@@ -377,6 +377,23 @@ table td {
   background-color: #fff0ff !important;
 }
 
+.lobby-games-table-joined.hover {
+  background-color: #e0e0ff !important;
+}
+.lobby-games-table-unstarted.hover {
+  background-color: #ffffe1 !important;
+}
+.lobby-games-table-unstarted-password.hover {
+  background-color: #ffd5d5 !important;
+}
+.lobby-games-table-started.hover {
+  background-color: #cdffdd !important;
+}
+.lobby-games-table-replay.hover {
+  background-color: #ffe1ff !important;
+}
+
+
 /*
   Lobby chat
 */

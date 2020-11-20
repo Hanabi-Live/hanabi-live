@@ -73,11 +73,6 @@ export default function tablesDraw(): void {
     }
   }
 
-  // Get the overlay div
-  const overlay = $(".overlay");
-  overlay.on("mouseleave", () => {
-    overlay.hide();
-  });
   // Create the mouse cursors
   const cursors = createMouseCursors();
 
@@ -190,50 +185,37 @@ export default function tablesDraw(): void {
       button.appendTo(row);
     }
 
-    // Set the overlay div
+    // Setup mouse events
     row.on("mouseenter", () => {
-      const offset = row.offset();
-      const width = row.outerWidth();
-      const height = row.outerHeight();
-
-      if (offset === undefined || width === undefined || height === undefined) {
-        throw new Error(
-          "Failed to get the dimensions and coordinates for the table row.",
-        );
-      }
-
-      overlay.css({
-        display: "flex",
-        left: `${offset.left}px`,
-        top: `${offset.top}px`,
-        width: `${width}px`,
-        height: `${height}px`,
-      });
-
+      row.addClass("hover").off("click");
       if (table.sharedReplay || (!table.joined && table.running)) {
-        overlay.css("cursor", cursors.eye);
-        overlay.attr("id", `spectate-${table.id}`);
-        overlay.off("click").on("click", () => {
-          tableSpectate(table);
-        });
+        row
+          .css("cursor", cursors.eye)
+          .attr("id", `spectate-${table.id}`)
+          .on("click", () => {
+            tableSpectate(table);
+          });
       } else if (!table.joined) {
-        overlay.attr("id", `join-${table.id}`);
+        row.attr("id", `join-${table.id}`);
         if (table.numPlayers >= 6) {
-          overlay.css("cursor", cursors.forbid);
-          overlay.off("click");
+          row.css("cursor", cursors.forbid);
         } else {
-          overlay.css("cursor", cursors.sign);
-          overlay.off("click").on("click", () => {
+          row.css("cursor", cursors.sign).on("click", () => {
             tableJoin(table);
           });
         }
       } else {
-        overlay.css("cursor", cursors.play);
-        overlay.attr("id", `resume-${table.id}`);
-        overlay.off("click").on("click", () => {
-          tableReattend(table);
-        });
+        row
+          .css("cursor", cursors.play)
+          .attr("id", `resume-${table.id}`)
+          .on("click", () => {
+            tableReattend(table);
+          });
       }
+    });
+
+    row.on("mouseleave", () => {
+      row.removeClass("hover").off("click").css("cursor", "default");
     });
 
     row.appendTo(tbody);
