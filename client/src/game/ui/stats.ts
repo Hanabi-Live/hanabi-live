@@ -47,7 +47,7 @@ export function efficiencyLabelClick(
 
   // A normal right click is a arrow to highlight the efficiency
   if (!event.evt.altKey) {
-    arrows.click(event, ReplayArrowOrder.Efficiency, this);
+    arrows.click(event, ReplayArrowOrder.Efficiency);
     return;
   }
 

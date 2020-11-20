@@ -136,7 +136,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     globals.state.replay.shared.amLeader &&
     globals.state.replay.shared.useSharedSegments
   ) {
-    arrows.send(card.state.order, card);
+    arrows.toggle(card.state.order);
     return;
   }
 
@@ -197,7 +197,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     globals.state.replay.shared === null
   ) {
-    arrows.toggle(card);
+    arrows.toggle(card.state.order);
     return;
   }
 
