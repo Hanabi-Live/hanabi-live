@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables
 
 import globals from "../globals";
-import { timerFormatter } from "../misc";
+import { createMouseCursors, timerFormatter } from "../misc";
 import * as modals from "../modals";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
@@ -78,6 +78,8 @@ export default function tablesDraw(): void {
   overlay.on("mouseleave", () => {
     overlay.hide();
   });
+  // Create the mouse cursors
+  const cursors = createMouseCursors();
 
   // Add all of the games
   let addedFirstJoinButton = false;
@@ -208,34 +210,30 @@ export default function tablesDraw(): void {
         height: `${height}px`,
       });
 
-      // Add the appropriate button, id and action
-      const button = $("<button>")
-        .attr("type", "button")
-        .addClass("button small margin0");
       if (table.sharedReplay || (!table.joined && table.running)) {
-        button.html('<i class="fas fa-eye lobby-button-icon"></i>');
+        overlay.css("cursor", cursors.eye);
         overlay.attr("id", `spectate-${table.id}`);
         overlay.off("click").on("click", () => {
           tableSpectate(table);
         });
       } else if (!table.joined) {
-        button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
         overlay.attr("id", `join-${table.id}`);
         if (table.numPlayers >= 6) {
+          overlay.css("cursor", cursors.forbid);
           overlay.off("click");
         } else {
+          overlay.css("cursor", cursors.sign);
           overlay.off("click").on("click", () => {
             tableJoin(table);
           });
         }
       } else {
-        button.html('<i class="fas fa-play lobby-button-icon"></i>');
+        overlay.css("cursor", cursors.play);
         overlay.attr("id", `resume-${table.id}`);
         overlay.off("click").on("click", () => {
           tableReattend(table);
         });
       }
-      overlay.empty().append(button);
     });
 
     row.appendTo(tbody);

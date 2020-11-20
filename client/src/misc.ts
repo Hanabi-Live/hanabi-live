@@ -117,3 +117,61 @@ export function trimReplaySuffixFromURL(): void {
   }
   window.history.pushState({}, "", newURL);
 }
+
+// from https://stackoverflow.com/questions/24093263/set-font-awesome-icons-as-cursor-is-this-possible
+export function createMouseCursors(): { [name: string]: string } {
+  const canvas = document.createElement("canvas");
+  canvas.width = 47;
+  canvas.height = 42;
+
+  const icons: Array<{
+    name: string;
+    width: number;
+    code: string;
+    html: string;
+  }> = [
+    {
+      name: "eye",
+      width: 47,
+      code: "\uf06e",
+      html: "&#61550;",
+    },
+    {
+      name: "play",
+      width: 37,
+      code: "\uf04b",
+      html: "&#61515;",
+    },
+    {
+      name: "sign",
+      width: 42,
+      code: "\uf2f6",
+      html: "&#62198;",
+    },
+    {
+      name: "forbid",
+      width: 42,
+      code: "\uf05e",
+      html: "&#61534;",
+    },
+  ];
+
+  const mouseIcons: { [name: string]: string } = {};
+
+  const ctx = canvas.getContext("2d");
+  if (ctx === null) {
+    throw new Error("Unable to create canvas");
+  }
+
+  ctx.fillStyle = "#323232";
+  ctx.font = "40px 'Font Awesome 5 Free'";
+
+  for (const icon of icons) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillText(icon.code, (canvas.width - icon.width) / 2, 36);
+    mouseIcons[icon.name] = `url(${canvas.toDataURL("image/png")}) ${
+      canvas.width / 2
+    } ${canvas.height / 2}, pointer`;
+  }
+  return mouseIcons;
+}

@@ -346,11 +346,11 @@ table td {
   display: none;
   position: absolute;
   z-index: 999;
-  opacity: 0.8;
+  opacity: 0.1;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  background-color: #cecece;
+  background-color: black;
 }
 
 /*
