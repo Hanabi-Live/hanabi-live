@@ -307,6 +307,12 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		return
 	}
 
+	if command == "notation" {
+		msg := "It looks like you are using non-standard card notation in your question. Please use notation that the Hyphen-ated group will be familiar with. For example:\n- Use \"red 3\" instead of \"3 red\".\nUse \"r3\" instead of \"3r\".\nUse \"r[3]\" to indicate that a card is a red 3 but has a number 3 clue on it."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
 	if command == "oop" {
 		msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (i, ii, or iii)."
 		discordSend(m.ChannelID, "", msg)
