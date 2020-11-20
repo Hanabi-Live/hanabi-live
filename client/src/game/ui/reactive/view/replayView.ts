@@ -172,20 +172,6 @@ function playSharedReplayTween(
   }
 }
 
-export function onSecondRecordedSegment(
-  hasTwoOrMoreSegments: boolean,
-  previousHasTwoOrMoreSegments: boolean | undefined,
-): void {
-  if (previousHasTwoOrMoreSegments === undefined) {
-    return;
-  }
-
-  // The in-game replay button starts off disabled
-  // Enable it once there is at least one segment to rewind to
-  globals.elements.replayButton?.setEnabled(hasTwoOrMoreSegments);
-  globals.layers.UI.batchDraw();
-}
-
 export function onDatabaseIDChanged(databaseID: number | null): void {
   if (databaseID === null) {
     return;

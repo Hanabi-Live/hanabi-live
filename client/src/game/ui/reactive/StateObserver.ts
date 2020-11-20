@@ -267,7 +267,6 @@ const replayObservers: Subscriptions = [
     }),
     replayView.onSharedSegmentChanged,
   ),
-  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
 
   // Database ID
   subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),

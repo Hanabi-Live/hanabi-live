@@ -479,16 +479,9 @@ function drawBottomLeftButtons() {
       height: bottomLeftButtonValues.h! * winH,
       visible: !globals.state.finished,
     },
-    [
-      globals.imageLoader!.get("replay")!,
-      globals.imageLoader!.get("replay-disabled")!,
-    ],
+    [globals.imageLoader!.get("replay")!],
   );
   replayButton.on("click tap", () => {
-    if (!replayButton.enabled) {
-      return;
-    }
-
     if (globals.state.replay.active) {
       replay.exit();
     } else {
@@ -496,7 +489,6 @@ function drawBottomLeftButtons() {
     }
   });
   globals.layers.UI.add((replayButton as unknown) as Konva.Group);
-  replayButton.setEnabled(false);
   replayButton.tooltipName = "replay";
   replayButton.tooltipContent =
     "Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.";
