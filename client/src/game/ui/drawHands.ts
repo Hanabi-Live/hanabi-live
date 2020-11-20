@@ -354,7 +354,7 @@ export default function drawHands(winW: number, winH: number): void {
       } else {
         blackLineX = 0;
       }
-      let blackLineY = 0;
+      const blackLineY = 0;
       if (isHandReversed(j)) {
         if (numPlayers === 2 || numPlayers === 3) {
           blackLineX = handValues.w + 0.002;
@@ -365,7 +365,6 @@ export default function drawHands(winW: number, winH: number): void {
         } else {
           blackLineX = handValues.w;
         }
-
       }
       const blackLine = new Konva.Rect({
         x: blackLineX * winW,
