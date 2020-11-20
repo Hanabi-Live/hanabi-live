@@ -318,7 +318,6 @@ export default function drawReplayArea(winW: number, winH: number): void {
     width: bottomRightReplayButtonValues.w * winW,
     height: bottomRightReplayButtonValues.h * winH,
     text: "Enter Hypothetical",
-    visible: false,
   });
   globals.elements.enterHypoButton.on("click tap", hypothetical.start);
   globals.elements.replayArea.add(
