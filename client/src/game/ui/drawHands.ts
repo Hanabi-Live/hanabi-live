@@ -27,8 +27,6 @@ export default function drawHands(winW: number, winH: number): void {
   const { numPlayers } = globals.options;
   const numCardsPerHand = hand.cardsPerHand(globals.options);
 
-  /* eslint-disable object-curly-newline */
-
   // In Keldon mode, the hand positions are different depending on the amount of players,
   // so they have to be hard coded
   const handPos6H = 0.165; // 5-player is 0.189
@@ -265,8 +263,6 @@ export default function drawHands(winW: number, winH: number): void {
       h: namePosValues.h,
     },
   ];
-
-  /* eslint-enable object-curly-newline */
 
   if (!globals.lobby.settings.keldonMode) {
     const i = numPlayers;
