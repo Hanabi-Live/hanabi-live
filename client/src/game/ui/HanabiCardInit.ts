@@ -236,7 +236,7 @@ function makeCachedPips(variant: Variant) {
       offset,
       fill: "black",
       stroke: "white",
-      strokeWidth: 4,
+      strokeWidth: 6,
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
