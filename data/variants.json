@@ -13125,6 +13125,1136 @@
     ]
   },
   {
+    "name": "Deceptive-Ones (6 Suits)",
+    "id": 1671,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Teal"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones (5 Suits)",
+    "id": 1672,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones (4 Suits)",
+    "id": 1673,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones (3 Suits)",
+    "id": 1674,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Black (6 Suits)",
+    "id": 1675,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Black"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Black (5 Suits)",
+    "id": 1676,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Black"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Rainbow (6 Suits)",
+    "id": 1677,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Rainbow (5 Suits)",
+    "id": 1678,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Rainbow (4 Suits)",
+    "id": 1679,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Rainbow (3 Suits)",
+    "id": 1680,
+    "suits": [
+      "Red",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Pink (6 Suits)",
+    "id": 1681,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Pink (5 Suits)",
+    "id": 1682,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Pink (4 Suits)",
+    "id": 1683,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Pink (3 Suits)",
+    "id": 1684,
+    "suits": [
+      "Red",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & White (6 Suits)",
+    "id": 1685,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "White"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & White (5 Suits)",
+    "id": 1686,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & White (4 Suits)",
+    "id": 1687,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & White (3 Suits)",
+    "id": 1688,
+    "suits": [
+      "Red",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Brown (6 Suits)",
+    "id": 1689,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Brown"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Brown (5 Suits)",
+    "id": 1690,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Brown (4 Suits)",
+    "id": 1691,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Brown (3 Suits)",
+    "id": 1692,
+    "suits": [
+      "Red",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Omni (6 Suits)",
+    "id": 1693,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Omni"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Omni (5 Suits)",
+    "id": 1694,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Omni (4 Suits)",
+    "id": 1695,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Omni (3 Suits)",
+    "id": 1696,
+    "suits": [
+      "Red",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Null (6 Suits)",
+    "id": 1697,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Null"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Null (5 Suits)",
+    "id": 1698,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Null (4 Suits)",
+    "id": 1699,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Null (3 Suits)",
+    "id": 1700,
+    "suits": [
+      "Red",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Muddy Rainbow (6 Suits)",
+    "id": 1701,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Muddy Rainbow (5 Suits)",
+    "id": 1702,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Muddy Rainbow (4 Suits)",
+    "id": 1703,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Muddy Rainbow (3 Suits)",
+    "id": 1704,
+    "suits": [
+      "Red",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Light Pink (6 Suits)",
+    "id": 1705,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Light Pink (5 Suits)",
+    "id": 1706,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Light Pink (4 Suits)",
+    "id": 1707,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Light Pink (3 Suits)",
+    "id": 1708,
+    "suits": [
+      "Red",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Prism (6 Suits)",
+    "id": 1709,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Prism (5 Suits)",
+    "id": 1710,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Prism (4 Suits)",
+    "id": 1711,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Prism (3 Suits)",
+    "id": 1712,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Rainbow (6 Suits)",
+    "id": 1713,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Rainbow (5 Suits)",
+    "id": 1714,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Pink (6 Suits)",
+    "id": 1715,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Pink (5 Suits)",
+    "id": 1716,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Gray (6 Suits)",
+    "id": 1717,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Gray (5 Suits)",
+    "id": 1718,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Brown (6 Suits)",
+    "id": 1719,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Brown"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Brown (5 Suits)",
+    "id": 1720,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Brown"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Omni (6 Suits)",
+    "id": 1721,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Omni"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Omni (5 Suits)",
+    "id": 1722,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Omni"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Null (6 Suits)",
+    "id": 1723,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Null"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Null (5 Suits)",
+    "id": 1724,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Null"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Cocoa Rainbow (6 Suits)",
+    "id": 1725,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Cocoa Rainbow (5 Suits)",
+    "id": 1726,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Gray Pink (6 Suits)",
+    "id": 1727,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Gray Pink (5 Suits)",
+    "id": 1728,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray Pink"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Prism (6 Suits)",
+    "id": 1729,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Prism"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Deceptive-Ones & Dark Prism (5 Suits)",
+    "id": 1730,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Prism"
+    ],
+    "specialRank": 1,
+    "specialDeceptive": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
     "name": "Rainbow-Fives (6 Suits)",
     "id": 526,
     "suits": [
@@ -21677,6 +22807,1136 @@
     "specialRank": 5,
     "specialAllClueRanks": true,
     "specialNoClueColors": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives (6 Suits)",
+    "id": 1731,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Teal"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives (5 Suits)",
+    "id": 1732,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives (4 Suits)",
+    "id": 1733,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives (3 Suits)",
+    "id": 1734,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Black (6 Suits)",
+    "id": 1735,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Black"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Black (5 Suits)",
+    "id": 1736,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Black"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Rainbow (6 Suits)",
+    "id": 1737,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Rainbow (5 Suits)",
+    "id": 1738,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Rainbow (4 Suits)",
+    "id": 1739,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Rainbow (3 Suits)",
+    "id": 1740,
+    "suits": [
+      "Red",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Pink (6 Suits)",
+    "id": 1741,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Pink (5 Suits)",
+    "id": 1742,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Pink (4 Suits)",
+    "id": 1743,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Pink (3 Suits)",
+    "id": 1744,
+    "suits": [
+      "Red",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & White (6 Suits)",
+    "id": 1745,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "White"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & White (5 Suits)",
+    "id": 1746,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & White (4 Suits)",
+    "id": 1747,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & White (3 Suits)",
+    "id": 1748,
+    "suits": [
+      "Red",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Brown (6 Suits)",
+    "id": 1749,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Brown"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Brown (5 Suits)",
+    "id": 1750,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Brown (4 Suits)",
+    "id": 1751,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Brown (3 Suits)",
+    "id": 1752,
+    "suits": [
+      "Red",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Omni (6 Suits)",
+    "id": 1753,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Omni"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Omni (5 Suits)",
+    "id": 1754,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Omni (4 Suits)",
+    "id": 1755,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Omni (3 Suits)",
+    "id": 1756,
+    "suits": [
+      "Red",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Null (6 Suits)",
+    "id": 1757,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Null"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Null (5 Suits)",
+    "id": 1758,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Null (4 Suits)",
+    "id": 1759,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Null (3 Suits)",
+    "id": 1760,
+    "suits": [
+      "Red",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Muddy Rainbow (6 Suits)",
+    "id": 1761,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Muddy Rainbow (5 Suits)",
+    "id": 1762,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Muddy Rainbow (4 Suits)",
+    "id": 1763,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Muddy Rainbow (3 Suits)",
+    "id": 1764,
+    "suits": [
+      "Red",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Light Pink (6 Suits)",
+    "id": 1765,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Light Pink (5 Suits)",
+    "id": 1766,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Light Pink (4 Suits)",
+    "id": 1767,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Light Pink (3 Suits)",
+    "id": 1768,
+    "suits": [
+      "Red",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Prism (6 Suits)",
+    "id": 1769,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Prism (5 Suits)",
+    "id": 1770,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Prism (4 Suits)",
+    "id": 1771,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Prism (3 Suits)",
+    "id": 1772,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Rainbow (6 Suits)",
+    "id": 1773,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Rainbow (5 Suits)",
+    "id": 1774,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Pink (6 Suits)",
+    "id": 1775,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Pink (5 Suits)",
+    "id": 1776,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Gray (6 Suits)",
+    "id": 1777,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Gray (5 Suits)",
+    "id": 1778,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Brown (6 Suits)",
+    "id": 1779,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Brown"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Brown (5 Suits)",
+    "id": 1780,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Brown"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Omni (6 Suits)",
+    "id": 1781,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Omni"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Omni (5 Suits)",
+    "id": 1782,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Omni"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Null (6 Suits)",
+    "id": 1783,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Null"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Null (5 Suits)",
+    "id": 1784,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Null"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Cocoa Rainbow (6 Suits)",
+    "id": 1785,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Cocoa Rainbow (5 Suits)",
+    "id": 1786,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Gray Pink (6 Suits)",
+    "id": 1787,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Gray Pink (5 Suits)",
+    "id": 1788,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray Pink"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Prism (6 Suits)",
+    "id": 1789,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Prism"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Deceptive-Fives & Dark Prism (5 Suits)",
+    "id": 1790,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Prism"
+    ],
+    "specialRank": 5,
+    "specialDeceptive": true,
     "clueRanks": [
       1,
       2,

@@ -20,6 +20,7 @@ type Variant struct {
 	SpecialAllClueRanks    bool
 	SpecialNoClueColors    bool
 	SpecialNoClueRanks     bool
+	SpecialDeceptive       bool
 	MaxScore               int
 }
 
