@@ -6,12 +6,13 @@ import * as turn from "../../turn";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations
 export const shouldEnableEnterHypoButton = (state: State): boolean =>
-  state.replay.shared !== null &&
-  state.replay.shared.useSharedSegments &&
-  state.replay.shared.amLeader &&
-  // We can't start a hypothetical on a segment where the game has already ended
-  state.visibleState !== null &&
-  state.visibleState.turn.currentPlayerIndex !== null;
+  (!state.finished && state.replay.active) ||
+  (state.replay.shared !== null &&
+    state.replay.shared.useSharedSegments &&
+    state.replay.shared.amLeader &&
+    // We can't start a hypothetical on a segment where the game has already ended
+    state.visibleState !== null &&
+    state.visibleState.turn.currentPlayerIndex !== null);
 
 export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
   globals.elements.enterHypoButton?.setEnabled(enabled);
