@@ -359,11 +359,13 @@ export function toggle(order: number, alwaysShow = false): void {
     return;
   }
 
+  // Use the first arrow for highlighting a specific thing
   const arrow = globals.elements.arrows[0];
   const show =
     alwaysShow ||
     arrow.pointingTo !== element ||
     arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
+
   hideAll();
   if (show) {
     set(0, element, null, null);

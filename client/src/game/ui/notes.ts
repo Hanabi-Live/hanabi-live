@@ -385,11 +385,20 @@ export function openEditTooltip(card: HanabiCard): void {
     return;
   }
 
+  // If a note tooltip is open on a card and we right click on the card again,
+  // the "focusout" handler will automatically close the tooltip,
+  // but then this code will run and immediately re-open the tooltip
+  // Detect if this is happening and do nothing
+  const tooltip = $(`#tooltip-${card.tooltipName}`);
+  const status = tooltip.tooltipster("status");
+  if (status.state === "disappearing") {
+    return;
+  }
+
   show(card);
 
   globals.editingNote = card.state.order;
   const note = get(card.state.order, true);
-  const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster("instance");
   tooltipInstance.content(
     `<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`,
