@@ -25,6 +25,7 @@ import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { animate } from "./konvaHelpers";
 import LayoutChild from "./LayoutChild";
+import * as noteIdentity from "./noteIdentity";
 import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
@@ -1119,8 +1120,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   checkSpecialNote(): void {
     const noteText = globals.ourNotes.get(this.state.order) ?? "";
 
-    this.note = notes.checkNoteIdentity(this.variant, noteText);
-    notes.checkNoteImpossibility(this.variant, this.state, this.note);
+    this.note = notes.parseNote(this.variant, noteText);
+    noteIdentity.checkNoteImpossibility(this.variant, this.state, this.note);
 
     // Morph the card if it has an "exact" card note
     // (or clear the bare image if the note was deleted/changed)
