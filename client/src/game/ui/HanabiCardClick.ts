@@ -8,6 +8,7 @@ import * as arrows from "./arrows";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
+import * as noteIdentity from "./noteIdentity";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
@@ -234,7 +235,7 @@ function clickMorph(order: number) {
   }
 
   // We want an exact match, so fullNote is sent as an empty string
-  const cardIdentity = notes.parseIdentity(globals.variant, cardText);
+  const cardIdentity = noteIdentity.parseIdentity(globals.variant, cardText);
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     modals.warningShow("You entered an invalid card.");
     return;
