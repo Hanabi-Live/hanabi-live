@@ -316,35 +316,9 @@ commands.set("replayIndicator", (data: ReplayIndicatorData) => {
     return;
   }
 
-  if (data.order >= 0) {
-    // This is an arrow for a card
-    const card = getCardOrStackBase(data.order);
-    arrows.toggle(card);
-  } else {
-    // This is an arrow for some other UI element
-    let element;
-    if (data.order === ReplayArrowOrder.Deck) {
-      element = globals.elements.deck;
-    } else if (data.order === ReplayArrowOrder.Turn) {
-      element = globals.elements.turnNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Score) {
-      element = globals.elements.scoreNumberLabel;
-    } else if (data.order === ReplayArrowOrder.MaxScore) {
-      element = globals.elements.maxScoreNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Clues) {
-      element = globals.elements.cluesNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Pace) {
-      element = globals.elements.paceNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Efficiency) {
-      element = globals.elements.efficiencyNumberLabel;
-    } else if (data.order === ReplayArrowOrder.MinEfficiency) {
-      element = globals.elements.efficiencyMinNeededLabel;
-    } else {
-      console.warn('Received a "replayIndicator" for an unknown element.');
-      return;
-    }
-
-    arrows.toggle(element);
+  arrows.hideAll();
+  if (data.order !== ReplayArrowOrder.Nothing) {
+    arrows.toggle(data.order);
   }
 });
 

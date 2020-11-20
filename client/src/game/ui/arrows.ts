@@ -18,6 +18,7 @@ import Arrow from "./controls/Arrow";
 import NodeWithTooltip from "./controls/NodeWithTooltip";
 import StrikeSquare from "./controls/StrikeSquare";
 import drawPip from "./drawPip";
+import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as konvaHelpers from "./konvaHelpers";
@@ -317,8 +318,7 @@ function animate(
 
 export function click(
   event: KonvaEventObject<MouseEvent>,
-  order: ReplayArrowOrder,
-  element: NodeWithTooltip | null,
+  order: number,
 ): void {
   // "event.evt.buttons" is always 0 here
   if (event.evt.button !== 2) {
@@ -326,47 +326,44 @@ export function click(
     return;
   }
 
+  // Don't allow followers in a shared replay to summon arrows because it could be misleading as to
+  // who the real replay leader is
   if (
     globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
-    globals.state.replay.shared.useSharedSegments
+    !globals.state.replay.shared.amLeader
   ) {
-    // The shared replay leader is clicking on a UI element, so send this action to the server
-    send(order, element);
-  } else if (globals.state.replay.shared === null) {
-    // Otherwise, toggle the arrow locally
-    // However, we don't want to enable this functionality in shared replays because it could be
-    // misleading as to who the real replay leader is
-    toggle(element);
+    return;
   }
-}
 
-export function send(
-  order: ReplayArrowOrder,
-  element: NodeWithTooltip | null,
-): void {
-  globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.Arrow,
-    order,
-  });
+  // Don't allow shared replay leaders to summon arrows when they are not in shared turns because it
+  // could be misleading as to whether or not the arrows are being shown to the other players
+  if (
+    globals.state.replay.shared !== null &&
+    !globals.state.replay.shared.useSharedSegments
+  ) {
+    return;
+  }
 
-  // Draw the arrow manually so that we don't have to wait for the client to server round-trip
-  toggle(element);
+  toggle(order);
 }
 
 // This toggles the "highlight" arrow on a particular element
-export function toggle(element: NodeWithTooltip | null): void {
+export function toggle(order: number, alwaysShow = false): void {
+  // Get the element corresponding to the "order" number
+  const element = getElementFromOrder(order);
+
   // If we are showing an arrow on a card that is currently tweening,
   // delay showing it until the tween is finished
   if (element instanceof HanabiCard && element.tweening) {
-    element.waitForTweening(() => toggle(element));
+    element.waitForTweening(() => toggle(order, alwaysShow));
     return;
   }
 
   const arrow = globals.elements.arrows[0];
   const show =
-    arrow.pointingTo !== element || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
+    alwaysShow ||
+    arrow.pointingTo !== element ||
+    arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
   hideAll();
   if (show) {
     set(0, element, null, null);
@@ -379,6 +376,58 @@ export function toggle(element: NodeWithTooltip | null): void {
     ) {
       const tooltip = $(`#tooltip-${element.tooltipName}`);
       tooltip.tooltipster("close");
+    }
+  }
+
+  if (
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader &&
+    globals.state.replay.shared.useSharedSegments
+  ) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.Arrow,
+      order: show ? order : ReplayArrowOrder.Nothing,
+    });
+  }
+}
+
+function getElementFromOrder(order: number): NodeWithTooltip {
+  if (order >= 0) {
+    // This is an arrow for a card
+    // The order corresponds to the card's order in the deck
+    return getCardOrStackBase(order);
+  }
+
+  switch (order) {
+    case ReplayArrowOrder.Deck: {
+      return globals.elements.deck!;
+    }
+    case ReplayArrowOrder.Turn: {
+      return globals.elements.turnNumberLabel!;
+    }
+    case ReplayArrowOrder.Score: {
+      return globals.elements.scoreNumberLabel!;
+    }
+    case ReplayArrowOrder.MaxScore: {
+      return globals.elements.maxScoreNumberLabel!;
+    }
+    case ReplayArrowOrder.Clues: {
+      return globals.elements.cluesNumberLabel!;
+    }
+    case ReplayArrowOrder.Pace: {
+      return globals.elements.paceNumberLabel!;
+    }
+    case ReplayArrowOrder.Efficiency: {
+      return globals.elements.efficiencyNumberLabel!;
+    }
+    case ReplayArrowOrder.MinEfficiency: {
+      return globals.elements.efficiencyMinNeededLabel!;
+    }
+    default: {
+      throw new Error(
+        `Failed to get the element corresponding to arrow order ${order}.`,
+      );
     }
   }
 }

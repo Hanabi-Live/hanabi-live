@@ -749,11 +749,7 @@ function drawScoreArea() {
       replay.promptTurn();
     } else if (event.evt.button === 2) {
       // Right-click
-      arrows.click(
-        event,
-        ReplayArrowOrder.Clues,
-        globals.elements.turnNumberLabel,
-      );
+      arrows.click(event, ReplayArrowOrder.Clues);
     }
   });
   turnTextLabel.on("dbltap", replay.promptTurn);
@@ -776,11 +772,7 @@ function drawScoreArea() {
         replay.promptTurn();
       } else if (event.evt.button === 2) {
         // Right-click
-        arrows.click(
-          event,
-          ReplayArrowOrder.Clues,
-          globals.elements.turnNumberLabel,
-        );
+        arrows.click(event, ReplayArrowOrder.Clues);
       }
     },
   );
@@ -798,11 +790,7 @@ function drawScoreArea() {
   globals.elements.scoreTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(
-        event,
-        ReplayArrowOrder.Score,
-        globals.elements.scoreNumberLabel,
-      );
+      arrows.click(event, ReplayArrowOrder.Score);
     },
   );
 
@@ -818,11 +806,7 @@ function drawScoreArea() {
   globals.elements.scoreNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(
-        event,
-        ReplayArrowOrder.Score,
-        globals.elements.scoreNumberLabel,
-      );
+      arrows.click(event, ReplayArrowOrder.Score);
     },
   );
 
@@ -839,11 +823,7 @@ function drawScoreArea() {
   globals.elements.maxScoreNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(
-        event,
-        ReplayArrowOrder.MaxScore,
-        globals.elements.maxScoreNumberLabel,
-      );
+      arrows.click(event, ReplayArrowOrder.MaxScore);
     },
   );
 
@@ -858,11 +838,7 @@ function drawScoreArea() {
     globals.elements.playsTextLabel.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        arrows.click(
-          event,
-          ReplayArrowOrder.Clues,
-          globals.elements.playsNumberLabel,
-        );
+        arrows.click(event, ReplayArrowOrder.Clues);
       },
     );
 
@@ -876,11 +852,7 @@ function drawScoreArea() {
     globals.elements.playsNumberLabel.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        arrows.click(
-          event,
-          ReplayArrowOrder.Clues,
-          globals.elements.playsNumberLabel,
-        );
+        arrows.click(event, ReplayArrowOrder.Clues);
       },
     );
   }
@@ -895,7 +867,7 @@ function drawScoreArea() {
   cluesTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
+      arrows.click(event, ReplayArrowOrder.Clues);
     },
   );
 
@@ -910,7 +882,7 @@ function drawScoreArea() {
   cluesNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
+      arrows.click(event, ReplayArrowOrder.Clues);
     },
   );
 
@@ -955,7 +927,7 @@ function drawScoreArea() {
 
         // Highlight the card
         const card = getCardOrStackBase(strike.order);
-        arrows.toggle(card);
+        arrows.toggle(card.state.order, true);
 
         break;
       }
@@ -974,8 +946,7 @@ function drawScoreArea() {
           throw new Error(`Unknown strike number of ${this.num}".`);
         }
 
-        const element = globals.elements.strikeSquares[this.num];
-        arrows.click(event, order, element);
+        arrows.click(event, order);
 
         break;
       }
@@ -1391,12 +1362,12 @@ function drawStatistics() {
   globals.elements.paceNumberLabel = paceNumberLabel;
 
   paceTextLabel.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-    arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Pace);
   });
   paceNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
+      arrows.click(event, ReplayArrowOrder.Pace);
     },
   );
 
@@ -1426,7 +1397,7 @@ function drawStatistics() {
   efficiencyTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
+      arrows.click(event, ReplayArrowOrder.Efficiency);
     },
   );
 
@@ -1471,11 +1442,7 @@ function drawStatistics() {
   efficiencyMinNeededLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(
-        event,
-        ReplayArrowOrder.MinEfficiency,
-        efficiencyMinNeededLabel,
-      );
+      arrows.click(event, ReplayArrowOrder.MinEfficiency);
     },
   );
   globals.elements.efficiencyMinNeededLabel = efficiencyMinNeededLabel;

@@ -59,7 +59,7 @@ export default class Deck extends Konva.Group {
 
     // Right-click on the deck to highlight it with an arrow
     this.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Deck, this);
+      arrows.click(event, ReplayArrowOrder.Deck);
     });
 
     this.initTooltip();

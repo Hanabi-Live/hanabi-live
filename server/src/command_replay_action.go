@@ -124,6 +124,8 @@ func replayActionSegment(s *Session, d *CommandData, t *Table) {
 func replayActionArrow(s *Session, d *CommandData, t *Table) {
 	// Display an arrow to indicate a specific card that the shared replay leader wants to draw
 	// attention to
+	// The server does not know what a particular order value corresponds to;
+	// it simply transmits the order chosen by the replay leader to everyone else
 	type ReplayIndicatorMessage struct {
 		TableID uint64 `json:"tableID"`
 		Order   int    `json:"order"`
