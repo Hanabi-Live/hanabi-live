@@ -131,13 +131,7 @@ function statsReducerFunction(
   }
 
   // Record the last action
-  if (
-    action.type === "play" ||
-    action.type === "discard" ||
-    action.type === "clue"
-  ) {
-    stats.lastAction = action;
-  }
+  stats.lastAction = action;
 
   // Find out which sound effect to play (if this is an ongoing game)
   stats.soundTypeForLastAction = getSoundType(
