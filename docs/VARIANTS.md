@@ -122,13 +122,23 @@ One of each card per suit (e.g. 5 in total):
 
 - Fives have the property of the suit prefix. For example, rainbow-fives are "touched" by all colors.
 
-### Deceptive-Ones & Deceptive-Fives
+### Deceptive-Ones
 
-- Ones/fives have the property that they are only touched by certain rank clues:
+- Ones have the property that they are only touched by certain rank clues:
   - The first suit is touched by a rank 2 clue
   - The second suit is touched by a rank 3 clue
-  - The third suit is touched by a rank 4 clue, and so on
-  - If there are five suits, the fifth suit is touched by a rank 2 clue (wrapping around)
+  - The third suit is touched by a rank 4 clue,
+  - The fifth suit is touched by a rank 5 clue
+  - The sixth suit is touched by a rank 2 clue (wrapping around)
+
+### Deceptive-Fives
+
+- Fives have the property that they are only touched by certain rank clues:
+  - The first suit is touched by a rank 1 clue
+  - The second suit is touched by a rank 2 clue
+  - The third suit is touched by a rank 3 clue,
+  - The fifth suit is touched by a rank 4 clue
+  - The sixth suit is touched by a rank 1 clue (wrapping around)
 
 ### Suit-Ones or Suit-Fives with Another Special Suit
 
