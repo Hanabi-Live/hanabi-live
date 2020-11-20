@@ -319,6 +319,7 @@ Docker is **not supported** as an official installation method. However, we prov
   - If you are on Windows, you should run this script from a Git Bash window.
   - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
   - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443.
+- Once the server is running, you can go to "http://localhost/" to view the site. (By default, it listens on port 80. The page will only work if the client is already built, which is covered previously in this document.)
 - If you change any of the Golang code, then you must restart the server for the changes to take effect.
 - If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
   - Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack-dev-server.sh` script running and go to "http://localhost/dev". This way, the code will be automatically compiled whenever you change a file and the page will automatically refresh.
