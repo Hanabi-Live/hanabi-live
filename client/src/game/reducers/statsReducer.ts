@@ -43,7 +43,7 @@ function statsReducerFunction(
         stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
-      break;
+      return;
     }
 
     case "play": {
