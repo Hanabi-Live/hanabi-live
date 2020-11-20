@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,9 +27,12 @@ func httpMain(c *gin.Context) {
 		return
 	}
 
+	// Unlike the other pages, the main website does not directly display the title
+	// Instead, we use this value to store whether or not we will use the WebPack development
+	// JavaScript
 	title := "Main"
-	path := c.Request.URL.Path
-	if strings.HasPrefix(path, "/dev") {
+	_, dev := c.Request.URL.Query()["dev"]
+	if dev {
 		title = "Dev"
 	}
 

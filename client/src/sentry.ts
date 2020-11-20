@@ -3,6 +3,7 @@
 import * as Sentry from "@sentry/browser";
 import version from "../../data/version.json";
 import InitData from "./game/types/InitData";
+import { isDevWebpack } from "./misc";
 
 export function init(): void {
   if (!useSentry()) {
@@ -64,5 +65,4 @@ export function setGameContext(gameInitData: InitData): void {
 }
 
 const useSentry = () =>
-  window.location.hostname !== "localhost" &&
-  !window.location.pathname.includes("/dev");
+  window.location.hostname !== "localhost" && !isDevWebpack();

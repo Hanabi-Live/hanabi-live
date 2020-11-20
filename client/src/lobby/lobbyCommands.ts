@@ -203,6 +203,7 @@ interface TableStartData {
   replay: boolean;
 }
 commands.set("tableStart", (data: TableStartData) => {
+  // Record the table ID for later
   globals.tableID = data.tableID;
 
   if (!data.replay) {
@@ -343,10 +344,7 @@ commands.set("welcome", (data: WelcomeData) => {
   }
 
   // Automatically create a table if we are using a "/create-table" URL
-  if (
-    window.location.pathname === "/create-table" ||
-    window.location.pathname === "/dev/create-table"
-  ) {
+  if (window.location.pathname === "/create-table") {
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get("name") ?? globals.randomTableName;
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;

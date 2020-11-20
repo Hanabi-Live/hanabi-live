@@ -53,11 +53,7 @@ export function init(): void {
 
   // The "Sign Out" button
   $(".signout").on("click", () => {
-    let path = "/logout";
-    if (window.location.pathname.includes("/dev")) {
-      path += "?dev=true";
-    }
-    window.location.href = path;
+    window.location.href = "/logout";
   });
 
   // The "Start Game" button

@@ -41,6 +41,11 @@ export function initArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
 }
 
+export function isDevWebpack(): boolean {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.has("dev");
+}
+
 // This is a helper to check for empty/invalid HTML elements without worrying about the linter
 export const isEmpty = (
   value: string | string[] | number | undefined,

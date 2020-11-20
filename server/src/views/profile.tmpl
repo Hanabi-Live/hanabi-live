@@ -198,7 +198,7 @@
     }
 
     // Parse the number of players from the URL
-    // e.g. ["", "missing-scores", "test"] from "http://localhost/missing-scores/test/2"
+    // e.g. ["", "missing-scores", "Alice", "Bob"] from "/missing-scores/Alice/Bob"
     const urlSegments = window.location.pathname.split('/');
     if (urlSegments < 3) {
       return;

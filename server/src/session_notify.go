@@ -156,12 +156,14 @@ func (s *Session) NotifyChatTyping(t *Table, name string, typing bool) {
 
 func (s *Session) NotifyTableStart(t *Table) {
 	type TableStartMessage struct {
-		TableID uint64 `json:"tableID"`
-		Replay  bool   `json:"replay"`
+		TableID      uint64 `json:"tableID"`
+		Replay       bool   `json:"replay"`
+		SharedReplay bool   `json:"sharedReplay"`
 	}
 	s.Emit("tableStart", &TableStartMessage{
-		TableID: t.ID,
-		Replay:  t.Replay,
+		TableID:      t.ID,
+		Replay:       t.Replay,
+		SharedReplay: !t.Visible,
 	})
 }
 
