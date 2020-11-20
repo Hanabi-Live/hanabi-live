@@ -251,7 +251,7 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 			if variant.SpecialDeceptive {
 				// The rank that touches a deceptive card is contingent upon the card's suit
-				deceptiveRank := (card.SuitIndex % len(variant.ClueRanks)) + 2
+				deceptiveRank := variant.ClueRanks[card.SuitIndex%len(variant.ClueRanks)]
 				return clue.Value == deceptiveRank
 			}
 		}
