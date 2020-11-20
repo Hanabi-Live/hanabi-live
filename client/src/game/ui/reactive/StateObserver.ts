@@ -240,7 +240,6 @@ const ongoingGameObservers: Subscriptions = [
       soundType: s.ongoingGame.stats.soundTypeForLastAction,
       currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
       turn: s.ongoingGame.turn.turnNum,
-      lastAction: s.ongoingGame.stats.lastAction,
     }),
     soundView.onNewSoundEffect,
   ),
