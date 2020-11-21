@@ -334,7 +334,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const cardIdentity = globals.state.cardIdentities[this.state.order];
     if (cardIdentity === undefined) {
       throw new Error(
-        `Failed to get the previously known card identity for card ${this.state.order}.`,
+        `Failed to get the previously known card identity for card: ${this.state.order}`,
       );
     }
     return cardIdentity;
