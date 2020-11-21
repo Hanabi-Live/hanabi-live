@@ -19,7 +19,7 @@ export function onTurnChanged(data: {
   globals.elements.turnNumberLabel?.text(friendlyTurn);
 
   // Update the address bar
-  setBrowserAddressBarPath(window.location.pathname, friendlyTurn);
+  setBrowserAddressBarPath(window.location.pathname, `#${friendlyTurn}`);
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
   if (data.endTurn !== null) {

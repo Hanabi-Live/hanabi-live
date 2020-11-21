@@ -106,9 +106,10 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   }
   if (hash !== undefined) {
     // e.g. "#123", which is used to show the current turn
-    path += `#${hash}`;
+    path += hash;
   }
   window.history.pushState({}, "", path);
+  console.trace();
 }
 
 export function timerFormatter(totalSeconds: number): string {

@@ -265,6 +265,14 @@ interface GameActionListData {
   list: GameAction[];
 }
 commands.set("gameActionList", (data: GameActionListData) => {
+  // Users can load a specific turn in a replay by using a URL hash
+  // e.g. "/replay/123#5"
+  // Record the hash before we change the turn (which will overwrite the hash)
+  let specificTurnString = null;
+  if (window.location.hash !== "") {
+    specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#"
+  }
+
   // The server has sent us the list of the game actions that have occurred in the game thus far
   // (in response to the "getGameInfo2" command)
   // Send this list to the reducers
@@ -273,7 +281,9 @@ commands.set("gameActionList", (data: GameActionListData) => {
     actions: data.list,
   });
 
-  checkLoadSpecificReplayTurn();
+  if (specificTurnString !== null) {
+    loadSpecificReplayTurn(specificTurnString);
+  }
 });
 
 interface PauseData {
@@ -407,7 +417,7 @@ function setURL(data: InitData) {
   } else {
     path = `/game/${data.tableID}`;
   }
-  setBrowserAddressBarPath(path);
+  setBrowserAddressBarPath(path, window.location.hash);
 }
 
 function initStateStore(data: InitData) {
@@ -479,12 +489,11 @@ function initStateStore(data: InitData) {
 }
 
 // We might need to go to a specific turn
-// (e.g. we loaded a URL of "http://localhost/replay/123?turn=5")
-function checkLoadSpecificReplayTurn() {
-  const turnString = window.location.hash;
+// (e.g. we loaded a URL of "http://localhost/replay/123#5")
+function loadSpecificReplayTurn(turnString: string) {
   let turn = parseIntSafe(turnString);
   if (Number.isNaN(turn)) {
-    // The turn is not a number
+    // The turn is not a number, so ignore it
     return;
   }
 
