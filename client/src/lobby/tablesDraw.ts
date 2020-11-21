@@ -34,10 +34,12 @@ export default function tablesDraw(): void {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
+        //  Tables that we are currently in
         if (friends && i === 1 && table.joined && !table.sharedReplay) {
           tableIDsOfThisType.push(id);
         }
 
+        // Tables our friends are currently in
         const hasFriends = tableHasFriends(table);
         if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
@@ -49,6 +51,7 @@ export default function tablesDraw(): void {
           !table.passwordProtected &&
           !table.joined
         ) {
+          // Unstarted tables
           tableIDsOfThisType.push(id);
         } else if (
           i === 3 &&
@@ -56,6 +59,7 @@ export default function tablesDraw(): void {
           table.passwordProtected &&
           !table.joined
         ) {
+          // Unstarted & password-protected tables
           tableIDsOfThisType.push(id);
         } else if (
           i === 4 &&
@@ -63,8 +67,10 @@ export default function tablesDraw(): void {
           !table.sharedReplay &&
           !table.joined
         ) {
+          // Ongoing tables
           tableIDsOfThisType.push(id);
         } else if (i === 5 && table.running && table.sharedReplay) {
+          // Shared replays
           tableIDsOfThisType.push(id);
         }
       }
@@ -276,9 +282,11 @@ function tableReattend(table: Table) {
 }
 
 function tableHasFriends(table: Table) {
-  for (const player of table.players) {
-    if (globals.friends.includes(player)) {
-      return true;
+  if (!table.sharedReplay) {
+    for (const player of table.players) {
+      if (globals.friends.includes(player)) {
+        return true;
+      }
     }
   }
 
