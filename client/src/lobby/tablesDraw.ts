@@ -192,7 +192,10 @@ export default function tablesDraw(): void {
           .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
             if (event.ctrlKey) {
               // Copy the URL that would occur from clicking on this table row
-              copyURLToClipboard(`/game/${table.id}`, row);
+              const path = table.sharedReplay
+                ? `/shared-replay/${table.id}`
+                : `/game/${table.id}`;
+              copyURLToClipboard(path, row);
             } else {
               tableSpectate(table);
             }
