@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables
 
 import globals from "../globals";
-import { createMouseCursors, timerFormatter } from "../misc";
+import { timerFormatter } from "../misc";
 import * as modals from "../modals";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
@@ -72,9 +72,6 @@ export default function tablesDraw(): void {
       sortedTableIDs = sortedTableIDs.concat(tableIDsOfThisType);
     }
   }
-
-  // Create the mouse cursors
-  const cursors = createMouseCursors();
 
   // Add all of the games
   let addedFirstJoinButton = false;
@@ -189,33 +186,27 @@ export default function tablesDraw(): void {
     row.on("mouseenter", () => {
       row.addClass("hover").off("click");
       if (table.sharedReplay || (!table.joined && table.running)) {
-        row
-          .css("cursor", cursors.eye)
-          .attr("id", `spectate-${table.id}`)
-          .on("click", () => {
-            tableSpectate(table);
-          });
+        row.attr("id", `spectate-${table.id}`).on("click", () => {
+          tableSpectate(table);
+        });
       } else if (!table.joined) {
         row.attr("id", `join-${table.id}`);
         if (table.numPlayers >= 6) {
-          row.css("cursor", cursors.forbid);
+          row.addClass("full");
         } else {
-          row.css("cursor", cursors.sign).on("click", () => {
+          row.on("click", () => {
             tableJoin(table);
           });
         }
       } else {
-        row
-          .css("cursor", cursors.play)
-          .attr("id", `resume-${table.id}`)
-          .on("click", () => {
-            tableReattend(table);
-          });
+        row.attr("id", `resume-${table.id}`).on("click", () => {
+          tableReattend(table);
+        });
       }
     });
 
     row.on("mouseleave", () => {
-      row.removeClass("hover").off("click").css("cursor", "default");
+      row.removeClass("hover").removeClass("full").off("click");
     });
 
     row.appendTo(tbody);
