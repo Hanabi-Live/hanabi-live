@@ -648,7 +648,7 @@ function drawDeck() {
       y: 0,
     },
     shadowOpacity: 0.9,
-    visible: globals.state.finished && globals.state.replay.databaseID !== null,
+    visible: true,
   });
   // As with gameIdLabel, this goes on the arrow layer
   globals.layers.arrow.add(globals.elements.gameInfoImage);
