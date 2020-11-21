@@ -303,6 +303,8 @@ const replayObservers: Subscriptions = [
   ),
 
   // Replay entered or exited
+  // Note that this needs to go after onActiveOrAmLeaderChanged so that the clue area is shown at
+  // game start
   subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
 
   // Replay sliders and buttons
