@@ -194,13 +194,13 @@ const visibleStateObservers: Subscriptions = [
   // Must come after card layout so animations to deck are correctly triggered
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
-  // Clues (arrows + log)
+  // Clue log
+  subVS((s) => s.clues, cluesView.onCluesChanged),
+
+  // Clue arrows
   subVS(
-    (s) => ({
-      clues: s.clues,
-      segment: s.turn.segment,
-    }),
-    cluesView.onCluesChanged,
+    (s) => ({ lastClue: s.clues[s.clues.length - 1], segment: s.turn.segment }),
+    cluesView.onLastClueOrSegmentChanged,
   ),
 
   // Deck

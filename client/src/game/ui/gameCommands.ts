@@ -334,10 +334,11 @@ commands.set("replayIndicator", (data: ReplayIndicatorData) => {
     return;
   }
 
-  arrows.hideAll();
-  if (data.order !== ReplayArrowOrder.Nothing) {
-    arrows.toggle(data.order);
+  if (data.order === ReplayArrowOrder.Nothing) {
+    arrows.hideAll();
+    return;
   }
+  arrows.toggle(data.order);
 });
 
 // This is used in shared replays to specify who the leader is

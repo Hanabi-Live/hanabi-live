@@ -95,8 +95,7 @@ export function onStatesLengthChanged(): void {
 }
 
 export const shouldShowHypoBackButton = (state: State): boolean =>
-  state.replay.shared !== null &&
-  state.replay.shared.amLeader &&
+  (!state.replay.shared || state.replay.shared.amLeader) &&
   state.replay.hypothetical !== null &&
   state.replay.hypothetical.states.length > 1;
 

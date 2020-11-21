@@ -9,22 +9,24 @@ import ClueEntry from "../../ClueEntry";
 import getCardOrStackBase from "../../getCardOrStackBase";
 import globals from "../../globals";
 
-export function onCluesChanged(data: {
-  clues: readonly StateClue[];
-  segment: number | null;
-}): void {
-  updateArrows(data.clues, data.segment);
-  updateLog(data.clues);
+export function onCluesChanged(clues: readonly StateClue[]): void {
+  updateLog(clues);
 }
 
-function updateArrows(clues: readonly StateClue[], segment: number | null) {
+export function onLastClueOrSegmentChanged(data: {
+  lastClue: StateClue | undefined;
+  segment: number | null;
+}): void {
+  updateArrows(data.lastClue, data.segment);
+}
+
+function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   arrows.hideAll();
 
   if (segment === null) {
     return;
   }
 
-  const lastClue = clues[clues.length - 1];
   if (lastClue === undefined || lastClue.segment !== segment - 1) {
     // We are initializing (or we rewinded and just removed the first clue)
     return;
