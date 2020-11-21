@@ -47,6 +47,7 @@ export default class Elements {
   endHypotheticalButton: Button | null = null;
   deck: Deck | null = null;
   gameIDLabel: FitText | null = null;
+  gameInfoImage: Konva.Image | null = null;
   deckTurnsRemainingLabel1: Konva.Text | null = null;
   deckTurnsRemainingLabel2: Konva.Text | null = null;
   deckPlayAvailableLabel: Konva.Rect | null = null;

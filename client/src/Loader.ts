@@ -9,6 +9,7 @@ const fileIDs = [
   "eyes",
   "home",
   "note",
+  "question-mark",
   "replay",
   "replay-disabled",
   "replay-back",
