@@ -63,6 +63,11 @@ function statsReducerFunction(
     }
   }
 
+  const numEndGameTurns = turnRules.endGameLength(
+    metadata.options,
+    metadata.characterAssignments,
+  );
+
   // Handle max score calculation
   if (action.type === "play" || action.type === "discard") {
     stats.maxScorePerStack = statsRules.getMaxScorePerStack(
@@ -82,7 +87,7 @@ function statsReducerFunction(
     score,
     currentState.cardsRemainingInTheDeck,
     stats.maxScore,
-    metadata.options.numPlayers,
+    numEndGameTurns,
     // currentPlayerIndex will be null if the game is over
     currentState.turn.currentPlayerIndex === null,
   );
@@ -107,7 +112,7 @@ function statsReducerFunction(
     scorePerStack,
     stats.maxScorePerStack,
     currentState.cardsRemainingInTheDeck,
-    turnRules.endGameLength(metadata.options, metadata.characterAssignments),
+    numEndGameTurns,
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
     clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
