@@ -2078,14 +2078,14 @@ function drawHypotheticalArea() {
     (globals.elements.hypoBackButton as unknown) as Konva.Group,
   );
 
-  // The "Toggle Revealed Cards" / "Toggle Hidden Cards" button
-  const toggleHiddenButtonValues = {
+  // The "Show Drawn Cards" / "Hide Drawn Cards" button
+  const toggleDrawnCardsButtonValues = {
     x: hypoBackButtonValues.x,
     y: hypoBackButtonValues.y + 0.0663,
   };
-  globals.elements.toggleRevealedButton = new ThreeLineButton({
-    x: toggleHiddenButtonValues.x * winW,
-    y: toggleHiddenButtonValues.y * winH,
+  globals.elements.toggleDrawnCardsButton = new ThreeLineButton({
+    x: toggleDrawnCardsButtonValues.x * winW,
+    y: toggleDrawnCardsButtonValues.y * winH,
     width: 0.07 * winW,
     height: 0.1226 * winH,
     text: "Show",
@@ -2093,12 +2093,12 @@ function drawHypotheticalArea() {
     text3: "Cards",
     visible: false,
   });
-  globals.elements.toggleRevealedButton.on(
+  globals.elements.toggleDrawnCardsButton.on(
     "click tap",
     hypothetical.toggleRevealed,
   );
   globals.layers.UI.add(
-    (globals.elements.toggleRevealedButton as unknown) as Konva.Group,
+    (globals.elements.toggleDrawnCardsButton as unknown) as Konva.Group,
   );
 }
 

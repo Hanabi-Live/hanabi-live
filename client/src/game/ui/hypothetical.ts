@@ -13,21 +13,18 @@ import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 
 export function start(): void {
-  if (
-    globals.state.replay.shared === null ||
-    globals.state.replay.hypothetical !== null
-  ) {
+  if (globals.state.replay.hypothetical !== null) {
     return;
   }
 
-  if (globals.state.replay.shared.amLeader) {
+  if (globals.state.replay.shared && globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoStart,
     });
   }
 
-  globals.elements.toggleRevealedButton!.setEnabled(true);
+  globals.elements.toggleDrawnCardsButton!.setEnabled(true);
 
   globals.store!.dispatch({
     type: "hypoStart",
@@ -37,14 +34,11 @@ export function start(): void {
 }
 
 export function end(): void {
-  if (
-    globals.state.replay.shared === null ||
-    globals.state.replay.hypothetical === null
-  ) {
+  if (globals.state.replay.hypothetical === null) {
     return;
   }
 
-  if (globals.state.replay.shared.amLeader) {
+  if (globals.state.replay.shared && globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoEnd,
@@ -245,7 +239,7 @@ export function checkToggleRevealedButton(
           cardOrder,
         )
       ) {
-        globals.elements.toggleRevealedButton?.setEnabled(false);
+        globals.elements.toggleDrawnCardsButton?.setEnabled(false);
       }
 
       break;
@@ -258,7 +252,7 @@ export function checkToggleRevealedButton(
             cardOrder,
           )
         ) {
-          globals.elements.toggleRevealedButton?.setEnabled(false);
+          globals.elements.toggleDrawnCardsButton?.setEnabled(false);
           return;
         }
       }

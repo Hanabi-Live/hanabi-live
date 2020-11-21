@@ -113,7 +113,7 @@ export default class Elements {
   enterHypoButton: Button | null = null;
   hypoCircle: Konva.Group | null = null;
   hypoBackButton: Button | null = null;
-  toggleRevealedButton: ThreeLineButton | null = null;
+  toggleDrawnCardsButton: ThreeLineButton | null = null;
 
   // The pause screen
   pauseArea: Konva.Group | null = null;

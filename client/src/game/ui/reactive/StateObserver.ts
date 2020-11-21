@@ -2,6 +2,7 @@ import { Store, Unsubscribe } from "redux";
 import { Action } from "../../types/actions";
 import GameState from "../../types/GameState";
 import State from "../../types/State";
+import globals from "../globals";
 import observeStore, { Listener, Selector, Subscription } from "./observeStore";
 import * as animateFastView from "./view/animateFastView";
 import * as cardLayoutView from "./view/cardLayoutView";
@@ -247,27 +248,6 @@ const ongoingGameObservers: Subscriptions = [
 ];
 
 const replayObservers: Subscriptions = [
-  // Replay entered or exited
-  subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
-
-  // Replay sliders and buttons
-  subAfterInit(
-    (s) => ({
-      active: s.replay.active,
-      replaySegment: s.replay.segment,
-      ongoingGameSegment: s.ongoingGame.turn.segment,
-    }),
-    replayView.onSegmentChanged,
-  ),
-  subAfterInit(
-    (s) => ({
-      active: s.replay.active,
-      sharedSegment: s.replay.shared?.segment,
-      useSharedSegments: s.replay.shared?.useSharedSegments,
-    }),
-    replayView.onSharedSegmentChanged,
-  ),
-
   // Database ID
   subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),
 
@@ -295,13 +275,17 @@ const replayObservers: Subscriptions = [
     hypotheticalView.shouldEnableEnterHypoButtonChanged,
   ),
   subAfterInit(
-    (s) => s.replay.shared !== null && s.replay.hypothetical !== null,
+    (s) => ({
+      hypotheticalActive: s.replay.hypothetical !== null,
+      replayActive: s.replay.shared !== null || s.replay.active,
+    }),
     hypotheticalView.onActiveChanged,
   ),
   subAfterInit(
     (s) => ({
-      active: s.replay.shared !== null && s.replay.hypothetical !== null,
-      amLeader: s.replay.shared?.amLeader,
+      active: s.replay.hypothetical !== null,
+      amLeader: !s.replay.shared || s.replay.shared.amLeader,
+      sharedReplay: s.replay.shared !== null,
     }),
     hypotheticalView.onActiveOrAmLeaderChanged,
   ),
@@ -316,6 +300,33 @@ const replayObservers: Subscriptions = [
   subAfterInit(
     (s) => s.replay.hypothetical?.drawnCardsShown,
     hypotheticalView.onDrawnCardsInHypotheticalChanged,
+  ),
+
+  // Replay entered or exited
+  subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
+
+  // Replay sliders and buttons
+  subAfterInit(
+    (s) => ({
+      active: s.replay.active,
+      replaySegment: s.replay.segment,
+      ongoingGameSegment: s.ongoingGame.turn.segment,
+    }),
+    replayView.onSegmentChanged,
+  ),
+  subAfterInit(
+    (s) => ({
+      active: s.replay.active,
+      sharedSegment: s.replay.shared?.segment,
+      useSharedSegments: s.replay.shared?.useSharedSegments,
+    }),
+    replayView.onSharedSegmentChanged,
+  ),
+
+  // Replay button
+  subAfterInit(
+    (s) => !s.replay.hypothetical && !globals.state.finished,
+    replayView.onShouldShowReplayButtonChanged,
   ),
 
   // Card and stack base morphing

@@ -134,6 +134,10 @@ export function onSharedSegmentChanged(
   globals.layers.UI.batchDraw();
 }
 
+export function onShouldShowReplayButtonChanged(shouldShow: boolean): void {
+  globals.elements.replayButton?.visible(shouldShow);
+}
+
 // In shared replays, it can be confusing as to what the shared replay leader is doing,
 // so play an appropriate animations to indicate what is going on
 // (and cancel the other tween if it is going)

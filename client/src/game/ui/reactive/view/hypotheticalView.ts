@@ -19,23 +19,21 @@ export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-export function onActiveChanged(active: boolean): void {
-  if (globals.state.replay.shared === null) {
-    return;
-  }
-
-  globals.elements.replayArea?.visible(!active);
+export function onActiveChanged(data: {
+  hypotheticalActive: boolean;
+  replayActive: boolean;
+}): void {
+  globals.elements.replayArea?.visible(
+    data.replayActive && !data.hypotheticalActive,
+  );
 
   checkSetDraggableAllHands();
 
-  if (active) {
-    // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
-    // changes in the middle of a hypothetical
-    if (globals.options.numPlayers !== 2) {
-      globals.elements.clueTargetButtonGroup?.hide();
-      globals.elements.clueTargetButtonGroup2?.show();
-    }
-    globals.elements.restartButton?.visible(!active);
+  // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
+  // changes in the middle of a hypothetical
+  if (globals.options.numPlayers !== 2) {
+    globals.elements.clueTargetButtonGroup?.visible(!data.hypotheticalActive);
+    globals.elements.clueTargetButtonGroup2?.visible(data.hypotheticalActive);
   }
 
   globals.layers.UI.batchDraw();
@@ -43,23 +41,26 @@ export function onActiveChanged(active: boolean): void {
 
 export function onActiveOrAmLeaderChanged(data: {
   active: boolean;
-  amLeader: boolean | undefined;
+  amLeader: boolean;
+  sharedReplay: boolean;
 }): void {
-  if (data.amLeader === undefined) {
-    return;
-  }
-
   const visibleForLeaderInHypo = data.active && data.amLeader;
   globals.elements.endHypotheticalButton?.visible(visibleForLeaderInHypo);
-  globals.elements.toggleRevealedButton?.visible(visibleForLeaderInHypo);
   globals.elements.clueArea?.visible(visibleForLeaderInHypo);
+
+  const visibleForLeaderInSharedHypo =
+    visibleForLeaderInHypo && data.sharedReplay;
+  globals.elements.toggleDrawnCardsButton?.visible(
+    visibleForLeaderInSharedHypo,
+  );
 
   const visibleForFollowersInHypo = data.active && !data.amLeader;
   globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
 
-  const visibleForLeaderOutOfHypo = !data.active && data.amLeader;
-  globals.elements.restartButton?.visible(visibleForLeaderOutOfHypo);
-  if (visibleForLeaderOutOfHypo) {
+  const visibleForLeaderInSharedReplay =
+    !data.active && data.sharedReplay && data.amLeader;
+  globals.elements.restartButton?.visible(visibleForLeaderInSharedReplay);
+  if (visibleForLeaderInSharedReplay) {
     turn.hideClueUIAndDisableDragging();
   }
 
@@ -107,7 +108,7 @@ export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
 export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
 ): void {
-  globals.elements.toggleRevealedButton?.setText({
+  globals.elements.toggleDrawnCardsButton?.setText({
     line1: drawnCardsInHypothetical ? "Hide" : "Show",
   });
 

@@ -127,20 +127,16 @@ function replayReducerFunction(
     // --------------------
 
     case "hypoStart": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
       if (state.hypothetical !== null) {
         throw new Error(
           `A "${action.type}" action was dispatched with a non-null hypothetical state.`,
         );
       }
-
-      // Bring us to the current shared replay turn, if we are not already there
-      state.segment = state.shared.segment;
-      state.shared.useSharedSegments = true;
+      if (state.shared) {
+        // Bring us to the current shared replay turn, if we are not already there
+        state.segment = state.shared.segment;
+        state.shared.useSharedSegments = true;
+      }
 
       const ongoing = state.states[state.segment];
       state.hypothetical = {
@@ -159,11 +155,6 @@ function replayReducerFunction(
     }
 
     case "hypoEnd": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
       if (state.hypothetical === null) {
         throw new Error(
           `A "${action.type}" action was dispatched with a null hypothetical state.`,
