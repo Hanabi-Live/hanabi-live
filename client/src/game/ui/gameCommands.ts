@@ -79,6 +79,13 @@ interface FinishOngoingGameData {
   sharedReplayLeader: string;
 }
 commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
+  // Zero out the user-created efficiency modifier, if any
+  // In a shared replay, this must be synced with the shared replay leader
+  globals.efficiencyModifier = 0;
+
+  // Set the browser address bar
+  setBrowserAddressBarPath(`/shared-replay/${data.databaseID}`);
+
   // Begin the process of converting an ongoing game to a shared replay
   globals.store!.dispatch({
     type: "finishOngoingGame",
@@ -86,10 +93,6 @@ commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
     sharedReplayLeader: data.sharedReplayLeader,
     datetimeFinished: new Date().toString(),
   });
-
-  // Zero out the user-created efficiency modifier, if any
-  // In a shared replay, this must be synced with the shared replay leader
-  globals.efficiencyModifier = 0;
 });
 
 interface HypotheticalData {
