@@ -132,39 +132,7 @@ export default function tablesDraw(): void {
     }
     $("<td>").html(status).appendTo(row);
 
-    // Column 6 - Action
-    const button = $("<button>")
-      .attr("type", "button")
-      .addClass("button small margin0");
-    if (table.sharedReplay || (!table.joined && table.running)) {
-      button.html('<i class="fas fa-eye lobby-button-icon"></i>');
-      button.attr("id", `spectate-${table.id}`);
-      button.on("click", () => {
-        tableSpectate(table);
-      });
-    } else if (!table.joined) {
-      button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
-      button.attr("id", `join-${table.id}`);
-      if (table.numPlayers >= 6) {
-        button.addClass("disabled");
-      }
-      button.on("click", () => {
-        tableJoin(table);
-      });
-      if (!addedFirstJoinButton) {
-        addedFirstJoinButton = true;
-        button.addClass("lobby-games-first-join-button");
-      }
-    } else {
-      button.html('<i class="fas fa-play lobby-button-icon"></i>');
-      button.attr("id", `resume-${table.id}`);
-      button.on("click", () => {
-        tableReattend(table);
-      });
-    }
-    $("<td>").html(button[0]).appendTo(row);
-
-    // Column 7 - Players
+    // Column 6 - Players
     const playersArray: string[] = [];
     for (const player of table.players) {
       if (player === globals.username) {
@@ -178,7 +146,7 @@ export default function tablesDraw(): void {
     const playersString = playersArray.join(", ");
     $("<td>").html(playersString).appendTo(row);
 
-    // Column 8 - Spectators
+    // Column 7 - Spectators
     let spectatorsString: string;
     if (table.spectators.length === 0) {
       spectatorsString = "-";
@@ -194,6 +162,52 @@ export default function tablesDraw(): void {
       spectatorsString = spectatorsArray.join(", ");
     }
     $("<td>").html(spectatorsString).appendTo(row);
+
+    // Add a hidden FirstJoin button to the row if appropriate
+    if (
+      !table.running &&
+      !table.joined &&
+      table.numPlayers < 6 &&
+      !addedFirstJoinButton
+    ) {
+      addedFirstJoinButton = true;
+      const button = $("<button>")
+        .attr("type", "button")
+        .css("display", "none")
+        .attr("id", `join-${table.id}`)
+        .addClass("lobby-games-first-join-button")
+        .on("click", () => {
+          tableJoin(table);
+        });
+      button.appendTo(row);
+    }
+
+    // Setup mouse events
+    row.on("mouseenter", () => {
+      row.addClass("hover").off("click");
+      if (table.sharedReplay || (!table.joined && table.running)) {
+        row.attr("id", `spectate-${table.id}`).on("click", () => {
+          tableSpectate(table);
+        });
+      } else if (!table.joined) {
+        row.attr("id", `join-${table.id}`);
+        if (table.numPlayers >= 6) {
+          row.addClass("full");
+        } else {
+          row.on("click", () => {
+            tableJoin(table);
+          });
+        }
+      } else {
+        row.attr("id", `resume-${table.id}`).on("click", () => {
+          tableReattend(table);
+        });
+      }
+    });
+
+    row.on("mouseleave", () => {
+      row.removeClass("hover").removeClass("full").off("click");
+    });
 
     row.appendTo(tbody);
   }

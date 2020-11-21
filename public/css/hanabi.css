@@ -340,6 +340,20 @@ table td {
 }
 
 /*
+  Row overlay div
+*/
+.overlay {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  opacity: 0.1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+}
+
+/*
   The list of ongoing tables / games
 */
 
@@ -362,6 +376,31 @@ table td {
 .lobby-games-table-replay {
   background-color: #fff0ff !important;
 }
+
+.lobby-games-table-joined.hover {
+  background-color: #e0e0ff !important;
+  cursor: url('/public/img/hover-cursors/play.png') 28 12.5, pointer;
+}
+.lobby-games-table-unstarted.hover {
+  background-color: #ffffe1 !important;
+  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+}
+.lobby-games-table-unstarted-password.hover {
+  background-color: #ffd5d5 !important;
+  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+}
+.lobby-games-table-started.hover {
+  background-color: #cdffdd !important;
+  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+}
+.lobby-games-table-replay.hover {
+  background-color: #ffe1ff !important;
+  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+}
+.lobby-games-table-unstarted.hover.full, .lobby-games-table-unstarted-password.hover.full {
+  cursor: url('/public/img/hover-cursors/forbid.png') 28 12.5, pointer;
+}
+
 
 /*
   Lobby chat
