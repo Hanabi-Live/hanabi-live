@@ -109,7 +109,6 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
     path += hash;
   }
   window.history.pushState({}, "", path);
-  console.trace();
 }
 
 export function timerFormatter(totalSeconds: number): string {

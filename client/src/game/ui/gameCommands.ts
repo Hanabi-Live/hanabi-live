@@ -267,7 +267,8 @@ interface GameActionListData {
 commands.set("gameActionList", (data: GameActionListData) => {
   // Users can load a specific turn in a replay by using a URL hash
   // e.g. "/replay/123#5"
-  // Record the hash before we change the turn (which will overwrite the hash)
+  // Record the hash before we load the UI (which will overwrite the hash with "#1",
+  // corresponding to the first turn)
   let specificTurnString = null;
   if (window.location.hash !== "") {
     specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#"
