@@ -205,8 +205,10 @@ func httpInit() {
 	httpRouter.GET("/game/:tableID", httpMain)
 	httpRouter.GET("/replay", httpMain)
 	httpRouter.GET("/replay/:gameID", httpMain)
+	httpRouter.GET("/replay/:gameID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/shared-replay", httpMain)
 	httpRouter.GET("/shared-replay/:gameID", httpMain)
+	httpRouter.GET("/shared-replay/:gameID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/create-table", httpMain)
 
 	// Path handlers for other URLs

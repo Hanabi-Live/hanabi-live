@@ -16,9 +16,7 @@ export default function backToLobby(): void {
   chat.updatePeopleTyping();
 
   // Update the address bar
-  const queryParameters = new URLSearchParams(window.location.search);
-  queryParameters.delete("turn");
-  setBrowserAddressBarPath("/lobby", queryParameters);
+  setBrowserAddressBarPath("/lobby");
 
   globals.lobby.conn!.send("tableUnattend", {
     tableID: globals.lobby.tableID,

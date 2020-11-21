@@ -53,11 +53,8 @@ export function init(): void {
 
   // The "Sign Out" button
   $(".signout").on("click", () => {
-    let path = "/logout";
-    if (window.location.search.length > 0) {
-      path += window.location.search;
-    }
-    window.location.href = path;
+    // Add the query parameters to the end to preserve using "?dev"
+    window.location.href = `/logout${window.location.search}`;
   });
 
   // The "Start Game" button

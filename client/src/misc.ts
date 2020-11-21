@@ -91,19 +91,24 @@ export function parseIntSafe(input: string): number {
   return parseInt(trimmedInput, 10);
 }
 
-export function setBrowserAddressBarPath(
-  newPath: string,
-  queryParameters = new URLSearchParams(window.location.search),
-): void {
+export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
+  console.log("PATH:", newPath);
+  console.log("HASH:", hash);
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
+  const queryParameters = new URLSearchParams(window.location.search);
   const modifiedQueryParameters = queryParameters
     .toString()
     // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable
     .replace(/=&/g, "&")
     .replace(/=$/, "");
+
   let path = newPath;
   if (modifiedQueryParameters.length > 0) {
     path += `?${modifiedQueryParameters}`;
+  }
+  if (hash !== undefined) {
+    // e.g. "#123", which is used to show the current turn
+    path += `#${hash}`;
   }
   window.history.pushState({}, "", path);
 }

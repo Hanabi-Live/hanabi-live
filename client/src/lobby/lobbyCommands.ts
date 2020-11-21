@@ -407,7 +407,5 @@ commands.set("welcome", (data: WelcomeData) => {
   }
 
   // Otherwise, we will stay in the lobby
-  const queryParameters = new URLSearchParams(window.location.search);
-  queryParameters.delete("turn");
-  setBrowserAddressBarPath("/lobby", queryParameters);
+  setBrowserAddressBarPath("/lobby");
 });

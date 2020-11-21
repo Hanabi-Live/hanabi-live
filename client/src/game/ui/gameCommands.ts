@@ -481,15 +481,10 @@ function initStateStore(data: InitData) {
 // We might need to go to a specific turn
 // (e.g. we loaded a URL of "http://localhost/replay/123?turn=5")
 function checkLoadSpecificReplayTurn() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const turnString = urlParams.get("turn");
-  if (turnString === null) {
-    return;
-  }
+  const turnString = window.location.hash;
   let turn = parseIntSafe(turnString);
   if (Number.isNaN(turn)) {
     // The turn is not a number
-    urlParams.delete("turn");
     return;
   }
 
