@@ -187,9 +187,15 @@ export default function tablesDraw(): void {
     row.on("mouseenter", () => {
       row.addClass("hover").off("click");
       if (table.sharedReplay || (!table.joined && table.running)) {
-        row.attr("id", `spectate-${table.id}`).on("click", () => {
-          tableSpectate(table);
-        });
+        row
+          .attr("id", `spectate-${table.id}`)
+          .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+            if (event.ctrlKey) {
+              // Copy the URL that would
+            } else {
+              tableSpectate(table);
+            }
+          });
       } else if (!table.joined) {
         row.attr("id", `join-${table.id}`);
         if (table.numPlayers >= 6) {
