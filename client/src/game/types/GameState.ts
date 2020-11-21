@@ -38,7 +38,9 @@ export interface StateClue {
   readonly giver: number;
   readonly target: number;
   readonly segment: number;
+  // The list of cards that the clue touches
   readonly list: readonly number[];
+  // The list of cards in the same hand that the clue does not touch
   readonly negativeList: readonly number[];
 }
 
