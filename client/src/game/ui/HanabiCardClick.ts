@@ -217,7 +217,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 // Morphing cards allows for creation of hypothetical situations
 function clickMorph(order: number) {
   const cardText = prompt(
-    'What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink", "45")',
+    'What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink")',
   );
   if (cardText === null) {
     return;
@@ -234,7 +234,6 @@ function clickMorph(order: number) {
     return;
   }
 
-  // We want an exact match, so fullNote is sent as an empty string
   const cardIdentity = noteIdentity.parseIdentity(globals.variant, cardText);
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     modals.warningShow("You entered an invalid card.");
