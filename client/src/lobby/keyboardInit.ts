@@ -28,7 +28,7 @@ export default function keyboardInit(): void {
       // Alt + j
       // Click on the first "Join" button in the table list
       if (globals.currentScreen === Screen.Lobby) {
-        $(".lobby-games-first-join-button").click();
+        $(".lobby-games-join-first-table-button").click();
       }
     } else if (event.altKey && (event.key === "c" || event.key === "ç")) {
       // Alt + c

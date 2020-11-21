@@ -74,7 +74,7 @@ export default function tablesDraw(): void {
   }
 
   // Add all of the games
-  let addedFirstJoinButton = false;
+  let addedJoinFirstTableButton = false;
   for (const id of sortedTableIDs) {
     const table = globals.tableMap.get(id);
     if (table === undefined) {
@@ -163,19 +163,20 @@ export default function tablesDraw(): void {
     }
     $("<td>").html(spectatorsString).appendTo(row);
 
-    // Add a hidden FirstJoin button to the row if appropriate
+    // There is a keyboard shortcut to join the first table available
+    // Add a hidden button to facilitate this
     if (
       !table.running &&
       !table.joined &&
       table.numPlayers < 6 &&
-      !addedFirstJoinButton
+      !addedJoinFirstTableButton
     ) {
-      addedFirstJoinButton = true;
+      addedJoinFirstTableButton = true;
       const button = $("<button>")
         .attr("type", "button")
         .css("display", "none")
         .attr("id", `join-${table.id}`)
-        .addClass("lobby-games-first-join-button")
+        .addClass("lobby-games-join-first-table-button")
         .on("click", () => {
           tableJoin(table);
         });
