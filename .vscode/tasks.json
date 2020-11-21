@@ -1,0 +1,33 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Hanabi Server",
+      "type": "shell",
+      "command": "./run.sh",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Hanabi Client (webpack)",
+      "type": "shell",
+      "command": "./webpack-dev-server.sh",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Hanabi Client+Server",
+      "dependsOn": [
+        "Hanabi Server",
+        "Hanabi Client (webpack)"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
