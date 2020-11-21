@@ -80,7 +80,7 @@ export function send(hypoAction: ClientAction): void {
     }
 
     default: {
-      throw new Error(`Unknown hypothetical action of ${hypoAction.type}.`);
+      throw new Error(`Unknown hypothetical action of: ${hypoAction.type}`);
     }
   }
 
@@ -185,7 +185,7 @@ export function send(hypoAction: ClientAction): void {
     }
 
     default: {
-      throw new Error(`Unknown hypothetical type of ${type}.`);
+      throw new Error(`Unknown hypothetical type of: ${type}`);
     }
   }
 

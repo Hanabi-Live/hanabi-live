@@ -87,7 +87,7 @@ function gameStateReducerFunction(
       if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
-            `The suit index for the discarded card was ${action.suitIndex}.`,
+            `The suit index for the discarded card was: ${action.suitIndex}`,
           );
         }
 
@@ -174,7 +174,7 @@ function gameStateReducerFunction(
       if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
-            `The suit index for the played card was ${action.suitIndex}.`,
+            `The suit index for the played card was: ${action.suitIndex}`,
           );
         }
 

@@ -14,7 +14,7 @@ export function get(): CardLayout {
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
     throw new Error(
-      `Failed to get our hand with an index of ${ourPlayerIndex}.`,
+      `Failed to get our hand with an index of: ${ourPlayerIndex}`,
     );
   }
   return ourHand;
@@ -29,7 +29,7 @@ export function checkSetDraggableAll(): void {
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
     throw new Error(
-      `Failed to get our hand with an index of ${ourPlayerIndex}.`,
+      `Failed to get our hand with an index of: ${ourPlayerIndex}`,
     );
   }
   ourHand.checkSetDraggableAll();

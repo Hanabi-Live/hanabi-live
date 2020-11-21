@@ -428,7 +428,7 @@ function getElementFromOrder(order: number): NodeWithTooltip {
     }
     default: {
       throw new Error(
-        `Failed to get the element corresponding to arrow order ${order}.`,
+        `Failed to get the element corresponding to arrow order: ${order}`,
       );
     }
   }

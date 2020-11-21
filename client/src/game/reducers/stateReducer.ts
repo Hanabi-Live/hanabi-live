@@ -309,7 +309,7 @@ function visualStateToShow(state: Draft<State>, action: Action) {
       const currentReplayState = state.replay.states[state.replay.segment];
       if (currentReplayState === undefined) {
         throw new Error(
-          `Failed to find the replay state for segment ${state.replay.segment}.`,
+          `Failed to find the replay state for segment: ${state.replay.segment}`,
         );
       }
       return currentReplayState;

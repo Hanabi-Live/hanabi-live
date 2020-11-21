@@ -36,7 +36,7 @@ export function onSpectatorsChanged(data: {
           globals.metadata.playerNames[spectator.shadowingPlayerIndex];
         if (playerName === undefined) {
           throw new Error(
-            `Failed to find the player name at index ${spectator.shadowingPlayerIndex}.`,
+            `Failed to find the player name at index: ${spectator.shadowingPlayerIndex}`,
           );
         }
         if (playerName !== spectator.name) {
