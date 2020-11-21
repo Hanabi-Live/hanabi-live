@@ -214,17 +214,22 @@ export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
 export function sendBack(): void {
   if (
     globals.state.replay.hypothetical === null ||
-    globals.state.replay.hypothetical.states.length <= 1 ||
-    globals.state.replay.shared === null ||
-    !globals.state.replay.shared.amLeader
+    globals.state.replay.hypothetical.states.length <= 1
   ) {
     return;
   }
-
-  globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.HypoBack,
-  });
+  if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared.amLeader) {
+      globals.lobby.conn!.send("replayAction", {
+        tableID: globals.lobby.tableID,
+        type: ReplayActionType.HypoBack,
+      });
+    }
+  } else {
+    globals.store!.dispatch({
+      type: "hypoBack",
+    });
+  }
 }
 
 export function toggleRevealed(): void {
