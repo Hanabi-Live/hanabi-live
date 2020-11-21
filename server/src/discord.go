@@ -220,7 +220,6 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	// Special commands
 	// ----------------
 
-	// This code is duplicated from the "chatReplay()" function
 	if command == "replay" || command == "link" || command == "game" {
 		if len(args) == 0 {
 			discordSend(
@@ -273,7 +272,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		}
 
 		// They specified an ID and a turn
-		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) + ">"
+		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "#" + strconv.Itoa(turn) + ">"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
@@ -303,6 +302,12 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 
 	if command == "loweffort" {
 		msg := "It looks like you are asking a low-effort question. Update your question to explain what **you** think the best answer is, based on your current understanding of the conventions. Provide a detailed explanation as to **why** you think it is the best answer. Discuss any relevant contextual clues present in the game that influence the answer, if any. Provide an alternate answer that might also be the case and discuss why that answer is not as good. This allows us to hone in on the specific gaps in your knowledge."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
+	if command == "notation" {
+		msg := "It looks like you are using non-standard card notation in your question. Please use notation that the Hyphen-ated group will be familiar with. For example:\n- Use \"red 3\" instead of \"3 red\".\n- Use \"r3\" instead of \"3r\".\n- Use \"r[3]\" to indicate that a card is a red 3 but has a number 3 clue on it.\n- Always use the characters of Alice, Bob, Cathy, Donald, Emily, and Frank instead of real player names. Alice should always be the player who performs the first action, and so forth."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}

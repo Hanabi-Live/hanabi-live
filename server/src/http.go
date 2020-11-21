@@ -198,29 +198,18 @@ func httpInit() {
 
 	// Path handlers (for the main website)
 	httpRouter.GET("/", httpMain)
+	httpRouter.GET("/lobby", httpMain)
+	httpRouter.GET("/pre-game", httpMain)
+	httpRouter.GET("/pre-game/:tableID", httpMain)
+	httpRouter.GET("/game", httpMain)
+	httpRouter.GET("/game/:tableID", httpMain)
 	httpRouter.GET("/replay", httpMain)
 	httpRouter.GET("/replay/:gameID", httpMain)
-	httpRouter.GET("/replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/replay/:gameID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/shared-replay", httpMain)
 	httpRouter.GET("/shared-replay/:gameID", httpMain)
-	httpRouter.GET("/shared-replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/shared-replay/:gameID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/create-table", httpMain)
-	httpRouter.GET("/test", httpMain)
-	httpRouter.GET("/test/:testNum", httpMain)
-
-	// Path handlers (for development)
-	// ("/dev" is the same as "/" but uses webpack-dev-server to serve JavaScript)
-	httpRouter.GET("/dev", httpMain)
-	httpRouter.GET("/dev/", httpMain)
-	httpRouter.GET("/dev/replay", httpMain)
-	httpRouter.GET("/dev/replay/:gameID", httpMain)
-	httpRouter.GET("/dev/replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/dev/shared-replay", httpMain)
-	httpRouter.GET("/dev/shared-replay/:gameID", httpMain)
-	httpRouter.GET("/dev/shared-replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/dev/create-table", httpMain)
-	httpRouter.GET("/dev/test", httpMain)
-	httpRouter.GET("/dev/test/:testNum", httpMain)
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)

@@ -311,6 +311,56 @@ def main():
 
                     variants.append(variant)
 
+        # Add variants for Deceptive-Ones and Deceptive-Fives
+        special_name = "Deceptive-" + word
+
+        # First, create "Deceptive-Ones (6 Suits)", etc.
+        for suit_num in [6, 5, 4, 3]:
+            variant_name = special_name + " (" + str(suit_num) + " Suits)"
+            computed_variant_suits = variant_suits[suit_num].copy()
+            variant = {
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": computed_variant_suits,
+                "specialRank": special_rank,
+                "specialDeceptive": True,
+            }
+
+            clue_ranks = [1, 2, 3, 4, 5]
+            clue_ranks.remove(special_rank)
+            variant["clueRanks"] = clue_ranks
+
+            variants.append(variant)
+
+        # Second, create the special suit combinations, e.g. "Deceptive-Ones & Rainbow (6 Suits)"
+        for [suit_name, suit] in suits.items():
+            if not suit["createVariants"]:
+                continue
+
+            for suit_num in [6, 5, 4, 3]:
+                # It would be too difficult to have a 4 suit variant or a 3 suits variant with a
+                # one-of-each suit
+                if (suit_num == 4 or suit_num == 3) and suit["oneOfEach"]:
+                    continue
+
+                variant_name = (
+                    special_name + " & " + suit_name + " (" + str(suit_num) + " Suits)"
+                )
+                computed_variant_suits = variant_suits[suit_num - 1] + [suit_name]
+                variant = {
+                    "name": variant_name,
+                    "id": get_variant_id(variant_name),
+                    "suits": computed_variant_suits,
+                    "specialRank": special_rank,
+                    "specialDeceptive": True,
+                }
+
+                clue_ranks = [1, 2, 3, 4, 5]
+                clue_ranks.remove(special_rank)
+                variant["clueRanks"] = clue_ranks
+
+                variants.append(variant)
+
     # Add "Ambiguous" variants
     red_ambiguous_suits = ["Tomato", "Mahogany"]
     green_ambiguous_suits = ["Lime", "Forest"]

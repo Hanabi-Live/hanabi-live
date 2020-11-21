@@ -1,3 +1,4 @@
+import { setBrowserAddressBarPath } from "../../../../misc";
 import { clueTokensRules, variantRules } from "../../../rules";
 import { MAX_STRIKES } from "../../../types/constants";
 import { StateStrike } from "../../../types/GameState";
@@ -10,10 +11,15 @@ export function onTurnChanged(data: {
   turn: number;
   endTurn: number | null;
 }): void {
-  // Update the "Turn" label
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
-  globals.elements.turnNumberLabel?.text(`${data.turn + 1}`);
+  const friendlyTurn = `${data.turn + 1}`;
+
+  // Update the "Turn" label
+  globals.elements.turnNumberLabel?.text(friendlyTurn);
+
+  // Update the address bar
+  setBrowserAddressBarPath(window.location.pathname, `#${friendlyTurn}`);
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
   if (data.endTurn !== null) {

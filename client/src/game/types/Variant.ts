@@ -16,6 +16,7 @@ export default interface Variant {
   readonly specialAllClueRanks: boolean;
   readonly specialNoClueColors: boolean;
   readonly specialNoClueRanks: boolean;
+  readonly specialDeceptive: boolean;
 
   readonly showSuitNames: boolean;
   readonly spacing: boolean;

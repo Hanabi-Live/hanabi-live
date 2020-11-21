@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
@@ -16,9 +15,7 @@ type WebsocketConnectData struct {
 	Settings                    Settings
 	Friends                     []string
 	FirstTimeUser               bool
-	PlayingInOngoingGame        bool
 	PlayingInOngoingGameTableID uint64
-	SpectatingTable             bool
 	SpectatingTableID           uint64
 }
 
@@ -47,6 +44,7 @@ func websocketConnect(ms *melody.Session) {
 	logger.Debug("Acquired sessions read lock for user: " + s.Username())
 	s2, ok := sessions[s.UserID()]
 	sessionsMutex.RUnlock()
+	logger.Debug("Released sessions read lock for user: " + s.Username())
 	if ok {
 		logger.Info("Closing existing connection for user \"" + s.Username() + "\".")
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
@@ -71,6 +69,7 @@ func websocketConnect(ms *melody.Session) {
 	logger.Debug("Acquired sessions write lock for user: " + s.Username())
 	sessions[s.UserID()] = s
 	sessionsMutex.Unlock()
+	logger.Debug("Released sessions write lock for user: " + s.Username())
 	logger.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
 	// Now, send some additional information to them
@@ -83,13 +82,6 @@ func websocketConnect(ms *melody.Session) {
 
 	// Alert everyone that a new user has logged in
 	notifyAllUser(s)
-
-	// They might need to rejoin an ongoing game or shared replay
-	if data.PlayingInOngoingGame {
-		websocketConnectRejoinOngoingGame(s, data)
-	} else if data.SpectatingTable {
-		websocketConnectRespectate(s, data)
-	}
 }
 
 func websocketConnectGetData(s *Session) *WebsocketConnectData {
@@ -146,16 +138,16 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 
 		playerIndex := t.GetPlayerIndexFromID(s.UserID())
 		if playerIndex != -1 {
-			data.PlayingInOngoingGame = true
 			data.PlayingInOngoingGameTableID = t.ID
 			break
 		}
 	}
 	tablesMutex.RUnlock()
+	logger.Debug("Released tables read lock for user: " + s.Username())
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
 	// (games that they are playing in take priority over shared replays)
-	if !data.PlayingInOngoingGame {
+	if data.PlayingInOngoingGameTableID != 0 {
 		logger.Debug("Acquiring tables read lock for user: " + s.Username())
 		tablesMutex.RLock()
 		logger.Debug("Acquired tables read lock for user: " + s.Username())
@@ -169,12 +161,12 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 					continue
 				}
 
-				data.SpectatingTable = true
 				data.SpectatingTableID = t.ID
 				break
 			}
 		}
 		tablesMutex.RUnlock()
+		logger.Debug("Released tables read lock for user: " + s.Username())
 	}
 
 	return data
@@ -184,14 +176,17 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 	// Send an initial message that contains information about who they are and
 	// the current state of the server
 	type WelcomeMessage struct {
-		UserID               int       `json:"userID"`
-		Username             string    `json:"username"`
-		TotalGames           int       `json:"totalGames"`
-		Muted                bool      `json:"muted"`
-		FirstTimeUser        bool      `json:"firstTimeUser"`
-		Settings             Settings  `json:"settings"`
-		Friends              []string  `json:"friends"`
-		AtOngoingTable       bool      `json:"atOngoingTable"`
+		UserID        int      `json:"userID"`
+		Username      string   `json:"username"`
+		TotalGames    int      `json:"totalGames"`
+		Muted         bool     `json:"muted"`
+		FirstTimeUser bool     `json:"firstTimeUser"`
+		Settings      Settings `json:"settings"`
+		Friends       []string `json:"friends"`
+
+		PlayingInOngoingGameTableID uint64 `json:"playingInOngoingGameTableID"`
+		SpectatingTableID           uint64 `json:"spectatingTableID"`
+
 		RandomTableName      string    `json:"randomTableName"`
 		ShuttingDown         bool      `json:"shuttingDown"`
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
@@ -218,8 +213,10 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 		Settings: data.Settings,
 		Friends:  data.Friends,
 
-		// Warn the user if they rejoining an ongoing game or shared replay
-		AtOngoingTable: data.PlayingInOngoingGame || data.SpectatingTable,
+		// Inform the user that they were previously playing or spectating a game
+		// (so that they can choose to rejoin it)
+		PlayingInOngoingGameTableID: data.PlayingInOngoingGameTableID,
+		SpectatingTableID:           data.SpectatingTableID,
 
 		// Provide them with a random table name
 		// (which will be used by default on the first table that they create)
@@ -243,6 +240,7 @@ func websocketConnectUserList(s *Session) {
 		userMessageList = append(userMessageList, makeUserMessage(s2))
 	}
 	sessionsMutex.RUnlock()
+	logger.Debug("Released sessions read lock for user: " + s.Username())
 	s.Emit("userList", userMessageList)
 }
 
@@ -259,6 +257,7 @@ func websocketConnectTableList(s *Session) {
 		}
 	}
 	tablesMutex.RUnlock()
+	logger.Debug("Released tables read lock for user: " + s.Username())
 	s.Emit("tableList", tableMessageList)
 }
 
@@ -349,58 +348,4 @@ func websocketConnectHistoryFriends(s *Session, friends []string) {
 		gameHistoryFriendsList = v
 	}
 	s.Emit("gameHistoryFriends", &gameHistoryFriendsList)
-}
-
-func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
-	logger.Debug("Acquiring tables read lock for user: " + s.Username())
-	t, exists := getTableAndLock(s, data.PlayingInOngoingGameTableID, true)
-	if !exists {
-		return
-	}
-	logger.Debug("Acquired tables read lock for user: " + s.Username())
-	defer t.Mutex.Unlock()
-
-	// Don't do anything if the game has ended in the meantime
-	if !t.Running {
-		return
-	}
-
-	// Find their index
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
-	if playerIndex == -1 {
-		return
-	}
-
-	logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
-		"to table " + strconv.FormatUint(data.PlayingInOngoingGameTableID, 10) + ".")
-
-	// Update the player object with the new socket
-	t.Players[playerIndex].Session = s
-
-	commandTableReattend(s, &CommandData{ // Manual invocation
-		TableID: data.PlayingInOngoingGameTableID,
-		NoLock:  true,
-	})
-}
-
-func websocketConnectRespectate(s *Session, data *WebsocketConnectData) {
-	logger.Debug("Acquiring tables read lock for user: " + s.Username())
-	t, exists := getTableAndLock(s, data.SpectatingTableID, true)
-	if !exists {
-		return
-	}
-	logger.Debug("Acquired tables read lock for user: " + s.Username())
-	defer t.Mutex.Unlock()
-
-	logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
-		"to table " + strconv.FormatUint(data.SpectatingTableID, 10) + ".")
-
-	// Mark that this player is no longer disconnected
-	delete(t.DisconSpectators, s.UserID())
-
-	commandTableSpectate(s, &CommandData{ // Manual invocation
-		TableID:              data.SpectatingTableID,
-		ShadowingPlayerIndex: -1,
-		NoLock:               true,
-	})
 }

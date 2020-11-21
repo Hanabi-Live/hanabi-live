@@ -31,6 +31,7 @@ type VariantJSON struct {
 	SpecialAllClueRanks    bool      `json:"specialAllClueRanks"`
 	SpecialNoClueColors    bool      `json:"specialNoClueColors"`
 	SpecialNoClueRanks     bool      `json:"specialNoClueRanks"`
+	SpecialDeceptive       bool      `json:"specialDeceptive"`
 }
 
 func variantsInit() {
@@ -155,6 +156,7 @@ func variantsInit() {
 			SpecialAllClueRanks:    variant.SpecialAllClueRanks,
 			SpecialNoClueColors:    variant.SpecialNoClueColors,
 			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
+			SpecialDeceptive:       variant.SpecialDeceptive,
 			MaxScore:               len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
@@ -246,6 +248,11 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 			if variant.SpecialNoClueRanks {
 				return false
+			}
+			if variant.SpecialDeceptive {
+				// The rank that touches a deceptive card is contingent upon the card's suit
+				deceptiveRank := variant.ClueRanks[card.SuitIndex%len(variant.ClueRanks)]
+				return clue.Value == deceptiveRank
 			}
 		}
 

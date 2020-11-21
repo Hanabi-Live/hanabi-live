@@ -9,8 +9,6 @@ import (
 )
 
 func httpLogout(c *gin.Context) {
-	dev := c.DefaultQuery("dev", "false")
-
 	deleteCookie(c)
 
 	// We need tell tell the browser to not cache the redirect
@@ -20,8 +18,8 @@ func httpLogout(c *gin.Context) {
 	c.Writer.Header().Set("Cache-Control", "no-store")
 
 	path := "/"
-	if dev == "true" {
-		path = "/dev"
+	if _, ok := c.Request.URL.Query()["dev"]; ok {
+		path += "?dev"
 	}
 	c.Redirect(http.StatusMovedPermanently, path)
 }

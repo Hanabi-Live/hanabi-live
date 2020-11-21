@@ -618,7 +618,7 @@ function drawDeck() {
     fontFamily: "Verdana",
     fill: "white",
     align: "center",
-    fontSize: 0.02 * winH,
+    fontSize: 0.019 * winH,
     shadowColor: "black",
     shadowBlur: 10,
     shadowOffset: {

@@ -121,6 +121,12 @@ export function touchesCard(
       if (variant.specialNoClueRanks) {
         return false;
       }
+      if (variant.specialDeceptive) {
+        // The rank that touches a deceptive card is contingent upon the card's suit
+        const deceptiveRank =
+          variant.clueRanks[suitIndex % variant.clueRanks.length];
+        return clue.value === deceptiveRank;
+      }
     }
 
     return clue.value === rank;

@@ -3,7 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from "redux";
-import { initArray, parseIntSafe, trimReplaySuffixFromURL } from "../../misc";
+import { initArray, parseIntSafe, setBrowserAddressBarPath } from "../../misc";
 import * as sentry from "../../sentry";
 import { getVariant } from "../data/gameData";
 import initialState from "../reducers/initialStates/initialState";
@@ -153,6 +153,7 @@ commands.set("init", (metadata: InitData) => {
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
 
+  setURL(metadata);
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -264,6 +265,15 @@ interface GameActionListData {
   list: GameAction[];
 }
 commands.set("gameActionList", (data: GameActionListData) => {
+  // Users can load a specific turn in a replay by using a URL hash
+  // e.g. "/replay/123#5"
+  // Record the hash before we load the UI (which will overwrite the hash with "#1",
+  // corresponding to the first turn)
+  let specificTurnString = null;
+  if (window.location.hash !== "") {
+    specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#"
+  }
+
   // The server has sent us the list of the game actions that have occurred in the game thus far
   // (in response to the "getGameInfo2" command)
   // Send this list to the reducers
@@ -272,8 +282,8 @@ commands.set("gameActionList", (data: GameActionListData) => {
     actions: data.list,
   });
 
-  if (validateReplayURL()) {
-    checkLoadSpecificReplayTurn();
+  if (specificTurnString !== null) {
+    loadSpecificReplayTurn(specificTurnString);
   }
 });
 
@@ -399,6 +409,18 @@ commands.set("spectators", (data: SpectatorsData) => {
 // Subroutines
 // -----------
 
+function setURL(data: InitData) {
+  let path;
+  if (data.sharedReplay) {
+    path = `/shared-replay/${data.databaseID}`;
+  } else if (data.replay) {
+    path = `/replay/${data.databaseID}`;
+  } else {
+    path = `/game/${data.tableID}`;
+  }
+  setBrowserAddressBarPath(path, window.location.hash);
+}
+
 function initStateStore(data: InitData) {
   // Set the variant (as a helper reference)
   globals.variant = getVariant(data.options.variantName);
@@ -467,50 +489,20 @@ function initStateStore(data: InitData) {
   // because the "hypoEnter" handler requires there to be a valid state
 }
 
-// Validate that the database ID in the URL matches the one in the game that just loaded
-// (e.g. "/replay/150" for database game 150)
-function validateReplayURL() {
-  const match1 = /\/replay\/(\d+).*/.exec(window.location.pathname);
-  const match2 = /\/shared-replay\/(\d+).*/.exec(window.location.pathname);
-  let databaseID;
-  if (
-    match1 &&
-    globals.state.finished &&
-    globals.state.replay.shared === null
-  ) {
-    databaseID = parseIntSafe(match1[1]);
-  } else if (
-    match2 &&
-    globals.state.finished &&
-    globals.state.replay.shared !== null
-  ) {
-    databaseID = parseIntSafe(match2[1]);
-  }
-  if (databaseID === globals.state.replay.databaseID) {
-    return true;
-  }
-
-  trimReplaySuffixFromURL();
-  return false;
-}
-
-// Check to see if we are loading a specific replay to a specific turn
-// (as specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
-function checkLoadSpecificReplayTurn() {
-  // If we get here, we should be in a replay that matches the database ID
-  let segment;
-  const match1 = /\/replay\/\d+\/(\d+)/.exec(window.location.pathname);
-  const match2 = /\/shared-replay\/\d+\/(\d+)/.exec(window.location.pathname);
-  // We minus one from the segment since turns are represented to the user as starting from 1
-  // (instead of from 0)
-  if (match1) {
-    segment = parseIntSafe(match1[1]) - 1;
-  } else if (match2) {
-    segment = parseIntSafe(match2[1]) - 1;
-  } else {
+// We might need to go to a specific turn
+// (e.g. we loaded a URL of "http://localhost/replay/123#5")
+function loadSpecificReplayTurn(turnString: string) {
+  let turn = parseIntSafe(turnString);
+  if (Number.isNaN(turn)) {
+    // The turn is not a number, so ignore it
     return;
   }
-  replay.goToSegment(segment, true);
+
+  // We minus one from the turn since turns are represented to the user as starting from 1
+  // (instead of from 0)
+  turn -= 1;
+
+  replay.goToSegment(turn, true); // A turn is an approximation for a segment
 }
 
 // Allow TypeScript to modify the browser's "window" object

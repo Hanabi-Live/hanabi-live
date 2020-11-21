@@ -39,6 +39,10 @@ func commandTableReattend(s *Session, d *CommandData) {
 func tableReattend(s *Session, t *Table, playerIndex int) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" reattended.")
 
+	// They might be reconnecting after a disconnect,
+	// so update the player object with the new socket
+	t.Players[playerIndex].Session = s
+
 	if t.Running {
 		// Make the client switch screens to show the game UI
 		s.NotifyTableStart(t)

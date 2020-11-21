@@ -3,7 +3,7 @@
 import version from "../../../data/version.json";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
-import { isEmpty, parseIntSafe } from "../misc";
+import { isDevWebpack, isEmpty } from "../misc";
 import websocketInit from "../websocketInit";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
@@ -104,23 +104,11 @@ function getAjaxError(jqXHR: JQuery.jqXHR<any>) {
 }
 
 export function automaticLogin(): void {
-  // Automatically sign in to the WebSocket server if we are using a "/test" URL
-  if (window.location.pathname.includes("/test")) {
-    // Parse the test number from the URL, if any
-    let testNumberString = "";
-    const match = /\/test\/(\d+)/.exec(window.location.pathname);
-    if (match) {
-      testNumberString = match[1];
-    }
-    let testNumber = 1;
-    if (testNumberString !== "") {
-      testNumber = parseIntSafe(testNumberString);
-    }
-    if (Number.isNaN(testNumber)) {
-      testNumber = 1;
-    }
-
-    const username = `test${testNumber}`;
+  // Automatically sign in to the WebSocket server if a query string of "?login" is present
+  // (which is intended to be used with test accounts)
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get("login");
+  if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);
     send(username, username); // For test accounts, we use the username as the password
     return;
@@ -182,7 +170,7 @@ export function hide(firstTimeUser: boolean): void {
   // Hide the login screen
   $("#login").hide();
 
-  if (firstTimeUser && !window.location.pathname.includes("/dev")) {
+  if (firstTimeUser && !isDevWebpack()) {
     $("#tutorial").fadeIn(FADE_TIME);
     return;
   }
