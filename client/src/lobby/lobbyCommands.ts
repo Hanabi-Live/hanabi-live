@@ -307,17 +307,22 @@ commands.set("welcome", (data: WelcomeData) => {
     return;
   }
 
-  // Automatically join a table if we are using a "/pre-game/123" URL
-  const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
-  if (preGameMatch) {
-    const tableID = parseIntSafe(preGameMatch[1]); // The server expects the game ID as an integer
-    globals.conn!.send("tableJoin", {
-      tableID,
-    });
-    return;
+  // Automatically join a pre-game if we are using a "/pre-game/123" URL
+  // (this should override rejoining a shared replay but not rejoining a game,
+  // because users are not allowed to be in two games at once)
+  if (data.playingInOngoingGameTableID === 0) {
+    const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
+    if (preGameMatch) {
+      const tableID = parseIntSafe(preGameMatch[1]); // The server expects the game ID as an integer
+      globals.conn!.send("tableJoin", {
+        tableID,
+      });
+      return;
+    }
   }
 
   // Automatically go into a replay if we are using a "/replay/123" URL
+  // (this should override both rejoining a game and rejoining a shared replay)
   const replayMatch = /\/replay\/(\d+)/.exec(window.location.pathname);
   if (replayMatch) {
     const gameID = parseIntSafe(replayMatch[1]); // The server expects the game ID as an integer
@@ -331,6 +336,7 @@ commands.set("welcome", (data: WelcomeData) => {
   }
 
   // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
+  // (this should override both rejoining a game and rejoining a shared replay)
   const sharedReplayMatch = /\/shared-replay\/(\d+)/.exec(
     window.location.pathname,
   );
@@ -346,7 +352,12 @@ commands.set("welcome", (data: WelcomeData) => {
   }
 
   // Automatically create a table if we are using a "/create-table" URL
-  if (window.location.pathname === "/create-table") {
+  // (this should override rejoining a shared replay but not rejoining a game,
+  // because users are not allowed to be in two games at once)
+  if (
+    data.playingInOngoingGameTableID === 0 &&
+    window.location.pathname === "/create-table"
+  ) {
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get("name") ?? globals.randomTableName;
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
@@ -392,6 +403,20 @@ commands.set("welcome", (data: WelcomeData) => {
   if (data.playingInOngoingGameTableID !== 0) {
     globals.conn!.send("tableReattend", {
       tableID: data.playingInOngoingGameTableID,
+    });
+    return;
+  }
+
+  // Automatically spectate a game if we are using a "/game/123" URL
+  // (this should override rejoining a shared replay but not rejoining a game,
+  // because we assume at this point that we need to send a "tableSpectate" command instead of a
+  // "tableReattend" command)
+  const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
+  if (gameMatch) {
+    const tableID = parseIntSafe(gameMatch[1]); // The server expects the game ID as an integer
+    globals.conn!.send("tableSpectate", {
+      tableID,
+      shadowingPlayerIndex: -1,
     });
     return;
   }
