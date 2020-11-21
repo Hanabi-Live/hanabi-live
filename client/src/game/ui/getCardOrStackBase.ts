@@ -15,5 +15,5 @@ export default function getCardOrStackBase(order: number): HanabiCard {
     return stackBase;
   }
 
-  throw new Error(`Failed to find the card at order ${order}.`);
+  throw new Error(`Failed to find the card at order: ${order}`);
 }

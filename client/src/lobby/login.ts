@@ -3,7 +3,7 @@
 import version from "../../../data/version.json";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
-import { isDevWebpack, isEmpty } from "../misc";
+import { getURLFromPath, isDevWebpack, isEmpty } from "../misc";
 import websocketInit from "../websocketInit";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
@@ -62,11 +62,7 @@ function send(username: string, password: string) {
   $("#login-ajax").show();
 
   // Send a login request to the server; if successful, we will get a cookie back
-  let url = `${window.location.protocol}//${window.location.hostname}`;
-  if (window.location.port !== "") {
-    url += `:${window.location.port}`;
-  }
-  url += "/login";
+  const url = getURLFromPath("/login");
   const postData = {
     username,
     password,

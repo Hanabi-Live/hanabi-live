@@ -37,6 +37,16 @@ export const ensureAllCases = (obj: never): never => obj;
 export const getRandomNumber = (min: number, max: number): number =>
   Math.floor(Math.random() * (max - min + 1) + min);
 
+export function getURLFromPath(path: string): string {
+  let url = `${window.location.protocol}//${window.location.hostname}`;
+  if (window.location.port !== "") {
+    url += `:${window.location.port}`;
+  }
+  url += path;
+
+  return url;
+}
+
 export function initArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
 }

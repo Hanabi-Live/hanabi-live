@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables
 
 import globals from "../globals";
-import { timerFormatter } from "../misc";
+import { copyStringToClipboard, getURLFromPath, timerFormatter } from "../misc";
 import * as modals from "../modals";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
@@ -191,7 +191,8 @@ export default function tablesDraw(): void {
           .attr("id", `spectate-${table.id}`)
           .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
             if (event.ctrlKey) {
-              // Copy the URL that would
+              // Copy the URL that would occur from clicking on this table row
+              copyURLToClipboard(`/game/${table.id}`, row);
             } else {
               tableSpectate(table);
             }
@@ -201,14 +202,26 @@ export default function tablesDraw(): void {
         if (table.numPlayers >= 6) {
           row.addClass("full");
         } else {
-          row.on("click", () => {
-            tableJoin(table);
+          row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+            if (event.ctrlKey) {
+              // Copy the URL that would occur from clicking on this table row
+              copyURLToClipboard(`/pre-game/${table.id}`, row);
+            } else {
+              tableJoin(table);
+            }
           });
         }
       } else {
-        row.attr("id", `resume-${table.id}`).on("click", () => {
-          tableReattend(table);
-        });
+        row
+          .attr("id", `resume-${table.id}`)
+          .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+            if (event.ctrlKey) {
+              // Copy the URL that would occur from clicking on this table row
+              copyURLToClipboard(`/game/${table.id}`, row);
+            } else {
+              tableReattend(table);
+            }
+          });
       }
     });
 
@@ -273,4 +286,23 @@ function tableHasFriends(table: Table) {
   }
 
   return false;
+}
+
+function copyURLToClipboard(path: string, row: JQuery<HTMLElement>) {
+  const url = getURLFromPath(path);
+  copyStringToClipboard(url);
+
+  // Show a visual indication that the copy worked
+  row.tooltipster({
+    animation: "grow",
+    content: '<span style="font-size: 0.75em;">URL copied to clipboard!</span>',
+    contentAsHTML: true,
+    delay: 0,
+    trigger: "custom",
+    theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
+  });
+  row.tooltipster("instance").open();
+  setTimeout(() => {
+    row.tooltipster("instance").close();
+  }, 1000); // 1 second
 }

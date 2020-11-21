@@ -22,17 +22,14 @@ export default function websocketInit(): void {
   }
 
   // Prepare the URL of the WebSocket server
-  let websocketURL = "ws";
-  if (window.location.protocol === "https:") {
-    websocketURL += "s";
-  }
-  websocketURL += "://";
-  websocketURL += window.location.hostname;
+  // e.g. "ws://localhost/ws" or "wss://hanab.live/ws"
+  const websocketProtocol =
+    window.location.protocol === "https:" ? "wss" : "ws";
+  let websocketHost = window.location.hostname;
   if (window.location.port !== "") {
-    websocketURL += ":";
-    websocketURL += window.location.port;
+    websocketHost += `:${window.location.port}`;
   }
-  websocketURL += "/ws";
+  const websocketURL = `${websocketProtocol}://${websocketHost}/ws`;
 
   // Connect to the WebSocket server
   // This will automatically use the cookie that we received earlier from the POST
