@@ -272,7 +272,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		}
 
 		// They specified an ID and a turn
-		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "?turn=" + strconv.Itoa(turn) + ">"
+		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "#" + strconv.Itoa(turn) + ">"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
