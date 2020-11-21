@@ -92,8 +92,6 @@ export function parseIntSafe(input: string): number {
 }
 
 export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
-  console.log("PATH:", newPath);
-  console.log("HASH:", hash);
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
   const queryParameters = new URLSearchParams(window.location.search);
   const modifiedQueryParameters = queryParameters
