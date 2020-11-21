@@ -41,6 +41,11 @@ export function initArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
 }
 
+export function isDevWebpack(): boolean {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.has("dev");
+}
+
 // This is a helper to check for empty/invalid HTML elements without worrying about the linter
 export const isEmpty = (
   value: string | string[] | number | undefined,
@@ -84,6 +89,26 @@ export function parseIntSafe(input: string): number {
     trimmedInput = `-${trimmedInput}`;
   }
   return parseInt(trimmedInput, 10);
+}
+
+export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
+  // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
+  const queryParameters = new URLSearchParams(window.location.search);
+  const modifiedQueryParameters = queryParameters
+    .toString()
+    // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable
+    .replace(/=&/g, "&")
+    .replace(/=$/, "");
+
+  let path = newPath;
+  if (modifiedQueryParameters.length > 0) {
+    path += `?${modifiedQueryParameters}`;
+  }
+  if (hash !== undefined) {
+    // e.g. "#123", which is used to show the current turn
+    path += hash;
+  }
+  window.history.replaceState({}, "", path);
 }
 
 export function timerFormatter(totalSeconds: number): string {

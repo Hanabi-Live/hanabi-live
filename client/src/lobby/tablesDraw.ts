@@ -222,6 +222,7 @@ export function tableSpectate(table: Table): void {
     tableID: table.id,
     shadowingPlayerIndex: -1,
   });
+  // (we will get a "tableStart" response back from the server)
 }
 
 export function tableJoin(table: Table): void {
@@ -235,6 +236,7 @@ export function tableJoin(table: Table): void {
     globals.conn!.send("tableJoin", {
       tableID: table.id,
     });
+    // (we will get a "joined" response back from the server)
   }
 }
 
@@ -246,6 +248,8 @@ function tableReattend(table: Table) {
   globals.conn!.send("tableReattend", {
     tableID: table.id,
   });
+  // (we will get either a "game" or a "tableStart" response back from the server,
+  // depending on if the game has started or not)
 }
 
 function tableHasFriends(table: Table) {
