@@ -7,30 +7,29 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Hanabi Server",
-      "type": "shell",
-      "command": "./run.sh",
-      "presentation": {
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
       "label": "Hanabi Client (webpack)",
       "type": "shell",
       "command": "./webpack-dev-server.sh",
       "presentation": {
         "reveal": "always",
-        "panel": "new"
-      }
+        "panel": "new",
+      },
     },
     {
-      "label": "Hanabi Client+Server",
+      "label": "Hanabi Server",
+      "type": "shell",
+      "command": "./run.sh",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+      },
+    },
+    {
+      "label": "Hanabi Client + Server",
       "dependsOn": [
         "Hanabi Server",
-        "Hanabi Client (webpack)"
+        "Hanabi Client (webpack)",
       ],
-      "problemMatcher": []
-    }
-  ]
+    },
+  ],
 }
