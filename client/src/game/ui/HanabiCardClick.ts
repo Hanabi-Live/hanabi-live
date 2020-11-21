@@ -114,10 +114,8 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
 function clickRight(card: HanabiCard, event: MouseEvent) {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
-    globals.state.finished &&
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
     globals.state.replay.hypothetical !== null &&
+    (!globals.state.replay.shared || globals.state.replay.shared.amLeader) &&
     !event.ctrlKey &&
     !event.shiftKey &&
     event.altKey &&

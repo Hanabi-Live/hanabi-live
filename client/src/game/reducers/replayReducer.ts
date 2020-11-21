@@ -228,11 +228,6 @@ function replayReducerFunction(
     }
 
     case "hypoAction": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
       if (state.hypothetical === null) {
         throw new Error(
           `A "${action.type}" action was dispatched with a null hypothetical state.`,

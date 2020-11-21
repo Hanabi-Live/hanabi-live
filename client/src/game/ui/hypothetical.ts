@@ -191,11 +191,18 @@ export function send(hypoAction: ClientAction): void {
 }
 
 export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
-  globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.HypoAction,
-    actionJSON: JSON.stringify(hypoAction),
-  });
+  if (globals.state.replay.shared !== null) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.HypoAction,
+      actionJSON: JSON.stringify(hypoAction),
+    });
+  } else {
+    globals.store!.dispatch({
+      type: "hypoAction",
+      action: hypoAction,
+    });
+  }
 }
 
 export function sendBack(): void {
