@@ -90,5 +90,6 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command            | Description
 | ------------------ | -----------
+| `/suggest [turn]`  | Suggest a specific turn for the shared replay leader to go to
 | `/tagdelete [tag]` | Delete an existing tag from the game
 | `/tags`            | Show all of the tags for this game
