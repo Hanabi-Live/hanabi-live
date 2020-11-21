@@ -128,8 +128,8 @@ One of each card per suit (e.g. 5 in total):
   - The first suit is touched by a rank 2 clue
   - The second suit is touched by a rank 3 clue
   - The third suit is touched by a rank 4 clue,
-  - The fifth suit is touched by a rank 5 clue
-  - The sixth suit is touched by a rank 2 clue (wrapping around)
+  - The fourth suit is touched by a rank 5 clue
+  - The fifth suit is touched by a rank 2 clue (wrapping around)
 
 ### Deceptive-Fives
 
@@ -137,8 +137,8 @@ One of each card per suit (e.g. 5 in total):
   - The first suit is touched by a rank 1 clue
   - The second suit is touched by a rank 2 clue
   - The third suit is touched by a rank 3 clue,
-  - The fifth suit is touched by a rank 4 clue
-  - The sixth suit is touched by a rank 1 clue (wrapping around)
+  - The fourth suit is touched by a rank 4 clue
+  - The fifth suit is touched by a rank 1 clue (wrapping around)
 
 ### Suit-Ones or Suit-Fives with Another Special Suit
 
