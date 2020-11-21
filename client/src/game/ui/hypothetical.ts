@@ -17,7 +17,10 @@ export function start(): void {
     return;
   }
 
-  if (globals.state.replay.shared && globals.state.replay.shared.amLeader) {
+  if (
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader
+  ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoStart,
@@ -38,7 +41,10 @@ export function end(): void {
     return;
   }
 
-  if (globals.state.replay.shared && globals.state.replay.shared.amLeader) {
+  if (
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader
+  ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoEnd,

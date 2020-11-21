@@ -284,7 +284,7 @@ const replayObservers: Subscriptions = [
   subAfterInit(
     (s) => ({
       active: s.replay.hypothetical !== null,
-      amLeader: !s.replay.shared || s.replay.shared.amLeader,
+      amLeader: s.replay.shared === null || s.replay.shared.amLeader,
       sharedReplay: s.replay.shared !== null,
     }),
     hypotheticalView.onActiveOrAmLeaderChanged,

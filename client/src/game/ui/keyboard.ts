@@ -272,7 +272,8 @@ function keydown(event: JQuery.KeyDownEvent) {
     (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex) ||
     // If we are in a hypothetical and we are the shared replay leader
     (globals.state.replay.hypothetical !== null &&
-      (!globals.state.replay.shared || globals.state.replay.shared.amLeader));
+      (globals.state.replay.shared === null ||
+        globals.state.replay.shared.amLeader));
   const ongoingGameState =
     globals.state.replay.hypothetical === null
       ? globals.state.ongoingGame

@@ -84,7 +84,7 @@ export default class LayoutChild extends Konva.Group {
     // First, handle the special case of a hypothetical
     if (globals.state.replay.hypothetical !== null) {
       return (
-        (!globals.state.replay.shared ||
+        (globals.state.replay.shared === null ||
           globals.state.replay.shared.amLeader) &&
         currentPlayerIndex === this.card.state.location &&
         !this.blank
