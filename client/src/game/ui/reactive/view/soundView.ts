@@ -2,6 +2,7 @@
 
 import { ensureAllCases } from "../../../../misc";
 import { variantRules } from "../../../rules";
+import { GameAction } from "../../../types/actions";
 import SoundType from "../../../types/SoundType";
 import globals from "../../globals";
 
@@ -10,12 +11,14 @@ export function onNewSoundEffect(
     soundType: SoundType;
     currentPlayerIndex: number | null;
     turn: number;
+    lastAction: GameAction | null;
   },
   previousData:
     | {
         soundType: SoundType;
         currentPlayerIndex: number | null;
         turn: number;
+        lastAction: GameAction | null;
       }
     | undefined,
 ): void {
