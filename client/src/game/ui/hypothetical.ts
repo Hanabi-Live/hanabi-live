@@ -1,6 +1,7 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
+import { negativeOneIfNull } from "../../misc";
 import { playStacksRules } from "../rules";
 import { ActionIncludingHypothetical } from "../types/actions";
 import ActionType from "../types/ActionType";
@@ -86,6 +87,10 @@ export function send(hypoAction: ClientAction): void {
     case "play":
     case "discard": {
       const card = getCardOrStackBase(hypoAction.target);
+      // TODO: Ask user something like
+      // "You just tried to play an unknown card. What card do you want to assume it is for the
+      // purposes of the hypothetical? (e.g. red 1, b3)"
+      // and then morph the card as it plays
       if (card.visibleSuitIndex === null) {
         throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
       }
@@ -128,21 +133,18 @@ export function send(hypoAction: ClientAction): void {
       }
 
       // Draw
-      const nextCardOrder = gameState.deck.length;
-      const nextCard = globals.state.cardIdentities[nextCardOrder];
-      if (nextCard !== undefined) {
+      if (gameState.deck.length >= 1) {
         // All the cards might have already been drawn
-        if (nextCard.suitIndex === null || nextCard.rank === null) {
-          throw new Error("Failed to find the suit or rank of the next card.");
-        }
+        const nextCardOrder = gameState.deck.length;
+        const nextCard = globals.state.cardIdentities[nextCardOrder];
         sendHypoAction({
           type: "draw",
           order: nextCardOrder,
           playerIndex: gameState.turn.currentPlayerIndex!,
           // Always send the correct suitIndex and rank;
           // the blanking of the card will be performed on the client
-          suitIndex: nextCard.suitIndex,
-          rank: nextCard.rank,
+          suitIndex: negativeOneIfNull(nextCard?.suitIndex),
+          rank: negativeOneIfNull(nextCard?.rank),
         });
       }
 
@@ -218,6 +220,7 @@ export function sendBack(): void {
   ) {
     return;
   }
+
   if (globals.state.replay.shared !== null) {
     if (globals.state.replay.shared.amLeader) {
       globals.lobby.conn!.send("replayAction", {
