@@ -3,7 +3,7 @@
 import * as chat from "../chat";
 import { getVariant } from "../game/data/gameData";
 import globals from "../globals";
-import { timerFormatter } from "../misc";
+import { setBrowserAddressBarPath, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
@@ -52,6 +52,9 @@ export function show(): void {
   // Adjust the top navigation bar
   nav.show("pregame");
   enableStartGameButton();
+
+  // Set the browser address bar
+  setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
 }
 
 export function hide(): void {
@@ -74,6 +77,9 @@ export function hide(): void {
 
   // Adjust the navigation bar
   nav.show("lobby");
+
+  // Set the browser address bar
+  setBrowserAddressBarPath("/lobby");
 }
 
 export function draw(): void {

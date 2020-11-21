@@ -81,6 +81,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		}
 	}
 	tablesMutex.RUnlock()
+	logger.Debug("Released tables read lock for user: " + s.Username())
 
 	for _, ongoingGameTableID := range ongoingGameTableIDs {
 		logger.Info("Unattending player \"" + s.Username() + "\" from ongoing table " +
@@ -99,22 +100,18 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	}
 
 	for _, spectatingTableID := range spectatingTableIDs {
-		t, exists := getTableAndLock(s, spectatingTableID, true)
-		if !exists {
-			continue
-		}
-
 		logger.Info("Ejecting spectator \"" + s.Username() + "\" from table " +
 			strconv.FormatUint(spectatingTableID, 10) + " since they disconnected.")
-
-		// Add them to the disconnected spectators map
-		// (so that they will be automatically reconnected to the game if/when they reconnect)
-		t.DisconSpectators[s.UserID()] = struct{}{}
-
 		commandTableUnattend(s, &CommandData{ // Manual invocation
-			TableID: t.ID,
-			NoLock:  true,
+			TableID: spectatingTableID,
 		})
-		t.Mutex.Unlock()
+
+		// Additionally, we also want to add this user to the map of disconnected spectators
+		// (so that they will be automatically reconnected to the game if/when they reconnect)
+		t, exists := getTableAndLock(s, spectatingTableID, true)
+		if exists {
+			t.DisconSpectators[s.UserID()] = struct{}{}
+			t.Mutex.Unlock()
+		}
 	}
 }

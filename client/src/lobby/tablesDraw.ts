@@ -222,7 +222,7 @@ export function tableJoin(table: Table): void {
     globals.conn!.send("tableJoin", {
       tableID: table.id,
     });
-    // (we will get a "game" response back from the server)
+    // (we will get a "joined" response back from the server)
   }
 }
 

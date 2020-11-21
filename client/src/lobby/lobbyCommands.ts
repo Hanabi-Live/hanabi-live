@@ -4,7 +4,7 @@ import * as gameMain from "../game/main";
 import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
 import globals from "../globals";
-import { parseIntSafe, trimReplaySuffixFromURL } from "../misc";
+import { parseIntSafe, setBrowserAddressBarPath } from "../misc";
 import * as sentry from "../sentry";
 import * as sounds from "../sounds";
 import * as history from "./history";
@@ -276,7 +276,8 @@ interface WelcomeData {
   firstTimeUser: boolean;
   settings: Settings;
   friends: string[];
-  atOngoingTable: boolean;
+  playingInOngoingGameTableID: number;
+  spectatingTableID: number;
   randomTableName: string;
   shuttingDown: boolean;
   maintenanceMode: boolean;
@@ -306,40 +307,41 @@ commands.set("welcome", (data: WelcomeData) => {
     return;
   }
 
-  // If we are currently in an ongoing game or are reconnecting to a shared replay,
-  // then do not automatically go into another replay
-  if (data.atOngoingTable) {
-    trimReplaySuffixFromURL();
+  // Automatically join a table if we are using a "/pre-game/123" URL
+  const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
+  if (preGameMatch) {
+    const tableID = parseIntSafe(preGameMatch[1]); // The server expects the game ID as an integer
+    globals.conn!.send("tableJoin", {
+      tableID,
+    });
     return;
   }
 
   // Automatically go into a replay if we are using a "/replay/123" URL
-  const match1 = /\/replay\/(\d+)/.exec(window.location.pathname);
-  if (match1) {
-    setTimeout(() => {
-      const gameID = parseIntSafe(match1[1]); // The server expects the game ID as an integer
-      globals.conn!.send("replayCreate", {
-        gameID,
-        source: "id",
-        visibility: "solo",
-        shadowingPlayerIndex: -1,
-      });
-    }, 10);
+  const replayMatch = /\/replay\/(\d+)/.exec(window.location.pathname);
+  if (replayMatch) {
+    const gameID = parseIntSafe(replayMatch[1]); // The server expects the game ID as an integer
+    globals.conn!.send("replayCreate", {
+      gameID,
+      source: "id",
+      visibility: "solo",
+      shadowingPlayerIndex: -1,
+    });
     return;
   }
 
   // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
-  const match2 = /\/shared-replay\/(\d+)/.exec(window.location.pathname);
-  if (match2) {
-    setTimeout(() => {
-      const gameID = parseIntSafe(match2[1]); // The server expects the game ID as an integer
-      globals.conn!.send("replayCreate", {
-        gameID,
-        source: "id",
-        visibility: "shared",
-        shadowingPlayerIndex: -1,
-      });
-    }, 10);
+  const sharedReplayMatch = /\/shared-replay\/(\d+)/.exec(
+    window.location.pathname,
+  );
+  if (sharedReplayMatch) {
+    const gameID = parseIntSafe(sharedReplayMatch[1]); // The server expects the game ID as an integer
+    globals.conn!.send("replayCreate", {
+      gameID,
+      source: "id",
+      visibility: "shared",
+      shadowingPlayerIndex: -1,
+    });
     return;
   }
 
@@ -364,25 +366,48 @@ commands.set("welcome", (data: WelcomeData) => {
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
 
-    setTimeout(() => {
-      globals.conn!.send("tableCreate", {
-        name,
-        options: {
-          variantName,
-          timed,
-          timeBase,
-          timePerTurn,
-          speedrun,
-          cardCycle,
-          deckPlays,
-          emptyClues,
-          oneExtraCard,
-          oneLessCard,
-          allOrNothing,
-          detrimentalCharacters,
-        },
-        password,
-      });
-    }, 10);
+    globals.conn!.send("tableCreate", {
+      name,
+      options: {
+        variantName,
+        timed,
+        timeBase,
+        timePerTurn,
+        speedrun,
+        cardCycle,
+        deckPlays,
+        emptyClues,
+        oneExtraCard,
+        oneLessCard,
+        allOrNothing,
+        detrimentalCharacters,
+      },
+      password,
+    });
+    return;
   }
+
+  // If the server has informed us that we are currently playing in an ongoing game,
+  // automatically reconnect to that game
+  if (data.playingInOngoingGameTableID !== 0) {
+    globals.conn!.send("tableReattend", {
+      tableID: data.playingInOngoingGameTableID,
+    });
+    return;
+  }
+
+  // If the server has informed us that were previously spectating an ongoing shared replay,
+  // automatically spectate that table
+  if (data.spectatingTableID !== 0) {
+    globals.conn!.send("tableSpectate", {
+      tableID: data.spectatingTableID,
+      shadowingPlayerIndex: -1,
+    });
+    return;
+  }
+
+  // Otherwise, we will stay in the lobby
+  const queryParameters = new URLSearchParams(window.location.search);
+  queryParameters.delete("turn");
+  setBrowserAddressBarPath("/lobby", queryParameters);
 });

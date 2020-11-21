@@ -220,7 +220,6 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	// Special commands
 	// ----------------
 
-	// This code is duplicated from the "chatReplay()" function
 	if command == "replay" || command == "link" || command == "game" {
 		if len(args) == 0 {
 			discordSend(
@@ -273,7 +272,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		}
 
 		// They specified an ID and a turn
-		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) + ">"
+		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "?turn=" + strconv.Itoa(turn) + ">"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}

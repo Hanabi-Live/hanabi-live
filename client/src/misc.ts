@@ -91,6 +91,23 @@ export function parseIntSafe(input: string): number {
   return parseInt(trimmedInput, 10);
 }
 
+export function setBrowserAddressBarPath(
+  newPath: string,
+  queryParameters = new URLSearchParams(window.location.search),
+): void {
+  // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
+  const modifiedQueryParameters = queryParameters
+    .toString()
+    // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable
+    .replace(/=&/g, "&")
+    .replace(/=$/, "");
+  let path = newPath;
+  if (modifiedQueryParameters.length > 0) {
+    path += `?${modifiedQueryParameters}`;
+  }
+  window.history.pushState({}, "", path);
+}
+
 export function timerFormatter(totalSeconds: number): string {
   const time = new Date();
   time.setHours(0, 0, totalSeconds);
@@ -103,22 +120,4 @@ export function timerFormatter(totalSeconds: number): string {
     return `${hours}:${minutesFormatted}:${secondsFormatted}`;
   }
   return `${minutes}:${secondsFormatted}`;
-}
-
-// Remove any replay suffixes from the URL without reloading the page, if any
-export function trimReplaySuffixFromURL(): void {
-  let finalCharacterIndex;
-  if (window.location.pathname.includes("/replay")) {
-    finalCharacterIndex = window.location.pathname.indexOf("/replay");
-  } else if (window.location.pathname.includes("/shared-replay")) {
-    finalCharacterIndex = window.location.pathname.indexOf("/shared-replay");
-  } else {
-    return;
-  }
-
-  let newURL = window.location.pathname.substring(0, finalCharacterIndex);
-  if (newURL === "") {
-    newURL = "/";
-  }
-  window.history.pushState({}, "", newURL);
 }

@@ -198,12 +198,15 @@ func httpInit() {
 
 	// Path handlers (for the main website)
 	httpRouter.GET("/", httpMain)
+	httpRouter.GET("/lobby", httpMain)
+	httpRouter.GET("/pre-game", httpMain)
+	httpRouter.GET("/pre-game/:tableID", httpMain)
+	httpRouter.GET("/game", httpMain)
+	httpRouter.GET("/game/:tableID", httpMain)
 	httpRouter.GET("/replay", httpMain)
 	httpRouter.GET("/replay/:gameID", httpMain)
-	httpRouter.GET("/replay/:gameID/:turn", httpMain)
 	httpRouter.GET("/shared-replay", httpMain)
 	httpRouter.GET("/shared-replay/:gameID", httpMain)
-	httpRouter.GET("/shared-replay/:gameID/:turn", httpMain)
 	httpRouter.GET("/create-table", httpMain)
 
 	// Path handlers for other URLs

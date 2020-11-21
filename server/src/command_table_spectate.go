@@ -77,6 +77,11 @@ func tableSpectate(s *Session, d *CommandData, t *Table) {
 		logger.Info(t.GetName() + "User \"" + s.Username() + "\" spectated.")
 	}
 
+	// They might be reconnecting after a disconnect,
+	// so mark that this player is no longer disconnected
+	// (this will be a no-op if they were not in the "DisconSpectators" map)
+	delete(t.DisconSpectators, s.UserID())
+
 	// Add them to the spectators object
 	sp := &Spectator{
 		ID:                   s.UserID(),

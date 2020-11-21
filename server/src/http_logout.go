@@ -18,6 +18,9 @@ func httpLogout(c *gin.Context) {
 	c.Writer.Header().Set("Cache-Control", "no-store")
 
 	path := "/"
+	if _, ok := c.Request.URL.Query()["dev"]; ok {
+		path += "?dev"
+	}
 	c.Redirect(http.StatusMovedPermanently, path)
 }
 

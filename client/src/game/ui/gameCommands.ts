@@ -3,7 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from "redux";
-import { initArray, parseIntSafe, trimReplaySuffixFromURL } from "../../misc";
+import { initArray, parseIntSafe, setBrowserAddressBarPath } from "../../misc";
 import * as sentry from "../../sentry";
 import { getVariant } from "../data/gameData";
 import initialState from "../reducers/initialStates/initialState";
@@ -153,6 +153,7 @@ commands.set("init", (metadata: InitData) => {
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
 
+  setURL(metadata);
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -272,9 +273,7 @@ commands.set("gameActionList", (data: GameActionListData) => {
     actions: data.list,
   });
 
-  if (validateReplayURL()) {
-    checkLoadSpecificReplayTurn();
-  }
+  checkLoadSpecificReplayTurn();
 });
 
 interface PauseData {
@@ -399,6 +398,18 @@ commands.set("spectators", (data: SpectatorsData) => {
 // Subroutines
 // -----------
 
+function setURL(data: InitData) {
+  let path;
+  if (data.sharedReplay) {
+    path = `/shared-replay/${data.databaseID}`;
+  } else if (data.replay) {
+    path = `/replay/${data.databaseID}`;
+  } else {
+    path = `/game/${data.tableID}`;
+  }
+  setBrowserAddressBarPath(path);
+}
+
 function initStateStore(data: InitData) {
   // Set the variant (as a helper reference)
   globals.variant = getVariant(data.options.variantName);
@@ -467,50 +478,26 @@ function initStateStore(data: InitData) {
   // because the "hypoEnter" handler requires there to be a valid state
 }
 
-// Validate that the database ID in the URL matches the one in the game that just loaded
-// (e.g. "/replay/150" for database game 150)
-function validateReplayURL() {
-  const match1 = /\/replay\/(\d+).*/.exec(window.location.pathname);
-  const match2 = /\/shared-replay\/(\d+).*/.exec(window.location.pathname);
-  let databaseID;
-  if (
-    match1 &&
-    globals.state.finished &&
-    globals.state.replay.shared === null
-  ) {
-    databaseID = parseIntSafe(match1[1]);
-  } else if (
-    match2 &&
-    globals.state.finished &&
-    globals.state.replay.shared !== null
-  ) {
-    databaseID = parseIntSafe(match2[1]);
-  }
-  if (databaseID === globals.state.replay.databaseID) {
-    return true;
-  }
-
-  trimReplaySuffixFromURL();
-  return false;
-}
-
-// Check to see if we are loading a specific replay to a specific turn
-// (as specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
+// We might need to go to a specific turn
+// (e.g. we loaded a URL of "http://localhost/replay/123?turn=5")
 function checkLoadSpecificReplayTurn() {
-  // If we get here, we should be in a replay that matches the database ID
-  let segment;
-  const match1 = /\/replay\/\d+\/(\d+)/.exec(window.location.pathname);
-  const match2 = /\/shared-replay\/\d+\/(\d+)/.exec(window.location.pathname);
-  // We minus one from the segment since turns are represented to the user as starting from 1
-  // (instead of from 0)
-  if (match1) {
-    segment = parseIntSafe(match1[1]) - 1;
-  } else if (match2) {
-    segment = parseIntSafe(match2[1]) - 1;
-  } else {
+  const urlParams = new URLSearchParams(window.location.search);
+  const turnString = urlParams.get("turn");
+  if (turnString === null) {
     return;
   }
-  replay.goToSegment(segment, true);
+  let turn = parseIntSafe(turnString);
+  if (Number.isNaN(turn)) {
+    // The turn is not a number
+    urlParams.delete("turn");
+    return;
+  }
+
+  // We minus one from the turn since turns are represented to the user as starting from 1
+  // (instead of from 0)
+  turn -= 1;
+
+  replay.goToSegment(turn, true); // A turn is an approximation for a segment
 }
 
 // Allow TypeScript to modify the browser's "window" object
