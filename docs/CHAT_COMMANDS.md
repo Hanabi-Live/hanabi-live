@@ -33,6 +33,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/unfriend [username]` | Remove someone from your friends list
 | `/friends`             | Show a list of all your friends
 | `/tagsearch [tag]`     | Search through all games for a specific tag
+| `/version`             | Show the version number of the client code
 
 <br />
 
