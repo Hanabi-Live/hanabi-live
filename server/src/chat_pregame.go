@@ -187,11 +187,8 @@ func chatMissingScores(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	msg := "http"
-	if useTLS {
-		msg += "s"
-	}
-	msg += "://" + domain + "/shared-missing-scores/" + strings.Join(usernames, "/")
+	path := "/shared-missing-scores/" + strings.Join(usernames, "/")
+	msg := getURLFromPath(path)
 	chatServerSend(msg, d.Room)
 }
 

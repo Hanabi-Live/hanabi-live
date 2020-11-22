@@ -247,10 +247,12 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 			id = v
 		}
 
-		// We enclose the link in "<>" to prevent Discord from generating a link preview
 		if len(args) == 0 {
 			// They specified an ID but not a turn
-			msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + ">"
+			path := "/replay/" + strconv.Itoa(id)
+			url := getURLFromPath(path)
+			// We enclose the link in "<>" to prevent Discord from generating a link preview
+			msg := "<" + url + ">"
 			discordSend(m.ChannelID, "", msg)
 			return
 		}
@@ -272,7 +274,10 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		}
 
 		// They specified an ID and a turn
-		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "#" + strconv.Itoa(turn) + ">"
+		path := "/replay/" + strconv.Itoa(id) + "#" + strconv.Itoa(turn)
+		url := getURLFromPath(path)
+		// We enclose the link in "<>" to prevent Discord from generating a link preview
+		msg := "<" + url + ">"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}

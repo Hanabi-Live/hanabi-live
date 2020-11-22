@@ -22,6 +22,16 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+// From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
+func containsAllPrintableASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] < 32 || s[i] > 126 { // 32 is " " and 126 is "~"
+			return false
+		}
+	}
+	return true
+}
+
 func executeScript(script string) error {
 	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
 	cmd.Dir = projectPath
@@ -61,6 +71,14 @@ func getRandom(min int, max int) int {
 	}
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min // nolint: gosec
+}
+
+func getURLFromPath(path string) string {
+	protocol := "http"
+	if useTLS {
+		protocol = "https"
+	}
+	return protocol + "://" + domain + path
 }
 
 // getVersion will get the current version of the JavaScript client,
@@ -108,16 +126,6 @@ func isValidURL(toTest string) bool {
 		return false
 	}
 
-	return true
-}
-
-// From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
-func containsAllPrintableASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] < 32 || s[i] > 126 { // 32 is " " and 126 is "~"
-			return false
-		}
-	}
 	return true
 }
 

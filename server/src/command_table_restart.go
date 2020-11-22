@@ -261,7 +261,11 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 	}
 
 	// Add a message to the chat to indicate that the game was restarted
-	chatServerSend("The game has been restarted.", t2.GetRoomName())
+	path := "/replay/" + strconv.Itoa(t.ExtraOptions.DatabaseID)
+	url := getURLFromPath(path)
+	link := "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener noreferrer\">#" + strconv.Itoa(t.ExtraOptions.DatabaseID) + "</a>"
+	msg := "The game has been restarted (from game " + link + ")."
+	chatServerSend(msg, t2.GetRoomName())
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "restarted" message, since it is superfluous

@@ -62,8 +62,11 @@ func commandChat(s *Session, d *CommandData) {
 	// because we do not want to send HTML-escaped text to Discord
 	rawMsg := d.Msg
 
-	// Escape all HTML special characters (to stop various attacks against other players)
-	d.Msg = html.EscapeString(d.Msg)
+	// Escape all HTML special characters to stop XSS attacks and so forth
+	// (but make an exception for server messages so that the server can properly send links)
+	if !d.Server || d.Discord {
+		d.Msg = html.EscapeString(d.Msg)
+	}
 
 	// Validate the room
 	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
@@ -193,6 +196,7 @@ func commandChatTable(s *Session, d *CommandData) {
 		Username: d.Username, // This was prepared above in the "commandChat()" function
 		Msg:      d.Msg,
 		Datetime: time.Now(),
+		Server:   d.Server,
 	}
 	t.Chat = append(t.Chat, chatMsg)
 
@@ -271,8 +275,10 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 	// Validate that the message does not contain an unreasonable amount of consecutive diacritics
 	// (accents)
 	if numConsecutiveDiacritics(msg) > ConsecutiveDiacriticsAllowed {
-		s.Warning("Chat messages cannot contain more than " +
-			strconv.Itoa(ConsecutiveDiacriticsAllowed) + " consecutive diacritics.")
+		if s != nil {
+			s.Warning("Chat messages cannot contain more than " +
+				strconv.Itoa(ConsecutiveDiacriticsAllowed) + " consecutive diacritics.")
+		}
 		return msg, false
 	}
 
