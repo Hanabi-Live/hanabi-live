@@ -307,6 +307,12 @@ const replayObservers: Subscriptions = [
   // game start
   subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
 
+  // Enter Hypothetical button
+  subAfterInit(
+    (s) => s.finished && s.replay.active && s.replay.shared === null,
+    replayView.onInsidePrivateReplayChanged,
+  ),
+
   // Replay sliders and buttons
   subAfterInit(
     (s) => ({
