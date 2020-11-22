@@ -718,6 +718,7 @@ function drawScoreArea() {
   };
   if (!globals.lobby.settings.keldonMode) {
     scoreAreaValues.x = deckValues.x + deckValues.w! + 0.01;
+    scoreAreaValues.y = 0.81;
   }
   globals.elements.scoreArea = new Konva.Group({
     x: scoreAreaValues.x * winW,
