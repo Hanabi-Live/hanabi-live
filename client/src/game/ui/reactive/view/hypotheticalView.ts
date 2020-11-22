@@ -6,7 +6,7 @@ import * as turn from "../../turn";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations
 export const shouldEnableEnterHypoButton = (state: State): boolean =>
-  (!state.finished && state.replay.active) ||
+  (state.replay.shared === null && state.replay.active) ||
   (state.replay.shared !== null &&
     state.replay.shared.useSharedSegments &&
     state.replay.shared.amLeader &&
