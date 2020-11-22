@@ -309,7 +309,7 @@ const replayObservers: Subscriptions = [
 
   // Enter Hypothetical button
   subAfterInit(
-    (s) => s.finished && s.replay.active,
+    (s) => s.finished && s.replay.active && s.replay.shared === null,
     replayView.onInsidePrivateReplayChanged,
   ),
 
