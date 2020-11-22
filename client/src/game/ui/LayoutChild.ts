@@ -2,6 +2,7 @@
 // It has a CardLayout or PlayStack parent
 
 import Konva from "konva";
+import * as modals from "../../modals";
 import * as sounds from "../../sounds";
 import { cardRules, clueTokensRules } from "../rules";
 import * as variantRules from "../rules/variant";
@@ -10,7 +11,9 @@ import CardLayout from "./CardLayout";
 import * as cursor from "./cursor";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
+import * as hypothetical from "./hypothetical";
 import isOurTurn from "./isOurTurn";
+import * as noteIdentity from "./noteIdentity";
 import PlayStack from "./PlayStack";
 import * as turn from "./turn";
 
@@ -134,6 +137,13 @@ export default class LayoutChild extends Konva.Group {
       globals.elements.cluesNumberLabelPulse!.play();
       draggedTo = null;
     }
+    if (
+      globals.state.replay.hypothetical !== null &&
+      ((draggedTo === "playArea" && this.checkHypoUnknown("play")) ||
+        (draggedTo === "discardArea" && this.checkHypoUnknown("discard")))
+    ) {
+      draggedTo = null;
+    }
     if (draggedTo === "playArea" && this.checkMisplay()) {
       draggedTo = null;
     }
@@ -189,6 +199,44 @@ export default class LayoutChild extends Konva.Group {
         "available to you. (e.g. positive clues, negative clues, cards seen, etc.)";
       return !window.confirm(text);
     }
+
+    return false;
+  }
+
+  checkHypoUnknown(action: string): boolean {
+    if (this.card.visibleSuitIndex !== null && this.card.visibleRank !== null) {
+      return false;
+    }
+
+    const newIdentityText = window.prompt(
+      `You just tried to ${action} an unknown card.\n` +
+        "What card do you want to assume it is for the purposes of the hypothetical? (e.g. red 1, b3)",
+    );
+    if (newIdentityText === null) {
+      return true;
+    }
+    const newIdentity = noteIdentity.parseIdentity(
+      globals.variant,
+      newIdentityText,
+    );
+
+    const newSuitIndex = this.card.visibleSuitIndex ?? newIdentity.suitIndex;
+    const newRank = this.card.visibleRank ?? newIdentity.rank;
+    if (
+      (newIdentity.suitIndex === null && newIdentity.rank === null) ||
+      newSuitIndex === null ||
+      newRank === null
+    ) {
+      modals.warningShow("You entered an invalid card.");
+      return true;
+    }
+
+    hypothetical.sendHypoAction({
+      type: "morph",
+      order: this.card.state.order,
+      suitIndex: newSuitIndex,
+      rank: newRank,
+    });
 
     return false;
   }
