@@ -48,8 +48,8 @@
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
   {{else}}
     <!-- Delay loading non-critical CSS -->
-    <link rel="preload" type="text/css" href="/public/css/main.min.css" as="style">
-    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css">
+    <link rel="preload" type="text/css" href="/public/css/main.min.css?v={{.CSSVersion}}" as="style">
+    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css?v={{.CSSVersion}}">
   {{end}}
   <link rel="icon" type="image/png" sizes="32x32" href="/public/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/public/img/favicon-16x16.png">

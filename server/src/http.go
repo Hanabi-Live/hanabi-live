@@ -26,6 +26,8 @@ type TemplateData struct {
 	Compiling   bool // True if we are currently recompiling the TypeScript client
 	WebpackPort int
 
+	CSSVersion int64 // for CSS Cache busting after server restart
+
 	// Profile
 	Name       string
 	NamesTitle string
@@ -402,6 +404,9 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 
 	// Add extra data that should be the same for every page request
 	data.WebsiteName = WebsiteName
+
+	// Add datetimeStarted in seconds from Unix epoch for css cache busting
+	data.CSSVersion = datetimeStarted.Unix()
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
