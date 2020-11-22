@@ -1,6 +1,6 @@
 import { initArray } from "../../../misc";
 import { getVariant } from "../../data/gameData";
-import { handRules, statsRules } from "../../rules";
+import { deckRules } from "../../rules";
 import GameMetadata from "../../types/GameMetadata";
 import State from "../../types/State";
 import initialGameState from "./initialGameState";
@@ -10,12 +10,7 @@ export default function initialState(metadata: GameMetadata): State {
 
   const { options } = metadata;
   const variant = getVariant(options.variantName);
-  const cardsPerHand = handRules.cardsPerHand(options);
-  const startingDeckSize = statsRules.startingDeckSize(
-    options.numPlayers,
-    cardsPerHand,
-    variant,
-  );
+  const totalCards = deckRules.totalCards(variant);
 
   return {
     visibleState: null,
@@ -38,7 +33,7 @@ export default function initialState(metadata: GameMetadata): State {
     datetimeFinished: null,
 
     metadata,
-    cardIdentities: initArray(startingDeckSize, {
+    cardIdentities: initArray(totalCards, {
       suitIndex: null,
       rank: null,
     }),
