@@ -179,7 +179,7 @@ const visibleStateObservers: Subscriptions = [
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyAdded),
 
   // Card layout - the order of the following subscriptions matters
-  // Hands have to come first to perform the add-removes so we get nice animations
+  // Hands have to come first to perform the adds/removes for the purposes of displaying animations
   subVS((s) => s.hands, cardLayoutView.onHandsChanged),
   subVS((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
   subVS((s) => s.hole, cardLayoutView.onHoleChanged),

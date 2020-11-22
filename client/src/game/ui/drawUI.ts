@@ -625,8 +625,8 @@ function drawDeck() {
   // not on top of the black second layer
   globals.layers.arrow.add(globals.elements.gameIDLabel);
 
-  // At the bottom of the deck, draw a thing hinting at the ability to mouse over the deck
-  // for detailed information about the game (in replays)
+  // At the bottom of the deck, draw a thing hinting that the user can mouse over the deck for
+  // detailed information about the current game
   globals.elements.gameInfoImage = new Konva.Image({
     x: (deckValues.x + 0.004) * winW,
     y: (deckValues.y + 0.161) * winH,
@@ -641,7 +641,7 @@ function drawDeck() {
     },
     shadowOpacity: 0.9,
   });
-  // As with gameIdLabel, this goes on the arrow layer
+  // This goes on the same layer as the gameIDLabel
   globals.layers.arrow.add(globals.elements.gameInfoImage);
 
   globals.elements.deck = new Deck({
