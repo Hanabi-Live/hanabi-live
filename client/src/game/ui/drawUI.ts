@@ -20,6 +20,7 @@ import { CARD_ANIMATION_LENGTH, LABEL_COLOR } from "./constants";
 import Arrow from "./controls/Arrow";
 import Button from "./controls/Button";
 import CurrentPlayerArea from "./controls/CurrentPlayerArea";
+import EndHypoButton from "./controls/EndHypoButton";
 import FitText from "./controls/FitText";
 import ImageWithTooltip from "./controls/ImageWithTooltip";
 import PlayerButton from "./controls/PlayerButton";
@@ -524,15 +525,25 @@ function drawBottomLeftButtons() {
   tooltips.init(restartButton, true, false);
   globals.elements.restartButton = restartButton;
 
+  // This button is up during shared replay and in-game, and down during private replay
+  function setRaised(this: EndHypoButton): void {
+    this.y(bottomLeftButtonValues.y * winH);
+  }
+  function setLowered(this: EndHypoButton): void {
+    this.y(
+      (bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01) * winH,
+    );
+  }
   // The "End Hypothetical" button
-  const endHypotheticalButton = new Button({
+  const endHypotheticalButton = new EndHypoButton({
     x: bottomLeftButtonValues.x * winW,
-    y: bottomLeftButtonValues.y * winH,
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
     text: "End Hypo",
     visible: false,
   });
+  endHypotheticalButton.setRaised = setRaised;
+  endHypotheticalButton.setLowered = setLowered;
   globals.layers.UI.add((endHypotheticalButton as unknown) as Konva.Group);
   endHypotheticalButton.on("click tap", () => {
     hypothetical.end();

@@ -38,8 +38,10 @@ export function onActiveChanged(active: boolean): void {
 export function onInsidePrivateReplayChanged(inside: boolean): void {
   if (inside) {
     globals.elements.enterHypoButton?.setCenter();
+    globals.elements.endHypotheticalButton?.setLowered();
   } else {
     globals.elements.enterHypoButton?.setRight();
+    globals.elements.endHypotheticalButton?.setRaised();
   }
 }
 
