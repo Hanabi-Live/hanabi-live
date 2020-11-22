@@ -7,6 +7,7 @@ import ColorButton from "./ColorButton";
 import Arrow from "./controls/Arrow";
 import Button from "./controls/Button";
 import CurrentPlayerArea from "./controls/CurrentPlayerArea";
+import EndHypoButton from "./controls/EndHypoButton";
 import EnterHypoButton from "./controls/EnterHypoButton";
 import FitText from "./controls/FitText";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
@@ -45,7 +46,7 @@ export default class Elements {
   chatButton: Button | null = null;
   lobbyButton: Button | null = null;
   restartButton: Button | null = null;
-  endHypotheticalButton: Button | null = null;
+  endHypotheticalButton: EndHypoButton | null = null;
   deck: Deck | null = null;
   gameIDLabel: FitText | null = null;
   gameInfoImage: Konva.Image | null = null;
