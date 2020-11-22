@@ -2,7 +2,6 @@
 // to see what will happen
 
 import { negativeOneIfNull } from "../../misc";
-import * as modals from "../../modals";
 import { playStacksRules } from "../rules";
 import { ActionIncludingHypothetical } from "../types/actions";
 import ActionType from "../types/ActionType";
@@ -88,19 +87,11 @@ export function send(hypoAction: ClientAction): void {
     case "play":
     case "discard": {
       const card = getCardOrStackBase(hypoAction.target);
-      // TODO: Ask user something like
-      // "You just tried to play an unknown card. What card do you want to assume it is for the
-      // purposes of the hypothetical? (e.g. red 1, b3)"
-      // and then morph the card as it plays
       if (card.visibleSuitIndex === null) {
-        modals.warningShow(
-          `Card ${hypoAction.target} has an unknown suit index.`,
-        );
-        return;
+        throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
       }
       if (card.visibleRank === null) {
-        modals.warningShow(`Card ${hypoAction.target} has an unknown rank.`);
-        return;
+        throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
       }
 
       // Find out if this card misplays
