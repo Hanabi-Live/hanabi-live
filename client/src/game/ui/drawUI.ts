@@ -709,15 +709,15 @@ function drawDeck() {
 
 function drawScoreArea() {
   // The rectangle that holds the turn, score, and clue count
+  const scoreAreaHeight = 0.18;
   scoreAreaValues = {
     x: 0.66,
-    y: 0.81,
+    y: deckValues.y + (deckValues.h! - scoreAreaHeight) / 2,
     w: 0.13,
-    h: 0.18,
+    h: scoreAreaHeight,
   };
   if (!globals.lobby.settings.keldonMode) {
     scoreAreaValues.x = deckValues.x + deckValues.w! + 0.01;
-    scoreAreaValues.y = 0.81;
   }
   globals.elements.scoreArea = new Konva.Group({
     x: scoreAreaValues.x * winW,
