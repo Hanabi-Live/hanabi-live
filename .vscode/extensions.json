@@ -1,5 +1,6 @@
-// These are Visual Studio Code extensions that are intended to be used with this particular repository
-// https://go.microsoft.com/fwlink/?LinkId=827846
+// These are Visual Studio Code extensions that are intended to be used with this particular
+// repository
+// https://code.visualstudio.com/docs/editor/extension-gallery#_workspace-recommended-extensions
 {
   "recommendations": [
     "dbaeumer.vscode-eslint", // The TypeScript linter

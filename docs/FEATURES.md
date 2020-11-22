@@ -31,8 +31,8 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 - If you don't know how to play the game already, read [the rules](RULES.md). For visual learners, you can also try watching [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
 - Getting a game going should be self-explanatory, but just in case:
-  - Once logged in, use the "Create Game" button on the top navigation bar and then click "Create".
-  - For everyone else, the game will now appear in the list of games. To join it, they need to click on ▶️.
+  - Once logged in, click on the "Create Game" button on the top navigation bar and then click "Create".
+  - For everyone else, the game will now appear in the list of games. To join it, they need to click on row corresponding to the game.
   - Then, the creator of the table needs to click on the "Start Game" button on the top navigation bar.
 - Once inside a game, the UI elements are as follows:
   - The play stacks are on the left (one for each suit).

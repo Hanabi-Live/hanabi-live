@@ -1,23 +1,25 @@
+// This is Visual Studio Code debugging configuration that is intended to be used with this
+// particular repository
+// Use IntelliSense to learn about possible attributes
+// Hover to view descriptions of existing attributes
+// https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "name": "vscode-jest-tests",
-            "request": "launch",
-            "program": "${workspaceFolder}/client/node_modules/jest/bin/jest",
-            "args": [
-                "--runInBand",
-                "--config",
-                "${workspaceFolder}/client/jest.config.js"
-            ],
-            "cwd": "${workspaceFolder}/client",
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "name": "vscode-jest-tests",
+      "request": "launch",
+      "program": "${workspaceFolder}/client/node_modules/jest/bin/jest",
+      "args": [
+        "--runInBand",
+        "--config",
+        "${workspaceFolder}/client/jest.config.js"
+      ],
+      "cwd": "${workspaceFolder}/client",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true
+    }
+  ]
 }

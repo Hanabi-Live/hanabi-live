@@ -1,0 +1,35 @@
+// These are Visual Studio Code tasks are that intended to be used with this particular repository
+// https://code.visualstudio.com/docs/editor/tasks#vscode
+// To run them, select "Terminal" from the menu, and then select "Run Task..."
+// Alternatively, you can bind them to a specific hotkey:
+// https://code.visualstudio.com/docs/editor/tasks#_binding-keyboard-shortcuts-to-tasks
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Hanabi Client (webpack)",
+      "type": "shell",
+      "command": "./webpack-dev-server.sh",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+      },
+    },
+    {
+      "label": "Hanabi Server",
+      "type": "shell",
+      "command": "./run.sh",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+      },
+    },
+    {
+      "label": "Hanabi Client + Server",
+      "dependsOn": [
+        "Hanabi Server",
+        "Hanabi Client (webpack)",
+      ],
+    },
+  ],
+}

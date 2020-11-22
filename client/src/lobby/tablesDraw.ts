@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables
 
 import globals from "../globals";
-import { timerFormatter } from "../misc";
+import { copyStringToClipboard, getURLFromPath, timerFormatter } from "../misc";
 import * as modals from "../modals";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
@@ -34,10 +34,12 @@ export default function tablesDraw(): void {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
+        //  Tables that we are currently in
         if (friends && i === 1 && table.joined && !table.sharedReplay) {
           tableIDsOfThisType.push(id);
         }
 
+        // Tables our friends are currently in
         const hasFriends = tableHasFriends(table);
         if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
@@ -49,6 +51,7 @@ export default function tablesDraw(): void {
           !table.passwordProtected &&
           !table.joined
         ) {
+          // Unstarted tables
           tableIDsOfThisType.push(id);
         } else if (
           i === 3 &&
@@ -56,6 +59,7 @@ export default function tablesDraw(): void {
           table.passwordProtected &&
           !table.joined
         ) {
+          // Unstarted & password-protected tables
           tableIDsOfThisType.push(id);
         } else if (
           i === 4 &&
@@ -63,8 +67,10 @@ export default function tablesDraw(): void {
           !table.sharedReplay &&
           !table.joined
         ) {
+          // Ongoing tables
           tableIDsOfThisType.push(id);
         } else if (i === 5 && table.running && table.sharedReplay) {
+          // Shared replays
           tableIDsOfThisType.push(id);
         }
       }
@@ -187,22 +193,44 @@ export default function tablesDraw(): void {
     row.on("mouseenter", () => {
       row.addClass("hover").off("click");
       if (table.sharedReplay || (!table.joined && table.running)) {
-        row.attr("id", `spectate-${table.id}`).on("click", () => {
-          tableSpectate(table);
-        });
+        row
+          .attr("id", `spectate-${table.id}`)
+          .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+            if (event.ctrlKey) {
+              // Copy the URL that would occur from clicking on this table row
+              const path = table.sharedReplay
+                ? `/shared-replay/${table.id}`
+                : `/game/${table.id}`;
+              copyURLToClipboard(path, row);
+            } else {
+              tableSpectate(table);
+            }
+          });
       } else if (!table.joined) {
         row.attr("id", `join-${table.id}`);
         if (table.numPlayers >= 6) {
           row.addClass("full");
         } else {
-          row.on("click", () => {
-            tableJoin(table);
+          row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+            if (event.ctrlKey) {
+              // Copy the URL that would occur from clicking on this table row
+              copyURLToClipboard(`/pre-game/${table.id}`, row);
+            } else {
+              tableJoin(table);
+            }
           });
         }
       } else {
-        row.attr("id", `resume-${table.id}`).on("click", () => {
-          tableReattend(table);
-        });
+        row
+          .attr("id", `resume-${table.id}`)
+          .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+            if (event.ctrlKey) {
+              // Copy the URL that would occur from clicking on this table row
+              copyURLToClipboard(`/game/${table.id}`, row);
+            } else {
+              tableReattend(table);
+            }
+          });
       }
     });
 
@@ -254,9 +282,11 @@ function tableReattend(table: Table) {
 }
 
 function tableHasFriends(table: Table) {
-  for (const player of table.players) {
-    if (globals.friends.includes(player)) {
-      return true;
+  if (!table.sharedReplay) {
+    for (const player of table.players) {
+      if (globals.friends.includes(player)) {
+        return true;
+      }
     }
   }
 
@@ -267,4 +297,23 @@ function tableHasFriends(table: Table) {
   }
 
   return false;
+}
+
+function copyURLToClipboard(path: string, row: JQuery<HTMLElement>) {
+  const url = getURLFromPath(path);
+  copyStringToClipboard(url);
+
+  // Show a visual indication that the copy worked
+  row.tooltipster({
+    animation: "grow",
+    content: '<span style="font-size: 0.75em;">URL copied to clipboard!</span>',
+    contentAsHTML: true,
+    delay: 0,
+    trigger: "custom",
+    theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
+  });
+  row.tooltipster("instance").open();
+  setTimeout(() => {
+    row.tooltipster("instance").close();
+  }, 1000); // 1 second
 }
