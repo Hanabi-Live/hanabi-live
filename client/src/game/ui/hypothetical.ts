@@ -138,7 +138,7 @@ export function send(hypoAction: ClientAction): void {
       }
 
       // Draw
-      if (gameState.deck.length >= 1) {
+      if (gameState.deck.length < globals.state.cardIdentities.length) {
         // All the cards might have already been drawn
         const nextCardOrder = gameState.deck.length;
         const nextCard = globals.state.cardIdentities[nextCardOrder];
@@ -146,7 +146,7 @@ export function send(hypoAction: ClientAction): void {
           type: "draw",
           order: nextCardOrder,
           playerIndex: gameState.turn.currentPlayerIndex!,
-          // Always send the correct suitIndex and rank;
+          // Always send the correct suitIndex and rank if known;
           // the blanking of the card will be performed on the client
           suitIndex: negativeOneIfNull(nextCard?.suitIndex),
           rank: negativeOneIfNull(nextCard?.rank),
