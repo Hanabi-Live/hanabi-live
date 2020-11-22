@@ -54,7 +54,7 @@ export function clue(
     for (const order of action.list) {
       const slot = handRules.cardSlot(order, targetHand);
       if (slot === null) {
-        throw new Error(`Failed to get the slot for card ${order}.`);
+        throw new Error(`Failed to get the slot for card: ${order}`);
       }
       slots.push(slot);
     }

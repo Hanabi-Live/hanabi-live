@@ -315,7 +315,7 @@ function removePossibility(state: CardState, suitIndex: number, rank: number) {
 function getCard(deck: readonly CardState[], order: number) {
   const card = deck[order];
   if (card === undefined) {
-    throw new Error(`Failed to get the card for index ${order}.`);
+    throw new Error(`Failed to get the card for index: ${order}`);
   }
   return card;
 }

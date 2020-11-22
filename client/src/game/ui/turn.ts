@@ -179,7 +179,6 @@ function setRankClueButtonsVisible(visible: boolean) {
 export function end(clientAction: ClientAction): void {
   if (globals.state.replay.hypothetical !== null) {
     hypothetical.send(clientAction);
-    hideClueUIAndDisableDragging();
     return;
   }
 

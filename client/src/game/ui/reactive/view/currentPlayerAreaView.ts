@@ -195,7 +195,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
     throw new Error(
-      `Failed to get the hand corresponding to the player at index ${playerIndex}.`,
+      `Failed to get the hand corresponding to the player at index: ${playerIndex}`,
     );
   }
   const centerPos = hand.getAbsoluteCenterPos();

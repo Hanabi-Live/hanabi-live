@@ -48,7 +48,7 @@ export function onPlayStackDirectionsChanged(
       const stackText = stackStrings.get(direction);
       if (stackText === undefined) {
         throw new Error(
-          `Failed to find the stack string for the stack direction of ${direction}.`,
+          `Failed to find the stack string for the stack direction of: ${direction}`,
         );
       }
       text = stackText;

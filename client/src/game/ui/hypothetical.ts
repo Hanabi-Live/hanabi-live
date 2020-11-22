@@ -1,6 +1,8 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
+import { negativeOneIfNull } from "../../misc";
+import * as modals from "../../modals";
 import { playStacksRules } from "../rules";
 import { ActionIncludingHypothetical } from "../types/actions";
 import ActionType from "../types/ActionType";
@@ -13,21 +15,21 @@ import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 
 export function start(): void {
-  if (
-    globals.state.replay.shared === null ||
-    globals.state.replay.hypothetical !== null
-  ) {
+  if (globals.state.replay.hypothetical !== null) {
     return;
   }
 
-  if (globals.state.replay.shared.amLeader) {
+  if (
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader
+  ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoStart,
     });
   }
 
-  globals.elements.toggleRevealedButton!.setEnabled(true);
+  globals.elements.toggleDrawnCardsButton!.setEnabled(true);
 
   globals.store!.dispatch({
     type: "hypoStart",
@@ -37,14 +39,14 @@ export function start(): void {
 }
 
 export function end(): void {
-  if (
-    globals.state.replay.shared === null ||
-    globals.state.replay.hypothetical === null
-  ) {
+  if (globals.state.replay.hypothetical === null) {
     return;
   }
 
-  if (globals.state.replay.shared.amLeader) {
+  if (
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader
+  ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoEnd,
@@ -78,7 +80,7 @@ export function send(hypoAction: ClientAction): void {
     }
 
     default: {
-      throw new Error(`Unknown hypothetical action of ${hypoAction.type}.`);
+      throw new Error(`Unknown hypothetical action of: ${hypoAction.type}`);
     }
   }
 
@@ -86,11 +88,19 @@ export function send(hypoAction: ClientAction): void {
     case "play":
     case "discard": {
       const card = getCardOrStackBase(hypoAction.target);
+      // TODO: Ask user something like
+      // "You just tried to play an unknown card. What card do you want to assume it is for the
+      // purposes of the hypothetical? (e.g. red 1, b3)"
+      // and then morph the card as it plays
       if (card.visibleSuitIndex === null) {
-        throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
+        modals.warningShow(
+          `Card ${hypoAction.target} has an unknown suit index.`,
+        );
+        return;
       }
       if (card.visibleRank === null) {
-        throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
+        modals.warningShow(`Card ${hypoAction.target} has an unknown rank.`);
+        return;
       }
 
       // Find out if this card misplays
@@ -128,21 +138,18 @@ export function send(hypoAction: ClientAction): void {
       }
 
       // Draw
-      const nextCardOrder = gameState.deck.length;
-      const nextCard = globals.state.cardIdentities[nextCardOrder];
-      if (nextCard !== undefined) {
+      if (gameState.deck.length < globals.state.cardIdentities.length) {
         // All the cards might have already been drawn
-        if (nextCard.suitIndex === null || nextCard.rank === null) {
-          throw new Error("Failed to find the suit or rank of the next card.");
-        }
+        const nextCardOrder = gameState.deck.length;
+        const nextCard = globals.state.cardIdentities[nextCardOrder];
         sendHypoAction({
           type: "draw",
           order: nextCardOrder,
           playerIndex: gameState.turn.currentPlayerIndex!,
-          // Always send the correct suitIndex and rank;
+          // Always send the correct suitIndex and rank if known;
           // the blanking of the card will be performed on the client
-          suitIndex: nextCard.suitIndex,
-          rank: nextCard.rank,
+          suitIndex: negativeOneIfNull(nextCard?.suitIndex),
+          rank: negativeOneIfNull(nextCard?.rank),
         });
       }
 
@@ -178,7 +185,7 @@ export function send(hypoAction: ClientAction): void {
     }
 
     default: {
-      throw new Error(`Unknown hypothetical type of ${type}.`);
+      throw new Error(`Unknown hypothetical type of: ${type}`);
     }
   }
 
@@ -197,27 +204,40 @@ export function send(hypoAction: ClientAction): void {
 }
 
 export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
-  globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.HypoAction,
-    actionJSON: JSON.stringify(hypoAction),
-  });
+  if (globals.state.replay.shared !== null) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.HypoAction,
+      actionJSON: JSON.stringify(hypoAction),
+    });
+  } else {
+    globals.store!.dispatch({
+      type: "hypoAction",
+      action: hypoAction,
+    });
+  }
 }
 
 export function sendBack(): void {
   if (
     globals.state.replay.hypothetical === null ||
-    globals.state.replay.hypothetical.states.length <= 1 ||
-    globals.state.replay.shared === null ||
-    !globals.state.replay.shared.amLeader
+    globals.state.replay.hypothetical.states.length <= 1
   ) {
     return;
   }
 
-  globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.HypoBack,
-  });
+  if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared.amLeader) {
+      globals.lobby.conn!.send("replayAction", {
+        tableID: globals.lobby.tableID,
+        type: ReplayActionType.HypoBack,
+      });
+    }
+  } else {
+    globals.store!.dispatch({
+      type: "hypoBack",
+    });
+  }
 }
 
 export function toggleRevealed(): void {
@@ -245,7 +265,7 @@ export function checkToggleRevealedButton(
           cardOrder,
         )
       ) {
-        globals.elements.toggleRevealedButton?.setEnabled(false);
+        globals.elements.toggleDrawnCardsButton?.setEnabled(false);
       }
 
       break;
@@ -258,7 +278,7 @@ export function checkToggleRevealedButton(
             cardOrder,
           )
         ) {
-          globals.elements.toggleRevealedButton?.setEnabled(false);
+          globals.elements.toggleDrawnCardsButton?.setEnabled(false);
           return;
         }
       }

@@ -134,6 +134,10 @@ export function onSharedSegmentChanged(
   globals.layers.UI.batchDraw();
 }
 
+export function onShouldShowReplayButtonChanged(shouldShow: boolean): void {
+  globals.elements.replayButton?.visible(shouldShow);
+}
+
 // In shared replays, it can be confusing as to what the shared replay leader is doing,
 // so play an appropriate animations to indicate what is going on
 // (and cancel the other tween if it is going)
@@ -170,20 +174,6 @@ function playSharedReplayTween(
       opacity,
     }).play();
   }
-}
-
-export function onSecondRecordedSegment(
-  hasTwoOrMoreSegments: boolean,
-  previousHasTwoOrMoreSegments: boolean | undefined,
-): void {
-  if (previousHasTwoOrMoreSegments === undefined) {
-    return;
-  }
-
-  // The in-game replay button starts off disabled
-  // Enable it once there is at least one segment to rewind to
-  globals.elements.replayButton?.setEnabled(hasTwoOrMoreSegments);
-  globals.layers.UI.batchDraw();
 }
 
 export function onDatabaseIDChanged(databaseID: number | null): void {

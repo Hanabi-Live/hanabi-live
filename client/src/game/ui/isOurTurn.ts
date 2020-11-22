@@ -8,7 +8,7 @@ export default function isOurTurn(): boolean {
   if (globals.state.replay.hypothetical !== null) {
     // It is always the replay leader's turn in a hypothetical
     return (
-      globals.state.replay.shared !== null &&
+      globals.state.replay.shared === null ||
       globals.state.replay.shared.amLeader
     );
   }

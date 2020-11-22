@@ -11,7 +11,6 @@ const fileIDs = [
   "note",
   "question-mark",
   "replay",
-  "replay-disabled",
   "replay-back",
   "replay-back-border",
   "replay-back-disabled",

@@ -1,9 +1,17 @@
+import { initArray } from "../../../misc";
+import { getVariant } from "../../data/gameData";
+import { deckRules } from "../../rules";
 import GameMetadata from "../../types/GameMetadata";
 import State from "../../types/State";
 import initialGameState from "./initialGameState";
 
 export default function initialState(metadata: GameMetadata): State {
   const game = initialGameState(metadata);
+
+  const { options } = metadata;
+  const variant = getVariant(options.variantName);
+  const totalCards = deckRules.totalCards(variant);
+
   return {
     visibleState: null,
     ongoingGame: game,
@@ -25,7 +33,10 @@ export default function initialState(metadata: GameMetadata): State {
     datetimeFinished: null,
 
     metadata,
-    cardIdentities: [],
+    cardIdentities: initArray(totalCards, {
+      suitIndex: null,
+      rank: null,
+    }),
     premove: null,
     pause: {
       active: false,

@@ -2,6 +2,7 @@ import { Store, Unsubscribe } from "redux";
 import { Action } from "../../types/actions";
 import GameState from "../../types/GameState";
 import State from "../../types/State";
+import globals from "../globals";
 import observeStore, { Listener, Selector, Subscription } from "./observeStore";
 import * as animateFastView from "./view/animateFastView";
 import * as cardLayoutView from "./view/cardLayoutView";
@@ -193,13 +194,13 @@ const visibleStateObservers: Subscriptions = [
   // Must come after card layout so animations to deck are correctly triggered
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
-  // Clues (arrows + log)
+  // Clue log
+  subVS((s) => s.clues, cluesView.onCluesChanged),
+
+  // Clue arrows
   subVS(
-    (s) => ({
-      clues: s.clues,
-      segment: s.turn.segment,
-    }),
-    cluesView.onCluesChanged,
+    (s) => ({ lastClue: s.clues[s.clues.length - 1], segment: s.turn.segment }),
+    cluesView.onLastClueOrSegmentChanged,
   ),
 
   // Deck
@@ -247,28 +248,6 @@ const ongoingGameObservers: Subscriptions = [
 ];
 
 const replayObservers: Subscriptions = [
-  // Replay entered or exited
-  subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
-
-  // Replay sliders and buttons
-  subAfterInit(
-    (s) => ({
-      active: s.replay.active,
-      replaySegment: s.replay.segment,
-      ongoingGameSegment: s.ongoingGame.turn.segment,
-    }),
-    replayView.onSegmentChanged,
-  ),
-  subAfterInit(
-    (s) => ({
-      active: s.replay.active,
-      sharedSegment: s.replay.shared?.segment,
-      useSharedSegments: s.replay.shared?.useSharedSegments,
-    }),
-    replayView.onSharedSegmentChanged,
-  ),
-  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
-
   // Database ID
   subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),
 
@@ -296,13 +275,17 @@ const replayObservers: Subscriptions = [
     hypotheticalView.shouldEnableEnterHypoButtonChanged,
   ),
   subAfterInit(
-    (s) => s.replay.shared !== null && s.replay.hypothetical !== null,
+    (s) => ({
+      hypotheticalActive: s.replay.hypothetical !== null,
+      replayActive: s.replay.shared !== null || s.replay.active,
+    }),
     hypotheticalView.onActiveChanged,
   ),
   subAfterInit(
     (s) => ({
-      active: s.replay.shared !== null && s.replay.hypothetical !== null,
-      amLeader: s.replay.shared?.amLeader,
+      active: s.replay.hypothetical !== null,
+      amLeader: s.replay.shared === null || s.replay.shared.amLeader,
+      sharedReplay: s.replay.shared !== null,
     }),
     hypotheticalView.onActiveOrAmLeaderChanged,
   ),
@@ -317,6 +300,35 @@ const replayObservers: Subscriptions = [
   subAfterInit(
     (s) => s.replay.hypothetical?.drawnCardsShown,
     hypotheticalView.onDrawnCardsInHypotheticalChanged,
+  ),
+
+  // Replay entered or exited
+  // Note that this needs to go after onActiveOrAmLeaderChanged so that the clue area is shown at
+  // game start
+  subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
+
+  // Replay sliders and buttons
+  subAfterInit(
+    (s) => ({
+      active: s.replay.active,
+      replaySegment: s.replay.segment,
+      ongoingGameSegment: s.ongoingGame.turn.segment,
+    }),
+    replayView.onSegmentChanged,
+  ),
+  subAfterInit(
+    (s) => ({
+      active: s.replay.active,
+      sharedSegment: s.replay.shared?.segment,
+      useSharedSegments: s.replay.shared?.useSharedSegments,
+    }),
+    replayView.onSharedSegmentChanged,
+  ),
+
+  // Replay button
+  subAfterInit(
+    (s) => !s.replay.hypothetical && !globals.state.finished,
+    replayView.onShouldShowReplayButtonChanged,
   ),
 
   // Card and stack base morphing
