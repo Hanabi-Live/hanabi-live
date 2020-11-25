@@ -189,54 +189,51 @@ export default function tablesDraw(): void {
       button.appendTo(row);
     }
 
-    // Setup mouse events
-    row.on("mouseenter", () => {
-      row.addClass("hover").off("click");
-      if (table.sharedReplay || (!table.joined && table.running)) {
-        row
-          .attr("id", `spectate-${table.id}`)
-          .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
-            if (event.ctrlKey) {
-              // Copy the URL that would occur from clicking on this table row
-              const path = table.sharedReplay
-                ? `/shared-replay/${table.id}`
-                : `/game/${table.id}`;
-              copyURLToClipboard(path, row);
-            } else {
-              tableSpectate(table);
-            }
-          });
-      } else if (!table.joined) {
-        row.attr("id", `join-${table.id}`);
-        if (table.numPlayers >= 6) {
-          row.addClass("full");
-        } else {
-          row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
-            if (event.ctrlKey) {
-              // Copy the URL that would occur from clicking on this table row
-              copyURLToClipboard(`/pre-game/${table.id}`, row);
-            } else {
-              tableJoin(table);
-            }
-          });
-        }
-      } else {
-        row
-          .attr("id", `resume-${table.id}`)
-          .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
-            if (event.ctrlKey) {
-              // Copy the URL that would occur from clicking on this table row
-              copyURLToClipboard(`/game/${table.id}`, row);
-            } else {
-              tableReattend(table);
-            }
-          });
-      }
-    });
+    // this is redundant; will remove after implementing
+    // server css cache busting
+    row.addClass("hover");
 
-    row.on("mouseleave", () => {
-      row.removeClass("hover").removeClass("full").off("click");
-    });
+    // Setup click actions
+    if (table.sharedReplay || (!table.joined && table.running)) {
+      row
+        .attr("id", `spectate-${table.id}`)
+        .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+          if (event.ctrlKey) {
+            // Copy the URL that would occur from clicking on this table row
+            const path = table.sharedReplay
+              ? `/shared-replay/${table.id}`
+              : `/game/${table.id}`;
+            copyURLToClipboard(path, row);
+          } else {
+            tableSpectate(table);
+          }
+        });
+    } else if (!table.joined) {
+      row.attr("id", `join-${table.id}`);
+      if (table.numPlayers >= 6) {
+        row.addClass("full");
+      } else {
+        row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+          if (event.ctrlKey) {
+            // Copy the URL that would occur from clicking on this table row
+            copyURLToClipboard(`/pre-game/${table.id}`, row);
+          } else {
+            tableJoin(table);
+          }
+        });
+      }
+    } else {
+      row
+        .attr("id", `resume-${table.id}`)
+        .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+          if (event.ctrlKey) {
+            // Copy the URL that would occur from clicking on this table row
+            copyURLToClipboard(`/game/${table.id}`, row);
+          } else {
+            tableReattend(table);
+          }
+        });
+    }
 
     row.appendTo(tbody);
   }
