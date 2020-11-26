@@ -3,7 +3,7 @@ package main
 import (
 	"sync"
 
-	melody "gopkg.in/olahol/melody.v1"
+	"github.com/gabstv/melody"
 )
 
 var (

@@ -1,5 +1,5 @@
-// Functions to return session values
-// Session values are created in "http_ws.go"
+// Methods to return session values
+// Session values are initially created in "http_ws.go"
 
 package main
 

@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	melody "gopkg.in/olahol/melody.v1"
+	"github.com/gabstv/melody"
 )
 
 type GameJSON struct {
@@ -540,17 +540,17 @@ func loadFakePlayers(t *Table, playerNames []string) {
 // newFakeSession prepares a "fake" user session that will be used for game emulation
 func newFakeSession(id int, name string) *Session {
 	keys := defaultSessionKeys()
-
 	keys["sessionID"] = id
 	keys["userID"] = id
 	keys["username"] = name
 	keys["fakeUser"] = true
 
-	return &Session{
-		&melody.Session{
-			Keys: keys,
-		},
+	ms := &melody.Session{}
+	for k, v := range keys {
+		ms.Set(k, v)
 	}
+
+	return &Session{ms}
 }
 
 func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
