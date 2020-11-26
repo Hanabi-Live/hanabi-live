@@ -41,6 +41,7 @@ const serverSideOnlyCommands = [
   "s6",
   "startin",
   "kick",
+  "impostor",
 
   // Pre-game or game commands
   "missing",

@@ -38,6 +38,7 @@ func chatCommandInit() {
 	chatCommandMap["s6"] = chatS6
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["kick"] = chatKick
+	chatCommandMap["impostor"] = chatImpostor
 
 	// Table-only commands (pregame or game)
 	chatCommandMap["missing"] = chatMissingScores
