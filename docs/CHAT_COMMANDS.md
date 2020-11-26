@@ -50,6 +50,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/s6`                   | Automatically start the game when it has 6 players
 | `/startin [minutes]`    | Automatically start the game in the provided amount of minutes
 | `/kick [username]`      | Remove a player from the table
+| `/impostor`             | Randomly tells one of the players they are an impostor and the others they are crewmates.
 
 <br />
 
