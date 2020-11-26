@@ -5,7 +5,7 @@
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial
  * - PostgreSQL automatically creates indexes for columns with primary keys, foreign keys, and
- *   constraints, so we only have to bother explicitly creating a few indexes
+ *   constraints, so we only have to explicitly create a few indexes
  * - PostgreSQL automatically handles Unicode text, emojis, and so forth
  * - "ON DELETE CASCADE" means that if the parent row is deleted, the child row will also be
  *   automatically deleted

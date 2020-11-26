@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -193,6 +194,11 @@ func main() {
 
 	// Restore tables that were ongoing at the time of the last server restart
 	restoreTables()
+
+	// Specify that we are running the HTTP framework in production
+	// (it is "gin.DebugMode" by default)
+	// Comment this out to debug HTTP stuff
+	gin.SetMode(gin.ReleaseMode)
 
 	// Initialize an HTTP router that will only listen locally for maintenance-related commands
 	// (in "httpLocalhost.go")
