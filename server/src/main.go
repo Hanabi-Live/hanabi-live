@@ -198,6 +198,7 @@ func main() {
 	// Specify that we are running the HTTP framework in production
 	// (it is "gin.DebugMode" by default)
 	// Comment this out to debug HTTP stuff
+	// This must be done before spawning the localhost goroutine in order to prevent race conditions
 	gin.SetMode(gin.ReleaseMode)
 
 	// Initialize an HTTP router that will only listen locally for maintenance-related commands
