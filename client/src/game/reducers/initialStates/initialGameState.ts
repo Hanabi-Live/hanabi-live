@@ -66,6 +66,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
   const cluesStillUsable = statsRules.cluesStillUsable(
+    scorePerStack.reduce((a, b) => a + b, 0),
     scorePerStack,
     maxScorePerStack,
     startingDeckSize,

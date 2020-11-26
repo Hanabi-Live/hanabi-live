@@ -109,6 +109,7 @@ function statsReducerFunction(
     (playStack) => playStack.length,
   );
   stats.cluesStillUsable = statsRules.cluesStillUsable(
+    score,
     scorePerStack,
     stats.maxScorePerStack,
     currentState.cardsRemainingInTheDeck,
