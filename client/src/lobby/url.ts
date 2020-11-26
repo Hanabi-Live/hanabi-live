@@ -17,7 +17,8 @@ export function parseAndGoto(data: WelcomeData): void {
   if (data.playingInOngoingGameTableID === 0) {
     const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
     if (preGameMatch) {
-      const tableID = parseIntSafe(preGameMatch[1]); // The server expects the game ID as an integer
+      // The server expects the game ID as an integer
+      const tableID = parseIntSafe(preGameMatch[1]);
       globals.conn!.send("tableJoin", {
         tableID,
       });
@@ -29,9 +30,10 @@ export function parseAndGoto(data: WelcomeData): void {
   // (this should override both rejoining a game and rejoining a shared replay)
   const replayMatch = /\/replay\/(\d+)/.exec(window.location.pathname);
   if (replayMatch) {
-    const gameID = parseIntSafe(replayMatch[1]); // The server expects the game ID as an integer
+    // The server expects the game ID as an integer
+    const databaseID = parseIntSafe(replayMatch[1]);
     globals.conn!.send("replayCreate", {
-      gameID,
+      databaseID,
       source: "id",
       visibility: "solo",
       shadowingPlayerIndex: -1,
@@ -40,18 +42,28 @@ export function parseAndGoto(data: WelcomeData): void {
   }
 
   // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
-  // (this should override both rejoining a game and rejoining a shared replay)
+  // (this should override rejoining a game)
   const sharedReplayMatch = /\/shared-replay\/(\d+)/.exec(
     window.location.pathname,
   );
   if (sharedReplayMatch) {
-    const gameID = parseIntSafe(sharedReplayMatch[1]); // The server expects the game ID as an integer
-    globals.conn!.send("replayCreate", {
-      gameID,
-      source: "id",
-      visibility: "shared",
-      shadowingPlayerIndex: -1,
-    });
+    // The server expects the game ID as an integer
+    const databaseID = parseIntSafe(sharedReplayMatch[1]);
+    if (databaseID === data.spectatingDatabaseID) {
+      // We want to go into the same shared replay that we just disconnected from
+      globals.conn!.send("tableSpectate", {
+        tableID: data.spectatingTableID,
+        shadowingPlayerIndex: -1,
+      });
+    } else {
+      // We want to go into a different shared replay than the one we just disconnected from
+      globals.conn!.send("replayCreate", {
+        databaseID,
+        source: "id",
+        visibility: "shared",
+        shadowingPlayerIndex: -1,
+      });
+    }
     return;
   }
 

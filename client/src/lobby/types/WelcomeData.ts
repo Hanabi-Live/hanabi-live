@@ -10,6 +10,7 @@ export default interface WelcomeData {
   friends: string[];
   playingInOngoingGameTableID: number;
   spectatingTableID: number;
+  spectatingDatabaseID: number;
   randomTableName: string;
   shuttingDown: boolean;
   maintenanceMode: boolean;

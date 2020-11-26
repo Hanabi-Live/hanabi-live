@@ -445,7 +445,7 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   return html;
 }
 
-function makeReplayButton(id: number, visibility: string) {
+function makeReplayButton(databaseID: number, visibility: string) {
   const button = $("<button>")
     .attr("type", "button")
     .addClass("button fit margin0");
@@ -462,12 +462,12 @@ function makeReplayButton(id: number, visibility: string) {
   button.html(text);
   button.addClass("history-table");
   button.addClass("enter-history-game");
-  button.attr("id", `replay-${id}`);
+  button.attr("id", `replay-${databaseID}`);
 
   button.on("click", () => {
     globals.conn!.send("replayCreate", {
       source: "id",
-      gameID: id,
+      databaseID,
       visibility,
       shadowingPlayerIndex: -1,
     });

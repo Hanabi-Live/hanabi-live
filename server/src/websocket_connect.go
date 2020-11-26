@@ -17,6 +17,7 @@ type WebsocketConnectData struct {
 	FirstTimeUser               bool
 	PlayingInOngoingGameTableID uint64
 	SpectatingTableID           uint64
+	SpectatingDatabaseID        int
 }
 
 // websocketConnect is fired when a new Melody WebSocket session is established
@@ -162,6 +163,7 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 				}
 
 				data.SpectatingTableID = t.ID
+				data.SpectatingDatabaseID = t.ExtraOptions.DatabaseID
 				break
 			}
 		}
@@ -186,6 +188,7 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 
 		PlayingInOngoingGameTableID uint64 `json:"playingInOngoingGameTableID"`
 		SpectatingTableID           uint64 `json:"spectatingTableID"`
+		SpectatingDatabaseID        int    `json:"spectatingDatabaseID"`
 
 		RandomTableName      string    `json:"randomTableName"`
 		ShuttingDown         bool      `json:"shuttingDown"`
@@ -217,6 +220,7 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 		// (so that they can choose to rejoin it)
 		PlayingInOngoingGameTableID: data.PlayingInOngoingGameTableID,
 		SpectatingTableID:           data.SpectatingTableID,
+		SpectatingDatabaseID:        data.SpectatingDatabaseID,
 
 		// Provide them with a random table name
 		// (which will be used by default on the first table that they create)

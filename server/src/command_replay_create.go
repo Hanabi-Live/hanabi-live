@@ -40,7 +40,7 @@ type CharacterAssignment struct {
 // Example data:
 // {
 //   source: 'id',
-//   gameID: 15103, // Only if source is "id"
+//   databaseID: 15103, // Only if source is "id"
 //   json: '{"actions"=[],"deck"=[]}', // Only if source is "json"
 //   visibility: 'solo', // Can also be "shared"
 // }
@@ -74,7 +74,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// Create a table
 	name := strings.Title(d.Visibility) + " replay for "
 	if d.Source == "id" {
-		name += "game #" + strconv.Itoa(d.GameID)
+		name += "game #" + strconv.Itoa(d.DatabaseID)
 	} else if d.Source == "json" {
 		name += s.Username() + "'"
 		if !strings.HasSuffix(s.Username(), "s") {
@@ -91,7 +91,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// Load the options and players
 	if d.Source == "id" {
 		var dbPlayers []*DBPlayer
-		if v, success := loadDatabaseOptionsToTable(s, d.GameID, t); !success {
+		if v, success := loadDatabaseOptionsToTable(s, d.DatabaseID, t); !success {
 			return
 		} else {
 			dbPlayers = v
@@ -117,7 +117,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	if d.Source == "id" {
 		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility +
-			" replay for game #" + strconv.Itoa(d.GameID))
+			" replay for game #" + strconv.Itoa(d.DatabaseID))
 	} else if d.Source == "json" {
 		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
 	}
@@ -130,7 +130,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	})
 	g := t.Game
 	if g == nil {
-		logger.Error("Failed to start the game when after loading database game #" + strconv.Itoa(d.GameID) + ".")
+		logger.Error("Failed to start the game when after loading database game #" + strconv.Itoa(d.DatabaseID) + ".")
 		s.Error(InitGameFail)
 		deleteTable(t)
 		return
@@ -186,12 +186,12 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 func validateDatabase(s *Session, d *CommandData) bool {
 	// Check to see if the game exists in the database
-	if exists, err := models.Games.Exists(d.GameID); err != nil {
-		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
+	if exists, err := models.Games.Exists(d.DatabaseID); err != nil {
+		logger.Error("Failed to check to see if game "+strconv.Itoa(d.DatabaseID)+" exists:", err)
 		s.Error(InitGameFail)
 		return false
 	} else if !exists {
-		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
+		s.Warning("Game #" + strconv.Itoa(d.DatabaseID) + " does not exist in the database.")
 		return false
 	}
 
@@ -342,11 +342,11 @@ func validateJSON(s *Session, d *CommandData) bool {
 	return true
 }
 
-func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, bool) {
+func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlayer, bool) {
 	// Get the options from the database
-	if v, err := models.Games.GetOptions(gameID); err != nil {
+	if v, err := models.Games.GetOptions(databaseID); err != nil {
 		logger.Error("Failed to get the options from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+			strconv.Itoa(databaseID)+":", err)
 		s.Error(InitGameFail)
 		return nil, false
 	} else {
@@ -355,9 +355,9 @@ func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, 
 
 	// Get the players from the database
 	var dbPlayers []*DBPlayer
-	if v, err := models.Games.GetPlayers(gameID); err != nil {
+	if v, err := models.Games.GetPlayers(databaseID); err != nil {
 		logger.Error("Failed to get the players from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+			strconv.Itoa(databaseID)+":", err)
 		return nil, false
 	} else {
 		dbPlayers = v
@@ -366,7 +366,7 @@ func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, 
 	// As a sanity check, ensure that the number of game participants in the database matches the
 	// number of players that are supposed to be in the game (according to the options)
 	if len(dbPlayers) != t.Options.NumPlayers {
-		logger.Error("There are not enough game participants for game #" + strconv.Itoa(gameID) +
+		logger.Error("There are not enough game participants for game #" + strconv.Itoa(databaseID) +
 			" in the database. (There were " + strconv.Itoa(len(dbPlayers)) +
 			" player rows and there should be " + strconv.Itoa(t.Options.NumPlayers) + ".)")
 		s.Error(InitGameFail)
@@ -380,9 +380,9 @@ func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, 
 
 	// Get the seed from the database
 	var seed string
-	if v, err := models.Games.GetSeed(gameID); err != nil {
+	if v, err := models.Games.GetSeed(databaseID); err != nil {
 		logger.Error("Failed to get the seed from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+			strconv.Itoa(databaseID)+":", err)
 		s.Error(InitGameFail)
 		return nil, false
 	} else {
@@ -391,9 +391,9 @@ func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, 
 
 	// Get the actions from the database
 	var actions []*GameAction
-	if v, err := models.GameActions.GetAll(gameID); err != nil {
+	if v, err := models.GameActions.GetAll(databaseID); err != nil {
 		logger.Error("Failed to get the actions from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+			strconv.Itoa(databaseID)+":", err)
 		s.Error(InitGameFail)
 		return nil, false
 	} else {
@@ -401,7 +401,7 @@ func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, 
 	}
 
 	t.ExtraOptions = &ExtraOptions{
-		DatabaseID: gameID,
+		DatabaseID: databaseID,
 
 		NoWriteToDatabase: true,
 
@@ -559,9 +559,9 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 		// Get the notes from the database
 		variant := variants[g.Options.VariantName]
 		noteSize := variant.GetDeckSize() + len(variant.Suits)
-		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), noteSize); err != nil {
+		if v, err := models.Games.GetNotes(d.DatabaseID, len(g.Players), noteSize); err != nil {
 			logger.Error("Failed to get the notes from the database for game "+
-				strconv.Itoa(d.GameID)+":", err)
+				strconv.Itoa(d.DatabaseID)+":", err)
 			s.Error(InitGameFail)
 			return false
 		} else {

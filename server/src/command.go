@@ -2,8 +2,8 @@ package main
 
 type CommandData struct {
 	// various
-	TableID uint64 `json:"tableID"`
-	GameID  int    `json:"gameID"`
+	TableID    uint64 `json:"tableID"`
+	DatabaseID int    `json:"databaseID"`
 
 	// setting
 	Setting string `json:"setting"`

@@ -203,11 +203,11 @@ func httpInit() {
 	httpRouter.GET("/game", httpMain)
 	httpRouter.GET("/game/:tableID", httpMain)
 	httpRouter.GET("/replay", httpMain)
-	httpRouter.GET("/replay/:gameID", httpMain)
-	httpRouter.GET("/replay/:gameID/:turnID", httpMain) // Deprecated; needed for older links to work
+	httpRouter.GET("/replay/:databaseID", httpMain)
+	httpRouter.GET("/replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/shared-replay", httpMain)
-	httpRouter.GET("/shared-replay/:gameID", httpMain)
-	httpRouter.GET("/shared-replay/:gameID/:turnID", httpMain) // Deprecated; needed for older links to work
+	httpRouter.GET("/shared-replay/:databaseID", httpMain)
+	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/create-table", httpMain)
 
 	// Path handlers for other URLs
@@ -247,7 +247,7 @@ func httpInit() {
 
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:game", httpExport)
+	httpRouter.GET("/export/:databaseID", httpExport)
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))

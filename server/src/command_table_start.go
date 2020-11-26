@@ -290,14 +290,14 @@ func emulateActions(s *Session, d *CommandData, t *Table) {
 		})
 
 		if g.InvalidActionOccurred {
-			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.GameID) + "; " +
+			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.DatabaseID) + "; " +
 				"not emulating the rest of the actions.")
 			if s != nil {
 				s.Warning("The action at index " + strconv.Itoa(i) +
 					" was not valid. Skipping all subsequent actions. " +
 					"Please report this error to an administrator.")
 			}
-			badGameIDs = append(badGameIDs, d.GameID)
+			badGameIDs = append(badGameIDs, d.DatabaseID)
 			return
 		}
 	}

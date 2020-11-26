@@ -67,22 +67,22 @@ function submit() {
   };
 
   // ID
-  const gameIDString = $("#replay-id").val();
-  if (typeof gameIDString !== "string") {
+  const databaseIDString = $("#replay-id").val();
+  if (typeof databaseIDString !== "string") {
     throw new Error('The value of the "replay-id" element is not a string.');
   }
-  let gameID: number | undefined;
+  let databaseID: number | undefined;
   if (source === "id") {
-    gameID = parseIntSafe(gameIDString);
-    if (Number.isNaN(gameID)) {
+    databaseID = parseIntSafe(databaseIDString);
+    if (Number.isNaN(databaseID)) {
       error("Error: The database ID must be a number.");
       return;
     }
-    if (gameID < 1) {
+    if (databaseID < 1) {
       error("Error: The database ID must be a positive number.");
       return;
     }
-    localStorage.setItem("watchReplayID", gameIDString);
+    localStorage.setItem("watchReplayID", databaseIDString);
   }
 
   // JSON
@@ -121,7 +121,7 @@ function submit() {
   if (source === "id") {
     globals.conn!.send("replayCreate", {
       source,
-      gameID,
+      databaseID,
       visibility,
       shadowingPlayerIndex: -1,
     });
@@ -155,11 +155,11 @@ export function ready(): void {
   $(sourceBox).change();
 
   // Set the "ID" field
-  let gameID = localStorage.getItem("watchReplayID");
-  if (typeof gameID !== "string") {
-    gameID = "";
+  let databaseID = localStorage.getItem("watchReplayID");
+  if (typeof databaseID !== "string") {
+    databaseID = "";
   }
-  $("#replay-id").val(gameID);
+  $("#replay-id").val(databaseID);
 
   // Set the "JSON" field
   let json = localStorage.getItem("watchReplayJSON");
