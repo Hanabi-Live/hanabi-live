@@ -517,7 +517,7 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 
 ## Research & Bots
 
-- A game can be stored as a [JSON](https://www.json.org/json-en.html) object. The community uses [the following format](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/misc/example_game_with_comments.json) to specify a game.
+- A game can be stored as a [JSON](https://www.json.org/json-en.html) object. The community uses [the following format](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/misc/example_game_with_comments.jsonc) to specify a game.
 - The website supports watching arbitrary games from JSON files. Simply select "Watch Specific Replay" from the menu, select "JSON Data" as the source, and then paste in the JSON data.
 - This is useful for researchers and bot-makers because you can take one of the games that your bot plays and then plug it into the website in order to more-easily see what kinds of strategies that it is doing.
 - It is also possible to program a bot to play on the website with other players. Unlike other websites such as [lichess.org](https://lichess.org/), there is no bot-specific API. Bots must connect to the WebSocket server and send messages in exactly the same way that a real player would. A reference bot implementation can be found [here](https://github.com/Zamiell/hanabi-live-bot).
