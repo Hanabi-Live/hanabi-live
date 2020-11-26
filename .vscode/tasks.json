@@ -12,8 +12,8 @@
       "command": "./webpack-dev-server.sh",
       "presentation": {
         "reveal": "always",
-        "panel": "new",
-      },
+        "panel": "new"
+      }
     },
     {
       "label": "Hanabi Server",
@@ -21,15 +21,16 @@
       "command": "./run.sh",
       "presentation": {
         "reveal": "always",
-        "panel": "new",
-      },
+        "panel": "new"
+      }
     },
     {
       "label": "Hanabi Client + Server",
       "dependsOn": [
         "Hanabi Server",
-        "Hanabi Client (webpack)",
+        "Hanabi Client (webpack)"
       ],
-    },
+      "problemMatcher": []
+    }
   ],
 }
