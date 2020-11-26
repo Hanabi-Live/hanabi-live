@@ -139,8 +139,8 @@ func httpWS(c *gin.Context) {
 	logger.Info("User \"" + username + "\" is establishing a WebSocket connection.")
 
 	// Transfer the values from the login cookie into WebSocket session variables
-	// New keys added here should also be added to the "newFakeSesssion()" function
-	keys := defaultSessionKeys()
+	// (new keys added here might also need to be added to the "newFakeSesssion()" function)
+	keys := defaultSessionKeys() // This initializes every possible field
 	// The session ID is independent of the user and is used for disconnection purposes
 	keys["sessionID"] = atomic.AddUint64(&sessionIDCounter, 1)
 	keys["userID"] = userID
@@ -153,7 +153,7 @@ func httpWS(c *gin.Context) {
 	// Validation succeeded; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
 	// further initialization is performed there
-	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
+	if err := melodyRouter.HandleRequestWithKeys(w, r, keys); err != nil {
 		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
 		// fail for mundane reasons (e.g. internet dropping)
 		logger.Info("Failed to establish the WebSocket connection for user \""+username+"\":", err)

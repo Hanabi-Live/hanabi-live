@@ -8,7 +8,7 @@ import (
 
 var (
 	// This is the Melody WebSocket router
-	m *melody.Melody
+	melodyRouter *melody.Melody
 
 	// We keep track of all WebSocket sessions
 	sessions      = make(map[int]*Session)
@@ -27,17 +27,17 @@ func websocketInit() {
 	commandInit()
 
 	// Define a new Melody router
-	m = melody.New()
+	melodyRouter = melody.New()
 
 	// The default maximum message size is 512 bytes,
 	// but this is not long enough to send game objects
 	// Thus, we have to manually increase it
-	m.Config.MaxMessageSize = 8192
+	melodyRouter.Config.MaxMessageSize = 8192
 
 	// Attach some handlers
-	m.HandleConnect(websocketConnect)
-	m.HandleDisconnect(websocketDisconnect)
-	m.HandleMessage(websocketMessage)
+	melodyRouter.HandleConnect(websocketConnect)
+	melodyRouter.HandleDisconnect(websocketDisconnect)
+	melodyRouter.HandleMessage(websocketMessage)
 	// We could also attach a function to HandleError, but this fires on routine
 	// things like disconnects, so it is undesirable
 }

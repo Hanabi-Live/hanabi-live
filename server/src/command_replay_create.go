@@ -539,7 +539,7 @@ func loadFakePlayers(t *Table, playerNames []string) {
 
 // newFakeSession prepares a "fake" user session that will be used for game emulation
 func newFakeSession(id int, name string) *Session {
-	keys := defaultSessionKeys()
+	keys := defaultSessionKeys() // This initializes every possible field
 	keys["sessionID"] = id
 	keys["userID"] = id
 	keys["username"] = name
