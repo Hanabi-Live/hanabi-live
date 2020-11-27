@@ -7,8 +7,6 @@ import ColorButton from "./ColorButton";
 import Arrow from "./controls/Arrow";
 import Button from "./controls/Button";
 import CurrentPlayerArea from "./controls/CurrentPlayerArea";
-import EndHypoButton from "./controls/EndHypoButton";
-import EnterHypoButton from "./controls/EnterHypoButton";
 import FitText from "./controls/FitText";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
 import Shuttle from "./controls/Shuttle";
@@ -46,7 +44,7 @@ export default class Elements {
   chatButton: Button | null = null;
   lobbyButton: Button | null = null;
   restartButton: Button | null = null;
-  endHypotheticalButton: EndHypoButton | null = null;
+  endHypotheticalButton: Button | null = null;
   deck: Deck | null = null;
   gameIDLabel: FitText | null = null;
   gameInfoImage: Konva.Image | null = null;
@@ -112,7 +110,7 @@ export default class Elements {
   replayExitButton: Button | null = null;
   pauseSharedTurnsButton: SharedTurnsButton | null = null;
   useSharedTurnsButton: SharedTurnsButton | null = null;
-  enterHypoButton: EnterHypoButton | null = null;
+  enterHypoButton: Button | null = null;
   hypoCircle: Konva.Group | null = null;
   hypoBackButton: Button | null = null;
   toggleDrawnCardsButton: ThreeLineButton | null = null;
