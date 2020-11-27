@@ -16,9 +16,30 @@ if [[ -z $HOME ]] && [[ -z $CI ]]; then
   export HOME=/root
 fi
 
+# Import the domain
+if [[ -z $CI ]]; then
+  ENV_PATH="$DIR/../.env"
+  if [[ ! -f $ENV_PATH ]]; then
+    echo "Failed to find the \".env\" file at: $ENV_PATH"
+    exit 1
+  fi
+  source "$ENV_PATH"
+  if [[ -z $DOMAIN ]]; then
+    DOMAIN="localhost"
+  fi
+fi
+
 # Compile the Golang code
 cd "$DIR/src"
-go build -o "$DIR/../$REPO"
+if [[ $DOMAIN == "localhost" ]]; then
+  # In development environments, turn on the Go race condition detector
+  # https://blog.golang.org/race-detector
+  go build -o "$DIR/../$REPO" -race
+else
+  # Also enable the race condition detector in production (temporarily)
+  # TODO remove this
+  go build -o "$DIR/../$REPO" -race
+fi
 if [[ $? -ne 0 ]]; then
   echo "$REPO - Go compilation failed!"
   exit 1
