@@ -1,9 +1,5 @@
 package main
 
-const (
-	SeedSort = "score DESC, id ASC"
-)
-
 // commandHistoryGetSeed is sent when the user clicks on the "Compare Scores" button
 //
 // Example data:
@@ -41,7 +37,7 @@ func commandHistoryGetSeed(s *Session, d *CommandData) {
 	// Get the history for these game IDs
 	// (with a custom sort by score)
 	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistoryCustomSort(gameIDs, SeedSort); err != nil {
+	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
 		logger.Error("Failed to get the history:", err)
 		s.Error(DefaultErrorMsg)
 		return

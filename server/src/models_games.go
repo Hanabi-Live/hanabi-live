@@ -140,11 +140,23 @@ type GameHistory struct {
 }
 
 func (g *Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
-	return g.GetHistoryCustomSort(gameIDs, "id DESC")
+	return g.GetHistoryCustomSort(gameIDs, "normal")
 }
 
-func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, error) {
+func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHistory, error) {
 	games := make([]*GameHistory, 0)
+
+	var sortSQL string
+	if sortMode == "normal" {
+		// Normally, we want history to be displayed with the newest game at the top
+		sortSQL = "games1.id DESC"
+	} else if sortMode == "seed" {
+		// For viewing games of the same seed, we want the best scores to be at the top,
+		// with the first group to get that score displayed on top
+		sortSQL = "games1.score DESC, games1.id ASC"
+	} else {
+		return games, errors.New("unknown sort mode of \"" + sortMode + "\"")
+	}
 
 	// We rename "games" to "games1" so that the subquery can access their values
 	// (otherwise, the table names would conflict)
@@ -195,7 +207,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, 
 		 */
 		WHERE games1.id = ANY($1)
 	`
-	SQLString += "ORDER BY games1." + sort
+	SQLString += "ORDER BY " + sortSQL
 
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), SQLString, gameIDs); err != nil {
