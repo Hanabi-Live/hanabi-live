@@ -44,6 +44,10 @@ export function onActiveOrAmLeaderChanged(data: {
   amLeader: boolean;
   sharedReplay: boolean;
 }): void {
+  if (!data.active) {
+    turn.hideClueUIAndDisableDragging();
+  }
+
   const visibleForLeaderInHypo = data.active && data.amLeader;
   globals.elements.endHypotheticalButton?.visible(visibleForLeaderInHypo);
   globals.elements.clueArea?.visible(visibleForLeaderInHypo);
@@ -60,9 +64,6 @@ export function onActiveOrAmLeaderChanged(data: {
   const visibleForLeaderInSharedReplay =
     !data.active && data.sharedReplay && data.amLeader;
   globals.elements.restartButton?.visible(visibleForLeaderInSharedReplay);
-  if (visibleForLeaderInSharedReplay) {
-    turn.hideClueUIAndDisableDragging();
-  }
 
   // We might to change the draggable property of a hand
   checkSetDraggableAllHands();
