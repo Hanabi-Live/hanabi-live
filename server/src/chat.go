@@ -50,7 +50,9 @@ func chatServerSendAll(msg string) {
 	roomNames := make([]string, 0)
 	tablesMutex.RLock()
 	for _, t := range tables {
+		t.Mutex.Lock()
 		roomNames = append(roomNames, t.GetRoomName())
+		t.Mutex.Unlock()
 	}
 	tablesMutex.RUnlock()
 

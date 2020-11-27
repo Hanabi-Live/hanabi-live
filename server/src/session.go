@@ -144,10 +144,9 @@ func (s *Session) GetJoinedTable() *Table {
 	defer tablesMutex.RUnlock()
 
 	for _, t := range tables {
-		t.Mutex.Lock()
-
 		joinedToTable := false
-		if t.Replay {
+		t.Mutex.Lock()
+		if !t.Replay {
 			for _, p := range t.Players {
 				if p.ID == s.UserID {
 					joinedToTable = true
@@ -155,7 +154,6 @@ func (s *Session) GetJoinedTable() *Table {
 				}
 			}
 		}
-
 		t.Mutex.Unlock()
 
 		if joinedToTable {

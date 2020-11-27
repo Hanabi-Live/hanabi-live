@@ -203,48 +203,51 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 	// Information about their current activity
 	// ----------------------------------------
 
-	// Check to see if they are currently playing in an ongoing game
 	logger.Debug("Acquiring tables read lock for user: " + username)
 	tablesMutex.RLock()
 	logger.Debug("Acquired tables read lock for user: " + username)
-	for _, t := range tables {
-		if t.Replay {
-			continue
-		}
 
-		playerIndex := t.GetPlayerIndexFromID(userID)
-		if playerIndex != -1 {
+	// Check to see if they are currently playing in an ongoing game
+	for _, t := range tables {
+		foundTable := false
+		t.Mutex.Lock()
+		if !t.Replay {
+			playerIndex := t.GetPlayerIndexFromID(userID)
+			if playerIndex != -1 {
+				foundTable = true
+			}
+		}
+		t.Mutex.Unlock()
+
+		if foundTable {
 			data.PlayingInOngoingGameTableID = t.ID
 			break
 		}
 	}
-	tablesMutex.RUnlock()
-	logger.Debug("Released tables read lock for user: " + username)
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
-	// (games that they are playing in take priority over shared replays)
-	if data.PlayingInOngoingGameTableID != 0 {
-		logger.Debug("Acquiring tables read lock for user: " + username)
-		tablesMutex.RLock()
-		logger.Debug("Acquired tables read lock for user: " + username)
-		for _, t := range tables {
-			if !t.Replay {
-				continue
-			}
-
-			for id := range t.DisconSpectators {
-				if id != userID {
-					continue
+	for _, t := range tables {
+		foundTable := false
+		t.Mutex.Lock()
+		if t.Replay {
+			for disconnectedUserID := range t.DisconSpectators {
+				if disconnectedUserID == userID {
+					foundTable = true
+					break
 				}
-
-				data.SpectatingTableID = t.ID
-				data.SpectatingDatabaseID = t.ExtraOptions.DatabaseID
-				break
 			}
 		}
-		tablesMutex.RUnlock()
-		logger.Debug("Released tables read lock for user: " + username)
+		t.Mutex.Unlock()
+
+		if foundTable {
+			data.SpectatingTableID = t.ID
+			data.SpectatingDatabaseID = t.ExtraOptions.DatabaseID
+			break
+		}
 	}
+
+	tablesMutex.RUnlock()
+	logger.Debug("Released tables read lock for user: " + username)
 
 	return data
 }
@@ -331,9 +334,11 @@ func websocketConnectTableList(s *Session) {
 	tablesMutex.RLock()
 	logger.Debug("Acquired tables read lock for user: " + s.Username)
 	for _, t := range tables {
+		t.Mutex.Lock()
 		if t.Visible {
 			tableMessageList = append(tableMessageList, makeTableMessage(s, t))
 		}
+		t.Mutex.Unlock()
 	}
 	tablesMutex.RUnlock()
 	logger.Debug("Released tables read lock for user: " + s.Username)

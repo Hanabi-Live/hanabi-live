@@ -48,6 +48,8 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	tablesMutex.RLock()
 	logger.Debug("Acquired tables read lock for user: " + s.Username)
 	for _, t := range tables {
+		t.Mutex.Lock()
+
 		// They could be one of the players (1/2)
 		playerIndex := t.GetPlayerIndexFromID(s.UserID)
 		if playerIndex != -1 && !t.Replay {
@@ -63,6 +65,8 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		if spectatorIndex != -1 {
 			spectatingTableIDs = append(spectatingTableIDs, t.ID)
 		}
+
+		t.Mutex.Unlock()
 	}
 	tablesMutex.RUnlock()
 	logger.Debug("Released tables read lock for user: " + s.Username)

@@ -61,7 +61,14 @@ func getTableIDFromName(tableName string) (uint64, bool) {
 	defer tablesMutex.RUnlock()
 
 	for _, t := range tables {
+		foundTable := false
+		t.Mutex.Lock()
 		if t.Name == tableName {
+			foundTable = true
+		}
+		t.Mutex.Unlock()
+
+		if foundTable {
 			return t.ID, true
 		}
 	}
@@ -69,12 +76,13 @@ func getTableIDFromName(tableName string) (uint64, bool) {
 	return 0, false
 }
 
+// deleteTable removes a table from the tables map
 func deleteTable(t *Table) {
 	logger.Debug("Acquiring tables write lock in the \"deleteTable()\" function.")
 	tablesMutex.Lock()
 	logger.Debug("Acquired tables write lock in the \"deleteTable()\" function.")
 	delete(tables, t.ID)
-	t.Deleted = true
+	t.Deleted = true // It is assumed that t.Mutex is locked before getting here
 	tablesMutex.Unlock()
 
 	notifyAllTableGone(t)

@@ -67,29 +67,9 @@ type TableChatMessage struct {
 }
 
 func NewTable(name string, owner int) *Table {
-	// Get a new table ID
-	tablesMutex.RLock()
-	var newTableID uint64
-	for {
-		newTableID = atomic.AddUint64(&tableIDCounter, 1)
-
-		// Ensure that the table ID does not conflict with any existing tables
-		valid := true
-		for tableID := range tables {
-			if tableID == newTableID {
-				valid = false
-				break
-			}
-		}
-		if valid {
-			break
-		}
-	}
-	tablesMutex.RUnlock()
-
 	// Create the table object
 	return &Table{
-		ID:   newTableID,
+		ID:   getNewTableID(),
 		Name: name,
 
 		Players:          make([]*Player, 0),
@@ -109,6 +89,27 @@ func NewTable(name string, owner int) *Table {
 
 		Chat:     make([]*TableChatMessage, 0),
 		ChatRead: make(map[int]int),
+	}
+}
+
+func getNewTableID() uint64 {
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
+
+	for {
+		newTableID := atomic.AddUint64(&tableIDCounter, 1)
+
+		// Ensure that the table ID does not conflict with any existing tables
+		valid := true
+		for tableID := range tables {
+			if tableID == newTableID {
+				valid = false
+				break
+			}
+		}
+		if valid {
+			return newTableID
+		}
 	}
 }
 

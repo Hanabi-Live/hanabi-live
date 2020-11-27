@@ -39,12 +39,15 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	alreadySpectating := false
 	tablesMutex.RLock()
 	for _, t2 := range tables {
+		t2.Mutex.Lock()
 		for _, sp := range t2.Spectators {
 			if sp.ID == s.UserID {
 				alreadySpectating = true
 				break
 			}
 		}
+		t2.Mutex.Unlock()
+
 		if alreadySpectating {
 			break
 		}

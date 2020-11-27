@@ -11,23 +11,20 @@ import (
 // it is possible for tables to be created with no people in them
 // So we allow an administrator to clear them manually
 func httpLocalhostClearEmptyTables(c *gin.Context) {
-	tablesMutex.Lock()
-	defer tablesMutex.Unlock()
-
 	// First, make a slice of all of the map keys
 	// (so that we are not iterating over the map while simultaneously removing things from it)
 	tableIDs := make([]uint64, 0, len(tables))
+	tablesMutex.RLock()
 	for tableID := range tables {
 		tableIDs = append(tableIDs, tableID)
 	}
+	tablesMutex.RUnlock()
 
 	for _, tableID := range tableIDs {
-		var t *Table
-		if v, ok := tables[tableID]; !ok {
+		t, exists := getTableAndLock(nil, tableID, true)
+		if !exists {
 			logger.Error("Failed to get the table with ID " + strconv.FormatUint(tableID, 10) + ".")
 			continue
-		} else {
-			t = v
 		}
 
 		if !t.Running && len(t.Players) == 0 {
@@ -40,6 +37,8 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 			logger.Info("Successfully cleared replay table #" + strconv.FormatUint(t.ID, 10) + ".")
 		}
 		// (don't do anything for ongoing games)
+
+		t.Mutex.Unlock()
 	}
 
 	c.String(http.StatusOK, "success\n")

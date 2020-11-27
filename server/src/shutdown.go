@@ -49,9 +49,11 @@ func shutdownXMinutesLeft(minutesLeft int) {
 
 		tablesMutex.RLock()
 		for _, t := range tables {
+			t.Mutex.Lock()
 			if !t.Running {
 				unstartedTableIDs = append(unstartedTableIDs, t.ID)
 			}
+			t.Mutex.Unlock()
 		}
 		tablesMutex.RUnlock()
 
@@ -78,7 +80,9 @@ func shutdownXMinutesLeft(minutesLeft int) {
 	roomNames := make([]string, 0)
 	tablesMutex.RLock()
 	for _, t := range tables {
+		t.Mutex.Lock()
 		roomNames = append(roomNames, t.GetRoomName())
+		t.Mutex.Unlock()
 	}
 	tablesMutex.RUnlock()
 
@@ -101,9 +105,11 @@ func shutdownWait() {
 			tableIDsToTerminate := make([]uint64, 0)
 			tablesMutex.RLock()
 			for _, t := range tables {
+				t.Mutex.Lock()
 				if t.Running && !t.Replay {
 					tableIDsToTerminate = append(tableIDsToTerminate, t.ID)
 				}
+				t.Mutex.Unlock()
 			}
 			tablesMutex.RUnlock()
 
@@ -144,9 +150,11 @@ func countActiveTables() int {
 
 	numTables := 0
 	for _, t := range tables {
+		t.Mutex.Lock()
 		if t.Running && !t.Replay {
 			numTables++
 		}
+		t.Mutex.Unlock()
 	}
 
 	return numTables

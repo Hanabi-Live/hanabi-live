@@ -18,34 +18,33 @@ func serializeTables() bool {
 	defer tablesMutex.RUnlock()
 
 	for _, t := range tables {
-		// Only serialize ongoing games
-		if !t.Running || t.Replay {
-			logger.Info("Skipping due to it being unstarted or a replay.")
-			continue
-		}
-
-		logger.Info("Serializing table:", t.ID)
-
-		// Several fields on the Table object and the Game object are set with `json:"-"` to prevent
-		// the JSON encoder from serializing them
-		// Otherwise, we would have to explicitly unset some fields here to avoid circular
-		// references, session data, and so forth
 		t.Mutex.Lock()
-		var tableJSON []byte
-		if v, err := json.Marshal(t); err != nil {
-			logger.Error("Failed to marshal table "+strconv.FormatUint(t.ID, 10)+":", err)
-			return false
-		} else {
-			tableJSON = v
-		}
-		t.Mutex.Unlock()
 
-		tableFilename := strconv.FormatUint(t.ID, 10) + ".json"
-		tablePath := path.Join(tablesPath, tableFilename)
-		if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
-			logger.Error("Failed to write \""+tablePath+"\":", err)
-			return false
+		// Only serialize ongoing games
+		if t.Running && !t.Replay {
+			logger.Info("Serializing table:", t.ID)
+
+			// Several fields on the Table object and the Game object are set with `json:"-"` to prevent
+			// the JSON encoder from serializing them
+			// Otherwise, we would have to explicitly unset some fields here to avoid circular
+			// references, session data, and so forth
+			var tableJSON []byte
+			if v, err := json.Marshal(t); err != nil {
+				logger.Error("Failed to marshal table "+strconv.FormatUint(t.ID, 10)+":", err)
+				return false
+			} else {
+				tableJSON = v
+			}
+
+			tableFilename := strconv.FormatUint(t.ID, 10) + ".json"
+			tablePath := path.Join(tablesPath, tableFilename)
+			if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
+				logger.Error("Failed to write \""+tablePath+"\":", err)
+				return false
+			}
 		}
+
+		t.Mutex.Unlock()
 	}
 
 	return true

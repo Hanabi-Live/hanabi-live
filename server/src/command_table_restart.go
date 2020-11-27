@@ -203,8 +203,15 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 	var t2 *Table
 	tablesMutex.RLock()
 	for _, existingTable := range tables {
+		foundTable := false
+		existingTable.Mutex.Lock()
 		if existingTable.Name == newTableName {
+			foundTable = true
 			t2 = existingTable
+		}
+		existingTable.Mutex.Unlock()
+
+		if foundTable {
 			break
 		}
 	}
