@@ -165,12 +165,12 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 			g.ActivePlayerIndex = (g.ActivePlayerIndex + 1) % len(g.Players)
 		}
 	}
-	np := g.Players[g.ActivePlayerIndex] // The next player
-	nps := t.Players[np.Index].Session
+	nextPlayer := g.Players[g.ActivePlayerIndex]
+	nextPlayerSession := t.Players[nextPlayer.Index].Session
 
 	// Check for character-related softlocks
 	// (we will set the strikes to 3 if there is a softlock)
-	characterCheckSoftlock(g, np)
+	characterCheckSoftlock(g, nextPlayer)
 
 	// Check for end game states
 	if g.CheckEnd() {
@@ -187,7 +187,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	t.NotifyTurn()
 
 	if g.EndCondition == EndConditionInProgress {
-		logger.Info(t.GetName() + "It is now " + np.Name + "'s turn.")
+		logger.Info(t.GetName() + "It is now " + nextPlayer.Name + "'s turn.")
 	} else {
 		g.End()
 		return
@@ -199,12 +199,12 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
 		// Start the function that will check to see if the current player has run out of time
 		// (since it just got to be their turn)
-		go g.CheckTimer(g.Turn, g.PauseCount, np)
+		go g.CheckTimer(nextPlayer.Time, g.Turn, g.PauseCount, nextPlayer)
 
 		// If the next player queued a pause command, then pause the game
-		if np.RequestedPause {
-			np.RequestedPause = false
-			commandPause(nps, &CommandData{ // Manual invocation
+		if nextPlayer.RequestedPause {
+			nextPlayer.RequestedPause = false
+			commandPause(nextPlayerSession, &CommandData{ // Manual invocation
 				TableID: t.ID,
 				Setting: "pause",
 				NoLock:  true,

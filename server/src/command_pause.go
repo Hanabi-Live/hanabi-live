@@ -116,7 +116,8 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 		// Restart the function that will check to see if the current player has run out of time
 		// (the old "CheckTimer()" invocation will return and do nothing because the pause count of
 		// the game will not match)
-		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
+		activePlayer := g.Players[g.ActivePlayerIndex]
+		go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 	}
 
 	t.NotifyPause()

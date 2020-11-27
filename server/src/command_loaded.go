@@ -50,7 +50,8 @@ func commandLoaded(s *Session, d *CommandData) {
 
 		// Start the countdown for when the active player runs out of time
 		if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
-			go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
+			activePlayer := g.Players[g.ActivePlayerIndex]
+			go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 		}
 	}
 }

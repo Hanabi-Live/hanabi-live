@@ -203,7 +203,8 @@ func restoreTables() {
 
 			// Players will never run out of time on restored tables because the "CheckTimer()"
 			// function was never initiated; manually do this
-			go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
+			activePlayer := g.Players[g.ActivePlayerIndex]
+			go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 		}
 
 		tables[t.ID] = t

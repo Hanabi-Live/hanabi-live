@@ -130,12 +130,12 @@ func NewGame(t *Table) *Game {
 */
 
 // CheckTimer is meant to be called in a new goroutine
-func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
+func (g *Game) CheckTimer(timeToSleep time.Duration, turn int, pauseCount int, gp *GamePlayer) {
+	// Sleep until the active player runs out of time
+	time.Sleep(timeToSleep)
+
 	// Local variables
 	t := g.Table
-
-	// Sleep until the active player runs out of time
-	time.Sleep(gp.Time)
 
 	// Check to see if the table still exists
 	t2, exists := getTableAndLock(nil, t.ID, false)
