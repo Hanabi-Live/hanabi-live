@@ -53,15 +53,14 @@ export function onEfficiencyChanged(data: {
     cardsGottenModified = true;
   }
 
-  let cardsGottenByNotes : number | string;
+  let cardsGottenByNotes: number | string;
   if (!globals.state.finished && globals.state.playing) {
     cardsGottenByNotes = 0;
     for (const card of globals.deck) {
       cardsGottenByNotes += card.notesEfficiencyModifier();
     }
     cardsGotten += cardsGottenByNotes;
-  }
-  else {
+  } else {
     cardsGottenByNotes = "-";
   }
 
