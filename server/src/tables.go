@@ -34,7 +34,7 @@ func getTable(s *Session, tableID uint64) (*Table, bool) {
 // If it does, it locks the table mutex and returns it
 func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool) {
 	t, exists := getTable(s, tableID)
-	if !exists || t.Deleted {
+	if !exists {
 		return nil, false
 	}
 

@@ -207,11 +207,11 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 		existingTable.Mutex.Lock()
 		if existingTable.Name == newTableName {
 			foundTable = true
-			t2 = existingTable
 		}
 		existingTable.Mutex.Unlock()
 
 		if foundTable {
+			t2 = existingTable
 			break
 		}
 	}
