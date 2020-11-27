@@ -204,7 +204,9 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
     // Make sure that the arrow points to an imaginary person behind the hand of cards
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = (600 / 1080) * winH;
-    const rot = (-hand.origRotation / 180) * Math.PI;
+    const handRotation =
+      globals.metadata.ourPlayerIndex === playerIndex ? 180 : hand.origRotation;
+    const rot = (-handRotation / 180) * Math.PI;
     centerPos.x += distanceToImaginaryPlayer * -Math.sin(rot); // -sin(x) = cos(x + PI / 2)
     centerPos.y -= distanceToImaginaryPlayer * Math.cos(rot); // cos(x) = sin(x + PI / 2)
   }
