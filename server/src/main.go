@@ -41,6 +41,18 @@ func main() {
 	logger.Info(startText)
 	logger.Info(borderText)
 
+	// Record the commit that corresponds with when the Golang code was compiled
+	// (this is useful to know what version of the server is running,
+	// since it is possible to update the client without restarting the server)
+	cmd := exec.Command("git", "rev-parse", "HEAD")
+	if stdout, err := cmd.Output(); err != nil {
+		logger.Fatal("Failed to perform a \"git rev-parse HEAD\":", err)
+		return
+	} else {
+		gitCommitOnStart = strings.TrimSpace(string(stdout))
+	}
+	logger.Info("Current git commit: " + gitCommitOnStart)
+
 	// Get the project path
 	// https://stackoverflow.com/questions/18537257/
 	if v, err := os.Executable(); err != nil {
@@ -95,17 +107,6 @@ func main() {
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \""+specificDealsPath+"\" file exists:", err)
 		return
-	}
-
-	// Record the commit that corresponds with when the Golang code was compiled
-	// (this is useful to know what version of the server is running,
-	// since it is possible to update the client without restarting the server)
-	cmd := exec.Command("git", "rev-parse", "HEAD")
-	if stdout, err := cmd.Output(); err != nil {
-		logger.Fatal("Failed to perform a \"git rev-parse HEAD\":", err)
-		return
-	} else {
-		gitCommitOnStart = strings.TrimSpace(string(stdout))
 	}
 
 	// Check to see if the ".env" file exists
