@@ -99,10 +99,17 @@ function showClueMatch(target: number, clue: Clue) {
       suitIndex = card.visibleSuitIndex;
       rank = card.visibleRank;
     }
+    const possibleIdentities: Array<readonly [number, number]> =
+      suitIndex === null || rank === null
+        ? card.state.possibleCardsFromClues.filter(
+            ([suitIndexB, rankB]) =>
+              card.state.possibleCardsFromObservation[suitIndexB][rankB] >= 1,
+          )
+        : [[suitIndex, rank]];
     if (
-      suitIndex !== null &&
-      rank !== null &&
-      cluesRules.touchesCard(globals.variant, clue, suitIndex, rank)
+      possibleIdentities.every(([suitIndexC, rankC]) =>
+        cluesRules.touchesCard(globals.variant, clue, suitIndexC, rankC),
+      )
     ) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
@@ -120,14 +127,21 @@ export function getTouchedCardsFromClue(
   const cardsTouched: number[] = []; // An array of the card orders
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
+    const possibleIdentities: Array<readonly [number, number]> =
+      card.visibleSuitIndex === null || card.visibleRank === null
+        ? card.state.possibleCardsFromClues.filter(
+            ([suitIndexB, rankB]) =>
+              card.state.possibleCardsFromObservation[suitIndexB][rankB] >= 1,
+          )
+        : [[card.visibleSuitIndex, card.visibleRank]];
     if (
-      card.visibleSuitIndex !== null &&
-      card.visibleRank !== null &&
-      cluesRules.touchesCard(
-        globals.variant,
-        cluesRules.msgClueToClue(clue, globals.variant),
-        card.visibleSuitIndex,
-        card.visibleRank,
+      possibleIdentities.every(([suitIndexC, rankC]) =>
+        cluesRules.touchesCard(
+          globals.variant,
+          cluesRules.msgClueToClue(clue, globals.variant),
+          suitIndexC,
+          rankC,
+        ),
       )
     ) {
       cardsTouched.push(card.state.order);
