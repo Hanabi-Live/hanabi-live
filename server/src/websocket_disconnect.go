@@ -34,24 +34,6 @@ func websocketDisconnectRemoveFromMap(s *Session) {
 	logger.Debug("Acquired sessions write lock for user: " + s.Username)
 	defer sessionsMutex.Unlock()
 
-	// Check to see if the existing session is different
-	// (this occurs during a reconnect, for example)
-	var thisSessionID uint64
-	if v, exists := s.Get("sessionID"); !exists {
-		logger.Error("Failed to get the \"sessionID\" key from a Melody session.")
-		return false
-	} else {
-		thisSessionID = v.(uint64)
-	}
-
-	var otherSessionID uint64
-	if v, exists := ms.Get("sessionID"); !exists {
-		logger.Error("Failed to get the \"sessionID\" key from a Melody session.")
-		return false
-	} else {
-		otherSessionID = v.(uint64)
-	}
-
 	if thisSessionID != otherSessionID {
 		logger.Info("The orphaned session for user \"" + s.Username + "\" " +
 			"successfully disconnected.")
