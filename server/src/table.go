@@ -161,7 +161,7 @@ func (t *Table) EndIdle() {
 			// A spectator's session should never be nil
 			// They might be in the process of reconnecting,
 			// so make a fake session that will represent them
-			s = newFakeSession(sp.ID, sp.Name)
+			s = NewFakeSession(sp.ID, sp.Name)
 			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
 		commandTableUnattend(s, &CommandData{ // Manual invocation
@@ -247,7 +247,7 @@ func (t *Table) GetOwnerSession() *Session {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s = newFakeSession(p.ID, p.Name)
+				s = NewFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 			}
 			break
@@ -256,7 +256,7 @@ func (t *Table) GetOwnerSession() *Session {
 
 	if s == nil {
 		logger.Error("Failed to find the owner for table " + strconv.FormatUint(t.ID, 10) + ".")
-		s = newFakeSession(-1, "Unknown")
+		s = NewFakeSession(-1, "Unknown")
 		logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 	}
 

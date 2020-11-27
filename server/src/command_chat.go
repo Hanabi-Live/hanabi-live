@@ -39,14 +39,14 @@ func commandChat(s *Session, d *CommandData) {
 			logger.Error("Failed to send a chat message because the sender's session was nil.")
 			return
 		}
-		userID = s.UserID()
+		userID = s.UserID
 	}
 	if d.Username == "" && s != nil {
-		d.Username = s.Username()
+		d.Username = s.Username
 	}
 
 	// Check to see if their IP has been muted
-	if s != nil && s.Muted() {
+	if s != nil && s.Muted {
 		s.Warning("You have been muted by an administrator.")
 		return
 	}
@@ -177,8 +177,8 @@ func commandChatTable(s *Session, d *CommandData) {
 	var playerIndex int
 	var spectatorIndex int
 	if !d.Server {
-		playerIndex = t.GetPlayerIndexFromID(s.UserID())
-		spectatorIndex = t.GetSpectatorIndexFromID(s.UserID())
+		playerIndex = t.GetPlayerIndexFromID(s.UserID)
+		spectatorIndex = t.GetSpectatorIndexFromID(s.UserID)
 		if playerIndex == -1 && spectatorIndex == -1 {
 			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 				", so you cannot send chat to it.")
@@ -189,7 +189,7 @@ func commandChatTable(s *Session, d *CommandData) {
 	// Store the chat in memory
 	userID := 0
 	if s != nil {
-		userID = s.UserID()
+		userID = s.UserID
 	}
 	chatMsg := &TableChatMessage{
 		UserID:   userID,

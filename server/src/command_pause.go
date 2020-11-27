@@ -36,7 +36,7 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex == -1 {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot pause / unpause.")
@@ -122,7 +122,7 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 	t.NotifyPause()
 
 	// Also send a chat message about it
-	msg := s.Username() + " "
+	msg := s.Username + " "
 	if !g.Paused {
 		msg += "un"
 	}

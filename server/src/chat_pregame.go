@@ -54,7 +54,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
@@ -113,7 +113,7 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
@@ -125,7 +125,7 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 
 	// Check to make sure that they are not targeting themself
 	normalizedUsername := normalizeString(d.Args[0])
-	if normalizedUsername == normalizeString(s.Username()) {
+	if normalizedUsername == normalizeString(s.Username) {
 		chatServerSend("You cannot kick yourself.", d.Room)
 		return
 	}
@@ -142,7 +142,7 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s2 = newFakeSession(p.ID, p.Name)
+				s2 = NewFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"chatKick()\" function.")
 			}
 			commandTableLeave(s2, &CommandData{ // Manual invocation
@@ -278,7 +278,7 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 		return
 	}
 
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
@@ -365,7 +365,7 @@ func chatImpostor(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
@@ -384,7 +384,7 @@ func chatImpostor(s *Session, d *CommandData, t *Table) {
 			Msg:       msg,
 			Who:       WebsiteName,
 			Datetime:  time.Now(),
-			Recipient: p.Session.Username(),
+			Recipient: p.Session.Username,
 		}
 		p.Session.Emit("chat", chatMessage)
 	}

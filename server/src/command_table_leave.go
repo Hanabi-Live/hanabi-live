@@ -33,7 +33,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are at the table
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex == -1 {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot leave it.")
@@ -44,7 +44,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 }
 
 func tableLeave(s *Session, t *Table, playerIndex int) {
-	logger.Info(t.GetName() + "User \"" + s.Username() + "\" left. " +
+	logger.Info(t.GetName() + "User \"" + s.Username + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
 	// Remove the player
@@ -54,8 +54,8 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 
 	// Set their status
 	if s != nil {
-		s.Set("status", StatusLobby)
-		s.Set("tableID", uint64(0))
+		s.SetStatus(StatusLobby)
+		s.SetTableID(uint64(0))
 		notifyAllUser(s)
 	}
 
@@ -68,7 +68,7 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 	})
 
 	// If they were typing, remove the message
-	t.NotifyChatTyping(s.Username(), false)
+	t.NotifyChatTyping(s.Username, false)
 
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
@@ -77,7 +77,7 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 	}
 
 	// Force everyone else to leave if it was the owner that left
-	if s.UserID() == t.Owner && len(t.Players) > 0 {
+	if s.UserID == t.Owner && len(t.Players) > 0 {
 		for len(t.Players) > 0 {
 			p := t.Players[0]
 			s2 := p.Session
@@ -85,7 +85,7 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s2 = newFakeSession(p.ID, p.Name)
+				s2 = NewFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
 			commandTableLeave(s2, &CommandData{ // Manual invocation

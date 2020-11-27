@@ -22,7 +22,7 @@ func commandTableTerminate(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex == -1 {
 		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot terminate it.")

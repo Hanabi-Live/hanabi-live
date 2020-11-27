@@ -66,7 +66,7 @@ func chatServerSendPM(s *Session, msg string, room string) {
 		Who:       WebsiteName,
 		Datetime:  time.Now(),
 		Room:      room,
-		Recipient: s.Username(),
+		Recipient: s.Username,
 	})
 }
 
@@ -121,7 +121,7 @@ type ChatListMessage struct {
 func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 	var rawMsgs []DBChatMessage
 	if v, err := models.ChatLog.Get(room, count); err != nil {
-		logger.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
+		logger.Error("Failed to get the lobby chat history for user \""+s.Username+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return false
 	} else {
@@ -183,6 +183,6 @@ func chatSendPastFromTable(s *Session, t *Table) {
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   chatList,
-		Unread: len(t.Chat) - t.ChatRead[s.UserID()],
+		Unread: len(t.Chat) - t.ChatRead[s.UserID],
 	})
 }

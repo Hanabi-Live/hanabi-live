@@ -25,7 +25,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 
 	// Validate that this is the owner of the table
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		s.Warning("Only the owner of a table can start the game.")
 		return
 	}
@@ -126,7 +126,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		for _, p := range t.Players {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(p.ID, variant.ID); err != nil {
-				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
+				logger.Error("Failed to get the past seeds for \""+s.Username+"\":", err)
 				s.Error(StartGameFail)
 				return
 			} else {
@@ -255,8 +255,8 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		// Set the status for all of the users in the game
 		for _, p := range t.Players {
 			if p.Session != nil {
-				p.Session.Set("status", StatusPlaying)
-				p.Session.Set("tableID", t.ID)
+				p.Session.SetStatus(StatusPlaying)
+				p.Session.SetTableID(t.ID)
 				notifyAllUser(p.Session)
 			}
 		}

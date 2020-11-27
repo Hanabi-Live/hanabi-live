@@ -24,14 +24,14 @@ func commandTableJoin(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not already joined to this table
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex != -1 {
 		s.Warning("You have already joined this table.")
 		return
 	}
 
 	// Validate that the player is not joined to another table
-	if !strings.HasPrefix(s.Username(), "Bot-") {
+	if !strings.HasPrefix(s.Username, "Bot-") {
 		if t2 := s.GetJoinedTable(); t2 != nil {
 			s.Warning("You cannot join more than one table at a time. " +
 				"Terminate your other game before joining a new one.")
@@ -70,7 +70,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	}
 
 	// Validate that they have not been previously kicked from this game
-	if _, ok := t.KickedPlayers[s.UserID()]; ok {
+	if _, ok := t.KickedPlayers[s.UserID]; ok {
 		s.Warning("You cannot join a game that you have been kicked from.")
 		return
 	}
@@ -82,14 +82,14 @@ func tableJoin(s *Session, t *Table) {
 	// Local variables
 	variant := variants[t.Options.VariantName]
 
-	logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
+	logger.Info(t.GetName() + "User \"" + s.Username + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 
 	// Get the total number of non-speedrun games that this player has played
 	var numGames int
-	if v, err := models.Games.GetUserNumGames(s.UserID(), false); err != nil {
+	if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
 		logger.Error("Failed to get the number of non-speedrun games for player "+
-			"\""+s.Username()+"\":", err)
+			"\""+s.Username+"\":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {
@@ -98,8 +98,8 @@ func tableJoin(s *Session, t *Table) {
 
 	// Get the variant-specific stats for this player
 	var variantStats *UserStatsRow
-	if v, err := models.UserStats.Get(s.UserID(), variant.ID); err != nil {
-		logger.Error("Failed to get the stats for player \""+s.Username()+"\" for variant "+
+	if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
+		logger.Error("Failed to get the stats for player \""+s.Username+"\" for variant "+
 			strconv.Itoa(variant.ID)+":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
@@ -108,8 +108,8 @@ func tableJoin(s *Session, t *Table) {
 	}
 
 	p := &Player{
-		ID:      s.UserID(),
-		Name:    s.Username(),
+		ID:      s.UserID,
+		Name:    s.Username,
 		Session: s,
 		Present: true,
 		Stats: PregameStats{
@@ -123,8 +123,8 @@ func tableJoin(s *Session, t *Table) {
 
 	// Set their status
 	if s != nil {
-		s.Set("status", StatusPregame)
-		s.Set("tableID", t.ID)
+		s.SetStatus(StatusPregame)
+		s.SetTableID(t.ID)
 		notifyAllUser(s)
 	}
 

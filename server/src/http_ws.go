@@ -5,17 +5,10 @@ import (
 	"net/http"
 	"strconv"
 	"sync/atomic"
-	"time"
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
-)
-
-var (
-	// The counter is atomically incremented before assignment,
-	// so the first ID will be 1 and will increase from there
-	sessionIDCounter uint64 = 0
 )
 
 // httpWS handles part 2 of 2 for logic authentication
@@ -25,7 +18,7 @@ var (
 // for the website when establishing a WebSocket connection)
 // So, before allowing anyone to open a WebSocket connection, we need to validate that they have
 // gone through part 1 (e.g. they have a valid cookie that was created at some point in the past)
-// We also do a few other checks to be thorough
+// We also do some other checks to be thorough
 // If all of the checks pass, the WebSocket connection will be established,
 // and then the user's website data will be initialized in "websocketConnect.go"
 // If anything fails in this function, we want to delete the user's cookie in order to force them to
@@ -45,8 +38,6 @@ func httpWS(c *gin.Context) {
 		ip = v
 	}
 
-	logger.Debug("Entered the \"httpWS()\" function for IP: " + ip)
-
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
 		msg := "Failed to check to see if the IP \"" + ip + "\" is banned:"
@@ -65,16 +56,6 @@ func httpWS(c *gin.Context) {
 		return
 	}
 
-	// Check to see if their IP is muted
-	var muted bool
-	if v, err := models.MutedIPs.Check(ip); err != nil {
-		msg := "Failed to check to see if the IP \"" + ip + "\" is muted:"
-		httpWSError(c, msg, err)
-		return
-	} else {
-		muted = v
-	}
-
 	// If they have a valid cookie, it should have the "userID" value that we set in "httpLogin()"
 	session := gsessions.Default(c)
 	var userID int
@@ -90,8 +71,8 @@ func httpWS(c *gin.Context) {
 	// Get the username for this user
 	var username string
 	if v, err := models.Users.GetUsername(userID); err == pgx.ErrNoRows {
-		// The user has a cookie for a user that does not exist in the database,
-		// e.g. an "orphaned" user
+		// The user has a cookie for a user that does not exist in the database
+		// (e.g. an "orphaned" user)
 		// This can happen in situations where a test user was deleted, for example
 		// Delete their cookie and force them to re-login
 		msg := "User from \"" + ip + "\" " +
@@ -107,53 +88,19 @@ func httpWS(c *gin.Context) {
 		username = v
 	}
 
-	// Get their friends and reverse friends
-	var friendsMap map[int]struct{}
-	if v, err := models.UserFriends.GetMap(userID); err != nil {
-		msg := "Failed to get the friend map for user \"" + username + "\":"
-		httpWSError(c, msg, err)
-		return
-	} else {
-		friendsMap = v
-	}
-	var reverseFriendsMap map[int]struct{}
-	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
-		msg := "Failed to get the reverse friend map for user \"" + username + "\":"
-		httpWSError(c, msg, err)
-		return
-	} else {
-		reverseFriendsMap = v
-	}
-
-	// Get whether or not they are a member of the Hyphen-ated group
-	var hyphenated bool
-	if v, err := models.UserSettings.IsHyphenated(userID); err != nil {
-		msg := "Failed to get the Hyphen-ated setting for user \"" + username + "\":"
-		httpWSError(c, msg, err)
-		return
-	} else {
-		hyphenated = v
-	}
-
-	// If they got this far, they are a valid user
-	logger.Info("User \"" + username + "\" is establishing a WebSocket connection.")
-
-	// Transfer the values from the login cookie into WebSocket session variables
-	// (new keys added here might also need to be added to the "newFakeSesssion()" function)
-	keys := defaultSessionKeys() // This initializes every possible field
+	// We can attach metadata to a Melody session
+	keys := make(map[string]interface{})
 	// The session ID is independent of the user and is used for disconnection purposes
 	keys["sessionID"] = atomic.AddUint64(&sessionIDCounter, 1)
+	// Attach the user ID and username so that we can identify the user in the next step
 	keys["userID"] = userID
 	keys["username"] = username
-	keys["muted"] = muted
-	keys["friends"] = friendsMap
-	keys["reverseFriends"] = reverseFriendsMap
-	keys["hyphenated"] = hyphenated
 
-	// Validation succeeded; establish the WebSocket connection
+	// Validation was successful; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
 	// further initialization is performed there
-	// This call is blocking (since this function is called in a new goroutine)
+	// "HandleRequestWithKeys()" is blocking
+	// (but that is not a problem because this function is called in a dedicated goroutine)
 	if err := melodyRouter.HandleRequestWithKeys(w, r, keys); err != nil {
 		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
 		// fail for mundane reasons (e.g. internet dropping)
@@ -167,7 +114,7 @@ func httpWS(c *gin.Context) {
 		return
 	}
 
-	// This point will not be reached until the WebSocket connection is closed and/or terminated
+	// This line will not be reached until the WebSocket connection is closed and/or terminated
 }
 
 func httpWSError(c *gin.Context, msg string, err error) {
@@ -194,25 +141,4 @@ func httpWSDeny(c *gin.Context, msg string) {
 		http.StatusUnauthorized,
 	)
 	deleteCookie(c)
-}
-
-func defaultSessionKeys() map[string]interface{} {
-	keys := make(map[string]interface{})
-
-	keys["sessionID"] = -1
-	keys["userID"] = -1
-	keys["username"] = ""
-	keys["muted"] = false
-	keys["status"] = StatusLobby // By default, new users are in the lobby
-	keys["tableID"] = uint64(0)
-	keys["friends"] = make(map[int]struct{})
-	keys["reverseFriends"] = make(map[int]struct{})
-	keys["hyphenated"] = false
-	keys["inactive"] = false
-	keys["fakeUser"] = false
-	keys["rateLimitAllowance"] = RateLimitRate
-	keys["rateLimitLastCheck"] = time.Now()
-	keys["banned"] = false
-
-	return keys
 }

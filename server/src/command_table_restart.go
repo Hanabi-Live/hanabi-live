@@ -35,14 +35,14 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that this person is spectating the shared replay
-	j := t.GetSpectatorIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID)
 	if j < -1 {
 		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
 		return
 	}
 
 	// Validate that this person is leading the shared replay
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		s.Warning("You cannot restart a game unless you are the leader.")
 		return
 	}
@@ -50,7 +50,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Validate that this person was one of the players in the game
 	leaderPlayedInOriginalGame := false
 	for _, p := range t.Players {
-		if p.ID == s.UserID() {
+		if p.ID == s.UserID {
 			leaderPlayedInOriginalGame = true
 			break
 		}
@@ -127,7 +127,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 	for _, s2 := range playerSessions {
 		if s2.GetJoinedTable() != nil {
-			s.Warning("You cannot restart the game because " + s2.Username() +
+			s.Warning("You cannot restart the game because " + s2.Username +
 				" is already playing in another game.")
 			return
 		}
@@ -222,7 +222,7 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
-		if s2.UserID() == s.UserID() {
+		if s2.UserID == s.UserID {
 			// The creator of the game does not need to join
 			continue
 		}

@@ -36,7 +36,7 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that they did not target themselves
-	if normalizedUsername == normalizeString(s.Username()) {
+	if normalizedUsername == normalizeString(s.Username) {
 		s.Warning("You cannot pass leadership to yourself.")
 		return
 	}
@@ -86,7 +86,7 @@ func tableSetLeader(s *Session, t *Table, newLeader *NewLeader) {
 		if !t.Running {
 			// On the pregame screen, the leader should always be the leftmost player,
 			// so we need to swap elements in the players slice
-			playerIndex := t.GetPlayerIndexFromID(s.UserID())
+			playerIndex := t.GetPlayerIndexFromID(s.UserID)
 			t.Players[playerIndex], t.Players[newLeader.Index] = t.Players[newLeader.Index], t.Players[playerIndex]
 
 			// Re-send the "game" message that draws the pregame screen
@@ -94,7 +94,7 @@ func tableSetLeader(s *Session, t *Table, newLeader *NewLeader) {
 			t.NotifyPlayerChange()
 		}
 
-		msg := s.Username() + " has passed table ownership to: " + newLeader.Username
+		msg := s.Username + " has passed table ownership to: " + newLeader.Username
 		chatServerSend(msg, t.GetRoomName())
 	}
 }

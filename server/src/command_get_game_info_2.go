@@ -27,8 +27,8 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are either a player or a spectator
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not a player or a spectator at table " +
 			strconv.FormatUint(t.ID, 10) + ", so you cannot be ready for it.")
@@ -46,7 +46,7 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	scrubbedActions := make([]interface{}, 0)
 	if !t.Replay {
 		for _, action := range g.Actions {
-			scrubbedAction := CheckScrub(t, action, s.UserID())
+			scrubbedAction := CheckScrub(t, action, s.UserID)
 			scrubbedActions = append(scrubbedActions, scrubbedAction)
 		}
 	} else {

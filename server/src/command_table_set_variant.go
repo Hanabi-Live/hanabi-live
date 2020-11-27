@@ -27,7 +27,7 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 
-	if s.UserID() != t.Owner {
+	if s.UserID != t.Owner {
 		s.Warning(NotOwnerFail)
 		return
 	}
@@ -61,7 +61,7 @@ func tableSetVariant(s *Session, d *CommandData, t *Table) {
 	for _, p := range t.Players {
 		var variantStats *UserStatsRow
 		if v, err := models.UserStats.Get(p.ID, variant.ID); err != nil {
-			logger.Error("Failed to get the stats for player \""+s.Username()+"\" for variant "+
+			logger.Error("Failed to get the stats for player \""+s.Username+"\" for variant "+
 				strconv.Itoa(variant.ID)+":", err)
 			s.Error(DefaultErrorMsg)
 			return
@@ -82,6 +82,6 @@ func tableSetVariant(s *Session, d *CommandData, t *Table) {
 	// Update the variant in the table list for everyone in the lobby
 	notifyAllTable(t)
 
-	msg := s.Username() + " has changed the variant to: " + d.Options.VariantName
+	msg := s.Username + " has changed the variant to: " + d.Options.VariantName
 	chatServerSend(msg, t.GetRoomName())
 }

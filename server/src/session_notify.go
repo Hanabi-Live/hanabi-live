@@ -9,8 +9,8 @@ import (
 */
 
 // NotifyUser will notify someone about a new user that connected or a change in an existing user
-func (s *Session) NotifyUser(u *Session) {
-	s.Emit("user", makeUserMessage(u))
+func (s *Session) NotifyUser(s2 *Session) {
+	s.Emit("user", makeUserMessage(s2))
 }
 
 type UserMessage struct {
@@ -24,8 +24,8 @@ type UserMessage struct {
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
-		UserID:     s.UserID(),
-		Name:       s.Username(),
+		UserID:     s.UserID,
+		Name:       s.Username,
 		Status:     s.Status(),
 		TableID:    s.TableID(),
 		Hyphenated: s.Hyphenated(),
@@ -34,25 +34,25 @@ func makeUserMessage(s *Session) *UserMessage {
 }
 
 // NotifyUserLeft will notify someone about a user that disconnected
-func (s *Session) NotifyUserLeft(u *Session) {
+func (s *Session) NotifyUserLeft(s2 *Session) {
 	type UserLeftMessage struct {
 		UserID int `json:"userID"`
 	}
 	s.Emit("userLeft", &UserLeftMessage{
-		UserID: u.UserID(),
+		UserID: s2.UserID,
 	})
 }
 
 // NotifyUserInactive will notify someone about a user that is either
 // inactive or coming back from inactive status
-func (s *Session) NotifyUserInactive(u *Session) {
+func (s *Session) NotifyUserInactive(s2 *Session) {
 	type UserInactiveMessage struct {
 		UserID   int  `json:"userID"`
 		Inactive bool `json:"inactive"`
 	}
 	s.Emit("userInactive", &UserInactiveMessage{
-		UserID:   u.UserID(),
-		Inactive: u.Inactive(),
+		UserID:   s2.UserID,
+		Inactive: s2.Inactive(),
 	})
 }
 
@@ -80,7 +80,7 @@ type TableMessage struct {
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 
 	players := make([]string, 0)
 	for _, p := range t.Players {
@@ -98,7 +98,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		PasswordProtected: len(t.PasswordHash) > 0,
 		Joined:            playerIndex != -1,
 		NumPlayers:        len(t.Players),
-		Owned:             s.UserID() == t.Owner,
+		Owned:             s.UserID == t.Owner,
 		Running:           t.Running,
 		Variant:           t.Options.VariantName,
 		Timed:             t.Options.Timed,
@@ -219,7 +219,7 @@ func (s *Session) NotifyConnected(t *Table) {
 }
 
 func (s *Session) NotifyGameAction(t *Table, action interface{}) {
-	scrubbedAction := CheckScrub(t, action, s.UserID())
+	scrubbedAction := CheckScrub(t, action, s.UserID)
 
 	type GameActionMessage struct {
 		TableID uint64      `json:"tableID"`
