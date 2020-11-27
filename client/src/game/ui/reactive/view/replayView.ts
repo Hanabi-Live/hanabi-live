@@ -35,16 +35,6 @@ export function onActiveChanged(active: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-export function onInsidePrivateReplayChanged(inside: boolean): void {
-  if (inside) {
-    globals.elements.enterHypoButton?.setCenter();
-    globals.elements.endHypotheticalButton?.setLowered();
-  } else {
-    globals.elements.enterHypoButton?.setRight();
-    globals.elements.endHypotheticalButton?.setRaised();
-  }
-}
-
 export function onSegmentChanged(
   data: {
     active: boolean;

@@ -1,6 +1,5 @@
 import Konva from "konva";
 import Button from "./controls/Button";
-import EnterHypoButton from "./controls/EnterHypoButton";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
 import Shuttle from "./controls/Shuttle";
 import globals from "./globals";
@@ -308,27 +307,21 @@ export default function drawReplayArea(winW: number, winH: number): void {
     h: bottomLeftReplayButtonValues.h,
   };
 
-  // This button will be moved to the right during shared and in-game replay and center for local
+  // This button will be moved to the right during shared and in-game replay and centered for local
   // replay
-  function setCenter2(this: EnterHypoButton) {
-    const x =
-      replayButtonValues.x + (totalWidth - bottomLeftReplayButtonValues.w) / 2;
-    this.x(x * winW);
-    this.y(bottomLeftReplayButtonValues.y * winH);
-  }
-  function setRight(this: EnterHypoButton) {
-    this.x(bottomRightReplayButtonValues.x * winW);
-    this.y(bottomRightReplayButtonValues.y * winH);
-  }
+  const enterHypoX =
+    globals.state.finished && globals.state.replay.shared === null
+      ? replayButtonValues.x + (totalWidth - bottomLeftReplayButtonValues.w) / 2
+      : bottomRightReplayButtonValues.x;
 
   // The "Enter Hypothetical" button
-  globals.elements.enterHypoButton = new EnterHypoButton({
+  globals.elements.enterHypoButton = new Button({
+    x: enterHypoX * winW,
+    y: bottomRightReplayButtonValues.y * winH,
     width: bottomRightReplayButtonValues.w * winW,
     height: bottomRightReplayButtonValues.h * winH,
     text: "Enter Hypothetical",
   });
-  globals.elements.enterHypoButton.setCenter = setCenter2;
-  globals.elements.enterHypoButton.setRight = setRight;
   globals.elements.enterHypoButton.on("click tap", hypothetical.start);
   globals.elements.replayArea.add(
     (globals.elements.enterHypoButton as unknown) as Konva.Group,
