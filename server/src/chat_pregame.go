@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -351,4 +352,40 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 	}
 
 	logger.Error("Failed to find the owner of the game when attempting to automatically start it.")
+}
+
+func chatImpostor(s *Session, d *CommandData, t *Table) {
+	if t == nil || d.Room == "lobby" {
+		chatServerSend(NotInGameFail, d.Room)
+		return
+	}
+
+	if t.Running {
+		chatServerSend(NotStartedFail, d.Room)
+		return
+	}
+
+	if s.UserID() != t.Owner {
+		chatServerSend(NotOwnerFail, d.Room)
+		return
+	}
+
+	randomIndex := rand.Intn(len(t.Players)) // nolint: gosec
+
+	for i, p := range t.Players {
+		var msg string
+		if i == randomIndex {
+			msg = "You are an IMPOSTOR."
+		} else {
+			msg = "You are a CREWMATE."
+		}
+
+		chatMessage := &ChatMessage{
+			Msg:       msg,
+			Who:       WebsiteName,
+			Datetime:  time.Now(),
+			Recipient: p.Session.Username(),
+		}
+		p.Session.Emit("chat", chatMessage)
+	}
 }
