@@ -88,7 +88,15 @@ func httpWS(c *gin.Context) {
 		username = v
 	}
 
-	// We can attach metadata to a Melody session
+	// Validation was successful; update the database with "datetime_last_login" and "last_ip"
+	if err := models.Users.Update(userID, ip); err != nil {
+		msg := "Failed to set \"datetime_last_login\" and \"last_ip\" for user " + "\"" + username + "\":"
+		httpWSError(c, msg, err)
+		return
+	}
+
+	// Establish the WebSocket connection using the Melody framework
+	// We need to attach some metadata to the Melody session
 	keys := make(map[string]interface{})
 	// The session ID is independent of the user and is used for disconnection purposes
 	keys["sessionID"] = atomic.AddUint64(&sessionIDCounter, 1)
@@ -96,14 +104,15 @@ func httpWS(c *gin.Context) {
 	keys["userID"] = userID
 	keys["username"] = username
 
-	// Validation was successful; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
 	// further initialization is performed there
 	// "HandleRequestWithKeys()" is blocking
 	// (but that is not a problem because this function is called in a dedicated goroutine)
 	if err := melodyRouter.HandleRequestWithKeys(w, r, keys); err != nil {
-		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
-		// fail for mundane reasons (e.g. internet dropping)
+		// We use
+		// "logger.Info()" instead of "logger.Error()"
+		// and "http.StatusBadRequest" instead of "http.StatusInternalServerError"
+		// because WebSocket establishment can fail for mundane reasons (e.g. internet dropping)
 		logger.Info("Failed to establish the WebSocket connection for user \""+username+"\":", err)
 		http.Error(
 			w,

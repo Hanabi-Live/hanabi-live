@@ -30,6 +30,11 @@ type HTTPLoginData struct {
 // The user must POST to "/login" with the values of "username", "password", and "version"
 // If successful, they will receive a cookie from the server with an expiry of N seconds
 // Part 2 is found in "httpWS.go"
+//
+// By allowing this function to run concurrently with no locking, there is a race condition where
+// a new user can login twice at the same time and "models.Users.Insert" will be called twice
+// However, the UNIQUE SQL constraint will prevent the 2nd insersion from completing, and the second
+// goroutine will return at that point
 func httpLogin(c *gin.Context) {
 	// Local variables
 	w := c.Writer
@@ -124,18 +129,6 @@ func httpLogin(c *gin.Context) {
 				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
 				return
 			}
-		}
-
-		// Update the database with "datetime_last_login" and "last_ip"
-		if err := models.Users.Update(user.ID, data.IP); err != nil {
-			logger.Error("Failed to set the login values for user "+
-				"\""+strconv.Itoa(user.ID)+"\":", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
 		}
 	} else {
 		// Check to see if any other users have a normalized version of this username
