@@ -10,8 +10,8 @@ var (
 	// This is the Melody WebSocket router
 	// We choose Melody as a framework because it is a bit higher level than the two most popular
 	// candidates, "gorilla/websocket" and "nhooyr/websocket"
-	// We use a fork of Melody ("gabstv/melody") because the original is unmaintained and the fork
-	// fixes some race conditions
+	// We use a fork of Melody ("gabstv/melody") because the original ("olahol/melody") is
+	// unmaintained and the fork fixes some race conditions
 	melodyRouter *melody.Melody
 
 	// We keep track of all WebSocket sessions

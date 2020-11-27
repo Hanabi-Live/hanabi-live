@@ -153,6 +153,7 @@ func httpWS(c *gin.Context) {
 	// Validation succeeded; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
 	// further initialization is performed there
+	// This call is blocking (since this function is called in a new goroutine)
 	if err := melodyRouter.HandleRequestWithKeys(w, r, keys); err != nil {
 		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
 		// fail for mundane reasons (e.g. internet dropping)
@@ -165,6 +166,8 @@ func httpWS(c *gin.Context) {
 		deleteCookie(c)
 		return
 	}
+
+	// This point will not be reached until the WebSocket connection is closed and/or terminated
 }
 
 func httpWSError(c *gin.Context, msg string, err error) {

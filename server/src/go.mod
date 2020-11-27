@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/Zamiell/go-logging v0.0.0-20200330042608-74a4ce81eb96
+	github.com/Zamiell/hanabi-live/src v0.0.0-20200406062600-5be1ef5b2354 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20200802152012-2464efd3196b
 	github.com/bwmarrin/discordgo v0.22.0
 	github.com/didip/tollbooth v4.0.2+incompatible
