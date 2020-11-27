@@ -7,74 +7,26 @@ import (
 	"time"
 )
 
-func (s *Session) SessionID() uint64 {
-	if s == nil {
-		logger.Error("The \"SessionID\" method was called for a nil session.")
-		return 0
-	}
-
-	if v, exists := s.Get("sessionID"); !exists {
-		logger.Error("Failed to get \"SessionID\" from a session.")
-		return 0
-	} else {
-		return v.(uint64)
-	}
-}
-
-func (s *Session) UserID() int {
-	if s == nil {
-		logger.Error("The \"UserID\" method was called for a nil session.")
-		return -1
-	}
-
-	if v, exists := s.Get("userID"); !exists {
-		logger.Error("Failed to get \"userID\" from a session.")
-		return -1
-	} else {
-		return v.(int)
-	}
-}
-
-func (s *Session) Username() string {
-	if s == nil {
-		logger.Error("The \"Username\" method was called for a nil session.")
-		return "Unknown"
-	}
-
-	if v, exists := s.Get("username"); !exists {
-		logger.Error("Failed to get \"username\" from a session.")
-		return "Unknown"
-	} else {
-		return v.(string)
-	}
-}
-
-func (s *Session) Muted() bool {
-	if s == nil {
-		logger.Error("The \"Muted\" method was called for a nil session.")
-		return false
-	}
-
-	if v, exists := s.Get("muted"); !exists {
-		logger.Error("Failed to get \"muted\" from a session.")
-		return false
-	} else {
-		return v.(bool)
-	}
-}
-
 func (s *Session) Status() int {
 	if s == nil {
 		logger.Error("The \"Status\" method was called for a nil session.")
-		return -1
+		return 0
 	}
 
-	if v, exists := s.Get("status"); !exists {
-		logger.Error("Failed to get \"status\" from a session.")
-		return -1
-	} else {
-		return v.(int)
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.Status
+}
+
+func (s *Session) SetStatus(status int) {
+	if s == nil {
+		logger.Error("The \"SetStatus\" method was called for a nil session.")
+		return
 	}
+
+	s.DataMutex.Lock()
+	s.Data.Status = status
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) TableID() uint64 {
@@ -83,12 +35,20 @@ func (s *Session) TableID() uint64 {
 		return 0
 	}
 
-	if v, exists := s.Get("tableID"); !exists {
-		logger.Error("Failed to get \"tableID\" from a session.")
-		return 0
-	} else {
-		return v.(uint64)
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.TableID
+}
+
+func (s *Session) SetTableID(tableID uint64) {
+	if s == nil {
+		logger.Error("The \"SetTableID\" method was called for a nil session.")
+		return
 	}
+
+	s.DataMutex.Lock()
+	s.Data.TableID = tableID
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) Friends() map[int]struct{} {
@@ -97,12 +57,9 @@ func (s *Session) Friends() map[int]struct{} {
 		return make(map[int]struct{})
 	}
 
-	if v, exists := s.Get("friends"); !exists {
-		logger.Error("Failed to get \"friends\" from a session.")
-		return make(map[int]struct{})
-	} else {
-		return v.(map[int]struct{})
-	}
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.Friends
 }
 
 func (s *Session) ReverseFriends() map[int]struct{} {
@@ -111,12 +68,9 @@ func (s *Session) ReverseFriends() map[int]struct{} {
 		return make(map[int]struct{})
 	}
 
-	if v, exists := s.Get("reverseFriends"); !exists {
-		logger.Error("Failed to get \"reverseFriends\" from a session.")
-		return make(map[int]struct{})
-	} else {
-		return v.(map[int]struct{})
-	}
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.ReverseFriends
 }
 
 func (s *Session) Hyphenated() bool {
@@ -125,12 +79,20 @@ func (s *Session) Hyphenated() bool {
 		return false
 	}
 
-	if v, exists := s.Get("hyphenated"); !exists {
-		logger.Error("Failed to get \"hyphenated\" from a session.")
-		return false
-	} else {
-		return v.(bool)
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.Hyphenated
+}
+
+func (s *Session) SetHyphenated(hyphenated bool) {
+	if s == nil {
+		logger.Error("The \"SetHyphenated\" method was called for a nil session.")
+		return
 	}
+
+	s.DataMutex.Lock()
+	s.Data.Hyphenated = hyphenated
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) Inactive() bool {
@@ -139,26 +101,20 @@ func (s *Session) Inactive() bool {
 		return false
 	}
 
-	if v, exists := s.Get("inactive"); !exists {
-		logger.Error("Failed to get \"inactive\" from a session.")
-		return false
-	} else {
-		return v.(bool)
-	}
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.Inactive
 }
 
-func (s *Session) FakeUser() bool {
+func (s *Session) SetInactive(inactive bool) {
 	if s == nil {
-		logger.Error("The \"FakeUser\" method was called for a nil session.")
-		return false
+		logger.Error("The \"SetInactive\" method was called for a nil session.")
+		return
 	}
 
-	if v, exists := s.Get("fakeUser"); !exists {
-		logger.Error("Failed to get \"fakeUser\" from a session.")
-		return false
-	} else {
-		return v.(bool)
-	}
+	s.DataMutex.Lock()
+	s.Data.Inactive = inactive
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) RateLimitAllowance() float64 {
@@ -167,12 +123,20 @@ func (s *Session) RateLimitAllowance() float64 {
 		return RateLimitRate
 	}
 
-	if v, exists := s.Get("rateLimitAllowance"); !exists {
-		logger.Error("Failed to get \"rateLimitAllowance\" from a session.")
-		return -1
-	} else {
-		return v.(float64)
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.RateLimitAllowance
+}
+
+func (s *Session) SetRateLimitAllowance(rateLimitAllowance float64) {
+	if s == nil {
+		logger.Error("The \"SetRateLimitAllowance\" method was called for a nil session.")
+		return
 	}
+
+	s.DataMutex.Lock()
+	s.Data.RateLimitAllowance = rateLimitAllowance
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) RateLimitLastCheck() time.Time {
@@ -181,12 +145,20 @@ func (s *Session) RateLimitLastCheck() time.Time {
 		return time.Now()
 	}
 
-	if v, exists := s.Get("rateLimitLastCheck"); !exists {
-		logger.Error("Failed to get \"rateLimitLastCheck\" from a session.")
-		return time.Now()
-	} else {
-		return v.(time.Time)
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.RateLimitLastCheck
+}
+
+func (s *Session) SetRateLimitLastCheck(rateLimitLastCheck time.Time) {
+	if s == nil {
+		logger.Error("The \"SetRateLimitLastCheck\" method was called for a nil session.")
+		return
 	}
+
+	s.DataMutex.Lock()
+	s.Data.RateLimitLastCheck = rateLimitLastCheck
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) Banned() bool {
@@ -195,10 +167,7 @@ func (s *Session) Banned() bool {
 		return false
 	}
 
-	if v, exists := s.Get("banned"); !exists {
-		logger.Error("Failed to get \"banned\" from a session.")
-		return false
-	} else {
-		return v.(bool)
-	}
+	s.DataMutex.RLock()
+	defer s.DataMutex.RUnlock()
+	return s.Data.Banned
 }

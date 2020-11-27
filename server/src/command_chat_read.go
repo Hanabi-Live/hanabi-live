@@ -17,8 +17,8 @@ func commandChatRead(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game or are a spectator
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 	if playerIndex == -1 && spectatorIndex == -1 {
 		// Return without an error message if they are not playing or spectating at the table
 		// (to account for lag)
@@ -31,5 +31,5 @@ func commandChatRead(s *Session, d *CommandData) {
 	}
 
 	// Mark that they have read all of the in-game chat
-	t.ChatRead[s.UserID()] = len(t.Chat)
+	t.ChatRead[s.UserID] = len(t.Chat)
 }

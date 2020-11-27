@@ -36,7 +36,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that they did not target themselves
-	if normalizedUsername == normalizeString(s.Username()) {
+	if normalizedUsername == normalizeString(s.Username) {
 		var verb string
 		if add {
 			verb = "friend"
@@ -82,23 +82,23 @@ func friend(s *Session, d *CommandData, add bool) {
 		}
 
 		// Add the friend
-		if err := models.UserFriends.Insert(s.UserID(), friend.ID); err != nil {
+		if err := models.UserFriends.Insert(s.UserID, friend.ID); err != nil {
 			logger.Error("Failed to insert a new friend for user "+
-				"\""+s.Username()+"\":", err)
+				"\""+s.Username+"\":", err)
 			s.Error(DefaultErrorMsg)
 			return
 		}
 		friendMap[friend.ID] = struct{}{}
 
 		// Add the reverse friend (e.g. the inverse relationship)
-		if err := models.UserReverseFriends.Insert(friend.ID, s.UserID()); err != nil {
+		if err := models.UserReverseFriends.Insert(friend.ID, s.UserID); err != nil {
 			logger.Error("Failed to insert a new reverse friend for user "+
-				"\""+s.Username()+"\":", err)
+				"\""+s.Username+"\":", err)
 			s.Error(DefaultErrorMsg)
 			return
 		}
 		if reverseFriendMap != nil {
-			reverseFriendMap[s.UserID()] = struct{}{}
+			reverseFriendMap[s.UserID] = struct{}{}
 		}
 
 		msg = "Successfully added \"" + d.Name + "\" to your friends list."
@@ -110,21 +110,21 @@ func friend(s *Session, d *CommandData, add bool) {
 		}
 
 		// Remove the friend
-		if err := models.UserFriends.Delete(s.UserID(), friend.ID); err != nil {
-			logger.Error("Failed to delete a friend for user \""+s.Username()+"\":", err)
+		if err := models.UserFriends.Delete(s.UserID, friend.ID); err != nil {
+			logger.Error("Failed to delete a friend for user \""+s.Username+"\":", err)
 			s.Error(DefaultErrorMsg)
 			return
 		}
 		delete(friendMap, friend.ID)
 
 		// Remove the reverse friend (e.g. the inverse relationship)
-		if err := models.UserReverseFriends.Delete(friend.ID, s.UserID()); err != nil {
-			logger.Error("Failed to delete a reverse friend for user \""+s.Username()+"\":", err)
+		if err := models.UserReverseFriends.Delete(friend.ID, s.UserID); err != nil {
+			logger.Error("Failed to delete a reverse friend for user \""+s.Username+"\":", err)
 			s.Error(DefaultErrorMsg)
 			return
 		}
 		if reverseFriendMap != nil {
-			delete(reverseFriendMap, s.UserID())
+			delete(reverseFriendMap, s.UserID)
 		}
 
 		msg = "Successfully removed \"" + d.Name + "\" from your friends list."
@@ -133,8 +133,8 @@ func friend(s *Session, d *CommandData, add bool) {
 
 	// Get their (new) friends from the database
 	var friends []string
-	if v, err := models.UserFriends.GetAllUsernames(s.UserID()); err != nil {
-		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
+	if v, err := models.UserFriends.GetAllUsernames(s.UserID); err != nil {
+		logger.Error("Failed to get the friends for user \""+s.Username+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

@@ -128,7 +128,7 @@ func logoutUser(userID int) {
 		return
 	}
 
-	if err := s.Close(); err != nil {
+	if err := s.ms.Close(); err != nil {
 		logger.Error("Failed to manually close the WebSocket session for user "+
 			strconv.Itoa(userID)+":", err)
 	} else {

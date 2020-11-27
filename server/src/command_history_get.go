@@ -20,8 +20,8 @@ func commandHistoryGet(s *Session, d *CommandData) {
 
 	// Get the list of game IDs for the range that they specified
 	var gameIDs []int
-	if v, err := models.Games.GetGameIDsUser(s.UserID(), d.Offset, d.Amount); err != nil {
-		logger.Error("Failed to get the game IDs for user \""+s.Username()+"\":", err)
+	if v, err := models.Games.GetGameIDsUser(s.UserID, d.Offset, d.Amount); err != nil {
+		logger.Error("Failed to get the game IDs for user \""+s.Username+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

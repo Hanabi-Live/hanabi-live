@@ -36,8 +36,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are either playing or spectating the game
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			".")
@@ -85,7 +85,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		// If a spectator is viewing a replay of a game that they played in,
 		// we want to put them in the same seat
 		for i, name := range playerNames {
-			if name == s.Username() {
+			if name == s.Username {
 				ourPlayerIndex = i
 				break
 			}

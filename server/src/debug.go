@@ -188,7 +188,7 @@ func getBadGameIDs() {
 			break
 		}
 		logger.Debug("ON GAME:", id)
-		s := newFakeSession(1, "Server")
+		s := NewFakeSession(1, "Server")
 		commandReplayCreate(s, &CommandData{ // Manual invocation
 			Source:     "id",
 			GameID:     id,

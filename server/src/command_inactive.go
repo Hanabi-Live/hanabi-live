@@ -7,7 +7,7 @@ package main
 // }
 func commandInactive(s *Session, d *CommandData) {
 	if s != nil {
-		s.Set("inactive", d.Inactive)
+		s.SetInactive(d.Inactive)
 		notifyAllUserInactive(s)
 	}
 }

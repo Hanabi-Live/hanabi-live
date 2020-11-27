@@ -186,7 +186,7 @@ func (g *Game) EndTimer(gp *GamePlayer) {
 		// A player's session should never be nil
 		// They might be in the process of reconnecting,
 		// so make a fake session that will represent them
-		s = newFakeSession(p.ID, p.Name)
+		s = NewFakeSession(p.ID, p.Name)
 		logger.Info("Created a new fake session in the \"CheckTimer()\" function.")
 	}
 

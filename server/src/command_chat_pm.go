@@ -14,7 +14,7 @@ import (
 // }
 func commandChatPM(s *Session, d *CommandData) {
 	// Check to see if their IP has been muted
-	if s != nil && s.Muted() {
+	if s != nil && s.Muted {
 		s.Warning("You have been muted by an administrator.")
 		return
 	}
@@ -35,7 +35,7 @@ func commandChatPM(s *Session, d *CommandData) {
 
 	// Validate that they are not sending a private message to themselves
 	normalizedUsername := normalizeString(d.Recipient)
-	if normalizedUsername == normalizeString(s.Username()) {
+	if normalizedUsername == normalizeString(s.Username) {
 		s.Warning("You cannot send a private message to yourself.")
 		return
 	}
@@ -44,7 +44,7 @@ func commandChatPM(s *Session, d *CommandData) {
 	var recipientSession *Session
 	sessionsMutex.RLock()
 	for _, s2 := range sessions {
-		if normalizeString(s2.Username()) == normalizedUsername {
+		if normalizeString(s2.Username) == normalizedUsername {
 			recipientSession = s2
 			break
 		}
@@ -63,10 +63,10 @@ func commandChatPM(s *Session, d *CommandData) {
 
 func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 	// Log the message
-	logger.Info("PM <" + s.Username() + "> --> <" + recipientSession.Username() + "> " + d.Msg)
+	logger.Info("PM <" + s.Username + "> --> <" + recipientSession.Username + "> " + d.Msg)
 
 	// Add the message to the database
-	if err := models.ChatLogPM.Insert(s.UserID(), d.Msg, recipientSession.UserID()); err != nil {
+	if err := models.ChatLogPM.Insert(s.UserID, d.Msg, recipientSession.UserID); err != nil {
 		logger.Error("Failed to insert a private message into the database:", err)
 		s.Error("")
 		return
@@ -74,9 +74,9 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 
 	chatMessage := &ChatMessage{
 		Msg:       d.Msg,
-		Who:       s.Username(),
+		Who:       s.Username,
 		Datetime:  time.Now(),
-		Recipient: recipientSession.Username(),
+		Recipient: recipientSession.Username,
 	}
 
 	// Echo the private message back to the person who sent it

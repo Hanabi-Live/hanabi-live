@@ -22,12 +22,12 @@ func commandHistoryFriendsGet(s *Session, d *CommandData) {
 	// Get the list of friend game IDs for the range that they specified
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsFriends(
-		s.UserID(),
+		s.UserID,
 		s.Friends(),
 		d.Offset,
 		d.Amount,
 	); err != nil {
-		logger.Error("Failed to get the friend game IDs for user \""+s.Username()+"\":", err)
+		logger.Error("Failed to get the friend game IDs for user \""+s.Username+"\":", err)
 		return
 	} else {
 		gameIDs = v

@@ -25,8 +25,8 @@ func commandChatTyping(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game or are a spectator
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot report that you are typing.")
@@ -67,7 +67,7 @@ func chatTyping(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	}
 
 	// X seconds from now, check to see if they have stopped typing
-	go chatTypingCheckStopped(t, s.UserID())
+	go chatTypingCheckStopped(t, s.UserID)
 }
 
 func chatTypingCheckStopped(t *Table, userID int) {

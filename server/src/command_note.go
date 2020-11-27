@@ -38,8 +38,8 @@ func commandNote(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot send a note.")
@@ -83,7 +83,7 @@ func commandNote(s *Session, d *CommandData) {
 	// Escape all HTML special characters (to stop various attacks against other players)
 	d.Msg = html.EscapeString(d.Msg)
 
-	logger.Debug("User \"" + s.Username() + "\" submitted a note of: " + d.Msg)
+	logger.Debug("User \"" + s.Username + "\" submitted a note of: " + d.Msg)
 	note(d, t, playerIndex, spectatorIndex)
 }
 

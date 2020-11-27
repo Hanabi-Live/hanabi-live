@@ -27,7 +27,7 @@ func commandLoaded(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are a player
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex == -1 {
 		// Don't show a warning message,
 		// since the client is programmed to also send a "loaded" command

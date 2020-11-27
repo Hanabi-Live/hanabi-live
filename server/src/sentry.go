@@ -72,7 +72,7 @@ func sentryHTTPAttachMetadata(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address:", err)
+		logger.Error("Failed to parse the IP address from \""+r.RemoteAddr+"\":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -100,8 +100,8 @@ func sentryWebsocketMessageAttachMetadata(s *Session) {
 
 	// Parse the IP address
 	var ip string
-	if v, _, err := net.SplitHostPort(s.Session.Request.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address:", err)
+	if v, _, err := net.SplitHostPort(s.ms.Request.RemoteAddr); err != nil {
+		logger.Error("Failed to parse the IP address from \""+s.ms.Request.RemoteAddr+"\":", err)
 		return
 	} else {
 		ip = v
@@ -112,8 +112,8 @@ func sentryWebsocketMessageAttachMetadata(s *Session) {
 	// We use "SetTags()" instead of "SetUser()" since tags are more easy to see in the
 	// Sentry GUI than users
 	sentry.ConfigureScope(func(scope *sentry.Scope) {
-		scope.SetTag("userID", strconv.Itoa(s.UserID()))
-		scope.SetTag("username", s.Username())
+		scope.SetTag("userID", strconv.Itoa(s.UserID))
+		scope.SetTag("username", s.Username)
 		scope.SetTag("ip", ip)
 		scope.SetTag("path", "n/a")
 	})

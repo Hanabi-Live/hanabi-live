@@ -73,8 +73,8 @@ func commandSetting(s *Session, d *CommandData) {
 }
 
 func setting(s *Session, d *CommandData) {
-	if err := models.UserSettings.Set(s.UserID(), toSnakeCase(d.Name), d.Setting); err != nil {
-		logger.Error("Failed to set a setting for user \""+s.Username()+"\":", err)
+	if err := models.UserSettings.Set(s.UserID, toSnakeCase(d.Name), d.Setting); err != nil {
+		logger.Error("Failed to set a setting for user \""+s.Username+"\":", err)
 		s.Error("")
 		return
 	}
@@ -82,9 +82,9 @@ func setting(s *Session, d *CommandData) {
 	// We also store whether or not they are a Hyphen-ated member on the session itself
 	if d.Name == "hyphenatedConventions" {
 		if d.Setting == "1" {
-			s.Set("hyphenated", true)
+			s.SetHyphenated(true)
 		} else if d.Setting == "0" {
-			s.Set("hyphenated", false)
+			s.SetHyphenated(false)
 		}
 	}
 }

@@ -54,7 +54,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not joined to another table
-	if !strings.HasPrefix(s.Username(), "Bot-") {
+	if !strings.HasPrefix(s.Username, "Bot-") {
 		if t2 := s.GetJoinedTable(); t2 != nil {
 			s.Warning("You cannot join more than one table at a time. " +
 				"Terminate your other game before creating a new one.")
@@ -286,7 +286,7 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 		}
 	}
 
-	t := NewTable(d.Name, s.UserID())
+	t := NewTable(d.Name, s.UserID)
 	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
 	t.Visible = !d.HidePregame
@@ -336,17 +336,17 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	}
 
 	// Add it to the map
-	logger.Debug("Acquiring tables write lock for user: " + s.Username())
+	logger.Debug("Acquiring tables write lock for user: " + s.Username)
 	tablesMutex.Lock()
-	logger.Debug("Acquired tables write lock for user: " + s.Username())
+	logger.Debug("Acquired tables write lock for user: " + s.Username)
 	tables[t.ID] = t
 	tablesMutex.Unlock()
 
-	logger.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")
+	logger.Info(t.GetName() + "User \"" + s.Username + "\" created a table.")
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 
 	// Log a chat message so that future players can see a timestamp of when the table was created
-	msg := s.Username() + " created the table."
+	msg := s.Username + " created the table."
 	chatServerSend(msg, t.GetRoomName())
 
 	// Join the user to the new table

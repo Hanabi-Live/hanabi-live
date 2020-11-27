@@ -3,8 +3,6 @@ package main
 import (
 	"strconv"
 	"strings"
-
-	melody "gopkg.in/olahol/melody.v1"
 )
 
 type GameJSON struct {
@@ -76,8 +74,8 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	if d.Source == "id" {
 		name += "game #" + strconv.Itoa(d.DatabaseID)
 	} else if d.Source == "json" {
-		name += s.Username() + "'"
-		if !strings.HasSuffix(s.Username(), "s") {
+		name += s.Username + "'"
+		if !strings.HasSuffix(s.Username, "s") {
 			name += "s"
 		}
 		name += " JSON game"
@@ -109,17 +107,17 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Add it to the map
-	logger.Debug("Acquiring tables write lock for user: " + s.Username())
+	logger.Debug("Acquiring tables write lock for user: " + s.Username)
 	tablesMutex.Lock()
-	logger.Debug("Acquired tables write lock for user: " + s.Username())
+	logger.Debug("Acquired tables write lock for user: " + s.Username)
 	tables[t.ID] = t
 	tablesMutex.Unlock()
 
 	if d.Source == "id" {
-		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility +
+		logger.Info("User \"" + s.Username + "\" created a new " + d.Visibility +
 			" replay for game #" + strconv.Itoa(d.DatabaseID))
 	} else if d.Source == "json" {
-		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
+		logger.Info("User \"" + s.Username + "\" created a new " + d.Visibility + " JSON replay")
 	}
 	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
@@ -174,7 +172,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		ShadowingPlayerIndex: -1,
 		NoLock:               true,
 	})
-	t.Owner = s.UserID()
+	t.Owner = s.UserID
 
 	// Start the idle timeout
 	go t.CheckIdle()
@@ -530,25 +528,10 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		player := &Player{
 			ID:      id,
 			Name:    name,
-			Session: newFakeSession(id, name),
+			Session: NewFakeSession(id, name),
 			Present: true,
 		}
 		t.Players = append(t.Players, player)
-	}
-}
-
-// newFakeSession prepares a "fake" user session that will be used for game emulation
-func newFakeSession(id int, name string) *Session {
-	keys := defaultSessionKeys() // This initializes every possible field
-	keys["sessionID"] = id
-	keys["userID"] = id
-	keys["username"] = name
-	keys["fakeUser"] = true
-
-	return &Session{
-		&melody.Session{
-			Keys: keys,
-		},
 	}
 }
 

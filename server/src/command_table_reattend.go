@@ -20,7 +20,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are at the table
-	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex == -1 {
 		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot reattend it.")
@@ -37,7 +37,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 }
 
 func tableReattend(s *Session, t *Table, playerIndex int) {
-	logger.Info(t.GetName() + "User \"" + s.Username() + "\" reattended.")
+	logger.Info(t.GetName() + "User \"" + s.Username + "\" reattended.")
 
 	// They might be reconnecting after a disconnect,
 	// so update the player object with the new socket
@@ -70,8 +70,8 @@ func tableReattend(s *Session, t *Table, playerIndex int) {
 		} else {
 			status = StatusPregame
 		}
-		s.Set("status", status)
-		s.Set("tableID", t.ID)
+		s.SetStatus(status)
+		s.SetTableID(t.ID)
 		notifyAllUser(s)
 	}
 }

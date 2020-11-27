@@ -51,7 +51,7 @@ func tag(s *Session, d *CommandData, t *Table) {
 	if !t.Replay {
 		// Store the tag temporarily until the game ends,
 		// at which point we will write it to the database
-		g.Tags[d.Msg] = s.UserID()
+		g.Tags[d.Msg] = s.UserID
 
 		// Send them an acknowledgement via private message to avoid spoiling information about the
 		// ongoing game
@@ -80,14 +80,14 @@ func tag(s *Session, d *CommandData, t *Table) {
 	}
 
 	// Add it to the database
-	if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, s.UserID(), d.Msg); err != nil {
+	if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, s.UserID, d.Msg); err != nil {
 		logger.Error("Failed to insert a tag for game ID "+
 			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
 		s.Error(DefaultErrorMsg)
 		return
 	}
 
-	msg := s.Username() + " has added a game tag of \"" + d.Msg + "\"."
+	msg := s.Username + " has added a game tag of \"" + d.Msg + "\"."
 	chatServerSend(msg, t.GetRoomName())
 }
 
