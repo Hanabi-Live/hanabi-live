@@ -545,8 +545,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Contribution desired based on notes
     const b = (
-      !(this.note.knownTrash || this.note.unclued)
-      && (cardRules.isClued(this.state) || this.note.finessed)
+      !(this.note.knownTrash) &&
+      (this.note.finessed || (cardRules.isClued(this.state) && !this.note.unclued))
      ) ? 1 : 0;
 
      return b-a;
