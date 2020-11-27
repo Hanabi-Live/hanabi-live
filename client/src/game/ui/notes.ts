@@ -8,6 +8,7 @@ import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
+import * as statsView from "./reactive/view/statsView";
 
 // Get the contents of the note tooltip
 function get(order: number, our: boolean) {
@@ -35,6 +36,7 @@ function get(order: number, our: boolean) {
 // 1) update the stored note in memory
 // 2) send the new note to the server
 // 3) check for new note identities
+// 4) update efficiency
 export function set(order: number, note: string): void {
   const oldNote = globals.ourNotes.get(order) ?? "";
   globals.ourNotes.set(order, note);
@@ -65,6 +67,10 @@ export function set(order: number, note: string): void {
 
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
+
+  if (!globals.state.finished) {
+    statsView.onEfficiencyChanged({ ...globals.state.ongoingGame.stats });
+  }
 }
 
 function getNoteKeywords(note: string) {

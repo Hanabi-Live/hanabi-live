@@ -25,6 +25,7 @@ import * as notes from "./notes";
 import StateObserver from "./reactive/StateObserver";
 import * as replay from "./replay";
 import * as stats from "./stats";
+import * as statsView from "./reactive/view/statsView";
 import * as timer from "./timer";
 import uiInit from "./uiInit";
 
@@ -250,6 +251,10 @@ commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   // Check for special notes on the stack bases
   for (const stackBase of globals.stackBases) {
     stackBase.checkSpecialNote();
+  }
+
+  if (!globals.state.finished) {
+    statsView.onEfficiencyChanged({ ...globals.state.ongoingGame.stats });
   }
 });
 
