@@ -406,6 +406,16 @@ func (*Games) GetGameIDsFriends(
 func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
 	gameIDs := make([]int, 0)
 
+	// First, validate that all of the user IDs are unique
+	userIDMap := make(map[int]struct{})
+	for _, userID := range userIDs {
+		if _, ok := userIDMap[userID]; ok {
+			err := errors.New("the list of user IDs contained a duplicate entry of " + strconv.Itoa(userID))
+			return gameIDs, err
+		}
+		userIDMap[userID] = struct{}{}
+	}
+
 	SQLString := `
 		SELECT DISTINCT games.id
 		FROM games

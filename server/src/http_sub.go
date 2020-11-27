@@ -98,7 +98,7 @@ func httpParsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 
 		playerIDs = append(playerIDs, user.ID)
 		playerNames = append(playerNames, user.Username)
-		playerNormalizedNames = append(playerNames, normalizedUsername)
+		playerNormalizedNames = append(playerNormalizedNames, normalizedUsername)
 	}
 
 	return playerIDs, playerNames, true
