@@ -52,6 +52,19 @@ export function onEfficiencyChanged(data: {
     cardsGotten += globals.efficiencyModifier;
     cardsGottenModified = true;
   }
+
+  let cardsGottenByNotes : number | string;
+  if (!globals.state.finished) {
+    cardsGottenByNotes = 0;
+    for (const card of globals.deck) {
+      cardsGottenByNotes += card.notesEfficiencyModifier();
+    }
+    cardsGotten += cardsGottenByNotes;
+  }
+  else {
+    cardsGottenByNotes = "-";
+  }
+
   const cardsNotGotten = data.maxScore - cardsGotten;
 
   const efficiency = statsRules.efficiency(
@@ -106,6 +119,7 @@ export function onEfficiencyChanged(data: {
   }
   const tooltipContent = `
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
+    ${formatLine("Current cards noted as gotten", cardsGottenByNotes)}
     ${formatLine("Current cards gotten modifier", globals.efficiencyModifier)}
     ${formatLine("Potential clues lost", data.potentialCluesLost)}
     ${formatLine(
