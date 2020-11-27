@@ -34,15 +34,8 @@ func websocketDisconnectRemoveFromMap(s *Session) {
 	logger.Debug("Acquired sessions write lock for user: " + s.Username)
 	defer sessionsMutex.Unlock()
 
-	if thisSessionID != otherSessionID {
-		logger.Info("The orphaned session for user \"" + s.Username + "\" " +
-			"successfully disconnected.")
-		return false
-	}
-
 	delete(sessions, s.UserID)
 	logger.Info("User \""+s.Username+"\" disconnected;", len(sessions), "user(s) now connected.")
-	return true
 }
 
 func websocketDisconnectRemoveFromGames(s *Session) {
@@ -51,12 +44,12 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	preGameTableIDs := make([]uint64, 0)
 	spectatingTableIDs := make([]uint64, 0)
 
-	logger.Debug("Acquiring tables read lock for user: " + username)
+	logger.Debug("Acquiring tables read lock for user: " + s.Username)
 	tablesMutex.RLock()
-	logger.Debug("Acquired tables read lock for user: " + username)
+	logger.Debug("Acquired tables read lock for user: " + s.Username)
 	for _, t := range tables {
 		// They could be one of the players (1/2)
-		playerIndex := t.GetPlayerIndexFromID(userID)
+		playerIndex := t.GetPlayerIndexFromID(s.UserID)
 		if playerIndex != -1 && !t.Replay {
 			if t.Running {
 				ongoingGameTableIDs = append(ongoingGameTableIDs, t.ID)
@@ -66,16 +59,16 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		}
 
 		// They could be one of the spectators (2/2)
-		spectatorIndex := t.GetSpectatorIndexFromID(userID)
+		spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 		if spectatorIndex != -1 {
 			spectatingTableIDs = append(spectatingTableIDs, t.ID)
 		}
 	}
 	tablesMutex.RUnlock()
-	logger.Debug("Released tables read lock for user: " + username)
+	logger.Debug("Released tables read lock for user: " + s.Username)
 
 	for _, ongoingGameTableID := range ongoingGameTableIDs {
-		logger.Info("Unattending player \"" + username + "\" from ongoing table " +
+		logger.Info("Unattending player \"" + s.Username + "\" from ongoing table " +
 			strconv.FormatUint(ongoingGameTableID, 10) + " since they disconnected.")
 		commandTableUnattend(s, &CommandData{ // Manual invocation
 			TableID: ongoingGameTableID,
@@ -83,7 +76,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	}
 
 	for _, preGameTableID := range preGameTableIDs {
-		logger.Info("Ejecting player \"" + username + "\" from unstarted table " +
+		logger.Info("Ejecting player \"" + s.Username + "\" from unstarted table " +
 			strconv.FormatUint(preGameTableID, 10) + " since they disconnected.")
 		commandTableLeave(s, &CommandData{ // Manual invocation
 			TableID: preGameTableID,
@@ -91,7 +84,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	}
 
 	for _, spectatingTableID := range spectatingTableIDs {
-		logger.Info("Ejecting spectator \"" + username + "\" from table " +
+		logger.Info("Ejecting spectator \"" + s.Username + "\" from table " +
 			strconv.FormatUint(spectatingTableID, 10) + " since they disconnected.")
 		commandTableUnattend(s, &CommandData{ // Manual invocation
 			TableID: spectatingTableID,
@@ -101,7 +94,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		// (so that they will be automatically reconnected to the game if/when they reconnect)
 		t, exists := getTableAndLock(s, spectatingTableID, true)
 		if exists {
-			t.DisconSpectators[userID] = struct{}{}
+			t.DisconSpectators[s.UserID] = struct{}{}
 			t.Mutex.Unlock()
 		}
 	}

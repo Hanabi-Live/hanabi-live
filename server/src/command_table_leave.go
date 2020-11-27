@@ -53,11 +53,9 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 	t.NotifyPlayerChange()
 
 	// Set their status
-	if s != nil {
-		s.SetStatus(StatusLobby)
-		s.SetTableID(uint64(0))
-		notifyAllUser(s)
-	}
+	s.SetStatus(StatusLobby)
+	s.SetTableID(uint64(0))
+	notifyAllUser(s)
 
 	// Make the client switch screens to show the base lobby
 	type TableLeftMessage struct {

@@ -122,11 +122,9 @@ func tableJoin(s *Session, t *Table) {
 	t.NotifyPlayerChange()
 
 	// Set their status
-	if s != nil {
-		s.SetStatus(StatusPregame)
-		s.SetTableID(t.ID)
-		notifyAllUser(s)
-	}
+	s.SetStatus(StatusPregame)
+	s.SetTableID(t.ID)
+	notifyAllUser(s)
 
 	// Let the client know they successfully joined the table
 	s.NotifyTableJoined(t)

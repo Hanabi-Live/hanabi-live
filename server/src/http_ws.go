@@ -31,7 +31,7 @@ func httpWS(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		msg := "Failed to parse the IP address:"
+		msg := "Failed to parse the IP address from \"" + r.RemoteAddr + "\":"
 		httpWSError(c, msg, err)
 		return
 	} else {

@@ -36,20 +36,23 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	commandWaitGroup.Add(1)
 	defer commandWaitGroup.Done()
 
-	// Turn the Melody session into a custom session
-	s := &Session{ms}
+	// Get the respective Hanabi session for this Melody session
+	s := getSessionFromMelodySession(ms)
+	if s == nil {
+		return
+	}
 
 	if s.Banned() {
 		// We already banned this user, so ignore any of their remaining messages in the queue
 		return
 	}
 
-	if !s.FakeUser() {
+	if !s.FakeUser {
 		// Validate that the user is not attempting to flood the server
 		// Algorithm from: http://stackoverflow.com/questions/667508
 		now := time.Now()
 		timePassed := now.Sub(s.RateLimitLastCheck()).Seconds()
-		s.Set("rateLimitLastCheck", now)
+		s.SetRateLimitLastCheck(now)
 
 		newRateLimitAllowance := s.RateLimitAllowance() + timePassed*(RateLimitRate/RateLimitPer)
 		if newRateLimitAllowance > RateLimitRate {
@@ -64,7 +67,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 		}
 
 		newRateLimitAllowance--
-		s.Set("rateLimitAllowance", newRateLimitAllowance)
+		s.SetRateLimitAllowance(newRateLimitAllowance)
 	}
 
 	sentryWebsocketMessageAttachMetadata(s)
@@ -107,8 +110,8 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 func ban(s *Session) {
 	// Parse the IP address
 	var ip string
-	if v, _, err := net.SplitHostPort(s.Session.Request.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address in the WebSocket function:", err)
+	if v, _, err := net.SplitHostPort(s.ms.Request.RemoteAddr); err != nil {
+		logger.Error("Failed to parse the IP address from \""+s.ms.Request.RemoteAddr+"\":", err)
 		return
 	} else {
 		ip = v

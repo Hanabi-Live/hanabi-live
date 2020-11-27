@@ -15,10 +15,8 @@ var (
 	melodyRouter *melody.Melody
 
 	// We keep track of all WebSocket sessions
-	sessions        = make(map[int]*Session) // Indexed by user ID
-	sessionsMutex   = sync.RWMutex{}
-	sessionsIDMap   = make(map[uint64]*Session) // Indexed by Melody session ID
-	sessionsIDMutex = sync.RWMutex{}
+	sessions      = make(map[int]*Session) // Indexed by user ID
+	sessionsMutex = sync.RWMutex{}
 
 	// We only allow one user to connect or disconnect at the same time
 	sessionConnectMutex = sync.Mutex{}

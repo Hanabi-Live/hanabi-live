@@ -105,11 +105,9 @@ func tableSpectate(s *Session, d *CommandData, t *Table) {
 			tableID = 0 // Protect the privacy of a user in a solo replay
 		}
 	}
-	if s != nil {
-		s.SetStatus(status)
-		s.SetTableID(tableID)
-		notifyAllUser(s)
-	}
+	s.SetStatus(status)
+	s.SetTableID(tableID)
+	notifyAllUser(s)
 
 	// Send them a "tableStart" message
 	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command
