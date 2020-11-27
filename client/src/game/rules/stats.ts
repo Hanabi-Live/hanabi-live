@@ -200,6 +200,7 @@ export function minEfficiency(
 // Returns the max number of clues that can be spent while getting the max possible score from a
 // given game state onward (not accounting for the locations of playable cards)
 export function cluesStillUsable(
+  score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
   deckSize: number,
@@ -224,7 +225,6 @@ export function cluesStillUsable(
     return null;
   }
 
-  const score = scorePerStack.reduce((a, b) => a + b, 0);
   const maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
 
   const missingScore = maxScore - score;
@@ -278,11 +278,13 @@ export function startingCluesUsable(
   deckSize: number,
   variant: Variant,
 ): number {
+  const score = 0;
   const scorePerStack = new Array(variant.suits.length).fill(0);
   const maxScorePerStack = new Array(variant.suits.length).fill(5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
   const startingClues = cluesStillUsable(
+    score,
     scorePerStack,
     maxScorePerStack,
     deckSize,
