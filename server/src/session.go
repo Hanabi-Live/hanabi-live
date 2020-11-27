@@ -144,6 +144,9 @@ func (s *Session) GetJoinedTable() *Table {
 	defer tablesMutex.RUnlock()
 
 	for _, t := range tables {
+		t.Mutex.Lock()
+		defer t.Mutex.Unlock()
+
 		if t.Replay {
 			continue
 		}

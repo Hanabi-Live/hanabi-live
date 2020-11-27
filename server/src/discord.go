@@ -91,6 +91,11 @@ func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Don't do anything if we are not yet connected
+	if discordBotID == "" {
+		return
+	}
+
 	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
