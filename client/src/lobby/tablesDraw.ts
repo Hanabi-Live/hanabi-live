@@ -170,7 +170,7 @@ export default function tablesDraw(): void {
     $("<td>").html(spectatorsString).appendTo(row);
 
     // There is a keyboard shortcut to join the first table available
-    // Add a hidden button to facilitate this
+    // Add a class to the first relevant row to facilitate this
     if (
       !table.running &&
       !table.joined &&
@@ -178,20 +178,8 @@ export default function tablesDraw(): void {
       !addedJoinFirstTableButton
     ) {
       addedJoinFirstTableButton = true;
-      const button = $("<button>")
-        .attr("type", "button")
-        .css("display", "none")
-        .attr("id", `join-${table.id}`)
-        .addClass("lobby-games-join-first-table-button")
-        .on("click", () => {
-          tableJoin(table);
-        });
-      button.appendTo(row);
+      row.addClass("lobby-games-join-first-table-button");
     }
-
-    // this is redundant; will remove after implementing
-    // server css cache busting
-    row.addClass("hover");
 
     // Setup click actions
     if (table.sharedReplay || (!table.joined && table.running)) {
