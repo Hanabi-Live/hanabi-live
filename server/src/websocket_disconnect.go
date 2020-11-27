@@ -3,7 +3,7 @@ package main
 import (
 	"strconv"
 
-	"github.com/gabstv/melody"
+	melody "gopkg.in/olahol/melody.v1"
 )
 
 func websocketDisconnect(ms *melody.Session) {

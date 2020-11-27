@@ -5,7 +5,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/gabstv/melody"
+	melody "gopkg.in/olahol/melody.v1"
 )
 
 type Session struct {

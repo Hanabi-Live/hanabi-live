@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gabstv/melody"
+	melody "gopkg.in/olahol/melody.v1"
 )
 
 type GameJSON struct {
@@ -545,12 +545,11 @@ func newFakeSession(id int, name string) *Session {
 	keys["username"] = name
 	keys["fakeUser"] = true
 
-	ms := &melody.Session{}
-	for k, v := range keys {
-		ms.Set(k, v)
+	return &Session{
+		&melody.Session{
+			Keys: keys,
+		},
 	}
-
-	return &Session{ms}
 }
 
 func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabstv/melody"
+	melody "gopkg.in/olahol/melody.v1"
 )
 
 const (
