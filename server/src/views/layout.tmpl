@@ -28,7 +28,7 @@
   >
   <!-- Load the Critical CSS first -->
   {{if ne .Title "Dev"}}
-    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css?version={{.Version}}" />
   {{end}}
   <!-- Preload fonts -->
   <link
@@ -48,8 +48,8 @@
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
   {{else}}
     <!-- Delay loading non-critical CSS -->
-    <link rel="preload" type="text/css" href="/public/css/main.min.css" as="style">
-    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css">
+    <link rel="preload" type="text/css" href="/public/css/main.min.css?version={{.Version }}" as="style">
+    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css?version={{.Version }}">
   {{end}}
   <link rel="icon" type="image/png" sizes="32x32" href="/public/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/public/img/favicon-16x16.png">

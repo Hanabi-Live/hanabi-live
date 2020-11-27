@@ -1,9 +1,9 @@
 // This is the main entry point for the client code
-// The client code is split up into multiple files and bundled together with Webpack
+// The client code is split up into multiple files and bundled together with webpack
 
 // Tooltipster is a jQuery library, so we import it purely for the side-effects
 // (e.g. so that it can add the ".tooltipster" property to the "$" object)
-// Webpack will purge modules like this from the resulting bundled file (e.g. the "tree shaking"
+// webpack will purge modules like this from the resulting bundled file (e.g. the "tree shaking"
 // feature) if we have "sideEffects" equal to true in the "package.json" file
 // So we have to make sure that "sideEffects" is is either removed or set to false
 // Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have

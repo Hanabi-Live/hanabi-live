@@ -3,8 +3,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-// It is possible for the Webpack configuration to be written in TypeScript,
+// It is possible for the webpack configuration to be written in TypeScript,
 // but this will not work with the full range of options in "tsconfig.json"
+// Keep the config file written in JavaScript for simplicity
 
 // Imports
 const SentryWebpackPlugin = require("@sentry/webpack-plugin");
@@ -15,6 +16,7 @@ const path = require("path");
 const webpack = require("webpack");
 
 // Constants
+const filename = "main.min.js";
 const outputPath = path.join(__dirname, "webpack_output");
 const inTravis =
   process.env.TRAVIS !== undefined && process.env.TRAVIS === "true";
@@ -34,10 +36,8 @@ if (!fs.existsSync(versionPath)) {
 }
 const version = fs.readFileSync(versionPath).toString().trim();
 
-// Constants
-const filename = `main.${version}.min.js`;
-
 // Clear out the output subdirectory, as it might contain old JavaScript bundles and old source maps
+// (but don't do this if we are running the webpack dev server)
 if (process.env.WEBPACK_DEV_SERVER === "") {
   if (fs.existsSync(outputPath)) {
     const files = fs.readdirSync(outputPath);
@@ -53,12 +53,10 @@ module.exports = {
 
   // Where to put the bundled file
   output: {
-    // By default, Webpack will output the file to a "dist" subdirectory
+    // By default, webpack will output the file to a "dist" subdirectory
     path: outputPath,
-    // (after WebPack is complete, a script will move the files to the "bundles" subdirectory)
+    // (after webpack is complete, a script will move the files to the "bundles" subdirectory)
 
-    // We want to include the version number inside of the file name so that browsers will be forced
-    // to retrieve the latest version (and not use a cached older version)
     filename,
   },
 
@@ -67,7 +65,7 @@ module.exports = {
     symlinks: false, // Performance optimization
   },
 
-  // Webpack will display a warning unless we specify the mode
+  // webpack will display a warning unless we specify the mode
   // Production mode minifies the resulting JavaScript, reducing the file size by a huge factor
   // However, production mode takes a lot longer to pack than development mode,
   // so we only enable it on the real web server so that we can have speedy development
@@ -129,7 +127,7 @@ if (!inTravis && sentryTokenIsSet) {
     throw new Error("There are no existing plugins to append to.");
   }
   module.exports.plugins.push(
-    // In order for Sentry to use the source maps, we must use their custom Webpack plugin
+    // In order for Sentry to use the source maps, we must use their custom webpack plugin
     // This also uploads the packed file + source maps to Sentry
     // https://docs.sentry.io/platforms/javascript/sourcemaps/
     // (we don't want to upload anything in a development or testing environment)
