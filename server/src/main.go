@@ -1,6 +1,6 @@
 package main // In Go, executable commands must always use package main
 
-// This file contains the entry point for the server software
+// This file contains the entry point for the server software asdf
 
 import (
 	"os"
