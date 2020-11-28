@@ -423,14 +423,14 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   }
 
   if (tooltipHTML === "") {
-    return "-";
+    return "[none]";
   }
 
   let id = `lobby-history-table-${i}-options`;
   if (otherScores) {
     id += "-other-scores";
   }
-  let html = `<i id="${id}" class="fas fa-plus" `;
+  let html = `<i id="${id}" class="fas fa-ellipsis-h" `;
   html += `data-tooltip-content="#${id}-tooltip"></i>`;
   html += `
     <div class="hidden">
