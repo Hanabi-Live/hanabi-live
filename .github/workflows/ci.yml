@@ -14,8 +14,8 @@ jobs:
     - uses: actions/setup-node@v1
     - uses: actions/cache@v2
       with:
-        path: ./${{env.working-directory}}/node_modules
-        key: node-modules-${{ hashFiles('./${{env.working-directory}}/package-lock.json') }}
+        path: ${{env.working-directory}}/node_modules
+        key: node-modules-${{ hashFiles('${{env.working-directory}}/package-lock.json') }}
     - if: steps.cache.outputs.cache-hit != 'true'
       run: npm install
       working-directory: ${{env.working-directory}}
@@ -52,8 +52,8 @@ jobs:
     - uses: actions/setup-node@v1
     - uses: actions/cache@v2
       with:
-        path: ./${{env.working-directory}}/node_modules
-        key: spell-check-node-modules-${{ hashFiles('./${{env.working-directory}}/package-lock.json') }}
+        path: ${{env.working-directory}}/node_modules
+        key: spell-check-node-modules-${{ hashFiles('${{env.working-directory}}/package-lock.json') }}
     - if: steps.cache.outputs.cache-hit != 'true'
       run: npm install
       working-directory: ${{env.working-directory}}

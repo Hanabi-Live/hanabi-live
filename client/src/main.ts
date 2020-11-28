@@ -83,5 +83,3 @@ $(document).ready(() => {
   // Now that the UI is initialized, automatically login if the user has cached credentials
   lobbyLogin.automaticLogin();
 });
-
-poop;
