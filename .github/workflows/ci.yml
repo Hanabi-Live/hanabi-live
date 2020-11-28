@@ -36,6 +36,8 @@ jobs:
       - if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ${{ env.working-directory }}
+      - run: ./set_version.sh
+        working-directory: ${{ env.working-directory }}
       - run: npm run lint
         working-directory: ${{ env.working-directory }}
 
@@ -93,6 +95,7 @@ jobs:
 
   discord:
     needs: [client_build, client_lint, client_test, server, spell_check]
+    if: always() # This is needed to always run this job even if the other jobs fail
     runs-on: ubuntu-latest
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
