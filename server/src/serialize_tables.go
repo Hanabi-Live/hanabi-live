@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -89,6 +90,7 @@ func restoreTables() {
 		if t.ChatRead == nil {
 			t.ChatRead = make(map[int]int)
 		}
+		t.mutex = &sync.Mutex{}
 
 		// Restore the circular references that could not be represented in JSON
 		g := t.Game
