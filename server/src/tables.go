@@ -89,10 +89,37 @@ func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *
 	return nil
 }
 
+// FindUserSpectatingTable returns the table that the corresponding user ID is currently spectating
+// (or nil if they were not spectating any tables)
+func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint64) *Table {
+	tableList := ts.GetList()
+	for _, t := range tableList {
+		spectatorIndex := -1
+
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Lock()
+		}
+
+		if t.Replay {
+			spectatorIndex = t.GetSpectatorIndexFromID(userID)
+		}
+
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Unlock()
+		}
+
+		if spectatorIndex > 0 {
+			return t
+		}
+	}
+
+	return nil
+}
+
 // FindUserDisconSpectatorTable returns the table that the corresponding user ID was spectating
 // before they disconnected (or nil if they were not spectating any tables)
 func (ts *Tables) FindUserDisconSpectatorTable(userID int, tableIDAlreadyLocked uint64) *Table {
-	tableList := tables.GetList()
+	tableList := ts.GetList()
 	for _, t := range tableList {
 		foundTable := false
 

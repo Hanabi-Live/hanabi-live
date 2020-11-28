@@ -1,5 +1,7 @@
 package main
 
+import "strconv"
+
 // commandTableSpectate is sent when:
 // 1) the user clicks on the "Spectate" button in the lobby
 // 2) the user creates a solo replay
@@ -36,24 +38,9 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not already spectating another table
-	tableList := tables.GetList()
-	alreadySpectating := false
-	for _, t2 := range tableList {
-		t2.Mutex.Lock()
-		for _, sp := range t2.Spectators {
-			if sp.ID == s.UserID {
-				alreadySpectating = true
-				break
-			}
-		}
-		t2.Mutex.Unlock()
-
-		if alreadySpectating {
-			break
-		}
-	}
-	if alreadySpectating {
-		s.Warning("You are already spectating another table.")
+	spectatingTable := tables.FindUserSpectatingTable(s.UserID, t.ID)
+	if spectatingTable != nil {
+		s.Warning("You are already spectating table " + strconv.FormatUint(spectatingTable.ID, 10) + ".")
 		return
 	}
 

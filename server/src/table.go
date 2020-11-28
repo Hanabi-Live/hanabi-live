@@ -221,18 +221,18 @@ func (t *Table) GetRoomName() string {
 	return "table" + strconv.FormatUint(t.ID, 10)
 }
 
-func (t *Table) GetPlayerIndexFromID(id int) int {
+func (t *Table) GetPlayerIndexFromID(userID int) int {
 	for i, p := range t.Players {
-		if p.ID == id {
+		if p.ID == userID {
 			return i
 		}
 	}
 	return -1
 }
 
-func (t *Table) GetSpectatorIndexFromID(id int) int {
+func (t *Table) GetSpectatorIndexFromID(userID int) int {
 	for i, sp := range t.Spectators {
-		if sp.ID == id {
+		if sp.ID == userID {
 			return i
 		}
 	}
