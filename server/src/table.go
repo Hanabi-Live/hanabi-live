@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime/debug"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -131,10 +132,16 @@ func getNewTableID() uint64 {
 }
 
 func (t *Table) Lock() {
+	logger.Debug("ACQUIRING table " + strconv.FormatUint(t.ID, 10) + " lock.")
+	debug.PrintStack()
 	t.mutex.Lock()
+	logger.Debug("ACQUIRED table " + strconv.FormatUint(t.ID, 10) + " lock.")
+	debug.PrintStack()
 }
 
 func (t *Table) Unlock() {
+	logger.Debug("RELEASING table " + strconv.FormatUint(t.ID, 10) + " lock.")
+	debug.PrintStack()
 	t.mutex.Unlock()
 }
 
