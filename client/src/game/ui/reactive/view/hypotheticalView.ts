@@ -23,6 +23,10 @@ export function onActiveChanged(data: {
   hypotheticalActive: boolean;
   replayActive: boolean;
 }): void {
+  if (!data.hypotheticalActive && data.replayActive) {
+    turn.hideClueUIAndDisableDragging();
+  }
+
   globals.elements.replayArea?.visible(
     data.replayActive && !data.hypotheticalActive,
   );
@@ -44,10 +48,6 @@ export function onActiveOrAmLeaderChanged(data: {
   amLeader: boolean;
   sharedReplay: boolean;
 }): void {
-  if (!data.active) {
-    turn.hideClueUIAndDisableDragging();
-  }
-
   const visibleForLeaderInHypo = data.active && data.amLeader;
   globals.elements.endHypotheticalButton?.visible(visibleForLeaderInHypo);
   globals.elements.clueArea?.visible(visibleForLeaderInHypo);
@@ -60,6 +60,10 @@ export function onActiveOrAmLeaderChanged(data: {
 
   const visibleForFollowersInHypo = data.active && !data.amLeader;
   globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
+
+  if (visibleForFollowersInHypo) {
+    turn.hideClueUIAndDisableDragging();
+  }
 
   const visibleForLeaderInSharedReplay =
     !data.active && data.sharedReplay && data.amLeader;
