@@ -3,12 +3,10 @@ name: Continuous Integration Tasks
 on: [push]
 
 jobs:
-  client:
+  client_build:
     runs-on: ubuntu-latest
-
     env:
       working-directory: ./client
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -22,17 +20,47 @@ jobs:
         working-directory: ${{ env.working-directory }}
       - run: ./build_client.sh
         working-directory: ${{ env.working-directory }}
+
+  client_lint:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./client
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ${{ env.working-directory }}
       - run: npm run lint
+        working-directory: ${{ env.working-directory }}
+
+  client_test:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./client
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
         working-directory: ${{ env.working-directory }}
       - run: npm run test
         working-directory: ${{ env.working-directory }}
 
   server:
     runs-on: ubuntu-latest
-
     env:
       working-directory: ./server
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -64,11 +92,11 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   discord:
-    needs: [client, server, spell_check]
+    needs: [client_build, client_lint, client_test, server, spell_check]
     runs-on: ubuntu-latest
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
-      - if: env.WORKFLOW_CONCLUSION != 'success' && env.WORKFLOW_CONCLUSION != 'cancelled'
-        uses: sarisia/actions-status-discord@v1
+      #- if: env.WORKFLOW_CONCLUSION != 'success' && env.WORKFLOW_CONCLUSION != 'cancelled'
+      - uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
