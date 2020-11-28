@@ -10,22 +10,22 @@ jobs:
       working-directory: ./client
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-    - uses: actions/cache@v2
-      id: cache
-      with:
-        path: ${{ env.working-directory }}/node_modules
-        key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
-    - if: steps.cache.outputs.cache-hit != 'true'
-      run: npm install
-      working-directory: ${{ env.working-directory }}
-    - run: ./build_client.sh
-      working-directory: ${{ env.working-directory }}
-    - run: npm run lint
-      working-directory: ${{ env.working-directory }}
-    - run: npm run test
-      working-directory: ${{ env.working-directory }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ${{ env.working-directory }}
+      - run: ./build_client.sh
+        working-directory: ${{ env.working-directory }}
+      - run: npm run lint
+        working-directory: ${{ env.working-directory }}
+      - run: npm run test
+        working-directory: ${{ env.working-directory }}
 
   server:
     runs-on: ubuntu-latest
@@ -34,14 +34,14 @@ jobs:
       working-directory: ./server
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-go@v2
-    - run: ./build_server.sh
-      working-directory: ${{ env.working-directory }}
-    - uses: golangci/golangci-lint-action@v2
-      with:
-        version: v1.33
-        working-directory: ${{ env.working-directory }}/src
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: ./build_server.sh
+        working-directory: ${{ env.working-directory }}
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.33
+          working-directory: ${{ env.working-directory }}/src
 
   spell_check:
     runs-on: ubuntu-latest
@@ -50,15 +50,25 @@ jobs:
       working-directory: ./spell_check
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-    - uses: actions/cache@v2
-      id: cache
-      with:
-        path: ${{ env.working-directory }}/node_modules
-        key: spell-check-node-modules-${{ hashFiles('spell_check/package-lock.json') }}
-    - if: steps.cache.outputs.cache-hit != 'true'
-      run: npm install
-      working-directory: ${{ env.working-directory }}
-    - run: ./spell_check.sh
-      working-directory: ${{ env.working-directory }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: spell-check-node-modules-${{ hashFiles('spell_check/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ${{ env.working-directory }}
+      - run: ./spell_check.sh
+        working-directory: ${{ env.working-directory }}
+
+  discord:
+    needs: [client, server, spell_check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v2
+      - if: env.WORKFLOW_CONCLUSION != 'success' && env.WORKFLOW_CONCLUSION != 'cancelled'
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
