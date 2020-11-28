@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/tevino/abool"
 )
 
 var (
@@ -15,6 +16,7 @@ var (
 	discordListenChannels []string
 	discordLobbyChannel   string
 	discordBotID          string
+	discordIsReady        = abool.New()
 )
 
 /*
@@ -87,12 +89,13 @@ func discordConnect() {
 func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 	logger.Info("Discord bot connected with username: " + event.User.Username)
 	discordBotID = event.User.ID
+	discordIsReady.Set()
 }
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Don't do anything if we are not yet connected
-	if discordBotID == "" {
+	if discordIsReady.IsNotSet() {
 		return
 	}
 
