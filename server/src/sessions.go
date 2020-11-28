@@ -12,6 +12,7 @@ type Sessions struct {
 func NewSessions() *Sessions {
 	return &Sessions{
 		sessions: make(map[int]*Session),
+		mutex:    &sync.RWMutex{},
 	}
 }
 

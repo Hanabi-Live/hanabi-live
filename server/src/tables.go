@@ -13,6 +13,7 @@ type Tables struct {
 func NewTables() *Tables {
 	return &Tables{
 		tables: make(map[uint64]*Table),
+		mutex:  &sync.RWMutex{},
 	}
 }
 
@@ -61,6 +62,10 @@ func (ts *Tables) Length() int {
 	return len(ts.tables)
 }
 
+// ----------------
+// Helper functions
+// ----------------
+
 func getTable(s *Session, tableID uint64) (*Table, bool) {
 	t, ok := tables.Get(tableID)
 	if !ok {
@@ -76,8 +81,8 @@ func getTable(s *Session, tableID uint64) (*Table, bool) {
 // getTableAndLock checks to see if the given table exists
 // If it does, it locks the table mutex and returns it
 func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool) {
-	t, exists := getTable(s, tableID)
-	if !exists {
+	t, ok := getTable(s, tableID)
+	if !ok {
 		return nil, false
 	}
 
