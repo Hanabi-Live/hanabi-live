@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -51,7 +52,7 @@ func (*Seeds) GetNumGames(seed string) (int, error) {
 		SELECT num_games
 		FROM seeds
 		WHERE seed = $1
-	`, seed).Scan(&numGames); err == pgx.ErrNoRows {
+	`, seed).Scan(&numGames); errors.Is(err, pgx.ErrNoRows) {
 		return 0, nil
 	} else if err != nil {
 		return 0, err

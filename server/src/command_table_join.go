@@ -113,10 +113,12 @@ func tableJoin(s *Session, t *Table) {
 		Name:    s.Username,
 		Session: s,
 		Present: true,
-		Stats: PregameStats{
+		Stats: &PregameStats{
 			NumGames: numGames,
 			Variant:  variantStats,
 		},
+		Typing:    false,
+		LastTyped: time.Time{},
 	}
 	t.Players = append(t.Players, p)
 	notifyAllTable(t)
@@ -158,7 +160,7 @@ func tableJoin(s *Session, t *Table) {
 					return
 				}
 
-				commandTableStart(p2.Session, &CommandData{ // Manual invocation
+				commandTableStart(p2.Session, &CommandData{ // nolint: exhaustivestruct
 					TableID: t.ID,
 					NoLock:  true,
 				})

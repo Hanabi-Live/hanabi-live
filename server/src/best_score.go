@@ -1,14 +1,15 @@
 package main
 
 type BestScore struct {
-	NumPlayers   int     `json:"numPlayers"`
-	Score        int     `json:"score"`
-	Modifier     Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
-	DeckPlays    bool    `json:"deckPlays"`
-	EmptyClues   bool    `json:"emptyClues"`
-	OneExtraCard bool    `json:"oneExtraCard"`
-	OneLessCard  bool    `json:"oneLessCard"`
-	AllOrNothing bool    `json:"allOrNothing"`
+	NumPlayers int     `json:"numPlayers"`
+	Score      int     `json:"score"`
+	Modifier   Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
+
+	DeckPlays    bool `json:"deckPlays"`
+	EmptyClues   bool `json:"emptyClues"`
+	OneExtraCard bool `json:"oneExtraCard"`
+	OneLessCard  bool `json:"oneLessCard"`
+	AllOrNothing bool `json:"allOrNothing"`
 }
 
 func NewBestScores() []*BestScore {

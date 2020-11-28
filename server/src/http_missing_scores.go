@@ -48,7 +48,7 @@ func httpMissingScores(c *gin.Context) {
 		numMaxScoresPerType,
 	)
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:                      "Missing Scores",
 		Name:                       user.Username,
 		RequestedNumPlayers:        numPlayers,

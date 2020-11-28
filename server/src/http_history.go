@@ -55,7 +55,7 @@ func httpHistory(c *gin.Context) {
 		return
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:   "History",
 		Name:    playerNames[0],
 		History: gameHistoryList,

@@ -164,7 +164,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypoBack":
     case "hypoEnd":
     case "hypoAction":
-    case "hypoDrawnCardsShown": {
+    case "hypoShowDrawnCards": {
       state.replay = replayReducer(
         state.replay,
         action,

@@ -9,7 +9,7 @@ import (
 
 func httpPasswordReset(c *gin.Context) {
 	w := c.Writer
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Password Reset",
 	}
 	httpServeTemplate(w, data, "informational", "password-reset")

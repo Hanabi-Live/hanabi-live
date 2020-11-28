@@ -43,7 +43,7 @@ export type HypotheticalAction =
   | ActionHypotheticalEnd
   | ActionHypotheticalAction
   | ActionHypotheticalBack
-  | ActionHypotheticalDrawnCardsShown;
+  | ActionHypotheticalShowDrawnCards;
 
 // ----------------------
 // Initialization actions
@@ -224,7 +224,7 @@ export interface ActionReplayLeader {
 
 export interface ActionHypotheticalStart {
   type: "hypoStart";
-  readonly drawnCardsShown: boolean;
+  readonly showDrawnCards: boolean;
   readonly actions: ActionIncludingHypothetical[];
 }
 
@@ -248,7 +248,7 @@ export interface ActionHypotheticalMorph {
   readonly order: number;
 }
 
-export interface ActionHypotheticalDrawnCardsShown {
-  type: "hypoDrawnCardsShown";
-  readonly drawnCardsShown: boolean;
+export interface ActionHypotheticalShowDrawnCards {
+  type: "hypoShowDrawnCards";
+  readonly showDrawnCards: boolean;
 }

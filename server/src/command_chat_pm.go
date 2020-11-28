@@ -74,7 +74,10 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 	chatMessage := &ChatMessage{
 		Msg:       d.Msg,
 		Who:       s.Username,
+		Discord:   false,
+		Server:    false,
 		Datetime:  time.Now(),
+		Room:      "",
 		Recipient: recipientSession.Username,
 	}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 )
 
 // commandTableSpectate is sent when:
@@ -78,6 +79,8 @@ func tableSpectate(s *Session, d *CommandData, t *Table) {
 		ID:                   s.UserID,
 		Name:                 s.Username,
 		Session:              s,
+		Typing:               false,
+		LastTyped:            time.Time{},
 		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
 		Notes:                make([]string, g.GetNotesSize()),
 	}

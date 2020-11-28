@@ -42,28 +42,31 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are at the table
-	newLeader := &NewLeader{
-		ID: -1,
-	}
+	var newLeader *NewLeader
 	if t.Replay {
 		for _, sp := range t.Spectators {
 			if normalizeString(sp.Name) == normalizedUsername {
-				newLeader.ID = sp.ID
-				newLeader.Username = sp.Name
+				newLeader = &NewLeader{
+					ID:       sp.ID,
+					Username: sp.Name,
+					Index:    -1,
+				}
 				break
 			}
 		}
 	} else {
 		for i, p := range t.Players {
 			if normalizeString(p.Name) == normalizedUsername {
-				newLeader.ID = p.ID
-				newLeader.Username = p.Name
-				newLeader.Index = i
+				newLeader = &NewLeader{
+					ID:       p.ID,
+					Username: p.Name,
+					Index:    i,
+				}
 				break
 			}
 		}
 	}
-	if newLeader.ID == -1 {
+	if newLeader == nil {
 		var msg string
 		if t.Replay {
 			msg = "\"" + d.Name + "\" is not spectating the shared replay."

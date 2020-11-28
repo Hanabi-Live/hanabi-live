@@ -26,7 +26,7 @@ func sentryInit() bool {
 	}
 
 	// Initialize Sentry
-	if err := sentry.Init(sentry.ClientOptions{
+	if err := sentry.Init(sentry.ClientOptions{ // nolint: exhaustivestruct
 		Dsn:          sentryDSN,
 		IgnoreErrors: commonHTTPErrors,
 		Release:      gitCommitOnStart,

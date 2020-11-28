@@ -298,7 +298,7 @@ const replayObservers: Subscriptions = [
     hypotheticalView.shouldShowHypoBackButtonChanged,
   ),
   subAfterInit(
-    (s) => s.replay.hypothetical?.drawnCardsShown,
+    (s) => s.replay.hypothetical?.showDrawnCards,
     hypotheticalView.onDrawnCardsInHypotheticalChanged,
   ),
 

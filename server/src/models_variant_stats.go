@@ -20,7 +20,11 @@ type VariantStatsRow struct {
 
 func NewVariantStatsRow() VariantStatsRow {
 	return VariantStatsRow{
-		BestScores: NewBestScores(),
+		NumGames:      0,
+		BestScores:    NewBestScores(),
+		NumMaxScores:  0,
+		AverageScore:  0,
+		NumStrikeouts: 0,
 	}
 }
 
@@ -51,7 +55,7 @@ func (*VariantStats) Get(variantID int) (VariantStatsRow, error) {
 		&stats.NumMaxScores,
 		&stats.AverageScore,
 		&stats.NumStrikeouts,
-	); err == pgx.ErrNoRows {
+	); errors.Is(err, pgx.ErrNoRows) {
 		return stats, nil
 	} else if err != nil {
 		return stats, err

@@ -137,7 +137,7 @@ export const endReplay = (): ActionReplayExit => ({
 
 export const hypoStart = (): ActionHypotheticalStart => ({
   type: "hypoStart",
-  drawnCardsShown: false,
+  showDrawnCards: false,
   actions: [],
 });
 

@@ -128,7 +128,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send everyone the notification
-	commandChat(nil, &CommandData{ // Manual invocation
+	commandChat(nil, &CommandData{ // nolint: exhaustivestruct
 		Username: discordGetNickname(m.Author.ID),
 		Msg:      m.Content,
 		Discord:  true,
@@ -169,7 +169,7 @@ func discordSend(to string, username string, msg string) {
 
 	// We use "ChannelMessageSendComplex" instead of "ChannelMessageSend" because we need to specify
 	// the "AllowedMentions" property
-	messageSendData := &discordgo.MessageSend{
+	messageSendData := &discordgo.MessageSend{ // nolint: exhaustivestruct
 		Content: fullMsg,
 		// Specifying an empty "MessageAllowedMentions" struct means that the bot is not allowed to
 		// mention anybody

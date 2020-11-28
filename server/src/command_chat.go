@@ -121,12 +121,13 @@ func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 		sessionList := sessions.GetList()
 		for _, s2 := range sessionList {
 			s2.Emit("chat", &ChatMessage{
-				Msg:      d.Msg,
-				Who:      d.Username,
-				Discord:  d.Discord,
-				Server:   d.Server,
-				Datetime: time.Now(),
-				Room:     d.Room,
+				Msg:       d.Msg,
+				Who:       d.Username,
+				Discord:   d.Discord,
+				Server:    d.Server,
+				Datetime:  time.Now(),
+				Room:      d.Room,
+				Recipient: "",
 			})
 		}
 	}
@@ -201,12 +202,13 @@ func commandChatTable(s *Session, d *CommandData) {
 
 	// Send it to all of the players and spectators
 	t.NotifyChat(&ChatMessage{
-		Msg:      d.Msg,
-		Who:      d.Username,
-		Discord:  d.Discord,
-		Server:   d.Server,
-		Datetime: chatMsg.Datetime,
-		Room:     d.Room,
+		Msg:       d.Msg,
+		Who:       d.Username,
+		Discord:   d.Discord,
+		Server:    d.Server,
+		Datetime:  chatMsg.Datetime,
+		Room:      d.Room,
+		Recipient: "",
 	})
 
 	// Check for commands

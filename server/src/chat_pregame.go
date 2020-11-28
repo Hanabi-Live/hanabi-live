@@ -145,7 +145,7 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 				s2 = NewFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"chatKick()\" function.")
 			}
-			commandTableLeave(s2, &CommandData{ // Manual invocation
+			commandTableLeave(s2, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				NoLock:  true,
 			})
@@ -299,7 +299,7 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	}
 
 	if len(t.Players) == numPlayers {
-		commandTableStart(s, &CommandData{ // Manual invocation
+		commandTableStart(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})
@@ -343,7 +343,7 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 			}
 
 			logger.Info(t.GetName() + " Automatically starting (from the /startin command).")
-			commandTableStart(p.Session, &CommandData{ // Manual invocation
+			commandTableStart(p.Session, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				NoLock:  true,
 			})
@@ -383,7 +383,10 @@ func chatImpostor(s *Session, d *CommandData, t *Table) {
 		chatMessage := &ChatMessage{
 			Msg:       msg,
 			Who:       WebsiteName,
+			Discord:   false,
+			Server:    true,
 			Datetime:  time.Now(),
+			Room:      d.Room,
 			Recipient: p.Session.Username,
 		}
 		p.Session.Emit("chat", chatMessage)

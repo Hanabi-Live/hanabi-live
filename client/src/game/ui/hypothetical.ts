@@ -32,7 +32,7 @@ export function start(): void {
 
   globals.store!.dispatch({
     type: "hypoStart",
-    drawnCardsShown: false,
+    showDrawnCards: false,
     actions: [],
   });
 }

@@ -148,13 +148,13 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 	// On the server side, all of the spectators will still be in the game,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
-		commandTableUnattend(s2, &CommandData{ // Manual invocation
+		commandTableUnattend(s2, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})
 	}
 	for _, s2 := range spectatorSessions {
-		commandTableUnattend(s2, &CommandData{ // Manual invocation
+		commandTableUnattend(s2, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})
@@ -162,7 +162,11 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 
 	newTableName := ""
 
-	if t.InitialName != "" {
+	if t.InitialName == "" {
+		// If players spawn a shared replay and then restart,
+		// there will not be an initial name for the table
+		newTableName = getName()
+	} else {
 		// Generate a new name for the game based on how many times the players have restarted
 		// e.g. "logic only" --> "logic only (#2)" --> "logic only (#3)"
 		oldTableName := t.InitialName
@@ -179,15 +183,11 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 			oldTableName = oldTableName[0 : maxGameNameLengthWithoutSuffix-1]
 		}
 		newTableName = oldTableName + tableNameSuffix
-	} else {
-		// If players spawn a shared replay and then restart,
-		// there will not be an initial name for the table
-		newTableName = getName()
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby
-	commandTableCreate(s, &CommandData{ // Manual invocation
+	commandTableCreate(s, &CommandData{ // nolint: exhaustivestruct
 		Name:    newTableName,
 		Options: t.Options,
 		// We want to prevent the pre-game from showing up in the lobby for a brief second
@@ -227,7 +227,7 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 			// The creator of the game does not need to join
 			continue
 		}
-		commandTableJoin(s2, &CommandData{ // Manual invocation
+		commandTableJoin(s2, &CommandData{ // nolint: exhaustivestruct
 			TableID: t2.ID,
 			NoLock:  true,
 		})
@@ -247,14 +247,14 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 	t2.ExtraOptions.Restarted = true
 
 	// Emulate the game owner clicking on the "Start Game" button
-	commandTableStart(s, &CommandData{ // Manual invocation
+	commandTableStart(s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t2.ID,
 		NoLock:  true,
 	})
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
-		commandTableSpectate(s2, &CommandData{ // Manual invocation
+		commandTableSpectate(s2, &CommandData{ // nolint: exhaustivestruct
 			TableID:              t2.ID,
 			ShadowingPlayerIndex: -1,
 			NoLock:               true,

@@ -67,7 +67,7 @@ func httpTags(c *gin.Context) {
 		}
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:   "Tagged Games",
 		Name:    user.Username,
 		History: gameHistoryList,

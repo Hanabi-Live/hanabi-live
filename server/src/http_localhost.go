@@ -53,7 +53,7 @@ func httpLocalhostInit() {
 
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-	HTTPServerWithTimeout := &http.Server{
+	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 		Addr:         "127.0.0.1:" + strconv.Itoa(port), // Listen only on the localhost interface
 		Handler:      httpRouter,
 		ReadTimeout:  HTTPReadTimeout,

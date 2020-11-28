@@ -74,9 +74,9 @@ type Game struct {
 	EfficiencyMod int
 
 	// Hypothetical-related fields
-	Hypothetical        bool // Whether or not we are in a post-game hypothetical
-	HypoActions         []string
-	HypoDrawnCardsShown bool // Whether or not drawn cards should be revealed (false by default)
+	Hypothetical       bool // Whether or not we are in a post-game hypothetical
+	HypoActions        []string
+	HypoShowDrawnCards bool // Whether or not drawn cards should be revealed (false by default)
 
 	// Keep track of user-defined tags; they will be written to the database upon game completion
 	Tags map[string]int // Keys are the tags, values are the user ID that created it
@@ -86,25 +86,48 @@ func NewGame(t *Table) *Game {
 	variant := variants[t.Options.VariantName]
 
 	g := &Game{
+		DatetimeStarted:  time.Time{},
+		DatetimeFinished: time.Time{},
+
 		Table:        t,
 		Options:      t.Options,
 		ExtraOptions: t.ExtraOptions,
 
-		Players:             make([]*GamePlayer, 0),
-		Deck:                make([]*Card, 0),
-		CardIdentities:      make([]*CardIdentity, 0),
-		Stacks:              make([]int, len(variant.Suits)),
-		PlayStackDirections: make([]int, len(variant.Suits)),
-		DatetimeTurnBegin:   time.Now(),
-		ClueTokens:          variant.GetAdjustedClueTokens(MaxClueNum),
-		MaxScore:            len(variant.Suits) * PointsPerSuit,
-		LastClueTypeGiven:   -1,
-		Actions:             make([]interface{}, 0),
-		Actions2:            make([]*GameAction, 0),
-		EndTurn:             -1,
+		Players:               make([]*GamePlayer, 0),
+		Seed:                  "",
+		Deck:                  make([]*Card, 0),
+		CardIdentities:        make([]*CardIdentity, 0),
+		DeckIndex:             0,
+		Stacks:                make([]int, len(variant.Suits)),
+		PlayStackDirections:   make([]int, len(variant.Suits)),
+		Turn:                  0,
+		DatetimeTurnBegin:     time.Time{},
+		TurnsInverted:         false,
+		ActivePlayerIndex:     0,
+		ClueTokens:            variant.GetAdjustedClueTokens(MaxClueNum),
+		Score:                 0,
+		MaxScore:              len(variant.Suits) * PointsPerSuit,
+		Strikes:               0,
+		LastClueTypeGiven:     -1,
+		Actions:               make([]interface{}, 0),
+		Actions2:              make([]*GameAction, 0),
+		InvalidActionOccurred: false,
+		EndCondition:          0,
+		EndPlayer:             -1,
+		EndTurn:               -1,
 
-		HypoActions: make([]string, 0),
-		Tags:        make(map[string]int),
+		StartedTimer:     false,
+		Paused:           false,
+		PausePlayerIndex: -1,
+		PauseCount:       0,
+
+		EfficiencyMod: 0,
+
+		Hypothetical:       false,
+		HypoActions:        make([]string, 0),
+		HypoShowDrawnCards: false,
+
+		Tags: make(map[string]int),
 	}
 
 	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
@@ -191,7 +214,7 @@ func (g *Game) EndTimer(gp *GamePlayer) {
 	}
 
 	// End the game
-	commandAction(s, &CommandData{ // Manual invocation
+	commandAction(s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  gp.Index,

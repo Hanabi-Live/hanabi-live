@@ -81,7 +81,7 @@ var (
 	// HTTPClientWithTimeout is used for sending web requests to external sites,
 	// which is used in various middleware
 	// We don't want to use the default http.Client because it has no default timeout set
-	HTTPClientWithTimeout = &http.Client{
+	HTTPClientWithTimeout = &http.Client{ // nolint: exhaustivestruct
 		Timeout: HTTPWriteTimeout,
 	}
 )
@@ -152,7 +152,7 @@ func httpInit() {
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
-	options := gsessions.Options{
+	options := gsessions.Options{ // nolint: exhaustivestruct
 		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: HTTPSessionTimeout, // In seconds
 	}
@@ -181,7 +181,7 @@ func httpInit() {
 
 	// Attach the Sentry middleware
 	if usingSentry {
-		httpRouter.Use(sentrygin.New(sentrygin.Options{
+		httpRouter.Use(sentrygin.New(sentrygin.Options{ // nolint: exhaustivestruct
 			// https://github.com/getsentry/sentry-go/blob/master/gin/sentrygin.go
 			Repanic: true, // Recommended as per the documentation
 			Timeout: HTTPWriteTimeout,
@@ -302,7 +302,7 @@ func httpInit() {
 		go func() {
 			// We need to create a new http.Server because the default one has no timeouts
 			// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-			HTTPRedirectServerWithTimeout := &http.Server{
+			HTTPRedirectServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 				Addr:         "0.0.0.0:80", // Listen on all IP addresses
 				Handler:      HTTPServeMux,
 				ReadTimeout:  HTTPReadTimeout,
@@ -320,7 +320,7 @@ func httpInit() {
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 	logger.Info("Listening on port " + strconv.Itoa(port) + ".")
-	HTTPServerWithTimeout := &http.Server{
+	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 		Addr:         "0.0.0.0:" + strconv.Itoa(port), // Listen on all IP addresses
 		Handler:      httpRouter,
 		ReadTimeout:  HTTPReadTimeout,
@@ -343,7 +343,7 @@ func httpInit() {
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
-func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ...string) {
+func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName ...string) {
 	// Since we are using the GZip middleware, we have to specify the content type,
 	// or else the page will be downloaded by the browser as "download.gz"
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

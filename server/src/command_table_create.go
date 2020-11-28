@@ -110,7 +110,13 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Set default values for data relating to tables created with a special prefix or custom data
 	data := &SpecialGameData{
-		DatabaseID: -1, // Normally, the database ID of an ongoing game should be -1
+		DatabaseID:       -1, // Normally, the database ID of an ongoing game should be -1
+		CustomNumPlayers: 0,
+		CustomActions:    nil,
+
+		SetSeedSuffix: "",
+		SetReplay:     false,
+		SetReplayTurn: 0,
 	}
 
 	// Handle special game option creation
@@ -212,9 +218,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that they sent the options object
 	if d.Options == nil {
-		d.Options = &Options{
-			VariantName: "No Variant",
-		}
+		d.Options = NewOptions()
 	}
 
 	// Validate that the variant name is valid
@@ -293,9 +297,18 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	t.PasswordHash = passwordHash
 	t.Options = d.Options
 	t.ExtraOptions = &ExtraOptions{
-		DatabaseID:       data.DatabaseID,
-		CustomNumPlayers: data.CustomNumPlayers,
-		SetSeedSuffix:    data.SetSeedSuffix,
+		DatabaseID:                 data.DatabaseID,
+		NoWriteToDatabase:          false,
+		JSONReplay:                 false,
+		CustomNumPlayers:           data.CustomNumPlayers,
+		CustomCharacterAssignments: nil,
+		CustomSeed:                 "",
+		CustomDeck:                 nil,
+		CustomActions:              nil,
+		Restarted:                  false,
+		SetSeedSuffix:              data.SetSeedSuffix,
+		SetReplay:                  false,
+		SetReplayTurn:              0,
 	}
 
 	// If this is a "!replay" game, override the options with the ones found in the database
@@ -356,7 +369,7 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	}
 
 	// Join the user to the new table
-	commandTableJoin(s, &CommandData{ // Manual invocation
+	commandTableJoin(s, &CommandData{ // nolint: exhaustivestruct
 		TableID:  t.ID,
 		Password: d.Password,
 		NoLock:   true,

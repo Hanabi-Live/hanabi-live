@@ -113,7 +113,7 @@ func httpScores(c *gin.Context) {
 		numMaxScoresPerType,
 	)
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:                      "Scores",
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,

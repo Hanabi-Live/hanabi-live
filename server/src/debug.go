@@ -189,12 +189,12 @@ func getBadGameIDs() {
 		}
 		logger.Debug("ON GAME:", id)
 		s := NewFakeSession(1, "Server")
-		commandReplayCreate(s, &CommandData{ // Manual invocation
+		commandReplayCreate(s, &CommandData{ // nolint: exhaustivestruct
 			Source:     "id",
 			GameID:     id,
 			Visibility: "solo",
 		})
-		commandTableUnattend(s, &CommandData{ // Manual invocation
+		commandTableUnattend(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: tableIDCounter,
 		})
 	}

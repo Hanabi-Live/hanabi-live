@@ -51,7 +51,7 @@ func httpSeed(c *gin.Context) {
 		return
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:        "History",
 		History:      gameHistoryList,
 		NamesTitle:   "seed: " + seed,

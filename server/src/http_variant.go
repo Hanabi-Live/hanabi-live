@@ -148,7 +148,7 @@ func httpVariant(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Variant Stats",
 
 		Name:               variantIDMap[variantID],

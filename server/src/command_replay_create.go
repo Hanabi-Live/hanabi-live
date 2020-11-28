@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 	"strings"
+	"time"
 )
 
 type GameJSON struct {
@@ -118,7 +119,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
 	// Start the (fake) game
-	commandTableStart(t.Players[0].Session, &CommandData{ // Manual invocation
+	commandTableStart(t.Players[0].Session, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		NoLock:  true,
 	})
@@ -163,7 +164,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Join the user to the new replay
-	commandTableSpectate(s, &CommandData{ // Manual invocation
+	commandTableSpectate(s, &CommandData{ // nolint: exhaustivestruct
 		TableID:              t.ID,
 		ShadowingPlayerIndex: -1,
 		NoLock:               true,
@@ -398,13 +399,20 @@ func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlay
 		DatabaseID: databaseID,
 
 		NoWriteToDatabase: true,
+		JSONReplay:        false,
 
 		CustomNumPlayers:           len(dbPlayers),
 		CustomCharacterAssignments: characterAssignments,
 		CustomSeed:                 seed,
 		// Setting "CustomDeck" is not necessary because the deck is not stored in the database;
 		// the ordering of the cards is determined by using the game's seed
+		CustomDeck:    nil,
 		CustomActions: actions,
+
+		Restarted:     false,
+		SetSeedSuffix: "",
+		SetReplay:     false,
+		SetReplayTurn: 0,
 	}
 
 	return dbPlayers, true
@@ -431,6 +439,10 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 	startingPlayer := 0
 	if d.GameJSON.Options.StartingPlayer != nil {
 		startingPlayer = *d.GameJSON.Options.StartingPlayer
+	}
+	variantName := "No Variant"
+	if d.GameJSON.Options.Variant != nil {
+		variantName = *d.GameJSON.Options.Variant
 	}
 	timed := false
 	if d.GameJSON.Options.Timed != nil {
@@ -480,8 +492,10 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 	// Store the options on the table
 	// (the variant was already validated in the "validateJSON()" function)
 	t.Options = &Options{
+		NumPlayers:            len(d.GameJSON.Players),
 		StartingPlayer:        startingPlayer,
-		VariantName:           *d.GameJSON.Options.Variant,
+		VariantID:             variants[variantName].ID,
+		VariantName:           variantName,
 		Timed:                 timed,
 		TimeBase:              timeBase,
 		TimePerTurn:           timePerTurn,
@@ -511,6 +525,11 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 		CustomSeed:    d.GameJSON.Seed,
 		CustomDeck:    d.GameJSON.Deck,
 		CustomActions: d.GameJSON.Actions,
+
+		Restarted:     false,
+		SetSeedSuffix: "",
+		SetReplay:     false,
+		SetReplayTurn: 0,
 	}
 }
 
@@ -522,10 +541,13 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		id := (i + 1) * -1
 
 		player := &Player{
-			ID:      id,
-			Name:    name,
-			Session: NewFakeSession(id, name),
-			Present: true,
+			ID:        id,
+			Name:      name,
+			Session:   NewFakeSession(id, name),
+			Present:   true,
+			Stats:     &PregameStats{},
+			Typing:    false,
+			LastTyped: time.Time{},
 		}
 		t.Players = append(t.Players, player)
 	}

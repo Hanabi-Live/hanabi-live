@@ -75,26 +75,36 @@ var (
 func NewTable(name string, owner int) *Table {
 	// Create the table object
 	return &Table{
-		ID:   getNewTableID(),
-		Name: name,
+		ID:          getNewTableID(),
+		Name:        name,
+		InitialName: "", // This must stay blank in shared replays
 
 		Players:          make([]*Player, 0),
 		Spectators:       make([]*Spectator, 0),
 		KickedPlayers:    make(map[int]struct{}),
 		DisconSpectators: make(map[int]struct{}),
 
-		Owner:   owner,
-		Visible: true, // Tables are visible by default
+		Owner:          owner,
+		Visible:        true, // Tables are visible by default
+		PasswordHash:   "",
+		Running:        false,
+		Replay:         false,
+		AutomaticStart: 0,
+		Progress:       0,
 
-		DatetimeCreated:    time.Now(),
-		DatetimeLastJoined: time.Now(),
-		DatetimeLastAction: time.Now(),
+		DatetimeCreated:      time.Now(),
+		DatetimeLastJoined:   time.Time{},
+		DatetimePlannedStart: time.Time{},
+		DatetimeLastAction:   time.Time{},
 
-		Options:      &Options{},
+		Game: nil,
+
+		Options:      NewOptions(),
 		ExtraOptions: &ExtraOptions{},
 
 		Chat:     make([]*TableChatMessage, 0),
 		ChatRead: make(map[int]int),
+		Deleted:  false,
 
 		mutex: &sync.Mutex{},
 	}
@@ -180,7 +190,7 @@ func (t *Table) EndIdle() {
 			s = NewFakeSession(sp.ID, sp.Name)
 			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
-		commandTableUnattend(s, &CommandData{ // Manual invocation
+		commandTableUnattend(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})
@@ -196,7 +206,7 @@ func (t *Table) EndIdle() {
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
-		commandAction(s, &CommandData{ // Manual invocation
+		commandAction(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			Type:    ActionTypeEndGame,
 			Target:  -1,
@@ -207,7 +217,7 @@ func (t *Table) EndIdle() {
 		// We need to end a game that has not started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
-		commandTableLeave(s, &CommandData{ // Manual invocation
+		commandTableLeave(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})

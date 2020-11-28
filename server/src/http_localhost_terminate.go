@@ -46,7 +46,7 @@ func httpLocalhostTerminate(c *gin.Context) {
 
 	// Terminate it
 	s := t.GetOwnerSession()
-	commandAction(s, &CommandData{ // Manual invocation
+	commandAction(s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  -1,

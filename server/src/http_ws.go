@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"strconv"
@@ -70,7 +71,7 @@ func httpWS(c *gin.Context) {
 
 	// Get the username for this user
 	var username string
-	if v, err := models.Users.GetUsername(userID); err == pgx.ErrNoRows {
+	if v, err := models.Users.GetUsername(userID); errors.Is(err, pgx.ErrNoRows) {
 		// The user has a cookie for a user that does not exist in the database
 		// (e.g. an "orphaned" user)
 		// This can happen in situations where a test user was deleted, for example

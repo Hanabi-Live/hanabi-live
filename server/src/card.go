@@ -21,9 +21,16 @@ type Card struct {
 
 func NewCard(suit int, rank int) *Card {
 	c := &Card{
-		SuitIndex: suit,
-		Rank:      rank,
-		// We can't set the order here because the deck will be shuffled later
+		Order:            0, // We can't set the order here because the deck will be shuffled later
+		SuitIndex:        suit,
+		Rank:             rank,
+		Slot:             0,
+		Touched:          false,
+		Discarded:        false,
+		Played:           false,
+		Failed:           false,
+		CannotBePlayed:   false,
+		InsistentTouched: false,
 	}
 
 	return c

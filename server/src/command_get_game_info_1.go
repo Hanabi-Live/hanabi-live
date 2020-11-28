@@ -106,7 +106,6 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		// Game settings
 		TableID          uint64    `json:"tableID"`
 		PlayerNames      []string  `json:"playerNames"`
-		Variant          string    `json:"variant"`
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`

@@ -15,7 +15,7 @@ type Player struct {
 	// and it is safe to manually perform actions on their behalf with the orphaned session
 	Session   *Session `json:"-"` // Skip when serializing
 	Present   bool
-	Stats     PregameStats
+	Stats     *PregameStats
 	Typing    bool
 	LastTyped time.Time
 }

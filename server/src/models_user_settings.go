@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -38,7 +39,8 @@ type Settings struct {
 
 var (
 	// The database schema must also be configured with any default settings
-	defaultSettings = Settings{
+	// This cannot be a pointer because we need to copy it
+	defaultSettings = Settings{ // nolint: exhaustivestruct
 		SoundMove:                     true,
 		SoundTimer:                    true,
 		Volume:                        50,
@@ -106,7 +108,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableOneLessCard,
 		&settings.CreateTableAllOrNothing,
 		&settings.CreateTableDetrimentalCharacters,
-	); err == pgx.ErrNoRows {
+	); errors.Is(err, pgx.ErrNoRows) {
 		return defaultSettings, nil
 	} else if err != nil {
 		return defaultSettings, err
@@ -155,7 +157,7 @@ func (*UserSettings) IsHyphenated(userID int) (bool, error) {
 		SELECT hyphenated_conventions
 		FROM user_settings
 		WHERE user_id = $1
-	`, userID).Scan(&hyphenated); err == pgx.ErrNoRows {
+	`, userID).Scan(&hyphenated); errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	} else if err != nil {
 		return false, err

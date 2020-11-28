@@ -204,7 +204,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 		// If the next player queued a pause command, then pause the game
 		if nextPlayer.RequestedPause {
 			nextPlayer.RequestedPause = false
-			commandPause(nextPlayerSession, &CommandData{ // Manual invocation
+			commandPause(nextPlayerSession, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				Setting: "pause",
 				NoLock:  true,

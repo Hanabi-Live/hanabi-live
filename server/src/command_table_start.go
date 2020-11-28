@@ -189,8 +189,12 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 			Index: i,
 			Game:  g,
 
-			Hand:  make([]*Card, 0),
-			Notes: make([]string, g.GetNotesSize()),
+			Hand:              make([]*Card, 0),
+			Time:              0,
+			Notes:             make([]string, g.GetNotesSize()),
+			RequestedPause:    false,
+			Character:         "",
+			CharacterMetadata: -1,
 		}
 		gp.InitTime(t.Options)
 		g.Players = append(g.Players, gp)
@@ -281,7 +285,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) {
 
 		p := t.Players[g.ActivePlayerIndex]
 
-		commandAction(p.Session, &CommandData{ // Manual invocation
+		commandAction(p.Session, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			Type:    action.Type,
 			Target:  action.Target,

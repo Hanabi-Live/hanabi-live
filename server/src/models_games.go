@@ -115,7 +115,7 @@ func (*Games) Exists(databaseID int) (bool, error) {
 		SELECT id
 		FROM games
 		WHERE id = $1
-	`, databaseID).Scan(&id); err == pgx.ErrNoRows {
+	`, databaseID).Scan(&id); errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	} else if err != nil {
 		return false, err
@@ -217,8 +217,8 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 	}
 
 	for rows.Next() {
-		gameHistory := GameHistory{
-			Options: &Options{},
+		gameHistory := GameHistory{ // nolint: exhaustivestruct
+			Options: NewOptions(),
 		}
 		var variantID int
 		var playerNamesString string

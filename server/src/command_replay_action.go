@@ -165,7 +165,7 @@ func replayActionHypoStart(s *Session, d *CommandData, t *Table) {
 
 	// Start a hypothetical line
 	g.Hypothetical = true
-	g.HypoDrawnCardsShown = false
+	g.HypoShowDrawnCards = false
 
 	type HypoStartMessage struct {
 		TableID uint64
@@ -267,18 +267,18 @@ func replayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
-	g.HypoDrawnCardsShown = !g.HypoDrawnCardsShown
+	g.HypoShowDrawnCards = !g.HypoShowDrawnCards
 
-	type HypoDrawnCardsShownMessage struct {
-		TableID         uint64 `json:"tableID"`
-		DrawnCardsShown bool   `json:"drawnCardsShown"`
+	type HypoShowDrawnCardsMessage struct {
+		TableID        uint64 `json:"tableID"`
+		ShowDrawnCards bool   `json:"showDrawnCards"`
 	}
-	hypoDrawnCardsShownMessage := &HypoDrawnCardsShownMessage{
-		TableID:         t.ID,
-		DrawnCardsShown: g.HypoDrawnCardsShown,
+	hypoShowDrawnCardsMessage := &HypoShowDrawnCardsMessage{
+		TableID:        t.ID,
+		ShowDrawnCards: g.HypoShowDrawnCards,
 	}
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("hypoDrawnCardsShown", hypoDrawnCardsShownMessage)
+		sp.Session.Emit("hypoShowDrawnCards", hypoShowDrawnCardsMessage)
 	}
 }
 

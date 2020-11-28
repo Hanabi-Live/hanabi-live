@@ -142,7 +142,7 @@ function replayReducerFunction(
       state.hypothetical = {
         ongoing,
         states: [ongoing],
-        drawnCardsShown: action.drawnCardsShown,
+        showDrawnCards: action.showDrawnCards,
         drawnCardsInHypothetical: [],
         morphedIdentities: [],
       };
@@ -179,7 +179,7 @@ function replayReducerFunction(
       break;
     }
 
-    case "hypoDrawnCardsShown": {
+    case "hypoShowDrawnCards": {
       if (state.shared === null) {
         throw new Error(
           `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
@@ -191,8 +191,8 @@ function replayReducerFunction(
         );
       }
 
-      state.hypothetical.drawnCardsShown = action.drawnCardsShown;
-      if (action.drawnCardsShown) {
+      state.hypothetical.showDrawnCards = action.showDrawnCards;
+      if (action.showDrawnCards) {
         // Filter out all identities morphed to blank
         const morphed = original(state.hypothetical.morphedIdentities)!;
         for (let i = 0; i < morphed.length; i++) {
@@ -261,7 +261,7 @@ function hypoAction(
     if (action.type === "draw") {
       // Store drawn cards to be able to show/hide in the future
       state.hypothetical.drawnCardsInHypothetical.push(action.order);
-      if (!state.hypothetical.drawnCardsShown) {
+      if (!state.hypothetical.showDrawnCards) {
         // Mark this one as blank
         suitIndex = null;
         rank = null;

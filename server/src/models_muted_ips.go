@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -14,7 +15,7 @@ func (*MutedIPs) Check(ip string) (bool, error) {
 		SELECT id
 		FROM muted_ips
 		WHERE ip = $1
-	`, ip).Scan(&id); err == pgx.ErrNoRows {
+	`, ip).Scan(&id); errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	} else if err != nil {
 		return false, err

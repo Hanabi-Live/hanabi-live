@@ -112,6 +112,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	g.Actions2 = append(g.Actions2, &GameAction{
 		Type:   ActionTypePlay,
 		Target: c.Order,
+		Value:  0, // This is unused for play actions
 	})
 
 	// Find out if this successfully plays
@@ -214,6 +215,7 @@ func (p *GamePlayer) DiscardCard(c *Card) {
 		g.Actions2 = append(g.Actions2, &GameAction{
 			Type:   ActionTypeDiscard,
 			Target: c.Order,
+			Value:  0, // This is unused for discard actions
 		})
 	}
 

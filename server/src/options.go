@@ -65,6 +65,26 @@ type OptionsJSON struct {
 	DetrimentalCharacters *bool   `json:"detrimentalCharacters,omitempty"`
 }
 
+func NewOptions() *Options {
+	return &Options{
+		NumPlayers:            0, // This will be written when the game starts
+		StartingPlayer:        0,
+		VariantID:             0,
+		VariantName:           "No Variant",
+		Timed:                 false,
+		TimeBase:              0,
+		TimePerTurn:           0,
+		Speedrun:              false,
+		CardCycle:             false,
+		DeckPlays:             false,
+		EmptyClues:            false,
+		OneExtraCard:          false,
+		OneLessCard:           false,
+		AllOrNothing:          false,
+		DetrimentalCharacters: false,
+	}
+}
+
 // GetModifier computes the integer modifier for the game options,
 // corresponding to the "ScoreModifier" constants in "constants.go"
 func (o *Options) GetModifier() Bitmask {

@@ -99,7 +99,7 @@ func websocketConnect(ms *melody.Session) {
 }
 
 func websocketConnectGetData(ms *melody.Session, userID int, username string) *WebsocketConnectData {
-	data := &WebsocketConnectData{
+	data := &WebsocketConnectData{ // nolint: exhaustivestruct
 		Friends:        make(map[int]struct{}),
 		ReverseFriends: make(map[int]struct{}),
 	}
@@ -304,10 +304,13 @@ func websocketConnectChat(s *Session) {
 		"<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">" +
 		"Discord chat</a>."
 	s.Emit("chat", &ChatMessage{
-		Msg:      msg,
-		Server:   true,
-		Datetime: time.Now(),
-		Room:     "lobby",
+		Msg:       msg,
+		Who:       "",
+		Discord:   false,
+		Server:    true,
+		Datetime:  time.Now(),
+		Room:      "lobby",
+		Recipient: "",
 	})
 
 	// Send them the message of the day, if any
@@ -328,10 +331,13 @@ func websocketConnectChat(s *Session) {
 			if len(motd) > 0 {
 				msg := "[Server Notice] " + motd
 				s.Emit("chat", &ChatMessage{
-					Msg:      msg,
-					Server:   true,
-					Datetime: time.Now(),
-					Room:     "lobby",
+					Msg:       msg,
+					Who:       "",
+					Discord:   false,
+					Server:    true,
+					Datetime:  time.Now(),
+					Room:      "lobby",
+					Recipient: "",
 				})
 			}
 		}

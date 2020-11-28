@@ -113,7 +113,7 @@ func httpGetVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*Use
 	for _, name := range variantNames {
 		variant := variants[name]
 		maxScore := len(variant.Suits) * PointsPerSuit
-		variantStats := &UserVariantStats{
+		variantStats := &UserVariantStats{ // nolint: exhaustivestruct
 			ID:       variant.ID,
 			Name:     name,
 			MaxScore: maxScore,

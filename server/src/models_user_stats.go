@@ -21,7 +21,10 @@ type UserStatsRow struct {
 
 func NewUserStatsRow() *UserStatsRow {
 	return &UserStatsRow{
-		BestScores: NewBestScores(),
+		NumGames:      0,
+		BestScores:    NewBestScores(),
+		AverageScore:  0,
+		NumStrikeouts: 0,
 	}
 }
 
@@ -60,7 +63,7 @@ func (*UserStats) Get(userID int, variantID int) (*UserStatsRow, error) {
 		&stats.BestScores[4].Modifier,
 		&stats.AverageScore,
 		&stats.NumStrikeouts,
-	); err == pgx.ErrNoRows {
+	); errors.Is(err, pgx.ErrNoRows) {
 		// This user has not played this variant before,
 		// so return a stats object that contains all zero values
 		return stats, nil
@@ -317,9 +320,10 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 				bestScoresIndex := gameHistory.Options.NumPlayers - 2
 				bestScore := stats.BestScores[bestScoresIndex]
 				modifier := gameHistory.Options.GetModifier()
-				thisScore := &BestScore{
-					Score:    gameHistory.Score,
-					Modifier: modifier,
+				thisScore := &BestScore{ // nolint: exhaustivestruct
+					NumPlayers: gameHistory.Options.NumPlayers,
+					Score:      gameHistory.Score,
+					Modifier:   modifier,
 				}
 				if thisScore.IsBetterThan(bestScore) {
 					bestScore.Score = gameHistory.Score

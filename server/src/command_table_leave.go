@@ -86,7 +86,7 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 				s2 = NewFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
-			commandTableLeave(s2, &CommandData{ // Manual invocation
+			commandTableLeave(s2, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				NoLock:  true,
 			})

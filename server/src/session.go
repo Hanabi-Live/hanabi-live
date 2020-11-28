@@ -118,7 +118,7 @@ func (s *Session) Warning(message string) {
 		Warning string `json:"warning"`
 	}
 	s.Emit("warning", &WarningMessage{
-		message,
+		Warning: message,
 	})
 }
 
@@ -135,6 +135,6 @@ func (s *Session) Error(message string) {
 		Error string `json:"error"`
 	}
 	s.Emit("error", &ErrorMessage{
-		message,
+		Error: message,
 	})
 }

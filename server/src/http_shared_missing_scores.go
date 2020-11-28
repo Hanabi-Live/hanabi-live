@@ -65,7 +65,7 @@ func httpSharedMissingScores(c *gin.Context) {
 		}
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:               "Missing Scores",
 		NamesTitle:          "Missing Scores for [" + strings.Join(playerNames, ", ") + "]",
 		RequestedNumPlayers: len(playerIDs),

@@ -63,7 +63,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	for _, ongoingGameTableID := range ongoingGameTableIDs {
 		logger.Info("Unattending player \"" + s.Username + "\" from ongoing table " +
 			strconv.FormatUint(ongoingGameTableID, 10) + " since they disconnected.")
-		commandTableUnattend(s, &CommandData{ // Manual invocation
+		commandTableUnattend(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: ongoingGameTableID,
 		})
 	}
@@ -71,7 +71,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	for _, preGameTableID := range preGameTableIDs {
 		logger.Info("Ejecting player \"" + s.Username + "\" from unstarted table " +
 			strconv.FormatUint(preGameTableID, 10) + " since they disconnected.")
-		commandTableLeave(s, &CommandData{ // Manual invocation
+		commandTableLeave(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: preGameTableID,
 		})
 	}
@@ -79,7 +79,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	for _, spectatingTableID := range spectatingTableIDs {
 		logger.Info("Ejecting spectator \"" + s.Username + "\" from table " +
 			strconv.FormatUint(spectatingTableID, 10) + " since they disconnected.")
-		commandTableUnattend(s, &CommandData{ // Manual invocation
+		commandTableUnattend(s, &CommandData{ // nolint: exhaustivestruct
 			TableID: spectatingTableID,
 		})
 

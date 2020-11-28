@@ -96,7 +96,7 @@ commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
 });
 
 interface HypotheticalData {
-  drawnCardsShown: boolean;
+  showDrawnCards: boolean;
   actions: string[];
 }
 commands.set("hypothetical", (data: HypotheticalData) => {
@@ -113,7 +113,7 @@ commands.set("hypothetical", (data: HypotheticalData) => {
 
   globals.store!.dispatch({
     type: "hypoStart",
-    drawnCardsShown: data.drawnCardsShown,
+    showDrawnCards: data.showDrawnCards,
     actions,
   });
 });
@@ -137,13 +137,13 @@ commands.set("hypoEnd", () => {
   hypothetical.end();
 });
 
-interface HypoDrawnCardsShownData {
-  drawnCardsShown: boolean;
+interface HypoShowDrawnCardsData {
+  showDrawnCards: boolean;
 }
-commands.set("hypoDrawnCardsShown", (data: HypoDrawnCardsShownData) => {
+commands.set("hypoShowDrawnCards", (data: HypoShowDrawnCardsData) => {
   globals.store!.dispatch({
-    type: "hypoDrawnCardsShown",
-    drawnCardsShown: data.drawnCardsShown,
+    type: "hypoShowDrawnCards",
+    showDrawnCards: data.showDrawnCards,
   });
 });
 

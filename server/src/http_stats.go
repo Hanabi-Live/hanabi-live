@@ -95,7 +95,7 @@ func httpStats(c *gin.Context) {
 	for _, name := range variantNames {
 		variant := variants[name]
 		maxScore := len(variant.Suits) * PointsPerSuit
-		variantStats := &VariantStatsData{
+		variantStats := &VariantStatsData{ // nolint: exhaustivestruct
 			ID:   variant.ID,
 			Name: name,
 		}
@@ -156,7 +156,7 @@ func httpStats(c *gin.Context) {
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Stats",
 
 		NumGames:                   globalStats.NumGames,

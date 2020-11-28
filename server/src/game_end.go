@@ -85,6 +85,7 @@ func (g *Game) End() {
 		NumGamesOnThisSeed: numGamesOnThisSeed,
 		PlayerNames:        playerNames,
 		IncrementNumGames:  true,
+		Tags:               "", // Tags are written to the database at a later step
 	})
 	for _, p := range t.Players {
 		p.Session.Emit("gameHistory", &gameHistoryList)
@@ -281,9 +282,10 @@ func (g *Game) WriteDatabaseStats() {
 			userStats = v
 		}
 
-		thisScore := &BestScore{
-			Score:    g.Score,
-			Modifier: modifier,
+		thisScore := &BestScore{ // nolint: exhaustivestruct
+			NumPlayers: g.Options.NumPlayers,
+			Score:      g.Score,
+			Modifier:   modifier,
 		}
 		bestScore := userStats.BestScores[bestScoreIndex]
 		if thisScore.IsBetterThan(bestScore) {
@@ -365,6 +367,8 @@ func (t *Table) ConvertToSharedReplay() {
 			ID:                   p.ID,
 			Name:                 p.Name,
 			Session:              p.Session,
+			Typing:               false,
+			LastTyped:            time.Time{},
 			ShadowingPlayerIndex: -1, // To indicate that they are not shadowing anyone
 			Notes:                make([]string, g.GetNotesSize()),
 		}

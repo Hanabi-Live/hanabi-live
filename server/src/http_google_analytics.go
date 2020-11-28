@@ -40,7 +40,7 @@ func httpGoogleAnalytics(c *gin.Context) {
 	if cookie, err := r.Cookie("_ga"); err != nil {
 		// They don't have a cookie set, so set a new one
 		clientID = uuid.NewV4().String()
-		http.SetCookie(w, &http.Cookie{
+		http.SetCookie(w, &http.Cookie{ // nolint: exhaustivestruct
 			// This is the standard cookie name used by the Google Analytics JavaScript library
 			Name:  "_ga",
 			Value: clientID,

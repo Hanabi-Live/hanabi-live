@@ -35,7 +35,7 @@ func httpMain(c *gin.Context) {
 		title = "Dev"
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:       title,
 		Domain:      domain,
 		Version:     getVersion(),

@@ -34,7 +34,7 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 
 	// Validate that they sent the options object
 	if d.Options == nil {
-		d.Options = &Options{}
+		d.Options = NewOptions()
 	}
 
 	if len(d.Options.VariantName) == 0 {
@@ -69,7 +69,7 @@ func tableSetVariant(s *Session, d *CommandData, t *Table) {
 			variantStats = v
 		}
 
-		p.Stats = PregameStats{
+		p.Stats = &PregameStats{
 			NumGames: p.Stats.NumGames,
 			Variant:  variantStats,
 		}

@@ -64,7 +64,7 @@ func shutdownXMinutesLeft(minutesLeft int) {
 			}
 
 			s := t.GetOwnerSession()
-			commandTableLeave(s, &CommandData{ // Manual invocation
+			commandTableLeave(s, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				NoLock:  true,
 			})
@@ -126,7 +126,7 @@ func shutdownWait() {
 				}
 
 				s := t.GetOwnerSession()
-				commandAction(s, &CommandData{ // Manual invocation
+				commandAction(s, &CommandData{ // nolint: exhaustivestruct
 					TableID: t.ID,
 					Type:    ActionTypeEndGame,
 					Target:  -1,

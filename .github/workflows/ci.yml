@@ -1,0 +1,89 @@
+name: Continuous Integration Tasks
+
+on: [push]
+
+jobs:
+  client_build:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./client
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: node-modules-${{ hashFiles('package-lock.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install
+      working-directory: ${{env.working-directory}}
+    - run: ./build_client.sh
+      working-directory: ${{env.working-directory}}
+    - run: npm run lint
+      working-directory: ${{env.working-directory}}
+    - run: npm run test
+      working-directory: ${{env.working-directory}}
+
+  client_lint:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./client
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: node-modules-${{ hashFiles('package-lock.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install
+      working-directory: ${{env.working-directory}}
+    - run: npm run lint
+      working-directory: ${{env.working-directory}}
+
+  client_test:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./client
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: node-modules-${{ hashFiles('package-lock.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install
+      working-directory: ${{env.working-directory}}
+    - run: npm run test
+      working-directory: ${{env.working-directory}}
+
+
+  server_build:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./server
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+    - run: ./build_server.sh
+      working-directory: ${{env.working-directory}}
+
+  server_lint:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./server
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: golangci/golangci-lint-action@v2
+      working-directory: ${{env.working-directory}}

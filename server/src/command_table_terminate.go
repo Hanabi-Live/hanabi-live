@@ -45,7 +45,7 @@ func commandTableTerminate(s *Session, d *CommandData) {
 }
 
 func terminate(s *Session, t *Table, playerIndex int) {
-	commandAction(s, &CommandData{ // Manual invocation
+	commandAction(s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  playerIndex,

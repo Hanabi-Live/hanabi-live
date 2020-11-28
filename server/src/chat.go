@@ -34,7 +34,7 @@ type ChatMessage struct {
 // (e.g. to give feedback to a user after they type a command,
 // to notify that the server is shutting down, etc.)
 func chatServerSend(msg string, room string) {
-	commandChat(nil, &CommandData{ // Manual invocation
+	commandChat(nil, &CommandData{ // nolint: exhaustivestruct
 		Msg:    msg,
 		Room:   room,
 		Server: true,
@@ -65,6 +65,8 @@ func chatServerSendPM(s *Session, msg string, room string) {
 	s.Emit("chat", &ChatMessage{
 		Msg:       msg,
 		Who:       WebsiteName,
+		Discord:   false,
+		Server:    true,
 		Datetime:  time.Now(),
 		Room:      room,
 		Recipient: s.Username,
@@ -147,17 +149,19 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 		}
 		rawMsg.Message = chatFillMentions(rawMsg.Message)
 		msg := &ChatMessage{
-			Msg:      rawMsg.Message,
-			Who:      rawMsg.Name,
-			Discord:  discord,
-			Server:   server,
-			Datetime: rawMsg.Datetime,
-			Room:     room,
+			Msg:       rawMsg.Message,
+			Who:       rawMsg.Name,
+			Discord:   discord,
+			Server:    server,
+			Datetime:  rawMsg.Datetime,
+			Room:      room,
+			Recipient: "",
 		}
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", &ChatListMessage{
-		List: msgs,
+		List:   msgs,
+		Unread: 0,
 	})
 
 	return true
@@ -173,12 +177,13 @@ func chatSendPastFromTable(s *Session, t *Table) {
 		// We have to convert the *GameChatMessage to a *ChatMessage
 		gcm := t.Chat[i]
 		cm := &ChatMessage{
-			Msg:      gcm.Msg,
-			Who:      gcm.Username,
-			Discord:  false,
-			Server:   gcm.Server,
-			Datetime: gcm.Datetime,
-			Room:     t.GetRoomName(),
+			Msg:       gcm.Msg,
+			Who:       gcm.Username,
+			Discord:   false,
+			Server:    gcm.Server,
+			Datetime:  gcm.Datetime,
+			Room:      t.GetRoomName(),
+			Recipient: "",
 		}
 		chatList = append(chatList, cm)
 	}

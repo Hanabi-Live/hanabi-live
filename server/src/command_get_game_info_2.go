@@ -123,12 +123,12 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 
 	if g.Hypothetical {
 		type HypotheticalMessage struct {
-			DrawnCardsShown bool     `json:"drawnCardsShown"`
-			Actions         []string `json:"actions"`
+			ShowDrawnCards bool     `json:"showDrawnCards"`
+			Actions        []string `json:"actions"`
 		}
 		s.Emit("hypothetical", &HypotheticalMessage{
-			DrawnCardsShown: g.HypoDrawnCardsShown,
-			Actions:         g.HypoActions,
+			ShowDrawnCards: g.HypoShowDrawnCards,
+			Actions:        g.HypoActions,
 		})
 	}
 }

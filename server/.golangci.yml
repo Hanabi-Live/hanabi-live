@@ -20,7 +20,7 @@ linters:
     # gofmt is not needed because we are running goimports (which is a superset of gofmt)
     - gofmt
     # gofumpt is closed on the following issue:
-    # https://github.com/mvdan/gofumpt/issues/88
+    # https://github.com/mvdan/gofumpt/issues/96
     - gofumpt
     # gomnd complains about magic numbers
     - gomnd
@@ -36,7 +36,9 @@ linters:
     - noctx
     # We use some unused parameters for command function uniformity
     - unparam
-    # WSL requires excessive newlines around if statements
+    # We don't need to wrap all error messages
+    - wrapcheck
+    # wsl requires excessive newlines around if statements
     - wsl
 
 issues:
