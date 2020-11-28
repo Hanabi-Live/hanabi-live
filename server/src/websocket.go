@@ -17,9 +17,6 @@ var (
 	// We keep track of all WebSocket sessions
 	sessions = NewSessions()
 
-	// We only allow one user to connect or disconnect at the same time
-	sessionConnectMutex = sync.Mutex{}
-
 	// We keep track of all ongoing WebSocket messages/commands
 	commandWaitGroup sync.WaitGroup
 )

@@ -16,13 +16,8 @@ func websocketDisconnect(ms *melody.Session) {
 
 	// We only want one computer to connect to one user at a time
 	// Use a dedicated mutex to prevent race conditions
-	logger.Debug("Acquiring session connection write lock for user: " + s.Username)
-	sessionConnectMutex.Lock()
-	logger.Debug("Acquired session connection write lock for user: " + s.Username)
-	defer func() {
-		logger.Debug("Releasing session connection write lock for user: " + s.Username)
-		sessionConnectMutex.Unlock()
-	}()
+	sessions.ConnectMutex.Lock()
+	defer sessions.ConnectMutex.Unlock()
 
 	websocketDisconnectRemoveFromMap(s)
 	websocketDisconnectRemoveFromGames(s)

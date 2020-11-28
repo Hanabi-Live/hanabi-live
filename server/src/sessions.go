@@ -7,12 +7,17 @@ import (
 type Sessions struct {
 	sessions map[int]*Session // Indexed by user ID
 	mutex    *sync.RWMutex    // For handling concurrent access
+
+	// We only allow one user to connect or disconnect at the same time
+	ConnectMutex *sync.Mutex
 }
 
 func NewSessions() *Sessions {
 	return &Sessions{
 		sessions: make(map[int]*Session),
 		mutex:    &sync.RWMutex{},
+
+		ConnectMutex: &sync.Mutex{},
 	}
 }
 
