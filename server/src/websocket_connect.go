@@ -60,15 +60,18 @@ func websocketConnect(ms *melody.Session) {
 	logger.Debug("Acquiring session connection write lock for user: " + s.Username)
 	sessionConnectMutex.Lock()
 	logger.Debug("Acquired session connection write lock for user: " + s.Username)
-	defer sessionConnectMutex.Unlock()
+	defer func() {
+		logger.Debug("Releasing session connection write lock for user: " + s.Username)
+		sessionConnectMutex.Unlock()
+	}()
 
 	// Disconnect any existing connections with this user ID
 	logger.Debug("Acquiring sessions read lock for user: " + s.Username)
 	sessionsMutex.RLock()
 	logger.Debug("Acquired sessions read lock for user: " + s.Username)
 	s2, ok := sessions[s.UserID]
+	logger.Debug("Releasing sessions read lock for user: " + s.Username)
 	sessionsMutex.RUnlock()
-	logger.Debug("Released sessions read lock for user: " + s.Username)
 	if ok {
 		logger.Info("Closing existing connection for user: " + s.Username)
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
@@ -92,8 +95,8 @@ func websocketConnect(ms *melody.Session) {
 	sessionsMutex.Lock()
 	logger.Debug("Acquired sessions write lock for user: " + s.Username)
 	sessions[s.UserID] = s
+	logger.Debug("Releasing sessions write lock for user: " + s.Username)
 	sessionsMutex.Unlock()
-	logger.Debug("Released sessions write lock for user: " + s.Username)
 	logger.Info("User \""+s.Username+"\" connected;", len(sessions), "user(s) now connected.")
 
 	// Now, send some additional information to them
@@ -246,8 +249,8 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 		}
 	}
 
+	logger.Debug("Releasing tables read lock for user: " + username)
 	tablesMutex.RUnlock()
-	logger.Debug("Released tables read lock for user: " + username)
 
 	return data
 }
@@ -321,8 +324,8 @@ func websocketConnectUserList(s *Session) {
 	for _, s2 := range sessions {
 		userMessageList = append(userMessageList, makeUserMessage(s2))
 	}
+	logger.Debug("Releasing sessions read lock for user: " + s.Username)
 	sessionsMutex.RUnlock()
-	logger.Debug("Released sessions read lock for user: " + s.Username)
 	s.Emit("userList", userMessageList)
 }
 
@@ -340,8 +343,8 @@ func websocketConnectTableList(s *Session) {
 		}
 		t.Mutex.Unlock()
 	}
+	logger.Debug("Releasing tables read lock for user: " + s.Username)
 	tablesMutex.RUnlock()
-	logger.Debug("Released tables read lock for user: " + s.Username)
 	s.Emit("tableList", tableMessageList)
 }
 

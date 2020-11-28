@@ -19,7 +19,10 @@ func websocketDisconnect(ms *melody.Session) {
 	logger.Debug("Acquiring session connection write lock for user: " + s.Username)
 	sessionConnectMutex.Lock()
 	logger.Debug("Acquired session connection write lock for user: " + s.Username)
-	defer sessionConnectMutex.Unlock()
+	defer func() {
+		logger.Debug("Releasing session connection write lock for user: " + s.Username)
+		sessionConnectMutex.Unlock()
+	}()
 
 	websocketDisconnectRemoveFromMap(s)
 	websocketDisconnectRemoveFromGames(s)
@@ -32,7 +35,10 @@ func websocketDisconnectRemoveFromMap(s *Session) {
 	logger.Debug("Acquiring sessions write lock for user: " + s.Username)
 	sessionsMutex.Lock()
 	logger.Debug("Acquired sessions write lock for user: " + s.Username)
-	defer sessionsMutex.Unlock()
+	defer func() {
+		logger.Debug("Releasing sessions write lock for user: " + s.Username)
+		sessionsMutex.Unlock()
+	}()
 
 	delete(sessions, s.UserID)
 	logger.Info("User \""+s.Username+"\" disconnected;", len(sessions), "user(s) now connected.")
@@ -68,8 +74,8 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 
 		t.Mutex.Unlock()
 	}
+	logger.Debug("Releasing tables read lock for user: " + s.Username)
 	tablesMutex.RUnlock()
-	logger.Debug("Released tables read lock for user: " + s.Username)
 
 	for _, ongoingGameTableID := range ongoingGameTableIDs {
 		logger.Info("Unattending player \"" + s.Username + "\" from ongoing table " +

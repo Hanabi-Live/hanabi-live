@@ -340,6 +340,7 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	tablesMutex.Lock()
 	logger.Debug("Acquired tables write lock for user: " + s.Username)
 	tables[t.ID] = t
+	logger.Debug("Releasing tables write lock for user: " + s.Username)
 	tablesMutex.Unlock()
 
 	logger.Info(t.GetName() + "User \"" + s.Username + "\" created a table.")
@@ -348,13 +349,6 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	// Log a chat message so that future players can see a timestamp of when the table was created
 	msg := s.Username + " created the table."
 	chatServerSend(msg, t.GetRoomName())
-
-	// Join the user to the new table
-	commandTableJoin(s, &CommandData{ // Manual invocation
-		TableID:  t.ID,
-		Password: d.Password,
-		NoLock:   true,
-	})
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {
@@ -365,4 +359,11 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 			"Keep in mind that if your game is not finished in time, it will be terminated."
 		chatServerSend(msg, t.GetRoomName())
 	}
+
+	// Join the user to the new table
+	commandTableJoin(s, &CommandData{ // Manual invocation
+		TableID:  t.ID,
+		Password: d.Password,
+		NoLock:   true,
+	})
 }

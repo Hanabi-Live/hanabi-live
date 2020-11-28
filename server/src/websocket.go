@@ -87,10 +87,11 @@ func getSessionFromMelodySession(ms *melody.Session) *Session {
 
 	// Check to see if a session matching this user ID is in the sessions map
 	logger.Debug("Acquiring sessions read lock for user: " + username)
-	sessionsMutex.Lock()
+	sessionsMutex.RLock()
 	logger.Debug("Acquired sessions read lock for user: " + username)
-	defer sessionsMutex.Unlock()
 	s, ok := sessions[userID]
+	logger.Debug("Releasing sessions read lock for user: " + username)
+	sessionsMutex.RUnlock()
 	if !ok {
 		return nil
 	}

@@ -111,6 +111,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	tablesMutex.Lock()
 	logger.Debug("Acquired tables write lock for user: " + s.Username)
 	tables[t.ID] = t
+	logger.Debug("Releasing tables write lock for user: " + s.Username)
 	tablesMutex.Unlock()
 
 	if d.Source == "id" {

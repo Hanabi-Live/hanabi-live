@@ -83,6 +83,7 @@ func deleteTable(t *Table) {
 	logger.Debug("Acquired tables write lock in the \"deleteTable()\" function.")
 	delete(tables, t.ID)
 	t.Deleted = true // It is assumed that t.Mutex is locked before getting here
+	logger.Debug("Released tables write lock in the \"deleteTable()\" function.")
 	tablesMutex.Unlock()
 
 	notifyAllTableGone(t)
