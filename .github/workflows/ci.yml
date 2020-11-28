@@ -39,7 +39,7 @@ jobs:
       working-directory: ${{env.working-directory}}
     - uses: golangci/golangci-lint-action@v2
       with:
-        working-directory: ${{env.working-directory}}
+        working-directory: ${{env.working-directory}}/src
 
   spell_check:
     runs-on: ubuntu-latest

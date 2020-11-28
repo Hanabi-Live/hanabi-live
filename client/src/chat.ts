@@ -8,7 +8,7 @@ import chatCommands from "./chatCommands";
 import { FADE_TIME } from "./constants";
 import globals from "./globals";
 import Screen from "./lobby/types/Screen";
-import { isEmpty, parseIntSafe } from "./misc";
+import { parseIntSafe } from "./misc";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
@@ -202,14 +202,10 @@ const keypress = (room: string) =>
 
 function send(room: string, element: JQuery<HTMLElement>) {
   let msg = element.val();
-  if (isEmpty(msg)) {
-    return;
-  }
   if (typeof msg !== "string") {
-    throw new Error(
-      "The value of the element in the keypress function is not a string.",
-    );
+    throw new Error("The value of the element is not a string.");
   }
+  msg = msg.trim();
 
   // Validate that they are accidentally broadcasting a private message reply
   if (msg.startsWith("/r ")) {
@@ -221,6 +217,11 @@ function send(room: string, element: JQuery<HTMLElement>) {
 
   // Clear the chat box
   element.val("");
+
+  // Validate that they did not send an empty message
+  if (msg === "") {
+    return;
+  }
 
   if (globals.muted) {
     modals.warningShow("You have been muted by an administrator.");
