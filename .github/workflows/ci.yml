@@ -100,7 +100,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   discord:
-    needs: [client_build, client_lint, client_test, server, spell_check]
+    needs: [client_build, client_lint, client_test, server_build, server_lint, spell_check]
     if: always() # This is needed to always run this job, even if the other jobs fail
     runs-on: ubuntu-latest
     steps:
