@@ -39,7 +39,7 @@ func printTableStats(tableList []*Table) {
 	numReplays := 0
 
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 
 		if !t.Running {
 			numUnstarted++
@@ -53,7 +53,7 @@ func printTableStats(tableList []*Table) {
 			numReplays++
 		}
 
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	logger.Debug("Current unstarted tables:", numUnstarted)
@@ -71,7 +71,7 @@ func printTables(tableList []*Table) {
 	}
 
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 
 		logger.Debug(strconv.FormatUint(t.ID, 10) + " - " + t.Name)
 		logger.Debug("\n")
@@ -127,7 +127,7 @@ func printTables(tableList []*Table) {
 
 		logger.Debug("---------------------------------------------------------------")
 
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 }
 

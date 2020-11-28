@@ -24,7 +24,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	// Validate that this is a shared replay
@@ -199,11 +199,11 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 	var t2 *Table
 	for _, existingTable := range tableList {
 		foundTable := false
-		existingTable.Mutex.Lock()
+		existingTable.Lock()
 		if existingTable.Name == newTableName {
 			foundTable = true
 		}
-		existingTable.Mutex.Unlock()
+		existingTable.Unlock()
 
 		if foundTable {
 			t2 = existingTable
@@ -218,8 +218,8 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 		return
 	}
 
-	t2.Mutex.Lock()
-	defer t2.Mutex.Unlock()
+	t2.Lock()
+	defer t2.Unlock()
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {

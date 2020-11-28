@@ -16,7 +16,7 @@ import (
 func serializeTables() bool {
 	tableList := tables.GetList()
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 
 		// Only serialize ongoing games
 		if t.Running && !t.Replay {
@@ -42,7 +42,7 @@ func serializeTables() bool {
 			}
 		}
 
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	return true

@@ -21,7 +21,7 @@ func commandChatTyping(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	// Validate that they are in the game or are a spectator
@@ -78,13 +78,8 @@ func chatTypingCheckStopped(t *Table, userID int) {
 	if !exists || t != t2 {
 		return
 	}
-	logger.Debug("Acquiring table", t.ID, "lock.")
-	t.Mutex.Lock()
-	logger.Debug("Acquired table", t.ID, "lock.")
-	defer func() {
-		logger.Debug("Releasing table", t.ID, "lock.")
-		t.Mutex.Unlock()
-	}()
+	t.Lock()
+	defer t.Unlock()
 
 	// Validate that they are in the game or are a spectator
 	playerIndex := t.GetPlayerIndexFromID(userID)

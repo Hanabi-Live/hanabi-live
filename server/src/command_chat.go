@@ -169,7 +169,7 @@ func commandChatTable(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	// Validate that this player is in the game or spectating

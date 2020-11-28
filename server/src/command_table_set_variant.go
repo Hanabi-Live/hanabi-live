@@ -19,7 +19,7 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	if t.Running {

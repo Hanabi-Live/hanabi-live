@@ -22,7 +22,7 @@ func commandNote(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	// Validate that the game has started
@@ -83,7 +83,6 @@ func commandNote(s *Session, d *CommandData) {
 	// Escape all HTML special characters (to stop various attacks against other players)
 	d.Msg = html.EscapeString(d.Msg)
 
-	logger.Debug("User \"" + s.Username + "\" submitted a note of: " + d.Msg)
 	note(d, t, playerIndex, spectatorIndex)
 }
 

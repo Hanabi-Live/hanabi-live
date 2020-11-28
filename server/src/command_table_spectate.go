@@ -1,6 +1,8 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 // commandTableSpectate is sent when:
 // 1) the user clicks on the "Spectate" button in the lobby
@@ -20,7 +22,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	// Validate that the game has started

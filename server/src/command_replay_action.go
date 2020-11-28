@@ -41,7 +41,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 
 	// Validate that this is a shared replay

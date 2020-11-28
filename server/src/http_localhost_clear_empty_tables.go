@@ -30,7 +30,7 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 		}
 		// (don't do anything for ongoing games)
 
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	c.String(http.StatusOK, "success\n")

@@ -19,7 +19,7 @@ func commandPause(s *Session, d *CommandData) {
 		return
 	}
 	if !d.NoLock {
-		defer t.Mutex.Unlock()
+		defer t.Unlock()
 	}
 	g := t.Game
 

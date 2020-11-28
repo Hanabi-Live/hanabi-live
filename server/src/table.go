@@ -52,10 +52,10 @@ type Table struct {
 
 	Chat     []*TableChatMessage // All of the in-game chat history
 	ChatRead map[int]int         // A map of which users have read which messages
+	Deleted  bool                `json:"-"` // Used to prevent race conditions
 
 	// Each table has its own mutex to ensure that only one action can occur at the same time
-	Mutex   sync.Mutex `json:"-"`
-	Deleted bool       `json:"-"` // Used to prevent race conditions
+	mutex *sync.Mutex
 }
 
 type TableChatMessage struct {
@@ -95,6 +95,8 @@ func NewTable(name string, owner int) *Table {
 
 		Chat:     make([]*TableChatMessage, 0),
 		ChatRead: make(map[int]int),
+
+		mutex: &sync.Mutex{},
 	}
 }
 
@@ -118,6 +120,14 @@ func getNewTableID() uint64 {
 	}
 }
 
+func (t *Table) Lock() {
+	t.mutex.Lock()
+}
+
+func (t *Table) Unlock() {
+	t.mutex.Unlock()
+}
+
 // CheckIdle is meant to be called in a new goroutine
 func (t *Table) CheckIdle() {
 	// Disable idle timeouts in development
@@ -126,9 +136,9 @@ func (t *Table) CheckIdle() {
 	}
 
 	// Set the last action
-	t.Mutex.Lock()
+	t.Lock()
 	t.DatetimeLastAction = time.Now()
-	t.Mutex.Unlock()
+	t.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
 	time.Sleep(IdleGameTimeout)
@@ -138,8 +148,8 @@ func (t *Table) CheckIdle() {
 	if !exists || t != t2 {
 		return
 	}
-	t.Mutex.Lock()
-	defer t.Mutex.Unlock()
+	t.Lock()
+	defer t.Unlock()
 
 	// Don't do anything if there has been an action in the meantime
 	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {

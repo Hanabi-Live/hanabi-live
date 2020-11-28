@@ -142,8 +142,8 @@ func (g *Game) CheckTimer(timeToSleep time.Duration, turn int, pauseCount int, g
 	if !exists || t != t2 {
 		return
 	}
-	t.Mutex.Lock()
-	defer t.Mutex.Unlock()
+	t.Lock()
+	defer t.Unlock()
 
 	// Check to see if we have made a move in the meanwhile
 	if turn != g.Turn {

@@ -320,13 +320,8 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 	if !exists || t != t2 {
 		return
 	}
-	logger.Debug("Acquiring table", t.ID, "lock.")
-	t.Mutex.Lock()
-	logger.Debug("Acquired table", t.ID, "lock.")
-	defer func() {
-		logger.Debug("Releasing table", t.ID, "lock.")
-		t.Mutex.Unlock()
-	}()
+	t.Lock()
+	defer t.Unlock()
 
 	// Check to see if the game has already started
 	if t.Running {

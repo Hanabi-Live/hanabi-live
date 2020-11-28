@@ -70,7 +70,7 @@ func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *
 		playerIndex := -1
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Lock()
+			t.Lock()
 		}
 
 		if !t.Replay {
@@ -78,7 +78,7 @@ func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *
 		}
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Unlock()
+			t.Unlock()
 		}
 
 		if playerIndex > 0 {
@@ -97,7 +97,7 @@ func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint6
 		spectatorIndex := -1
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Lock()
+			t.Lock()
 		}
 
 		if t.Replay {
@@ -105,7 +105,7 @@ func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint6
 		}
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Unlock()
+			t.Unlock()
 		}
 
 		if spectatorIndex > 0 {
@@ -124,7 +124,7 @@ func (ts *Tables) FindUserDisconSpectatorTable(userID int, tableIDAlreadyLocked 
 		foundTable := false
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Lock()
+			t.Lock()
 		}
 
 		if t.Replay {
@@ -137,7 +137,7 @@ func (ts *Tables) FindUserDisconSpectatorTable(userID int, tableIDAlreadyLocked 
 		}
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Unlock()
+			t.Unlock()
 		}
 
 		if foundTable {
@@ -177,12 +177,12 @@ func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool
 		// any work on the table
 		// After calling "getTableAndLock()", the parent function should immediately perform a
 		// "defer t.Mutex.Unlock()"
-		t.Mutex.Lock()
+		t.Lock()
 
-		// Prevent the race condition where the table can be removed from the map while the
-		// above lock acquisition is blocking
+		// Prevent the race condition where the table can be removed from the map while the above
+		// lock acquisition is blocking
 		if t.Deleted {
-			t.Mutex.Unlock()
+			t.Unlock()
 			return nil, false
 		}
 	}
@@ -194,11 +194,11 @@ func getTableIDFromName(tableName string) (uint64, bool) {
 	tableList := tables.GetList()
 	for _, t := range tableList {
 		foundTable := false
-		t.Mutex.Lock()
+		t.Lock()
 		if t.Name == tableName {
 			foundTable = true
 		}
-		t.Mutex.Unlock()
+		t.Unlock()
 
 		if foundTable {
 			return t.ID, true
@@ -208,7 +208,6 @@ func getTableIDFromName(tableName string) (uint64, bool) {
 	return 0, false
 }
 
-// deleteTable removes a table from the tables map
 func deleteTable(t *Table) {
 	tables.Delete(t.ID)
 	t.Deleted = true // It is assumed that t.Mutex is locked at this point

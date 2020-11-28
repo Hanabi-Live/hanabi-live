@@ -287,13 +287,8 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	}
 
 	t := NewTable(d.Name, s.UserID)
-	logger.Debug("Acquiring table", t.ID, "lock.")
-	t.Mutex.Lock()
-	logger.Debug("Acquired table", t.ID, "lock.")
-	defer func() {
-		logger.Debug("Releasing table", t.ID, "lock.")
-		t.Mutex.Unlock()
-	}()
+	t.Lock()
+	defer t.Unlock()
 	t.Visible = !d.HidePregame
 	t.PasswordHash = passwordHash
 	t.Options = d.Options

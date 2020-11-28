@@ -39,7 +39,7 @@ func websocketConnect(ms *melody.Session) {
 		return
 	}
 
-	logger.Debug("Entered the \"websocketConnect()\" function for user: " + username)
+	logger.Info("Entered the \"websocketConnect()\" function for user: " + username)
 
 	// First, perform all the expensive database retrieval to gather the data we need
 	// We want to do this before we start locking any mutexes (to minimize the lock time)
@@ -283,11 +283,11 @@ func websocketConnectTableList(s *Session) {
 	tableList := tables.GetList()
 	tableMessageList := make([]*TableMessage, 0)
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 		if t.Visible {
 			tableMessageList = append(tableMessageList, makeTableMessage(s, t))
 		}
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	s.Emit("tableList", tableMessageList)

@@ -50,12 +50,9 @@ func chatServerSendAll(msg string) {
 	tableList := tables.GetList()
 	roomNames := make([]string, 0)
 	for _, t := range tableList {
-		logger.Debug("Acquiring table", t.ID, "lock.")
-		t.Mutex.Lock()
-		logger.Debug("Acquired table", t.ID, "lock.")
+		t.Lock()
 		roomNames = append(roomNames, t.GetRoomName())
-		logger.Debug("Releasing table", t.ID, "lock.")
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	for _, roomName := range roomNames {

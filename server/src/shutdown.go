@@ -50,11 +50,11 @@ func shutdownXMinutesLeft(minutesLeft int) {
 		unstartedTableIDs := make([]uint64, 0)
 
 		for _, t := range tableList {
-			t.Mutex.Lock()
+			t.Lock()
 			if !t.Running {
 				unstartedTableIDs = append(unstartedTableIDs, t.ID)
 			}
-			t.Mutex.Unlock()
+			t.Unlock()
 		}
 
 		for _, unstartedTableID := range unstartedTableIDs {
@@ -68,7 +68,7 @@ func shutdownXMinutesLeft(minutesLeft int) {
 				TableID: t.ID,
 				NoLock:  true,
 			})
-			t.Mutex.Unlock()
+			t.Unlock()
 		}
 	}
 
@@ -79,9 +79,9 @@ func shutdownXMinutesLeft(minutesLeft int) {
 	// Send a warning message to the people still playing
 	roomNames := make([]string, 0)
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 		roomNames = append(roomNames, t.GetRoomName())
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	msg += " Finish your game soon or it will be automatically terminated!"
@@ -112,11 +112,11 @@ func shutdownWait() {
 			tableList := tables.GetList()
 			tableIDsToTerminate := make([]uint64, 0)
 			for _, t := range tableList {
-				t.Mutex.Lock()
+				t.Lock()
 				if t.Running && !t.Replay {
 					tableIDsToTerminate = append(tableIDsToTerminate, t.ID)
 				}
-				t.Mutex.Unlock()
+				t.Unlock()
 			}
 
 			for _, tableIDToTerminate := range tableIDsToTerminate {
@@ -133,7 +133,7 @@ func shutdownWait() {
 					Value:   EndConditionTerminated,
 					NoLock:  true,
 				})
-				t.Mutex.Unlock()
+				t.Unlock()
 			}
 		}
 
@@ -145,11 +145,11 @@ func countActiveTables() int {
 	tableList := tables.GetList()
 	numTables := 0
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 		if t.Running && !t.Replay {
 			numTables++
 		}
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	return numTables

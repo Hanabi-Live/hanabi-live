@@ -12,7 +12,7 @@ func websocketDisconnect(ms *melody.Session) {
 		return
 	}
 
-	logger.Debug("Entered the \"websocketDisconnect()\" function for user: " + s.Username)
+	logger.Info("Entered the \"websocketDisconnect()\" function for user: " + s.Username)
 
 	// We only want one computer to connect to one user at a time
 	// Use a dedicated mutex to prevent race conditions
@@ -39,7 +39,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 
 	tableList := tables.GetList()
 	for _, t := range tableList {
-		t.Mutex.Lock()
+		t.Lock()
 
 		// They could be one of the players (1/2)
 		playerIndex := t.GetPlayerIndexFromID(s.UserID)
@@ -57,7 +57,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 			spectatingTableIDs = append(spectatingTableIDs, t.ID)
 		}
 
-		t.Mutex.Unlock()
+		t.Unlock()
 	}
 
 	for _, ongoingGameTableID := range ongoingGameTableIDs {
@@ -88,7 +88,7 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		t, exists := getTableAndLock(s, spectatingTableID, true)
 		if exists {
 			t.DisconSpectators[s.UserID] = struct{}{}
-			t.Mutex.Unlock()
+			t.Unlock()
 		}
 	}
 }
