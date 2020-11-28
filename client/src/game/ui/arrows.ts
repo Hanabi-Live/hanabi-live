@@ -4,6 +4,7 @@
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { KonvaEventObject } from "konva/types/Node";
+import { ensureAllCases } from "../../misc";
 import { getCharacter } from "../data/gameData";
 import { cardRules, variantRules } from "../rules";
 import Clue from "../types/Clue";
@@ -401,7 +402,16 @@ function getElementFromOrder(order: number): NodeWithTooltip {
     return getCardOrStackBase(order);
   }
 
+  return getElementFromNegativeOrder(order);
+}
+
+function getElementFromNegativeOrder(order: ReplayArrowOrder): NodeWithTooltip {
   switch (order) {
+    case ReplayArrowOrder.Nothing: {
+      throw new Error(
+        `An order of ${ReplayArrowOrder.Nothing} does not correspond to an element.`,
+      );
+    }
     case ReplayArrowOrder.Deck: {
       return globals.elements.deck!;
     }
@@ -417,6 +427,15 @@ function getElementFromOrder(order: number): NodeWithTooltip {
     case ReplayArrowOrder.Clues: {
       return globals.elements.cluesNumberLabel!;
     }
+    case ReplayArrowOrder.Strike1: {
+      return globals.elements.cluesNumberLabel!;
+    }
+    case ReplayArrowOrder.Strike2: {
+      return globals.elements.cluesNumberLabel!;
+    }
+    case ReplayArrowOrder.Strike3: {
+      return globals.elements.cluesNumberLabel!;
+    }
     case ReplayArrowOrder.Pace: {
       return globals.elements.paceNumberLabel!;
     }
@@ -427,8 +446,9 @@ function getElementFromOrder(order: number): NodeWithTooltip {
       return globals.elements.efficiencyMinNeededLabel!;
     }
     default: {
+      ensureAllCases(order);
       throw new Error(
-        `Failed to get the element corresponding to arrow order: ${order}`,
+        "Failed to get the element corresponding to arrow order.",
       );
     }
   }
