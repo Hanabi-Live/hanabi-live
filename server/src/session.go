@@ -139,24 +139,23 @@ func (s *Session) Error(message string) {
 	})
 }
 
-func (s *Session) GetJoinedTable() *Table {
+func (s *Session) GetJoinedTable(tableIDAlreadyLocked uint64) *Table {
 	tablesMutex.RLock()
 	defer tablesMutex.RUnlock()
 
 	for _, t := range tables {
-		joinedToTable := false
-		t.Mutex.Lock()
-		if !t.Replay {
-			for _, p := range t.Players {
-				if p.ID == s.UserID {
-					joinedToTable = true
-					break
-				}
-			}
+		playerIndex := -1
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Lock()
 		}
-		t.Mutex.Unlock()
+		if !t.Replay {
+			playerIndex = t.GetPlayerIndexFromID(s.UserID)
+		}
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Unlock()
+		}
 
-		if joinedToTable {
+		if playerIndex > 0 {
 			return t
 		}
 	}

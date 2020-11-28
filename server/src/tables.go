@@ -7,7 +7,7 @@ import (
 
 var (
 	tables      = make(map[uint64]*Table)
-	tablesMutex = sync.RWMutex{}
+	tablesMutex = sync.RWMutex{} // For handling concurrent access to the "tables" map
 
 	// The counter is atomically incremented before assignment,
 	// so the first ID will be 1 and will increase from there
@@ -82,7 +82,7 @@ func deleteTable(t *Table) {
 	tablesMutex.Lock()
 	logger.Debug("Acquired tables write lock in the \"deleteTable()\" function.")
 	delete(tables, t.ID)
-	t.Deleted = true // It is assumed that t.Mutex is locked before getting here
+	t.Deleted = true // It is assumed that t.Mutex is locked at this point
 	logger.Debug("Released tables write lock in the \"deleteTable()\" function.")
 	tablesMutex.Unlock()
 

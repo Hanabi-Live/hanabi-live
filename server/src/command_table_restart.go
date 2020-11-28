@@ -120,13 +120,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that no-one in the game are currently playing in any other games
-	if s.GetJoinedTable() != nil {
-		s.Warning("You cannot join more than one table at a time. " +
-			"Terminate your other game before restarting a replay.")
-		return
-	}
 	for _, s2 := range playerSessions {
-		if s2.GetJoinedTable() != nil {
+		if s2.GetJoinedTable(t.ID) != nil {
 			s.Warning("You cannot restart the game because " + s2.Username +
 				" is already playing in another game.")
 			return

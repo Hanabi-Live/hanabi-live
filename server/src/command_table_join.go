@@ -23,16 +23,17 @@ func commandTableJoin(s *Session, d *CommandData) {
 		defer t.Mutex.Unlock()
 	}
 
-	// Validate that the player is not already joined to this table
-	playerIndex := t.GetPlayerIndexFromID(s.UserID)
-	if playerIndex != -1 {
-		s.Warning("You have already joined this table.")
-		return
-	}
-
-	// Validate that the player is not joined to another table
-	if !strings.HasPrefix(s.Username, "Bot-") {
-		if t2 := s.GetJoinedTable(); t2 != nil {
+	if strings.HasPrefix(s.Username, "Bot-") {
+		// Validate that the player is not already joined to this table
+		playerIndex := t.GetPlayerIndexFromID(s.UserID)
+		if playerIndex != -1 {
+			s.Warning("You have already joined this table.")
+			return
+		}
+	} else {
+		// Validate that the player is not joined to any table
+		// (only bots have the ability to join more than one table)
+		if t2 := s.GetJoinedTable(t.ID); t2 != nil {
 			s.Warning("You cannot join more than one table at a time. " +
 				"Terminate your other game before joining a new one.")
 			return

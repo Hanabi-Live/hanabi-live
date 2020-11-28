@@ -16,7 +16,7 @@ var (
 
 	// We keep track of all WebSocket sessions
 	sessions      = make(map[int]*Session) // Indexed by user ID
-	sessionsMutex = sync.RWMutex{}
+	sessionsMutex = sync.RWMutex{}         // For handling concurrent access to the "sessions" map
 
 	// We only allow one user to connect or disconnect at the same time
 	sessionConnectMutex = sync.Mutex{}

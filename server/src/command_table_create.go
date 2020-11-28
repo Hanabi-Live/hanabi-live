@@ -55,7 +55,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that the player is not joined to another table
 	if !strings.HasPrefix(s.Username, "Bot-") {
-		if t2 := s.GetJoinedTable(); t2 != nil {
+		if t2 := s.GetJoinedTable(0); t2 != nil { // We pass 0 as a null value
 			s.Warning("You cannot join more than one table at a time. " +
 				"Terminate your other game before creating a new one.")
 			return
