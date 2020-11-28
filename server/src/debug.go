@@ -4,7 +4,7 @@ var (
 	badGameIDs = make([]int, 0)
 )
 
-func debug() {
+func debugFunction() {
 	logger.Debug("Executing debug function(s).")
 
 	// updateAllSeedNumGames()

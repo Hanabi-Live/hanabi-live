@@ -7,6 +7,6 @@ import (
 )
 
 func httpLocalhostDebug(c *gin.Context) {
-	debug()
+	debugFunction()
 	c.String(http.StatusOK, "success\n")
 }

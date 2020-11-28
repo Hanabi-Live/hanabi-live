@@ -62,6 +62,65 @@ func (ts *Tables) Length() int {
 	return len(ts.tables)
 }
 
+// FindUserJoinedTable returns the table that the corresponding user ID is currently joined to
+// (or nil if not joined to any tables)
+func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *Table {
+	tableList := ts.GetList()
+	for _, t := range tableList {
+		playerIndex := -1
+
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Lock()
+		}
+
+		if !t.Replay {
+			playerIndex = t.GetPlayerIndexFromID(userID)
+		}
+
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Unlock()
+		}
+
+		if playerIndex > 0 {
+			return t
+		}
+	}
+
+	return nil
+}
+
+// FindUserDisconSpectatorTable returns the table that the corresponding user ID was spectating
+// before they disconnected (or nil if they were not spectating any tables)
+func (ts *Tables) FindUserDisconSpectatorTable(userID int, tableIDAlreadyLocked uint64) *Table {
+	tableList := tables.GetList()
+	for _, t := range tableList {
+		foundTable := false
+
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Lock()
+		}
+
+		if t.Replay {
+			for disconnectedUserID := range t.DisconSpectators {
+				if disconnectedUserID == userID {
+					foundTable = true
+					break
+				}
+			}
+		}
+
+		if t.ID != tableIDAlreadyLocked {
+			t.Mutex.Unlock()
+		}
+
+		if foundTable {
+			return t
+		}
+	}
+
+	return nil
+}
+
 // ----------------
 // Helper functions
 // ----------------

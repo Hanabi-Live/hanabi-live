@@ -78,8 +78,13 @@ func chatTypingCheckStopped(t *Table, userID int) {
 	if !exists || t != t2 {
 		return
 	}
+	logger.Debug("Acquiring table", t.ID, "lock.")
 	t.Mutex.Lock()
-	defer t.Mutex.Unlock()
+	logger.Debug("Acquired table", t.ID, "lock.")
+	defer func() {
+		logger.Debug("Releasing table", t.ID, "lock.")
+		t.Mutex.Unlock()
+	}()
 
 	// Validate that they are in the game or are a spectator
 	playerIndex := t.GetPlayerIndexFromID(userID)

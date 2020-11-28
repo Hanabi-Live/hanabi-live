@@ -33,7 +33,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	} else {
 		// Validate that the player is not joined to any table
 		// (only bots have the ability to join more than one table)
-		if t2 := s.GetJoinedTable(t.ID); t2 != nil {
+		if t2 := tables.FindUserJoinedTable(s.UserID, t.ID); t2 != nil {
 			s.Warning("You cannot join more than one table at a time. " +
 				"Terminate your other game before joining a new one.")
 			return

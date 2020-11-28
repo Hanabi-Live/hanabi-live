@@ -82,8 +82,13 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	t := NewTable(name, -1)
+	logger.Debug("Acquiring table", t.ID, "lock.")
 	t.Mutex.Lock()
-	defer t.Mutex.Unlock()
+	logger.Debug("Acquired table", t.ID, "lock.")
+	defer func() {
+		logger.Debug("Releasing table", t.ID, "lock.")
+		t.Mutex.Unlock()
+	}()
 	t.Visible = d.Visibility == "shared"
 
 	// Load the options and players

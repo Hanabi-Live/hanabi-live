@@ -191,48 +191,17 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 	// Information about their current activity
 	// ----------------------------------------
 
-	tableList := tables.GetList()
-
 	// Check to see if they are currently playing in an ongoing game
-	for _, t := range tableList {
-		foundTable := false
-		logger.Debug("Acquiring table " + strconv.FormatUint(t.ID, 10) + " lock for user: " + username)
-		t.Mutex.Lock()
-		logger.Debug("Acquired table " + strconv.FormatUint(t.ID, 10) + " lock for user: " + username)
-		if !t.Replay {
-			playerIndex := t.GetPlayerIndexFromID(userID)
-			if playerIndex != -1 {
-				foundTable = true
-			}
-		}
-		logger.Debug("Releasing table " + strconv.FormatUint(t.ID, 10) + " lock for user: " + username)
-		t.Mutex.Unlock()
-
-		if foundTable {
-			data.PlayingInOngoingGameTableID = t.ID
-			break
-		}
+	joinedTable := tables.FindUserJoinedTable(userID, 0) // We pass 0 as a null value
+	if joinedTable != nil {
+		data.PlayingInOngoingGameTableID = joinedTable.ID
 	}
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
-	for _, t := range tableList {
-		foundTable := false
-		t.Mutex.Lock()
-		if t.Replay {
-			for disconnectedUserID := range t.DisconSpectators {
-				if disconnectedUserID == userID {
-					foundTable = true
-					break
-				}
-			}
-		}
-		t.Mutex.Unlock()
-
-		if foundTable {
-			data.SpectatingTableID = t.ID
-			data.SpectatingDatabaseID = t.ExtraOptions.DatabaseID
-			break
-		}
+	spectatingTable := tables.FindUserDisconSpectatorTable(userID, 0) // We pass 0 as a null value
+	if spectatingTable != nil {
+		data.SpectatingTableID = spectatingTable.ID
+		data.SpectatingDatabaseID = spectatingTable.ExtraOptions.DatabaseID
 	}
 
 	return data

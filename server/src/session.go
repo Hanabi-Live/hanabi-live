@@ -138,25 +138,3 @@ func (s *Session) Error(message string) {
 		message,
 	})
 }
-
-func (s *Session) GetJoinedTable(tableIDAlreadyLocked uint64) *Table {
-	tableList := tables.GetList()
-	for _, t := range tableList {
-		playerIndex := -1
-		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Lock()
-		}
-		if !t.Replay {
-			playerIndex = t.GetPlayerIndexFromID(s.UserID)
-		}
-		if t.ID != tableIDAlreadyLocked {
-			t.Mutex.Unlock()
-		}
-
-		if playerIndex > 0 {
-			return t
-		}
-	}
-
-	return nil
-}
