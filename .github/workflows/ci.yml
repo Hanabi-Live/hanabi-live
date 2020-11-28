@@ -59,7 +59,7 @@ jobs:
       - run: npm run test
         working-directory: ${{ env.working-directory }}
 
-  server:
+  server_build:
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -68,6 +68,14 @@ jobs:
       - uses: actions/setup-go@v2
       - run: ./build_server.sh
         working-directory: ${{ env.working-directory }}
+
+  server_lint:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./server
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
       - uses: golangci/golangci-lint-action@v2
         with:
           version: v1.33
@@ -75,10 +83,8 @@ jobs:
 
   spell_check:
     runs-on: ubuntu-latest
-
     env:
       working-directory: ./spell_check
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -104,3 +110,4 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ env.WORKFLOW_CONCLUSION }}
+          title: ""
