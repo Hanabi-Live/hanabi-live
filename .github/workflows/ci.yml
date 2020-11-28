@@ -1,6 +1,6 @@
 name: Continuous Integration Tasks
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   client_build:
