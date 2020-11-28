@@ -100,6 +100,6 @@ jobs:
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
       - if: env.WORKFLOW_CONCLUSION != 'success' && env.WORKFLOW_CONCLUSION != 'cancelled'
-      - uses: sarisia/actions-status-discord@v1
+        uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
