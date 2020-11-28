@@ -32,16 +32,8 @@ func websocketDisconnect(ms *melody.Session) {
 }
 
 func websocketDisconnectRemoveFromMap(s *Session) {
-	logger.Debug("Acquiring sessions write lock for user: " + s.Username)
-	sessionsMutex.Lock()
-	logger.Debug("Acquired sessions write lock for user: " + s.Username)
-	defer func() {
-		logger.Debug("Releasing sessions write lock for user: " + s.Username)
-		sessionsMutex.Unlock()
-	}()
-
-	delete(sessions, s.UserID)
-	logger.Info("User \""+s.Username+"\" disconnected;", len(sessions), "user(s) now connected.")
+	sessions.Delete(s.UserID)
+	logger.Info("User \"" + s.Username + "\" disconnected;" + strconv.Itoa(sessions.Length()) + " user(s) now connected.")
 }
 
 func websocketDisconnectRemoveFromGames(s *Session) {
@@ -50,10 +42,8 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	preGameTableIDs := make([]uint64, 0)
 	spectatingTableIDs := make([]uint64, 0)
 
-	logger.Debug("Acquiring tables read lock for user: " + s.Username)
-	tablesMutex.RLock()
-	logger.Debug("Acquired tables read lock for user: " + s.Username)
-	for _, t := range tables {
+	tableList := tables.GetList()
+	for _, t := range tableList {
 		t.Mutex.Lock()
 
 		// They could be one of the players (1/2)
@@ -74,8 +64,6 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 
 		t.Mutex.Unlock()
 	}
-	logger.Debug("Releasing tables read lock for user: " + s.Username)
-	tablesMutex.RUnlock()
 
 	for _, ongoingGameTableID := range ongoingGameTableIDs {
 		logger.Info("Unattending player \"" + s.Username + "\" from ongoing table " +

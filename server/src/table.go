@@ -66,6 +66,12 @@ type TableChatMessage struct {
 	Server   bool
 }
 
+var (
+	// The counter is atomically incremented before assignment,
+	// so the first table ID will be 1 and will increase from there
+	tableIDCounter uint64 = 0
+)
+
 func NewTable(name string, owner int) *Table {
 	// Create the table object
 	return &Table{
@@ -93,15 +99,14 @@ func NewTable(name string, owner int) *Table {
 }
 
 func getNewTableID() uint64 {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
+	tableIDs := tables.GetKeys()
 
 	for {
 		newTableID := atomic.AddUint64(&tableIDCounter, 1)
 
 		// Ensure that the table ID does not conflict with any existing tables
 		valid := true
-		for tableID := range tables {
+		for _, tableID := range tableIDs {
 			if tableID == newTableID {
 				valid = false
 				break
@@ -306,13 +311,11 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 
 	// Go through the map and build a list of users that happen to be currently online
 	notifySessions := make([]*Session, 0)
-	sessionsMutex.RLock()
 	for userID := range notifyMap {
-		if s, ok := sessions[userID]; ok {
+		if s, ok := sessions.Get(userID); ok {
 			notifySessions = append(notifySessions, s)
 		}
 	}
-	sessionsMutex.RUnlock()
 
 	return notifySessions
 }

@@ -3,27 +3,24 @@
 package main
 
 func notifyAllUser(s *Session) {
-	sessionsMutex.RLock()
-	for _, s2 := range sessions {
+	sessionList := sessions.GetList()
+	for _, s2 := range sessionList {
 		s2.NotifyUser(s)
 	}
-	sessionsMutex.RUnlock()
 }
 
 func notifyAllUserLeft(s *Session) {
-	sessionsMutex.RLock()
-	for _, s2 := range sessions {
+	sessionList := sessions.GetList()
+	for _, s2 := range sessionList {
 		s2.NotifyUserLeft(s)
 	}
-	sessionsMutex.RUnlock()
 }
 
 func notifyAllUserInactive(s *Session) {
-	sessionsMutex.RLock()
-	for _, s2 := range sessions {
+	sessionList := sessions.GetList()
+	for _, s2 := range sessionList {
 		s2.NotifyUserInactive(s)
 	}
-	sessionsMutex.RUnlock()
 }
 
 func notifyAllTable(t *Table) {
@@ -31,11 +28,10 @@ func notifyAllTable(t *Table) {
 		return
 	}
 
-	sessionsMutex.RLock()
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.NotifyTable(t)
 	}
-	sessionsMutex.RUnlock()
 }
 
 func notifyAllTableGone(t *Table) {
@@ -43,25 +39,22 @@ func notifyAllTableGone(t *Table) {
 		return
 	}
 
-	sessionsMutex.RLock()
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.NotifyTableGone(t)
 	}
-	sessionsMutex.RUnlock()
 }
 
 func notifyAllShutdown() {
-	sessionsMutex.RLock()
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.NotifyShutdown()
 	}
-	sessionsMutex.RUnlock()
 }
 
 func notifyAllMaintenance() {
-	sessionsMutex.RLock()
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.NotifyMaintenance()
 	}
-	sessionsMutex.RUnlock()
 }

@@ -195,9 +195,9 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 	})
 
 	// Find the table ID for the new game
+	tableList := tables.GetList()
 	var t2 *Table
-	tablesMutex.RLock()
-	for _, existingTable := range tables {
+	for _, existingTable := range tableList {
 		foundTable := false
 		existingTable.Mutex.Lock()
 		if existingTable.Name == newTableName {
@@ -210,7 +210,6 @@ func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSess
 			break
 		}
 	}
-	tablesMutex.RUnlock()
 	if t2 == nil {
 		logger.Error("Failed to find the newly created table of \"" + newTableName + "\" " +
 			"in the table map.")

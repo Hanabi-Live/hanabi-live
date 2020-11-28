@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -66,13 +67,7 @@ func websocketConnect(ms *melody.Session) {
 	}()
 
 	// Disconnect any existing connections with this user ID
-	logger.Debug("Acquiring sessions read lock for user: " + s.Username)
-	sessionsMutex.RLock()
-	logger.Debug("Acquired sessions read lock for user: " + s.Username)
-	s2, ok := sessions[s.UserID]
-	logger.Debug("Releasing sessions read lock for user: " + s.Username)
-	sessionsMutex.RUnlock()
-	if ok {
+	if s2, ok := sessions.Get(s.UserID); ok {
 		logger.Info("Closing existing connection for user: " + s.Username)
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
 		if err := s2.ms.Close(); err != nil {
@@ -90,14 +85,9 @@ func websocketConnect(ms *melody.Session) {
 		websocketDisconnectRemoveFromGames(s2)
 	}
 
-	// Add the connection to a session map so that we can keep track of all of the connections
-	logger.Debug("Acquiring sessions write lock for user: " + s.Username)
-	sessionsMutex.Lock()
-	logger.Debug("Acquired sessions write lock for user: " + s.Username)
-	sessions[s.UserID] = s
-	logger.Debug("Releasing sessions write lock for user: " + s.Username)
-	sessionsMutex.Unlock()
-	logger.Info("User \""+s.Username+"\" connected;", len(sessions), "user(s) now connected.")
+	// Add the session to a map so that we can keep track of all of the connected users
+	sessions.Set(s.UserID, s)
+	logger.Info("User \"" + s.Username + "\" connected; " + strconv.Itoa(sessions.Length()) + " user(s) now connected.")
 
 	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
@@ -206,20 +196,21 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 	// Information about their current activity
 	// ----------------------------------------
 
-	logger.Debug("Acquiring tables read lock for user: " + username)
-	tablesMutex.RLock()
-	logger.Debug("Acquired tables read lock for user: " + username)
+	tableList := tables.GetList()
 
 	// Check to see if they are currently playing in an ongoing game
-	for _, t := range tables {
+	for _, t := range tableList {
 		foundTable := false
+		logger.Debug("Acquiring table " + strconv.FormatUint(t.ID, 10) + " lock for user: " + username)
 		t.Mutex.Lock()
+		logger.Debug("Acquired table " + strconv.FormatUint(t.ID, 10) + " lock for user: " + username)
 		if !t.Replay {
 			playerIndex := t.GetPlayerIndexFromID(userID)
 			if playerIndex != -1 {
 				foundTable = true
 			}
 		}
+		logger.Debug("Releasing table " + strconv.FormatUint(t.ID, 10) + " lock for user: " + username)
 		t.Mutex.Unlock()
 
 		if foundTable {
@@ -229,7 +220,7 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 	}
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
-	for _, t := range tables {
+	for _, t := range tableList {
 		foundTable := false
 		t.Mutex.Lock()
 		if t.Replay {
@@ -248,9 +239,6 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 			break
 		}
 	}
-
-	logger.Debug("Releasing tables read lock for user: " + username)
-	tablesMutex.RUnlock()
 
 	return data
 }
@@ -317,34 +305,27 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 // websocketConnectUserList sends a "userList" message
 // (this is much more performant than sending an individual "user" message for every user)
 func websocketConnectUserList(s *Session) {
+	sessionList := sessions.GetList()
 	userMessageList := make([]*UserMessage, 0)
-	logger.Debug("Acquiring sessions read lock for user: " + s.Username)
-	sessionsMutex.RLock()
-	logger.Debug("Acquired sessions read lock for user: " + s.Username)
-	for _, s2 := range sessions {
+	for _, s2 := range sessionList {
 		userMessageList = append(userMessageList, makeUserMessage(s2))
 	}
-	logger.Debug("Releasing sessions read lock for user: " + s.Username)
-	sessionsMutex.RUnlock()
 	s.Emit("userList", userMessageList)
 }
 
 // websocketConnectTableList sends a "tableList" message
 // (this is much more performant than sending an individual "table" message for every table)
 func websocketConnectTableList(s *Session) {
+	tableList := tables.GetList()
 	tableMessageList := make([]*TableMessage, 0)
-	logger.Debug("Acquiring tables read lock for user: " + s.Username)
-	tablesMutex.RLock()
-	logger.Debug("Acquired tables read lock for user: " + s.Username)
-	for _, t := range tables {
+	for _, t := range tableList {
 		t.Mutex.Lock()
 		if t.Visible {
 			tableMessageList = append(tableMessageList, makeTableMessage(s, t))
 		}
 		t.Mutex.Unlock()
 	}
-	logger.Debug("Releasing tables read lock for user: " + s.Username)
-	tablesMutex.RUnlock()
+
 	s.Emit("tableList", tableMessageList)
 }
 

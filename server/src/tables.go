@@ -5,21 +5,64 @@ import (
 	"sync"
 )
 
-var (
-	tables      = make(map[uint64]*Table)
-	tablesMutex = sync.RWMutex{} // For handling concurrent access to the "tables" map
+type Tables struct {
+	tables map[uint64]*Table // Indexed by table ID
+	mutex  *sync.RWMutex     // For handling concurrent access
+}
 
-	// The counter is atomically incremented before assignment,
-	// so the first ID will be 1 and will increase from there
-	tableIDCounter uint64 = 0
-)
+func NewTables() *Tables {
+	return &Tables{
+		tables: make(map[uint64]*Table),
+	}
+}
+
+func (ts *Tables) Get(tableID uint64) (*Table, bool) {
+	ts.mutex.RLock()
+	defer ts.mutex.RUnlock()
+	t, ok := ts.tables[tableID]
+	return t, ok
+}
+
+func (ts *Tables) GetList() []*Table {
+	tableList := make([]*Table, 0)
+	ts.mutex.RLock()
+	for _, t := range ts.tables {
+		tableList = append(tableList, t)
+	}
+	ts.mutex.RUnlock()
+	return tableList
+}
+
+func (ts *Tables) GetKeys() []uint64 {
+	tableIDList := make([]uint64, 0)
+	ts.mutex.RLock()
+	for _, t := range ts.tables {
+		tableIDList = append(tableIDList, t.ID)
+	}
+	ts.mutex.RUnlock()
+	return tableIDList
+}
+
+func (ts *Tables) Set(tableID uint64, t *Table) {
+	ts.mutex.Lock()
+	ts.tables[tableID] = t
+	ts.mutex.Unlock()
+}
+
+func (ts *Tables) Delete(tableID uint64) {
+	ts.mutex.Lock()
+	delete(ts.tables, tableID)
+	ts.mutex.Unlock()
+}
+
+func (ts *Tables) Length() int {
+	ts.mutex.RLock()
+	defer ts.mutex.RUnlock()
+	return len(ts.tables)
+}
 
 func getTable(s *Session, tableID uint64) (*Table, bool) {
-	// Golang maps are not safe for concurrent use
-	tablesMutex.RLock()
-	t, ok := tables[tableID]
-	tablesMutex.RUnlock()
-
+	t, ok := tables.Get(tableID)
 	if !ok {
 		if s != nil {
 			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
@@ -57,10 +100,8 @@ func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool
 }
 
 func getTableIDFromName(tableName string) (uint64, bool) {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
-
-	for _, t := range tables {
+	tableList := tables.GetList()
+	for _, t := range tableList {
 		foundTable := false
 		t.Mutex.Lock()
 		if t.Name == tableName {
@@ -78,13 +119,7 @@ func getTableIDFromName(tableName string) (uint64, bool) {
 
 // deleteTable removes a table from the tables map
 func deleteTable(t *Table) {
-	logger.Debug("Acquiring tables write lock in the \"deleteTable()\" function.")
-	tablesMutex.Lock()
-	logger.Debug("Acquired tables write lock in the \"deleteTable()\" function.")
-	delete(tables, t.ID)
+	tables.Delete(t.ID)
 	t.Deleted = true // It is assumed that t.Mutex is locked at this point
-	logger.Debug("Released tables write lock in the \"deleteTable()\" function.")
-	tablesMutex.Unlock()
-
 	notifyAllTableGone(t)
 }

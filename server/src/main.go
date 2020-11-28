@@ -28,6 +28,7 @@ var (
 	usingSentry      bool
 	models           *Models
 	datetimeStarted  time.Time
+	tables           = NewTables()
 )
 
 func main() {

@@ -10,38 +10,35 @@ import (
 // Print out a bunch of debug information about the current state of the server
 func print() {
 	printCurrentUsers()
-	printTableStats()
-	printTables()
+	tableList := tables.GetList()
+	printTableStats(tableList)
+	printTables(tableList)
 }
 
 func printCurrentUsers() {
-	sessionsMutex.RLock()
-	defer sessionsMutex.RUnlock()
+	sessionList := sessions.GetList()
 
 	logger.Debug("---------------------------------------------------------------")
-	logger.Debug("Current users (" + strconv.Itoa(len(sessions)) + "):")
-	if len(sessions) == 0 {
+	logger.Debug("Current users (" + strconv.Itoa(len(sessionList)) + "):")
+	if len(sessionList) == 0 {
 		logger.Debug("    [no users]")
 	}
-	for i, s2 := range sessions { // This is a map[int]*Session
+	for i, s2 := range sessionList {
 		logger.Debug("    User ID: " + strconv.Itoa(i) + ", " +
 			"Username: " + s2.Username + ", " +
 			"Status: " + strconv.Itoa(s2.Status()))
 	}
 }
 
-func printTableStats() {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
-
+func printTableStats(tableList []*Table) {
 	logger.Debug("---------------------------------------------------------------")
-	logger.Debug("Current total tables:", len(tables))
+	logger.Debug("Current total tables:", len(tableList))
 
 	numUnstarted := 0
 	numRunning := 0
 	numReplays := 0
 
-	for _, t := range tables { // This is a map[int]*Table
+	for _, t := range tableList {
 		t.Mutex.Lock()
 
 		if !t.Running {
@@ -64,22 +61,19 @@ func printTableStats() {
 	logger.Debug("Current replays:", numReplays)
 }
 
-func printTables() {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
-
+func printTables(tableList []*Table) {
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current table list:")
 	logger.Debug("---------------------------------------------------------------")
 
-	if len(tables) == 0 {
+	if len(tableList) == 0 {
 		logger.Debug("[no current tables]")
 	}
 
-	for tableID, t := range tables { // This is a map[int]*Table
+	for _, t := range tableList {
 		t.Mutex.Lock()
 
-		logger.Debug(strconv.FormatUint(tableID, 10) + " - " + t.Name)
+		logger.Debug(strconv.FormatUint(t.ID, 10) + " - " + t.Name)
 		logger.Debug("\n")
 
 		// Print out all of the fields

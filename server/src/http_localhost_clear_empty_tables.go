@@ -11,15 +11,7 @@ import (
 // it is possible for tables to be created with no people in them
 // So we allow an administrator to clear them manually
 func httpLocalhostClearEmptyTables(c *gin.Context) {
-	// First, make a slice of all of the map keys
-	// (so that we are not iterating over the map while simultaneously removing things from it)
-	tableIDs := make([]uint64, 0, len(tables))
-	tablesMutex.RLock()
-	for tableID := range tables {
-		tableIDs = append(tableIDs, tableID)
-	}
-	tablesMutex.RUnlock()
-
+	tableIDs := tables.GetKeys()
 	for _, tableID := range tableIDs {
 		t, exists := getTableAndLock(nil, tableID, true)
 		if !exists {

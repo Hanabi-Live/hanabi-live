@@ -33,27 +33,26 @@ func restart() {
 	}
 	logger.Info("Finished writing all tables to disk.")
 
-	sessionsMutex.RLock()
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		// The sound has to be before the error, since the latter will cause a disconnect
 		s.NotifySoundLobby("shutdown")
 		s.Error("The server is going down momentarily to load a new version of the code.<br />" +
 			"If you are currently playing a game, all of the progress should be saved.<br />" +
 			"Please wait a few seconds and then refresh the page.")
 	}
-	sessionsMutex.RUnlock()
 
 	msg := "The server went down for a restart at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
 	chatServerSend(msg, "lobby")
 
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS == "windows" {
+		logger.Info("Manually kill the server now.")
+	} else {
 		logger.Info("Restarting...")
 		if err := executeScript("restart_service_only.sh"); err != nil {
 			logger.Error("Failed to execute the \"restart_service_only.sh\" script:", err)
 			return
 		}
-	} else {
-		logger.Info("Manually kill the server now.")
 	}
 }

@@ -42,20 +42,20 @@ func shutdownXMinutesLeft(minutesLeft int) {
 		return
 	}
 
+	tableList := tables.GetList()
+
 	// Automatically end all unstarted tables,
 	// since they will almost certainly not have time to finish
 	if minutesLeft == 5 {
 		unstartedTableIDs := make([]uint64, 0)
 
-		tablesMutex.RLock()
-		for _, t := range tables {
+		for _, t := range tableList {
 			t.Mutex.Lock()
 			if !t.Running {
 				unstartedTableIDs = append(unstartedTableIDs, t.ID)
 			}
 			t.Mutex.Unlock()
 		}
-		tablesMutex.RUnlock()
 
 		for _, unstartedTableID := range unstartedTableIDs {
 			t, exists := getTableAndLock(nil, unstartedTableID, true)
@@ -78,13 +78,11 @@ func shutdownXMinutesLeft(minutesLeft int) {
 
 	// Send a warning message to the people still playing
 	roomNames := make([]string, 0)
-	tablesMutex.RLock()
-	for _, t := range tables {
+	for _, t := range tableList {
 		t.Mutex.Lock()
 		roomNames = append(roomNames, t.GetRoomName())
 		t.Mutex.Unlock()
 	}
-	tablesMutex.RUnlock()
 
 	msg += " Finish your game soon or it will be automatically terminated!"
 	for _, roomName := range roomNames {
@@ -99,19 +97,27 @@ func shutdownWait() {
 			break
 		}
 
-		if countActiveTables() > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
+		numActiveTables := countActiveTables()
+
+		if numActiveTables == 0 {
+			// Wait 10 seconds so that the players are not immediately booted upon finishing
+			time.Sleep(time.Second * 10)
+
+			logger.Info("There are 0 active tables left.")
+			shutdownImmediate()
+			break
+		} else if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
 			// It has been a long time since the server shutdown/restart was initiated,
 			// so automatically terminate any remaining ongoing games
+			tableList := tables.GetList()
 			tableIDsToTerminate := make([]uint64, 0)
-			tablesMutex.RLock()
-			for _, t := range tables {
+			for _, t := range tableList {
 				t.Mutex.Lock()
 				if t.Running && !t.Replay {
 					tableIDsToTerminate = append(tableIDsToTerminate, t.ID)
 				}
 				t.Mutex.Unlock()
 			}
-			tablesMutex.RUnlock()
 
 			for _, tableIDToTerminate := range tableIDsToTerminate {
 				t, exists := getTableAndLock(nil, tableIDToTerminate, true)
@@ -131,25 +137,14 @@ func shutdownWait() {
 			}
 		}
 
-		if countActiveTables() == 0 {
-			// Wait 10 seconds so that the players are not immediately booted upon finishing
-			time.Sleep(time.Second * 10)
-
-			logger.Info("There are 0 active tables left.")
-			shutdownImmediate()
-			break
-		}
-
 		time.Sleep(time.Second)
 	}
 }
 
 func countActiveTables() int {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
-
+	tableList := tables.GetList()
 	numTables := 0
-	for _, t := range tables {
+	for _, t := range tableList {
 		t.Mutex.Lock()
 		if t.Running && !t.Replay {
 			numTables++
@@ -165,14 +160,13 @@ func shutdownImmediate() {
 
 	waitForAllWebSocketCommandsToFinish()
 
-	sessionsMutex.RLock()
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.Error("The server is going down for scheduled maintenance.<br />" +
 			"The server might be down for a while; " +
 			"please see the Discord server for more specific updates.")
 		s.NotifySoundLobby("shutdown")
 	}
-	sessionsMutex.RUnlock()
 
 	msg := "The server successfully shut down at: " + getCurrentTimestamp()
 	chatServerSend(msg, "lobby")

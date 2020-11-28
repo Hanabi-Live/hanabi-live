@@ -140,10 +140,8 @@ func (s *Session) Error(message string) {
 }
 
 func (s *Session) GetJoinedTable(tableIDAlreadyLocked uint64) *Table {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
-
-	for _, t := range tables {
+	tableList := tables.GetList()
+	for _, t := range tableList {
 		playerIndex := -1
 		if t.ID != tableIDAlreadyLocked {
 			t.Mutex.Lock()

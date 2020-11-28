@@ -47,14 +47,13 @@ func chatServerSend(msg string, room string) {
 func chatServerSendAll(msg string) {
 	chatServerSend(msg, "lobby")
 
+	tableList := tables.GetList()
 	roomNames := make([]string, 0)
-	tablesMutex.RLock()
-	for _, t := range tables {
+	for _, t := range tableList {
 		t.Mutex.Lock()
 		roomNames = append(roomNames, t.GetRoomName())
 		t.Mutex.Unlock()
 	}
-	tablesMutex.RUnlock()
 
 	for _, roomName := range roomNames {
 		chatServerSend(msg, roomName)

@@ -106,13 +106,8 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		loadFakePlayers(t, d.GameJSON.Players)
 	}
 
-	// Add it to the map
-	logger.Debug("Acquiring tables write lock for user: " + s.Username)
-	tablesMutex.Lock()
-	logger.Debug("Acquired tables write lock for user: " + s.Username)
-	tables[t.ID] = t
-	logger.Debug("Releasing tables write lock for user: " + s.Username)
-	tablesMutex.Unlock()
+	// Add the table to a map so that we can keep track of all of the active tables
+	tables.Set(t.ID, t)
 
 	if d.Source == "id" {
 		logger.Info("User \"" + s.Username + "\" created a new " + d.Visibility +

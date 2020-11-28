@@ -36,9 +36,9 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not already spectating another table
+	tableList := tables.GetList()
 	alreadySpectating := false
-	tablesMutex.RLock()
-	for _, t2 := range tables {
+	for _, t2 := range tableList {
 		t2.Mutex.Lock()
 		for _, sp := range t2.Spectators {
 			if sp.ID == s.UserID {
@@ -52,7 +52,6 @@ func commandTableSpectate(s *Session, d *CommandData) {
 			break
 		}
 	}
-	tablesMutex.RUnlock()
 	if alreadySpectating {
 		s.Warning("You are already spectating another table.")
 		return

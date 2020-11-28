@@ -14,10 +14,8 @@ import (
 
 // serializeTables saves any ongoing tables to disk as JSON files so that they can be restored later
 func serializeTables() bool {
-	tablesMutex.RLock()
-	defer tablesMutex.RUnlock()
-
-	for _, t := range tables {
+	tableList := tables.GetList()
+	for _, t := range tableList {
 		t.Mutex.Lock()
 
 		// Only serialize ongoing games
@@ -206,9 +204,7 @@ func restoreTables() {
 			go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 		}
 
-		tables[t.ID] = t
-		// (we don't need to lock "tablesMutex" because we are still in the synchronous phase of
-		// startup)
+		tables.Set(t.ID, t)
 		logger.Info(t.GetName() + "Restored table.")
 
 		if err := os.Remove(tablePath); err != nil {
@@ -223,8 +219,9 @@ func restoreTables() {
 	// (we do not need to adjust the "tableIDCounter" variable because
 	// we have logic to not allow duplicate game IDs)
 
-	msg := "Restored " + strconv.Itoa(len(tables)) + " previously running table"
-	if len(tables) >= 2 {
+	numTables := tables.Length()
+	msg := "Restored " + strconv.Itoa(numTables) + " previously running table"
+	if numTables >= 2 {
 		msg += "s"
 	}
 	msg += "."

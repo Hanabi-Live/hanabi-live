@@ -15,8 +15,7 @@ var (
 	melodyRouter *melody.Melody
 
 	// We keep track of all WebSocket sessions
-	sessions      = make(map[int]*Session) // Indexed by user ID
-	sessionsMutex = sync.RWMutex{}         // For handling concurrent access to the "sessions" map
+	sessions = NewSessions()
 
 	// We only allow one user to connect or disconnect at the same time
 	sessionConnectMutex = sync.Mutex{}
@@ -80,18 +79,13 @@ func websocketGetKeyValues(ms *melody.Session) (uint64, int, string, bool) {
 // getSessionFromMelodySession returns nil if the respective Melody session has already been removed
 // from the sessions map
 func getSessionFromMelodySession(ms *melody.Session) *Session {
-	sessionID, userID, username, success := websocketGetKeyValues(ms)
+	sessionID, userID, _, success := websocketGetKeyValues(ms)
 	if !success {
 		return nil
 	}
 
 	// Check to see if a session matching this user ID is in the sessions map
-	logger.Debug("Acquiring sessions read lock for user: " + username)
-	sessionsMutex.RLock()
-	logger.Debug("Acquired sessions read lock for user: " + username)
-	s, ok := sessions[userID]
-	logger.Debug("Releasing sessions read lock for user: " + username)
-	sessionsMutex.RUnlock()
+	s, ok := sessions.Get(userID)
 	if !ok {
 		return nil
 	}

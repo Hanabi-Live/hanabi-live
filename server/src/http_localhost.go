@@ -118,9 +118,7 @@ func httpLocalhostUserAction(c *gin.Context) {
 }
 
 func logoutUser(userID int) {
-	sessionsMutex.RLock()
-	s, ok := sessions[userID]
-	sessionsMutex.RUnlock()
+	s, ok := sessions.Get(userID)
 
 	if !ok {
 		logger.Info("Attempted to manually log out user " + strconv.Itoa(userID) + ", " +
