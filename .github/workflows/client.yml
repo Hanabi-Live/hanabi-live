@@ -1,0 +1,22 @@
+name: Hanab Live Client (Node.js)
+
+on: [push]
+
+jobs:
+  client_job:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./client
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - run: npm install
+      working-directory: ${{env.working-directory}}
+    - run: ./build_client.sh
+      working-directory: ${{env.working-directory}}
+    - run: npm run lint
+      working-directory: ${{env.working-directory}}
+    - run: npm run test
+      working-directory: ${{env.working-directory}}
