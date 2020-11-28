@@ -95,7 +95,7 @@ jobs:
 
   discord:
     needs: [client_build, client_lint, client_test, server, spell_check]
-    if: always() # This is needed to always run this job even if the other jobs fail
+    if: always() # This is needed to always run this job, even if the other jobs fail
     runs-on: ubuntu-latest
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
@@ -103,3 +103,4 @@ jobs:
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ env.WORKFLOW_CONCLUSION }}
