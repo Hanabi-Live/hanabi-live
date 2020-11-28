@@ -14,8 +14,8 @@ jobs:
     - uses: actions/setup-node@v1
     - uses: actions/cache@v2
       with:
-        path: node_modules
-        key: node-modules-${{ hashFiles('package-lock.json') }}
+        path: ./${{env.working-directory}}/node_modules
+        key: node-modules-${{ hashFiles('./${{env.working-directory}}/package-lock.json') }}
     - if: steps.cache.outputs.cache-hit != 'true'
       run: npm install
       working-directory: ${{env.working-directory}}
@@ -38,3 +38,24 @@ jobs:
     - run: ./build_server.sh
       working-directory: ${{env.working-directory}}
     - uses: golangci/golangci-lint-action@v2
+      with:
+        working-directory: ${{env.working-directory}}
+
+  spell_check:
+    runs-on: ubuntu-latest
+
+    env:
+      working-directory: ./spell_check
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - uses: actions/cache@v2
+      with:
+        path: ./${{env.working-directory}}/node_modules
+        key: spell-check-node-modules-${{ hashFiles('./${{env.working-directory}}/package-lock.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install
+      working-directory: ${{env.working-directory}}
+    - run: ./spell_check.sh
+      working-directory: ${{env.working-directory}}
