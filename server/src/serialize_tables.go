@@ -17,7 +17,9 @@ import (
 func serializeTables() bool {
 	tableList := tables.GetList()
 	for _, t := range tableList {
-		t.Lock()
+		// t.Lock()
+		// TODO: right now, we don't acquire the table lock so that we can save games in case of a
+		// deadlock
 
 		// Only serialize ongoing games
 		if t.Running && !t.Replay {
@@ -43,7 +45,9 @@ func serializeTables() bool {
 			}
 		}
 
-		t.Unlock()
+		// t.Unlock()
+		// TODO: right now, we don't acquire the table lock so that we can save games in case of a
+		// deadlock
 	}
 
 	return true
