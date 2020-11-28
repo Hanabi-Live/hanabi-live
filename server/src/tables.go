@@ -81,7 +81,7 @@ func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *
 			t.Unlock()
 		}
 
-		if playerIndex > 0 {
+		if playerIndex > -1 {
 			return t
 		}
 	}
@@ -108,7 +108,7 @@ func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint6
 			t.Unlock()
 		}
 
-		if spectatorIndex > 0 {
+		if spectatorIndex > -1 {
 			return t
 		}
 	}
