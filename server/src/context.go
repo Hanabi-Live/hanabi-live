@@ -59,6 +59,7 @@ func printContextWithStackTrace(ctx context.Context, msg string) {
 		msg += "[no context]"
 	} else if sessionContext.Type == "session" {
 		msg += "ContextID: " + strconv.FormatUint(sessionContext.ContextID, 10) + ", "
+		msg += "Type: " + sessionContext.Type + ", "
 		msg += "SessionID: " + strconv.FormatUint(sessionContext.SessionID, 10) + ", "
 		msg += "UserID: " + strconv.Itoa(sessionContext.UserID) + ", "
 		msg += "Username: " + sessionContext.Username + ", "
