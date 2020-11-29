@@ -254,7 +254,8 @@ export default function cardsReducer(
     }
 
     // Some actions do not affect the card state
-    case "note":
+    case "notelist":
+    case "notesingle":
     case "gameOver":
     case "playerTimes":
     case "strike":

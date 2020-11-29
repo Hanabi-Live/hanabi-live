@@ -1,6 +1,5 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import globals from "../ui/globals";
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
@@ -180,6 +179,7 @@ export function cardsGotten(
 }
 
 export function cardsGottenByNotes(
+  notes: Map<number, string>,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
@@ -205,7 +205,7 @@ export function cardsGottenByNotes(
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
       // vvv maybe the list of notes should be part of the state
-      const note = parseNote(variant, globals.ourNotes.get(index) ?? "");
+      const note = parseNote(variant, notes.get(index) ?? "");
 
       // Contribution desired based on notes
       const b =

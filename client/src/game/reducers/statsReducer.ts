@@ -58,6 +58,16 @@ function statsReducerFunction(
       break;
     }
 
+    case "notelist": {
+      stats.notes = action.notes;
+      break;
+    }
+
+    case "notesingle": {
+      stats.notes.set(action.order, action.note);
+      break;
+    }
+
     default: {
       break;
     }
@@ -103,6 +113,7 @@ function statsReducerFunction(
     variant,
   );
   stats.cardsGottenByNotes = statsRules.cardsGottenByNotes(
+    currentState.stats.notes,
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
