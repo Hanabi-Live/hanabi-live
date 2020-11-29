@@ -56,6 +56,8 @@ jobs:
       - if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ${{ env.working-directory }}
+      - run: ./set_version.sh
+        working-directory: ${{ env.working-directory }}
       - run: npm run test
         working-directory: ${{ env.working-directory }}
 
