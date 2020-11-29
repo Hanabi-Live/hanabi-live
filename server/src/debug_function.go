@@ -19,14 +19,6 @@ func debugFunction(ctx context.Context) {
 
 	// updateUserStatsFromInterval("2 hours")
 
-	tableList := tables.GetList()
-	if len(tableList) > 0 {
-		for _, t := range tableList {
-			t.Lock(ctx)
-			break
-		}
-	}
-
 	logger.Debug("Debug function(s) complete.")
 }
 
