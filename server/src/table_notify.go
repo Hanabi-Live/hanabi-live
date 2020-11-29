@@ -254,7 +254,8 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		// the shadowed player
 		type Note struct {
 			Name string `json:"name"`
-			Note string `json:"note"`
+			Note string `json:"text"`
+			// ^^ TODO maybe the "Note" field should be renamed too
 		}
 		notes := make([]Note, 0)
 		for _, p := range g.Players {

@@ -220,7 +220,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "noteListPlayer":
     case "noteList":
     case "receiveNote": {
-      state.notes = notesReducer(original(state.notes), action, state.metadata);
+      state.notes = notesReducer(
+        original(state.notes),
+        action,
+        state.metadata,
+        state.playing,
+      );
       console.log(state.notes);
       break;
     }

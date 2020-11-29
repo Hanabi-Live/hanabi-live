@@ -15,13 +15,32 @@ function notesReducerFunction(
   notes: Draft<NotesState>,
   action: NoteAction,
   metadata: GameMetadata,
+  playing: boolean,
 ) {
   const variant = getVariant(metadata.options.variantName);
   switch (action.type) {
     case "editNote": {
       notes.ourNotes[action.order] = parseNote(variant, action.text);
+
       // TODO if spectator, update allNotes accordingly too
-      console.log(action.order);
+      if (!playing) {
+        for (const specNote of notes.allNotes[action.order]) {
+          if (specNote.name == metadata.ourUsername) {
+            specNote.text = action.text;
+          }
+        }
+      }
+
+      /*
+      if (!globals.state.playing) {
+        const noteObjectArray = globals.allNotes.get(order) ?? [];
+        for (const noteObject of noteObjectArray) {
+          if (noteObject.name === globals.metadata.ourUsername) {
+          noteObject.text = text;
+          }
+        }
+      }
+      */
       break;
     }
 
@@ -29,13 +48,12 @@ function notesReducerFunction(
       action.texts.forEach((text, i) => {
         notes.ourNotes[i] = parseNote(variant, text);
       });
-      console.log(action.texts);
-      console.log(notes.ourNotes);
       break;
     }
 
     case "receiveNote": {
       // Add in the notes received from server
+      console.log(action.notes);
       notes.allNotes[action.order] = action.notes;
       break;
     }
@@ -62,6 +80,7 @@ function notesReducerFunction(
             name: action.names[i],
             text: text,
           });
+          console.log(notes.allNotes[order]);
         });
       });
       break;

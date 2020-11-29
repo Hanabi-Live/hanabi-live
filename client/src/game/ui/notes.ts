@@ -16,7 +16,7 @@ function get(order: number, our: boolean) {
 
   // Build a string that shows the combined notes from the players & spectators
   let content = "";
-  const noteObjectArray = globals.allNotes.get(order) ?? [];
+  const noteObjectArray = globals.state.notes.allNotes[order];
   for (const noteObject of noteObjectArray) {
     if (noteObject.text.length > 0) {
       content += `<strong>${noteObject.name}:</strong> ${noteObject.text}<br />`;
@@ -35,16 +35,6 @@ function get(order: number, our: boolean) {
 export function set(order: number, text: string): void {
   const oldNote = globals.state.notes.ourNotes[order].text;
   globals.lastNote = text;
-
-  // vvv TODO remember to allow for updating spectator notes
-  if (!globals.state.playing) {
-    const noteObjectArray = globals.allNotes.get(order) ?? [];
-    for (const noteObject of noteObjectArray) {
-      if (noteObject.name === globals.metadata.ourUsername) {
-        noteObject.text = text;
-      }
-    }
-  }
 
   // Send the note to the server
   if (!globals.state.finished && text !== oldNote) {
