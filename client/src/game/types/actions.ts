@@ -3,6 +3,7 @@ import ClientAction from "./ClientAction";
 import EndCondition from "./EndCondition";
 import MsgClue from "./MsgClue";
 import Spectator from "./Spectator";
+import SpectatorNote from "./SpectatorNote";
 
 export type Action =
   | ActionInit
@@ -204,6 +205,8 @@ export interface ActionEditNote {
 
 export interface ActionReceiveNote {
   type: "receiveNote";
+  readonly order: number;
+  readonly notes: SpectatorNote[];
 }
 
 export interface ActionNoteListPlayer {
@@ -213,6 +216,8 @@ export interface ActionNoteListPlayer {
 
 export interface ActionNoteList {
   type: "noteList";
+  readonly names: string[];
+  readonly noteTextLists: string[][];
 }
 
 // --------------

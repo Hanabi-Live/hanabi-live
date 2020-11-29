@@ -35,12 +35,35 @@ function notesReducerFunction(
     }
 
     case "receiveNote": {
-      // TODO implement
+      // Add in the notes received from server
+      notes.allNotes[action.order] = action.notes;
       break;
     }
 
     case "noteList": {
-      // TODO for noteList, also edit ourNotes with our own notes
+      // Reset any existing notes
+      for (let i = 0; i < notes.allNotes.length; i++ ){
+        notes.allNotes[i] = [];
+      }
+
+      // Set the new notes
+      action.noteTextLists.forEach((noteTextList, i) => {
+        if (
+          (action.names[i] == metadata.ourUsername)
+          // TODO also check playing and not finished
+        ) {
+          noteTextList.forEach((text, order) => {
+            notes.ourNotes[order] = parseNote(variant, text);
+          });
+        }
+
+        noteTextList.forEach((text, order) => {
+          notes.allNotes[order].push({
+            name: action.names[i],
+            text: text,
+          });
+        });
+      });
       break;
     }
 

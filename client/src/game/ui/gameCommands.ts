@@ -174,8 +174,11 @@ commands.set("note", (data: NoteData) => {
     return;
   }
 
-  // Store the combined notes for this card
-  globals.allNotes.set(data.order, data.notes);
+  globals.store!.dispatch({
+    type: "receiveNote",
+    order: data.order,
+    notes: data.notes,
+  });
 
   // Set the note indicator
   const card = getCardOrStackBase(data.order);
@@ -195,26 +198,18 @@ interface NoteList {
   notes: string[];
 }
 commands.set("noteList", (data: NoteListData) => {
-  // Reset any existing notes
-  // (we could be getting a fresh copy of all notes after an ongoing game has ended)
-  for (let i = 0; i < globals.allNotes.size; i++) {
-    globals.allNotes.set(i, []);
-  }
-
-  // Data comes from the server as an array of player & spectator notes
-  // We want to convert this to an array of objects for each card
+  const names = new Array() as string[];
+  const noteTextLists = new Array() as string[][];
+  console.log(data);
   for (const noteList of data.notes) {
-    // If we are a spectator, copy our notes from the combined list
-    // ^^ TODO: don't forget to implement this in reducer
-    for (let i = 0; i < noteList.notes.length; i++) {
-      const note = noteList.notes[i];
-      globals.allNotes.get(i)!.push({
-        name: noteList.name,
-        text: note,
-      });
-    }
+    names.push(noteList.name);
+    noteTextLists.push(noteList.notes);
   }
-
+  globals.store!.dispatch({
+    type: "noteList",
+    names,
+    noteTextLists,
+  });
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
 });
