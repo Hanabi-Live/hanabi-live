@@ -1,6 +1,8 @@
 package main
 
-import "context"
+import (
+	"context"
+)
 
 // commandHistoryFriendsGet is sent when the user clicks the "Show More History" button
 // (on the "Show History of Friends" screen)

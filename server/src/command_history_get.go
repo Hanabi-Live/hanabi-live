@@ -1,6 +1,8 @@
 package main
 
-import "context"
+import (
+	"context"
+)
 
 // commandHistoryGet is sent when the user clicks the "Show More History" button
 //

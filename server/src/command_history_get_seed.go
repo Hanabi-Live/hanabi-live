@@ -1,6 +1,8 @@
 package main
 
-import "context"
+import (
+	"context"
+)
 
 // commandHistoryGetSeed is sent when the user clicks on the "Compare Scores" button
 //
