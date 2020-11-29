@@ -58,17 +58,6 @@ function statsReducerFunction(
       break;
     }
 
-    case "notelist": {
-      stats.notes = action.notelist;
-      break;
-    }
-
-    case "notesingle": {
-      stats.notes[action.order] = action.note;
-      console.log(stats.notes, action.order, action.note);
-      break;
-    }
-
     default: {
       break;
     }

@@ -1,12 +1,12 @@
 // Functions to calculate game stats such as pace and efficiency
 
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
+import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";
 import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
-import { parseNote } from "../ui/notes";
 import * as reversibleRules from "./variants/reversible";
 
 export function getMaxScorePerStack(
@@ -179,7 +179,7 @@ export function cardsGotten(
 }
 
 export function cardsGottenByNotes(
-  notes: string[],
+  notes: CardNote[],
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
@@ -205,7 +205,7 @@ export function cardsGottenByNotes(
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
       // vvv maybe the list of notes should be part of the state
-      const note = parseNote(variant, notes[order] ?? "");
+      const note = notes[order];
 
       // Contribution desired based on notes
       const b =
