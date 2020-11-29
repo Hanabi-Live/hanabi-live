@@ -45,7 +45,8 @@ export function onEfficiencyChanged(data: {
     shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
   }
 
-  let { cardsGotten, cardsGottenByNotes } = data;
+  let { cardsGotten } = data;
+  const { cardsGottenByNotes } = data;
   if (cardsGottenByNotes !== null) {
     cardsGotten += cardsGottenByNotes;
   }
@@ -113,7 +114,8 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
     ${formatLine(
       "Current cards noted as gotten",
-      cardsGottenByNotes === null ? "-" : cardsGottenByNotes)}
+      cardsGottenByNotes === null ? "-" : cardsGottenByNotes,
+    )}
     ${formatLine("Current cards gotten modifier", globals.efficiencyModifier)}
     ${formatLine("Potential clues lost", data.potentialCluesLost)}
     ${formatLine(

@@ -1,6 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import globals from "../ui/globals.ts"
+import globals from "../ui/globals";
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
@@ -191,7 +191,7 @@ export function cardsGottenByNotes(
   }
   let currentCardsGottenByNotes = 0;
 
-  deck.forEach((card, index) =>  {
+  deck.forEach((card, index) => {
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -210,13 +210,11 @@ export function cardsGottenByNotes(
       // Contribution desired based on notes
       const b =
         !note.knownTrash &&
-        (note.finessed ||
-          (cardRules.isClued(card) && !note.unclued))
+        (note.finessed || (cardRules.isClued(card) && !note.unclued))
           ? 1
           : 0;
-      console.log(a,b, card, index);
 
-      currentCardsGottenByNotes += b-a;
+      currentCardsGottenByNotes += b - a;
     }
   });
   return currentCardsGottenByNotes;
