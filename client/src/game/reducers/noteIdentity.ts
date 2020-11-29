@@ -4,8 +4,6 @@ import Suit from "../types/Suit";
 import { START_CARD_RANK } from "../types/constants";
 import Variant from "../types/Variant";
 
-/* Originally from noteIdentity.ts */
-
 function parseSuit(variant: Variant, suitText: string): number | null {
   const suitAbbreviationIndex = variant.abbreviations.findIndex(
     (abbreviation) => abbreviation.toLowerCase() === suitText,
@@ -136,8 +134,6 @@ export function getPossibilitiesFromKeywords(
 
   return possibilities;
 }
-
-/* Originally in noteIdentityPattern.ts */
 
 function createSuitPattern(suits: Suit[], abbreviations: string[]): string {
   let alternation = "";
