@@ -25,7 +25,14 @@ export type GameAction =
   | ActionPlay
   | ActionPlayerTimes
   | ActionStrike
-  | ActionTurn;
+  | ActionTurn
+  | NoteAction;
+
+export type NoteAction =
+  | ActionEditNote
+  | ActionNoteList
+  | ActionNoteListPlayer
+  | ActionReceiveNote
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
@@ -183,6 +190,28 @@ export interface ActionTurn {
   type: "turn";
   readonly num: number;
   readonly currentPlayerIndex: number;
+}
+
+// ------------
+// Note actions
+// ------------
+
+export interface ActionEditNote {
+  type: "editNote";
+  readonly order: number;
+  readonly text: string;
+}
+
+export interface ActionReceiveNote {
+  type: "receiveNote";
+}
+
+export interface ActionNoteListPlayer {
+  type: "noteListPlayer";
+}
+
+export interface ActionNoteList {
+  type: "noteList";
 }
 
 // --------------

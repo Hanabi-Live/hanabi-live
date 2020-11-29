@@ -254,6 +254,10 @@ export default function cardsReducer(
     }
 
     // Some actions do not affect the card state
+    case "editNote":
+    case "noteList":
+    case "noteListPlayer":
+    case "receiveNote":
     case "gameOver":
     case "playerTimes":
     case "strike":

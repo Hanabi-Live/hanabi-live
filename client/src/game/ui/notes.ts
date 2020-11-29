@@ -63,10 +63,17 @@ export function set(order: number, text: string): void {
     return;
   }
 
+  globals.store!.dispatch({
+    type: "editNote",
+    order: order,
+    text: text,
+  });
+
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
 }
 
+// TODO vvv delete
 function getNoteKeywords(note: string) {
   // Match either:
   // - zero or more characters between square brackets `[]`
@@ -93,9 +100,11 @@ function getNoteKeywords(note: string) {
   return keywords;
 }
 
+// TODO vvv delete
 const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
   keywords.some((k) => patterns.some((pattern) => k === pattern));
 
+// TODO vvv delete
 export function parseNote(variant: Variant, text: string): CardNote {
   // Make all letters lowercase to simply the matching logic below
   // and remove all leading and trailing whitespace
