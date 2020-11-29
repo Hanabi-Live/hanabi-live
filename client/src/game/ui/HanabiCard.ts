@@ -1122,7 +1122,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     this.note = notes.parseNote(this.variant, noteText);
     noteIdentity.checkNoteImpossibility(this.variant, this.state, this.note);
-    globals.state.ongoingGame.stats.notes[this.state.order] = this.note
+    globals.state.ongoingGame.stats.notes[this.state.order] = this.note;
 
     // Morph the card if it has an "exact" card note
     // (or clear the bare image if the note was deleted/changed)

@@ -103,17 +103,15 @@ export default function initialGameState(metadata: GameMetadata): GameState {
 
       cardsGotten: 0,
       cardsGottenByNotes: 0,
-      notes: new Array(deckRules.totalCards(variant)).fill(
-        {
-          possibilities: [],
-          chopMoved: false,
-          needsFix: false,
-          knownTrash: false,
-          finessed: false,
-          blank: false,
-          unclued: false,
-        }
-      ) as CardNote[], // indexed by card order
+      notes: new Array(deckRules.totalCards(variant)).fill({
+        possibilities: [],
+        chopMoved: false,
+        needsFix: false,
+        knownTrash: false,
+        finessed: false,
+        blank: false,
+        unclued: false,
+      }) as CardNote[], // indexed by card order
       potentialCluesLost: 0,
 
       cluesStillUsable,
