@@ -11,7 +11,7 @@ function get(order: number, our: boolean) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note
   if (our || globals.state.playing) {
-    return globals.state.notes.ourNotes[order] ?? "";
+    return globals.state.notes.ourNotes[order].text ?? "";
   }
 
   // Build a string that shows the combined notes from the players & spectators
@@ -70,20 +70,19 @@ export function set(order: number, text: string): void {
   card.checkSpecialNote();
 }
 
-export function update(card: HanabiCard): void {
+export function update(card: HanabiCard, text: string): void {
   // Update the tooltip
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster("instance");
-  const note = globals.state.notes.ourNotes[card.state.order];
-  tooltipInstance.content(note);
-  if (note.text.length === 0) {
+  tooltipInstance.content(text);
+  if (text.length === 0) {
     tooltip.tooltipster("close");
     globals.editingNote = null;
   }
 
   // Update the card indicator
   const visibleOld = card.noteIndicator.visible();
-  const visibleNew = note.text.length > 0;
+  const visibleNew = text.length > 0;
   if (visibleOld !== visibleNew) {
     card.noteIndicator.visible(visibleNew);
     globals.layers.card.batchDraw();
@@ -190,7 +189,8 @@ export function openEditTooltip(card: HanabiCard): void {
       tooltip.tooltipster("close");
     }
 
-    update(card);
+    const text = newNote ?? "";
+    update(card, text);
   });
 
   // Automatically close the tooltip if we click elsewhere on the screen

@@ -1092,7 +1092,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   setNote(note: string): void {
     notes.set(this.state.order, note);
-    notes.update(this);
+    notes.update(this, note);
     if (note !== "") {
       notes.show(this);
     }
@@ -1139,7 +1139,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       )
     ) {
       // Unmorph
-      this.note.possibilities = [];
+      // vv TODO this no longer works
+      // this.note.possibilities = [];
       this.setBareImage();
     }
   }
