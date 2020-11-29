@@ -884,7 +884,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // We are not a player in an ongoing game
     // Only show the note indicator if there is one or more non-blank notes
-    const note = globals.allNotes.get(this.state.order);
+    const note = globals.state.notes.allNotes[this.state.order];
     if (note === undefined) {
       return false;
     }
@@ -1127,8 +1127,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       )
     ) {
       // Unmorph
-      // vv TODO this no longer works
-      // this.note.possibilities = [];
       this.setBareImage();
     }
   }

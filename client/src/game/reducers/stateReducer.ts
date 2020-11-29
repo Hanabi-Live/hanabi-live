@@ -225,8 +225,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         action,
         state.metadata,
         state.playing,
+        state.finished,
       );
-      console.log(state.notes);
       break;
     }
 

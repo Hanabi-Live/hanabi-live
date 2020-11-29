@@ -173,6 +173,8 @@ commands.set("note", (data: NoteData) => {
   if (globals.state.playing) {
     return;
   }
+  // TODO right now the server calls the field "note"
+  //
 
   globals.store!.dispatch({
     type: "receiveNote",
@@ -200,7 +202,6 @@ interface NoteList {
 commands.set("noteList", (data: NoteListData) => {
   const names = new Array() as string[];
   const noteTextLists = new Array() as string[][];
-  console.log(data);
   for (const noteList of data.notes) {
     names.push(noteList.name);
     noteTextLists.push(noteList.notes);
