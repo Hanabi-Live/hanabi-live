@@ -32,7 +32,7 @@ export type NoteAction =
   | ActionEditNote
   | ActionNoteList
   | ActionNoteListPlayer
-  | ActionReceiveNote
+  | ActionReceiveNote;
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 

@@ -36,14 +36,14 @@ export default function initialState(metadata: GameMetadata): State {
     // need a slightly larger array
     notes: {
       ourNotes: initArray(totalCards + variant.suits.length + 1, {
-          possibilities: [],
-          chopMoved: false,
-          needsFix: false,
-          knownTrash: false,
-          finessed: false,
-          blank: false,
-          unclued: false,
-          text: '',
+        possibilities: [],
+        chopMoved: false,
+        needsFix: false,
+        knownTrash: false,
+        finessed: false,
+        blank: false,
+        unclued: false,
+        text: "",
       }),
       allNotes: initArray(totalCards + variant.suits.length + 1, []),
     },

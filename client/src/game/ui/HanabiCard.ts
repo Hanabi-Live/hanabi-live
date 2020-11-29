@@ -25,7 +25,7 @@ import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { animate } from "./konvaHelpers";
 import LayoutChild from "./LayoutChild";
-import { checkNoteImpossibility, possibleCardsFromNoteAndClues } from "./noteCheckImpossibility.ts";
+import { checkNoteImpossibility, possibleCardsFromNoteAndClues } from "./noteCheckImpossibility";
 import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
@@ -354,12 +354,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we have a note on the card and it only provides possibilities of the same suit,
     // show that suit
     if (this.note.possibilities.length !== 0) {
-      const possibilities = possibleCardsFromNoteAndClues(this.note, this.state);
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
+      );
       const [candidateSuitIndex] = possibilities[0];
       if (
-        possibilities.every(
-          ([suitIndex]) => suitIndex === candidateSuitIndex,
-        )
+        possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
       ) {
         return this.variant.suits[candidateSuitIndex];
       }
@@ -383,11 +384,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     let noteRank = null;
     if (this.note.possibilities.length !== 0) {
-      const possibilities = possibleCardsFromNoteAndClues(this.note, this.state);
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
+      );
       const candidateRank = possibilities[0][1];
-      if (
-        possibilities.every((card) => card[1] === candidateRank)
-      ) {
+      if (possibilities.every((card) => card[1] === candidateRank)) {
         noteRank = candidateRank;
       }
     }

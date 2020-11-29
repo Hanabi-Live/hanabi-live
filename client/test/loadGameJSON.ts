@@ -179,7 +179,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     return nextState;
   }, state.ongoingGame);
 
-
   return {
     visibleState: game,
     ongoingGame: game,

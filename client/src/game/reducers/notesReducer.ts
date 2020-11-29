@@ -5,7 +5,7 @@ import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";
 import NotesState from "../types/NotesState";
 import Variant from "../types/Variant";
-import * as noteIdentity from "./noteIdentity.ts";
+import * as noteIdentity from "./noteIdentity";
 
 const notesReducer = produce(notesReducerFunction, {} as NotesState);
 export default notesReducer;
@@ -13,7 +13,7 @@ export default notesReducer;
 function notesReducerFunction(
   notes: Draft<NotesState>,
   action: NoteAction,
-  metadata : GameMetadata,
+  metadata: GameMetadata,
 ) {
   const variant = getVariant(metadata.options.variantName);
   switch (action.type) {
@@ -24,7 +24,9 @@ function notesReducerFunction(
       break;
     }
     case "noteListPlayer": {
-      action.texts.forEach((text, i) => { notes.ourNotes[i] = parseNote(variant, text); });
+      action.texts.forEach((text, i) => {
+        notes.ourNotes[i] = parseNote(variant, text);
+      });
       console.log(action.texts);
       console.log(notes.ourNotes);
       break;
@@ -69,7 +71,10 @@ function parseNote(variant: Variant, text: string): CardNote {
   // and remove all leading and trailing whitespace
   const fullNote = text.toLowerCase().trim();
   const keywords = getNoteKeywords(fullNote);
-  const possibilities = noteIdentity.getPossibilitiesFromKeywords(variant, keywords);
+  const possibilities = noteIdentity.getPossibilitiesFromKeywords(
+    variant,
+    keywords,
+  );
 
   const chopMoved = checkNoteKeywordsForMatch(
     [
@@ -109,6 +114,6 @@ function parseNote(variant: Variant, text: string): CardNote {
     needsFix,
     blank,
     unclued,
-    text: text,
+    text,
   };
 }
