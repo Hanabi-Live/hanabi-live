@@ -1,11 +1,13 @@
 // Functions to calculate game stats such as pace and efficiency
 
+import globals from "../ui/globals.ts"
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";
 import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
+import { parseNote } from "../ui/notes";
 import * as reversibleRules from "./variants/reversible";
 
 export function getMaxScorePerStack(
@@ -183,13 +185,13 @@ export function cardsGottenByNotes(
   playStackDirections: readonly StackDirection[],
   playing: boolean,
   variant: Variant,
-): number {
+): number | null {
   if (!playing) {
-    return 0;
+    return null;
   }
   let currentCardsGottenByNotes = 0;
 
-  for (const card of deck) {
+  deck.forEach((card, index) =>  {
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -202,22 +204,23 @@ export function cardsGottenByNotes(
     ) {
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
+      // vvv maybe the list of notes should be part of the state
+      const note = parseNote(variant, globals.ourNotes.get(index) ?? "");
 
       // Contribution desired based on notes
       const b =
-        !card.note.knownTrash &&
-        (card.note.finessed ||
-          (cardRules.isClued(card) && !card.note.unclued))
+        !note.knownTrash &&
+        (note.finessed ||
+          (cardRules.isClued(card) && !note.unclued))
           ? 1
           : 0;
+      console.log(a,b, card, index);
 
       currentCardsGottenByNotes += b-a;
     }
-  }
+  });
   return currentCardsGottenByNotes;
 }
-
-
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
 export function minEfficiency(

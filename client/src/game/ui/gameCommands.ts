@@ -25,7 +25,6 @@ import * as notes from "./notes";
 import StateObserver from "./reactive/StateObserver";
 import * as replay from "./replay";
 import * as stats from "./stats";
-import * as statsView from "./reactive/view/statsView";
 import * as timer from "./timer";
 import uiInit from "./uiInit";
 
@@ -254,7 +253,9 @@ commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   }
 
   if (!globals.state.finished) {
-    statsView.onEfficiencyChanged({ ...globals.state.ongoingGame.stats });
+    globals.store!.dispatch({
+      type: "note",
+    });
   }
 });
 

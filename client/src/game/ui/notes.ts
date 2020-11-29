@@ -8,7 +8,6 @@ import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
-import * as statsView from "./reactive/view/statsView";
 
 // Get the contents of the note tooltip
 function get(order: number, our: boolean) {
@@ -68,9 +67,9 @@ export function set(order: number, note: string): void {
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
 
-  if (!globals.state.finished) {
-    statsView.onEfficiencyChanged({ ...globals.state.ongoingGame.stats });
-  }
+  globals.store!.dispatch({
+    type: "note",
+  });
 }
 
 function getNoteKeywords(note: string) {
