@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	melody "gopkg.in/olahol/melody.v1"
+	"github.com/gabstv/melody"
 )
 
 func websocketDisconnect(ms *melody.Session) {

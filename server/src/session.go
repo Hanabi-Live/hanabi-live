@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/gabstv/melody"
 	"github.com/sasha-s/go-deadlock"
-	melody "gopkg.in/olahol/melody.v1"
 )
 
 type Session struct {

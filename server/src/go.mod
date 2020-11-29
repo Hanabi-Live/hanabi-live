@@ -8,6 +8,7 @@ require (
 	github.com/bwmarrin/discordgo v0.22.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
+	github.com/gabstv/melody v1.0.2
 	github.com/getsentry/sentry-go v0.7.0
 	github.com/gin-contrib/gzip v0.0.2
 	github.com/gin-contrib/sessions v0.0.3
@@ -34,6 +35,5 @@ require (
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
