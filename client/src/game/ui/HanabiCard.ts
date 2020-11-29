@@ -25,7 +25,10 @@ import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { animate } from "./konvaHelpers";
 import LayoutChild from "./LayoutChild";
-import { checkNoteImpossibility, possibleCardsFromNoteAndClues } from "./noteCheckImpossibility";
+import {
+  checkNoteImpossibility,
+  possibleCardsFromNoteAndClues,
+} from "./noteCheckImpossibility";
 import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";

@@ -1,5 +1,6 @@
 import produce, { Draft } from "immer";
 import { getVariant } from "../data/gameData";
+import { ensureAllCases } from "../../misc";
 import { NoteAction } from "../types/actions";
 import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";
@@ -23,6 +24,7 @@ function notesReducerFunction(
       console.log(action.order);
       break;
     }
+
     case "noteListPlayer": {
       action.texts.forEach((text, i) => {
         notes.ourNotes[i] = parseNote(variant, text);
@@ -31,7 +33,21 @@ function notesReducerFunction(
       console.log(notes.ourNotes);
       break;
     }
-    // TODO for noteList, also edit ourNotes with our own notes
+
+    case "receiveNote": {
+      // TODO implement
+      break;
+    }
+
+    case "noteList": {
+      // TODO for noteList, also edit ourNotes with our own notes
+      break;
+    }
+
+    default: {
+      ensureAllCases(action);
+      break;
+    }
   }
 }
 
