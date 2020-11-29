@@ -32,6 +32,18 @@ export default function initialState(metadata: GameMetadata): State {
     datetimeStarted: null,
     datetimeFinished: null,
 
+    ourNotes: initArray(totalCards, {
+        possibilities: [],
+        chopMoved: false,
+        needsFix: false,
+        knownTrash: false,
+        finessed: false,
+        blank: false,
+        unclued: false,
+        text: '',
+    }),
+    allNotes: initArray(totalCards, []),
+
     metadata,
     cardIdentities: initArray(totalCards, {
       suitIndex: null,

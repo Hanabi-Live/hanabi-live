@@ -66,6 +66,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private trashcan: Konva.Image;
   private wrench: Konva.Image;
 
+  // TODO going to nuke this pretty soon
   note: CardNote = {
     possibilities: [],
     chopMoved: false,
@@ -74,6 +75,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     finessed: false,
     blank: false,
     unclued: false,
+    text: '',
   };
 
   // -------------------
@@ -907,7 +909,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return false;
     }
     for (const noteObject of note) {
-      if (noteObject.note.length > 0) {
+      if (noteObject.text.length > 0) {
         return true;
       }
     }

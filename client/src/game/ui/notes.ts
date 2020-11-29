@@ -21,8 +21,8 @@ function get(order: number, our: boolean) {
   let content = "";
   const noteObjectArray = globals.allNotes.get(order) ?? [];
   for (const noteObject of noteObjectArray) {
-    if (noteObject.note.length > 0) {
-      content += `<strong>${noteObject.name}:</strong> ${noteObject.note}<br />`;
+    if (noteObject.text.length > 0) {
+      content += `<strong>${noteObject.name}:</strong> ${noteObject.text}<br />`;
     }
   }
   if (content.length !== 0) {
@@ -35,26 +35,26 @@ function get(order: number, our: boolean) {
 // 1) update the stored note in memory
 // 2) send the new note to the server
 // 3) check for new note identities
-export function set(order: number, note: string): void {
+export function set(order: number, text: string): void {
   const oldNote = globals.ourNotes.get(order) ?? "";
-  globals.ourNotes.set(order, note);
-  globals.lastNote = note;
+  globals.ourNotes.set(order, text);
+  globals.lastNote = text;
 
   if (!globals.state.playing) {
     const noteObjectArray = globals.allNotes.get(order) ?? [];
     for (const noteObject of noteObjectArray) {
       if (noteObject.name === globals.metadata.ourUsername) {
-        noteObject.note = note;
+        noteObject.text = text;
       }
     }
   }
 
   // Send the note to the server
-  if (!globals.state.finished && note !== oldNote) {
+  if (!globals.state.finished && text !== oldNote) {
     globals.lobby.conn!.send("note", {
       tableID: globals.lobby.tableID,
       order,
-      note,
+      text,
     });
   }
 
@@ -96,10 +96,10 @@ function getNoteKeywords(note: string) {
 const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
   keywords.some((k) => patterns.some((pattern) => k === pattern));
 
-export function parseNote(variant: Variant, note: string): CardNote {
+export function parseNote(variant: Variant, text: string): CardNote {
   // Make all letters lowercase to simply the matching logic below
   // and remove all leading and trailing whitespace
-  const fullNote = note.toLowerCase().trim();
+  const fullNote = text.toLowerCase().trim();
   const keywords = getNoteKeywords(fullNote);
   const possibilities = getPossibilitiesFromKeywords(variant, keywords);
 
@@ -141,6 +141,7 @@ export function parseNote(variant: Variant, note: string): CardNote {
     needsFix,
     blank,
     unclued,
+    text,
   };
 }
 

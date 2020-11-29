@@ -218,7 +218,7 @@ commands.set("noteList", (data: NoteListData) => {
       const note = noteList.notes[i];
       globals.allNotes.get(i)!.push({
         name: noteList.name,
-        note,
+        text: note,
       });
     }
   }

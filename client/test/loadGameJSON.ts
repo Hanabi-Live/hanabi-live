@@ -179,14 +179,19 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     return nextState;
   }, state.ongoingGame);
 
+
   return {
     visibleState: game,
     ongoingGame: game,
     replay: { ...state.replay, states },
     cardIdentities: [],
 
+    // TODO the test data has no notes,
+    // else we could parse them here
     playing: false,
     finished: true,
+    ourNotes: [],
+    allNotes: [],
 
     datetimeStarted: null,
     datetimeFinished: null,
