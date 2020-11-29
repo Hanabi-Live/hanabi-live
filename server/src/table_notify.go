@@ -255,7 +255,6 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		type Note struct {
 			Name string `json:"name"`
 			Text string `json:"text"`
-			// ^^ TODO maybe the "Note" field should be renamed too
 		}
 		notes := make([]Note, 0)
 		for _, p := range g.Players {
