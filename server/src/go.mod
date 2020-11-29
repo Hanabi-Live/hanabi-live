@@ -23,7 +23,9 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/mozillazg/go-unidecode v0.1.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sasha-s/go-deadlock v0.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/tevino/abool v1.2.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect

@@ -7,6 +7,6 @@ import (
 )
 
 func httpLocalhostPrint(c *gin.Context) {
-	print()
+	print(c)
 	c.String(http.StatusOK, "success\n")
 }

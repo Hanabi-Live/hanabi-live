@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/tevino/abool"
 )
 
@@ -8,7 +10,7 @@ var (
 	maintenanceMode = abool.New()
 )
 
-func maintenance(enabled bool) {
+func maintenance(ctx context.Context, enabled bool) {
 	maintenanceMode.SetTo(enabled)
 	notifyAllMaintenance()
 	msg := ""
@@ -23,5 +25,5 @@ func maintenance(enabled bool) {
 	} else {
 		msg += "disabled."
 	}
-	chatServerSendAll(msg)
+	chatServerSendAll(ctx, msg)
 }

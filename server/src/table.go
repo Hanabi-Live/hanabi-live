@@ -1,11 +1,12 @@
 package main
 
 import (
-	"runtime/debug"
+	"context"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/sasha-s/go-deadlock"
 )
 
 // Table describes the container that a player can join, whether it is an unstarted game,
@@ -56,7 +57,7 @@ type Table struct {
 	Deleted  bool                `json:"-"` // Used to prevent race conditions
 
 	// Each table has its own mutex to ensure that only one action can occur at the same time
-	mutex *sync.Mutex
+	mutex *deadlock.Mutex
 }
 
 type TableChatMessage struct {
@@ -107,7 +108,7 @@ func NewTable(name string, owner int) *Table {
 		ChatRead: make(map[int]int),
 		Deleted:  false,
 
-		mutex: &sync.Mutex{},
+		mutex: &deadlock.Mutex{},
 	}
 }
 
@@ -131,53 +132,50 @@ func getNewTableID() uint64 {
 	}
 }
 
-func (t *Table) Lock() {
-	logger.Debug("ACQUIRING table " + strconv.FormatUint(t.ID, 10) + " lock.")
-	debug.PrintStack()
+func (t *Table) Lock(ctx context.Context) {
+	printContextWithStackTrace(ctx, "GETTING table "+strconv.FormatUint(t.ID, 10)+" lock")
 	t.mutex.Lock()
-	logger.Debug("ACQUIRED table " + strconv.FormatUint(t.ID, 10) + " lock.")
-	debug.PrintStack()
+	printContextWithStackTrace(ctx, "ACQUIRED table "+strconv.FormatUint(t.ID, 10)+" lock")
 }
 
-func (t *Table) Unlock() {
-	logger.Debug("RELEASING table " + strconv.FormatUint(t.ID, 10) + " lock.")
-	debug.PrintStack()
+func (t *Table) Unlock(ctx context.Context) {
+	printContextWithStackTrace(ctx, "RELEASING table "+strconv.FormatUint(t.ID, 10)+" lock")
 	t.mutex.Unlock()
 }
 
 // CheckIdle is meant to be called in a new goroutine
-func (t *Table) CheckIdle() {
+func (t *Table) CheckIdle(ctx context.Context) {
 	// Disable idle timeouts in development
 	if isDev {
 		return
 	}
 
 	// Set the last action
-	t.Lock()
+	t.Lock(ctx)
 	t.DatetimeLastAction = time.Now()
-	t.Unlock()
+	t.Unlock(ctx)
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
 	time.Sleep(IdleGameTimeout)
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(nil, t.ID, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false)
 	if !exists || t != t2 {
 		return
 	}
-	t.Lock()
-	defer t.Unlock()
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 
 	// Don't do anything if there has been an action in the meantime
 	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {
 		return
 	}
 
-	t.EndIdle()
+	t.EndIdle(ctx)
 }
 
 // EndIdle is called when a table has been idle for a while and should be automatically ended
-func (t *Table) EndIdle() {
+func (t *Table) EndIdle(ctx context.Context) {
 	logger.Info(t.GetName() + " Idle timeout has elapsed; ending the game.")
 
 	if t.Replay {
@@ -197,7 +195,7 @@ func (t *Table) EndIdle() {
 			s = NewFakeSession(sp.ID, sp.Name)
 			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
-		commandTableUnattend(s, &CommandData{ // nolint: exhaustivestruct
+		commandTableUnattend(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})
@@ -213,7 +211,7 @@ func (t *Table) EndIdle() {
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
-		commandAction(s, &CommandData{ // nolint: exhaustivestruct
+		commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			Type:    ActionTypeEndGame,
 			Target:  -1,
@@ -224,7 +222,7 @@ func (t *Table) EndIdle() {
 		// We need to end a game that has not started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
-		commandTableLeave(s, &CommandData{ // nolint: exhaustivestruct
+		commandTableLeave(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			NoLock:  true,
 		})

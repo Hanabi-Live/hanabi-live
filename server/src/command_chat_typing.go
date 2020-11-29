@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -15,13 +16,13 @@ const (
 // {
 //   tableID: 15103,
 // }
-func commandChatTyping(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandChatTyping(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that they are in the game or are a spectator
@@ -38,10 +39,10 @@ func commandChatTyping(s *Session, d *CommandData) {
 		return
 	}
 
-	chatTyping(s, t, playerIndex, spectatorIndex)
+	chatTyping(ctx, s, t, playerIndex, spectatorIndex)
 }
 
-func chatTyping(s *Session, t *Table, playerIndex int, spectatorIndex int) {
+func chatTyping(ctx context.Context, s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	// Update the "LastTyped" and "Typing" fields
 	// Check for spectators first in case this is a shared replay that the player happened to be in
 	name := ""
@@ -67,19 +68,19 @@ func chatTyping(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	}
 
 	// X seconds from now, check to see if they have stopped typing
-	go chatTypingCheckStopped(t, s.UserID)
+	go chatTypingCheckStopped(ctx, t, s.UserID)
 }
 
-func chatTypingCheckStopped(t *Table, userID int) {
+func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	time.Sleep(TypingDelay)
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(nil, t.ID, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false)
 	if !exists || t != t2 {
 		return
 	}
-	t.Lock()
-	defer t.Unlock()
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 
 	// Validate that they are in the game or are a spectator
 	playerIndex := t.GetPlayerIndexFromID(userID)

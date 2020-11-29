@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"time"
@@ -14,13 +15,13 @@ import (
 // {
 //   tableID: 15103,
 // }
-func commandTableJoin(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	if strings.HasPrefix(s.Username, "Bot-") {
@@ -33,7 +34,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	} else {
 		// Validate that the player is not joined to any table
 		// (only bots have the ability to join more than one table)
-		if t2 := tables.FindUserJoinedTable(s.UserID, t.ID); t2 != nil {
+		if t2 := tables.FindUserJoinedTable(ctx, s.UserID, t.ID); t2 != nil {
 			s.Warning("You cannot join more than one table at a time. " +
 				"Terminate your other game before joining a new one.")
 			return
@@ -76,10 +77,10 @@ func commandTableJoin(s *Session, d *CommandData) {
 		return
 	}
 
-	tableJoin(s, t)
+	tableJoin(ctx, s, t)
 }
 
-func tableJoin(s *Session, t *Table) {
+func tableJoin(ctx context.Context, s *Session, t *Table) {
 	// Local variables
 	variant := variants[t.Options.VariantName]
 
@@ -146,7 +147,7 @@ func tableJoin(s *Session, t *Table) {
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		chatServerSend("Automatic game start has been canceled.", t.GetRoomName())
+		chatServerSend(ctx, "Automatic game start has been canceled.", t.GetRoomName())
 	}
 
 	// If the user previously requested it, automatically start the game
@@ -156,11 +157,11 @@ func tableJoin(s *Session, t *Table) {
 			if p2.ID == t.Owner {
 				if !p2.Present {
 					msg := "Aborting automatic game start since the table creator is away."
-					chatServerSend(msg, t.GetRoomName())
+					chatServerSend(ctx, msg, t.GetRoomName())
 					return
 				}
 
-				commandTableStart(p2.Session, &CommandData{ // nolint: exhaustivestruct
+				commandTableStart(ctx, p2.Session, &CommandData{ // nolint: exhaustivestruct
 					TableID: t.ID,
 					NoLock:  true,
 				})

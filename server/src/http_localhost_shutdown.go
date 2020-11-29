@@ -15,6 +15,6 @@ func httpLocalhostShutdown(c *gin.Context) {
 		return
 	}
 
-	shutdown()
+	shutdown(c)
 	c.String(http.StatusOK, "success\n")
 }

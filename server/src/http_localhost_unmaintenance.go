@@ -19,6 +19,6 @@ func httpLocalhostUnmaintenance(c *gin.Context) {
 		return
 	}
 
-	maintenance(false)
+	maintenance(c, false)
 	c.String(http.StatusOK, "success\n")
 }

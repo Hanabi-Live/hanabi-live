@@ -57,6 +57,8 @@ func discordInit() {
 }
 
 func discordConnect() {
+	ctx := NewMiscContext("discordConnect")
+
 	// Bot accounts must be prefixed with "Bot"
 	if v, err := discordgo.New("Bot " + discordToken); err != nil {
 		logger.Error("Failed to create a Discord session:", err)
@@ -79,7 +81,7 @@ func discordConnect() {
 	// (we wait for Discord to connect before displaying this message)
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	chatServerSend(msg, "lobby")
+	chatServerSend(ctx, msg, "lobby")
 }
 
 /*
@@ -98,6 +100,8 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if discordIsReady.IsNotSet() {
 		return
 	}
+
+	ctx := NewMiscContext("discordMessageCreate")
 
 	// Get the channel
 	var channel *discordgo.Channel
@@ -128,7 +132,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send everyone the notification
-	commandChat(nil, &CommandData{ // nolint: exhaustivestruct
+	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
 		Username: discordGetNickname(m.Author.ID),
 		Msg:      m.Content,
 		Discord:  true,

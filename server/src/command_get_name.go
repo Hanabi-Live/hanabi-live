@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -30,7 +31,7 @@ func wordListInit() {
 // It generate a new random table name for them
 //
 // Has no data
-func commandGetName(s *Session, d *CommandData) {
+func commandGetName(ctx context.Context, s *Session, d *CommandData) {
 	type NameMessage struct {
 		Name string `json:"name"`
 	}

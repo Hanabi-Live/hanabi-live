@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -13,13 +14,13 @@ import (
 //   setting: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
 //   // ('pause-queue' will automatically pause the game when it gets to their turn)
 // }
-func commandPause(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandPause(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 	g := t.Game
 
@@ -81,10 +82,10 @@ func commandPause(s *Session, d *CommandData) {
 		return
 	}
 
-	pause(s, d, t, playerIndex)
+	pause(ctx, s, d, t, playerIndex)
 }
 
-func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
+func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
 	// Local variables
 	g := t.Game
 	p := g.Players[playerIndex]
@@ -117,7 +118,7 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 		// (the old "CheckTimer()" invocation will return and do nothing because the pause count of
 		// the game will not match)
 		activePlayer := g.Players[g.ActivePlayerIndex]
-		go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
+		go g.CheckTimer(ctx, activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 	}
 
 	t.NotifyPause()
@@ -128,7 +129,7 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 		msg += "un"
 	}
 	msg += "paused the game."
-	chatServerSend(msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName())
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "pause" message, since it is superfluous

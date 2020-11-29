@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"html"
 	"time"
 )
@@ -12,7 +13,7 @@ import (
 //   msg: 'i secretly adore you',
 //   recipient: 'Alice',
 // }
-func commandChatPM(s *Session, d *CommandData) {
+func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
 	// Check to see if their IP has been muted
 	if s != nil && s.Muted {
 		s.Warning("You have been muted by an administrator.")

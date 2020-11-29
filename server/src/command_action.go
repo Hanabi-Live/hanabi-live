@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -36,13 +37,13 @@ func actionsFunctionsInit() {
 //   // If a game over, then the value corresponds to the "endCondition" values in "constants.go"
 //   value: 0,
 // }
-func commandAction(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandAction(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 	g := t.Game
 
@@ -94,17 +95,17 @@ func commandAction(s *Session, d *CommandData) {
 		}
 	}
 
-	action(s, d, t, p)
+	action(ctx, s, d, t, p)
 }
 
-func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
+func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	// Local variables
 	g := t.Game
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
 	if d.Type != ActionTypeEndGame {
-		go t.CheckIdle()
+		go t.CheckIdle(ctx)
 	}
 
 	// Do different tasks depending on the action
@@ -199,12 +200,12 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
 		// Start the function that will check to see if the current player has run out of time
 		// (since it just got to be their turn)
-		go g.CheckTimer(nextPlayer.Time, g.Turn, g.PauseCount, nextPlayer)
+		go g.CheckTimer(ctx, nextPlayer.Time, g.Turn, g.PauseCount, nextPlayer)
 
 		// If the next player queued a pause command, then pause the game
 		if nextPlayer.RequestedPause {
 			nextPlayer.RequestedPause = false
-			commandPause(nextPlayerSession, &CommandData{ // nolint: exhaustivestruct
+			commandPause(ctx, nextPlayerSession, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				Setting: "pause",
 				NoLock:  true,

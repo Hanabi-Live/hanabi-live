@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -10,7 +11,7 @@ import (
 // {
 //   name: 'Alice',
 // }
-func commandChatPlayerInfo(s *Session, d *CommandData) {
+func commandChatPlayerInfo(ctx context.Context, s *Session, d *CommandData) {
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that this person exists in the database

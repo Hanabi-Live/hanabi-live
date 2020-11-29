@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -104,13 +103,13 @@ func httpLocalhostUserAction(c *gin.Context) {
 	}
 
 	path := c.Request.URL.Path
-	if strings.HasPrefix(path, "/ban") {
+	if path == "/ban" {
 		httpLocalhostBan(c, username, lastIP, userID)
-	} else if strings.HasPrefix(path, "/mute") {
+	} else if path == "/mute" {
 		httpLocalhostMute(c, username, lastIP, userID)
-	} else if strings.HasPrefix(path, "/sendWarning") {
+	} else if path == "/sendWarning" {
 		httpLocalhostSendWarning(c, userID)
-	} else if strings.HasPrefix(path, "/sendError") {
+	} else if path == "/sendError" {
 		httpLocalhostSendError(c, userID)
 	} else {
 		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)

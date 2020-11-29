@@ -27,7 +27,7 @@ func httpLocalhostTerminate(c *gin.Context) {
 	}
 
 	if searchingByName {
-		if v, exists := getTableIDFromName(tableNameOrID); !exists {
+		if v, exists := getTableIDFromName(c, tableNameOrID); !exists {
 			msg := "Table \"" + tableNameOrID + "\" does not exist.\n"
 			c.String(http.StatusOK, msg)
 			return
@@ -37,7 +37,7 @@ func httpLocalhostTerminate(c *gin.Context) {
 	}
 
 	// Get the corresponding table
-	t, exists := getTableAndLock(nil, tableID, true)
+	t, exists := getTableAndLock(c, nil, tableID, true)
 	if !exists {
 		msg := "Table \"" + strconv.FormatUint(tableID, 10) + "\" does not exist.\n"
 		c.String(http.StatusOK, msg)
@@ -46,7 +46,7 @@ func httpLocalhostTerminate(c *gin.Context) {
 
 	// Terminate it
 	s := t.GetOwnerSession()
-	commandAction(s, &CommandData{ // nolint: exhaustivestruct
+	commandAction(c, s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  -1,

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"html"
 	"regexp"
 	"strconv"
@@ -29,7 +30,7 @@ var (
 //   msg: 'hi',
 //   room: 'lobby', // Room can also be "table1", "table1234", etc.
 // }
-func commandChat(s *Session, d *CommandData) {
+func commandChat(ctx context.Context, s *Session, d *CommandData) {
 	// Local variables
 	var userID int
 	if d.Discord || d.Server {
@@ -76,10 +77,10 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	chat(s, d, userID, rawMsg)
+	chat(ctx, s, d, userID, rawMsg)
 }
 
-func chat(s *Session, d *CommandData, userID int, rawMsg string) {
+func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg string) {
 	// Log the message
 	text := "#" + d.Room + " "
 	if d.Username != "" {
@@ -94,7 +95,7 @@ func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
 	if strings.HasPrefix(d.Room, "table") {
-		commandChatTable(s, d)
+		commandChatTable(ctx, s, d)
 		return
 	}
 
@@ -140,11 +141,11 @@ func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 	}
 
 	// Check for commands
-	chatCommand(s, d, nil)
+	chatCommand(ctx, s, d, nil)
 	// (we pass nil as the third argument here because there is no associated table)
 }
 
-func commandChatTable(s *Session, d *CommandData) {
+func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 	// Parse the table ID from the room
 	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
 	if match == nil {
@@ -165,12 +166,12 @@ func commandChatTable(s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	t, exists := getTableAndLock(s, tableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, tableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that this player is in the game or spectating
@@ -212,7 +213,7 @@ func commandChatTable(s *Session, d *CommandData) {
 	})
 
 	// Check for commands
-	chatCommand(s, d, t)
+	chatCommand(ctx, s, d, t)
 
 	// If this user was typing, set them so that they are not typing
 	// Check for spectators first in case this is a shared replay that the player happened to be in

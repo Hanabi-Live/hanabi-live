@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"math"
 	"regexp"
@@ -35,13 +36,13 @@ func replayActionsFunctionsInit() {
 //   value: 10, // Optional
 //   name: 'Alice', // Optional
 // }
-func commandReplayAction(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that this is a shared replay
@@ -63,12 +64,12 @@ func commandReplayAction(s *Session, d *CommandData) {
 		return
 	}
 
-	replayAction(s, d, t)
+	replayAction(ctx, s, d, t)
 }
 
-func replayAction(s *Session, d *CommandData, t *Table) {
+func replayAction(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Start the idle timeout
-	go t.CheckIdle()
+	go t.CheckIdle(ctx)
 
 	// Do different tasks depending on the action
 	if replayActionFunction, ok := replayActionFunctions[d.Type]; ok {

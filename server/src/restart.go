@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"runtime"
 )
 
 // We want to record all of the ongoing games to a flat file on the disk
 // This allows the server to restart without waiting for ongoing games to finish
-func restart() {
+func restart(ctx context.Context) {
 	logger.Info("Initiating a server graceful restart.")
 
 	// We build the client and the server first before kicking everyone off in order to reduce the
@@ -44,7 +45,7 @@ func restart() {
 
 	msg := "The server went down for a restart at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	chatServerSend(msg, "lobby")
+	chatServerSend(ctx, msg, "lobby")
 
 	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")

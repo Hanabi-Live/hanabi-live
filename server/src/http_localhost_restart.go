@@ -8,7 +8,7 @@ import (
 
 func httpLocalhostRestart(c *gin.Context) {
 	// We need to call this in a new goroutine or else the return string will never get sent
-	go restart()
+	go restart(c)
 
 	c.String(http.StatusOK, "success\n")
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"math/rand"
 	"strconv"
 	"time"
@@ -15,13 +16,13 @@ import (
 // {
 //   tableID: 5,
 // }
-func commandTableStart(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that this is the owner of the table
@@ -64,10 +65,10 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 	}
 
-	tableStart(s, d, t)
+	tableStart(ctx, s, d, t)
 }
 
-func tableStart(s *Session, d *CommandData, t *Table) {
+func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	variant := variants[t.Options.VariantName]
 
@@ -88,7 +89,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	g := NewGame(t)
 
 	// Start the idle timeout
-	go t.CheckIdle()
+	go t.CheckIdle(ctx)
 
 	g.InitDeck()
 
@@ -230,7 +231,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 
 	// If custom actions were provided, emulate those actions
 	if t.ExtraOptions.CustomActions != nil {
-		emulateActions(s, d, t)
+		emulateActions(ctx, s, d, t)
 
 		// Reset all of the player's clocks to avoid some bugs relating to taking super-fast turns
 		for _, p := range g.Players {
@@ -269,7 +270,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	// The "CheckTimer()" function will be called when the starting player has finished loading
 }
 
-func emulateActions(s *Session, d *CommandData, t *Table) {
+func emulateActions(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -285,7 +286,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) {
 
 		p := t.Players[g.ActivePlayerIndex]
 
-		commandAction(p.Session, &CommandData{ // nolint: exhaustivestruct
+		commandAction(ctx, p.Session, &CommandData{ // nolint: exhaustivestruct
 			TableID: t.ID,
 			Type:    action.Type,
 			Target:  action.Target,

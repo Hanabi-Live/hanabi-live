@@ -1,5 +1,9 @@
 package main
 
+import (
+	"context"
+)
+
 // commandChatRead is sent when the user opens the in-game chat or
 // when they receive a chat message when the in-game chat is already open
 //
@@ -7,13 +11,13 @@ package main
 // {
 //   tableID: 5,
 // }
-func commandChatRead(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandChatRead(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that they are in the game or are a spectator

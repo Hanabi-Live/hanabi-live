@@ -1,25 +1,26 @@
 package main
 
 import (
+	"context"
 	"sort"
 	"strconv"
 )
 
 // /suggest
-func chatSuggest(s *Session, d *CommandData, t *Table) {
+func chatSuggest(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(NotReplayFail, d.Room)
+		chatServerSend(ctx, NotReplayFail, d.Room)
 		return
 	}
 
 	// Validate that they only sent one argument
 	if len(d.Args) != 1 {
-		chatServerSend("The format of the /suggest command is: /suggest [turn]", d.Room)
+		chatServerSend(ctx, "The format of the /suggest command is: /suggest [turn]", d.Room)
 		return
 	}
 
@@ -32,7 +33,7 @@ func chatSuggest(s *Session, d *CommandData, t *Table) {
 		} else {
 			msg = "The /suggest command only accepts integers."
 		}
-		chatServerSend(msg, d.Room)
+		chatServerSend(ctx, msg, d.Room)
 		return
 	}
 
@@ -40,14 +41,14 @@ func chatSuggest(s *Session, d *CommandData, t *Table) {
 }
 
 // /tags
-func chatTags(s *Session, d *CommandData, t *Table) {
+func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(NotReplayFail, d.Room)
+		chatServerSend(ctx, NotReplayFail, d.Room)
 		return
 	}
 
@@ -63,7 +64,7 @@ func chatTags(s *Session, d *CommandData, t *Table) {
 	}
 
 	if len(tags) == 0 {
-		chatServerSend("There are not yet any tags for this game.", d.Room)
+		chatServerSend(ctx, "There are not yet any tags for this game.", d.Room)
 		return
 	}
 
@@ -71,9 +72,9 @@ func chatTags(s *Session, d *CommandData, t *Table) {
 	// lowercase
 	sort.Strings(tags)
 
-	chatServerSend("The list of tags for this game are as follows:", d.Room)
+	chatServerSend(ctx, "The list of tags for this game are as follows:", d.Room)
 	for i, tag := range tags {
 		msg := strconv.Itoa(i+1) + ") " + tag
-		chatServerSend(msg, d.Room)
+		chatServerSend(ctx, msg, d.Room)
 	}
 }

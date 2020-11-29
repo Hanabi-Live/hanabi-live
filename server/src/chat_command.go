@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"strings"
 )
 
 var (
 	// Used to store all of the functions that handle each command
-	chatCommandMap = make(map[string]func(*Session, *CommandData, *Table))
+	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table))
 )
 
 func chatCommandInit() {
@@ -71,7 +72,7 @@ func chatCommandInit() {
 	chatCommandMap["version"] = chatCommandWebsiteOnly
 }
 
-func chatCommand(s *Session, d *CommandData, t *Table) {
+func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Parse the command
 	args := strings.Split(d.Msg, " ")
 	command := args[0]
@@ -88,13 +89,13 @@ func chatCommand(s *Session, d *CommandData, t *Table) {
 	// Check to see if there is a command handler for this command
 	chatCommandFunction, ok := chatCommandMap[command]
 	if ok {
-		chatCommandFunction(s, d, t)
+		chatCommandFunction(ctx, s, d, t)
 	} else {
-		chatServerSend("The chat command of \"/"+command+"\" is not valid.", d.Room)
+		chatServerSend(ctx, "The chat command of \"/"+command+"\" is not valid.", d.Room)
 	}
 }
 
-func chatCommandWebsiteOnly(s *Session, d *CommandData, t *Table) {
+func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room)
 }

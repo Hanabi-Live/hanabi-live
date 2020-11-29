@@ -1,12 +1,14 @@
 package main
 
+import "context"
+
 // commandHistoryGetSeed is sent when the user clicks on the "Compare Scores" button
 //
 // Example data:
 // {
 //   seed: 'p2v0s1',
 // }
-func commandHistoryGetSeed(s *Session, d *CommandData) {
+func commandHistoryGetSeed(ctx context.Context, s *Session, d *CommandData) {
 	if d.Seed == "" {
 		s.Warning("You must provide a seed.")
 		return

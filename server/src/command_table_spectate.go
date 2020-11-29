@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -17,13 +18,13 @@ import (
 //   // A value of "-1" must be specified if we do not want to shadow a player
 //   shadowingPlayerIndex: -1,
 // }
-func commandTableSpectate(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that the game has started
@@ -41,7 +42,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not already spectating another table
-	spectatingTable := tables.FindUserSpectatingTable(s.UserID, t.ID)
+	spectatingTable := tables.FindUserSpectatingTable(ctx, s.UserID, t.ID)
 	if spectatingTable != nil {
 		s.Warning("You are already spectating table " + strconv.FormatUint(spectatingTable.ID, 10) + ".")
 		return

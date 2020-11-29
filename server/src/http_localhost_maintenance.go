@@ -15,6 +15,6 @@ func httpLocalhostMaintenance(c *gin.Context) {
 		return
 	}
 
-	maintenance(true)
+	maintenance(c, true)
 	c.String(http.StatusOK, "success\n")
 }

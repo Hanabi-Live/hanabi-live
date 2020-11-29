@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io/ioutil"
 	"net"
 	"os"
@@ -41,16 +42,21 @@ func websocketConnect(ms *melody.Session) {
 
 	logger.Info("Entered the \"websocketConnect()\" function for user: " + username)
 
-	// First, perform all the expensive database retrieval to gather the data we need
-	// We want to do this before we start locking any mutexes (to minimize the lock time)
-	data := websocketConnectGetData(ms, userID, username)
-
 	// Create the new session object
 	s := NewSession()
 	s.ms = ms
 	s.SessionID = sessionID
 	s.UserID = userID
 	s.Username = username
+	// (we attach other data later)
+
+	ctx := NewSessionContext(s)
+
+	// Next, perform all the expensive database retrieval to gather the data we need
+	// We want to do this before we start locking any mutexes (to minimize the lock time)
+	data := websocketConnectGetData(ctx, ms, userID, username)
+
+	// Attach the new data to the session object
 	s.Muted = data.Muted
 	s.Data.Friends = data.Friends
 	s.Data.ReverseFriends = data.ReverseFriends
@@ -77,17 +83,18 @@ func websocketConnect(ms *melody.Session) {
 		// Thus, we need to manually clean up the user from the global session map and any ongoing
 		// games
 		websocketDisconnectRemoveFromMap(s2)
-		websocketDisconnectRemoveFromGames(s2)
+		websocketDisconnectRemoveFromGames(ctx, s2)
 	}
 
 	// Add the session to a map so that we can keep track of all of the connected users
 	sessions.Set(s.UserID, s)
-	logger.Info("User \"" + s.Username + "\" connected; " + strconv.Itoa(sessions.Length()) + " user(s) now connected.")
+	logger.Info("User \"" + s.Username + "\" connected; " +
+		strconv.Itoa(sessions.Length()) + " user(s) now connected.")
 
 	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
 	websocketConnectUserList(s)
-	websocketConnectTableList(s)
+	websocketConnectTableList(ctx, s)
 	websocketConnectChat(s)
 	websocketConnectHistory(s)
 	if len(data.Friends) > 0 {
@@ -98,7 +105,7 @@ func websocketConnect(ms *melody.Session) {
 	notifyAllUser(s)
 }
 
-func websocketConnectGetData(ms *melody.Session, userID int, username string) *WebsocketConnectData {
+func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int, username string) *WebsocketConnectData {
 	data := &WebsocketConnectData{ // nolint: exhaustivestruct
 		Friends:        make(map[int]struct{}),
 		ReverseFriends: make(map[int]struct{}),
@@ -192,13 +199,13 @@ func websocketConnectGetData(ms *melody.Session, userID int, username string) *W
 	// ----------------------------------------
 
 	// Check to see if they are currently playing in an ongoing game
-	joinedTable := tables.FindUserJoinedTable(userID, 0) // We pass 0 as a null value
+	joinedTable := tables.FindUserJoinedTable(ctx, userID, 0) // We pass 0 as a null value
 	if joinedTable != nil {
 		data.PlayingInOngoingGameTableID = joinedTable.ID
 	}
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
-	spectatingTable := tables.FindUserDisconSpectatorTable(userID, 0) // We pass 0 as a null value
+	spectatingTable := tables.FindUserDisconSpectatorTable(ctx, userID, 0) // We pass 0 as a null value
 	if spectatingTable != nil {
 		data.SpectatingTableID = spectatingTable.ID
 		data.SpectatingDatabaseID = spectatingTable.ExtraOptions.DatabaseID
@@ -279,15 +286,15 @@ func websocketConnectUserList(s *Session) {
 
 // websocketConnectTableList sends a "tableList" message
 // (this is much more performant than sending an individual "table" message for every table)
-func websocketConnectTableList(s *Session) {
+func websocketConnectTableList(ctx context.Context, s *Session) {
 	tableList := tables.GetList()
 	tableMessageList := make([]*TableMessage, 0)
 	for _, t := range tableList {
-		t.Lock()
+		t.Lock(ctx)
 		if t.Visible {
 			tableMessageList = append(tableMessageList, makeTableMessage(s, t))
 		}
-		t.Unlock()
+		t.Unlock(ctx)
 	}
 
 	s.Emit("tableList", tableMessageList)

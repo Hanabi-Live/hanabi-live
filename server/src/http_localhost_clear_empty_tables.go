@@ -13,7 +13,7 @@ import (
 func httpLocalhostClearEmptyTables(c *gin.Context) {
 	tableIDs := tables.GetKeys()
 	for _, tableID := range tableIDs {
-		t, exists := getTableAndLock(nil, tableID, true)
+		t, exists := getTableAndLock(c, nil, tableID, true)
 		if !exists {
 			logger.Error("Failed to get the table with ID " + strconv.FormatUint(tableID, 10) + ".")
 			continue
@@ -30,7 +30,7 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 		}
 		// (don't do anything for ongoing games)
 
-		t.Unlock()
+		t.Unlock(c)
 	}
 
 	c.String(http.StatusOK, "success\n")

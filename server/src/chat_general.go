@@ -1,42 +1,43 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
 
 // /help
-func chatHelp(s *Session, d *CommandData, t *Table) {
+func chatHelp(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "You can see the list of chat commands here: " +
 		"https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room)
 }
 
 // /rules
-func chatRules(s *Session, d *CommandData, t *Table) {
+func chatRules(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "Please follow the community guidelines: " +
 		"https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room)
 }
 
 // /new
-func chatNew(s *Session, d *CommandData, t *Table) {
+func chatNew(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: " +
 		"https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room)
 }
 
 // /discord
-func chatDiscord(s *Session, d *CommandData, t *Table) {
+func chatDiscord(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "Join the Discord server: https://discord.gg/FADvkJp"
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room)
 }
 
 // /random [min] [max]
-func chatRandom(s *Session, d *CommandData, t *Table) {
+func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// We expect something like "/random 2" or "/random 1 2"
 	if len(d.Args) != 1 && len(d.Args) != 2 {
-		chatServerSend("The format of the /random command is: /random [min] [max]", d.Room)
+		chatServerSend(ctx, "The format of the /random command is: /random [min] [max]", d.Room)
 		return
 	}
 
@@ -44,9 +45,9 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 	var arg1, arg2 int
 	if v, err := strconv.Atoi(d.Args[0]); err != nil {
 		if _, err := strconv.ParseFloat(d.Args[0], 64); err != nil {
-			chatServerSend("\""+d.Args[0]+"\" is not a number.", d.Room)
+			chatServerSend(ctx, "\""+d.Args[0]+"\" is not a number.", d.Room)
 		} else {
-			chatServerSend("The /random command only accepts integers.", d.Room)
+			chatServerSend(ctx, "The /random command only accepts integers.", d.Room)
 		}
 		return
 	} else {
@@ -55,9 +56,9 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 	if len(d.Args) == 2 {
 		if v, err := strconv.Atoi(d.Args[1]); err != nil {
 			if _, err := strconv.ParseFloat(d.Args[1], 64); err != nil {
-				chatServerSend("\""+d.Args[1]+"\" is not a number.", d.Room)
+				chatServerSend(ctx, "\""+d.Args[1]+"\" is not a number.", d.Room)
 			} else {
-				chatServerSend("The /random command only accepts integers.", d.Room)
+				chatServerSend(ctx, "The /random command only accepts integers.", d.Room)
 			}
 			return
 		} else {
@@ -79,28 +80,28 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 	if min >= max {
 		msg := strconv.Itoa(min) + " is greater than or equal to " + strconv.Itoa(max) + ", " +
 			"so that request is nonsensical."
-		chatServerSend(msg, d.Room)
+		chatServerSend(ctx, msg, d.Room)
 		return
 	}
 
 	randNum := getRandom(min, max)
 	msg := "Random number between " + strconv.Itoa(min) + " and " + strconv.Itoa(max) + ": " +
 		strconv.Itoa(randNum)
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room)
 }
 
 // /uptime
-func chatUptime(s *Session, d *CommandData, t *Table) {
-	chatServerSend(getCameOnline(), d.Room)
+func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	chatServerSend(ctx, getCameOnline(), d.Room)
 	var uptime string
 	if v, err := getUptime(); err != nil {
 		logger.Error("Failed to get the uptime:", err)
-		chatServerSend(DefaultErrorMsg, d.Room)
+		chatServerSend(ctx, DefaultErrorMsg, d.Room)
 		return
 	} else {
 		uptime = v
 	}
-	chatServerSend(uptime, d.Room)
+	chatServerSend(ctx, uptime, d.Room)
 }
 func getCameOnline() string {
 	return "The server came online at: " + formatTimestampUnix(datetimeStarted)
@@ -118,17 +119,17 @@ func getUptime() (string, error) {
 }
 
 // /timeleft
-func chatTimeLeft(s *Session, d *CommandData, t *Table) {
+func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
 		logger.Error("Failed to get the time left:", err)
-		chatServerSend(DefaultErrorMsg, d.Room)
+		chatServerSend(ctx, DefaultErrorMsg, d.Room)
 		return
 	} else {
 		timeLeft = v
 	}
 
-	chatServerSend(timeLeft, d.Room)
+	chatServerSend(ctx, timeLeft, d.Room)
 }
 
 func getTimeLeft() (string, error) {

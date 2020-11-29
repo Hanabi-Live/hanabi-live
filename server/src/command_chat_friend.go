@@ -1,12 +1,16 @@
 package main
 
+import (
+	"context"
+)
+
 // commandChatFriend is sent when a user types the "/friend" command
 //
 // Example data:
 // {
 //   name: 'Alice',
 // }
-func commandChatFriend(s *Session, d *CommandData) {
+func commandChatFriend(ctx context.Context, s *Session, d *CommandData) {
 	friend(s, d, true)
 }
 
@@ -16,7 +20,7 @@ func commandChatFriend(s *Session, d *CommandData) {
 // {
 //   name: 'Alice',
 // }
-func commandChatUnfriend(s *Session, d *CommandData) {
+func commandChatUnfriend(ctx context.Context, s *Session, d *CommandData) {
 	friend(s, d, false)
 }
 

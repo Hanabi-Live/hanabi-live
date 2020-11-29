@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"strings"
 )
@@ -11,7 +12,7 @@ import (
 // {
 //   msg: 'inverted priority finesse',
 // }
-func commandTagSearch(s *Session, d *CommandData) {
+func commandTagSearch(ctx context.Context, s *Session, d *CommandData) {
 	// Sanitize, validate, and normalize the tag
 	if v, err := sanitizeTag(d.Msg); err != nil {
 		s.Warning(err.Error())

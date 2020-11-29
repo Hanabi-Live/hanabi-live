@@ -4,9 +4,9 @@ package main
 
 import (
 	"encoding/json"
-	"sync"
 	"time"
 
+	"github.com/sasha-s/go-deadlock"
 	melody "gopkg.in/olahol/melody.v1"
 )
 
@@ -25,7 +25,7 @@ type Session struct {
 	// Dynamic data fields
 	// (they are updated as the user performs activities, so we need to use a mutex)
 	Data      *SessionData
-	DataMutex *sync.RWMutex
+	DataMutex *deadlock.RWMutex
 }
 
 type SessionData struct {
@@ -67,7 +67,7 @@ func NewSession() *Session {
 			RateLimitLastCheck: time.Now(),
 			Banned:             false,
 		},
-		DataMutex: &sync.RWMutex{},
+		DataMutex: &deadlock.RWMutex{},
 	}
 }
 

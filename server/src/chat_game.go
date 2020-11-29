@@ -1,18 +1,22 @@
 package main
 
+import (
+	"context"
+)
+
 // /pause
-func chatPause(s *Session, d *CommandData, t *Table) {
+func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room)
 		return
 	}
 
-	commandPause(s, &CommandData{ // nolint: exhaustivestruct
+	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Setting: "pause",
 		NoLock:  true,
@@ -20,18 +24,18 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 }
 
 // /unpause
-func chatUnpause(s *Session, d *CommandData, t *Table) {
+func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room)
 		return
 	}
 
-	commandPause(s, &CommandData{ // nolint: exhaustivestruct
+	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Setting: "unpause",
 		NoLock:  true,

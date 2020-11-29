@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -8,11 +9,11 @@ import (
 )
 
 // Print out a bunch of debug information about the current state of the server
-func print() {
+func print(ctx context.Context) {
 	printCurrentUsers()
 	tableList := tables.GetList()
-	printTableStats(tableList)
-	printTables(tableList)
+	printTableStats(ctx, tableList)
+	printTables(ctx, tableList)
 }
 
 func printCurrentUsers() {
@@ -30,7 +31,7 @@ func printCurrentUsers() {
 	}
 }
 
-func printTableStats(tableList []*Table) {
+func printTableStats(ctx context.Context, tableList []*Table) {
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current total tables:", len(tableList))
 
@@ -39,7 +40,7 @@ func printTableStats(tableList []*Table) {
 	numReplays := 0
 
 	for _, t := range tableList {
-		t.Lock()
+		t.Lock(ctx)
 
 		if !t.Running {
 			numUnstarted++
@@ -53,7 +54,7 @@ func printTableStats(tableList []*Table) {
 			numReplays++
 		}
 
-		t.Unlock()
+		t.Unlock(ctx)
 	}
 
 	logger.Debug("Current unstarted tables:", numUnstarted)
@@ -61,7 +62,7 @@ func printTableStats(tableList []*Table) {
 	logger.Debug("Current replays:", numReplays)
 }
 
-func printTables(tableList []*Table) {
+func printTables(ctx context.Context, tableList []*Table) {
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current table list:")
 	logger.Debug("---------------------------------------------------------------")
@@ -71,7 +72,7 @@ func printTables(tableList []*Table) {
 	}
 
 	for _, t := range tableList {
-		t.Lock()
+		t.Lock(ctx)
 
 		logger.Debug(strconv.FormatUint(t.ID, 10) + " - " + t.Name)
 		logger.Debug("\n")
@@ -127,7 +128,7 @@ func printTables(tableList []*Table) {
 
 		logger.Debug("---------------------------------------------------------------")
 
-		t.Unlock()
+		t.Unlock(ctx)
 	}
 }
 

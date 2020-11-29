@@ -19,6 +19,6 @@ func httpLocalhostCancel(c *gin.Context) {
 		return
 	}
 
-	cancel()
+	cancel(c)
 	c.String(http.StatusOK, "success\n")
 }

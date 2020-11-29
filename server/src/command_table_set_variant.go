@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -13,13 +14,13 @@ import (
 //     variant: 'Black & Rainbow (6 Suit)',
 //   },
 // }
-func commandTableSetVariant(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTableSetVariant(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	if t.Running {
@@ -47,10 +48,10 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 
-	tableSetVariant(s, d, t)
+	tableSetVariant(ctx, s, d, t)
 }
 
-func tableSetVariant(s *Session, d *CommandData, t *Table) {
+func tableSetVariant(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	variant := variants[d.Options.VariantName]
 
@@ -83,5 +84,5 @@ func tableSetVariant(s *Session, d *CommandData, t *Table) {
 	notifyAllTable(t)
 
 	msg := s.Username + " has changed the variant to: " + d.Options.VariantName
-	chatServerSend(msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName())
 }

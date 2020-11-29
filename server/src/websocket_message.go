@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"strings"
@@ -70,6 +71,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 		s.SetRateLimitAllowance(newRateLimitAllowance)
 	}
 
+	ctx := NewSessionContext(s)
 	sentryWebsocketMessageAttachMetadata(s)
 
 	// Unpack the message to see what kind of command it is
@@ -85,7 +87,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	jsonData := []byte(result[1])
 
 	// Check to see if there is a command handler for this command
-	var commandMapFunction func(*Session, *CommandData)
+	var commandMapFunction func(context.Context, *Session, *CommandData)
 	if v, ok := commandMap[command]; !ok {
 		logger.Error("User \"" + s.Username + "\" sent an invalid command of " +
 			"\"" + command + "\".")
@@ -104,7 +106,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	// Call the command handler for this command
 	logger.Info("Command - " + command + " - " + s.Username)
-	commandMapFunction(s, d)
+	commandMapFunction(ctx, s, d)
 }
 
 func ban(s *Session) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"time"
@@ -43,7 +44,7 @@ type CharacterAssignment struct {
 //   json: '{"actions"=[],"deck"=[]}', // Only if source is "json"
 //   visibility: 'solo', // Can also be "shared"
 // }
-func commandReplayCreate(s *Session, d *CommandData) {
+func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that there is not a password
 	if d.Password != "" {
 		s.Warning("You cannot create a replay with a password.")
@@ -83,8 +84,8 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	t := NewTable(name, -1)
-	t.Lock()
-	defer t.Unlock()
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 	t.Visible = d.Visibility == "shared"
 
 	// Load the options and players
@@ -119,7 +120,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// (a "table" message will be sent in the "commandTableSpectate" function below)
 
 	// Start the (fake) game
-	commandTableStart(t.Players[0].Session, &CommandData{ // nolint: exhaustivestruct
+	commandTableStart(ctx, t.Players[0].Session, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		NoLock:  true,
 	})
@@ -164,7 +165,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Join the user to the new replay
-	commandTableSpectate(s, &CommandData{ // nolint: exhaustivestruct
+	commandTableSpectate(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID:              t.ID,
 		ShadowingPlayerIndex: -1,
 		NoLock:               true,
@@ -172,7 +173,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	t.Owner = s.UserID
 
 	// Start the idle timeout
-	go t.CheckIdle()
+	go t.CheckIdle(ctx)
 
 	// The "commandTableSpectate()" function above sends the user the "tableStart" message
 	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command

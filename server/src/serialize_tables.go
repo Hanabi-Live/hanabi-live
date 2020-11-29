@@ -7,10 +7,10 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/sasha-s/go-deadlock"
 )
 
 // serializeTables saves any ongoing tables to disk as JSON files so that they can be restored later
@@ -56,6 +56,8 @@ func serializeTables() bool {
 // restoreTables recreates tables that were ongoing at the time of the last server restart
 // Tables were serialized to flat files in the "tablesPath" directory
 func restoreTables() {
+	ctx := NewMiscContext("restoreTables")
+
 	var files []os.FileInfo
 	if v, err := ioutil.ReadDir(tablesPath); err != nil {
 		log.Fatal("Failed to get the files in the \""+tablesPath+"\" directory: ", err)
@@ -94,7 +96,7 @@ func restoreTables() {
 		if t.ChatRead == nil {
 			t.ChatRead = make(map[int]int)
 		}
-		t.mutex = &sync.Mutex{}
+		t.mutex = &deadlock.Mutex{}
 
 		// Restore the circular references that could not be represented in JSON
 		g := t.Game
@@ -207,7 +209,7 @@ func restoreTables() {
 			// Players will never run out of time on restored tables because the "CheckTimer()"
 			// function was never initiated; manually do this
 			activePlayer := g.Players[g.ActivePlayerIndex]
-			go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
+			go g.CheckTimer(ctx, activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 		}
 
 		tables.Set(t.ID, t)
@@ -219,7 +221,7 @@ func restoreTables() {
 
 		// Restored tables will never be automatically terminated due to idleness because the
 		// "CheckIdle()" function was never initiated; manually do this
-		go t.CheckIdle()
+		go t.CheckIdle(ctx)
 	}
 
 	// (we do not need to adjust the "tableIDCounter" variable because

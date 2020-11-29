@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -153,7 +154,13 @@ func NewGame(t *Table) *Game {
 */
 
 // CheckTimer is meant to be called in a new goroutine
-func (g *Game) CheckTimer(timeToSleep time.Duration, turn int, pauseCount int, gp *GamePlayer) {
+func (g *Game) CheckTimer(
+	ctx context.Context,
+	timeToSleep time.Duration,
+	turn int,
+	pauseCount int,
+	gp *GamePlayer,
+) {
 	// Sleep until the active player runs out of time
 	time.Sleep(timeToSleep)
 
@@ -161,12 +168,12 @@ func (g *Game) CheckTimer(timeToSleep time.Duration, turn int, pauseCount int, g
 	t := g.Table
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(nil, t.ID, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false)
 	if !exists || t != t2 {
 		return
 	}
-	t.Lock()
-	defer t.Unlock()
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 
 	// Check to see if we have made a move in the meanwhile
 	if turn != g.Turn {
@@ -188,12 +195,12 @@ func (g *Game) CheckTimer(timeToSleep time.Duration, turn int, pauseCount int, g
 		return
 	}
 
-	g.EndTimer(gp)
+	g.EndTimer(ctx, gp)
 }
 
 // EndTimer is called when a player has run out of time in a timed game, which will automatically
 // end the game with a score of 0
-func (g *Game) EndTimer(gp *GamePlayer) {
+func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 	// Local variables
 	t := g.Table
 
@@ -214,7 +221,7 @@ func (g *Game) EndTimer(gp *GamePlayer) {
 	}
 
 	// End the game
-	commandAction(s, &CommandData{ // nolint: exhaustivestruct
+	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  gp.Index,

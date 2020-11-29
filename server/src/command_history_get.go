@@ -1,5 +1,7 @@
 package main
 
+import "context"
+
 // commandHistoryGet is sent when the user clicks the "Show More History" button
 //
 // Example data:
@@ -7,7 +9,7 @@ package main
 //   offset: 10,
 //   amount: 10,
 // }
-func commandHistoryGet(s *Session, d *CommandData) {
+func commandHistoryGet(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they sent a valid offset and amount value
 	if d.Offset < 0 {
 		s.Warning("That is not a valid start value.")

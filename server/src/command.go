@@ -1,5 +1,9 @@
 package main
 
+import (
+	"context"
+)
+
 type CommandData struct {
 	// various
 	TableID    uint64 `json:"tableID"`
@@ -75,7 +79,7 @@ type CommandData struct {
 
 var (
 	// Used to store all of the functions that handle each command
-	commandMap = make(map[string]func(*Session, *CommandData))
+	commandMap = make(map[string]func(context.Context, *Session, *CommandData))
 )
 
 // Define all of the WebSocket commands

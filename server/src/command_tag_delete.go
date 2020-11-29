@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -11,13 +12,13 @@ import (
 //   tableID: 123,
 //   msg: 'inverted priority finesse',
 // }
-func commandTagDelete(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	if !t.Running {
@@ -33,10 +34,10 @@ func commandTagDelete(s *Session, d *CommandData) {
 		d.Msg = v
 	}
 
-	tagDelete(s, d, t)
+	tagDelete(ctx, s, d, t)
 }
 
-func tagDelete(s *Session, d *CommandData, t *Table) {
+func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -81,5 +82,5 @@ func tagDelete(s *Session, d *CommandData, t *Table) {
 	}
 
 	msg := s.Username + " has deleted a game tag of \"" + d.Msg + "\"."
-	chatServerSend(msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName())
 }

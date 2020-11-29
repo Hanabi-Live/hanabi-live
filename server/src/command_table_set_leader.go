@@ -1,5 +1,9 @@
 package main
 
+import (
+	"context"
+)
+
 type NewLeader struct {
 	ID       int
 	Username string
@@ -14,13 +18,13 @@ type NewLeader struct {
 //   tableID: 123,
 //   name: 'Alice,
 // }
-func commandTableSetLeader(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	if len(d.Name) == 0 {
@@ -77,10 +81,10 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		return
 	}
 
-	tableSetLeader(s, t, newLeader)
+	tableSetLeader(ctx, s, t, newLeader)
 }
 
-func tableSetLeader(s *Session, t *Table, newLeader *NewLeader) {
+func tableSetLeader(ctx context.Context, s *Session, t *Table, newLeader *NewLeader) {
 	t.Owner = newLeader.ID
 
 	if t.Replay {
@@ -98,6 +102,6 @@ func tableSetLeader(s *Session, t *Table, newLeader *NewLeader) {
 		}
 
 		msg := s.Username + " has passed table ownership to: " + newLeader.Username
-		chatServerSend(msg, t.GetRoomName())
+		chatServerSend(ctx, msg, t.GetRoomName())
 	}
 }

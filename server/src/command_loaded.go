@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"time"
 )
 
@@ -10,13 +11,13 @@ import (
 // {
 //   tableID: 5,
 // }
-func commandLoaded(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandLoaded(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 	g := t.Game
 
@@ -51,7 +52,7 @@ func commandLoaded(s *Session, d *CommandData) {
 		// Start the countdown for when the active player runs out of time
 		if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
 			activePlayer := g.Players[g.ActivePlayerIndex]
-			go g.CheckTimer(activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
+			go g.CheckTimer(ctx, activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 		}
 	}
 }

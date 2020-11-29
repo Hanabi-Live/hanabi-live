@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -11,13 +12,13 @@ import (
 // {
 //   tableID: 5,
 // }
-func commandTableLeave(s *Session, d *CommandData) {
-	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+func commandTableLeave(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that the game has not started
@@ -40,10 +41,10 @@ func commandTableLeave(s *Session, d *CommandData) {
 		return
 	}
 
-	tableLeave(s, t, playerIndex)
+	tableLeave(ctx, s, t, playerIndex)
 }
 
-func tableLeave(s *Session, t *Table, playerIndex int) {
+func tableLeave(ctx context.Context, s *Session, t *Table, playerIndex int) {
 	logger.Info(t.GetName() + "User \"" + s.Username + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
@@ -71,7 +72,7 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		chatServerSend("Automatic game start has been canceled.", t.GetRoomName())
+		chatServerSend(ctx, "Automatic game start has been canceled.", t.GetRoomName())
 	}
 
 	// Force everyone else to leave if it was the owner that left
@@ -86,7 +87,7 @@ func tableLeave(s *Session, t *Table, playerIndex int) {
 				s2 = NewFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
-			commandTableLeave(s2, &CommandData{ // nolint: exhaustivestruct
+			commandTableLeave(ctx, s2, &CommandData{ // nolint: exhaustivestruct
 				TableID: t.ID,
 				NoLock:  true,
 			})

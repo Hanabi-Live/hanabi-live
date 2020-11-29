@@ -1,19 +1,21 @@
 package main
 
 import (
+	"context"
 	"strconv"
-	"sync"
+
+	"github.com/sasha-s/go-deadlock"
 )
 
 type Tables struct {
 	tables map[uint64]*Table // Indexed by table ID
-	mutex  *sync.RWMutex     // For handling concurrent access
+	mutex  *deadlock.RWMutex // For handling concurrent access
 }
 
 func NewTables() *Tables {
 	return &Tables{
 		tables: make(map[uint64]*Table),
-		mutex:  &sync.RWMutex{},
+		mutex:  &deadlock.RWMutex{},
 	}
 }
 
@@ -64,13 +66,13 @@ func (ts *Tables) Length() int {
 
 // FindUserJoinedTable returns the table that the corresponding user ID is currently joined to
 // (or nil if not joined to any tables)
-func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *Table {
+func (ts *Tables) FindUserJoinedTable(ctx context.Context, userID int, tableIDAlreadyLocked uint64) *Table {
 	tableList := ts.GetList()
 	for _, t := range tableList {
 		playerIndex := -1
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Lock()
+			t.Lock(ctx)
 		}
 
 		if !t.Replay {
@@ -78,7 +80,7 @@ func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *
 		}
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Unlock()
+			t.Unlock(ctx)
 		}
 
 		if playerIndex > -1 {
@@ -91,13 +93,13 @@ func (ts *Tables) FindUserJoinedTable(userID int, tableIDAlreadyLocked uint64) *
 
 // FindUserSpectatingTable returns the table that the corresponding user ID is currently spectating
 // (or nil if they were not spectating any tables)
-func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint64) *Table {
+func (ts *Tables) FindUserSpectatingTable(ctx context.Context, userID int, tableIDAlreadyLocked uint64) *Table {
 	tableList := ts.GetList()
 	for _, t := range tableList {
 		spectatorIndex := -1
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Lock()
+			t.Lock(ctx)
 		}
 
 		if t.Replay {
@@ -105,7 +107,7 @@ func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint6
 		}
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Unlock()
+			t.Unlock(ctx)
 		}
 
 		if spectatorIndex > -1 {
@@ -118,13 +120,13 @@ func (ts *Tables) FindUserSpectatingTable(userID int, tableIDAlreadyLocked uint6
 
 // FindUserDisconSpectatorTable returns the table that the corresponding user ID was spectating
 // before they disconnected (or nil if they were not spectating any tables)
-func (ts *Tables) FindUserDisconSpectatorTable(userID int, tableIDAlreadyLocked uint64) *Table {
+func (ts *Tables) FindUserDisconSpectatorTable(ctx context.Context, userID int, tableIDAlreadyLocked uint64) *Table {
 	tableList := ts.GetList()
 	for _, t := range tableList {
 		foundTable := false
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Lock()
+			t.Lock(ctx)
 		}
 
 		if t.Replay {
@@ -137,7 +139,7 @@ func (ts *Tables) FindUserDisconSpectatorTable(userID int, tableIDAlreadyLocked 
 		}
 
 		if t.ID != tableIDAlreadyLocked {
-			t.Unlock()
+			t.Unlock(ctx)
 		}
 
 		if foundTable {
@@ -166,7 +168,7 @@ func getTable(s *Session, tableID uint64) (*Table, bool) {
 
 // getTableAndLock checks to see if the given table exists
 // If it does, it locks the table mutex and returns it
-func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool) {
+func getTableAndLock(ctx context.Context, s *Session, tableID uint64, acquireLock bool) (*Table, bool) {
 	t, ok := getTable(s, tableID)
 	if !ok {
 		return nil, false
@@ -177,12 +179,12 @@ func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool
 		// any work on the table
 		// After calling "getTableAndLock()", the parent function should immediately perform a
 		// "defer t.Mutex.Unlock()"
-		t.Lock()
+		t.Lock(ctx)
 
 		// Prevent the race condition where the table can be removed from the map while the above
 		// lock acquisition is blocking
 		if t.Deleted {
-			t.Unlock()
+			t.Unlock(ctx)
 			return nil, false
 		}
 	}
@@ -190,15 +192,15 @@ func getTableAndLock(s *Session, tableID uint64, acquireLock bool) (*Table, bool
 	return t, true
 }
 
-func getTableIDFromName(tableName string) (uint64, bool) {
+func getTableIDFromName(ctx context.Context, tableName string) (uint64, bool) {
 	tableList := tables.GetList()
 	for _, t := range tableList {
 		foundTable := false
-		t.Lock()
+		t.Lock(ctx)
 		if t.Name == tableName {
 			foundTable = true
 		}
-		t.Unlock()
+		t.Unlock(ctx)
 
 		if foundTable {
 			return t.ID, true

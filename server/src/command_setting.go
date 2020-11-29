@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"reflect"
 	"strconv"
 )
@@ -12,7 +13,7 @@ import (
 //   name: 'soundMove',
 //   setting: 'false', // All setting values must be strings
 // }
-func commandSetting(s *Session, d *CommandData) {
+func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	// Validate the setting name
 	if d.Name == "" {
 		s.Warning("The settings name cannot be blank.")

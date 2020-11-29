@@ -1,23 +1,23 @@
 package main
 
 import (
-	"sync"
+	"github.com/sasha-s/go-deadlock"
 )
 
 type Sessions struct {
-	sessions map[int]*Session // Indexed by user ID
-	mutex    *sync.RWMutex    // For handling concurrent access
+	sessions map[int]*Session  // Indexed by user ID
+	mutex    *deadlock.RWMutex // For handling concurrent access
 
 	// We only allow one user to connect or disconnect at the same time
-	ConnectMutex *sync.Mutex
+	ConnectMutex *deadlock.Mutex
 }
 
 func NewSessions() *Sessions {
 	return &Sessions{
 		sessions: make(map[int]*Session),
-		mutex:    &sync.RWMutex{},
+		mutex:    &deadlock.RWMutex{},
 
-		ConnectMutex: &sync.Mutex{},
+		ConnectMutex: &deadlock.Mutex{},
 	}
 }
 

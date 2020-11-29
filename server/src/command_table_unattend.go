@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -13,17 +14,17 @@ import (
 // {
 //   tableID: 5,
 // }
-func commandTableUnattend(s *Session, d *CommandData) {
+func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	// Unlike other command handlers, we do not want to show a warning to the user if the table does
 	// not exist, so we pass "nil" instead of "s" to the "getTableAndLock()" function
 	// This is because in some cases, network latency will cause the "unattend" message to get to
 	// the server after the respective table has already been deleted
-	t, exists := getTableAndLock(nil, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, nil, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
 	if !d.NoLock {
-		defer t.Unlock()
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that they are either playing or spectating the game
