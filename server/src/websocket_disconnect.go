@@ -27,6 +27,8 @@ func websocketDisconnect(ms *melody.Session) {
 
 	// Alert everyone that a user has logged out
 	notifyAllUserLeft(s)
+
+	logger.Info("Exited the \"websocketDisconnect()\" function for user: " + s.Username)
 }
 
 func websocketDisconnectRemoveFromMap(s *Session) {

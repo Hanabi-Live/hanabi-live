@@ -103,6 +103,8 @@ func websocketConnect(ms *melody.Session) {
 
 	// Alert everyone that a new user has logged in
 	notifyAllUser(s)
+
+	logger.Info("Exited the \"websocketConnect()\" function for user: " + username)
 }
 
 func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int, username string) *WebsocketConnectData {
