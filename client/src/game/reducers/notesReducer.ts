@@ -25,7 +25,7 @@ function notesReducerFunction(
 
       if (!playing) {
         for (const specNote of notes.allNotes[action.order]) {
-          if (specNote.name == metadata.ourUsername) {
+          if (specNote.name === metadata.ourUsername) {
             specNote.text = action.text;
           }
         }
@@ -49,14 +49,14 @@ function notesReducerFunction(
 
     case "noteList": {
       // Reset any existing notes
-      for (let i = 0; i < notes.allNotes.length; i++ ){
+      for (let i = 0; i < notes.allNotes.length; i++) {
         notes.allNotes[i] = [];
       }
 
       // Set the new notes
       action.noteTextLists.forEach((noteTextList, i) => {
         // If we are a spectator, copy our notes from combined list
-        if ((action.names[i] == metadata.ourUsername) && !playing && !finished) {
+        if (action.names[i] === metadata.ourUsername && !playing && !finished) {
           noteTextList.forEach((text, order) => {
             notes.ourNotes[order] = parseNote(variant, text);
           });
@@ -65,7 +65,7 @@ function notesReducerFunction(
         noteTextList.forEach((text, order) => {
           notes.allNotes[order].push({
             name: action.names[i],
-            text: text,
+            text,
           });
         });
       });

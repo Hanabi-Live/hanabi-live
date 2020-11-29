@@ -200,8 +200,8 @@ interface NoteList {
   notes: string[];
 }
 commands.set("noteList", (data: NoteListData) => {
-  const names = new Array() as string[];
-  const noteTextLists = new Array() as string[][];
+  const names = [] as string[];
+  const noteTextLists = [] as string[][];
   for (const noteList of data.notes) {
     names.push(noteList.name);
     noteTextLists.push(noteList.notes);
