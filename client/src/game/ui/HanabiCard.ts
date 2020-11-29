@@ -66,18 +66,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private trashcan: Konva.Image;
   private wrench: Konva.Image;
 
-  // TODO going to nuke this pretty soon
-  note: CardNote = {
-    possibilities: [],
-    chopMoved: false,
-    needsFix: false,
-    knownTrash: false,
-    finessed: false,
-    blank: false,
-    unclued: false,
-    text: '',
-  };
-
   // -------------------
   // Getters and setters
   // -------------------
@@ -100,6 +88,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   set state(state: CardState) {
     this._state = state;
+  }
+
+  get note(): CardNote {
+    return globals.state.notes.ourNotes[this.state.order];
   }
 
   private _tweening = false;
@@ -889,7 +881,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we are a player in an ongoing game,
     // show the note indicator if we have a non-blank note on it
     if (globals.state.playing) {
-      const ourNote = globals.ourNotes.get(this.state.order) ?? "";
+      const ourNote = globals.state.notes.ourNotes[this.state.order].text ?? "";
       return ourNote !== "";
     }
 
@@ -1111,7 +1103,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let newNote = note;
 
     // If we had an existing note, append the new note to the end using pipe notation
-    const existingNote = globals.ourNotes.get(this.state.order);
+    const existingNote = globals.state.notes.ourNotes[this.state.order].text;
     if (existingNote !== undefined && existingNote !== "") {
       newNote = `${existingNote} | ${note}`;
     }
@@ -1120,9 +1112,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   checkSpecialNote(): void {
-    const noteText = globals.ourNotes.get(this.state.order) ?? "";
-
-    this.note = notes.parseNote(this.variant, noteText);
     noteIdentity.checkNoteImpossibility(this.variant, this.state, this.note);
 
     // Morph the card if it has an "exact" card note

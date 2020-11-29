@@ -14,7 +14,7 @@ function get(order: number, our: boolean) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note
   if (our || globals.state.playing) {
-    return globals.ourNotes.get(order) ?? "";
+    return globals.state.notes.ourNotes[order] ?? "";
   }
 
   // Build a string that shows the combined notes from the players & spectators
@@ -32,14 +32,14 @@ function get(order: number, our: boolean) {
 }
 
 // A note has been updated, so:
-// 1) update the stored note in memory
-// 2) send the new note to the server
-// 3) check for new note identities
+// 1) send the new note to the server
+// 2) dispatch an event with the updated note
+// 3) check for new card identities
 export function set(order: number, text: string): void {
-  const oldNote = globals.ourNotes.get(order) ?? "";
-  globals.ourNotes.set(order, text);
+  const oldNote = globals.state.notes.ourNotes[order].text;
   globals.lastNote = text;
 
+  // vvv TODO remember to allow for updating spectator notes
   if (!globals.state.playing) {
     const noteObjectArray = globals.allNotes.get(order) ?? [];
     for (const noteObject of noteObjectArray) {
@@ -58,16 +58,16 @@ export function set(order: number, text: string): void {
     });
   }
 
-  // The note identity features are only enabled for active players
-  if (!globals.state.playing) {
-    return;
-  }
-
   globals.store!.dispatch({
     type: "editNote",
     order,
     text,
   });
+
+  // The note identity features are only enabled for active players
+  if (!globals.state.playing) {
+    return;
+  }
 
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
@@ -158,16 +158,16 @@ export function update(card: HanabiCard): void {
   // Update the tooltip
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster("instance");
-  const note = get(card.state.order, false);
+  const note = globals.state.notes.ourNotes[card.state.order];
   tooltipInstance.content(note);
-  if (note.length === 0) {
+  if (note.text.length === 0) {
     tooltip.tooltipster("close");
     globals.editingNote = null;
   }
 
   // Update the card indicator
   const visibleOld = card.noteIndicator.visible();
-  const visibleNew = note.length > 0;
+  const visibleNew = note.text.length > 0;
   if (visibleOld !== visibleNew) {
     card.noteIndicator.visible(visibleNew);
     globals.layers.card.batchDraw();

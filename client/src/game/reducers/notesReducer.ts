@@ -25,6 +25,7 @@ function notesReducerFunction(
   switch (action.type) {
     case "editNote": {
       notes.ourNotes[action.order] = parseNote(variant, action.text);
+      // TODO if spectator, update allNotes accordingly too
       console.log(action.order);
       break;
     }
@@ -34,6 +35,7 @@ function notesReducerFunction(
       console.log(notes.ourNotes);
       break;
     }
+    // TODO for noteList, also edit ourNotes with our own notes
   }
 }
 

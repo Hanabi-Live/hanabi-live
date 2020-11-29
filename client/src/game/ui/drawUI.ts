@@ -349,8 +349,6 @@ function drawPlayStacks() {
 
     // Add the stack base to the play stack
     const order = deck.totalCards(globals.variant) + i;
-    globals.ourNotes.set(order, "");
-    globals.allNotes.set(order, []);
     // Stack bases use card orders after the final card in the deck
     const stackBase = new HanabiCard(
       order,

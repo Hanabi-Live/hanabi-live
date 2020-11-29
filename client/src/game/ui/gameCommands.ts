@@ -205,15 +205,7 @@ commands.set("noteList", (data: NoteListData) => {
   // We want to convert this to an array of objects for each card
   for (const noteList of data.notes) {
     // If we are a spectator, copy our notes from the combined list
-    if (
-      !globals.state.playing &&
-      !globals.state.finished &&
-      noteList.name === globals.metadata.ourUsername
-    ) {
-      globals.ourNotes.clear();
-      noteList.notes.forEach((note, i) => globals.ourNotes.set(i, note));
-    }
-
+    // ^^ TODO: don't forget to implement this in reducer
     for (let i = 0; i < noteList.notes.length; i++) {
       const note = noteList.notes[i];
       globals.allNotes.get(i)!.push({
@@ -233,12 +225,7 @@ interface NoteListPlayerData {
   notes: string[];
 }
 commands.set("noteListPlayer", (data: NoteListPlayerData) => {
-  // vvv TOOD nuke soon
   // Store our notes
-  globals.ourNotes.clear();
-  data.notes.forEach((note, i) => globals.ourNotes.set(i, note));
-  console.log(data.notes);
-
   globals.store!.dispatch({
     type: "noteListPlayer",
     texts: data.notes,

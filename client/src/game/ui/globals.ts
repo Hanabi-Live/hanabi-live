@@ -60,7 +60,6 @@ export class Globals {
   finalReplayTurn = 0;
 
   // Notes feature
-  ourNotes: Map<number, string> = new Map<number, string>(); // Indexed by card order
   // "allNotes" is indexed by card order
   // It represents the notes of every player & spectator
   allNotes: Map<number, SpectatorNote[]> = new Map<number, SpectatorNote[]>();
@@ -141,7 +140,6 @@ export class Globals {
     this.replayLog = [];
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.ourNotes.clear();
     this.allNotes.clear();
     this.editingNote = null;
     this.actionOccurred = false;
