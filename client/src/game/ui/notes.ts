@@ -54,7 +54,7 @@ export function set(order: number, text: string): void {
     globals.lobby.conn!.send("note", {
       tableID: globals.lobby.tableID,
       order,
-      text,
+      note: text,
     });
   }
 
@@ -65,8 +65,8 @@ export function set(order: number, text: string): void {
 
   globals.store!.dispatch({
     type: "editNote",
-    order: order,
-    text: text,
+    order,
+    text,
   });
 
   const card = getCardOrStackBase(order);

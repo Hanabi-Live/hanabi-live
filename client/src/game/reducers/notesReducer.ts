@@ -24,8 +24,14 @@ function notesReducerFunction(
   const variant = getVariant(metadata.options.variantName);
   switch (action.type) {
     case "editNote": {
-      console.log(action.order);
       notes.ourNotes[action.order] = parseNote(variant, action.text);
+      console.log(action.order);
+      break;
+    }
+    case "noteListPlayer": {
+      action.texts.forEach((text, i) => { notes.ourNotes[i] = parseNote(variant, text); });
+      console.log(action.texts);
+      console.log(notes.ourNotes);
       break;
     }
   }

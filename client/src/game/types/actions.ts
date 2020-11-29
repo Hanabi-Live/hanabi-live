@@ -208,6 +208,7 @@ export interface ActionReceiveNote {
 
 export interface ActionNoteListPlayer {
   type: "noteListPlayer";
+  readonly texts: string[];
 }
 
 export interface ActionNoteList {

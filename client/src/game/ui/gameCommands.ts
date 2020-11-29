@@ -233,9 +233,16 @@ interface NoteListPlayerData {
   notes: string[];
 }
 commands.set("noteListPlayer", (data: NoteListPlayerData) => {
+  // vvv TOOD nuke soon
   // Store our notes
   globals.ourNotes.clear();
   data.notes.forEach((note, i) => globals.ourNotes.set(i, note));
+  console.log(data.notes);
+
+  globals.store!.dispatch({
+    type: "noteListPlayer",
+    texts: data.notes,
+  });
 
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
