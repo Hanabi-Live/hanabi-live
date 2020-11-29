@@ -1,12 +1,11 @@
 import CardIdentity from "./CardIdentity";
-import CardNote from "./CardNote";
 import ClientAction from "./ClientAction";
 import GameMetadata from "./GameMetadata";
 import GameState from "./GameState";
+import NotesState from "./NotesState";
 import PauseState from "./PauseState";
 import ReplayState from "./ReplayState";
 import Spectator from "./Spectator";
-import SpectatorNote from "./SpectatorNote";
 
 export default interface State {
   readonly visibleState: GameState | null; // Null during initialization
@@ -31,6 +30,5 @@ export default interface State {
   readonly pause: PauseState;
   readonly spectators: Spectator[];
 
-  readonly ourNotes: readonly CardNote[];
-  readonly allNotes: readonly SpectatorNote[][];
+  readonly notes: NotesState;
 }

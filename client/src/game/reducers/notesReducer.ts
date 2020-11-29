@@ -1,24 +1,35 @@
+import produce, { Draft } from "immer";
 import { parseIntSafe } from "../../misc";
 import { getVariant } from "../data/gameData";
-import { ActionEditNote } from "../types/actions";
+import { NoteAction } from "../types/actions";
 import CardIdentity from "../types/CardIdentity";
 import CardNote from "../types/CardNote";
-import { START_CARD_RANK } from "../types/constants";
 import GameMetadata from "../types/GameMetadata";
-import Variant from "../types/Variant";
-
+import NotesState from "../types/NotesState";
 import Suit from "../types/Suit";
+import Variant from "../types/Variant";
+import { START_CARD_RANK } from "../types/constants";
+
 
 // import SpectatorNote from "../types/SpectatorNote";
 
-export function editNoteReducer(
-  action: ActionEditNote,
-  metadata : GameMetadata,
-): CardNote {
-  const variant = getVariant(metadata.options.variantName);
-  return parseNote(variant, action.text);
-}
+const notesReducer = produce(notesReducerFunction, {} as NotesState);
+export default notesReducer;
 
+function notesReducerFunction(
+  notes: Draft<NotesState>,
+  action: NoteAction,
+  metadata : GameMetadata,
+) {
+  const variant = getVariant(metadata.options.variantName);
+  switch (action.type) {
+    case "editNote": {
+      console.log(action.order);
+      notes.ourNotes[action.order] = parseNote(variant, action.text);
+      break;
+    }
+  }
+}
 
 /* Originally from notes.ts */
 
