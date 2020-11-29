@@ -29,9 +29,9 @@ function get(order: number, our: boolean) {
 }
 
 // A note has been updated, so:
-// 1) send the new note to the server
-// 2) dispatch an event with the updated note
-// 3) check for new card identities
+// 1) Send the new note to the server
+// 2) Dispatch an event with the updated note
+// 3) Check for new card identities
 export function set(order: number, text: string): void {
   const oldNote = globals.state.notes.ourNotes[order].text;
   globals.lastNote = text;

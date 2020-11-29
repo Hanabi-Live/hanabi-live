@@ -185,8 +185,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     replay: { ...state.replay, states },
     cardIdentities: [],
 
-    // TODO the test data has no notes,
-    // else we could parse them here
     playing: false,
     finished: true,
     notes: {

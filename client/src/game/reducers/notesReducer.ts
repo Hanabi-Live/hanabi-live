@@ -79,8 +79,6 @@ function notesReducerFunction(
   }
 }
 
-/* Originally from notes.ts */
-
 function getNoteKeywords(note: string) {
   // Match either:
   // - zero or more characters between square brackets `[]`

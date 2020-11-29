@@ -173,8 +173,6 @@ commands.set("note", (data: NoteData) => {
   if (globals.state.playing) {
     return;
   }
-  // TODO right now the server calls the field "note"
-  //
 
   globals.store!.dispatch({
     type: "receiveNote",

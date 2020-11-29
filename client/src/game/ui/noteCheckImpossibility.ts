@@ -23,7 +23,6 @@ export function checkNoteImpossibility(
     modals.warningShow(
       "You cannot morph a stack base to have a different suit.",
     );
-    // note.possibilities = [];
     return;
   }
 
@@ -51,7 +50,6 @@ export function checkNoteImpossibility(
       `That card cannot possibly be any of ${impossibilities.join(", ")}`,
     );
   }
-  // note.possibilities = [];
 }
 
 export function possibleCardsFromNoteAndClues(
