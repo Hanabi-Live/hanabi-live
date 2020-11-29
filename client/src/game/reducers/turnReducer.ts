@@ -43,7 +43,9 @@ function turnReducerFunction(
 
     case "discard": {
       turn.cardsPlayedOrDiscardedThisTurn += 1;
-      turn.cardsDiscardedThisTurn += 1;
+      if (!action.failed) {
+        turn.cardsDiscardedThisTurn += 1;
+      }
 
       if (currentState.cardsRemainingInTheDeck === 0) {
         turn.segment! += 1;
