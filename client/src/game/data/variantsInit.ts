@@ -4,7 +4,7 @@ import { isNameUpOrDown } from "../rules/variant";
 import Color from "../types/Color";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
-import { createIdentityNotePattern } from "../ui/noteIdentityPattern";
+import { createIdentityNotePattern } from "../reducers/noteIdentity.ts";
 
 // "VariantJSON" is very similar to "Variant",
 // but the latter is comprised of some more complicated objects

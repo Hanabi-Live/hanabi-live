@@ -1,13 +1,10 @@
 // Users can right-click cards to record information on them
 
 import * as variantRules from "../rules/variant";
-import CardNote from "../types/CardNote";
 import { STACK_BASE_RANK } from "../types/constants";
-import Variant from "../types/Variant";
 import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
-import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 // Get the contents of the note tooltip
 function get(order: number, our: boolean) {
@@ -71,87 +68,6 @@ export function set(order: number, text: string): void {
 
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
-}
-
-// TODO vvv delete
-function getNoteKeywords(note: string) {
-  // Match either:
-  // - zero or more characters between square brackets `[]`
-  //   - \[(.*?)\]
-  // - zero or more non-pipe non-bracket characters between a pipe `|` and the end of the note
-  //   - \|([^[|]*$)
-  // - one or more non-pipe non-bracket characters between the start and end of the note
-  //   - (^[^[|]+$)
-  const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
-  const keywords = [];
-
-  let match = regexp.exec(note);
-  while (match !== null) {
-    if (match[1] !== undefined) {
-      keywords.push(match[1].trim());
-    } else if (match[2] !== undefined) {
-      keywords.push(match[2].trim());
-    } else {
-      keywords.push(match[3].trim());
-    }
-    match = regexp.exec(note);
-  }
-
-  return keywords;
-}
-
-// TODO vvv delete
-const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
-  keywords.some((k) => patterns.some((pattern) => k === pattern));
-
-// TODO vvv delete
-export function parseNote(variant: Variant, text: string): CardNote {
-  // Make all letters lowercase to simply the matching logic below
-  // and remove all leading and trailing whitespace
-  const fullNote = text.toLowerCase().trim();
-  const keywords = getNoteKeywords(fullNote);
-  const possibilities = getPossibilitiesFromKeywords(variant, keywords);
-
-  const chopMoved = checkNoteKeywordsForMatch(
-    [
-      "cm",
-      "chop move",
-      "chop moved",
-      "5cm",
-      "e5cm",
-      "tcm",
-      "tccm",
-      "sdcm",
-      "sbpcm",
-      "ocm",
-      "tocm",
-      "utfcm",
-      "utbcm",
-    ],
-    keywords,
-  );
-  const finessed = checkNoteKeywordsForMatch(["f", "hf", "pf", "gd"], keywords);
-  const knownTrash = checkNoteKeywordsForMatch(
-    ["kt", "trash", "stale", "bad"],
-    keywords,
-  );
-  const needsFix = checkNoteKeywordsForMatch(
-    ["fix", "fixme", "needs fix"],
-    keywords,
-  );
-  const blank = checkNoteKeywordsForMatch(["blank"], keywords);
-  const unclued = checkNoteKeywordsForMatch(["unclued"], keywords);
-
-  return {
-    possibilities,
-    chopMoved,
-    finessed,
-    knownTrash,
-    needsFix,
-    blank,
-    unclued,
-    text,
-  };
 }
 
 export function update(card: HanabiCard): void {
