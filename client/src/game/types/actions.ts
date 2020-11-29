@@ -22,8 +22,7 @@ export type GameAction =
   | ActionDiscard
   | ActionDraw
   | ActionGameOver
-  | ActionNoteList
-  | ActionNoteSingle
+  | ActionNote
   | ActionPlay
   | ActionPlayerTimes
   | ActionStrike
@@ -152,14 +151,8 @@ export interface ActionGameOver {
   readonly playerIndex: number;
 }
 
-export interface ActionNoteSingle {
-  type: "notesingle";
-  readonly order: number;
-  readonly note: string;
-}
-export interface ActionNoteList {
-  type: "notelist";
-  readonly notelist: string[];
+export interface ActionNote {
+  type: "note";
 }
 
 export interface ActionPlay {

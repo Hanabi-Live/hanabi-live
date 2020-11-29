@@ -68,9 +68,7 @@ export function set(order: number, note: string): void {
   card.checkSpecialNote();
 
   globals.store!.dispatch({
-    type: "notesingle",
-    order: order,
-    note: note,
+    type: "note",
   });
 }
 
