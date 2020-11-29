@@ -19,6 +19,7 @@ export default interface StatsState {
 
   // For future efficiency
   readonly cluesStillUsable: number | null;
+  readonly cardsGottenByNotes: number | null;
   // (cardsNotGotten is simply "maxScore - cardsGotten")
   // (future efficiency is simply "cardsNotGotten / cluesStillUsable")
 

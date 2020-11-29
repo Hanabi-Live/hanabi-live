@@ -7,6 +7,7 @@ import * as tooltips from "../../tooltips";
 // onEfficiencyChanged updates the labels on the right-hand side of the screen
 export function onEfficiencyChanged(data: {
   cardsGotten: number;
+  cardsGottenByNotes: number | null;
   potentialCluesLost: number;
   maxScore: number;
   cluesStillUsable: number | null;
@@ -44,24 +45,16 @@ export function onEfficiencyChanged(data: {
     shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
   }
 
-  let { cardsGotten } = data;
+  let { cardsGotten, cardsGottenByNotes } = data;
+  if (cardsGottenByNotes !== null) {
+    cardsGotten += cardsGottenByNotes;
+  }
   let cardsGottenModified = false;
   if (shouldModifyEff && globals.efficiencyModifier !== 0) {
     // The user has specified a manual efficiency modification
     // (e.g. to account for a card that is Finessed)
     cardsGotten += globals.efficiencyModifier;
     cardsGottenModified = true;
-  }
-
-  let cardsGottenByNotes: number | string;
-  if (!globals.state.finished && globals.state.playing) {
-    cardsGottenByNotes = 0;
-    for (const card of globals.deck) {
-      cardsGottenByNotes += card.notesEfficiencyModifier();
-    }
-    cardsGotten += cardsGottenByNotes;
-  } else {
-    cardsGottenByNotes = "-";
   }
 
   const cardsNotGotten = data.maxScore - cardsGotten;
@@ -118,7 +111,9 @@ export function onEfficiencyChanged(data: {
   }
   const tooltipContent = `
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
-    ${formatLine("Current cards noted as gotten", cardsGottenByNotes)}
+    ${formatLine(
+      "Current cards noted as gotten",
+      cardsGottenByNotes === null ? "-" : cardsGottenByNotes)}
     ${formatLine("Current cards gotten modifier", globals.efficiencyModifier)}
     ${formatLine("Potential clues lost", data.potentialCluesLost)}
     ${formatLine(

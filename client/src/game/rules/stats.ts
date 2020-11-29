@@ -153,7 +153,7 @@ export function cardsGotten(
       // (and failed discards count as played for the purposes of "Throw It in a Hole" variants)
       currentCardsGotten += 1;
     } else if (
-      typeof card.location === "number" && // This card is in a player's hand
+      cardRules.isInPlayerHand(card) &&
       cardRules.isClued(card) &&
       !cardRules.allPossibilitiesTrash(
         card,
@@ -176,6 +176,48 @@ export function cardsGotten(
 
   return currentCardsGotten;
 }
+
+export function cardsGottenByNotes(
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  playing: boolean,
+  variant: Variant,
+): number {
+  if (!playing) {
+    return 0;
+  }
+  let currentCardsGottenByNotes = 0;
+
+  for (const card of deck) {
+    if (
+      cardRules.isInPlayerHand(card) &&
+      !cardRules.allPossibilitiesTrash(
+        card,
+        deck,
+        playStacks,
+        playStackDirections,
+        variant,
+      )
+    ) {
+      // Original contribution
+      const a = cardRules.isClued(card) ? 1 : 0;
+
+      // Contribution desired based on notes
+      const b =
+        !card.note.knownTrash &&
+        (card.note.finessed ||
+          (cardRules.isClued(card) && !card.note.unclued))
+          ? 1
+          : 0;
+
+      currentCardsGottenByNotes += b-a;
+    }
+  }
+  return currentCardsGottenByNotes;
+}
+
+
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
 export function minEfficiency(

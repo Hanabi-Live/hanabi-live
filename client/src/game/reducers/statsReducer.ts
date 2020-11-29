@@ -102,6 +102,13 @@ function statsReducerFunction(
     stats.maxScore,
     variant,
   );
+  stats.cardsGottenByNotes = statsRules.cardsGottenByNotes(
+    currentState.deck,
+    currentState.playStacks,
+    currentState.playStackDirections,
+    playing,
+    variant,
+  );
 
   // Handle future efficiency calculation
   const scorePerStack: number[] = Array.from(

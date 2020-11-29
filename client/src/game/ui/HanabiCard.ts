@@ -526,36 +526,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
   }
 
-  notesEfficiencyModifier(): number {
-    if (globals.state.finished || typeof this.state.location !== "number") {
-      return 0;
-    }
-    if (
-      cardRules.allPossibilitiesTrash(
-        this.state,
-        globals.state.ongoingGame.deck,
-        globals.state.ongoingGame.playStacks,
-        globals.state.ongoingGame.playStackDirections,
-        this.variant,
-      )
-    ) {
-      return 0;
-    }
-
-    // Original contribution
-    const a = cardRules.isClued(this.state) ? 1 : 0;
-
-    // Contribution desired based on notes
-    const b =
-      !this.note.knownTrash &&
-      (this.note.finessed ||
-        (cardRules.isClued(this.state) && !this.note.unclued))
-        ? 1
-        : 0;
-
-    return b - a;
-  }
-
   // -----------
   // Pip methods
   // -----------

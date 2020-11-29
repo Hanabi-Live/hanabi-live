@@ -101,6 +101,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       finalRoundEffectivelyStarted: false,
 
       cardsGotten: 0,
+      cardsGottenByNotes: 0,
       potentialCluesLost: 0,
 
       cluesStillUsable,
