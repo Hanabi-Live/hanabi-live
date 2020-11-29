@@ -179,7 +179,7 @@ export function cardsGotten(
 }
 
 export function cardsGottenByNotes(
-  notes: Map<number, string>,
+  notes: string[],
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
@@ -191,7 +191,7 @@ export function cardsGottenByNotes(
   }
   let currentCardsGottenByNotes = 0;
 
-  deck.forEach((card, index) => {
+  deck.forEach((card, order) => {
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -205,7 +205,7 @@ export function cardsGottenByNotes(
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
       // vvv maybe the list of notes should be part of the state
-      const note = parseNote(variant, notes.get(index) ?? "");
+      const note = parseNote(variant, notes[order] ?? "");
 
       // Contribution desired based on notes
       const b =

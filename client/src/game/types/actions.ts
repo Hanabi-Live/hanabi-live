@@ -159,7 +159,7 @@ export interface ActionNoteSingle {
 }
 export interface ActionNoteList {
   type: "notelist";
-  readonly notes: Map<number, string>;
+  readonly notelist: string[];
 }
 
 export interface ActionPlay {

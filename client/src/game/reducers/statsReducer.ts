@@ -59,12 +59,13 @@ function statsReducerFunction(
     }
 
     case "notelist": {
-      stats.notes = action.notes;
+      stats.notes = action.notelist;
       break;
     }
 
     case "notesingle": {
-      stats.notes.set(action.order, action.note);
+      stats.notes[action.order] = action.note;
+      console.log(stats.notes, action.order, action.note);
       break;
     }
 
@@ -112,6 +113,7 @@ function statsReducerFunction(
     stats.maxScore,
     variant,
   );
+  console.log(currentState.stats.notes);
   stats.cardsGottenByNotes = statsRules.cardsGottenByNotes(
     currentState.stats.notes,
     currentState.deck,

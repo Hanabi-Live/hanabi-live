@@ -255,7 +255,7 @@ commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   if (!globals.state.finished) {
     globals.store!.dispatch({
       type: "notelist",
-      notes: globals.ourNotes,
+      notelist: data.notes,
     });
   }
 });

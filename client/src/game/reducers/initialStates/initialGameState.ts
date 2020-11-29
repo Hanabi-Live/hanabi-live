@@ -102,7 +102,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
 
       cardsGotten: 0,
       cardsGottenByNotes: 0,
-      notes: new Map<number, string>(), // indexed by card order
+      notes: new Array(deckRules.totalCards(variant)).fill('') as string[], // indexed by card order
       potentialCluesLost: 0,
 
       cluesStillUsable,
