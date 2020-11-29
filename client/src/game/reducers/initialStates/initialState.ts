@@ -32,8 +32,10 @@ export default function initialState(metadata: GameMetadata): State {
     datetimeStarted: null,
     datetimeFinished: null,
 
+    // because of play stack notes (e.g. throw it in a hole)
+    // need a slightly larger array
     notes: {
-      ourNotes: initArray(totalCards, {
+      ourNotes: initArray(totalCards + variant.suits.length + 1, {
           possibilities: [],
           chopMoved: false,
           needsFix: false,
@@ -43,7 +45,7 @@ export default function initialState(metadata: GameMetadata): State {
           unclued: false,
           text: '',
       }),
-      allNotes: initArray(totalCards, []),
+      allNotes: initArray(totalCards + variant.suits.length + 1, []),
     },
 
     metadata,
