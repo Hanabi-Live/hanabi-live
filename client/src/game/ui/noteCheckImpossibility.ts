@@ -6,7 +6,7 @@ import { STACK_BASE_RANK, START_CARD_RANK } from "../types/constants";
 import Variant from "../types/Variant";
 import globals from "./globals";
 
-export default function checkNoteImpossibility(
+export function checkNoteImpossibility(
   variant: Variant,
   cardState: CardState,
   note: CardNote,
@@ -23,7 +23,7 @@ export default function checkNoteImpossibility(
     modals.warningShow(
       "You cannot morph a stack base to have a different suit.",
     );
-    note.possibilities = [];
+    // note.possibilities = [];
     return;
   }
 
@@ -51,5 +51,23 @@ export default function checkNoteImpossibility(
       `That card cannot possibly be any of ${impossibilities.join(", ")}`,
     );
   }
-  note.possibilities = [];
+  // note.possibilities = [];
+}
+
+export function possibleCardsFromNoteAndClues(
+  note: CardNote,
+  state: CardState,
+): ReadonlyArray<readonly [number, number]> {
+  const possibilities_with_notes = note.possibilities.filter(
+    ([suitIndexA, rankA]) =>
+    state.possibleCardsFromClues.findIndex(
+      ([suitIndexB, rankB]) =>
+      suitIndexA === suitIndexB && rankA === rankB,
+    ) !== -1,
+  );
+
+  if (possibilities_with_notes.length === 0) {
+    return state.possibleCardsFromClues;
+  }
+  return possibilities_with_notes;
 }
