@@ -261,7 +261,7 @@ function gameStateReducerFunction(
     }
   }
 
-  if (action.type == "noteList" || action.type == "receiveNote") {
+  if (action.type === "noteList" || action.type === "receiveNote") {
     // This has no effect, so don't bother computing anything
     return;
   }
