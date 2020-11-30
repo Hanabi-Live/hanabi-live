@@ -13,6 +13,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/sasha-s/go-deadlock"
 )
 
 var (
@@ -28,12 +29,15 @@ var (
 	usingSentry      bool
 	models           *Models
 	datetimeStarted  time.Time
-	tables           = NewTables()
+	tables           = NewTables() // An object that tracks ongoing tables
 )
 
 func main() {
 	// Initialize logging (in "logger.go")
 	logger = NewLogger()
+
+	// Configure the deadlock detector
+	deadlock.Opts.DisableLockOrderDetection = true
 
 	// Welcome message
 	startText := "| Starting " + ProjectName + " |"

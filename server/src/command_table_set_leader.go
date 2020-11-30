@@ -5,7 +5,7 @@ import (
 )
 
 type NewLeader struct {
-	ID       int
+	UserID   int
 	Username string
 	Index    int
 }
@@ -19,11 +19,11 @@ type NewLeader struct {
 //   name: 'Alice,
 // }
 func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -51,7 +51,7 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 		for _, sp := range t.Spectators {
 			if normalizeString(sp.Name) == normalizedUsername {
 				newLeader = &NewLeader{
-					ID:       sp.ID,
+					UserID:   sp.UserID,
 					Username: sp.Name,
 					Index:    -1,
 				}
@@ -62,7 +62,7 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 		for i, p := range t.Players {
 			if normalizeString(p.Name) == normalizedUsername {
 				newLeader = &NewLeader{
-					ID:       p.ID,
+					UserID:   p.UserID,
 					Username: p.Name,
 					Index:    i,
 				}
@@ -81,11 +81,17 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	tableSetLeader(ctx, s, t, newLeader)
+	tableSetLeader(ctx, s, d, t, newLeader)
 }
 
-func tableSetLeader(ctx context.Context, s *Session, t *Table, newLeader *NewLeader) {
-	t.Owner = newLeader.ID
+func tableSetLeader(
+	ctx context.Context,
+	s *Session,
+	d *CommandData,
+	t *Table,
+	newLeader *NewLeader,
+) {
+	t.OwnerID = newLeader.UserID
 
 	if t.Replay {
 		t.NotifyReplayLeader()
@@ -102,6 +108,6 @@ func tableSetLeader(ctx context.Context, s *Session, t *Table, newLeader *NewLea
 		}
 
 		msg := s.Username + " has passed table ownership to: " + newLeader.Username
-		chatServerSend(ctx, msg, t.GetRoomName())
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 	}
 }

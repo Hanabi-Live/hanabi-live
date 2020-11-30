@@ -141,8 +141,7 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 	}
 
 	// Check for commands
-	chatCommand(ctx, s, d, nil)
-	// (we pass nil as the third argument here because there is no associated table)
+	chatCommand(ctx, s, d, nil) // We pass nil because there is no associated table
 }
 
 func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
@@ -166,11 +165,11 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	t, exists := getTableAndLock(ctx, s, tableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, tableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 

@@ -27,7 +27,7 @@ export class Globals {
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
   friends: string[] = [];
   shuttingDown = false;
-  datetimeShutdownInit = 0;
+  datetimeShutdownInit = new Date();
   maintenanceMode = false;
 
   userMap: Map<number, User> = new Map<number, User>(); // Keys are IDs

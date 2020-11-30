@@ -43,7 +43,7 @@ func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 	preGameTableIDs := make([]uint64, 0)
 	spectatingTableIDs := make([]uint64, 0)
 
-	tableList := tables.GetList()
+	tableList := tables.GetList(true)
 	for _, t := range tableList {
 		t.Lock(ctx)
 
@@ -89,12 +89,14 @@ func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 			TableID: spectatingTableID,
 		})
 
-		// Additionally, we also want to add this user to the map of disconnected spectators
-		// (so that they will be automatically reconnected to the game if/when they reconnect)
-		t, exists := getTableAndLock(ctx, s, spectatingTableID, true)
-		if exists {
-			t.DisconSpectators[s.UserID] = struct{}{}
-			t.Unlock(ctx)
+		// They might have been the last person spectating the table
+		// If they were, the table will no longer exist
+		// Check to see if the table still exists
+		if _, ok := getTable(s, spectatingTableID, true); ok {
+			// We want to add this relationship to the map of disconnected spectators
+			// (so that the user will be automatically reconnected to the game if/when they
+			// reconnect)
+			tables.SetDisconSpectating(s.UserID, spectatingTableID)
 		}
 	}
 }

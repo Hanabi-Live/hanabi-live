@@ -15,11 +15,11 @@ import (
 //   // ('pause-queue' will automatically pause the game when it gets to their turn)
 // }
 func commandPause(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 	g := t.Game
@@ -129,7 +129,7 @@ func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerInde
 		msg += "un"
 	}
 	msg += "paused the game."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "pause" message, since it is superfluous

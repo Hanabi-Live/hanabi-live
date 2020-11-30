@@ -1,9 +1,10 @@
-name: Continuous Integration Tasks
+name: CI
 
 on: [push, pull_request]
 
 jobs:
   client_build:
+    name: Client / Build (Compile TypeScript)
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -22,6 +23,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   client_lint:
+    name: Client / Lint (ESLint)
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -42,6 +44,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   client_test:
+    name: Client / Test (Jest)
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -62,6 +65,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   server_build:
+    name: Server / Build (Compile Go)
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -72,6 +76,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   server_lint:
+    name: Server / Lint (golangci-lint)
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -84,6 +89,7 @@ jobs:
           working-directory: ${{ env.working-directory }}/src
 
   spell_check:
+    name: Spell Check
     runs-on: ubuntu-latest
     env:
       working-directory: ./spell_check
@@ -102,6 +108,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   discord:
+    name: Discord Failure Notification
     needs: [client_build, client_lint, client_test, server_build, server_lint, spell_check]
     if: always() # This is needed to always run this job, even if the other jobs fail
     runs-on: ubuntu-latest

@@ -27,9 +27,8 @@ type WebsocketConnectData struct {
 	FriendsList   []string
 
 	// Information about their current activity
-	PlayingInOngoingGameTableID uint64
-	SpectatingTableID           uint64
-	SpectatingDatabaseID        int
+	PlayingAtTables       []uint64
+	DisconSpectatingTable uint64
 }
 
 // websocketConnect is fired when a new Melody WebSocket session is established
@@ -200,17 +199,13 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Information about their current activity
 	// ----------------------------------------
 
-	// Check to see if they are currently playing in an ongoing game
-	joinedTable := tables.FindUserJoinedTable(ctx, userID, 0) // We pass 0 as a null value
-	if joinedTable != nil {
-		data.PlayingInOngoingGameTableID = joinedTable.ID
-	}
+	// We must acquire the tables lock before calling the below functions
+	tables.RLock()
+	defer tables.RUnlock()
 
-	// Check to see if they are were spectating in a shared replay before they disconnected
-	spectatingTable := tables.FindUserDisconSpectatorTable(ctx, userID, 0) // We pass 0 as a null value
-	if spectatingTable != nil {
-		data.SpectatingTableID = spectatingTable.ID
-		data.SpectatingDatabaseID = spectatingTable.ExtraOptions.DatabaseID
+	data.PlayingAtTables = tables.GetTablesUserPlaying(userID)
+	if tableID, ok := tables.GetDisconSpectatingTable(userID); ok {
+		data.DisconSpectatingTable = tableID
 	}
 
 	return data
@@ -228,9 +223,8 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 		Settings      Settings `json:"settings"`
 		Friends       []string `json:"friends"`
 
-		PlayingInOngoingGameTableID uint64 `json:"playingInOngoingGameTableID"`
-		SpectatingTableID           uint64 `json:"spectatingTableID"`
-		SpectatingDatabaseID        int    `json:"spectatingDatabaseID"`
+		PlayingAtTables       []uint64 `json:"playingAtTables"`
+		DisconSpectatingTable uint64   `json:"disconSpectatingTable"`
 
 		RandomTableName      string    `json:"randomTableName"`
 		ShuttingDown         bool      `json:"shuttingDown"`
@@ -260,9 +254,8 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 
 		// Inform the user that they were previously playing or spectating a game
 		// (so that they can choose to rejoin it)
-		PlayingInOngoingGameTableID: data.PlayingInOngoingGameTableID,
-		SpectatingTableID:           data.SpectatingTableID,
-		SpectatingDatabaseID:        data.SpectatingDatabaseID,
+		PlayingAtTables:       data.PlayingAtTables,
+		DisconSpectatingTable: data.DisconSpectatingTable,
 
 		// Provide them with a random table name
 		// (which will be used by default on the first table that they create)
@@ -289,7 +282,7 @@ func websocketConnectUserList(s *Session) {
 // websocketConnectTableList sends a "tableList" message
 // (this is much more performant than sending an individual "table" message for every table)
 func websocketConnectTableList(ctx context.Context, s *Session) {
-	tableList := tables.GetList()
+	tableList := tables.GetList(true)
 	tableMessageList := make([]*TableMessage, 0)
 	for _, t := range tableList {
 		t.Lock(ctx)

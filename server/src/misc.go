@@ -104,6 +104,16 @@ func getVersion() int {
 	}
 }
 
+func indexOf(value uint64, slice []uint64) int {
+	for i, v := range slice {
+		if v == value {
+			return i
+		}
+	}
+
+	return -1
+}
+
 func intInSlice(a int, slice []int) bool {
 	for _, b := range slice {
 		if b == a {

@@ -13,11 +13,11 @@ import (
 //   msg: 'inverted priority finesse',
 // }
 func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -82,5 +82,5 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	msg := s.Username + " has deleted a game tag of \"" + d.Msg + "\"."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }

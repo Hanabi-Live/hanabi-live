@@ -9,18 +9,19 @@ import (
 // /suggest
 func chatSuggest(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(ctx, NotReplayFail, d.Room)
+		chatServerSend(ctx, NotReplayFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	// Validate that they only sent one argument
 	if len(d.Args) != 1 {
-		chatServerSend(ctx, "The format of the /suggest command is: /suggest [turn]", d.Room)
+		msg := "The format of the /suggest command is: /suggest [turn]"
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -33,7 +34,7 @@ func chatSuggest(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		} else {
 			msg = "The /suggest command only accepts integers."
 		}
-		chatServerSend(ctx, msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -43,12 +44,12 @@ func chatSuggest(ctx context.Context, s *Session, d *CommandData, t *Table) {
 // /tags
 func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(ctx, NotReplayFail, d.Room)
+		chatServerSend(ctx, NotReplayFail, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -64,7 +65,8 @@ func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	if len(tags) == 0 {
-		chatServerSend(ctx, "There are not yet any tags for this game.", d.Room)
+		msg := "There are not yet any tags for this game."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -72,9 +74,10 @@ func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// lowercase
 	sort.Strings(tags)
 
-	chatServerSend(ctx, "The list of tags for this game are as follows:", d.Room)
+	msg := "The list of tags for this game are as follows:"
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	for i, tag := range tags {
 		msg := strconv.Itoa(i+1) + ") " + tag
-		chatServerSend(ctx, msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 }

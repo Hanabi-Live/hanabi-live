@@ -11,7 +11,7 @@ import (
 // Print out a bunch of debug information about the current state of the server
 func print(ctx context.Context) {
 	printCurrentUsers()
-	tableList := tables.GetList()
+	tableList := tables.GetList(true)
 	printTableStats(ctx, tableList)
 	printTables(ctx, tableList)
 }
@@ -121,7 +121,6 @@ func printTables(ctx context.Context, tableList []*Table) {
 
 		printTablePlayers(t)
 		printTableSpectators(t)
-		printTableDisconSpectators(t)
 		printTableOptions(t)
 		printTableExtraOptions(t)
 		printTableChat(t)
@@ -139,7 +138,7 @@ func printTablePlayers(t *Table) {
 	} else {
 		for j, p := range t.Players { // This is a []*Player
 			logger.Debug("        " + strconv.Itoa(j) + " - " +
-				"User ID: " + strconv.Itoa(p.ID) + ", " +
+				"User ID: " + strconv.Itoa(p.UserID) + ", " +
 				"Username: " + p.Name + ", " +
 				"Present: " + strconv.FormatBool(p.Present))
 		}
@@ -157,26 +156,11 @@ func printTableSpectators(t *Table) {
 	} else {
 		for j, sp := range t.Spectators { // This is a []*Spectator
 			logger.Debug("        " + strconv.Itoa(j) + " - " +
-				"User ID: " + strconv.Itoa(sp.ID) + ", " +
+				"User ID: " + strconv.Itoa(sp.UserID) + ", " +
 				"Username: " + sp.Name)
 		}
 		if len(t.Spectators) == 0 {
 			logger.Debug("        [no spectators]")
-		}
-	}
-	logger.Debug("\n")
-}
-
-func printTableDisconSpectators(t *Table) {
-	logger.Debug("    DisconSpectators (" + strconv.Itoa(len(t.DisconSpectators)) + "):")
-	if t.DisconSpectators == nil {
-		logger.Debug("      [DisconSpectators is nil; this should never happen]")
-	} else {
-		for k := range t.DisconSpectators { // This is a map[int]struct{}
-			logger.Debug("        User ID: " + strconv.Itoa(k))
-		}
-		if len(t.DisconSpectators) == 0 {
-			logger.Debug("        [no disconnected spectators]")
 		}
 	}
 	logger.Debug("\n")

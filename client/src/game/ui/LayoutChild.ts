@@ -13,7 +13,7 @@ import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import isOurTurn from "./isOurTurn";
-import * as noteIdentity from "./noteIdentity";
+import * as noteIdentity from "../reducers/noteIdentity";
 import PlayStack from "./PlayStack";
 import * as turn from "./turn";
 

@@ -19,11 +19,11 @@ func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	// not exist, so we pass "nil" instead of "s" to the "getTableAndLock()" function
 	// This is because in some cases, network latency will cause the "unattend" message to get to
 	// the server after the respective table has already been deleted
-	t, exists := getTableAndLock(ctx, nil, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, nil, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -52,13 +52,13 @@ func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	t.NotifyChatTyping(s.Username, false)
 
 	if playerIndex != -1 && !t.Replay {
-		tableUnattendPlayer(s, t, playerIndex)
+		tableUnattendPlayer(ctx, s, d, t, playerIndex)
 	} else {
-		tableUnattendSpectator(t, spectatorIndex)
+		tableUnattendSpectator(ctx, s, d, t, spectatorIndex)
 	}
 }
 
-func tableUnattendPlayer(s *Session, t *Table, i int) {
+func tableUnattendPlayer(ctx context.Context, s *Session, d *CommandData, t *Table, i int) {
 	// Set their "present" variable to false, which will turn their name red
 	// (or set them to "AWAY" if the game has not started yet)
 	p := t.Players[i]
@@ -71,7 +71,14 @@ func tableUnattendPlayer(s *Session, t *Table, i int) {
 	}
 }
 
-func tableUnattendSpectator(t *Table, j int) {
+func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *Table, j int) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
 	// If this is an ongoing game, create a list of any notes that they wrote
 	cardOrderList := make([]int, 0)
 	if !t.Replay {
@@ -83,8 +90,8 @@ func tableUnattendSpectator(t *Table, j int) {
 		}
 	}
 
-	// Remove them from the spectators slice
 	t.Spectators = append(t.Spectators[:j], t.Spectators[j+1:]...)
+	tables.DeleteSpectating(s.UserID, t.ID) // Keep track of user to table relationships
 
 	if t.Replay && len(t.Spectators) == 0 {
 		// This was the last person to leave the replay, so delete it

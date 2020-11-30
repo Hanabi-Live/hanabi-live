@@ -8,7 +8,7 @@ import * as arrows from "./arrows";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
-import * as noteIdentity from "./noteIdentity";
+import * as noteIdentity from "../reducers/noteIdentity";
 import * as notes from "./notes";
 import * as replay from "./replay";
 

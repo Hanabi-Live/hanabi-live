@@ -174,8 +174,11 @@ commands.set("note", (data: NoteData) => {
     return;
   }
 
-  // Store the combined notes for this card
-  globals.allNotes.set(data.order, data.notes);
+  globals.store!.dispatch({
+    type: "receiveNote",
+    order: data.order,
+    notes: data.notes,
+  });
 
   // Set the note indicator
   const card = getCardOrStackBase(data.order);
@@ -195,34 +198,17 @@ interface NoteList {
   notes: string[];
 }
 commands.set("noteList", (data: NoteListData) => {
-  // Reset any existing notes
-  // (we could be getting a fresh copy of all notes after an ongoing game has ended)
-  for (let i = 0; i < globals.allNotes.size; i++) {
-    globals.allNotes.set(i, []);
-  }
-
-  // Data comes from the server as an array of player & spectator notes
-  // We want to convert this to an array of objects for each card
+  const names = [] as string[];
+  const noteTextLists = [] as string[][];
   for (const noteList of data.notes) {
-    // If we are a spectator, copy our notes from the combined list
-    if (
-      !globals.state.playing &&
-      !globals.state.finished &&
-      noteList.name === globals.metadata.ourUsername
-    ) {
-      globals.ourNotes.clear();
-      noteList.notes.forEach((note, i) => globals.ourNotes.set(i, note));
-    }
-
-    for (let i = 0; i < noteList.notes.length; i++) {
-      const note = noteList.notes[i];
-      globals.allNotes.get(i)!.push({
-        name: noteList.name,
-        note,
-      });
-    }
+    names.push(noteList.name);
+    noteTextLists.push(noteList.notes);
   }
-
+  globals.store!.dispatch({
+    type: "noteList",
+    names,
+    noteTextLists,
+  });
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
 });
@@ -234,8 +220,10 @@ interface NoteListPlayerData {
 }
 commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   // Store our notes
-  globals.ourNotes.clear();
-  data.notes.forEach((note, i) => globals.ourNotes.set(i, note));
+  globals.store!.dispatch({
+    type: "noteListPlayer",
+    texts: data.notes,
+  });
 
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
@@ -473,8 +461,8 @@ function initStateStore(data: InitData) {
   globals.store.dispatch({
     type: "init",
     spectating: data.spectating,
-    datetimeStarted: data.datetimeStarted,
-    datetimeFinished: data.datetimeFinished,
+    datetimeStarted: data.datetimeStarted.toString(),
+    datetimeFinished: data.datetimeFinished.toString(),
     replay: data.replay,
     sharedReplay: data.sharedReplay,
     databaseID: data.databaseID,

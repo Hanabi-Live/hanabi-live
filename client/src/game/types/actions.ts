@@ -3,6 +3,7 @@ import ClientAction from "./ClientAction";
 import EndCondition from "./EndCondition";
 import MsgClue from "./MsgClue";
 import Spectator from "./Spectator";
+import SpectatorNote from "./SpectatorNote";
 
 export type Action =
   | ActionInit
@@ -25,7 +26,14 @@ export type GameAction =
   | ActionPlay
   | ActionPlayerTimes
   | ActionStrike
-  | ActionTurn;
+  | ActionTurn
+  | NoteAction;
+
+export type NoteAction =
+  | ActionEditNote
+  | ActionNoteList
+  | ActionNoteListPlayer
+  | ActionReceiveNote;
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
@@ -183,6 +191,33 @@ export interface ActionTurn {
   type: "turn";
   readonly num: number;
   readonly currentPlayerIndex: number;
+}
+
+// ------------
+// Note actions
+// ------------
+
+export interface ActionEditNote {
+  type: "editNote";
+  readonly order: number;
+  readonly text: string;
+}
+
+export interface ActionReceiveNote {
+  type: "receiveNote";
+  readonly order: number;
+  readonly notes: SpectatorNote[];
+}
+
+export interface ActionNoteListPlayer {
+  type: "noteListPlayer";
+  readonly texts: string[];
+}
+
+export interface ActionNoteList {
+  type: "noteList";
+  readonly names: string[];
+  readonly noteTextLists: string[][];
 }
 
 // --------------

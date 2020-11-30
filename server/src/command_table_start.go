@@ -17,16 +17,16 @@ import (
 //   tableID: 5,
 // }
 func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
 	// Validate that this is the owner of the table
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		s.Warning("Only the owner of a table can start the game.")
 		return
 	}
@@ -126,7 +126,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		seedMap := make(map[string]struct{})
 		for _, p := range t.Players {
 			var seeds []string
-			if v, err := models.Games.GetPlayerSeeds(p.ID, variant.ID); err != nil {
+			if v, err := models.Games.GetPlayerSeeds(p.UserID, variant.ID); err != nil {
 				logger.Error("Failed to get the past seeds for \""+s.Username+"\":", err)
 				s.Error(StartGameFail)
 				return
@@ -213,7 +213,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		if p.Present {
 			p.Present = false
 		} else {
-			listOfAwayPlayers = append(listOfAwayPlayers, p.ID)
+			listOfAwayPlayers = append(listOfAwayPlayers, p.UserID)
 		}
 	}
 
@@ -242,7 +242,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Send a "tableStart" message to everyone in the game
 	for _, p := range t.Players {
 		// If a player is back in the lobby, then don't automatically force them into the game
-		if !intInSlice(p.ID, listOfAwayPlayers) {
+		if !intInSlice(p.UserID, listOfAwayPlayers) {
 			p.Session.NotifyTableStart(t)
 		}
 	}
@@ -287,11 +287,12 @@ func emulateActions(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		p := t.Players[g.ActivePlayerIndex]
 
 		commandAction(ctx, p.Session, &CommandData{ // nolint: exhaustivestruct
-			TableID: t.ID,
-			Type:    action.Type,
-			Target:  action.Target,
-			Value:   action.Value,
-			NoLock:  true,
+			TableID:      t.ID,
+			Type:         action.Type,
+			Target:       action.Target,
+			Value:        action.Value,
+			NoTableLock:  true,
+			NoTablesLock: d.NoTablesLock,
 		})
 
 		if g.InvalidActionOccurred {

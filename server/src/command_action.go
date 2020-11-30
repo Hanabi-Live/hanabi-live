@@ -38,11 +38,11 @@ func actionsFunctionsInit() {
 //   value: 0,
 // }
 func commandAction(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 	g := t.Game
@@ -190,7 +190,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	if g.EndCondition == EndConditionInProgress {
 		logger.Info(t.GetName() + "It is now " + nextPlayer.Name + "'s turn.")
 	} else {
-		g.End()
+		g.End(ctx, d)
 		return
 	}
 
@@ -206,9 +206,9 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 		if nextPlayer.RequestedPause {
 			nextPlayer.RequestedPause = false
 			commandPause(ctx, nextPlayerSession, &CommandData{ // nolint: exhaustivestruct
-				TableID: t.ID,
-				Setting: "pause",
-				NoLock:  true,
+				TableID:     t.ID,
+				Setting:     "pause",
+				NoTableLock: true,
 			})
 		}
 	}

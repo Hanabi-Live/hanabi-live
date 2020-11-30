@@ -37,11 +37,11 @@ func replayActionsFunctionsInit() {
 //   name: 'Alice', // Optional
 // }
 func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -59,7 +59,7 @@ func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that this person is leading the shared replay
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		s.Warning("You cannot send a shared replay action unless you are the leader.")
 		return
 	}

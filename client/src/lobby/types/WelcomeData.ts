@@ -8,10 +8,12 @@ export default interface WelcomeData {
   firstTimeUser: boolean;
   settings: Settings;
   friends: string[];
-  playingInOngoingGameTableID: number;
-  spectatingTableID: number;
-  spectatingDatabaseID: number;
+
+  playingAtTables: number[];
+  disconSpectatingTable: number;
+
   randomTableName: string;
   shuttingDown: boolean;
+  datetimeShutdownInit: string;
   maintenanceMode: boolean;
 }

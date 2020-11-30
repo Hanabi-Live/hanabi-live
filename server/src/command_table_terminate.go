@@ -14,11 +14,11 @@ import (
 //   server: true, // True if a server-initiated termination, otherwise omitted
 // }
 func commandTableTerminate(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -42,15 +42,15 @@ func commandTableTerminate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	terminate(ctx, s, t, playerIndex)
+	terminate(ctx, s, d, t, playerIndex)
 }
 
-func terminate(ctx context.Context, s *Session, t *Table, playerIndex int) {
+func terminate(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
 	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID: t.ID,
-		Type:    ActionTypeEndGame,
-		Target:  playerIndex,
-		Value:   EndConditionTerminated,
-		NoLock:  true,
+		TableID:     t.ID,
+		Type:        ActionTypeEndGame,
+		Target:      playerIndex,
+		Value:       EndConditionTerminated,
+		NoTableLock: true,
 	})
 }

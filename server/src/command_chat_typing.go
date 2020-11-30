@@ -17,11 +17,11 @@ const (
 //   tableID: 15103,
 // }
 func commandChatTyping(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -71,11 +71,12 @@ func chatTyping(ctx context.Context, s *Session, t *Table, playerIndex int, spec
 	go chatTypingCheckStopped(ctx, t, s.UserID)
 }
 
+// chatTypingCheckStopped is meant to be run in a new goroutine
 func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	time.Sleep(TypingDelay)
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false, false)
 	if !exists || t != t2 {
 		return
 	}

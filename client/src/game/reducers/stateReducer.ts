@@ -8,6 +8,7 @@ import GameMetadata from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import State from "../types/State";
 import gameStateReducer from "./gameStateReducer";
+import notesReducer from "./notesReducer";
 import initialGameState from "./initialStates/initialGameState";
 import replayReducer from "./replayReducer";
 
@@ -212,6 +213,20 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
     case "spectators": {
       state.spectators = action.spectators;
+      break;
+    }
+
+    case "editNote":
+    case "noteListPlayer":
+    case "noteList":
+    case "receiveNote": {
+      state.notes = notesReducer(
+        original(state.notes),
+        action,
+        state.metadata,
+        state.playing,
+        state.finished,
+      );
       break;
     }
 
