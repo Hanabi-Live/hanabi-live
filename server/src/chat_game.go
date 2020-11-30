@@ -7,12 +7,12 @@ import (
 // /pause
 func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -26,12 +26,12 @@ func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 // /unpause
 func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, "lobby")
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 

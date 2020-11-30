@@ -81,7 +81,7 @@ func discordConnect() {
 	// (we wait for Discord to connect before displaying this message)
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	chatServerSend(ctx, msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
 }
 
 /*

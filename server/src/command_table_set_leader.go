@@ -81,10 +81,16 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	tableSetLeader(ctx, s, t, newLeader)
+	tableSetLeader(ctx, s, d, t, newLeader)
 }
 
-func tableSetLeader(ctx context.Context, s *Session, t *Table, newLeader *NewLeader) {
+func tableSetLeader(
+	ctx context.Context,
+	s *Session,
+	d *CommandData,
+	t *Table,
+	newLeader *NewLeader,
+) {
 	t.OwnerID = newLeader.UserID
 
 	if t.Replay {
@@ -102,6 +108,6 @@ func tableSetLeader(ctx context.Context, s *Session, t *Table, newLeader *NewLea
 		}
 
 		msg := s.Username + " has passed table ownership to: " + newLeader.Username
-		chatServerSend(ctx, msg, t.GetRoomName())
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 	}
 }

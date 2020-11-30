@@ -89,7 +89,7 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	msg := s.Username + " has added a game tag of \"" + d.Msg + "\"."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }
 
 func sanitizeTag(tag string) (string, error) {

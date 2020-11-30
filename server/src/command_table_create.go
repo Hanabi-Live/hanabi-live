@@ -365,7 +365,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 	// Log a chat message so that future players can see a timestamp of when the table was created
 	msg := s.Username + " created the table."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), true)
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {
@@ -374,7 +374,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
 			"Keep in mind that if your game is not finished in time, it will be terminated."
-		chatServerSend(ctx, msg, t.GetRoomName())
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 	}
 
 	// Join the user to the new table

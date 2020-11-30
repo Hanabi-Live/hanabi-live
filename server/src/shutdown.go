@@ -51,7 +51,7 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 
 	// Send a warning message to the lobby
 	msg := "The server will shutdown in " + strconv.Itoa(minutesLeft) + " minutes."
-	chatServerSend(ctx, msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
 
 	// Send a warning message to the people still playing
 	tableList := tables.GetList(true)
@@ -64,7 +64,7 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 
 	msg += " Finish your game soon or it will be automatically terminated!"
 	for _, roomName := range roomNames {
-		chatServerSend(ctx, msg, roomName)
+		chatServerSend(ctx, msg, roomName, false)
 	}
 }
 
@@ -165,7 +165,7 @@ func shutdownImmediate(ctx context.Context) {
 	}
 
 	msg := "The server successfully shut down at: " + getCurrentTimestamp()
-	chatServerSend(ctx, msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
 
 	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")

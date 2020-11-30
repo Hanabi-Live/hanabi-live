@@ -89,8 +89,14 @@ func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 			TableID: spectatingTableID,
 		})
 
-		// Additionally, we also want to add this user to the map of disconnected spectators
-		// (so that they will be automatically reconnected to the game if/when they reconnect)
-		tables.SetDisconSpectating(s.UserID, spectatingTableID)
+		// They might have been the last person spectating the table
+		// If they were, the table will no longer exist
+		// Check to see if the table still exists
+		if _, ok := getTable(s, spectatingTableID, true); ok {
+			// We want to add this relationship to the map of disconnected spectators
+			// (so that the user will be automatically reconnected to the game if/when they
+			// reconnect)
+			tables.SetDisconSpectating(s.UserID, spectatingTableID)
+		}
 	}
 }

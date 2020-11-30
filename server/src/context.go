@@ -5,7 +5,6 @@ package main
 
 import (
 	"context"
-	"strconv"
 	"sync/atomic"
 )
 
@@ -51,6 +50,7 @@ func NewMiscContext(contextType string) context.Context {
 	return ctx
 }
 
+/*
 func printContextWithStackTrace(ctx context.Context, msg string) {
 	msg += " - "
 
@@ -70,3 +70,4 @@ func printContextWithStackTrace(ctx context.Context, msg string) {
 
 	logger.Debug(msg)
 }
+*/

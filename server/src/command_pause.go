@@ -129,7 +129,7 @@ func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerInde
 		msg += "un"
 	}
 	msg += "paused the game."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "pause" message, since it is superfluous

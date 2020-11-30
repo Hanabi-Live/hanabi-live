@@ -45,7 +45,7 @@ func gracefulRestart(ctx context.Context) {
 
 	msg := "The server went down for a restart at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	chatServerSend(ctx, msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
 
 	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")

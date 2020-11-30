@@ -80,7 +80,8 @@ func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playe
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		chatServerSend(ctx, "Automatic game start has been canceled.", t.GetRoomName())
+		msg := "Automatic game start has been canceled."
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 	}
 
 	// Force everyone else to leave if it was the owner that left

@@ -46,44 +46,44 @@ func chatS6(ctx context.Context, s *Session, d *CommandData, t *Table) {
 // /startin [minutes]
 func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if s.UserID != t.OwnerID {
-		chatServerSend(ctx, NotOwnerFail, d.Room)
+		chatServerSend(ctx, NotOwnerFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	// If the user did not specify the amount of minutes, assume 1
 	if len(d.Args) != 1 {
-		chatServerSend(
-			ctx,
-			"You must specify the amount of minutes to wait. (e.g. \"/startin 1\")",
-			d.Room,
-		)
+		msg := "You must specify the amount of minutes to wait. (e.g. \"/startin 1\")"
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 
 	var minutesToWait float64
 	if v, err := strconv.ParseFloat(d.Args[0], 64); err != nil {
-		chatServerSend(ctx, "\""+d.Args[0]+"\" is not a valid number.", d.Room)
+		msg := "\"" + d.Args[0] + "\" is not a valid number."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	} else {
 		minutesToWait = v
 	}
 
 	if minutesToWait <= 0 {
-		chatServerSend(ctx, "The minutes to wait must be greater than 0.", d.Room)
+		msg := "The minutes to wait must be greater than 0."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if minutesToWait > 10 {
-		chatServerSend(ctx, "The minutes to wait cannot be greater than 10.", d.Room)
+		msg := "The minutes to wait cannot be greater than 10."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -100,35 +100,37 @@ func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		announcement += d.Args[0] + " minutes"
 	}
 	announcement += "."
-	chatServerSend(ctx, announcement, d.Room)
+	chatServerSend(ctx, announcement, d.Room, d.NoTablesLock)
 	go startIn(ctx, t, timeToWait, timeToStart)
 }
 
 func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if s.UserID != t.OwnerID {
-		chatServerSend(ctx, NotOwnerFail, d.Room)
+		chatServerSend(ctx, NotOwnerFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if len(d.Args) != 1 {
-		chatServerSend(ctx, "The format of the /kick command is: /kick [username]", d.Room)
+		msg := "The format of the /kick command is: /kick [username]"
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
 	// Check to make sure that they are not targeting themself
 	normalizedUsername := normalizeString(d.Args[0])
 	if normalizedUsername == normalizeString(s.Username) {
-		chatServerSend(ctx, "You cannot kick yourself.", d.Room)
+		msg := "You cannot kick yourself."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -154,12 +156,14 @@ func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table) {
 				NoTableLock: true,
 			})
 
-			chatServerSend(ctx, "Successfully kicked \""+d.Args[0]+"\" from the game.", d.Room)
+			msg := "Successfully kicked \"" + d.Args[0] + "\" from the game."
+			chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 			return
 		}
 	}
 
-	chatServerSend(ctx, "\""+d.Args[0]+"\" is not joined to this game.", d.Room)
+	msg := "\"" + d.Args[0] + "\" is not joined to this game."
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 /*
@@ -169,7 +173,7 @@ func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table) {
 // /missingscores
 func chatMissingScores(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -188,20 +192,20 @@ func chatMissingScores(ctx context.Context, s *Session, d *CommandData, t *Table
 
 	if len(usernames) < 2 || len(usernames) > 6 {
 		msg := "You can only perform this command if the game or shared replay has between 2 and 6 players."
-		chatServerSend(ctx, msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
 	path := "/shared-missing-scores/" + strings.Join(usernames, "/")
 	msg := getURLFromPath(path)
-	chatServerSend(ctx, msg, d.Room)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /findvariant
 // This function does not consider modifiers (e.g. "Empty Clues")
 func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -220,7 +224,7 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 
 	if len(userIDs) < 2 || len(userIDs) > 6 {
 		msg := "You can only perform this command if the game or shared replay has between 2 and 6 players."
-		chatServerSend(ctx, msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -230,7 +234,7 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 		if statsMap, err := models.UserStats.GetAll(userID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player ID "+
 				strconv.Itoa(userID)+":", err)
-			chatServerSend(ctx, DefaultErrorMsg, d.Room)
+			chatServerSend(ctx, DefaultErrorMsg, d.Room, d.NoTablesLock)
 			return
 		} else {
 			statsMaps = append(statsMaps, statsMap)
@@ -264,7 +268,7 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 
 	msg := "Here is a random variant that everyone needs the " +
 		strconv.Itoa(len(userIDs)) + "-player max score in: " + randomVariant
-	chatServerSend(ctx, msg, d.Room)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 /*
@@ -273,31 +277,33 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 
 func automaticStart(ctx context.Context, s *Session, d *CommandData, t *Table, numPlayers int) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ctx, StartedFail, d.Room)
+		chatServerSend(ctx, StartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if s.UserID != t.OwnerID {
-		chatServerSend(ctx, NotOwnerFail, d.Room)
+		chatServerSend(ctx, NotOwnerFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if len(d.Args) > 0 {
 		// They specific an argument, so make this take priority
 		if v, err := strconv.Atoi(d.Args[0]); err != nil {
-			chatServerSend(ctx, "\""+d.Args[0]+"\" is not a number.", d.Room)
+			msg := "\"" + d.Args[0] + "\" is not a number."
+			chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 			return
 		} else {
 			numPlayers = v
 		}
 
 		if numPlayers < 2 || numPlayers > 6 {
-			chatServerSend(ctx, "You can only start a table with 2 to 6 players.", d.Room)
+			msg := "You can only start a table with 2 to 6 players."
+			chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 			return
 		}
 	}
@@ -310,12 +316,17 @@ func automaticStart(ctx context.Context, s *Session, d *CommandData, t *Table, n
 	} else {
 		t.AutomaticStart = numPlayers
 		msg := "The game will start as soon as " + strconv.Itoa(numPlayers) + " players have joined."
-		chatServerSend(ctx, msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 }
 
 // startIn is meant to be run in a goroutine
-func startIn(ctx context.Context, t *Table, timeToWait time.Duration, datetimePlannedStart time.Time) {
+func startIn(
+	ctx context.Context,
+	t *Table,
+	timeToWait time.Duration,
+	datetimePlannedStart time.Time,
+) {
 	// Sleep until it is time to automatically start
 	time.Sleep(timeToWait)
 
@@ -342,7 +353,7 @@ func startIn(ctx context.Context, t *Table, timeToWait time.Duration, datetimePl
 		if p.UserID == t.OwnerID {
 			if !p.Present {
 				msg := "Aborting automatic game start since the table creator is away."
-				chatServerSend(ctx, msg, t.GetRoomName())
+				chatServerSend(ctx, msg, t.GetRoomName(), false)
 				return
 			}
 
@@ -360,17 +371,17 @@ func startIn(ctx context.Context, t *Table, timeToWait time.Duration, datetimePl
 
 func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if s.UserID != t.OwnerID {
-		chatServerSend(ctx, NotOwnerFail, d.Room)
+		chatServerSend(ctx, NotOwnerFail, d.Room, d.NoTablesLock)
 		return
 	}
 

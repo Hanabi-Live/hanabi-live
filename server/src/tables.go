@@ -71,6 +71,19 @@ func (ts *Tables) Set(tableID uint64, t *Table) {
 func (ts *Tables) Delete(tableID uint64) {
 	// It is assumed that the tables mutex is locked when calling this function
 	delete(ts.tables, tableID)
+
+	// If any users disconnected while spectating this table,
+	// we need to clear out these fields to prevent them from rejoining a table that does not exist
+	keysToDelete := make([]int, 0)
+	for userID, disconTableID := range ts.disconSpectating {
+		if disconTableID == tableID {
+			keysToDelete = append(keysToDelete, userID)
+		}
+	}
+
+	for _, userID := range keysToDelete {
+		delete(ts.disconSpectating, userID)
+	}
 }
 
 // ----------------------------
@@ -183,13 +196,10 @@ func (ts *Tables) GetDisconSpectatingTable(userID int) (uint64, bool) {
 // --------------------------
 
 func (ts *Tables) Lock(ctx context.Context) {
-	printContextWithStackTrace(ctx, "ACQUIRING Z lock.")
 	ts.mutex.Lock()
-	printContextWithStackTrace(ctx, "GOT Z lock.")
 }
 
 func (ts *Tables) Unlock(ctx context.Context) {
-	printContextWithStackTrace(ctx, "RELEASED Z lock.")
 	ts.mutex.Unlock()
 }
 

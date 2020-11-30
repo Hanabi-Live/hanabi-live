@@ -82,5 +82,5 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	msg := s.Username + " has deleted a game tag of \"" + d.Msg + "\"."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }

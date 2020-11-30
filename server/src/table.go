@@ -129,13 +129,10 @@ func getNewTableID() uint64 {
 }
 
 func (t *Table) Lock(ctx context.Context) {
-	printContextWithStackTrace(ctx, "ACQUIRING table lock.")
 	t.mutex.Lock()
-	printContextWithStackTrace(ctx, "GOT table lock.")
 }
 
 func (t *Table) Unlock(ctx context.Context) {
-	printContextWithStackTrace(ctx, "RELEASED table lock.")
 	t.mutex.Unlock()
 }
 

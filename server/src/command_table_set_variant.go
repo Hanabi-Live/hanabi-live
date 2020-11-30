@@ -84,5 +84,5 @@ func tableSetVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 	notifyAllTable(t)
 
 	msg := s.Username + " has changed the variant to: " + d.Options.VariantName
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }
