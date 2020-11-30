@@ -11,7 +11,6 @@ import { GameExports } from "../main";
 import { Action, GameAction } from "../types/actions";
 import { DEFAULT_VARIANT_NAME } from "../types/constants";
 import GameMetadata from "../types/GameMetadata";
-import SpectatorNote from "../types/SpectatorNote";
 import State from "../types/State";
 import Variant from "../types/Variant";
 import * as cursor from "./cursor";
@@ -60,10 +59,6 @@ export class Globals {
   finalReplayTurn = 0;
 
   // Notes feature
-  ourNotes: Map<number, string> = new Map<number, string>(); // Indexed by card order
-  // "allNotes" is indexed by card order
-  // It represents the notes of every player & spectator
-  allNotes: Map<number, SpectatorNote[]> = new Map<number, SpectatorNote[]>();
   // Used to keep track of which card the user is editing;
   // users can only update one note at a time to prevent bugs
   // Equal to the card order number or null
@@ -141,8 +136,6 @@ export class Globals {
     this.replayLog = [];
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.ourNotes.clear();
-    this.allNotes.clear();
     this.editingNote = null;
     this.actionOccurred = false;
     this.lastNote = "";

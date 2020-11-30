@@ -25,7 +25,10 @@ import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { animate } from "./konvaHelpers";
 import LayoutChild from "./LayoutChild";
-import * as noteIdentity from "./noteIdentity";
+import {
+  checkNoteImpossibility,
+  possibleCardsFromNoteAndClues,
+} from "./noteCheckImpossibility";
 import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
@@ -66,16 +69,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private trashcan: Konva.Image;
   private wrench: Konva.Image;
 
-  note: CardNote = {
-    possibilities: [],
-    chopMoved: false,
-    needsFix: false,
-    knownTrash: false,
-    finessed: false,
-    blank: false,
-    unclued: false,
-  };
-
   // -------------------
   // Getters and setters
   // -------------------
@@ -98,6 +91,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   set state(state: CardState) {
     this._state = state;
+  }
+
+  get note(): CardNote {
+    return globals.state.notes.ourNotes[this.state.order];
   }
 
   private _tweening = false;
@@ -360,18 +357,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we have a note on the card and it only provides possibilities of the same suit,
     // show that suit
     if (this.note.possibilities.length !== 0) {
-      const possibleCardsFromNoteAndClues = this.note.possibilities.filter(
-        ([suitIndexA, rankA]) =>
-          this.state.possibleCardsFromClues.findIndex(
-            ([suitIndexB, rankB]) =>
-              suitIndexA === suitIndexB && rankA === rankB,
-          ) !== -1,
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
       );
-      const [candidateSuitIndex] = possibleCardsFromNoteAndClues[0];
+      const [candidateSuitIndex] = possibilities[0];
       if (
-        possibleCardsFromNoteAndClues.every(
-          ([suitIndex]) => suitIndex === candidateSuitIndex,
-        )
+        possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
       ) {
         return this.variant.suits[candidateSuitIndex];
       }
@@ -395,17 +387,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     let noteRank = null;
     if (this.note.possibilities.length !== 0) {
-      const possibleCardsFromNoteAndClues = this.note.possibilities.filter(
-        ([suitIndexA, rankA]) =>
-          this.state.possibleCardsFromClues.findIndex(
-            ([suitIndexB, rankB]) =>
-              suitIndexA === suitIndexB && rankA === rankB,
-          ) !== -1,
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
       );
-      const candidateRank = possibleCardsFromNoteAndClues[0][1];
-      if (
-        possibleCardsFromNoteAndClues.every((card) => card[1] === candidateRank)
-      ) {
+      const candidateRank = possibilities[0][1];
+      if (possibilities.every((card) => card[1] === candidateRank)) {
         noteRank = candidateRank;
       }
     }
@@ -580,16 +567,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     for (const rank of this.variant.ranks)
       rankPipStates[rank] = PipState.Hidden;
 
-    const ignoreNote = this.empathy || this.note.possibilities.length === 0;
+    const possibilities = possibleCardsFromNoteAndClues(this.note, this.state);
+    const ignoreNote = this.empathy;
     const possibleCards = ignoreNote
       ? this.state.possibleCardsFromClues
-      : this.note.possibilities.filter(
-          ([suitIndexA, rankA]) =>
-            this.state.possibleCardsFromClues.findIndex(
-              ([suitIndexB, rankB]) =>
-                suitIndexA === suitIndexB && rankA === rankB,
-            ) !== -1,
-        );
+      : possibilities;
 
     // We look through each card that should have a visible pip (eliminated or not)
     for (const [suitIndex, rank] of possibleCards) {
@@ -887,7 +869,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we are a player in an ongoing game,
     // show the note indicator if we have a non-blank note on it
     if (globals.state.playing) {
-      const ourNote = globals.ourNotes.get(this.state.order) ?? "";
+      const ourNote = globals.state.notes.ourNotes[this.state.order].text ?? "";
       return ourNote !== "";
     }
 
@@ -902,12 +884,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // We are not a player in an ongoing game
     // Only show the note indicator if there is one or more non-blank notes
-    const note = globals.allNotes.get(this.state.order);
+    const note = globals.state.notes.allNotes[this.state.order];
     if (note === undefined) {
       return false;
     }
     for (const noteObject of note) {
-      if (noteObject.note.length > 0) {
+      if (noteObject.text.length > 0) {
         return true;
       }
     }
@@ -1098,7 +1080,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   setNote(note: string): void {
     notes.set(this.state.order, note);
-    notes.update(this);
+    notes.update(this, note);
     if (note !== "") {
       notes.show(this);
     }
@@ -1109,7 +1091,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let newNote = note;
 
     // If we had an existing note, append the new note to the end using pipe notation
-    const existingNote = globals.ourNotes.get(this.state.order);
+    const existingNote = globals.state.notes.ourNotes[this.state.order].text;
     if (existingNote !== undefined && existingNote !== "") {
       newNote = `${existingNote} | ${note}`;
     }
@@ -1118,10 +1100,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   checkSpecialNote(): void {
-    const noteText = globals.ourNotes.get(this.state.order) ?? "";
-
-    this.note = notes.parseNote(this.variant, noteText);
-    noteIdentity.checkNoteImpossibility(this.variant, this.state, this.note);
+    const note = globals.state.notes.ourNotes[this.state.order];
+    checkNoteImpossibility(this.variant, this.state, note);
 
     // Morph the card if it has an "exact" card note
     // (or clear the bare image if the note was deleted/changed)
@@ -1147,7 +1127,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       )
     ) {
       // Unmorph
-      this.note.possibilities = [];
       this.setBareImage();
     }
   }

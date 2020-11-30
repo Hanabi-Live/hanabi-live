@@ -254,14 +254,14 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		// the shadowed player
 		type Note struct {
 			Name string `json:"name"`
-			Note string `json:"note"`
+			Text string `json:"text"`
 		}
 		notes := make([]Note, 0)
 		for _, p := range g.Players {
 			if sp.ShadowingPlayerIndex == -1 || sp.ShadowingPlayerIndex == p.Index {
 				notes = append(notes, Note{
 					Name: p.Name,
-					Note: p.Notes[order],
+					Text: p.Notes[order],
 				})
 			}
 		}
@@ -269,7 +269,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 			for _, sp2 := range t.Spectators {
 				notes = append(notes, Note{
 					Name: sp2.Name,
-					Note: sp2.Notes[order],
+					Text: sp2.Notes[order],
 				})
 			}
 		}

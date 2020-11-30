@@ -1,13 +1,8 @@
 import { parseIntSafe } from "../../misc";
-import * as modals from "../../modals";
-import { canPossiblyBe } from "../rules/card";
 import CardIdentity from "../types/CardIdentity";
-import CardNote from "../types/CardNote";
-import CardState from "../types/CardState";
-import { STACK_BASE_RANK, START_CARD_RANK } from "../types/constants";
+import Suit from "../types/Suit";
+import { START_CARD_RANK } from "../types/constants";
 import Variant from "../types/Variant";
-import globals from "./globals";
-import { extractRankText, extractSuitText } from "./noteIdentityPattern";
 
 function parseSuit(variant: Variant, suitText: string): number | null {
   const suitAbbreviationIndex = variant.abbreviations.findIndex(
@@ -140,50 +135,43 @@ export function getPossibilitiesFromKeywords(
   return possibilities;
 }
 
-export function checkNoteImpossibility(
-  variant: Variant,
-  cardState: CardState,
-  note: CardNote,
-): void {
-  const { possibilities } = note;
-  if (possibilities.length === 0) {
-    return;
-  }
-  // Prevent players from accidentally mixing up which stack base is which
-  if (
-    cardState.rank === STACK_BASE_RANK &&
-    possibilities.every((possibility) => possibility[0] !== cardState.suitIndex)
-  ) {
-    modals.warningShow(
-      "You cannot morph a stack base to have a different suit.",
-    );
-    note.possibilities = [];
-    return;
-  }
+function createSuitPattern(suits: Suit[], abbreviations: string[]): string {
+  let alternation = "";
+  suits.forEach((suit, i) => {
+    if (i !== 0) {
+      alternation += "|";
+    }
 
-  // Only validate cards in our own hand
-  if (
-    !(cardState.location === globals.metadata.ourPlayerIndex) ||
-    possibilities.some((possibility) =>
-      canPossiblyBe(cardState, possibility[0], possibility[1]),
-    )
-  ) {
-    return;
-  }
-
-  // We have specified a list of identities where none are possible
-  const impossibilities = Array.from(possibilities, ([suitIndex, rank]) => {
-    const suitName = variant.suits[suitIndex].displayName;
-    const impossibleSuit = suitName.toLowerCase();
-    const impossibleRank = rank === START_CARD_RANK ? "START" : rank.toString();
-    return `${impossibleSuit} ${impossibleRank}`;
+    alternation += abbreviations[i].toLowerCase();
+    alternation += "|";
+    alternation += suit.displayName.toLowerCase();
   });
-  if (impossibilities.length === 1) {
-    modals.warningShow(`That card cannot possibly be ${impossibilities[0]}`);
-  } else {
-    modals.warningShow(
-      `That card cannot possibly be any of ${impossibilities.join(", ")}`,
-    );
-  }
-  note.possibilities = [];
+
+  return `(${alternation})`;
 }
+
+function createRankPattern(ranks: number[], isUpOrDown: boolean): string {
+  let rankStrings = ranks.map((r) => r.toString());
+  if (isUpOrDown) {
+    rankStrings = rankStrings.concat("0", "s", "start");
+  }
+
+  return `(${rankStrings.join("|")})`;
+}
+
+export function createIdentityNotePattern(
+  suits: Suit[],
+  ranks: number[],
+  abbreviations: string[],
+  isUpOrDown: boolean,
+): string {
+  const suitPattern = createSuitPattern(suits, abbreviations);
+  const rankPattern = createRankPattern(ranks, isUpOrDown);
+  return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern})$`;
+}
+
+export const extractSuitText = (match: RegExpMatchArray): string | null =>
+  match[1] ?? match[4] ?? match[5] ?? null;
+
+export const extractRankText = (match: RegExpMatchArray): string | null =>
+  match[2] ?? match[3] ?? match[6] ?? null;

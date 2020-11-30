@@ -2,6 +2,7 @@ import CardIdentity from "./CardIdentity";
 import ClientAction from "./ClientAction";
 import GameMetadata from "./GameMetadata";
 import GameState from "./GameState";
+import NotesState from "./NotesState";
 import PauseState from "./PauseState";
 import ReplayState from "./ReplayState";
 import Spectator from "./Spectator";
@@ -29,4 +30,6 @@ export default interface State {
   readonly premove: ClientAction | null;
   readonly pause: PauseState;
   readonly spectators: Spectator[];
+
+  readonly notes: NotesState;
 }

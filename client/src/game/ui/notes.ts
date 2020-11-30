@@ -1,28 +1,25 @@
 // Users can right-click cards to record information on them
 
 import * as variantRules from "../rules/variant";
-import CardNote from "../types/CardNote";
 import { STACK_BASE_RANK } from "../types/constants";
-import Variant from "../types/Variant";
 import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
-import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 // Get the contents of the note tooltip
 function get(order: number, our: boolean) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note
   if (our || globals.state.playing) {
-    return globals.ourNotes.get(order) ?? "";
+    return globals.state.notes.ourNotes[order].text ?? "";
   }
 
   // Build a string that shows the combined notes from the players & spectators
   let content = "";
-  const noteObjectArray = globals.allNotes.get(order) ?? [];
+  const noteObjectArray = globals.state.notes.allNotes[order];
   for (const noteObject of noteObjectArray) {
-    if (noteObject.note.length > 0) {
-      content += `<strong>${noteObject.name}:</strong> ${noteObject.note}<br />`;
+    if (noteObject.text.length > 0) {
+      content += `<strong>${noteObject.name}:</strong> ${noteObject.text}<br />`;
     }
   }
   if (content.length !== 0) {
@@ -32,31 +29,27 @@ function get(order: number, our: boolean) {
 }
 
 // A note has been updated, so:
-// 1) update the stored note in memory
-// 2) send the new note to the server
-// 3) check for new note identities
-export function set(order: number, note: string): void {
-  const oldNote = globals.ourNotes.get(order) ?? "";
-  globals.ourNotes.set(order, note);
-  globals.lastNote = note;
-
-  if (!globals.state.playing) {
-    const noteObjectArray = globals.allNotes.get(order) ?? [];
-    for (const noteObject of noteObjectArray) {
-      if (noteObject.name === globals.metadata.ourUsername) {
-        noteObject.note = note;
-      }
-    }
-  }
+// 1) Send the new note to the server
+// 2) Dispatch an event with the updated note
+// 3) Check for new card identities
+export function set(order: number, text: string): void {
+  const oldNote = globals.state.notes.ourNotes[order].text;
+  globals.lastNote = text;
 
   // Send the note to the server
-  if (!globals.state.finished && note !== oldNote) {
+  if (!globals.state.finished && text !== oldNote) {
     globals.lobby.conn!.send("note", {
       tableID: globals.lobby.tableID,
       order,
-      note,
+      note: text,
     });
   }
+
+  globals.store!.dispatch({
+    type: "editNote",
+    order,
+    text,
+  });
 
   // The note identity features are only enabled for active players
   if (!globals.state.playing) {
@@ -67,97 +60,19 @@ export function set(order: number, note: string): void {
   card.checkSpecialNote();
 }
 
-function getNoteKeywords(note: string) {
-  // Match either:
-  // - zero or more characters between square brackets `[]`
-  //   - \[(.*?)\]
-  // - zero or more non-pipe non-bracket characters between a pipe `|` and the end of the note
-  //   - \|([^[|]*$)
-  // - one or more non-pipe non-bracket characters between the start and end of the note
-  //   - (^[^[|]+$)
-  const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
-  const keywords = [];
-
-  let match = regexp.exec(note);
-  while (match !== null) {
-    if (match[1] !== undefined) {
-      keywords.push(match[1].trim());
-    } else if (match[2] !== undefined) {
-      keywords.push(match[2].trim());
-    } else {
-      keywords.push(match[3].trim());
-    }
-    match = regexp.exec(note);
-  }
-
-  return keywords;
-}
-
-const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
-  keywords.some((k) => patterns.some((pattern) => k === pattern));
-
-export function parseNote(variant: Variant, note: string): CardNote {
-  // Make all letters lowercase to simply the matching logic below
-  // and remove all leading and trailing whitespace
-  const fullNote = note.toLowerCase().trim();
-  const keywords = getNoteKeywords(fullNote);
-  const possibilities = getPossibilitiesFromKeywords(variant, keywords);
-
-  const chopMoved = checkNoteKeywordsForMatch(
-    [
-      "cm",
-      "chop move",
-      "chop moved",
-      "5cm",
-      "e5cm",
-      "tcm",
-      "tccm",
-      "sdcm",
-      "sbpcm",
-      "ocm",
-      "tocm",
-      "utfcm",
-      "utbcm",
-    ],
-    keywords,
-  );
-  const finessed = checkNoteKeywordsForMatch(["f", "hf", "pf", "gd"], keywords);
-  const knownTrash = checkNoteKeywordsForMatch(
-    ["kt", "trash", "stale", "bad"],
-    keywords,
-  );
-  const needsFix = checkNoteKeywordsForMatch(
-    ["fix", "fixme", "needs fix"],
-    keywords,
-  );
-  const blank = checkNoteKeywordsForMatch(["blank"], keywords);
-  const unclued = checkNoteKeywordsForMatch(["unclued"], keywords);
-
-  return {
-    possibilities,
-    chopMoved,
-    finessed,
-    knownTrash,
-    needsFix,
-    blank,
-    unclued,
-  };
-}
-
-export function update(card: HanabiCard): void {
+export function update(card: HanabiCard, text: string): void {
   // Update the tooltip
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster("instance");
-  const note = get(card.state.order, false);
-  tooltipInstance.content(note);
-  if (note.length === 0) {
+  tooltipInstance.content(text);
+  if (text.length === 0) {
     tooltip.tooltipster("close");
     globals.editingNote = null;
   }
 
   // Update the card indicator
   const visibleOld = card.noteIndicator.visible();
-  const visibleNew = note.length > 0;
+  const visibleNew = text.length > 0;
   if (visibleOld !== visibleNew) {
     card.noteIndicator.visible(visibleNew);
     globals.layers.card.batchDraw();
@@ -264,7 +179,8 @@ export function openEditTooltip(card: HanabiCard): void {
       tooltip.tooltipster("close");
     }
 
-    update(card);
+    const text = newNote ?? "";
+    update(card, text);
   });
 
   // Automatically close the tooltip if we click elsewhere on the screen
