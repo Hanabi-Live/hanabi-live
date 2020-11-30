@@ -1,0 +1,62 @@
+name: Continuous Integration Tasks
+
+on: [push, pull_request]
+
+jobs:
+  client_build:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./client
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ${{ env.working-directory }}
+      - run: ./build_client.sh
+        working-directory: ${{ env.working-directory }}
+
+  client_lint:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./client
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ${{ env.working-directory }}
+      - run: ./set_version.sh
+        working-directory: ${{ env.working-directory }}
+      - run: npm run lint
+        working-directory: ${{ env.working-directory }}
+
+  client_test:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./client
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ${{ env.working-directory }}/node_modules
+          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ${{ env.working-directory }}
+      - run: ./set_version.sh
+        working-directory: ${{ env.working-directory }}
+      - run: npm run test
+        working-directory: ${{ env.working-directory }}
