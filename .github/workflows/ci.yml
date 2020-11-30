@@ -1,5 +1,3 @@
-name: Continuous Integration Tasks
-
 on: [push, pull_request]
 
 jobs:
