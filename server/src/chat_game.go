@@ -17,9 +17,9 @@ func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID: t.ID,
-		Setting: "pause",
-		NoLock:  true,
+		TableID:     t.ID,
+		Setting:     "pause",
+		NoTableLock: true,
 	})
 }
 
@@ -36,8 +36,8 @@ func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID: t.ID,
-		Setting: "unpause",
-		NoLock:  true,
+		TableID:     t.ID,
+		Setting:     "unpause",
+		NoTableLock: true,
 	})
 }

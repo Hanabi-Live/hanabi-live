@@ -141,7 +141,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		DiscordID: m.Author.ID,
 		// Pass through the discriminator so we can append it to the username
 		DiscordDiscriminator: m.Author.Discriminator,
-		NoLock:               true,
 	})
 }
 

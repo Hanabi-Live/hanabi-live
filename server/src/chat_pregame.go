@@ -55,7 +55,7 @@ func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		chatServerSend(ctx, NotOwnerFail, d.Room)
 		return
 	}
@@ -115,7 +115,7 @@ func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		chatServerSend(ctx, NotOwnerFail, d.Room)
 		return
 	}
@@ -136,20 +136,22 @@ func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	for _, p := range t.Players {
 		if normalizedUsername == normalizeString(p.Name) {
 			// Record this player's user ID so that they cannot rejoin the table afterward
-			t.KickedPlayers[p.ID] = struct{}{}
+			t.KickedPlayers[p.UserID] = struct{}{}
 
-			// Remove them from the table
+			// Get the session
 			s2 := p.Session
 			if s2 == nil {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s2 = NewFakeSession(p.ID, p.Name)
+				s2 = NewFakeSession(p.UserID, p.Name)
 				logger.Info("Created a new fake session in the \"chatKick()\" function.")
 			}
+
+			// Remove them from the table
 			commandTableLeave(ctx, s2, &CommandData{ // nolint: exhaustivestruct
-				TableID: t.ID,
-				NoLock:  true,
+				TableID:     t.ID,
+				NoTableLock: true,
 			})
 
 			chatServerSend(ctx, "Successfully kicked \""+d.Args[0]+"\" from the game.", d.Room)
@@ -208,11 +210,11 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 	userIDs := make([]int, 0)
 	if t.Replay {
 		for _, sp := range t.Spectators {
-			userIDs = append(userIDs, sp.ID)
+			userIDs = append(userIDs, sp.UserID)
 		}
 	} else {
 		for _, p := range t.Players {
-			userIDs = append(userIDs, p.ID)
+			userIDs = append(userIDs, p.UserID)
 		}
 	}
 
@@ -280,7 +282,7 @@ func automaticStart(ctx context.Context, s *Session, d *CommandData, t *Table, n
 		return
 	}
 
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		chatServerSend(ctx, NotOwnerFail, d.Room)
 		return
 	}
@@ -302,8 +304,8 @@ func automaticStart(ctx context.Context, s *Session, d *CommandData, t *Table, n
 
 	if len(t.Players) == numPlayers {
 		commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
-			TableID: t.ID,
-			NoLock:  true,
+			TableID:     t.ID,
+			NoTableLock: true,
 		})
 	} else {
 		t.AutomaticStart = numPlayers
@@ -318,7 +320,7 @@ func startIn(ctx context.Context, t *Table, timeToWait time.Duration, datetimePl
 	time.Sleep(timeToWait)
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false, false)
 	if !exists || t != t2 {
 		return
 	}
@@ -337,7 +339,7 @@ func startIn(ctx context.Context, t *Table, timeToWait time.Duration, datetimePl
 
 	// Check to see if the owner is present
 	for _, p := range t.Players {
-		if p.ID == t.Owner {
+		if p.UserID == t.OwnerID {
 			if !p.Present {
 				msg := "Aborting automatic game start since the table creator is away."
 				chatServerSend(ctx, msg, t.GetRoomName())
@@ -346,8 +348,8 @@ func startIn(ctx context.Context, t *Table, timeToWait time.Duration, datetimePl
 
 			logger.Info(t.GetName() + " Automatically starting (from the /startin command).")
 			commandTableStart(ctx, p.Session, &CommandData{ // nolint: exhaustivestruct
-				TableID: t.ID,
-				NoLock:  true,
+				TableID:     t.ID,
+				NoTableLock: true,
 			})
 			return
 		}
@@ -367,7 +369,7 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		chatServerSend(ctx, NotOwnerFail, d.Room)
 		return
 	}

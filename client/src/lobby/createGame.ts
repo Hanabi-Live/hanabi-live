@@ -405,12 +405,14 @@ export function before(): boolean {
   }
 
   if (globals.shuttingDown) {
-    const now = new Date().getTime();
-    const elapsedTime = now - globals.datetimeShutdownInit;
+    const now = new Date();
+    const elapsedTimeMilliseconds =
+      now.getTime() - globals.datetimeShutdownInit.getTime();
     // SHUTDOWN_TIMEOUT is in minutes
     const shutdownTimeoutMilliseconds = SHUTDOWN_TIMEOUT * 60 * 1000;
-    const timeLeft = shutdownTimeoutMilliseconds - elapsedTime;
-    const minutesLeft = new Date(timeLeft).getMinutes();
+    const millisecondsLeft =
+      shutdownTimeoutMilliseconds - elapsedTimeMilliseconds;
+    const minutesLeft = new Date(millisecondsLeft).getMinutes();
     if (minutesLeft <= 5) {
       let msg = "The server is shutting down ";
       if (minutesLeft <= 0) {

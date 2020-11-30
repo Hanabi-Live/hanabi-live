@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"time"
 )
 
-func (g *Game) End() {
+func (g *Game) End(ctx context.Context, d *CommandData) {
 	// Local variables
 	t := g.Table
 
@@ -98,7 +99,7 @@ func (g *Game) End() {
 
 	// All games are automatically converted to shared replays after they finish
 	// (unless all the players are in the lobby / disconnected, or if the game ended to idleness)
-	t.ConvertToSharedReplay()
+	t.ConvertToSharedReplay(ctx, d)
 }
 
 func (g *Game) WriteDatabase() error {
@@ -156,7 +157,7 @@ func (g *Game) WriteDatabase() error {
 
 		gameParticipantsRows = append(gameParticipantsRows, &GameParticipantsRow{
 			GameID:              t.ExtraOptions.DatabaseID,
-			UserID:              p.ID,
+			UserID:              p.UserID,
 			Seat:                gp.Index,
 			CharacterAssignment: characterID,
 			CharacterMetadata:   characterMetadata,
@@ -197,7 +198,7 @@ func (g *Game) WriteDatabase() error {
 
 			gameParticipantNotesRows = append(gameParticipantNotesRows, &GameParticipantNotesRow{
 				GameID:    t.ExtraOptions.DatabaseID,
-				UserID:    p.ID,
+				UserID:    p.UserID,
 				CardOrder: j,
 				Note:      note,
 			})
@@ -275,7 +276,7 @@ func (g *Game) WriteDatabaseStats() {
 	for _, p := range t.Players {
 		// Get their current best scores
 		var userStats *UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variant.ID); err != nil {
+		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
 			logger.Error("Failed to get the stats for user "+p.Name+":", err)
 			continue
 		} else {
@@ -296,7 +297,7 @@ func (g *Game) WriteDatabaseStats() {
 		// Update their stats
 		// (even if they did not get a new best score,
 		// we still want to update their average score and strikeout rate)
-		if err := models.UserStats.Update(p.ID, variant.ID, userStats); err != nil {
+		if err := models.UserStats.Update(p.UserID, variant.ID, userStats); err != nil {
 			logger.Error("Failed to update the stats for user "+p.Name+":", err)
 			continue
 		}
@@ -328,8 +329,15 @@ func (g *Game) WriteDatabaseStats() {
 	}
 }
 
-func (t *Table) ConvertToSharedReplay() {
+func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 	g := t.Game
+
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
 
 	t.Replay = true
 	t.InitialName = t.Name
@@ -346,7 +354,7 @@ func (t *Table) ConvertToSharedReplay() {
 		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
-			if p.ID == t.Owner && (p.Session == nil || p.Session.ms.IsClosed()) {
+			if p.UserID == t.OwnerID && (p.Session == nil || p.Session.ms.IsClosed()) {
 				// We don't want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)
 				ownerOffline = true
@@ -364,7 +372,7 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:                   p.ID,
+			UserID:               p.UserID,
 			Name:                 p.Name,
 			Session:              p.Session,
 			Typing:               false,
@@ -373,6 +381,11 @@ func (t *Table) ConvertToSharedReplay() {
 			Notes:                make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
+
+		// Also, keep track of user to table relationships
+		tables.DeletePlaying(p.UserID, t.ID)
+		tables.AddSpectating(p.UserID, t.ID)
+
 		logger.Info("Converted " + p.Name + " to a spectator.")
 	}
 
@@ -386,21 +399,21 @@ func (t *Table) ConvertToSharedReplay() {
 
 	// If the owner of the game is not present, then make someone else the shared replay leader
 	if ownerOffline {
-		t.Owner = -1
+		t.OwnerID = -1
 
 		// Default to making the first player the leader,
 		// or the second player if the first is away, etc.
 		for _, p := range t.Players {
 			if p.Present {
-				t.Owner = p.ID
+				t.OwnerID = p.UserID
 				logger.Info("Set the new leader to be:", p.Name)
 				break
 			}
 		}
 
-		if t.Owner == -1 {
+		if t.OwnerID == -1 {
 			// All of the players are away, so make the first spectator the leader
-			t.Owner = t.Spectators[0].ID
+			t.OwnerID = t.Spectators[0].UserID
 			logger.Info("All players are offline; set the new leader to be:", t.Spectators[0].Name)
 		}
 	}

@@ -7,8 +7,8 @@ export default interface GameHistory {
   score: number;
   numTurns: number;
   endCondition: number;
-  datetimeStarted: Date;
-  datetimeFinished: Date;
+  datetimeStarted: string;
+  datetimeFinished: string;
   numGamesOnThisSeed: number;
   playerNames: string[];
   incrementNumGames: boolean;

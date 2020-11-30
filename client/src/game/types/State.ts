@@ -21,6 +21,7 @@ export default interface State {
 
   readonly metadata: GameMetadata;
 
+  // We don't use a Date object for dates in order to speed up state copying
   readonly datetimeStarted: string | null;
   readonly datetimeFinished: string | null;
 

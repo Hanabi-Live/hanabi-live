@@ -8,154 +8,205 @@ import (
 )
 
 type Tables struct {
-	tables map[uint64]*Table // Indexed by table ID
-	mutex  *deadlock.RWMutex // For handling concurrent access
+	tables     map[uint64]*Table // Indexed by table ID
+	playing    map[int][]uint64  // Indexed by user ID, values are table IDs
+	spectating map[int][]uint64  // Indexed by user ID, values are table IDs
+	// We also keep track of spectators who have disconnected
+	// so that we can automatically put them back into the shared replay
+	disconSpectating map[int]uint64    // Indexed by user ID, value is a table ID
+	mutex            *deadlock.RWMutex // For handling concurrent access
 }
 
 func NewTables() *Tables {
 	return &Tables{
-		tables: make(map[uint64]*Table),
-		mutex:  &deadlock.RWMutex{},
+		tables:           make(map[uint64]*Table),
+		playing:          make(map[int][]uint64),
+		spectating:       make(map[int][]uint64),
+		disconSpectating: make(map[int]uint64),
+		mutex:            &deadlock.RWMutex{},
 	}
 }
 
-func (ts *Tables) Get(tableID uint64) (*Table, bool) {
-	ts.mutex.RLock()
-	defer ts.mutex.RUnlock()
+// ---------------------------
+// Methods related to "tables"
+// ---------------------------
+
+func (ts *Tables) Get(tableID uint64, acquireTablesLock bool) (*Table, bool) {
+	if acquireTablesLock {
+		ts.mutex.RLock()
+		defer ts.mutex.RUnlock()
+	}
+
 	t, ok := ts.tables[tableID]
 	return t, ok
 }
 
-func (ts *Tables) GetList() []*Table {
+func (ts *Tables) GetList(acquireLock bool) []*Table {
+	if acquireLock {
+		ts.mutex.RLock()
+		defer ts.mutex.RUnlock()
+	}
+
 	tableList := make([]*Table, 0)
-	ts.mutex.RLock()
 	for _, t := range ts.tables {
 		tableList = append(tableList, t)
 	}
-	ts.mutex.RUnlock()
 	return tableList
 }
 
-func (ts *Tables) GetKeys() []uint64 {
+func (ts *Tables) GetTableIDs() []uint64 {
+	// It is assumed that the tables mutex is locked when calling this function
 	tableIDList := make([]uint64, 0)
-	ts.mutex.RLock()
-	for _, t := range ts.tables {
-		tableIDList = append(tableIDList, t.ID)
+	for tableID := range ts.tables {
+		tableIDList = append(tableIDList, tableID)
 	}
-	ts.mutex.RUnlock()
 	return tableIDList
 }
 
 func (ts *Tables) Set(tableID uint64, t *Table) {
-	ts.mutex.Lock()
+	// It is assumed that the tables mutex is locked when calling this function
 	ts.tables[tableID] = t
-	ts.mutex.Unlock()
 }
 
 func (ts *Tables) Delete(tableID uint64) {
-	ts.mutex.Lock()
+	// It is assumed that the tables mutex is locked when calling this function
 	delete(ts.tables, tableID)
+}
+
+// ----------------------------
+// Methods related to "playing"
+// ----------------------------
+
+func (ts *Tables) AddPlaying(userID int, tableID uint64) {
+	// It is assumed that the tables mutex is locked when calling this function
+	tableList, ok := ts.playing[userID]
+	if !ok {
+		tableList = make([]uint64, 0)
+	}
+	tableList = append(tableList, tableID)
+	ts.playing[userID] = tableList
+}
+
+func (ts *Tables) DeletePlaying(userID int, tableID uint64) {
+	// It is assumed that the tables mutex is locked when calling this function
+	tableList, ok := ts.playing[userID]
+	if !ok {
+		return
+	}
+
+	i := indexOf(tableID, tableList)
+	if i == -1 {
+		return
+	}
+
+	tableList = append(tableList[:i], tableList[i+1:]...)
+	if len(tableList) == 0 {
+		delete(ts.playing, userID)
+	} else {
+		ts.playing[userID] = tableList
+	}
+}
+
+func (ts *Tables) GetTablesUserPlaying(userID int) []uint64 {
+	// It is assumed that the tables mutex is locked when calling this function
+	if tablesList, ok := ts.playing[userID]; ok {
+		return tablesList
+	}
+	return make([]uint64, 0)
+}
+
+// -------------------------------
+// Methods related to "spectating"
+// -------------------------------
+
+func (ts *Tables) AddSpectating(userID int, tableID uint64) {
+	// It is assumed that the tables mutex is locked when calling this function
+	tableList, ok := ts.spectating[userID]
+	if !ok {
+		tableList = make([]uint64, 0)
+	}
+	tableList = append(tableList, tableID)
+	ts.spectating[userID] = tableList
+}
+
+func (ts *Tables) DeleteSpectating(userID int, tableID uint64) {
+	// It is assumed that the tables mutex is locked when calling this function
+	tableList, ok := ts.spectating[userID]
+	if !ok {
+		return
+	}
+
+	i := indexOf(tableID, tableList)
+	if i == -1 {
+		return
+	}
+
+	tableList = append(tableList[:i], tableList[i+1:]...)
+	if len(tableList) == 0 {
+		delete(ts.spectating, userID)
+	} else {
+		ts.spectating[userID] = tableList
+	}
+}
+
+func (ts *Tables) GetTablesUserSpectating(userID int) []uint64 {
+	// It is assumed that the tables mutex is locked when calling this function
+	if tablesList, ok := ts.spectating[userID]; ok {
+		return tablesList
+	}
+	return make([]uint64, 0)
+}
+
+// -------------------------------------
+// Methods related to "disconSpectating"
+// -------------------------------------
+
+func (ts *Tables) SetDisconSpectating(userID int, tableID uint64) {
+	ts.mutex.Lock()
+	ts.disconSpectating[userID] = tableID
 	ts.mutex.Unlock()
 }
 
-func (ts *Tables) Length() int {
+func (ts *Tables) DeleteDisconSpectating(userID int) {
+	// It is assumed that the tables mutex is locked when calling this function
+	delete(ts.disconSpectating, userID)
+}
+
+func (ts *Tables) GetDisconSpectatingTable(userID int) (uint64, bool) {
+	// It is assumed that the tables mutex is locked when calling this function
+	tableID, ok := ts.disconSpectating[userID]
+	return tableID, ok
+}
+
+// --------------------------
+// Methods related to "mutex"
+// --------------------------
+
+func (ts *Tables) Lock(ctx context.Context) {
+	printContextWithStackTrace(ctx, "ACQUIRING Z lock.")
+	ts.mutex.Lock()
+	printContextWithStackTrace(ctx, "GOT Z lock.")
+}
+
+func (ts *Tables) Unlock(ctx context.Context) {
+	printContextWithStackTrace(ctx, "RELEASED Z lock.")
+	ts.mutex.Unlock()
+}
+
+func (ts *Tables) RLock() {
 	ts.mutex.RLock()
-	defer ts.mutex.RUnlock()
-	return len(ts.tables)
 }
 
-// FindUserJoinedTable returns the table that the corresponding user ID is currently joined to
-// (or nil if not joined to any tables)
-func (ts *Tables) FindUserJoinedTable(ctx context.Context, userID int, tableIDAlreadyLocked uint64) *Table {
-	tableList := ts.GetList()
-	for _, t := range tableList {
-		playerIndex := -1
-
-		if t.ID != tableIDAlreadyLocked {
-			t.Lock(ctx)
-		}
-
-		if !t.Replay {
-			playerIndex = t.GetPlayerIndexFromID(userID)
-		}
-
-		if t.ID != tableIDAlreadyLocked {
-			t.Unlock(ctx)
-		}
-
-		if playerIndex > -1 {
-			return t
-		}
-	}
-
-	return nil
-}
-
-// FindUserSpectatingTable returns the table that the corresponding user ID is currently spectating
-// (or nil if they were not spectating any tables)
-func (ts *Tables) FindUserSpectatingTable(ctx context.Context, userID int, tableIDAlreadyLocked uint64) *Table {
-	tableList := ts.GetList()
-	for _, t := range tableList {
-		spectatorIndex := -1
-
-		if t.ID != tableIDAlreadyLocked {
-			t.Lock(ctx)
-		}
-
-		if t.Replay {
-			spectatorIndex = t.GetSpectatorIndexFromID(userID)
-		}
-
-		if t.ID != tableIDAlreadyLocked {
-			t.Unlock(ctx)
-		}
-
-		if spectatorIndex > -1 {
-			return t
-		}
-	}
-
-	return nil
-}
-
-// FindUserDisconSpectatorTable returns the table that the corresponding user ID was spectating
-// before they disconnected (or nil if they were not spectating any tables)
-func (ts *Tables) FindUserDisconSpectatorTable(ctx context.Context, userID int, tableIDAlreadyLocked uint64) *Table {
-	tableList := ts.GetList()
-	for _, t := range tableList {
-		foundTable := false
-
-		if t.ID != tableIDAlreadyLocked {
-			t.Lock(ctx)
-		}
-
-		if t.Replay {
-			for disconnectedUserID := range t.DisconSpectators {
-				if disconnectedUserID == userID {
-					foundTable = true
-					break
-				}
-			}
-		}
-
-		if t.ID != tableIDAlreadyLocked {
-			t.Unlock(ctx)
-		}
-
-		if foundTable {
-			return t
-		}
-	}
-
-	return nil
+func (ts *Tables) RUnlock() {
+	ts.mutex.RUnlock()
 }
 
 // ----------------
 // Helper functions
 // ----------------
 
-func getTable(s *Session, tableID uint64) (*Table, bool) {
-	t, ok := tables.Get(tableID)
+func getTable(s *Session, tableID uint64, acquireTablesLock bool) (*Table, bool) {
+	t, ok := tables.Get(tableID, acquireTablesLock)
 	if !ok {
 		if s != nil {
 			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
@@ -168,13 +219,19 @@ func getTable(s *Session, tableID uint64) (*Table, bool) {
 
 // getTableAndLock checks to see if the given table exists
 // If it does, it locks the table mutex and returns it
-func getTableAndLock(ctx context.Context, s *Session, tableID uint64, acquireLock bool) (*Table, bool) {
-	t, ok := getTable(s, tableID)
+func getTableAndLock(
+	ctx context.Context,
+	s *Session,
+	tableID uint64,
+	acquireTableLock bool,
+	acquireTablesLock bool,
+) (*Table, bool) {
+	t, ok := getTable(s, tableID, acquireTablesLock)
 	if !ok {
 		return nil, false
 	}
 
-	if acquireLock {
+	if acquireTableLock {
 		// By default, every table-related command will acquire the table lock before performing
 		// any work on the table
 		// After calling "getTableAndLock()", the parent function should immediately perform a
@@ -193,7 +250,7 @@ func getTableAndLock(ctx context.Context, s *Session, tableID uint64, acquireLoc
 }
 
 func getTableIDFromName(ctx context.Context, tableName string) (uint64, bool) {
-	tableList := tables.GetList()
+	tableList := tables.GetList(false)
 	for _, t := range tableList {
 		foundTable := false
 		t.Lock(ctx)
@@ -211,7 +268,7 @@ func getTableIDFromName(ctx context.Context, tableName string) (uint64, bool) {
 }
 
 func deleteTable(t *Table) {
-	tables.Delete(t.ID)
-	t.Deleted = true // It is assumed that t.Mutex is locked at this point
+	tables.Delete(t.ID) // It is assumed that tables.mutex is locked at this point
+	t.Deleted = true    // It is assumed that t.Mutex is locked at this point
 	notifyAllTableGone(t)
 }

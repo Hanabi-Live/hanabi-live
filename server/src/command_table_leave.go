@@ -13,11 +13,11 @@ import (
 //   tableID: 5,
 // }
 func commandTableLeave(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -41,15 +41,23 @@ func commandTableLeave(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	tableLeave(ctx, s, t, playerIndex)
+	tableLeave(ctx, s, d, t, playerIndex)
 }
 
-func tableLeave(ctx context.Context, s *Session, t *Table, playerIndex int) {
+func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
 	logger.Info(t.GetName() + "User \"" + s.Username + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
-	// Remove the player
 	t.Players = append(t.Players[:playerIndex], t.Players[playerIndex+1:]...)
+	tables.DeletePlaying(s.UserID, t.ID) // Keep track of user to table relationships
+
 	notifyAllTable(t)
 	t.NotifyPlayerChange()
 
@@ -76,7 +84,7 @@ func tableLeave(ctx context.Context, s *Session, t *Table, playerIndex int) {
 	}
 
 	// Force everyone else to leave if it was the owner that left
-	if s.UserID == t.Owner && len(t.Players) > 0 {
+	if s.UserID == t.OwnerID && len(t.Players) > 0 {
 		for len(t.Players) > 0 {
 			p := t.Players[0]
 			s2 := p.Session
@@ -84,12 +92,13 @@ func tableLeave(ctx context.Context, s *Session, t *Table, playerIndex int) {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s2 = NewFakeSession(p.ID, p.Name)
+				s2 = NewFakeSession(p.UserID, p.Name)
 				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
 			commandTableLeave(ctx, s2, &CommandData{ // nolint: exhaustivestruct
-				TableID: t.ID,
-				NoLock:  true,
+				TableID:      t.ID,
+				NoTableLock:  true,
+				NoTablesLock: true,
 			})
 		}
 		return

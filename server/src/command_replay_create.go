@@ -71,6 +71,25 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
+	replayCreate(ctx, s, d)
+}
+
+func replayCreate(ctx context.Context, s *Session, d *CommandData) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
+	// Validate that the player is not spectating another table
+	// (this cannot be in the "commandReplayCreate()" function because we need the tables lock)
+	if len(tables.GetTablesUserSpectating(s.UserID)) > 0 {
+		s.Warning("You cannot spectate more than one table at a time. " +
+			"Leave your other table before creating a new replay.")
+		return
+	}
+
 	// Create a table
 	name := strings.Title(d.Visibility) + " replay for "
 	if d.Source == "id" {
@@ -121,8 +140,9 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 
 	// Start the (fake) game
 	commandTableStart(ctx, t.Players[0].Session, &CommandData{ // nolint: exhaustivestruct
-		TableID: t.ID,
-		NoLock:  true,
+		TableID:      t.ID,
+		NoTableLock:  true,
+		NoTablesLock: true,
 	})
 	g := t.Game
 	if g == nil {
@@ -168,9 +188,10 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 	commandTableSpectate(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID:              t.ID,
 		ShadowingPlayerIndex: -1,
-		NoLock:               true,
+		NoTableLock:          true,
+		NoTablesLock:         true,
 	})
-	t.Owner = s.UserID
+	t.OwnerID = s.UserID
 
 	// Start the idle timeout
 	go t.CheckIdle(ctx)
@@ -542,7 +563,7 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		id := (i + 1) * -1
 
 		player := &Player{
-			ID:        id,
+			UserID:    id,
 			Name:      name,
 			Session:   NewFakeSession(id, name),
 			Present:   true,

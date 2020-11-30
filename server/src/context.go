@@ -5,7 +5,6 @@ package main
 
 import (
 	"context"
-	"runtime/debug"
 	"strconv"
 	"sync/atomic"
 )
@@ -67,7 +66,7 @@ func printContextWithStackTrace(ctx context.Context, msg string) {
 		msg += "ContextID: " + strconv.FormatUint(sessionContext.ContextID, 10) + ", "
 		msg += "Type: " + sessionContext.Type
 	}
-	msg += "\n" + string(debug.Stack())
+	// msg += "\n" + string(debug.Stack())
 
 	logger.Debug(msg)
 }

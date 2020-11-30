@@ -15,11 +15,11 @@ import (
 //   },
 // }
 func commandTableSetVariant(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -28,7 +28,7 @@ func commandTableSetVariant(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	if s.UserID != t.Owner {
+	if s.UserID != t.OwnerID {
 		s.Warning(NotOwnerFail)
 		return
 	}
@@ -61,7 +61,7 @@ func tableSetVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 	// Update the variant-specific stats for each player at the table
 	for _, p := range t.Players {
 		var variantStats *UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variant.ID); err != nil {
+		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
 			logger.Error("Failed to get the stats for player \""+s.Username+"\" for variant "+
 				strconv.Itoa(variant.ID)+":", err)
 			s.Error(DefaultErrorMsg)

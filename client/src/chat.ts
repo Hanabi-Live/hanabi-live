@@ -616,7 +616,7 @@ export function addSelf(msg: string, room: string): void {
       who: "",
       discord: false,
       server: true,
-      datetime: new Date().getTime(),
+      datetime: new Date().toString(),
       room,
       recipient: "",
     },

@@ -19,11 +19,11 @@ import (
 //   shadowingPlayerIndex: -1,
 // }
 func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -33,19 +33,20 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they are not already spectating this table
-	for _, sp := range t.Spectators {
-		if sp.ID == s.UserID {
-			s.Warning("You are already spectating this table.")
+	// Validate that they are not playing at this table
+	for _, p := range t.Players {
+		if p.UserID == s.UserID {
+			s.Warning("You cannot spectate a game that you are currently playing.")
 			return
 		}
 	}
 
-	// Validate that they are not already spectating another table
-	spectatingTable := tables.FindUserSpectatingTable(ctx, s.UserID, t.ID)
-	if spectatingTable != nil {
-		s.Warning("You are already spectating table " + strconv.FormatUint(spectatingTable.ID, 10) + ".")
-		return
+	// Validate that they are not already spectating this table
+	for _, sp := range t.Spectators {
+		if sp.UserID == s.UserID {
+			s.Warning("You are already spectating this table.")
+			return
+		}
 	}
 
 	// Validate the shadowing player index
@@ -57,12 +58,26 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
-	tableSpectate(s, d, t)
+	tableSpectate(ctx, s, d, t)
 }
 
-func tableSpectate(s *Session, d *CommandData, t *Table) {
+func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
+
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
+	// Validate that they are not already spectating another table
+	if len(tables.GetTablesUserSpectating(s.UserID)) > 0 {
+		s.Warning("You are already spectating a table, so you cannot spectate table " +
+			strconv.FormatUint(t.ID, 10) + ".")
+		return
+	}
 
 	if t.Replay {
 		logger.Info(t.GetName() + "User \"" + s.Username + "\" joined the replay.")
@@ -73,11 +88,11 @@ func tableSpectate(s *Session, d *CommandData, t *Table) {
 	// They might be reconnecting after a disconnect,
 	// so mark that this player is no longer disconnected
 	// (this will be a no-op if they were not in the "DisconSpectators" map)
-	delete(t.DisconSpectators, s.UserID)
+	tables.DeleteDisconSpectating(s.UserID)
 
 	// Add them to the spectators object
 	sp := &Spectator{
-		ID:                   s.UserID,
+		UserID:               s.UserID,
 		Name:                 s.Username,
 		Session:              s,
 		Typing:               false,
@@ -85,7 +100,10 @@ func tableSpectate(s *Session, d *CommandData, t *Table) {
 		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
 		Notes:                make([]string, g.GetNotesSize()),
 	}
+
 	t.Spectators = append(t.Spectators, sp)
+	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships
+
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby
 	t.NotifySpectators() // Update the in-game spectator list
 

@@ -43,34 +43,10 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 		return
 	}
 
-	tableList := tables.GetList()
-
-	// Automatically end all unstarted tables,
-	// since they will almost certainly not have time to finish
 	if minutesLeft == 5 {
-		unstartedTableIDs := make([]uint64, 0)
-
-		for _, t := range tableList {
-			t.Lock(ctx)
-			if !t.Running {
-				unstartedTableIDs = append(unstartedTableIDs, t.ID)
-			}
-			t.Unlock(ctx)
-		}
-
-		for _, unstartedTableID := range unstartedTableIDs {
-			t, exists := getTableAndLock(ctx, nil, unstartedTableID, true)
-			if !exists {
-				continue
-			}
-
-			s := t.GetOwnerSession()
-			commandTableLeave(ctx, s, &CommandData{ // nolint: exhaustivestruct
-				TableID: t.ID,
-				NoLock:  true,
-			})
-			t.Unlock(ctx)
-		}
+		// Automatically end all unstarted tables,
+		// since they will almost certainly not have time to finish
+		terminateAllUnstartedTables(ctx)
 	}
 
 	// Send a warning message to the lobby
@@ -78,6 +54,7 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 	chatServerSend(ctx, msg, "lobby")
 
 	// Send a warning message to the people still playing
+	tableList := tables.GetList(true)
 	roomNames := make([]string, 0)
 	for _, t := range tableList {
 		t.Lock(ctx)
@@ -88,6 +65,26 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 	msg += " Finish your game soon or it will be automatically terminated!"
 	for _, roomName := range roomNames {
 		chatServerSend(ctx, msg, roomName)
+	}
+}
+
+func terminateAllUnstartedTables(ctx context.Context) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
+	for _, t := range tables.GetList(false) {
+		t.Lock(ctx)
+		if !t.Running {
+			s := t.GetOwnerSession()
+			commandTableLeave(ctx, s, &CommandData{ // nolint: exhaustivestruct
+				TableID:      t.ID,
+				NoTableLock:  true,
+				NoTablesLock: true,
+			})
+		}
+		t.Unlock(ctx)
 	}
 }
 
@@ -110,40 +107,38 @@ func shutdownWait(ctx context.Context) {
 		} else if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
 			// It has been a long time since the server shutdown/restart was initiated,
 			// so automatically terminate any remaining ongoing games
-			tableList := tables.GetList()
-			tableIDsToTerminate := make([]uint64, 0)
-			for _, t := range tableList {
-				t.Lock(ctx)
-				if t.Running && !t.Replay {
-					tableIDsToTerminate = append(tableIDsToTerminate, t.ID)
-				}
-				t.Unlock(ctx)
-			}
-
-			for _, tableIDToTerminate := range tableIDsToTerminate {
-				t, exists := getTableAndLock(ctx, nil, tableIDToTerminate, true)
-				if !exists {
-					continue
-				}
-
-				s := t.GetOwnerSession()
-				commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
-					TableID: t.ID,
-					Type:    ActionTypeEndGame,
-					Target:  -1,
-					Value:   EndConditionTerminated,
-					NoLock:  true,
-				})
-				t.Unlock(ctx)
-			}
+			terminateAllStartedTables(ctx)
 		}
 
 		time.Sleep(time.Second)
 	}
 }
 
+func terminateAllStartedTables(ctx context.Context) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
+	for _, t := range tables.GetList(false) {
+		t.Lock(ctx)
+		if t.Running && !t.Replay {
+			s := t.GetOwnerSession()
+			commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
+				TableID:      t.ID,
+				Type:         ActionTypeEndGame,
+				Target:       -1,
+				Value:        EndConditionTerminated,
+				NoTableLock:  true,
+				NoTablesLock: true,
+			})
+		}
+		t.Unlock(ctx)
+	}
+}
+
 func countActiveTables(ctx context.Context) int {
-	tableList := tables.GetList()
+	tableList := tables.GetList(true)
 	numTables := 0
 	for _, t := range tableList {
 		t.Lock(ctx)

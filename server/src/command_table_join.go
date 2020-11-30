@@ -16,29 +16,19 @@ import (
 //   tableID: 15103,
 // }
 func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
-	if strings.HasPrefix(s.Username, "Bot-") {
-		// Validate that the player is not already joined to this table
-		playerIndex := t.GetPlayerIndexFromID(s.UserID)
-		if playerIndex != -1 {
-			s.Warning("You have already joined this table.")
-			return
-		}
-	} else {
-		// Validate that the player is not joined to any table
-		// (only bots have the ability to join more than one table)
-		if t2 := tables.FindUserJoinedTable(ctx, s.UserID, t.ID); t2 != nil {
-			s.Warning("You cannot join more than one table at a time. " +
-				"Terminate your other game before joining a new one.")
-			return
-		}
+	// Validate that the player is not already joined to this table
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	if playerIndex != -1 {
+		s.Warning("You have already joined this table.")
+		return
 	}
 
 	// Validate that this table does not already have 6 players
@@ -77,12 +67,30 @@ func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	tableJoin(ctx, s, t)
+	tableJoin(ctx, s, d, t)
 }
 
-func tableJoin(ctx context.Context, s *Session, t *Table) {
+func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	variant := variants[t.Options.VariantName]
+
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
+	// Validate that the player is not joined to any table
+	// (this cannot be in the "commandTableJoin()" function because we need the tables lock)
+	// (only bots have the ability to join more than one table)
+	if !strings.HasPrefix(s.Username, "Bot-") {
+		if len(tables.GetTablesUserPlaying(s.UserID)) > 0 {
+			s.Warning("You cannot join more than one table at a time. " +
+				"Terminate your other game before joining a new one.")
+			return
+		}
+	}
 
 	logger.Info(t.GetName() + "User \"" + s.Username + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
@@ -110,7 +118,7 @@ func tableJoin(ctx context.Context, s *Session, t *Table) {
 	}
 
 	p := &Player{
-		ID:      s.UserID,
+		UserID:  s.UserID,
 		Name:    s.Username,
 		Session: s,
 		Present: true,
@@ -121,7 +129,10 @@ func tableJoin(ctx context.Context, s *Session, t *Table) {
 		Typing:    false,
 		LastTyped: time.Time{},
 	}
+
 	t.Players = append(t.Players, p)
+	tables.AddPlaying(s.UserID, t.ID) // Keep track of user to table relationships
+
 	notifyAllTable(t)
 	t.NotifyPlayerChange()
 
@@ -135,7 +146,7 @@ func tableJoin(ctx context.Context, s *Session, t *Table) {
 
 	// Send them the chat history for this game
 	chatSendPastFromTable(s, t)
-	t.ChatRead[p.ID] = len(t.Chat)
+	t.ChatRead[p.UserID] = len(t.Chat)
 
 	// Send them messages for people typing, if any
 	for _, p := range t.Players {
@@ -154,7 +165,7 @@ func tableJoin(ctx context.Context, s *Session, t *Table) {
 	if t.AutomaticStart == len(t.Players) {
 		// Check to see if the owner is present
 		for _, p2 := range t.Players {
-			if p2.ID == t.Owner {
+			if p2.UserID == t.OwnerID {
 				if !p2.Present {
 					msg := "Aborting automatic game start since the table creator is away."
 					chatServerSend(ctx, msg, t.GetRoomName())
@@ -162,8 +173,9 @@ func tableJoin(ctx context.Context, s *Session, t *Table) {
 				}
 
 				commandTableStart(ctx, p2.Session, &CommandData{ // nolint: exhaustivestruct
-					TableID: t.ID,
-					NoLock:  true,
+					TableID:      t.ID,
+					NoTableLock:  true,
+					NoTablesLock: true,
 				})
 				return
 			}
@@ -181,7 +193,7 @@ func tableJoin(ctx context.Context, s *Session, t *Table) {
 	if time.Since(datetimeLastJoined) > time.Second*15 {
 		for _, p2 := range t.Players {
 			// Skip sending a message to the player that just joined
-			if p2.ID != p.ID {
+			if p2.UserID != p.UserID {
 				p2.Session.NotifySoundLobby("someone_joined")
 			}
 		}

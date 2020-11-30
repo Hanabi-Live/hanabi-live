@@ -166,11 +166,11 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	t, exists := getTableAndLock(ctx, s, tableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, tableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 

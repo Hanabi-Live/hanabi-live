@@ -36,10 +36,10 @@ type ChatMessage struct {
 // to notify that the server is shutting down, etc.)
 func chatServerSend(ctx context.Context, msg string, room string) {
 	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-		Msg:    msg,
-		Room:   room,
-		Server: true,
-		NoLock: true,
+		Msg:         msg,
+		Room:        room,
+		Server:      true,
+		NoTableLock: true,
 	})
 }
 
@@ -48,7 +48,7 @@ func chatServerSend(ctx context.Context, msg string, room string) {
 func chatServerSendAll(ctx context.Context, msg string) {
 	chatServerSend(ctx, msg, "lobby")
 
-	tableList := tables.GetList()
+	tableList := tables.GetList(true)
 	roomNames := make([]string, 0)
 	for _, t := range tableList {
 		t.Lock(ctx)
