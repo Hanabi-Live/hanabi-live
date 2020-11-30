@@ -1,10 +1,10 @@
-name: CI Tasks
+name: CI
 
 on: [push, pull_request]
 
 jobs:
   client_build:
-    name: Client Build/Compile
+    name: Client / Build (Compile TypeScript)
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -23,7 +23,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   client_lint:
-    name: Client Lint (ESLint)
+    name: Client / Lint (ESLint)
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -44,7 +44,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   client_test:
-    name: Client Test (Jest)
+    name: Client / Test (Jest)
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -65,7 +65,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   server_build:
-    name: Server Build/Compile
+    name: Server / Build (Compile Go)
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -76,7 +76,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   server_lint:
-    name: Server Lint (golangci-lint)
+    name: Server / Lint (golangci-lint)
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
