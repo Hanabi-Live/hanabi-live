@@ -9,7 +9,6 @@ import {
   statsRules,
   turnRules,
 } from "../../rules";
-import CardNote from "../../types/CardNote";
 import CardStatus from "../../types/CardStatus";
 import { MAX_CLUE_NUM } from "../../types/constants";
 import GameMetadata from "../../types/GameMetadata";
@@ -103,15 +102,6 @@ export default function initialGameState(metadata: GameMetadata): GameState {
 
       cardsGotten: 0,
       cardsGottenByNotes: 0,
-      notes: new Array(deckRules.totalCards(variant)).fill({
-        possibilities: [],
-        chopMoved: false,
-        needsFix: false,
-        knownTrash: false,
-        finessed: false,
-        blank: false,
-        unclued: false,
-      }) as CardNote[], // indexed by card order
       potentialCluesLost: 0,
 
       cluesStillUsable,

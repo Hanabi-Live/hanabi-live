@@ -1,5 +1,4 @@
 import { GameAction } from "./actions";
-import CardNote from "./CardNote";
 import { PaceRisk } from "./GameState";
 import SoundType from "./SoundType";
 
@@ -21,7 +20,6 @@ export default interface StatsState {
   // For future efficiency
   readonly cluesStillUsable: number | null;
   readonly cardsGottenByNotes: number | null;
-  readonly notes: CardNote[];
   // (cardsNotGotten is simply "maxScore - cardsGotten")
   // (future efficiency is simply "cardsNotGotten / cluesStillUsable")
 

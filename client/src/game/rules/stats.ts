@@ -1,7 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency
 
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
-import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";

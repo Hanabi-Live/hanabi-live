@@ -251,12 +251,6 @@ commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   for (const stackBase of globals.stackBases) {
     stackBase.checkSpecialNote();
   }
-
-  if (!globals.state.finished) {
-    globals.store!.dispatch({
-      type: "note",
-    });
-  }
 });
 
 // Used when the game state changes

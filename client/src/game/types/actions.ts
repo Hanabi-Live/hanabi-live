@@ -22,7 +22,6 @@ export type GameAction =
   | ActionDiscard
   | ActionDraw
   | ActionGameOver
-  | ActionNote
   | ActionPlay
   | ActionPlayerTimes
   | ActionStrike
@@ -149,10 +148,6 @@ export interface ActionGameOver {
   type: "gameOver";
   readonly endCondition: EndCondition;
   readonly playerIndex: number;
-}
-
-export interface ActionNote {
-  type: "note";
 }
 
 export interface ActionPlay {

@@ -35,7 +35,6 @@ function get(order: number, our: boolean) {
 // 1) update the stored note in memory
 // 2) send the new note to the server
 // 3) check for new note identities
-// 4) update efficiency
 export function set(order: number, note: string): void {
   const oldNote = globals.ourNotes.get(order) ?? "";
   globals.ourNotes.set(order, note);
@@ -66,10 +65,6 @@ export function set(order: number, note: string): void {
 
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
-
-  globals.store!.dispatch({
-    type: "note",
-  });
 }
 
 function getNoteKeywords(note: string) {
