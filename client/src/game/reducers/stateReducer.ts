@@ -227,7 +227,9 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.playing,
         state.finished,
       );
-      break;
+      if (action.type === "noteList" || action.type === "receiveNote") {
+        break;
+      }
     }
 
     default: {
@@ -238,6 +240,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         action,
         state.playing,
         state.metadata,
+        state.notes.ourNotes,
       );
 
       // We copy the card identities to the global state for convenience

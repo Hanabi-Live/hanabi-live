@@ -1,6 +1,7 @@
 // Functions to calculate game stats such as pace and efficiency
 
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
+import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";
@@ -178,16 +179,12 @@ export function cardsGotten(
 }
 
 export function cardsGottenByNotes(
-  notes: CardNote[],
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  playing: boolean,
   variant: Variant,
-): number | null {
-  if (!playing) {
-    return null;
-  }
+  notes: CardNote[],
+): number {
   let currentCardsGottenByNotes = 0;
 
   deck.forEach((card, order) => {
@@ -212,6 +209,7 @@ export function cardsGottenByNotes(
         (note.finessed || (cardRules.isClued(card) && !note.unclued))
           ? 1
           : 0;
+      console.log([order,note,a,b]);
 
       currentCardsGottenByNotes += b - a;
     }
