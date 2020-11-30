@@ -200,7 +200,6 @@ export function cardsGottenByNotes(
     ) {
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
-      // vvv maybe the list of notes should be part of the state
       const note = notes[order];
 
       // Contribution desired based on notes

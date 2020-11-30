@@ -247,8 +247,8 @@ function gameStateReducerFunction(
 
     // Some actions do not affect the main state or are handled by another reducer
     case "editNote":
-    case "noteListPlayer":
     case "noteList":
+    case "noteListPlayer":
     case "receiveNote":
     case "turn":
     case "cardIdentity": {
