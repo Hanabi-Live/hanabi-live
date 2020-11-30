@@ -168,7 +168,7 @@ func (g *Game) CheckTimer(
 	t := g.Table
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false, true)
 	if !exists || t != t2 {
 		return
 	}
@@ -200,6 +200,7 @@ func (g *Game) CheckTimer(
 
 // EndTimer is called when a player has run out of time in a timed game, which will automatically
 // end the game with a score of 0
+// The table lock is assumed to be acquired in this function
 func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 	// Local variables
 	t := g.Table
@@ -216,17 +217,17 @@ func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 		// A player's session should never be nil
 		// They might be in the process of reconnecting,
 		// so make a fake session that will represent them
-		s = NewFakeSession(p.ID, p.Name)
+		s = NewFakeSession(p.UserID, p.Name)
 		logger.Info("Created a new fake session in the \"CheckTimer()\" function.")
 	}
 
 	// End the game
 	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID: t.ID,
-		Type:    ActionTypeEndGame,
-		Target:  gp.Index,
-		Value:   EndConditionTimeout,
-		NoLock:  true,
+		TableID:     t.ID,
+		Type:        ActionTypeEndGame,
+		Target:      gp.Index,
+		Value:       EndConditionTimeout,
+		NoTableLock: true,
 	})
 }
 

@@ -64,7 +64,7 @@ func (t *Table) NotifyPlayerChange() {
 			gamePlayer := &GamePlayerMessage{
 				Index:   j,
 				Name:    p2.Name,
-				You:     p.ID == p2.ID,
+				You:     p.UserID == p2.UserID,
 				Present: p2.Present,
 				Stats:   p2.Stats,
 			}
@@ -83,7 +83,7 @@ func (t *Table) NotifyPlayerChange() {
 		p.Session.Emit("game", &GameMessage{
 			TableID:           t.ID,
 			Name:              t.Name,
-			Owner:             t.Owner,
+			Owner:             t.OwnerID,
 			Players:           gamePlayers,
 			Options:           t.Options,
 			PasswordProtected: t.PasswordHash != "",

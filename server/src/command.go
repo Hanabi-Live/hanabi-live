@@ -74,7 +74,8 @@ type CommandData struct {
 	Args []string `json:"-"`
 	// Used when a command handler calls another command handler
 	// (e.g. the mutex lock is already acquired and does not need to be acquired again)
-	NoLock bool `json:"-"`
+	NoTableLock  bool `json:"-"` // To avoid "t.Lock()"
+	NoTablesLock bool `json:"-"` // To avoid "tables.Lock()"
 }
 
 var (

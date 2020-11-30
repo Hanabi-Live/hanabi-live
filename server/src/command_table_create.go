@@ -54,15 +54,6 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that the player is not joined to another table
-	if !strings.HasPrefix(s.Username, "Bot-") {
-		if t2 := tables.FindUserJoinedTable(ctx, s.UserID, 0); t2 != nil { // We pass 0 as a null value
-			s.Warning("You cannot join more than one table at a time. " +
-				"Terminate your other game before creating a new one.")
-			return
-		}
-	}
-
 	// Truncate long table names
 	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
 	if len(d.Name) > MaxGameNameLength {
@@ -279,6 +270,23 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 }
 
 func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialGameData) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
+	// Validate that the player is not joined to another table
+	// (this cannot be in the "commandTableCreate()" function because we need the tables lock)
+	if !strings.HasPrefix(s.Username, "Bot-") {
+		if len(tables.GetTablesUserPlaying(s.UserID)) > 0 {
+			s.Warning("You cannot join more than one table at a time. " +
+				"Terminate your other game before creating a new one.")
+			return
+		}
+	}
+
 	passwordHash := ""
 	if d.Password != "" {
 		// Create an Argon2id hash of the plain-text password
@@ -357,7 +365,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 	// Log a chat message so that future players can see a timestamp of when the table was created
 	msg := s.Username + " created the table."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), true)
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {
@@ -366,13 +374,14 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
 			"Keep in mind that if your game is not finished in time, it will be terminated."
-		chatServerSend(ctx, msg, t.GetRoomName())
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 	}
 
 	// Join the user to the new table
 	commandTableJoin(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID:  t.ID,
-		Password: d.Password,
-		NoLock:   true,
+		TableID:      t.ID,
+		Password:     d.Password,
+		NoTableLock:  true,
+		NoTablesLock: true,
 	})
 }

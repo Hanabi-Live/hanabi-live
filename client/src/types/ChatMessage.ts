@@ -3,7 +3,7 @@ export default interface ChatMessage {
   who: string;
   discord: boolean;
   server: boolean;
-  datetime: number;
+  datetime: string; // Converted to a date in the "chat.add()" function
   room: string;
   recipient: string;
 }

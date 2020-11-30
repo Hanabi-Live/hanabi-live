@@ -81,7 +81,7 @@ func discordConnect() {
 	// (we wait for Discord to connect before displaying this message)
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	chatServerSend(ctx, msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
 }
 
 /*
@@ -141,7 +141,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		DiscordID: m.Author.ID,
 		// Pass through the discriminator so we can append it to the username
 		DiscordDiscriminator: m.Author.Discriminator,
-		NoLock:               true,
 	})
 }
 

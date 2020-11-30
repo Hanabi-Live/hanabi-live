@@ -98,7 +98,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		PasswordProtected: len(t.PasswordHash) > 0,
 		Joined:            playerIndex != -1,
 		NumPlayers:        len(t.Players),
-		Owned:             s.UserID == t.Owner,
+		Owned:             s.UserID == t.OwnerID,
 		Running:           t.Running,
 		Variant:           t.Options.VariantName,
 		Timed:             t.Options.Timed,

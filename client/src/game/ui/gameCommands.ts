@@ -473,8 +473,8 @@ function initStateStore(data: InitData) {
   globals.store.dispatch({
     type: "init",
     spectating: data.spectating,
-    datetimeStarted: data.datetimeStarted,
-    datetimeFinished: data.datetimeFinished,
+    datetimeStarted: data.datetimeStarted.toString(),
+    datetimeFinished: data.datetimeFinished.toString(),
     replay: data.replay,
     sharedReplay: data.sharedReplay,
     databaseID: data.databaseID,

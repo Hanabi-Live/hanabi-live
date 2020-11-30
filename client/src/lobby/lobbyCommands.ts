@@ -137,11 +137,11 @@ commands.set("name", (data: NameData) => {
 
 interface ShutdownData {
   shuttingDown: boolean;
-  datetimeShutdownInit: number;
+  datetimeShutdownInit: string;
 }
 commands.set("shutdown", (data: ShutdownData) => {
   globals.shuttingDown = data.shuttingDown;
-  globals.datetimeShutdownInit = data.datetimeShutdownInit;
+  globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
 });
 
 interface SoundLobbyData {
@@ -277,6 +277,7 @@ commands.set("welcome", (data: WelcomeData) => {
   globals.friends = data.friends;
   globals.randomTableName = data.randomTableName;
   globals.shuttingDown = data.shuttingDown;
+  globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
   globals.maintenanceMode = data.maintenanceMode;
 
   // Now that we know what our user ID and username are, we can attach them to the Sentry context
@@ -286,6 +287,28 @@ commands.set("welcome", (data: WelcomeData) => {
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
   lobbySettingsTooltip.setSettingsTooltip();
   lobbyLogin.hide(data.firstTimeUser);
+
+  // If the server has informed us that we are currently playing in an ongoing game,
+  // automatically reconnect to that game
+  // (and ignore any specific custom path that the user has entered)
+  if (data.playingAtTables.length > 0) {
+    const firstTableID = data.playingAtTables[0];
+    globals.conn!.send("tableReattend", {
+      tableID: firstTableID,
+    });
+    return;
+  }
+
+  // If the server has informed us that were previously spectating an ongoing shared replay,
+  // automatically spectate that table
+  // (and ignore any specific custom path that the user has entered)
+  if (data.disconSpectatingTable !== 0) {
+    globals.conn!.send("tableSpectate", {
+      tableID: data.disconSpectatingTable,
+      shadowingPlayerIndex: -1,
+    });
+    return;
+  }
 
   // If we have entered a specific URL, we might want to go somewhere specific instead of the lobby
   url.parseAndGoto(data);

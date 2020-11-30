@@ -21,11 +21,11 @@ const (
 //   msg: 'inverted priority finesse',
 // }
 func commandTag(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoLock)
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
-	if !d.NoLock {
+	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
 
@@ -89,7 +89,7 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	msg := s.Username + " has added a game tag of \"" + d.Msg + "\"."
-	chatServerSend(ctx, msg, t.GetRoomName())
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }
 
 func sanitizeTag(tag string) (string, error) {

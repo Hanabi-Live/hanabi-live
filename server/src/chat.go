@@ -34,21 +34,22 @@ type ChatMessage struct {
 // chatServerSend is a helper function to send a message from the server
 // (e.g. to give feedback to a user after they type a command,
 // to notify that the server is shutting down, etc.)
-func chatServerSend(ctx context.Context, msg string, room string) {
+func chatServerSend(ctx context.Context, msg string, room string, noTablesLock bool) {
 	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-		Msg:    msg,
-		Room:   room,
-		Server: true,
-		NoLock: true,
+		Msg:          msg,
+		Room:         room,
+		Server:       true,
+		NoTableLock:  true,
+		NoTablesLock: noTablesLock,
 	})
 }
 
 // chatServerSendAll is a helper function to broadcast a message to everyone on the server,
 // whether they are in the lobby or in the middle of a game
 func chatServerSendAll(ctx context.Context, msg string) {
-	chatServerSend(ctx, msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
 
-	tableList := tables.GetList()
+	tableList := tables.GetList(true)
 	roomNames := make([]string, 0)
 	for _, t := range tableList {
 		t.Lock(ctx)
@@ -57,7 +58,7 @@ func chatServerSendAll(ctx context.Context, msg string) {
 	}
 
 	for _, roomName := range roomNames {
-		chatServerSend(ctx, msg, roomName)
+		chatServerSend(ctx, msg, roomName, false)
 	}
 }
 

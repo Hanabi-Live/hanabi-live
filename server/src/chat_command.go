@@ -91,11 +91,12 @@ func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if ok {
 		chatCommandFunction(ctx, s, d, t)
 	} else {
-		chatServerSend(ctx, "The chat command of \"/"+command+"\" is not valid.", d.Room)
+		msg := "The chat command of \"/" + command + "\" is not valid."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 }
 
 func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
-	chatServerSend(ctx, msg, d.Room)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
