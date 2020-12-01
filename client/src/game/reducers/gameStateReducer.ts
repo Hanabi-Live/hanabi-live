@@ -13,6 +13,7 @@ import {
   variantRules,
 } from "../rules";
 import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
+import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import EndCondition from "../types/EndCondition";
 import GameMetadata, { getPlayerName } from "../types/GameMetadata";
@@ -30,6 +31,7 @@ function gameStateReducerFunction(
   action: GameAction,
   playing: boolean,
   metadata: GameMetadata,
+  ourNotes?: CardNote[],
 ) {
   const variant = getVariant(metadata.options.variantName);
 
@@ -259,6 +261,11 @@ function gameStateReducerFunction(
     }
   }
 
+  if (action.type === "noteList" || action.type === "receiveNote") {
+    // This has no effect, so don't bother computing anything
+    return;
+  }
+
   // Use a sub-reducer to calculate changes on cards
   state.deck = castDraft(
     cardsReducer(original(state.deck)!, action, state, playing, metadata),
@@ -308,6 +315,7 @@ function gameStateReducerFunction(
     state,
     playing,
     metadata,
+    ourNotes ?? null,
   );
 }
 

@@ -1,6 +1,7 @@
 // Functions to calculate game stats such as pace and efficiency
 
 import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
+import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";
@@ -153,7 +154,7 @@ export function cardsGotten(
       // (and failed discards count as played for the purposes of "Throw It in a Hole" variants)
       currentCardsGotten += 1;
     } else if (
-      typeof card.location === "number" && // This card is in a player's hand
+      cardRules.isInPlayerHand(card) &&
       cardRules.isClued(card) &&
       !cardRules.allPossibilitiesTrash(
         card,
@@ -175,6 +176,44 @@ export function cardsGotten(
   }
 
   return currentCardsGotten;
+}
+
+export function cardsGottenByNotes(
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+  notes: CardNote[],
+): number {
+  let currentCardsGottenByNotes = 0;
+
+  deck.forEach((card, order) => {
+    if (
+      cardRules.isInPlayerHand(card) &&
+      !cardRules.allPossibilitiesTrash(
+        card,
+        deck,
+        playStacks,
+        playStackDirections,
+        variant,
+      )
+    ) {
+      // Original contribution
+      const a = cardRules.isClued(card) ? 1 : 0;
+      const note = notes[order];
+
+      // Contribution desired based on notes
+      const b =
+        !note.knownTrash &&
+        (note.finessed || (cardRules.isClued(card) && !note.unclued))
+          ? 1
+          : 0;
+      console.log([order, note, a, b]);
+
+      currentCardsGottenByNotes += b - a;
+    }
+  });
+  return currentCardsGottenByNotes;
 }
 
 // Calculate the minimum amount of efficiency needed in order to win this variant

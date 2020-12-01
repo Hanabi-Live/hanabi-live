@@ -144,6 +144,7 @@ const visibleStateObservers: Subscriptions = [
   subVS(
     (s) => ({
       cardsGotten: s.stats.cardsGotten,
+      cardsGottenByNotes: s.stats.cardsGottenByNotes,
       potentialCluesLost: s.stats.potentialCluesLost,
       maxScore: s.stats.maxScore,
       cluesStillUsable: s.stats.cluesStillUsable,

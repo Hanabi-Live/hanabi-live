@@ -216,8 +216,6 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       break;
     }
 
-    case "editNote":
-    case "noteListPlayer":
     case "noteList":
     case "receiveNote": {
       state.notes = notesReducer(
@@ -230,6 +228,29 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       break;
     }
 
+    case "editNote":
+    case "noteListPlayer": {
+      state.notes = notesReducer(
+        original(state.notes),
+        action,
+        state.metadata,
+        state.playing,
+        state.finished,
+      );
+
+      if (state.playing && !state.finished) {
+        // Recompute efficiency since it could change
+        state.ongoingGame = gameStateReducer(
+          original(state.ongoingGame),
+          action,
+          state.playing,
+          state.metadata,
+          state.notes.ourNotes,
+        );
+      }
+      break;
+    }
+
     default: {
       // A new game action happened
       const previousSegment = state.ongoingGame.turn.segment;
@@ -238,6 +259,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         action,
         state.playing,
         state.metadata,
+        state.notes.ourNotes,
       );
 
       // We copy the card identities to the global state for convenience

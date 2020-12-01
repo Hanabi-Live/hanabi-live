@@ -6,6 +6,7 @@ import { getVariant } from "../data/gameData";
 import { clueTokensRules, turnRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
 import { GameAction } from "../types/actions";
+import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import StatsState from "../types/StatsState";
@@ -21,6 +22,7 @@ function statsReducerFunction(
   currentState: GameState,
   playing: boolean,
   metadata: GameMetadata,
+  ourNotes: CardNote[] | null,
 ) {
   const variant = getVariant(metadata.options.variantName);
 
@@ -102,6 +104,17 @@ function statsReducerFunction(
     stats.maxScore,
     variant,
   );
+  if (ourNotes !== null) {
+    stats.cardsGottenByNotes = statsRules.cardsGottenByNotes(
+      currentState.deck,
+      currentState.playStacks,
+      currentState.playStackDirections,
+      variant,
+      ourNotes,
+    );
+  } else {
+    stats.cardsGottenByNotes = null;
+  }
 
   // Handle future efficiency calculation
   const scorePerStack: number[] = Array.from(
