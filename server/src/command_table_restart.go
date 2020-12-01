@@ -209,7 +209,8 @@ func tableRestart(
 		Name:    newTableName,
 		Options: t.Options,
 		// We want to prevent the pre-game from showing up in the lobby for a brief second
-		HidePregame: true,
+		HidePregame:  true,
+		NoTablesLock: true,
 	})
 
 	// Find the table ID for the new game
@@ -287,7 +288,7 @@ func tableRestart(
 	url := getURLFromPath(path)
 	link := "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener noreferrer\">#" + strconv.Itoa(t.ExtraOptions.DatabaseID) + "</a>"
 	msg := "The game has been restarted (from game " + link + ")."
-	chatServerSend(ctx, msg, t2.GetRoomName(), d.NoTablesLock)
+	chatServerSend(ctx, msg, t2.GetRoomName(), true)
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "restarted" message, since it is superfluous
