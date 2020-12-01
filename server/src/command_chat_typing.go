@@ -76,7 +76,7 @@ func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	time.Sleep(TypingDelay)
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false, false)
+	t2, exists := getTableAndLock(ctx, nil, t.ID, true, true)
 	if !exists || t != t2 {
 		return
 	}
