@@ -134,10 +134,13 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 		restoreTableAction(t, i, a)
 	}
 
-	// Ensure that all of the players are not present
-	// (they were presumably present and connected when the table serialization happened)
 	for _, p := range t.Players {
+		// Ensure that all of the players are not present
+		// (they were presumably present and connected when the table serialization happened)
 		p.Present = false
+
+		// Restore the player relationships
+		tables.AddPlaying(p.UserID, t.ID)
 	}
 
 	if g.Options.Timed {
