@@ -79,6 +79,8 @@ interface FinishOngoingGameData {
   sharedReplayLeader: string;
 }
 commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
+  // Zero out the user-created efficiency modifier, if any
+  // In a shared replay, this must be synced with the shared replay leader
   globals.store!.dispatch({
     type: "setEffMod",
     mod: 0,
