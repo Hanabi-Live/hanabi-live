@@ -79,9 +79,10 @@ interface FinishOngoingGameData {
   sharedReplayLeader: string;
 }
 commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
-  // Zero out the user-created efficiency modifier, if any
-  // In a shared replay, this must be synced with the shared replay leader
-  globals.efficiencyModifier = 0;
+  globals.store!.dispatch({
+    type: "setEffMod",
+    mod: 0,
+  });
 
   // Set the browser address bar
   setBrowserAddressBarPath(`/shared-replay/${data.databaseID}`);
@@ -470,10 +471,8 @@ function initStateStore(data: InitData) {
     sharedReplayLeader: data.sharedReplayLeader,
     paused: data.paused,
     pausePlayerIndex: data.pausePlayerIndex,
+    efficiencyModifier: data.sharedReplayEffMod,
   });
-
-  // For now, the efficiency modifier is stored as a global variable instead of being in the state
-  globals.efficiencyModifier = data.sharedReplayEffMod;
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
   // We must wait until the game is initialized first,

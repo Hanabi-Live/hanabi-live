@@ -228,6 +228,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       break;
     }
 
+    case "setEffMod":
     case "editNote":
     case "noteListPlayer": {
       state.notes = notesReducer(

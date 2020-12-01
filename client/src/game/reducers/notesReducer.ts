@@ -20,6 +20,12 @@ function notesReducerFunction(
 ) {
   const variant = getVariant(metadata.options.variantName);
   switch (action.type) {
+    case "setEffMod": {
+      notes.efficiencyModifier = action.mod;
+      console.log(action.mod);
+      break;
+    }
+
     case "editNote": {
       notes.ourNotes[action.order] = parseNote(variant, action.text);
 

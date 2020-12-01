@@ -33,7 +33,8 @@ export type NoteAction =
   | ActionEditNote
   | ActionNoteList
   | ActionNoteListPlayer
-  | ActionReceiveNote;
+  | ActionReceiveNote
+  | ActionSetEffMod;
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
@@ -218,6 +219,11 @@ export interface ActionNoteList {
   type: "noteList";
   readonly names: string[];
   readonly noteTextLists: string[][];
+}
+
+export interface ActionSetEffMod {
+  type: "setEffMod";
+  readonly mod: number;
 }
 
 // --------------

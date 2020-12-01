@@ -141,14 +141,15 @@ const visibleStateObservers: Subscriptions = [
     }),
     statsView.onPaceOrPaceRiskChanged,
   ),
-  subVS(
+  subAfterInit(
     (s) => ({
-      cardsGotten: s.stats.cardsGotten,
-      cardsGottenByNotes: s.stats.cardsGottenByNotes,
-      potentialCluesLost: s.stats.potentialCluesLost,
-      maxScore: s.stats.maxScore,
-      cluesStillUsable: s.stats.cluesStillUsable,
-      finalRoundEffectivelyStarted: s.stats.finalRoundEffectivelyStarted,
+      cardsGotten: s.visibleState!.stats.cardsGotten,
+      cardsGottenByNotes: s.visibleState!.stats.cardsGottenByNotes,
+      efficiencyModifier: s.notes.efficiencyModifier,
+      potentialCluesLost: s.visibleState!.stats.potentialCluesLost,
+      maxScore: s.visibleState!.stats.maxScore,
+      cluesStillUsable: s.visibleState!.stats.cluesStillUsable,
+      finalRoundEffectivelyStarted: s.visibleState!.stats.finalRoundEffectivelyStarted,
     }),
     statsView.onEfficiencyChanged,
   ),

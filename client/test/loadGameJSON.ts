@@ -190,7 +190,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     notes: {
       ourNotes: [],
       allNotes: [],
+      efficiencyModifier: 0,
     },
+
 
     datetimeStarted: null,
     datetimeFinished: null,
