@@ -59,7 +59,7 @@ export function onEfficiencyChanged(data: {
     if (cardsGottenByNotes !== null) {
       cardsGotten += cardsGottenByNotes;
     }
-} else {
+  } else {
     cardsGottenByNotes = null;
   }
 
@@ -119,11 +119,12 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
     ${formatLine(
       "Current cards noted as gotten",
-      (cardsGottenByNotes !== null && shouldModifyEff) ? cardsGottenByNotes : "-",
+      cardsGottenByNotes !== null && shouldModifyEff ? cardsGottenByNotes : "-",
     )}
     ${formatLine(
       "Current cards gotten modifier",
-      shouldModifyEff ? efficiencyModifier : "-")}
+      shouldModifyEff ? efficiencyModifier : "-",
+    )}
     ${formatLine("Potential clues lost", data.potentialCluesLost)}
     ${formatLine(
       "Current efficiency",

@@ -67,7 +67,6 @@ export class Globals {
   actionOccurred = false;
   lastNote = ""; // Equal to the last note entered
 
-
   // Timer feature
   timerID: number | null = null;
   playerTimes: number[] = [];

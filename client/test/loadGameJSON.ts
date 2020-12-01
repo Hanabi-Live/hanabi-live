@@ -193,7 +193,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       efficiencyModifier: 0,
     },
 
-
     datetimeStarted: null,
     datetimeFinished: null,
 
