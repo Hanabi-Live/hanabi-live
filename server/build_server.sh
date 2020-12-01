@@ -36,7 +36,7 @@ if [[ $DOMAIN == "localhost" ]]; then
   # https://blog.golang.org/race-detector
   go build -o "$DIR/../$REPO" -race
 else
-  go build -o "$DIR/../$REPO" -race
+  go build -o "$DIR/../$REPO"
 fi
 if [[ $? -ne 0 ]]; then
   echo "$REPO - Go compilation failed!"
