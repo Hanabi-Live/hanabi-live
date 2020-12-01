@@ -46,6 +46,7 @@ export default function initialState(metadata: GameMetadata): State {
         text: "",
       }),
       allNotes: initArray(totalCards + variant.suits.length + 1, []),
+      efficiencyModifier: 0,
     },
 
     metadata,

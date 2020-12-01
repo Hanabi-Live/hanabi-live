@@ -8,20 +8,16 @@ import ReplayArrowOrder from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
 import TextWithTooltip from "./controls/TextWithTooltip";
 import globals from "./globals";
-import * as statsView from "./reactive/view/statsView";
 
 export function setEfficiencyMod(mod: number): void {
-  globals.efficiencyModifier = mod;
+  globals.store!.dispatch({
+    type: "setEffMod",
+    mod,
+  });
 
   if (globals.state.visibleState === null) {
     return;
   }
-
-  const ongoingGameState = globals.state.finished
-    ? globals.state.visibleState
-    : globals.state.ongoingGame;
-  const ongoingGameStats = ongoingGameState.stats;
-  statsView.onEfficiencyChanged({ ...ongoingGameStats });
 
   if (
     globals.state.replay.shared !== null &&
@@ -70,7 +66,7 @@ export function efficiencyLabelClick(
   }
 
   const effModString = window.prompt(
-    `The current modifier is: ${globals.efficiencyModifier}\nEnter a modifier for the "cards currently gotten".\n(e.g. "1", "-2", etc.)`,
+    `The current modifier is: ${globals.state.notes.efficiencyModifier}\nEnter a modifier for the "cards currently gotten".\n(e.g. "1", "-2", etc.)`,
   );
   if (effModString === null) {
     // Don't do anything if they pressed the cancel button
