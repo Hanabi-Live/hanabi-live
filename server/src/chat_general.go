@@ -35,19 +35,19 @@ func chatNew(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 // /bga
 func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md>"
+	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md"
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /doc
 func chatDoc(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "The strategy reference for the Hyphen-ated group: <https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md>"
+	msg := "The strategy reference for the Hyphen-ated group: https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md"
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /efficiency
 func chatEfficiency(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Info on efficiency calculation: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md>"
+	msg := "Info on efficiency calculation: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md"
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
