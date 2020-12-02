@@ -4,7 +4,24 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 // Imports
+const fs = require("fs");
 const path = require("path");
+
+// Read the version
+const versionPath = path.join(__dirname, "..", "data", "version.json");
+if (!fs.existsSync(versionPath)) {
+  throw new Error(`The version.json file does not exist at "${versionPath}".`);
+}
+const version = fs.readFileSync(versionPath).toString().trim();
+
+// Define the name of the final CSS file
+// We want to include the version inside of the filename
+// (as opposed to other solutions like using a version query string)
+// This will:
+// 1) allow proxies to cache the file properly
+// 2) properly force a download of a new version in a reliable way
+// https://www.alainschlesser.com/bust-cache-content-hash/
+const filename = `main.${version}.min.css`;
 
 // Constants
 const cssPath = path.join("..", "public", "css");
@@ -38,10 +55,13 @@ module.exports = (grunt) => {
       },
       main: {
         src: path.join(cssPath, "main.css"),
-        dest: path.join(cssPath, "main.min.css"),
+        dest: path.join(cssPath, filename),
       },
       critical: {
         src: path.join(cssPath, "critical.css"),
+        // We don't bother baking the version into the critical CSS filename like we do for the
+        // normal CSS bundle because we don't typically re-create the critical CSS after every
+        // single client change
         dest: path.join(cssPath, "critical.min.css"),
       },
     },

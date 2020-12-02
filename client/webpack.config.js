@@ -15,8 +15,23 @@ const os = require("os");
 const path = require("path");
 const webpack = require("webpack");
 
-// Constants
-const filename = "main.min.js";
+// Read the version
+const versionPath = path.join(__dirname, "..", "data", "version.json");
+if (!fs.existsSync(versionPath)) {
+  throw new Error(`The version.json file does not exist at "${versionPath}".`);
+}
+const version = fs.readFileSync(versionPath).toString().trim();
+
+// Define the name of the compiled JS file
+// We want to include the version inside of the filename
+// (as opposed to other solutions like using a version query string)
+// This will:
+// 1) allow proxies to cache the file properly
+// 2) properly force a download of a new version in a reliable way
+// https://www.alainschlesser.com/bust-cache-content-hash/
+const filename = `main.${version}.min.js`;
+
+// Other constants
 const outputPath = path.join(__dirname, "webpack_output");
 const inTravis =
   process.env.TRAVIS !== undefined && process.env.TRAVIS === "true";
@@ -28,13 +43,6 @@ const sentryTokenIsSet =
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
 });
-
-// Read the version
-const versionPath = path.join(__dirname, "..", "data", "version.json");
-if (!fs.existsSync(versionPath)) {
-  throw new Error(`The version.json file does not exist at "${versionPath}".`);
-}
-const version = fs.readFileSync(versionPath).toString().trim();
 
 // Clear out the output subdirectory, as it might contain old JavaScript bundles and old source maps
 // (but don't do this if we are running the webpack dev server)

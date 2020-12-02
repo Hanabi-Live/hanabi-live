@@ -1496,7 +1496,7 @@
 -->
 <script
   type="text/javascript"
-  src="http://{{.Domain}}:{{.WebpackPort}}/main.min.js?version={{.Version}}"
+  src="http://{{.Domain}}:{{.WebpackPort}}/main.{{.Version}}.min.js"
 ></script>
 {{else if .Compiling}}
 <!-- The server is currently in the process of compiling the TypeScript -->
@@ -1504,6 +1504,6 @@
 <script type="text/javascript" src="/public/js/compiling.js"></script>
 {{else}}
 <!-- All of the JavaScript is bundled into one file with webpack -->
-<script type="text/javascript" src="/public/js/bundles/main.min.js?version={{.Version}}"></script>
+<script type="text/javascript" src="/public/js/bundles/main.{{.Version}}.min.js"></script>
 {{end}}
 {{end}}
