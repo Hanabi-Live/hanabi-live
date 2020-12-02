@@ -199,9 +199,8 @@ export default class Deck extends Konva.Group {
 }
 
 function getTooltipContent() {
-  // The tooltip will show what the deck is, followed by the current game options
-  let content = '<span style="font-size: 0.75em;">';
-  content += "<strong>Game Info:</strong>";
+  // The tooltip will show the current game options
+  let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
   // Disable this row in JSON replays
