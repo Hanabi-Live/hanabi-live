@@ -43,8 +43,8 @@ func gracefulRestart(ctx context.Context) {
 			"Please wait a few seconds and then refresh the page.")
 	}
 
-	msg := "The server went down for a restart at: " + getCurrentTimestamp() + "\n"
-	msg += "(" + gitCommitOnStart + ")"
+	msg := "The server went down for a restart at: " + getCurrentTimestamp() + " " +
+		"(" + gitCommitOnStart + ")"
 	chatServerSend(ctx, msg, "lobby", false)
 
 	if runtime.GOOS == "windows" {
