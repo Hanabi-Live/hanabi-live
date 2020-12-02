@@ -14,12 +14,13 @@ func print(ctx context.Context) {
 	tableList := tables.GetList(true)
 	printTableStats(ctx, tableList)
 	printTables(ctx, tableList)
+	printUserRelationships(ctx)
 }
 
 func printCurrentUsers() {
 	sessionList := sessions.GetList()
 
-	logger.Debug("---------------------------------------------------------------")
+	printLine()
 	logger.Debug("Current users (" + strconv.Itoa(len(sessionList)) + "):")
 	if len(sessionList) == 0 {
 		logger.Debug("    [no users]")
@@ -32,7 +33,7 @@ func printCurrentUsers() {
 }
 
 func printTableStats(ctx context.Context, tableList []*Table) {
-	logger.Debug("---------------------------------------------------------------")
+	printLine()
 	logger.Debug("Current total tables:", len(tableList))
 
 	numUnstarted := 0
@@ -63,9 +64,9 @@ func printTableStats(ctx context.Context, tableList []*Table) {
 }
 
 func printTables(ctx context.Context, tableList []*Table) {
-	logger.Debug("---------------------------------------------------------------")
+	printLine()
 	logger.Debug("Current table list:")
-	logger.Debug("---------------------------------------------------------------")
+	printLine()
 
 	if len(tableList) == 0 {
 		logger.Debug("[no current tables]")
@@ -125,7 +126,7 @@ func printTables(ctx context.Context, tableList []*Table) {
 		printTableExtraOptions(t)
 		printTableChat(t)
 
-		logger.Debug("---------------------------------------------------------------")
+		printLine()
 
 		t.Unlock(ctx)
 	}
@@ -230,4 +231,21 @@ func printTableChat(t *Table) {
 		}
 	}
 	logger.Debug("\n")
+}
+
+func printUserRelationships(ctx context.Context) {
+	printLine()
+	logger.Debug("Current user to table relationships:")
+	printLine()
+
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
+	tables.PrintPlaying()
+	tables.PrintSpectating()
+	tables.PrintDisconSpectating()
+}
+
+func printLine() {
+	logger.Debug("------------------------------------")
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/sasha-s/go-deadlock"
 )
@@ -128,6 +129,19 @@ func (ts *Tables) GetTablesUserPlaying(userID int) []uint64 {
 	return make([]uint64, 0)
 }
 
+func (ts *Tables) PrintPlaying() {
+	// It is assumed that the tables mutex is locked when calling this function
+	logger.Debug("Playing relationships:")
+	for userID, tableIDs := range ts.playing {
+		tableIDStrings := make([]string, 0)
+		for _, tableID := range tableIDs {
+			tableIDStrings = append(tableIDStrings, strconv.FormatUint(tableID, 10))
+		}
+		tablesString := strings.Join(tableIDStrings, ", ")
+		logger.Debug("  User " + strconv.Itoa(userID) + " --> Tables: " + tablesString)
+	}
+}
+
 // -------------------------------
 // Methods related to "spectating"
 // -------------------------------
@@ -170,6 +184,19 @@ func (ts *Tables) GetTablesUserSpectating(userID int) []uint64 {
 	return make([]uint64, 0)
 }
 
+func (ts *Tables) PrintSpectating() {
+	// It is assumed that the tables mutex is locked when calling this function
+	logger.Debug("Spectating relationships:")
+	for userID, tableIDs := range ts.spectating {
+		tableIDStrings := make([]string, 0)
+		for _, tableID := range tableIDs {
+			tableIDStrings = append(tableIDStrings, strconv.FormatUint(tableID, 10))
+		}
+		tablesString := strings.Join(tableIDStrings, ", ")
+		logger.Debug("  User " + strconv.Itoa(userID) + " --> Tables: " + tablesString)
+	}
+}
+
 // -------------------------------------
 // Methods related to "disconSpectating"
 // -------------------------------------
@@ -189,6 +216,14 @@ func (ts *Tables) GetDisconSpectatingTable(userID int) (uint64, bool) {
 	// It is assumed that the tables mutex is locked when calling this function
 	tableID, ok := ts.disconSpectating[userID]
 	return tableID, ok
+}
+
+func (ts *Tables) PrintDisconSpectating() {
+	// It is assumed that the tables mutex is locked when calling this function
+	logger.Debug("DisconSpectating relationships:")
+	for userID, tableID := range ts.disconSpectating {
+		logger.Debug("  User " + strconv.Itoa(userID) + " --> Table: " + strconv.FormatUint(tableID, 10))
+	}
 }
 
 // --------------------------
