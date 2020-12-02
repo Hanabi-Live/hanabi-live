@@ -36,6 +36,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/cancel", httpLocalhostCancel)
 	httpRouter.GET("/clearEmptyTables", httpLocalhostClearEmptyTables)
 	httpRouter.GET("/debugFunction", httpLocalhostDebugFunction)
+	httpRouter.GET("/getLongTables", httpLocalhostGetLongTables)
 	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
 	httpRouter.POST("/mute", httpLocalhostUserAction)
 	httpRouter.GET("/print", httpLocalhostPrint)
