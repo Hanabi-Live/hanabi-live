@@ -97,8 +97,8 @@ else
   echo
 fi
 GRUNT_OUTPUT_DIR="$DIR/grunt_output"
-CSS_BUNDLES_DIR="$DIR/../public/css/bundles"
-cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_BUNDLES_DIR/"
+CSS_DIR="$DIR/../public/css"
+cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_DIR/"
 
 # The JavaScript & CSS files are now ready to be requested from users
 rm -f "$COMPILING_FILE"
@@ -114,9 +114,11 @@ cd "$JS_BUNDLES_DIR"
 if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
   ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
 fi
-cd "$CSS_BUNDLES_DIR"
-if [[ $(ls | grep -v "main.$VERSION") ]]; then
-  ls | grep -v "main.$VERSION" | xargs rm
+
+# Clean up the files in the CSS directory
+cd "$CSS_DIR"
+if [[ $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
+  ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
 fi
 cd "$DIR"
 
