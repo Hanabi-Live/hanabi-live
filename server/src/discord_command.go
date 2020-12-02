@@ -23,11 +23,14 @@ func discordCommandInit() {
 	discordCommandMap["2p"] = discordCommand2PQuestion
 	discordCommandMap["badquestion"] = discordCommandBadQuestion
 	discordCommandMap["bga"] = discordCommandBGA
+	discordCommandMap["doc"] = discordCommandDoc
+	discordCommandMap["document"] = discordCommandDoc
 	discordCommandMap["efficiency"] = discordCommandEfficiency
 	discordCommandMap["level"] = discordCommandLevel
 	discordCommandMap["loweffort"] = discordCommandLowEffort
 	discordCommandMap["notation"] = discordCommandNotation
 	discordCommandMap["oop"] = discordCommandOOP
+	discordCommandMap["reference"] = discordCommandDoc
 	discordCommandMap["screenshot"] = discordCommandScreenshot
 	discordCommandMap["noreplay"] = discordCommandScreenshot
 	discordCommandMap["undefined"] = discordCommandUndefined
@@ -40,6 +43,10 @@ func discordCommand(m *discordgo.MessageCreate, command string, args []string) {
 	}
 	// (do nothing if they sent an invalid command)
 }
+
+// ----------------
+// Special commands
+// ----------------
 
 func discordCommandReplay(m *discordgo.MessageCreate, args []string) {
 	if len(args) == 0 {
@@ -99,6 +106,10 @@ func discordCommandReplay(m *discordgo.MessageCreate, args []string) {
 	discordSend(m.ChannelID, "", msg)
 }
 
+// -------------
+// Info commands
+// -------------
+
 func discordCommand2PQuestion(m *discordgo.MessageCreate, args []string) {
 	msg := "Ask questions about 2-player games in the <#712153960709881888> channel."
 	discordSend(m.ChannelID, "", msg)
@@ -111,6 +122,11 @@ func discordCommandBadQuestion(m *discordgo.MessageCreate, args []string) {
 
 func discordCommandBGA(m *discordgo.MessageCreate, args []string) {
 	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md>"
+	discordSend(m.ChannelID, "", msg)
+}
+
+func discordCommandDoc(m *discordgo.MessageCreate, args []string) {
+	msg := "The strategy reference for the Hyphen-ated group: <https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md>"
 	discordSend(m.ChannelID, "", msg)
 }
 
