@@ -38,7 +38,6 @@ func httpMain(c *gin.Context) {
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:       title,
 		Domain:      domain,
-		Version:     getVersion(),
 		Compiling:   compiling,
 		WebpackPort: webpackPort,
 	}

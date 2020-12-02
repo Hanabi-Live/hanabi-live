@@ -401,6 +401,7 @@ func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName .
 
 	// Add extra data that should be the same for every page request
 	data.WebsiteName = WebsiteName
+	data.Version = getVersion()
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
