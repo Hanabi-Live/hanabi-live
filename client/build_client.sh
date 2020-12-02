@@ -74,7 +74,7 @@ touch "$COMPILING_FILE"
 # directory to see what the latest version of the client is
 WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
 BUNDLES_DIR="$DIR/../public/js/bundles"
-cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min..js" "$BUNDLES_DIR/"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$BUNDLES_DIR/"
 cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$BUNDLES_DIR/"
 echo "$VERSION" > "$BUNDLES_DIR/version.txt"
 # In addition to the numerical version (e.g. the number of commits),
