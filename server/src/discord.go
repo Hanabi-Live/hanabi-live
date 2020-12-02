@@ -9,13 +9,12 @@ import (
 )
 
 var (
-	discord               *discordgo.Session
-	discordToken          string
-	discordGuildID        string
-	discordListenChannels []string
-	discordLobbyChannel   string
-	discordBotID          string
-	discordIsReady        = abool.New()
+	discord                     *discordgo.Session
+	discordToken                string
+	discordGuildID              string
+	discordChannelSyncWithLobby string
+	discordBotID                string
+	discordIsReady              = abool.New()
 )
 
 /*
@@ -37,16 +36,9 @@ func discordInit() {
 			"aborting Discord initialization.")
 		return
 	}
-	discordListenChannelsString := os.Getenv("DISCORD_LISTEN_CHANNEL_IDS")
-	if len(discordListenChannelsString) == 0 {
-		logger.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; " +
-			"aborting Discord initialization.")
-		return
-	}
-	discordListenChannels = strings.Split(discordListenChannelsString, ",")
-	discordLobbyChannel = os.Getenv("DISCORD_LOBBY_CHANNEL_ID")
-	if len(discordLobbyChannel) == 0 {
-		logger.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; " +
+	discordChannelSyncWithLobby = os.Getenv("DISCORD_CHANNEL_SYNC_WITH_LOBBY")
+	if len(discordChannelSyncWithLobby) == 0 {
+		logger.Info("The \"DISCORD_CHANNEL_SYNC_WITH_LOBBY\" environment variable is blank; " +
 			"aborting Discord initialization.")
 		return
 	}
@@ -124,10 +116,9 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// We want to replicate Discord messages to the lobby, but only from specific channels
-	if !stringInSlice(m.ChannelID, discordListenChannels) {
-		// Handle specific commands in non-listening channels
-		// (to replicate lobby functionality to the Discord server more generally)
+	// Handle specific Discord commands in channels other than the lobby
+	// (to replicate some lobby functionality to the Discord server more generally)
+	if m.ChannelID != discordChannelSyncWithLobby {
 		discordCheckCommand(m)
 
 		return

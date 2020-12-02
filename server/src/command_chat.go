@@ -133,11 +133,12 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		}
 	}
 
-	// Don't send Discord messages that we are already replicating
+	// Replicate all lobby messages to Discord
+	// (but don't send Discord messages that we are already replicating)
 	if !d.Discord {
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
 		// (since Discord can handle escaping HTML special characters itself)
-		discordSend(discordLobbyChannel, d.Username, rawMsg)
+		discordSend(discordChannelSyncWithLobby, d.Username, rawMsg)
 	}
 
 	// Check for commands
