@@ -104,7 +104,8 @@ func shutdownWait(ctx context.Context) {
 	}
 }
 
-// This runs every second while the server is waiting to shutdown
+// shutdownWaitSub runs at an interval while the server is waiting to shutdown
+// It returns whether or not to break out of the infinite loop
 func shutdownWaitSub(ctx context.Context) bool {
 	if shuttingDown.IsNotSet() {
 		logger.Info("The shutdown was aborted.")
