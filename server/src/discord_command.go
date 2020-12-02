@@ -115,7 +115,7 @@ func discordCommandBGA(m *discordgo.MessageCreate, args []string) {
 }
 
 func discordCommandEfficiency(m *discordgo.MessageCreate, args []string) {
-	msg := "<https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md>"
+	msg := "<https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md>"
 	discordSend(m.ChannelID, "", msg)
 }
 
