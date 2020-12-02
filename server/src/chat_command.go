@@ -22,6 +22,11 @@ func chatCommandInit() {
 	chatCommandMap["beginner"] = chatNew
 	chatCommandMap["beginners"] = chatNew
 	chatCommandMap["guide"] = chatNew
+	chatCommandMap["bga"] = chatBGA
+	chatCommandMap["doc"] = chatDoc
+	chatCommandMap["document"] = chatDoc
+	chatCommandMap["reference"] = chatDoc
+	chatCommandMap["efficiency"] = chatEfficiency
 	chatCommandMap["random"] = chatRandom
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
