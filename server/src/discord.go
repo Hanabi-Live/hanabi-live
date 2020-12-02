@@ -51,6 +51,9 @@ func discordInit() {
 		return
 	}
 
+	// Initialize the command map
+	discordCommandInit()
+
 	// Start the Discord bot in a new goroutine
 	go discordConnect()
 }
