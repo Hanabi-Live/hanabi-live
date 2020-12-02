@@ -75,15 +75,40 @@ func (ts *Tables) Delete(tableID uint64) {
 
 	// If any users disconnected while spectating this table,
 	// we need to clear out these fields to prevent them from rejoining a table that does not exist
-	keysToDelete := make([]int, 0)
+	disconSpectatingKeysToDelete := make([]int, 0)
 	for userID, disconTableID := range ts.disconSpectating {
 		if disconTableID == tableID {
-			keysToDelete = append(keysToDelete, userID)
+			disconSpectatingKeysToDelete = append(disconSpectatingKeysToDelete, userID)
 		}
 	}
 
-	for _, userID := range keysToDelete {
+	for _, userID := range disconSpectatingKeysToDelete {
 		delete(ts.disconSpectating, userID)
+	}
+
+	// Additionally, ensure that any stray playing/spectating relationships are cleaned up
+	// (this should not be necessary, but do it just in case)
+	usersJoinedToTable := make([]int, 0)
+	for userID, tableIDs := range ts.playing {
+		for _, relationshipTableID := range tableIDs {
+			if relationshipTableID == tableID {
+				usersJoinedToTable = append(usersJoinedToTable, userID)
+			}
+		}
+	}
+	for _, userID := range usersJoinedToTable {
+		ts.DeletePlaying(userID, tableID)
+	}
+	usersSpectatingTable := make([]int, 0)
+	for userID, tableIDs := range ts.spectating {
+		for _, relationshipTableID := range tableIDs {
+			if relationshipTableID == tableID {
+				usersSpectatingTable = append(usersSpectatingTable, userID)
+			}
+		}
+	}
+	for _, userID := range usersSpectatingTable {
+		ts.DeleteSpectating(userID, tableID)
 	}
 }
 
