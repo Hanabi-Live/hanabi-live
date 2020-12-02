@@ -29,7 +29,7 @@ const version = fs.readFileSync(versionPath).toString().trim();
 // 1) allow proxies to cache the file properly
 // 2) properly force a download of a new version in a reliable way
 // https://www.alainschlesser.com/bust-cache-content-hash/
-const filename = `main.${version}.min.js`;
+const bundleFilename = `main.${version}.min.js`;
 
 // Other constants
 const outputPath = path.join(__dirname, "webpack_output");
@@ -65,7 +65,7 @@ module.exports = {
     path: outputPath,
     // (after webpack is complete, a script will move the files to the "bundles" subdirectory)
 
-    filename,
+    filename: bundleFilename,
   },
 
   resolve: {

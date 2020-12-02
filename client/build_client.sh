@@ -64,34 +64,22 @@ echo
 npm run webpack
 echo
 
-# Create a file that informs the server that the compiled JavaScript will not be available for the
-# next few milliseconds or so
+# Create a file that informs the server that the bundled JavaScript & CSS will not be available for
+# the next few milliseconds or so
 COMPILING_FILE="$DIR/../compiling_client"
 touch "$COMPILING_FILE"
 
-# We don't want to serve files directly out of the WebPack output directory because that would
-# cause website downtime during client compilation; the Golang server will look at the "bundles"
-# directory to see what the latest version of the client is
+# JavaScript and CSS files are served out of a "bundles" directory
+# We do not want to serve files directly out of the "webpack_output" or the "grunt_output" directory
+# because that would cause website downtime during client compilation
 WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
-BUNDLES_DIR="$DIR/../public/js/bundles"
-cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$BUNDLES_DIR/"
-cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$BUNDLES_DIR/"
-echo "$VERSION" > "$BUNDLES_DIR/version.txt"
+JS_BUNDLES_DIR="$DIR/../public/js/bundles"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$JS_BUNDLES_DIR/"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$JS_BUNDLES_DIR/"
+echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
 # In addition to the numerical version (e.g. the number of commits),
 # it is also handy to have the exact git commit hash for the current build
-echo $(git rev-parse HEAD) > "$BUNDLES_DIR/git_revision.txt"
-
-# The JavaScript files are now ready to be requested from users
-rm -f "$COMPILING_FILE"
-
-# Clean up old files in the "bundles" directory
-cd "$DIR/../public/js/bundles"
-if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
-  # (we don't use an environment variable to store the results because it will cause the script to
-  # stop execution in the case where there are no results)
-fi
-cd "$DIR"
+echo $(git rev-parse HEAD) > "$JS_BUNDLES_DIR/git_revision.txt"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
@@ -108,5 +96,28 @@ else
   npm run grunt
   echo
 fi
+GRUNT_OUTPUT_DIR="$DIR/grunt_output"
+CSS_BUNDLES_DIR="$DIR/../public/css/bundles"
+cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_BUNDLES_DIR/"
+
+# The JavaScript & CSS files are now ready to be requested from users
+rm -f "$COMPILING_FILE"
+
+# Clean up the output directories
+rm -rf "$WEBPACK_OUTPUT_DIR"
+rm -rf "$GRUNT_OUTPUT_DIR"
+
+# Clean up old files in the "bundles" directory
+# (we don't use an environment variable to store the results of ls because it will cause the script
+# to stop execution in the case where there are no results)
+cd "$JS_BUNDLES_DIR"
+if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
+  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
+fi
+cd "$CSS_BUNDLES_DIR"
+if [[ $(ls | grep -v "main.$VERSION") ]]; then
+  ls | grep -v "main.$VERSION" | xargs rm
+fi
+cd "$DIR"
 
 echo "Client v$VERSION successfully built in $SECONDS seconds."

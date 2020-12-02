@@ -21,11 +21,12 @@ const version = fs.readFileSync(versionPath).toString().trim();
 // 1) allow proxies to cache the file properly
 // 2) properly force a download of a new version in a reliable way
 // https://www.alainschlesser.com/bust-cache-content-hash/
-const filename = `main.${version}.min.css`;
+const bundleFilename = `main.${version}.min.css`;
 
 // Constants
 const cssPath = path.join("..", "public", "css");
 const cssLibPath = path.join(cssPath, "lib");
+const gruntOutputPath = path.join(__dirname, "grunt_output");
 
 module.exports = (grunt) => {
   grunt.initConfig({
@@ -42,7 +43,7 @@ module.exports = (grunt) => {
           path.join(cssLibPath, "alpha.css"),
           path.join(cssPath, "hanabi.css"),
         ],
-        dest: path.join(cssPath, "main.css"),
+        dest: path.join(gruntOutputPath, "main.css"),
       },
     },
 
@@ -54,13 +55,13 @@ module.exports = (grunt) => {
         level: 2,
       },
       main: {
-        src: path.join(cssPath, "main.css"),
-        dest: path.join(cssPath, filename),
+        src: path.join(gruntOutputPath, "main.css"),
+        dest: path.join(gruntOutputPath, bundleFilename),
       },
       critical: {
         src: path.join(cssPath, "critical.css"),
         // We don't bother baking the version into the critical CSS filename like we do for the
-        // normal CSS bundle because we don't typically re-create the critical CSS after every
+        // normal CSS bundle because we do not typically re-create the critical CSS after every
         // single client change
         dest: path.join(cssPath, "critical.min.css"),
       },
@@ -78,19 +79,6 @@ module.exports = (grunt) => {
           buffer: 800 * 1024,
           ignoreConsole: false,
         },
-      },
-    },
-
-    // Minify the CSS
-    cssminCritical: {
-      options: {
-        // clean-css only does level 1 optimizations by default
-        // https://github.com/jakubpawlowicz/clean-css#optimization-levels
-        level: 2,
-      },
-      dist: {
-        src: path.join(cssPath, "critical.css"),
-        dest: path.join(cssPath, "critical.min.css"),
       },
     },
   });
