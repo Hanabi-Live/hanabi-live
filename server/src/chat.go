@@ -46,6 +46,7 @@ func chatServerSend(ctx context.Context, msg string, room string, noTablesLock b
 
 // chatServerSendAll is a helper function to broadcast a message to everyone on the server,
 // whether they are in the lobby or in the middle of a game
+// It is assumed that the tables mutex is locked when calling this function
 func chatServerSendAll(ctx context.Context, msg string) {
 	chatServerSend(ctx, msg, "lobby", false)
 

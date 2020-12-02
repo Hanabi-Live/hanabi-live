@@ -19,6 +19,11 @@ func shutdown(ctx context.Context) {
 	shuttingDown.Set()
 	datetimeShutdownInit = time.Now()
 
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
 	numGames := countActiveTables(ctx)
 	logger.Info("Initiating a graceful server shutdown (with " + strconv.Itoa(numGames) +
 		" active games).")
@@ -43,6 +48,11 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 		return
 	}
 
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
 	if minutesLeft == 5 {
 		// Automatically end all unstarted tables,
 		// since they will almost certainly not have time to finish
@@ -54,7 +64,7 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 	chatServerSend(ctx, msg, "lobby", false)
 
 	// Send a warning message to the people still playing
-	tableList := tables.GetList(true)
+	tableList := tables.GetList(false)
 	roomNames := make([]string, 0)
 	for _, t := range tableList {
 		t.Lock(ctx)
@@ -69,11 +79,7 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 }
 
 func terminateAllUnstartedTables(ctx context.Context) {
-	// Since this is a function that changes a user's relationship to tables,
-	// we must acquires the tables lock to prevent race conditions
-	tables.Lock(ctx)
-	defer tables.Unlock(ctx)
-
+	// It is assumed that the tables mutex is locked when calling this function
 	for _, t := range tables.GetList(false) {
 		t.Lock(ctx)
 		if !t.Running {
@@ -90,36 +96,48 @@ func terminateAllUnstartedTables(ctx context.Context) {
 
 func shutdownWait(ctx context.Context) {
 	for {
-		if shuttingDown.IsNotSet() {
-			logger.Info("The shutdown was aborted.")
+		if shutdownWaitSub(ctx) {
 			break
-		}
-
-		numActiveTables := countActiveTables(ctx)
-
-		if numActiveTables == 0 {
-			// Wait 10 seconds so that the players are not immediately booted upon finishing
-			time.Sleep(time.Second * 10)
-
-			logger.Info("There are 0 active tables left.")
-			shutdownImmediate(ctx)
-			break
-		} else if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
-			// It has been a long time since the server shutdown/restart was initiated,
-			// so automatically terminate any remaining ongoing games
-			terminateAllStartedTables(ctx)
 		}
 
 		time.Sleep(time.Second)
 	}
 }
 
-func terminateAllStartedTables(ctx context.Context) {
+// This runs every second while the server is waiting to shutdown
+func shutdownWaitSub(ctx context.Context) bool {
+	if shuttingDown.IsNotSet() {
+		logger.Info("The shutdown was aborted.")
+		return true
+	}
+
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquires the tables lock to prevent race conditions
 	tables.Lock(ctx)
 	defer tables.Unlock(ctx)
 
+	numActiveTables := countActiveTables(ctx)
+
+	if numActiveTables == 0 {
+		// Wait 10 seconds so that the players are not immediately booted upon finishing
+		time.Sleep(time.Second * 10)
+
+		logger.Info("There are 0 active tables left.")
+		shutdownImmediate(ctx)
+		return true
+	}
+
+	if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
+		// It has been a long time since the server shutdown/restart was initiated,
+		// so automatically terminate any remaining ongoing games
+		terminateAllStartedTables(ctx)
+	}
+
+	return false
+}
+
+func terminateAllStartedTables(ctx context.Context) {
+	// It is assumed that the tables mutex is locked when calling this function
 	for _, t := range tables.GetList(false) {
 		t.Lock(ctx)
 		if t.Running && !t.Replay {
@@ -138,7 +156,8 @@ func terminateAllStartedTables(ctx context.Context) {
 }
 
 func countActiveTables(ctx context.Context) int {
-	tableList := tables.GetList(true)
+	// It is assumed that the tables mutex is locked when calling this function
+	tableList := tables.GetList(false)
 	numTables := 0
 	for _, t := range tableList {
 		t.Lock(ctx)
@@ -152,6 +171,7 @@ func countActiveTables(ctx context.Context) int {
 }
 
 func shutdownImmediate(ctx context.Context) {
+	// It is assumed that the tables mutex is locked when calling this function
 	logger.Info("Initiating an immediate server shutdown.")
 
 	waitForAllWebSocketCommandsToFinish()
