@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"strings"
 
@@ -119,8 +120,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Handle specific Discord commands in channels other than the lobby
 	// (to replicate some lobby functionality to the Discord server more generally)
 	if m.ChannelID != discordChannelSyncWithLobby {
-		discordCheckCommand(m)
-
+		discordCheckCommand(ctx, m)
 		return
 	}
 
@@ -206,7 +206,7 @@ func discordGetChannel(discordID string) string {
 
 // We need to check for special commands that occur in Discord channels other than #general
 // (because the messages will not flow to the normal "chatCommandMap")
-func discordCheckCommand(m *discordgo.MessageCreate) {
+func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 	// This code is duplicated from the "chatCommand()" function
 	args := strings.Split(m.Content, " ")
 	command := args[0]
@@ -220,5 +220,5 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	command = strings.TrimPrefix(command, "/")
 	command = strings.ToLower(command) // Commands are case-insensitive
 
-	discordCommand(m, command, args)
+	discordCommand(ctx, m, command, args)
 }

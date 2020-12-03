@@ -11,7 +11,7 @@ var (
 )
 
 func chatCommandInit() {
-	// General commands (they work both in the lobby and at a table)
+	// General commands (that work both in the lobby and at a table)
 	chatCommandMap["help"] = chatHelp
 	chatCommandMap["commands"] = chatHelp
 	chatCommandMap["?"] = chatHelp
@@ -22,11 +22,12 @@ func chatCommandInit() {
 	chatCommandMap["beginner"] = chatNew
 	chatCommandMap["beginners"] = chatNew
 	chatCommandMap["guide"] = chatNew
-	chatCommandMap["bga"] = chatBGA
 	chatCommandMap["doc"] = chatDoc
 	chatCommandMap["document"] = chatDoc
 	chatCommandMap["reference"] = chatDoc
+	chatCommandMap["bga"] = chatBGA
 	chatCommandMap["efficiency"] = chatEfficiency
+	chatCommandMap["replay"] = chatReplay
 	chatCommandMap["random"] = chatRandom
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft

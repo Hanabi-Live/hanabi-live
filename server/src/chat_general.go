@@ -8,46 +8,56 @@ import (
 
 // /help
 func chatHelp(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "You can see the list of chat commands here: " +
-		"https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
+	msg := "You can see the list of chat commands here: https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /discord
 func chatDiscord(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "Join the Discord server: https://discord.gg/FADvkJp"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /rules
 func chatRules(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Please follow the community guidelines: " +
-		"https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
+	msg := "Please follow the community guidelines: https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /new
 func chatNew(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: " +
-		"https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /bga
-func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md"
+	msg := "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /doc
 func chatDoc(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "The strategy reference for the Hyphen-ated group: https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+}
+
+// /bga
+func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /efficiency
 func chatEfficiency(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "Info on efficiency calculation: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+}
+
+// /replay [databaseID] [turn]
+func chatReplay(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	msg := getReplayURL(d.Args)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
@@ -125,20 +135,6 @@ func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		uptime = v
 	}
 	chatServerSend(ctx, uptime, d.Room, d.NoTablesLock)
-}
-func getCameOnline() string {
-	return "The server came online at: " + formatTimestampUnix(datetimeStarted)
-}
-func getUptime() (string, error) {
-	elapsedTime := time.Since(datetimeStarted)
-	elapsedSeconds := int(elapsedTime.Seconds())
-	var durationString string
-	if v, err := secondsToDurationString(elapsedSeconds); err != nil {
-		return "", err
-	} else {
-		durationString = v
-	}
-	return "Uptime: " + durationString, nil
 }
 
 // /timeleft
