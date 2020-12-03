@@ -159,7 +159,7 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value
 		msg := "Automatic game start has been canceled."
-		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
 
 	// If the user previously requested it, automatically start the game
@@ -169,7 +169,7 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			if p2.UserID == t.OwnerID {
 				if !p2.Present {
 					msg := "Aborting automatic game start since the table creator is away."
-					chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+					chatServerSend(ctx, msg, t.GetRoomName(), true)
 					return
 				}
 

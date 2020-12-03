@@ -374,7 +374,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
 			"Keep in mind that if your game is not finished in time, it will be terminated."
-		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
 
 	// Join the user to the new table
