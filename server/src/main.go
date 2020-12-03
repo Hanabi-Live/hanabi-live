@@ -36,6 +36,7 @@ var (
 func main() {
 	// Initialize logging (in "logger.go")
 	logger = NewLogger()
+	defer logger.Sync()
 
 	// Configure the deadlock detector
 	deadlock.Opts.DisableLockOrderDetection = true

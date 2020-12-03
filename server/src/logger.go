@@ -3,31 +3,38 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
+	"log"
 
-	logging "github.com/Zamiell/go-logging"
 	sentry "github.com/getsentry/sentry-go"
+	"go.uber.org/zap"
 )
 
-// We use a custom wrapper on top of the "go-logging" logger because
-// we want to automatically report all warnings and errors to Sentry
+// We use a custom wrapper on top of the "uber-go/zap" logger because we want to automatically
+// report all warnings and errors to Sentry
 type Logger struct {
-	Logger *logging.Logger
+	Logger *zap.Logger
 }
 
 func NewLogger() *Logger {
-	// Initialize logging using the "go-logging" library
-	// http://godoc.org/github.com/op/go-logging#Formatter
-	logger := logging.MustGetLogger(projectName)
-	loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
-	logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
-		`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
-	)
-	loggingBackendFormatted := logging.NewBackendFormatter(loggingBackend, logFormat)
-	logging.SetBackend(loggingBackendFormatted)
+	// Initialize logging using the "uber-go/zap" library
+	var zapLogger *zap.Logger
+	if v, err := zap.NewProduction(); err != nil {
+		log.Fatalf("Failed to initialize the zap logger: %v", err)
+		return nil
+	} else {
+		zapLogger = v
+	}
+
+	/*
+		loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
+		logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
+			`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
+		)
+		loggingBackendFormatted := logging.NewBackendFormatter(loggingBackend, logFormat)
+	*/
 
 	return &Logger{
-		Logger: logger,
+		Logger: zapLogger,
 	}
 }
 
