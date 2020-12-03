@@ -159,12 +159,15 @@ func httpInit() {
 	if !isDev {
 		// Bind the cookie to this specific domain for security purposes
 		options.Domain = domain
+
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
 		options.Secure = useTLS
+
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
 		options.HttpOnly = true
+
 		// Mitigate CSRF attacks:
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
 		options.SameSite = http.SameSiteStrictMode

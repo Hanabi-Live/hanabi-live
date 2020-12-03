@@ -44,11 +44,27 @@ func httpGoogleAnalytics(c *gin.Context) {
 			// This is the standard cookie name used by the Google Analytics JavaScript library
 			Name:  "_ga",
 			Value: clientID,
+
 			// The standard library does not have definitions for units of day
 			// or larger to avoid confusion across daylight savings
 			// We use 2 years because it is recommended by Google:
 			// https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage
 			Expires: time.Now().Add(2 * 365 * 24 * time.Hour), // 2 years
+
+			// Bind the cookie to this specific domain for security purposes
+			Domain: domain,
+
+			// Only send the cookie over HTTPS:
+			// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
+			Secure: useTLS,
+
+			// Mitigate XSS attacks:
+			// https://www.owasp.org/index.php/HttpOnly
+			HttpOnly: true,
+
+			// Mitigate CSRF attacks:
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
+			SameSite: http.SameSiteStrictMode,
 		})
 	} else {
 		clientID = cookie.Value
