@@ -84,7 +84,6 @@ func printTables(ctx context.Context, tableList []*Table) {
 		fieldsToIgnore := []string{
 			"Players",
 			"Spectators",
-			"DisconSpectators",
 			"Options",
 			"ExtraOptions",
 			"Chat",
