@@ -17,7 +17,7 @@ export default function tutorialInit(): void {
 
   $("#tutorial-2-yes").on("click", () => {
     $("#tutorial-2").fadeOut(FADE_TIME, () => {
-      $("#tutorial-2-1").fadeIn(FADE_TIME);
+      $("#tutorial-3").fadeIn(FADE_TIME);
     });
   });
   $("#tutorial-2-no").on("click", () => {
