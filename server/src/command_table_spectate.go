@@ -34,10 +34,12 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not playing at this table
-	for _, p := range t.Players {
-		if p.UserID == s.UserID {
-			s.Warning("You cannot spectate a game that you are currently playing.")
-			return
+	if !t.Replay {
+		for _, p := range t.Players {
+			if p.UserID == s.UserID {
+				s.Warning("You cannot spectate a game that you are currently playing.")
+				return
+			}
 		}
 	}
 
