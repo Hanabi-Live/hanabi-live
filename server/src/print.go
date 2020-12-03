@@ -10,17 +10,24 @@ import (
 
 // Print out a bunch of debug information about the current state of the server
 func print(ctx context.Context) {
-	printCurrentUsers()
 	tableList := tables.GetList(true)
+
+	printLine()
+	logger.Debug("*** PRINTING EVERYTHING ***")
+	printLine()
+	printCurrentUsers()
+	printLine()
 	printTableStats(ctx, tableList)
+	printLine()
 	printTables(ctx, tableList)
+	printLine()
 	printUserRelationships(ctx)
+	printLine()
 }
 
 func printCurrentUsers() {
 	sessionList := sessions.GetList()
 
-	printLine()
 	logger.Debug("Current users (" + strconv.Itoa(len(sessionList)) + "):")
 	if len(sessionList) == 0 {
 		logger.Debug("    [no users]")
@@ -33,7 +40,6 @@ func printCurrentUsers() {
 }
 
 func printTableStats(ctx context.Context, tableList []*Table) {
-	printLine()
 	logger.Debug("Current total tables:", len(tableList))
 
 	numUnstarted := 0
@@ -64,15 +70,15 @@ func printTableStats(ctx context.Context, tableList []*Table) {
 }
 
 func printTables(ctx context.Context, tableList []*Table) {
-	printLine()
 	logger.Debug("Current table list:")
-	printLine()
 
 	if len(tableList) == 0 {
 		logger.Debug("[no current tables]")
 	}
 
 	for _, t := range tableList {
+		printLine()
+
 		t.Lock(ctx)
 
 		logger.Debug(strconv.FormatUint(t.ID, 10) + " - " + t.Name)
@@ -125,8 +131,6 @@ func printTables(ctx context.Context, tableList []*Table) {
 		printTableOptions(t)
 		printTableExtraOptions(t)
 		printTableChat(t)
-
-		printLine()
 
 		t.Unlock(ctx)
 	}
@@ -234,7 +238,6 @@ func printTableChat(t *Table) {
 }
 
 func printUserRelationships(ctx context.Context) {
-	printLine()
 	logger.Debug("Current user to table relationships:")
 	printLine()
 
