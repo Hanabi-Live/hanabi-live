@@ -87,6 +87,7 @@ func printTables(ctx context.Context, tableList []*Table) {
 			"Options",
 			"ExtraOptions",
 			"Chat",
+			"mutex",
 		}
 		s := reflect.ValueOf(t).Elem()
 		maxChars := 0
