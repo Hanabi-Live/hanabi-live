@@ -697,7 +697,10 @@ func (*Games) GetSeed(databaseID int) (string, error) {
 }
 
 func (*Games) GetDatetimes(databaseID int) (time.Time, time.Time, error) {
-	var datetimeStarted time.Time
+	// The following line triggers a false positive on "govet";
+	// https://github.com/golangci/govet/issues/2
+	// TODO Try removing the nolint comment in the future
+	var datetimeStarted time.Time // nolint: govet
 	var datetimeFinished time.Time
 	err := db.QueryRow(context.Background(), `
 		SELECT datetime_started, datetime_finished
