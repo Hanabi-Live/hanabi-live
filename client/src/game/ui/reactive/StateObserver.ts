@@ -220,6 +220,12 @@ const ongoingGameObservers: Subscriptions = [
     turnView.onOngoingTurnChanged,
   ),
 
+  // "Your Turn" indicator
+  subAfterInit(
+    (s) => turnView.shouldShowYourTurnIndicator(s),
+    turnView.shouldShowYourTurnIndicatorChanged,
+  ),
+
   // The "Current Player" area should only be shown under certain conditions
   subAfterInit(
     (s) => ({
@@ -274,8 +280,20 @@ const replayObservers: Subscriptions = [
 
   // Hypothetical
   subAfterInit(
+    (s) => hypotheticalView.shouldShowReplayArea(s),
+    hypotheticalView.shouldShowReplayAreaChanged,
+  ),
+  subAfterInit(
     (s) => hypotheticalView.shouldEnableEnterHypoButton(s),
     hypotheticalView.shouldEnableEnterHypoButtonChanged,
+  ),
+  subAfterInit(
+    (s) => hypotheticalView.shouldShowHypoControls(s),
+    hypotheticalView.shouldShowHypoControlsChanged,
+  ),
+  subAfterInit(
+    (s) => hypotheticalView.shouldShowToggleDrawnCards(s),
+    hypotheticalView.shouldShowToggleDrawnCardsChanged,
   ),
   subAfterInit(
     (s) => ({

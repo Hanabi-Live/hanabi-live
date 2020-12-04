@@ -232,10 +232,23 @@ export function sendBack(): void {
 }
 
 export function toggleRevealed(): void {
-  globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.HypoToggleRevealed,
-  });
+  if (globals.state.replay.hypothetical === null) {
+    return;
+  }
+
+  if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared.amLeader) {
+      globals.lobby.conn!.send("replayAction", {
+        tableID: globals.lobby.tableID,
+        type: ReplayActionType.HypoToggleRevealed,
+      });
+    }
+  } else {
+    globals.store!.dispatch({
+      type: "hypoShowDrawnCards",
+      showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
+    });
+  }
 }
 
 // Check if we need to disable the toggleRevealedButton
