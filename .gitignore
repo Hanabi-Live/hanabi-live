@@ -30,3 +30,6 @@ motd.txt*
 /letsencrypt
 /logs
 /data/ongoing_tables
+
+# Private keys
+GitHub_private_key.pem
