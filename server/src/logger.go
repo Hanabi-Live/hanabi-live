@@ -3,9 +3,11 @@ package main
 import (
 	"errors"
 	"log"
+	"time"
 
 	sentry "github.com/getsentry/sentry-go"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // We use a custom wrapper on top of the "uber-go/zap" logger because we want to automatically
@@ -18,22 +20,26 @@ type Logger struct {
 // The parent function must also run "defer logger.Sync()" so that logs are written before the
 // program exits
 func NewLogger() *Logger {
-	// Prepare the configuration for the zap library
-	// This config is based on the "zap.NewProductionConfig()" preset
-	zapConfig := zap.Config{ // nolint: exhaustivestruct
-		// Even in production, we want to print debug messages
-		// (to help with troubleshooting in production)
-		Level: zap.NewAtomicLevelAt(zap.DebugLevel),
-
-		Development:      isDev,
-		Encoding:         "json",
-		EncoderConfig:    zap.NewProductionEncoderConfig(),
-		OutputPaths:      []string{"stderr"},
-		ErrorOutputPaths: []string{"stderr"},
-
-		// We add some additional fields
-		InitialFields: map[string]interface{}{"datetime": 5},
+	// Prepare the encoder configuration for the zap library
+	zapEncoderConfig := zap.NewProductionEncoderConfig() // Start with the preset production config
+	zapEncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		// By default, the "ts" field will be an epoch timestamp
+		// Instead, use the typical format from syslog (since it is more human readable)
+		// https://blog.sandipb.net/2018/05/03/using-zap-creating-custom-encoders/
+		enc.AppendString(t.Format("Jan  2 15:04:05"))
 	}
+
+	// Prepare the configuration for the zap library
+	zapConfig := zap.NewProductionConfig() // Start with the preset production config
+	// Even in production, we want to print debug messages
+	// (to help with troubleshooting in production)
+	zapConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	zapConfig.Development = isDev
+	// Sampling caps the global CPU and I/O load that logging puts on the process
+	// This can cause messages to not be processed by the logger
+	// By default, sampling is enabled, so we disable it
+	zapConfig.Sampling = nil
+	zapConfig.EncoderConfig = zapEncoderConfig
 
 	// This prevents the bug where all log messages will originate from "logger.go"
 	otherOptions := zap.AddCallerSkip(1)
@@ -45,15 +51,6 @@ func NewLogger() *Logger {
 	} else {
 		zapLogger = v
 	}
-
-	// Old logger config for reference
-	/*
-		loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
-		logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
-			`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
-		)
-		loggingBackendFormatted := logging.NewBackendFormatter(loggingBackend, logFormat)
-	*/
 
 	return &Logger{
 		logger: zapLogger,
@@ -68,7 +65,7 @@ func (l *Logger) Info(msg string, fields ...zap.Field) {
 	l.logger.Info(msg, fields...)
 }
 
-// Warning levels and above are sent to Sentry
+// The warn, error, and fatal levels are sent to Sentry
 // Setting the scope is from:
 // https://stackoverflow.com/questions/51752779/sentry-go-integration-how-to-specify-error-level
 
