@@ -45,14 +45,14 @@ func charactersInit() {
 	filePath := path.Join(dataPath, "characters.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {
 		fileContents = v
 	}
 	var charactersArray []*Character
 	if err := json.Unmarshal(fileContents, &charactersArray); err != nil {
-		logger.Fatal("Failed to convert the characters file to JSON:", err)
+		logger.Fatal("Failed to convert the characters file to JSON: " + err.Error())
 		return
 	}
 

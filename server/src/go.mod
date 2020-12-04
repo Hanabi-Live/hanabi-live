@@ -25,12 +25,14 @@ require (
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/mozillazg/go-unidecode v0.1.1
+	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sasha-s/go-deadlock v0.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/tevino/abool v1.2.0
+	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
 	golang.org/x/sys v0.0.0-20200817155316-9781c653f443 // indirect
 	golang.org/x/text v0.3.3

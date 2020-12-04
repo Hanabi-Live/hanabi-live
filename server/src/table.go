@@ -367,8 +367,8 @@ func (t *Table) GetSharedReplayLeaderName() string {
 	// The leader is not currently present and was not a member of the original game,
 	// so we need to look up their username from the database
 	if v, err := models.Users.GetUsername(t.OwnerID); err != nil {
-		logger.Error("Failed to get the username for user "+strconv.Itoa(t.OwnerID)+
-			" who is the owner of table:", t.ID)
+		logger.Error("Failed to get the username for user " + strconv.Itoa(t.OwnerID) +
+			" who is the owner of table: " + strconv.FormatUint(t.ID, 10))
 		return "(Unknown)"
 	} else {
 		return v

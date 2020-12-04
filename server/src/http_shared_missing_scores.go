@@ -31,8 +31,8 @@ func httpSharedMissingScores(c *gin.Context) {
 	for i, playerID := range playerIDs {
 		var statsMap map[int]*UserStatsRow
 		if v, err := models.UserStats.GetAll(playerID); err != nil {
-			logger.Error("Failed to get all of the variant-specific stats for player "+
-				"\""+playerNames[i]+"\":", err)
+			logger.Error("Failed to get all of the variant-specific stats for player " +
+				"\"" + playerNames[i] + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),

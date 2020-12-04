@@ -56,7 +56,7 @@ func discordConnect() {
 
 	// Bot accounts must be prefixed with "Bot"
 	if v, err := discordgo.New("Bot " + discordToken); err != nil {
-		logger.Error("Failed to create a Discord session:", err)
+		logger.Error("Failed to create a Discord session: " + err.Error())
 		return
 	} else {
 		discord = v
@@ -68,7 +68,7 @@ func discordConnect() {
 
 	// Open the websocket and begin listening
 	if err := discord.Open(); err != nil {
-		logger.Error("Failed to open the Discord session:", err)
+		logger.Error("Failed to open the Discord session: " + err.Error())
 		return
 	}
 
@@ -102,7 +102,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
-		logger.Info("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
+		logger.Info("Failed to get the Discord channel of \"" + m.ChannelID + "\": " + err.Error())
 		return
 	} else {
 		channel = v
@@ -175,7 +175,7 @@ func discordSend(to string, username string, msg string) {
 	if _, err := discord.ChannelMessageSendComplex(to, messageSendData); err != nil {
 		// Occasionally, sending messages to Discord can time out; if this occurs,
 		// do not bother retrying, since losing a single message is fairly meaningless
-		logger.Info("Failed to send \""+fullMsg+"\" to Discord:", err)
+		logger.Info("Failed to send \"" + fullMsg + "\" to Discord: " + err.Error())
 		return
 	}
 }
@@ -183,7 +183,7 @@ func discordSend(to string, username string, msg string) {
 func discordGetNickname(discordID string) string {
 	if member, err := discord.GuildMember(discordGuildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
-		logger.Info("Failed to get the Discord guild member:", err)
+		logger.Info("Failed to get the Discord guild member: " + err.Error())
 		return "[error]"
 	} else {
 		if member.Nick != "" {
@@ -197,7 +197,7 @@ func discordGetNickname(discordID string) string {
 func discordGetChannel(discordID string) string {
 	if channel, err := discord.Channel(discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
-		logger.Info("Failed to get the Discord channel:", err)
+		logger.Info("Failed to get the Discord channel: " + err.Error())
 		return "[error]"
 	} else {
 		return channel.Name

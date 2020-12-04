@@ -28,7 +28,7 @@ func httpStats(c *gin.Context) {
 	// Get some global statistics
 	var globalStats Stats
 	if v, err := models.Games.GetGlobalStats(); err != nil {
-		logger.Error("Failed to get the global stats:", err)
+		logger.Error("Failed to get the global stats: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -43,8 +43,9 @@ func httpStats(c *gin.Context) {
 	timePlayed := ""
 	if globalStats.TimePlayed != 0 {
 		if v, err := secondsToDurationString(globalStats.TimePlayed); err != nil {
-			logger.Error("Failed to parse the duration of "+
-				"\""+strconv.Itoa(globalStats.TimePlayed)+"\" for the global stats:", err)
+			logger.Error("Failed to parse the duration of " +
+				"\"" + strconv.Itoa(globalStats.TimePlayed) + "\" for the global stats: " +
+				err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -60,8 +61,9 @@ func httpStats(c *gin.Context) {
 	timePlayedSpeedrun := ""
 	if globalStats.TimePlayedSpeedrun != 0 {
 		if v, err := secondsToDurationString(globalStats.TimePlayedSpeedrun); err != nil {
-			logger.Error("Failed to parse the duration of "+
-				"\""+strconv.Itoa(globalStats.TimePlayedSpeedrun)+"\" for the global stats:", err)
+			logger.Error("Failed to parse the duration of " +
+				"\"" + strconv.Itoa(globalStats.TimePlayedSpeedrun) + "\" for the global stats: " +
+				err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -76,7 +78,7 @@ func httpStats(c *gin.Context) {
 	// Get the stats for all variants
 	var statsMap map[int]VariantStatsRow
 	if v, err := models.VariantStats.GetAll(); err != nil {
-		logger.Error("Failed to get the stats for all the variants:", err)
+		logger.Error("Failed to get the stats for all the variants: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

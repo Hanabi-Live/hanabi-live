@@ -30,8 +30,8 @@ func httpMissingScores(c *gin.Context) {
 	// Get all of the variant-specific stats for this player
 	var statsMap map[int]*UserStatsRow
 	if v, err := models.UserStats.GetAll(user.ID); err != nil {
-		logger.Error("Failed to get all of the variant-specific stats for player "+
-			"\""+user.Username+"\":", err)
+		logger.Error("Failed to get all of the variant-specific stats for player " +
+			"\"" + user.Username + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

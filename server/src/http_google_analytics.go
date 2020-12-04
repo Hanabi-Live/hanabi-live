@@ -101,7 +101,7 @@ func sendGoogleAnalytics(c *gin.Context, clientID string) {
 	if err != nil {
 		// POSTs to Google Analytics will occasionally time out; if this occurs,
 		// do not bother retrying, since losing a single page view is fairly meaningless
-		logger.Info("Failed to send a page hit to Google Analytics:", err)
+		logger.Info("Failed to send a page hit to Google Analytics: " + err.Error())
 		return
 	}
 	defer resp.Body.Close()

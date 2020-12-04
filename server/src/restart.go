@@ -15,13 +15,13 @@ func gracefulRestart(ctx context.Context) {
 	if runtime.GOOS != "windows" {
 		logger.Info("Building the client...")
 		if err := executeScript("client/build_client.sh"); err != nil {
-			logger.Error("Failed to execute the \"build_client.sh\" script:", err)
+			logger.Error("Failed to execute the \"build_client.sh\" script: " + err.Error())
 			return
 		}
 
 		logger.Info("Building the server...")
 		if err := executeScript("server/build_server.sh"); err != nil {
-			logger.Error("Failed to execute the \"build_server.sh\" script:", err)
+			logger.Error("Failed to execute the \"build_server.sh\" script: " + err.Error())
 			return
 		}
 	}
@@ -52,7 +52,7 @@ func gracefulRestart(ctx context.Context) {
 	} else {
 		logger.Info("Restarting...")
 		if err := executeScript("restart_service_only.sh"); err != nil {
-			logger.Error("Failed to execute the \"restart_service_only.sh\" script:", err)
+			logger.Error("Failed to execute the \"restart_service_only.sh\" script: " + err.Error())
 			return
 		}
 	}

@@ -52,7 +52,8 @@ func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they entered the correct password
 	if t.PasswordHash != "" {
 		if match, err := argon2id.ComparePasswordAndHash(d.Password, t.PasswordHash); err != nil {
-			logger.Error("Failed to compare the submitted password to the Argon2 hash:", err)
+			logger.Error("Failed to compare the submitted password to the Argon2 hash: " +
+				err.Error())
 			s.Error(DefaultErrorMsg)
 			return
 		} else if !match {
@@ -98,8 +99,8 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Get the total number of non-speedrun games that this player has played
 	var numGames int
 	if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
-		logger.Error("Failed to get the number of non-speedrun games for player "+
-			"\""+s.Username+"\":", err)
+		logger.Error("Failed to get the number of non-speedrun games for player " +
+			"\"" + s.Username + "\": " + err.Error())
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {
@@ -109,8 +110,8 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Get the variant-specific stats for this player
 	var variantStats *UserStatsRow
 	if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
-		logger.Error("Failed to get the stats for player \""+s.Username+"\" for variant "+
-			strconv.Itoa(variant.ID)+":", err)
+		logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
+			strconv.Itoa(variant.ID) + ": " + err.Error())
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {

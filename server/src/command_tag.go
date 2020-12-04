@@ -64,8 +64,8 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Get the existing tags from the database
 	var tags []string
 	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
-		logger.Error("Failed to get the tags for game ID "+
-			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
+		logger.Error("Failed to get the tags for game ID " +
+			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -82,8 +82,8 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	// Add it to the database
 	if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, s.UserID, d.Msg); err != nil {
-		logger.Error("Failed to insert a tag for game ID "+
-			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
+		logger.Error("Failed to insert a tag for game ID " +
+			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	}

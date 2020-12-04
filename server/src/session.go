@@ -91,7 +91,7 @@ func (s *Session) Emit(command string, d interface{}) {
 	// Convert the data to JSON
 	var ds string
 	if dj, err := json.Marshal(d); err != nil {
-		logger.Error("Failed to marshal data when writing to a WebSocket session:", err)
+		logger.Error("Failed to marshal data when writing to a WebSocket session: " + err.Error())
 		return
 	} else {
 		ds = string(dj)
@@ -107,11 +107,6 @@ func (s *Session) Emit(command string, d interface{}) {
 }
 
 func (s *Session) Warning(message string) {
-	// Specify a default warning message
-	if message == "" {
-		message = DefaultErrorMsg
-	}
-
 	logger.Info("Warning - " + message + " - " + s.Username)
 
 	type WarningMessage struct {
@@ -124,11 +119,6 @@ func (s *Session) Warning(message string) {
 
 // Sent to the client if either their command was unsuccessful or something else went wrong
 func (s *Session) Error(message string) {
-	// Specify a default error message
-	if message == "" {
-		message = DefaultErrorMsg
-	}
-
 	logger.Info("Error - " + message + " - " + s.Username)
 
 	type ErrorMessage struct {

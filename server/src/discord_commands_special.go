@@ -30,7 +30,7 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 			Body:  &body,
 		},
 	); err != nil {
-		logger.Error("Failed to submit a GitHub issue:", err)
+		logger.Error("Failed to submit a GitHub issue: " + err.Error())
 		discordSend(m.ChannelID, "", DefaultErrorMsg)
 		return
 	}

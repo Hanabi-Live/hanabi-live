@@ -62,7 +62,7 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 	// Send a "gameHistory" message to all the players in the game
 	var numGamesOnThisSeed int
 	if v, err := models.Seeds.GetNumGames(g.Seed); err != nil {
-		logger.Error("Failed to get the number of games on seed "+g.Seed+":", err)
+		logger.Error("Failed to get the number of games on seed " + g.Seed + ": " + err.Error())
 		return
 	} else {
 		numGamesOnThisSeed = v
@@ -116,7 +116,7 @@ func (g *Game) WriteDatabase() error {
 		DatetimeFinished: g.DatetimeFinished,
 	}
 	if v, err := models.Games.Insert(row); err != nil {
-		logger.Error("Failed to insert the game row:", err)
+		logger.Error("Failed to insert the game row: " + err.Error())
 		return err
 	} else {
 		t.ExtraOptions.DatabaseID = v
@@ -164,7 +164,7 @@ func (g *Game) WriteDatabase() error {
 		})
 	}
 	if err := models.GameParticipants.BulkInsert(gameParticipantsRows); err != nil {
-		logger.Error("Failed to insert the game participant rows:", err)
+		logger.Error("Failed to insert the game participant rows: " + err.Error())
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (g *Game) WriteDatabase() error {
 	}
 	if len(gameActionRows) > 0 {
 		if err := models.GameActions.BulkInsert(gameActionRows); err != nil {
-			logger.Error("Failed to insert the game action rows:", err)
+			logger.Error("Failed to insert the game action rows: " + err.Error())
 			return err
 		}
 	}
@@ -206,7 +206,7 @@ func (g *Game) WriteDatabase() error {
 	}
 	if len(gameParticipantNotesRows) > 0 {
 		if err := models.GameParticipantNotes.BulkInsert(gameParticipantNotesRows); err != nil {
-			logger.Error("Failed to insert the game participants notes rows:", err)
+			logger.Error("Failed to insert the game participants notes rows: " + err.Error())
 			// Do not return on failed note insertion,
 			// since it should not affect subsequent operations
 		}
@@ -223,7 +223,7 @@ func (g *Game) WriteDatabase() error {
 	}
 	if len(chatLogRows) > 0 {
 		if err := models.ChatLog.BulkInsert(chatLogRows); err != nil {
-			logger.Error("Failed to insert the chat message rows:", err)
+			logger.Error("Failed to insert the chat message rows: " + err.Error())
 			// Do not return on failed chat insertion,
 			// since it should not affect subsequent operations
 		}
@@ -240,7 +240,7 @@ func (g *Game) WriteDatabase() error {
 	}
 	if len(gameTagsRows) > 0 {
 		if err := models.GameTags.BulkInsert(gameTagsRows); err != nil {
-			logger.Error("Failed to insert the tag rows:", err)
+			logger.Error("Failed to insert the tag rows: " + err.Error())
 			// Do not return on failed tag insertion,
 			// since it should not affect subsequent operations
 		}
@@ -248,7 +248,7 @@ func (g *Game) WriteDatabase() error {
 
 	// Finally, we update the seeds table with the number of games played on this seed
 	if err := models.Seeds.UpdateNumGames(g.Seed); err != nil {
-		logger.Error("Failed to update the number of games in the seeds table:", err)
+		logger.Error("Failed to update the number of games in the seeds table: " + err.Error())
 		// Do not return on a failed seeds update,
 		// since it should not affect subsequent operations
 	}
@@ -277,7 +277,7 @@ func (g *Game) WriteDatabaseStats() {
 		// Get their current best scores
 		var userStats *UserStatsRow
 		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
-			logger.Error("Failed to get the stats for user "+p.Name+":", err)
+			logger.Error("Failed to get the stats for user " + p.Name + ": " + err.Error())
 			continue
 		} else {
 			userStats = v
@@ -298,7 +298,7 @@ func (g *Game) WriteDatabaseStats() {
 		// (even if they did not get a new best score,
 		// we still want to update their average score and strikeout rate)
 		if err := models.UserStats.Update(p.UserID, variant.ID, userStats); err != nil {
-			logger.Error("Failed to update the stats for user "+p.Name+":", err)
+			logger.Error("Failed to update the stats for user " + p.Name + ": " + err.Error())
 			continue
 		}
 	}
@@ -306,7 +306,8 @@ func (g *Game) WriteDatabaseStats() {
 	// Get the current stats for this variant
 	var variantStats VariantStatsRow
 	if v, err := models.VariantStats.Get(variant.ID); err != nil {
-		logger.Error("Failed to get the stats for variant "+strconv.Itoa(variant.ID)+":", err)
+		logger.Error("Failed to get the stats for variant " + strconv.Itoa(variant.ID) + ": " +
+			err.Error())
 		return
 	} else {
 		variantStats = v
@@ -324,7 +325,8 @@ func (g *Game) WriteDatabaseStats() {
 	// (even if the game was played with modifiers,
 	// we still need to update the number of games played)
 	if err := models.VariantStats.Update(variant.ID, variant.MaxScore, variantStats); err != nil {
-		logger.Error("Failed to update the stats for variant "+strconv.Itoa(variant.ID)+":", err)
+		logger.Error("Failed to update the stats for variant " + strconv.Itoa(variant.ID) + ": " +
+			err.Error())
 		return
 	}
 }
@@ -406,7 +408,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		for _, p := range t.Players {
 			if p.Present {
 				t.OwnerID = p.UserID
-				logger.Info("Set the new leader to be:", p.Name)
+				logger.Info("Set the new leader to be: " + p.Name)
 				break
 			}
 		}
@@ -414,7 +416,8 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		if t.OwnerID == -1 {
 			// All of the players are away, so make the first spectator the leader
 			t.OwnerID = t.Spectators[0].UserID
-			logger.Info("All players are offline; set the new leader to be:", t.Spectators[0].Name)
+			logger.Info("All players are offline; set the new leader to be: " +
+				t.Spectators[0].Name)
 		}
 	}
 

@@ -39,14 +39,14 @@ func variantsInit() {
 	filePath := path.Join(dataPath, "variants.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {
 		fileContents = v
 	}
 	var variantsArray []VariantJSON
 	if err := json.Unmarshal(fileContents, &variantsArray); err != nil {
-		logger.Fatal("Failed to convert the variants file to JSON:", err)
+		logger.Fatal("Failed to convert the variants file to JSON: " + err.Error())
 		return
 	}
 

@@ -32,7 +32,8 @@ func httpScores(c *gin.Context) {
 	// Get basic stats for this player
 	var profileStats Stats
 	if v, err := models.Games.GetProfileStats(user.ID); err != nil {
-		logger.Error("Failed to get the profile stats for player \""+user.Username+"\":", err)
+		logger.Error("Failed to get the profile stats for player \"" + user.Username + "\": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -60,9 +61,9 @@ func httpScores(c *gin.Context) {
 	timePlayed := ""
 	if profileStats.TimePlayed != 0 {
 		if v, err := secondsToDurationString(profileStats.TimePlayed); err != nil {
-			logger.Error("Failed to parse the duration of "+
-				"\""+strconv.Itoa(profileStats.TimePlayed)+"\" for player "+
-				"\""+user.Username+"\":", err)
+			logger.Error("Failed to parse the duration of " +
+				"\"" + strconv.Itoa(profileStats.TimePlayed) + "\" for player " +
+				"\"" + user.Username + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -78,9 +79,9 @@ func httpScores(c *gin.Context) {
 	timePlayedSpeedrun := ""
 	if profileStats.TimePlayedSpeedrun != 0 {
 		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {
-			logger.Error("Failed to parse the duration of "+
-				"\""+strconv.Itoa(profileStats.TimePlayedSpeedrun)+"\" for player "+
-				"\""+user.Username+"\":", err)
+			logger.Error("Failed to parse the duration of " +
+				"\"" + strconv.Itoa(profileStats.TimePlayedSpeedrun) + "\" for player " +
+				"\"" + user.Username + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -95,8 +96,8 @@ func httpScores(c *gin.Context) {
 	// Get all of the variant-specific stats for this player
 	var statsMap map[int]*UserStatsRow
 	if v, err := models.UserStats.GetAll(user.ID); err != nil {
-		logger.Error("Failed to get all of the variant-specific stats for player "+
-			"\""+user.Username+"\":", err)
+		logger.Error("Failed to get all of the variant-specific stats for player " +
+			"\"" + user.Username + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

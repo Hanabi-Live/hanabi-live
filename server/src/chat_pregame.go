@@ -232,8 +232,8 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 	statsMaps := make([]map[int]*UserStatsRow, 0)
 	for _, userID := range userIDs {
 		if statsMap, err := models.UserStats.GetAll(userID); err != nil {
-			logger.Error("Failed to get all of the variant-specific stats for player ID "+
-				strconv.Itoa(userID)+":", err)
+			logger.Error("Failed to get all of the variant-specific stats for player ID " +
+				strconv.Itoa(userID) + ": " + err.Error())
 			chatServerSend(ctx, DefaultErrorMsg, d.Room, d.NoTablesLock)
 			return
 		} else {

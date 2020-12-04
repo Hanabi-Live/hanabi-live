@@ -18,7 +18,7 @@ var (
 func wordListInit() {
 	wordListPath := path.Join(dataPath, "word_list.txt")
 	if v, err := ioutil.ReadFile(wordListPath); err != nil {
-		logger.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + wordListPath + "\" file: " + err.Error())
 		return
 	} else {
 		wordListString := string(v)

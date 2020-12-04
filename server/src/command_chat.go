@@ -105,14 +105,15 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 	// Add the message to the database
 	if d.Discord {
 		if err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
-			logger.Error("Failed to insert a Discord chat message into the database:", err)
-			s.Error("")
+			logger.Error("Failed to insert a Discord chat message into the database: " +
+				err.Error())
+			s.Error(DefaultErrorMsg)
 			return
 		}
 	} else if !d.OnlyDiscord {
 		if err := models.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
-			logger.Error("Failed to insert a chat message into the database:", err)
-			s.Error("")
+			logger.Error("Failed to insert a chat message into the database: " + err.Error())
+			s.Error(DefaultErrorMsg)
 			return
 		}
 	}
@@ -149,7 +150,7 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 	// Parse the table ID from the room
 	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
 	if match == nil {
-		logger.Error("Failed to parse the table ID from the room:", d.Room)
+		logger.Error("Failed to parse the table ID from the room: " + d.Room)
 		if s != nil {
 			s.Error("That is an invalid room.")
 		}
@@ -157,7 +158,7 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 	}
 	var tableID uint64
 	if v, err := strconv.ParseUint(match[1], 10, 64); err != nil {
-		logger.Error("Failed to convert the table ID to a number:", err)
+		logger.Error("Failed to convert the table ID to a number: " + err.Error())
 		if s != nil {
 			s.Error("That is an invalid room.")
 		}

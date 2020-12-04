@@ -32,7 +32,7 @@ func sentryInit() bool {
 		Release:      gitCommitOnStart,
 		HTTPClient:   HTTPClientWithTimeout,
 	}); err != nil {
-		logger.Fatal("Failed to initialize Sentry:", err)
+		logger.Fatal("Failed to initialize Sentry: " + err.Error())
 		return false
 	}
 
@@ -72,7 +72,7 @@ func sentryHTTPAttachMetadata(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address from \""+r.RemoteAddr+"\":", err)
+		logger.Error("Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -101,7 +101,8 @@ func sentryWebsocketMessageAttachMetadata(s *Session) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(s.ms.Request.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address from \""+s.ms.Request.RemoteAddr+"\":", err)
+		logger.Error("Failed to parse the IP address from \"" + s.ms.Request.RemoteAddr + "\": " +
+			err.Error())
 		return
 	} else {
 		ip = v

@@ -18,7 +18,9 @@ import (
 	"time"
 	"unicode"
 
+	sentry "github.com/getsentry/sentry-go"
 	"github.com/mozillazg/go-unidecode"
+	"go.uber.org/zap"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -35,21 +37,16 @@ func containsAllPrintableASCII(s string) bool {
 func executeScript(script string) error {
 	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
 	cmd.Dir = projectPath
-	output, err := cmd.CombinedOutput()
+	outputBytes, err := cmd.CombinedOutput()
+	output := strings.TrimSpace(string(outputBytes))
+	logger.Info("\""+script+"\" completed.", zap.String("output", output))
 	if err != nil {
 		// The "cmd.CombinedOutput()" function will throw an error if the return code is not equal
 		// to 0
-		logger.Error("Failed to execute \""+script+"\":", err)
-		if string(output) != "" {
-			logger.Error("Output is as follows:")
-			logger.Error(string(output))
-		}
-		return err
-	}
-	logger.Info("\"" + script + "\" completed.")
-	if string(output) != "" {
-		logger.Info("Output is as follows:")
-		logger.Info(string(output))
+		sentry.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetTag("scriptOutput", output)
+		})
+		return fmt.Errorf("failed to execute \"%s\": %w", script, err)
 	}
 	return nil
 }
@@ -88,7 +85,7 @@ func getURLFromPath(path string) string {
 func getVersion() int {
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(versionPath); err != nil {
-		logger.Error("Failed to read the \""+versionPath+"\" file:", err)
+		logger.Error("Failed to read the \"" + versionPath + "\" file: " + err.Error())
 		return 0
 	} else {
 		fileContents = v
@@ -96,8 +93,8 @@ func getVersion() int {
 	versionString := string(fileContents)
 	versionString = strings.TrimSpace(versionString)
 	if v, err := strconv.Atoi(versionString); err != nil {
-		logger.Error("Failed to convert \""+versionString+"\" "+
-			"(the contents of the version file) to a number:", err)
+		logger.Error("Failed to convert \"" + versionString + "\" " +
+			"(the contents of the version file) to a number: " + err.Error())
 		return 0
 	} else {
 		return v

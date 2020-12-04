@@ -60,7 +60,7 @@ func httpLocalhostInit() {
 		WriteTimeout: HTTPWriteTimeout,
 	}
 	if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
-		logger.Fatal("ListenAndServe failed (for localhost):", err)
+		logger.Fatal("ListenAndServe failed (for localhost): " + err.Error())
 		return
 	}
 	logger.Fatal("ListenAndServe ended prematurely (for localhost).")
@@ -80,7 +80,7 @@ func httpLocalhostUserAction(c *gin.Context) {
 	// Check to see if this username exists in the database
 	var userID int
 	if exists, v, err := models.Users.Get(username); err != nil {
-		logger.Error("Failed to get user \""+username+"\":", err)
+		logger.Error("Failed to get user \"" + username + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -97,7 +97,7 @@ func httpLocalhostUserAction(c *gin.Context) {
 	// Get the IP for this user
 	var lastIP string
 	if v, err := models.Users.GetLastIP(username); err != nil {
-		logger.Error("Failed to get the last IP for \""+username+"\":", err)
+		logger.Error("Failed to get the last IP for \"" + username + "\": " + err.Error())
 		return
 	} else {
 		lastIP = v
@@ -127,8 +127,8 @@ func logoutUser(userID int) {
 	}
 
 	if err := s.ms.Close(); err != nil {
-		logger.Error("Failed to manually close the WebSocket session for user "+
-			strconv.Itoa(userID)+":", err)
+		logger.Error("Failed to manually close the WebSocket session for user " +
+			strconv.Itoa(userID) + ": " + err.Error())
 	} else {
 		logger.Info("Successfully terminated the WebSocket session for user " +
 			strconv.Itoa(userID) + ".")

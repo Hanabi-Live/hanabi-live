@@ -29,7 +29,8 @@ func httpExport(c *gin.Context) {
 
 	// Check to see if the game exists in the database
 	if exists, err := models.Games.Exists(databaseID); err != nil {
-		logger.Error("Failed to check to see if game "+strconv.Itoa(databaseID)+" exists:", err)
+		logger.Error("Failed to check to see if game " + strconv.Itoa(databaseID) + " exists: " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -44,8 +45,8 @@ func httpExport(c *gin.Context) {
 	// Get the players from the database
 	var dbPlayers []*DBPlayer
 	if v, err := models.Games.GetPlayers(databaseID); err != nil {
-		logger.Error("Failed to get the players from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the players from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -65,8 +66,8 @@ func httpExport(c *gin.Context) {
 	// Get the options from the database
 	var options *Options
 	if v, err := models.Games.GetOptions(databaseID); err != nil {
-		logger.Error("Failed to get the options from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the options from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -82,8 +83,8 @@ func httpExport(c *gin.Context) {
 	// Get the seed from the database
 	var seed string
 	if v, err := models.Games.GetSeed(databaseID); err != nil {
-		logger.Error("Failed to get the seed for game "+
-			"\""+strconv.Itoa(databaseID)+"\":", err)
+		logger.Error("Failed to get the seed for game " +
+			"\"" + strconv.Itoa(databaseID) + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -107,8 +108,8 @@ func httpExport(c *gin.Context) {
 	// Get the actions from the database
 	var actions []*GameAction
 	if v, err := models.GameActions.GetAll(databaseID); err != nil {
-		logger.Error("Failed to get the actions from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the actions from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -124,8 +125,8 @@ func httpExport(c *gin.Context) {
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
 	if v, err := models.Games.GetNotes(databaseID, len(dbPlayers), noteSize); err != nil {
-		logger.Error("Failed to get the notes from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the notes from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

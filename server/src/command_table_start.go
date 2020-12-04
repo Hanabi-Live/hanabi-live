@@ -127,7 +127,8 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		for _, p := range t.Players {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(p.UserID, variant.ID); err != nil {
-				logger.Error("Failed to get the past seeds for \""+s.Username+"\":", err)
+				logger.Error("Failed to get the past seeds for \"" + s.Username + "\": " +
+					err.Error())
 				s.Error(StartGameFail)
 				return
 			} else {
@@ -150,9 +151,9 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			}
 		}
 	}
-	logger.Info(t.GetName()+"Using seed:", g.Seed)
-	logger.Info("Shuffling deck:", shuffleDeck)
-	logger.Info("Shuffling players:", shufflePlayers)
+	logger.Info(t.GetName() + "Using seed: " + g.Seed)
+	logger.Info("Shuffling deck: " + strconv.FormatBool(shuffleDeck))
+	logger.Info("Shuffling players: " + strconv.FormatBool(shufflePlayers))
 
 	setSeed(g.Seed) // Seed the random number generator
 	if shuffleDeck {

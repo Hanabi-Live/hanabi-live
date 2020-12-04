@@ -127,7 +127,7 @@ type ChatListMessage struct {
 func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 	var rawMsgs []DBChatMessage
 	if v, err := models.ChatLog.Get(room, count); err != nil {
-		logger.Error("Failed to get the lobby chat history for user \""+s.Username+"\":", err)
+		logger.Error("Failed to get the lobby chat history for user \"" + s.Username + "\": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return false
 	} else {

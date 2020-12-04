@@ -24,7 +24,7 @@ func serializeTables() bool {
 
 		// Only serialize ongoing games
 		if t.Running && !t.Replay {
-			logger.Info("Serializing table:", t.ID)
+			logger.Info("Serializing table: " + strconv.FormatUint(t.ID, 10))
 
 			// Several fields on the Table object and the Game object are set with `json:"-"` to prevent
 			// the JSON encoder from serializing them
@@ -32,7 +32,8 @@ func serializeTables() bool {
 			// references, session data, and so forth
 			var tableJSON []byte
 			if v, err := json.Marshal(t); err != nil {
-				logger.Error("Failed to marshal table "+strconv.FormatUint(t.ID, 10)+":", err)
+				logger.Error("Failed to marshal table " + strconv.FormatUint(t.ID, 10) + ": " +
+					err.Error())
 				return false
 			} else {
 				tableJSON = v
@@ -41,7 +42,7 @@ func serializeTables() bool {
 			tableFilename := strconv.FormatUint(t.ID, 10) + ".json"
 			tablePath := path.Join(tablesPath, tableFilename)
 			if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
-				logger.Error("Failed to write \""+tablePath+"\":", err)
+				logger.Error("Failed to write \"" + tablePath + "\": " + err.Error())
 				return false
 			}
 		}
@@ -110,7 +111,7 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 
 	t := &Table{} // We must initialize the table for "Unmarshal()" to work
 	if err := json.Unmarshal(tableJSON, t); err != nil {
-		logger.Fatal("Failed to unmarshal \""+tablePath+"\":", err)
+		logger.Fatal("Failed to unmarshal \"" + tablePath + "\": " + err.Error())
 		return false
 	}
 	t.Spectators = make([]*Spectator, 0)
@@ -158,7 +159,7 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 	logger.Info(t.GetName() + "Restored table.")
 
 	if err := os.Remove(tablePath); err != nil {
-		logger.Fatal("Failed to delete \""+tablePath+"\":", err)
+		logger.Fatal("Failed to delete \"" + tablePath + "\": " + err.Error())
 	}
 
 	// Restored tables will never be automatically terminated due to idleness because the

@@ -1,4 +1,5 @@
-package main
+// The "dupl" linter has a false positive with the "http_localhost_mute.go" file
+package main // nolint: dupl
 
 import (
 	"net/http"
@@ -12,7 +13,7 @@ func httpLocalhostBan(c *gin.Context, username string, ip string, userID int) {
 
 	// Check to see if this IP is already banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+		logger.Error("Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -27,7 +28,7 @@ func httpLocalhostBan(c *gin.Context, username string, ip string, userID int) {
 
 	// Insert a new row in the database for this IP
 	if err := models.BannedIPs.Insert(ip, userID); err != nil {
-		logger.Error("Failed to insert the banned IP row:", err)
+		logger.Error("Failed to insert the banned IP row: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

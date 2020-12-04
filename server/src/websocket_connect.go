@@ -119,7 +119,8 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(ms.Request.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address from \""+ms.Request.RemoteAddr+"\":", err)
+		logger.Error("Failed to parse the IP address from \"" + ms.Request.RemoteAddr + "\": " +
+			err.Error())
 		return data
 	} else {
 		ip = v
@@ -127,7 +128,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Check to see if their IP is muted
 	if v, err := models.MutedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is muted:", err)
+		logger.Error("Failed to check to see if the IP \"" + ip + "\" is muted: " + err.Error())
 		return data
 	} else {
 		data.Muted = v
@@ -135,7 +136,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Get their friends
 	if v, err := models.UserFriends.GetMap(userID); err != nil {
-		logger.Error("Failed to get the friends map for user \""+username+"\":", err)
+		logger.Error("Failed to get the friends map for user \"" + username + "\": " + err.Error())
 		return data
 	} else {
 		data.Friends = v
@@ -143,7 +144,8 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Get their reverse friends
 	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
-		logger.Error("Failed to get the reverse friends map for user \""+username+"\":", err)
+		logger.Error("Failed to get the reverse friends map for user \"" + username + "\": " +
+			err.Error())
 		return data
 	} else {
 		data.ReverseFriends = v
@@ -151,7 +153,8 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Get whether or not they are a member of the Hyphen-ated group
 	if v, err := models.UserSettings.IsHyphenated(userID); err != nil {
-		logger.Error("Failed to get the Hyphen-ated setting for user \""+username+"\":", err)
+		logger.Error("Failed to get the Hyphen-ated setting for user \"" + username + "\": " +
+			err.Error())
 		return data
 	} else {
 		data.Hyphenated = v
@@ -164,7 +167,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Get their join date from the database
 	var datetimeCreated time.Time
 	if v, err := models.Users.GetDatetimeCreated(userID); err != nil {
-		logger.Error("Failed to get the join date for user \""+username+"\":", err)
+		logger.Error("Failed to get the join date for user \"" + username + "\": " + err.Error())
 		return data
 	} else {
 		datetimeCreated = v
@@ -173,7 +176,8 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Get their total number of games played from the database
 	if v, err := models.Games.GetUserNumGames(userID, true); err != nil {
-		logger.Error("Failed to get the number of games played for user \""+username+"\":", err)
+		logger.Error("Failed to get the number of games played for user \"" + username + "\": " +
+			err.Error())
 		return data
 	} else {
 		data.TotalGames = v
@@ -181,7 +185,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Get their settings from the database
 	if v, err := models.UserSettings.Get(userID); err != nil {
-		logger.Error("Failed to get the settings for user \""+username+"\":", err)
+		logger.Error("Failed to get the settings for user \"" + username + "\": " + err.Error())
 		return data
 	} else {
 		data.Settings = v
@@ -189,7 +193,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 
 	// Get their friends from the database
 	if v, err := models.UserFriends.GetAllUsernames(userID); err != nil {
-		logger.Error("Failed to get the friends for user \""+username+"\":", err)
+		logger.Error("Failed to get the friends for user \"" + username + "\": " + err.Error())
 		return data
 	} else {
 		data.FriendsList = v
@@ -321,12 +325,12 @@ func websocketConnectChat(s *Session) {
 	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
 		exists = false
 	} else if err != nil {
-		logger.Error("Failed to check if the \""+motdPath+"\" file exists:", err)
+		logger.Error("Failed to check if the \"" + motdPath + "\" file exists: " + err.Error())
 		exists = false
 	}
 	if exists {
 		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
-			logger.Error("Failed to read the \""+motdPath+"\" file:", err)
+			logger.Error("Failed to read the \"" + motdPath + "\" file: " + err.Error())
 		} else {
 			motd := string(fileContents)
 			motd = strings.TrimSpace(motd)
@@ -351,14 +355,14 @@ func websocketConnectChat(s *Session) {
 func websocketConnectHistory(s *Session) {
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsUser(s.UserID, 0, 10); err != nil {
-		logger.Error("Failed to get the game IDs for user \""+s.Username+"\":", err)
+		logger.Error("Failed to get the game IDs for user \"" + s.Username + "\": " + err.Error())
 		return
 	} else {
 		gameIDs = v
 	}
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the history:", err)
+		logger.Error("Failed to get the history: " + err.Error())
 		return
 	} else {
 		gameHistoryList = v
@@ -371,14 +375,15 @@ func websocketConnectHistory(s *Session) {
 func websocketConnectHistoryFriends(s *Session) {
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsFriends(s.UserID, s.Friends(), 0, 10); err != nil {
-		logger.Error("Failed to get the friend game IDs for user \""+s.Username+"\":", err)
+		logger.Error("Failed to get the friend game IDs for user \"" + s.Username + "\": " +
+			err.Error())
 		return
 	} else {
 		gameIDs = v
 	}
 	var gameHistoryFriendsList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the history:", err)
+		logger.Error("Failed to get the history: " + err.Error())
 		return
 	} else {
 		gameHistoryFriendsList = v

@@ -24,8 +24,8 @@ func httpHistory(c *gin.Context) {
 	// Get the game IDs for this player (or set of players)
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsMultiUser(playerIDs); err != nil {
-		logger.Error("Failed to get the game IDs for the players of "+
-			"\""+strings.Join(playerNames, ", ")+"\":", err)
+		logger.Error("Failed to get the game IDs for the players of " +
+			"\"" + strings.Join(playerNames, ", ") + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -39,7 +39,7 @@ func httpHistory(c *gin.Context) {
 	// Get the games corresponding to these IDs
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the games from the database:", err)
+		logger.Error("Failed to get the games from the database: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
