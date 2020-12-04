@@ -132,9 +132,9 @@ export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
 export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
 ): void {
-  globals.elements.toggleDrawnCardsButton?.setText({
-    line1: drawnCardsInHypothetical ? "Hide" : "Show",
-  });
+  globals.elements.toggleDrawnCardsButton?.text(
+    drawnCardsInHypothetical ? "Hide Drawn" : "Show Drawn",
+  );
 
   // Check if the ability to give a clue changed
   clues.checkLegal();

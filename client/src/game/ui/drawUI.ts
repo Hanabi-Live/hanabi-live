@@ -24,10 +24,10 @@ import FitText from "./controls/FitText";
 import ImageWithTooltip from "./controls/ImageWithTooltip";
 import PlayerButton from "./controls/PlayerButton";
 import RectWithTooltip from "./controls/RectWithTooltip";
+import SlidableGroup from "./controls/SlidableGroup";
 import StrikeSquare from "./controls/StrikeSquare";
 import StrikeX from "./controls/StrikeX";
 import TextWithTooltip from "./controls/TextWithTooltip";
-import ThreeLineButton from "./controls/ThreeLineButton";
 import TimerDisplay from "./controls/TimerDisplay";
 import * as cursor from "./cursor";
 import Deck from "./Deck";
@@ -66,8 +66,7 @@ let bottomLeftButtonValues: Values;
 let deckValues: Values;
 let scoreAreaValues: Values;
 let clueAreaValues: Values;
-let finalColorButtonValues: Values;
-let finalRankButtonValues: Values;
+let lowerClueAreaValues: Values;
 let clueLogValues: Values;
 let giveClueValues: Values;
 let spectatorsLabelValues: Values;
@@ -108,7 +107,6 @@ export default function drawUI(): void {
   drawArrows();
   drawTimers();
   drawClueArea();
-  drawClueAreaDisabled();
   drawCurrentPlayerArea();
   drawPreplayArea();
   drawReplayArea(winW, winH);
@@ -521,27 +519,6 @@ function drawBottomLeftButtons() {
     "Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).";
   tooltips.init(restartButton, true, false);
   globals.elements.restartButton = restartButton;
-
-  // This button is raised during shared replay and in-game, and lowered during private replay
-  const endHypotheticalY =
-    globals.state.finished && globals.state.replay.shared === null
-      ? bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01
-      : bottomLeftButtonValues.y;
-
-  // The "End Hypothetical" button
-  const endHypotheticalButton = new Button({
-    x: bottomLeftButtonValues.x * winW,
-    y: endHypotheticalY * winH,
-    width: bottomLeftButtonValues.w! * winW,
-    height: bottomLeftButtonValues.h! * winH,
-    text: "End Hypo",
-    visible: false,
-  });
-  globals.layers.UI.add((endHypotheticalButton as unknown) as Konva.Group);
-  endHypotheticalButton.on("click tap", () => {
-    hypothetical.end();
-  });
-  globals.elements.endHypotheticalButton = endHypotheticalButton;
 
   // The chat button
   const chatButton = new Button({
@@ -1747,9 +1724,8 @@ function drawClueArea() {
     if (totalPlayerButtons >= 5) {
       playerButtonW -= 0.01;
     }
-    let totalPlayerWidth = playerButtonW * totalPlayerButtons;
-    totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
-    let playerX = clueAreaValues.w! * 0.5 - totalPlayerWidth * 0.5;
+    // player buttons are left justified in hypo mode, because the whole clue ui slides left
+    let playerX = 0;
     for (let i = 0; i < totalPlayerButtons; i++) {
       // We change the calculation of j from the above code block because we want the buttons to
       // follow the order of players from top to bottom (in BGA mode)
@@ -1785,12 +1761,45 @@ function drawClueArea() {
     listening: false,
   });
 
+  // In a hypo, the lower part of the clue ui slides left independently of the clue target buttons.
+  // The limiting factor on how far it can slide is when there's 6 color buttons
+  const maxColorWidth = buttonW * 6 + buttonXSpacing * 5;
+  const lowerClueAreaWidth = maxColorWidth * winW;
+  const offsetX = -0.5 * (clueAreaValues.w! * winW - lowerClueAreaWidth);
+  function setLeft(this: SlidableGroup) {
+    const x = offsetX;
+    this.x(x);
+  }
+
+  function setCenter(this: SlidableGroup) {
+    this.x(0);
+  }
+
+  lowerClueAreaValues = {
+    x: 0,
+    y: playerButtonH,
+    w: maxColorWidth,
+  };
+
+  globals.elements.lowerClueArea = new SlidableGroup({
+    x: lowerClueAreaValues.x * winW,
+    y: lowerClueAreaValues.y * winH,
+    width: lowerClueAreaValues.w!,
+  });
+
+  globals.elements.lowerClueArea.setLeft = setLeft;
+  globals.elements.lowerClueArea.setCenter = setCenter;
+  globals.elements.lowerClueArea.setCenter();
+  globals.elements.clueArea.add(
+    (globals.elements.lowerClueArea as unknown) as Konva.Group,
+  );
+
   // Color buttons
   globals.elements.colorClueButtons = [];
   let totalColorWidth = buttonW * globals.variant.clueColors.length;
   totalColorWidth += buttonXSpacing * (globals.variant.clueColors.length - 1);
   const colorX = clueAreaValues.w! * 0.5 - totalColorWidth * 0.5;
-  const colorY = playerButtonH + buttonYSpacing - playerButtonAdjustment;
+  const colorY = buttonYSpacing - playerButtonAdjustment;
   for (let i = 0; i < globals.variant.clueColors.length; i++) {
     const color = globals.variant.clueColors[i];
 
@@ -1821,12 +1830,6 @@ function drawClueArea() {
       matchingSuit,
     );
 
-    // Also store the X and Y coordinates of the slot to the right of this button for later
-    finalColorButtonValues = {
-      x: colorX + (i + 1) * (buttonW + buttonXSpacing),
-      y: colorY,
-    };
-
     globals.elements.clueTypeButtonGroup.add(
       (button as unknown) as Konva.Group,
     );
@@ -1852,12 +1855,6 @@ function drawClueArea() {
       clue: rankClue(rank),
     });
 
-    // Also store the X and Y coordinates of the slot to the right of this button for later
-    finalRankButtonValues = {
-      x: rankX + (i + 1) * (buttonW + buttonXSpacing),
-      y: rankY,
-    };
-
     globals.elements.clueTypeButtonGroup.add(
       (button as unknown) as Konva.Group,
     );
@@ -1870,7 +1867,7 @@ function drawClueArea() {
   globals.elements.clueTargetButtonGroup2.on("change", clues.checkLegal);
   globals.elements.clueTypeButtonGroup.on("change", clues.checkLegal);
 
-  globals.elements.clueArea.add(
+  globals.elements.lowerClueArea.add(
     (globals.elements.clueTypeButtonGroup as unknown) as Konva.Group,
   );
 
@@ -1890,22 +1887,35 @@ function drawClueArea() {
     text: "Give Clue",
   });
   globals.elements.giveClueButton.setEnabled(false);
-  globals.elements.clueArea.add(
+  globals.elements.lowerClueArea.add(
     (globals.elements.giveClueButton as unknown) as Konva.Group,
   );
   globals.elements.giveClueButton.on("click tap", clues.give);
 
   globals.layers.UI.add(globals.elements.clueArea);
+
+  drawClueAreaDisabled(offsetX);
 }
 
-function drawClueAreaDisabled() {
+function drawClueAreaDisabled(offsetX: number) {
   // We fade the clue area and draw a rectangle on top of it when there are no clues available
-  globals.elements.clueAreaDisabled = new Konva.Group({
+  globals.elements.clueAreaDisabled = new SlidableGroup({
     x: clueAreaValues.x * winW,
     y: clueAreaValues.y * winH,
     width: clueAreaValues.w! * winW,
     listening: false,
   });
+
+  function setLeft(this: SlidableGroup) {
+    this.x(clueAreaValues.x * winW + offsetX);
+  }
+  globals.elements.clueAreaDisabled.setLeft = setLeft;
+
+  function setCenter(this: SlidableGroup) {
+    this.x(clueAreaValues.x * winW);
+  }
+  globals.elements.clueAreaDisabled.setCenter = setCenter;
+  globals.elements.clueAreaDisabled.setCenter();
 
   // A transparent rectangle to stop clicks
   const rect = new Konva.Rect({
@@ -1965,7 +1975,9 @@ function drawClueAreaDisabled() {
   globals.elements.clueAreaDisabled.add(noCluesText);
 
   globals.elements.clueAreaDisabled.hide();
-  globals.layers.UI.add(globals.elements.clueAreaDisabled);
+  globals.layers.UI.add(
+    (globals.elements.clueAreaDisabled as unknown) as Konva.Group,
+  );
 }
 
 function drawCurrentPlayerArea() {
@@ -2055,56 +2067,94 @@ function drawHypotheticalArea() {
   });
   globals.elements.hypoCircle.add(text);
 
+  globals.elements.hypoButtonsArea = new Konva.Group({
+    visible: false,
+  });
+
+  globals.layers.UI.add(globals.elements.hypoButtonsArea);
+
+  const hypoButtonWidth = 0.06;
+  const hypoButtonHeight = 0.051;
+  const hypoButtonSpacing = 0.008;
+
   // The "Back 1 Turn" button
   const hypoBackButtonValues = {
-    x: spectatorsLabelValues.x + 0.04,
-    y: bottomLeftButtonValues.y,
+    // eslint-disable-next-line prettier/prettier
+    x: clueAreaValues.x + lowerClueAreaValues.x + giveClueValues.x + giveClueValues.w! - 0.05,
+    y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
   };
-  if (globals.lobby.settings.keldonMode) {
-    // The button should be aligned with the right-most element between the color buttons,
-    // the rank buttons, and the "Give Clue" button, whichever one that is
-    const furthestRightElementX = Math.max(
-      finalColorButtonValues.x,
-      finalRankButtonValues.x,
-      giveClueValues.x + giveClueValues.w! + 0.01,
-    );
-    hypoBackButtonValues.x = clueAreaValues.x + furthestRightElementX;
-    hypoBackButtonValues.y =
-      clueAreaValues.y + finalColorButtonValues.y + 0.008;
-  }
+
   globals.elements.hypoBackButton = new Button({
     x: hypoBackButtonValues.x * winW,
     y: hypoBackButtonValues.y * winH,
-    width: 0.07 * winW,
-    height: 0.0563 * winH,
+    width: hypoButtonWidth * winW,
+    height: hypoButtonHeight * winH,
     text: "Back 1",
-    visible: false,
+    fontSize: 0.019 * winH,
   });
   globals.elements.hypoBackButton.on("click tap", hypothetical.sendBack);
-  globals.layers.UI.add(
+  globals.elements.hypoButtonsArea.add(
     (globals.elements.hypoBackButton as unknown) as Konva.Group,
+  );
+
+  // The "End Hypothetical" button
+  const endHypotheticalButtonValues = {
+    x: hypoBackButtonValues.x + hypoButtonWidth + hypoButtonSpacing,
+    y: hypoBackButtonValues.y,
+  };
+
+  const endHypotheticalButton = new Button({
+    x: endHypotheticalButtonValues.x * winW,
+    y: endHypotheticalButtonValues.y * winH,
+    width: hypoButtonWidth * winW,
+    height: hypoButtonHeight * winH,
+    text: "End Hypo",
+    fontSize: 0.019 * winH,
+  });
+  globals.elements.hypoButtonsArea.add(
+    (endHypotheticalButton as unknown) as Konva.Group,
+  );
+  endHypotheticalButton.on("click tap", () => {
+    hypothetical.end();
+  });
+  globals.elements.endHypotheticalButton = endHypotheticalButton;
+
+  // The "Edit Cards" button
+  const editCardsButtonValues = {
+    x: endHypotheticalButtonValues.x,
+    y: endHypotheticalButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
+  };
+  globals.elements.editCardsButton = new Button({
+    x: editCardsButtonValues.x * winW,
+    y: editCardsButtonValues.y * winH,
+    width: hypoButtonWidth * winW,
+    height: hypoButtonHeight * winH,
+    text: "Edit Cards",
+    fontSize: 0.019 * winH,
+  });
+  globals.elements.hypoButtonsArea.add(
+    (globals.elements.editCardsButton as unknown) as Konva.Group,
   );
 
   // The "Show Drawn Cards" / "Hide Drawn Cards" button
   const toggleDrawnCardsButtonValues = {
-    x: hypoBackButtonValues.x,
-    y: hypoBackButtonValues.y + 0.0663,
+    x: editCardsButtonValues.x,
+    y: editCardsButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.toggleDrawnCardsButton = new ThreeLineButton({
+  globals.elements.toggleDrawnCardsButton = new Button({
     x: toggleDrawnCardsButtonValues.x * winW,
     y: toggleDrawnCardsButtonValues.y * winH,
-    width: 0.07 * winW,
-    height: 0.1226 * winH,
-    text: "Show",
-    text2: "Drawn",
-    text3: "Cards",
+    width: hypoButtonWidth * winW,
+    height: hypoButtonHeight * winH,
+    text: "Show Drawn",
+    fontSize: 0.017 * winH,
     visible: false,
   });
   globals.elements.toggleDrawnCardsButton.on(
     "click tap",
     hypothetical.toggleRevealed,
   );
-  globals.layers.UI.add(
+  globals.elements.hypoButtonsArea.add(
     (globals.elements.toggleDrawnCardsButton as unknown) as Konva.Group,
   );
 }

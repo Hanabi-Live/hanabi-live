@@ -5,6 +5,7 @@ import FitText from "./FitText";
 export default class Button extends Konva.Group {
   enabled = true;
   pressed = false;
+  assignedTextSize = false;
 
   background: Konva.Rect;
   textElement: FitText | null = null;
@@ -21,6 +22,10 @@ export default class Button extends Konva.Group {
     // Local variables
     const w = this.width();
     const h = this.height();
+    const textSize = (config.fontSize as number) ?? 0.5 * h;
+    if (config.fontSize) {
+      this.assignedTextSize = true;
+    }
 
     this.background = new Konva.Rect({
       x: 0,
@@ -39,10 +44,10 @@ export default class Button extends Konva.Group {
     if (config.text) {
       this.textElement = new FitText({
         x: 0,
-        y: 0.275 * h,
+        y: (0.525 - textSize / 2 / h) * h, // a smidgeon higher than vertically centered
         width: w,
         height: 0.5 * h,
-        fontSize: 0.5 * h,
+        fontSize: textSize,
         fontFamily: "Verdana",
         fill: "white",
         align: "center",
@@ -123,7 +128,12 @@ export default class Button extends Konva.Group {
 
   text(newText: string): void {
     if (this.textElement) {
-      this.textElement.fitText(newText);
+      if (this.assignedTextSize) {
+        this.textElement.text(newText);
+      } else {
+        // resize to fit the new text if we haven't been specifically given a size
+        this.textElement.fitText(newText);
+      }
     } else {
       throw new Error('The "text()" method was called on a non-text Button.');
     }

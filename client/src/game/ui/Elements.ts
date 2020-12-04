@@ -10,10 +10,10 @@ import CurrentPlayerArea from "./controls/CurrentPlayerArea";
 import FitText from "./controls/FitText";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
 import Shuttle from "./controls/Shuttle";
+import SlidableGroup from "./controls/SlidableGroup";
 import StrikeSquare from "./controls/StrikeSquare";
 import StrikeX from "./controls/StrikeX";
 import TextWithTooltip from "./controls/TextWithTooltip";
-import ThreeLineButton from "./controls/ThreeLineButton";
 import TimerDisplay from "./controls/TimerDisplay";
 import Deck from "./Deck";
 import FullActionLog from "./FullActionLog";
@@ -44,7 +44,6 @@ export default class Elements {
   chatButton: Button | null = null;
   lobbyButton: Button | null = null;
   restartButton: Button | null = null;
-  endHypotheticalButton: Button | null = null;
   deck: Deck | null = null;
   gameIDLabel: FitText | null = null;
   gameInfoImage: Konva.Image | null = null;
@@ -89,11 +88,12 @@ export default class Elements {
   clueArea: Konva.Group | null = null;
   clueTargetButtonGroup: ButtonGroup | null = null;
   clueTargetButtonGroup2: ButtonGroup | null = null; // For hypotheticals
+  lowerClueArea: SlidableGroup | null = null;
   clueTypeButtonGroup: ButtonGroup | null = null;
   rankClueButtons: RankButton[] = [];
   colorClueButtons: ColorButton[] = [];
   giveClueButton: Button | null = null;
-  clueAreaDisabled: Konva.Group | null = null;
+  clueAreaDisabled: SlidableGroup | null = null;
 
   // The current turn UI
   currentPlayerArea: CurrentPlayerArea | null = null;
@@ -112,8 +112,11 @@ export default class Elements {
   useSharedTurnsButton: SharedTurnsButton | null = null;
   enterHypoButton: Button | null = null;
   hypoCircle: Konva.Group | null = null;
+  hypoButtonsArea: Konva.Group | null = null;
+  editCardsButton: Button | null = null;
   hypoBackButton: Button | null = null;
-  toggleDrawnCardsButton: ThreeLineButton | null = null;
+  toggleDrawnCardsButton: Button | null = null;
+  endHypotheticalButton: Button | null = null;
 
   // The pause screen
   pauseArea: Konva.Group | null = null;
