@@ -81,7 +81,6 @@ const (
 )
 
 const (
-	ProjectName = "hanabi-live-server"
 	WebsiteName = "Hanab Live"
 
 	// The maximum amount of clues (and the amount of clues that players start the game with)

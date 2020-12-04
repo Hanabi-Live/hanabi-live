@@ -18,7 +18,7 @@ type Logger struct {
 func NewLogger() *Logger {
 	// Initialize logging using the "go-logging" library
 	// http://godoc.org/github.com/op/go-logging#Formatter
-	logger := logging.MustGetLogger(ProjectName)
+	logger := logging.MustGetLogger(projectName)
 	loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
 	logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
 		`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,

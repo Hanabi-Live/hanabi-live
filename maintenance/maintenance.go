@@ -43,6 +43,7 @@ func main() {
 
 	// Get the parent directory
 	// https://stackoverflow.com/questions/48570228/get-the-parent-path
+	// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
 	projectPath = filepath.Dir(projectPath)
 
 	// Check to see if the ".env" file exists

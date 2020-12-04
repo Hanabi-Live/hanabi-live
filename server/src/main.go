@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	projectName       string
 	projectPath       string
 	dataPath          string
 	versionPath       string
@@ -40,7 +41,7 @@ func main() {
 	deadlock.Opts.DisableLockOrderDetection = true
 
 	// Welcome message
-	startText := "| Starting " + ProjectName + " |"
+	startText := "| Starting " + projectName + " |"
 	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
 	logger.Info(borderText)
 	logger.Info(startText)
@@ -63,6 +64,8 @@ func main() {
 	if v, err := os.Executable(); err != nil {
 		logger.Fatal("Failed to get the path of the currently running executable:", err)
 	} else {
+		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
+		projectName = filepath.Base(v)
 		projectPath = filepath.Dir(v)
 	}
 
