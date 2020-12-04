@@ -180,11 +180,6 @@ function replayReducerFunction(
     }
 
     case "hypoShowDrawnCards": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
       if (state.hypothetical === null) {
         throw new Error(
           `A "${action.type}" action was dispatched with a null hypothetical state.`,
@@ -195,10 +190,10 @@ function replayReducerFunction(
       if (action.showDrawnCards) {
         // Filter out all identities morphed to blank
         const morphed = original(state.hypothetical.morphedIdentities)!;
+        state.hypothetical.morphedIdentities = [];
         for (let i = 0; i < morphed.length; i++) {
           // Note: the for loop is necessary because the array is not contiguous
           // Array.filter would change the indexes
-          state.hypothetical.morphedIdentities = [];
           if (
             morphed[i] !== undefined &&
             morphed[i].rank !== null &&
