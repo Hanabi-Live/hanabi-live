@@ -11,11 +11,10 @@ The following instructions will set up the server as well as the linters. We ass
 ## Table of Contents
 
 1. [Hardware Prerequisites](#hardware-prerequisites)
-2. [Installation for Development (Windows)](#installation-for-development-windows)
-3. [Installation for Development (MacOS)](#installation-for-development-macos)
-5. [Installation for Production (Linux)](#installation-for-production-linux)
-4. [Installation (Docker)](#installation-docker)
-6. [Running the Server](#running-the-server)
+1. [Installation for Development (Windows)](#installation-for-development-windows)
+1. [Installation for Development (MacOS)](#installation-for-development-macos)
+1. [Installation for Production (Linux)](#installation-for-production-linux)
+1. [Running the Server](#running-the-server)
 
 <br />
 
@@ -26,8 +25,6 @@ Building the client code can be memory intensive. Make sure that your system has
 <br />
 
 ## Installation for Development (Windows)
-
-If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
 
 - Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 - Install the [Chocolatey](https://chocolatey.org/) package manager:
@@ -100,8 +97,6 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Development (MacOS)
 
-If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
-
 - Install the [Homebrew](https://brew.sh/) package manager:
   - `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
 - Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
@@ -164,7 +159,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Production (Linux)
 
-These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux. Alternatively, you can follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
+These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
 
 - Make sure the package manager is up to date:
   - `sudo apt update`
