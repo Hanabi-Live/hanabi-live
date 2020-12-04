@@ -3,7 +3,6 @@ module github.com/Zamiell/hanabi-live/src
 go 1.14
 
 require (
-	github.com/Zamiell/go-logging v0.0.0-20200330042608-74a4ce81eb96
 	github.com/alexedwards/argon2id v0.0.0-20200802152012-2464efd3196b
 	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/bwmarrin/discordgo v0.22.0
@@ -25,7 +24,6 @@ require (
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/mozillazg/go-unidecode v0.1.1
-	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
