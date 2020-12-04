@@ -48,7 +48,7 @@ export function onCurrentPlayerIndexChanged(
   if (currentPlayerIndex === null) {
     // The game has ended
     // Ensure that the clue UI is not showing
-    turn.hideClueUIAndDisableDragging();
+    turn.hideArrowsAndDisableDragging();
   } else if (globals.lobby.settings.keldonMode) {
     // In addition to bolding the player's name,
     // change the color of their black line to signify that it is their turn
@@ -186,23 +186,19 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
     return;
   }
 
-  if (clueTokensRules.atMax(data.clueTokens, globals.variant)) {
-    // Show the red border around the discard pile
-    // (to reinforce that the current player cannot discard)
-    globals.elements.noDiscardBorder?.show();
-    globals.elements.noDoubleDiscardBorder?.hide();
-  } else if (
-    data.doubleDiscard &&
-    globals.lobby.settings.hyphenatedConventions
-  ) {
-    // Show a yellow border around the discard pile
-    // (to reinforce that this is a "Double Discard" situation)
-    globals.elements.noDiscardBorder?.hide();
-    globals.elements.noDoubleDiscardBorder?.show();
-  } else {
-    globals.elements.noDiscardBorder?.hide();
-    globals.elements.noDoubleDiscardBorder?.hide();
-  }
+  const noDiscard = clueTokensRules.atMax(data.clueTokens, globals.variant);
+
+  // Show the red border around the discard pile
+  // (to reinforce that the current player cannot discard)
+  globals.elements.noDiscardBorder?.visible(noDiscard);
+
+  // Show a yellow border around the discard pile
+  // (to reinforce that this is a "Double Discard" situation)
+  globals.elements.noDoubleDiscardBorder?.visible(
+    globals.lobby.settings.hyphenatedConventions &&
+      !noDiscard &&
+      data.doubleDiscard,
+  );
 
   globals.layers.UI.batchDraw();
 }

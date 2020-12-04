@@ -1734,6 +1734,8 @@ function drawClueArea() {
     // The clue target buttons are pointless if we are playing a 2-player game
     // (because we only have the ability to clue one player)
     globals.elements.clueTargetButtonGroup.hide();
+    // Default the clue recipient button to the only other player available
+    globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
   }
 
   // This button group includes us, which is used for hypotheticals

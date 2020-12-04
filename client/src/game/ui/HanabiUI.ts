@@ -10,7 +10,6 @@ import * as keyboard from "./keyboard";
 import * as replay from "./replay";
 import setGlobalEmpathy from "./setGlobalEmpathy";
 import * as timer from "./timer";
-import * as turn from "./turn";
 
 export default class HanabiUI {
   globals: Globals;
@@ -71,11 +70,6 @@ export default class HanabiUI {
         replay.goToSegment(segment - 1);
       }
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  reshowClueUIAfterWarning(): void {
-    turn.showClueUI();
   }
 
   // eslint-disable-next-line class-methods-use-this

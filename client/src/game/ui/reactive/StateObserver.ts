@@ -211,6 +211,30 @@ const visibleStateObservers: Subscriptions = [
 ];
 
 const ongoingGameObservers: Subscriptions = [
+  // Clue area
+  subAfterInit(
+    (s) => turnView.shouldShowTurnUI(s),
+    turnView.shouldShowTurnUIChanged,
+  ),
+
+  // "No Clues" indicator and fade
+  subAfterInit(
+    (s) => turnView.shouldIndicateNoClues(s),
+    turnView.shouldIndicateNoCluesChanged,
+  ),
+
+  // Bottom-Deck Blind-Play UI
+  subAfterInit(
+    (s) => turnView.shouldEnableBottomDeckBlindPlay(s),
+    turnView.shouldEnableBottomDeckBlindPlayChanged,
+  ),
+
+  // Alternating Clues UI
+  subAfterInit(
+    (s) => s.visibleState!.clues[s.visibleState!.clues.length - 1]?.type,
+    turnView.onLastClueTypeChanged,
+  ),
+
   // Segment + current player index
   subAfterInit(
     (s) => ({
@@ -364,6 +388,10 @@ const replayObservers: Subscriptions = [
 
 const otherObservers = [
   // Premoves (e.g. queued actions)
+  subAfterInit(
+    (s) => premoveView.shouldShowCancelButton(s),
+    premoveView.shouldShowCancelButtonChanged,
+  ),
   subAfterInit((s) => s.premove, premoveView.onChanged),
 
   // Pause

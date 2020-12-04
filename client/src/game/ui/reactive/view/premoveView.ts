@@ -2,8 +2,17 @@
 
 import ActionType from "../../../types/ActionType";
 import ClientAction from "../../../types/ClientAction";
+import State from "../../../types/State";
 import globals from "../../globals";
 import * as ourHand from "../../ourHand";
+
+export const shouldShowCancelButton = (state: State): boolean =>
+  !state.replay.active && state.premove !== null;
+
+export function shouldShowCancelButtonChanged(shouldShow: boolean): void {
+  globals.elements.premoveCancelButton?.visible(shouldShow);
+  globals.layers.UI.batchDraw();
+}
 
 export function onChanged(
   action: ClientAction | null,
@@ -16,9 +25,6 @@ export function onChanged(
 
   if (action === null && previousAction !== null) {
     // We just canceled a premove action
-    globals.elements.premoveCancelButton?.hide();
-    globals.elements.currentPlayerArea?.show();
-    globals.layers.UI.batchDraw();
 
     // If we dragged a card, we have to make the card tween back to the hand
     if (
@@ -44,8 +50,6 @@ export function onChanged(
       text += "Clue";
     }
     globals.elements.premoveCancelButton?.text(text);
-    globals.elements.premoveCancelButton?.show();
-    globals.elements.currentPlayerArea?.hide();
 
     globals.layers.UI.batchDraw();
   }

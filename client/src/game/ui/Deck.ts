@@ -88,9 +88,6 @@ export default class Deck extends Konva.Group {
         },
       });
     } else if (draggedTo === "playArea") {
-      this.draggable(false);
-      globals.elements.deckPlayAvailableLabel!.hide();
-
       turn.end({
         type: ActionType.Play,
         // Card orders start at 0, so the final card order is the length of the deck - 1
