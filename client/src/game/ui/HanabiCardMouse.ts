@@ -102,7 +102,8 @@ function mouseDown(
 
   const editMode =
     globals.elements.editCardsButton != null &&
-    globals.elements.editCardsButton.pressed;
+    globals.elements.editCardsButton.pressed &&
+    globals.state.replay.hypothetical !== null;
   // Empathy
   if (
     event.evt.buttons === 1 && // Only enable Empathy for left-clicks
@@ -168,7 +169,8 @@ function getCursorType(card: HanabiCard) {
 
   if (
     globals.elements.editCardsButton &&
-    globals.elements.editCardsButton.pressed
+    globals.elements.editCardsButton.pressed &&
+    globals.state.replay.hypothetical !== null
   ) {
     return "edit";
   }
