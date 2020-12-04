@@ -68,7 +68,7 @@
   {
     "name": "Miser",
     "id": 10,
-    "description": "Can only clue if there are 4 or more clues available",
+    "description": "Cannot clue if there are 3 or fewer clues available",
     "emoji": "💰"
   },
   {
