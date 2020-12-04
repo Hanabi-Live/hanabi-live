@@ -18,7 +18,7 @@ func httpMain(c *gin.Context) {
 	if _, err := os.Stat(compilingPath); os.IsNotExist(err) {
 		compiling = false
 	} else if err != nil {
-		logger.Error("Failed to check if the \""+compilingPath+"\" file exists:", err)
+		logger.Error("Failed to check if the \"" + compilingPath + "\" file exists: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

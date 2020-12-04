@@ -40,7 +40,7 @@ func printCurrentUsers() {
 }
 
 func printTableStats(ctx context.Context, tableList []*Table) {
-	logger.Debug("Current total tables:", len(tableList))
+	logger.Debug("Current total tables: " + strconv.Itoa(len(tableList)))
 
 	numUnstarted := 0
 	numRunning := 0
@@ -64,9 +64,9 @@ func printTableStats(ctx context.Context, tableList []*Table) {
 		t.Unlock(ctx)
 	}
 
-	logger.Debug("Current unstarted tables:", numUnstarted)
-	logger.Debug("Current ongoing tables:", numRunning)
-	logger.Debug("Current replays:", numReplays)
+	logger.Debug("Current unstarted tables: " + strconv.Itoa(numUnstarted))
+	logger.Debug("Current ongoing tables: " + strconv.Itoa(numRunning))
+	logger.Debug("Current replays: " + strconv.Itoa(numReplays))
 }
 
 func printTables(ctx context.Context, tableList []*Table) {

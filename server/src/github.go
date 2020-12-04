@@ -63,7 +63,7 @@ func githubInit() {
 		gitHubInstallationID,
 		gitHubKeyPath,
 	); err != nil {
-		logger.Info("Failed to read the private key from \""+gitHubKeyPath+"\":", err)
+		logger.Info("Failed to read the private key from \"" + gitHubKeyPath + "\": " + err.Error())
 		logger.Info("Aborting GitHub initialization.")
 		return
 	} else {

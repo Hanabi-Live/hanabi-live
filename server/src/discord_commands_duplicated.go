@@ -19,7 +19,7 @@ func discordUptime(ctx context.Context, m *discordgo.MessageCreate, args []strin
 	cameOnline := getCameOnline()
 	var uptime string
 	if v, err := getUptime(); err != nil {
-		logger.Error("Failed to get the uptime:", err)
+		logger.Error("Failed to get the uptime: " + err.Error())
 		discordSend(m.ChannelID, "", DefaultErrorMsg)
 		return
 	} else {

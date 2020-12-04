@@ -75,8 +75,8 @@ func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 
 func setting(s *Session, d *CommandData) {
 	if err := models.UserSettings.Set(s.UserID, toSnakeCase(d.Name), d.Setting); err != nil {
-		logger.Error("Failed to set a setting for user \""+s.Username+"\":", err)
-		s.Error("")
+		logger.Error("Failed to set a setting for user \"" + s.Username + "\": " + err.Error())
+		s.Error(DefaultErrorMsg)
 		return
 	}
 

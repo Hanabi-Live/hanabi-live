@@ -29,8 +29,8 @@ func httpPasswordResetPost(c *gin.Context) {
 	// Hash it with Argon2id
 	var hash string
 	if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
-		logger.Error("Failed to create a hash from the submitted password "+
-			"(in the password reset form):", err)
+		logger.Error("Failed to create a hash from the submitted password " +
+			"(in the password reset form): " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

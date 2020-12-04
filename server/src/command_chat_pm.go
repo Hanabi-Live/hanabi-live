@@ -67,8 +67,8 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 
 	// Add the message to the database
 	if err := models.ChatLogPM.Insert(s.UserID, d.Msg, recipientSession.UserID); err != nil {
-		logger.Error("Failed to insert a private message into the database:", err)
-		s.Error("")
+		logger.Error("Failed to insert a private message into the database: " + err.Error())
+		s.Error(DefaultErrorMsg)
 		return
 	}
 

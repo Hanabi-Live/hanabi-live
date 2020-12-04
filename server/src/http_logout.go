@@ -32,7 +32,7 @@ func deleteCookie(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address from \""+r.RemoteAddr+"\":", err)
+		logger.Error("Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -47,7 +47,7 @@ func deleteCookie(c *gin.Context) {
 	session := gsessions.Default(c)
 	session.Clear()
 	if err := session.Save(); err != nil {
-		logger.Error("Failed to clear the cookie for IP \""+ip+"\":", err)
+		logger.Error("Failed to clear the cookie for IP \"" + ip + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

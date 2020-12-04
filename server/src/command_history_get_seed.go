@@ -31,7 +31,7 @@ func commandHistoryGetSeed(ctx context.Context, s *Session, d *CommandData) {
 	// Get the list of game IDs played on this seed
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsSeed(d.Seed); err != nil {
-		logger.Error("Failed to get the game IDs for seed \""+d.Seed+"\":", err)
+		logger.Error("Failed to get the game IDs for seed \"" + d.Seed + "\": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -42,7 +42,7 @@ func commandHistoryGetSeed(ctx context.Context, s *Session, d *CommandData) {
 	// (with a custom sort by score)
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
-		logger.Error("Failed to get the history:", err)
+		logger.Error("Failed to get the history: " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

@@ -173,8 +173,8 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 	if d.Source == "id" {
 		// Fill in the DatetimeStarted and DatetimeFinished" values from the database
 		if v1, v2, err := models.Games.GetDatetimes(t.ExtraOptions.DatabaseID); err != nil {
-			logger.Error("Failed to get the datetimes for game "+
-				"\""+strconv.Itoa(t.ExtraOptions.DatabaseID)+"\":", err)
+			logger.Error("Failed to get the datetimes for game " +
+				"\"" + strconv.Itoa(t.ExtraOptions.DatabaseID) + "\": " + err.Error())
 			s.Error(InitGameFail)
 			deleteTable(t)
 			return
@@ -204,7 +204,8 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 func validateDatabase(s *Session, d *CommandData) bool {
 	// Check to see if the game exists in the database
 	if exists, err := models.Games.Exists(d.DatabaseID); err != nil {
-		logger.Error("Failed to check to see if game "+strconv.Itoa(d.DatabaseID)+" exists:", err)
+		logger.Error("Failed to check to see if game " + strconv.Itoa(d.DatabaseID) + " exists: " +
+			err.Error())
 		s.Error(InitGameFail)
 		return false
 	} else if !exists {
@@ -362,8 +363,8 @@ func validateJSON(s *Session, d *CommandData) bool {
 func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlayer, bool) {
 	// Get the options from the database
 	if v, err := models.Games.GetOptions(databaseID); err != nil {
-		logger.Error("Failed to get the options from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the options from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		s.Error(InitGameFail)
 		return nil, false
 	} else {
@@ -373,8 +374,8 @@ func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlay
 	// Get the players from the database
 	var dbPlayers []*DBPlayer
 	if v, err := models.Games.GetPlayers(databaseID); err != nil {
-		logger.Error("Failed to get the players from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the players from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		return nil, false
 	} else {
 		dbPlayers = v
@@ -398,8 +399,8 @@ func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlay
 	// Get the seed from the database
 	var seed string
 	if v, err := models.Games.GetSeed(databaseID); err != nil {
-		logger.Error("Failed to get the seed from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the seed from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		s.Error(InitGameFail)
 		return nil, false
 	} else {
@@ -409,8 +410,8 @@ func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlay
 	// Get the actions from the database
 	var actions []*GameAction
 	if v, err := models.GameActions.GetAll(databaseID); err != nil {
-		logger.Error("Failed to get the actions from the database for game "+
-			strconv.Itoa(databaseID)+":", err)
+		logger.Error("Failed to get the actions from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		s.Error(InitGameFail)
 		return nil, false
 	} else {
@@ -582,8 +583,8 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 		variant := variants[g.Options.VariantName]
 		noteSize := variant.GetDeckSize() + len(variant.Suits)
 		if v, err := models.Games.GetNotes(d.DatabaseID, len(g.Players), noteSize); err != nil {
-			logger.Error("Failed to get the notes from the database for game "+
-				strconv.Itoa(d.DatabaseID)+":", err)
+			logger.Error("Failed to get the notes from the database for game " +
+				strconv.Itoa(d.DatabaseID) + ": " + err.Error())
 			s.Error(InitGameFail)
 			return false
 		} else {

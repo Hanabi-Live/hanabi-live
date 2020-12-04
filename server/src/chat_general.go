@@ -128,7 +128,7 @@ func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	chatServerSend(ctx, getCameOnline(), d.Room, d.NoTablesLock)
 	var uptime string
 	if v, err := getUptime(); err != nil {
-		logger.Error("Failed to get the uptime:", err)
+		logger.Error("Failed to get the uptime: " + err.Error())
 		chatServerSend(ctx, DefaultErrorMsg, d.Room, d.NoTablesLock)
 		return
 	} else {
@@ -141,7 +141,7 @@ func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
 func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
-		logger.Error("Failed to get the time left:", err)
+		logger.Error("Failed to get the time left: " + err.Error())
 		chatServerSend(ctx, DefaultErrorMsg, d.Room, d.NoTablesLock)
 		return
 	} else {

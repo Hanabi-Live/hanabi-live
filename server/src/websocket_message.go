@@ -62,7 +62,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 		if newRateLimitAllowance < 1 {
 			// They are flooding, so automatically ban them
-			logger.Warning("User \"" + s.Username + "\" triggered rate-limiting; banning them.")
+			logger.Warn("User \"" + s.Username + "\" triggered rate-limiting; banning them.")
 			ban(s)
 			return
 		}
@@ -113,7 +113,8 @@ func ban(s *Session) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(s.ms.Request.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address from \""+s.ms.Request.RemoteAddr+"\":", err)
+		logger.Error("Failed to parse the IP address from \"" + s.ms.Request.RemoteAddr + "\": " +
+			err.Error())
 		return
 	} else {
 		ip = v
@@ -121,7 +122,7 @@ func ban(s *Session) {
 
 	// Check to see if this IP is already banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+		logger.Error("Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error())
 		return
 	} else if banned {
 		return
@@ -129,7 +130,7 @@ func ban(s *Session) {
 
 	// Insert a new row in the database for this IP
 	if err := models.BannedIPs.Insert(ip, s.UserID); err != nil {
-		logger.Error("Failed to insert the banned IP row:", err)
+		logger.Error("Failed to insert the banned IP row: " + err.Error())
 		return
 	}
 

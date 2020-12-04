@@ -62,8 +62,8 @@ func tableSetVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 	for _, p := range t.Players {
 		var variantStats *UserStatsRow
 		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
-			logger.Error("Failed to get the stats for player \""+s.Username+"\" for variant "+
-				strconv.Itoa(variant.ID)+":", err)
+			logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
+				strconv.Itoa(variant.ID) + ": " + err.Error())
 			s.Error(DefaultErrorMsg)
 			return
 		} else {

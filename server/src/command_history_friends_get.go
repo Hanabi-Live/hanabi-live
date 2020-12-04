@@ -31,7 +31,8 @@ func commandHistoryFriendsGet(ctx context.Context, s *Session, d *CommandData) {
 		d.Offset,
 		d.Amount,
 	); err != nil {
-		logger.Error("Failed to get the friend game IDs for user \""+s.Username+"\":", err)
+		logger.Error("Failed to get the friend game IDs for user \"" + s.Username + "\": " +
+			err.Error())
 		return
 	} else {
 		gameIDs = v
@@ -40,7 +41,7 @@ func commandHistoryFriendsGet(ctx context.Context, s *Session, d *CommandData) {
 	// Get the history for these game IDs
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the history:", err)
+		logger.Error("Failed to get the history: " + err.Error())
 		return
 	} else {
 		gameHistoryList = v

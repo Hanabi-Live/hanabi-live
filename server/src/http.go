@@ -262,21 +262,24 @@ func httpInit() {
 		letsEncryptPath := path.Join(projectPath, "letsencrypt")
 		if _, err := os.Stat(letsEncryptPath); os.IsNotExist(err) {
 			if err := os.MkdirAll(letsEncryptPath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+letsEncryptPath+"\" directory:", err)
+				logger.Fatal("Failed to create the \"" + letsEncryptPath + "\" directory: " +
+					err.Error())
 			}
 		}
 
 		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
 		if _, err := os.Stat(wellKnownPath); os.IsNotExist(err) {
 			if err := os.MkdirAll(wellKnownPath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+wellKnownPath+"\" directory:", err)
+				logger.Fatal("Failed to create the \"" + wellKnownPath + "\" directory: " +
+					err.Error())
 			}
 		}
 
 		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
 		if _, err := os.Stat(acmeChallengePath); os.IsNotExist(err) {
 			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+				logger.Fatal("Failed to create the \"" + acmeChallengePath + "\" directory: " +
+					err.Error())
 			}
 		}
 
@@ -331,13 +334,13 @@ func httpInit() {
 	}
 	if useTLS {
 		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {
-			logger.Fatal("ListenAndServeTLS failed:", err)
+			logger.Fatal("ListenAndServeTLS failed: " + err.Error())
 			return
 		}
 		logger.Fatal("ListenAndServeTLS ended prematurely.")
 	} else {
 		if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
-			logger.Fatal("ListenAndServe failed:", err)
+			logger.Fatal("ListenAndServe failed: " + err.Error())
 			return
 		}
 		logger.Fatal("ListenAndServe ended prematurely.")
@@ -391,7 +394,7 @@ func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName .
 	if v, err := template.New("template").Funcs(template.FuncMap{
 		"formatDate": httpFormatDate,
 	}).ParseFiles(templateName...); err != nil {
-		logger.Error("Failed to create the template:", err.Error())
+		logger.Error("Failed to create the template: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

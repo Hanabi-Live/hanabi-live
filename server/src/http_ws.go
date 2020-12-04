@@ -32,8 +32,8 @@ func httpWS(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		msg := "Failed to parse the IP address from \"" + r.RemoteAddr + "\":"
-		httpWSError(c, msg, err)
+		msg := "Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error()
+		httpWSError(c, msg)
 		return
 	} else {
 		ip = v
@@ -41,8 +41,8 @@ func httpWS(c *gin.Context) {
 
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		msg := "Failed to check to see if the IP \"" + ip + "\" is banned:"
-		httpWSError(c, msg, err)
+		msg := "Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error()
+		httpWSError(c, msg)
 		return
 	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
@@ -82,8 +82,8 @@ func httpWS(c *gin.Context) {
 		httpWSDeny(c, msg)
 		return
 	} else if err != nil {
-		msg := "Failed to get the username for user " + strconv.Itoa(userID) + ":"
-		httpWSError(c, msg, err)
+		msg := "Failed to get the username for user " + strconv.Itoa(userID) + ": " + err.Error()
+		httpWSError(c, msg)
 		return
 	} else {
 		username = v
@@ -91,8 +91,9 @@ func httpWS(c *gin.Context) {
 
 	// Validation was successful; update the database with "datetime_last_login" and "last_ip"
 	if err := models.Users.Update(userID, ip); err != nil {
-		msg := "Failed to set \"datetime_last_login\" and \"last_ip\" for user " + "\"" + username + "\":"
-		httpWSError(c, msg, err)
+		msg := "Failed to set \"datetime_last_login\" and \"last_ip\" for user " +
+			"\"" + username + "\": " + err.Error()
+		httpWSError(c, msg)
 		return
 	}
 
@@ -114,7 +115,8 @@ func httpWS(c *gin.Context) {
 		// "logger.Info()" instead of "logger.Error()"
 		// and "http.StatusBadRequest" instead of "http.StatusInternalServerError"
 		// because WebSocket establishment can fail for mundane reasons (e.g. internet dropping)
-		logger.Info("Failed to establish the WebSocket connection for user \""+username+"\":", err)
+		logger.Info("Failed to establish the WebSocket connection for user \"" + username + "\": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusBadRequest),
@@ -127,11 +129,11 @@ func httpWS(c *gin.Context) {
 	// This line will not be reached until the WebSocket connection is closed and/or terminated
 }
 
-func httpWSError(c *gin.Context, msg string, err error) {
+func httpWSError(c *gin.Context, msg string) {
 	// Local variables
 	w := c.Writer
 
-	logger.Error(msg, err)
+	logger.Error(msg)
 	http.Error(
 		w,
 		http.StatusText(http.StatusInternalServerError),

@@ -24,7 +24,8 @@ func commandTagSearch(ctx context.Context, s *Session, d *CommandData) {
 	// Search through the database for games matching this tag
 	var gameIDs []int
 	if v, err := models.GameTags.SearchByTag(d.Msg); err != nil {
-		logger.Error("Failed to search for games matching a tag of \""+d.Msg+"\":", err)
+		logger.Error("Failed to search for games matching a tag of \"" + d.Msg + "\": " +
+			err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

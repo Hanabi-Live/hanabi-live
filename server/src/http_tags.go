@@ -23,8 +23,8 @@ func httpTags(c *gin.Context) {
 	// Search through the database for tags matching this user ID
 	var gamesMap map[int][]string
 	if v, err := models.GameTags.SearchByUserID(user.ID); err != nil {
-		logger.Error("Failed to search for games matching a user ID of "+
-			strconv.Itoa(user.ID)+":", err)
+		logger.Error("Failed to search for games matching a user ID of " +
+			strconv.Itoa(user.ID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -47,7 +47,7 @@ func httpTags(c *gin.Context) {
 	// Get the games corresponding to these IDs
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the games from the database:", err)
+		logger.Error("Failed to get the games from the database: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

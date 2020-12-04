@@ -191,7 +191,7 @@ func shutdownImmediate(ctx context.Context) {
 	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")
 	} else if err := executeScript("stop.sh"); err != nil {
-		logger.Error("Failed to execute the \"stop.sh\" script:", err)
+		logger.Error("Failed to execute the \"stop.sh\" script: " + err.Error())
 	}
 }
 

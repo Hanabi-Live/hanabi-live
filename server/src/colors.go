@@ -15,14 +15,14 @@ func colorsInit() {
 	filePath := path.Join(dataPath, "colors.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {
 		fileContents = v
 	}
 	var colorsArray []*Color
 	if err := json.Unmarshal(fileContents, &colorsArray); err != nil {
-		logger.Fatal("Failed to convert the colors file to JSON:", err)
+		logger.Fatal("Failed to convert the colors file to JSON: " + err.Error())
 		return
 	}
 

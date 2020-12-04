@@ -41,6 +41,16 @@ func main() {
 	// Configure the deadlock detector
 	deadlock.Opts.DisableLockOrderDetection = true
 
+	// Get the project path
+	// https://stackoverflow.com/questions/18537257/
+	if v, err := os.Executable(); err != nil {
+		logger.Fatal("Failed to get the path of the currently running executable: " + err.Error())
+	} else {
+		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
+		projectName = filepath.Base(v)
+		projectPath = filepath.Dir(v)
+	}
+
 	// Welcome message
 	startText := "| Starting " + projectName + " |"
 	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
@@ -53,22 +63,12 @@ func main() {
 	// since it is possible to update the client without restarting the server)
 	cmd := exec.Command("git", "rev-parse", "HEAD")
 	if stdout, err := cmd.Output(); err != nil {
-		logger.Fatal("Failed to perform a \"git rev-parse HEAD\":", err)
+		logger.Fatal("Failed to perform a \"git rev-parse HEAD\": " + err.Error())
 		return
 	} else {
 		gitCommitOnStart = strings.TrimSpace(string(stdout))
 	}
 	logger.Info("Current git commit: " + gitCommitOnStart)
-
-	// Get the project path
-	// https://stackoverflow.com/questions/18537257/
-	if v, err := os.Executable(); err != nil {
-		logger.Fatal("Failed to get the path of the currently running executable:", err)
-	} else {
-		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
-		projectName = filepath.Base(v)
-		projectPath = filepath.Dir(v)
-	}
 
 	// Check to see if the data path exists
 	dataPath = path.Join(projectPath, "data")
@@ -77,7 +77,7 @@ func main() {
 			"This directory should always exist; please try re-cloning the repository.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+dataPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + dataPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -90,7 +90,7 @@ func main() {
 			"This file should automatically be created when building the client.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+versionPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + versionPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -98,11 +98,11 @@ func main() {
 	tablesPath = path.Join(dataPath, "ongoing_tables")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
-			logger.Fatal("Failed to create the \""+tablesPath+"\" directory:", err2)
+			logger.Fatal("Failed to create the \"" + tablesPath + "\" directory: " + err2.Error())
 			return
 		}
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+tablesPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + tablesPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -110,11 +110,13 @@ func main() {
 	specificDealsPath = path.Join(dataPath, "specific_deals")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
-			logger.Fatal("Failed to create the \""+specificDealsPath+"\" directory:", err2)
+			logger.Fatal("Failed to create the \"" + specificDealsPath + "\" directory: " +
+				err2.Error())
 			return
 		}
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+specificDealsPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + specificDealsPath + "\" file exists: " +
+			err.Error())
 		return
 	}
 
@@ -126,13 +128,13 @@ func main() {
 			"This file should automatically be created when running this script.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+envPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + envPath + "\" file exists: " + err.Error())
 		return
 	}
 
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(envPath); err != nil {
-		logger.Fatal("Failed to load the \".env\" file:", err)
+		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
 		return
 	}
 
@@ -154,7 +156,7 @@ func main() {
 
 	// Initialize the database model (in "models.go")
 	if v, err := modelsInit(); err != nil {
-		logger.Fatal("Failed to open the database:", err)
+		logger.Fatal("Failed to open the database: " + err.Error())
 		return
 	} else {
 		models = v
@@ -169,7 +171,7 @@ func main() {
 			return
 		}
 
-		logger.Error("Failed to run the database test query:", err)
+		logger.Error("Failed to run the database test query: " + err.Error())
 		logger.Fatal("Try re-running the \"install/install_database_schema.sh\" script in order to re-initialize the database.")
 		return
 	}

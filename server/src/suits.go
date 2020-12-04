@@ -15,14 +15,14 @@ func suitsInit() {
 	filePath := path.Join(dataPath, "suits.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {
 		fileContents = v
 	}
 	var suitsArray []*Suit
 	if err := json.Unmarshal(fileContents, &suitsArray); err != nil {
-		logger.Fatal("Failed to convert the suits file from JSON:", err)
+		logger.Fatal("Failed to convert the suits file from JSON: " + err.Error())
 		return
 	}
 

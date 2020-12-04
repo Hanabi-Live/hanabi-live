@@ -25,7 +25,7 @@ func httpParsePlayerName(c *gin.Context) (User, bool) {
 	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
 		normalizedUsername,
 	); err != nil {
-		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
+		logger.Error("Failed to check to see if player \"" + player + "\" exists: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -78,7 +78,8 @@ func httpParsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 		if exists, v, err := models.Users.GetUserFromNormalizedUsername(
 			normalizedUsername,
 		); err != nil {
-			logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
+			logger.Error("Failed to check to see if player \"" + player + "\" exists: " +
+				err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),

@@ -154,8 +154,8 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 
 			// Check to see if the game ID exists on the server
 			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
-				logger.Error("Failed to check to see if game "+strconv.Itoa(data.DatabaseID)+
-					" exists:", err)
+				logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
+					" exists: " + err.Error())
 				s.Error(CreateGameFail)
 				return
 			} else if !exists {
@@ -187,8 +187,8 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 			// (it has to be a turn before the game ends)
 			var numTurns int
 			if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
-				logger.Error("Failed to get the number of turns from the database for game "+
-					strconv.Itoa(data.DatabaseID)+":", err)
+				logger.Error("Failed to get the number of turns from the database for game " +
+					strconv.Itoa(data.DatabaseID) + ": " + err.Error())
 				s.Error(InitGameFail)
 				return
 			} else {
@@ -291,7 +291,8 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 	if d.Password != "" {
 		// Create an Argon2id hash of the plain-text password
 		if v, err := argon2id.CreateHash(d.Password, argon2id.DefaultParams); err != nil {
-			logger.Error("Failed to create a hash from the submitted table password:", err)
+			logger.Error("Failed to create a hash from the submitted table password: " +
+				err.Error())
 			s.Error(CreateGameFail)
 			return
 		} else {

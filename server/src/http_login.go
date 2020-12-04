@@ -50,7 +50,7 @@ func httpLogin(c *gin.Context) {
 	var exists bool
 	var user User
 	if v1, v2, err := models.Users.Get(data.Username); err != nil {
-		logger.Error("Failed to get user \""+data.Username+"\":", err)
+		logger.Error("Failed to get user \"" + data.Username + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -79,8 +79,8 @@ func httpLogin(c *gin.Context) {
 			// Create an Argon2id hash of the plain-text password
 			var passwordHash string
 			if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-				logger.Error("Failed to create a hash from the submitted password for "+
-					"\""+data.Username+"\":", err)
+				logger.Error("Failed to create a hash from the submitted password for " +
+					"\"" + data.Username + "\": " + err.Error())
 				http.Error(
 					w,
 					http.StatusText(http.StatusInternalServerError),
@@ -93,7 +93,8 @@ func httpLogin(c *gin.Context) {
 
 			// Update their password to the new Argon2 format
 			if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
-				logger.Error("Failed to set the new hash for \""+data.Username+"\":", err)
+				logger.Error("Failed to set the new hash for \"" + data.Username + "\": " +
+					err.Error())
 				http.Error(
 					w,
 					http.StatusText(http.StatusInternalServerError),
@@ -117,8 +118,8 @@ func httpLogin(c *gin.Context) {
 				data.Password,
 				user.PasswordHash.String,
 			); err != nil {
-				logger.Error("Failed to compare the password to the Argon2 hash for "+
-					"\""+data.Username+"\":", err)
+				logger.Error("Failed to compare the password to the Argon2 hash for " +
+					"\"" + data.Username + "\": " + err.Error())
 				http.Error(
 					w,
 					http.StatusText(http.StatusInternalServerError),
@@ -148,8 +149,8 @@ func httpLogin(c *gin.Context) {
 		if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
 			data.NormalizedUsername,
 		); err != nil {
-			logger.Error("Failed to check for normalized password uniqueness for "+
-				"\""+data.Username+"\":", err)
+			logger.Error("Failed to check for normalized password uniqueness for " +
+				"\"" + data.Username + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -168,8 +169,8 @@ func httpLogin(c *gin.Context) {
 		// Create an Argon2id hash of the plain-text password
 		var passwordHash string
 		if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-			logger.Error("Failed to create a hash from the submitted password for "+
-				"\""+data.Username+"\":", err)
+			logger.Error("Failed to create a hash from the submitted password for " +
+				"\"" + data.Username + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -187,7 +188,7 @@ func httpLogin(c *gin.Context) {
 			passwordHash,
 			data.IP,
 		); err != nil {
-			logger.Error("Failed to insert user \""+data.Username+"\":", err)
+			logger.Error("Failed to insert user \"" + data.Username + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -203,7 +204,8 @@ func httpLogin(c *gin.Context) {
 	session := gsessions.Default(c)
 	session.Set("userID", user.ID)
 	if err := session.Save(); err != nil {
-		logger.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
+		logger.Error("Failed to write to the login cookie for user \"" + user.Username + "\": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -214,7 +216,7 @@ func httpLogin(c *gin.Context) {
 
 	// Log the login request and give a "200 OK" HTTP code
 	// (returning a code is not actually necessary but Firefox will complain otherwise)
-	logger.Info("User \""+user.Username+"\" logged in from:", data.IP)
+	logger.Info("User \"" + user.Username + "\" logged in from: " + data.IP)
 	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
 
 	// Next, the client will attempt to establish a WebSocket connection,
@@ -229,7 +231,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address from \""+r.RemoteAddr+"\":", err)
+		logger.Error("Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -242,7 +244,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+		logger.Error("Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

@@ -275,13 +275,13 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	sort.Slice(userIDs, func(i, j int) bool {
 		return userIDs[i] < userIDs[j]
 	})
-	logger.Debug("Total users:", len(userIDs))
+	logger.Debug("Total users: " + strconv.Itoa(len(userIDs)))
 	logger.Debug("(From user " + strconv.Itoa(userIDs[0]) + " " +
 		"to user " + strconv.Itoa(userIDs[len(userIDs)-1]) + ".)")
 
 	// Go through each user
 	for _, userID := range userIDs {
-		logger.Debug("Updating user:", userID)
+		logger.Debug("Updating user: " + strconv.Itoa(userID))
 
 		// Get the game IDs for this player
 		var gameIDs []int

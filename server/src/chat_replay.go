@@ -56,8 +56,8 @@ func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Get the tags from the database
 	var tags []string
 	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
-		logger.Error("Failed to get the tags for game ID "+
-			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
+		logger.Error("Failed to get the tags for game ID " +
+			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
