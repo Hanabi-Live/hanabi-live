@@ -100,10 +100,14 @@ function mouseDown(
     return;
   }
 
+  const editMode =
+    globals.elements.editCardsButton != null &&
+    globals.elements.editCardsButton.pressed;
   // Empathy
   if (
     event.evt.buttons === 1 && // Only enable Empathy for left-clicks
-    shouldShowEmpathy(this, event)
+    shouldShowEmpathy(this, event) &&
+    !editMode
   ) {
     setEmpathyOnHand(this, true);
   }
@@ -160,6 +164,13 @@ export function setCursor(this: HanabiCard): void {
 function getCursorType(card: HanabiCard) {
   if (card.dragging) {
     return "dragging";
+  }
+
+  if (
+    globals.elements.editCardsButton &&
+    globals.elements.editCardsButton.pressed
+  ) {
+    return "edit";
   }
 
   if (card.layout.draggable() && !card.tweening) {

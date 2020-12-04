@@ -2,13 +2,13 @@
 
 import Konva from "konva";
 import * as modals from "../../modals";
+import * as noteIdentity from "../reducers/noteIdentity";
 import * as cardRules from "../rules/card";
 import { STACK_BASE_RANK } from "../types/constants";
 import * as arrows from "./arrows";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
-import * as noteIdentity from "../reducers/noteIdentity";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
@@ -46,6 +46,16 @@ export default function HanabiCardClick(
 function clickLeft(card: HanabiCard, event: MouseEvent) {
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
+
+  // If we're in "edit cards" mode, left clicking a card morphs it.
+  if (
+    globals.elements.editCardsButton &&
+    globals.elements.editCardsButton.pressed
+  ) {
+    clickMorph(card);
+    return;
+  }
+
   if (
     event.ctrlKey || // No actions in this function use modifiers other than Alt
     event.shiftKey ||
@@ -122,7 +132,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     event.altKey &&
     !event.metaKey
   ) {
-    clickMorph(card.state.order);
+    clickMorph(card);
     return;
   }
 
@@ -214,7 +224,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 }
 
 // Morphing cards allows for creation of hypothetical situations
-function clickMorph(order: number) {
+function clickMorph(card: HanabiCard) {
   const cardText = prompt(
     'What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink")',
   );
@@ -226,7 +236,7 @@ function clickMorph(order: number) {
     // Don't bother with all of the text parsing below
     hypothetical.sendHypoAction({
       type: "morph",
-      order,
+      order: card.state.order,
       suitIndex: -1,
       rank: -1,
     });
@@ -242,7 +252,7 @@ function clickMorph(order: number) {
   // Tell the server that we are morphing a card
   hypothetical.sendHypoAction({
     type: "morph",
-    order,
+    order: card.state.order,
     suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
   });

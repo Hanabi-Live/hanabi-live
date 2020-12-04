@@ -4,6 +4,7 @@
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
+import * as noteIdentity from "../reducers/noteIdentity";
 import { cardRules, clueTokensRules } from "../rules";
 import * as variantRules from "../rules/variant";
 import ActionType from "../types/ActionType";
@@ -13,7 +14,6 @@ import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import isOurTurn from "./isOurTurn";
-import * as noteIdentity from "../reducers/noteIdentity";
 import PlayStack from "./PlayStack";
 import * as turn from "./turn";
 
