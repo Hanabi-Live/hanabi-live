@@ -2073,23 +2073,21 @@ function drawHypotheticalArea() {
 
   globals.layers.UI.add(globals.elements.hypoButtonsArea);
 
-  const hypoButtonWidth = 0.06;
-  const hypoButtonHeight = 0.051;
-  const hypoButtonSpacing = 0.008;
-
   // The "Back 1 Turn" button
   const hypoBackButtonValues = {
     // eslint-disable-next-line prettier/prettier
     x: clueAreaValues.x + lowerClueAreaValues.x + giveClueValues.x + giveClueValues.w! - 0.05,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
+    w: 0.035,
+    h: 0.051,
   };
 
   globals.elements.hypoBackButton = new Button({
     x: hypoBackButtonValues.x * winW,
     y: hypoBackButtonValues.y * winH,
-    width: hypoButtonWidth * winW,
-    height: hypoButtonHeight * winH,
-    text: "Back 1",
+    width: hypoBackButtonValues.w * winW,
+    height: hypoBackButtonValues.h * winH,
+    text: "Back",
     fontSize: 0.019 * winH,
   });
   globals.elements.hypoBackButton.on("click tap", hypothetical.sendBack);
@@ -2097,9 +2095,13 @@ function drawHypotheticalArea() {
     (globals.elements.hypoBackButton as unknown) as Konva.Group,
   );
 
+  const hypoButtonWidth = 0.075;
+  const hypoButtonHeight = 0.051;
+  const hypoButtonSpacing = 0.008;
+
   // The "End Hypothetical" button
   const endHypotheticalButtonValues = {
-    x: hypoBackButtonValues.x + hypoButtonWidth + hypoButtonSpacing,
+    x: hypoBackButtonValues.x + hypoBackButtonValues.w + hypoButtonSpacing,
     y: hypoBackButtonValues.y,
   };
 
@@ -2108,7 +2110,7 @@ function drawHypotheticalArea() {
     y: endHypotheticalButtonValues.y * winH,
     width: hypoButtonWidth * winW,
     height: hypoButtonHeight * winH,
-    text: "End Hypo",
+    text: "Exit Hypo",
     fontSize: 0.019 * winH,
   });
   globals.elements.hypoButtonsArea.add(
