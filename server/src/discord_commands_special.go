@@ -21,7 +21,7 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 		discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator
 
 	// Open a new issue on GitHub for this repository
-	if _, _, err := ghClient.Issues.Create(
+	if _, _, err := gitHubClient.Issues.Create(
 		ctx,
 		githubRepositoryOwner,
 		projectName,

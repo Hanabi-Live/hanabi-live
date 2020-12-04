@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	ghClient *github.Client
+	gitHubClient *github.Client
 )
 
 func githubInit() {
@@ -72,7 +72,7 @@ func githubInit() {
 
 	// Initialize the GitHub API client
 	// https://github.com/google/go-github
-	ghClient = github.NewClient(&http.Client{ // nolint: exhaustivestruct
+	gitHubClient = github.NewClient(&http.Client{ // nolint: exhaustivestruct
 		Transport: transport,
 	})
 }
