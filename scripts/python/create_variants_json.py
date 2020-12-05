@@ -361,7 +361,7 @@ def main():
 
                 variants.append(variant)
 
-    # Add "Ambiguous" variants
+    # Add "Ambiguous" variants (where 2 suits share a color)
     red_ambiguous_suits = ["Tomato", "Mahogany"]
     green_ambiguous_suits = ["Lime", "Forest"]
     blue_ambiguous_suits = ["Sky", "Navy"]
@@ -398,6 +398,12 @@ def main():
             if incremented_suit_num == 3 and suit["oneOfEach"]:
                 continue
 
+            # In some cases, "Ambiguous + X (3 Suit)" are the same as "Extremely Ambiguous (3 Suit)"
+            if incremented_suit_num == 3 and (
+                suit_name == "Rainbow" or suit_name == "Prism"
+            ):
+                continue
+
             variant_name = (
                 "Ambiguous & "
                 + suit_name
@@ -414,7 +420,7 @@ def main():
                 }
             )
 
-    # Add "Very Ambiguous" variants
+    # Add "Very Ambiguous" variants (where 3 suits share a color)
     variants.append(
         {
             "name": "Very Ambiguous (6 Suits)",
@@ -431,7 +437,7 @@ def main():
         }
     )
 
-    # Add "Extremely Ambiguous" variants
+    # Add "Extremely Ambiguous" variants (where all suits share a color)
     extremely_ambiguous_suits = {}
     extremely_ambiguous_suits[3] = [
         "Sky VA",

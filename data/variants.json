@@ -23993,16 +23993,6 @@
     "showSuitNames": true
   },
   {
-    "name": "Ambiguous & Rainbow (3 Suits)",
-    "id": 1353,
-    "suits": [
-      "Tomato",
-      "Mahogany",
-      "Rainbow"
-    ],
-    "showSuitNames": true
-  },
-  {
     "name": "Ambiguous & Pink (5 Suits)",
     "id": 1354,
     "suits": [
@@ -24164,16 +24154,6 @@
       "Mahogany",
       "Sky",
       "Navy",
-      "Prism"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Ambiguous & Prism (3 Suits)",
-    "id": 1642,
-    "suits": [
-      "Tomato",
-      "Mahogany",
       "Prism"
     ],
     "showSuitNames": true
