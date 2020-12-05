@@ -140,6 +140,12 @@ export function onEfficiencyChanged(data: {
       "Future required efficiency",
       shouldShowFutureEfficiency ? futureEfficiency.toFixed(2) : "-",
     )}
+    ${formatLine(
+      "Number finesses required",
+      data.cluesStillUsable !== null && shouldShowFutureEfficiency
+        ? Math.max(cardsNotGotten - data.cluesStillUsable, 0)
+        : "-",
+    )}
     <br />
     Alt + right click this number to add a modifier.
   `;
