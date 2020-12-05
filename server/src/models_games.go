@@ -718,7 +718,7 @@ type DBPlayer struct {
 }
 
 func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
-	players := make([]*DBPlayer, 0)
+	dbPlayers := make([]*DBPlayer, 0)
 
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), `
@@ -733,30 +733,30 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 		WHERE games.id = $1
 		ORDER BY game_participants.seat
 	`, databaseID); err != nil {
-		return players, err
+		return dbPlayers, err
 	} else {
 		rows = v
 	}
 
 	for rows.Next() {
-		var player DBPlayer
+		var dbPlayer DBPlayer
 		if err := rows.Scan(
-			&player.ID,
-			&player.Name,
-			&player.CharacterAssignment,
-			&player.CharacterMetadata,
+			&dbPlayer.ID,
+			&dbPlayer.Name,
+			&dbPlayer.CharacterAssignment,
+			&dbPlayer.CharacterMetadata,
 		); err != nil {
-			return players, err
+			return dbPlayers, err
 		}
-		players = append(players, &player)
+		dbPlayers = append(dbPlayers, &dbPlayer)
 	}
 
 	if err := rows.Err(); err != nil {
-		return players, err
+		return dbPlayers, err
 	}
 	rows.Close()
 
-	return players, nil
+	return dbPlayers, nil
 }
 
 func (*Games) GetPlayerSeeds(userID int, variantID int) ([]string, error) {

@@ -65,6 +65,8 @@ export function parseAndGoto(data: WelcomeData): void {
   }
 
   // Automatically spectate a game if we are using a "/game/123" URL
+  // (we want to spectate it instead of reattend it because if we are at this point,
+  // it is assumed that if we were in the respective game, we would have already tried to join it)
   const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
   if (gameMatch) {
     const tableID = parseIntSafe(gameMatch[1]); // The server expects the game ID as an integer
@@ -90,6 +92,8 @@ export function parseAndGoto(data: WelcomeData): void {
   }
 
   // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
+  // (if there is an existing shared replay for this database ID,
+  // then the server will automatically make us join the existing one instead of creating a new one)
   const sharedReplayMatch = /\/shared-replay\/(\d+)/.exec(
     window.location.pathname,
   );

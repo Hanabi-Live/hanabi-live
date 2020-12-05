@@ -7,29 +7,6 @@ import (
 	"time"
 )
 
-type GameJSON struct {
-	ID      int             `json:"id,omitempty"` // Optional element only used for game exports
-	Players []string        `json:"players"`
-	Deck    []*CardIdentity `json:"deck"`
-	Actions []*GameAction   `json:"actions"`
-	// Options is an optional element
-	// Thus, it must be a pointer so that we can tell if the value was specified or not
-	Options *OptionsJSON `json:"options,omitempty"`
-	// Notes is an optional element that contains the notes for each player
-	Notes [][]string `json:"notes,omitempty"`
-	// Characters is an optional element that specifies the "Detrimental Character" assignment for
-	// each player, if any
-	Characters []*CharacterAssignment `json:"characters,omitempty"`
-	// Seed is an optional value that specifies the server-side seed for the game (e.g. "p2v0s1")
-	// This allows the server to reconstruct the game without the deck being present and to properly
-	// write the game back to the database
-	Seed string `json:"seed,omitempty"`
-}
-type CharacterAssignment struct {
-	Name     string `json:"name"`
-	Metadata int    `json:"metadata"`
-}
-
 // commandReplayCreate is sent when the user clicks on the "Watch Replay", "Share Replay",
 // or "Watch Specific Replay" button
 // It means that they want to view the replay of a game from the database or that they are
@@ -88,6 +65,23 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 		s.Warning("You cannot spectate more than one table at a time. " +
 			"Leave your other table before creating a new replay.")
 		return
+	}
+
+	// If this is a replay of a game in the database,
+	// validate that there is not another table open with this table ID
+	// For simplicity, we only allow one shared replay of the same table ID at once
+	if d.Source == "id" {
+		tableList := tables.GetList(false)
+		for _, t := range tableList {
+			if t.Replay && t.Visible && t.ExtraOptions.DatabaseID == d.DatabaseID {
+				commandTableSpectate(ctx, s, &CommandData{ // nolint: exhaustivestruct
+					TableID:              t.ID,
+					ShadowingPlayerIndex: -1,
+					NoTablesLock:         true,
+				})
+				return
+			}
+		}
 	}
 
 	// Create a table
