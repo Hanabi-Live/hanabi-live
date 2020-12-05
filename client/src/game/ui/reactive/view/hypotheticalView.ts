@@ -33,7 +33,7 @@ export function onActiveChanged(data: {
   replayActive: boolean;
 }): void {
   if (!data.hypotheticalActive && data.replayActive) {
-    turn.hideClueUIAndDisableDragging();
+    turn.hideArrowsAndDisableDragging();
   }
 
   checkSetDraggableAllHands();
@@ -56,7 +56,6 @@ export const shouldShowHypoControls = (state: State): boolean =>
 
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
   globals.elements.endHypotheticalButton?.visible(shouldShow);
-  globals.elements.clueArea?.visible(shouldShow);
 
   // We might need to change the draggable property of a hand
   checkSetDraggableAllHands();
@@ -82,7 +81,7 @@ export function onActiveOrAmLeaderChanged(data: {
   globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
 
   if (visibleForFollowersInHypo) {
-    turn.hideClueUIAndDisableDragging();
+    turn.hideArrowsAndDisableDragging();
   }
 
   const visibleForLeaderInSharedReplay =
@@ -96,7 +95,7 @@ export function onActiveOrAmLeaderChanged(data: {
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
 export function onStatesLengthChanged(): void {
-  turn.showClueUI();
+  turn.resetSelectedClue();
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;

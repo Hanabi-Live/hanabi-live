@@ -1,8 +1,7 @@
 import * as notifications from "../../notifications";
-import { clueTokensRules, variantRules } from "../rules";
+import { clueTokensRules } from "../rules";
 import ActionType from "../types/ActionType";
 import ClientAction from "../types/ClientAction";
-import ClueType from "../types/ClueType";
 import * as arrows from "./arrows";
 import { PREPLAY_DELAY } from "./constants";
 import globals from "./globals";
@@ -12,7 +11,7 @@ import * as ourHand from "./ourHand";
 import * as replay from "./replay";
 
 export function begin(): void {
-  showClueUI();
+  resetSelectedClue();
 
   if (globals.animateFast) {
     return;
@@ -35,12 +34,15 @@ function handlePremove() {
     return;
   }
 
-  // Get rid of the pre-move button, since it is now our turn
-  globals.elements.premoveCancelButton!.hide();
-  globals.layers.UI.batchDraw();
+  // Make a copy of the premove values and then clear the premove action
+  const { type, target, value } = premove;
+  globals.store!.dispatch({
+    type: "premove",
+    premove: null,
+  });
 
   // Perform some validation
-  switch (premove.type) {
+  switch (type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
       // Prevent pre-cluing if there is not a clue available
@@ -65,13 +67,6 @@ function handlePremove() {
     }
   }
 
-  // Make a copy of the premove values and then clear the premove action
-  const { type, target, value } = premove;
-  globals.store!.dispatch({
-    type: "premove",
-    premove: null,
-  });
-
   // We don't want to send the action right away, or else it introduces bugs
   setTimeout(() => {
     // As a sanity check, ensure that it is still our turn
@@ -86,94 +81,15 @@ function handlePremove() {
       value,
     });
 
-    hideClueUIAndDisableDragging();
+    hideArrowsAndDisableDragging();
   }, PREPLAY_DELAY);
 }
 
-export function showClueUI(): void {
-  if (!isOurTurn()) {
-    return;
-  }
-
-  // Don't show the clue UI if it gets to be our turn and we happen to be viewing past actions in an
-  // in-game replay
-  if (
-    globals.state.replay.active &&
-    globals.state.replay.hypothetical === null
-  ) {
-    return;
-  }
-
-  // Reset and show the clue UI
-  if (globals.options.numPlayers === 2) {
-    // In 2-player games,
-    // default the clue recipient button to the only other player available
-    // Otherwise, leave the last player selected
-    globals.elements.clueTargetButtonGroup!.list[0].setPressed(true);
-  }
+export function resetSelectedClue(): void {
+  // Reset the clue UI, leaving the last target player selected
   globals.elements.clueTypeButtonGroup!.clearPressed();
-  globals.elements.clueArea!.show();
-  globals.elements.currentPlayerArea!.hide();
-
-  const ongoingGameState =
-    globals.state.replay.hypothetical === null
-      ? globals.state.ongoingGame
-      : globals.state.replay.hypothetical.ongoing;
-
-  // Hide some specific clue buttons in certain variants with clue restrictions
-  if (variantRules.isAlternatingClues(globals.variant)) {
-    if (ongoingGameState.clues.length === 0) {
-      setColorClueButtonsVisible(true);
-      setRankClueButtonsVisible(true);
-    } else {
-      const lastClue =
-        ongoingGameState.clues[ongoingGameState.clues.length - 1];
-      if (lastClue.type === ClueType.Color) {
-        setColorClueButtonsVisible(false);
-        setRankClueButtonsVisible(true);
-      } else if (lastClue.type === ClueType.Rank) {
-        setColorClueButtonsVisible(true);
-        setRankClueButtonsVisible(false);
-      }
-    }
-  }
-
-  // Fade the clue UI if there is not a clue available
-  if (
-    ongoingGameState.clueTokens >=
-    clueTokensRules.getAdjusted(1, globals.variant)
-  ) {
-    globals.elements.clueArea!.opacity(1);
-    globals.elements.clueAreaDisabled!.hide();
-  } else {
-    globals.elements.clueArea!.opacity(0.2);
-    globals.elements.clueAreaDisabled!.show();
-  }
-
-  if (globals.options.deckPlays) {
-    const lastCardInDeck = ongoingGameState.cardsRemainingInTheDeck === 1;
-    globals.elements.deck!.cardBack.draggable(lastCardInDeck);
-    globals.elements.deckPlayAvailableLabel!.visible(lastCardInDeck);
-
-    if (lastCardInDeck) {
-      // Ensure the deck is above other cards and UI elements
-      globals.elements.deck!.moveToTop();
-    }
-  }
 
   globals.layers.UI.batchDraw();
-}
-
-function setColorClueButtonsVisible(visible: boolean) {
-  for (const button of globals.elements.colorClueButtons) {
-    button.visible(visible);
-  }
-}
-
-function setRankClueButtonsVisible(visible: boolean) {
-  for (const button of globals.elements.rankClueButtons) {
-    button.visible(visible);
-  }
 }
 
 export function end(clientAction: ClientAction): void {
@@ -192,7 +108,7 @@ export function end(clientAction: ClientAction): void {
       target: clientAction.target,
       value: clientAction.value,
     });
-    hideClueUIAndDisableDragging();
+    hideArrowsAndDisableDragging();
   } else {
     globals.store!.dispatch({
       type: "premove",
@@ -201,13 +117,7 @@ export function end(clientAction: ClientAction): void {
   }
 }
 
-export function hideClueUIAndDisableDragging(): void {
-  globals.elements.clueArea!.hide();
-  globals.elements.clueAreaDisabled!.hide();
-  globals.elements.currentPlayerArea!.hide();
-  globals.elements.premoveCancelButton!.hide();
-  globals.elements.noDiscardBorder!.hide();
-  globals.elements.noDoubleDiscardBorder!.hide();
+export function hideArrowsAndDisableDragging(): void {
   arrows.hideAll();
 
   // Make all of the cards in our hand not draggable
@@ -215,7 +125,4 @@ export function hideClueUIAndDisableDragging(): void {
   if (!globals.lobby.settings.speedrunPreplay) {
     ourHand.checkSetDraggableAll();
   }
-
-  globals.elements.deck!.cardBack.draggable(false);
-  globals.elements.deckPlayAvailableLabel!.hide();
 }

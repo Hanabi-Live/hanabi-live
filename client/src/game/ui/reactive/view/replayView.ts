@@ -7,7 +7,6 @@ import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
 import * as tooltips from "../../tooltips";
-import * as turn from "../../turn";
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
@@ -17,17 +16,12 @@ export function onActiveChanged(active: boolean): void {
   replayArea.visible(active);
 
   if (active) {
-    // Hide the UI elements that overlap with the replay area
-    turn.hideClueUIAndDisableDragging();
-
-    // Next, show the replay area and initialize some UI elements
+    // Show the replay area and initialize some UI elements
     replay.adjustShuttles(true); // We want it to immediately snap to the end
-  } else {
+  } else if (globals.state.premove !== null) {
     // We are exiting a replay
-    if (globals.state.premove !== null) {
-      globals.elements.premoveCancelButton?.show();
-    }
-    turn.showClueUI();
+
+    globals.elements.premoveCancelButton?.show();
   }
 
   ourHand.checkSetDraggableAll();

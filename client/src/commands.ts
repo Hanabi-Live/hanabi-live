@@ -26,11 +26,6 @@ commands.set("warning", (data: WarningData) => {
   if (globals.currentScreen === Screen.PreGame) {
     pregame.enableStartGameButton();
   }
-
-  // Re-activate in-game elements
-  if (globals.currentScreen === Screen.Game && globals.ui !== null) {
-    globals.ui.reshowClueUIAfterWarning();
-  }
 });
 
 interface ErrorData {

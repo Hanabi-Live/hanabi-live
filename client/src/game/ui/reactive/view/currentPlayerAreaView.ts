@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { clueTokensRules, handRules, variantRules } from "../../../rules";
+import { clueTokensRules, handRules } from "../../../rules";
 import State from "../../../types/State";
 import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
@@ -51,22 +51,17 @@ export function onChanged(
     return;
   }
   const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
-  const isLocked = handRules.isLocked(
-    currentPlayerHand,
-    globals.state.ongoingGame.deck,
-  );
   const { numPlayers } = globals.options;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
   let specialText = "";
   if (!globals.lobby.settings.realLifeMode) {
-    let cluesTokensText = clueTokens.toString();
-    if (variantRules.isClueStarved(globals.variant)) {
-      // In "Clue Starved" variants,
-      // clues are tracked internally at twice the value shown to the user
-      cluesTokensText = (clueTokens / 2).toString();
-    }
+    // In "Clue Starved" variants,
+    // clues are tracked internally at twice the value shown to the user
+    const cluesTokensText = clueTokensRules
+      .getUnadjusted(clueTokens, globals.variant)
+      .toString();
 
     if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
       specialText = `(cannot clue; ${cluesTokensText} clues left)`;
@@ -74,7 +69,10 @@ export function onChanged(
     } else if (clueTokensRules.atMax(clueTokens, globals.variant)) {
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
-    } else if (isLocked && globals.lobby.settings.hyphenatedConventions) {
+    } else if (
+      globals.lobby.settings.hyphenatedConventions &&
+      handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck)
+    ) {
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (

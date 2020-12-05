@@ -355,7 +355,7 @@ function performAction(playAction = true) {
       target,
     });
   }
-  turn.hideClueUIAndDisableDragging();
+  turn.hideArrowsAndDisableDragging();
 }
 
 function promptCardOrder(verb: string): number | null {
