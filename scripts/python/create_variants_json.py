@@ -398,7 +398,7 @@ def main():
             if incremented_suit_num == 3 and suit["oneOfEach"]:
                 continue
 
-            # In some cases, "Ambiguous + X (3 Suit)" are the same as "Extremely Ambiguous (3 Suit)"
+            # In some cases, "Ambiguous + X (3 Suit)" are the same as "Very Ambiguous (3 Suit)"
             if incremented_suit_num == 3 and (
                 suit_name == "Rainbow" or suit_name == "Prism"
             ):
