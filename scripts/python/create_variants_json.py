@@ -92,15 +92,15 @@ def main():
     # First, start with the basic variants
     variant_suits = {}
     variant_suits[1] = ["Red"]
-    variant_suits[2] = variant_suits[1] + ["Blue"]
+    variant_suits[2] = variant_suits[1].copy() + ["Blue"]
     variant_suits[3] = variant_suits[2].copy()
     # Green is inserted before Blue to keep the colors in "rainbow" order
     variant_suits[3].insert(1, "Green")
     variant_suits[4] = variant_suits[3].copy()
     # Yellow is inserted before Green to keep the colors in "rainbow" order
     variant_suits[4].insert(1, "Yellow")
-    variant_suits[5] = variant_suits[4] + ["Purple"]
-    variant_suits[6] = variant_suits[5] + ["Teal"]
+    variant_suits[5] = variant_suits[4].copy() + ["Purple"]
+    variant_suits[6] = variant_suits[5].copy() + ["Teal"]
 
     variants.append(
         {
@@ -145,7 +145,7 @@ def main():
                 continue
 
             variant_name = suit_name + " (" + str(suit_num) + " Suits)"
-            computed_variant_suits = variant_suits[suit_num - 1] + [suit_name]
+            computed_variant_suits = variant_suits[suit_num - 1].copy() + [suit_name]
             variants.append(
                 {
                     "name": variant_name,
@@ -285,7 +285,9 @@ def main():
                         + str(suit_num)
                         + " Suits)"
                     )
-                    computed_variant_suits = variant_suits[suit_num - 1] + [suit_name2]
+                    computed_variant_suits = variant_suits[suit_num - 1].copy() + [
+                        suit_name2
+                    ]
                     variant = {
                         "name": variant_name,
                         "id": get_variant_id(variant_name),
@@ -346,7 +348,9 @@ def main():
                 variant_name = (
                     special_name + " & " + suit_name + " (" + str(suit_num) + " Suits)"
                 )
-                computed_variant_suits = variant_suits[suit_num - 1] + [suit_name]
+                computed_variant_suits = variant_suits[suit_num - 1].copy() + [
+                    suit_name
+                ]
                 variant = {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
@@ -362,14 +366,21 @@ def main():
                 variants.append(variant)
 
     # Add "Ambiguous" variants (where 2 suits share a color)
+    suits_that_cause_duplicated_variants_with_ambiguous = [
+        "Rainbow",
+        "Prism",
+        "Dark Prism",  # This is the same as Dark Rainbow
+    ]
     red_ambiguous_suits = ["Tomato", "Mahogany"]
     green_ambiguous_suits = ["Lime", "Forest"]
     blue_ambiguous_suits = ["Sky", "Navy"]
     ambiguous_suits = {}
     ambiguous_suits[2] = red_ambiguous_suits.copy()
-    ambiguous_suits[4] = red_ambiguous_suits + blue_ambiguous_suits
+    ambiguous_suits[4] = red_ambiguous_suits.copy() + blue_ambiguous_suits.copy()
     ambiguous_suits[6] = (
-        red_ambiguous_suits + green_ambiguous_suits + blue_ambiguous_suits
+        red_ambiguous_suits.copy()
+        + green_ambiguous_suits.copy()
+        + blue_ambiguous_suits.copy()
     )
     variants.append(
         {
@@ -398,9 +409,11 @@ def main():
             if incremented_suit_num == 3 and suit["oneOfEach"]:
                 continue
 
-            # In some cases, "Ambiguous + X (3 Suit)" are the same as "Very Ambiguous (3 Suit)"
-            if incremented_suit_num == 3 and (
-                suit_name == "Rainbow" or suit_name == "Prism"
+            # For some suits:
+            # "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)"
+            if (
+                incremented_suit_num == 3
+                and suit_name in suits_that_cause_duplicated_variants_with_ambiguous
             ):
                 continue
 
@@ -415,43 +428,79 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": ambiguous_suits[suit_num] + [suit_name],
+                    "suits": ambiguous_suits[suit_num].copy() + [suit_name],
                     "showSuitNames": True,
                 }
             )
 
     # Add "Very Ambiguous" variants (where 3 suits share a color)
-    variants.append(
-        {
-            "name": "Very Ambiguous (6 Suits)",
-            "id": get_variant_id("Very Ambiguous (6 Suits)"),
-            "suits": [
-                "Tomato VA",
-                "Ruby VA",
-                "Mahogany VA",
-                "Sky VA",
-                "Berry VA",
-                "Navy VA",
-            ],
-            "showSuitNames": True,
-        }
-    )
-
-    # Add "Extremely Ambiguous" variants (where all suits share a color)
-    extremely_ambiguous_suits = {}
-    extremely_ambiguous_suits[3] = [
+    red_very_ambiguous_suits = [
+        "Tomato VA",
+        "Ruby VA",
+        "Mahogany VA",
+    ]
+    blue_very_ambiguous_suits = [
         "Sky VA",
         "Berry VA",
         "Navy VA",
     ]
+    very_ambiguous_suits = {}
+    # For "Very Ambiguous (3 Suits)", we use blue suits instead of red suits so that this will align
+    # better with the Extremely Ambiguous variants (Extremely Ambiguous uses blue suits because it
+    # is easier to come up with suit names for blue cards than it is for red cards)
+    very_ambiguous_suits[3] = blue_very_ambiguous_suits.copy()
+    very_ambiguous_suits[6] = (
+        red_very_ambiguous_suits.copy() + blue_very_ambiguous_suits.copy()
+    )
+    variants.append(
+        {
+            "name": "Very Ambiguous (6 Suits)",
+            "id": get_variant_id("Very Ambiguous (6 Suits)"),
+            "suits": very_ambiguous_suits[6],
+            "showSuitNames": True,
+        }
+    )
+    variants.append(
+        {
+            "name": "Very Ambiguous (3 Suits)",
+            "id": get_variant_id("Very Ambiguous (3 Suits)"),
+            "suits": very_ambiguous_suits[3],
+            "showSuitNames": True,
+        }
+    )
+    for [suit_name, suit] in suits.items():
+        if not suit["createVariants"]:
+            continue
+
+        # It would be too difficult to have a 4 suit variant with a one-of-each suit
+        if suit["oneOfEach"]:
+            continue
+
+        # For some suits:
+        # "Very Ambiguous + X (4 Suit)" is the same as "Extremely Ambiguous (4 Suit)"
+        if suit_name in suits_that_cause_duplicated_variants_with_ambiguous:
+            continue
+
+        variant_name = "Very Ambiguous & " + suit_name + " (4 Suits)"
+        variants.append(
+            {
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": very_ambiguous_suits[3].copy() + [suit_name],
+                "showSuitNames": True,
+            }
+        )
+
+    # Add "Extremely Ambiguous" variants (where 4 or more suits share a color)
+    extremely_ambiguous_suits = {}
     extremely_ambiguous_suits[4] = [
         "Ice EA",
         "Sapphire EA",
         "Sky EA",
         "Berry EA",
     ]
-    extremely_ambiguous_suits[5] = extremely_ambiguous_suits[4] + ["Navy EA"]
-    extremely_ambiguous_suits[6] = extremely_ambiguous_suits[5] + ["Ocean EA"]
+    extremely_ambiguous_suits[5] = extremely_ambiguous_suits[4].copy() + ["Navy EA"]
+    extremely_ambiguous_suits[6] = extremely_ambiguous_suits[5].copy() + ["Ocean EA"]
     variants.append(
         {
             "name": "Extremely Ambiguous (6 Suits)",
@@ -476,23 +525,21 @@ def main():
             "showSuitNames": True,
         }
     )
-    variants.append(
-        {
-            "name": "Extremely Ambiguous (3 Suits)",
-            "id": get_variant_id("Extremely Ambiguous (3 Suits)"),
-            "suits": extremely_ambiguous_suits[3],
-            "showSuitNames": True,
-        }
-    )
     for [suit_name, suit] in suits.items():
         if not suit["createVariants"]:
             continue
 
-        for suit_num in [5, 4, 3]:
+        for suit_num in [5, 4]:
             incremented_suit_num = suit_num + 1
 
             # It would be too difficult to have a 4 suit variant with a one-of-each suit
             if incremented_suit_num == 4 and suit["oneOfEach"]:
+                continue
+
+            # For some suits:
+            # 1) "Extremely Ambiguous + X (6 Suit)" is the same as "Extremely Ambiguous (6 Suit)"
+            # 2) "Extremely Ambiguous + X (5 Suit)" is the same as "Extremely Ambiguous (5 Suit)"
+            if suit_name in suits_that_cause_duplicated_variants_with_ambiguous:
                 continue
 
             variant_name = (
@@ -506,7 +553,7 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": extremely_ambiguous_suits[suit_num] + [suit_name],
+                    "suits": extremely_ambiguous_suits[suit_num].copy() + [suit_name],
                     "showSuitNames": True,
                 }
             )
@@ -569,7 +616,7 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": dual_color_suits[suit_num] + [suit_name],
+                    "suits": dual_color_suits[suit_num].copy() + [suit_name],
                     "showSuitNames": True,
                 }
             )
@@ -737,7 +784,7 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": variant_suits[suit_num - 1] + [suit_name],
+                    "suits": variant_suits[suit_num - 1].copy() + [suit_name],
                 }
             )
 
@@ -766,7 +813,7 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": variant_suits[suit_num - 1] + [suit_name],
+                    "suits": variant_suits[suit_num - 1].copy() + [suit_name],
                 }
             )
 
@@ -818,7 +865,7 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": variant_suits[suit_num - 1] + [suit_name],
+                    "suits": variant_suits[suit_num - 1].copy() + [suit_name],
                 }
             )
 
@@ -854,7 +901,7 @@ def main():
                 continue
 
             variant_name = suit_name + " (" + str(suit_num) + " Suits)"
-            computed_variant_suits = variant_suits[suit_num - 1] + [suit_name]
+            computed_variant_suits = variant_suits[suit_num - 1].copy() + [suit_name]
             variants.append(
                 {
                     "name": variant_name,
@@ -890,7 +937,7 @@ def main():
                 {
                     "name": variant_name,
                     "id": get_variant_id(variant_name),
-                    "suits": variant_suits[suit_num - 1] + [suit_name],
+                    "suits": variant_suits[suit_num - 1].copy() + [suit_name],
                     "showSuitNames": True,
                 }
             )

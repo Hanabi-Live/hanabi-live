@@ -24280,6 +24280,93 @@
     "showSuitNames": true
   },
   {
+    "name": "Very Ambiguous (3 Suits)",
+    "id": 287,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & Pink (4 Suits)",
+    "id": 1390,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & White (4 Suits)",
+    "id": 1393,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "White"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & Brown (4 Suits)",
+    "id": 1396,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Brown"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & Omni (4 Suits)",
+    "id": 1399,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Omni"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & Null (4 Suits)",
+    "id": 1402,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Null"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & Muddy Rainbow (4 Suits)",
+    "id": 1405,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Muddy Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Very Ambiguous & Light Pink (4 Suits)",
+    "id": 1408,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
     "name": "Extremely Ambiguous (6 Suits)",
     "id": 288,
     "suits": [
@@ -24316,16 +24403,6 @@
     "showSuitNames": true
   },
   {
-    "name": "Extremely Ambiguous (3 Suits)",
-    "id": 287,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA"
-    ],
-    "showSuitNames": true
-  },
-  {
     "name": "Extremely Ambiguous & Black (6 Suits)",
     "id": 1379,
     "suits": [
@@ -24351,42 +24428,6 @@
     "showSuitNames": true
   },
   {
-    "name": "Extremely Ambiguous & Rainbow (6 Suits)",
-    "id": 1383,
-    "suits": [
-      "Ice EA",
-      "Sapphire EA",
-      "Sky EA",
-      "Berry EA",
-      "Navy EA",
-      "Rainbow"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Rainbow (5 Suits)",
-    "id": 1386,
-    "suits": [
-      "Ice EA",
-      "Sapphire EA",
-      "Sky EA",
-      "Berry EA",
-      "Rainbow"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Rainbow (4 Suits)",
-    "id": 1387,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
-      "Rainbow"
-    ],
-    "showSuitNames": true
-  },
-  {
     "name": "Extremely Ambiguous & Pink (6 Suits)",
     "id": 1388,
     "suits": [
@@ -24407,17 +24448,6 @@
       "Sapphire EA",
       "Sky EA",
       "Berry EA",
-      "Pink"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Pink (4 Suits)",
-    "id": 1390,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
       "Pink"
     ],
     "showSuitNames": true
@@ -24448,17 +24478,6 @@
     "showSuitNames": true
   },
   {
-    "name": "Extremely Ambiguous & White (4 Suits)",
-    "id": 1393,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
-      "White"
-    ],
-    "showSuitNames": true
-  },
-  {
     "name": "Extremely Ambiguous & Brown (6 Suits)",
     "id": 1394,
     "suits": [
@@ -24479,17 +24498,6 @@
       "Sapphire EA",
       "Sky EA",
       "Berry EA",
-      "Brown"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Brown (4 Suits)",
-    "id": 1396,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
       "Brown"
     ],
     "showSuitNames": true
@@ -24520,17 +24528,6 @@
     "showSuitNames": true
   },
   {
-    "name": "Extremely Ambiguous & Omni (4 Suits)",
-    "id": 1399,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
-      "Omni"
-    ],
-    "showSuitNames": true
-  },
-  {
     "name": "Extremely Ambiguous & Null (6 Suits)",
     "id": 1400,
     "suits": [
@@ -24551,17 +24548,6 @@
       "Sapphire EA",
       "Sky EA",
       "Berry EA",
-      "Null"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Null (4 Suits)",
-    "id": 1402,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
       "Null"
     ],
     "showSuitNames": true
@@ -24592,17 +24578,6 @@
     "showSuitNames": true
   },
   {
-    "name": "Extremely Ambiguous & Muddy Rainbow (4 Suits)",
-    "id": 1405,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
-      "Muddy Rainbow"
-    ],
-    "showSuitNames": true
-  },
-  {
     "name": "Extremely Ambiguous & Light Pink (6 Suits)",
     "id": 1406,
     "suits": [
@@ -24624,53 +24599,6 @@
       "Sky EA",
       "Berry EA",
       "Light Pink"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Light Pink (4 Suits)",
-    "id": 1408,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
-      "Light Pink"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Prism (6 Suits)",
-    "id": 1644,
-    "suits": [
-      "Ice EA",
-      "Sapphire EA",
-      "Sky EA",
-      "Berry EA",
-      "Navy EA",
-      "Prism"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Prism (5 Suits)",
-    "id": 1645,
-    "suits": [
-      "Ice EA",
-      "Sapphire EA",
-      "Sky EA",
-      "Berry EA",
-      "Prism"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Prism (4 Suits)",
-    "id": 1646,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA",
-      "Prism"
     ],
     "showSuitNames": true
   },
@@ -24871,31 +24799,6 @@
       "Sky EA",
       "Berry EA",
       "Gray Pink"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Dark Prism (6 Suits)",
-    "id": 1647,
-    "suits": [
-      "Ice EA",
-      "Sapphire EA",
-      "Sky EA",
-      "Berry EA",
-      "Navy EA",
-      "Dark Prism"
-    ],
-    "showSuitNames": true
-  },
-  {
-    "name": "Extremely Ambiguous & Dark Prism (5 Suits)",
-    "id": 1648,
-    "suits": [
-      "Ice EA",
-      "Sapphire EA",
-      "Sky EA",
-      "Berry EA",
-      "Dark Prism"
     ],
     "showSuitNames": true
   },
