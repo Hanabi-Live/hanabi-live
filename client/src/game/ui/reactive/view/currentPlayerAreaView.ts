@@ -51,9 +51,6 @@ export function onChanged(
     return;
   }
   const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
-  const isLocked =
-    globals.lobby.settings.hyphenatedConventions &&
-    handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck);
   const { numPlayers } = globals.options;
 
   // Update the text
@@ -72,7 +69,10 @@ export function onChanged(
     } else if (clueTokensRules.atMax(clueTokens, globals.variant)) {
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
-    } else if (isLocked) {
+    } else if (
+      globals.lobby.settings.hyphenatedConventions &&
+      handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck)
+    ) {
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
