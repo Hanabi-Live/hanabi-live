@@ -39,13 +39,7 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 
 	normalizedUsername := normalizeString(d.Name)
 
-	// Validate that they did not target themselves
-	if normalizedUsername == normalizeString(s.Username) {
-		s.Warning("You cannot pass leadership to yourself.")
-		return
-	}
-
-	// Validate that they are at the table
+	// Validate that the target is at the table
 	var newLeader *NewLeader
 	if t.Replay {
 		for _, sp := range t.Spectators {
@@ -78,6 +72,12 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 			msg = "\"" + d.Name + "\" is not joined to this table."
 		}
 		s.Error(msg)
+		return
+	}
+
+	// Validate that the target is not already the leader
+	if newLeader.UserID == t.OwnerID {
+		s.Warning(newLeader.Username + " is already the leader.")
 		return
 	}
 
