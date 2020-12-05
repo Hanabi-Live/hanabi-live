@@ -685,6 +685,30 @@ func characterAdjustEndTurn(g *Game) {
 	}
 }
 
+func characterHasTakenLastTurn(g *Game) bool {
+	if g.EndTurn == -1 {
+		return false
+	}
+	originalPlayer := g.ActivePlayerIndex
+	activePlayer := g.ActivePlayerIndex
+	turnsInverted := g.TurnsInverted
+	for turn := g.Turn + 1; turn <= g.EndTurn; turn++ {
+		if turnsInverted {
+			activePlayer += len(g.Players)
+			activePlayer = (activePlayer - 1) % len(g.Players)
+		} else {
+			activePlayer = (activePlayer + 1) % len(g.Players)
+		}
+		if activePlayer == originalPlayer {
+			return false
+		}
+		if g.Players[activePlayer].Character == "Contrarian" { // 27
+			turnsInverted = !turnsInverted
+		}
+	}
+	return true
+}
+
 func characterCheckSoftlock(g *Game, p *GamePlayer) {
 	if !g.Options.DetrimentalCharacters {
 		return
