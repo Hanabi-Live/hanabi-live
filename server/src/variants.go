@@ -176,13 +176,16 @@ func variantsInit() {
 	}
 
 	// Validate that there are no skipped ID numbers
-	for i := 0; i < len(variantNames); i++ {
-		if _, ok := variantIDMap[i]; !ok {
-			logger.Fatal("There is no variant with an ID of \"" + strconv.Itoa(i) + "\". " +
-				"(Variant IDs must be sequential.)")
-			return
+	// (commented out for now since we have deleted some variants in the last round of changes)
+	/*
+		for i := 0; i < len(variantNames); i++ {
+			if _, ok := variantIDMap[i]; !ok {
+				logger.Fatal("There is no variant with an ID of \"" + strconv.Itoa(i) + "\". " +
+					"(Variant IDs must be sequential.)")
+				return
+			}
 		}
-	}
+	*/
 }
 
 // variantIsCardTouched returns true if a clue will touch a particular suit
