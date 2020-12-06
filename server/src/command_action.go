@@ -152,6 +152,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 		}
 	} else if g.EndTurn != -1 &&
 		g.EndTurn != g.Turn+len(g.Players)+1 {
+
 		for _, c := range p.Hand {
 			c.CannotBePlayed = true
 		}
