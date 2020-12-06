@@ -12,22 +12,17 @@ export function shouldEndTurnAfterDraw(
   variant: Variant,
 ): boolean {
   // Some "Detrimental Characters" are able to perform two actions
-  if (characterID !== null) {
-    const character = getCharacter(characterID);
-
-    // Panicky - After discarding, discards again if there are 4 clues or less
-    if (
-      character.name === "Panicky" &&
-      clueTokens <= clueTokensRules.getAdjusted(4, variant)
-    ) {
-      return cardsDiscardedThisTurn !== 1;
-    }
-  }
+  // Panicky - After discarding, discards again if there are 4 clues or less
+  const panickyFirstDiscard =
+    cardsDiscardedThisTurn === 1 &&
+    clueTokens <= clueTokensRules.getAdjusted(4, variant) &&
+    characterID !== null &&
+    getCharacter(characterID).name === "Panicky";
 
   // Otherwise, the turn always increments when:
   // 1) a play or discard happens and
   // 2) a card is drawn
-  return cardsPlayedOrDiscardedThisTurn >= 1;
+  return !panickyFirstDiscard && cardsPlayedOrDiscardedThisTurn >= 1;
 }
 
 export function shouldEndTurnAfterClue(
