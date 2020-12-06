@@ -19,6 +19,7 @@ import ColorButton from "./ColorButton";
 import { CARD_ANIMATION_LENGTH, LABEL_COLOR } from "./constants";
 import Arrow from "./controls/Arrow";
 import Button from "./controls/Button";
+import CheckButton from "./controls/CheckButton";
 import CurrentPlayerArea from "./controls/CurrentPlayerArea";
 import FitText from "./controls/FitText";
 import ImageWithTooltip from "./controls/ImageWithTooltip";
@@ -2129,7 +2130,7 @@ function drawHypotheticalArea() {
     x: endHypotheticalButtonValues.x,
     y: endHypotheticalButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.editCardsButton = new Button({
+  globals.elements.editCardsButton = new CheckButton({
     x: editCardsButtonValues.x * winW,
     y: editCardsButtonValues.y * winH,
     width: hypoButtonWidth * winW,
@@ -2152,7 +2153,7 @@ function drawHypotheticalArea() {
     x: editCardsButtonValues.x,
     y: editCardsButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.toggleDrawnCardsButton = new Button({
+  globals.elements.toggleDrawnCardsButton = new CheckButton({
     x: toggleDrawnCardsButtonValues.x * winW,
     y: toggleDrawnCardsButtonValues.y * winH,
     width: hypoButtonWidth * winW,

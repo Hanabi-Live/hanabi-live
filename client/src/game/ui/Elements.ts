@@ -6,6 +6,7 @@ import ClueLog from "./ClueLog";
 import ColorButton from "./ColorButton";
 import Arrow from "./controls/Arrow";
 import Button from "./controls/Button";
+import CheckButton from "./controls/CheckButton";
 import CurrentPlayerArea from "./controls/CurrentPlayerArea";
 import FitText from "./controls/FitText";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
@@ -113,9 +114,9 @@ export default class Elements {
   enterHypoButton: Button | null = null;
   hypoCircle: Konva.Group | null = null;
   hypoButtonsArea: Konva.Group | null = null;
-  editCardsButton: Button | null = null;
+  editCardsButton: CheckButton | null = null;
   hypoBackButton: Button | null = null;
-  toggleDrawnCardsButton: Button | null = null;
+  toggleDrawnCardsButton: CheckButton | null = null;
   endHypotheticalButton: Button | null = null;
 
   // The pause screen
