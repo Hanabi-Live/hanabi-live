@@ -144,7 +144,13 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	// If a player has just taken their final turn,
 	// mark all of the cards in their hand as not able to be played
 	// (but don't do this if we are in an end game that has a custom amount of turns)
-	if g.EndTurn != -1 &&
+	if g.Options.DetrimentalCharacters {
+		if characterHasTakenLastTurn(g) {
+			for _, c := range p.Hand {
+				c.CannotBePlayed = true
+			}
+		}
+	} else if g.EndTurn != -1 &&
 		g.EndTurn != g.Turn+len(g.Players)+1 {
 
 		for _, c := range p.Hand {
