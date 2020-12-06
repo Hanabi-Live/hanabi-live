@@ -55,8 +55,15 @@ export const shouldShowHypoControls = (state: State): boolean =>
   (state.replay.shared === null || state.replay.shared.amLeader);
 
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
-  globals.elements.endHypotheticalButton?.visible(shouldShow);
-
+  globals.elements.hypoButtonsArea?.visible(shouldShow);
+  if (shouldShow) {
+    // the lower part of the clue area and the "no clues" indicators slide left during hypo
+    globals.elements.lowerClueArea?.setLeft();
+    globals.elements.clueAreaDisabled?.setLeft();
+  } else {
+    globals.elements.lowerClueArea?.setCenter();
+    globals.elements.clueAreaDisabled?.setCenter();
+  }
   // We might need to change the draggable property of a hand
   checkSetDraggableAllHands();
   globals.layers.UI.batchDraw();
@@ -68,7 +75,7 @@ export const shouldShowToggleDrawnCards = (state: State): boolean =>
   (state.replay.shared === null || state.replay.shared.amLeader);
 
 export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {
-  globals.elements.toggleDrawnCardsButton?.visible(shouldShow);
+  globals.elements.toggleDrawnCardsButton?.setEnabled(shouldShow);
   globals.layers.UI.batchDraw();
 }
 
@@ -125,16 +132,14 @@ export const shouldShowHypoBackButton = (state: State): boolean =>
   state.replay.hypothetical.states.length > 1;
 
 export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
-  globals.elements.hypoBackButton?.visible(enabled);
+  globals.elements.hypoBackButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 }
 
 export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
 ): void {
-  globals.elements.toggleDrawnCardsButton?.setText({
-    line1: drawnCardsInHypothetical ? "Hide" : "Show",
-  });
+  globals.elements.toggleDrawnCardsButton?.setPressed(drawnCardsInHypothetical);
 
   // Check if the ability to give a clue changed
   clues.checkLegal();

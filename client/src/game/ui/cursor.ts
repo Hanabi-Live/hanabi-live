@@ -3,7 +3,7 @@ import Deck from "./Deck";
 import globals from "./globals";
 import LayoutChild from "./LayoutChild";
 
-export type CursorType = "default" | "hand" | "dragging" | "look";
+export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 
 // Module variables
 // (this does not have to be on the globals because it is explicitly reset in HanabiUI constructor)
@@ -31,7 +31,8 @@ export function set(cursorType: CursorType): void {
 
   let cursorValue = "auto";
   switch (cursorType) {
-    case "look": {
+    case "look":
+    case "edit": {
       const url = `/public/img/cursors/${cursorType}.png`;
       cursorValue = `url('${url}'), auto`;
       break;

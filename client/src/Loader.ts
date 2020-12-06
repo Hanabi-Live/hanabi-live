@@ -4,6 +4,10 @@ type FinishedCallback = () => void;
 // The list of all game-related images to preload
 // All of these files should have a ".png" extension
 const fileIDs = [
+  "checkbox-on",
+  "checkbox-off",
+  "checkbox-on-disabled",
+  "checkbox-off-disabled",
   "crown",
   "critical",
   "eyes",
