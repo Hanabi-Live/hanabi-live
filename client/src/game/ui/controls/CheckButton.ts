@@ -42,7 +42,7 @@ export default class CheckButton extends Konva.Group {
     this.add(this.background);
 
     const checkY = 0.325 * h;
-    const checkX = checkY / 2;
+    const checkX = checkY / 2.5;
     const checkH = 0.35 * h;
     const checkW = checkH;
 
