@@ -44,7 +44,7 @@ export default class Button extends Konva.Group {
     if (config.text) {
       this.textElement = new FitText({
         x: 0,
-        y: (0.525 - textSize / 2 / h) * h, // a smidgeon higher than vertically centered
+        y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered
         width: w,
         height: 0.5 * h,
         fontSize: textSize,
@@ -131,7 +131,7 @@ export default class Button extends Konva.Group {
       if (this.assignedTextSize) {
         this.textElement.text(newText);
       } else {
-        // resize to fit the new text if we haven't been specifically given a size
+        // Resize to fit the new text if we haven't been specifically given a size
         this.textElement.fitText(newText);
       }
     } else {

@@ -5,7 +5,6 @@ import { drawLayer } from "../konvaHelpers";
 export default class CheckButton extends Konva.Group {
   enabled = true;
   pressed = false;
-  assignedTextSize = false;
 
   background: Konva.Rect;
   checkImageOn: Konva.Image | null = null;
@@ -25,9 +24,6 @@ export default class CheckButton extends Konva.Group {
     const w = this.width();
     const h = this.height();
     const textSize = (config.fontSize as number) ?? 0.5 * h;
-    if (config.fontSize) {
-      this.assignedTextSize = true;
-    }
 
     this.background = new Konva.Rect({
       x: 0,
@@ -96,7 +92,7 @@ export default class CheckButton extends Konva.Group {
     if (config.text) {
       this.textElement = new Konva.Text({
         x: checkW + checkX * 1.5,
-        y: (0.525 - textSize / 2 / h) * h, // a smidgeon higher than vertically centered
+        y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered
         width: w,
         height: 0.5 * h,
         fontSize: textSize,
@@ -160,9 +156,7 @@ export default class CheckButton extends Konva.Group {
 
   text(newText: string): void {
     if (this.textElement) {
-      if (this.assignedTextSize) {
-        this.textElement.text(newText);
-      }
+      this.textElement.text(newText);
     } else {
       throw new Error('The "text()" method was called on a non-text Button.');
     }
