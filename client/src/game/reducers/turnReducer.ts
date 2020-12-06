@@ -49,12 +49,22 @@ function turnReducerFunction(
 
       if (currentState.cardsRemainingInTheDeck === 0) {
         turn.segment! += 1;
-        nextTurn(
-          turn,
-          currentState.cardsRemainingInTheDeck,
-          characterID,
-          metadata,
-        );
+        if (
+          turnRules.shouldEndTurnAfterDraw(
+            turn.cardsPlayedOrDiscardedThisTurn,
+            turn.cardsDiscardedThisTurn,
+            characterID,
+            currentState.clueTokens,
+            variant,
+          )
+        ) {
+          nextTurn(
+            turn,
+            currentState.cardsRemainingInTheDeck,
+            characterID,
+            metadata,
+          );
+        }
       }
 
       break;
