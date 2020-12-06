@@ -18,6 +18,7 @@ var (
 // Example data:
 // {
 //   tableID: 15103,
+//   hidePregame: true,
 // }
 func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
@@ -208,8 +209,9 @@ func tableRestart(
 	commandTableCreate(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		Name:    newTableName,
 		Options: t.Options,
-		// We want to prevent the pre-game from showing up in the lobby for a brief second
-		HidePregame:  true,
+		// If pregame option is false, then
+		// we want to prevent the pre-game from showing up in the lobby for a brief second
+		HidePregame:  d.HidePregame,
 		NoTablesLock: true,
 	})
 
@@ -268,21 +270,23 @@ func tableRestart(
 
 	t2.ExtraOptions.Restarted = true
 
-	// Emulate the game owner clicking on the "Start Game" button
-	commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID:      t2.ID,
-		NoTableLock:  true,
-		NoTablesLock: true,
-	})
-
-	// Automatically join any other spectators that were watching
-	for _, s2 := range spectatorSessions {
-		commandTableSpectate(ctx, s2, &CommandData{ // nolint: exhaustivestruct
-			TableID:              t2.ID,
-			ShadowingPlayerIndex: -1,
-			NoTableLock:          true,
-			NoTablesLock:         true,
+	if (d.HidePregame) {
+		// Emulate the game owner clicking on the "Start Game" button
+		commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
+			TableID:      t2.ID,
+			NoTableLock:  true,
+			NoTablesLock: true,
 		})
+
+		// Automatically join any other spectators that were watching
+		for _, s2 := range spectatorSessions {
+			commandTableSpectate(ctx, s2, &CommandData{ // nolint: exhaustivestruct
+				TableID:              t2.ID,
+				ShadowingPlayerIndex: -1,
+				NoTableLock:          true,
+				NoTablesLock:         true,
+			})
+		}
 	}
 
 	// Add a message to the chat to indicate that the game was restarted
