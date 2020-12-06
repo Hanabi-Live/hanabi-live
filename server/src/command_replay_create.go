@@ -70,19 +70,22 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 	// If this is a replay of a game in the database,
 	// validate that there is not another table open with this table ID
 	// For simplicity, we only allow one shared replay of the same table ID at once
-	if d.Source == "id" {
-		tableList := tables.GetList(false)
-		for _, t := range tableList {
-			if t.Replay && t.Visible && t.ExtraOptions.DatabaseID == d.DatabaseID {
-				commandTableSpectate(ctx, s, &CommandData{ // nolint: exhaustivestruct
-					TableID:              t.ID,
-					ShadowingPlayerIndex: -1,
-					NoTablesLock:         true,
-				})
-				return
+	// (commented out for now since it causes race conditions)
+	/*
+		if d.Source == "id" {
+			tableList := tables.GetList(false)
+			for _, t := range tableList {
+				if t.Replay && t.Visible && t.ExtraOptions.DatabaseID == d.DatabaseID {
+					commandTableSpectate(ctx, s, &CommandData{ // nolint: exhaustivestruct
+						TableID:              t.ID,
+						ShadowingPlayerIndex: -1,
+						NoTablesLock:         true,
+					})
+					return
+				}
 			}
 		}
-	}
+	*/
 
 	// Create a table
 	name := strings.Title(d.Visibility) + " replay for "
