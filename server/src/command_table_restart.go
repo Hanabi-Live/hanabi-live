@@ -270,7 +270,7 @@ func tableRestart(
 
 	t2.ExtraOptions.Restarted = true
 
-	if (d.HidePregame) {
+	if d.HidePregame {
 		// Emulate the game owner clicking on the "Start Game" button
 		commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID:      t2.ID,

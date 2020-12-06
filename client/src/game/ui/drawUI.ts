@@ -2221,7 +2221,6 @@ function drawPauseArea() {
   pauseLobbyButton.on("click tap", lobbyButtonClick);
 }
 
-
 function drawRestartArea() {
   const restartAreaValues = {
     w: 0.7,
@@ -2230,7 +2229,7 @@ function drawRestartArea() {
 
   globals.elements.restartArea = new Konva.Group({
     x: 0.15 * winW,
-    y: 0.20 * winH,
+    y: 0.2 * winH,
     visible: false,
     listening: false,
   });
@@ -2266,7 +2265,7 @@ function drawRestartArea() {
 
   const buttonW = restartAreaValues.w * 0.35;
   const buttonH = 0.25;
-  const spacing = restartAreaValues.w * 0.10;
+  const spacing = restartAreaValues.w * 0.1;
 
   const restartGameButton = new Button({
     x: spacing * winW,
@@ -2303,9 +2302,9 @@ function drawRestartArea() {
   );
 
   const restartCancelButton = new Button({
-    x: (restartAreaValues.w - buttonW/2 - spacing) * winW,
+    x: (restartAreaValues.w - buttonW / 2 - spacing) * winW,
     y: (buttonH * 1.5 + spacing) * winH,
-    width: buttonW/2 * winW,
+    width: (buttonW / 2) * winW,
     height: 0.1 * winH,
     text: "Cancel",
   });
@@ -2317,7 +2316,6 @@ function drawRestartArea() {
     (restartCancelButton as unknown) as Konva.Group,
   );
 }
-
 
 function drawExtraAnimations() {
   // These images are shown to the player to
