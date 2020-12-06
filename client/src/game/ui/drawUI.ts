@@ -508,8 +508,7 @@ function drawBottomLeftButtons() {
   restartButton.on("click tap", () => {
     if (
       globals.options.speedrun ||
-      debug.amTestUser(globals.metadata.ourUsername) ||
-      globals.lobby.totalGames >= 1000
+      debug.amTestUser(globals.metadata.ourUsername)
     ) {
       globals.lobby.conn!.send("tableRestart", {
         tableID: globals.lobby.tableID,
