@@ -114,6 +114,7 @@ export default function drawUI(): void {
   drawReplayArea(winW, winH);
   drawHypotheticalArea();
   drawPauseArea();
+  drawRestartArea();
   drawExtraAnimations();
 
   // Just in case, delete all existing layers
@@ -508,12 +509,15 @@ function drawBottomLeftButtons() {
     if (
       globals.options.speedrun ||
       debug.amTestUser(globals.metadata.ourUsername) ||
-      globals.lobby.totalGames >= 1000 ||
-      window.confirm("Are you sure you want to restart the game?")
+      globals.lobby.totalGames >= 1000
     ) {
       globals.lobby.conn!.send("tableRestart", {
         tableID: globals.lobby.tableID,
+        hidePregame: true,
       });
+    } else {
+      globals.elements.restartArea?.visible(true);
+      globals.layers.UI2.batchDraw();
     }
   });
   restartButton.tooltipName = "restart";
@@ -2216,6 +2220,104 @@ function drawPauseArea() {
   globals.elements.pauseArea.add((pauseLobbyButton as unknown) as Konva.Group);
   pauseLobbyButton.on("click tap", lobbyButtonClick);
 }
+
+
+function drawRestartArea() {
+  const restartAreaValues = {
+    w: 0.7,
+    h: 0.6,
+  };
+
+  globals.elements.restartArea = new Konva.Group({
+    x: 0.15 * winW,
+    y: 0.20 * winH,
+    visible: false,
+    listening: false,
+  });
+  globals.layers.UI2.add(globals.elements.restartArea);
+
+  const restartRect = new Konva.Rect({
+    width: restartAreaValues.w * winW,
+    height: restartAreaValues.h * winH,
+    fill: "#b3b3b3",
+    cornerRadius: 0.01 * winH,
+    listening: true,
+  });
+  globals.elements.restartArea.add(restartRect);
+
+  const restartTitle = new Konva.Text({
+    y: 0.1 * winH,
+    width: restartAreaValues.w * winW,
+    fontFamily: "Verdana",
+    fontSize: 0.08 * winH,
+    text: "Restart?",
+    align: "center",
+    fill: "white",
+    shadowColor: "black",
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    listening: false,
+  });
+  globals.elements.restartArea.add(restartTitle);
+
+  const buttonW = restartAreaValues.w * 0.35;
+  const buttonH = 0.25;
+  const spacing = restartAreaValues.w * 0.10;
+
+  const restartGameButton = new Button({
+    x: spacing * winW,
+    y: buttonH * winH,
+    width: buttonW * winW,
+    height: 0.1 * winH,
+    text: "Restart game",
+  });
+  restartGameButton.on("click tap", () => {
+    globals.lobby.conn!.send("tableRestart", {
+      tableID: globals.lobby.tableID,
+      hidePregame: true,
+    });
+  });
+  globals.elements.restartArea.add(
+    (restartGameButton as unknown) as Konva.Group,
+  );
+
+  const restartTableButton = new Button({
+    x: (2 * spacing + buttonW) * winW,
+    y: buttonH * winH,
+    width: buttonW * winW,
+    height: 0.1 * winH,
+    text: "Remake table",
+  });
+  restartTableButton.on("click tap", () => {
+    globals.lobby.conn!.send("tableRestart", {
+      tableID: globals.lobby.tableID,
+      hidePregame: false,
+    });
+  });
+  globals.elements.restartArea.add(
+    (restartTableButton as unknown) as Konva.Group,
+  );
+
+  const restartCancelButton = new Button({
+    x: (restartAreaValues.w - buttonW/2 - spacing) * winW,
+    y: (buttonH * 1.5 + spacing) * winH,
+    width: buttonW/2 * winW,
+    height: 0.1 * winH,
+    text: "Cancel",
+  });
+  restartCancelButton.on("click tap", () => {
+    globals.elements.restartArea?.visible(false);
+    globals.layers.UI2.batchDraw();
+  });
+  globals.elements.restartArea.add(
+    (restartCancelButton as unknown) as Konva.Group,
+  );
+}
+
 
 function drawExtraAnimations() {
   // These images are shown to the player to
