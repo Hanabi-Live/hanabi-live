@@ -55,8 +55,15 @@ export const shouldShowHypoControls = (state: State): boolean =>
   (state.replay.shared === null || state.replay.shared.amLeader);
 
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
-  globals.elements.endHypotheticalButton?.visible(shouldShow);
-
+  globals.elements.hypoButtonsArea?.visible(shouldShow);
+  if (shouldShow) {
+    // the lower part of the clue area and the "no clues" indicators slide left during hypo
+    globals.elements.lowerClueArea?.setLeft();
+    globals.elements.clueAreaDisabled?.setLeft();
+  } else {
+    globals.elements.lowerClueArea?.setCenter();
+    globals.elements.clueAreaDisabled?.setCenter();
+  }
   // We might need to change the draggable property of a hand
   checkSetDraggableAllHands();
   globals.layers.UI.batchDraw();
