@@ -146,14 +146,12 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	// (but don't do this if we are in an end game that has a custom amount of turns)
 	if g.Options.DetrimentalCharacters {
 		if characterHasTakenLastTurn(g) {
-
 			for _, c := range p.Hand {
 				c.CannotBePlayed = true
 			}
 		}
 	} else if g.EndTurn != -1 &&
 		g.EndTurn != g.Turn+len(g.Players)+1 {
-
 		for _, c := range p.Hand {
 			c.CannotBePlayed = true
 		}
