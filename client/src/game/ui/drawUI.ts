@@ -2074,6 +2074,7 @@ function drawHypotheticalArea() {
   globals.layers.UI.add(globals.elements.hypoButtonsArea);
 
   // The "Back 1 Turn" button
+  // (to the right of the give clue button)
   const hypoBackButtonValues = {
     // eslint-disable-next-line prettier/prettier
     x: clueAreaValues.x + lowerClueAreaValues.x + giveClueValues.x + giveClueValues.w! - 0.05,
@@ -2100,6 +2101,7 @@ function drawHypotheticalArea() {
   const hypoButtonSpacing = 0.008;
 
   // The "End Hypothetical" button
+  // (to the right of the back button)
   const endHypotheticalButtonValues = {
     x: hypoBackButtonValues.x + hypoBackButtonValues.w + hypoButtonSpacing,
     y: hypoBackButtonValues.y,
@@ -2122,6 +2124,7 @@ function drawHypotheticalArea() {
   globals.elements.endHypotheticalButton = endHypotheticalButton;
 
   // The "Edit Cards" button
+  // (above the exit hypo button)
   const editCardsButtonValues = {
     x: endHypotheticalButtonValues.x,
     y: endHypotheticalButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
@@ -2144,6 +2147,7 @@ function drawHypotheticalArea() {
   );
 
   // The "Show Drawn Cards" / "Hide Drawn Cards" button
+  // (above the edit cards button)
   const toggleDrawnCardsButtonValues = {
     x: editCardsButtonValues.x,
     y: editCardsButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
@@ -2155,7 +2159,6 @@ function drawHypotheticalArea() {
     height: hypoButtonHeight * winH,
     text: "Show Drawn",
     fontSize: 0.016 * winH,
-    visible: false,
   });
   globals.elements.toggleDrawnCardsButton.on(
     "click tap",

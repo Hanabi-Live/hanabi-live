@@ -75,7 +75,7 @@ export const shouldShowToggleDrawnCards = (state: State): boolean =>
   (state.replay.shared === null || state.replay.shared.amLeader);
 
 export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {
-  globals.elements.toggleDrawnCardsButton?.visible(shouldShow);
+  globals.elements.toggleDrawnCardsButton?.setEnabled(shouldShow);
   globals.layers.UI.batchDraw();
 }
 
@@ -132,16 +132,14 @@ export const shouldShowHypoBackButton = (state: State): boolean =>
   state.replay.hypothetical.states.length > 1;
 
 export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
-  globals.elements.hypoBackButton?.visible(enabled);
+  globals.elements.hypoBackButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 }
 
 export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
 ): void {
-  globals.elements.toggleDrawnCardsButton?.text(
-    drawnCardsInHypothetical ? "Hide Drawn" : "Show Drawn",
-  );
+  globals.elements.toggleDrawnCardsButton?.setPressed(drawnCardsInHypothetical);
 
   // Check if the ability to give a clue changed
   clues.checkLegal();
