@@ -61,6 +61,7 @@ let basicTextLabel: Konva.Text;
 let basicNumberLabel: Konva.Text;
 let actionLogValues: Values;
 let playAreaValues: Values;
+let playStackFarLeftX: number;
 let cardWidth;
 let cardHeight;
 let bottomLeftButtonValues: Values;
@@ -304,6 +305,7 @@ function drawPlayStacks() {
   playStackValues.w +=
     playStackValues.spacing * (globals.variant.suits.length - 1);
 
+  playStackFarLeftX = playStackValues.x;
   // Variants with less than 5 stacks will be left-aligned instead of centered
   // unless we manually adjust them
   if (
@@ -1644,9 +1646,9 @@ function drawTimers() {
 function drawClueArea() {
   // Put the clue area directly below the play stacks, with a little bit of spacing
   clueAreaValues = {
-    x: playAreaValues.x,
+    x: playStackFarLeftX,
     y: playAreaValues.y + playAreaValues.h! + 0.005,
-    w: playAreaValues.w,
+    w: 0.4,
     h: 0.23,
   };
   if (globals.variant.showSuitNames) {
