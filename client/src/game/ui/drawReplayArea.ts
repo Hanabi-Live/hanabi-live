@@ -1,5 +1,6 @@
 import Konva from "konva";
 import Button from "./controls/Button";
+import EnterHypoButton from "./controls/EnterHypoButton";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
 import Shuttle from "./controls/Shuttle";
 import globals from "./globals";
@@ -220,22 +221,25 @@ export default function drawReplayArea(winW: number, winH: number): void {
     );
   }
 
+  const extra = 0.05;
+  const totalWidth = replayButtonValues.w * 4 + replayButtonValues.spacing * 3;
   const bottomButtonValues = {
     y: 0.17,
-  };
-  const extra = 0.05;
-  const bottomLeftReplayButtonValues = {
-    x: replayButtonValues.x - extra,
-    y: bottomButtonValues.y,
     w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
     h: 0.06,
   };
-
+  const bottomLeftReplayButtonX = replayButtonValues.x - extra;
+  const bottomCenterReplayButtonX =
+    replayButtonValues.x + (totalWidth - bottomButtonValues.w) / 2;
+  const bottomRightReplayButtonX =
+    replayButtonValues.x +
+    replayButtonValues.w * 2 +
+    replayButtonValues.spacing * 2;
   // The "Exit Replay" button
   globals.elements.replayExitButton = new Button({
-    x: bottomLeftReplayButtonValues.x * winW,
+    x: bottomRightReplayButtonX * winW,
     y: bottomButtonValues.y * winH,
-    width: bottomLeftReplayButtonValues.w * winW,
+    width: bottomButtonValues.w * winW,
     height: replayButtonValues.w * winH,
     text: "Exit Replay",
     visible: !globals.state.finished,
@@ -247,23 +251,19 @@ export default function drawReplayArea(winW: number, winH: number): void {
 
   // The next two buttons will be moved to the left for replay leaders
   // and centered for non-replay-leaders
-  const totalWidth = replayButtonValues.w * 4 + replayButtonValues.spacing * 3;
   function setCenter(this: SharedTurnsButton) {
-    const x =
-      replayButtonValues.x + (totalWidth - bottomLeftReplayButtonValues.w) / 2;
-    this.x(x * winW);
-    this.y(bottomLeftReplayButtonValues.y * winH);
+    this.x(bottomCenterReplayButtonX * winW);
   }
   function setLeft(this: SharedTurnsButton) {
-    this.x(bottomLeftReplayButtonValues.x * winW);
-    this.y(bottomLeftReplayButtonValues.y * winH);
+    this.x(bottomLeftReplayButtonX * winW);
   }
 
   // The "Pause Shared Turns" button
   // (this will be shown when the client receives the "replayLeader" command)
   globals.elements.pauseSharedTurnsButton = new SharedTurnsButton({
-    width: bottomLeftReplayButtonValues.w * winW,
-    height: bottomLeftReplayButtonValues.h * winH,
+    y: bottomButtonValues.y * winH,
+    width: bottomButtonValues.w * winW,
+    height: bottomButtonValues.h * winH,
     text: "Pause Shared Turns",
     visible: false,
   });
@@ -281,8 +281,8 @@ export default function drawReplayArea(winW: number, winH: number): void {
   // The "Use Shared Turns" button
   // (this will be shown when the client receives the "replayLeader" command)
   globals.elements.useSharedTurnsButton = new SharedTurnsButton({
-    width: bottomLeftReplayButtonValues.w * winW,
-    height: bottomLeftReplayButtonValues.h * winH,
+    width: bottomButtonValues.w * winW,
+    height: bottomButtonValues.h * winH,
     text: "Use Shared Turns",
     visible: false,
   });
@@ -297,35 +297,34 @@ export default function drawReplayArea(winW: number, winH: number): void {
     (globals.elements.useSharedTurnsButton as unknown) as Konva.Group,
   );
 
-  const bottomRightReplayButtonValues = {
-    x:
-      replayButtonValues.x +
-      replayButtonValues.w * 2 +
-      replayButtonValues.spacing * 2,
-    y: bottomLeftReplayButtonValues.y,
-    w: bottomLeftReplayButtonValues.w,
-    h: bottomLeftReplayButtonValues.h,
-  };
-
-  // This button will be moved to the right during shared and in-game replay and centered for local
-  // replay
-  const enterHypoX =
-    globals.state.finished && globals.state.replay.shared === null
-      ? replayButtonValues.x + (totalWidth - bottomLeftReplayButtonValues.w) / 2
-      : bottomRightReplayButtonValues.x;
-
   // The "Enter Hypothetical" button
-  globals.elements.enterHypoButton = new Button({
-    x: enterHypoX * winW,
-    y: bottomRightReplayButtonValues.y * winH,
-    width: bottomRightReplayButtonValues.w * winW,
-    height: bottomRightReplayButtonValues.h * winH,
+  globals.elements.enterHypoButton = new EnterHypoButton({
+    y: bottomButtonValues.y * winH,
+    width: bottomButtonValues.w * winW,
+    height: bottomButtonValues.h * winH,
     text: "Enter Hypothetical",
   });
   globals.elements.enterHypoButton.on("click tap", hypothetical.start);
   globals.elements.replayArea.add(
     (globals.elements.enterHypoButton as unknown) as Konva.Group,
   );
+
+  // This button will be moved to the left during in-game replay, centered during private replay,
+  // and right during shared replay
+
+  function enterHypoSetLeft(this: EnterHypoButton): void {
+    this.x(bottomLeftReplayButtonX * winW);
+  }
+  function enterHypoSetCenter(this: EnterHypoButton): void {
+    this.x(bottomCenterReplayButtonX * winW);
+  }
+  function enterHypoSetRight(this: EnterHypoButton): void {
+    this.x(bottomRightReplayButtonX * winW);
+  }
+
+  globals.elements.enterHypoButton.setLeft = enterHypoSetLeft;
+  globals.elements.enterHypoButton.setCenter = enterHypoSetCenter;
+  globals.elements.enterHypoButton.setRight = enterHypoSetRight;
 
   // Add the replay area to the UI
   globals.layers.UI.add(globals.elements.replayArea);
