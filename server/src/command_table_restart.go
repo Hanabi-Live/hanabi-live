@@ -93,7 +93,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 			spectatorSessions = append(spectatorSessions, sp.Session)
 		}
 	}
-	if len(playerSessions) != len(t.Players) {
+	if len(playerSessions) != len(t.Players) && d.HidePregame {
 		s.Warning("Not all of the players from the original game are in the shared replay, " +
 			"so you cannot restart the game.")
 		return
