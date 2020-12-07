@@ -2091,6 +2091,12 @@ function drawHypotheticalArea() {
     text: "Back",
     fontSize: 0.019 * winH,
   });
+
+  globals.elements.hypoBackButton.tooltipName = "hypo-back";
+  globals.elements.hypoBackButton.tooltipContent =
+    "Go back a turn in this hypothetical.";
+  tooltips.init(globals.elements.hypoBackButton, true, false);
+
   globals.elements.hypoBackButton.on("click tap", hypothetical.sendBack);
   globals.elements.hypoButtonsArea.add(
     (globals.elements.hypoBackButton as unknown) as Konva.Group,
@@ -2135,6 +2141,12 @@ function drawHypotheticalArea() {
     text: "Edit Cards",
     fontSize: 0.019 * winH,
   });
+
+  globals.elements.editCardsButton.tooltipName = "hypo-edit-cards";
+  globals.elements.editCardsButton.tooltipContent =
+    "Turn this on and then click on cards to change them into other cards.";
+  tooltips.init(globals.elements.editCardsButton, true, false);
+
   globals.elements.editCardsButton.on("click tap", () => {
     globals.elements.editCardsButton?.setPressed(
       !globals.elements.editCardsButton?.pressed,
@@ -2157,6 +2169,11 @@ function drawHypotheticalArea() {
     text: "Show Drawn",
     fontSize: 0.016 * winH,
   });
+  globals.elements.toggleDrawnCardsButton.tooltipName = "hypo-show-drawn";
+  globals.elements.toggleDrawnCardsButton.tooltipContent =
+    "Show the front faces of cards drawn during the hypothetical.";
+  tooltips.init(globals.elements.toggleDrawnCardsButton, true, false);
+
   globals.elements.toggleDrawnCardsButton.on(
     "click tap",
     hypothetical.toggleRevealed,
