@@ -214,9 +214,9 @@ function shouldShowLookCursor(card: HanabiCard) {
     card.note.possibilities.length !== 0 &&
     card.state.possibleCardsFromClues.some(
       ([suitIndexA, rankA]) =>
-        card.note.possibilities.findIndex(
+        !card.note.possibilities.some(
           ([suitIndexB, rankB]) => suitIndexA === suitIndexB && rankA === rankB,
-        ) === -1,
+        ),
     );
   if (noteNarrowsPossibilities || card.note.blank || card.note.unclued) {
     return true;

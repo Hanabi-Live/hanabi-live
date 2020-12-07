@@ -1,7 +1,7 @@
 import { parseIntSafe } from "../../misc";
 import CardIdentity from "../types/CardIdentity";
-import Suit from "../types/Suit";
 import { START_CARD_RANK } from "../types/constants";
+import Suit from "../types/Suit";
 import Variant from "../types/Variant";
 
 function parseSuit(variant: Variant, suitText: string): number | null {
@@ -64,11 +64,11 @@ function getPossibilitiesFromKeyword(
 
       // Check that this identity is not already present in the list
       if (
-        possibilities.findIndex(
+        !possibilities.some(
           (possibility) =>
             possibility[0] === identity.suitIndex &&
             possibility[1] === identity.rank,
-        ) === -1
+        )
       ) {
         possibilities.push([identity.suitIndex, identity.rank]);
       }
@@ -77,10 +77,10 @@ function getPossibilitiesFromKeyword(
       for (const rank of variant.ranks) {
         // Check that this identity is not already present in the list
         if (
-          possibilities.findIndex(
+          !possibilities.some(
             (possibility) =>
               possibility[0] === identity.suitIndex && possibility[1] === rank,
-          ) === -1
+          )
         ) {
           possibilities.push([identity.suitIndex, rank]);
         }
@@ -90,10 +90,10 @@ function getPossibilitiesFromKeyword(
       for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
         // Check that this identity is not already present in the list
         if (
-          possibilities.findIndex(
+          !possibilities.some(
             (possibility) =>
               possibility[0] === suitIndex && possibility[1] === identity.rank,
-          ) === -1
+          )
         ) {
           possibilities.push([suitIndex, identity.rank]);
         }
@@ -120,12 +120,11 @@ export function getPossibilitiesFromKeywords(
       continue;
     }
     const oldPossibilities = possibilities;
-    const intersection = newPossibilities.filter(
-      ([newSuitIndex, newRank]) =>
-        oldPossibilities.findIndex(
-          ([oldSuitIndex, oldRank]) =>
-            newSuitIndex === oldSuitIndex && newRank === oldRank,
-        ) !== -1,
+    const intersection = newPossibilities.filter(([newSuitIndex, newRank]) =>
+      oldPossibilities.some(
+        ([oldSuitIndex, oldRank]) =>
+          newSuitIndex === oldSuitIndex && newRank === oldRank,
+      ),
     );
     // If this new term completely conflicts with the previous terms, then reset our state to
     // just the new term
