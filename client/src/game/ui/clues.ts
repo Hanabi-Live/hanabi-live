@@ -89,27 +89,12 @@ function showClueMatch(target: number, clue: Clue) {
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target].children[i];
     const card: HanabiCard = child.children[0] as HanabiCard;
-    let suitIndex: number | null;
-    let rank: number | null;
-    if (globals.state.replay.hypothetical === null) {
-      suitIndex = card.state.suitIndex;
-      rank = card.state.rank;
-    } else {
-      // We should be able to clue morphed cards in a hypothetical
-      suitIndex = card.visibleSuitIndex;
-      rank = card.visibleRank;
-    }
-    const possibleIdentities: Array<readonly [number, number]> =
-      suitIndex === null || rank === null
-        ? card.state.possibleCardsFromClues.filter(
-            ([suitIndexB, rankB]) =>
-              card.state.possibleCardsFromObservation[suitIndexB][rankB] >= 1,
-          )
-        : [[suitIndex, rank]];
     if (
-      possibleIdentities.every(([suitIndexC, rankC]) =>
-        cluesRules.touchesCard(globals.variant, clue, suitIndexC, rankC),
-      )
+      card
+        .getMorphedPossibilities()
+        .every(([suitIndex, rank]) =>
+          cluesRules.touchesCard(globals.variant, clue, suitIndex, rank),
+        )
     ) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
@@ -127,22 +112,17 @@ export function getTouchedCardsFromClue(
   const cardsTouched: number[] = []; // An array of the card orders
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
-    const possibleIdentities: Array<readonly [number, number]> =
-      card.visibleSuitIndex === null || card.visibleRank === null
-        ? card.state.possibleCardsFromClues.filter(
-            ([suitIndexB, rankB]) =>
-              card.state.possibleCardsFromObservation[suitIndexB][rankB] >= 1,
-          )
-        : [[card.visibleSuitIndex, card.visibleRank]];
     if (
-      possibleIdentities.every(([suitIndexC, rankC]) =>
-        cluesRules.touchesCard(
-          globals.variant,
-          cluesRules.msgClueToClue(clue, globals.variant),
-          suitIndexC,
-          rankC,
-        ),
-      )
+      card
+        .getMorphedPossibilities()
+        .every(([suitIndexC, rankC]) =>
+          cluesRules.touchesCard(
+            globals.variant,
+            cluesRules.msgClueToClue(clue, globals.variant),
+            suitIndexC,
+            rankC,
+          ),
+        )
     ) {
       cardsTouched.push(card.state.order);
     }
