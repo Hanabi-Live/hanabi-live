@@ -3,7 +3,6 @@
 import produce, { Draft, original } from "immer";
 import { ensureAllCases, nullIfNegative } from "../../misc";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
-import CardIdentity from "../types/CardIdentity";
 import GameMetadata from "../types/GameMetadata";
 import ReplayState from "../types/ReplayState";
 import gameStateReducer from "./gameStateReducer";
@@ -14,7 +13,6 @@ export default replayReducer;
 function replayReducerFunction(
   state: Draft<ReplayState>,
   action: ReplayAction,
-  cardIdentities: readonly CardIdentity[],
   metadata: GameMetadata,
 ) {
   // Validate current state
@@ -148,7 +146,7 @@ function replayReducerFunction(
       };
 
       for (const a of action.actions) {
-        hypoAction(state, a, cardIdentities, metadata);
+        hypoAction(state, a, metadata);
       }
 
       break;
@@ -224,7 +222,7 @@ function replayReducerFunction(
         );
       }
 
-      hypoAction(state, action.action, cardIdentities, metadata);
+      hypoAction(state, action.action, metadata);
       break;
     }
 
@@ -238,7 +236,6 @@ function replayReducerFunction(
 function hypoAction(
   state: Draft<ReplayState>,
   action: ActionIncludingHypothetical,
-  cardIdentities: readonly CardIdentity[],
   metadata: GameMetadata,
 ) {
   if (state.hypothetical === null) {
@@ -263,18 +260,11 @@ function hypoAction(
       }
     }
 
-    if (
-      // Stack bases can be morphed, but their orders are higher than the deck size
-      action.order >= cardIdentities.length ||
-      suitIndex !== cardIdentities[action.order].suitIndex ||
-      rank !== cardIdentities[action.order].rank
-    ) {
-      // This card has been morphed or blanked
-      state.hypothetical.morphedIdentities[action.order] = {
-        suitIndex,
-        rank,
-      };
-    }
+    // This card has been morphed or blanked
+    state.hypothetical.morphedIdentities[action.order] = {
+      suitIndex,
+      rank,
+    };
   }
 
   // The game state doesn't care about morphed cards

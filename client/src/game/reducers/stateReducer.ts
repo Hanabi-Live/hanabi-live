@@ -8,8 +8,8 @@ import GameMetadata from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import State from "../types/State";
 import gameStateReducer from "./gameStateReducer";
-import notesReducer from "./notesReducer";
 import initialGameState from "./initialStates/initialGameState";
+import notesReducer from "./notesReducer";
 import replayReducer from "./replayReducer";
 
 // Ensure that immer will always auto-freeze recursive structures (like replay states)
@@ -166,12 +166,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypoEnd":
     case "hypoAction":
     case "hypoShowDrawnCards": {
-      state.replay = replayReducer(
-        state.replay,
-        action,
-        original(state.cardIdentities)!,
-        state.metadata,
-      );
+      state.replay = replayReducer(state.replay, action, state.metadata);
       break;
     }
 
