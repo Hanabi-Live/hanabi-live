@@ -97,6 +97,12 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
 
+    if (globals.state.replay.hypothetical !== null) {
+      // Escape = If in a hypothetical, exit back to the replay
+      hypothetical.end();
+      return;
+    }
+
     if (globals.state.finished) {
       // Escape = If in a replay, exit back to the lobby
       backToLobby();
