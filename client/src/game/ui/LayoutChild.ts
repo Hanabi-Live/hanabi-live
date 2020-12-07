@@ -204,7 +204,8 @@ export default class LayoutChild extends Konva.Group {
   }
 
   checkHypoUnknown(action: string): boolean {
-    if (this.card.visibleSuitIndex !== null && this.card.visibleRank !== null) {
+    const { suitIndex, rank } = this.card.getMorphedIdentity();
+    if (suitIndex !== null && rank !== null) {
       return false;
     }
 
@@ -220,8 +221,8 @@ export default class LayoutChild extends Konva.Group {
       newIdentityText,
     );
 
-    const newSuitIndex = this.card.visibleSuitIndex ?? newIdentity.suitIndex;
-    const newRank = this.card.visibleRank ?? newIdentity.rank;
+    const newSuitIndex = suitIndex ?? newIdentity.suitIndex;
+    const newRank = rank ?? newIdentity.rank;
     if (
       (newIdentity.suitIndex === null && newIdentity.rank === null) ||
       newSuitIndex === null ||

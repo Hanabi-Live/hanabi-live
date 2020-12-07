@@ -69,3 +69,34 @@ export function possibleCardsFromNoteAndClues(
   }
   return possibilitiesWithNotes;
 }
+
+export function getSuitIndexFromNote(
+  note: CardNote,
+  state: CardState,
+): number | null {
+  if (note.possibilities.length !== 0) {
+    const possibilities = possibleCardsFromNoteAndClues(note, state);
+    const [candidateSuitIndex] = possibilities[0];
+    if (
+      possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
+    ) {
+      return candidateSuitIndex;
+    }
+  }
+  return null;
+}
+
+export function getRankFromNote(
+  note: CardNote,
+  state: CardState,
+): number | null {
+  if (note.possibilities.length !== 0) {
+    const possibilities = possibleCardsFromNoteAndClues(note, state);
+    const candidateRank = possibilities[0][1];
+    if (possibilities.every((card) => card[1] === candidateRank)) {
+      return candidateRank;
+    }
+  }
+
+  return null;
+}

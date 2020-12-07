@@ -27,6 +27,8 @@ import { animate } from "./konvaHelpers";
 import LayoutChild from "./LayoutChild";
 import {
   checkNoteImpossibility,
+  getRankFromNote,
+  getSuitIndexFromNote,
   possibleCardsFromNoteAndClues,
 } from "./noteCheckImpossibility";
 import * as notes from "./notes";
@@ -355,19 +357,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // If we have a note on the card and it only provides possibilities of the same suit,
-    // show that suit
-    if (this.note.possibilities.length !== 0) {
-      const possibilities = possibleCardsFromNoteAndClues(
-        this.note,
-        this.state,
-      );
-      const [candidateSuitIndex] = possibilities[0];
-      if (
-        possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
-      ) {
-        return this.variant.suits[candidateSuitIndex];
-      }
+    // return that suit
+    const suitIndexFromNote = getSuitIndexFromNote(this.note, this.state);
+    if (suitIndexFromNote !== null) {
+      return this.variant.suits[suitIndexFromNote];
     }
+
     return unknownSuit;
   }
 
@@ -385,17 +380,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // show that rank (specifically for stack bases in ongoing games; we want notes to have
     // precedence in this case so that players can make notes in "Throw It in a Hole" variants)
 
-    let noteRank = null;
-    if (this.note.possibilities.length !== 0) {
-      const possibilities = possibleCardsFromNoteAndClues(
-        this.note,
-        this.state,
-      );
-      const candidateRank = possibilities[0][1];
-      if (possibilities.every((card) => card[1] === candidateRank)) {
-        noteRank = candidateRank;
-      }
-    }
+    const noteRank = getRankFromNote(this.note, this.state);
 
     if (
       noteRank !== null &&
@@ -416,6 +401,49 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     return UNKNOWN_CARD_RANK;
+  }
+
+  getMorphedIdentity(): CardIdentity {
+    if (globals.state.replay.hypothetical !== null) {
+      const morphedIdentity =
+        globals.state.replay.hypothetical.morphedIdentities[this.state.order];
+      if (morphedIdentity !== undefined) {
+        return morphedIdentity;
+      }
+
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
+      );
+      if (possibilities.length === 1) {
+        const [suitIndex, rank] = possibilities[0];
+        return { suitIndex, rank };
+      }
+    }
+
+    // We do not track the card identities for the stack bases
+    // (for stack bases, the suit and rank is always baked into the state from the get-go)
+    if (this.state.rank === STACK_BASE_RANK) {
+      return this.state;
+    }
+
+    return globals.state.cardIdentities[this.state.order];
+  }
+
+  getMorphedPossibilities(): Array<readonly [number, number]> {
+    const { suitIndex, rank } = this.getMorphedIdentity();
+    if (suitIndex !== null && rank !== null) {
+      return [[suitIndex, rank]];
+    }
+
+    const possibleCardsWithoutObservation =
+      globals.state.replay.hypothetical === null
+        ? this.state.possibleCardsFromClues
+        : possibleCardsFromNoteAndClues(this.note, this.state);
+    return possibleCardsWithoutObservation.filter(
+      ([suitIndexB, rankB]) =>
+        this.state.possibleCardsFromObservation[suitIndexB][rankB] >= 1,
+    );
   }
 
   isMorphedBlank(): boolean {
