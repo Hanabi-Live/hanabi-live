@@ -59,9 +59,9 @@ export function possibleCardsFromNoteAndClues(
 ): ReadonlyArray<readonly [number, number]> {
   const possibilitiesWithNotes = note.possibilities.filter(
     ([suitIndexA, rankA]) =>
-      state.possibleCardsFromClues.findIndex(
+      state.possibleCardsFromClues.some(
         ([suitIndexB, rankB]) => suitIndexA === suitIndexB && rankA === rankB,
-      ) !== -1,
+      ),
   );
 
   if (possibilitiesWithNotes.length === 0) {
