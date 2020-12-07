@@ -103,9 +103,13 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
 
-    // Escape = If in an in-game replay, exit back to the game
-    replay.exit();
-    return;
+    if (globals.state.replay.hypothetical !== null) {
+      // Escape = If in a hypothetical, exit back to the replay
+      hypothetical.end();
+    } else {
+      // Escape = If in an in-game replay, exit back to the game
+      replay.exit();
+    }
   }
 
   if (event.key === " ") {
