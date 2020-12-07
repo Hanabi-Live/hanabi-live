@@ -8,6 +8,7 @@ import Arrow from "./controls/Arrow";
 import Button from "./controls/Button";
 import CheckButton from "./controls/CheckButton";
 import CurrentPlayerArea from "./controls/CurrentPlayerArea";
+import EnterHypoButton from "./controls/EnterHypoButton";
 import FitText from "./controls/FitText";
 import SharedTurnsButton from "./controls/SharedTurnsButton";
 import Shuttle from "./controls/Shuttle";
@@ -111,7 +112,7 @@ export default class Elements {
   replayExitButton: Button | null = null;
   pauseSharedTurnsButton: SharedTurnsButton | null = null;
   useSharedTurnsButton: SharedTurnsButton | null = null;
-  enterHypoButton: Button | null = null;
+  enterHypoButton: EnterHypoButton | null = null;
   hypoCircle: Konva.Group | null = null;
   hypoButtonsArea: Konva.Group | null = null;
   editCardsButton: CheckButton | null = null;

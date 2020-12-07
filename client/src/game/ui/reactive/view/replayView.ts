@@ -132,6 +132,19 @@ export function onShouldShowReplayButtonChanged(shouldShow: boolean): void {
   globals.elements.replayButton?.visible(shouldShow);
 }
 
+export function enterHypoButtonLocationChanged(data: {
+  finished: boolean;
+  shared: boolean;
+}): void {
+  if (!data.finished) {
+    globals.elements.enterHypoButton?.setLeft();
+  } else if (!data.shared) {
+    globals.elements.enterHypoButton?.setCenter();
+  } else {
+    globals.elements.enterHypoButton?.setRight();
+  }
+}
+
 // In shared replays, it can be confusing as to what the shared replay leader is doing,
 // so play an appropriate animations to indicate what is going on
 // (and cancel the other tween if it is going)

@@ -376,6 +376,12 @@ const replayObservers: Subscriptions = [
     replayView.onShouldShowReplayButtonChanged,
   ),
 
+  // "Enter Hypothetical" button
+  subAfterInit(
+    (s) => ({ finished: s.finished, shared: s.replay.shared !== null }),
+    replayView.enterHypoButtonLocationChanged,
+  ),
+
   // Card and stack base morphing
   subAfterInit(
     (s) => ({
