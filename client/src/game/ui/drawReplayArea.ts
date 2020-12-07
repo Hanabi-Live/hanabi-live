@@ -281,6 +281,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   // The "Use Shared Turns" button
   // (this will be shown when the client receives the "replayLeader" command)
   globals.elements.useSharedTurnsButton = new SharedTurnsButton({
+    y: bottomButtonValues.y * winH,
     width: bottomButtonValues.w * winW,
     height: bottomButtonValues.h * winH,
     text: "Use Shared Turns",
