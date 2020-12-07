@@ -111,6 +111,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
     // Escape = If in an in-game replay, exit back to the game
     replay.exit();
+    return;
   }
 
   if (event.key === " ") {
