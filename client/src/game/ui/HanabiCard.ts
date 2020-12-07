@@ -411,12 +411,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         return morphedIdentity;
       }
 
-      const suitIndexFromNote = getSuitIndexFromNote(this.note, this.state);
-      if (suitIndexFromNote !== null) {
-        const rankFromNote = getRankFromNote(this.note, this.state);
-        if (rankFromNote !== null) {
-          return { suitIndex: suitIndexFromNote, rank: rankFromNote };
-        }
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
+      );
+      if (possibilities.length === 1) {
+        const [suitIndex, rank] = possibilities[0];
+        return { suitIndex, rank };
       }
     }
 
