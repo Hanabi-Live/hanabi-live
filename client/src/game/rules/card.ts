@@ -181,6 +181,19 @@ export function allPossibilitiesTrash(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): boolean {
+  // If we fully know the card already, just check if it's playable
+  if (card.rank != null && card.suitIndex != null) {
+    return !needsToBePlayed(
+      card.suitIndex,
+      card.rank,
+      deck,
+      playStacks,
+      playStackDirections,
+      variant,
+    );
+  }
+
+  // Otherwise, check based on possibilities from clues
   for (const [suitIndex, rank] of card.possibleCardsFromClues) {
     if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
     if (
