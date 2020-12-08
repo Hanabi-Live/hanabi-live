@@ -100,19 +100,6 @@ a {
   color: hotpink;
 }
 
-#header nav > ul > li .button {
-  /* Decrease the padding of the nav buttons on the left and the right sides */
-  padding: 0 0.8em;
-  /* Center it vertically */
-  vertical-align: middle;
-}
-
-@media screen and (min-width: 1440px) {
-  #header nav > ul > li .button {
-    margin-bottom: 3px;
-  }
-}
-
 /*
   Common
 */
@@ -280,7 +267,7 @@ table td {
 }
 
 .nav-hotkey-indicator {
-  border-bottom: dotted 1px;
+  border-bottom: 1px solid #999;
 }
 
 .help-button {
@@ -885,18 +872,6 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Hide the logo on the header when it overlaps with the lobby nav bar buttons */
-@media screen and (max-width: 650px) {
-  .lobby-header #logo-text {
-    display: none;
-  }
-}
-@media screen and (max-width: 490px) {
-  .lobby-header {
-    display: none;
-  }
-}
-
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
 @media screen and (max-width: 830px) {
   #profile-buttons {
@@ -914,10 +889,6 @@ input::-webkit-calendar-picker-indicator {
 
 /* Make the main screen appear the same way, even on smaller resolutions */
 @media screen and (max-width: 840px) {
-  #header {
-    display: block;
-  }
-
   #page-wrapper {
     padding-top: 3em;
   }
@@ -935,5 +906,46 @@ input::-webkit-calendar-picker-indicator {
     margin: 0em;
     padding: 1.5em !important;
     overflow-y: hidden;
+  }
+}
+
+/*
+  Header
+*/
+@media screen and (max-width: 840px) {
+    #header {
+    display: block;
+  }
+
+  #logo-text {
+    display: none;
+  }
+}
+@media screen and (max-width: 670px) {
+  #header nav > ul > li a#nav-buttons-lobby-stats {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 620px) {
+  #header nav > ul > li a#nav-buttons-lobby-resources {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 530px) {
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.5em;
+  }
+}
+@media screen and (max-width: 410px) {
+  #header nav > ul > li a#nav-buttons-lobby-history {
+    display: none;
+  }
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.3em;
+  }
+}
+@media screen and (max-width: 360px) {
+  #header nav > ul > li a#nav-buttons-lobby-help {
+    display: none;
   }
 }

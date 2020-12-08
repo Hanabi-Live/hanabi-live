@@ -30,8 +30,12 @@ export default function keyboardInit(): void {
       if (globals.currentScreen === Screen.Lobby) {
         $(".lobby-games-join-first-table-button").click();
       }
-    } else if (event.altKey && (event.key === "c" || event.key === "ç")) {
-      // Alt + c
+    } else if (
+      event.altKey &&
+      (event.key === "c" || event.key === "p" || event.key === "ç")
+    ) {
+      // Alt + c (old)
+      // Alt + p
       // Click the "Create Game" button
       if (globals.currentScreen === Screen.Lobby) {
         $("#nav-buttons-lobby-create-game").click();

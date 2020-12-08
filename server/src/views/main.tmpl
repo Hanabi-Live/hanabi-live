@@ -11,83 +11,69 @@
         <li>
           <a
             id="nav-buttons-lobby-create-game"
-            class="button tooltip pri1"
+            class="tooltip pri1"
             data-tooltip-content="#create-game-tooltip"
           >
-            <i class="fas fa-plus nav-icon"></i>
-            <span class="mobile-hide">
-              <span class="nav-hotkey-indicator">C</span>reate Game <!-- cspell:disable-line -->
-            </span>
+            <span class="nav-hotkey-indicator">P</span>lay <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
-          <a id="nav-buttons-lobby-history" class="button pri1">
-            <i class="fas fa-history nav-icon"></i>
-            <span class="mobile-hide">
-              Show <span class="nav-hotkey-indicator">H</span>istory <!-- cspell:disable-line -->
-            </span>
+          <a id="nav-buttons-lobby-history" class="pri1">
+            <span class="nav-hotkey-indicator">H</span>istory <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-replay"
-            class="button tooltip pri1"
+            class="tooltip pri1"
             data-tooltip-content="#replay-tooltip"
           >
-            <i class="fas fa-eye nav-icon"></i>
-            <span class="mobile-hide">
-              W<span class="nav-hotkey-indicator">a</span>tch Specific Replay
-            </span>
+            W<span class="nav-hotkey-indicator">a</span>tch
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-stats"
-            class="button pri2"
+            class="pri2"
             href="/stats"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <i class="fas fa-chart-area nav-icon"></i>
-            <span class="mobile-hide">Stats</span>
+            Stats
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-resources"
-            class="button tooltip pri2"
+            class="tooltip pri2"
             data-tooltip-content="#resources-tooltip"
           >
-            <i class="fas fa-link nav-icon"></i>
-            <span class="mobile-hide">Resources</span>
+            Resources
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-settings"
-            class="button tooltip pri2"
+            class="tooltip pri2"
             data-tooltip-content="#settings-tooltip"
           >
-            <i class="fas fa-cog nav-icon"></i>
-            <span class="mobile-hide">Settings</span>
+            Settings
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-help"
-            class="button pri2 help-button"
+            class="pri2 help-button"
             href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <i class="fas fa-question-circle nav-icon"></i>
-            <span class="mobile-hide">Help</span>
+            Help
           </a>
         </li>
         <li>
-          <a id="nav-buttons-lobby-sign-out" class="button signout pri2">
-            <i class="fas fa-sign-out-alt nav-icon"></i>
-            <span class="mobile-hide">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
+          <a id="nav-buttons-lobby-sign-out" class="signout pri2">
+            Sign <span class="nav-hotkey-indicator">O</span>ut
           </a>
         </li>
       </ul>
@@ -579,6 +565,7 @@
         <section id="lobby-games" class="box align-center-v">
           <h3 id="lobby-games-no">No current games.</h3>
           <div id="lobby-games-table-container" class="hidden lobby-table-container">
+            <h3 class="lobby-title">List of games</h3>
             <table id="lobby-games-table" class="alt">
               <thead>
                 <tr>
