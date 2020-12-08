@@ -63,7 +63,7 @@ export function onEfficiencyChanged(data: {
     cardsGottenByNotes = null;
   }
 
-  const cardsNotGotten = data.maxScore - cardsGotten;
+  const cardsNotGotten = Math.max(data.maxScore - cardsGotten, 0);
 
   const efficiency = statsRules.efficiency(
     cardsGotten,
