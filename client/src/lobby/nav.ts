@@ -57,6 +57,22 @@ export function init(): void {
     window.location.href = `/logout${window.location.search}`;
   });
 
+  // "List of Games" bottom screen toggle button for small screens
+  $("#lobby-toggle-show-tables").on("click", () => {
+    $("#lobby-toggle-show-tables").addClass("toggle-active");
+    $("#lobby-toggle-show-chat").removeClass("toggle-active");
+    $("#lobby-top-half").addClass("toggle-active");
+    $("#lobby-bottom-half").removeClass("toggle-active");
+  });
+
+  // "Chat & Users" bottom screen toggle button for small screens
+  $("#lobby-toggle-show-chat").on("click", () => {
+    $("#lobby-toggle-show-tables").removeClass("toggle-active");
+    $("#lobby-toggle-show-chat").addClass("toggle-active");
+    $("#lobby-top-half").removeClass("toggle-active");
+    $("#lobby-bottom-half").addClass("toggle-active");
+  });
+
   // The "Start Game" button
   $("#nav-buttons-pregame-start").on("click", () => {
     if (!$("#nav-buttons-pregame-start").hasClass("disabled")) {

@@ -6,7 +6,6 @@
   <header id="header">
     <h1 class="lobby-header">{{ template "logo" }}</h1>
     <nav id="nav">
-      <!-- We use <i> instead of the icon class because it results in a more compact button -->
       <ul id="nav-buttons-lobby" class="hidden">
         <li>
           <a
@@ -559,7 +558,7 @@
 
   <!-- Lobby -->
   <div id="lobby" class="container max hidden">
-    <div id="lobby-top-half" class="row lobby-half">
+    <div id="lobby-top-half" class="row lobby-half toggle-active">
       <div class="col-12">
         <!-- The "games" table (all current games) -->
         <section id="lobby-games" class="box align-center-v">
@@ -618,7 +617,7 @@
       <!-- The chat for the entire lobby -->
       <div id="lobby-chat-container" class="col-8">
         <section id="lobby-chat" class="box">
-          <h3 class="lobby-title">Lobby Chat</h3>
+          <h3 class="lobby-title">Lobby Chat<span class="only-on-narrow-screen"> (<span class="lobby-users-num">0</span> online)</span></h3>
           <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
           <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
         </section>
@@ -635,9 +634,9 @@
       </div>
 
       <!-- The "Online Users" section -->
-      <div class="col-4 lobby-users-box-container">
+      <div class="col-4 lobby-users-box-container narrow-screen-toggle">
         <section class="box">
-          <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+          <h3 class="lobby-title">Online<span id="small-screen-toggle-users-h3"> Users (<span class="lobby-users-num">0</span>)</span></h3>
           <div id="lobby-users-container">
             <table id="lobby-users-table" class="slim-table">
               <thead>
@@ -651,6 +650,22 @@
           </div>
         </section>
       </div>
+    </div>
+
+    <!-- small screen toggle buttons -->
+    <div id="lobby-small-screen-buttons">
+      <nav id="nav-bottom">
+        <ul>
+          <li>
+            <a id="lobby-toggle-show-tables" class="button small toggle-active">
+              List of games
+            </a>
+            <a id="lobby-toggle-show-chat" class="button small">
+              Chat<span id="narrow-screen-toggle-button-text"> & Users</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <!-- History -->

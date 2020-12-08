@@ -17,6 +17,7 @@ export function show(): void {
   // Replace the list of current games with a list of the current players
   $("#lobby-pregame").show();
   $("#lobby-games").hide();
+  $("#lobby-small-screen-buttons").hide();
 
   // Add an extra chat box
   $("#lobby-chat-container").removeClass("col-8");
@@ -65,6 +66,7 @@ export function hide(): void {
   // Replace the list of current players with a list of the current games
   $("#lobby-pregame").hide();
   $("#lobby-games").show();
+  $("#lobby-small-screen-buttons").show();
 
   // Remove the extra chat box
   $("#lobby-chat-container").addClass("col-8");

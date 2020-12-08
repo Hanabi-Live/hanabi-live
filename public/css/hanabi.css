@@ -283,7 +283,7 @@ table td {
 
 #lobby {
   margin-top: 1.5em;
-  margin-bottom: 1.5em;
+  margin-bottom: 0.5em;
   /* Left and right margins are handled on the rows in "alpha.css" */
   height: calc(100% - 3em); /* The header is 3em */
 }
@@ -910,42 +910,164 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /*
-  Header
+  Tables headers
+*/
+table th {
+  padding: 0 0.75em 0.25em 0.75em;
+  font-size: 0.8em;
+}
+
+/*
+  Media queries for lobby redesign on smaller screens
 */
 @media screen and (max-width: 840px) {
-    #header {
+  /* override alpha.css default behavior */
+  #header {
     display: block;
   }
 
+  /* hide just the logo text */
   #logo-text {
+    display: none;
+  }
+
+  /* hide column '# of Players' */
+  #lobby-games-table th:nth-child(2),
+  #lobby-games-table td:nth-child(2) {
     display: none;
   }
 }
 @media screen and (max-width: 670px) {
+  /* hide 'stats' nav menu */
   #header nav > ul > li a#nav-buttons-lobby-stats {
-    display: none!important;
+    display: none;
+  }
+
+  /* hide column 'Name' */
+  #lobby-games-table th:nth-child(1),
+  #lobby-games-table td:nth-child(1) {
+    display: none;
+  }
+
+  /* fix border of column 'Variant' */
+  #lobby-games-table th:nth-child(3),
+  #lobby-games-table td:nth-child(3) {
+    border-left-width: 1px;
   }
 }
+
 @media screen and (max-width: 620px) {
+  /* hide 'resources nav menu */
   #header nav > ul > li a#nav-buttons-lobby-resources {
-    display: none!important;
+    display: none;
+  }
+
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(7),
+  #lobby-games-table td:nth-child(7) {
+    display: none;
   }
 }
+
 @media screen and (max-width: 530px) {
+  /* make nav items in between space smaller */
   #header nav > ul > li a:not(.button) {
     padding: 0 0.5em;
   }
+
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(4),
+  #lobby-games-table td:nth-child(4) {
+    display: none;
+  }
 }
 @media screen and (max-width: 410px) {
+  /* hide 'history' nav menu */
   #header nav > ul > li a#nav-buttons-lobby-history {
     display: none;
   }
   #header nav > ul > li a:not(.button) {
     padding: 0 0.3em;
   }
+  /* hide column 'Status' */
+  #lobby-games-table th:nth-child(5),
+  #lobby-games-table td:nth-child(5) {
+    display: none;
+  }
 }
 @media screen and (max-width: 360px) {
+  /* hide 'help' nav menu */
   #header nav > ul > li a#nav-buttons-lobby-help {
     display: none;
   }
+}
+
+/*
+  Small screen toggle buttons
+*/
+#lobby-small-screen-buttons {
+  margin-top: 1em;
+  height: 2em;
+  display: none;
+}
+#lobby-small-screen-buttons nav > ul {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+#lobby-small-screen-buttons nav > ul li:first-child {
+  padding-left: 0;
+}
+
+.only-on-narrow-screen {
+  display: none;
+}
+
+@media screen and (max-height: 530px), screen and (max-width: 620px) {
+  #lobby-top-half,
+  #lobby-bottom-half {
+    display: none;
+    height: calc(100% - 4em);
+  }
+  #lobby-separator {
+    display: none;
+  }
+  #lobby-top-half.toggle-active {
+    display: flex;
+  }
+  #lobby-bottom-half.toggle-active {
+    display: flex;
+  }
+  #lobby-small-screen-buttons {
+    display: block;
+  }
+  #lobby {
+    height: calc(100% - 1.25em); /* The header is 3em */
+  }
+}
+
+@media screen and (max-width: 620px) {
+  #lobby-users-table th:nth-child(2),
+  #lobby-users-table td:nth-child(2) {
+    display: none;
+  }
+  #small-screen-toggle-users-h3 {
+    display: none;
+  }
+}
+@media screen and (max-width: 520px) {
+  #narrow-screen-toggle-button-text, .narrow-screen-toggle {
+    display: none;
+  }
+  .only-on-narrow-screen {
+    display: inline;
+  }
+  .row > #lobby-chat-container {
+    width: 100%;
+  }
+}
+
+a.toggle-active {
+  background-color: rgb(68, 150, 68) !important;
 }

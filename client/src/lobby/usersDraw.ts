@@ -8,7 +8,7 @@ import Screen from "./types/Screen";
 import Status, { StatusText } from "./types/Status";
 
 export function draw(): void {
-  $("#lobby-users-num").text(globals.userMap.size);
+  $(".lobby-users-num").text(globals.userMap.size);
 
   const tbody = $("#lobby-users-table-tbody");
 
