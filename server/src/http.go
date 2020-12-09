@@ -8,6 +8,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth_gin"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
@@ -145,14 +147,12 @@ func httpInit() {
 	// The rate limiter is commented out for now to prevent bugs with Apple browsers
 	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
 	// problems
-	/*
-		if !isDev {
-			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-			limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
-			httpRouter.Use(limiterMiddleware)
-		}
-	*/
+	if !isDev {
+		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
+		httpRouter.Use(limiterMiddleware)
+	}
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
