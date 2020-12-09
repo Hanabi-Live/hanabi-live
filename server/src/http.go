@@ -8,8 +8,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/didip/tollbooth"
-	"github.com/didip/tollbooth_gin"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
@@ -143,12 +141,18 @@ func httpInit() {
 	// Thus, this does not impact the ability of a user to download CSS and image files all at once
 	// (However, we do not want to use the rate-limiter in development, since we might have multiple
 	// tabs open that are automatically-refreshing with webpack-dev-server)
-	if !isDev {
-		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
-		httpRouter.Use(limiterMiddleware)
-	}
+	//
+	// The rate limiter is commented out for now to prevent bugs with Apple browsers
+	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
+	// problems
+	/*
+		if !isDev {
+			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+			limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
+			httpRouter.Use(limiterMiddleware)
+		}
+	*/
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
