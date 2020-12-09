@@ -1,13 +1,13 @@
 package bestscore
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/util"
+	"github.com/Zamiell/hanabi-live/server/pkg/bitmask"
 )
 
 type BestScore struct {
-	NumPlayers int          `json:"numPlayers"`
-	Score      int          `json:"score"`
-	Modifier   util.Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
+	NumPlayers int             `json:"numPlayers"`
+	Score      int             `json:"score"`
+	Modifier   bitmask.Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
 
 	DeckPlays    bool `json:"deckPlays"`
 	EmptyClues   bool `json:"emptyClues"`

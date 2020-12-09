@@ -8,210 +8,129 @@ import (
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
-	"github.com/didip/tollbooth/v6"
-	sentrygin "github.com/getsentry/sentry-go/gin"
+	"github.com/Zamiell/hanabi-live/server/pkg/logger"
+	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/sessions"
+	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-contrib/gzip"
-	gsessions "github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	// The name supplied to the Gin session middleware can be any arbitrary string
-	HTTPSessionName    = "hanabi.sid"
-	HTTPSessionTimeout = 60 * 60 * 24 * 365 // 1 year in seconds
-)
-
 var (
+	// From the parent function
+	hLogger          *logger.Logger
+	hModels          *models.Models
+	hVariantsManager *variants.Manager
+	hSessionsManager *sessions.Manager
+	hProjectPath     string
+	hVersionPath     string
+
+	// Global variables used in Gin middleware
 	domain       string
 	useTLS       bool
-	GATrackingID string
+	gaTrackingID string
 	webpackPort  int
-
-	// HTTPClientWithTimeout is used for sending web requests to external sites,
-	// which is used in various middleware
-	// We don't want to use the default http.Client because it has no default timeout set
-	HTTPClientWithTimeout = &http.Client{ // nolint: exhaustivestruct
-		Timeout: constants.HTTPWriteTimeout,
-	}
 )
 
-func Start() {
-	envVariables := readEnvVariables()
+func Start(
+	logger *logger.Logger,
+	models *models.Models,
+	variantsManager *variants.Manager,
+	sessionsManager *sessions.Manager,
+	projectPath string,
+	versionPath string,
+	isDev bool,
+	usingSentry bool,
+) {
+	// Store references on global variables for convenience
+	hLogger = logger
+	hModels = models
+	hVariantsManager = variantsManager
+	hSessionsManager = sessionsManager
+	hProjectPath = projectPath
+	hVersionPath = versionPath
+
+	// Get environment variables and store some of them as global variables
+	// https://stackoverflow.com/questions/34046194
+	var envVars *envVars
+	if v, ok := readEnvVars(); !ok {
+		return
+	} else {
+		envVars = v
+	}
+	domain = envVars.domain
+	useTLS = len(envVars.tlsCertFile) > 0 && len(envVars.tlsKeyFile) > 0
+	gaTrackingID = envVars.gaTrackingID
+	webpackPort = envVars.webpackPort
 
 	// Create a new Gin HTTP router
 	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 
-	// Attach rate-limiting middleware from Tollbooth
-	// The limiter works per path request,
-	// meaning that a user can only request one specific path every X seconds
-	// Thus, this does not impact the ability of a user to download CSS and image files all at once
-	// (However, we do not want to use the rate-limiter in development, since we might have multiple
-	// tabs open that are automatically-refreshing with webpack-dev-server)
-	//
-	// The rate limiter is commented out for now to prevent bugs with Apple browsers
-	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
-	// problems
-	/*
-		if !isDev {
-			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-			limiterMiddleware := httpLimitHandler(limiter)
-			httpRouter.Use(limiterMiddleware)
-		}
-	*/
-
-	// Create a session store
-	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
-	options := gsessions.Options{ // nolint: exhaustivestruct
-		Path:   "/",                // The cookie should apply to the entire domain
-		MaxAge: HTTPSessionTimeout, // In seconds
-	}
-	if !isDev {
-		// Bind the cookie to this specific domain for security purposes
-		options.Domain = domain
-
-		// Only send the cookie over HTTPS:
-		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-		options.Secure = useTLS
-
-		// Mitigate XSS attacks:
-		// https://www.owasp.org/index.php/HttpOnly
-		options.HttpOnly = true
-
-		// Mitigate CSRF attacks:
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
-		options.SameSite = http.SameSiteStrictMode
-	}
-	httpSessionStore.Options(options)
-
-	// Attach the sessions middleware
-	httpRouter.Use(gsessions.Sessions(HTTPSessionName, httpSessionStore))
-
-	// Initialize Google Analytics
-	if len(GATrackingID) > 0 {
-		httpRouter.Use(httpGoogleAnalytics) // Attach the Google Analytics middleware
-	}
-
-	// Attach the Sentry middleware
-	if usingSentry {
-		httpRouter.Use(sentrygin.New(sentrygin.Options{ // nolint: exhaustivestruct
-			// https://github.com/getsentry/sentry-go/blob/master/gin/sentrygin.go
-			Repanic: true, // Recommended as per the documentation
-			Timeout: HTTPWriteTimeout,
-		}))
-		httpRouter.Use(sentryHTTPAttachMetadataMiddleware)
-	}
-
+	attachMiddleware(httpRouter, envVars, isDev, usingSentry)
 	attachPathHandlers(httpRouter)
 
 	if useTLS {
-		// Create the LetsEncrypt directory structure
-		// (CertBot will look for data in "/.well-known/acme-challenge/####")
-		letsEncryptPath := path.Join(projectPath, "letsencrypt")
-		if _, err := os.Stat(letsEncryptPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(letsEncryptPath, 0755); err != nil {
-				hLog.Fatal(
-					"Failed to create the \"%v\" directory: %v",
-					letsEncryptPath,
-					err,
-				)
-			}
-		}
-
-		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
-		if _, err := os.Stat(wellKnownPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(wellKnownPath, 0755); err != nil {
-				hLog.Fatalf("Failed to create the \"%v\" directory: %v", wellKnownPath, err)
-			}
-		}
-
-		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
-		if _, err := os.Stat(acmeChallengePath); os.IsNotExist(err) {
-			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				hLog.Fatalf(
-					"Failed to create the \"%v\" directory: %v",
-					acmeChallengePath,
-					err,
-				)
-			}
-		}
-
-		// We want all HTTP requests to be redirected to HTTPS
-		// (but make an exception for Let's Encrypt)
-		// The Gin router is using the default serve mux,
-		// so we need to create a new fresh one for the HTTP handler
-		HTTPServeMux := http.NewServeMux()
-		HTTPServeMux.Handle(
-			"/.well-known/acme-challenge/",
-			http.FileServer(http.FileSystem(http.Dir(letsEncryptPath))),
-		)
-		HTTPServeMux.Handle(
-			"/",
-			http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				http.Redirect(
-					w,
-					req,
-					"https://"+req.Host+req.URL.String(),
-					http.StatusMovedPermanently,
-				)
-			}),
-		)
+		createLetsEncryptDirs()
 
 		// ListenAndServe is blocking, so we need to start listening in a new goroutine
-		go func() {
-			// We need to create a new http.Server because the default one has no timeouts
-			// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-			HTTPRedirectServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
-				Addr:         "0.0.0.0:80", // Listen on all IP addresses
-				Handler:      HTTPServeMux,
-				ReadTimeout:  HTTPReadTimeout,
-				WriteTimeout: HTTPWriteTimeout,
-			}
-			if err := HTTPRedirectServerWithTimeout.ListenAndServe(); err != nil {
-				hLog.Fatalf("ListenAndServe failed to start on port 80: %v", err)
-			}
-			hLog.Fatal("ListenAndServe ended for port 80.")
-		}()
+		go httpRedirectToHTTPS()
+	}
+
+	// Listen on all IP addresses
+	addr := fmt.Sprintf("0.0.0.0:%v", envVars.port)
+
+	// Create an HTTP server
+	// We need to create a new http.Server because the default one has no timeouts
+	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
+	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
+		Addr:         addr,
+		Handler:      httpRouter,
+		ReadTimeout:  constants.HTTPReadTimeout,
+		WriteTimeout: constants.HTTPWriteTimeout,
 	}
 
 	// Start listening and serving requests (which is blocking)
-	// We need to create a new http.Server because the default one has no timeouts
-	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-	hLog.Infof("Listening on port: %v", port)
-	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
-		Addr:         fmt.Sprintf("0.0.0.0:%v", port), // Listen on all IP addresses
-		Handler:      httpRouter,
-		ReadTimeout:  HTTPReadTimeout,
-		WriteTimeout: HTTPWriteTimeout,
-	}
+	hLogger.Infof("Listening on port: %v", envVars.port)
 	if useTLS {
-		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {
-			hLog.Fatalf("ListenAndServeTLS failed: %v", err)
+		if err := HTTPServerWithTimeout.ListenAndServeTLS(
+			envVars.tlsCertFile,
+			envVars.tlsKeyFile,
+		); err != nil {
+			hLogger.Fatalf("ListenAndServeTLS failed: %v", err)
 		}
-		hLog.Fatal("ListenAndServeTLS ended prematurely.")
+		hLogger.Fatal("ListenAndServeTLS ended prematurely.")
 	} else {
 		if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
-			hLog.Fatalf("ListenAndServe failed: %v", err)
+			hLogger.Fatalf("ListenAndServe failed: %v", err)
 		}
-		hLog.Fatal("ListenAndServe ended prematurely.")
+		hLogger.Fatal("ListenAndServe ended prematurely.")
 	}
 }
 
-// readEnvVariables reads some specific environment variables relating to HTTP configuration
+type envVars struct {
+	domain        string
+	sessionSecret string
+	port          int
+	tlsCertFile   string
+	tlsKeyFile    string
+	gaTrackingID  string
+	webpackPort   int
+}
+
+// readEnvVars reads some specific environment variables relating to HTTP configuration
 // (they were loaded from the ".env" file in "main.go")
-func readEnvVariables() {
-	domain = os.Getenv("DOMAIN")
+func readEnvVars() (*envVars, bool) {
+	domain := os.Getenv("DOMAIN")
 	if len(domain) == 0 {
-		hLog.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
-		return
+		hLogger.Info("The \"DOMAIN\" environment variable is blank; aborting HTTP initialization.")
+		return nil, false
 	}
 
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	if len(sessionSecret) == 0 {
-		hLog.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initialization.")
-		return
+		hLogger.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initialization.")
+		return nil, false
 	}
 
 	portString := os.Getenv("PORT")
@@ -220,7 +139,7 @@ func readEnvVariables() {
 		port = 80
 	} else {
 		if v, err := strconv.Atoi(portString); err != nil {
-			hLog.Fatalf(
+			hLogger.Fatalf(
 				"Failed to convert the \"PORT\" environment variable of \"%v\" to an integer: %v",
 				portString,
 				err,
@@ -232,21 +151,27 @@ func readEnvVariables() {
 
 	tlsCertFile := os.Getenv("TLS_CERT_FILE")
 	tlsKeyFile := os.Getenv("TLS_KEY_FILE")
+	if len(tlsCertFile) == 0 && len(tlsKeyFile) != 0 {
+		hLogger.Fatal("You have an environment variable set for \"TLS_CERT_FILE\" but nothing set for \"TLS_KEY_FILE\". Both of these environment variables must be set in order for HTTPS to work properly.")
+	}
+	if len(tlsCertFile) != 0 && len(tlsKeyFile) == 0 {
+		hLogger.Fatal("You have an environment variable set for \"TLS_KEY_FILE\" but nothing set for \"TLS_CERT_FILE\". Both of these environment variables must be set in order for HTTPS to work properly.")
+	}
 	if len(tlsCertFile) != 0 && len(tlsKeyFile) != 0 {
-		useTLS = true
 		if port == 80 {
 			port = 443
 		}
 	}
 
-	GATrackingID = os.Getenv("GA_TRACKING_ID")
+	gaTrackingID := os.Getenv("GA_TRACKING_ID")
 
 	webpackPortString := os.Getenv("WEBPACK_DEV_SERVER_PORT")
+	var webpackPort int
 	if len(webpackPortString) == 0 {
 		webpackPort = 8080
 	} else {
 		if v, err := strconv.Atoi(webpackPortString); err != nil {
-			hLog.Fatalf(
+			hLogger.Fatalf(
 				"Failed to convert the \"WEBPACK_DEV_SERVER_PORT\" environment variable of \"%v\" to an integer: %v",
 				webpackPortString,
 				err,
@@ -255,87 +180,152 @@ func readEnvVariables() {
 			webpackPort = v
 		}
 	}
-}
 
-func attachMiddleware(httpRouter *gin.Engine) {
-
+	envVars := &envVars{
+		domain:        domain,
+		sessionSecret: sessionSecret,
+		port:          port,
+		tlsCertFile:   tlsCertFile,
+		tlsKeyFile:    tlsKeyFile,
+		gaTrackingID:  gaTrackingID,
+		webpackPort:   webpackPort,
+	}
+	return envVars, true
 }
 
 func attachPathHandlers(httpRouter *gin.Engine) {
 	// Path handlers (for cookies and logging in)
-	httpRouter.POST("/login", httpLogin)
-	httpRouter.GET("/logout", httpLogout)
-	httpRouter.GET("/test-cookie", httpTestCookie)
-	httpRouter.GET("/ws", httpWS)
+	httpRouter.POST("/login", login)
+	httpRouter.GET("/logout", logout)
+	httpRouter.GET("/test-cookie", testCookie)
+	httpRouter.GET("/ws", ws)
 
 	// Path handlers (for the main website)
-	httpRouter.GET("/", httpMain)
-	httpRouter.GET("/lobby", httpMain)
-	httpRouter.GET("/pre-game", httpMain)
-	httpRouter.GET("/pre-game/:tableID", httpMain)
-	httpRouter.GET("/game", httpMain)
-	httpRouter.GET("/game/:tableID", httpMain)
-	httpRouter.GET("/replay", httpMain)
-	httpRouter.GET("/replay/:databaseID", httpMain)
-	httpRouter.GET("/replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
-	httpRouter.GET("/shared-replay", httpMain)
-	httpRouter.GET("/shared-replay/:databaseID", httpMain)
-	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
-	httpRouter.GET("/create-table", httpMain)
+	httpRouter.GET("/", main)
+	httpRouter.GET("/lobby", main)
+	httpRouter.GET("/pre-game", main)
+	httpRouter.GET("/pre-game/:tableID", main)
+	httpRouter.GET("/game", main)
+	httpRouter.GET("/game/:tableID", main)
+	httpRouter.GET("/replay", main)
+	httpRouter.GET("/replay/:databaseID", main)
+	httpRouter.GET("/replay/:databaseID/:turnID", main) // Deprecated; needed for older links to work
+	httpRouter.GET("/shared-replay", main)
+	httpRouter.GET("/shared-replay/:databaseID", main)
+	httpRouter.GET("/shared-replay/:databaseID/:turnID", main) // Deprecated; needed for older links to work
+	httpRouter.GET("/create-table", main)
 
 	// Path handlers for other URLs
-	httpRouter.GET("/scores", httpScores)
-	httpRouter.GET("/scores/:player1", httpScores)
-	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
-	httpRouter.GET("/profile/:player1", httpScores)
-	httpRouter.GET("/history", httpHistory)
-	httpRouter.GET("/history/:player1", httpHistory)
-	httpRouter.GET("/history/:player1/:player2", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3/:player4", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
-	httpRouter.GET("/missing-scores", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player1/:numPlayers", httpMissingScores)
-	httpRouter.GET("/shared-missing-scores", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
-	httpRouter.GET("/tags", httpTags)
-	httpRouter.GET("/tags/:player1", httpTags)
-	httpRouter.GET("/seed", httpSeed)
-	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
-	httpRouter.GET("/stats", httpStats)
-	httpRouter.GET("/variant", httpVariant)
-	httpRouter.GET("/variant/:id", httpVariant)
-	httpRouter.GET("/tag", httpTag)
-	httpRouter.GET("/tag/:tag", httpTag)
-	httpRouter.GET("/videos", httpVideos)
-	httpRouter.GET("/password-reset", httpPasswordReset)
-	httpRouter.POST("/password-reset", httpPasswordResetPost)
+	httpRouter.GET("/scores", scores)
+	httpRouter.GET("/scores/:player1", scores)
+	httpRouter.GET("/profile", scores) // "/profile" is an alias for "/scores"
+	httpRouter.GET("/profile/:player1", scores)
+	httpRouter.GET("/history", history)
+	httpRouter.GET("/history/:player1", history)
+	httpRouter.GET("/history/:player1/:player2", history)
+	httpRouter.GET("/history/:player1/:player2/:player3", history)
+	httpRouter.GET("/history/:player1/:player2/:player3/:player4", history)
+	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", history)
+	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", history)
+	httpRouter.GET("/missing-scores", missingScores)
+	httpRouter.GET("/missing-scores/:player1", missingScores)
+	httpRouter.GET("/missing-scores/:player1/:numPlayers", missingScores)
+	httpRouter.GET("/shared-missing-scores", sharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1", sharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2", sharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3", sharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4", sharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5", sharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", sharedMissingScores)
+	httpRouter.GET("/tag", tag)
+	httpRouter.GET("/tag/:tag", tag)
+	httpRouter.GET("/tags", tags)
+	httpRouter.GET("/tags/:player1", tags)
+	httpRouter.GET("/seed", seed)
+	httpRouter.GET("/seed/:seed", seed) // Display all games played on a given seed
+	httpRouter.GET("/stats", stats)
+	httpRouter.GET("/variant", variant)
+	httpRouter.GET("/variant/:id", variant)
+	httpRouter.GET("/videos", videos)
+	httpRouter.GET("/password-reset", passwordReset)
+	httpRouter.POST("/password-reset", passwordResetPost)
 
 	// Path handlers for bots, developers, researchers, etc.
-	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:databaseID", httpExport)
+	httpRouter.GET("/export", export)
+	httpRouter.GET("/export/:databaseID", export)
 
 	// Other
-	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.ico"))
+	httpRouter.Static("/public", path.Join(hProjectPath, "public"))
+	httpRouter.StaticFile("/favicon.ico", path.Join(hProjectPath, "public", "img", "favicon.ico"))
 }
 
-// From: https://github.com/didip/tollbooth_gin/blob/master/tollbooth_gin.go
-func httpLimitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		httpError := tollbooth.LimitByRequest(lmt, c.Writer, c.Request)
-		if httpError != nil {
-			c.Data(httpError.StatusCode, lmt.GetMessageContentType(), []byte(httpError.Message))
-			c.Abort()
-		} else {
-			c.Next()
+func createLetsEncryptDirs() {
+	// Create the LetsEncrypt directory structure
+	// (CertBot will look for data in "/.well-known/acme-challenge/####")
+	letsEncryptPath := path.Join(hProjectPath, "letsencrypt")
+	if _, err := os.Stat(letsEncryptPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(letsEncryptPath, 0755); err != nil {
+			hLogger.Fatalf(
+				"Failed to create the \"%v\" directory: %v",
+				letsEncryptPath,
+				err,
+			)
 		}
 	}
+
+	wellKnownPath := path.Join(letsEncryptPath, ".well-known")
+	if _, err := os.Stat(wellKnownPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(wellKnownPath, 0755); err != nil {
+			hLogger.Fatalf("Failed to create the \"%v\" directory: %v", wellKnownPath, err)
+		}
+	}
+
+	acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
+	if _, err := os.Stat(acmeChallengePath); os.IsNotExist(err) {
+		if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
+			hLogger.Fatalf(
+				"Failed to create the \"%v\" directory: %v",
+				acmeChallengePath,
+				err,
+			)
+		}
+	}
+}
+
+// httpRedirectToHTTPS is meant to be run in a new goroutine
+func httpRedirectToHTTPS() {
+	// We want all HTTP requests to be redirected to HTTPS
+	// (but make an exception for Let's Encrypt)
+	// The Gin router is using the default serve mux,
+	// so we need to create a new fresh one for the HTTP handler
+	letsEncryptPath := path.Join(hProjectPath, "letsencrypt")
+	HTTPServeMux := http.NewServeMux()
+	HTTPServeMux.Handle(
+		"/.well-known/acme-challenge/",
+		http.FileServer(http.FileSystem(http.Dir(letsEncryptPath))),
+	)
+	HTTPServeMux.Handle(
+		"/",
+		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			http.Redirect(
+				w,
+				req,
+				"https://"+req.Host+req.URL.String(),
+				http.StatusMovedPermanently,
+			)
+		}),
+	)
+
+	// We need to create a new http.Server because the default one has no timeouts
+	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
+	HTTPRedirectServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
+		Addr:         "0.0.0.0:80", // Listen on all IP addresses
+		Handler:      HTTPServeMux,
+		ReadTimeout:  constants.HTTPReadTimeout,
+		WriteTimeout: constants.HTTPWriteTimeout,
+	}
+	if err := HTTPRedirectServerWithTimeout.ListenAndServe(); err != nil {
+		hLogger.Fatalf("ListenAndServe failed to start on port 80: %v", err)
+	}
+	hLogger.Fatal("ListenAndServe ended for port 80.")
 }

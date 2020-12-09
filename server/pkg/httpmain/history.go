@@ -16,7 +16,7 @@ func history(c *gin.Context) {
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	var playerNames []string
-	if v1, v2, ok := httpParsePlayerNames(c); !ok {
+	if v1, v2, ok := parsePlayerNames(c); !ok {
 		return
 	} else {
 		playerIDs = v1
@@ -25,8 +25,8 @@ func history(c *gin.Context) {
 
 	// Get the game IDs for this player (or set of players)
 	var gameIDs []int
-	if v, err := models.Games.GetGameIDsMultiUser(playerIDs); err != nil {
-		hLog.Errorf(
+	if v, err := hModels.Games.GetGameIDsMultiUser(c, playerIDs); err != nil {
+		hLogger.Errorf(
 			"Failed to get the game IDs for the player IDs of [%v]: %v",
 			strings.Join(playerNames, ", "),
 			err,
@@ -42,9 +42,9 @@ func history(c *gin.Context) {
 	}
 
 	// Get the games corresponding to these IDs
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		hLog.Errorf("Failed to get the games from the database: %v", err)
+	var gameHistoryList []*models.GameHistory
+	if v, err := hModels.Games.GetHistory(c, gameIDs); err != nil {
+		hLogger.Errorf("Failed to get the games from the database: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -68,5 +68,5 @@ func history(c *gin.Context) {
 	if len(playerNames) > 1 {
 		data.NamesTitle = fmt.Sprintf("Game History for [%v]", strings.Join(playerNames, ", "))
 	}
-	httpServeTemplate(w, data, "profile", "history")
+	serveTemplate(w, data, "profile", "history")
 }

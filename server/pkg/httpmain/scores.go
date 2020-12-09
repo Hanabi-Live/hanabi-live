@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/bestscore"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ type UserVariantStats struct {
 	Name          string
 	NumGames      int
 	MaxScore      int
-	BestScores    []*BestScore
+	BestScores    []*bestscore.BestScore
 	AverageScore  string
 	NumStrikeouts int
 	StrikeoutRate string
@@ -24,17 +25,17 @@ func scores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	var user User
-	if v, ok := httpParsePlayerName(c); !ok {
+	var user models.User
+	if v, ok := parsePlayerName(c); !ok {
 		return
 	} else {
 		user = v
 	}
 
 	// Get basic stats for this player
-	var profileStats Stats
-	if v, err := models.Games.GetProfileStats(user.ID); err != nil {
-		hLog.Errorf(
+	var profileStats models.Stats
+	if v, err := hModels.Games.GetProfileStats(c, user.ID); err != nil {
+		hLogger.Errorf(
 			"Failed to get the profile stats for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -66,8 +67,8 @@ func scores(c *gin.Context) {
 	// Only show their normal time if they have played one or more non-speedrun games
 	timePlayed := ""
 	if profileStats.TimePlayed != 0 {
-		if v, err := secondsToDurationString(profileStats.TimePlayed); err != nil {
-			hLog.Errorf("Failed to parse the duration of \"%v\" for %v: %v",
+		if v, err := util.SecondsToDurationString(profileStats.TimePlayed); err != nil {
+			hLogger.Errorf("Failed to parse the duration of \"%v\" for %v: %v",
 				profileStats.TimePlayed,
 				util.PrintUser(user.ID, user.Username),
 				err,
@@ -86,8 +87,8 @@ func scores(c *gin.Context) {
 	// Only show their speedrun time if they have played one or more speedrun games
 	timePlayedSpeedrun := ""
 	if profileStats.TimePlayedSpeedrun != 0 {
-		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {
-			hLog.Errorf(
+		if v, err := util.SecondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {
+			hLogger.Errorf(
 				"Failed to parse the duration of \"%v\" for %v: %v",
 				profileStats.TimePlayedSpeedrun,
 				util.PrintUser(user.ID, user.Username),
@@ -105,9 +106,9 @@ func scores(c *gin.Context) {
 	}
 
 	// Get all of the variant-specific stats for this player
-	var statsMap map[int]*UserStatsRow
-	if v, err := models.UserStats.GetAll(user.ID); err != nil {
-		hLog.Errorf(
+	var statsMap map[int]*models.UserStatsRow
+	if v, err := hModels.UserStats.GetAll(c, user.ID); err != nil {
+		hLogger.Errorf(
 			"Failed to get all of the variant-specific stats for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -122,8 +123,8 @@ func scores(c *gin.Context) {
 		statsMap = v
 	}
 
-	numMaxScores, numMaxScoresPerType, variantStatsList := httpGetVariantStatsList(statsMap)
-	percentageMaxScoresString, percentageMaxScoresPerType := httpGetPercentageMaxScores(
+	numMaxScores, numMaxScoresPerType, variantStatsList := getVariantStatsList(statsMap)
+	percentageMaxScoresString, percentageMaxScoresPerType := getPercentageMaxScores(
 		numMaxScores,
 		numMaxScoresPerType,
 	)
@@ -137,12 +138,12 @@ func scores(c *gin.Context) {
 		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,
 		NumMaxScores:               numMaxScores,
-		TotalMaxScores:             len(variantNames) * 5, // For 2 to 6 players
+		TotalMaxScores:             len(hVariantsManager.VariantNames) * 5, // For 2 to 6 players
 		PercentageMaxScores:        percentageMaxScoresString,
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 
 		VariantStats: variantStatsList,
 	}
-	httpServeTemplate(w, data, "profile", "scores")
+	serveTemplate(w, data, "profile", "scores")
 }

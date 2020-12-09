@@ -2,14 +2,19 @@ package httpmain
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/bestscore"
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
-func parsePlayerName(c *gin.Context) (User, bool) {
+func parsePlayerName(c *gin.Context) (models.User, bool) {
 	// Local variables
 	w := c.Writer
 
@@ -17,26 +22,27 @@ func parsePlayerName(c *gin.Context) (User, bool) {
 	player := c.Param("player1")
 	if player == "" {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
-		return User{}, false
+		return models.User{}, false
 	}
-	normalizedUsername := normalizeString(player)
+	normalizedUsername := util.NormalizeString(player)
 
 	// Check if the player exists
-	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
+	if exists, v, err := hModels.Users.GetUserFromNormalizedUsername(
+		c,
 		normalizedUsername,
 	); err != nil {
-		hLog.Errorf("Failed to check to see if player \"%v\" exists: %v", player, err)
+		hLogger.Errorf("Failed to check to see if player \"%v\" exists: %v", player, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
-		return User{}, false
+		return models.User{}, false
 	} else if exists {
 		return v, true
 	} else {
 		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
-		return User{}, false
+		return models.User{}, false
 	}
 }
 
@@ -63,8 +69,8 @@ func parsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 
 		// Check to see if this is a duplicate player
 		// e.g. "/history/Alice/Bob/bob"
-		normalizedUsername := normalizeString(player)
-		if stringInSlice(normalizedUsername, playerNormalizedNames) {
+		normalizedUsername := util.NormalizeString(player)
+		if util.StringInSlice(normalizedUsername, playerNormalizedNames) {
 			http.Error(
 				w,
 				"Error: You can not specify the same player twice.",
@@ -74,11 +80,12 @@ func parsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 		}
 
 		// Check if the player exists
-		var user User
-		if exists, v, err := models.Users.GetUserFromNormalizedUsername(
+		var user models.User
+		if exists, v, err := hModels.Users.GetUserFromNormalizedUsername(
+			c,
 			normalizedUsername,
 		); err != nil {
-			hLog.Errorf("Failed to check to see if player \"%v\" exists: %v", player, err)
+			hLogger.Errorf("Failed to check to see if player \"%v\" exists: %v", player, err)
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -104,15 +111,17 @@ func parsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 	return playerIDs, playerNames, true
 }
 
-func getVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*UserVariantStats) {
+func getVariantStatsList(
+	statsMap map[int]*models.UserStatsRow,
+) (int, []int, []*UserVariantStats) {
 	// Convert the map (statsMap) to a slice (variantStatsList),
 	// filling in any non-played variants with 0 values
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]*UserVariantStats, 0)
-	for _, name := range variantNames {
-		variant := variants[name]
-		maxScore := len(variant.Suits) * PointsPerSuit
+	for _, name := range hVariantsManager.VariantNames {
+		variant := hVariantsManager.Variants[name]
+		maxScore := len(variant.Suits) * constants.PointsPerSuit
 		variantStats := &UserVariantStats{ // nolint: exhaustivestruct
 			ID:       variant.ID,
 			Name:     name,
@@ -150,7 +159,7 @@ func getVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*UserVar
 		} else {
 			// They have not played any games in this particular variant,
 			// so initialize the stats object with zero values
-			variantStats.BestScores = NewBestScores()
+			variantStats.BestScores = bestscore.NewBestScores()
 			variantStats.AverageScore = "-"
 			variantStats.StrikeoutRate = "-"
 		}
@@ -162,18 +171,46 @@ func getVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*UserVar
 }
 
 func getPercentageMaxScores(numMaxScores int, numMaxScoresPerType []int) (string, []string) {
+	numVariants := len(hVariantsManager.VariantNames)
+
 	percentageMaxScoresPerType := make([]string, 0)
 	for _, maxScores := range numMaxScoresPerType {
-		percentage := float64(maxScores) / float64(len(variantNames)) * 100
+		percentage := float64(maxScores) / float64(numVariants) * 100
 		percentageString := fmt.Sprintf("%.1f", percentage)
 		percentageString = strings.TrimSuffix(percentageString, ".0")
 		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
 	}
 
-	percentageMaxScores := float64(numMaxScores) / float64(len(variantNames)*5) * 100
+	percentageMaxScores := float64(numMaxScores) / float64(numVariants*5) * 100
 	// (we multiply by 5 because there are max scores for 2 to 6 players)
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
 
 	return percentageMaxScoresString, percentageMaxScoresPerType
+}
+
+// getVersion will get the current version of the JavaScript client,
+// which is contained in the "version.txt" file
+// We want to read this file every time (as opposed to just reading it on server start) so that we
+// can update the client without having to restart the entire server
+func getVersion() int {
+	var fileContents []byte
+	if v, err := ioutil.ReadFile(hVersionPath); err != nil {
+		hLogger.Errorf("Failed to read the \"%v\" file: %v", hVersionPath, err)
+		return 0
+	} else {
+		fileContents = v
+	}
+	versionString := string(fileContents)
+	versionString = strings.TrimSpace(versionString)
+	if v, err := strconv.Atoi(versionString); err != nil {
+		hLogger.Errorf(
+			"Failed to convert \"%v\" (the contents of the version file) to an integer: %v",
+			versionString,
+			err,
+		)
+		return 0
+	} else {
+		return v
+	}
 }

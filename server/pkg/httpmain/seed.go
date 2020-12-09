@@ -21,8 +21,8 @@ func seed(c *gin.Context) {
 
 	// Get the list of game IDs played on this seed
 	var gameIDs []int
-	if v, err := models.Games.GetGameIDsSeed(seed); err != nil {
-		hLog.Errorf("Failed to get the game IDs from the database for seed \"%v\": %v", seed, err)
+	if v, err := hModels.Games.GetGameIDsSeed(c, seed); err != nil {
+		hLogger.Errorf("Failed to get the game IDs from the database for seed \"%v\": %v", seed, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -35,9 +35,9 @@ func seed(c *gin.Context) {
 
 	// Get the history for these game IDs
 	// (with a custom sort by score)
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
-		hLog.Errorf("Failed to get the history: %v", err)
+	var gameHistoryList []*models.GameHistory
+	if v, err := hModels.Games.GetHistoryCustomSort(c, gameIDs, "seed"); err != nil {
+		hLogger.Errorf("Failed to get the history: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -59,5 +59,5 @@ func seed(c *gin.Context) {
 		NamesTitle:   fmt.Sprintf("seed: %v", seed),
 		SpecificSeed: true,
 	}
-	httpServeTemplate(w, data, "profile", "history")
+	serveTemplate(w, data, "profile", "history")
 }

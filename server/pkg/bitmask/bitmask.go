@@ -1,4 +1,4 @@
-package util
+package bitmask
 
 // From: https://stackoverflow.com/questions/48050522/using-bitsets-in-golang-to-represent-capabilities
 type Bitmask uint32

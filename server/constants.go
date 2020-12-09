@@ -5,19 +5,12 @@ import (
 )
 
 const (
-	WebsiteName = "Hanab Live"
-
 	// The amount of time that players have to finish their game once
 	// a server shutdown or restart is initiated
 	ShutdownTimeout = time.Minute * 30
 
 	// The amount of time that a game is inactive before it is killed by the server
 	IdleGameTimeout = time.Minute * 30
-
-	// We want to validate string inputs for too many consecutive diacritics
-	// This prevents the attack where messages can have a lot of diacritics and cause overflow
-	// into sections above and below the text
-	ConsecutiveDiacriticsAllowed = 3
 
 	// Common error messages
 	DefaultErrorMsg = "Something went wrong. Please contact an administrator."

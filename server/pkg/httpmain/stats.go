@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/bestscore"
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +16,7 @@ type VariantStatsData struct {
 	ID            int
 	Name          string
 	NumGames      int
-	BestScores    []*BestScore
+	BestScores    []*bestscore.BestScore
 	NumMaxScores  int
 	MaxScoreRate  string
 	AverageScore  string
@@ -24,11 +27,12 @@ type VariantStatsData struct {
 func stats(c *gin.Context) {
 	// Local variables
 	w := c.Writer
+	numVariants := len(hVariantsManager.VariantNames)
 
 	// Get some global statistics
-	var globalStats Stats
-	if v, err := models.Games.GetGlobalStats(); err != nil {
-		hLog.Errorf("Failed to get the global stats: %v", err)
+	var globalStats models.Stats
+	if v, err := hModels.Games.GetGlobalStats(c); err != nil {
+		hLogger.Errorf("Failed to get the global stats: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -42,8 +46,8 @@ func stats(c *gin.Context) {
 	// It will only be valid if they have played a non-speedrun game
 	timePlayed := ""
 	if globalStats.TimePlayed != 0 {
-		if v, err := secondsToDurationString(globalStats.TimePlayed); err != nil {
-			hLog.Errorf(
+		if v, err := util.SecondsToDurationString(globalStats.TimePlayed); err != nil {
+			hLogger.Errorf(
 				"Failed to parse the duration of \"%v\" for the global stats: %v",
 				globalStats.TimePlayed,
 				err,
@@ -62,8 +66,8 @@ func stats(c *gin.Context) {
 	// It will only be valid if they have played a speedrun game
 	timePlayedSpeedrun := ""
 	if globalStats.TimePlayedSpeedrun != 0 {
-		if v, err := secondsToDurationString(globalStats.TimePlayedSpeedrun); err != nil {
-			hLog.Errorf(
+		if v, err := util.SecondsToDurationString(globalStats.TimePlayedSpeedrun); err != nil {
+			hLogger.Errorf(
 				"Failed to parse the duration of \"%v\" for the global stats: %v",
 				globalStats.TimePlayedSpeedrun,
 				err,
@@ -80,9 +84,9 @@ func stats(c *gin.Context) {
 	}
 
 	// Get the stats for all variants
-	var statsMap map[int]VariantStatsRow
-	if v, err := models.VariantStats.GetAll(); err != nil {
-		hLog.Errorf("Failed to get the stats for all the variants: %v", err)
+	var statsMap map[int]models.VariantStatsRow
+	if v, err := hModels.VariantStats.GetAll(c); err != nil {
+		hLogger.Errorf("Failed to get the stats for all the variants: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -98,9 +102,9 @@ func stats(c *gin.Context) {
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]*VariantStatsData, 0)
-	for _, name := range variantNames {
-		variant := variants[name]
-		maxScore := len(variant.Suits) * PointsPerSuit
+	for _, name := range hVariantsManager.VariantNames {
+		variant := hVariantsManager.Variants[name]
+		maxScore := len(variant.Suits) * constants.PointsPerSuit
 		variantStats := &VariantStatsData{ // nolint: exhaustivestruct
 			ID:   variant.ID,
 			Name: name,
@@ -141,7 +145,7 @@ func stats(c *gin.Context) {
 		} else {
 			// There have been no games played in this particular variant,
 			// so initialize the stats object with zero values
-			variantStats.BestScores = NewBestScores()
+			variantStats.BestScores = bestscore.NewBestScores()
 			variantStats.AverageScore = "-"
 			variantStats.StrikeoutRate = "-"
 		}
@@ -151,13 +155,13 @@ func stats(c *gin.Context) {
 
 	percentageMaxScoresPerType := make([]string, 0)
 	for _, maxScores := range numMaxScoresPerType {
-		percentage := float64(maxScores) / float64(len(variantNames)) * 100
+		percentage := float64(maxScores) / float64(numVariants) * 100
 		percentageString := fmt.Sprintf("%.1f", percentage)
 		percentageString = strings.TrimSuffix(percentageString, ".0")
 		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
 	}
 
-	percentageMaxScores := float64(numMaxScores) / float64(len(variantNames)*5) * 100
+	percentageMaxScores := float64(numMaxScores) / float64(numVariants*5) * 100
 	// (we multiply by 5 because there are max scores for 2 to 6 players)
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
@@ -169,7 +173,7 @@ func stats(c *gin.Context) {
 		TimePlayed:                 timePlayed,
 		NumGamesSpeedrun:           globalStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,
-		NumVariants:                len(variantNames),
+		NumVariants:                numVariants,
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 		NumMaxScores:               numMaxScores,
@@ -178,5 +182,5 @@ func stats(c *gin.Context) {
 		Variants: variantStatsList,
 	}
 
-	httpServeTemplate(w, data, "stats")
+	serveTemplate(w, data, "stats")
 }

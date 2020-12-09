@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +21,7 @@ func tag(c *gin.Context) {
 	}
 
 	// Sanitize, validate, and normalize the tag
-	if v, err := sanitizeTag(tag); err != nil {
+	if v, err := util.SanitizeTag(tag); err != nil {
 		// sanitizeTag returns a properly formatted error for the end-user
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -30,8 +31,8 @@ func tag(c *gin.Context) {
 
 	// Get the game IDs that match this tag
 	var gameIDs []int
-	if v, err := models.GameTags.SearchByTag(tag); err != nil {
-		hLog.Errorf("Failed to search for games matching a tag of \"%v\": %v", tag, err)
+	if v, err := hModels.GameTags.SearchByTag(c, tag); err != nil {
+		hLogger.Errorf("Failed to search for games matching a tag of \"%v\": %v", tag, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -43,9 +44,9 @@ func tag(c *gin.Context) {
 	}
 
 	// Get the games corresponding to these IDs
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		hLog.Errorf("Failed to get the games from the database: %v", err)
+	var gameHistoryList []*models.GameHistory
+	if v, err := hModels.Games.GetHistory(c, gameIDs); err != nil {
+		hLogger.Errorf("Failed to get the games from the database: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -61,5 +62,5 @@ func tag(c *gin.Context) {
 		NamesTitle: fmt.Sprintf("Games With a Tag of: %v", tag),
 		History:    gameHistoryList,
 	}
-	httpServeTemplate(w, data, "profile", "history")
+	serveTemplate(w, data, "profile", "history")
 }

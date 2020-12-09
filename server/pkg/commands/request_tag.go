@@ -2,17 +2,9 @@ package commands
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
-	"unicode"
-	"unicode/utf8"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
-)
-
-const (
-	MaxTagLength = 100
 )
 
 // commandTag is sent when a user types the "/tag [tag]" command
@@ -99,37 +91,4 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	msg := fmt.Sprintf("%v has added a game tag of: %v", s.Username, d.Msg)
 	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
-}
-
-func sanitizeTag(tag string) (string, error) {
-	// Validate tag length
-	if len(tag) > MaxTagLength {
-		err := fmt.Errorf("Tags cannot be longer than %v characters.", MaxTagLength)
-		return tag, err
-	}
-
-	// Check for valid UTF8
-	if !utf8.Valid([]byte(tag)) {
-		err := errors.New("Tags must contain valid UTF8 characters.")
-		return tag, err
-	}
-
-	// Replace any whitespace that is not a space with a space
-	tag2 := tag
-	for _, letter := range tag2 {
-		if unicode.IsSpace(letter) && letter != ' ' {
-			tag = strings.ReplaceAll(tag, string(letter), " ")
-		}
-	}
-
-	// Trim whitespace from both sides
-	tag = strings.TrimSpace(tag)
-
-	// Validate blank tags
-	if tag == "" {
-		err := errors.New("Tags cannot be blank.")
-		return tag, err
-	}
-
-	return normalizeString(tag), nil
 }

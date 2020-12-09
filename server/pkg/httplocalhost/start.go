@@ -27,7 +27,8 @@ func Start(logger *logger.Logger, models *models.Models) {
 	hLogger = logger
 	hModels = models
 
-	envVariables := readEnvVariables()
+	// Get environment variables
+	envVars := readEnvVars()
 
 	// Create a new Gin HTTP router
 	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
@@ -35,31 +36,33 @@ func Start(logger *logger.Logger, models *models.Models) {
 	attachPathHandlers(httpRouter)
 
 	// Listen only on the localhost interface
-	addr := fmt.Sprintf("127.0.0.1:%v", envVariables.port)
+	addr := fmt.Sprintf("127.0.0.1:%v", envVars.port)
 
-	// Create the HTTP server and start it
+	// Create an HTTP server
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-	hLogger.Infof("Listening on port: %v (for localhost)", envVariables.port)
 	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 		Addr:         addr,
 		Handler:      httpRouter,
 		ReadTimeout:  constants.HTTPReadTimeout,
 		WriteTimeout: constants.HTTPWriteTimeout,
 	}
+
+	// Start listening and serving requests (which is blocking)
+	hLogger.Infof("Listening on port: %v (for localhost)", envVars.port)
 	if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
 		hLogger.Fatalf("ListenAndServe failed (for localhost): %v", err)
 	}
 	hLogger.Fatal("ListenAndServe ended prematurely (for localhost).")
 }
 
-type envVariables struct {
+type envVars struct {
 	port int
 }
 
-// readEnvVariables reads some specific environment variables relating to HTTP configuration
+// readEnvVars reads some specific environment variables relating to HTTP configuration
 // (they were loaded from the ".env" file in "main.go")
-func readEnvVariables() *envVariables {
+func readEnvVars() *envVars {
 	portString := os.Getenv("LOCALHOST_PORT")
 	var port int
 	if len(portString) == 0 {
@@ -76,7 +79,7 @@ func readEnvVariables() *envVariables {
 		}
 	}
 
-	return &EnvVariables{
+	return &envVars{
 		port: port,
 	}
 }

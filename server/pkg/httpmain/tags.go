@@ -13,8 +13,8 @@ func tags(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	var user User
-	if v, ok := httpParsePlayerName(c); !ok {
+	var user models.User
+	if v, ok := parsePlayerName(c); !ok {
 		return
 	} else {
 		user = v
@@ -22,8 +22,8 @@ func tags(c *gin.Context) {
 
 	// Search through the database for tags matching this user ID
 	var gamesMap map[int][]string
-	if v, err := models.GameTags.SearchByUserID(user.ID); err != nil {
-		hLog.Errorf("Failed to search for games matching a user ID of %v: %v", user.ID, err)
+	if v, err := hModels.GameTags.SearchByUserID(c, user.ID); err != nil {
+		hLogger.Errorf("Failed to search for games matching a user ID of %v: %v", user.ID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -44,9 +44,9 @@ func tags(c *gin.Context) {
 	}
 
 	// Get the games corresponding to these IDs
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		hLog.Errorf("Failed to get the games from the database: %v", err)
+	var gameHistoryList []*models.GameHistory
+	if v, err := hModels.Games.GetHistory(c, gameIDs); err != nil {
+		hLogger.Errorf("Failed to get the games from the database: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -72,5 +72,5 @@ func tags(c *gin.Context) {
 		History: gameHistoryList,
 		Tags:    gamesMap,
 	}
-	httpServeTemplate(w, data, "profile", "history")
+	serveTemplate(w, data, "profile", "history")
 }

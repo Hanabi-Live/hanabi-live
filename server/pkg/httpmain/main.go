@@ -14,11 +14,11 @@ func main(c *gin.Context) {
 
 	// Check to see if we are currently recompiling the client
 	compiling := true
-	compilingPath := path.Join(projectPath, "compiling_client")
+	compilingPath := path.Join(hProjectPath, "compiling_client")
 	if _, err := os.Stat(compilingPath); os.IsNotExist(err) {
 		compiling = false
 	} else if err != nil {
-		hLog.Errorf("Failed to check if the \"%v\" file exists: %v", compilingPath, err)
+		hLogger.Errorf("Failed to check if the \"%v\" file exists: %v", compilingPath, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -41,5 +41,5 @@ func main(c *gin.Context) {
 		Compiling:   compiling,
 		WebpackPort: webpackPort,
 	}
-	httpServeTemplate(w, data, "main")
+	serveTemplate(w, data, "main")
 }

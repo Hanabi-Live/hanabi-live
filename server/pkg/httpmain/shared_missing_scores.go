@@ -17,7 +17,7 @@ func sharedMissingScores(c *gin.Context) {
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	var playerNames []string
-	if v1, v2, ok := httpParsePlayerNames(c); !ok {
+	if v1, v2, ok := parsePlayerNames(c); !ok {
 		return
 	} else {
 		playerIDs = v1
@@ -32,9 +32,9 @@ func sharedMissingScores(c *gin.Context) {
 	// Get all of the variant-specific stats for each player
 	variantStatsListList := make([][]*UserVariantStats, 0)
 	for i, playerID := range playerIDs {
-		var statsMap map[int]*UserStatsRow
-		if v, err := models.UserStats.GetAll(playerID); err != nil {
-			hLog.Errorf(
+		var statsMap map[int]*models.UserStatsRow
+		if v, err := hModels.UserStats.GetAll(c, playerID); err != nil {
+			hLogger.Errorf(
 				"Failed to get all of the variant-specific stats for %v: %v",
 				util.PrintUser(playerID, playerNames[i]),
 				err,
@@ -49,7 +49,7 @@ func sharedMissingScores(c *gin.Context) {
 			statsMap = v
 		}
 
-		_, _, variantStatsList := httpGetVariantStatsList(statsMap)
+		_, _, variantStatsList := getVariantStatsList(statsMap)
 		variantStatsListList = append(variantStatsListList, variantStatsList)
 	}
 
@@ -82,5 +82,5 @@ func sharedMissingScores(c *gin.Context) {
 
 		VariantStats: combinedVariantStatsList,
 	}
-	httpServeTemplate(w, data, "profile", "missing-scores")
+	serveTemplate(w, data, "profile", "missing-scores")
 }

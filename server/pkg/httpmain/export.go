@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/options"
+	"github.com/Zamiell/hanabi-live/server/pkg/table"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-gonic/gin"
 )
@@ -30,8 +32,8 @@ func export(c *gin.Context) {
 	}
 
 	// Check to see if the game exists in the database
-	if exists, err := hModels.Games.Exists(databaseID); err != nil {
-		hLog.Errorf("Failed to check to see if database ID %v exists: %v", databaseID, err)
+	if exists, err := hModels.Games.Exists(c, databaseID); err != nil {
+		hLogger.Errorf("Failed to check to see if database ID %v exists: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -44,9 +46,9 @@ func export(c *gin.Context) {
 	}
 
 	// Get the players from the database
-	var dbPlayers []*DBPlayer
-	if v, err := models.Games.GetPlayers(databaseID); err != nil {
-		hLog.Errorf("Failed to get the players from the database for game %v: %v", databaseID, err)
+	var dbPlayers []*models.DBPlayer
+	if v, err := hModels.Games.GetPlayers(c, databaseID); err != nil {
+		hLogger.Errorf("Failed to get the players from the database for game %v: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -64,9 +66,13 @@ func export(c *gin.Context) {
 	}
 
 	// Get the options from the database
-	var options *Options
-	if v, err := models.Games.GetOptions(databaseID); err != nil {
-		hLog.Errorf("Failed to get the options from the database for game %v: %v", databaseID, err)
+	var opts *options.Options
+	if v, err := hModels.Games.GetOptions(c, databaseID); err != nil {
+		hLogger.Errorf(
+			"Failed to get the options from the database for game %v: %v",
+			databaseID,
+			err,
+		)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -74,15 +80,15 @@ func export(c *gin.Context) {
 		)
 		return
 	} else {
-		options = v
+		opts = v
 	}
 
 	// Deck specification for a particular game are not stored in the database
 	// Thus, we must recalculate the deck order based on the seed of the game
 	// Get the seed from the database
 	var seed string
-	if v, err := models.Games.GetSeed(databaseID); err != nil {
-		hLog.Errorf("Failed to get the seed from the database for game %v: %v", databaseID, err)
+	if v, err := hModels.Games.GetSeed(c, databaseID); err != nil {
+		hLogger.Errorf("Failed to get the seed from the database for game %v: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -94,19 +100,26 @@ func export(c *gin.Context) {
 	}
 
 	// Make a deck and shuffle it
-	g := &Game{ // nolint: exhaustivestruct
-		Options:      options,
-		ExtraOptions: &ExtraOptions{},
+	g := &table.Game{ // nolint: exhaustivestruct
+		Options:      opts,
+		ExtraOptions: &options.ExtraOptions{},
 		Seed:         seed,
 	}
-	g.InitDeck()
-	setSeed(g.Seed) // Seed the random number generator
-	g.ShuffleDeck()
+	// TODO
+	/*
+		g.InitDeck()
+		setSeed(g.Seed) // Seed the random number generator
+		g.ShuffleDeck()
+	*/
 
 	// Get the actions from the database
-	var actions []*GameAction
-	if v, err := models.GameActions.GetAll(databaseID); err != nil {
-		hLog.Errorf("Failed to get the actions from the database for game %v: %v", databaseID, err)
+	var actions []*options.GameAction
+	if v, err := hModels.GameActions.GetAll(c, databaseID); err != nil {
+		hLogger.Errorf(
+			"Failed to get the actions from the database for game %v: %v",
+			databaseID,
+			err,
+		)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -117,12 +130,28 @@ func export(c *gin.Context) {
 		actions = v
 	}
 
+	// Get the variant
+	var variant *variants.Variant
+	if v, ok := hVariantsManager.Variants[g.Options.VariantName]; !ok {
+		hLogger.Errorf(
+			"Failed to get the variant of \"%v\" from the variants map.",
+			g.Options.VariantName,
+		)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		variant = v
+	}
+
 	// Get the notes from the database
-	variant := variants[g.Options.VariantName]
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
-	if v, err := models.Games.GetNotes(databaseID, len(dbPlayers), noteSize); err != nil {
-		hLog.Errorf("Failed to get the notes from the database for game %v: %v", databaseID, err)
+	if v, err := hModels.Games.GetNotes(c, databaseID, len(dbPlayers), noteSize); err != nil {
+		hLogger.Errorf("Failed to get the notes from the database for game %v: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -150,60 +179,62 @@ func export(c *gin.Context) {
 
 	// If this was a game with the "Detrimental Characters" option turned on,
 	// make a list of the characters for each player
-	var characterAssignments []*CharacterAssignment
-	if options.DetrimentalCharacters {
-		characterAssignments = getCharacterAssignmentsFromDBPlayers(dbPlayers)
+	var characterAssignments []*options.CharacterAssignment
+	if opts.DetrimentalCharacters {
+		// TODO
+		// characterAssignments = getCharacterAssignmentsFromDBPlayers(dbPlayers)
+		characterAssignments = make([]*options.CharacterAssignment, 0)
 	}
 
 	// Create JSON options
 	// (we want the pointers to remain nil if the option is the default value
 	// so that they are not added to the JSON object)
-	optionsJSON := &OptionsJSON{}
+	optionsJSON := &options.JSON{}
 	allDefaultOptions := true
-	if options.StartingPlayer != 0 {
-		optionsJSON.StartingPlayer = &options.StartingPlayer
+	if opts.StartingPlayer != 0 {
+		optionsJSON.StartingPlayer = &opts.StartingPlayer
 		allDefaultOptions = false
 	}
-	if options.VariantName != variants.DefaultVariantName {
+	if opts.VariantName != variants.DefaultVariantName {
 		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false
 	}
-	if options.Timed {
-		optionsJSON.Timed = &options.Timed
-		optionsJSON.TimeBase = &options.TimeBase
-		optionsJSON.TimePerTurn = &options.TimePerTurn
+	if opts.Timed {
+		optionsJSON.Timed = &opts.Timed
+		optionsJSON.TimeBase = &opts.TimeBase
+		optionsJSON.TimePerTurn = &opts.TimePerTurn
 		allDefaultOptions = false
 	}
-	if options.Speedrun {
-		optionsJSON.Speedrun = &options.Speedrun
+	if opts.Speedrun {
+		optionsJSON.Speedrun = &opts.Speedrun
 		allDefaultOptions = false
 	}
-	if options.CardCycle {
-		optionsJSON.CardCycle = &options.CardCycle
+	if opts.CardCycle {
+		optionsJSON.CardCycle = &opts.CardCycle
 		allDefaultOptions = false
 	}
-	if options.DeckPlays {
-		optionsJSON.DeckPlays = &options.DeckPlays
+	if opts.DeckPlays {
+		optionsJSON.DeckPlays = &opts.DeckPlays
 		allDefaultOptions = false
 	}
-	if options.EmptyClues {
-		optionsJSON.EmptyClues = &options.EmptyClues
+	if opts.EmptyClues {
+		optionsJSON.EmptyClues = &opts.EmptyClues
 		allDefaultOptions = false
 	}
-	if options.OneExtraCard {
-		optionsJSON.OneExtraCard = &options.OneExtraCard
+	if opts.OneExtraCard {
+		optionsJSON.OneExtraCard = &opts.OneExtraCard
 		allDefaultOptions = false
 	}
-	if options.OneLessCard {
-		optionsJSON.OneLessCard = &options.OneLessCard
+	if opts.OneLessCard {
+		optionsJSON.OneLessCard = &opts.OneLessCard
 		allDefaultOptions = false
 	}
-	if options.AllOrNothing {
-		optionsJSON.AllOrNothing = &options.AllOrNothing
+	if opts.AllOrNothing {
+		optionsJSON.AllOrNothing = &opts.AllOrNothing
 		allDefaultOptions = false
 	}
-	if options.DetrimentalCharacters {
-		optionsJSON.DetrimentalCharacters = &options.DetrimentalCharacters
+	if opts.DetrimentalCharacters {
+		optionsJSON.DetrimentalCharacters = &opts.DetrimentalCharacters
 		allDefaultOptions = false
 	}
 	if allDefaultOptions {
@@ -211,7 +242,7 @@ func export(c *gin.Context) {
 	}
 
 	// Create a JSON game
-	gameJSON := &GameJSON{
+	gameJSON := &table.GameJSON{
 		ID:         databaseID,
 		Players:    playerNames,
 		Deck:       g.CardIdentities,

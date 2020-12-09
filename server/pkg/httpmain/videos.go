@@ -9,5 +9,5 @@ func videos(c *gin.Context) {
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Videos",
 	}
-	httpServeTemplate(w, data, "informational", "videos")
+	serveTemplate(w, data, "informational", "videos")
 }

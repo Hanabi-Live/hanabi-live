@@ -1,8 +1,8 @@
 package options
 
 import (
+	"github.com/Zamiell/hanabi-live/server/pkg/bitmask"
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
-	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
@@ -110,8 +110,8 @@ func NewOptions() *Options {
 
 // GetModifier computes the integer modifier for the game options,
 // corresponding to the "ScoreModifier" constants in "constants.go"
-func (o *Options) GetModifier() util.Bitmask {
-	var modifier util.Bitmask
+func (o *Options) GetModifier() bitmask.Bitmask {
+	var modifier bitmask.Bitmask
 
 	if o.DeckPlays {
 		modifier.AddFlag(constants.ScoreModifierDeckPlays)

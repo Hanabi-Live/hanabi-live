@@ -3,7 +3,7 @@ package constants
 import (
 	"time"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/util"
+	"github.com/Zamiell/hanabi-live/server/pkg/bitmask"
 )
 
 // iota starts at 0 and counts upwards
@@ -75,7 +75,7 @@ const (
 // We need to keep track of these options when determining the maximum score for a particular
 // variant
 const (
-	ScoreModifierDeckPlays util.Bitmask = 1 << iota // e.g. 1, 2, 4, and so forth
+	ScoreModifierDeckPlays bitmask.Bitmask = 1 << iota // e.g. 1, 2, 4, and so forth
 	ScoreModifierEmptyClues
 	ScoreModifierOneExtraCard
 	ScoreModifierOneLessCard
@@ -83,6 +83,8 @@ const (
 )
 
 const (
+	WebsiteName = "Hanab Live"
+
 	// The maximum amount of clues (and the amount of clues that players start the game with)
 	MaxClueNum = 8
 
@@ -92,6 +94,14 @@ const (
 	// Currently, in all variants, you get 5 points per suit/stack,
 	// but this may not always be the case
 	PointsPerSuit = 5
+
+	// We want to validate string inputs for too many consecutive diacritics
+	// This prevents the attack where messages can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	ConsecutiveDiacriticsAllowed = 3
+
+	// Tags are user-generated strings that can be arbitrarily assigned to games
+	MaxTagLength = 100
 )
 
 const (

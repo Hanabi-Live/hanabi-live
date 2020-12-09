@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/alexedwards/argon2id"
@@ -51,9 +52,9 @@ func login(c *gin.Context) {
 
 	// Check to see if this username exists in the database
 	var exists bool
-	var user User
-	if v1, v2, err := models.Users.Get(data.Username); err != nil {
-		hLog.Errorf("Failed to get user \"%v\": %v", data.Username, err)
+	var user models.User
+	if v1, v2, err := hModels.Users.Get(c, data.Username); err != nil {
+		hLogger.Errorf("Failed to get user \"%v\": %v", data.Username, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -83,7 +84,7 @@ func login(c *gin.Context) {
 			// Create an Argon2id hash of the plain-text password
 			var passwordHash string
 			if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-				hLog.Errorf(
+				hLogger.Errorf(
 					"Failed to create a hash from the submitted password for %v: %v",
 					util.PrintUser(user.ID, user.Username),
 					err,
@@ -99,8 +100,8 @@ func login(c *gin.Context) {
 			}
 
 			// Update their password to the new Argon2 format
-			if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
-				hLog.Errorf(
+			if err := hModels.Users.UpdatePassword(c, user.ID, passwordHash); err != nil {
+				hLogger.Errorf(
 					"Failed to set the new hash for %v: %v",
 					util.PrintUser(user.ID, user.Username),
 					err,
@@ -115,7 +116,7 @@ func login(c *gin.Context) {
 		} else {
 			// Check to see if their password is correct
 			if !user.PasswordHash.Valid {
-				hLog.Errorf(
+				hLogger.Errorf(
 					"Failed to get the Argon2 hash from the database for %v.",
 					util.PrintUser(user.ID, user.Username),
 				)
@@ -130,7 +131,7 @@ func login(c *gin.Context) {
 				data.Password,
 				user.PasswordHash.String,
 			); err != nil {
-				hLog.Errorf(
+				hLogger.Errorf(
 					"Failed to compare the password to the Argon2 hash for %v: %v",
 					util.PrintUser(user.ID, user.Username),
 					err,
@@ -160,10 +161,11 @@ func login(c *gin.Context) {
 			)
 			return
 		}
-		if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
+		if normalizedExists, similarUsername, err := hModels.Users.NormalizedUsernameExists(
+			c,
 			data.NormalizedUsername,
 		); err != nil {
-			hLog.Errorf(
+			hLogger.Errorf(
 				"Failed to check for normalized password uniqueness for \"%v\": %v",
 				data.Username,
 				err,
@@ -189,7 +191,7 @@ func login(c *gin.Context) {
 		// Create an Argon2id hash of the plain-text password
 		var passwordHash string
 		if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-			hLog.Errorf(
+			hLogger.Errorf(
 				"Failed to create a hash from the submitted password for \"%v\": %v",
 				data.Username,
 				err,
@@ -205,13 +207,14 @@ func login(c *gin.Context) {
 		}
 
 		// Create the new user in the database
-		if v, err := models.Users.Insert(
+		if v, err := hModels.Users.Insert(
+			c,
 			data.Username,
 			data.NormalizedUsername,
 			passwordHash,
 			data.IP,
 		); err != nil {
-			hLog.Errorf("Failed to insert user \"%v\": %v", data.Username, err)
+			hLogger.Errorf("Failed to insert user \"%v\": %v", data.Username, err)
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -227,7 +230,7 @@ func login(c *gin.Context) {
 	session := gsessions.Default(c)
 	session.Set("userID", user.ID)
 	if err := session.Save(); err != nil {
-		hLog.Errorf(
+		hLogger.Errorf(
 			"Failed to write to the login cookie for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -242,7 +245,7 @@ func login(c *gin.Context) {
 
 	// Log the login request and give a "200 OK" HTTP code
 	// (returning a code is not actually necessary but Firefox will complain otherwise)
-	hLog.Infof(
+	hLogger.Infof(
 		"%v logged in from: %v",
 		util.PrintUserCapitalized(user.ID, user.Username),
 		data.IP,
@@ -261,7 +264,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		hLog.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
+		hLogger.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -273,8 +276,8 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	}
 
 	// Check to see if their IP is banned
-	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		hLog.Errorf("Failed to check to see if the IP \"%v\" is banned: %v", ip, err)
+	if banned, err := hModels.BannedIPs.Check(c, ip); err != nil {
+		hLogger.Errorf("Failed to check to see if the IP \"%v\" is banned: %v", ip, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -282,7 +285,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		)
 		return nil, false
 	} else if banned {
-		hLog.Infof("IP \"%v\" tried to log in, but they are banned.", ip)
+		hLogger.Infof("IP \"%v\" tried to log in, but they are banned.", ip)
 		http.Error(
 			w,
 			"Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
@@ -294,7 +297,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	// Validate that the user sent the required POST values
 	username := c.PostForm("username")
 	if username == "" {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in, but they did not provide the \"username\" parameter.",
 			ip,
 		)
@@ -307,7 +310,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	}
 	password := c.PostForm("password")
 	if password == "" {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in, but they did not provide the \"password\" parameter.",
 			ip,
 		)
@@ -320,7 +323,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	}
 	version := c.PostForm("version")
 	if version == "" {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in, but they did not provide the \"version\" parameter.",
 			ip,
 		)
@@ -338,7 +341,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	// Validate that the username does not contain any whitespace
 	for _, letter := range username {
 		if unicode.IsSpace(letter) {
-			hLog.Infof(
+			hLogger.Infof(
 				"User from IP \"%v\" tried to log in with a username of \"%v\", but it contained whitespace.",
 				ip,
 				username,
@@ -354,7 +357,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Validate that the username is not excessively short
 	if len(username) < MinUsernameLength {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it is shorter than %v characters.",
 			ip,
 			username,
@@ -370,7 +373,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Validate that the username is not excessively long
 	if len(username) > MaxUsernameLength {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it is longer than %v characters.",
 			ip,
 			username,
@@ -387,7 +390,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	// Validate that the username does not have any special characters in it
 	// (other than underscores, hyphens, and periods)
 	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it has illegal special characters in it.",
 			ip,
 			username,
@@ -402,7 +405,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Validate that the username does not have any emojis in it
 	if match := emojiRegExp.FindStringSubmatch(username); match != nil {
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it has emojis in it.",
 			ip,
 			username,
@@ -417,18 +420,18 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Validate that the username does not contain an unreasonable amount of consecutive diacritics
 	// (accents)
-	if numConsecutiveDiacritics(username) > ConsecutiveDiacriticsAllowed {
-		hLog.Infof(
+	if util.NumConsecutiveDiacritics(username) > constants.ConsecutiveDiacriticsAllowed {
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it has %v or more consecutive diacritics in it.",
 			ip,
 			username,
-			ConsecutiveDiacriticsAllowed,
+			constants.ConsecutiveDiacriticsAllowed,
 		)
 		http.Error(
 			w,
 			fmt.Sprintf(
 				"Usernames cannot contain %v or more consecutive diacritics.",
-				ConsecutiveDiacriticsAllowed,
+				constants.ConsecutiveDiacriticsAllowed,
 			),
 			http.StatusUnauthorized,
 		)
@@ -436,8 +439,8 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	}
 
 	// Validate that the username is not reserved
-	normalizedUsername := normalizeString(username)
-	if normalizedUsername == normalizeString(WebsiteName) ||
+	normalizedUsername := util.NormalizeString(username)
+	if normalizedUsername == util.NormalizeString(constants.WebsiteName) ||
 		normalizedUsername == "hanab" ||
 		normalizedUsername == "hanabi" ||
 		normalizedUsername == "live" ||
@@ -446,7 +449,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		normalizedUsername == "hanabilive" ||
 		normalizedUsername == "nabilive" {
 
-		hLog.Infof(
+		hLogger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but that username is reserved.",
 			ip,
 			username,
@@ -465,7 +468,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	if version != "bot" {
 		var versionNum int
 		if v, err := strconv.Atoi(version); err != nil {
-			hLog.Infof(
+			hLogger.Infof(
 				"User from IP \"%v\" tried to log in with a username of \"%v\", but the submitted version is not an integer.",
 				ip,
 				username,
@@ -481,7 +484,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		}
 		currentVersion := getVersion()
 		if versionNum != currentVersion {
-			hLog.Infof(
+			hLogger.Infof(
 				"User from IP \"%v\" tried to log in with a username of \"%v\" and a version of \"%v\", but this is an old version. (The current version is \"%v\".)",
 				ip,
 				username,

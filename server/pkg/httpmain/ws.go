@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/sessions"
 	"github.com/Zamiell/hanabi-live/server/pkg/settings"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
@@ -39,19 +38,19 @@ func ws(c *gin.Context) {
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
 		msg := fmt.Sprintf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return
 	} else {
 		ip = v
 	}
 
 	// Check to see if their IP is banned
-	if banned, err := models.BannedIPs.Check(ip); err != nil {
+	if banned, err := hModels.BannedIPs.Check(c, ip); err != nil {
 		msg := fmt.Sprintf("Failed to check to see if the IP \"%v\" is banned: %v", ip, err)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return
 	} else if banned {
-		hLog.Infof("IP \"%v\" tried to establish a WebSocket connection, but they are banned.", ip)
+		hLogger.Infof("IP \"%v\" tried to establish a WebSocket connection, but they are banned.", ip)
 		http.Error(
 			w,
 			"Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
@@ -69,7 +68,7 @@ func ws(c *gin.Context) {
 			"Unauthorized WebSocket handshake detected from \"%v\". This likely means that their cookie has expired.",
 			ip,
 		)
-		httpWSDeny(c, msg)
+		wsDeny(c, msg)
 		return
 	} else {
 		userID = v.(int)
@@ -77,7 +76,7 @@ func ws(c *gin.Context) {
 
 	// Get the username for this user
 	var username string
-	if v, err := models.Users.GetUsername(userID); errors.Is(err, pgx.ErrNoRows) {
+	if v, err := hModels.Users.GetUsername(c, userID); errors.Is(err, pgx.ErrNoRows) {
 		// The user has a cookie for a user that does not exist in the database
 		// (e.g. an "orphaned" user)
 		// This can happen in situations where a test user was deleted, for example
@@ -87,7 +86,7 @@ func ws(c *gin.Context) {
 			ip,
 			userID,
 		)
-		httpWSDeny(c, msg)
+		wsDeny(c, msg)
 		return
 	} else if err != nil {
 		msg := fmt.Sprintf(
@@ -95,13 +94,13 @@ func ws(c *gin.Context) {
 			userID,
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return
 	} else {
 		username = v
 	}
 
-	httpWSNew(c, userID, username, ip)
+	wsNew(c, userID, username, ip)
 }
 
 func wsNew(c *gin.Context, userID int, username string, ip string) {
@@ -117,7 +116,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return
 	} else {
 		conn = v
@@ -125,7 +124,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 	defer conn.Close(websocket.StatusInternalError, "")
 
 	// Next, perform all the expensive database calls to gather the data we need
-	data := httpWSGetData(c, conn, userID, username, ip)
+	data := wsGetData(c, conn, userID, username, ip)
 	if data == nil {
 		return
 	}
@@ -133,7 +132,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 	// Send a request to add the WebSocket connection to the sessions manager
 	// (which listens on a separate goroutine)
 	// This will block until an error is received from the channel
-	err := sessionsManager.NewSession(data)
+	err := hSessionsManager.NewSession(data)
 	if errors.Is(err, context.Canceled) ||
 		websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
@@ -141,7 +140,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 		// The WebSocket connection was closed in a normal/expected way
 		return
 	} else if err != nil {
-		hLog.Errorf(
+		hLogger.Errorf(
 			"The WebSocket connection for %v encountered an unknown error: %v",
 			util.PrintUser(userID, username),
 			err,
@@ -162,13 +161,13 @@ func wsGetData(
 	// ----
 
 	// Update the database with "datetime_last_login" and "last_ip"
-	if err := models.Users.Update(userID, ip); err != nil {
+	if err := hModels.Users.Update(c, userID, ip); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to set \"datetime_last_login\" and \"last_ip\" for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	}
 
@@ -178,13 +177,13 @@ func wsGetData(
 
 	// Check to see if their IP is muted
 	var muted bool
-	if v, err := models.MutedIPs.Check(ip); err != nil {
+	if v, err := hModels.MutedIPs.Check(c, ip); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to check to see if the IP \"%v\" is muted: %v",
 			ip,
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		muted = v
@@ -192,13 +191,13 @@ func wsGetData(
 
 	// Get their friends
 	var friends map[int]struct{}
-	if v, err := models.UserFriends.GetMap(userID); err != nil {
+	if v, err := hModels.UserFriends.GetMap(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the friends map for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		friends = v
@@ -206,13 +205,13 @@ func wsGetData(
 
 	// Get their reverse friends
 	var reverseFriends map[int]struct{}
-	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
+	if v, err := hModels.UserReverseFriends.GetMap(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the reverse friends map for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		reverseFriends = v
@@ -220,13 +219,13 @@ func wsGetData(
 
 	// Get whether or not they are a member of the Hyphen-ated group
 	var hyphenated bool
-	if v, err := models.UserSettings.IsHyphenated(userID); err != nil {
+	if v, err := hModels.UserSettings.IsHyphenated(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the Hyphen-ated setting for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		hyphenated = v
@@ -238,13 +237,13 @@ func wsGetData(
 
 	// Get their join date from the database
 	var datetimeCreated time.Time
-	if v, err := models.Users.GetDatetimeCreated(userID); err != nil {
+	if v, err := hModels.Users.GetDatetimeCreated(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the join date for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		datetimeCreated = v
@@ -253,13 +252,13 @@ func wsGetData(
 
 	// Get their total number of games played from the database
 	var totalGames int
-	if v, err := models.Games.GetUserNumGames(userID, true); err != nil {
+	if v, err := hModels.Games.GetUserNumGames(c, userID, true); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the number of games played for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		totalGames = v
@@ -267,13 +266,13 @@ func wsGetData(
 
 	// Get their settings from the database
 	var settings settings.Settings
-	if v, err := models.UserSettings.Get(userID); err != nil {
+	if v, err := hModels.UserSettings.Get(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the settings for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		settings = v
@@ -281,13 +280,13 @@ func wsGetData(
 
 	// Get their friends from the database
 	var friendsList []string
-	if v, err := models.UserFriends.GetAllUsernames(userID); err != nil {
+	if v, err := hModels.UserFriends.GetAllUsernames(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the friends for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		httpWSError(c, msg)
+		wsError(c, msg)
 		return nil
 	} else {
 		friendsList = v
@@ -299,14 +298,18 @@ func wsGetData(
 
 	// We must acquire the tables lock before calling the below functions
 	// TODO USE TABLE MANAGER
-	tables.RLock()
-	defer tables.RUnlock()
+	/*
+		tables.RLock()
+		defer tables.RUnlock()
 
-	playingAtTables := tables.GetTablesUserPlaying(userID)
+		playingAtTables := tables.GetTablesUserPlaying(userID)
+		disconSpectatingTable := uint64(0)
+		if tableID, ok := tables.GetDisconSpectatingTable(userID); ok {
+			disconSpectatingTable = tableID
+		}
+	*/
+	playingAtTables := make([]uint64, 0)
 	disconSpectatingTable := uint64(0)
-	if tableID, ok := tables.GetDisconSpectatingTable(userID); ok {
-		disconSpectatingTable = tableID
-	}
 
 	return &sessions.NewSessionData{
 		Ctx:  c,
@@ -334,7 +337,7 @@ func wsError(c *gin.Context, msg string) {
 	// Local variables
 	w := c.Writer
 
-	hLog.Error(msg)
+	hLogger.Error(msg)
 	http.Error(
 		w,
 		http.StatusText(http.StatusInternalServerError),
@@ -347,7 +350,7 @@ func wsDeny(c *gin.Context, msg string) {
 	// Local variables
 	w := c.Writer
 
-	hLog.Info(msg)
+	hLogger.Info(msg)
 	http.Error(
 		w,
 		http.StatusText(http.StatusUnauthorized),

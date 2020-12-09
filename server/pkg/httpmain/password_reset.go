@@ -12,7 +12,7 @@ func passwordReset(c *gin.Context) {
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Password Reset",
 	}
-	httpServeTemplate(w, data, "informational", "password-reset")
+	serveTemplate(w, data, "informational", "password-reset")
 }
 
 func passwordResetPost(c *gin.Context) {
@@ -29,7 +29,7 @@ func passwordResetPost(c *gin.Context) {
 	// Hash it with Argon2id
 	var hash string
 	if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
-		hLog.Errorf(
+		hLogger.Errorf(
 			"Failed to create a hash from the submitted password (in the password reset form): %v",
 			err,
 		)

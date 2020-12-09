@@ -13,8 +13,8 @@ func missingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	var user User
-	if v, ok := httpParsePlayerName(c); !ok {
+	var user models.User
+	if v, ok := parsePlayerName(c); !ok {
 		return
 	} else {
 		user = v
@@ -33,9 +33,9 @@ func missingScores(c *gin.Context) {
 	}
 
 	// Get all of the variant-specific stats for this player
-	var statsMap map[int]*UserStatsRow
-	if v, err := models.UserStats.GetAll(user.ID); err != nil {
-		hLog.Errorf(
+	var statsMap map[int]*models.UserStatsRow
+	if v, err := hModels.UserStats.GetAll(c, user.ID); err != nil {
+		hLogger.Errorf(
 			"Failed to get all of the variant-specific stats for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -50,8 +50,8 @@ func missingScores(c *gin.Context) {
 		statsMap = v
 	}
 
-	numMaxScores, numMaxScoresPerType, variantStatsList := httpGetVariantStatsList(statsMap)
-	percentageMaxScoresString, percentageMaxScoresPerType := httpGetPercentageMaxScores(
+	numMaxScores, numMaxScoresPerType, variantStatsList := getVariantStatsList(statsMap)
+	percentageMaxScoresString, percentageMaxScoresPerType := getPercentageMaxScores(
 		numMaxScores,
 		numMaxScoresPerType,
 	)
@@ -68,5 +68,5 @@ func missingScores(c *gin.Context) {
 
 		VariantStats: variantStatsList,
 	}
-	httpServeTemplate(w, data, "profile", "missing-scores")
+	serveTemplate(w, data, "profile", "missing-scores")
 }

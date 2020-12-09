@@ -4,9 +4,12 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 	"text/template"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/sentry"
 )
 
 type TemplateData struct {
@@ -23,7 +26,7 @@ type TemplateData struct {
 	NamesTitle string
 
 	// History
-	History      []*GameHistory
+	History      []*models.GameHistory
 	SpecificSeed bool
 	Tags         map[int][]string
 
@@ -53,7 +56,7 @@ type TemplateData struct {
 	AverageScore  string
 	NumStrikeouts int
 	StrikeoutRate string
-	RecentGames   []*GameHistory
+	RecentGames   []*models.GameHistory
 }
 
 // serveTemplate combines a standard HTML header with the body for a specific page
@@ -63,7 +66,7 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 	// or else the page will be downloaded by the browser as "download.gz"
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	viewsPath := path.Join(projectPath, "server", "src", "views")
+	viewsPath := path.Join(hProjectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
 
@@ -74,7 +77,7 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 
 	// Ensure that the layout file exists
 	if _, err := os.Stat(layoutPath); os.IsNotExist(err) {
-		hLog.Error("The layout template does not exist.")
+		hLogger.Error("The layout template does not exist.")
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -103,7 +106,7 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 	if v, err := template.New("template").Funcs(template.FuncMap{
 		"formatDate": formatDate,
 	}).ParseFiles(templateName...); err != nil {
-		hLog.Errorf("Failed to create the template: %v", err)
+		hLogger.Errorf("Failed to create the template: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -115,15 +118,15 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 	}
 
 	// Add extra data that should be the same for every page request
-	data.WebsiteName = WebsiteName
+	data.WebsiteName = constants.WebsiteName
 	data.Version = getVersion()
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
-		if isCommonHTTPError(err.Error()) {
-			hLog.Infof("Ordinary error when executing the template: %v", err)
+		if sentry.IsCommonHTTPError(err.Error()) {
+			hLogger.Infof("Ordinary error when executing the template: %v", err)
 		} else {
-			hLog.Errorf("Failed to execute the template: %v", err)
+			hLogger.Errorf("Failed to execute the template: %v", err)
 		}
 		http.Error(
 			w,
@@ -135,16 +138,4 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 
 func formatDate(date time.Time) string {
 	return date.Format("2006-01-02 &mdash; 15:04:05 MST")
-}
-
-// isCommonHTTPError checks for some errors that are common and expected
-// (e.g. the user presses the "Stop" button while the template is executing)
-func isCommonHTTPError(errorMsg string) bool {
-	for _, commonHTTPError := range commonHTTPErrors {
-		if strings.HasSuffix(errorMsg, commonHTTPError) {
-			return true
-		}
-	}
-
-	return false
 }
