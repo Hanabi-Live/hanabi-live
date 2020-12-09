@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/didip/tollbooth/v6"
-	"github.com/didip/tollbooth_gin"
+	"github.com/didip/tollbooth/v6/limiter"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
@@ -150,7 +150,7 @@ func httpInit() {
 	if !isDev {
 		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
 		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
+		limiterMiddleware := httpLimitHandler(limiter)
 		httpRouter.Use(limiterMiddleware)
 	}
 
@@ -348,6 +348,19 @@ func httpInit() {
 			return
 		}
 		logger.Fatal("ListenAndServe ended prematurely.")
+	}
+}
+
+// From: https://github.com/didip/tollbooth_gin/blob/master/tollbooth_gin.go
+func httpLimitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		httpError := tollbooth.LimitByRequest(lmt, c.Writer, c.Request)
+		if httpError != nil {
+			c.Data(httpError.StatusCode, lmt.GetMessageContentType(), []byte(httpError.Message))
+			c.Abort()
+		} else {
+			c.Next()
+		}
 	}
 }
 
