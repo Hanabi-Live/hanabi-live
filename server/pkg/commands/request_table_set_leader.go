@@ -1,0 +1,114 @@
+package commands
+
+import (
+	"context"
+	"fmt"
+)
+
+type NewLeader struct {
+	UserID   int
+	Username string
+	Index    int
+}
+
+// commandTableSetLeader is sent when a user right-clicks on the crown
+// or types the "/setleader [username]" command
+//
+// Example data:
+// {
+//   tableID: 123,
+//   name: 'Alice,
+// }
+func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
+		return
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
+	}
+
+	if len(d.Name) == 0 {
+		s.Warning("You must specify the username to pass the lead to. (e.g. \"/setleader Alice\")")
+		return
+	}
+
+	if t.Replay && !t.Visible {
+		s.Warning("You cannot set a new leader in a solo replay.")
+		return
+	}
+
+	normalizedUsername := normalizeString(d.Name)
+
+	// Validate that the target is at the table
+	var newLeader *NewLeader
+	if t.Replay {
+		for _, sp := range t.Spectators {
+			if normalizeString(sp.Name) == normalizedUsername {
+				newLeader = &NewLeader{
+					UserID:   sp.UserID,
+					Username: sp.Name,
+					Index:    -1,
+				}
+				break
+			}
+		}
+	} else {
+		for i, p := range t.Players {
+			if normalizeString(p.Name) == normalizedUsername {
+				newLeader = &NewLeader{
+					UserID:   p.UserID,
+					Username: p.Name,
+					Index:    i,
+				}
+				break
+			}
+		}
+	}
+	if newLeader == nil {
+		var verb string
+		if t.Replay {
+			verb = "spectating the shared replay"
+		} else {
+			verb = "joined to this table"
+		}
+		s.Errorf("\"%v\" is not %v.", d.Name, verb)
+		return
+	}
+
+	// Validate that the target is not already the leader
+	if newLeader.UserID == t.OwnerID {
+		s.Warningf("\"%v\" is already the leader.", newLeader.Username)
+		return
+	}
+
+	tableSetLeader(ctx, s, d, t, newLeader)
+}
+
+func tableSetLeader(
+	ctx context.Context,
+	s *Session,
+	d *CommandData,
+	t *Table,
+	newLeader *NewLeader,
+) {
+	t.OwnerID = newLeader.UserID
+
+	if t.Replay {
+		t.NotifyReplayLeader()
+	} else {
+		if !t.Running {
+			// On the pregame screen, the leader should always be the leftmost player,
+			// so we need to swap elements in the players slice
+			playerIndex := t.GetPlayerIndexFromID(s.UserID)
+			t.Players[playerIndex], t.Players[newLeader.Index] = t.Players[newLeader.Index], t.Players[playerIndex]
+
+			// Re-send the "game" message that draws the pregame screen
+			// and enables/disables the "Start Game" button
+			t.NotifyPlayerChange()
+		}
+
+		msg := fmt.Sprintf("%v has passed table ownership to: %v", s.Username, newLeader.Username)
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+	}
+}

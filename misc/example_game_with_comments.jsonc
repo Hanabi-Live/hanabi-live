@@ -133,7 +133,7 @@
       "target": 1,
 
       // The reason for ending the game, corresponding to the "endCondition" value in "constants.go"
-      // https://github.com/Zamiell/hanabi-live/blob/master/server/src/constants.go
+      // https://github.com/Zamiell/hanabi-live/blob/master/server/constants.go
       // e.g. 3 corresponds to someone running out of time in a timed game,
       // 4 corresponds to a player manually terminating the game, etc.
       "value": 3

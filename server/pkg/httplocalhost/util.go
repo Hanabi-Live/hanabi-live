@@ -1,0 +1,90 @@
+package httplocalhost
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
+	"github.com/gin-gonic/gin"
+)
+
+func userAction(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	// Validate the username
+	username := c.PostForm("username")
+	if username == "" {
+		http.Error(w, "Error: You must specify a username.", http.StatusBadRequest)
+		return
+	}
+
+	// Check to see if this username exists in the database
+	var userID int
+	if exists, v, err := hModels.Users.Get(c, username); err != nil {
+		hLogger.Errorf("Failed to get user \"%v\": %v", username, err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else if !exists {
+		msg := fmt.Sprintf("User \"%v\" does not exist in the database.\n", username)
+		c.String(http.StatusOK, msg)
+		return
+	} else {
+		userID = v.ID
+	}
+
+	// Get the IP for this user
+	var lastIP string
+	if v, err := hModels.Users.GetLastIP(c, username); err != nil {
+		hLogger.Errorf(
+			"Failed to get the last IP from the database for %v: %v",
+			util.PrintUser(userID, username),
+			err,
+		)
+		return
+	} else {
+		lastIP = v
+	}
+
+	path := c.Request.URL.Path
+	if path == "/ban" {
+		ban(c, username, lastIP, userID)
+	} else if path == "/mute" {
+		mute(c, username, lastIP, userID)
+	} else if path == "/sendWarning" {
+		sendWarning(c, userID)
+	} else if path == "/sendError" {
+		sendError(c, userID)
+	} else {
+		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
+	}
+}
+
+func logoutUser(userID int) {
+	// TODO
+	/*
+		s, ok := sessions2.Get(userID)
+
+		if !ok {
+			hLog.Infof(
+				"Attempted to manually log out user ID %v, but they were not online.",
+				userID,
+			)
+			return
+		}
+
+		if err := s.ms.Close(); err != nil {
+			hLog.Errorf(
+				"Failed to manually close the WebSocket session for user ID %v: %v",
+				userID,
+				err,
+			)
+		} else {
+			hLog.Infof("Successfully terminated the WebSocket session for user ID: %v")
+		}
+	*/
+}

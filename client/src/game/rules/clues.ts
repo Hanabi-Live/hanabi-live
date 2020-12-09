@@ -58,7 +58,7 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 }
 
-// This mirrors the function "variantIsCardTouched()" in "variants.go"
+// This mirrors the function "TouchesCard()" in "touches_card.go"
 export function touchesCard(
   variant: Variant,
   clue: Clue,

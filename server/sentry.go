@@ -1,0 +1,106 @@
+package main
+
+import (
+	"net"
+	"net/http"
+	"os"
+	"strconv"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
+)
+
+func sentryInit() bool {
+	// We only want to report errors in production
+	if isDev {
+		return false
+	}
+
+	// Read some configuration values from environment variables
+	// (they were loaded from the ".env" file in "main.go")
+	sentryDSN := os.Getenv("SENTRY_DSN")
+	if len(sentryDSN) == 0 {
+		hLog.Info("The \"sentryDSN\" environment variable is blank; aborting Sentry initialization.")
+		return false
+	}
+
+	// Initialize Sentry
+	if err := sentry.Init(sentry.ClientOptions{ // nolint: exhaustivestruct
+		Dsn:          sentryDSN,
+		IgnoreErrors: commonHTTPErrors,
+		Release:      gitCommitOnStart,
+		HTTPClient:   HTTPClientWithTimeout,
+	}); err != nil {
+		hLog.Fatalf("Failed to initialize Sentry: %v", err)
+	}
+
+	return true
+}
+
+var commonHTTPErrors = []string{
+	"client disconnected",
+	"http2: stream closed",
+	"write: broken pipe",
+	"write: connection reset by peer",
+	"write: connection timed out",
+	"i/o timeout",
+}
+
+func sentryHTTPAttachMetadataMiddleware(c *gin.Context) {
+	if !usingSentry {
+		return
+	}
+
+	// Local variables
+	r := c.Request
+	w := c.Writer
+
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
+		hLog.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		ip = v
+	}
+
+	// If we encounter an error later on, we want metadata to be attached to the error message,
+	// which can be helpful for debugging (since we can ask the user how they caused the error)
+	sentry.ConfigureScope(func(scope *sentry.Scope) {
+		scope.SetTag("userID", "n/a")
+		scope.SetTag("username", "n/a")
+		scope.SetTag("ip", ip)
+		scope.SetTag("path", c.Request.URL.Path)
+	})
+}
+
+func sentryWebsocketMessageAttachMetadata(s *Session) {
+	if !usingSentry {
+		return
+	}
+
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(s.ms.Request.RemoteAddr); err != nil {
+		hLog.Errorf("Failed to parse the IP address from \"%v\": %v", s.ms.Request.RemoteAddr, err)
+		return
+	} else {
+		ip = v
+	}
+
+	// If we encounter an error later on, we want metadata to be attached to the error message,
+	// which can be helpful for debugging (since we can ask the user how they caused the error)
+	// We use "SetTags()" instead of "SetUser()" since tags are more easy to see in the
+	// Sentry GUI than users
+	sentry.ConfigureScope(func(scope *sentry.Scope) {
+		scope.SetTag("userID", strconv.Itoa(s.UserID))
+		scope.SetTag("username", s.Username)
+		scope.SetTag("ip", ip)
+		scope.SetTag("path", "n/a")
+	})
+}

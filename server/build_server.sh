@@ -30,7 +30,7 @@ if [[ -z $CI ]]; then
 fi
 
 # Compile the Golang code
-cd "$DIR/src"
+cd "$DIR"
 if [[ $DOMAIN == "localhost" ]]; then
   # In development environments, turn on the Go race condition detector
   # https://blog.golang.org/race-detector
