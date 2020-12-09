@@ -6,7 +6,8 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20200802152012-2464efd3196b
 	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/bwmarrin/discordgo v0.22.0
-	github.com/didip/tollbooth v4.0.2+incompatible
+	github.com/didip/tollbooth v4.0.2+incompatible // indirect
+	github.com/didip/tollbooth/v6 v6.0.2
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/gabstv/melody v1.0.2
 	github.com/getsentry/sentry-go v0.9.0
