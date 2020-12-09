@@ -8,8 +8,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/didip/tollbooth/v6"
-	"github.com/didip/tollbooth/v6/limiter"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
@@ -147,12 +145,14 @@ func httpInit() {
 	// The rate limiter is commented out for now to prevent bugs with Apple browsers
 	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
 	// problems
-	if !isDev {
-		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-		limiterMiddleware := httpLimitHandler(limiter)
-		httpRouter.Use(limiterMiddleware)
-	}
+	/*
+		if !isDev {
+			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+			limiterMiddleware := httpLimitHandler(limiter)
+			httpRouter.Use(limiterMiddleware)
+		}
+	*/
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
@@ -351,6 +351,7 @@ func httpInit() {
 	}
 }
 
+/*
 // From: https://github.com/didip/tollbooth_gin/blob/master/tollbooth_gin.go
 func httpLimitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -363,6 +364,7 @@ func httpLimitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
 		}
 	}
 }
+*/
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
