@@ -61,7 +61,6 @@ let basicTextLabel: Konva.Text;
 let basicNumberLabel: Konva.Text;
 let actionLogValues: Values;
 let playAreaValues: Values;
-let playStackFarLeftX: number;
 let cardWidth;
 let cardHeight;
 let bottomLeftButtonValues: Values;
@@ -305,7 +304,6 @@ function drawPlayStacks() {
   playStackValues.w +=
     playStackValues.spacing * (globals.variant.suits.length - 1);
 
-  playStackFarLeftX = playStackValues.x;
   // Variants with less than 5 stacks will be left-aligned instead of centered
   // unless we manually adjust them
   if (
@@ -1530,11 +1528,11 @@ function drawTimers() {
   }
 
   const timerValues = {
-    x1: 0.155,
-    x2: 0.565,
-    y1: 0.592,
-    y2: 0.592,
-    w: 0.08,
+    x1: 0.145,
+    x2: 0.595,
+    y1: 0.645,
+    y2: 0.645,
+    w: 0.065,
     h: 0.051,
     fontSize: 0.03,
     cornerRadius: 0.05,
@@ -1646,9 +1644,9 @@ function drawTimers() {
 function drawClueArea() {
   // Put the clue area directly below the play stacks, with a little bit of spacing
   clueAreaValues = {
-    x: playStackFarLeftX,
+    x: actionLogValues.x,
     y: playAreaValues.y + playAreaValues.h! + 0.005,
-    w: 0.4,
+    w: actionLogValues.w!,
     h: 0.23,
   };
   if (globals.variant.showSuitNames) {
@@ -1668,7 +1666,6 @@ function drawClueArea() {
 
   // Player buttons
   const { numPlayers } = globals.options;
-  let playerButtonW = 0.08;
   const playerButtonH = 0.025;
   const playerButtonSpacing = 0.0075;
 
@@ -1682,17 +1679,15 @@ function drawClueArea() {
   });
   {
     const totalPlayerButtons = numPlayers - 1;
-    if (totalPlayerButtons >= 5) {
-      playerButtonW -= 0.01;
-    }
-    let totalPlayerWidth = playerButtonW * totalPlayerButtons;
-    totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
-    let playerX = clueAreaValues.w! * 0.5 - totalPlayerWidth * 0.5;
+    const totalPlayerW =
+      clueAreaValues.w! - playerButtonSpacing * (totalPlayerButtons - 1);
+    const playerButtonW = totalPlayerW / totalPlayerButtons;
+
     for (let i = 0; i < totalPlayerButtons; i++) {
       const j = (globals.metadata.ourPlayerIndex + i + 1) % numPlayers;
       const button = new PlayerButton(
         {
-          x: playerX * winW,
+          x: (playerButtonW + playerButtonSpacing) * i * winW,
           y: 0,
           width: playerButtonW * winW,
           height: playerButtonH * winH,
@@ -1704,7 +1699,6 @@ function drawClueArea() {
         (button as unknown) as Konva.Group,
       );
       globals.elements.clueTargetButtonGroup.addList(button);
-      playerX += playerButtonW + playerButtonSpacing;
     }
   }
   globals.elements.clueArea.add(
@@ -1724,18 +1718,17 @@ function drawClueArea() {
   });
   {
     const totalPlayerButtons = numPlayers;
-    if (totalPlayerButtons >= 5) {
-      playerButtonW -= 0.01;
-    }
-    // Player buttons are left justified in hypo mode, because the whole clue ui slides left
-    let playerX = 0;
+    const totalPlayerW =
+      clueAreaValues.w! - playerButtonSpacing * (totalPlayerButtons - 1);
+    const playerButtonW = totalPlayerW / totalPlayerButtons;
+
     for (let i = 0; i < totalPlayerButtons; i++) {
       // We change the calculation of j from the above code block because we want the buttons to
       // follow the order of players from top to bottom (in BGA mode)
       const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
       const button = new PlayerButton(
         {
-          x: playerX * winW,
+          x: (playerButtonW + playerButtonSpacing) * i * winW,
           y: 0,
           width: playerButtonW * winW,
           height: playerButtonH * winH,
@@ -1747,7 +1740,6 @@ function drawClueArea() {
         (button as unknown) as Konva.Group,
       );
       globals.elements.clueTargetButtonGroup2.addList(button);
-      playerX += playerButtonW + playerButtonSpacing;
     }
   }
   globals.elements.clueArea.add(

@@ -221,7 +221,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
     );
   }
 
-  const extra = 0.05;
+  const extra = 0.04;
   const totalWidth = replayButtonValues.w * 4 + replayButtonValues.spacing * 3;
   const bottomButtonValues = {
     y: 0.17,
