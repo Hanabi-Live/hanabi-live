@@ -411,13 +411,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         return morphedIdentity;
       }
 
-      const possibilities = possibleCardsFromNoteAndClues(
-        this.note,
-        this.state,
-      );
-      if (possibilities.length === 1) {
-        const [suitIndex, rank] = possibilities[0];
-        return { suitIndex, rank };
+      if (globals.state.playing) {
+        const possibilities = possibleCardsFromNoteAndClues(
+          this.note,
+          this.state,
+        );
+        if (possibilities.length === 1) {
+          const [suitIndex, rank] = possibilities[0];
+          return { suitIndex, rank };
+        }
       }
     }
 
@@ -437,9 +439,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     const possibleCardsWithoutObservation =
-      globals.state.replay.hypothetical === null
-        ? this.state.possibleCardsFromClues
-        : possibleCardsFromNoteAndClues(this.note, this.state);
+      globals.state.replay.hypothetical !== null && globals.state.playing
+        ? possibleCardsFromNoteAndClues(this.note, this.state)
+        : this.state.possibleCardsFromClues;
     return possibleCardsWithoutObservation.filter(
       ([suitIndexB, rankB]) =>
         this.state.possibleCardsFromObservation[suitIndexB][rankB] >= 1,
