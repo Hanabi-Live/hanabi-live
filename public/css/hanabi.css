@@ -466,6 +466,7 @@ table td {
   flex: 1 1 160px;
   margin: 0 0.5em 0.5em 0;
   max-width: 300px;
+  max-height: calc(100% - 1em);
 }
 
 .lobby-pregame-player-away {
