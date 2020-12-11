@@ -57,14 +57,14 @@ export function init(): void {
     window.location.href = `/logout${window.location.search}`;
   });
 
-  // Games bottom screen toggle button
+  // The "Games" bottom screen toggle button
   $("#lobby-toggle-show-tables").on("click", () => {
     $("#lobby-toggle-show-tables").addClass("toggle-active");
     $("#lobby-toggle-show-chat").removeClass("toggle-active");
     $("#lobby-toggle-show-game-chat").removeClass("toggle-active");
     $("#lobby-top-half").addClass("toggle-active");
     $("#lobby-bottom-half").removeClass("toggle-active");
-    // restore online users and chat for small screens
+    // Restore online users and chat for small screens
     $("#lobby-online-users").removeClass("pregame-hidden");
     $("#lobby-chat-container")
       .removeClass("pregame-chat-layout")
@@ -72,7 +72,7 @@ export function init(): void {
     $("#lobby-chat-pregame-container").removeClass("pregame-chat-layout");
   });
 
-  // "Chat & Users" bottom screen toggle button
+  // The "Chat & Users" bottom screen toggle button
   $("#lobby-toggle-show-chat").on("click", () => {
     $("#lobby-toggle-show-tables").removeClass("toggle-active");
     $("#lobby-toggle-show-chat").addClass("toggle-active");
@@ -80,13 +80,13 @@ export function init(): void {
     $("#lobby-bottom-half").addClass("toggle-active");
   });
 
-  // Pregame Chat bottom screen toggle button
+  // The "Pregame Chat" bottom screen toggle button
   $("#lobby-toggle-show-game-chat").on("click", () => {
     $("#lobby-toggle-show-tables").removeClass("toggle-active");
     $("#lobby-toggle-show-game-chat").addClass("toggle-active");
     $("#lobby-top-half").removeClass("toggle-active");
     $("#lobby-bottom-half").addClass("toggle-active");
-    // setup online users and chat for small screens
+    // Setup online users and chat for small screens
     $("#lobby-online-users").addClass("pregame-hidden");
     $("#lobby-chat-container")
       .addClass("pregame-chat-layout")
