@@ -913,6 +913,11 @@ input::-webkit-calendar-picker-indicator {
     align-items: stretch;
   }
 
+  /* Remove extra space from nav icons */
+  .nav-icon {
+    margin-right: 0;
+  }
+
   #profile-buttons li {
     padding-top: 1em;
   }
@@ -949,6 +954,11 @@ table th {
 /*
   Media queries for lobby redesign on smaller screens
 */
+@media screen and (max-width: 1084px) {
+  #logo-text {
+    /* display: none; */
+  }
+}
 @media screen and (max-width: 980px) {
   /* make nav items in between space smaller */
   #header nav > ul > li a:not(.button) {
