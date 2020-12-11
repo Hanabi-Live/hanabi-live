@@ -889,6 +889,21 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
+/* Tighter nav buttons before text disappears */
+@media screen and (max-width: 1086px) {
+  #header nav > ul > li .button {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+}
+
+/* Hide the logo text */
+@media screen and (max-width: 1064px) {
+  #logo-text {
+    display: none;
+  }
+}
+
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 400px) {
   #nav-buttons-pregame .nav-icon {
