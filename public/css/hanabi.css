@@ -1058,9 +1058,17 @@ table th {
   #lobby-bottom-half.toggle-active {
     display: flex;
   }
+
   #lobby-small-screen-buttons {
     display: block;
   }
+
+  #lobby-top-half.hidden,
+  #lobby-bottom-half.hidden,
+  #lobby-small-screen-buttons.hidden {
+    display: none;
+  }
+
   #lobby {
     height: calc(100% - 1.25em); /* The header is 3em */
   }
@@ -1092,7 +1100,7 @@ table th {
   }
 }
 @media screen and (max-width: 520px) {
-  #narrow-screen-toggle-button-text, .narrow-screen-toggle {
+  .narrow-screen-toggle {
     display: none;
   }
   .row > #lobby-chat-container {
