@@ -466,7 +466,8 @@ table td {
   flex: 1 1 160px;
   margin: 0 0.5em 0.5em 0;
   max-width: 300px;
-  max-height: calc(100% - 1em);
+  max-height: calc(100% - 0.5em);
+  overflow-y: auto;
 }
 
 .lobby-pregame-player-away {
@@ -1078,6 +1079,25 @@ table th {
   display: none;
 }
 
+@media screen and (max-height: 530px) {
+  /* Put pregame chat boxes side by side */
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout {
+    flex: 1 1 50%;
+    height: 100%;
+    padding-left: 2em!important;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* Put pregame chat boxes on top of each other */
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout {
+    flex: 1 1 100%;
+    height: calc((100% - 1em) / 2);
+  }
+}
+
 @media screen and (max-height: 530px), screen and (max-width: 620px) {
   #lobby-top-half,
   #lobby-bottom-half {
@@ -1113,12 +1133,6 @@ table th {
   }
   .pregame-lobby-chat {
     margin-bottom: 1em;
-  }
-  #lobby-chat-container.pregame-chat-layout,
-  #lobby-chat-pregame-container.pregame-chat-layout {
-    flex: 1 1 100%;
-    height: calc((100% - 1em) / 2);
-    padding-left: 2em!important;
   }
 }
 
