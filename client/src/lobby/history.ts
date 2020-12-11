@@ -44,9 +44,10 @@ export function show(): void {
   globals.currentScreen = Screen.History;
 
   $("#lobby-history").show();
-  $("#lobby-top-half").hide();
-  $("#lobby-separator").hide();
-  $("#lobby-bottom-half").hide();
+  $("#lobby-top-half").addClass("hidden");
+  $("#lobby-separator").addClass("hidden");
+  $("#lobby-bottom-half").addClass("hidden");
+  $("#lobby-small-screen-buttons").addClass("hidden");
 
   // Update the nav
   nav.show("history");
@@ -71,9 +72,10 @@ export function hide(): void {
 
   $("#lobby-history").hide();
   $("#lobby-history-other-scores").hide();
-  $("#lobby-top-half").show();
-  $("#lobby-separator").show();
-  $("#lobby-bottom-half").show();
+  $("#lobby-top-half").removeClass("hidden");
+  $("#lobby-separator").removeClass("hidden");
+  $("#lobby-bottom-half").removeClass("hidden");
+  $("#lobby-small-screen-buttons").removeClass("hidden");
   nav.show("lobby");
 }
 

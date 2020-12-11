@@ -18,6 +18,11 @@ export function show(): void {
   $("#lobby-pregame").show();
   $("#lobby-games").hide();
 
+  // Fix bottom nav buttons for small screens
+  $("#lobby-toggle-show-tables").text("Game");
+  $("#lobby-toggle-show-chat").addClass("hidden");
+  $("#lobby-toggle-show-game-chat").removeClass("hidden");
+
   // Add an extra chat box
   $("#lobby-chat-container").removeClass("col-8");
   $("#lobby-chat-container").addClass("col-4");
@@ -65,6 +70,12 @@ export function hide(): void {
   // Replace the list of current players with a list of the current games
   $("#lobby-pregame").hide();
   $("#lobby-games").show();
+
+  // Fix bottom nav buttons for small screens
+  $("#lobby-toggle-show-tables").text("Games");
+  $("#lobby-toggle-show-chat").removeClass("hidden");
+  $("#lobby-toggle-show-game-chat").addClass("hidden");
+  $("#lobby-toggle-show-tables").click();
 
   // Remove the extra chat box
   $("#lobby-chat-container").addClass("col-8");
@@ -313,15 +324,6 @@ function drawPlayerBox(i: number) {
     html += player.name;
   }
   html += "</strong></p>";
-
-  // There is not enough room to draw the full box for 6 players
-  if (numPlayers === 6) {
-    div.removeClass("col-2");
-    div.addClass("lobby-pregame-col");
-  } else {
-    div.addClass("col-2");
-    div.removeClass("lobby-pregame-col");
-  }
 
   // Calculate some stats
   const variantStats = player.stats.variant;

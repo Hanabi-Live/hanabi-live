@@ -6,88 +6,81 @@
   <header id="header">
     <h1 class="lobby-header">{{ template "logo" }}</h1>
     <nav id="nav">
-      <!-- We use <i> instead of the icon class because it results in a more compact button -->
       <ul id="nav-buttons-lobby" class="hidden">
         <li>
           <a
             id="nav-buttons-lobby-create-game"
-            class="button tooltip pri1"
+            class="button tooltip"
             data-tooltip-content="#create-game-tooltip"
           >
             <i class="fas fa-plus nav-icon"></i>
-            <span class="mobile-hide">
-              <span class="nav-hotkey-indicator">C</span>reate Game <!-- cspell:disable-line -->
-            </span>
+            <span class="hidden-xs"><span class="nav-hotkey-indicator">N</span>ew<span class="hidden-xl"> Game</span></span> <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
-          <a id="nav-buttons-lobby-history" class="button pri1">
+          <a id="nav-buttons-lobby-history" class="button hidden-xs">
             <i class="fas fa-history nav-icon"></i>
-            <span class="mobile-hide">
-              Show <span class="nav-hotkey-indicator">H</span>istory <!-- cspell:disable-line -->
-            </span>
+            <span class="hidden-xs"><span class="nav-hotkey-indicator">H</span>istory</span> <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-replay"
-            class="button tooltip pri1"
+            class="button tooltip"
             data-tooltip-content="#replay-tooltip"
           >
             <i class="fas fa-eye nav-icon"></i>
-            <span class="mobile-hide">
-              W<span class="nav-hotkey-indicator">a</span>tch Specific Replay
-            </span>
+            <span class="hidden-xs"><span class="hidden-xl">Watch </span>Repl<span class="nav-hotkey-indicator">a</span>y</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-stats"
-            class="button pri2"
+            class="button hidden-xs"
             href="/stats"
             target="_blank"
             rel="noopener noreferrer"
           >
             <i class="fas fa-chart-area nav-icon"></i>
-            <span class="mobile-hide">Stats</span>
+            <span class="hidden-md">Stats</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-resources"
-            class="button tooltip pri2"
+            class="button tooltip hidden-xs"
             data-tooltip-content="#resources-tooltip"
           >
             <i class="fas fa-link nav-icon"></i>
-            <span class="mobile-hide">Resources</span>
+            <span class="hidden-md">Resources</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-settings"
-            class="button tooltip pri2"
+            class="button tooltip"
             data-tooltip-content="#settings-tooltip"
           >
             <i class="fas fa-cog nav-icon"></i>
-            <span class="mobile-hide">Settings</span>
+            <span class="hidden-md">Settings</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-help"
-            class="button pri2 help-button"
+            class="button help-button hidden-xs"
             href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
             target="_blank"
             rel="noopener noreferrer"
           >
             <i class="fas fa-question-circle nav-icon"></i>
-            <span class="mobile-hide">Help</span>
+            <span class="hidden-md">Help</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-lobby-sign-out" class="button signout pri2">
+          <a id="nav-buttons-lobby-sign-out" class="button signout">
             <i class="fas fa-sign-out-alt nav-icon"></i>
-            <span class="mobile-hide">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
+            <span class="hidden-md">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
           </a>
         </li>
       </ul>
@@ -95,33 +88,37 @@
         <li>
           <a id="nav-buttons-pregame-start" class="button disabled">
             <i class="fas fa-play nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">S</span>tart Game</span>
+            <span class="hidden-xs">
+              <span class="nav-hotkey-indicator">S</span>tart<span class="hidden-md"> Game</span>
+            </span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-pregame-change-variant"
-            class="button disabled tooltip pri1"
+            class="button disabled tooltip"
             data-tooltip-content="#change-variant-tooltip"
           >
             <i class="fas fa-rainbow nav-icon"></i>
-            <span class="mobile-hide">
-              Change <span class="nav-hotkey-indicator">V</span>ariant <!-- cspell:disable-line -->
+            <span class="hidden-xs">
+              <span class="hidden-md">Change </span><span class="nav-hotkey-indicator">V</span>ariant <!-- cspell:disable-line -->
             </span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-pregame-unattend" class="button">
             <i class="fas fa-pause nav-icon"></i>
-            <span class="mobile-hide">
-              <span class="nav-hotkey-indicator">R</span>eturn to Lobby <!-- cspell:disable-line -->
+            <span class="hidden-xs">
+              <span class="hidden-md">Return to </span><span class="nav-hotkey-indicator">L</span>obby <!-- cspell:disable-line -->
             </span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-pregame-leave" class="button">
             <i class="fas fa-times nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">L</span>eave Game</span>
+            <span class="hidden-xs">
+              Leav<span class="nav-hotkey-indicator">e</span><span class="hidden-md"> Game</span><!-- cspell:disable-line -->
+            </span>
           </a>
         </li>
       </ul>
@@ -134,13 +131,13 @@
         <li>
           <a id="nav-buttons-history-show-friends" class="button">
             <i class="fas fa-heart nav-icon"></i>
-            <span class="mobile-hide">Show History of Friends</span>
+            <span class="hidden-sm">Show History of Friends</span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-history-return" class="button">
             <i class="fas fa-home nav-icon"></i>
-            <span class="mobile-hide">
+            <span class="hidden-sm">
               <span class="nav-hotkey-indicator">R</span>eturn to Lobby <!-- cspell:disable-line -->
             </span>
           </a>
@@ -573,12 +570,13 @@
 
   <!-- Lobby -->
   <div id="lobby" class="container max hidden">
-    <div id="lobby-top-half" class="row lobby-half">
+    <div id="lobby-top-half" class="row lobby-half toggle-active">
       <div class="col-12">
         <!-- The "games" table (all current games) -->
         <section id="lobby-games" class="box align-center-v">
           <h3 id="lobby-games-no">No current games.</h3>
           <div id="lobby-games-table-container" class="hidden lobby-table-container">
+            <h3 class="lobby-title">List of games</h3>
             <table id="lobby-games-table" class="alt">
               <thead>
                 <tr>
@@ -598,8 +596,8 @@
 
         <!-- The "pregame" table -->
         <section id="lobby-pregame" class="box hidden">
-          <div class="row">
-            <div id="lobby-pregame-left" class="col-2 padding-right1">
+          <div class="lobby-pregame-container">
+            <div id="lobby-pregame-left" class="lobby-pregame-info">
               <h4 class="padding0p5">
                 <strong><i class="fas fa-signature"></i>&nbsp; Name:</strong><br />
                 <span id="lobby-pregame-name"></span>
@@ -613,12 +611,14 @@
                 <ul id="lobby-pregame-options"></ul>
               </h4>
             </div>
-            <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-6" class="col-2 lobby-pregame-player"></div>
+            <div class="lobby-pregame-players">
+              <div id="lobby-pregame-player-1" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-2" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-3" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-4" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-5" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-6" class="lobby-pregame-player"></div>
+            </div>
           </div>
         </section>
       </div>
@@ -631,7 +631,7 @@
       <!-- The chat for the entire lobby -->
       <div id="lobby-chat-container" class="col-8">
         <section id="lobby-chat" class="box">
-          <h3 class="lobby-title">Lobby Chat</h3>
+          <h3 class="lobby-title">Lobby Chat<span class="only-on-narrow-screen"> (<span class="lobby-users-num">0</span> online)</span></h3>
           <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
           <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
         </section>
@@ -648,9 +648,9 @@
       </div>
 
       <!-- The "Online Users" section -->
-      <div class="col-4 lobby-users-box-container">
+      <div id="lobby-online-users" class="col-4 lobby-users-box-container narrow-screen-toggle">
         <section class="box">
-          <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+          <h3 class="lobby-title">Online<span id="small-screen-toggle-users-h3"> Users (<span class="lobby-users-num">0</span>)</span></h3>
           <div id="lobby-users-container">
             <table id="lobby-users-table" class="slim-table">
               <thead>
@@ -664,6 +664,25 @@
           </div>
         </section>
       </div>
+    </div>
+
+    <!-- small screen toggle buttons -->
+    <div id="lobby-small-screen-buttons">
+      <nav id="nav-bottom">
+        <ul>
+          <li>
+            <a id="lobby-toggle-show-tables" class="button small toggle-active">
+              Games
+            </a>
+            <a id="lobby-toggle-show-chat" class="button small">
+              Chat
+            </a>
+            <a id="lobby-toggle-show-game-chat" class="button small hidden">
+              Pre-game Chat
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <!-- History -->

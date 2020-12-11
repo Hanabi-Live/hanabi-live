@@ -66,6 +66,10 @@ input[type="radio"] + label:before,
   Alpha edits
 */
 
+#header a {
+  cursor: pointer;
+}
+
 #main > header p {
   border-top: 0;
   margin-top: 0;
@@ -98,19 +102,6 @@ a {
 
 .friend {
   color: hotpink;
-}
-
-#header nav > ul > li .button {
-  /* Decrease the padding of the nav buttons on the left and the right sides */
-  padding: 0 0.8em;
-  /* Center it vertically */
-  vertical-align: middle;
-}
-
-@media screen and (min-width: 1440px) {
-  #header nav > ul > li .button {
-    margin-bottom: 3px;
-  }
 }
 
 /*
@@ -272,7 +263,6 @@ table td {
 /*
   Nav (the top bar)
 */
-
 .nav-icon {
   position: relative;
   top: 0.05em;
@@ -280,12 +270,13 @@ table td {
 }
 
 .nav-hotkey-indicator {
-  border-bottom: dotted 1px;
+  border-bottom: 1px solid #999;
 }
 
 .help-button {
   background-color: rgb(68, 150, 68) !important;
 }
+
 .help-button:hover {
   background-color: #84c884 !important;
 }
@@ -296,7 +287,7 @@ table td {
 
 #lobby {
   margin-top: 1.5em;
-  margin-bottom: 1.5em;
+  margin-bottom: 0.5em;
   /* Left and right margins are handled on the rows in "alpha.css" */
   height: calc(100% - 3em); /* The header is 3em */
 }
@@ -449,19 +440,31 @@ table td {
   Pregame
 */
 
-#lobby-pregame > div {
+.lobby-pregame-container {
   height: 100%;
+  display: flex;
 }
 
-#lobby-pregame-left {
+.lobby-pregame-info {
   font-size: 0.85em;
+  width: 150px;
+}
+
+.lobby-pregame-players {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .lobby-pregame-player {
   border: 1px solid black;
   border-radius: 5px;
-  padding: 1em;
-  height: 100%;
+  padding: 0.8em;
+  flex: 1 1 140px;
+  margin: 0 0.5em 0.5em 0;
+  max-width: 170px;
 }
 
 .lobby-pregame-player-away {
@@ -833,9 +836,52 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /*
+  Media Responsive Utilities
+  Breakpoints:
+    Alpha names   Max Res   Media names
+    Wide:          1680px   xxl
+    Normal:        1280px   xl
+    Narrow:         980px   lg
+    Narrower:       840px   md
+    Mobile:         736px   sm
+    Portrait:       480px   xs
+
+    hidden-*:      hidden on this and all smaller screens
+*/
+@media screen and (max-width: 1680px) {
+  .hidden-xxl {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 1280px) {
+  .hidden-xl {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 980px) {
+  .hidden-lg {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 840px) {
+  .hidden-md {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 736px) {
+  .hidden-sm {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 480px) {
+  .hidden-xs {
+    display: none!important;
+  }
+}
+
+/*
   Media edits
 */
-
 /* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
 @media screen and (min-width: 1280px) {
   .container.max {
@@ -843,33 +889,30 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/*
-  Make the lobby nav bar show only the button icons for low priority buttons on smaller resolutions
-*/
-@media screen and (max-width: 1220px) {
-  #nav-buttons-lobby .pri2 .mobile-hide {
-    display: none;
-  }
-  #nav-buttons-lobby .pri2 .nav-icon {
-    margin-right: 0em;
+/* Tighter nav buttons before text disappears */
+@media screen and (max-width: 1086px) {
+  #header nav > ul > li .button {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
   }
 }
 
-/* Make the lobby nav bar show only the button icons for all buttons on smaller resolutions */
-@media screen and (max-width: 970px) {
-  #nav-buttons-lobby .pri1 .mobile-hide {
+/* Hide the logo text */
+@media screen and (max-width: 950px) {
+  #logo-text {
     display: none;
   }
-  #nav-buttons-lobby .pri1 .nav-icon {
-    margin-right: 0em;
+}
+
+/* Reinstate the containers round box */
+@media screen and (max-width: 480px) {
+  .box {
+    border-radius: 6px;
   }
 }
 
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 400px) {
-  #nav-buttons-pregame .mobile-hide {
-    display: none;
-  }
   #nav-buttons-pregame .nav-icon {
     margin-right: 0em;
   }
@@ -877,28 +920,13 @@ input::-webkit-calendar-picker-indicator {
 
 /* Make the history nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 290px) {
-  #nav-buttons-history .mobile-hide {
-    display: none;
-  }
   #nav-buttons-history .nav-icon {
     margin-right: 0em;
   }
 }
 
-/* Hide the logo on the header when it overlaps with the lobby nav bar buttons */
-@media screen and (max-width: 650px) {
-  .lobby-header #logo-text {
-    display: none;
-  }
-}
-@media screen and (max-width: 490px) {
-  .lobby-header {
-    display: none;
-  }
-}
-
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
-@media screen and (max-width: 830px) {
+@media screen and (max-width: 840px) {
   #profile-buttons {
     /* These lines are copied from alpha.css which has breakpoint 480 px */
     display: flex;
@@ -907,17 +935,16 @@ input::-webkit-calendar-picker-indicator {
     align-items: stretch;
   }
 
+  /* Remove extra space from nav icons */
+  .nav-icon {
+    margin-right: 0;
+  }
+
   #profile-buttons li {
     padding-top: 1em;
   }
-}
 
-/* Make the main screen appear the same way, even on smaller resolutions */
-@media screen and (max-width: 840px) {
-  #header {
-    display: block;
-  }
-
+  /* Make the main screen appear the same way, even on smaller resolutions */
   #page-wrapper {
     padding-top: 3em;
   }
@@ -936,4 +963,178 @@ input::-webkit-calendar-picker-indicator {
     padding: 1.5em !important;
     overflow-y: hidden;
   }
+}
+
+/*
+  Tables headers
+*/
+table th {
+  padding: 0 0.75em 0.25em 0.75em;
+  font-size: 0.8em;
+}
+
+/*
+  Media queries for lobby redesign on smaller screens
+*/
+@media screen and (max-width: 980px) {
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.8em;
+  }
+}
+@media screen and (max-width: 840px) {
+  /* override alpha.css default behavior */
+  #header {
+    display: block;
+  }
+
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.5em;
+  }
+
+  /* hide column '# of Players' */
+  #lobby-games-table th:nth-child(2),
+  #lobby-games-table td:nth-child(2) {
+    display: none;
+  }
+}
+@media screen and (max-width: 670px) {
+  /* hide column 'Name' */
+  #lobby-games-table th:nth-child(1),
+  #lobby-games-table td:nth-child(1) {
+    display: none;
+  }
+
+  /* fix border of column 'Variant' */
+  #lobby-games-table th:nth-child(3),
+  #lobby-games-table td:nth-child(3) {
+    border-left-width: 1px;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(7),
+  #lobby-games-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 570px) {
+  /* hide 'help' nav menu */
+  #header nav > ul > li a#nav-buttons-lobby-stats,
+  #header nav > ul > li a#nav-buttons-lobby-resources {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(4),
+  #lobby-games-table td:nth-child(4) {
+    display: none;
+  }
+}
+@media screen and (max-width: 410px) {
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.3em;
+  }
+  /* hide column 'Status' */
+  #lobby-games-table th:nth-child(5),
+  #lobby-games-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+/*
+  Small screen toggle buttons
+*/
+#lobby-small-screen-buttons {
+  margin-top: 1em;
+  height: 2em;
+  display: none;
+}
+#lobby-small-screen-buttons nav > ul {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+#lobby-small-screen-buttons nav > ul li:first-child {
+  padding-left: 0;
+}
+
+.only-on-narrow-screen {
+  display: none;
+}
+
+@media screen and (max-height: 530px), screen and (max-width: 620px) {
+  #lobby-top-half,
+  #lobby-bottom-half {
+    display: none;
+    height: calc(100% - 4em);
+  }
+  #lobby-separator {
+    display: none;
+  }
+  #lobby-top-half.toggle-active {
+    display: flex;
+  }
+  #lobby-bottom-half.toggle-active {
+    display: flex;
+  }
+
+  #lobby-small-screen-buttons {
+    display: block;
+  }
+
+  #lobby-top-half.hidden,
+  #lobby-bottom-half.hidden,
+  #lobby-small-screen-buttons.hidden {
+    display: none;
+  }
+
+  #lobby {
+    height: calc(100% - 1.25em); /* The header is 3em */
+  }
+
+  .pregame-hidden {
+    display: none;
+  }
+  .pregame-lobby-chat {
+    margin-bottom: 1em;
+  }
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout {
+    flex: 1 1 100%;
+    height: calc((100% - 1em) / 2);
+    padding-left: 2em!important;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  #lobby-users-table th:nth-child(2),
+  #lobby-users-table td:nth-child(2) {
+    display: none;
+  }
+  #small-screen-toggle-users-h3 {
+    display: none;
+  }
+  .only-on-narrow-screen {
+    display: inline;
+  }
+}
+@media screen and (max-width: 520px) {
+  .narrow-screen-toggle {
+    display: none;
+  }
+  .row > #lobby-chat-container {
+    width: 100%;
+  }
+}
+
+a.toggle-active {
+  background-color: rgb(68, 150, 68) !important;
 }

@@ -57,6 +57,43 @@ export function init(): void {
     window.location.href = `/logout${window.location.search}`;
   });
 
+  // The "Games" bottom screen toggle button
+  $("#lobby-toggle-show-tables").on("click", () => {
+    $("#lobby-toggle-show-tables").addClass("toggle-active");
+    $("#lobby-toggle-show-chat").removeClass("toggle-active");
+    $("#lobby-toggle-show-game-chat").removeClass("toggle-active");
+    $("#lobby-top-half").addClass("toggle-active");
+    $("#lobby-bottom-half").removeClass("toggle-active");
+    // Restore online users and chat for small screens
+    $("#lobby-online-users").removeClass("pregame-hidden");
+    $("#lobby-chat-container")
+      .removeClass("pregame-chat-layout")
+      .removeClass("pregame-lobby-chat");
+    $("#lobby-chat-pregame-container").removeClass("pregame-chat-layout");
+  });
+
+  // The "Chat & Users" bottom screen toggle button
+  $("#lobby-toggle-show-chat").on("click", () => {
+    $("#lobby-toggle-show-tables").removeClass("toggle-active");
+    $("#lobby-toggle-show-chat").addClass("toggle-active");
+    $("#lobby-top-half").removeClass("toggle-active");
+    $("#lobby-bottom-half").addClass("toggle-active");
+  });
+
+  // The "Pregame Chat" bottom screen toggle button
+  $("#lobby-toggle-show-game-chat").on("click", () => {
+    $("#lobby-toggle-show-tables").removeClass("toggle-active");
+    $("#lobby-toggle-show-game-chat").addClass("toggle-active");
+    $("#lobby-top-half").removeClass("toggle-active");
+    $("#lobby-bottom-half").addClass("toggle-active");
+    // Setup online users and chat for small screens
+    $("#lobby-online-users").addClass("pregame-hidden");
+    $("#lobby-chat-container")
+      .addClass("pregame-chat-layout")
+      .addClass("pregame-lobby-chat");
+    $("#lobby-chat-pregame-container").addClass("pregame-chat-layout");
+  });
+
   // The "Start Game" button
   $("#nav-buttons-pregame-start").on("click", () => {
     if (!$("#nav-buttons-pregame-start").hasClass("disabled")) {
