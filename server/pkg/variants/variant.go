@@ -60,6 +60,7 @@ func (v *Variant) HasReversedSuits() bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -72,9 +73,11 @@ func (v *Variant) GetDeckSize() int {
 			deckSize += 10
 		}
 	}
+
 	if v.IsUpOrDown() {
 		deckSize -= len(v.Suits)
 	}
+
 	return deckSize
 }
 

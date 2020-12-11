@@ -19,8 +19,8 @@ func (m *Manager) SendMsg(userID int, msg []byte) {
 	}
 }
 
-// sendMsg sends a message to a particular user
-// It never blocks, so messages to slow sessions are dropped
+// sendMsg sends a message to a particular user.
+// It never blocks, so messages to slow sessions are dropped.
 func sendMsg(m *Manager, rawData interface{}) {
 	var data *sendMsgData
 	if v, ok := rawData.(*sendMsgData); !ok {

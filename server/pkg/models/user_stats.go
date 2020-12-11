@@ -15,7 +15,7 @@ type UserStats struct {
 	m *Models // Reverse reference
 }
 
-// These are the stats for a user playing a specific variant + the total count of their games
+// These are the stats for a user playing a specific variant + the total count of their games.
 type UserStatsRow struct {
 	NumGames      int                    `json:"numGames"`
 	BestScores    []*bestscore.BestScore `json:"bestScores"`
@@ -148,18 +148,18 @@ func (us *UserStats) GetAll(ctx context.Context, userID int) (map[int]*UserStats
 	return statsMap, nil
 }
 
-// Update inserts or updates the row for the user's stats
+// Update inserts or updates the row for the user's stats.
 // The stats passed in as an argument do not have to contain "NumGames", "AverageScore",
-// or "NumStrikeouts"; those will be calculated from the database
+// or "NumStrikeouts"; those will be calculated from the database.
 func (us *UserStats) Update(
 	ctx context.Context,
 	userID int,
 	variantID int,
 	stats *UserStatsRow,
 ) error {
-	// Validate that the BestScores slice contains 5 entries
-	if len(stats.BestScores) != 5 {
-		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
+	// Validate that the BestScores slice contains entries for every player amount
+	if len(stats.BestScores) != bestscore.NumPlayerGameTypes {
+		return fmt.Errorf("BestScores does not contain %v entries", bestscore.NumPlayerGameTypes)
 	}
 
 	SQLString1 := `
@@ -215,10 +215,10 @@ func (us *UserStats) Update(
 			best_score6 = $11,
 			best_score6_mod = $12,
 			average_score = (
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if the user has not played any games in this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if the user has not played any games in this variant
+				 */
 				SELECT COALESCE(AVG(games.score), 0)
 				FROM games
 					JOIN game_participants
@@ -342,7 +342,8 @@ func (us *UserStats) UpdateAll(ctx context.Context, highestVariantID int) error 
 					stats.NumStrikeouts++
 				}
 
-				bestScoresIndex := gameHistory.Options.NumPlayers - 2
+				// We subtract 2 because the 0th entry is for a 2-player game, and so forth
+				bestScoresIndex := gameHistory.Options.NumPlayers - 2 // nolint: gomnd
 				bestScore := stats.BestScores[bestScoresIndex]
 				modifier := gameHistory.Options.GetModifier()
 				thisScore := &bestscore.BestScore{ // nolint: exhaustivestruct

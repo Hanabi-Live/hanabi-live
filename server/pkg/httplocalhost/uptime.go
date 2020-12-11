@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func uptime(c *gin.Context) {
+func (m *Manager) uptime(c *gin.Context) {
 	// TODO
 	/*
 		// Local variables

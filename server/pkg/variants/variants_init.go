@@ -132,8 +132,7 @@ func (m *Manager) VariantsInit(dataPath string) {
 			SpecialNoClueColors:    variantJSON.SpecialNoClueColors,
 			SpecialNoClueRanks:     variantJSON.SpecialNoClueRanks,
 			SpecialDeceptive:       variantJSON.SpecialDeceptive,
-			MaxScore:               len(variantSuits) * 5,
-			// (we assume that there are 5 points per stack)
+			MaxScore:               len(variantSuits) * pointsPerStack,
 		}
 		m.Variants[variant.Name] = variant
 

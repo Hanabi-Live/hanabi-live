@@ -1,7 +1,7 @@
 package variants
 
-// VariantJSON is very similar to Variant,
-// but the latter is comprised of some more complicated objects
+// VariantJSON matches the format of an entry in the "variants.json" file.
+// We convert this simple representation to a more complex object (e.g. a "Variant").
 type VariantJSON struct {
 	Name  string   `json:"name"`
 	ID    int      `json:"id"`

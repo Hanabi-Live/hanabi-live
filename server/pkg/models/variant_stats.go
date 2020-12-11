@@ -129,9 +129,9 @@ func (vs *VariantStats) Update(
 	maxScore int,
 	stats VariantStatsRow,
 ) error {
-	// Validate that the BestScores slice contains 5 entries
-	if len(stats.BestScores) != 5 {
-		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
+	// Validate that the BestScores slice contains entries for every player amount
+	if len(stats.BestScores) != bestscore.NumPlayerGameTypes {
+		return fmt.Errorf("BestScores does not contain %v entries", bestscore.NumPlayerGameTypes)
 	}
 
 	SQLString1 := `
@@ -186,10 +186,10 @@ func (vs *VariantStats) Update(
 					AND speedrun = FALSE
 			),
 			average_score = (
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if there have been 0 games played on this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if there have been 0 games played on this variant
+				 */
 				SELECT COALESCE(AVG(score), 0)
 				FROM games
 				WHERE variant_id = $1
@@ -250,10 +250,10 @@ func (vs *VariantStats) UpdateAll(ctx context.Context, highestVariantID int, max
 
 			// Get the score for this player count (using a modifier of 0)
 			SQLString2 := `
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if there have been 0 games played on this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if there have been 0 games played on this variant
+				 */
 				SELECT COALESCE(MAX(games.score), 0)
 				FROM games
 				WHERE variant_id = $1
@@ -279,7 +279,8 @@ func (vs *VariantStats) UpdateAll(ctx context.Context, highestVariantID int, max
 				overallBestScore = bestScore
 			}
 
-			i := numPlayers - 2
+			// We subtract 2 because the 0th entry is for a 2-player game, and so forth
+			i := numPlayers - 2 // nolint: gomnd
 			stats.BestScores[i].Score = overallBestScore
 		}
 

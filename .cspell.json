@@ -102,6 +102,7 @@
         "goerr",
         "gofmt",
         "gofumpt",
+        "gogithub",
         "goimports",
         "golangci",
         "golint",

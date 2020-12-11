@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func saveTables(c *gin.Context) {
+func (m *Manager) saveTables(c *gin.Context) {
 	// TODO
 	// serializeTables()
 	c.String(http.StatusOK, "success\n")

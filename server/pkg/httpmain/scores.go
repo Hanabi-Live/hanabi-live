@@ -1,7 +1,6 @@
 package httpmain
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/bestscore"
@@ -21,12 +20,12 @@ type UserVariantStats struct {
 	StrikeoutRate string
 }
 
-func scores(c *gin.Context) {
+func (m *Manager) scores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	var user models.User
-	if v, ok := parsePlayerName(c); !ok {
+	if v, ok := m.parsePlayerName(c); !ok {
 		return
 	} else {
 		user = v
@@ -34,8 +33,8 @@ func scores(c *gin.Context) {
 
 	// Get basic stats for this player
 	var profileStats models.Stats
-	if v, err := hModels.Games.GetProfileStats(c, user.ID); err != nil {
-		hLogger.Errorf(
+	if v, err := m.models.Games.GetProfileStats(c, user.ID); err != nil {
+		m.logger.Errorf(
 			"Failed to get the profile stats for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -50,25 +49,13 @@ func scores(c *gin.Context) {
 		profileStats = v
 	}
 
-	// Format the date that they joined
-	// https://stackoverflow.com/questions/28889818/formatting-verbose-dates-in-go
-	suffix := "th"
-	switch profileStats.DateJoined.Day() {
-	case 1, 21, 31:
-		suffix = "st"
-	case 2, 22:
-		suffix = "nd"
-	case 3, 23:
-		suffix = "rd"
-	}
-	dateFormatString := fmt.Sprintf("January 2%v, 2006", suffix)
-	dateJoined := profileStats.DateJoined.Format(dateFormatString)
+	dateJoined := formatDate(profileStats.DateJoined)
 
 	// Only show their normal time if they have played one or more non-speedrun games
 	timePlayed := ""
 	if profileStats.TimePlayed != 0 {
 		if v, err := util.SecondsToDurationString(profileStats.TimePlayed); err != nil {
-			hLogger.Errorf("Failed to parse the duration of \"%v\" for %v: %v",
+			m.logger.Errorf("Failed to parse the duration of \"%v\" for %v: %v",
 				profileStats.TimePlayed,
 				util.PrintUser(user.ID, user.Username),
 				err,
@@ -88,7 +75,7 @@ func scores(c *gin.Context) {
 	timePlayedSpeedrun := ""
 	if profileStats.TimePlayedSpeedrun != 0 {
 		if v, err := util.SecondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {
-			hLogger.Errorf(
+			m.logger.Errorf(
 				"Failed to parse the duration of \"%v\" for %v: %v",
 				profileStats.TimePlayedSpeedrun,
 				util.PrintUser(user.ID, user.Username),
@@ -107,8 +94,8 @@ func scores(c *gin.Context) {
 
 	// Get all of the variant-specific stats for this player
 	var statsMap map[int]*models.UserStatsRow
-	if v, err := hModels.UserStats.GetAll(c, user.ID); err != nil {
-		hLogger.Errorf(
+	if v, err := m.models.UserStats.GetAll(c, user.ID); err != nil {
+		m.logger.Errorf(
 			"Failed to get all of the variant-specific stats for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -123,8 +110,8 @@ func scores(c *gin.Context) {
 		statsMap = v
 	}
 
-	numMaxScores, numMaxScoresPerType, variantStatsList := getVariantStatsList(statsMap)
-	percentageMaxScoresString, percentageMaxScoresPerType := getPercentageMaxScores(
+	numMaxScores, numMaxScoresPerType, variantStatsList := m.getVariantStatsList(statsMap)
+	percentageMaxScoresString, percentageMaxScoresPerType := m.getPercentageMaxScores(
 		numMaxScores,
 		numMaxScoresPerType,
 	)
@@ -138,12 +125,12 @@ func scores(c *gin.Context) {
 		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,
 		NumMaxScores:               numMaxScores,
-		TotalMaxScores:             len(hVariantsManager.VariantNames) * 5, // For 2 to 6 players
+		TotalMaxScores:             len(m.variantsManager.VariantNames) * bestscore.NumPlayerGameTypes,
 		PercentageMaxScores:        percentageMaxScoresString,
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 
 		VariantStats: variantStatsList,
 	}
-	serveTemplate(w, data, "profile", "scores")
+	m.serveTemplate(w, data, "profile", "scores")
 }

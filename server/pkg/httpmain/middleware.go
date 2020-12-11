@@ -11,26 +11,26 @@ import (
 )
 
 const (
-	// The name supplied to the Gin session middleware can be any arbitrary string
+	// The name supplied to the Gin session middleware can be any arbitrary string.
 	HTTPSessionName    = "hanabi.sid"
 	HTTPSessionTimeout = 60 * 60 * 24 * 365 // 1 year in seconds
 )
 
-func attachMiddleware(httpRouter *gin.Engine, envVars *envVars, isDev bool, usingSentry bool) {
-	if !isDev {
+func attachMiddleware(httpRouter *gin.Engine, m *Manager, envVars *envVars) {
+	if !m.isDev {
 		attachMiddlewareTollbooth(httpRouter)
 	}
 
-	attachMiddlewareSessionStore(httpRouter, envVars, isDev)
+	attachMiddlewareSessionStore(httpRouter, m, envVars)
 
 	// Initialize Google Analytics
-	if len(envVars.gaTrackingID) > 0 {
-		httpRouter.Use(googleAnalyticsMiddleware)
+	if len(m.gaTrackingID) > 0 {
+		httpRouter.Use(m.googleAnalyticsMiddleware)
 	}
 
 	// Attach the Sentry middleware
-	if usingSentry {
-		attachMiddlewareSentry(httpRouter)
+	if m.usingSentry {
+		attachMiddlewareSentry(httpRouter, m)
 	}
 }
 
@@ -69,7 +69,7 @@ func limitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
 }
 */
 
-func attachMiddlewareSessionStore(httpRouter *gin.Engine, envVars *envVars, isDev bool) {
+func attachMiddlewareSessionStore(httpRouter *gin.Engine, m *Manager, envVars *envVars) {
 	// Create a session store to handle cookies
 	sessionStore := cookie.NewStore([]byte(envVars.sessionSecret))
 
@@ -78,13 +78,13 @@ func attachMiddlewareSessionStore(httpRouter *gin.Engine, envVars *envVars, isDe
 		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: HTTPSessionTimeout, // In seconds
 	}
-	if !isDev {
+	if !m.isDev {
 		// Bind the cookie to this specific domain for security purposes
-		sessionsOptions.Domain = domain
+		sessionsOptions.Domain = m.Domain
 
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-		sessionsOptions.Secure = useTLS
+		sessionsOptions.Secure = m.UseTLS
 
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
@@ -100,11 +100,11 @@ func attachMiddlewareSessionStore(httpRouter *gin.Engine, envVars *envVars, isDe
 	httpRouter.Use(gsessions.Sessions(HTTPSessionName, sessionStore))
 }
 
-func attachMiddlewareSentry(httpRouter *gin.Engine) {
+func attachMiddlewareSentry(httpRouter *gin.Engine, m *Manager) {
 	httpRouter.Use(sentrygin.New(sentrygin.Options{ // nolint: exhaustivestruct
 		// https://github.com/getsentry/sentry-go/blob/master/gin/sentrygin.go
 		Repanic: true, // Recommended as per the documentation
 		Timeout: constants.HTTPWriteTimeout,
 	}))
-	httpRouter.Use(sentryMiddleware)
+	httpRouter.Use(m.sentryMiddleware)
 }

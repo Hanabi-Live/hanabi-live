@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func debugFunction(c *gin.Context) {
+func (m *Manager) debugFunction(c *gin.Context) {
 	// TODO
 	// debugFunction(c)
 	c.String(http.StatusOK, "success\n")

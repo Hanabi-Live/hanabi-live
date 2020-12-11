@@ -8,7 +8,7 @@ type GameParticipantNotes struct {
 	m *Models // Reverse reference
 }
 
-// GameParticipantNotesRow roughly mirrors the "game_participant_notes" table row
+// GameParticipantNotesRow roughly mirrors the "game_participant_notes" database table row.
 type GameParticipantNotesRow struct {
 	GameID    int
 	UserID    int

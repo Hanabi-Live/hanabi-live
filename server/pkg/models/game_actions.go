@@ -11,7 +11,7 @@ type GameActions struct {
 	m *Models // Reverse reference
 }
 
-// GameActionRow mirrors the "game_actions" table row
+// GameActionRow mirrors the "game_actions" database table row.
 type GameActionRow struct {
 	GameID int
 	Turn   int

@@ -17,19 +17,18 @@ import (
 	"nhooyr.io/websocket"
 )
 
-// ws handles part 2 of 2 for logic authentication
-// Part 1 is found in "login.go"
+// ws handles part 2 of 2 for logic authentication. (Part 1 is found in "login.go".)
 // After receiving a cookie in part 1, the client will attempt to open a WebSocket connection with
 // the cookie (which is done implicitly because JavaScript will automatically use any current
-// cookies for the website when establishing a WebSocket connection)
+// cookies for the website when establishing a WebSocket connection).
 // So, before allowing anyone to open a WebSocket connection, we need to validate that they have
-// gone through part 1 (e.g. they have a valid cookie that was created at some point in the past)
-// We also do some other checks to be thorough
+// gone through part 1 (e.g. they have a valid cookie that was created at some point in the past).
+// We also do some other checks to be thorough.
 // If all of the checks pass, the WebSocket connection will be established,
-// and then handed off to the sessions manager to reading/writing
+// and then handed off to the sessions manager to reading/writing.
 // If anything fails in this function, we want to delete the user's cookie in order to force them to
-// start authentication from the beginning
-func ws(c *gin.Context) {
+// start authentication from the beginning.
+func (m *Manager) ws(c *gin.Context) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
@@ -38,25 +37,25 @@ func ws(c *gin.Context) {
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
 		msg := fmt.Sprintf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return
 	} else {
 		ip = v
 	}
 
 	// Check to see if their IP is banned
-	if banned, err := hModels.BannedIPs.Check(c, ip); err != nil {
+	if banned, err := m.models.BannedIPs.Check(c, ip); err != nil {
 		msg := fmt.Sprintf("Failed to check to see if the IP \"%v\" is banned: %v", ip, err)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return
 	} else if banned {
-		hLogger.Infof("IP \"%v\" tried to establish a WebSocket connection, but they are banned.", ip)
+		m.logger.Infof("IP \"%v\" tried to establish a WebSocket connection, but they are banned.", ip)
 		http.Error(
 			w,
 			"Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
 			http.StatusUnauthorized,
 		)
-		deleteCookie(c)
+		m.deleteCookie(c)
 		return
 	}
 
@@ -68,7 +67,7 @@ func ws(c *gin.Context) {
 			"Unauthorized WebSocket handshake detected from \"%v\". This likely means that their cookie has expired.",
 			ip,
 		)
-		wsDeny(c, msg)
+		m.wsDeny(c, msg)
 		return
 	} else {
 		userID = v.(int)
@@ -76,7 +75,7 @@ func ws(c *gin.Context) {
 
 	// Get the username for this user
 	var username string
-	if v, err := hModels.Users.GetUsername(c, userID); errors.Is(err, pgx.ErrNoRows) {
+	if v, err := m.models.Users.GetUsername(c, userID); errors.Is(err, pgx.ErrNoRows) {
 		// The user has a cookie for a user that does not exist in the database
 		// (e.g. an "orphaned" user)
 		// This can happen in situations where a test user was deleted, for example
@@ -86,7 +85,7 @@ func ws(c *gin.Context) {
 			ip,
 			userID,
 		)
-		wsDeny(c, msg)
+		m.wsDeny(c, msg)
 		return
 	} else if err != nil {
 		msg := fmt.Sprintf(
@@ -94,16 +93,16 @@ func ws(c *gin.Context) {
 			userID,
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return
 	} else {
 		username = v
 	}
 
-	wsNew(c, userID, username, ip)
+	m.wsNew(c, userID, username, ip)
 }
 
-func wsNew(c *gin.Context, userID int, username string, ip string) {
+func (m *Manager) wsNew(c *gin.Context, userID int, username string, ip string) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
@@ -116,7 +115,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return
 	} else {
 		conn = v
@@ -124,7 +123,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 	defer conn.Close(websocket.StatusInternalError, "")
 
 	// Next, perform all the expensive database calls to gather the data we need
-	data := wsGetData(c, conn, userID, username, ip)
+	data := m.wsGetData(c, conn, userID, username, ip)
 	if data == nil {
 		return
 	}
@@ -132,7 +131,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 	// Send a request to add the WebSocket connection to the sessions manager
 	// (which listens on a separate goroutine)
 	// This will block until an error is received from the channel
-	err := hSessionsManager.NewSession(data)
+	err := m.sessionsManager.NewSession(data)
 	if errors.Is(err, context.Canceled) ||
 		websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
@@ -140,7 +139,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 		// The WebSocket connection was closed in a normal/expected way
 		return
 	} else if err != nil {
-		hLogger.Errorf(
+		m.logger.Errorf(
 			"The WebSocket connection for %v encountered an unknown error: %v",
 			util.PrintUser(userID, username),
 			err,
@@ -149,7 +148,7 @@ func wsNew(c *gin.Context, userID int, username string, ip string) {
 	}
 }
 
-func wsGetData(
+func (m *Manager) wsGetData(
 	c *gin.Context,
 	conn *websocket.Conn,
 	userID int,
@@ -161,13 +160,13 @@ func wsGetData(
 	// ----
 
 	// Update the database with "datetime_last_login" and "last_ip"
-	if err := hModels.Users.Update(c, userID, ip); err != nil {
+	if err := m.models.Users.Update(c, userID, ip); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to set \"datetime_last_login\" and \"last_ip\" for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	}
 
@@ -177,13 +176,13 @@ func wsGetData(
 
 	// Check to see if their IP is muted
 	var muted bool
-	if v, err := hModels.MutedIPs.Check(c, ip); err != nil {
+	if v, err := m.models.MutedIPs.Check(c, ip); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to check to see if the IP \"%v\" is muted: %v",
 			ip,
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		muted = v
@@ -191,13 +190,13 @@ func wsGetData(
 
 	// Get their friends
 	var friends map[int]struct{}
-	if v, err := hModels.UserFriends.GetMap(c, userID); err != nil {
+	if v, err := m.models.UserFriends.GetMap(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the friends map for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		friends = v
@@ -205,13 +204,13 @@ func wsGetData(
 
 	// Get their reverse friends
 	var reverseFriends map[int]struct{}
-	if v, err := hModels.UserReverseFriends.GetMap(c, userID); err != nil {
+	if v, err := m.models.UserReverseFriends.GetMap(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the reverse friends map for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		reverseFriends = v
@@ -219,13 +218,13 @@ func wsGetData(
 
 	// Get whether or not they are a member of the Hyphen-ated group
 	var hyphenated bool
-	if v, err := hModels.UserSettings.IsHyphenated(c, userID); err != nil {
+	if v, err := m.models.UserSettings.IsHyphenated(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the Hyphen-ated setting for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		hyphenated = v
@@ -237,28 +236,30 @@ func wsGetData(
 
 	// Get their join date from the database
 	var datetimeCreated time.Time
-	if v, err := hModels.Users.GetDatetimeCreated(c, userID); err != nil {
+	if v, err := m.models.Users.GetDatetimeCreated(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the join date for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		datetimeCreated = v
 	}
-	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
+	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second // nolint: gomnd
+	// (10 seconds is an arbitrary reasonable value to use,
+	// which accounts for if they accidentally refresh the page after logging in for the first time)
 
 	// Get their total number of games played from the database
 	var totalGames int
-	if v, err := hModels.Games.GetUserNumGames(c, userID, true); err != nil {
+	if v, err := m.models.Games.GetUserNumGames(c, userID, true); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the number of games played for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		totalGames = v
@@ -266,13 +267,13 @@ func wsGetData(
 
 	// Get their settings from the database
 	var settings settings.Settings
-	if v, err := hModels.UserSettings.Get(c, userID); err != nil {
+	if v, err := m.models.UserSettings.Get(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the settings for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		settings = v
@@ -280,13 +281,13 @@ func wsGetData(
 
 	// Get their friends from the database
 	var friendsList []string
-	if v, err := hModels.UserFriends.GetAllUsernames(c, userID); err != nil {
+	if v, err := m.models.UserFriends.GetAllUsernames(c, userID); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the friends for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
-		wsError(c, msg)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		friendsList = v
@@ -333,28 +334,28 @@ func wsGetData(
 	}
 }
 
-func wsError(c *gin.Context, msg string) {
+func (m *Manager) wsError(c *gin.Context, msg string) {
 	// Local variables
 	w := c.Writer
 
-	hLogger.Error(msg)
+	m.logger.Error(msg)
 	http.Error(
 		w,
 		http.StatusText(http.StatusInternalServerError),
 		http.StatusInternalServerError,
 	)
-	deleteCookie(c)
+	m.deleteCookie(c)
 }
 
-func wsDeny(c *gin.Context, msg string) {
+func (m *Manager) wsDeny(c *gin.Context, msg string) {
 	// Local variables
 	w := c.Writer
 
-	hLogger.Info(msg)
+	m.logger.Info(msg)
 	http.Error(
 		w,
 		http.StatusText(http.StatusUnauthorized),
 		http.StatusUnauthorized,
 	)
-	deleteCookie(c)
+	m.deleteCookie(c)
 }

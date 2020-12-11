@@ -7,9 +7,9 @@ import (
 )
 
 // If calls to the database fail for whatever reason,
-// it is possible for tables to be created with no people in them
-// So we allow an administrator to clear them manually
-func clearEmptyTables(c *gin.Context) {
+// it is possible for tables to be created with no people in them.
+// So we allow an administrator to clear them manually.
+func (m *Manager) clearEmptyTables(c *gin.Context) {
 	// TODO
 	/*
 		// Since this is a function that changes a user's relationship to tables,

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func logout(c *gin.Context) {
-	deleteCookie(c)
+func (m *Manager) logout(c *gin.Context) {
+	m.deleteCookie(c)
 
 	// We need tell tell the browser to not cache the redirect
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
@@ -24,7 +24,7 @@ func logout(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, path)
 }
 
-func deleteCookie(c *gin.Context) {
+func (m *Manager) deleteCookie(c *gin.Context) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
@@ -32,7 +32,7 @@ func deleteCookie(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		hLogger.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
+		m.logger.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -47,7 +47,7 @@ func deleteCookie(c *gin.Context) {
 	session := gsessions.Default(c)
 	session.Clear()
 	if err := session.Save(); err != nil {
-		hLogger.Errorf("Failed to clear the cookie for IP \"%v\": %v", ip, err)
+		m.logger.Errorf("Failed to clear the cookie for IP \"%v\": %v", ip, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

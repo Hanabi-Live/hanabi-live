@@ -7,22 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 )
 
-var (
-	// We don't want to use the default http.Client because it has no default timeout set
-	httpClientWithTimeout = &http.Client{ // nolint: exhaustivestruct
-		Timeout: constants.HTTPWriteTimeout,
-	}
-)
-
-// googleAnalyticsMiddleware is a Gin middleware for sending page views to Google Analytics
+// googleAnalyticsMiddleware is a Gin middleware for sending page views to Google Analytics.
 // (we do this on the server because client-side blocking is common via uBlock Origin, Adblock Plus,
 // etc.)
-func googleAnalyticsMiddleware(c *gin.Context) {
+func (m *Manager) googleAnalyticsMiddleware(c *gin.Context) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
@@ -60,11 +52,11 @@ func googleAnalyticsMiddleware(c *gin.Context) {
 			Expires: time.Now().Add(2 * 365 * 24 * time.Hour), // 2 years
 
 			// Bind the cookie to this specific domain for security purposes
-			Domain: domain,
+			Domain: m.Domain,
 
 			// Only send the cookie over HTTPS:
 			// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-			Secure: useTLS,
+			Secure: m.UseTLS,
 
 			// Mitigate XSS attacks:
 			// https://www.owasp.org/index.php/HttpOnly
@@ -83,34 +75,47 @@ func googleAnalyticsMiddleware(c *gin.Context) {
 	// According to the Gin documentation, we have to make a copy of the context
 	// before using it inside of a goroutine
 	contextCopy := c.Copy()
-	go googleAnalyticsSend(contextCopy, clientID)
+	go m.googleAnalyticsSend(contextCopy, clientID)
 	c.Next()
 }
 
-func googleAnalyticsSend(c *gin.Context, clientID string) {
+func (m *Manager) googleAnalyticsSend(c *gin.Context, clientID string) {
 	// Local variables
 	r := c.Request
 
+	// Prepare the request
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	data := url.Values{
-		"v":   {"1"},           // API version
-		"tid": {gaTrackingID},  // Tracking ID
-		"cid": {clientID},      // Anonymous client ID
-		"t":   {"pageview"},    // Hit type
-		"dh":  {r.Host},        // Document hostname
-		"dp":  {r.URL.Path},    // Document page/path
-		"uip": {ip},            // IP address override
-		"ua":  {r.UserAgent()}, // User agent override
+		"v":   {"1"},            // API version
+		"tid": {m.gaTrackingID}, // Tracking ID
+		"cid": {clientID},       // Anonymous client ID
+		"t":   {"pageview"},     // Hit type
+		"dh":  {r.Host},         // Document hostname
+		"dp":  {r.URL.Path},     // Document page/path
+		"uip": {ip},             // IP address override
+		"ua":  {r.UserAgent()},  // User agent override
 	}
-	resp, err := httpClientWithTimeout.PostForm(
-		"https://www.google-analytics.com/collect",
-		data,
-	)
-	if err != nil {
+	url := "https://www.google-analytics.com/collect"
+	var req *http.Request
+	if v, err := http.NewRequestWithContext(
+		c,
+		http.MethodPost,
+		url,
+		strings.NewReader(data.Encode()),
+	); err != nil {
+		m.logger.Infof("Failed to prepare a request for a page hit to Google Analytics: %v", err)
+		return
+	} else {
+		req = v
+	}
+
+	// Send it
+	if resp, err := m.httpClientWithTimeout.Do(req); err != nil {
 		// POSTs to Google Analytics will occasionally time out; if this occurs,
 		// do not bother retrying, since losing a single page view is fairly meaningless
-		hLogger.Infof("Failed to send a page hit to Google Analytics: %v", err)
+		m.logger.Infof("Failed to send a page hit to Google Analytics: %v", err)
 		return
+	} else {
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func version(c *gin.Context) {
+func (m *Manager) version(c *gin.Context) {
 	// TODO
 	gitCommitOnStart := ""
 	c.String(http.StatusOK, gitCommitOnStart+"\n")

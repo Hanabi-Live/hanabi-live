@@ -59,14 +59,14 @@ type TemplateData struct {
 	RecentGames   []*models.GameHistory
 }
 
-// serveTemplate combines a standard HTML header with the body for a specific page
-// (we want the same HTML header for all pages)
-func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...string) {
+// serveTemplate combines a standard HTML header with the body for a specific page.
+// (We want the same HTML header for all pages.)
+func (m *Manager) serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...string) {
 	// Since we are using the GZip middleware, we have to specify the content type,
 	// or else the page will be downloaded by the browser as "download.gz"
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	viewsPath := path.Join(hProjectPath, "server", "src", "views")
+	viewsPath := path.Join(m.projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
 
@@ -77,7 +77,7 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 
 	// Ensure that the layout file exists
 	if _, err := os.Stat(layoutPath); os.IsNotExist(err) {
-		hLogger.Error("The layout template does not exist.")
+		m.logger.Error("The layout template does not exist.")
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -104,9 +104,9 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 	// Create the template
 	var tmpl *template.Template
 	if v, err := template.New("template").Funcs(template.FuncMap{
-		"formatDate": formatDate,
+		"formatDatetime": formatDatetime,
 	}).ParseFiles(templateName...); err != nil {
-		hLogger.Errorf("Failed to create the template: %v", err)
+		m.logger.Errorf("Failed to create the template: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -119,14 +119,14 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 
 	// Add extra data that should be the same for every page request
 	data.WebsiteName = constants.WebsiteName
-	data.Version = getVersion()
+	data.Version = m.getVersion()
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
 		if sentry.IsCommonHTTPError(err.Error()) {
-			hLogger.Infof("Ordinary error when executing the template: %v", err)
+			m.logger.Infof("Ordinary error when executing the template: %v", err)
 		} else {
-			hLogger.Errorf("Failed to execute the template: %v", err)
+			m.logger.Errorf("Failed to execute the template: %v", err)
 		}
 		http.Error(
 			w,
@@ -136,6 +136,6 @@ func serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...st
 	}
 }
 
-func formatDate(date time.Time) string {
+func formatDatetime(date time.Time) string {
 	return date.Format("2006-01-02 &mdash; 15:04:05 MST")
 }

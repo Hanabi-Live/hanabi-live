@@ -56,7 +56,8 @@ func (u *Users) Insert(
 	}, nil
 }
 
-// We need to return the existing username in case they submitted the wrong case
+// Get retrieves data for a user from the database corresponding to a username.
+// We need to return the existing username in case the end-user submitted the wrong case.
 func (u *Users) Get(ctx context.Context, username string) (bool, User, error) {
 	SQLString := `
 		SELECT
@@ -181,7 +182,8 @@ func (u *Users) Update(ctx context.Context, userID int, lastIP string) error {
 	return err
 }
 
-// Legacy function; delete this when all users have logged in or in 2022, whichever comes first
+// UpdatePassword is a legacy function; delete this when all users have logged in or in 2022,
+// whichever comes first.
 func (u *Users) UpdatePassword(ctx context.Context, userID int, passwordHash string) error {
 	SQLString := `
 		UPDATE users

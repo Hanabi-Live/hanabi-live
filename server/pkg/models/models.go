@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// Models contains a list of interfaces representing database tables
+// Models contains a list of interfaces representing database tables.
 type Models struct {
 	BannedIPs
 	ChatLog
@@ -36,7 +36,7 @@ type Models struct {
 	variantsManager *variants.Manager
 }
 
-// NewModels opens a database connection based on the credentials in the ".env" file
+// NewModels opens a database connection based on the credentials in the ".env" file.
 func NewModels(
 	ctx context.Context,
 	logger *logger.Logger,
@@ -128,7 +128,7 @@ func NewModels(
 	return models, nil
 }
 
-// Close exposes the ability to close the underlying database connection
+// Close exposes the ability to close the underlying database connection.
 func (m *Models) Close() {
 	m.db.Close()
 }

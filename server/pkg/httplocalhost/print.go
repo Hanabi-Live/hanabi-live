@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func print(c *gin.Context) {
+func (m *Manager) print(c *gin.Context) {
 	// TODO
 	// print(c)
 	c.String(http.StatusOK, "success\n")

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func sendWarning(c *gin.Context, userID int) {
+func (m *Manager) sendWarning(c *gin.Context, userID int) {
 	// Validate that the admin sent a message
 	msg := c.PostForm("msg")
 	if msg == "" {

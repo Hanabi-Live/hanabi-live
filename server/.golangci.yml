@@ -1,42 +1,47 @@
 linters:
   enable-all: true
+  # Some linters are commented out because I am testing them out
   disable:
     # We use long functions
     - funlen
     # We use globals in the code base
-    - gochecknoglobals
+    #- gochecknoglobals
     # gocognit complains about having large functions
     - gocognit
     # goconst complains about common strings
-    - goconst
-    # gocritic complains about needing to make case statements
+    #- goconst
+    # gocritic complains about needing to make case statements,
+    # even for if statements with only 2 blocks, which is excessive
     - gocritic
     # gocyclo complains about having large functions
-    - gocyclo
+    #- gocyclo
     # We do not use conventional Golang comments
-    - godot
-    # goerr113 complains about creating new static errors
+    #- godot
+    # goerr113 complains about creating new static errors;
+    # making a package-level constructor for every single error is excessive
     - goerr113
     # gofmt is not needed because we are running goimports (which is a superset of gofmt)
-    - gofmt
+    #- gofmt
     # gofumpt is closed on the following issue:
-    # https://github.com/mvdan/gofumpt/issues/96
+    # https://github.com/golangci/golangci-lint/issues/1547
     - gofumpt
     # gomnd complains about magic numbers
-    - gomnd
-    # We manage long lines manually
+    #- gomnd
+    # We manage long lines manually (lll has no concept of ignoring long strings)
     - lll
     # We do not care about making structs take less memory
     - maligned
-    # nestif complains about some harmless nested if statements
+    # nestif complains about nested if statements, even for 2 nested blocks, which is excessive
     - nestif
     # nlreturn requires about excessive newlines around return statements
     - nlreturn
     # We do not need to use contexts in certain situations
-    - noctx
-    # We use some unused parameters for command function uniformity
+    #- noctx
+    # In command handlers, it is common to have unused parameters for uniformity
     - unparam
-    # We don't need to wrap all error messages
+    # We don't need to wrap all error messages;
+    # often times, the work function has no relevant information to add to the error
+    # (e.g. all of the database models functions)
     - wrapcheck
     # wsl requires excessive newlines around if statements
     - wsl

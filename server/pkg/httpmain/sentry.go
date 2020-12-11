@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func sentryMiddleware(c *gin.Context) {
+func (m *Manager) sentryMiddleware(c *gin.Context) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
@@ -16,7 +16,7 @@ func sentryMiddleware(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		hLogger.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
+		m.logger.Errorf("Failed to parse the IP address from \"%v\": %v", r.RemoteAddr, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

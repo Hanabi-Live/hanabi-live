@@ -10,12 +10,16 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-var (
-	// We don't want to use the default http.Client because it has no default timeout set
-	httpClientWithTimeout = &http.Client{ // nolint: exhaustivestruct
-		Timeout: constants.HTTPWriteTimeout,
+func getCommonHTTPErrors() []string {
+	return []string{
+		"client disconnected",
+		"http2: stream closed",
+		"write: broken pipe",
+		"write: connection reset by peer",
+		"write: connection timed out",
+		"i/o timeout",
 	}
-)
+}
 
 func Init(logger *logger.Logger, isDev bool, gitCommitOnStart string) bool {
 	// We only want to report errors in production
@@ -31,10 +35,15 @@ func Init(logger *logger.Logger, isDev bool, gitCommitOnStart string) bool {
 		return false
 	}
 
+	// The default http.Client has no default timeout set
+	httpClientWithTimeout := &http.Client{ // nolint: exhaustivestruct
+		Timeout: constants.HTTPWriteTimeout,
+	}
+
 	// Initialize Sentry
 	if err := sentry.Init(sentry.ClientOptions{ // nolint: exhaustivestruct
 		Dsn:          sentryDSN,
-		IgnoreErrors: commonHTTPErrors,
+		IgnoreErrors: getCommonHTTPErrors(),
 		Release:      gitCommitOnStart,
 		HTTPClient:   httpClientWithTimeout,
 	}); err != nil {
@@ -44,19 +53,11 @@ func Init(logger *logger.Logger, isDev bool, gitCommitOnStart string) bool {
 	return true
 }
 
-var commonHTTPErrors = []string{
-	"client disconnected",
-	"http2: stream closed",
-	"write: broken pipe",
-	"write: connection reset by peer",
-	"write: connection timed out",
-	"i/o timeout",
-}
-
-// IsCommonHTTPError checks for some errors that are common and expected
-// (e.g. the user presses the "Stop" button while the template is executing)
+// IsCommonHTTPError checks for some errors that are common and expected.
+// (For example, the end-user might press the "Stop" button in their browser while the template is
+// executing.)
 func IsCommonHTTPError(errorMsg string) bool {
-	for _, commonHTTPError := range commonHTTPErrors {
+	for _, commonHTTPError := range getCommonHTTPErrors() {
 		if strings.HasSuffix(errorMsg, commonHTTPError) {
 			return true
 		}

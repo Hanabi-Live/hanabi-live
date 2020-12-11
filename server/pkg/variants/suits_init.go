@@ -35,12 +35,10 @@ func (m *Manager) SuitsInit(dataPath string) {
 		// Validate that there is an abbreviation
 		// If it is not specified, use the abbreviation of the color with the same name
 		// Otherwise, assume that it is the first letter of the suit
-		if suit.Abbreviation == "" {
-			if len(suit.ClueColors) > 0 {
-				if color, ok := m.Colors[suit.ClueColors[0]]; ok {
-					if color.Abbreviation != "" {
-						suit.Abbreviation = color.Abbreviation
-					}
+		if suit.Abbreviation == "" && len(suit.ClueColors) > 0 {
+			if color, ok := m.Colors[suit.ClueColors[0]]; ok {
+				if color.Abbreviation != "" {
+					suit.Abbreviation = color.Abbreviation
 				}
 			}
 		}

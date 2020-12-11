@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func variant(c *gin.Context) {
+func (m *Manager) variant(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
@@ -34,7 +34,7 @@ func variant(c *gin.Context) {
 
 	// Validate that it is a valid variant ID
 	var variantObject *variants.Variant
-	if v, ok := hVariantsManager.VariantsIDMap[variantID]; !ok {
+	if v, ok := m.variantsManager.VariantsIDMap[variantID]; !ok {
 		http.Error(w, "Error: That is not a valid variant ID.", http.StatusBadRequest)
 		return
 	} else {
@@ -43,8 +43,8 @@ func variant(c *gin.Context) {
 
 	// Get the stats for this variant
 	var variantStats models.VariantStatsRow
-	if v, err := hModels.VariantStats.Get(c, variantID); err != nil {
-		hLogger.Errorf("Failed to get the variant stats for variant %v: %v", variantID, err)
+	if v, err := m.models.VariantStats.Get(c, variantID); err != nil {
+		m.logger.Errorf("Failed to get the variant stats for variant %v: %v", variantID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -59,8 +59,8 @@ func variant(c *gin.Context) {
 	for _, bestScore := range variantStats.BestScores {
 		bestScores = append(bestScores, bestScore.Score)
 	}
-	maxScoreRateFloat := float64(variantStats.NumMaxScores) / float64(variantStats.NumGames) * 100
-	strikeoutRateFloat := float64(variantStats.NumStrikeouts) / float64(variantStats.NumGames) * 100
+	maxScoreRateFloat := float64(variantStats.NumMaxScores) / float64(variantStats.NumGames) * 100   // nolint: gomnd
+	strikeoutRateFloat := float64(variantStats.NumStrikeouts) / float64(variantStats.NumGames) * 100 // nolint: gomnd
 
 	// Round them to 1 decimal place
 	maxScoreRate := fmt.Sprintf("%.1f", maxScoreRateFloat)
@@ -70,14 +70,14 @@ func variant(c *gin.Context) {
 	// If it ends in ".0", remove the unnecessary digits
 	maxScoreRate = strings.TrimSuffix(maxScoreRate, ".0")
 	strikeoutRate = strings.TrimSuffix(strikeoutRate, ".0")
-	if averageScore == "0.0" {
+	if averageScore == zeroString {
 		averageScore = "-"
 	}
 
 	// Get additional stats (that are not part of the "variant_stats" table)
 	var stats models.Stats
-	if v, err := hModels.Games.GetVariantStats(c, variantID); err != nil {
-		hLogger.Errorf("Failed to get the stats for variant %v: %v", variantID, err)
+	if v, err := m.models.Games.GetVariantStats(c, variantID); err != nil {
+		m.logger.Errorf("Failed to get the stats for variant %v: %v", variantID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -92,7 +92,7 @@ func variant(c *gin.Context) {
 	timePlayed := ""
 	if stats.TimePlayed != 0 {
 		if v, err := util.SecondsToDurationString(stats.TimePlayed); err != nil {
-			hLogger.Errorf(
+			m.logger.Errorf(
 				"Failed to parse the duration of \"%v\" for the variant stats: %v",
 				stats.TimePlayed,
 				err,
@@ -112,7 +112,7 @@ func variant(c *gin.Context) {
 	timePlayedSpeedrun := ""
 	if stats.TimePlayedSpeedrun != 0 {
 		if v, err := util.SecondsToDurationString(stats.TimePlayedSpeedrun); err != nil {
-			hLogger.Errorf(
+			m.logger.Errorf(
 				"Failed to parse the duration of \"%v\" for the variant stats: %v",
 				stats.TimePlayedSpeedrun,
 				err,
@@ -130,8 +130,8 @@ func variant(c *gin.Context) {
 
 	// Get recent games played on this variant
 	var gameIDs []int
-	if v, err := hModels.Games.GetGameIDsVariant(c, variantID, 50); err != nil {
-		hLogger.Errorf("Failed to get the game IDs for variant %v: %v", variantID, err)
+	if v, err := m.models.Games.GetGameIDsVariant(c, variantID, 50); err != nil {
+		m.logger.Errorf("Failed to get the game IDs for variant %v: %v", variantID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -144,8 +144,8 @@ func variant(c *gin.Context) {
 
 	// Get the games corresponding to these IDs
 	var gameHistoryList []*models.GameHistory
-	if v, err := hModels.Games.GetHistory(c, gameIDs); err != nil {
-		hLogger.Errorf("Failed to get the games from the database: %v", err)
+	if v, err := m.models.Games.GetHistory(c, gameIDs); err != nil {
+		m.logger.Errorf("Failed to get the games from the database: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -174,6 +174,5 @@ func variant(c *gin.Context) {
 
 		RecentGames: gameHistoryList,
 	}
-
-	serveTemplate(w, data, "variant")
+	m.serveTemplate(w, data, "variant")
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func cancel(c *gin.Context) {
+func (m *Manager) cancel(c *gin.Context) {
 	// TODO
 	/*
 		// Local variables

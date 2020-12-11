@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func shutdown(c *gin.Context) {
+func (m *Manager) shutdown(c *gin.Context) {
 	// TODO
 	/*
 		// Local variables

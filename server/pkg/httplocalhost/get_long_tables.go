@@ -9,7 +9,7 @@ import (
 
 const longTableLength = time.Minute * 150 // 2.5 hours
 
-func getLongTables(c *gin.Context) {
+func (m *Manager) getLongTables(c *gin.Context) {
 	// TODO
 	/*
 		now := time.Now()

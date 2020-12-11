@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func userAction(c *gin.Context) {
+func (m *Manager) userAction(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
@@ -21,8 +21,8 @@ func userAction(c *gin.Context) {
 
 	// Check to see if this username exists in the database
 	var userID int
-	if exists, v, err := hModels.Users.Get(c, username); err != nil {
-		hLogger.Errorf("Failed to get user \"%v\": %v", username, err)
+	if exists, v, err := m.models.Users.Get(c, username); err != nil {
+		m.logger.Errorf("Failed to get user \"%v\": %v", username, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -39,8 +39,8 @@ func userAction(c *gin.Context) {
 
 	// Get the IP for this user
 	var lastIP string
-	if v, err := hModels.Users.GetLastIP(c, username); err != nil {
-		hLogger.Errorf(
+	if v, err := m.models.Users.GetLastIP(c, username); err != nil {
+		m.logger.Errorf(
 			"Failed to get the last IP from the database for %v: %v",
 			util.PrintUser(userID, username),
 			err,
@@ -52,13 +52,13 @@ func userAction(c *gin.Context) {
 
 	path := c.Request.URL.Path
 	if path == "/ban" {
-		ban(c, username, lastIP, userID)
+		m.ban(c, username, lastIP, userID)
 	} else if path == "/mute" {
-		mute(c, username, lastIP, userID)
+		m.mute(c, username, lastIP, userID)
 	} else if path == "/sendWarning" {
-		sendWarning(c, userID)
+		m.sendWarning(c, userID)
 	} else if path == "/sendError" {
-		sendError(c, userID)
+		m.sendError(c, userID)
 	} else {
 		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
 	}

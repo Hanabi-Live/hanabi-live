@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func timeLeft(c *gin.Context) {
+func (m *Manager) timeLeft(c *gin.Context) {
 	// TODO
 
 	/*

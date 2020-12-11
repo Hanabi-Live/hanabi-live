@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func export(c *gin.Context) {
+func (m *Manager) export(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
@@ -32,8 +32,8 @@ func export(c *gin.Context) {
 	}
 
 	// Check to see if the game exists in the database
-	if exists, err := hModels.Games.Exists(c, databaseID); err != nil {
-		hLogger.Errorf("Failed to check to see if database ID %v exists: %v", databaseID, err)
+	if exists, err := m.models.Games.Exists(c, databaseID); err != nil {
+		m.logger.Errorf("Failed to check to see if database ID %v exists: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -47,8 +47,8 @@ func export(c *gin.Context) {
 
 	// Get the players from the database
 	var dbPlayers []*models.DBPlayer
-	if v, err := hModels.Games.GetPlayers(c, databaseID); err != nil {
-		hLogger.Errorf("Failed to get the players from the database for game %v: %v", databaseID, err)
+	if v, err := m.models.Games.GetPlayers(c, databaseID); err != nil {
+		m.logger.Errorf("Failed to get the players from the database for game %v: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -67,8 +67,8 @@ func export(c *gin.Context) {
 
 	// Get the options from the database
 	var opts *options.Options
-	if v, err := hModels.Games.GetOptions(c, databaseID); err != nil {
-		hLogger.Errorf(
+	if v, err := m.models.Games.GetOptions(c, databaseID); err != nil {
+		m.logger.Errorf(
 			"Failed to get the options from the database for game %v: %v",
 			databaseID,
 			err,
@@ -87,8 +87,8 @@ func export(c *gin.Context) {
 	// Thus, we must recalculate the deck order based on the seed of the game
 	// Get the seed from the database
 	var seed string
-	if v, err := hModels.Games.GetSeed(c, databaseID); err != nil {
-		hLogger.Errorf("Failed to get the seed from the database for game %v: %v", databaseID, err)
+	if v, err := m.models.Games.GetSeed(c, databaseID); err != nil {
+		m.logger.Errorf("Failed to get the seed from the database for game %v: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -114,8 +114,8 @@ func export(c *gin.Context) {
 
 	// Get the actions from the database
 	var actions []*options.GameAction
-	if v, err := hModels.GameActions.GetAll(c, databaseID); err != nil {
-		hLogger.Errorf(
+	if v, err := m.models.GameActions.GetAll(c, databaseID); err != nil {
+		m.logger.Errorf(
 			"Failed to get the actions from the database for game %v: %v",
 			databaseID,
 			err,
@@ -132,8 +132,8 @@ func export(c *gin.Context) {
 
 	// Get the variant
 	var variant *variants.Variant
-	if v, ok := hVariantsManager.Variants[g.Options.VariantName]; !ok {
-		hLogger.Errorf(
+	if v, ok := m.variantsManager.Variants[g.Options.VariantName]; !ok {
+		m.logger.Errorf(
 			"Failed to get the variant of \"%v\" from the variants map.",
 			g.Options.VariantName,
 		)
@@ -150,8 +150,8 @@ func export(c *gin.Context) {
 	// Get the notes from the database
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
-	if v, err := hModels.Games.GetNotes(c, databaseID, len(dbPlayers), noteSize); err != nil {
-		hLogger.Errorf("Failed to get the notes from the database for game %v: %v", databaseID, err)
+	if v, err := m.models.Games.GetNotes(c, databaseID, len(dbPlayers), noteSize); err != nil {
+		m.logger.Errorf("Failed to get the notes from the database for game %v: %v", databaseID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

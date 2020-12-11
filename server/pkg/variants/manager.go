@@ -16,7 +16,7 @@ type Manager struct {
 }
 
 func NewManager(logger *logger.Logger, dataPath string) *Manager {
-	manager := &Manager{
+	m := &Manager{
 		Colors:        make(map[string]*Color),
 		Suits:         make(map[string]*Suit),
 		Variants:      make(map[string]*Variant),
@@ -27,9 +27,9 @@ func NewManager(logger *logger.Logger, dataPath string) *Manager {
 		logger: logger,
 	}
 
-	manager.ColorsInit(dataPath)
-	manager.SuitsInit(dataPath)
-	manager.VariantsInit(dataPath)
+	m.ColorsInit(dataPath)
+	m.SuitsInit(dataPath)
+	m.VariantsInit(dataPath)
 
-	return manager
+	return m
 }

@@ -13,7 +13,7 @@ type ChatLog struct {
 	m *Models // Reverse reference
 }
 
-// ChatLogRow mirrors the "chat_log" table row
+// ChatLogRow mirrors the "chat_log" database table row.
 type ChatLogRow struct {
 	UserID  int
 	Message string
@@ -69,7 +69,6 @@ type DBChatMessage struct {
 	Datetime    time.Time      `json:"datetime"`
 }
 
-// Get the past messages sent in the lobby
 func (cl *ChatLog) Get(ctx context.Context, room string, count int) ([]DBChatMessage, error) {
 	SQLString := `
 		SELECT

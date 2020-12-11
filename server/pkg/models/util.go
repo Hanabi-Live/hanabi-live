@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// getBulkInsertSQL is a helper function to prepare a SQL query for a bulk insert
+// getBulkInsertSQL is a helper function to prepare a SQL query for a bulk insert.
 //
 // For example:
 //
@@ -23,7 +23,7 @@ import (
 //     ($5, $6)
 //
 // Also see:
-// https://stackoverflow.com/questions/12486436/how-do-i-batch-sql-statements-with-package-database-sql
+// https://stackoverflow.com/questions/12486436
 func getBulkInsertSQL(SQLString string, rowValueSQL string, numRows int) string {
 	// Combine the base SQL string and N value strings
 	valueStrings := make([]string, 0, numRows)
@@ -44,10 +44,10 @@ func getBulkInsertSQL(SQLString string, rowValueSQL string, numRows int) string 
 	return fmt.Sprintf(SQLString, numbers...)
 }
 
-// getBulkInsertSQLSimple is a helper function to prepare a SQL query for a bulk insert
+// getBulkInsertSQLSimple is a helper function to prepare a SQL query for a bulk insert.
 // getBulkInsertSQLSimple is used over getBulkInsertSQL when all of the values are plain question
-// marks (e.g. a 1-for-1 value insertion)
-// The example given for getBulkInsertSQL is such a query
+// marks (e.g. a 1-for-1 value insertion).
+// The example given for getBulkInsertSQL is such a query.
 func getBulkInsertSQLSimple(SQLString string, numArgsPerRow int, numRows int) string {
 	questionMarks := make([]string, 0, numArgsPerRow)
 	for i := 0; i < numArgsPerRow; i++ {

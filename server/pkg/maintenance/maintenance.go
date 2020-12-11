@@ -15,6 +15,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	defaultHTTPPort  = 80
+	defaultHTTPSPort = 443
+)
+
 func main() {
 	// Initialize logging (in "logger.go")
 	hLogger := logger.New(true)
@@ -69,8 +74,8 @@ func main() {
 	useTLS := false
 	if len(tlsCertFile) != 0 && len(tlsKeyFile) != 0 {
 		useTLS = true
-		if port == 80 {
-			port = 443
+		if port == defaultHTTPPort {
+			port = defaultHTTPSPort
 		}
 	}
 

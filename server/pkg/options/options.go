@@ -6,9 +6,11 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
-// Options are things that are specified about the game upon table creation (before the game starts)
-// All of these are stored in the database as columns of the "games" table
-// A pointer to these options is copied into the Game struct when the game starts for convenience
+// Options are things that are specified about the game upon table creation (before the game
+// starts).
+//
+// All of these are stored in the database as columns of the "games" table.
+// A pointer to these options is copied into the Game struct when the game starts for convenience.
 type Options struct {
 	NumPlayers int `json:"numPlayers"`
 	// StartingPlayer is a legacy field for games prior to April 2020
@@ -28,7 +30,7 @@ type Options struct {
 	DetrimentalCharacters bool   `json:"detrimentalCharacters"`
 }
 
-// To minimize JSON output, we need to use pointers to each option instead of the normal type
+// To minimize JSON output, we need to use pointers to each option instead of the normal type.
 type JSON struct {
 	StartingPlayer        *int    `json:"startingPlayer,omitempty"`
 	Variant               *string `json:"variant,omitempty"`
@@ -45,8 +47,8 @@ type JSON struct {
 	DetrimentalCharacters *bool   `json:"detrimentalCharacters,omitempty"`
 }
 
-// ExtraOptions are extra specifications for the game; they are not recorded in the database
-// Similar to Options, a pointer to ExtraOptions is copied into the Game struct for convenience
+// ExtraOptions are extra specifications for the game; they are not recorded in the database.
+// Similar to Options, a pointer to ExtraOptions is copied into the Game struct for convenience.
 type ExtraOptions struct {
 	// -1 if an ongoing game, 0 if a JSON replay,
 	// a positive number if a database replay (or a "!replay" table)
@@ -81,7 +83,7 @@ type CardIdentity struct {
 	Rank      int `json:"rank"`
 }
 
-// These fields are described in "database_schema.sql"
+// These fields are described in "database_schema.sql".
 type GameAction struct {
 	Type   int `json:"type"`
 	Target int `json:"target"`
@@ -109,7 +111,7 @@ func NewOptions() *Options {
 }
 
 // GetModifier computes the integer modifier for the game options,
-// corresponding to the "ScoreModifier" constants in "constants.go"
+// corresponding to the "ScoreModifier" constants in "constants.go".
 func (o *Options) GetModifier() bitmask.Bitmask {
 	var modifier bitmask.Bitmask
 

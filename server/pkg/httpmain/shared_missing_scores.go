@@ -10,21 +10,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func sharedMissingScores(c *gin.Context) {
+func (m *Manager) sharedMissingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	var playerNames []string
-	if v1, v2, ok := parsePlayerNames(c); !ok {
+	if v1, v2, ok := m.parsePlayerNames(c); !ok {
 		return
 	} else {
 		playerIDs = v1
 		playerNames = v2
 	}
 
-	if len(playerIDs) < 2 {
+	if len(playerIDs) < 2 { // nolint: gomnd
 		http.Error(w, "Error: You must specify at least two players.", http.StatusNotFound)
 		return
 	}
@@ -33,8 +33,8 @@ func sharedMissingScores(c *gin.Context) {
 	variantStatsListList := make([][]*UserVariantStats, 0)
 	for i, playerID := range playerIDs {
 		var statsMap map[int]*models.UserStatsRow
-		if v, err := hModels.UserStats.GetAll(c, playerID); err != nil {
-			hLogger.Errorf(
+		if v, err := m.models.UserStats.GetAll(c, playerID); err != nil {
+			m.logger.Errorf(
 				"Failed to get all of the variant-specific stats for %v: %v",
 				util.PrintUser(playerID, playerNames[i]),
 				err,
@@ -49,7 +49,7 @@ func sharedMissingScores(c *gin.Context) {
 			statsMap = v
 		}
 
-		_, _, variantStatsList := getVariantStatsList(statsMap)
+		_, _, variantStatsList := m.getVariantStatsList(statsMap)
 		variantStatsListList = append(variantStatsListList, variantStatsList)
 	}
 
@@ -82,5 +82,5 @@ func sharedMissingScores(c *gin.Context) {
 
 		VariantStats: combinedVariantStatsList,
 	}
-	serveTemplate(w, data, "profile", "missing-scores")
+	m.serveTemplate(w, data, "profile", "missing-scores")
 }

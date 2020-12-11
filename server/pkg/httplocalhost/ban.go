@@ -1,3 +1,4 @@
+// nolint: dupl
 package httplocalhost
 
 import (
@@ -7,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ban(c *gin.Context, username string, ip string, userID int) {
+func (m *Manager) ban(c *gin.Context, username string, ip string, userID int) {
 	// Local variables
 	w := c.Writer
 
 	// Check to see if this IP is already banned
-	if banned, err := hModels.BannedIPs.Check(c, ip); err != nil {
-		hLogger.Errorf("Failed to check to see if the IP \"%v\" is banned: %v", ip, err)
+	if banned, err := m.models.BannedIPs.Check(c, ip); err != nil {
+		m.logger.Errorf("Failed to check to see if the IP \"%v\" is banned: %v", ip, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -31,8 +32,8 @@ func ban(c *gin.Context, username string, ip string, userID int) {
 	}
 
 	// Insert a new row in the database for this IP
-	if err := hModels.BannedIPs.Insert(c, ip, userID); err != nil {
-		hLogger.Errorf("Failed to insert the banned IP row: %v", err)
+	if err := m.models.BannedIPs.Insert(c, ip, userID); err != nil {
+		m.logger.Errorf("Failed to insert the banned IP row: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

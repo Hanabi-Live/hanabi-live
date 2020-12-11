@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func seed(c *gin.Context) {
+func (m *Manager) seed(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
@@ -21,8 +21,8 @@ func seed(c *gin.Context) {
 
 	// Get the list of game IDs played on this seed
 	var gameIDs []int
-	if v, err := hModels.Games.GetGameIDsSeed(c, seed); err != nil {
-		hLogger.Errorf("Failed to get the game IDs from the database for seed \"%v\": %v", seed, err)
+	if v, err := m.models.Games.GetGameIDsSeed(c, seed); err != nil {
+		m.logger.Errorf("Failed to get the game IDs from the database for seed \"%v\": %v", seed, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -36,8 +36,8 @@ func seed(c *gin.Context) {
 	// Get the history for these game IDs
 	// (with a custom sort by score)
 	var gameHistoryList []*models.GameHistory
-	if v, err := hModels.Games.GetHistoryCustomSort(c, gameIDs, "seed"); err != nil {
-		hLogger.Errorf("Failed to get the history: %v", err)
+	if v, err := m.models.Games.GetHistoryCustomSort(c, gameIDs, "seed"); err != nil {
+		m.logger.Errorf("Failed to get the history: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -59,5 +59,5 @@ func seed(c *gin.Context) {
 		NamesTitle:   fmt.Sprintf("seed: %v", seed),
 		SpecificSeed: true,
 	}
-	serveTemplate(w, data, "profile", "history")
+	m.serveTemplate(w, data, "profile", "history")
 }

@@ -6,8 +6,8 @@ type printData struct {
 	resultsChannel chan string
 }
 
-// Print is a helper function for getting a description of all current sessions
-// It will block until the message is received
+// Print is a helper function for getting a description of all current sessions.
+// It will block until the message is received.
 func (m *Manager) Print() string {
 	resultsChannel := make(chan string)
 

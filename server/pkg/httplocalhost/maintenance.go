@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func maintenance(c *gin.Context) {
+func (m *Manager) maintenance(c *gin.Context) {
 	// TODO
 	/*
 		// Local variables

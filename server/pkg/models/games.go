@@ -16,8 +16,8 @@ type Games struct {
 	m *Models
 }
 
-// GameRow roughly mirrors the "games" table row
-// (it contains a subset of the information in the Game struct)
+// GameRow roughly mirrors the "games" database table row.
+// It contains a subset of the information in the Game struct.
 type GameRow struct {
 	Name             string
 	Options          *options.Options
@@ -191,7 +191,7 @@ func (g *Games) GetHistoryCustomSort(
 			games1.datetime_started,
 			games1.datetime_finished,
 			(
-				/*
+				/**
 				 * We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
 				 * does not exist
 				 * This row should always exist, but check it just to be safe
@@ -209,7 +209,7 @@ func (g *Games) GetHistoryCustomSort(
 				WHERE game_participants.game_id = games1.id
 			) AS player_names
 		FROM games AS games1
-		/*
+		/**
 		 * We must use the ANY operator for matching an array of IDs:
 		 * https://github.com/jackc/pgx/issues/334
 		 */
@@ -379,7 +379,7 @@ func (g *Games) GetGameIDsFriends(
 		SELECT DISTINCT games.id
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
-		/*
+		/**
 		 * We must use the ANY operator for matching an array of IDs:
 		 * https://github.com/jackc/pgx/issues/334
 		 */
@@ -900,10 +900,10 @@ func (g *Games) GetProfileStats(ctx context.Context, userID int) (Stats, error) 
 					AND games.speedrun = FALSE
 			) AS num_games,
 			(
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if the user has not yet played this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if the user has not yet played this variant
+				 */
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
@@ -921,10 +921,10 @@ func (g *Games) GetProfileStats(ctx context.Context, userID int) (Stats, error) 
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if the user has not yet played this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if the user has not yet played this variant
+				 */
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
@@ -959,10 +959,10 @@ func (g *Games) GetGlobalStats(ctx context.Context) (Stats, error) {
 				WHERE games.speedrun = FALSE
 			) AS num_games,
 			(
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if a there are no games played yet
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if a there are no games played yet
+				 */
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
@@ -977,10 +977,10 @@ func (g *Games) GetGlobalStats(ctx context.Context) (Stats, error) {
 				WHERE games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if a there are no games played yet
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if a there are no games played yet
+				 */
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
@@ -1014,10 +1014,10 @@ func (g *Games) GetVariantStats(ctx context.Context, variantID int) (Stats, erro
 					AND speedrun = FALSE
 			) AS num_games,
 			(
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if a there are no games played yet of this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if a there are no games played yet of this variant
+				 */
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
@@ -1034,10 +1034,10 @@ func (g *Games) GetVariantStats(ctx context.Context, variantID int) (Stats, erro
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				/*
-				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if a there are no games played yet of this variant
-				*/
+				/**
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if a there are no games played yet of this variant
+				 */
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)

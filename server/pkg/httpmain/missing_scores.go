@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func missingScores(c *gin.Context) {
+func (m *Manager) missingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	var user models.User
-	if v, ok := parsePlayerName(c); !ok {
+	if v, ok := m.parsePlayerName(c); !ok {
 		return
 	} else {
 		user = v
@@ -34,8 +34,8 @@ func missingScores(c *gin.Context) {
 
 	// Get all of the variant-specific stats for this player
 	var statsMap map[int]*models.UserStatsRow
-	if v, err := hModels.UserStats.GetAll(c, user.ID); err != nil {
-		hLogger.Errorf(
+	if v, err := m.models.UserStats.GetAll(c, user.ID); err != nil {
+		m.logger.Errorf(
 			"Failed to get all of the variant-specific stats for %v: %v",
 			util.PrintUser(user.ID, user.Username),
 			err,
@@ -50,8 +50,8 @@ func missingScores(c *gin.Context) {
 		statsMap = v
 	}
 
-	numMaxScores, numMaxScoresPerType, variantStatsList := getVariantStatsList(statsMap)
-	percentageMaxScoresString, percentageMaxScoresPerType := getPercentageMaxScores(
+	numMaxScores, numMaxScoresPerType, variantStatsList := m.getVariantStatsList(statsMap)
+	percentageMaxScoresString, percentageMaxScoresPerType := m.getPercentageMaxScores(
 		numMaxScores,
 		numMaxScoresPerType,
 	)
@@ -68,5 +68,5 @@ func missingScores(c *gin.Context) {
 
 		VariantStats: variantStatsList,
 	}
-	serveTemplate(w, data, "profile", "missing-scores")
+	m.serveTemplate(w, data, "profile", "missing-scores")
 }

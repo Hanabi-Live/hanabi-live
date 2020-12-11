@@ -19,8 +19,8 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypePrint] = print
 }
 
-// ListenForRequests will block until messages are sent on the request channel
-// It is meant to be run in a new goroutine
+// ListenForRequests will block until messages are sent on the request channel.
+// It is meant to be run in a new goroutine.
 func (m *Manager) ListenForRequests() {
 	for {
 		req := <-m.requests

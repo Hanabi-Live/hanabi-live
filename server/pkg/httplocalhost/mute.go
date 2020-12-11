@@ -1,3 +1,4 @@
+// nolint: dupl
 package httplocalhost
 
 import (
@@ -7,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func mute(c *gin.Context, username string, ip string, userID int) {
+func (m *Manager) mute(c *gin.Context, username string, ip string, userID int) {
 	// Local variables
 	w := c.Writer
 
 	// Check to see if this IP is already muted
-	if muted, err := hModels.MutedIPs.Check(c, ip); err != nil {
-		hLogger.Errorf("Failed to check to see if the IP \"%v\" is muted: %v", ip, err)
+	if muted, err := m.models.MutedIPs.Check(c, ip); err != nil {
+		m.logger.Errorf("Failed to check to see if the IP \"%v\" is muted: %v", ip, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -31,8 +32,8 @@ func mute(c *gin.Context, username string, ip string, userID int) {
 	}
 
 	// Insert a new row in the database for this IP
-	if err := hModels.MutedIPs.Insert(c, ip, userID); err != nil {
-		hLogger.Errorf("Failed to insert the muted IP row: %v", err)
+	if err := m.models.MutedIPs.Insert(c, ip, userID); err != nil {
+		m.logger.Errorf("Failed to insert the muted IP row: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

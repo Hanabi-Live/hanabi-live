@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func sendError(c *gin.Context, userID int) {
+func (m *Manager) sendError(c *gin.Context, userID int) {
 	// Validate that the admin sent a message
 	msg := c.PostForm("msg")
 	if msg == "" {

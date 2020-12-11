@@ -13,20 +13,18 @@ type UserSettings struct {
 	m *Models // Reverse reference
 }
 
-var (
+func (us *UserSettings) Get(ctx context.Context, userID int) (settings.Settings, error) {
 	// The database schema must also be configured with any default settings
 	// This cannot be a pointer because we need to copy it
-	defaultSettings = settings.Settings{ // nolint: exhaustivestruct
+	defaultSettings := settings.Settings{ // nolint: exhaustivestruct
 		SoundMove:                     true,
 		SoundTimer:                    true,
-		Volume:                        50,
+		Volume:                        50, // nolint: gomnd
 		CreateTableVariant:            variants.DefaultVariantName,
-		CreateTableTimeBaseMinutes:    2,
-		CreateTableTimePerTurnSeconds: 20,
+		CreateTableTimeBaseMinutes:    2,  // nolint: gomnd
+		CreateTableTimePerTurnSeconds: 20, // nolint: gomnd
 	}
-)
 
-func (us *UserSettings) Get(ctx context.Context, userID int) (settings.Settings, error) {
 	SQLString := `
 		SELECT
 			desktop_notification,

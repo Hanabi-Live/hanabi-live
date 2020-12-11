@@ -65,9 +65,9 @@ func (uf *UserFriends) GetAllUsernames(ctx context.Context, userID int) ([]strin
 	return friends, nil
 }
 
-// GetMap composes a map that represents all of this user's friends
+// GetMap composes a map that represents all of this user's friends.
 // We use a map to represent the friends instead of a slice because it is faster to check for the
-// existence of a friend in a map than to interate through a slice
+// existence of a friend in a map than to interate through a slice.
 func (uf *UserFriends) GetMap(ctx context.Context, userID int) (map[int]struct{}, error) {
 	SQLString := `
 		SELECT friend_id

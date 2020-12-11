@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func gracefulRestart(c *gin.Context) {
+func (m *Manager) gracefulRestart(c *gin.Context) {
 	// We need to call this in a new goroutine or else the return string will never get sent
 	// TODO
 	// go gracefulRestart(c)

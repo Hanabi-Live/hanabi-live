@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func tags(c *gin.Context) {
+func (m *Manager) tags(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	var user models.User
-	if v, ok := parsePlayerName(c); !ok {
+	if v, ok := m.parsePlayerName(c); !ok {
 		return
 	} else {
 		user = v
@@ -22,8 +22,8 @@ func tags(c *gin.Context) {
 
 	// Search through the database for tags matching this user ID
 	var gamesMap map[int][]string
-	if v, err := hModels.GameTags.SearchByUserID(c, user.ID); err != nil {
-		hLogger.Errorf("Failed to search for games matching a user ID of %v: %v", user.ID, err)
+	if v, err := m.models.GameTags.SearchByUserID(c, user.ID); err != nil {
+		m.logger.Errorf("Failed to search for games matching a user ID of %v: %v", user.ID, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -45,8 +45,8 @@ func tags(c *gin.Context) {
 
 	// Get the games corresponding to these IDs
 	var gameHistoryList []*models.GameHistory
-	if v, err := hModels.Games.GetHistory(c, gameIDs); err != nil {
-		hLogger.Errorf("Failed to get the games from the database: %v", err)
+	if v, err := m.models.Games.GetHistory(c, gameIDs); err != nil {
+		m.logger.Errorf("Failed to get the games from the database: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -72,5 +72,5 @@ func tags(c *gin.Context) {
 		History: gameHistoryList,
 		Tags:    gamesMap,
 	}
-	serveTemplate(w, data, "profile", "history")
+	m.serveTemplate(w, data, "profile", "history")
 }

@@ -35,8 +35,8 @@ type NewSessionData struct {
 	errChannel chan error
 }
 
-// NewSession is a helper function for requesting a new session
-// It will block until an error is received (e.g. the connection closes)
+// NewSession is a helper function for requesting a new session.
+// It will block until an error is received (e.g. the connection closes).
 func (m *Manager) NewSession(data *NewSessionData) error {
 	errChannel := make(chan error)
 

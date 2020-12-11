@@ -1,10 +1,10 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -14,6 +14,65 @@ import (
 	"github.com/mozillazg/go-unidecode"
 	"golang.org/x/text/unicode/norm"
 )
+
+func FormatTimestampUnix(datetime time.Time) string {
+	return datetime.Format("Mon Jan 02 15:04:05 MST 2006")
+}
+
+func GetCurrentTimestamp() string {
+	return FormatTimestampUnix(time.Now())
+}
+
+func GetReplayURL(domain string, useTLS bool, args []string) string {
+	if len(args) == 0 {
+		return "The format of the /replay command is: /replay [game ID] [turn number]"
+	}
+
+	// Validate that the first argument is an integer
+	arg1 := args[0]
+	args = args[1:] // This will be an empty slice if there is nothing after the command
+	var id int
+	if v, err := strconv.Atoi(arg1); err != nil {
+		if _, err := strconv.ParseFloat(arg1, 64); err != nil {
+			return fmt.Sprintf("\"%v\" is not an integer.", arg1)
+		}
+		return "The /replay command only accepts integers."
+	} else {
+		id = v
+	}
+
+	if len(args) == 0 {
+		// They specified an ID but not a turn
+		path := fmt.Sprintf("/replay/%v", id)
+		url := getURLFromPath(useTLS, domain, path)
+		return url
+	}
+
+	// Validate that the second argument is an integer
+	arg2 := args[0]
+	var turn int
+	if v, err := strconv.Atoi(arg2); err != nil {
+		if _, err := strconv.ParseFloat(arg2, 64); err != nil {
+			return fmt.Sprintf("\"%v\" is not an integer.", arg2)
+		}
+		return "The /replay command only accepts integers."
+	} else {
+		turn = v
+	}
+
+	// They specified an ID and a turn
+	path := fmt.Sprintf("/replay/%v#%v", id, turn)
+	url := getURLFromPath(useTLS, domain, path)
+	return url
+}
+
+func getURLFromPath(useTLS bool, domain string, path string) string {
+	protocol := "http"
+	if useTLS {
+		protocol = "https"
+	}
+	return fmt.Sprintf("%v://%v%v", protocol, domain, path)
+}
 
 func NormalizeString(str string) string {
 	// First, we transliterate the string to pure ASCII
@@ -55,18 +114,15 @@ func PrintUserCapitalized(userID int, username string) string {
 	return fmt.Sprintf("User \"%v\" (%v)", username, userID)
 }
 
-func SanitizeTag(tag string) (string, error) {
+func SanitizeTag(tag string) (string, string) {
 	// Validate tag length
 	if len(tag) > constants.MaxTagLength {
-		// nolint: golint, stylecheck
-		err := fmt.Errorf("Tags cannot be longer than %v characters.", constants.MaxTagLength)
-		return tag, err
+		return tag, "Tags cannot be longer than %v characters."
 	}
 
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(tag)) {
-		err := errors.New("Tags must contain valid UTF8 characters.") // nolint: golint, stylecheck
-		return tag, err
+		return tag, "Tags must contain valid UTF8 characters."
 	}
 
 	// Replace any whitespace that is not a space with a space
@@ -82,11 +138,10 @@ func SanitizeTag(tag string) (string, error) {
 
 	// Validate blank tags
 	if tag == "" {
-		err := errors.New("Tags cannot be blank.") // nolint: golint, stylecheck
-		return tag, err
+		return tag, "Tags cannot be blank."
 	}
 
-	return NormalizeString(tag), nil
+	return NormalizeString(tag), ""
 }
 
 func SecondsToDurationString(seconds int) (string, error) {
@@ -122,7 +177,7 @@ func SecondsToDurationString(seconds int) (string, error) {
 	// Convert the duration into days, hours, and minutes
 	hours := int(duration.Hours())
 	minutes := int(duration.Minutes())
-	minutes -= hours * 60
+	minutes -= hours * 60 // nolint: gomnd
 	days := 0
 	for hours > 24 {
 		days++
@@ -163,7 +218,7 @@ func SecondsToDurationString(seconds int) (string, error) {
 	return msg, nil
 }
 
-// From: https://stackoverflow.com/questions/51997276/how-one-can-do-case-insensitive-sorting-using-sort-strings-in-golang
+// From: https://stackoverflow.com/questions/51997276
 func SortStringsCaseInsensitive(slice []string) []string {
 	sort.Slice(slice, func(i, j int) bool {
 		return strings.ToLower(slice[i]) < strings.ToLower(slice[j])

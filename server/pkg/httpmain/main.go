@@ -8,17 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main(c *gin.Context) {
+func (m *Manager) main(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	// Check to see if we are currently recompiling the client
 	compiling := true
-	compilingPath := path.Join(hProjectPath, "compiling_client")
+	compilingPath := path.Join(m.projectPath, "compiling_client")
 	if _, err := os.Stat(compilingPath); os.IsNotExist(err) {
 		compiling = false
 	} else if err != nil {
-		hLogger.Errorf("Failed to check if the \"%v\" file exists: %v", compilingPath, err)
+		m.logger.Errorf("Failed to check if the \"%v\" file exists: %v", compilingPath, err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -37,9 +37,9 @@ func main(c *gin.Context) {
 
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:       title,
-		Domain:      domain,
+		Domain:      m.Domain,
 		Compiling:   compiling,
-		WebpackPort: webpackPort,
+		WebpackPort: m.webpackPort,
 	}
-	serveTemplate(w, data, "main")
+	m.serveTemplate(w, data, "main")
 }

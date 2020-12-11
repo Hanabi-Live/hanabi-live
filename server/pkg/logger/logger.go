@@ -11,16 +11,16 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// We use a custom wrapper on top of the "uber-go/zap" logger because we want to automatically
-// report all warnings and errors to Sentry
+// Logger is a custom wrapper on top of the "uber-go/zap" logger because we want to automatically
+// report all warnings and errors to Sentry.
 type Logger struct {
 	logger      *zap.Logger
 	usingSentry bool
 }
 
-// NewLogger creates a new wrapped logger
+// NewLogger creates a new wrapped logger.
 // The parent function must also run "defer logger.Sync()" so that logs are written before the
-// program exits
+// program exits.
 func New(isDev bool) *Logger {
 	// Prepare the encoder configuration for the zap library
 	zapEncoderConfig := zap.NewProductionEncoderConfig() // Start with the preset production config

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"hash/crc64"
 	"math/rand"
-	"net/url"
 	"os/exec"
 	"path"
 	"regexp"
@@ -49,14 +48,6 @@ func executeScript(scriptName string) error {
 	return nil
 }
 
-func formatTimestampUnix(datetime time.Time) string {
-	return datetime.Format("Mon Jan 02 15:04:05 MST 2006")
-}
-
-func getCurrentTimestamp() string {
-	return formatTimestampUnix(time.Now())
-}
-
 // From: http://golangcookbook.blogspot.com/2012/11/generate-random-number-in-given-range.html
 func getRandom(min int, max int) int {
 	max++
@@ -68,14 +59,6 @@ func getRandom(min int, max int) int {
 	return rand.Intn(max-min) + min // nolint: gosec
 }
 
-func getURLFromPath(path string) string {
-	protocol := "http"
-	if useTLS {
-		protocol = "https"
-	}
-	return fmt.Sprintf("%v://%v%v", protocol, domain, path)
-}
-
 func intInSlice(a int, slice []int) bool {
 	for _, b := range slice {
 		if b == a {
@@ -83,22 +66,6 @@ func intInSlice(a int, slice []int) bool {
 		}
 	}
 	return false
-}
-
-// isValidUrl tests a string to determine if it is a well-structured url or not
-// From: https://golangcode.com/how-to-check-if-a-string-is-a-url/
-func isValidURL(toTest string) bool {
-	_, err := url.ParseRequestURI(toTest)
-	if err != nil {
-		return false
-	}
-
-	u, err := url.Parse(toTest)
-	if err != nil || u.Scheme == "" || u.Host == "" {
-		return false
-	}
-
-	return true
 }
 
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go

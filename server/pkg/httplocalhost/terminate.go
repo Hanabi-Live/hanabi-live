@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func terminate(c *gin.Context) {
+func (m *Manager) terminate(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 

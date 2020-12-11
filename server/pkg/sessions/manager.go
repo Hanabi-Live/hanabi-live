@@ -6,8 +6,8 @@ import (
 )
 
 // Manager is an object that handles reading, writing, and organizing all of the WebSocket sessions,
-// using the "nhooyr.io/websocket" library
-// It listens for requests in a new goroutine
+// using the "nhooyr.io/websocket" library.
+// It listens for requests in a new goroutine.
 type Manager struct {
 	// We don't need a mutex for the map because only the manager goroutine will access it
 	sessions map[int]*session

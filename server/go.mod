@@ -26,5 +26,6 @@ require (
 	github.com/tevino/abool v1.2.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/text v0.3.4
+	golang.org/x/tools v0.0.0-20201208233053-a543418bbed2 // indirect
 	nhooyr.io/websocket v1.8.6
 )

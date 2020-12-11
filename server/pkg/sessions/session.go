@@ -32,8 +32,8 @@ type session struct {
 	sendChannel chan []byte // The messages sent to the remote user
 }
 
-// read is the function that handles reading data from a session
-// It is meant to be run in a new goroutine
+// read is the function that handles reading data from a session.
+// It is meant to be run in a new goroutine.
 func (s *session) read(m *Manager) {
 	// This will block until the connection is closed
 	err := s.waitForIncomingMsgs(s.ctx, m)
@@ -50,7 +50,7 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 	for {
 		var msg string
 		if messageType, v, err := s.conn.Read(s.ctx); err != nil {
-			return err
+			return fmt.Errorf("failed to read from a WebSocket connection: %w", err)
 		} else if messageType != websocket.MessageText {
 			return fmt.Errorf(
 				"received a WebSocket message of a type that was not text: %v",
@@ -67,8 +67,8 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 	}
 }
 
-// write is the function that handles writing data from a session
-// It is meant to be run in a new goroutine
+// write is the function that handles writing data from a session.
+// It is meant to be run in a new goroutine.
 func (s *session) write(m *Manager) {
 	// This will block until the connection is closed
 	err := s.waitForOutgoingMsgs()

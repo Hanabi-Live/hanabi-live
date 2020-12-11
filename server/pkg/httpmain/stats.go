@@ -24,15 +24,15 @@ type VariantStatsData struct {
 	StrikeoutRate string
 }
 
-func stats(c *gin.Context) {
+func (m *Manager) stats(c *gin.Context) {
 	// Local variables
 	w := c.Writer
-	numVariants := len(hVariantsManager.VariantNames)
+	numVariants := len(m.variantsManager.VariantNames)
 
 	// Get some global statistics
 	var globalStats models.Stats
-	if v, err := hModels.Games.GetGlobalStats(c); err != nil {
-		hLogger.Errorf("Failed to get the global stats: %v", err)
+	if v, err := m.models.Games.GetGlobalStats(c); err != nil {
+		m.logger.Errorf("Failed to get the global stats: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -47,7 +47,7 @@ func stats(c *gin.Context) {
 	timePlayed := ""
 	if globalStats.TimePlayed != 0 {
 		if v, err := util.SecondsToDurationString(globalStats.TimePlayed); err != nil {
-			hLogger.Errorf(
+			m.logger.Errorf(
 				"Failed to parse the duration of \"%v\" for the global stats: %v",
 				globalStats.TimePlayed,
 				err,
@@ -67,7 +67,7 @@ func stats(c *gin.Context) {
 	timePlayedSpeedrun := ""
 	if globalStats.TimePlayedSpeedrun != 0 {
 		if v, err := util.SecondsToDurationString(globalStats.TimePlayedSpeedrun); err != nil {
-			hLogger.Errorf(
+			m.logger.Errorf(
 				"Failed to parse the duration of \"%v\" for the global stats: %v",
 				globalStats.TimePlayedSpeedrun,
 				err,
@@ -85,8 +85,8 @@ func stats(c *gin.Context) {
 
 	// Get the stats for all variants
 	var statsMap map[int]models.VariantStatsRow
-	if v, err := hModels.VariantStats.GetAll(c); err != nil {
-		hLogger.Errorf("Failed to get the stats for all the variants: %v", err)
+	if v, err := m.models.VariantStats.GetAll(c); err != nil {
+		m.logger.Errorf("Failed to get the stats for all the variants: %v", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -102,8 +102,8 @@ func stats(c *gin.Context) {
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]*VariantStatsData, 0)
-	for _, name := range hVariantsManager.VariantNames {
-		variant := hVariantsManager.Variants[name]
+	for _, name := range m.variantsManager.VariantNames {
+		variant := m.variantsManager.Variants[name]
 		maxScore := len(variant.Suits) * constants.PointsPerSuit
 		variantStats := &VariantStatsData{ // nolint: exhaustivestruct
 			ID:   variant.ID,
@@ -126,13 +126,13 @@ func stats(c *gin.Context) {
 
 			// Round the average score to 1 decimal place
 			variantStats.AverageScore = fmt.Sprintf("%.1f", stats.AverageScore)
-			if variantStats.AverageScore == "0.0" {
+			if variantStats.AverageScore == zeroString {
 				variantStats.AverageScore = "-"
 			}
 
 			if stats.NumGames > 0 {
-				strikeoutRate := float64(stats.NumStrikeouts) / float64(stats.NumGames) * 100
-				maxScoreRate := float64(stats.NumMaxScores) / float64(stats.NumGames) * 100
+				strikeoutRate := float64(stats.NumStrikeouts) / float64(stats.NumGames) * 100 // nolint: gomnd
+				maxScoreRate := float64(stats.NumMaxScores) / float64(stats.NumGames) * 100   // nolint: gomnd
 
 				// Round them to 1 decimal place
 				variantStats.StrikeoutRate = fmt.Sprintf("%.1f", strikeoutRate)
@@ -155,13 +155,13 @@ func stats(c *gin.Context) {
 
 	percentageMaxScoresPerType := make([]string, 0)
 	for _, maxScores := range numMaxScoresPerType {
-		percentage := float64(maxScores) / float64(numVariants) * 100
+		percentage := float64(maxScores) / float64(numVariants) * 100 // nolint: gomnd
 		percentageString := fmt.Sprintf("%.1f", percentage)
 		percentageString = strings.TrimSuffix(percentageString, ".0")
 		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
 	}
 
-	percentageMaxScores := float64(numMaxScores) / float64(numVariants*5) * 100
+	percentageMaxScores := float64(numMaxScores) / float64(numVariants*5) * 100 // nolint: gomnd
 	// (we multiply by 5 because there are max scores for 2 to 6 players)
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
@@ -181,6 +181,5 @@ func stats(c *gin.Context) {
 
 		Variants: variantStatsList,
 	}
-
-	serveTemplate(w, data, "stats")
+	m.serveTemplate(w, data, "stats")
 }

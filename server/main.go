@@ -5,7 +5,6 @@ package main // In Go, executable commands must always use package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -30,8 +29,6 @@ var (
 	versionPath       string
 	tablesPath        string
 	specificDealsPath string
-	datetimeStarted   time.Time
-	gitCommitOnStart  string
 	usingSentry       bool
 
 	sessionsManager *sessions.Manager
@@ -127,20 +124,6 @@ func main() {
 	} else if err != nil {
 		hLogger.Fatalf("Failed to check if the \"%v\" file exists: %v", envPath, err)
 	}
-
-	// Record the time that the server started
-	datetimeStarted = time.Now()
-
-	// Record the commit that corresponds with when the Golang code was compiled
-	// (this is useful to know what version of the server is running,
-	// since it is possible to update the client without restarting the server)
-	cmd := exec.Command("git", "rev-parse", "HEAD")
-	if stdout, err := cmd.Output(); err != nil {
-		hLogger.Fatalf("Failed to perform a \"git rev-parse HEAD\": %v", err)
-	} else {
-		gitCommitOnStart = strings.TrimSpace(string(stdout))
-	}
-	hLogger.Infof("Current git commit: %v", gitCommitOnStart)
 
 	// Load the ".env" file, which contains environment variables with secret values
 	if err := godotenv.Load(envPath); err != nil {
