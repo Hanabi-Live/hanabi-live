@@ -954,11 +954,6 @@ table th {
 /*
   Media queries for lobby redesign on smaller screens
 */
-@media screen and (max-width: 1084px) {
-  #logo-text {
-    /* display: none; */
-  }
-}
 @media screen and (max-width: 980px) {
   /* make nav items in between space smaller */
   #header nav > ul > li a:not(.button) {
