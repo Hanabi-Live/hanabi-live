@@ -24,9 +24,9 @@ const version = fs.readFileSync(versionPath).toString().trim();
 const bundleFilename = `main.${version}.min.css`;
 
 // Constants
-const cssPath = path.join("..", "public", "css");
-const cssLibPath = path.join(cssPath, "lib");
-const gruntOutputPath = path.join(__dirname, "grunt_output");
+const cssDir = path.join("..", "public", "css");
+const cssLibDir = path.join(cssDir, "lib");
+const gruntOutputDir = path.join(__dirname, "grunt_output");
 
 module.exports = (grunt) => {
   grunt.initConfig({
@@ -36,14 +36,14 @@ module.exports = (grunt) => {
     concat: {
       css: {
         src: [
-          path.join(cssLibPath, "fontawesome.min.css"),
-          path.join(cssLibPath, "solid.min.css"),
-          path.join(cssLibPath, "tooltipster.bundle.min.css"),
-          path.join(cssLibPath, "tooltipster-sideTip-shadow.min.css"),
-          path.join(cssLibPath, "alpha.css"),
-          path.join(cssPath, "hanabi.css"),
+          path.join(cssLibDir, "fontawesome.min.css"),
+          path.join(cssLibDir, "solid.min.css"),
+          path.join(cssLibDir, "tooltipster.bundle.min.css"),
+          path.join(cssLibDir, "tooltipster-sideTip-shadow.min.css"),
+          path.join(cssLibDir, "alpha.css"),
+          path.join(cssDir, "hanabi.css"),
         ],
-        dest: path.join(gruntOutputPath, "main.css"),
+        dest: path.join(gruntOutputDir, "main.css"),
       },
     },
 
@@ -55,15 +55,15 @@ module.exports = (grunt) => {
         level: 2,
       },
       main: {
-        src: path.join(gruntOutputPath, "main.css"),
-        dest: path.join(gruntOutputPath, bundleFilename),
+        src: path.join(gruntOutputDir, "main.css"),
+        dest: path.join(gruntOutputDir, bundleFilename),
       },
       critical: {
-        src: path.join(cssPath, "critical.css"),
+        src: path.join(cssDir, "critical.css"),
         // We don't bother baking the version into the critical CSS filename like we do for the
         // normal CSS bundle because we do not typically re-create the critical CSS after every
         // single client change
-        dest: path.join(cssPath, "critical.min.css"),
+        dest: path.join(cssDir, "critical.min.css"),
       },
     },
 
@@ -74,8 +74,8 @@ module.exports = (grunt) => {
           url: grunt.option("url"), // Pass the URL when running the task
           width: 1200,
           height: 900,
-          filename: path.join(cssPath, "main.min.css"),
-          outputfile: path.join(cssPath, "critical.css"),
+          filename: path.join(gruntOutputDir, bundleFilename),
+          outputfile: path.join(cssDir, "critical.css"),
           buffer: 800 * 1024,
           ignoreConsole: false,
         },
