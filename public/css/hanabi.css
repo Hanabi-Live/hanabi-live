@@ -898,7 +898,7 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /* Hide the logo text */
-@media screen and (max-width: 1064px) {
+@media screen and (max-width: 950px) {
   #logo-text {
     display: none;
   }
