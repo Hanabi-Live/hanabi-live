@@ -640,7 +640,7 @@
       </div>
 
       <!-- The "Online Users" section -->
-      <div class="col-4 lobby-users-box-container narrow-screen-toggle">
+      <div id="lobby-online-users" class="col-4 lobby-users-box-container narrow-screen-toggle">
         <section class="box">
           <h3 class="lobby-title">Online<span id="small-screen-toggle-users-h3"> Users (<span class="lobby-users-num">0</span>)</span></h3>
           <div id="lobby-users-container">
@@ -668,6 +668,9 @@
             </a>
             <a id="lobby-toggle-show-chat" class="button small">
               Chat<span id="narrow-screen-toggle-button-text"> & Users</span>
+            </a>
+            <a id="lobby-toggle-show-game-chat" class="button small hidden">
+              Chat
             </a>
           </li>
         </ul>

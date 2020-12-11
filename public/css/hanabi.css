@@ -846,11 +846,7 @@ input::-webkit-calendar-picker-indicator {
     Mobile:         736px   sm
     Portrait:       480px   xs
 
-    invisible-*:      hidden on this and all smaller screens
-    visible-*:        block visible on this and all larger screens
-                      unavailable for xs
-    visible-inline-*: inline-block visible on this and all larger screens
-                      unavailable for xs
+    hidden-*:      hidden on this and all smaller screens
 */
 @media screen and (max-width: 1680px) {
   .hidden-xxl {
@@ -882,58 +878,6 @@ input::-webkit-calendar-picker-indicator {
     display: none!important;
   }
 }
-@media screen and (min-width: 1280.02px) {
-  .visible-xxl {
-    display: block!important;
-  }
-}
-@media screen and (min-width: 980.02px) {
-  .visible-xl {
-    display: block!important;
-  }
-}
-@media screen and (min-width: 840.02px) {
-  .visible-ld {
-    display: block!important;
-  }
-}
-@media screen and (min-width: 730.02px) {
-  .visible-md {
-    display: block!important;
-  }
-}
-@media screen and (min-width: 480.02px) {
-  .visible-sm {
-    display: block!important;
-  }
-}
-@media screen and (min-width: 1280.02px) {
-  .visible-inline-xxl {
-    display: inline-block!important;
-  }
-}
-@media screen and (min-width: 980.02px) {
-  .visible-inline-xl {
-    display: inline-block!important;
-  }
-}
-@media screen and (min-width: 840.02px) {
-  .visible-inline-ld {
-    display: inline-block!important;
-  }
-}
-@media screen and (min-width: 730.02px) {
-  .visible-inline-md {
-    display: inline-block!important;
-  }
-}
-@media screen and (min-width: 480.02px) {
-  .visible-inline-sm {
-    display: inline-block!important;
-  }
-}
-
-
 
 /*
   Media edits
@@ -1120,6 +1064,19 @@ table th {
   #lobby {
     height: calc(100% - 1.25em); /* The header is 3em */
   }
+
+  .pregame-hidden {
+    display: none;
+  }
+  .pregame-lobby-chat {
+    margin-bottom: 1em;
+  }
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout {
+    flex: 1 1 100%;
+    height: calc((100% - 1em) / 2);
+    padding-left: 2em!important;
+  }
 }
 
 @media screen and (max-width: 620px) {
@@ -1130,13 +1087,13 @@ table th {
   #small-screen-toggle-users-h3 {
     display: none;
   }
+  .only-on-narrow-screen {
+    display: inline;
+  }
 }
 @media screen and (max-width: 520px) {
   #narrow-screen-toggle-button-text, .narrow-screen-toggle {
     display: none;
-  }
-  .only-on-narrow-screen {
-    display: inline;
   }
   .row > #lobby-chat-container {
     width: 100%;
