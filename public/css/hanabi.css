@@ -263,7 +263,6 @@ table td {
 /*
   Nav (the top bar)
 */
-
 .nav-icon {
   position: relative;
   top: 0.05em;
@@ -277,6 +276,7 @@ table td {
 .help-button {
   background-color: rgb(68, 150, 68) !important;
 }
+
 .help-button:hover {
   background-color: #84c884 !important;
 }
@@ -440,19 +440,31 @@ table td {
   Pregame
 */
 
-#lobby-pregame > div {
+.lobby-pregame-container {
   height: 100%;
+  display: flex;
 }
 
-#lobby-pregame-left {
+.lobby-pregame-info {
   font-size: 0.85em;
+  width: 150px;
+}
+
+.lobby-pregame-players {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .lobby-pregame-player {
   border: 1px solid black;
   border-radius: 5px;
-  padding: 1em;
-  height: 100%;
+  padding: 0.8em;
+  flex: 1 1 140px;
+  margin: 0 0.5em 0.5em 0;
+  max-width: 170px;
 }
 
 .lobby-pregame-player-away {

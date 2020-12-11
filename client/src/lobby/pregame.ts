@@ -316,15 +316,6 @@ function drawPlayerBox(i: number) {
   }
   html += "</strong></p>";
 
-  // There is not enough room to draw the full box for 6 players
-  if (numPlayers === 6) {
-    div.removeClass("col-2");
-    div.addClass("lobby-pregame-col");
-  } else {
-    div.addClass("col-2");
-    div.removeClass("lobby-pregame-col");
-  }
-
   // Calculate some stats
   const variantStats = player.stats.variant;
   const averageScore = Math.round(variantStats.averageScore * 10) / 10;

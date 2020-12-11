@@ -588,8 +588,8 @@
 
         <!-- The "pregame" table -->
         <section id="lobby-pregame" class="box hidden">
-          <div class="row">
-            <div id="lobby-pregame-left" class="col-2 padding-right1">
+          <div class="lobby-pregame-container">
+            <div id="lobby-pregame-left" class="lobby-pregame-info">
               <h4 class="padding0p5">
                 <strong><i class="fas fa-signature"></i>&nbsp; Name:</strong><br />
                 <span id="lobby-pregame-name"></span>
@@ -603,12 +603,14 @@
                 <ul id="lobby-pregame-options"></ul>
               </h4>
             </div>
-            <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-6" class="col-2 lobby-pregame-player"></div>
+            <div class="lobby-pregame-players">
+              <div id="lobby-pregame-player-1" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-2" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-3" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-4" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-5" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-6" class="lobby-pregame-player"></div>
+            </div>
           </div>
         </section>
       </div>
@@ -662,7 +664,7 @@
         <ul>
           <li>
             <a id="lobby-toggle-show-tables" class="button small toggle-active">
-              List of games
+              Games
             </a>
             <a id="lobby-toggle-show-chat" class="button small">
               Chat<span id="narrow-screen-toggle-button-text"> & Users</span>
