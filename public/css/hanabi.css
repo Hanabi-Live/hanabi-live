@@ -904,6 +904,13 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
+/* Reinstate the containers round box */
+@media screen and (max-width: 480px) {
+  .box {
+    border-radius: 6px;
+  }
+}
+
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 400px) {
   #nav-buttons-pregame .nav-icon {
