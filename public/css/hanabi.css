@@ -447,7 +447,9 @@ table td {
 
 .lobby-pregame-info {
   font-size: 0.85em;
-  width: 150px;
+  width: 200px;
+  padding-right: 0.5em;
+  overflow-y: auto;
 }
 
 .lobby-pregame-players {
@@ -477,10 +479,14 @@ table td {
 
 #lobby-pregame-options {
   padding-left: 1em;
+  list-style-type: none;
+  padding: 0;
 }
 
-#lobby-pregame-options > li {
+#lobby-pregame-options li {
   padding-left: 0;
+  display: inline-block;
+  margin-right: 0.5em;
 }
 
 .lobby-pregame-tooltip {
@@ -808,6 +814,10 @@ input::-webkit-calendar-picker-indicator {
   width: 8em;
 }
 
+.container.max {
+  width: 80%;
+}
+
 /*
   Profile
 */
@@ -837,6 +847,13 @@ input::-webkit-calendar-picker-indicator {
   display: inline-block;
   width: 19em;
 }
+
+/* Make pregame name and variant appear on next line always */
+#lobby-pregame-name, #lobby-pregame-variant {
+  display: block;
+}
+
+
 
 /*
   Media Responsive Utilities
@@ -885,10 +902,12 @@ input::-webkit-calendar-picker-indicator {
 /*
   Media edits
 */
-/* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
-@media screen and (min-width: 1280px) {
+@media screen and (max-width: 1500px) {
+  .lobby-pregame-info {
+    width: 150px;
+  }
   .container.max {
-    width: 80%;
+    width: calc(100% - 2em) !important;
   }
 }
 
