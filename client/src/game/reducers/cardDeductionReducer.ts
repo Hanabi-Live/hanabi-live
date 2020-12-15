@@ -121,21 +121,15 @@ const getCardCountMap = (
     return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
   }
 
-  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
-  const possibleRanks: number[] = variant.ranks.slice();
-  const possibleCardMap: number[][] = [];
-
-  possibleSuits.forEach((suitIndex) => {
-    possibleCardMap[suitIndex] = [];
-    const suit = variant.suits[suitIndex];
-    possibleRanks.forEach((rank) => {
-      possibleCardMap[suitIndex][rank] = deckRules.numCopiesOfCard(
+  const possibleCardMap: number[][] = variant.suits.map((suit) => 
+    variant.ranks.map((rank) => 
+      deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,
-      );
-    });
-  });
+      )
+    )
+  );
 
   cachedVariantName = variant.name;
   cachedCardCountMap = Array.from(possibleCardMap, (arr) => Array.from(arr));
