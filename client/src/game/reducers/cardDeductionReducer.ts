@@ -37,11 +37,11 @@ const makeDeductions = (
   const cardCountMap = getCardCountMap(variant);
 
   // if our variant shows played/discarded cards, then they're known by everyone
-  newDeck.filter((card) => !hands.some((hand) => hand.includes(card.order)))
-    .filter((card) => card.suitIndex !== null && card.rank !== null)
-    .forEach((card) => {
-      cardCountMap[card.suitIndex!][card.rank!] -= 1;
-    });
+  for (const card of newDeck) {
+    if ((card.location === 'discard' || card.location === 'playStack') && card.SuitIndex !== null && card.rank !== null) {
+      cardCountMap[card.suitIndex][card.rank] -= 1;
+    }
+  }
 
   // We need to calculate our own hand first because those possibilities will be needed for
   // pretending like we know what the other players see in our hand.
