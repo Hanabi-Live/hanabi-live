@@ -28,6 +28,10 @@ const cardsReducer = (
     // the server will announce the identities of the cards that slide from slot 1 to slot 2
     // { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case 'cardIdentity': {
+      const order = action.order;
+      const card = getCard(deck, order);
+      const revealedToPlayer = recalculateReveals(card);
+
       if (
         action.playerIndex === metadata.ourPlayerIndex
         || action.suitIndex === -1
@@ -38,8 +42,6 @@ const cardsReducer = (
         break;
       }
 
-      const order = action.order;
-      const card = getCard(deck, order);
       if (card.suitIndex !== null && card.rank !== null) {
         // We already know the full identity of this card, so we can safely ignore this action
         break;
@@ -49,6 +51,7 @@ const cardsReducer = (
         ...card,
         suitIndex: action.suitIndex,
         rank: action.rank,
+        revealedToPlayer,
       };
 
       break;
@@ -74,10 +77,11 @@ const cardsReducer = (
       action.list.forEach((order) => {
         const card = getCard(newDeck, order);
         newDeck[order] = {
-          ...getCard(newDeck, order),
+          ...card,
           numPositiveClues: card.numPositiveClues + 1,
           segmentFirstClued: card.segmentFirstClued === null
             ? game.turn.segment! : card.segmentFirstClued,
+          hasClueApplied: true,
         };
         applyClue(order, true);
       });
@@ -85,7 +89,14 @@ const cardsReducer = (
       // Negative clues
       hands[action.target]
         .filter((order) => !action.list.includes(order))
-        .forEach((order) => applyClue(order, false));
+        .forEach((order) => {
+          const card = getCard(newDeck, order);
+          newDeck[order] = {
+            ...card,
+            hasClueApplied: true,
+          };
+          applyClue(order, false);
+        });
 
       break;
     }
@@ -131,6 +142,7 @@ const cardsReducer = (
         isMisplayed,
         suitDetermined: card.suitDetermined || identityDetermined,
         rankDetermined: card.rankDetermined || identityDetermined,
+        revealedToPlayer: identityDetermined ? new Array(6).fill(true) : card.revealedToPlayer,
       };
       break;
     }
@@ -149,12 +161,19 @@ const cardsReducer = (
 
       const initial = initialCardState(action.order, variant);
 
+      // TODO: detrimental characters might not see this card
+      const revealedToPlayer = Array.from(initial.revealedToPlayer);
+      for (let i = 0; i < 6; i++) {
+        revealedToPlayer[i] = i !== action.playerIndex;
+      }
+
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         segmentDrawn: game.turn.segment,
+        revealedToPlayer,
       };
 
       newDeck[action.order] = drawnCard;
@@ -221,3 +240,5 @@ const revealCard = (
 
   return true;
 };
+
+const recalculateReveals = (card: CardState) => card.revealedToPlayer;

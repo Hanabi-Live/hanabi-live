@@ -36,13 +36,6 @@ const makeDeductions = (
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
 
-  // if our variant shows played/discarded cards, then they're known by everyone
-  for (const card of newDeck) {
-    if ((card.location === 'discard' || card.location === 'playStack') && card.SuitIndex !== null && card.rank !== null) {
-      cardCountMap[card.suitIndex][card.rank] -= 1;
-    }
-  }
-
   // We need to calculate our own hand first because those possibilities will be needed for
   // pretending like we know what the other players see in our hand.
   calculateHandPossibilities(hands[metadata.ourPlayerIndex], hands, newDeck, cardCountMap);
@@ -57,27 +50,28 @@ const calculateHandPossibilities = (
   deck: CardState[],
   cardCountMap: readonly number[][],
 ) => {
+  const playerIndex = hands.indexOf(handToCalculate);
   const cardCountMapForHand = Array.from(
     cardCountMap,
     (arr) => Array.from(arr),
   );
   const unknownCards: number[] = [];
-  hands.forEach((hand) => hand.forEach((o) => {
-    const deckCard = deck[o];
-    // If card is not fully known then we need to run through the permutations.
-    // Otherwise, it's a card in another hand and we know we don't have that copy
-    // (and can reduce the count accordingly from the perspective of this hand).
-    if (deckCard.suitIndex === null || deckCard.rank === null || hand === handToCalculate) {
-      unknownCards.push(o);
-    } else {
-      cardCountMapForHand[deckCard.suitIndex][deckCard.rank] -= 1;
+
+  for (const card of deck) {
+    if (card.revealedToPlayer[playerIndex] && card.suitIndex !== null && card.rank !== null) {
+      cardCountMapForHand[card.suitIndex][card.rank] -= 1;
+    } else if (card.location !== 'deck') {
+      unknownCards.push(card.order);
     }
-  }));
+  }
+
   handToCalculate.forEach((o) => {
     const card = deck[o];
-    const possibilities = unknownCards
-      .filter((ro) => ro !== o)
-      .map((ro) => deck[ro].possibleCardsFromDeduction);
+    if (card.revealedToPlayer[playerIndex] && card.suitIndex !== null && card.rank !== null) {
+      // The player already knows this card.
+      return;
+    }
+    const possibilities = generatePossibilitiesForUnknownCards(unknownCards, o, deck, playerIndex);
     deck[o] = {
       ...card,
       possibleCardsFromDeduction: card.possibleCardsFromDeduction.filter(
@@ -85,6 +79,41 @@ const calculateHandPossibilities = (
       ),
     };
   });
+};
+
+const generatePossibilitiesForUnknownCards = (
+  unknownCardOrders: number[],
+  excludeCardOrder: number,
+  deck: CardState[],
+  playerIndex: number,
+) => {
+  const possibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
+  for (const cardOrder of unknownCardOrders) {
+    if (cardOrder === excludeCardOrder) {
+      continue;
+    }
+    const unknownCard = deck[cardOrder];
+    if (unknownCard.revealedToPlayer[playerIndex]) {
+      // If this card is revealed to the player, then use our best guess.
+      possibilities.push(unknownCard.possibleCardsFromDeduction);
+    } else if (unknownCard.hasClueApplied) {
+      // We know more than nothing about it, so it could be useful disproving a possibility in
+      // the players hand.
+      if (unknownCard.location === playerIndex) {
+        // If this card is in the players hand, then use our best (empathy) guess.
+        possibilities.push(unknownCard.possibleCardsFromDeduction);
+      } else {
+        // This is an unrevealed card not in the players hand but not revealed to them.
+        // That can happen with something like a detrimental character (like 'Slow-Witted')
+        // or throw it in the hole.  We can't use our best (empathy) guess, because the player
+        // might only know what's clued about it.
+        possibilities.push(unknownCard.possibleCardsFromClues);
+      }
+    }
+  }
+  // start with the more stable possibilities
+  possibilities.sort((a, b) => a.length - b.length);
+  return possibilities;
 };
 
 const possibilityValid = (
@@ -121,15 +150,20 @@ const getCardCountMap = (
     return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
   }
 
-  const possibleCardMap: number[][] = variant.suits.map((suit) => 
-    variant.ranks.map((rank) => 
-      deckRules.numCopiesOfCard(
+  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
+  const possibleRanks: number[] = variant.ranks.slice();
+  const possibleCardMap: number[][] = [];
+  possibleSuits.forEach((suitIndex) => {
+    possibleCardMap[suitIndex] = [];
+    const suit = variant.suits[suitIndex];
+    possibleRanks.forEach((rank) => {
+      possibleCardMap[suitIndex][rank] = deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,
-      )
-    )
-  );
+      );
+    });
+  });
 
   cachedVariantName = variant.name;
   cachedCardCountMap = Array.from(possibleCardMap, (arr) => Array.from(arr));

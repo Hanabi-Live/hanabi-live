@@ -15,6 +15,9 @@ export default interface CardState {
   //  = which specific cards are still possible based on everything the player should know
   readonly possibleCardsFromDeduction: ReadonlyArray<readonly [number, number]>;
 
+  // An array that specifies whether the card is revealed to a particular player index
+  readonly revealedToPlayer: readonly boolean[];
+
   // We need this to highlight pips (e.g. on Pink variants)
   readonly positiveRankClues : number[];
 
@@ -22,6 +25,7 @@ export default interface CardState {
 
   readonly suitDetermined: boolean;
   readonly rankDetermined: boolean;
+  readonly hasClueApplied: boolean;
   readonly numPositiveClues: number;
   readonly segmentFirstClued: number | null;
   readonly segmentDrawn: number | null;
