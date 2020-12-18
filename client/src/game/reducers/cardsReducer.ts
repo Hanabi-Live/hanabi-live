@@ -1,7 +1,7 @@
 // Calculates the state of the deck after an action
 
 import { ensureAllCases, nullIfNegative } from '../../misc';
-import { getVariant } from '../data/gameData';
+import { getVariant, getCharacter } from '../data/gameData';
 import { cluesRules, deckRules } from '../rules';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
@@ -12,6 +12,7 @@ import GameState from '../types/GameState';
 import cardDeductionReducer from './cardDeductionReducer';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
+import { getCharacterIDForPlayer } from './reducerHelpers';
 
 const cardsReducer = (
   deck: readonly CardState[],
@@ -29,8 +30,12 @@ const cardsReducer = (
     // { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case 'cardIdentity': {
       const order = action.order;
-      const card = getCard(deck, order);
-      const revealedToPlayer = recalculateReveals(card);
+      let card = getCard(deck, order);
+      card = {
+        ...card,
+        revealedToPlayer: cardIdentityRevealedToPlayer(card, metadata),
+      };
+      newDeck[order] = card;
 
       if (
         action.playerIndex === metadata.ourPlayerIndex
@@ -51,7 +56,6 @@ const cardsReducer = (
         ...card,
         suitIndex: action.suitIndex,
         rank: action.rank,
-        revealedToPlayer,
       };
 
       break;
@@ -142,7 +146,8 @@ const cardsReducer = (
         isMisplayed,
         suitDetermined: card.suitDetermined || identityDetermined,
         rankDetermined: card.rankDetermined || identityDetermined,
-        revealedToPlayer: identityDetermined ? new Array(6).fill(true) : card.revealedToPlayer,
+        revealedToPlayer: action.suitIndex >= 0 && action.rank >= 0
+          ? new Array(6).fill(true) : card.revealedToPlayer,
       };
       break;
     }
@@ -161,19 +166,13 @@ const cardsReducer = (
 
       const initial = initialCardState(action.order, variant);
 
-      // TODO: detrimental characters might not see this card
-      const revealedToPlayer = Array.from(initial.revealedToPlayer);
-      for (let i = 0; i < 6; i++) {
-        revealedToPlayer[i] = i !== action.playerIndex;
-      }
-
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         segmentDrawn: game.turn.segment,
-        revealedToPlayer,
+        revealedToPlayer: drawnCardRevealedToPlayer(action.playerIndex, metadata),
       };
 
       newDeck[action.order] = drawnCard;
@@ -213,6 +212,67 @@ export default cardsReducer;
 // Helpers
 // -------
 
+const cardIdentityRevealedToPlayer = (
+  card: CardState,
+  metadata: GameMetadata,
+) => {
+  const revealedToPlayer: boolean[] = [];
+  for (let i = 0; i < metadata.characterAssignments.length; i++) {
+    if (i !== card.location && getCharacterName(i, metadata) === 'Slow-Witted') {
+      revealedToPlayer.push(true);
+    } else {
+      revealedToPlayer.push(card.revealedToPlayer[i]);
+    }
+  }
+  return revealedToPlayer;
+};
+
+const drawnCardRevealedToPlayer = (
+  drawLocation: number,
+  metadata: GameMetadata,
+) => {
+  const revealedToPlayer: boolean[] = [];
+  const numPlayers = metadata.characterAssignments.length;
+  for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
+    revealedToPlayer.push(canPlayerSeeDrawnCard(playerIndex, drawLocation, numPlayers, metadata));
+  }
+  return revealedToPlayer;
+};
+
+const canPlayerSeeDrawnCard = (
+  playerIndex: number,
+  drawLocation: number,
+  numPlayers: number,
+  metadata: GameMetadata,
+) => {
+  if (playerIndex === drawLocation) {
+    return false;
+  }
+  const characterName = getCharacterName(playerIndex, metadata);
+  switch (characterName) {
+    case 'Slow-Witted': return false;
+    case 'Oblivious': return drawLocation !== (playerIndex - 1) % numPlayers;
+    case 'Blind Spot': return drawLocation !== (playerIndex + 1) % numPlayers;
+    default: return true;
+  }
+};
+
+const getCharacterName = (
+  playerIndex: number,
+  metadata: GameMetadata,
+) => {
+  const characterID = getCharacterIDForPlayer(
+    playerIndex,
+    metadata.characterAssignments,
+  );
+  let characterName = '';
+  if (characterID !== null) {
+    const giverCharacter = getCharacter(characterID);
+    characterName = giverCharacter.name;
+  }
+  return characterName;
+};
+
 const getCard = (deck: readonly CardState[], order: number) => {
   const card = deck[order];
   if (card === undefined) {
@@ -240,5 +300,3 @@ const revealCard = (
 
   return true;
 };
-
-const recalculateReveals = (card: CardState) => card.revealedToPlayer;

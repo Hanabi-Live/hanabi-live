@@ -4,6 +4,7 @@ import {
   discard,
   play,
   rankClue,
+  cardIdentity,
 } from '../../../test/testActions';
 import testMetadata from '../../../test/testMetadata';
 import { getVariant } from '../data/gameData';
@@ -15,8 +16,9 @@ import initialGameState from './initialStates/initialGameState';
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
-const gameState = initialGameState(defaultMetadata);
+const throwItInAHoleMetadata = testMetadata(numPlayers, 'Throw It in a Hole (4 Suits)');
 const variant = getVariant(defaultMetadata.options.variantName);
+const gameState = initialGameState(defaultMetadata);
 const defaultCard = initialCardState(0, variant);
 const secondCard = initialCardState(1, variant);
 const thirdCard = initialCardState(2, variant);
@@ -301,14 +303,42 @@ describe('cardsReducer', () => {
 
       const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
 
+      // Discard a red 5
+      const discardCardOne = discard(0, 1, 0, 5, false);
+      deck = cardsReducer(deck, discardCardOne, gameStateWithCorrectHands, defaultMetadata);
+
+      // Expect the remaining card to remove a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(false);
+    });
+    test('does not eliminate a possibility if there are other copies still available', () => {
+      let deck: CardState[] = [defaultCard, secondCard];
+      deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
+      deck = cardsReducer(deck, draw(0, 1), gameState, defaultMetadata);
+
+      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
+
       // Discard a red 1
       const discardCardOne = discard(0, 1, 0, 1, false);
       deck = cardsReducer(deck, discardCardOne, gameStateWithCorrectHands, defaultMetadata);
 
-      // Expect the remaining card to remove a possibility for a red 1
-      // So there are 2 red ones remaining in the deck
+      // There are 2 red ones remaining in the deck
       expect(deducedPossible(deck[0], 0, 1)).toBe(true);
     });
+    test('does not eliminate a possibility on other cards if we\'re playing throw it in the hole',
+      () => {
+        let deck: CardState[] = [defaultCard, secondCard];
+        deck = cardsReducer(deck, draw(1, 0, 0, 1), gameState, throwItInAHoleMetadata);
+        let nextGameState = { ...gameState, hands: [[], [0]] };
+        deck = cardsReducer(deck, draw(1, 1, 0, 5), nextGameState, throwItInAHoleMetadata);
+        nextGameState = { ...gameState, hands: [[], [0, 1]] };
+
+        // Discard a red 5
+        const discardCardOne = discard(1, 1, -1, -1, false);
+        deck = cardsReducer(deck, discardCardOne, nextGameState, throwItInAHoleMetadata);
+
+        // The remaining card cannot be a red 5 but the other player doesn't know that
+        expect(deducedPossible(deck[0], 0, 5)).toBe(true);
+      });
     test('only eliminates possibility on card inferred with it', () => {
       let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
@@ -344,63 +374,178 @@ describe('cardsReducer', () => {
       expect(deducedPossible(deck[2], 0, 4)).toBe(true);
       expect(deducedPossible(deck[3], 0, 4)).toBe(true);
     });
-    describe('draw', () => {
-      test('eliminates a possibility on other players\' cards', () => {
-        let deck: CardState[] = [defaultCard, secondCard];
-        const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
-        deck = cardsReducer(deck, draw(0, 0), gameStateDrawP0, defaultMetadata);
+  });
+  describe('draw', () => {
+    test('eliminates a possibility on other players\' cards', () => {
+      let deck: CardState[] = [defaultCard, secondCard];
+      const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
+      deck = cardsReducer(deck, draw(0, 0), gameStateDrawP0, defaultMetadata);
 
-        // P1 draws a red 5
-        const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
-        deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, defaultMetadata);
+      // P1 draws a red 5
+      const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
+      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, defaultMetadata);
 
-        // Expect the remaining card to remove a possibility for a red 5
-        expect(deducedPossible(deck[0], 0, 5)).toBe(false);
-      });
-      test('eliminates possibilities from previously drawn cards', () => {
-        let deck: CardState[] = [defaultCard, secondCard];
-        // P0 draws a red 5
-        const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
-        deck = cardsReducer(deck, draw(0, 0, 0, 5), gameStateDrawP0, defaultMetadata);
+      // Expect the remaining card to remove a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(false);
+    });
+    test('does not eliminate that possibility on Slow-Witted cards', () => {
+      const metaData = {
+        ...defaultMetadata,
+        characterAssignments: [null, null, 33],
+      };
+      let deck: CardState[] = [defaultCard, secondCard];
+      // P2 draws a yellow 1
+      const gameStateDrawP2 = { ...gameState, hands: [[], [], [0]] };
+      deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
 
-        const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
-        deck = cardsReducer(deck, draw(1, 1, 0, 1), gameStateDrawP1, defaultMetadata);
+      // P1 draws a red 5
+      const gameStateDrawP1 = { ...gameState, hands: [[], [1], [0]] };
+      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
-        // Expect the newly drawn card to remove a possibility for a red 5
-        expect(deducedPossible(deck[1], 0, 5)).toBe(false);
-      });
-      test('removes inferred negative possibilities on newly drawn card in own hand', () => {
-        let deck: CardState[] = [defaultCard, secondCard, thirdCard];
-        let nextGameState = { ...gameState, hands: [[0]] };
-        deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
-        nextGameState = { ...gameState, hands: [[0, 1]] };
-        deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
+      // Expect the remaining card to not remove a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(true);
+    });
+    test('does not eliminate that possibility on Oblivious cards for next player', () => {
+      const metaData = {
+        ...defaultMetadata,
+        characterAssignments: [null, null, 30],
+      };
+      let deck: CardState[] = [defaultCard, secondCard];
+      // P2 draws a yellow 1
+      const gameStateDrawP2 = { ...gameState, hands: [[], [], [0]] };
+      deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
 
-        const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
-        deck = cardsReducer(deck, fivesClue, nextGameState, defaultMetadata);
+      // P1 draws a red 5
+      const gameStateDrawP1 = { ...gameState, hands: [[], [1], [0]] };
+      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
-        // Load up the negative clues so we can make inferences
-        const redClue = colorClue(0, 1, [], 0, 0);
-        const yellowClue = colorClue(1, 1, [], 0, 0);
-        const greenClue = colorClue(2, 1, [], 0, 0);
-        deck = cardsReducer(deck, redClue, nextGameState, defaultMetadata);
-        deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
-        deck = cardsReducer(deck, greenClue, nextGameState, defaultMetadata);
+      // Expect the remaining card to not remove a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(true);
+    });
+    test('does eliminate that possibility on Oblivious cards for previous player', () => {
+      const metaData = {
+        ...defaultMetadata,
+        characterAssignments: [null, 30, null],
+      };
+      let deck: CardState[] = [defaultCard, secondCard];
+      // P1 draws a yellow 1
+      const gameStateDrawP2 = { ...gameState, hands: [[], [0], []] };
+      deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metaData);
 
-        // The two fives must be blue/purple in some order.  The newly drawn card can't be
-        // one of those fives.
-        nextGameState = { ...gameState, hands: [[0, 1, 2]] };
-        deck = cardsReducer(deck, draw(0, 2), nextGameState, defaultMetadata);
+      // P2 draws a red 5
+      const gameStateDrawP1 = { ...gameState, hands: [[], [0], [1]] };
+      deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
 
-        expect(deducedPossible(deck[2], 3, 5)).toBe(false);
-        expect(deducedPossible(deck[2], 4, 5)).toBe(false);
-      });
-      test('removes inferred negative possibilities on newly drawn card in other hand', () => {
-        let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      // Expect the remaining card to not a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(false);
+    });
+    test('does not eliminate that possibility on Blind Spot cards for previous player', () => {
+      const metaData = {
+        ...defaultMetadata,
+        characterAssignments: [null, 29, null],
+      };
+      let deck: CardState[] = [defaultCard, secondCard];
+      // P1 draws a yellow 1
+      const gameStateDrawP2 = { ...gameState, hands: [[], [0], []] };
+      deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metaData);
+
+      // P2 draws a red 5
+      const gameStateDrawP1 = { ...gameState, hands: [[], [0], [1]] };
+      deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
+
+      // Expect the remaining card to not remove a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(true);
+    });
+    test('does eliminate that possibility on Blind Spot cards for next player', () => {
+      const metaData = {
+        ...defaultMetadata,
+        characterAssignments: [null, null, 29],
+      };
+      let deck: CardState[] = [defaultCard, secondCard];
+      // P2 draws a yellow 1
+      const gameStateDrawP2 = { ...gameState, hands: [[], [], [0]] };
+      deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
+
+      // P1 draws a red 5
+      const gameStateDrawP1 = { ...gameState, hands: [[], [1], [0]] };
+      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
+
+      // Expect the remaining card to not a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(false);
+    });
+    test('eliminates possibilities from previously drawn cards', () => {
+      let deck: CardState[] = [defaultCard, secondCard];
+      // P0 draws a red 5
+      const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
+      deck = cardsReducer(deck, draw(0, 0, 0, 5), gameStateDrawP0, defaultMetadata);
+
+      const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
+      deck = cardsReducer(deck, draw(1, 1, 0, 1), gameStateDrawP1, defaultMetadata);
+
+      // Expect the newly drawn card to remove a possibility for a red 5
+      expect(deducedPossible(deck[1], 0, 5)).toBe(false);
+    });
+    test('removes inferred negative possibilities on newly drawn card in own hand', () => {
+      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let nextGameState = { ...gameState, hands: [[0]] };
+      deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
+      nextGameState = { ...gameState, hands: [[0, 1]] };
+      deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
+
+      const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
+      deck = cardsReducer(deck, fivesClue, nextGameState, defaultMetadata);
+
+      // Load up the negative clues so we can make inferences
+      const redClue = colorClue(0, 1, [], 0, 0);
+      const yellowClue = colorClue(1, 1, [], 0, 0);
+      const greenClue = colorClue(2, 1, [], 0, 0);
+      deck = cardsReducer(deck, redClue, nextGameState, defaultMetadata);
+      deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
+      deck = cardsReducer(deck, greenClue, nextGameState, defaultMetadata);
+
+      // The two fives must be blue/purple in some order.  The newly drawn card can't be
+      // one of those fives.
+      nextGameState = { ...gameState, hands: [[0, 1, 2]] };
+      deck = cardsReducer(deck, draw(0, 2), nextGameState, defaultMetadata);
+
+      expect(deducedPossible(deck[2], 3, 5)).toBe(false);
+      expect(deducedPossible(deck[2], 4, 5)).toBe(false);
+    });
+    test('removes inferred negative possibilities on newly drawn card in other hand', () => {
+      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let nextGameState = { ...gameState, hands: [[0], []] };
+      deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
+      nextGameState = { ...gameState, hands: [[0, 1], []] };
+      deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
+
+      const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
+      deck = cardsReducer(deck, fivesClue, nextGameState, defaultMetadata);
+
+      // Load up the negative clues so we can make inferences
+      const redClue = colorClue(0, 1, [], 0, 0);
+      const yellowClue = colorClue(1, 1, [], 0, 0);
+      const greenClue = colorClue(2, 1, [], 0, 0);
+      deck = cardsReducer(deck, redClue, nextGameState, defaultMetadata);
+      deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
+      deck = cardsReducer(deck, greenClue, nextGameState, defaultMetadata);
+
+      // The two fives must be blue/purple in some order.  The newly drawn card can't be
+      // one of those fives.
+      nextGameState = { ...gameState, hands: [[0, 1], [2]] };
+      deck = cardsReducer(deck, draw(1, 2), nextGameState, defaultMetadata);
+
+      expect(deducedPossible(deck[2], 3, 5)).toBe(false);
+      expect(deducedPossible(deck[2], 4, 5)).toBe(false);
+    });
+    describe('from other hand allows new inferences in own hand', () => {
+      test('as Alice', () => {
+        let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
         let nextGameState = { ...gameState, hands: [[0], []] };
         deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
         nextGameState = { ...gameState, hands: [[0, 1], []] };
         deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
+        nextGameState = { ...gameState, hands: [[0, 1, 2], []] };
+        deck = cardsReducer(deck, draw(0, 2), nextGameState, defaultMetadata);
 
         const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
         deck = cardsReducer(deck, fivesClue, nextGameState, defaultMetadata);
@@ -408,90 +553,85 @@ describe('cardsReducer', () => {
         // Load up the negative clues so we can make inferences
         const redClue = colorClue(0, 1, [], 0, 0);
         const yellowClue = colorClue(1, 1, [], 0, 0);
-        const greenClue = colorClue(2, 1, [], 0, 0);
         deck = cardsReducer(deck, redClue, nextGameState, defaultMetadata);
         deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
-        deck = cardsReducer(deck, greenClue, nextGameState, defaultMetadata);
 
-        // The two fives must be blue/purple in some order.  The newly drawn card can't be
-        // one of those fives.
-        nextGameState = { ...gameState, hands: [[0, 1], [2]] };
-        deck = cardsReducer(deck, draw(1, 2), nextGameState, defaultMetadata);
+        // Bob draws green 5.
+        nextGameState = { ...gameState, hands: [[0, 1, 2], [3]] };
+        deck = cardsReducer(deck, draw(1, 3, 2, 5), nextGameState, defaultMetadata);
 
+        // Now the two fives in our hand must be blue/purple in some order.
+        // The other card in our hand can't be one of those fives.
         expect(deducedPossible(deck[2], 3, 5)).toBe(false);
         expect(deducedPossible(deck[2], 4, 5)).toBe(false);
+
+        // In addition, we know that Bob knows that his newly drawn card can't
+        // be one of those fives either.
+        expect(deducedPossible(deck[3], 3, 5)).toBe(false);
+        expect(deducedPossible(deck[3], 4, 5)).toBe(false);
       });
-      describe('from other hand allows new inferences in own hand', () => {
-        test('as Alice', () => {
-          let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
-          let nextGameState = { ...gameState, hands: [[0], []] };
-          deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
-          nextGameState = { ...gameState, hands: [[0, 1], []] };
-          deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
-          nextGameState = { ...gameState, hands: [[0, 1, 2], []] };
-          deck = cardsReducer(deck, draw(0, 2), nextGameState, defaultMetadata);
+      test('as Bob', () => {
+        const bobMetadata = {
+          ...defaultMetadata,
+          ourUsername: 'Bob',
+          ourPlayerIndex: 1,
+        };
+        let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
+        let nextGameState = { ...gameState, hands: [[], [0]] };
+        deck = cardsReducer(deck, draw(1, 0), nextGameState, bobMetadata);
+        nextGameState = { ...gameState, hands: [[], [0, 1]] };
+        deck = cardsReducer(deck, draw(1, 1), nextGameState, bobMetadata);
+        nextGameState = { ...gameState, hands: [[], [0, 1, 2]] };
+        deck = cardsReducer(deck, draw(1, 2), nextGameState, bobMetadata);
 
-          const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
-          deck = cardsReducer(deck, fivesClue, nextGameState, defaultMetadata);
+        const fivesClue = rankClue(5, 0, [0, 1], 1, 0);
+        deck = cardsReducer(deck, fivesClue, nextGameState, bobMetadata);
 
-          // Load up the negative clues so we can make inferences
-          const redClue = colorClue(0, 1, [], 0, 0);
-          const yellowClue = colorClue(1, 1, [], 0, 0);
-          deck = cardsReducer(deck, redClue, nextGameState, defaultMetadata);
-          deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
+        // Load up the negative clues so we can make inferences
+        const redClue = colorClue(0, 0, [], 1, 0);
+        const yellowClue = colorClue(1, 0, [], 1, 0);
+        deck = cardsReducer(deck, redClue, nextGameState, bobMetadata);
+        deck = cardsReducer(deck, yellowClue, nextGameState, bobMetadata);
 
-          // Bob draws green 5.
-          nextGameState = { ...gameState, hands: [[0, 1, 2], [3]] };
-          deck = cardsReducer(deck, draw(1, 3, 2, 5), nextGameState, defaultMetadata);
+        // Alice draws green 5.
+        nextGameState = { ...gameState, hands: [[3], [0, 1, 2]] };
+        deck = cardsReducer(deck, draw(0, 3, 2, 5), nextGameState, bobMetadata);
 
-          // Now the two fives in our hand must be blue/purple in some order.
-          // The other card in our hand can't be one of those fives.
-          expect(deducedPossible(deck[2], 3, 5)).toBe(false);
-          expect(deducedPossible(deck[2], 4, 5)).toBe(false);
+        // Now the two fives in our hand must be blue/purple in some order.
+        // The other card in our hand can't be one of those fives.
+        expect(deducedPossible(deck[2], 3, 5)).toBe(false);
+        expect(deducedPossible(deck[2], 4, 5)).toBe(false);
 
-          // In addition, we know that Bob knows that his newly drawn card can't
-          // be one of those fives either.
-          expect(deducedPossible(deck[3], 3, 5)).toBe(false);
-          expect(deducedPossible(deck[3], 4, 5)).toBe(false);
-        });
-        test('as Bob', () => {
-          const bobMetadata = {
-            ...defaultMetadata,
-            ourUsername: 'Bob',
-            ourPlayerIndex: 1,
-          };
-          let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
-          let nextGameState = { ...gameState, hands: [[], [0]] };
-          deck = cardsReducer(deck, draw(1, 0), nextGameState, bobMetadata);
-          nextGameState = { ...gameState, hands: [[], [0, 1]] };
-          deck = cardsReducer(deck, draw(1, 1), nextGameState, bobMetadata);
-          nextGameState = { ...gameState, hands: [[], [0, 1, 2]] };
-          deck = cardsReducer(deck, draw(1, 2), nextGameState, bobMetadata);
-
-          const fivesClue = rankClue(5, 0, [0, 1], 1, 0);
-          deck = cardsReducer(deck, fivesClue, nextGameState, bobMetadata);
-
-          // Load up the negative clues so we can make inferences
-          const redClue = colorClue(0, 0, [], 1, 0);
-          const yellowClue = colorClue(1, 0, [], 1, 0);
-          deck = cardsReducer(deck, redClue, nextGameState, bobMetadata);
-          deck = cardsReducer(deck, yellowClue, nextGameState, bobMetadata);
-
-          // Alice draws green 5.
-          nextGameState = { ...gameState, hands: [[3], [0, 1, 2]] };
-          deck = cardsReducer(deck, draw(0, 3, 2, 5), nextGameState, bobMetadata);
-
-          // Now the two fives in our hand must be blue/purple in some order.
-          // The other card in our hand can't be one of those fives.
-          expect(deducedPossible(deck[2], 3, 5)).toBe(false);
-          expect(deducedPossible(deck[2], 4, 5)).toBe(false);
-
-          // In addition, we know that Alice knows that her newly drawn card can't
-          // be one of those fives either.
-          expect(deducedPossible(deck[3], 3, 5)).toBe(false);
-          expect(deducedPossible(deck[3], 4, 5)).toBe(false);
-        });
+        // In addition, we know that Alice knows that her newly drawn card can't
+        // be one of those fives either.
+        expect(deducedPossible(deck[3], 3, 5)).toBe(false);
+        expect(deducedPossible(deck[3], 4, 5)).toBe(false);
       });
+    });
+  });
+  describe('cardIdentity', () => {
+    test('eliminates a possibility on Slow-Witted cards', () => {
+      const metaData = {
+        ...defaultMetadata,
+        characterAssignments: [null, null, 33],
+      };
+      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      // P2 draws a yellow 1
+      const gameStateDrawY1 = { ...gameState, hands: [[], [], [0]] };
+      deck = cardsReducer(deck, draw(1, 0, 0, 5), gameStateDrawY1, metaData);
+
+      // P1 draws a red 5
+      const gameStateDrawR5 = { ...gameState, hands: [[], [1], [0]] };
+      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawR5, metaData);
+
+      // P1 draws a yellow 2
+      const gameStateDrawY2 = { ...gameState, hands: [[], [2, 1], [0]] };
+      deck = cardsReducer(deck, draw(1, 2, 1, 1), gameStateDrawY2, metaData);
+
+      deck = cardsReducer(deck, cardIdentity(1, 1, 0, 5), gameStateDrawY2, metaData);
+
+      // Expect the Slow-Witted card to remove a possibility for a red 5
+      expect(deducedPossible(deck[0], 0, 5)).toBe(false);
     });
   });
 });

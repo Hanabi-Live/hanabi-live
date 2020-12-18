@@ -16,6 +16,7 @@ import {
   ActionStrike,
   ActionTurn,
   ActionReplayEnterDedicated,
+  ActionCardIdentity,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 
@@ -103,6 +104,19 @@ export const play = (
   rank: number,
 ): ActionPlay => ({
   type: 'play',
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
+});
+
+export const cardIdentity = (
+  playerIndex: number,
+  order: number,
+  suitIndex: number,
+  rank: number,
+): ActionCardIdentity => ({
+  type: 'cardIdentity',
   playerIndex,
   order,
   suitIndex,
