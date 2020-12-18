@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,6 +22,17 @@ func FormatTimestampUnix(datetime time.Time) string {
 
 func GetCurrentTimestamp() string {
 	return FormatTimestampUnix(time.Now())
+}
+
+// From: http://golangcookbook.blogspot.com/2012/11/generate-random-number-in-given-range.html
+func GetRandom(min int, max int) (int, error) {
+	max++
+	if max-min <= 0 {
+		err := fmt.Errorf("invalid arguments of %v and %v", min, max)
+		return 0, err
+	}
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max-min) + min, nil // nolint: gosec
 }
 
 func GetReplayURL(domain string, useTLS bool, args []string) string {

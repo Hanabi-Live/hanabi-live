@@ -1,19 +1,19 @@
 package tables
 
-// addUserTable adds a table ID to the list for the respective user
-func addUserTable(userID int, tableID uint64, userMap map[int][]uint64) {
-	tableList, ok := userMap[userID]
+// addUserTable adds a table ID to the list for the respective user.
+func addUserTable(userID int, tableID uint64, usersMap map[int][]uint64) {
+	tableList, ok := usersMap[userID]
 	if !ok {
 		// This will be the first table for this user
 		tableList = make([]uint64, 0)
 	}
 	tableList = append(tableList, tableID)
-	userMap[userID] = tableList
+	usersMap[userID] = tableList
 }
 
-// deleteUserTable deletes a table ID from the list for the respective user
-func deleteUserTable(userID int, tableID uint64, userMap map[int][]uint64) {
-	tableList, ok := userMap[userID]
+// deleteUserTable deletes a table ID from the list for the respective user.
+func deleteUserTable(userID int, tableID uint64, usersMap map[int][]uint64) {
+	tableList, ok := usersMap[userID]
 	if !ok {
 		// This user is not in the map,
 		// which subsequently means that they are not present at any tables,
@@ -30,16 +30,16 @@ func deleteUserTable(userID int, tableID uint64, userMap map[int][]uint64) {
 	tableList = append(tableList[:i], tableList[i+1:]...)
 	if len(tableList) == 0 {
 		// This user is not present at any tables, so delete the entry for this user in the map
-		delete(userMap, userID)
+		delete(usersMap, userID)
 	} else {
 		// Save the new table list to the map
-		userMap[userID] = tableList
+		usersMap[userID] = tableList
 	}
 }
 
-// getUserTables gets the list of tables for the respective user
-func getUserTables(userID int, userMap map[int][]uint64) []uint64 {
-	if tablesList, ok := userMap[userID]; ok {
+// getUserTables gets the list of tables for the respective user.
+func getUserTables(userID int, usersMap map[int][]uint64) []uint64 {
+	if tablesList, ok := usersMap[userID]; ok {
 		return tablesList
 	}
 	return make([]uint64, 0)

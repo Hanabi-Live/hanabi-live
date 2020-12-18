@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// GamePlayer is the object that represents the game state related aspects of the player
-// (we separate the player object into two different objects;
-// one for the table and one for the game)
+// GamePlayer is the object that represents the game state related aspects of the player.
+// (We separate the player object into two different objects;
+// one for the table and one for the game.)
 type GamePlayer struct {
 	// Some entries are copied from the Player object for convenience
 	Name  string

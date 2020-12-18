@@ -1,4 +1,4 @@
-// Helper functions for variants where suits have a non-standard playing direction
+// Helper functions for variants where suits have a reverse playing direction
 // (e.g. 5 --> 4 --> 3 --> 2 --> 1)
 // Currently used for "Up Or Down" and "Reversed" variants
 
@@ -102,7 +102,7 @@ func variantReversibleGetMaxScore(g *Game) int {
 	return maxScore
 }
 
-// A helper function for "variantReversibleGetMaxScore()"
+// variantReversibleWalkUp is a helper function for "variantReversibleGetMaxScore()".
 func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 	// Local variables
 	variant := variants[g.Options.VariantName]
@@ -134,7 +134,7 @@ func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 	return cardsThatCanStillBePlayed
 }
 
-// A helper function for "variantReversibleGetMaxScore()"
+// variantReversibleWalkDown is a helper function for "variantReversibleGetMaxScore()".
 func variantReversibleWalkDown(g *Game, allDiscarded map[int]bool) int {
 	// Local variables
 	variant := variants[g.Options.VariantName]

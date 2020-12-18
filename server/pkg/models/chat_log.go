@@ -69,7 +69,7 @@ type DBChatMessage struct {
 	Datetime    time.Time      `json:"datetime"`
 }
 
-func (cl *ChatLog) Get(ctx context.Context, room string, count int) ([]DBChatMessage, error) {
+func (cl *ChatLog) Get(ctx context.Context, room string, count int) ([]*DBChatMessage, error) {
 	SQLString := `
 		SELECT
 			COALESCE(users.username, '__server'),
@@ -89,7 +89,7 @@ func (cl *ChatLog) Get(ctx context.Context, room string, count int) ([]DBChatMes
 		SQLString += fmt.Sprintf("LIMIT %v", count)
 	}
 
-	chatMessages := make([]DBChatMessage, 0)
+	chatMessages := make([]*DBChatMessage, 0)
 	var rows pgx.Rows
 	if v, err := cl.m.db.Query(ctx, SQLString, room); err != nil {
 		return chatMessages, err
@@ -107,7 +107,7 @@ func (cl *ChatLog) Get(ctx context.Context, room string, count int) ([]DBChatMes
 		); err != nil {
 			return chatMessages, err
 		}
-		chatMessages = append(chatMessages, message)
+		chatMessages = append(chatMessages, &message)
 	}
 
 	if err := rows.Err(); err != nil {

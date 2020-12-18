@@ -4,10 +4,9 @@ import (
 	"time"
 )
 
-// Spectator is an object that represents either a spectator in an ongoing game
-// or a viewer of a dedicated replay
-// It is sent directly to the client in the "spectators" command,
-// so we ensure that the only valid JSON fields are "name" and "shadowingPlayerIndex"
+// Spectator is an object that represents either a spectator in an ongoing game or a viewer of a
+// dedicated replay. It is sent directly to the client in the "spectators" command, so we ensure
+// that the only valid JSON fields are "name" and "shadowingPlayerIndex".
 type Spectator struct {
 	UserID int    `json:"-"` // This is equal to the database ID for the user
 	Name   string `json:"name"`

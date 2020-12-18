@@ -1,14 +1,20 @@
 package sessions
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type printData struct {
 	resultsChannel chan string
 }
 
-// Print is a helper function for getting a description of all current sessions.
+// Print will return a description of all current sessions.
 // It will block until the message is received.
 func (m *Manager) Print() string {
+	if m.requestsClosed.IsSet() {
+		return "impending server termination"
+	}
+
 	resultsChannel := make(chan string)
 
 	m.requests <- &request{
@@ -21,13 +27,13 @@ func (m *Manager) Print() string {
 	return <-resultsChannel
 }
 
-func print(m *Manager, rawData interface{}) {
-	var data *printData
-	if v, ok := rawData.(*printData); !ok {
-		m.logger.Errorf("Failed type assertion for data of type: %T", data)
+func (m *Manager) print(data interface{}) {
+	var d *printData
+	if v, ok := data.(*printData); !ok {
+		m.logger.Errorf("failed type assertion for data of type: %T", d)
 		return
 	} else {
-		data = v
+		d = v
 	}
 
 	msg := fmt.Sprintf("Current users (%v):\n", len(m.sessions))
@@ -44,5 +50,5 @@ func print(m *Manager, rawData interface{}) {
 		}
 	}
 
-	data.resultsChannel <- msg
+	d.resultsChannel <- msg
 }

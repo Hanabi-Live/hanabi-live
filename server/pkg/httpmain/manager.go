@@ -11,6 +11,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/sessions"
+	"github.com/Zamiell/hanabi-live/server/pkg/tables"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ type Manager struct {
 	logger          *logger.Logger
 	models          *models.Models
 	sessionsManager *sessions.Manager
+	tablesManager   *tables.Manager
 	variantsManager *variants.Manager
 	projectPath     string
 	versionPath     string
@@ -38,6 +40,7 @@ func NewManager(
 	logger *logger.Logger,
 	models *models.Models,
 	sessionsManager *sessions.Manager,
+	tablesManager *tables.Manager,
 	variantsManager *variants.Manager,
 	projectPath string,
 	versionPath string,
@@ -62,6 +65,7 @@ func NewManager(
 		logger:          logger,
 		models:          models,
 		sessionsManager: sessionsManager,
+		tablesManager:   tablesManager,
 		variantsManager: variantsManager,
 		projectPath:     projectPath,
 		versionPath:     versionPath,

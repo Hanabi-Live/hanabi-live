@@ -10,8 +10,8 @@ type printData struct {
 	resultsChannel chan string
 }
 
-// Print is a helper function for getting a description of all current user to table relationships
-// It will block until the message is received
+// Print requests a description of all current user to table relationships.
+// It will block until the message is received.
 func (m *Manager) Print() string {
 	resultsChannel := make(chan string)
 
@@ -25,13 +25,13 @@ func (m *Manager) Print() string {
 	return <-resultsChannel
 }
 
-func print(m *Manager, rawData interface{}) {
-	var data *printData
-	if v, ok := rawData.(*printData); !ok {
-		m.logger.Errorf("Failed type assertion for data of type: %T", data)
+func (m *Manager) print(data interface{}) {
+	var d *printData
+	if v, ok := data.(*printData); !ok {
+		m.logger.Errorf("Failed type assertion for data of type: %T", d)
 		return
 	} else {
-		data = v
+		d = v
 	}
 
 	msg := "Playing relationships:\n"
@@ -41,7 +41,7 @@ func print(m *Manager, rawData interface{}) {
 	msg += printUsersMap(m.usersSpectating)
 	msg += "\n"
 
-	data.resultsChannel <- msg
+	d.resultsChannel <- msg
 }
 
 func printUsersMap(usersMap map[int][]uint64) string {
@@ -52,7 +52,7 @@ func printUsersMap(usersMap map[int][]uint64) string {
 			tableIDStrings = append(tableIDStrings, strconv.FormatUint(tableID, 10))
 		}
 		tablesString := strings.Join(tableIDStrings, ", ")
-		msg += fmt.Sprintf("  User %v --> Tables: %v\n", userID, tablesString)
+		msg += fmt.Sprintf("  User %v --> Tables: [%v]\n", userID, tablesString)
 	}
 
 	return msg

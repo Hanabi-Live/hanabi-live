@@ -10,7 +10,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"time"
 	"unicode"
 
 	sentry "github.com/getsentry/sentry-go"
@@ -46,17 +45,6 @@ func executeScript(scriptName string) error {
 		return fmt.Errorf("failed to execute \"%v\": %w", scriptPath, err)
 	}
 	return nil
-}
-
-// From: http://golangcookbook.blogspot.com/2012/11/generate-random-number-in-given-range.html
-func getRandom(min int, max int) int {
-	max++
-	if max-min <= 0 {
-		hLog.Error("getRandom was given invalid arguments.")
-		return 0
-	}
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min // nolint: gosec
 }
 
 func intInSlice(a int, slice []int) bool {

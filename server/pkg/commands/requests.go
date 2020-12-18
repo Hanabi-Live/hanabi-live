@@ -1,27 +1,34 @@
 package commands
 
+import (
+	"fmt"
+)
+
 type request struct {
-	Type string
-	Data interface{}
+	userID  int
+	command string
+	data    interface{}
 }
 
 func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap[requestTypeNewSession] = newSession
-	m.requestFuncMap[requestTypeDeleteSession] = deleteSession
-	m.requestFuncMap[requestTypeSendMsg] = sendMsg
-	m.requestFuncMap[requestTypeGetList] = getList
+	m.requestFuncMap["tableCreate"] = m.tableCreate
 }
 
-// ListenForRequests will block until messages are sent on the request channel
-// It is meant to be run in a new goroutine
+// ListenForRequests will block until messages are sent on the request channel.
+// It is meant to be run in a new goroutine.
 func (m *Manager) ListenForRequests() {
 	for {
 		req := <-m.requests
 
-		if requestFunc, ok := m.requestFuncMap[req.Type]; ok {
-			requestFunc(m, req.Data)
+		if requestFunc, ok := m.requestFuncMap[req.command]; ok {
+			requestFunc(req.userID, req.data)
 		} else {
-			m.logger.Warnf("The commands manager received an invalid request type of: %v", req.Type)
+			m.logger.Warnf(
+				"The commands manager received an invalid command type of: %v",
+				req.command,
+			)
+			msg := fmt.Sprintf("The command of \"%s\" is invalid.", req.command)
+			m.Dispatcher.Sessions.NotifyError(req.userID, msg)
 		}
 	}
 }

@@ -6,30 +6,44 @@ import (
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
+	"github.com/tevino/abool"
 )
 
 type Manager struct {
-	GitCommitOnStart string
+	gitCommitOnStart string
+	datetimeStarted  time.Time
+	wordList         []string
 
-	datetimeStarted time.Time
+	shuttingDown         *abool.AtomicBool
+	datetimeShutdownInit time.Time
+	maintenanceMode      *abool.AtomicBool
+
+	logger *logger.Logger
 }
 
-func NewManager(logger *logger.Logger) *Manager {
+func NewManager(logger *logger.Logger, dataPath string) *Manager {
 	m := &Manager{
-		GitCommitOnStart: getGitCommitOnStart(logger),
+		gitCommitOnStart: getGitCommit(logger),
+		datetimeStarted:  time.Now(), // Record the time that the server started
+		wordList:         make([]string, 0),
 
-		datetimeStarted: time.Now(), // Record the time that the server started
+		shuttingDown:         abool.New(),
+		datetimeShutdownInit: time.Time{},
+		maintenanceMode:      abool.New(),
+
+		logger: logger,
 	}
+	m.wordListInit(dataPath)
 
-	logger.Infof("Current git commit: %v", m.GitCommitOnStart)
+	m.logger.Infof("Current git commit: %v", m.gitCommitOnStart)
 
 	return m
 }
 
-// Get the commit that corresponds with when the Golang code was compiled.
-// This is useful to know what version of the server is running,
-// since it is possible to update the client without restarting the server.
-func getGitCommitOnStart(logger *logger.Logger) string {
+// getGitCommit gets the commit that corresponds with when the Golang code was compiled.
+// This is useful to know what version of the server is running, since it is possible to update the
+// client without restarting the server.
+func getGitCommit(logger *logger.Logger) string {
 	cmd := exec.Command("git", "rev-parse", "HEAD")
 	stdout, err := cmd.Output()
 	if err != nil {

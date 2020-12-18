@@ -5,5 +5,6 @@ const (
 	defaultHTTPSPort   = 443
 	defaultWebpackPort = 8080
 
-	zeroString = "0.0"
+	lobbyChatHistoryAmount = 50
+	zeroString             = "0.0"
 )

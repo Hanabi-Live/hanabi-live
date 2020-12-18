@@ -8,10 +8,10 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
-// Game is a sub-object of a table
-// It represents all of the particular state associated with a game
+// Game is a sub-object of a table.
+// It represents all of the particular state associated with a game.
 // A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
-// (which is used in this case to prevent circular references)
+// (which is used in this case to prevent circular references).
 type Game struct {
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to

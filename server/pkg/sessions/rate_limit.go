@@ -8,7 +8,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 )
 
-func rateLimitIncomingMsg(ctx context.Context, m *Manager, s *session) {
+func rateLimitIncomingMsg(ctx context.Context, m *Manager, s *session) bool {
 	// Validate that the user is not attempting to flood the server
 	// Algorithm from: http://stackoverflow.com/questions/667508
 	now := time.Now()
@@ -41,16 +41,17 @@ func rateLimitIncomingMsg(ctx context.Context, m *Manager, s *session) {
 				s.ip,
 			)
 		}
-		return
+		return true
 	}
 
 	newRateLimitAllowance--
 	s.rateLimitAllowance = newRateLimitAllowance
+	return false
 }
 
 func ban(ctx context.Context, m *Manager, s *session) error {
 	// Disconnect their session
-	m.DeleteSession(s)
+	m.Delete(s)
 
 	// Check to see if this IP is already banned
 	if banned, err := m.models.BannedIPs.Check(ctx, s.ip); err != nil {

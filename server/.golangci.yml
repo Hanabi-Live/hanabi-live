@@ -1,32 +1,19 @@
 linters:
   enable-all: true
-  # Some linters are commented out because I am testing them out
   disable:
     # We use long functions
     - funlen
-    # We use globals in the code base
-    #- gochecknoglobals
     # gocognit complains about having large functions
     - gocognit
-    # goconst complains about common strings
-    #- goconst
     # gocritic complains about needing to make case statements,
     # even for if statements with only 2 blocks, which is excessive
     - gocritic
-    # gocyclo complains about having large functions
-    #- gocyclo
-    # We do not use conventional Golang comments
-    #- godot
     # goerr113 complains about creating new static errors;
     # making a package-level constructor for every single error is excessive
     - goerr113
-    # gofmt is not needed because we are running goimports (which is a superset of gofmt)
-    #- gofmt
     # gofumpt is closed on the following issue:
     # https://github.com/golangci/golangci-lint/issues/1547
     - gofumpt
-    # gomnd complains about magic numbers
-    #- gomnd
     # We manage long lines manually (lll has no concept of ignoring long strings)
     - lll
     # We do not care about making structs take less memory
@@ -35,8 +22,6 @@ linters:
     - nestif
     # nlreturn requires about excessive newlines around return statements
     - nlreturn
-    # We do not need to use contexts in certain situations
-    #- noctx
     # In command handlers, it is common to have unused parameters for uniformity
     - unparam
     # We don't need to wrap all error messages;
@@ -50,7 +35,7 @@ issues:
   # We want to use golint but we don't care about some of the things that it complains about
   exclude:
     # We have many exported functions without comments
-    - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
+    # - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
     # We block-scope variables in many places, making it impossible to outdent
     - "if block ends with a return statement, so drop this else and outdent its block"
     # TODO in comments is okay

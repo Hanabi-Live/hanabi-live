@@ -10,7 +10,7 @@ func NewClue(actionType int, value int) Clue {
 		// A color clue is action type 2
 		// A rank clue is action type 3
 		// Remap these to 0 and 1, respectively
-		Type:  actionType - 2,
+		Type:  actionType - 2, // nolint: gomnd
 		Value: value,
 	}
 }

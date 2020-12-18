@@ -4,13 +4,13 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 )
 
-// Manager is an object that handles management of a single table
-// It listens for requests in a new goroutine
+// Manager is an object that handles management of a single table.
+// It listens for requests in a new goroutine.
 type Manager struct {
 	table *Table
 
 	requests       chan *request
-	requestFuncMap map[int]func(*Manager, interface{})
+	requestFuncMap map[int]func(interface{})
 
 	logger *logger.Logger
 }
@@ -25,7 +25,7 @@ func NewManager(t *Table, logger *logger.Logger) *Manager {
 		table: t,
 
 		requests:       make(chan *request),
-		requestFuncMap: make(map[int]func(*Manager, interface{})),
+		requestFuncMap: make(map[int]func(interface{})),
 
 		logger: logger,
 	}

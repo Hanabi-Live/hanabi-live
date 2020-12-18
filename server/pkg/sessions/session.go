@@ -2,6 +2,7 @@ package sessions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -29,7 +30,7 @@ type session struct {
 	rateLimitLastCheck time.Time
 
 	errChannel  chan error
-	sendChannel chan []byte // The messages sent to the remote user
+	sendChannel chan string // The messages sent to the remote user
 }
 
 // read is the function that handles reading data from a session.
@@ -42,7 +43,7 @@ func (s *session) read(m *Manager) {
 	s.errChannel <- err
 
 	// Put in a request to clean up the session
-	m.DeleteSession(s)
+	m.Delete(s)
 }
 
 func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
@@ -60,10 +61,22 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 			msg = string(v)
 		}
 
-		rateLimitIncomingMsg(ctx, m, s)
+		if rateLimitIncomingMsg(ctx, m, s) {
+			return errors.New("banned because of rate limiting")
+		}
 
-		// TODO PASS REQUEST TO COMMAND MANAGER
-		m.logger.Debug(msg)
+		// Find out if they sent a coherent WebSocket message
+		if command, data, err := unpackMsg(msg); err != nil {
+			m.logger.Warnf(
+				"%v sent an invalid WebSocket message: %v",
+				util.PrintUserCapitalized(s.userID, s.username),
+				err,
+			)
+			m.NotifyError(s.userID, "That is an invalid WebSocket message.")
+		} else {
+			// This is a coherent message; forward it along to the command manager
+			m.Dispatcher.Commands.Send(s.userID, command, data)
+		}
 	}
 }
 
@@ -77,7 +90,7 @@ func (s *session) write(m *Manager) {
 	s.errChannel <- err
 
 	// Put in a request to clean up the session
-	m.DeleteSession(s)
+	m.Delete(s)
 }
 
 func (s *session) waitForOutgoingMsgs() error {
@@ -94,12 +107,12 @@ func (s *session) waitForOutgoingMsgs() error {
 	}
 }
 
-func writeToConnWithTimeout(ctx context.Context, conn *websocket.Conn, msg []byte) error {
+func writeToConnWithTimeout(ctx context.Context, conn *websocket.Conn, msg string) error {
 	// https://golang.org/pkg/context/#WithTimeout
 	ctx, cancel := context.WithTimeout(ctx, writeTimeoutLength)
 	defer cancel()
 
-	return conn.Write(ctx, websocket.MessageText, msg)
+	return conn.Write(ctx, websocket.MessageText, []byte(msg))
 }
 
 func logSession(m *Manager, userID int, username string, connected bool) {

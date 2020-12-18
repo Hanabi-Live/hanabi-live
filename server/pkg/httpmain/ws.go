@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/sessions"
 	"github.com/Zamiell/hanabi-live/server/pkg/settings"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
@@ -17,7 +18,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-// ws handles part 2 of 2 for logic authentication. (Part 1 is found in "login.go".)
+// ws handles part 2 of 2 for login authentication. (Part 1 is found in "login.go".)
 // After receiving a cookie in part 1, the client will attempt to open a WebSocket connection with
 // the cookie (which is done implicitly because JavaScript will automatically use any current
 // cookies for the website when establishing a WebSocket connection).
@@ -131,7 +132,7 @@ func (m *Manager) wsNew(c *gin.Context, userID int, username string, ip string) 
 	// Send a request to add the WebSocket connection to the sessions manager
 	// (which listens on a separate goroutine)
 	// This will block until an error is received from the channel
-	err := m.sessionsManager.NewSession(data)
+	err := m.sessionsManager.New(data)
 	if errors.Is(err, context.Canceled) ||
 		websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
@@ -154,11 +155,7 @@ func (m *Manager) wsGetData(
 	userID int,
 	username string,
 	ip string,
-) *sessions.NewSessionData {
-	// ----
-	// Misc
-	// ----
-
+) *sessions.NewData {
 	// Update the database with "datetime_last_login" and "last_ip"
 	if err := m.models.Users.Update(c, userID, ip); err != nil {
 		msg := fmt.Sprintf(
@@ -248,7 +245,7 @@ func (m *Manager) wsGetData(
 		datetimeCreated = v
 	}
 	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second // nolint: gomnd
-	// (10 seconds is an arbitrary reasonable value to use,
+	// (10 seconds is an reasonable arbitrary value to use,
 	// which accounts for if they accidentally refresh the page after logging in for the first time)
 
 	// Get their total number of games played from the database
@@ -297,22 +294,60 @@ func (m *Manager) wsGetData(
 	// Information about their current activity
 	// ----------------------------------------
 
-	// We must acquire the tables lock before calling the below functions
-	// TODO USE TABLE MANAGER
-	/*
-		tables.RLock()
-		defer tables.RUnlock()
+	playingAtTables, _ := m.tablesManager.GetUserTables(userID)
 
-		playingAtTables := tables.GetTablesUserPlaying(userID)
-		disconSpectatingTable := uint64(0)
-		if tableID, ok := tables.GetDisconSpectatingTable(userID); ok {
-			disconSpectatingTable = tableID
-		}
-	*/
-	playingAtTables := make([]uint64, 0)
-	disconSpectatingTable := uint64(0)
+	// -------
+	// History
+	// -------
 
-	return &sessions.NewSessionData{
+	var lobbyChatHistory []*DBChatMessage
+	if v, err := models.ChatLog.Get("lobby", lobbyChatHistoryAmount); err != nil {
+		msg := fmt.Sprintf(
+			"Failed to get the lobby chat history for %v: %v",
+			util.PrintUser(userID, username),
+			err,
+		)
+		return nil
+	} else {
+		lobbyChatHistory = v
+	}
+
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsUser(userID, 0, 10); err != nil {
+		msg := fmt.Sprintf(
+			"Failed to get the game IDs for %v: %v",
+			util.PrintUser(userID, username),
+			err,
+		)
+		m.wsError(c, msg)
+		return nil
+	} else {
+		gameIDs = v
+	}
+
+	var gameHistory []*GameHistory
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		msg := fmt.Sprintf(
+			"Failed to get the history for %v: %v",
+			util.PrintUser(userID, username),
+			err,
+		)
+		m.wsError(c, msg)
+		return nil
+	} else {
+		gameHistory = v
+	}
+
+	gameHistoryFriends := make([]*GameHistory, 0)
+	if len(friendsList) > 0 {
+
+	}
+
+	// ----
+	// Done
+	// ----
+
+	return &sessions.NewData{
 		Ctx:  c,
 		Conn: conn,
 
@@ -329,8 +364,11 @@ func (m *Manager) wsGetData(
 		Settings:      settings,
 		FriendsList:   friendsList,
 
-		PlayingAtTables:       playingAtTables,
-		DisconSpectatingTable: disconSpectatingTable,
+		PlayingAtTables: playingAtTables,
+
+		LobbyChatHistory:   lobbyChatHistory,
+		GameHistory:        gameHistory,
+		GameHistoryFriends: gameHistoryFriends,
 	}
 }
 

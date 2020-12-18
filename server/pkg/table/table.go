@@ -11,7 +11,7 @@ import (
 
 // Table describes the container that a player can join, whether it is an unstarted game,
 // an ongoing game, a solo replay, a shared replay, etc.
-// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
+// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing.
 type Table struct {
 	ID          uint64
 	Name        string
@@ -103,6 +103,26 @@ func NewTable(name string, ownerID int) *Table {
 
 		mutex: &deadlock.Mutex{},
 	}
+}
+
+func (t *Table) GetPlayerIndexFromID(userID int) int {
+	for i, p := range t.Players {
+		if p.UserID == userID {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func (t *Table) GetSpectatorIndexFromID(userID int) int {
+	for i, sp := range t.Spectators {
+		if sp.UserID == userID {
+			return i
+		}
+	}
+
+	return -1
 }
 
 /*
@@ -245,24 +265,6 @@ func (t *Table) GetName() string {
 func (t *Table) GetRoomName() string {
 	// Various places in the code base check for room names with a prefix of "table"
 	return fmt.Sprintf("table%v", t.ID)
-}
-
-func (t *Table) GetPlayerIndexFromID(userID int) int {
-	for i, p := range t.Players {
-		if p.UserID == userID {
-			return i
-		}
-	}
-	return -1
-}
-
-func (t *Table) GetSpectatorIndexFromID(userID int) int {
-	for i, sp := range t.Spectators {
-		if sp.UserID == userID {
-			return i
-		}
-	}
-	return -1
 }
 
 func (t *Table) GetOwnerSession() *Session {

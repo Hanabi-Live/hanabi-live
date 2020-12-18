@@ -13,36 +13,6 @@ func (s *Session) NotifyUser(s2 *Session) {
 	s.Emit("user", makeUserMessage(s2))
 }
 
-type UserMessage struct {
-	UserID     int    `json:"userID"`
-	Name       string `json:"name"`
-	Status     int    `json:"status"`
-	TableID    uint64 `json:"tableID"`
-	Hyphenated bool   `json:"hyphenated"`
-	Inactive   bool   `json:"inactive"`
-}
-
-func makeUserMessage(s *Session) *UserMessage {
-	return &UserMessage{
-		UserID:     s.UserID,
-		Name:       s.Username,
-		Status:     s.Status(),
-		TableID:    s.TableID(),
-		Hyphenated: s.Hyphenated(),
-		Inactive:   s.Inactive(),
-	}
-}
-
-// NotifyUserLeft will notify someone about a user that disconnected
-func (s *Session) NotifyUserLeft(s2 *Session) {
-	type UserLeftMessage struct {
-		UserID int `json:"userID"`
-	}
-	s.Emit("userLeft", &UserLeftMessage{
-		UserID: s2.UserID,
-	})
-}
-
 // NotifyUserInactive will notify someone about a user that is either
 // inactive or coming back from inactive status
 func (s *Session) NotifyUserInactive(s2 *Session) {
@@ -54,61 +24,6 @@ func (s *Session) NotifyUserInactive(s2 *Session) {
 		UserID:   s2.UserID,
 		Inactive: s2.Inactive(),
 	})
-}
-
-// NotifyTable will notify a user about a new game or a change in an existing game
-func (s *Session) NotifyTable(t *Table) {
-	s.Emit("table", makeTableMessage(s, t))
-}
-
-type TableMessage struct {
-	ID                uint64   `json:"id"`
-	Name              string   `json:"name"`
-	PasswordProtected bool     `json:"passwordProtected"`
-	Joined            bool     `json:"joined"`
-	NumPlayers        int      `json:"numPlayers"`
-	Owned             bool     `json:"owned"`
-	Running           bool     `json:"running"`
-	Variant           string   `json:"variant"`
-	Timed             bool     `json:"timed"`
-	TimeBase          int      `json:"timeBase"`
-	TimePerTurn       int      `json:"timePerTurn"`
-	SharedReplay      bool     `json:"sharedReplay"`
-	Progress          int      `json:"progress"`
-	Players           []string `json:"players"`
-	Spectators        []string `json:"spectators"`
-}
-
-func makeTableMessage(s *Session, t *Table) *TableMessage {
-	playerIndex := t.GetPlayerIndexFromID(s.UserID)
-
-	players := make([]string, 0)
-	for _, p := range t.Players {
-		players = append(players, p.Name)
-	}
-
-	spectators := make([]string, 0)
-	for _, sp := range t.Spectators {
-		spectators = append(spectators, sp.Name)
-	}
-
-	return &TableMessage{
-		ID:                t.ID,
-		Name:              t.Name,
-		PasswordProtected: len(t.PasswordHash) > 0,
-		Joined:            playerIndex != -1,
-		NumPlayers:        len(t.Players),
-		Owned:             s.UserID == t.OwnerID,
-		Running:           t.Running,
-		Variant:           t.Options.VariantName,
-		Timed:             t.Options.Timed,
-		TimeBase:          t.Options.TimeBase,
-		TimePerTurn:       t.Options.TimePerTurn,
-		SharedReplay:      t.Replay,
-		Progress:          t.Progress,
-		Players:           players,
-		Spectators:        spectators,
-	}
 }
 
 func (s *Session) NotifyTableJoined(t *Table) {
