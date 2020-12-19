@@ -16,7 +16,7 @@ import {
   ActionReplayEnter,
   ActionReplayExit,
   ActionStrike,
-  ActionTurn
+  ActionTurn,
 } from "../src/game/types/actions";
 import ClueType from "../src/game/types/ClueType";
 

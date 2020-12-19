@@ -10,7 +10,7 @@ import {
   handRules,
   playStacksRules,
   textRules,
-  variantRules
+  variantRules,
 } from "../rules";
 import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import CardNote from "../types/CardNote";
@@ -268,7 +268,9 @@ function gameStateReducerFunction(
   }
 
   // Use a sub-reducer to calculate changes on cards
-  state.deck = castDraft(cardsReducer(original(state.deck)!, action, state, metadata));
+  state.deck = castDraft(
+    cardsReducer(original(state.deck)!, action, state, metadata),
+  );
 
   // Resolve the stack direction
   if (action.type === "play" && variantRules.hasReversedSuits(variant)) {

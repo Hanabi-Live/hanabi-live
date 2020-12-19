@@ -1,9 +1,10 @@
 import {
-  cardIdentity, colorClue,
+  cardIdentity,
+  colorClue,
   discard,
   draw,
   play,
-  rankClue
+  rankClue,
 } from "../../../test/testActions";
 import testMetadata from "../../../test/testMetadata";
 import { getVariant } from "../data/gameData";
@@ -15,7 +16,10 @@ import initialGameState from "./initialStates/initialGameState";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
-const throwItInAHoleMetadata = testMetadata(numPlayers, "Throw It in a Hole (4 Suits)");
+const throwItInAHoleMetadata = testMetadata(
+  numPlayers,
+  "Throw It in a Hole (4 Suits)",
+);
 const variant = getVariant(defaultMetadata.options.variantName);
 const gameState = initialGameState(defaultMetadata);
 const defaultCard = initialCardState(0, variant);
@@ -37,7 +41,12 @@ describe("cardsReducer", () => {
 
       const gameStateNextTurn = { ...gameState, currentPlayerIndex: 1 };
 
-      newDeck = cardsReducer(deck, draw(1, 0), gameStateNextTurn, defaultMetadata);
+      newDeck = cardsReducer(
+        deck,
+        draw(1, 0),
+        gameStateNextTurn,
+        defaultMetadata,
+      );
       expect(newDeck[0].location).toBe(1);
     });
 
@@ -46,7 +55,12 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const discardAction = discard(0, 0, 1, 2, false);
-      const newDeck = cardsReducer(deck, discardAction, gameState, defaultMetadata);
+      const newDeck = cardsReducer(
+        deck,
+        discardAction,
+        gameState,
+        defaultMetadata,
+      );
       expect(newDeck[0].location).toBe("discard");
     });
 
@@ -55,7 +69,12 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const playAction = play(0, 0, 1, 2);
-      const newDeck = cardsReducer(deck, playAction, gameState, defaultMetadata);
+      const newDeck = cardsReducer(
+        deck,
+        playAction,
+        gameState,
+        defaultMetadata,
+      );
       expect(newDeck[0].location).toBe("playStack");
     });
   });
@@ -71,7 +90,12 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const discardAction = discard(0, 0, 1, 2, false);
-      const newDeck = cardsReducer(deck, discardAction, gameState, defaultMetadata);
+      const newDeck = cardsReducer(
+        deck,
+        discardAction,
+        gameState,
+        defaultMetadata,
+      );
       expect(newDeck[0].segmentDiscarded).toBe(gameState.turn.segment);
     });
 
@@ -80,7 +104,12 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const playAction = play(0, 0, 1, 2);
-      const newDeck = cardsReducer(deck, playAction, gameState, defaultMetadata);
+      const newDeck = cardsReducer(
+        deck,
+        playAction,
+        gameState,
+        defaultMetadata,
+      );
       expect(newDeck[0].segmentDiscarded).toBe(null);
     });
 
@@ -133,7 +162,12 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const discardAction = discard(0, 0, 1, 2, false);
-      const newDeck = cardsReducer(deck, discardAction, gameState, defaultMetadata);
+      const newDeck = cardsReducer(
+        deck,
+        discardAction,
+        gameState,
+        defaultMetadata,
+      );
       expect(newDeck[0].isMisplayed).toBe(false);
     });
 
@@ -142,7 +176,12 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const playAction = play(0, 0, 1, 2);
-      const newDeck = cardsReducer(deck, playAction, gameState, defaultMetadata);
+      const newDeck = cardsReducer(
+        deck,
+        playAction,
+        gameState,
+        defaultMetadata,
+      );
       expect(newDeck[0].isMisplayed).toBe(false);
     });
 
@@ -171,7 +210,12 @@ describe("cardsReducer", () => {
       expect(deck[0].numPositiveClues).toBe(1);
 
       const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
-      deck = cardsReducer(deck, anotherClueToCardZero, gameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        anotherClueToCardZero,
+        gameState,
+        defaultMetadata,
+      );
       expect(deck[0].numPositiveClues).toBe(2);
     });
 
@@ -185,7 +229,12 @@ describe("cardsReducer", () => {
       expect(deck[0].numPositiveClues).toBe(0);
 
       const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
-      deck = cardsReducer(deck, anotherClueToCardOne, gameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        anotherClueToCardOne,
+        gameState,
+        defaultMetadata,
+      );
       expect(deck[0].numPositiveClues).toBe(0);
     });
   });
@@ -198,7 +247,12 @@ describe("cardsReducer", () => {
       nextGameState = { ...gameState, hands: [[0, 1], []] };
       deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], [2]] };
-      deck = cardsReducer(deck, draw(1, 2, 0, 5), nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 2, 0, 5),
+        nextGameState,
+        defaultMetadata,
+      );
 
       // Load up the negative clues so we can make inferences
       const redClue = colorClue(0, 1, [], 0, 0);
@@ -223,9 +277,25 @@ describe("cardsReducer", () => {
       nextGameState = { ...gameState, hands: [[0, 1], []] };
       deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], [2]] };
-      deck = cardsReducer(deck, draw(1, 2, 0, 4), nextGameState, defaultMetadata);
-      nextGameState = { ...gameState, hands: [[0, 1], [2, 3]] };
-      deck = cardsReducer(deck, draw(1, 3, 1, 4), nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 2, 0, 4),
+        nextGameState,
+        defaultMetadata,
+      );
+      nextGameState = {
+        ...gameState,
+        hands: [
+          [0, 1],
+          [2, 3],
+        ],
+      };
+      deck = cardsReducer(
+        deck,
+        draw(1, 3, 1, 4),
+        nextGameState,
+        defaultMetadata,
+      );
 
       // Load up the negative clues so we can make inferences
       const greenClue = colorClue(2, 1, [], 0, 0);
@@ -247,15 +317,37 @@ describe("cardsReducer", () => {
       expect(deducedPossible(deck[3], 1, 4)).toBe(true);
     });
     test("inferences within other hands stay within those hands (we know their cards)", () => {
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard, fifthCard];
+      let deck: CardState[] = [
+        defaultCard,
+        secondCard,
+        thirdCard,
+        fourthCard,
+        fifthCard,
+      ];
       let nextGameState = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], []] };
       deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], [2]] };
-      deck = cardsReducer(deck, draw(1, 2, 0, 4), nextGameState, defaultMetadata);
-      nextGameState = { ...gameState, hands: [[0, 1], [2, 3]] };
-      deck = cardsReducer(deck, draw(1, 3, 1, 4), nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 2, 0, 4),
+        nextGameState,
+        defaultMetadata,
+      );
+      nextGameState = {
+        ...gameState,
+        hands: [
+          [0, 1],
+          [2, 3],
+        ],
+      };
+      deck = cardsReducer(
+        deck,
+        draw(1, 3, 1, 4),
+        nextGameState,
+        defaultMetadata,
+      );
 
       // Load up the negative clues so inferences can be made
       const greenClueToOther = colorClue(2, 0, [], 1, 0);
@@ -264,20 +356,51 @@ describe("cardsReducer", () => {
       const greenClueToUs = colorClue(2, 1, [], 0, 0);
       const blueClueToUs = colorClue(3, 1, [], 0, 0);
       const purpleClueToUs = colorClue(4, 1, [], 0, 0);
-      deck = cardsReducer(deck, greenClueToOther, nextGameState, defaultMetadata);
-      deck = cardsReducer(deck, blueClueToOther, nextGameState, defaultMetadata);
-      deck = cardsReducer(deck, purpleClueToOther, nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        greenClueToOther,
+        nextGameState,
+        defaultMetadata,
+      );
+      deck = cardsReducer(
+        deck,
+        blueClueToOther,
+        nextGameState,
+        defaultMetadata,
+      );
+      deck = cardsReducer(
+        deck,
+        purpleClueToOther,
+        nextGameState,
+        defaultMetadata,
+      );
       deck = cardsReducer(deck, greenClueToUs, nextGameState, defaultMetadata);
       deck = cardsReducer(deck, blueClueToUs, nextGameState, defaultMetadata);
       deck = cardsReducer(deck, purpleClueToUs, nextGameState, defaultMetadata);
 
-      nextGameState = { ...gameState, hands: [[0, 1], [2, 3, 4]] };
-      deck = cardsReducer(deck, draw(1, 4, 2, 4), nextGameState, defaultMetadata);
+      nextGameState = {
+        ...gameState,
+        hands: [
+          [0, 1],
+          [2, 3, 4],
+        ],
+      };
+      deck = cardsReducer(
+        deck,
+        draw(1, 4, 2, 4),
+        nextGameState,
+        defaultMetadata,
+      );
 
       const foursClueToUs = rankClue(4, 2, [0, 1], 0, 0);
       const foursClueToOther = rankClue(4, 2, [2, 3, 4], 1, 1);
       deck = cardsReducer(deck, foursClueToUs, nextGameState, defaultMetadata);
-      deck = cardsReducer(deck, foursClueToOther, nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        foursClueToOther,
+        nextGameState,
+        defaultMetadata,
+      );
 
       // The other player has inferred their first two fours are red/yellow in some order.
       // Therefore they know their other four is not red/yellow
@@ -304,7 +427,12 @@ describe("cardsReducer", () => {
 
       // Discard a red 5
       const discardCardOne = discard(0, 1, 0, 5, false);
-      deck = cardsReducer(deck, discardCardOne, gameStateWithCorrectHands, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        discardCardOne,
+        gameStateWithCorrectHands,
+        defaultMetadata,
+      );
 
       // Expect the remaining card to remove a possibility for a red 5
       expect(deducedPossible(deck[0], 0, 5)).toBe(false);
@@ -318,36 +446,71 @@ describe("cardsReducer", () => {
 
       // Discard a red 1
       const discardCardOne = discard(0, 1, 0, 1, false);
-      deck = cardsReducer(deck, discardCardOne, gameStateWithCorrectHands, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        discardCardOne,
+        gameStateWithCorrectHands,
+        defaultMetadata,
+      );
 
       // There are 2 red ones remaining in the deck
       expect(deducedPossible(deck[0], 0, 1)).toBe(true);
     });
-    test("does not eliminate a possibility on other cards if we're playing throw it in the hole",
-      () => {
-        let deck: CardState[] = [defaultCard, secondCard];
-        deck = cardsReducer(deck, draw(1, 0, 0, 1), gameState, throwItInAHoleMetadata);
-        let nextGameState = { ...gameState, hands: [[], [0]] };
-        deck = cardsReducer(deck, draw(1, 1, 0, 5), nextGameState, throwItInAHoleMetadata);
-        nextGameState = { ...gameState, hands: [[], [0, 1]] };
+    test("does not eliminate a possibility on other cards if we're playing throw it in the hole", () => {
+      let deck: CardState[] = [defaultCard, secondCard];
+      deck = cardsReducer(
+        deck,
+        draw(1, 0, 0, 1),
+        gameState,
+        throwItInAHoleMetadata,
+      );
+      let nextGameState = { ...gameState, hands: [[], [0]] };
+      deck = cardsReducer(
+        deck,
+        draw(1, 1, 0, 5),
+        nextGameState,
+        throwItInAHoleMetadata,
+      );
+      nextGameState = { ...gameState, hands: [[], [0, 1]] };
 
-        // Discard a red 5
-        const discardCardOne = discard(1, 1, -1, -1, false);
-        deck = cardsReducer(deck, discardCardOne, nextGameState, throwItInAHoleMetadata);
+      // Discard a red 5
+      const discardCardOne = discard(1, 1, -1, -1, false);
+      deck = cardsReducer(
+        deck,
+        discardCardOne,
+        nextGameState,
+        throwItInAHoleMetadata,
+      );
 
-        // The remaining card cannot be a red 5 but the other player doesn't know that
-        expect(deducedPossible(deck[0], 0, 5)).toBe(true);
-      });
+      // The remaining card cannot be a red 5 but the other player doesn't know that
+      expect(deducedPossible(deck[0], 0, 5)).toBe(true);
+    });
     test("only eliminates possibility on card inferred with it", () => {
       let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
       let nextGameState = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], []] };
-      deck = cardsReducer(deck, draw(1, 2, 0, 4), nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 2, 0, 4),
+        nextGameState,
+        defaultMetadata,
+      );
       nextGameState = { ...gameState, hands: [[0, 1], [2]] };
-      deck = cardsReducer(deck, draw(1, 3, 1, 4), nextGameState, defaultMetadata);
-      nextGameState = { ...gameState, hands: [[0, 1], [2, 3]] };
+      deck = cardsReducer(
+        deck,
+        draw(1, 3, 1, 4),
+        nextGameState,
+        defaultMetadata,
+      );
+      nextGameState = {
+        ...gameState,
+        hands: [
+          [0, 1],
+          [2, 3],
+        ],
+      };
 
       // Load up the negative clues so inferences can be made
       const greenClue = colorClue(2, 1, [], 0, 0);
@@ -382,7 +545,12 @@ describe("cardsReducer", () => {
 
       // P1 draws a red 5
       const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
-      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 1, 0, 5),
+        gameStateDrawP1,
+        defaultMetadata,
+      );
 
       // Expect the remaining card to remove a possibility for a red 5
       expect(deducedPossible(deck[0], 0, 5)).toBe(false);
@@ -476,10 +644,20 @@ describe("cardsReducer", () => {
       let deck: CardState[] = [defaultCard, secondCard];
       // P0 draws a red 5
       const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
-      deck = cardsReducer(deck, draw(0, 0, 0, 5), gameStateDrawP0, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(0, 0, 0, 5),
+        gameStateDrawP0,
+        defaultMetadata,
+      );
 
       const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
-      deck = cardsReducer(deck, draw(1, 1, 0, 1), gameStateDrawP1, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 1, 0, 1),
+        gameStateDrawP1,
+        defaultMetadata,
+      );
 
       // Expect the newly drawn card to remove a possibility for a red 5
       expect(deducedPossible(deck[1], 0, 5)).toBe(false);
@@ -538,7 +716,12 @@ describe("cardsReducer", () => {
     });
     describe("from other hand allows new inferences in own hand", () => {
       test("as Alice", () => {
-        let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
+        let deck: CardState[] = [
+          defaultCard,
+          secondCard,
+          thirdCard,
+          fourthCard,
+        ];
         let nextGameState = { ...gameState, hands: [[0], []] };
         deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
         nextGameState = { ...gameState, hands: [[0, 1], []] };
@@ -557,7 +740,12 @@ describe("cardsReducer", () => {
 
         // Bob draws green 5.
         nextGameState = { ...gameState, hands: [[0, 1, 2], [3]] };
-        deck = cardsReducer(deck, draw(1, 3, 2, 5), nextGameState, defaultMetadata);
+        deck = cardsReducer(
+          deck,
+          draw(1, 3, 2, 5),
+          nextGameState,
+          defaultMetadata,
+        );
 
         // Now the two fives in our hand must be blue/purple in some order.
         // The other card in our hand can't be one of those fives.
@@ -575,7 +763,12 @@ describe("cardsReducer", () => {
           ourUsername: "Bob",
           ourPlayerIndex: 1,
         };
-        let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
+        let deck: CardState[] = [
+          defaultCard,
+          secondCard,
+          thirdCard,
+          fourthCard,
+        ];
         let nextGameState = { ...gameState, hands: [[], [0]] };
         deck = cardsReducer(deck, draw(1, 0), nextGameState, bobMetadata);
         nextGameState = { ...gameState, hands: [[], [0, 1]] };
@@ -627,7 +820,12 @@ describe("cardsReducer", () => {
       const gameStateDrawY2 = { ...gameState, hands: [[], [2, 1], [0]] };
       deck = cardsReducer(deck, draw(1, 2, 1, 1), gameStateDrawY2, metaData);
 
-      deck = cardsReducer(deck, cardIdentity(1, 1, 0, 5), gameStateDrawY2, metaData);
+      deck = cardsReducer(
+        deck,
+        cardIdentity(1, 1, 0, 5),
+        gameStateDrawY2,
+        metaData,
+      );
 
       // Expect the Slow-Witted card to remove a possibility for a red 5
       expect(deducedPossible(deck[0], 0, 5)).toBe(false);
@@ -635,8 +833,5 @@ describe("cardsReducer", () => {
   });
 });
 
-const deducedPossible = (
-  card: CardState,
-  suit: number,
-  rank: number,
-) => card.possibleCardsFromDeduction.some(([s, r]) => s === suit && r === rank);
+const deducedPossible = (card: CardState, suit: number, rank: number) =>
+  card.possibleCardsFromDeduction.some(([s, r]) => s === suit && r === rank);

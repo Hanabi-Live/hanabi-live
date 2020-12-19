@@ -78,7 +78,12 @@ export default function cardsReducer(
         }
 
         const card = getCard(newDeck, order);
-        const newCard = cardPossibilitiesReducer(card, clue, positive, metadata);
+        const newCard = cardPossibilitiesReducer(
+          card,
+          clue,
+          positive,
+          metadata,
+        );
         newDeck[order] = newCard;
       };
 
@@ -126,11 +131,7 @@ export default function cardsReducer(
       const suitIndex = nullIfNegative(action.suitIndex) ?? card.suitIndex;
       const rank = nullIfNegative(action.rank) ?? card.rank;
 
-      const identityDetermined = revealCard(
-        suitIndex,
-        rank,
-        card,
-      );
+      const identityDetermined = revealCard(suitIndex, rank, card);
 
       let { segmentPlayed } = card;
       let { segmentDiscarded } = card;
@@ -158,8 +159,10 @@ export default function cardsReducer(
         isMisplayed,
         suitDetermined: card.suitDetermined || identityDetermined,
         rankDetermined: card.rankDetermined || identityDetermined,
-        revealedToPlayer: action.suitIndex >= 0 && action.rank >= 0
-          ? new Array(6).fill(true) : card.revealedToPlayer,
+        revealedToPlayer:
+          action.suitIndex >= 0 && action.rank >= 0
+            ? new Array(6).fill(true)
+            : card.revealedToPlayer,
       };
       break;
     }
@@ -189,7 +192,10 @@ export default function cardsReducer(
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         segmentDrawn: game.turn.segment,
-        revealedToPlayer: drawnCardRevealedToPlayer(action.playerIndex, metadata),
+        revealedToPlayer: drawnCardRevealedToPlayer(
+          action.playerIndex,
+          metadata,
+        ),
         // The segment will be null during the initial deal
         dealtToStartingHand: game.turn.segment === null,
       };
@@ -219,9 +225,9 @@ export default function cardsReducer(
   }
 
   if (
-    game.turn.turnNum === 0
-    && action.type === "draw"
-    && !deckRules.isInitialDealFinished(newDeck.length, metadata)
+    game.turn.turnNum === 0 &&
+    action.type === "draw" &&
+    !deckRules.isInitialDealFinished(newDeck.length, metadata)
   ) {
     // No need to do deduction while cards are being drawn
     return newDeck;
@@ -240,7 +246,10 @@ const cardIdentityRevealedToPlayer = (
 ) => {
   const revealedToPlayer: boolean[] = [];
   for (let i = 0; i < metadata.characterAssignments.length; i++) {
-    if (i !== card.location && getCharacterName(i, metadata) === "Slow-Witted") {
+    if (
+      i !== card.location &&
+      getCharacterName(i, metadata) === "Slow-Witted"
+    ) {
       revealedToPlayer.push(true);
     } else {
       revealedToPlayer.push(card.revealedToPlayer[i]);
@@ -256,7 +265,9 @@ const drawnCardRevealedToPlayer = (
   const revealedToPlayer: boolean[] = [];
   const numPlayers = metadata.characterAssignments.length;
   for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
-    revealedToPlayer.push(canPlayerSeeDrawnCard(playerIndex, drawLocation, numPlayers, metadata));
+    revealedToPlayer.push(
+      canPlayerSeeDrawnCard(playerIndex, drawLocation, numPlayers, metadata),
+    );
   }
   return revealedToPlayer;
 };
@@ -272,17 +283,18 @@ const canPlayerSeeDrawnCard = (
   }
   const characterName = getCharacterName(playerIndex, metadata);
   switch (characterName) {
-    case "Slow-Witted": return false;
-    case "Oblivious": return drawLocation !== (playerIndex - 1) % numPlayers;
-    case "Blind Spot": return drawLocation !== (playerIndex + 1) % numPlayers;
-    default: return true;
+    case "Slow-Witted":
+      return false;
+    case "Oblivious":
+      return drawLocation !== (playerIndex - 1) % numPlayers;
+    case "Blind Spot":
+      return drawLocation !== (playerIndex + 1) % numPlayers;
+    default:
+      return true;
   }
 };
 
-const getCharacterName = (
-  playerIndex: number,
-  metadata: GameMetadata,
-) => {
+const getCharacterName = (playerIndex: number, metadata: GameMetadata) => {
   const characterID = getCharacterIDForPlayer(
     playerIndex,
     metadata.characterAssignments,

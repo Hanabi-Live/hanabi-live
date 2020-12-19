@@ -164,5 +164,7 @@ function checkPossibilitiesEliminatedByObservation(
   card: CardState,
   expected: CardState,
 ) {
-  expect(card.possibleCardsFromDeduction).toEqual(expected.possibleCardsFromDeduction);
-};
+  expect(card.possibleCardsFromDeduction).toEqual(
+    expected.possibleCardsFromDeduction,
+  );
+}

@@ -27,7 +27,8 @@ export default function cardPossibilitiesReducer(
       cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
   const possibleCardsFromDeduction = state.possibleCardsFromDeduction.filter(
-    ([suitIndex, rank]) => cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+    ([suitIndex, rank]) =>
+      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
 
   let { positiveColorClues } = state;
@@ -100,7 +101,9 @@ function updateIdentity(
     rank,
     suitDetermined,
     rankDetermined,
-    revealedToPlayer: suitDetermined && rankDetermined
-      ? new Array(6).fill(true) : state.revealedToPlayer,
+    revealedToPlayer:
+      suitDetermined && rankDetermined
+        ? new Array(6).fill(true)
+        : state.revealedToPlayer,
   };
 }

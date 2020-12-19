@@ -7,7 +7,7 @@ import HanabiCard from "../../HanabiCard";
 import observeStore, {
   Listener,
   Selector,
-  Subscription
+  Subscription,
 } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {

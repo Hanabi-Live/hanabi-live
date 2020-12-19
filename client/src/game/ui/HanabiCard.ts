@@ -29,7 +29,7 @@ import {
   checkNoteImpossibility,
   getRankFromNote,
   getSuitIndexFromNote,
-  possibleCardsFromNoteAndClues
+  possibleCardsFromNoteAndClues,
 } from "./noteCheckImpossibility";
 import * as notes from "./notes";
 
@@ -445,7 +445,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return possibleCardsWithoutObservation.filter(([suitIndexB, rankB]) =>
       this.state.possibleCardsFromDeduction.some(
         ([suitIndexC, rankC]) => suitIndexB === suitIndexC && rankB === rankC,
-      ));
+      ),
+    );
   }
 
   isMorphedBlank(): boolean {

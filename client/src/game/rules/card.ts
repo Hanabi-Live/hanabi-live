@@ -166,7 +166,8 @@ export function canPossiblyBe(
     return true;
   }
   return card.possibleCardsFromDeduction.some(
-    ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
+    ([s, r]) =>
+      (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
   );
 }
 
@@ -177,19 +178,27 @@ export function allPossibilitiesTrash(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): boolean {
-    // If we fully know the card already, just check if it's playable
-    if (card.rank != null && card.suitIndex != null) {
-      return !needsToBePlayed(
-        card.suitIndex,
-        card.rank,
-        deck,
-        playStacks,
-        playStackDirections,
-        variant,
-      );
-    }
+  // If we fully know the card already, just check if it's playable
+  if (card.rank != null && card.suitIndex != null) {
+    return !needsToBePlayed(
+      card.suitIndex,
+      card.rank,
+      deck,
+      playStacks,
+      playStackDirections,
+      variant,
+    );
+  }
 
-    // Otherwise, check based on possibilities from clues/deduction
-    return !card.possibleCardsFromDeduction.some(([suitIndex, rank]) => needsToBePlayed(
-      suitIndex, rank, deck, playStacks, playStackDirections, variant,));
+  // Otherwise, check based on possibilities from clues/deduction
+  return !card.possibleCardsFromDeduction.some(([suitIndex, rank]) =>
+    needsToBePlayed(
+      suitIndex,
+      rank,
+      deck,
+      playStacks,
+      playStackDirections,
+      variant,
+    ),
+  );
 }
