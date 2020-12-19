@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"math"
 	"regexp"
@@ -14,14 +15,15 @@ var (
 
 func replayActionsFunctionsInit() {
 	replayActionFunctions = map[int]func(*Session, *CommandData, *Table){
-		ReplayActionTypeSegment:        commandReplayActionSegment,
-		ReplayActionTypeArrow:          commandReplayActionArrow,
-		ReplayActionTypeSound:          commandReplayActionSound,
-		ReplayActionTypeHypoStart:      commandReplayActionHypoStart,
-		ReplayActionTypeHypoEnd:        commandReplayActionHypoEnd,
-		ReplayActionTypeHypoAction:     commandReplayActionHypoAction,
-		ReplayActionTypeHypoBack:       commandReplayActionHypoBack,
-		ReplayActionTypeToggleRevealed: commandReplayActionToggleRevealed,
+		ReplayActionTypeSegment:        replayActionSegment,
+		ReplayActionTypeArrow:          replayActionArrow,
+		ReplayActionTypeSound:          replayActionSound,
+		ReplayActionTypeHypoStart:      replayActionHypoStart,
+		ReplayActionTypeHypoEnd:        replayActionHypoEnd,
+		ReplayActionTypeHypoAction:     replayActionHypoAction,
+		ReplayActionTypeHypoBack:       replayActionHypoBack,
+		ReplayActionTypeToggleRevealed: replayActionToggleRevealed,
+		ReplayActionTypeEfficiencyMod:  replayActionEfficiencyMod,
 	}
 }
 
@@ -34,46 +36,40 @@ func replayActionsFunctionsInit() {
 //   value: 10, // Optional
 //   name: 'Alice', // Optional
 // }
-func commandReplayAction(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
-		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, " +
+		s.Warning("Table " + strconv.FormatUint(t.ID, 10) + " is not a shared replay, " +
 			"so you cannot send a shared replay action.")
 		return
 	}
 
 	// Validate that this person is spectating the shared replay
-	j := t.GetSpectatorIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID)
 	if j < -1 {
-		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
+		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
 	}
 
 	// Validate that this person is leading the shared replay
-	if s.UserID() != t.Owner {
+	if s.UserID != t.OwnerID {
 		s.Warning("You cannot send a shared replay action unless you are the leader.")
 		return
 	}
 
-	/*
-		Replay action
-	*/
+	replayAction(ctx, s, d, t)
+}
 
+func replayAction(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Start the idle timeout
-	go t.CheckIdle()
+	go t.CheckIdle(ctx)
 
 	// Do different tasks depending on the action
 	if replayActionFunction, ok := replayActionFunctions[d.Type]; ok {
@@ -84,7 +80,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	}
 }
 
-func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
+func replayActionSegment(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -94,8 +90,8 @@ func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 
 	// Notify everyone
 	type ReplaySegmentMessage struct {
-		TableID int `json:"tableID"`
-		Segment int `json:"segment"`
+		TableID uint64 `json:"tableID"`
+		Segment int    `json:"segment"`
 	}
 	replaySegmentMessage := &ReplaySegmentMessage{
 		TableID: t.ID,
@@ -126,12 +122,14 @@ func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
+func replayActionArrow(s *Session, d *CommandData, t *Table) {
 	// Display an arrow to indicate a specific card that the shared replay leader wants to draw
 	// attention to
+	// The server does not know what a particular order value corresponds to;
+	// it simply transmits the order chosen by the replay leader to everyone else
 	type ReplayIndicatorMessage struct {
-		TableID int `json:"tableID"`
-		Order   int `json:"order"`
+		TableID uint64 `json:"tableID"`
+		Order   int    `json:"order"`
 	}
 	replayIndicatorMessage := &ReplayIndicatorMessage{
 		TableID: t.ID,
@@ -142,10 +140,10 @@ func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
+func replayActionSound(s *Session, d *CommandData, t *Table) {
 	// Play a sound effect
 	type ReplaySoundMessage struct {
-		TableID int    `json:"tableID"`
+		TableID uint64 `json:"tableID"`
 		Sound   string `json:"sound"`
 	}
 	replaySoundMessage := &ReplaySoundMessage{
@@ -157,7 +155,7 @@ func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
+func replayActionHypoStart(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -168,9 +166,10 @@ func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
 
 	// Start a hypothetical line
 	g.Hypothetical = true
+	g.HypoShowDrawnCards = false
 
 	type HypoStartMessage struct {
-		TableID int
+		TableID uint64
 	}
 	hypoStartMessage := &HypoStartMessage{
 		TableID: t.ID,
@@ -180,7 +179,7 @@ func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
+func replayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -194,7 +193,7 @@ func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	g.HypoActions = make([]string, 0)
 
 	type HypoEndMessage struct {
-		TableID int
+		TableID uint64
 	}
 	hypoEndMessage := &HypoEndMessage{
 		TableID: t.ID,
@@ -204,7 +203,7 @@ func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoAction(s *Session, d *CommandData, t *Table) {
+func replayActionHypoAction(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -229,7 +228,7 @@ func commandReplayActionHypoAction(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
+func replayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -255,7 +254,7 @@ func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	}
 
 	type HypoBackMessage struct {
-		TableID int
+		TableID uint64
 	}
 	hypoBackMessage := &HypoBackMessage{
 		TableID: t.ID,
@@ -265,21 +264,39 @@ func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
+func replayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
-	g.HypoDrawnCardsShown = !g.HypoDrawnCardsShown
+	g.HypoShowDrawnCards = !g.HypoShowDrawnCards
 
-	type HypoDrawnCardsShownMessage struct {
-		TableID         int  `json:"tableID"`
-		DrawnCardsShown bool `json:"drawnCardsShown"`
+	type HypoShowDrawnCardsMessage struct {
+		TableID        uint64 `json:"tableID"`
+		ShowDrawnCards bool   `json:"showDrawnCards"`
 	}
-	hypoDrawnCardsShownMessage := &HypoDrawnCardsShownMessage{
-		TableID:         t.ID,
-		DrawnCardsShown: g.HypoDrawnCardsShown,
+	hypoShowDrawnCardsMessage := &HypoShowDrawnCardsMessage{
+		TableID:        t.ID,
+		ShowDrawnCards: g.HypoShowDrawnCards,
 	}
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("hypoDrawnCardsShown", hypoDrawnCardsShownMessage)
+		sp.Session.Emit("hypoShowDrawnCards", hypoShowDrawnCardsMessage)
+	}
+}
+
+func replayActionEfficiencyMod(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	g.EfficiencyMod = d.Value
+	type ReplayEfficiencyModMessage struct {
+		TableID uint64 `json:"tableID"`
+		Mod     int    `json:"mod"`
+	}
+	replayEfficiencyModMessage := &ReplayEfficiencyModMessage{
+		TableID: t.ID,
+		Mod:     g.EfficiencyMod,
+	}
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("replayEfficiencyMod", replayEfficiencyModMessage)
 	}
 }

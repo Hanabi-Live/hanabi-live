@@ -3,7 +3,6 @@ package main // In Go, executable commands must always use package main
 // This file contains the entry point for the server software
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -12,14 +11,13 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-)
-
-const (
-	websiteName = "Hanab Live"
+	"github.com/sasha-s/go-deadlock"
 )
 
 var (
+	projectName       string
 	projectPath       string
 	dataPath          string
 	versionPath       string
@@ -32,29 +30,45 @@ var (
 	usingSentry      bool
 	models           *Models
 	datetimeStarted  time.Time
-	tables           = make(map[int]*Table) // Defined in "table.go"
-	// For storing all of the random words (used for random table names)
-	wordList = make([]string, 0)
+	tables           = NewTables() // An object that tracks ongoing tables
 )
 
 func main() {
 	// Initialize logging (in "logger.go")
 	logger = NewLogger()
+	defer logger.Sync()
+
+	// Configure the deadlock detector
+	deadlock.Opts.DisableLockOrderDetection = true
+
+	// Get the project path
+	// https://stackoverflow.com/questions/18537257/
+	if v, err := os.Executable(); err != nil {
+		logger.Fatal("Failed to get the path of the currently running executable: " + err.Error())
+	} else {
+		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
+		projectName = filepath.Base(v)
+		projectPath = filepath.Dir(v)
+	}
 
 	// Welcome message
-	startText := "| Starting " + websiteName + " |"
+	startText := "| Starting " + projectName + " |"
 	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
 	logger.Info(borderText)
 	logger.Info(startText)
 	logger.Info(borderText)
 
-	// Get the project path
-	// https://stackoverflow.com/questions/18537257/
-	if v, err := os.Executable(); err != nil {
-		logger.Fatal("Failed to get the path of the currently running executable:", err)
+	// Record the commit that corresponds with when the Golang code was compiled
+	// (this is useful to know what version of the server is running,
+	// since it is possible to update the client without restarting the server)
+	cmd := exec.Command("git", "rev-parse", "HEAD")
+	if stdout, err := cmd.Output(); err != nil {
+		logger.Fatal("Failed to perform a \"git rev-parse HEAD\": " + err.Error())
+		return
 	} else {
-		projectPath = filepath.Dir(v)
+		gitCommitOnStart = strings.TrimSpace(string(stdout))
 	}
+	logger.Info("Current git commit: " + gitCommitOnStart)
 
 	// Check to see if the data path exists
 	dataPath = path.Join(projectPath, "data")
@@ -63,7 +77,7 @@ func main() {
 			"This directory should always exist; please try re-cloning the repository.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+dataPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + dataPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -76,7 +90,7 @@ func main() {
 			"This file should automatically be created when building the client.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+versionPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + versionPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -84,11 +98,11 @@ func main() {
 	tablesPath = path.Join(dataPath, "ongoing_tables")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
-			logger.Fatal("Failed to create the \""+tablesPath+"\" directory:", err2)
+			logger.Fatal("Failed to create the \"" + tablesPath + "\" directory: " + err2.Error())
 			return
 		}
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+tablesPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + tablesPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -96,23 +110,14 @@ func main() {
 	specificDealsPath = path.Join(dataPath, "specific_deals")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
-			logger.Fatal("Failed to create the \""+specificDealsPath+"\" directory:", err2)
+			logger.Fatal("Failed to create the \"" + specificDealsPath + "\" directory: " +
+				err2.Error())
 			return
 		}
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+specificDealsPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + specificDealsPath + "\" file exists: " +
+			err.Error())
 		return
-	}
-
-	// Record the commit that corresponds with when the Golang code was compiled
-	// (this is useful to know what version of the server is running,
-	// since it is possible to update the client without restarting the server)
-	cmd := exec.Command("git", "rev-parse", "HEAD")
-	if stdout, err := cmd.Output(); err != nil {
-		logger.Fatal("Failed to perform a \"git rev-parse HEAD\":", err)
-		return
-	} else {
-		gitCommitOnStart = strings.TrimSpace(string(stdout))
 	}
 
 	// Check to see if the ".env" file exists
@@ -123,13 +128,13 @@ func main() {
 			"This file should automatically be created when running this script.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \""+envPath+"\" file exists:", err)
+		logger.Fatal("Failed to check if the \"" + envPath + "\" file exists: " + err.Error())
 		return
 	}
 
 	// Load the ".env" file which contains environment variables with secret values
 	if err := godotenv.Load(envPath); err != nil {
-		logger.Fatal("Failed to load the \".env\" file:", err)
+		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
 		return
 	}
 
@@ -151,7 +156,7 @@ func main() {
 
 	// Initialize the database model (in "models.go")
 	if v, err := modelsInit(); err != nil {
-		logger.Fatal("Failed to open the database:", err)
+		logger.Fatal("Failed to open the database: " + err.Error())
 		return
 	} else {
 		models = v
@@ -166,7 +171,7 @@ func main() {
 			return
 		}
 
-		logger.Error("Failed to run the database test query:", err)
+		logger.Error("Failed to run the database test query: " + err.Error())
 		logger.Fatal("Try re-running the \"install/install_database_schema.sh\" script in order to re-initialize the database.")
 		return
 	}
@@ -184,19 +189,14 @@ func main() {
 	// Initialize "Detrimental Character Assignments" (in "characters.go")
 	charactersInit()
 
-	// Initialize the word list
-	wordListPath := path.Join(dataPath, "word_list.txt")
-	if v, err := ioutil.ReadFile(wordListPath); err != nil {
-		logger.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
-		return
-	} else {
-		wordListString := string(v)
-		wordListString = strings.TrimSpace(wordListString)
-		wordList = strings.Split(wordListString, "\n")
-	}
+	// Initialize the list that contains every word in the dictionary
+	wordListInit()
 
 	// Start the Discord bot (in "discord.go")
 	discordInit()
+
+	// Start the GitHub bot (in "github.go")
+	githubInit()
 
 	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
@@ -209,6 +209,12 @@ func main() {
 
 	// Restore tables that were ongoing at the time of the last server restart
 	restoreTables()
+
+	// Specify that we are running the HTTP framework in production
+	// (it is "gin.DebugMode" by default)
+	// Comment this out to debug HTTP stuff
+	// This must be done before spawning the localhost goroutine in order to prevent race conditions
+	gin.SetMode(gin.ReleaseMode)
 
 	// Initialize an HTTP router that will only listen locally for maintenance-related commands
 	// (in "httpLocalhost.go")

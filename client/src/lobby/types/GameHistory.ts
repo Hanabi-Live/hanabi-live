@@ -1,4 +1,4 @@
-import Options from '../../types/Options';
+import Options from "../../types/Options";
 
 export default interface GameHistory {
   id: number;
@@ -7,8 +7,8 @@ export default interface GameHistory {
   score: number;
   numTurns: number;
   endCondition: number;
-  datetimeStarted: Date;
-  datetimeFinished: Date;
+  datetimeStarted: string;
+  datetimeFinished: string;
   numGamesOnThisSeed: number;
   playerNames: string[];
   incrementNumGames: boolean;

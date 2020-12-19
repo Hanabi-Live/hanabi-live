@@ -107,24 +107,39 @@
   });
 
   const initHistory = () => {
-    if (!window.location.pathname.startsWith('/history/')) {
+    if (
+      !window.location.pathname.startsWith('/history/')
+      && !window.location.pathname.startsWith('/seed/')
+    ) {
       return;
     }
 
     // Initialize the "Filter by # of Players" dropdown
-    $('#filter-by-players').change(() => {
+    // (which is not relevant on a seed listing page)
+    if (window.location.pathname.startsWith('/seed/')) {
+      $('#filter-by-players-label1').hide();
+      $('#filter-by-players-label2').hide();
+    } else {
+      $('#filter-by-players').change(() => {
       filterHistoryRows();
     });
+    }
 
     // Initialize the "Filter by Score" input field
     $('#filter-by-score').on('input', () => {
       filterHistoryRows();
     });
 
-    // Initialize the "Filter by Score" input field
-    $('#filter-by-variant').on('input', () => {
-      filterHistoryRows();
-    });
+    // Initialize the "Filter by Variant" input field
+    // (which is not relevant on a seed listing page)
+    if (window.location.pathname.startsWith('/seed/')) {
+      $('#filter-by-variant-label1').hide();
+      $('#filter-by-variant-label2').hide();
+    } else {
+      $('#filter-by-variant').on('input', () => {
+        filterHistoryRows();
+      });
+    }
   };
 
   const filterHistoryRows = () => {
@@ -134,7 +149,7 @@
     // Get the filter values
     const numPlayers = $('#filter-by-players').val();
     const scoreString = $('#filter-by-score').val();
-    const score = parseInt(scoreString, 10);
+    const score = parseIntSafe(scoreString);
     const variant = $('#filter-by-variant').val();
 
     const numPlayersFilterEnabled = numPlayers !== 'all';
@@ -144,6 +159,7 @@
     // If no filters are active, show everything
     if (!numPlayersFilterEnabled && !scoreFilterEnabled && !variantFilterEnabled) {
       $('.history-row').show();
+      setRowColors();
       return;
     }
 
@@ -160,7 +176,21 @@
     } else {
       $(historySelector).show();
     }
+
+    setRowColors();
   };
+
+  // In the Alpha HTML5 template, table rows are supposed to alternate colors
+  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
+  const setRowColors = () => {
+    const numRows = $('#history-table tr').length;
+    const color1 = '#f8f8f8';
+    const color2 = 'white';
+    for (let i = 0; i < numRows; i++) {
+      const colorForThisRow = i % 2 == 0 ? color1 : color2;
+      $(`#history-row-${i}`).css('background-color', colorForThisRow);
+    }
+  }
 
   const initMissingScores = () => {
     if (!window.location.pathname.startsWith('/missing-scores/')) {
@@ -168,7 +198,7 @@
     }
 
     // Parse the number of players from the URL
-    // e.g. ["", "missing-scores", "test"] from "http://localhost/missing-scores/test"
+    // e.g. ["", "missing-scores", "Alice", "Bob"] from "/missing-scores/Alice/Bob"
     const urlSegments = window.location.pathname.split('/');
     if (urlSegments < 3) {
       return;
@@ -176,7 +206,7 @@
     const playerName = urlSegments[2];
     let numPlayers = 0;
     if (urlSegments.length >= 4) {
-      numPlayers = parseInt(urlSegments[3], 10);
+      numPlayers = parseIntSafe(urlSegments[3]);
       if (numPlayers === NaN) {
         numPlayers = 0;
       }
@@ -194,5 +224,24 @@
       window.location = `/missing-scores/${playerName}/${numPlayers}`;
     });
   }
+
+  // Subroutines
+  // The "parseIntSafe()" function is copied from "misc.ts"
+  const parseIntSafe = (input) => {
+    let trimmedInput = input.trim(); // Remove all leading and trailing whitespace
+    const isNegativeNumber = trimmedInput.startsWith('-');
+    if (isNegativeNumber) {
+      // Remove the leading minus sign before we match the regular expression
+      trimmedInput = trimmedInput.substring(1);
+    }
+    if (!trimmedInput.match(/^\d+$/)) { // "\d" matches any digit (same as "[0-9]")
+      return NaN;
+    }
+    if (isNegativeNumber) {
+      // Add the leading minus sign back
+      trimmedInput = `-${trimmedInput}`;
+    }
+    return parseInt(trimmedInput, 10);
+  };
 </script>
 {{end}}

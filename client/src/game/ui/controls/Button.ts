@@ -1,18 +1,19 @@
-import Konva from 'konva';
-import { drawLayer } from '../konvaHelpers';
-import FitText from './FitText';
+import Konva from "konva";
+import { drawLayer } from "../konvaHelpers";
+import FitText from "./FitText";
 
 export default class Button extends Konva.Group {
-  enabled: boolean = true;
-  pressed: boolean = false;
+  enabled = true;
+  pressed = false;
+  assignedTextSize = false;
 
   background: Konva.Rect;
   textElement: FitText | null = null;
   imageElement: Konva.Image | null = null;
   imageDisabledElement: Konva.Image | null = null;
 
-  tooltipName: string = '';
-  tooltipContent: string = '';
+  tooltipName = "";
+  tooltipContent = "";
 
   constructor(config: Konva.ContainerConfig, images?: HTMLImageElement[]) {
     super(config);
@@ -21,6 +22,10 @@ export default class Button extends Konva.Group {
     // Local variables
     const w = this.width();
     const h = this.height();
+    const textSize = (config.fontSize as number) ?? 0.5 * h;
+    if (config.fontSize) {
+      this.assignedTextSize = true;
+    }
 
     this.background = new Konva.Rect({
       x: 0,
@@ -28,7 +33,7 @@ export default class Button extends Konva.Group {
       width: w,
       height: h,
       cornerRadius: 0.12 * h,
-      fill: 'black',
+      fill: "black",
       opacity: 0.6,
       listening: true,
     });
@@ -39,13 +44,13 @@ export default class Button extends Konva.Group {
     if (config.text) {
       this.textElement = new FitText({
         x: 0,
-        y: 0.275 * h,
+        y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered
         width: w,
         height: 0.5 * h,
-        fontSize: 0.5 * h,
-        fontFamily: 'Verdana',
-        fill: 'white',
-        align: 'center',
+        fontSize: textSize,
+        fontFamily: "Verdana",
+        fill: "white",
+        align: "center",
         text: config.text as string,
         listening: false,
       });
@@ -76,33 +81,33 @@ export default class Button extends Konva.Group {
     }
 
     const resetButton = () => {
-      this.background.fill('black');
+      this.background.fill("black");
       drawLayer(this);
 
-      this.background.off('mouseup');
-      this.background.off('mouseout');
+      this.background.off("mouseup");
+      this.background.off("mouseout");
     };
-    this.background.on('mousedown', () => {
-      this.background.fill('#888888');
+    this.background.on("mousedown", () => {
+      this.background.fill("#888888");
       drawLayer(this);
 
-      this.background.on('mouseout', () => {
+      this.background.on("mouseout", () => {
         resetButton();
       });
-      this.background.on('mouseup', () => {
+      this.background.on("mouseup", () => {
         resetButton();
       });
     });
   }
 
-  setEnabled(enabled: boolean) {
+  setEnabled(enabled: boolean): void {
     if (enabled === this.enabled) {
       return;
     }
     this.enabled = enabled;
 
     if (this.textElement) {
-      this.textElement.fill(enabled ? 'white' : '#444444');
+      this.textElement.fill(enabled ? "white" : "#444444");
     }
 
     if (this.imageElement && this.imageDisabledElement) {
@@ -115,21 +120,26 @@ export default class Button extends Konva.Group {
     drawLayer(this);
   }
 
-  setPressed(pressed: boolean) {
+  setPressed(pressed: boolean): void {
     this.pressed = pressed;
-    this.background.fill(pressed ? '#cccccc' : 'black');
+    this.background.fill(pressed ? "#cccccc" : "black");
     drawLayer(this);
   }
 
-  text(newText: string) {
+  text(newText: string): void {
     if (this.textElement) {
-      this.textElement.fitText(newText);
+      if (this.assignedTextSize) {
+        this.textElement.text(newText);
+      } else {
+        // Resize to fit the new text if we haven't been specifically given a size
+        this.textElement.fitText(newText);
+      }
     } else {
       throw new Error('The "text()" method was called on a non-text Button.');
     }
   }
 
-  fill(newFill: string) {
+  fill(newFill: string): void {
     if (this.textElement) {
       this.textElement.fill(newFill);
     } else {

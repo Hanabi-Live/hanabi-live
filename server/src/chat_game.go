@@ -1,37 +1,43 @@
 package main
 
+import (
+	"context"
+)
+
 // /pause
-func chatPause(s *Session, d *CommandData, t *Table) {
+func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
-	commandPause(s, &CommandData{
-		TableID: t.ID,
-		Setting: "pause",
+	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
+		TableID:     t.ID,
+		Setting:     "pause",
+		NoTableLock: true,
 	})
 }
 
 // /unpause
-func chatUnpause(s *Session, d *CommandData, t *Table) {
+func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
-	commandPause(s, &CommandData{
-		TableID: t.ID,
-		Setting: "unpause",
+	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
+		TableID:     t.ID,
+		Setting:     "unpause",
+		NoTableLock: true,
 	})
 }

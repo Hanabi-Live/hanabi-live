@@ -9,46 +9,50 @@ import (
 */
 
 // NotifyUser will notify someone about a new user that connected or a change in an existing user
-func (s *Session) NotifyUser(u *Session) {
-	s.Emit("user", makeUserMessage(u))
+func (s *Session) NotifyUser(s2 *Session) {
+	s.Emit("user", makeUserMessage(s2))
 }
 
 type UserMessage struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Status int    `json:"status"`
-	Table  int    `json:"table"`
+	UserID     int    `json:"userID"`
+	Name       string `json:"name"`
+	Status     int    `json:"status"`
+	TableID    uint64 `json:"tableID"`
+	Hyphenated bool   `json:"hyphenated"`
+	Inactive   bool   `json:"inactive"`
 }
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
-		ID:     s.UserID(),
-		Name:   s.Username(),
-		Status: s.Status(),
-		Table:  s.Table(),
+		UserID:     s.UserID,
+		Name:       s.Username,
+		Status:     s.Status(),
+		TableID:    s.TableID(),
+		Hyphenated: s.Hyphenated(),
+		Inactive:   s.Inactive(),
 	}
 }
 
 // NotifyUserLeft will notify someone about a user that disconnected
-func (s *Session) NotifyUserLeft(u *Session) {
+func (s *Session) NotifyUserLeft(s2 *Session) {
 	type UserLeftMessage struct {
-		ID int `json:"id"`
+		UserID int `json:"userID"`
 	}
 	s.Emit("userLeft", &UserLeftMessage{
-		ID: u.UserID(),
+		UserID: s2.UserID,
 	})
 }
 
 // NotifyUserInactive will notify someone about a user that is either
 // inactive or coming back from inactive status
-func (s *Session) NotifyUserInactive(u *Session) {
+func (s *Session) NotifyUserInactive(s2 *Session) {
 	type UserInactiveMessage struct {
-		ID       int  `json:"id"`
+		UserID   int  `json:"userID"`
 		Inactive bool `json:"inactive"`
 	}
 	s.Emit("userInactive", &UserInactiveMessage{
-		ID:       u.UserID(),
-		Inactive: u.Inactive(),
+		UserID:   s2.UserID,
+		Inactive: s2.Inactive(),
 	})
 }
 
@@ -58,7 +62,7 @@ func (s *Session) NotifyTable(t *Table) {
 }
 
 type TableMessage struct {
-	ID                int      `json:"id"`
+	ID                uint64   `json:"id"`
 	Name              string   `json:"name"`
 	PasswordProtected bool     `json:"passwordProtected"`
 	Joined            bool     `json:"joined"`
@@ -76,13 +80,7 @@ type TableMessage struct {
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
-	i := t.GetPlayerIndexFromID(s.UserID())
-	joined := false
-	if i != -1 {
-		joined = true
-	}
-
-	numPlayers := len(t.Players)
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 
 	players := make([]string, 0)
 	for _, p := range t.Players {
@@ -98,9 +96,9 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		ID:                t.ID,
 		Name:              t.Name,
 		PasswordProtected: len(t.PasswordHash) > 0,
-		Joined:            joined,
-		NumPlayers:        numPlayers,
-		Owned:             s.UserID() == t.Owner,
+		Joined:            playerIndex != -1,
+		NumPlayers:        len(t.Players),
+		Owned:             s.UserID == t.OwnerID,
 		Running:           t.Running,
 		Variant:           t.Options.VariantName,
 		Timed:             t.Options.Timed,
@@ -115,7 +113,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 
 func (s *Session) NotifyTableJoined(t *Table) {
 	type JoinedMessage struct {
-		TableID int `json:"tableID"`
+		TableID uint64 `json:"tableID"`
 	}
 	s.Emit("joined", &JoinedMessage{
 		TableID: t.ID,
@@ -124,11 +122,11 @@ func (s *Session) NotifyTableJoined(t *Table) {
 
 func (s *Session) NotifyTableProgress(t *Table) {
 	type TableProgressMessage struct {
-		ID       int `json:"id"`
-		Progress int `json:"progress"`
+		TableID  uint64 `json:"tableID"`
+		Progress int    `json:"progress"`
 	}
 	s.Emit("tableProgress", &TableProgressMessage{
-		ID:       t.ID,
+		TableID:  t.ID,
 		Progress: t.Progress,
 	})
 }
@@ -136,16 +134,16 @@ func (s *Session) NotifyTableProgress(t *Table) {
 // NotifyTableGone will notify someone about a game that ended
 func (s *Session) NotifyTableGone(t *Table) {
 	type TableGoneMessage struct {
-		ID int `json:"id"`
+		TableID uint64 `json:"tableID"`
 	}
 	s.Emit("tableGone", &TableGoneMessage{
-		ID: t.ID,
+		TableID: t.ID,
 	})
 }
 
 func (s *Session) NotifyChatTyping(t *Table, name string, typing bool) {
 	type ChatTypingMessage struct {
-		TableID int    `json:"tableID"`
+		TableID uint64 `json:"tableID"`
 		Name    string `json:"name"`
 		Typing  bool   `json:"typing"`
 	}
@@ -158,8 +156,8 @@ func (s *Session) NotifyChatTyping(t *Table, name string, typing bool) {
 
 func (s *Session) NotifyTableStart(t *Table) {
 	type TableStartMessage struct {
-		TableID int  `json:"tableID"`
-		Replay  bool `json:"replay"`
+		TableID uint64 `json:"tableID"`
+		Replay  bool   `json:"replay"`
 	}
 	s.Emit("tableStart", &TableStartMessage{
 		TableID: t.ID,
@@ -173,7 +171,7 @@ func (s *Session) NotifyShutdown() {
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 	}
 	s.Emit("shutdown", &ShutdownMessage{
-		ShuttingDown:         shuttingDown,
+		ShuttingDown:         shuttingDown.IsSet(),
 		DatetimeShutdownInit: datetimeShutdownInit,
 	})
 }
@@ -183,7 +181,16 @@ func (s *Session) NotifyMaintenance() {
 		MaintenanceMode bool `json:"maintenanceMode"`
 	}
 	s.Emit("maintenance", &MaintenanceMessage{
-		MaintenanceMode: maintenanceMode,
+		MaintenanceMode: maintenanceMode.IsSet(),
+	})
+}
+
+func (s *Session) NotifySoundLobby(file string) {
+	type SoundLobbyMessage struct {
+		File string `json:"file"`
+	}
+	s.Emit("soundLobby", &SoundLobbyMessage{
+		File: file,
 	})
 }
 
@@ -202,7 +209,7 @@ func (s *Session) NotifyConnected(t *Table) {
 
 	// Send the "connected" message
 	type ConnectedMessage struct {
-		TableID int    `json:"tableID"`
+		TableID uint64 `json:"tableID"`
 		List    []bool `json:"list"`
 	}
 	s.Emit("connected", &ConnectedMessage{
@@ -211,59 +218,16 @@ func (s *Session) NotifyConnected(t *Table) {
 	})
 }
 
-// NotifyYourTurn will send someone an "yourTurn" message
-// This is sent at the beginning of their turn to bring up the clue UI
-func (s *Session) NotifyYourTurn(t *Table) {
-	type YourTurnMessage struct {
-		TableID int `json:"tableID"`
-	}
-	s.Emit("yourTurn", &YourTurnMessage{
-		TableID: t.ID,
-	})
-}
-
 func (s *Session) NotifyGameAction(t *Table, action interface{}) {
-	scrubbedAction := CheckScrub(t, action, s.UserID())
+	scrubbedAction := CheckScrub(t, action, s.UserID)
 
 	type GameActionMessage struct {
-		TableID int         `json:"tableID"`
+		TableID uint64      `json:"tableID"`
 		Action  interface{} `json:"action"`
 	}
 	s.Emit("gameAction", &GameActionMessage{
 		TableID: t.ID,
 		Action:  scrubbedAction,
-	})
-}
-
-func (s *Session) NotifySound(t *Table, i int) {
-	g := t.Game
-
-	// Prepare the sound message, depending on if it is their turn
-	var sound string
-	if g.Sound != "" {
-		sound = g.Sound
-	} else if i == g.ActivePlayerIndex {
-		sound = "turn_us"
-	} else {
-		sound = "turn_other"
-	}
-
-	// Also check to see if this player is "surprised" from playing/discarding a card
-	if i > -1 {
-		p := g.Players[i]
-		if p.Surprised {
-			p.Surprised = false
-			sound = "turn_surprise"
-		}
-	}
-
-	type SoundMessage struct {
-		TableID int    `json:"tableID"`
-		File    string `json:"file"`
-	}
-	s.Emit("sound", &SoundMessage{
-		TableID: t.ID,
-		File:    sound,
 	})
 }
 
@@ -287,7 +251,7 @@ func (s *Session) NotifyTime(t *Table) {
 	timeTaken := int64(time.Since(g.DatetimeTurnBegin) / time.Millisecond)
 
 	type ClockMessage struct {
-		TableID           int     `json:"tableID"`
+		TableID           uint64  `json:"tableID"`
 		Times             []int64 `json:"times"`
 		ActivePlayerIndex int     `json:"activePlayerIndex"`
 		TimeTaken         int64   `json:"timeTaken"`
@@ -304,9 +268,9 @@ func (s *Session) NotifyPause(t *Table) {
 	g := t.Game
 
 	type PauseMessage struct {
-		TableID     int  `json:"tableID"`
-		Active      bool `json:"active"`
-		PlayerIndex int  `json:"playerIndex"`
+		TableID     uint64 `json:"tableID"`
+		Active      bool   `json:"active"`
+		PlayerIndex int    `json:"playerIndex"`
 	}
 	s.Emit("pause", &PauseMessage{
 		TableID:     t.ID,
@@ -317,7 +281,7 @@ func (s *Session) NotifyPause(t *Table) {
 
 func (s *Session) NotifySpectators(t *Table) {
 	type SpectatorsMessage struct {
-		TableID    int          `json:"tableID"`
+		TableID    uint64       `json:"tableID"`
 		Spectators []*Spectator `json:"spectators"`
 	}
 	s.Emit("spectators", &SpectatorsMessage{
@@ -328,7 +292,7 @@ func (s *Session) NotifySpectators(t *Table) {
 
 func (s *Session) NotifyBoot(t *Table) {
 	type BootMessage struct {
-		TableID int
+		TableID uint64
 	}
 	s.Emit("boot", &BootMessage{
 		TableID: t.ID,
@@ -343,7 +307,7 @@ func (s *Session) NotifyCardIdentities(t *Table) {
 	g := t.Game
 
 	type CardIdentitiesMessage struct {
-		TableID        int             `json:"tableID"`
+		TableID        uint64          `json:"tableID"`
 		CardIdentities []*CardIdentity `json:"cardIdentities"`
 	}
 	s.Emit("cardIdentities", &CardIdentitiesMessage{
@@ -354,7 +318,7 @@ func (s *Session) NotifyCardIdentities(t *Table) {
 
 func (s *Session) NotifyReplayLeader(t *Table) {
 	type ReplayLeaderMessage struct {
-		TableID int    `json:"tableID"`
+		TableID uint64 `json:"tableID"`
 		Name    string `json:"name"`
 	}
 	s.Emit("replayLeader", &ReplayLeaderMessage{
@@ -369,7 +333,6 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
-		ID    int      `json:"id"`
 		Name  string   `json:"name"`
 		Notes []string `json:"notes"`
 	}
@@ -379,7 +342,6 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	for _, p := range g.Players {
 		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
-				ID:    t.Players[p.Index].ID,
 				Name:  p.Name,
 				Notes: p.Notes,
 			})
@@ -388,7 +350,6 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	if !t.Replay && shadowingPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
-				ID:    sp.ID,
 				Name:  sp.Name,
 				Notes: sp.Notes,
 			})
@@ -397,7 +358,7 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 
 	// Send it
 	type NoteListMessage struct {
-		TableID int        `json:"tableID"`
+		TableID uint64     `json:"tableID"`
 		Notes   []NoteList `json:"notes"`
 	}
 	s.Emit("noteList", &NoteListMessage{

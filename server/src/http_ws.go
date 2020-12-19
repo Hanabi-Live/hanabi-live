@@ -1,19 +1,15 @@
 package main
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"strconv"
-	"time"
+	"sync/atomic"
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
-)
-
-var (
-	// Start at 1 and increment for every session created
-	sessionID = 1
 )
 
 // httpWS handles part 2 of 2 for logic authentication
@@ -23,26 +19,21 @@ var (
 // for the website when establishing a WebSocket connection)
 // So, before allowing anyone to open a WebSocket connection, we need to validate that they have
 // gone through part 1 (e.g. they have a valid cookie that was created at some point in the past)
-// We also do a few other checks to be thorough
+// We also do some other checks to be thorough
 // If all of the checks pass, the WebSocket connection will be established,
 // and then the user's website data will be initialized in "websocketConnect.go"
 // If anything fails in this function, we want to delete the user's cookie in order to force them to
 // start authentication from the beginning
 func httpWS(c *gin.Context) {
 	// Local variables
-	w := c.Writer
 	r := c.Request
-
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	// (we cannot use "defer commandMutex.Unlock()" since this function will not return until the
-	// WebSocket connection is terminated)
+	w := c.Writer
 
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		msg := "Failed to parse the IP address in the WebSocket function:"
-		httpWSError(msg, err, c)
+		msg := "Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error()
+		httpWSError(c, msg)
 		return
 	} else {
 		ip = v
@@ -50,8 +41,8 @@ func httpWS(c *gin.Context) {
 
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		msg := "Failed to check to see if the IP \"" + ip + "\" is banned:"
-		httpWSError(msg, err, c)
+		msg := "Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error()
+		httpWSError(c, msg)
 		return
 	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
@@ -63,33 +54,16 @@ func httpWS(c *gin.Context) {
 			http.StatusUnauthorized,
 		)
 		deleteCookie(c)
-		commandMutex.Unlock()
 		return
-	}
-
-	// Check to see if their IP is muted
-	var muted bool
-	if v, err := models.MutedIPs.Check(ip); err != nil {
-		msg := "Failed to check to see if the IP \"" + ip + "\" is muted:"
-		httpWSError(msg, err, c)
-		return
-	} else {
-		muted = v
 	}
 
 	// If they have a valid cookie, it should have the "userID" value that we set in "httpLogin()"
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
-		logger.Info("Unauthorized WebSocket handshake detected from \"" + ip + "\". " +
-			"This likely means that their cookie has expired.")
-		http.Error(
-			w,
-			http.StatusText(http.StatusUnauthorized),
-			http.StatusUnauthorized,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "Unauthorized WebSocket handshake detected from \"" + ip + "\". " +
+			"This likely means that their cookie has expired."
+		httpWSDeny(c, msg)
 		return
 	} else {
 		userID = v.(int)
@@ -97,70 +71,52 @@ func httpWS(c *gin.Context) {
 
 	// Get the username for this user
 	var username string
-	if v, err := models.Users.GetUsername(userID); err == pgx.ErrNoRows {
-		// The user has a cookie for a user that does not exist in the database,
-		// e.g. an "orphaned" user
+	if v, err := models.Users.GetUsername(userID); errors.Is(err, pgx.ErrNoRows) {
+		// The user has a cookie for a user that does not exist in the database
+		// (e.g. an "orphaned" user)
 		// This can happen in situations where a test user was deleted, for example
 		// Delete their cookie and force them to re-login
-		logger.Info("User from \"" + ip + "\" " +
-			"tried to login with a cookie with an orphaned user ID of " + strconv.Itoa(userID) + ". " +
-			"Deleting their cookie.")
-		http.Error(
-			w,
-			http.StatusText(http.StatusUnauthorized),
-			http.StatusUnauthorized,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "User from \"" + ip + "\" " +
+			"tried to login with a cookie with an orphaned user ID of " + strconv.Itoa(userID) +
+			". Deleting their cookie."
+		httpWSDeny(c, msg)
 		return
 	} else if err != nil {
-		msg := "Failed to get the username for user " + strconv.Itoa(userID) + ":"
-		httpWSError(msg, err, c)
+		msg := "Failed to get the username for user " + strconv.Itoa(userID) + ": " + err.Error()
+		httpWSError(c, msg)
 		return
 	} else {
 		username = v
 	}
 
-	// Get their friends and reverse friends
-	var friendsMap map[int]struct{}
-	if v, err := models.UserFriends.GetMap(userID); err != nil {
-		msg := "Failed to get the friend map for user \"" + username + "\":"
-		httpWSError(msg, err, c)
+	// Validation was successful; update the database with "datetime_last_login" and "last_ip"
+	if err := models.Users.Update(userID, ip); err != nil {
+		msg := "Failed to set \"datetime_last_login\" and \"last_ip\" for user " +
+			"\"" + username + "\": " + err.Error()
+		httpWSError(c, msg)
 		return
-	} else {
-		friendsMap = v
-	}
-	var reverseFriendsMap map[int]struct{}
-	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
-		msg := "Failed to get the reverse friend map for user \"" + username + "\":"
-		httpWSError(msg, err, c)
-		return
-	} else {
-		reverseFriendsMap = v
 	}
 
-	// If they got this far, they are a valid user
-	// Transfer the values from the login cookie into WebSocket session variables
-	// New keys added here should also be added to the "newFakeSesssion()" function
-	keys := defaultSessionKeys()
-	// This is independent of the user and used for disconnection purposes
-	keys["sessionID"] = sessionID
-	sessionID++
+	// Establish the WebSocket connection using the Melody framework
+	// We need to attach some metadata to the Melody session
+	keys := make(map[string]interface{})
+	// The session ID is independent of the user and is used for disconnection purposes
+	keys["sessionID"] = atomic.AddUint64(&sessionIDCounter, 1)
+	// Attach the user ID and username so that we can identify the user in the next step
 	keys["userID"] = userID
 	keys["username"] = username
-	keys["muted"] = muted
-	keys["friends"] = friendsMap
-	keys["reverseFriends"] = reverseFriendsMap
 
-	// Validation succeeded; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
 	// further initialization is performed there
-	commandMutex.Unlock() // We will acquire the lock again in the "websocketConnect()" function
-	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
-		// We don't use "httpWSError()" since we do not want to unlock the command mutex
-		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
-		// fail for mundane reasons (e.g. internet dropping)
-		logger.Info("Failed to establish the WebSocket connection for user \""+username+"\":", err)
+	// "HandleRequestWithKeys()" is blocking
+	// (but that is not a problem because this function is called in a dedicated goroutine)
+	if err := melodyRouter.HandleRequestWithKeys(w, r, keys); err != nil {
+		// We use
+		// "logger.Info()" instead of "logger.Error()"
+		// and "http.StatusBadRequest" instead of "http.StatusInternalServerError"
+		// because WebSocket establishment can fail for mundane reasons (e.g. internet dropping)
+		logger.Info("Failed to establish the WebSocket connection for user \"" + username + "\": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusBadRequest),
@@ -169,38 +125,32 @@ func httpWS(c *gin.Context) {
 		deleteCookie(c)
 		return
 	}
+
+	// This line will not be reached until the WebSocket connection is closed and/or terminated
 }
 
-func httpWSError(msg string, err error, c *gin.Context) {
+func httpWSError(c *gin.Context, msg string) {
 	// Local variables
 	w := c.Writer
 
-	logger.Error(msg, err)
+	logger.Error(msg)
 	http.Error(
 		w,
 		http.StatusText(http.StatusInternalServerError),
 		http.StatusInternalServerError,
 	)
 	deleteCookie(c)
-	commandMutex.Unlock()
 }
 
-func defaultSessionKeys() map[string]interface{} {
-	keys := make(map[string]interface{})
+func httpWSDeny(c *gin.Context, msg string) {
+	// Local variables
+	w := c.Writer
 
-	keys["sessionID"] = -1
-	keys["userID"] = -1
-	keys["username"] = ""
-	keys["muted"] = false
-	keys["status"] = StatusLobby // By default, new users are in the lobby
-	keys["table"] = -1
-	keys["friends"] = make(map[int]struct{})
-	keys["reverseFriends"] = make(map[int]struct{})
-	keys["inactive"] = false
-	keys["fakeUser"] = false
-	keys["rateLimitAllowance"] = RateLimitRate
-	keys["rateLimitLastCheck"] = time.Now()
-	keys["banned"] = false
-
-	return keys
+	logger.Info(msg)
+	http.Error(
+		w,
+		http.StatusText(http.StatusUnauthorized),
+		http.StatusUnauthorized,
+	)
+	deleteCookie(c)
 }

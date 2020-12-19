@@ -1,14 +1,15 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
-import * as chat from './chat';
-import * as gameChat from './game/chat';
-import globals from './globals';
-import * as pregame from './lobby/pregame';
-import Screen from './lobby/types/Screen';
-import * as modals from './modals';
-import ChatMessage from './types/ChatMessage';
+import * as chat from "./chat";
+import * as gameChat from "./game/chat";
+import globals from "./globals";
+import * as pregame from "./lobby/pregame";
+import Screen from "./lobby/types/Screen";
+import * as modals from "./modals";
+import ChatMessage from "./types/ChatMessage";
 
 // Define a command handler map
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
 export default commands;
@@ -16,29 +17,21 @@ export default commands;
 interface WarningData {
   warning: string;
 }
-commands.set('warning', (data: WarningData) => {
+commands.set("warning", (data: WarningData) => {
   console.warn(data.warning);
   modals.warningShow(data.warning);
 
   // Re-activate some lobby elements
-  $('#nav-buttons-games-create-game').removeClass('disabled');
+  $("#nav-buttons-lobby-create-game").removeClass("disabled");
   if (globals.currentScreen === Screen.PreGame) {
     pregame.enableStartGameButton();
-  }
-
-  // Re-activate in-game elements
-  if (
-    globals.currentScreen === Screen.Game
-    && globals.ui !== null
-  ) {
-    globals.ui.reshowClueUIAfterWarning();
   }
 });
 
 interface ErrorData {
   error: string;
 }
-commands.set('error', (data: ErrorData) => {
+commands.set("error", (data: ErrorData) => {
   console.error(data.error);
   modals.errorShow(data.error);
 
@@ -50,22 +43,22 @@ commands.set('error', (data: ErrorData) => {
 });
 
 // Received by the client when a new chat message arrives
-commands.set('chat', (data: ChatMessage) => {
+commands.set("chat", (data: ChatMessage) => {
   chat.add(data, false); // The second argument is "fast"
 
-  if (!data.room.startsWith('table')) {
+  if (!data.room.startsWith("table")) {
     return;
   }
   if (globals.currentScreen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received
-    globals.conn!.send('chatRead', {
+    globals.conn!.send("chatRead", {
       tableID: globals.tableID,
     });
   } else if (globals.currentScreen === Screen.Game && globals.ui !== null) {
-    if ($('#game-chat-modal').is(':visible')) {
+    if ($("#game-chat-modal").is(":visible")) {
       // The chat window was open;
       // notify the server that we have read the chat message that was just received
-      globals.conn!.send('chatRead', {
+      globals.conn!.send("chatRead", {
         tableID: globals.tableID,
       });
       return;
@@ -79,7 +72,7 @@ commands.set('chat', (data: ChatMessage) => {
     if (!UIState.playing && !UIState.finished) {
       // The chat window was not open; pop open the chat window every time for spectators
       gameChat.toggle();
-      globals.conn!.send('chatRead', {
+      globals.conn!.send("chatRead", {
         tableID: globals.tableID,
       });
     } else {
@@ -97,7 +90,7 @@ interface ChatTypingMessage {
   name: string;
   typing: boolean;
 }
-commands.set('chatTyping', (data: ChatTypingMessage) => {
+commands.set("chatTyping", (data: ChatTypingMessage) => {
   if (data.typing) {
     if (!globals.peopleTyping.includes(data.name)) {
       globals.peopleTyping.push(data.name);
@@ -118,11 +111,11 @@ interface ChatListData {
   list: ChatMessage[];
   unread: number;
 }
-commands.set('chatList', (data: ChatListData) => {
+commands.set("chatList", (data: ChatListData) => {
   for (const line of data.list) {
     chat.add(line, true); // The second argument is "fast"
   }
-  if (globals.ui !== null && !$('#game-chat-modal').is(':visible')) {
+  if (globals.ui !== null && !$("#game-chat-modal").is(":visible")) {
     // If the UI is open, we assume that this is a list of in-game chat messages
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();

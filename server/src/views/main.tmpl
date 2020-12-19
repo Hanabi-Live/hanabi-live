@@ -6,56 +6,81 @@
   <header id="header">
     <h1 class="lobby-header">{{ template "logo" }}</h1>
     <nav id="nav">
-      <!-- We use <i> instead of the icon class because it results in a more compact button -->
-      <ul id="nav-buttons-games" class="hidden">
+      <ul id="nav-buttons-lobby" class="hidden">
         <li>
-          <a id="nav-buttons-games-create-game" class="button tooltip pri1" data-tooltip-content="#create-game-tooltip">
+          <a
+            id="nav-buttons-lobby-create-game"
+            class="button tooltip"
+            data-tooltip-content="#create-game-tooltip"
+          >
             <i class="fas fa-plus nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">C</span>reate Game</span> <!-- cspell:disable-line -->
+            <span class="hidden-xs"><span class="nav-hotkey-indicator">N</span>ew<span class="hidden-xl"> Game</span></span> <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-history" class="button pri1">
+          <a id="nav-buttons-lobby-history" class="button hidden-xs">
             <i class="fas fa-history nav-icon"></i>
-            <span class="mobile-hide">Show <span class="nav-hotkey-indicator">H</span>istory</span> <!-- cspell:disable-line -->
+            <span class="hidden-xs"><span class="nav-hotkey-indicator">H</span>istory</span> <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-replay" class="button tooltip pri1" data-tooltip-content="#replay-tooltip">
+          <a
+            id="nav-buttons-lobby-replay"
+            class="button tooltip"
+            data-tooltip-content="#replay-tooltip"
+          >
             <i class="fas fa-eye nav-icon"></i>
-            <span class="mobile-hide">W<span class="nav-hotkey-indicator">a</span>tch Specific Replay</span>
+            <span class="hidden-xs"><span class="hidden-xl">Watch </span>Repl<span class="nav-hotkey-indicator">a</span>y</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-stats" class="button pri2" href="/stats" target="_blank" rel="noopener noreferrer">
+          <a
+            id="nav-buttons-lobby-stats"
+            class="button hidden-xs"
+            href="/stats"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-chart-area nav-icon"></i>
-            <span class="mobile-hide">Stats</span>
+            <span class="hidden-md">Stats</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-resources" class="button tooltip pri2" data-tooltip-content="#resources-tooltip">
+          <a
+            id="nav-buttons-lobby-resources"
+            class="button tooltip hidden-xs"
+            data-tooltip-content="#resources-tooltip"
+          >
             <i class="fas fa-link nav-icon"></i>
-            <span class="mobile-hide">Resources</span>
+            <span class="hidden-md">Resources</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-settings" class="button tooltip pri2" data-tooltip-content="#settings-tooltip">
+          <a
+            id="nav-buttons-lobby-settings"
+            class="button tooltip"
+            data-tooltip-content="#settings-tooltip"
+          >
             <i class="fas fa-cog nav-icon"></i>
-            <span class="mobile-hide">Settings</span>
+            <span class="hidden-md">Settings</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-help" class="button pri2"
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md" target="_blank"
-            rel="noopener noreferrer">
-            <i class="fas fa-question-circle question-mark nav-icon"></i>
-            <span class="mobile-hide">Help</span>
+          <a
+            id="nav-buttons-lobby-help"
+            class="button help-button hidden-xs"
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i class="fas fa-question-circle nav-icon"></i>
+            <span class="hidden-md">Help</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-sign-out" class="button signout pri2">
+          <a id="nav-buttons-lobby-sign-out" class="button signout">
             <i class="fas fa-sign-out-alt nav-icon"></i>
-            <span class="mobile-hide">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
+            <span class="hidden-md">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
           </a>
         </li>
       </ul>
@@ -63,19 +88,37 @@
         <li>
           <a id="nav-buttons-pregame-start" class="button disabled">
             <i class="fas fa-play nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">S</span>tart Game</span>
+            <span class="hidden-xs">
+              <span class="nav-hotkey-indicator">S</span>tart<span class="hidden-md"> Game</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a
+            id="nav-buttons-pregame-change-variant"
+            class="button disabled tooltip"
+            data-tooltip-content="#change-variant-tooltip"
+          >
+            <i class="fas fa-rainbow nav-icon"></i>
+            <span class="hidden-xs">
+              <span class="hidden-md">Change </span><span class="nav-hotkey-indicator">V</span>ariant <!-- cspell:disable-line -->
+            </span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-pregame-unattend" class="button">
             <i class="fas fa-pause nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">R</span>eturn to Lobby</span> <!-- cspell:disable-line -->
+            <span class="hidden-xs">
+              <span class="hidden-md">Return to </span><span class="nav-hotkey-indicator">L</span>obby <!-- cspell:disable-line -->
+            </span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-pregame-leave" class="button">
             <i class="fas fa-times nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">L</span>eave Game</span>
+            <span class="hidden-xs">
+              Leav<span class="nav-hotkey-indicator">e</span><span class="hidden-md"> Game</span><!-- cspell:disable-line -->
+            </span>
           </a>
         </li>
       </ul>
@@ -88,13 +131,15 @@
         <li>
           <a id="nav-buttons-history-show-friends" class="button">
             <i class="fas fa-heart nav-icon"></i>
-            <span class="mobile-hide">Show History of Friends</span>
+            <span class="hidden-sm">Show History of Friends</span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-history-return" class="button">
             <i class="fas fa-home nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">R</span>eturn to Lobby</span> <!-- cspell:disable-line -->
+            <span class="hidden-sm">
+              <span class="nav-hotkey-indicator">R</span>eturn to Lobby <!-- cspell:disable-line -->
+            </span>
           </a>
         </li>
       </ul>
@@ -157,7 +202,11 @@
             <p>
               To create a new account, simply login with a new username and select a password.<br />
               Do <strong>NOT</strong> reuse any of your
-              <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/PASSWORDS.md" target="_blank" rel="noopener noreferrer">previous passwords</a>!
+              <a
+                href="https://github.com/Zamiell/hanabi-live/blob/master/docs/PASSWORDS.md"
+                target="_blank"
+                rel="noopener noreferrer"
+              >previous passwords</a>!
             </p>
             <form id="login-form">
               <div class="row">
@@ -202,8 +251,8 @@
           <section id="compiling-warning" class="box align-center hidden">
             <h3><i class="fas fa-tools"></i>&nbsp; Maintenance</h3>
             <p>
-              A new version of {{.WebsiteName}} has been released and the server is in the process of
-              loading the new client, which should only take a second or two. Please wait.
+              A new version of {{.WebsiteName}} has been released and the server is in the process
+              of loading the new client, which should only take a second or two. Please wait.
             </p>
             <img src="/public/img/ajax.gif">
           </section>
@@ -291,10 +340,7 @@
 
           <section id="tutorial-2-1" class="box align-center hidden">
             <h3>The Rules</h3>
-            <p>
-              Good, because the website assumes that you already know how to play -
-              there isn't a tutorial mode or anything like that.
-            </p>
+            <p>Good, because the website assumes that you already know how to play.</p>
             <div class="row">
               <div class="col-12 align-center">
                 <a id="tutorial-2-1-ok" class="button icon fa-check">Ok, what's next?</a>
@@ -306,10 +352,16 @@
             <h3>The Rules</h3>
             <p>
               Well, unfortunately the website does not have a tutorial mode or anything like that.
-              You will have to learn <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/RULES.md">the rules</a> on your own. So read those, or try
-              watching
-              <a href="https://www.youtube.com/watch?v=jR9i1qCbHXQ" target="_blank" rel="noopener noreferrer">
-                my video explanation
+              You will have to learn <a
+                href="https://github.com/Zamiell/hanabi-live/blob/master/docs/RULES.md"
+                target="_blank"
+                rel="noopener noreferrer"
+              >the rules</a> on your own. So read those, or try
+              watching <a
+                href="https://www.youtube.com/watch?v=VrFCekQb4nY"
+                target="_blank"
+                rel="noopener noreferrer"
+              > this video explanation
               </a>.
             </p>
             <div class="row">
@@ -326,12 +378,13 @@
             <p>
               Getting a game going should be fairly straightforward:<br />
               1) Click on the "Create Game" button in the top navigation bar.<br />
-              2) Other people join the game by clicking on the &nbsp; <i class="fas fa-sign-in-alt nav-icon"></i> icon.<br />
+              2) Other people join the game by clicking on the row in the list of games.<br />
               3) Then, you click on the "Start Game" button.
             </p>
             <p>
               Once the game has started:<br />
-              1) Play a card by clicking and dragging it to the stacks in the center of the screen.<br />
+              1) Play a card by clicking and dragging it to the stacks in the center of the
+              screen.<br />
               2) Discard a card by clicking and dragging it to the bottom-right-hand corner.<br />
               3) Give a clue by clicking the buttons in the middle of the screen.<br />
             </p>
@@ -345,7 +398,10 @@
 
           <section id="tutorial-4" class="box align-center hidden">
             <h3>Other Players</h3>
-            <p>You can't play by yourself. Do you already have a team / a group of players to play with?</p>
+            <p>
+              You can't play by yourself.
+              Do you already have a team / a group of players to play with?
+            </p>
             <div class="row">
               <div class="col-6">
                 <a id="tutorial-4-yes" class="button fit icon fa-check">Yup.</a>
@@ -372,7 +428,7 @@
           <section id="tutorial-5" class="box align-center hidden">
             <h3>Other Players</h3>
             <p>
-              Hanab is a lot like Chess in that it is easy to learn, but hard to master,
+              This game is a lot like Chess in that it is easy to learn, but hard to master,
               even after spending hundreds of hours playing.
             </p>
             <p>
@@ -385,7 +441,8 @@
             </a>
             <br /><br />
             <a id="tutorial-5-expert" class="button icon fa-dice-six fit">
-              I love Hanab and would be willing to spend a lot of time to play with experienced players.
+              I love this game and would be willing to spend a lot of time to play with experienced
+              players.
             </a>
           </section>
 
@@ -394,23 +451,22 @@
             <p>
               Unfortunately, finding quick games with strangers on the website is difficult because
               it is mostly used by people who already have a team. You can always try to join random
-              games with other people, but don't be offended if people don't want to play with strangers.
+              games with other people, but don't be offended if people don't want to play with
+              strangers.
             </p>
             <p>
-              Fortunately, <a href="https://en.boardgamearena.com/">Board Game Arena</a> is a
-              website where you can play many different board games online. Their implementation of
-              the game is not as fancy as what this website offers, but the website has a ton of
-              people, so you will have much better luck finding random pick-up games there.
+              It used to be easy to find pick-up games on <a
+                href="https://en.boardgamearena.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Board Game Arena</a>, but not so many people play on there anymore because there is
+              a pseudo-paywall (as of December 2020). You can try to find pick-up games on BGA, or
+              you can try your luck in the lobby here.
             </p>
             <div class="row">
-              <div class="col-6">
-                <a href="https://en.boardgamearena.com/" class="button icon fa-sign-out-alt">
-                  Ok, I'll be leaving then.
-                </a>
-              </div>
-              <div class="col-6">
+              <div class="col-12">
                 <a id="tutorial-5-1-lobby" class="button icon fa-sign-in-alt">
-                  Take me to the lobby anyway.
+                  Take me to the lobby for now.
                 </a>
               </div>
             </div>
@@ -466,11 +522,10 @@
           <section id="tutorial-7-1" class="box align-center hidden">
             <h3>Voice Chat</h3>
             <p>
-              That's too bad. Doing post-game reviews without a microphone is a real pain.
-              Remember that if you do not have a desktop microphone or a headset,
-              you can also use the Discord app on a cell phone.
-              If you don't have a cell phone, you could always grab a cheap microphone from a local
-              electronics store.
+              That's too bad. Doing post-game reviews without a microphone is a real pain. Remember
+              that if you do not have a desktop microphone or a headset, you can also use the
+              Discord app on a cell phone. If you don't have a cell phone, you could always grab a
+              cheap microphone from a local electronics store.
             </p>
             <div class="row">
               <div class="col-6">
@@ -491,7 +546,11 @@
             <p>
               If you try to play with our group and don't understand what our clues mean, things
               won't go well. We ask that you spend some time and read the
-              <a href="https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Hyphen-ated Group beginners guide
               </a>. It shouldn't take all that long. And the guide has further instructions about
               how to get games going with members of the group.
@@ -511,12 +570,13 @@
 
   <!-- Lobby -->
   <div id="lobby" class="container max hidden">
-    <div id="lobby-top-half" class="row lobby-half">
+    <div id="lobby-top-half" class="row lobby-half toggle-active">
       <div class="col-12">
         <!-- The "games" table (all current games) -->
         <section id="lobby-games" class="box align-center-v">
           <h3 id="lobby-games-no">No current games.</h3>
           <div id="lobby-games-table-container" class="hidden lobby-table-container">
+            <h3 class="lobby-title">List of games</h3>
             <table id="lobby-games-table" class="alt">
               <thead>
                 <tr>
@@ -525,20 +585,19 @@
                   <th>Variant</th>
                   <th>Timed</th>
                   <th>Status</th>
-                  <th>Action</th>
                   <th>Players</th>
                   <th>Spectators</th>
                 </tr>
               </thead>
               <tbody id="lobby-games-table-tbody"></tbody>
             </table>
-            </table>
+          </div>
         </section>
 
         <!-- The "pregame" table -->
         <section id="lobby-pregame" class="box hidden">
-          <div class="row">
-            <div id="lobby-pregame-left" class="col-2 padding-right1">
+          <div class="lobby-pregame-container">
+            <div id="lobby-pregame-left" class="lobby-pregame-info">
               <h4 class="padding0p5">
                 <strong><i class="fas fa-signature"></i>&nbsp; Name:</strong><br />
                 <span id="lobby-pregame-name"></span>
@@ -552,12 +611,14 @@
                 <ul id="lobby-pregame-options"></ul>
               </h4>
             </div>
-            <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-6" class="col-2 lobby-pregame-player"></div>
+            <div class="lobby-pregame-players">
+              <div id="lobby-pregame-player-1" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-2" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-3" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-4" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-5" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-6" class="lobby-pregame-player"></div>
+            </div>
           </div>
         </section>
       </div>
@@ -570,7 +631,7 @@
       <!-- The chat for the entire lobby -->
       <div id="lobby-chat-container" class="col-8">
         <section id="lobby-chat" class="box">
-          <h3 class="lobby-title">Lobby Chat</h3>
+          <h3 class="lobby-title">Lobby Chat<span class="only-on-narrow-screen"> (<span class="lobby-users-num">0</span> online)</span></h3>
           <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
           <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
         </section>
@@ -587,9 +648,9 @@
       </div>
 
       <!-- The "Online Users" section -->
-      <div class="col-4 lobby-users-box-container">
+      <div id="lobby-online-users" class="col-4 lobby-users-box-container narrow-screen-toggle">
         <section class="box">
-          <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+          <h3 class="lobby-title">Online<span id="small-screen-toggle-users-h3"> Users (<span class="lobby-users-num">0</span>)</span></h3>
           <div id="lobby-users-container">
             <table id="lobby-users-table" class="slim-table">
               <thead>
@@ -603,6 +664,25 @@
           </div>
         </section>
       </div>
+    </div>
+
+    <!-- small screen toggle buttons -->
+    <div id="lobby-small-screen-buttons">
+      <nav id="nav-bottom">
+        <ul>
+          <li>
+            <a id="lobby-toggle-show-tables" class="button small toggle-active">
+              Games
+            </a>
+            <a id="lobby-toggle-show-chat" class="button small">
+              Chat
+            </a>
+            <a id="lobby-toggle-show-game-chat" class="button small hidden">
+              Pre-game Chat
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <!-- History -->
@@ -701,7 +781,13 @@
         <!-- See "createGame.ts" -->
         <span id="createTableVariant" class="hidden"></span>
         <select id="create-game-variant-dropdown1"></select>
-        <input id="create-game-variant-dropdown2" class="hidden" type="text" list="create-game-variant-dropdown2-list" autocomplete="off" />
+        <input
+          id="create-game-variant-dropdown2"
+          class="hidden"
+          type="text"
+          list="create-game-variant-dropdown2-list"
+          autocomplete="off"
+        />
         <datalist id="create-game-variant-dropdown2-list"></datalist>
       </div>
       <div class="col-1 input-text align-center">
@@ -711,8 +797,11 @@
         <i id="dice" class="fas fa-dice hidden"></i>
       </div>
       <div class="col-1 input-text align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md" target="_blank"
-          rel="noopener noreferrer">
+        <a
+          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <i class="fas fa-question-circle question-mark"></i>
         </a>
       </div>
@@ -785,8 +874,11 @@
           <label for="createTableSpeedrun"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -805,8 +897,11 @@
           <label for="createTableCardCycle"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -825,8 +920,11 @@
           <label for="createTableDeckPlays"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays"
-            target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -845,8 +943,11 @@
           <label for="createTableEmptyClues"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -865,8 +966,11 @@
           <label id="createTableOneExtraCardLabel" for="createTableOneExtraCard"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-extra-card" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-extra-card"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -885,8 +989,11 @@
           <label id="createTableOneLessCardLabel" for="createTableOneLessCard"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-less-card" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-less-card"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -905,8 +1012,11 @@
           <label for="createTableAllOrNothing"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#all-or-nothing" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#all-or-nothing"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
@@ -925,13 +1035,28 @@
           <label for="createTableDetrimentalCharacters"></label>
         </div>
         <div class="col-1 align-center">
-          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank"
-            rel="noopener noreferrer">
+          <a
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
           </a>
         </div>
       </div>
       <br />
+
+      <div id="create-game-json-row" class="row">
+        <div class="col-3 input-text">
+          <div class="create-game-icon">
+            <i class="fas fa-table"></i>
+          </div>
+          JSON
+        </div>
+        <div class="col-8">
+          <input id="createTableJSON" type="text" placeholder="JSON" />
+        </div>
+      </div>
     </div>
 
     <br />
@@ -946,10 +1071,22 @@
     <h2>Resources</h2>
     <ul>
       <li>
-        <a href="/password-reset" target="_blank" rel="noopener noreferrer">
-          Password Reset
+        <a
+          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          The Hanab Live Manual & List of Features
         </a><br />
-        If you need to reset your password, visit this page to learn more.
+        Get answers to the most common questions.
+      </li>
+      <br />
+
+      <li>
+        <a href="https://www.youtube.com/watch?v=VrFCekQb4nY" target="_blank" rel="noopener noreferrer">
+          The Rules / How to Play
+        </a><br />
+        This website does not have a tutorial on how to play, so watch this video instead.
       </li>
       <br />
 
@@ -962,7 +1099,11 @@
       <br />
 
       <li>
-        <a href="https://github.com/Zamiell/hanabi-conventions" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://github.com/Zamiell/hanabi-conventions"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Strategies and Conventions
         </a><br />
         This is a document that lists the strategies and conventions used by the Hyphen-ated group.<br />
@@ -979,17 +1120,25 @@
       <br />
 
       <li>
-        <a href="https://github.com/Zamiell/hanabi-live/issues" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://github.com/Zamiell/hanabi-live/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           File a Bug Report
         </a><br />
         Report bugs by opening a new issue on GitHub.<br />
         (You will need to create a free GitHub account.)<br />
-        (And make sure that someone else has not already opened the same issue.)
+        Make sure that someone else has not already opened the same issue.
       </li>
       <br />
 
       <li>
-        <a href="https://docs.google.com/spreadsheets/d/1iMv5mfVv7PYxckPPRBAnJpXyTHACn_9HAMfF2YID16w/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://hanabi-competitions.com/static/about.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Weekly Competitions
         </a><br />
         Compete with other players around the world to get the highest score on a new random deal.
@@ -1005,16 +1154,55 @@
       <br />
 
       <li>
-        <a href="https://www.givewell.org/charities/top-charities" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://www.givewell.org/charities/top-charities"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Make the World a Better Place
         </a><br />
         {{.WebsiteName}} is hosted free of charge and does not have any advertisements.<br />
         If you enjoy the website and want to help out, consider donating a portion of your income to the<br />
-        top-rated charities in the world. (<a href="https://en.wikipedia.org/wiki/GiveWell" target="_blank" rel="noopener noreferrer">GiveWell</a> is widely regarded as a pretty good organization<br />
+        top-rated charities in the world. (<a
+          href="https://en.wikipedia.org/wiki/GiveWell"
+          target="_blank"
+          rel="noopener noreferrer"
+        >GiveWell</a> is widely regarded as a pretty good organization<br />
         for assessing which charities are good.)
       </li>
     </ul>
     </div>
+  </div>
+
+  <div id="change-variant-tooltip">
+    <h2>Change Variant</h2>
+    <div class="row">
+      <div class="col-10">
+        <input
+          id="change-variant-dropdown"
+          type="text"
+          list="change-variant-dropdown-list"
+          autocomplete="off"
+        />
+        <datalist id="change-variant-dropdown-list"></datalist>
+      </div>
+      <div class="col-1 input-text align-center">
+        <a
+          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="fas fa-question-circle question-mark"></i>
+        </a>
+      </div>
+    </div>
+  <br />
+    <p class="margin1">
+      <button id="change-variant-submit" class="button fit" type="submit">
+        <i class="fas fa-check"></i>&nbsp;
+        Update
+      </button>
+    </p>
   </div>
 
   <div id="settings-tooltip">
@@ -1128,8 +1316,11 @@
     <input id="hyphenatedConventions" type="checkbox">
     <label for="hyphenatedConventions">
       <span class="label-text">
-        Enable <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions"
-          target="_blank" rel="noopener noreferrer">Hyphen-ated group</a> features
+        Enable <a
+          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Hyphen-ated group</a> features
       </span>
     </label>
 
@@ -1308,6 +1499,9 @@
   </section>
 </div>
 
+<!-- Page cover (which fades the background when a modal is showing) -->
+<div id="page-cover" class="hidden"></div>
+
 <!-- Used to validate that we are connecting to the correct URL -->
 <div id="domain" class="hidden">{{.Domain}}</div>
 
@@ -1316,13 +1510,16 @@
     In development, we use "webpack-dev-server" to serve the JavaScript on a separate port
     (this is necessary because it provides "hot reloading" and speeds up long compilation times)
 -->
-<script type="text/javascript" src="http://{{.Domain}}:{{.WebpackPort}}/main.{{.Version}}.min.js"></script>
+<script
+  type="text/javascript"
+  src="http://{{.Domain}}:{{.WebpackPort}}/main.{{.Version}}.min.js"
+></script>
 {{else if .Compiling}}
 <!-- The server is currently in the process of compiling the TypeScript -->
 <script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
 <script type="text/javascript" src="/public/js/compiling.js"></script>
 {{else}}
-<!-- All of the JavaScript is bundled into one file with Webpack -->
+<!-- All of the JavaScript is bundled into one file with webpack -->
 <script type="text/javascript" src="/public/js/bundles/main.{{.Version}}.min.js"></script>
 {{end}}
 {{end}}

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"strconv"
+	"time"
 )
 
 // commandTableSpectate is sent when:
@@ -16,39 +18,36 @@ import (
 //   // A value of "-1" must be specified if we do not want to shadow a player
 //   shadowingPlayerIndex: -1,
 // }
-func commandTableSpectate(s *Session, d *CommandData) {
-	/*
-		Validation
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
 	}
-	g := t.Game
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
+	}
 
 	// Validate that the game has started
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 
-	// Validate that they are not already spectating a game
-	for _, t2 := range tables {
-		for _, sp := range t2.Spectators {
-			if sp.ID == s.UserID() {
-				if t2.ID == t.ID {
-					s.Warning("You are already spectating this table.")
-				} else {
-					s.Warning("You are already spectating another table.")
-				}
+	// Validate that they are not playing at this table
+	if !t.Replay {
+		for _, p := range t.Players {
+			if p.UserID == s.UserID {
+				s.Warning("You cannot spectate a game that you are currently playing.")
 				return
 			}
+		}
+	}
+
+	// Validate that they are not already spectating this table
+	for _, sp := range t.Spectators {
+		if sp.UserID == s.UserID {
+			s.Warning("You are already spectating this table.")
+			return
 		}
 	}
 
@@ -61,44 +60,69 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		}
 	}
 
-	/*
-		Spectate / Join Solo Replay / Join Shared Replay
-	*/
+	tableSpectate(ctx, s, d, t)
+}
+
+func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
+	// Validate that they are not already spectating another table
+	if len(tables.GetTablesUserSpectating(s.UserID)) > 0 {
+		s.Warning("You are already spectating a table, so you cannot spectate table " +
+			strconv.FormatUint(t.ID, 10) + ".")
+		return
+	}
 
 	if t.Replay {
-		logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined the replay.")
+		logger.Info(t.GetName() + "User \"" + s.Username + "\" joined the replay.")
 	} else {
-		logger.Info(t.GetName() + "User \"" + s.Username() + "\" spectated.")
+		logger.Info(t.GetName() + "User \"" + s.Username + "\" spectated.")
 	}
+
+	// They might be reconnecting after a disconnect,
+	// so mark that this player is no longer disconnected
+	// (this will be a no-op if they were not in the "DisconSpectators" map)
+	tables.DeleteDisconSpectating(s.UserID)
 
 	// Add them to the spectators object
 	sp := &Spectator{
-		ID:                   s.UserID(),
-		Name:                 s.Username(),
+		UserID:               s.UserID,
+		Name:                 s.Username,
 		Session:              s,
+		Typing:               false,
+		LastTyped:            time.Time{},
 		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
 		Notes:                make([]string, g.GetNotesSize()),
 	}
+
 	t.Spectators = append(t.Spectators, sp)
+	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships
+
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby
 	t.NotifySpectators() // Update the in-game spectator list
 
 	// Set their status
 	status := StatusSpectating
-	table := t.ID
+	tableID := t.ID
 	if t.Replay {
 		if t.Visible {
 			status = StatusSharedReplay
 		} else {
 			status = StatusReplay
-			table = -1 // Protect the privacy of a user in a solo replay
+			tableID = 0 // Protect the privacy of a user in a solo replay
 		}
 	}
-	if s != nil {
-		s.Set("status", status)
-		s.Set("table", table)
-		notifyAllUser(s)
-	}
+	s.SetStatus(status)
+	s.SetTableID(tableID)
+	notifyAllUser(s)
 
 	// Send them a "tableStart" message
 	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command

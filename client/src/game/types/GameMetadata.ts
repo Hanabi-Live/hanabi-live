@@ -1,4 +1,4 @@
-import Options from '../../types/Options';
+import Options from "../../types/Options";
 
 // GameMetadata is for data that does not change
 export default interface GameMetadata {
@@ -10,9 +10,15 @@ export default interface GameMetadata {
   readonly ourPlayerIndex: number;
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
+
+  readonly minEfficiency: number;
+  readonly hardVariant: boolean;
+
+  readonly hasCustomSeed: boolean;
+  readonly seed: string;
 }
 
 export const getPlayerName = (
   playerIndex: number,
   metadata: GameMetadata,
-) => metadata.playerNames[playerIndex] ?? 'Hanabi Live';
+): string => metadata.playerNames[playerIndex] ?? "Hanabi Live";

@@ -1,8 +1,14 @@
 package main
 
 import (
-	"strconv"
+	"context"
 )
+
+type NewLeader struct {
+	UserID   int
+	Username string
+	Index    int
+}
 
 // commandTableSetLeader is sent when a user right-clicks on the crown
 // or types the "/setleader [username]" command
@@ -12,15 +18,13 @@ import (
 //   tableID: 123,
 //   name: 'Alice,
 // }
-func commandTableSetLeader(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
 	}
 
 	if len(d.Name) == 0 {
@@ -35,35 +39,32 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 
 	normalizedUsername := normalizeString(d.Name)
 
-	// Validate that they did not target themselves
-	if normalizedUsername == normalizeString(s.Username()) {
-		s.Warning("You cannot pass leadership to yourself.")
-		return
-	}
-
-	// Validate that they are at the table
-	newLeaderID := -1
-	var newLeaderUsername string
-	var newLeaderIndex int
+	// Validate that the target is at the table
+	var newLeader *NewLeader
 	if t.Replay {
 		for _, sp := range t.Spectators {
 			if normalizeString(sp.Name) == normalizedUsername {
-				newLeaderID = sp.ID
-				newLeaderUsername = sp.Name
+				newLeader = &NewLeader{
+					UserID:   sp.UserID,
+					Username: sp.Name,
+					Index:    -1,
+				}
 				break
 			}
 		}
 	} else {
 		for i, p := range t.Players {
 			if normalizeString(p.Name) == normalizedUsername {
-				newLeaderID = p.ID
-				newLeaderUsername = p.Name
-				newLeaderIndex = i
+				newLeader = &NewLeader{
+					UserID:   p.UserID,
+					Username: p.Name,
+					Index:    i,
+				}
 				break
 			}
 		}
 	}
-	if newLeaderID == -1 {
+	if newLeader == nil {
 		var msg string
 		if t.Replay {
 			msg = "\"" + d.Name + "\" is not spectating the shared replay."
@@ -74,7 +75,23 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		return
 	}
 
-	t.Owner = newLeaderID
+	// Validate that the target is not already the leader
+	if newLeader.UserID == t.OwnerID {
+		s.Warning(newLeader.Username + " is already the leader.")
+		return
+	}
+
+	tableSetLeader(ctx, s, d, t, newLeader)
+}
+
+func tableSetLeader(
+	ctx context.Context,
+	s *Session,
+	d *CommandData,
+	t *Table,
+	newLeader *NewLeader,
+) {
+	t.OwnerID = newLeader.UserID
 
 	if t.Replay {
 		t.NotifyReplayLeader()
@@ -82,15 +99,15 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		if !t.Running {
 			// On the pregame screen, the leader should always be the leftmost player,
 			// so we need to swap elements in the players slice
-			i := t.GetPlayerIndexFromID(s.UserID())
-			t.Players[i], t.Players[newLeaderIndex] = t.Players[newLeaderIndex], t.Players[i]
+			playerIndex := t.GetPlayerIndexFromID(s.UserID)
+			t.Players[playerIndex], t.Players[newLeader.Index] = t.Players[newLeader.Index], t.Players[playerIndex]
 
 			// Re-send the "game" message that draws the pregame screen
 			// and enables/disables the "Start Game" button
 			t.NotifyPlayerChange()
 		}
 
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend(s.Username()+" has passed table ownership to: "+newLeaderUsername, room)
+		msg := s.Username + " has passed table ownership to: " + newLeader.Username
+		chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 	}
 }

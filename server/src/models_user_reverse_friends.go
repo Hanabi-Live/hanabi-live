@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type UserReverseFriends struct{}
@@ -24,22 +26,28 @@ func (*UserReverseFriends) Delete(userID int, friendID int) error {
 }
 
 func (*UserReverseFriends) GetMap(userID int) (map[int]struct{}, error) {
-	rows, err := db.Query(context.Background(), `
+	friendMap := make(map[int]struct{})
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT friend_id
 		FROM user_reverse_friends
 		WHERE user_id = $1
-	`, userID)
+	`, userID); err != nil {
+		return friendMap, err
+	} else {
+		rows = v
+	}
 
-	friendMap := make(map[int]struct{})
 	for rows.Next() {
 		var friendID int
-		if err2 := rows.Scan(&friendID); err2 != nil {
-			return friendMap, err2
+		if err := rows.Scan(&friendID); err != nil {
+			return friendMap, err
 		}
 		friendMap[friendID] = struct{}{}
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return friendMap, err
 	}
 	rows.Close()

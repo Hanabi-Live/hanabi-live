@@ -1,4 +1,5 @@
 export default interface SpectatorNote {
-  name: string;
-  note: string;
+  // This is the username of the person setting the note
+  readonly name: string;
+  readonly text: string;
 }

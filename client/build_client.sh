@@ -12,7 +12,12 @@ SECONDS=0
 
 # Import the port
 if [[ -z $CI ]]; then
-  source "$DIR/../.env"
+  ENV_PATH="$DIR/../.env"
+  if [[ ! -f $ENV_PATH ]]; then
+    echo "Failed to find the \".env\" file at: $ENV_PATH"
+    exit 1
+  fi
+  source "$ENV_PATH"
   if [[ -z $PORT ]]; then
     PORT="80"
   fi
@@ -28,13 +33,13 @@ echo "$VERSION" > "$DIR/../data/version.json"
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script during a graceful restart and it will not have it in
 # the path by default)
-if ! command -v npx > /dev/null; then
+if ! command -v npm > /dev/null; then
   # MacOS only has Bash version 3, which does not have associative arrays,
   # so the below check will not work
   # https://unix.stackexchange.com/questions/92208/bash-how-to-get-the-first-number-that-occurs-in-a-variables-content
   BASH_VERSION_FIRST_DIGIT=$(bash --version | grep -o -E '[0-9]+' | head -1 | sed -e 's/^0\+//')
   if [[ $BASH_VERSION_FIRST_DIGIT -lt 4 ]]; then
-    echo "Failed to find the \"npx\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
+    echo "Failed to find the \"npm\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
     exit 1
   fi
 
@@ -43,7 +48,7 @@ if ! command -v npx > /dev/null; then
   NODE_VERSION_DIRS=(/root/.nvm/versions/node/*)
   NODE_VERSION_DIR="${NODE_VERSION_DIRS[-1]}"
   if [[ ! -d $NODE_VERSION_DIR ]]; then
-    echo "Failed to find the \"npx\" binary (in the \"/root/.nvm/versions/node\" directory)."
+    echo "Failed to find the \"npm\" binary (in the \"/root/.nvm/versions/node\" directory)."
     exit 1
   fi
   NPM_BIN_DIR="$NODE_VERSION_DIR/bin"
@@ -56,50 +61,65 @@ cd "$DIR"
 # We need to pack it into one JavaScript file before sending it to end-users
 echo "Packing the TypeScript using WebPack..."
 echo
-npx webpack
+npm run webpack
 echo
 
-# Create a file that informs the server that the compiled JavaScript will not be available for the
-# next few milliseconds or so
+# Create a file that informs the server that the bundled JavaScript & CSS will not be available for
+# the next few milliseconds or so
 COMPILING_FILE="$DIR/../compiling_client"
 touch "$COMPILING_FILE"
 
-# We don't want to serve files directly out of the WebPack output directory because that would
-# cause website downtime during client compilation; the Golang server will look at the "bundles"
-# directory to see what the latest version of the client is
+# JavaScript and CSS files are served out of a "bundles" directory
+# We do not want to serve files directly out of the "webpack_output" or the "grunt_output" directory
+# because that would cause website downtime during client compilation
 WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
-BUNDLES_DIR="$DIR/../public/js/bundles"
-cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$BUNDLES_DIR/"
-cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$BUNDLES_DIR/"
-echo "$VERSION" > "$BUNDLES_DIR/version.txt"
+JS_BUNDLES_DIR="$DIR/../public/js/bundles"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$JS_BUNDLES_DIR/"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$JS_BUNDLES_DIR/"
+echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
 # In addition to the numerical version (e.g. the number of commits),
 # it is also handy to have the exact git commit hash for the current build
-echo $(git rev-parse HEAD) > "$DIR/../public/js/bundles/git_revision.txt"
-rm -f "$COMPILING_FILE"
-
-# Clean up old files in the "bundles" directory
-cd "$DIR/../public/js/bundles"
-if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
-  # (we don't use an environment variable to store the results because it will cause the script to
-  # stop execution in the case where there are no results)
-fi
-cd "$DIR"
+echo $(git rev-parse HEAD) > "$JS_BUNDLES_DIR/git_revision.txt"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
 if [[ $1 == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
-  npx grunt critical --url=http://localhost:$PORT
+  npx grunt critical --url="http://localhost:$PORT"
   echo
   echo "Remember to commit critical.min.css if it had any changes."
   echo
 else
   echo "Packing the CSS using Grunt..."
   echo
-  npx grunt
+  npm run grunt
   echo
 fi
+GRUNT_OUTPUT_DIR="$DIR/grunt_output"
+CSS_DIR="$DIR/../public/css"
+cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_DIR/"
+
+# The JavaScript & CSS files are now ready to be requested from users
+rm -f "$COMPILING_FILE"
+
+# Clean up the output directories
+rm -rf "$WEBPACK_OUTPUT_DIR"
+rm -rf "$GRUNT_OUTPUT_DIR"
+
+# Clean up old files in the "bundles" directory
+# (we don't use an environment variable to store the results of ls because it will cause the script
+# to stop execution in the case where there are no results)
+cd "$JS_BUNDLES_DIR"
+if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
+  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
+fi
+
+# Clean up the files in the CSS directory
+cd "$CSS_DIR"
+if [[ $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
+  ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
+fi
+cd "$DIR"
 
 echo "Client v$VERSION successfully built in $SECONDS seconds."

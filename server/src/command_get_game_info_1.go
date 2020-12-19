@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -21,39 +21,36 @@ import (
 // {
 //   tableID: 5,
 // }
-func commandGetGameInfo1(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandGetGameInfo1(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
 	}
-	g := t.Game
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
+	}
 
 	// Validate that the game has started
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 
 	// Validate that they are either playing or spectating the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ".")
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+	if playerIndex == -1 && spectatorIndex == -1 {
+		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+			".")
 		return
 	}
 
-	/*
-		Provide the info
-	*/
+	getGameInfo1(s, t, playerIndex, spectatorIndex)
+}
+
+func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
+	// Local variables
+	g := t.Game
 
 	// Create a list of names of the players in this game
 	playerNames := make([]string, 0)
@@ -81,42 +78,41 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		}
 	}
 
-	ourPlayerIndex := i
+	ourPlayerIndex := playerIndex
 	if ourPlayerIndex == -1 {
 		// By default, spectators view the game from the first player's perspective
 		ourPlayerIndex = 0
 
 		// If a spectator is viewing a replay of a game that they played in,
 		// we want to put them in the same seat
-		for k, name := range playerNames {
-			if name == s.Username() {
-				ourPlayerIndex = k
+		for i, name := range playerNames {
+			if name == s.Username {
+				ourPlayerIndex = i
 				break
 			}
 		}
 	}
 
 	// Account for if a spectator is shadowing a specific player
-	if j != -1 && t.Spectators[j].ShadowingPlayerIndex != -1 {
-		ourPlayerIndex = t.Spectators[j].ShadowingPlayerIndex
+	if spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
+		ourPlayerIndex = t.Spectators[spectatorIndex].ShadowingPlayerIndex
 	}
 
 	pauseQueued := false
-	if i != -1 {
-		pauseQueued = g.Players[i].RequestedPause
+	if playerIndex != -1 {
+		pauseQueued = g.Players[playerIndex].RequestedPause
 	}
 
 	type InitMessage struct {
 		// Game settings
-		TableID          int       `json:"tableID"`
+		TableID          uint64    `json:"tableID"`
 		PlayerNames      []string  `json:"playerNames"`
-		Variant          string    `json:"variant"`
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`
 		DatabaseID       int       `json:"databaseID"`
+		HasCustomSeed    bool      `json:"hasCustomSeed"`
 		Seed             string    `json:"seed"`
-		Seeded           bool      `json:"seeded"`
 		DatetimeStarted  time.Time `json:"datetimeStarted"`
 		DatetimeFinished time.Time `json:"datetimeFinished"`
 		Options          *Options  `json:"options"`
@@ -129,6 +125,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		SharedReplay        bool   `json:"sharedReplay"`
 		SharedReplayLeader  string `json:"sharedReplayLeader"`
 		SharedReplaySegment int    `json:"sharedReplaySegment"`
+		SharedReplayEffMod  int    `json:"sharedReplayEffMod"`
 
 		// Other features
 		Paused           bool `json:"paused"`
@@ -141,11 +138,11 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
 		PlayerNames:      playerNames,
 		OurPlayerIndex:   ourPlayerIndex,
-		Spectating:       !t.Replay && j != -1,
+		Spectating:       spectatorIndex != -1 && !t.Replay,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
+		HasCustomSeed:    g.ExtraOptions.CustomSeed != "",
 		Seed:             g.Seed,
-		Seeded:           strings.HasPrefix(t.Name, "!seed "),
 		DatetimeStarted:  g.DatetimeStarted,
 		DatetimeFinished: g.DatetimeFinished,
 
@@ -160,6 +157,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		SharedReplay:        t.Replay && t.Visible,
 		SharedReplayLeader:  t.GetSharedReplayLeaderName(),
 		SharedReplaySegment: g.Turn,
+		SharedReplayEffMod:  g.EfficiencyMod,
 
 		// Other features
 		Paused:           g.Paused,

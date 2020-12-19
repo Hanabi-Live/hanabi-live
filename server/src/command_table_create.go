@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -13,6 +15,21 @@ const (
 	MaxGameNameLength = 45
 )
 
+var (
+	isValidTableName = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
+)
+
+// Data relating to games created with a special custom prefix (e.g. "!seed")
+type SpecialGameData struct {
+	DatabaseID       int
+	CustomNumPlayers int
+	CustomActions    []*GameAction
+
+	SetSeedSuffix string
+	SetReplay     bool
+	SetReplayTurn int
+}
+
 // commandTableCreate is sent when the user submits the "Create a New Game" form
 //
 // Example data:
@@ -24,30 +41,17 @@ const (
 //   },
 //   password: 'super_secret',
 // }
-func commandTableCreate(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
+func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that the server is not about to go offline
 	if checkImminentShutdown(s) {
 		return
 	}
 
 	// Validate that the server is not undergoing maintenance
-	if maintenanceMode {
+	if maintenanceMode.IsSet() {
 		s.Warning("The server is undergoing maintenance. " +
 			"You cannot start any new games for the time being.")
 		return
-	}
-
-	// Validate that the player is not joined to another table
-	if !strings.HasPrefix(s.Username(), "Bot-") {
-		if t2 := s.GetJoinedTable(); t2 != nil {
-			s.Warning("You cannot join more than one table at a time. " +
-				"Terminate your other game before creating a new one.")
-			return
-		}
 	}
 
 	// Truncate long table names
@@ -55,6 +59,9 @@ func commandTableCreate(s *Session, d *CommandData) {
 	if len(d.Name) > MaxGameNameLength {
 		d.Name = d.Name[0 : MaxGameNameLength-1]
 	}
+
+	// Remove any non-printable characters, if any
+	d.Name = removeNonPrintableCharacters(d.Name)
 
 	// Trim whitespace from both sides
 	d.Name = strings.TrimSpace(d.Name)
@@ -65,19 +72,21 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Check for non-ASCII characters
-	if !isPrintableASCII(d.Name) {
+	if !containsAllPrintableASCII(d.Name) {
 		s.Warning("Game names can only contain ASCII characters.")
 		return
 	}
 
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS attacks)
-	if !isAlphanumericSpacesSafeSpecialCharacters(d.Name) {
+	if !isValidTableName(d.Name) {
 		msg := "Game names can only contain English letters, numbers, spaces, " +
 			"<code>!</code>, " +
 			"<code>@</code>, " +
 			"<code>#</code>, " +
 			"<code>$</code>, " +
+			"<code>(</code>, " +
+			"<code>)</code>, " +
 			"<code>-</code>, " +
 			"<code>_</code>, " +
 			"<code>=</code>, " +
@@ -91,23 +100,24 @@ func commandTableCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	createTable(s, d, true)
-}
+	// Set default values for data relating to tables created with a special prefix or custom data
+	data := &SpecialGameData{
+		DatabaseID:       -1, // Normally, the database ID of an ongoing game should be -1
+		CustomNumPlayers: 0,
+		CustomActions:    nil,
 
-// This function is run after some validation in the "commandTableCreate()" function
-// Validation is bypassed if the server creates the game from a "restart" command
-// "preGameVisible" is false if this game should be hidden before it starts,
-// such as a restarted game
-func createTable(s *Session, d *CommandData, preGameVisible bool) {
-	// Set default values for the custom game options
-	setSeedSuffix := ""
-	setReplay := false
-	databaseID := -1
-	setReplayTurn := 0
-	var setReplayOptions *Options
+		SetSeedSuffix: "",
+		SetReplay:     false,
+		SetReplayTurn: 0,
+	}
 
 	// Handle special game option creation
 	if strings.HasPrefix(d.Name, "!") {
+		if d.GameJSON != nil {
+			s.Warning("You cannot create a table with a special prefix if JSON data is also provided.")
+			return
+		}
+
 		args := strings.Split(d.Name, " ")
 		command := args[0]
 		args = args[1:] // This will be an empty slice if there is nothing after the command
@@ -126,7 +136,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 			// and so on
 			// However, the seed does not actually have to be a number,
 			// so allow the user to use any arbitrary string as a seed suffix
-			setSeedSuffix = args[0]
+			data.SetSeedSuffix = args[0]
 		} else if command == "replay" {
 			// !replay - Replay a specific game up to a specific turn
 			if len(args) != 1 && len(args) != 2 {
@@ -139,33 +149,13 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 				s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
 				return
 			} else {
-				databaseID = v
+				data.DatabaseID = v
 			}
-
-			if len(args) == 1 {
-				setReplayTurn = 1
-			} else {
-				if v, err := strconv.Atoi(args[1]); err != nil {
-					s.Warning("The turn of \"" + args[1] + "\" is not a number.")
-					return
-				} else {
-					setReplayTurn = v
-				}
-
-				if setReplayTurn < 1 {
-					s.Warning("The replay turn must be greater than 0.")
-					return
-				}
-			}
-
-			// We have to minus the turn by one since turns are stored on the server starting at 0
-			// and turns are shown to the user starting at 1
-			setReplayTurn--
 
 			// Check to see if the game ID exists on the server
-			if exists, err := models.Games.Exists(databaseID); err != nil {
-				logger.Error("Failed to check to see if game "+strconv.Itoa(databaseID)+
-					" exists:", err)
+			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
+				logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
+					" exists: " + err.Error())
 				s.Error(CreateGameFail)
 				return
 			} else if !exists {
@@ -173,34 +163,44 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 				return
 			}
 
+			if len(args) == 1 {
+				data.SetReplayTurn = 1
+			} else {
+				if v, err := strconv.Atoi(args[1]); err != nil {
+					s.Warning("The turn of \"" + args[1] + "\" is not a number.")
+					return
+				} else {
+					data.SetReplayTurn = v
+				}
+
+				if data.SetReplayTurn < 1 {
+					s.Warning("The replay turn must be greater than 0.")
+					return
+				}
+			}
+
+			// We have to minus the turn by one since turns are stored on the server starting at 0
+			// and turns are shown to the user starting at 1
+			data.SetReplayTurn--
+
 			// Check to see if this turn is valid
 			// (it has to be a turn before the game ends)
 			var numTurns int
-			if v, err := models.Games.GetNumTurns(databaseID); err != nil {
-				logger.Error("Failed to get the number of turns from the database for game "+
-					strconv.Itoa(databaseID)+":", err)
+			if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
+				logger.Error("Failed to get the number of turns from the database for game " +
+					strconv.Itoa(data.DatabaseID) + ": " + err.Error())
 				s.Error(InitGameFail)
 				return
 			} else {
 				numTurns = v
 			}
-			if setReplayTurn >= numTurns {
-				s.Warning("Game #" + strconv.Itoa(databaseID) + " only has " +
-					strconv.Itoa(numTurns) + ".")
+			if data.SetReplayTurn >= numTurns {
+				s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
+					strconv.Itoa(numTurns) + " turns.")
 				return
 			}
 
-			// Set the options of the game to be the same as the one in the database
-			if v, err := models.Games.GetOptions(databaseID); err != nil {
-				logger.Error("Failed to get the variant from the database for game "+
-					strconv.Itoa(databaseID)+":", err)
-				s.Error(InitGameFail)
-				return
-			} else {
-				setReplayOptions = v
-			}
-
-			setReplay = true
+			data.SetReplay = true
 		} else {
 			msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
 			s.Warning(msg)
@@ -210,9 +210,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 
 	// Validate that they sent the options object
 	if d.Options == nil {
-		d.Options = &Options{
-			VariantName: "No Variant",
-		}
+		d.Options = NewOptions()
 	}
 
 	// Validate that the variant name is valid
@@ -261,15 +259,40 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 		d.Options.OneLessCard = false
 	}
 
-	/*
-		Create
-	*/
+	// Validate games with custom JSON
+	if d.GameJSON != nil {
+		if !validateJSON(s, d) {
+			return
+		}
+	}
+
+	tableCreate(ctx, s, d, data)
+}
+
+func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialGameData) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
+	}
+
+	// Validate that the player is not joined to another table
+	// (this cannot be in the "commandTableCreate()" function because we need the tables lock)
+	if !strings.HasPrefix(s.Username, "Bot-") {
+		if len(tables.GetTablesUserPlaying(s.UserID)) > 0 {
+			s.Warning("You cannot join more than one table at a time. " +
+				"Terminate your other game before creating a new one.")
+			return
+		}
+	}
 
 	passwordHash := ""
 	if d.Password != "" {
 		// Create an Argon2id hash of the plain-text password
 		if v, err := argon2id.CreateHash(d.Password, argon2id.DefaultParams); err != nil {
-			logger.Error("Failed to create a hash from the submitted table password:", err)
+			logger.Error("Failed to create a hash from the submitted table password: " +
+				err.Error())
 			s.Error(CreateGameFail)
 			return
 		} else {
@@ -277,35 +300,89 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 		}
 	}
 
-	t := NewTable(d.Name, s.UserID())
-	t.Visible = preGameVisible
+	t := NewTable(d.Name, s.UserID)
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
+	t.Visible = !d.HidePregame
 	t.PasswordHash = passwordHash
-	if setReplayOptions == nil {
-		t.Options = d.Options
-	} else {
-		t.Options = setReplayOptions
-	}
+	t.Options = d.Options
 	t.ExtraOptions = &ExtraOptions{
-		DatabaseID:    databaseID,
-		SetSeedSuffix: setSeedSuffix,
-		SetReplay:     setReplay,
-		SetReplayTurn: setReplayTurn,
+		DatabaseID:                 data.DatabaseID,
+		NoWriteToDatabase:          false,
+		JSONReplay:                 false,
+		CustomNumPlayers:           data.CustomNumPlayers,
+		CustomCharacterAssignments: nil,
+		CustomSeed:                 "",
+		CustomDeck:                 nil,
+		CustomActions:              nil,
+		Restarted:                  false,
+		SetSeedSuffix:              data.SetSeedSuffix,
+		SetReplay:                  false,
+		SetReplayTurn:              0,
 	}
-	tables[t.ID] = t // Add it to the map
-	logger.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")
+
+	// If this is a "!replay" game, override the options with the ones found in the database
+	if data.SetReplay {
+		if _, success := loadDatabaseOptionsToTable(s, data.DatabaseID, t); !success {
+			return
+		}
+
+		// "loadJSONOptionsToTable()" sets the database ID to a positive number
+		// The database ID for an ongoing game should be set to -1
+		t.ExtraOptions.DatabaseID = -1
+
+		// "loadDatabaseOptionsToTable()" marks that the game should not be written to the database,
+		// which is not true in this special case
+		t.ExtraOptions.NoWriteToDatabase = false
+
+		// "loadDatabaseOptionsToTable()" does not specify the "!replay" options
+		t.ExtraOptions.SetReplay = data.SetReplay
+		t.ExtraOptions.SetReplayTurn = data.SetReplayTurn
+	}
+
+	// If the user specified JSON data,
+	// override the options with the ones specified in the JSON data
+	if d.GameJSON != nil {
+		loadJSONOptionsToTable(d, t)
+
+		// "loadJSONOptionsToTable()" sets the database ID to 0, which corresponds to a JSON replay
+		// The database ID for an ongoing game should be set to -1
+		t.ExtraOptions.DatabaseID = -1
+
+		// "loadJSONOptionsToTable()" marks that the game should not be written to the database,
+		// which is not true in this special case
+		t.ExtraOptions.NoWriteToDatabase = false
+
+		// "loadJSONOptionsToTable()" marks that the game is a JSON replay,
+		// which is not true in this special case
+		t.ExtraOptions.JSONReplay = false
+	}
+
+	// Add the table to a map so that we can keep track of all of the active tables
+	tables.Set(t.ID, t)
+
+	logger.Info(t.GetName() + "User \"" + s.Username + "\" created a table.")
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 
-	// Join the user to the new table
-	d.TableID = t.ID
-	commandTableJoin(s, d)
+	// Log a chat message so that future players can see a timestamp of when the table was created
+	msg := s.Username + " created the table."
+	chatServerSend(ctx, msg, t.GetRoomName(), true)
 
 	// If the server is shutting down / restarting soon, warn the players
-	if shuttingDown {
+	if shuttingDown.IsSet() {
 		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
 			"Keep in mind that if your game is not finished in time, it will be terminated."
-		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
+		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
+
+	// Join the user to the new table
+	commandTableJoin(ctx, s, &CommandData{ // nolint: exhaustivestruct
+		TableID:      t.ID,
+		Password:     d.Password,
+		NoTableLock:  true,
+		NoTablesLock: true,
+	})
 }

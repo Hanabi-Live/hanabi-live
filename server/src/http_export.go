@@ -12,24 +12,25 @@ func httpExport(c *gin.Context) {
 	w := c.Writer
 
 	// Parse the game ID from the URL
-	gameIDString := c.Param("game")
-	if gameIDString == "" {
+	databaseIDString := c.Param("databaseID")
+	if databaseIDString == "" {
 		http.Error(w, "Error: You must specify a database game ID.", http.StatusNotFound)
 		return
 	}
 
 	// Validate that it is a number
-	var gameID int
-	if v, err := strconv.Atoi(gameIDString); err != nil {
+	var databaseID int
+	if v, err := strconv.Atoi(databaseIDString); err != nil {
 		http.Error(w, "Error: That is not a valid database game ID.", http.StatusBadRequest)
 		return
 	} else {
-		gameID = v
+		databaseID = v
 	}
 
 	// Check to see if the game exists in the database
-	if exists, err := models.Games.Exists(gameID); err != nil {
-		logger.Error("Failed to check to see if game "+strconv.Itoa(gameID)+" exists:", err)
+	if exists, err := models.Games.Exists(databaseID); err != nil {
+		logger.Error("Failed to check to see if game " + strconv.Itoa(databaseID) + " exists: " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -43,9 +44,9 @@ func httpExport(c *gin.Context) {
 
 	// Get the players from the database
 	var dbPlayers []*DBPlayer
-	if v, err := models.Games.GetPlayers(gameID); err != nil {
-		logger.Error("Failed to get the players from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+	if v, err := models.Games.GetPlayers(databaseID); err != nil {
+		logger.Error("Failed to get the players from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -64,9 +65,9 @@ func httpExport(c *gin.Context) {
 
 	// Get the options from the database
 	var options *Options
-	if v, err := models.Games.GetOptions(gameID); err != nil {
-		logger.Error("Failed to get the options from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+	if v, err := models.Games.GetOptions(databaseID); err != nil {
+		logger.Error("Failed to get the options from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -81,9 +82,9 @@ func httpExport(c *gin.Context) {
 	// Thus, we must recalculate the deck order based on the seed of the game
 	// Get the seed from the database
 	var seed string
-	if v, err := models.Games.GetSeed(gameID); err != nil {
-		logger.Error("Failed to get the seed for game "+
-			"\""+strconv.Itoa(gameID)+"\":", err)
+	if v, err := models.Games.GetSeed(databaseID); err != nil {
+		logger.Error("Failed to get the seed for game " +
+			"\"" + strconv.Itoa(databaseID) + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -95,7 +96,7 @@ func httpExport(c *gin.Context) {
 	}
 
 	// Make a deck and shuffle it
-	g := &Game{
+	g := &Game{ // nolint: exhaustivestruct
 		Options:      options,
 		ExtraOptions: &ExtraOptions{},
 		Seed:         seed,
@@ -106,9 +107,9 @@ func httpExport(c *gin.Context) {
 
 	// Get the actions from the database
 	var actions []*GameAction
-	if v, err := models.GameActions.GetAll(gameID); err != nil {
-		logger.Error("Failed to get the actions from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+	if v, err := models.GameActions.GetAll(databaseID); err != nil {
+		logger.Error("Failed to get the actions from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -123,9 +124,9 @@ func httpExport(c *gin.Context) {
 	variant := variants[g.Options.VariantName]
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
-	if v, err := models.Games.GetNotes(gameID, len(dbPlayers), noteSize); err != nil {
-		logger.Error("Failed to get the notes from the database for game "+
-			strconv.Itoa(gameID)+":", err)
+	if v, err := models.Games.GetNotes(databaseID, len(dbPlayers), noteSize); err != nil {
+		logger.Error("Failed to get the notes from the database for game " +
+			strconv.Itoa(databaseID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -153,16 +154,9 @@ func httpExport(c *gin.Context) {
 
 	// If this was a game with the "Detrimental Characters" option turned on,
 	// make a list of the characters for each player
-	var playerCharacters []*CharacterJSON
+	var characterAssignments []*CharacterAssignment
 	if options.DetrimentalCharacters {
-		playerCharacters = make([]*CharacterJSON, 0)
-		for _, dbP := range dbPlayers {
-			playerCharacters = append(playerCharacters, &CharacterJSON{
-				Name: charactersID[dbP.CharacterAssignment],
-				// Metadata is stored in the database as value + 1
-				Metadata: dbP.CharacterMetadata - 1,
-			})
-		}
+		characterAssignments = getCharacterAssignmentsFromDBPlayers(dbPlayers)
 	}
 
 	// Create JSON options
@@ -222,13 +216,14 @@ func httpExport(c *gin.Context) {
 
 	// Create a JSON game
 	gameJSON := &GameJSON{
-		ID:         gameID,
+		ID:         databaseID,
 		Players:    playerNames,
 		Deck:       g.CardIdentities,
 		Actions:    actions,
 		Options:    optionsJSON,
 		Notes:      notes,
-		Characters: playerCharacters,
+		Characters: characterAssignments,
+		Seed:       seed,
 	}
 
 	c.JSON(http.StatusOK, gameJSON)

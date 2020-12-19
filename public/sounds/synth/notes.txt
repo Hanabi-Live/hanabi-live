@@ -1,10 +1,10 @@
 To make more beeps that sound consistent, go to websynths.com and load hanabi.websynths-patch.json (the "load patch" button).
 
 If that does not work, try to recreate it by doing this:
-* elect "025: elise"
-* set "maximum sustain time" in the middle to 0.2
-* set "release part 3" below that to 0.5
-* set "reverb mix" on the right to 2
+- elect "025: elise"
+- set "maximum sustain time" in the middle to 0.2
+- set "release part 3" below that to 0.5
+- set "reverb mix" on the right to 2
 
 turn_us:
 - Keys: m, a
@@ -13,10 +13,6 @@ turn_us:
 turn_other:
 - Keys: v, m
 - Notes: D, G
-
-turn_surprise:
-- Keys v, n, <, m
-- Notes: D, F, A, G
 
 blind1:
 - Keys: m, >, a
@@ -61,5 +57,9 @@ sad:
 - Keys: C, B, A#, A
 - Notes: v, c, x, z
   (set tuning --> key --> none)
+
+shutdown:
+- Keys v, n, <, m
+- Notes: D, F, A, G
 
 The sounds are reduced in Audacity by -12.0 db before exporting to MP3.

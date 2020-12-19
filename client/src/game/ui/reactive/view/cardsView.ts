@@ -1,26 +1,29 @@
-import { deckRules } from '../../../rules';
-import CardIdentity from '../../../types/CardIdentity';
-import CardState from '../../../types/CardState';
-import State from '../../../types/State';
-import globals from '../../globals';
-import HanabiCard from '../../HanabiCard';
-import observeStore, { Subscription, Selector, Listener } from '../observeStore';
+import CardIdentity from "../../../types/CardIdentity";
+import CardState from "../../../types/CardState";
+import State from "../../../types/State";
+import getCardOrStackBase from "../../getCardOrStackBase";
+import globals from "../../globals";
+import HanabiCard from "../../HanabiCard";
+import observeStore, {
+  Listener,
+  Selector,
+  Subscription
+} from "../observeStore";
 
-export const onCardsPossiblyAdded = (length: number) => {
+export function onCardsPossiblyAdded(length: number): void {
   // Subscribe the new cards
   for (let i = globals.cardSubscriptions.length; i < length; i++) {
     if (globals.deck.length <= i) {
       // Construct the card object
-      globals.ourNotes.set(i, '');
-      globals.allNotes.set(i, []);
-      globals.deck.push(new HanabiCard({ order: i }));
+      const newCard = new HanabiCard(i, null, null, globals.variant);
+      globals.deck.push(newCard);
     }
     const subscription = subscribeToCardChanges(i);
     globals.cardSubscriptions.push(subscription);
   }
-};
+}
 
-export const onCardsPossiblyRemoved = (length: number) => {
+export function onCardsPossiblyRemoved(length: number): void {
   // Unsubscribe the removed cards
   while (globals.cardSubscriptions.length > length) {
     // The card was removed from the visible state
@@ -30,15 +33,20 @@ export const onCardsPossiblyRemoved = (length: number) => {
     const unsubscribe = globals.cardSubscriptions.pop()!;
     unsubscribe();
   }
-};
+}
 
-export const onMorphedIdentitiesChanged = (data: {
-  hypotheticalActive: boolean;
-  morphedIdentities: readonly CardIdentity[] | undefined;
-}, previousData: {
-  hypotheticalActive: boolean;
-  morphedIdentities: readonly CardIdentity[] | undefined;
-} | undefined) => {
+export function onMorphedIdentitiesChanged(
+  data: {
+    hypotheticalActive: boolean;
+    morphedIdentities: readonly CardIdentity[] | undefined;
+  },
+  previousData:
+    | {
+        hypotheticalActive: boolean;
+        morphedIdentities: readonly CardIdentity[] | undefined;
+      }
+    | undefined,
+): void {
   if (previousData === undefined || !previousData.hypotheticalActive) {
     // Initializing or entering a hypothetical
     return;
@@ -46,7 +54,9 @@ export const onMorphedIdentitiesChanged = (data: {
 
   if (!data.hypotheticalActive) {
     if (!previousData.hypotheticalActive) {
-      throw new Error('Trying to unmorph cards but we are not in a hypothetical.');
+      throw new Error(
+        "Trying to unmorph cards but we are not in a hypothetical.",
+      );
     }
 
     // Exiting hypothetical, update all morphed
@@ -68,9 +78,10 @@ export const onMorphedIdentitiesChanged = (data: {
       updateCardVisuals(i);
     }
   }
-};
+}
 
-const subscribeToCardChanges = (order: number) => {
+function subscribeToCardChanges(order: number) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subscriptions: Array<Subscription<State, any>> = [];
 
   // Validates that a card exists in the visible state before firing a listener
@@ -89,7 +100,10 @@ const subscribeToCardChanges = (order: number) => {
   // Subscribes to a set of property changes from cards
   function sub<T>(s: Selector<CardState, T>, l: Listener<T>) {
     const cardSelector = (state: State) => s(state.visibleState!.deck[order]);
-    subscriptions.push({ select: checkOrderAndSelect(cardSelector), onChange: l });
+    subscriptions.push({
+      select: checkOrderAndSelect(cardSelector),
+      onChange: l,
+    });
   }
 
   // Subscribes to a set of property changes from cards as well as anywhere else in state
@@ -98,68 +112,105 @@ const subscribeToCardChanges = (order: number) => {
   }
 
   // Borders
-  sub((c) => ({
-    numPositiveClues: c.numPositiveClues,
-    location: c.location,
-  }), () => updateBorder(order));
+  sub(
+    (c) => ({
+      numPositiveClues: c.numPositiveClues,
+      location: c.location,
+    }),
+    () => updateBorder(order),
+  );
+
+  // Card fade and critical indicator
+  subFullState(
+    (s) => {
+      const card = s.visibleState!.deck[order];
+      const status =
+        card.suitIndex !== null && card.rank !== null
+          ? s.visibleState!.cardStatus[card.suitIndex][card.rank]
+          : null;
+      return {
+        status,
+        clued: card.numPositiveClues >= 1,
+        location: card.location,
+      };
+    },
+    () => updateCardStatus(order),
+  );
+
+  // Notes
+  sub(
+    (c) => ({
+      possibleCardsFromClues: c.possibleCardsFromClues,
+      possibleCardsFromDeduction: c.possibleCardsFromDeduction,
+    }),
+    () => checkNoteDisproved(order),
+  );
 
   // Pips
-  sub((c) => ({
-    numPossibleCardsFromClues: c.possibleCardsFromClues.length,
-    possibleCardsFromDeduction: c.possibleCardsFromDeduction,
-    numPositiveRankClues: c.positiveRankClues.length,
-  }), () => updatePips(order));
-  // Notes
-  sub((c) => ({
-    possibleCardsFromClues: c.possibleCardsFromClues,
-    possibleCardsFromDeduction: c.possibleCardsFromDeduction,
-  }), () => updateNotePossibilities(order));
+  sub(
+    (c) => ({
+      numPossibleCardsFromClues: c.possibleCardsFromClues.length,
+      possibleCardsFromDeduction: c.possibleCardsFromDeduction,
+      numPositiveRankClues: c.positiveRankClues.length,
+    }),
+    () => updatePips(order),
+  );
+
   // Card visuals
-  subFullState((s) => {
-    const card = s.visibleState!.deck[order];
-    return {
-      rank: card.rank,
-      suitIndex: card.suitIndex,
-      location: card.location,
-      suitDetermined: card.suitDetermined,
-      rankDetermined: card.rankDetermined,
-      identity: s.cardIdentities[order],
-    };
-  }, () => updateCardVisuals(order));
+  subFullState(
+    (s) => {
+      const card = s.visibleState!.deck[order];
+      return {
+        rank: card.rank,
+        suitIndex: card.suitIndex,
+        location: card.location,
+        suitDetermined: card.suitDetermined,
+        rankDetermined: card.rankDetermined,
+        numPossibleCardsFromClues: card.possibleCardsFromClues.length,
+        identity: s.cardIdentities[order],
+      };
+    },
+    () => updateCardVisuals(order),
+  );
 
   return observeStore(globals.store!, subscriptions);
-};
+}
 
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
 
-const updateBorder = (order: number) => {
-  globals.deck[order].setBorder();
-  globals.layers.card.batchDraw();
-};
+function updateBorder(order: number) {
+  const card = getCardOrStackBase(order);
 
-const updatePips = (order: number) => {
-  globals.deck[order].updatePips();
-  globals.layers.card.batchDraw();
-};
+  // When cards have one or more positive clues, they get a special border
+  card.setBorder();
 
-const updateCardVisuals = (order: number) => {
-  // Card visuals are updated for both the deck and stack bases when morphed
-  if (order < globals.deck.length) {
-    globals.deck[order].setBareImage();
-  } else {
-    globals.stackBases[order - deckRules.totalCards(globals.variant)].setBareImage();
-  }
+  // When cards have one or more positive clues, they are raised up in the hand
+  card.setRaiseAndShadowOffset();
 
   globals.layers.card.batchDraw();
-};
+}
 
-const updateNotePossibilities = (order: number) => {
-  globals.deck[order].updateNotePossibilities();
+function updatePips(order: number) {
+  const card = getCardOrStackBase(order);
+  card.updatePips();
   globals.layers.card.batchDraw();
-};
+}
 
-export const onCardStatusChanged = () => {
-  globals.deck.forEach((card) => card.setStatus());
+function updateCardVisuals(order: number) {
+  const card = getCardOrStackBase(order);
+  card.setBareImage();
   globals.layers.card.batchDraw();
-};
+}
+
+function checkNoteDisproved(order: number) {
+  const card = getCardOrStackBase(order);
+  card.checkNoteDisproved();
+  globals.layers.card.batchDraw();
+}
+
+export function updateCardStatus(order: number): void {
+  const card = getCardOrStackBase(order);
+  card.setStatus();
+  globals.layers.card.batchDraw();
+}

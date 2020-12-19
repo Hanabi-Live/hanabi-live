@@ -1,16 +1,17 @@
 package main
 
 import (
+	"context"
 	"strings"
 )
 
 var (
 	// Used to store all of the functions that handle each command
-	chatCommandMap = make(map[string]func(*Session, *CommandData, *Table))
+	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table))
 )
 
 func chatCommandInit() {
-	// General commands (they work both in the lobby and at a table)
+	// General commands (that work both in the lobby and at a table)
 	chatCommandMap["help"] = chatHelp
 	chatCommandMap["commands"] = chatHelp
 	chatCommandMap["?"] = chatHelp
@@ -21,15 +22,18 @@ func chatCommandInit() {
 	chatCommandMap["beginner"] = chatNew
 	chatCommandMap["beginners"] = chatNew
 	chatCommandMap["guide"] = chatNew
+	chatCommandMap["doc"] = chatDoc
+	chatCommandMap["document"] = chatDoc
+	chatCommandMap["reference"] = chatDoc
+	chatCommandMap["bga"] = chatBGA
+	chatCommandMap["efficiency"] = chatEfficiency
 	chatCommandMap["replay"] = chatReplay
-	chatCommandMap["link"] = chatReplay
-	chatCommandMap["game"] = chatReplay
 	chatCommandMap["random"] = chatRandom
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
 
 	// Undocumented info commands (that work only in the lobby)
-	chatCommandMap["badhere"] = chatBadHere
+	chatCommandMap["here"] = chatHere
 	chatCommandMap["wrongchannel"] = chatWrongChannel
 
 	// Table-only commands (pregame only, table owner only)
@@ -41,6 +45,7 @@ func chatCommandInit() {
 	chatCommandMap["s6"] = chatS6
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["kick"] = chatKick
+	chatCommandMap["impostor"] = chatImpostor
 
 	// Table-only commands (pregame or game)
 	chatCommandMap["missing"] = chatMissingScores
@@ -62,11 +67,6 @@ func chatCommandInit() {
 	chatCommandMap["tags"] = chatTags
 	chatCommandMap["taglist"] = chatTags
 
-	// Discord-only commands
-	chatCommandMap["here"] = chatHere
-	chatCommandMap["last"] = chatLast
-	// (there are additional Discord-only commands in "discord.go")
-
 	// Error handlers for website-only commands
 	chatCommandMap["pm"] = chatCommandWebsiteOnly
 	chatCommandMap["w"] = chatCommandWebsiteOnly
@@ -78,7 +78,7 @@ func chatCommandInit() {
 	chatCommandMap["version"] = chatCommandWebsiteOnly
 }
 
-func chatCommand(s *Session, d *CommandData, t *Table) {
+func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Parse the command
 	args := strings.Split(d.Msg, " ")
 	command := args[0]
@@ -93,15 +93,16 @@ func chatCommand(s *Session, d *CommandData, t *Table) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	// Check to see if there is a command handler for this command
-	if chatCommandFunction, ok := chatCommandMap[command]; !ok {
-		chatServerSend("That is not a valid command.", d.Room)
-		return
+	chatCommandFunction, ok := chatCommandMap[command]
+	if ok {
+		chatCommandFunction(ctx, s, d, t)
 	} else {
-		chatCommandFunction(s, d, t)
+		msg := "The chat command of \"/" + command + "\" is not valid."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 }
 
-func chatCommandWebsiteOnly(s *Session, d *CommandData, t *Table) {
+func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
-	chatServerSend(msg, d.Room)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }

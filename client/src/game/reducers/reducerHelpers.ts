@@ -1,10 +1,29 @@
 // Miscellaneous helpers used by several reducers
 
-import Color from '../types/Color';
-import Suit from '../types/Suit';
-import Variant from '../types/Variant';
+import { statsRules } from "../rules";
+import Color from "../types/Color";
+import GameState from "../types/GameState";
+import Suit from "../types/Suit";
+import Variant from "../types/Variant";
 
-export const getIndexConverter = (variant: Variant) => {
+export function getEfficiency(state: GameState): number {
+  return statsRules.efficiency(
+    state.stats.cardsGotten,
+    state.stats.potentialCluesLost,
+  );
+}
+
+export function getFutureEfficiency(state: GameState): number | null {
+  if (state.stats.cluesStillUsable === null) {
+    return null;
+  }
+  const cardsNotGotten = state.stats.maxScore - state.stats.cardsGotten;
+  return statsRules.efficiency(cardsNotGotten, state.stats.cluesStillUsable);
+}
+
+export function getIndexConverter(
+  variant: Variant,
+): <T extends Color | Suit>(value: T) => number {
   const suitIndexes: Map<string, number> = new Map<string, number>();
   const colorIndexes: Map<Color, number> = new Map<Color, number>();
   variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
@@ -19,19 +38,21 @@ export const getIndexConverter = (variant: Variant) => {
   }
 
   return getIndex;
-};
+}
 
-export const getCharacterIDForPlayer = (
+export function getCharacterIDForPlayer(
   playerIndex: number | null,
   characterAssignments: Readonly<Array<number | null>>,
-) => {
+): number | null {
   if (playerIndex === null) {
     return null;
   }
 
   const characterID = characterAssignments[playerIndex];
   if (characterID === undefined) {
-    throw new Error(`The character ID for player ${playerIndex} was undefined.`);
+    throw new Error(
+      `The character ID for player ${playerIndex} was undefined.`,
+    );
   }
   return characterID;
-};
+}

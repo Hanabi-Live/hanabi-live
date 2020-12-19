@@ -1,35 +1,44 @@
-{
-  "Red": {
+[
+  {
+    "name": "Red",
     "fill": "#e60000"
   },
-  "Yellow": {
+  {
+    "name": "Yellow",
     "fill": "#e6e600"
   },
-  "Green": {
+  {
+    "name": "Green",
     "fill": "#02ec00",
     "fillColorblind": "#00aa00"
   },
-  "Blue": {
+  {
+    "name": "Blue",
     "fill": "#0037ff",
     "fillColorblind": "#0055ff"
   },
-  "Purple": {
+  {
+    "name": "Purple",
     "fill": "#6600cc",
     "fillColorblind": "#8800aa"
   },
-  "Teal": {
+  {
+    "name": "Teal",
     "fill": "#00cccc"
   },
-  "Black": {
+  {
+    "name": "Black",
     "abbreviation": "K",
     "fill": "#111111"
   },
-  "Pink": {
+  {
+    "name": "Pink",
     "abbreviation": "I",
     "fill": "#ff69b4"
   },
-  "Brown": {
+  {
+    "name": "Brown",
     "abbreviation": "N",
     "fill": "#654321"
   }
-}
+]

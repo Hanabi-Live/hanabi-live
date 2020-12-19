@@ -1,11 +1,11 @@
-/*
+/**
  * Notes:
  * - The website uses PostgreSQL
  * - Initializing the database is accomplished in the "install_database_schema.sh" script
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial
  * - PostgreSQL automatically creates indexes for columns with primary keys, foreign keys, and
- *   constraints, so we only have to bother explicitly creating a few indexes
+ *   constraints, so we only have to explicitly create a few indexes
  * - PostgreSQL automatically handles Unicode text, emojis, and so forth
  * - "ON DELETE CASCADE" means that if the parent row is deleted, the child row will also be
  *   automatically deleted
@@ -21,14 +21,14 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id                   SERIAL       PRIMARY KEY,
     username             TEXT         NOT NULL  UNIQUE,
-    /*
+    /**
      * PostgreSQL is not case-sensitive unique by default,
      * meaning that it will allow a username of "Alice" and "alice" to exist
      * Furthermore, because of Unicode, it would be possible for "Αlice" with a Greek letter A
      * (0x391) and "Alice" with a normal A (0x41) to exist
      * To guard against users impersonating each other & phishing attacks, we also store a
-     * normalized version of the username that is converted to ASCII with the go-unidecode library
-     * and then lower-cased
+     * normalized version of the username that is transliterated to ASCII with the go-unidecode
+     * library and then lower-cased
      * Importantly, we must verify that all new usernames are unique in code before adding them to
      * the database
      */
@@ -80,7 +80,7 @@ CREATE TABLE user_settings (
 DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
     user_id          INTEGER   NOT NULL,
-    variant          SMALLINT  NOT NULL,
+    variant_id       SMALLINT  NOT NULL,
     num_games        INTEGER   NOT NULL  DEFAULT 0,
     /* Their best score for 2-player games on this variant */
     best_score2      SMALLINT  NOT NULL  DEFAULT 0,
@@ -97,7 +97,7 @@ CREATE TABLE user_stats (
     average_score    FLOAT     NOT NULL  DEFAULT 0,
     num_strikeouts   INTEGER   NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, variant)
+    PRIMARY KEY (user_id, variant_id)
 );
 
 DROP TABLE IF EXISTS user_friends CASCADE;
@@ -123,13 +123,13 @@ CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
-    /*
+    /**
      * By default, the starting player is always at index (seat) 0
      * This field is only needed for legacy games before April 2020
      */
     starting_player         SMALLINT     NOT NULL  DEFAULT 0,
-    /* Equal to the variant ID (found in "variants.json") */
-    variant                 SMALLINT     NOT NULL,
+    /* The ID for a particular variant can be found in the "variants.json" file */
+    variant_id              SMALLINT     NOT NULL,
     timed                   BOOLEAN      NOT NULL,
     time_base               INTEGER      NOT NULL, /* in seconds */
     time_per_turn           INTEGER      NOT NULL, /* in seconds */
@@ -150,7 +150,7 @@ CREATE TABLE games (
     datetime_finished       TIMESTAMPTZ  NOT NULL
 );
 CREATE INDEX games_index_num_players ON games (num_players);
-CREATE INDEX games_index_variant     ON games (variant);
+CREATE INDEX games_index_variant_id  ON games (variant_id);
 CREATE INDEX games_index_seed        ON games (seed);
 
 DROP TABLE IF EXISTS game_participants CASCADE;
@@ -181,13 +181,13 @@ CREATE TABLE game_actions (
     turn     SMALLINT  NOT NULL,
     /* 0 - play, 1 - discard, 2 - color clue, 3 - rank clue, 4 - game over */
     type     SMALLINT  NOT NULL,
-    /*
+    /**
      * If a play or a discard, corresponds to the order of the the card that was played/discarded
      * If a clue, corresponds to the index of the player that received the clue
      * If a game over, corresponds to the index of the player that caused the game to end
      */
     target   SMALLINT  NOT NULL,
-    /*
+    /**
      * If a play or discard, then 0 (as NULL)
      * It uses less database space and reduces code complexity to use a value of 0 for NULL
      * than to use a SQL NULL
@@ -211,12 +211,18 @@ CREATE TABLE game_tags (
     CONSTRAINT game_tags_unique UNIQUE (game_id, tag)
 );
 
+DROP TABLE IF EXISTS seeds CASCADE;
+CREATE TABLE seeds (
+    seed       TEXT     NOT NULL  PRIMARY KEY,
+    num_games  INTEGER  NOT NULL
+);
+
 DROP TABLE IF EXISTS variant_stats CASCADE;
 CREATE TABLE variant_stats (
-    /* Equal to the variant ID (found in "variants.go") */
-    variant         SMALLINT  NOT NULL  PRIMARY KEY,
+    /* The ID for a particular variant can be found in the "variants.json" file */
+    variant_id      SMALLINT  NOT NULL  PRIMARY KEY,
     num_games       INTEGER   NOT NULL  DEFAULT 0,
-    /* The overall best score for a 2-player games on this variant */
+    /* The best score from any team for a 2-player game on this variant */
     best_score2     SMALLINT  NOT NULL  DEFAULT 0,
     best_score3     SMALLINT  NOT NULL  DEFAULT 0,
     best_score4     SMALLINT  NOT NULL  DEFAULT 0,
@@ -235,7 +241,7 @@ CREATE TABLE chat_log (
     message        TEXT         NOT NULL,
     room           TEXT         NOT NULL, /* Either "lobby" or "table####" */
     datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
-    /*
+    /**
      * There is no foreign key for "user_id" because it would not exist for Discord messages or
      * server messages
      */
@@ -296,5 +302,8 @@ CREATE TABLE metadata (
     name   TEXT    NOT NULL  UNIQUE,
     value  TEXT    NOT NULL
 );
-/* The "discord_last_at_here" value is stored as a RFC3339 string */
-INSERT INTO metadata (name, value) VALUES ('discord_last_at_here', '2006-01-02T15:04:05Z');
+/**
+ * We want at least one entry in the metadata table so that the "TestDatabase()" function works
+ * correctly
+ */
+INSERT INTO metadata (name, value) VALUES ('test_key', 'test_value');

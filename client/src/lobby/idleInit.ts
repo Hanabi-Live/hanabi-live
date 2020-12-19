@@ -1,10 +1,10 @@
-import globals from '../globals';
+import globals from "../globals";
 
 // Constants
 const minutesToTriggerIdle = 15;
 
 // From: https://stackoverflow.com/questions/667555/how-to-detect-idle-time-in-javascript-elegantly
-export default function idleInit() {
+export default function idleInit(): void {
   // Increment the global idle variable every minute
   setInterval(timerIncrement, 60000); // 1 minute
 
@@ -13,20 +13,20 @@ export default function idleInit() {
   $(document).keypress(mousemoveOrKeypress);
 }
 
-const mousemoveOrKeypress = () => {
+function mousemoveOrKeypress() {
   if (globals.conn === null) {
     return;
   }
 
   if (globals.idleMinutes >= minutesToTriggerIdle) {
-    globals.conn.send('inactive', {
+    globals.conn.send("inactive", {
       inactive: false,
     });
   }
   globals.idleMinutes = 0;
-};
+}
 
-const timerIncrement = () => {
+function timerIncrement() {
   if (globals.conn === null) {
     return;
   }
@@ -35,8 +35,8 @@ const timerIncrement = () => {
   if (globals.idleMinutes === minutesToTriggerIdle) {
     // We do not want to keep sending "inactive" messages every minute,
     // so we check for being exactly at the cutoff
-    globals.conn.send('inactive', {
+    globals.conn.send("inactive", {
       inactive: true,
     });
   }
-};
+}

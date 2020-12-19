@@ -24,13 +24,14 @@
 <br />
 
 <ul id="filter-players" class="horizontal">
-  <li>
+  <li id="filter-by-players-label1">
     <div class="create-game-icon">
         <i class="fas fa-users" style="position: relative; top: 1px;"></i>
     </div>
     Filter by # of Players
   </li>
-  <li>
+
+  <li id="filter-by-players-label2">
     <select id="filter-by-players">
       <option value="all">All</option>
       <option value="2">2-Players</option>
@@ -40,36 +41,40 @@
       <option value="6">6-Players</option>
     </select>
   </li>
+
   <li>
     <div class="create-game-icon">
         <i class="fas fa-star-half-alt"></i>
     </div>
     Filter by Score
   </li>
+
   <li>
     <input id="filter-by-score" type="number" min="0" max="30" style="width: 4em;">
   </li>
-  <li>
+
+  <li id="filter-by-variant-label1">
     <div class="create-game-icon">
         <i class="fas fa-rainbow"></i>
     </div>
     Filter by Variant
   </li>
-  <li>
+
+  <li id="filter-by-variant-label2">
     <input id="filter-by-variant" type="text" style="width: 7em;">
   </li>
 </ul>
 
 <br /><br /><br />
 
-<table>
+<table id="history-table">
   <thead>
     <tr>
       <th>ID</th>
       <th># of Players</th>
       <th>Score</th>
       <th>Variant</th>
-      <th>Date</th>
+      <th>Date & Time</th>
       <th>Players</th>
       {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
       {{if eq .Title "Tagged Games" }}<th>Tags</th>{{end}}
@@ -77,12 +82,16 @@
   </thead>
   <tbody>
     {{range $index, $results := .History}}
-      <tr class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}" data-variant="{{.Options.VariantName}}">
+      <tr
+        id="history-row-{{$index}}"
+        class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}"
+        data-variant="{{.Options.VariantName}}"
+      >
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
         <td>{{.Options.NumPlayers}}</td>
         <td>{{.Score}}</td>
-        <td>{{.Options.VariantName}}</td>
-        <td>{{.DatetimeFinished}}</td>
+        <td><a href="/variant/{{.Options.VariantID}}">{{.Options.VariantName}}</a></td>
+        <td>{{.DatetimeFinished | formatDate}}</td>
         <td>
           <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
           <a href="/history/{{range $index2, $results2 := .PlayerNames}}{{if $index2}}/{{end}}{{$results2}}{{end}}">

@@ -3,8 +3,8 @@
 package main
 
 import (
+	"context"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -34,21 +34,32 @@ type ChatMessage struct {
 // chatServerSend is a helper function to send a message from the server
 // (e.g. to give feedback to a user after they type a command,
 // to notify that the server is shutting down, etc.)
-func chatServerSend(msg string, room string) {
-	commandChat(nil, &CommandData{
-		Msg:    msg,
-		Server: true,
-		Room:   room,
+func chatServerSend(ctx context.Context, msg string, room string, noTablesLock bool) {
+	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
+		Msg:          msg,
+		Room:         room,
+		Server:       true,
+		NoTableLock:  true,
+		NoTablesLock: noTablesLock,
 	})
 }
 
 // chatServerSendAll is a helper function to broadcast a message to everyone on the server,
 // whether they are in the lobby or in the middle of a game
-func chatServerSendAll(msg string) {
-	chatServerSend(msg, "lobby")
-	for _, t := range tables {
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend(msg, room)
+// It is assumed that the tables mutex is locked when calling this function
+func chatServerSendAll(ctx context.Context, msg string) {
+	chatServerSend(ctx, msg, "lobby", false)
+
+	tableList := tables.GetList(true)
+	roomNames := make([]string, 0)
+	for _, t := range tableList {
+		t.Lock(ctx)
+		roomNames = append(roomNames, t.GetRoomName())
+		t.Unlock(ctx)
+	}
+
+	for _, roomName := range roomNames {
+		chatServerSend(ctx, msg, roomName, false)
 	}
 }
 
@@ -56,10 +67,12 @@ func chatServerSendAll(msg string) {
 func chatServerSendPM(s *Session, msg string, room string) {
 	s.Emit("chat", &ChatMessage{
 		Msg:       msg,
-		Who:       websiteName,
+		Who:       WebsiteName,
+		Discord:   false,
+		Server:    true,
 		Datetime:  time.Now(),
 		Room:      room,
-		Recipient: s.Username(),
+		Recipient: s.Username,
 	})
 }
 
@@ -114,7 +127,7 @@ type ChatListMessage struct {
 func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 	var rawMsgs []DBChatMessage
 	if v, err := models.ChatLog.Get(room, count); err != nil {
-		logger.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
+		logger.Error("Failed to get the lobby chat history for user \"" + s.Username + "\": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return false
 	} else {
@@ -139,17 +152,19 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 		}
 		rawMsg.Message = chatFillMentions(rawMsg.Message)
 		msg := &ChatMessage{
-			Msg:      rawMsg.Message,
-			Who:      rawMsg.Name,
-			Discord:  discord,
-			Server:   server,
-			Datetime: rawMsg.Datetime,
-			Room:     room,
+			Msg:       rawMsg.Message,
+			Who:       rawMsg.Name,
+			Discord:   discord,
+			Server:    server,
+			Datetime:  rawMsg.Datetime,
+			Room:      room,
+			Recipient: "",
 		}
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", &ChatListMessage{
-		List: msgs,
+		List:   msgs,
+		Unread: 0,
 	})
 
 	return true
@@ -164,19 +179,19 @@ func chatSendPastFromTable(s *Session, t *Table) {
 	for ; i < len(t.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
 		gcm := t.Chat[i]
-		room := "table" + strconv.Itoa(t.ID)
 		cm := &ChatMessage{
-			Msg:      gcm.Msg,
-			Who:      gcm.Username,
-			Discord:  false,
-			Server:   gcm.Server,
-			Datetime: gcm.Datetime,
-			Room:     room,
+			Msg:       gcm.Msg,
+			Who:       gcm.Username,
+			Discord:   false,
+			Server:    gcm.Server,
+			Datetime:  gcm.Datetime,
+			Room:      t.GetRoomName(),
+			Recipient: "",
 		}
 		chatList = append(chatList, cm)
 	}
 	s.Emit("chatList", &ChatListMessage{
 		List:   chatList,
-		Unread: len(t.Chat) - t.ChatRead[s.UserID()],
+		Unread: len(t.Chat) - t.ChatRead[s.UserID],
 	})
 }

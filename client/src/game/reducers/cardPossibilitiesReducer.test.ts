@@ -1,9 +1,9 @@
-import testMetadata from '../../../test/testMetadata';
-import { getVariant } from '../data/gameData';
-import CardState from '../types/CardState';
-import { colorClue, rankClue } from '../types/Clue';
-import cardPossibilitiesReducer from './cardPossibilitiesReducer';
-import initialCardState from './initialStates/initialCardState';
+import testMetadata from "../../../test/testMetadata";
+import { getVariant } from "../data/gameData";
+import CardState from "../types/CardState";
+import { colorClue, rankClue } from "../types/Clue";
+import cardPossibilitiesReducer from "./cardPossibilitiesReducer";
+import initialCardState from "./initialStates/initialCardState";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
@@ -15,9 +15,11 @@ function countPossibleCards(state: CardState) {
   return state.possibleCardsFromDeduction.length;
 }
 
-function possibilities(possibleCardsFromClues: ReadonlyArray<readonly [number, number]>) {
-  const possibleSuits : Set<number> = new Set();
-  const possibleRanks : Set<number> = new Set();
+function possibilities(
+  possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
+) {
+  const possibleSuits: Set<number> = new Set();
+  const possibleRanks: Set<number> = new Set();
   for (const [suit, rank] of possibleCardsFromClues) {
     possibleSuits.add(suit);
     possibleRanks.add(rank);
@@ -25,13 +27,20 @@ function possibilities(possibleCardsFromClues: ReadonlyArray<readonly [number, n
   return { possibleSuits, possibleRanks };
 }
 
-describe('cardPossibilitiesReducer', () => {
-  test('applies a simple positive clue', () => {
+describe("cardPossibilitiesReducer", () => {
+  test("applies a simple positive clue", () => {
     const red = colorClue(variant.clueColors[0]);
 
-    const newCard = cardPossibilitiesReducer(defaultCard, red, true, defaultMetadata);
+    const newCard = cardPossibilitiesReducer(
+      defaultCard,
+      red,
+      true,
+      defaultMetadata,
+    );
 
-    const { possibleSuits, possibleRanks } = possibilities(newCard.possibleCardsFromClues);
+    const { possibleSuits, possibleRanks } = possibilities(
+      newCard.possibleCardsFromClues,
+    );
     expect(possibleSuits.has(0)).toBe(true);
     expect(possibleSuits.size).toBe(1);
 
@@ -41,12 +50,19 @@ describe('cardPossibilitiesReducer', () => {
     expect(countPossibleCards(newCard)).toBe(5);
   });
 
-  test('applies a simple negative clue', () => {
+  test("applies a simple negative clue", () => {
     const red = colorClue(variant.clueColors[0]);
 
-    const newCard = cardPossibilitiesReducer(defaultCard, red, false, defaultMetadata);
+    const newCard = cardPossibilitiesReducer(
+      defaultCard,
+      red,
+      false,
+      defaultMetadata,
+    );
 
-    const { possibleSuits, possibleRanks } = possibilities(newCard.possibleCardsFromClues);
+    const { possibleSuits, possibleRanks } = possibilities(
+      newCard.possibleCardsFromClues,
+    );
     expect(possibleSuits.has(0)).toBe(false);
     expect(possibleSuits.size).toBe(4);
 
@@ -56,8 +72,8 @@ describe('cardPossibilitiesReducer', () => {
     expect(countPossibleCards(newCard)).toBe(20);
   });
 
-  test('removes possibilities based on previous rank and color clues', () => {
-    const metadata = testMetadata(numPlayers, 'Rainbow-Ones & Brown (6 Suits)');
+  test("removes possibilities based on previous rank and color clues", () => {
+    const metadata = testMetadata(numPlayers, "Rainbow-Ones & Brown (6 Suits)");
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
     const redClue = colorClue(variant.clueColors[0]);

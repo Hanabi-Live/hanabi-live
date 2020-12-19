@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -12,25 +13,19 @@ import (
 //   tableID: 5,
 //   server: true, // True if a server-initiated termination, otherwise omitted
 // }
-func commandTableTerminate(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandTableTerminate(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that they are in the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i == -1 {
-		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	if playerIndex == -1 {
+		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot terminate it.")
 		return
 	}
@@ -47,14 +42,15 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Terminate
-	*/
+	terminate(ctx, s, d, t, playerIndex)
+}
 
-	commandAction(s, &CommandData{
-		TableID: t.ID,
-		Type:    ActionTypeEndGame,
-		Target:  i,
-		Value:   EndConditionTerminated,
+func terminate(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
+	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
+		TableID:     t.ID,
+		Type:        ActionTypeEndGame,
+		Target:      playerIndex,
+		Value:       EndConditionTerminated,
+		NoTableLock: true,
 	})
 }

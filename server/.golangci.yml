@@ -19,6 +19,9 @@ linters:
     - goerr113
     # gofmt is not needed because we are running goimports (which is a superset of gofmt)
     - gofmt
+    # gofumpt is closed on the following issue:
+    # https://github.com/mvdan/gofumpt/issues/96
+    - gofumpt
     # gomnd complains about magic numbers
     - gomnd
     # We manage long lines manually
@@ -27,9 +30,15 @@ linters:
     - maligned
     # nestif complains about some harmless nested if statements
     - nestif
+    # nlreturn requires about excessive newlines around return statements
+    - nlreturn
+    # We do not need to use contexts in certain situations
+    - noctx
     # We use some unused parameters for command function uniformity
     - unparam
-    # WSL requires excessive newlines around if statements
+    # We don't need to wrap all error messages
+    - wrapcheck
+    # wsl requires excessive newlines around if statements
     - wsl
 
 issues:

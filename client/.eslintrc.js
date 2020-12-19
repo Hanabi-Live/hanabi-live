@@ -1,140 +1,200 @@
+// This is the configuration file for ESLint, the TypeScript linter
+// https://eslint.org/docs/user-guide/configuring
 module.exports = {
-  // The linter base is the Airbnb style guide, located here:
-  // https://github.com/airbnb/javascript
-  // The actual ESLint config is located here:
-  // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules
-  extends: 'airbnb-typescript/base',
+  // This configuration first imports rules from other places
+  extends: [
+    // The linter base is the Airbnb style guide,
+    // which is the most popular JavaScript style guide in the world:
+    // https://github.com/airbnb/javascript
+    // The actual ESLint config is located here:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules
+    // The TypeScript config extends it:
+    // https://github.com/iamturns/eslint-config-airbnb-typescript/blob/master/lib/shared.js
+    "airbnb-typescript/base",
+
+    // We extend the Airbnb rules with the "recommended" and "recommended-requiring-type-checking"
+    // rules from the "typescript-eslint" plugin, which is also recommended by Matt Turnbull,
+    // the author of "airbnb-typescript/base"
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/README.md#recommended
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended-requiring-type-checking.ts
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+
+    // We use Prettier to automatically format TypeScript files
+    // Disable any ESLint rules that conflict with Prettier
+    // https://silvenon.com/blog/integrating-and-enforcing-prettier-and-eslint
+    // https://github.com/prettier/eslint-plugin-prettier
+    "plugin:prettier/recommended",
+    "prettier",
+    "prettier/@typescript-eslint",
+  ],
 
   env: {
     browser: true,
     jquery: true,
   },
 
-  // We need to specify some additional settings in order to make the linter work with TypeScript:
-  // https://medium.com/@myylow/how-to-keep-the-airbnb-eslint-config-when-moving-to-typescript-1abb26adb5c6
-  parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: './tsconfig.json',
+    // ESLint needs to know about the project's TypeScript settings in order for TypeScript-specific
+    // things to lint correctly
+    // We do not point this at "./tsconfig.json" because certain files (such at this file) should be
+    // linted but not included in the actual project output
+    project: "./tsconfig.eslint.json",
   },
-  plugins: [
-    '@typescript-eslint',
-    'import',
-  ],
-  settings: {
-    'import/extensions': ['.ts'],
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts'],
-    },
-    'import/resolver': {
-      'typescript': {},
-    },
-  },
+
+  ignorePatterns: ["**/webpack_output/**", "**/lib/**"],
 
   // We modify the linting rules from the base for some specific things
   // (listed in alphabetical order)
+  // Note that currently, the "arrow-body-style" rule is bugged:
+  // https://github.com/prettier/eslint-config-prettier/blob/master/README.md#arrow-body-style-and-prefer-arrow-callback
   rules: {
+    // Documentation:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/array-type.md
+    // Not defined in parent configs
     // Prefer the "[]string" syntax over "Array<string>"
-    '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
+    "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
 
-    // Temp rules until airbnb-typescript can be updated
-    '@typescript-eslint/camelcase': 'off',
-
+    // Documentation:
+    // https://eslint.org/docs/rules/lines-between-class-members
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/lines-between-class-members.md
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
     // Airbnb has "exceptAfterSingleLine" turned off by default
     // A list of single-line variable declarations at the top of a class is common in TypeScript
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L183
-    '@typescript-eslint/lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+    "@typescript-eslint/lines-between-class-members": [
+      "error",
+      "always",
+      { exceptAfterSingleLine: true },
+    ],
 
-    // Enforce semi-colons inside interface and type declarations
-    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/semi.md
-    '@typescript-eslint/member-delimiter-style': ['error'],
+    // Documentation:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-non-null-assertion.md
+    // Defined at:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts
+    // We use many variables that are only null during initialization;
+    // adding explicit type guards would be superfluous
+    "@typescript-eslint/no-non-null-assertion": ["off"],
 
-    // Keep the code a bit less verbose by removing inferrable type annotations
-    '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
-
-    // No "any" types
-    '@typescript-eslint/no-unsafe-assignment': ['error'],
-    '@typescript-eslint/no-unsafe-call': ['error'],
-    '@typescript-eslint/no-unsafe-member-access': ['error'],
-    '@typescript-eslint/no-unsafe-return': ['error'],
-
+    // Documentation:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md
+    // https://eslint.org/docs/rules/no-use-before-define
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js
     // This allows code to be structured in a more logical order
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
-    '@typescript-eslint/no-use-before-define': ['off'],
+    "@typescript-eslint/no-use-before-define": ["off"],
 
-    // Prevent using falsy/truthy to compare against null/undefined
+    // Documentation:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/quotes.md
+    // Defined at:
+    // https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
+    // In order to forbid unnecessary backticks, we must re-enable the "@typescript-eslint/quotes"
+    // rule as specified in the eslint-config-prettier documentation:
+    // https://github.com/prettier/eslint-config-prettier#enforce-backticks
+    "@typescript-eslint/quotes": [
+      "error",
+      "double",
+      { avoidEscape: true, allowTemplateLiterals: false },
+    ],
+
+    // Documentation:
     // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/strict-boolean-expressions.md
-    // We allow 'any' values because Konva uses them a lot.
-    '@typescript-eslint/strict-boolean-expressions': ['error', { allowAny: true }],
+    // Not defined in parent configs
+    // This prevents comparing false/true to null/undefined
+    // We specify "allowAny" because Konva uses them a lot
+    "@typescript-eslint/strict-boolean-expressions": [
+      "error",
+      { allowAny: true },
+    ],
 
-    // ESLint does not like TypeScript 3.8 syntax, e.g. "import { module } from 'file'"
-    'import/named': ['off'],
-
+    // Documentation:
+    // https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/no-cycle.md
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/imports.js
     // The codebase uses cyclical dependencies because
     // various objects are attached to the global variables object,
     // but methods of these objects also reference/change global variables
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/imports.js#L236
-    'import/no-cycle': ['off'],
+    "import/no-cycle": ["off"],
 
-    // We want imports to be sorted alphabetically; this is not specified in the Airbnb config
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/imports.js#L148
-    'import/order': ['error', {
-      groups: [['builtin', 'external', 'internal']],
-      alphabetize: { order: 'asc', caseInsensitive: true },
-    }],
-
+    // Documentation:
+    // https://eslint.org/docs/rules/no-alert
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js
     // The client makes use of some tasteful alerts
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59
-    'no-alert': ['off'],
+    "no-alert": ["off"],
 
-    // We need to output messages to the console for debugging
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/errors.js#L27
-    'no-console': ['off'],
+    // Documentation:
+    // https://eslint.org/docs/rules/no-console
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/errors.js
+    // We need to output messages to the console for debugging purposes
+    "no-console": ["off"],
 
+    // Documentation:
+    // https://eslint.org/docs/rules/no-constant-condition
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/errors.js
     // We make use of constant while loops where appropriate
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/errors.js#L30
-    'no-constant-condition': ['off'],
+    "no-constant-condition": ["off"],
 
+    // Documentation:
+    // https://eslint.org/docs/rules/no-continue
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
     // Proper use of continues can reduce indentation for long blocks of code
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L279
-    'no-continue': ['off'],
+    "no-continue": "off",
 
-    // Airbnb disallows mixing * and /, which is fairly nonsensical
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L290
-    'no-mixed-operators': ['error', { allowSamePrecedence: true }],
-
-    // The Airbnb configuration allows 2 empty lines in a row, which is unneeded
-    // Additionally, the Airbnb configuration is bugged and
-    // allows a line at the beginning of the file
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L316
-    'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
-
+    // Documentation:
+    // https://eslint.org/docs/rules/no-param-reassign
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js
     // We allow reassigning properties of parameters, but not the parameters themselves
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L195
-    'no-param-reassign': ['error', { props: false }],
+    "no-param-reassign": ["error", { props: false }],
 
+    // Documentation:
+    // https://eslint.org/docs/rules/no-plusplus
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
     // Airbnb disallows these because it can lead to errors with minified code;
     // we don't have to worry about this in for loops though
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L330
-    'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
+    "no-plusplus": ["error", { allowForLoopAfterthoughts: true }],
 
-    // Clean code can arise from for-of statements if used properly
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L334
-    'no-restricted-syntax': ['off', 'ForOfStatement'],
+    // Documentation:
+    // https://eslint.org/docs/rules/no-restricted-syntax
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
+    // "for..of" loops are necessary to write efficient code in some situations
+    "no-restricted-syntax": "off",
 
+    // Documentation:
+    // https://eslint.org/docs/rules/no-underscore-dangle
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
     // KineticJS has functions that are prefixed with an underscore
-    // (remove this once the code base is transitioned to Phaser)
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L371
-    'no-underscore-dangle': ['off'],
+    "no-underscore-dangle": ["off"],
 
+    // Documentation:
+    // https://eslint.org/docs/rules/prefer-destructuring
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/es6.js
     // Array destructuring can result in non-intuitive code
-    // Object destructuring is disgustingly verbose in TypeScript
-    // e.g. "const foo: string = bar.foo;" vs "const { foo }: { foo: string } = bar;"
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/es6.js#L114
-    'prefer-destructuring': ['off'],
-
-    // This allows for cleaner looking code as recommended here:
-    // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L448
-    'quote-props': ['error', 'consistent-as-needed'],
+    // Keep the Airbnb config for object destructuring
+    "prefer-destructuring": [
+      "error",
+      {
+        VariableDeclarator: {
+          array: false,
+          object: true,
+        },
+        AssignmentExpression: {
+          array: false,
+          object: false,
+        },
+      },
+      {
+        enforceForRenamedProperties: false,
+      },
+    ],
   },
 };

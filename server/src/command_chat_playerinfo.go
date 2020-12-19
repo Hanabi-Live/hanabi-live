@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -10,7 +11,7 @@ import (
 // {
 //   name: 'Alice',
 // }
-func commandChatPlayerInfo(s *Session, d *CommandData) {
+func commandChatPlayerInfo(ctx context.Context, s *Session, d *CommandData) {
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that this person exists in the database
@@ -18,8 +19,8 @@ func commandChatPlayerInfo(s *Session, d *CommandData) {
 	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
 		normalizedUsername,
 	); err != nil {
-		logger.Error("Failed to validate that \""+normalizedUsername+"\" "+
-			"exists in the database:", err)
+		logger.Error("Failed to validate that \"" + normalizedUsername + "\" " +
+			"exists in the database: " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
@@ -31,8 +32,8 @@ func commandChatPlayerInfo(s *Session, d *CommandData) {
 
 	var numGames int
 	if v, err := models.Games.GetUserNumGames(user.ID, false); err != nil {
-		logger.Error("Failed to get the number of non-speedrun games for player "+
-			"\""+d.Name+"\":", err)
+		logger.Error("Failed to get the number of non-speedrun games for player " +
+			"\"" + d.Name + "\": " + err.Error())
 		s.Error("Something went wrong when getting stats. Please contact an administrator.")
 		return
 	} else {

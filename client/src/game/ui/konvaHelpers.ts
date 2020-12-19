@@ -1,8 +1,8 @@
-import Konva from 'konva';
-import * as KonvaBaseLayer from 'konva/types/BaseLayer';
-import globals from './globals';
+import Konva from "konva";
+import * as KonvaBaseLayer from "konva/types/BaseLayer";
+import globals from "./globals";
 
-export const drawLayer = (node: Konva.Node) => {
+export const drawLayer = (node: Konva.Node): void => {
   const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;
   if (layer) {
     layer.batchDraw();
@@ -22,25 +22,26 @@ interface TweenConfig {
   scale?: number;
   rotation?: number;
   opacity?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   easing?: (t: any, b: any, c: any, d: any) => any;
   onFinish?: () => void;
 }
 
-export const animate = (
+export function animate(
   node: Konva.Node & CanTween,
   params: TweenConfig,
-  interactive: boolean = false,
+  interactive = false,
   fast: boolean = globals.animateFast,
-) => {
-  if (!interactive && node.isListening() && !globals.options.speedrun) {
-    // Note that in speedruns, cards remain listening during their animations
-    throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
-  }
+): void {
+  // Before animating, ensure that the node is visible
+  // (since some elements might be previously hidden)
+  node.show();
 
   if (node.tween !== null) {
     node.tween.destroy();
     node.tween = null;
   }
+
   if (fast || params.duration === 0) {
     if (params.x !== undefined) {
       node.x(params.x);
@@ -76,12 +77,18 @@ export const animate = (
       node.listening(true);
     }
   } else {
+    // The Konva TypeScript definitions specify a Tween config as "any"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const config: any = {
       node,
       onFinish: () => {
         // If the game is restarted in the middle of an animation,
         // it is possible to get here with something important being undefined
-        if (node === undefined || globals.store === null || globals.state === undefined) {
+        if (
+          node === undefined ||
+          globals.store === null ||
+          globals.state === undefined
+        ) {
           return;
         }
 
@@ -143,4 +150,4 @@ export const animate = (
 
     node.tween = new Konva.Tween(config).play();
   }
-};
+}

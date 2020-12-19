@@ -1,29 +1,32 @@
 /* eslint-disable import/prefer-default-export */
 
-import equal from 'fast-deep-equal';
-import Clue, { rankClue, colorClue } from '../../../types/Clue';
-import ClueType from '../../../types/ClueType';
-import { StateClue } from '../../../types/GameState';
-import * as arrows from '../../arrows';
-import ClueEntry from '../../ClueEntry';
-import globals from '../../globals';
+import equal from "fast-deep-equal";
+import Clue, { colorClue, rankClue } from "../../../types/Clue";
+import ClueType from "../../../types/ClueType";
+import { StateClue } from "../../../types/GameState";
+import * as arrows from "../../arrows";
+import ClueEntry from "../../ClueEntry";
+import getCardOrStackBase from "../../getCardOrStackBase";
+import globals from "../../globals";
 
-export const onCluesChanged = (data: {
-  clues: readonly StateClue[];
+export function onCluesChanged(clues: readonly StateClue[]): void {
+  updateLog(clues);
+}
+
+export function onLastClueOrSegmentChanged(data: {
+  lastClue: StateClue | undefined;
   segment: number | null;
-}) => {
-  updateArrows(data.clues, data.segment);
-  updateLog(data.clues);
-};
+}): void {
+  updateArrows(data.lastClue, data.segment);
+}
 
-const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
+function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   arrows.hideAll();
 
   if (segment === null) {
     return;
   }
 
-  const lastClue = clues[clues.length - 1];
   if (lastClue === undefined || lastClue.segment !== segment - 1) {
     // We are initializing (or we rewinded and just removed the first clue)
     return;
@@ -37,18 +40,23 @@ const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
   }
 
   lastClue.list.forEach((order, i) => {
-    arrows.set(i, globals.deck[order], lastClue.giver, clue);
+    const card = getCardOrStackBase(order);
+    arrows.set(i, card, lastClue.giver, clue);
   });
 
   globals.layers.arrow.batchDraw();
-};
+}
 
-const updateLog = (clues: readonly StateClue[]) => {
-  const clueLog = globals.elements.clueLog!;
+function updateLog(clues: readonly StateClue[]) {
+  const { clueLog } = globals.elements;
+  if (clueLog === null) {
+    return;
+  }
+
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
   clues.slice(startingIndex).forEach((clue, i) => {
     if (i < clueLog.children.length) {
-      const clueEntry = clueLog.children[i] as unknown as ClueEntry;
+      const clueEntry = (clueLog.children[i] as unknown) as ClueEntry;
       if (equal(clue, clueEntry.clue)) {
         // No change
         return;
@@ -69,9 +77,12 @@ const updateLog = (clues: readonly StateClue[]) => {
 
   // Delete any left over clues
   if (clueLog.children.length > clues.length) {
-    clueLog.children.splice(clues.length, clueLog.children.length - clues.length);
+    clueLog.children.splice(
+      clues.length,
+      clueLog.children.length - clues.length,
+    );
   }
   clueLog.refresh();
 
   globals.layers.UI.batchDraw();
-};
+}

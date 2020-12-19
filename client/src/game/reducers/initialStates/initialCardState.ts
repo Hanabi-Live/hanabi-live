@@ -1,7 +1,10 @@
-import CardState from '../../types/CardState';
-import Variant from '../../types/Variant';
+import CardState from "../../types/CardState";
+import Variant from "../../types/Variant";
 
-export default function initialCardState(order: number, variant: Variant) : CardState {
+export default function initialCardState(
+  order: number,
+  variant: Variant,
+): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately
   // from knowledge of the true suit and rank
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
@@ -12,12 +15,13 @@ export default function initialCardState(order: number, variant: Variant) : Card
 
   return {
     order,
-    location: 'deck',
+    location: "deck",
     suitIndex: null,
     rank: null,
     possibleCardsFromClues: possibleCards,
     possibleCardsFromDeduction: possibleCards,
     revealedToPlayer: new Array(6).fill(false),
+    positiveColorClues: [],
     positiveRankClues: [],
     suitDetermined: false,
     rankDetermined: false,
@@ -28,5 +32,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
     segmentPlayed: null,
     segmentDiscarded: null,
     isMisplayed: false,
+    dealtToStartingHand: false,
+    firstCluedWhileOnChop: null,
   };
 }

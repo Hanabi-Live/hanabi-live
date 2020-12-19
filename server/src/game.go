@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"strconv"
-	"strings"
 	"time"
 )
 
+// Game is a sub-object of a table
+// It represents all of the particular state associated with a game
+// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
+// (which is used in this case to prevent circular references)
 type Game struct {
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
@@ -17,10 +21,10 @@ type Game struct {
 	DatetimeFinished time.Time
 
 	// This is a reference to the parent object; every game must have a parent Table object
-	Table *Table `json:"-"` // Skip circular references when encoding
+	Table *Table `json:"-"`
 	// This is a reference to the Options field of the Table object (for convenience purposes)
-	Options      *Options      `json:"-"` // Skip circular references when encoding
-	ExtraOptions *ExtraOptions `json:"-"` // Skip circular references when encoding
+	Options      *Options      `json:"-"`
+	ExtraOptions *ExtraOptions `json:"-"`
 	// (circular references must also be restored in the "restoreTables()" function)
 
 	// Game state related fields
@@ -42,8 +46,7 @@ type Game struct {
 	Score               int
 	MaxScore            int
 	Strikes             int
-	LastClueTypeGiven   int
-	DoubleDiscard       bool
+	LastClueTypeGiven   int // Used in "Alternating Clues" variants
 	// Actions is a list of all of the in-game moves that players have taken thus far
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
@@ -62,63 +65,76 @@ type Game struct {
 	// (to determine when the game should end)
 	EndTurn int
 
-	// Sound-related fields
-	// The name of the sound file to play to represent the action taken for the current turn
-	Sound      string
-	BlindPlays int // The number of consecutive blind plays
-	Misplays   int // The number of consecutive misplays
-
-	// Pause-related fields
-	// (these are only applicable to timed games)
+	// Time & Pause related fields
+	StartedTimer     bool // The timer is only started when the initial player has finished loading
 	Paused           bool
-	PauseTime        time.Time
-	PauseCount       int
 	PausePlayerIndex int
+	PauseCount       int
+
+	// Shared replay fields
+	EfficiencyMod int
 
 	// Hypothetical-related fields
-	Hypothetical        bool // Whether or not we are in a post-game hypothetical
-	HypoActions         []string
-	HypoDrawnCardsShown bool // Whether or not drawn cards should be revealed (false by default)
+	Hypothetical       bool // Whether or not we are in a post-game hypothetical
+	HypoActions        []string
+	HypoShowDrawnCards bool // Whether or not drawn cards should be revealed (false by default)
 
 	// Keep track of user-defined tags; they will be written to the database upon game completion
 	Tags map[string]int // Keys are the tags, values are the user ID that created it
 }
 
 func NewGame(t *Table) *Game {
+	variant := variants[t.Options.VariantName]
+
 	g := &Game{
+		DatetimeStarted:  time.Time{},
+		DatetimeFinished: time.Time{},
+
 		Table:        t,
 		Options:      t.Options,
 		ExtraOptions: t.ExtraOptions,
 
-		Players:             make([]*GamePlayer, 0),
-		Deck:                make([]*Card, 0),
-		CardIdentities:      make([]*CardIdentity, 0),
-		Stacks:              make([]int, len(variants[t.Options.VariantName].Suits)),
-		PlayStackDirections: make([]int, len(variants[t.Options.VariantName].Suits)),
-		DatetimeTurnBegin:   time.Now(),
-		ClueTokens:          MaxClueNum,
-		MaxScore:            len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
-		LastClueTypeGiven:   -1,
-		Actions:             make([]interface{}, 0),
-		Actions2:            make([]*GameAction, 0),
-		EndTurn:             -1,
+		Players:               make([]*GamePlayer, 0),
+		Seed:                  "",
+		Deck:                  make([]*Card, 0),
+		CardIdentities:        make([]*CardIdentity, 0),
+		DeckIndex:             0,
+		Stacks:                make([]int, len(variant.Suits)),
+		PlayStackDirections:   make([]int, len(variant.Suits)),
+		Turn:                  0,
+		DatetimeTurnBegin:     time.Time{},
+		TurnsInverted:         false,
+		ActivePlayerIndex:     0,
+		ClueTokens:            variant.GetAdjustedClueTokens(MaxClueNum),
+		Score:                 0,
+		MaxScore:              len(variant.Suits) * PointsPerSuit,
+		Strikes:               0,
+		LastClueTypeGiven:     -1,
+		Actions:               make([]interface{}, 0),
+		Actions2:              make([]*GameAction, 0),
+		InvalidActionOccurred: false,
+		EndCondition:          0,
+		EndPlayer:             -1,
+		EndTurn:               -1,
 
-		HypoActions: make([]string, 0),
-		Tags:        make(map[string]int),
-	}
+		StartedTimer:     false,
+		Paused:           false,
+		PausePlayerIndex: -1,
+		PauseCount:       0,
 
-	if strings.HasPrefix(t.Options.VariantName, "Clue Starved") {
-		// In this variant, having 1 clue token is represented with a value of 2
-		// We want the players to start with the normal amount of clues,
-		// so we have to double the starting amount
-		g.ClueTokens *= 2
+		EfficiencyMod: 0,
+
+		Hypothetical:       false,
+		HypoActions:        make([]string, 0),
+		HypoShowDrawnCards: false,
+
+		Tags: make(map[string]int),
 	}
 
 	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
 	// that uses the "Undecided" direction.
-	v := variants[t.Options.VariantName]
-	if v.HasReversedSuits() && !v.IsUpOrDown() {
-		for i, s := range v.Suits {
+	if variant.HasReversedSuits() && !variant.IsUpOrDown() {
+		for i, s := range variant.Suits {
 			if s.Reversed {
 				g.PlayStackDirections[i] = StackDirectionDown
 			} else {
@@ -138,19 +154,26 @@ func NewGame(t *Table) *Game {
 */
 
 // CheckTimer is meant to be called in a new goroutine
-func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
+func (g *Game) CheckTimer(
+	ctx context.Context,
+	timeToSleep time.Duration,
+	turn int,
+	pauseCount int,
+	gp *GamePlayer,
+) {
+	// Sleep until the active player runs out of time
+	time.Sleep(timeToSleep)
+
 	// Local variables
 	t := g.Table
 
-	// Sleep until the active player runs out of time
-	time.Sleep(gp.Time)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-
-	// Check to see if the game ended already
-	if g.EndCondition > EndConditionInProgress {
+	// Check to see if the table still exists
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false, true)
+	if !exists || t != t2 {
 		return
 	}
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 
 	// Check to see if we have made a move in the meanwhile
 	if turn != g.Turn {
@@ -167,8 +190,25 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 		return
 	}
 
-	gp.Time = 0
+	// Check to see if the game ended already
+	if g.EndCondition > EndConditionInProgress {
+		return
+	}
+
+	g.EndTimer(ctx, gp)
+}
+
+// EndTimer is called when a player has run out of time in a timed game, which will automatically
+// end the game with a score of 0
+// The table lock is assumed to be acquired in this function
+func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
+	// Local variables
+	t := g.Table
+
 	logger.Info(t.GetName() + "Time ran out for \"" + gp.Name + "\".")
+
+	// Adjust the final player's time (for the purposes of displaying the correct ending times)
+	gp.Time = 0
 
 	// Get the session of this player
 	p := t.Players[gp.Index]
@@ -177,16 +217,17 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 		// A player's session should never be nil
 		// They might be in the process of reconnecting,
 		// so make a fake session that will represent them
-		s = newFakeSession(p.ID, p.Name)
+		s = NewFakeSession(p.UserID, p.Name)
 		logger.Info("Created a new fake session in the \"CheckTimer()\" function.")
 	}
 
 	// End the game
-	commandAction(s, &CommandData{
-		TableID: t.ID,
-		Type:    ActionTypeEndGame,
-		Target:  gp.Index,
-		Value:   EndConditionTimeout,
+	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
+		TableID:     t.ID,
+		Type:        ActionTypeEndGame,
+		Target:      gp.Index,
+		Value:       EndConditionTimeout,
+		NoTableLock: true,
 	})
 }
 
@@ -194,6 +235,7 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 func (g *Game) CheckEnd() bool {
 	// Local variables
 	t := g.Table
+	variant := variants[g.Options.VariantName]
 
 	// Some ending conditions will already be set by the time we get here
 	if g.EndCondition == EndConditionTimeout ||
@@ -212,14 +254,14 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// In a speedrun, check to see if a perfect score can still be achieved
-	if g.Options.Speedrun && g.MaxScore < variants[g.Options.VariantName].MaxScore {
+	if g.Options.Speedrun && g.MaxScore < variant.MaxScore {
 		logger.Info(t.GetName() + "A perfect score is impossible in a speedrun; ending the game.")
 		g.EndCondition = EndConditionSpeedrunFail
 		return true
 	}
 
 	// In an "All or Nothing" game, check to see if a maximum score can still be reached
-	if g.Options.AllOrNothing && g.MaxScore < variants[g.Options.VariantName].MaxScore {
+	if g.Options.AllOrNothing && g.MaxScore < variant.MaxScore {
 		logger.Info(t.GetName() + "A perfect score is impossible in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingFail
 		return true
@@ -229,7 +271,7 @@ func (g *Game) CheckEnd() bool {
 	// handle the case where a player would have to discard without any cards in their hand
 	if g.Options.AllOrNothing &&
 		len(g.Players[g.ActivePlayerIndex].Hand) == 0 &&
-		g.ClueTokens == 0 {
+		g.ClueTokens < variant.GetAdjustedClueTokens(1) {
 
 		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingSoftlock
@@ -253,7 +295,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if there are any cards remaining that can be played on the stacks
-	if variants[g.Options.VariantName].HasReversedSuits() {
+	if variant.HasReversedSuits() {
 		// Searching for the next card is much more complicated if we are playing an "Up or Down"
 		// or "Reversed" variant, so the logic for this is stored in a separate file
 		if !variantReversibleCheckAllDead(g) {
@@ -321,9 +363,12 @@ func (g *Game) GetHandSizeForNormalGame() int {
 // GetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	// Getting the maximum score is much more complicated if we are playing a
 	// "Reversed" or "Up or Down" variant
-	if variants[g.Options.VariantName].HasReversedSuits() {
+	if variant.HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
 	}
 
@@ -361,8 +406,11 @@ func (g *Game) GetSpecificCardNum(suitIndex int, rank int) (int, int) {
 }
 
 func (g *Game) GetNotesSize() int {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	// There are notes for every card in the deck + the stack bases for each suit
 	numCards := len(g.Deck)
-	numSuits := len(variants[g.Options.VariantName].Suits)
+	numSuits := len(variant.Suits)
 	return numCards + numSuits
 }

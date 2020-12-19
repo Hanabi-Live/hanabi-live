@@ -47,7 +47,7 @@ numInvalidGames = 0
 for game in games:
     i += 1
     if i % 1000 == 0:
-        print("On user #" + str(i), flush=True)
+        print("On game #" + str(i), flush=True)
 
     cursor = conn.cursor()
     cursor.execute(

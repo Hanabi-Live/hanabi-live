@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type DiscordWaiters struct{}
@@ -18,28 +20,33 @@ type Waiter struct {
 func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 	waiters := make([]*Waiter, 0)
 
-	rows, err := db.Query(context.Background(), `
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT
 			username,
 			discord_mention,
 			datetime_expired
 		FROM discord_waiters
-	`)
+	`); err != nil {
+		return waiters, err
+	} else {
+		rows = v
+	}
 
 	for rows.Next() {
 		var waiter Waiter
-		if err2 := rows.Scan(
+		if err := rows.Scan(
 			&waiter.Username,
 			&waiter.DiscordMention,
 			&waiter.DatetimeExpired,
-		); err2 != nil {
-			return nil, err2
+		); err != nil {
+			return waiters, err
 		}
 		waiters = append(waiters, &waiter)
 	}
 
-	if rows.Err() != nil {
-		return nil, err
+	if err := rows.Err(); err != nil {
+		return waiters, err
 	}
 	rows.Close()
 

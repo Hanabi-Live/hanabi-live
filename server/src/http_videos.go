@@ -6,7 +6,7 @@ import (
 
 func httpVideos(c *gin.Context) {
 	w := c.Writer
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Videos",
 	}
 	httpServeTemplate(w, data, "informational", "videos")

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,22 +29,21 @@ func httpLocalhostInit() {
 	}
 
 	// Create a new Gin HTTP router
-	gin.SetMode(gin.ReleaseMode)
 	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
 
 	// Path handlers
 	httpRouter.POST("/ban", httpLocalhostUserAction)
 	httpRouter.GET("/cancel", httpLocalhostCancel)
 	httpRouter.GET("/clearEmptyTables", httpLocalhostClearEmptyTables)
-	httpRouter.GET("/debug", httpLocalhostDebug)
+	httpRouter.GET("/debugFunction", httpLocalhostDebugFunction)
+	httpRouter.GET("/getLongTables", httpLocalhostGetLongTables)
 	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
 	httpRouter.POST("/mute", httpLocalhostUserAction)
 	httpRouter.GET("/print", httpLocalhostPrint)
-	httpRouter.GET("/restart", httpLocalhostRestart)
+	httpRouter.GET("/gracefulRestart", httpLocalhostGracefulRestart)
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
 	httpRouter.POST("/sendWarning", httpLocalhostUserAction)
 	httpRouter.POST("/sendError", httpLocalhostUserAction)
-	httpRouter.POST("/serialize", httpLocalhostSerialize)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
 	httpRouter.GET("/terminate", httpLocalhostTerminate)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)
@@ -55,14 +53,14 @@ func httpLocalhostInit() {
 
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-	HTTPServerWithTimeout := &http.Server{
+	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 		Addr:         "127.0.0.1:" + strconv.Itoa(port), // Listen only on the localhost interface
 		Handler:      httpRouter,
 		ReadTimeout:  HTTPReadTimeout,
 		WriteTimeout: HTTPWriteTimeout,
 	}
 	if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
-		logger.Fatal("ListenAndServe failed (for localhost):", err)
+		logger.Fatal("ListenAndServe failed (for localhost): " + err.Error())
 		return
 	}
 	logger.Fatal("ListenAndServe ended prematurely (for localhost).")
@@ -82,7 +80,7 @@ func httpLocalhostUserAction(c *gin.Context) {
 	// Check to see if this username exists in the database
 	var userID int
 	if exists, v, err := models.Users.Get(username); err != nil {
-		logger.Error("Failed to get user \""+username+"\":", err)
+		logger.Error("Failed to get user \"" + username + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -99,20 +97,20 @@ func httpLocalhostUserAction(c *gin.Context) {
 	// Get the IP for this user
 	var lastIP string
 	if v, err := models.Users.GetLastIP(username); err != nil {
-		logger.Error("Failed to get the last IP for \""+username+"\":", err)
+		logger.Error("Failed to get the last IP for \"" + username + "\": " + err.Error())
 		return
 	} else {
 		lastIP = v
 	}
 
-	path := c.FullPath()
-	if strings.HasPrefix(path, "/ban") {
+	path := c.Request.URL.Path
+	if path == "/ban" {
 		httpLocalhostBan(c, username, lastIP, userID)
-	} else if strings.HasPrefix(path, "/mute") {
+	} else if path == "/mute" {
 		httpLocalhostMute(c, username, lastIP, userID)
-	} else if strings.HasPrefix(path, "/sendWarning") {
+	} else if path == "/sendWarning" {
 		httpLocalhostSendWarning(c, userID)
-	} else if strings.HasPrefix(path, "/sendError") {
+	} else if path == "/sendError" {
 		httpLocalhostSendError(c, userID)
 	} else {
 		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
@@ -120,16 +118,19 @@ func httpLocalhostUserAction(c *gin.Context) {
 }
 
 func logoutUser(userID int) {
-	if s, ok := sessions[userID]; !ok {
+	s, ok := sessions.Get(userID)
+
+	if !ok {
 		logger.Info("Attempted to manually log out user " + strconv.Itoa(userID) + ", " +
 			"but they were not online.")
+		return
+	}
+
+	if err := s.ms.Close(); err != nil {
+		logger.Error("Failed to manually close the WebSocket session for user " +
+			strconv.Itoa(userID) + ": " + err.Error())
 	} else {
-		if err := s.Close(); err != nil {
-			logger.Info("Failed to manually close the WebSocket session for user "+
-				strconv.Itoa(userID)+":", err)
-		} else {
-			logger.Info("Successfully terminated the WebSocket session for user " +
-				strconv.Itoa(userID) + ".")
-		}
+		logger.Info("Successfully terminated the WebSocket session for user " +
+			strconv.Itoa(userID) + ".")
 	}
 }

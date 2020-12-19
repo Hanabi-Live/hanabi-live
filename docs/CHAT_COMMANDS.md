@@ -11,15 +11,18 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/help`                               | Get the link to this page
 | `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)
 | `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
-| `/new`                                | Displays a stock message for new users, encouraging them to join the Hyphen-ated group
-| `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others
+| `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md)
+| `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md)
+| `/bga`                                | Get the link for the [Board Game Arena guide](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md)
+| `/efficiency`                         | Get the link for the [efficiency document](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md)
 | `/playerinfo`                         | Get the number of games played for all the players in the current game
 | `/playerinfo [username]`              | Get the number of games played for a specific player
 | `/playerinfo [username1] [username2]` | Get the number of games played for a list of players
+| `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others
 | `/random [min] [max]`                 | Get a random integer
 | `/uptime`                             | Get how long the server has been online
 | `/timeleft`                           | Get how much time is left before the server shuts down
-| `/shrug`                              | ¯\\_(ツ)_/¯
+| `/shrug`                              | ¯\\\_(ツ)\_/¯
 
 <br />
 
@@ -33,6 +36,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/unfriend [username]` | Remove someone from your friends list
 | `/friends`             | Show a list of all your friends
 | `/tagsearch [tag]`     | Search through all games for a specific tag
+| `/version`             | Show the version number of the client code
 
 <br />
 
@@ -49,6 +53,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/s6`                   | Automatically start the game when it has 6 players
 | `/startin [minutes]`    | Automatically start the game in the provided amount of minutes
 | `/kick [username]`      | Remove a player from the table
+| `/impostor`             | Randomly tells one of the players they are an impostor and the others they are crew-mates.
 
 <br />
 
@@ -90,17 +95,6 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command            | Description
 | ------------------ | -----------
+| `/suggest [turn]`  | Suggest a specific turn for the shared replay leader to go to
 | `/tagdelete [tag]` | Delete an existing tag from the game
 | `/tags`            | Show all of the tags for this game
-
-<br />
-
-### Discord commands
-
-| Command   | Description
-| --------- |------------
-| `/here`   | Ping members of the Hyphen-ated group to get a game going
-| `/last`   | See how long it has been since the last ping
-| `/next`   | Put yourself on the waiting list
-| `/unnext` | Take yourself off the waiting list
-| `/list`   | Show the people on the waiting list

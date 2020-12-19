@@ -1,7 +1,9 @@
-import Konva from 'konva';
-import NodeWithTooltip from './NodeWithTooltip';
+import Konva from "konva";
+import NodeWithTooltip from "./NodeWithTooltip";
 
-export default class RectWithTooltip extends Konva.Rect implements NodeWithTooltip {
-  tooltipName: string = '';
-  tooltipContent: string = '';
+export default class RectWithTooltip
+  extends Konva.Rect
+  implements NodeWithTooltip {
+  tooltipName = "";
+  tooltipContent = "";
 }

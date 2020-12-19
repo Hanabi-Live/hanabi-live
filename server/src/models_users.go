@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -37,8 +38,10 @@ func (*Users) Insert(
 	}
 
 	return User{
-		ID:       id,
-		Username: username,
+		ID:              id,
+		Username:        username,
+		PasswordHash:    sql.NullString{},
+		OldPasswordHash: sql.NullString{},
 	}, nil
 }
 
@@ -58,7 +61,7 @@ func (*Users) Get(username string) (bool, User, error) {
 		&user.Username,
 		&user.PasswordHash,
 		&user.OldPasswordHash,
-	); err == pgx.ErrNoRows {
+	); errors.Is(err, pgx.ErrNoRows) {
 		return false, user, nil
 	} else if err != nil {
 		return false, user, err
@@ -78,7 +81,7 @@ func (*Users) GetUserFromNormalizedUsername(normalizedUsername string) (bool, Us
 	`, normalizedUsername).Scan(
 		&user.ID,
 		&user.Username,
-	); err == pgx.ErrNoRows {
+	); errors.Is(err, pgx.ErrNoRows) {
 		return false, user, nil
 	} else if err != nil {
 		return false, user, err
@@ -123,7 +126,7 @@ func (*Users) NormalizedUsernameExists(normalizedUsername string) (bool, string,
 		SELECT username
 		FROM users
 		WHERE normalized_username = $1
-	`, normalizedUsername).Scan(&similarUsername); err == pgx.ErrNoRows {
+	`, normalizedUsername).Scan(&similarUsername); errors.Is(err, pgx.ErrNoRows) {
 		return false, "", nil
 	} else if err != nil {
 		return false, "", err

@@ -25,7 +25,7 @@ func httpParsePlayerName(c *gin.Context) (User, bool) {
 	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
 		normalizedUsername,
 	); err != nil {
-		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
+		logger.Error("Failed to check to see if player \"" + player + "\" exists: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -78,7 +78,8 @@ func httpParsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 		if exists, v, err := models.Users.GetUserFromNormalizedUsername(
 			normalizedUsername,
 		); err != nil {
-			logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
+			logger.Error("Failed to check to see if player \"" + player + "\" exists: " +
+				err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -98,22 +99,22 @@ func httpParsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 
 		playerIDs = append(playerIDs, user.ID)
 		playerNames = append(playerNames, user.Username)
-		playerNormalizedNames = append(playerNames, normalizedUsername)
+		playerNormalizedNames = append(playerNormalizedNames, normalizedUsername)
 	}
 
 	return playerIDs, playerNames, true
 }
 
-func httpGetVariantStatsList(statsMap map[int]UserStatsRow) (int, []int, []UserVariantStats) {
+func httpGetVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*UserVariantStats) {
 	// Convert the map (statsMap) to a slice (variantStatsList),
 	// filling in any non-played variants with 0 values
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
-	variantStatsList := make([]UserVariantStats, 0)
-	for _, name := range variantsList {
+	variantStatsList := make([]*UserVariantStats, 0)
+	for _, name := range variantNames {
 		variant := variants[name]
 		maxScore := len(variant.Suits) * PointsPerSuit
-		variantStats := UserVariantStats{
+		variantStats := &UserVariantStats{ // nolint: exhaustivestruct
 			ID:       variant.ID,
 			Name:     name,
 			MaxScore: maxScore,
@@ -164,13 +165,13 @@ func httpGetVariantStatsList(statsMap map[int]UserStatsRow) (int, []int, []UserV
 func httpGetPercentageMaxScores(numMaxScores int, numMaxScoresPerType []int) (string, []string) {
 	percentageMaxScoresPerType := make([]string, 0)
 	for _, maxScores := range numMaxScoresPerType {
-		percentage := float64(maxScores) / float64(len(variantsList)) * 100
+		percentage := float64(maxScores) / float64(len(variantNames)) * 100
 		percentageString := fmt.Sprintf("%.1f", percentage)
 		percentageString = strings.TrimSuffix(percentageString, ".0")
 		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
 	}
 
-	percentageMaxScores := float64(numMaxScores) / float64(len(variantsList)*5) * 100
+	percentageMaxScores := float64(numMaxScores) / float64(len(variantNames)*5) * 100
 	// (we multiply by 5 because there are max scores for 2 to 6 players)
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")

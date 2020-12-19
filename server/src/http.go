@@ -8,8 +8,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/didip/tollbooth"
-	"github.com/didip/tollbooth_gin"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
@@ -48,11 +46,11 @@ type TemplateData struct {
 	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
 	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
 	SharedMissingScores        bool     // Used on the "Missing Scores" page
-	VariantStats               []UserVariantStats
+	VariantStats               []*UserVariantStats
 
 	// Stats
 	NumVariants int
-	Variants    []VariantStatsData
+	Variants    []*VariantStatsData
 
 	// Variants
 	BestScores    []int
@@ -81,7 +79,7 @@ var (
 	// HTTPClientWithTimeout is used for sending web requests to external sites,
 	// which is used in various middleware
 	// We don't want to use the default http.Client because it has no default timeout set
-	HTTPClientWithTimeout = &http.Client{
+	HTTPClientWithTimeout = &http.Client{ // nolint: exhaustivestruct
 		Timeout: HTTPWriteTimeout,
 	}
 )
@@ -134,7 +132,6 @@ func httpInit() {
 	}
 
 	// Create a new Gin HTTP router
-	gin.SetMode(gin.ReleaseMode)                       // Comment this out to debug HTTP stuff
 	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 
@@ -144,28 +141,37 @@ func httpInit() {
 	// Thus, this does not impact the ability of a user to download CSS and image files all at once
 	// (However, we do not want to use the rate-limiter in development, since we might have multiple
 	// tabs open that are automatically-refreshing with webpack-dev-server)
-	if !isDev {
-		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
-		httpRouter.Use(limiterMiddleware)
-	}
+	//
+	// The rate limiter is commented out for now to prevent bugs with Apple browsers
+	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
+	// problems
+	/*
+		if !isDev {
+			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+			limiterMiddleware := httpLimitHandler(limiter)
+			httpRouter.Use(limiterMiddleware)
+		}
+	*/
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
-	options := gsessions.Options{
+	options := gsessions.Options{ // nolint: exhaustivestruct
 		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: HTTPSessionTimeout, // In seconds
 	}
 	if !isDev {
 		// Bind the cookie to this specific domain for security purposes
 		options.Domain = domain
+
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
 		options.Secure = useTLS
+
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
 		options.HttpOnly = true
+
 		// Mitigate CSRF attacks:
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
 		options.SameSite = http.SameSiteStrictMode
@@ -182,11 +188,12 @@ func httpInit() {
 
 	// Attach the Sentry middleware
 	if usingSentry {
-		httpRouter.Use(sentrygin.New(sentrygin.Options{
+		httpRouter.Use(sentrygin.New(sentrygin.Options{ // nolint: exhaustivestruct
 			// https://github.com/getsentry/sentry-go/blob/master/gin/sentrygin.go
 			Repanic: true, // Recommended as per the documentation
 			Timeout: HTTPWriteTimeout,
 		}))
+		httpRouter.Use(sentryHTTPAttachMetadata)
 	}
 
 	// Path handlers (for cookies and logging in)
@@ -197,29 +204,18 @@ func httpInit() {
 
 	// Path handlers (for the main website)
 	httpRouter.GET("/", httpMain)
+	httpRouter.GET("/lobby", httpMain)
+	httpRouter.GET("/pre-game", httpMain)
+	httpRouter.GET("/pre-game/:tableID", httpMain)
+	httpRouter.GET("/game", httpMain)
+	httpRouter.GET("/game/:tableID", httpMain)
 	httpRouter.GET("/replay", httpMain)
-	httpRouter.GET("/replay/:gameID", httpMain)
-	httpRouter.GET("/replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/replay/:databaseID", httpMain)
+	httpRouter.GET("/replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/shared-replay", httpMain)
-	httpRouter.GET("/shared-replay/:gameID", httpMain)
-	httpRouter.GET("/shared-replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/shared-replay/:databaseID", httpMain)
+	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/create-table", httpMain)
-	httpRouter.GET("/test", httpMain)
-	httpRouter.GET("/test/:testNum", httpMain)
-
-	// Path handlers (for development)
-	// ("/dev" is the same as "/" but uses webpack-dev-server to serve JavaScript)
-	httpRouter.GET("/dev", httpMain)
-	httpRouter.GET("/dev/", httpMain)
-	httpRouter.GET("/dev/replay", httpMain)
-	httpRouter.GET("/dev/replay/:gameID", httpMain)
-	httpRouter.GET("/dev/replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/dev/shared-replay", httpMain)
-	httpRouter.GET("/dev/shared-replay/:gameID", httpMain)
-	httpRouter.GET("/dev/shared-replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/dev/create-table", httpMain)
-	httpRouter.GET("/dev/test", httpMain)
-	httpRouter.GET("/dev/test/:testNum", httpMain)
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)
@@ -258,7 +254,7 @@ func httpInit() {
 
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:game", httpExport)
+	httpRouter.GET("/export/:databaseID", httpExport)
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
@@ -268,21 +264,26 @@ func httpInit() {
 		// Create the LetsEncrypt directory structure
 		// (CertBot will look for data in "/.well-known/acme-challenge/####")
 		letsEncryptPath := path.Join(projectPath, "letsencrypt")
-		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
-		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
 		if _, err := os.Stat(letsEncryptPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			if err := os.MkdirAll(letsEncryptPath, 0755); err != nil {
+				logger.Fatal("Failed to create the \"" + letsEncryptPath + "\" directory: " +
+					err.Error())
 			}
 		}
+
+		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
 		if _, err := os.Stat(wellKnownPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			if err := os.MkdirAll(wellKnownPath, 0755); err != nil {
+				logger.Fatal("Failed to create the \"" + wellKnownPath + "\" directory: " +
+					err.Error())
 			}
 		}
+
+		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
 		if _, err := os.Stat(acmeChallengePath); os.IsNotExist(err) {
 			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+				logger.Fatal("Failed to create the \"" + acmeChallengePath + "\" directory: " +
+					err.Error())
 			}
 		}
 
@@ -311,7 +312,7 @@ func httpInit() {
 		go func() {
 			// We need to create a new http.Server because the default one has no timeouts
 			// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-			HTTPRedirectServerWithTimeout := &http.Server{
+			HTTPRedirectServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 				Addr:         "0.0.0.0:80", // Listen on all IP addresses
 				Handler:      HTTPServeMux,
 				ReadTimeout:  HTTPReadTimeout,
@@ -329,7 +330,7 @@ func httpInit() {
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 	logger.Info("Listening on port " + strconv.Itoa(port) + ".")
-	HTTPServerWithTimeout := &http.Server{
+	HTTPServerWithTimeout := &http.Server{ // nolint: exhaustivestruct
 		Addr:         "0.0.0.0:" + strconv.Itoa(port), // Listen on all IP addresses
 		Handler:      httpRouter,
 		ReadTimeout:  HTTPReadTimeout,
@@ -337,22 +338,41 @@ func httpInit() {
 	}
 	if useTLS {
 		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {
-			logger.Fatal("ListenAndServeTLS failed:", err)
+			logger.Fatal("ListenAndServeTLS failed: " + err.Error())
 			return
 		}
 		logger.Fatal("ListenAndServeTLS ended prematurely.")
 	} else {
 		if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
-			logger.Fatal("ListenAndServe failed:", err)
+			logger.Fatal("ListenAndServe failed: " + err.Error())
 			return
 		}
 		logger.Fatal("ListenAndServe ended prematurely.")
 	}
 }
 
+/*
+// From: https://github.com/didip/tollbooth_gin/blob/master/tollbooth_gin.go
+func httpLimitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		httpError := tollbooth.LimitByRequest(lmt, c.Writer, c.Request)
+		if httpError != nil {
+			c.Data(httpError.StatusCode, lmt.GetMessageContentType(), []byte(httpError.Message))
+			c.Abort()
+		} else {
+			c.Next()
+		}
+	}
+}
+*/
+
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
-func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ...string) {
+func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName ...string) {
+	// Since we are using the GZip middleware, we have to specify the content type,
+	// or else the page will be downloaded by the browser as "download.gz"
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
@@ -390,8 +410,10 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 
 	// Create the template
 	var tmpl *template.Template
-	if v, err := template.ParseFiles(templateName...); err != nil {
-		logger.Error("Failed to create the template:", err.Error())
+	if v, err := template.New("template").Funcs(template.FuncMap{
+		"formatDate": httpFormatDate,
+	}).ParseFiles(templateName...); err != nil {
+		logger.Error("Failed to create the template: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -402,12 +424,9 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 		tmpl = v
 	}
 
-	// Since we are using the GZip middleware, we have to specify the content type,
-	// or else the page will be downloaded by the browser as "download.gz"
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	// Add extra data that should be the same for every page request
-	data.WebsiteName = websiteName
+	data.WebsiteName = WebsiteName
+	data.Version = getVersion()
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
@@ -422,4 +441,8 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 			http.StatusInternalServerError,
 		)
 	}
+}
+
+func httpFormatDate(date time.Time) string {
+	return date.Format("2006-01-02 &mdash; 15:04:05 MST")
 }

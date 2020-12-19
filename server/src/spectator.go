@@ -9,8 +9,8 @@ import (
 // It is sent directly to the client in the "spectators" command,
 // so we ensure that the only valid JSON fields are "name" and "shadowingPlayerIndex"
 type Spectator struct {
-	ID   int    `json:"-"` // This is equal to the database ID for the user
-	Name string `json:"name"`
+	UserID int    `json:"-"` // This is equal to the database ID for the user
+	Name   string `json:"name"`
 	// The user session corresponding to the spectator is copied here for convenience
 	// The session should always be valid because when a user disconnects,
 	// they will automatically stop spectating all games

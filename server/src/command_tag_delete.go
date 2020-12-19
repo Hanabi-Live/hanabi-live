@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -11,20 +12,17 @@ import (
 //   tableID: 123,
 //   msg: 'inverted priority finesse',
 // }
-func commandTagDelete(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
 	}
-	g := t.Game
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
+	}
 
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 
@@ -35,6 +33,13 @@ func commandTagDelete(s *Session, d *CommandData) {
 	} else {
 		d.Msg = v
 	}
+
+	tagDelete(ctx, s, d, t)
+}
+
+func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
 
 	if !t.Replay {
 		// See if the tag exists
@@ -54,8 +59,8 @@ func commandTagDelete(s *Session, d *CommandData) {
 	// Get the existing tags from the database
 	var tags []string
 	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
-		logger.Error("Failed to get the tags for game ID "+
-			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
+		logger.Error("Failed to get the tags for game ID " +
+			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -70,13 +75,12 @@ func commandTagDelete(s *Session, d *CommandData) {
 
 	// Delete it from the database
 	if err := models.GameTags.Delete(t.ExtraOptions.DatabaseID, d.Msg); err != nil {
-		logger.Error("Failed to delete a tag for game ID "+
-			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
+		logger.Error("Failed to delete a tag for game ID " +
+			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	}
 
-	msg := s.Username() + " has deleted a game tag of \"" + d.Msg + "\"."
-	room := "table" + strconv.Itoa(tableID)
-	chatServerSend(msg, room)
+	msg := s.Username + " has deleted a game tag of \"" + d.Msg + "\"."
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }

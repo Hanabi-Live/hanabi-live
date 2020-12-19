@@ -1,42 +1,52 @@
-// It is possible for the Webpack configuration to be written in TypeScript,
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+// It is possible for the webpack configuration to be written in TypeScript,
 // but this will not work with the full range of options in "tsconfig.json"
+// Keep the config file written in JavaScript for simplicity
 
 // Imports
-const SentryWebpackPlugin = require('@sentry/webpack-plugin');
-const dotenv = require('dotenv');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const webpack = require('webpack');
-
-// Constants
-const outputPath = path.join(__dirname, 'webpack_output');
-const inTravis = (
-  process.env.TRAVIS !== undefined
-  && process.env.TRAVIS === 'true'
-);
-const sentryTokenIsSet = (
-  process.env.SENTRY_AUTH_TOKEN !== undefined
-  && process.env.SENTRY_AUTH_TOKEN !== ''
-);
-
-// Read environment variables
-dotenv.config({
-  path: path.join(__dirname, '..', '.env'),
-});
+const SentryWebpackPlugin = require("@sentry/webpack-plugin");
+const dotenv = require("dotenv");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const webpack = require("webpack");
 
 // Read the version
-const versionPath = path.join(__dirname, '..', 'data', 'version.json');
+const versionPath = path.join(__dirname, "..", "data", "version.json");
 if (!fs.existsSync(versionPath)) {
   throw new Error(`The version.json file does not exist at "${versionPath}".`);
 }
 const version = fs.readFileSync(versionPath).toString().trim();
 
-// Constants
-const filename = `main.${version}.min.js`;
+// Define the name of the compiled JS file
+// We want to include the version inside of the filename
+// (as opposed to other solutions like using a version query string)
+// This will:
+// 1) allow proxies to cache the file properly
+// 2) properly force a download of a new version in a reliable way
+// https://www.alainschlesser.com/bust-cache-content-hash/
+const bundleFilename = `main.${version}.min.js`;
+
+// Other constants
+const outputPath = path.join(__dirname, "webpack_output");
+const inTravis =
+  process.env.TRAVIS !== undefined && process.env.TRAVIS === "true";
+const sentryTokenIsSet =
+  process.env.SENTRY_AUTH_TOKEN !== undefined &&
+  process.env.SENTRY_AUTH_TOKEN !== "";
+
+// Read environment variables
+dotenv.config({
+  path: path.join(__dirname, "..", ".env"),
+});
 
 // Clear out the output subdirectory, as it might contain old JavaScript bundles and old source maps
-if (!process.env.WEBPACK_DEV_SERVER) {
+// (but don't do this if we are running the webpack dev server)
+if (process.env.WEBPACK_DEV_SERVER === "") {
   if (fs.existsSync(outputPath)) {
     const files = fs.readdirSync(outputPath);
     for (const file of files) {
@@ -47,29 +57,27 @@ if (!process.env.WEBPACK_DEV_SERVER) {
 
 module.exports = {
   // The entry file to bundle
-  entry: path.join(__dirname, 'src', 'main.ts'),
+  entry: path.join(__dirname, "src", "main.ts"),
 
   // Where to put the bundled file
   output: {
-    // By default, Webpack will output the file to a "dist" subdirectory
+    // By default, webpack will output the file to a "dist" subdirectory
     path: outputPath,
-    // (after WebPack is complete, a script will move the files to the "bundles" subdirectory)
+    // (after webpack is complete, a script will move the files to the "bundles" subdirectory)
 
-    // We want to include the version number inside of the file name so that browsers will be forced
-    // to retrieve the latest version (and not use a cached older version)
-    filename,
+    filename: bundleFilename,
   },
 
   resolve: {
-    extensions: ['.js', '.ts', '.json'],
+    extensions: [".js", ".ts", ".json"],
     symlinks: false, // Performance optimization
   },
 
-  // Webpack will display a warning unless we specify the mode
+  // webpack will display a warning unless we specify the mode
   // Production mode minifies the resulting JavaScript, reducing the file size by a huge factor
   // However, production mode takes a lot longer to pack than development mode,
   // so we only enable it on the real web server so that we can have speedy development
-  mode: os.hostname() === 'hanabi-live-server' ? 'production' : 'development',
+  mode: os.hostname() === "hanabi-live-server" ? "production" : "development",
 
   // Loaders are transformations that are applied on the source code of a module
   // https://webpack.js.org/concepts/loaders/
@@ -78,14 +86,14 @@ module.exports = {
       // All files with a ".ts" extension (TypeScript files) will be handled by "ts-loader"
       {
         test: /\.ts$/,
-        include: path.join(__dirname, 'src'),
-        loader: 'ts-loader',
+        include: path.join(__dirname, "src"),
+        loader: "ts-loader",
       },
       // All files with a ".js" extension (JavaScript libraries) need to import other source maps
       {
         test: /\.js$/,
-        enforce: 'pre',
-        use: ['source-map-loader'],
+        enforce: "pre",
+        use: ["source-map-loader"],
       },
     ],
   },
@@ -95,16 +103,16 @@ module.exports = {
     // https://webpack.js.org/plugins/provide-plugin/
     new webpack.ProvidePlugin({
       // The codebase and the Tooltipster library uses "$" to invoke jQuery
-      $: 'jquery',
+      $: "jquery",
     }),
   ],
 
   // Ignore the warnings that recommend splitting up the codebase into separate bundles
   stats: {
     warningsFilter: [
-      'The following asset(s) exceed the recommended size limit',
-      'The following entrypoint(s) combined asset size exceeds the recommended limit',
-      'You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.',
+      "The following asset(s) exceed the recommended size limit",
+      "The following entrypoint(s) combined asset size exceeds the recommended limit",
+      "You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.",
     ],
   },
 
@@ -113,15 +121,21 @@ module.exports = {
   // Note that enabling source maps will not cause the end-user to download them unless they
   // actually open the developer tools in their browser
   // https://stackoverflow.com/questions/44315460/when-do-browsers-download-sourcemaps
-  devtool: 'source-map',
+  devtool: "source-map",
+
+  // Ignore the "node_modules" folder as a performance optimization
+  // https://webpack.js.org/configuration/watch/
+  watchOptions: {
+    ignored: /node_modules/,
+  },
 };
 
 if (!inTravis && sentryTokenIsSet) {
   if (module.exports.plugins === undefined) {
-    throw new Error('There are no existing plugins to append to.');
+    throw new Error("There are no existing plugins to append to.");
   }
   module.exports.plugins.push(
-    // In order for Sentry to use the source maps, we must use their custom Webpack plugin
+    // In order for Sentry to use the source maps, we must use their custom webpack plugin
     // This also uploads the packed file + source maps to Sentry
     // https://docs.sentry.io/platforms/javascript/sourcemaps/
     // (we don't want to upload anything in a development or testing environment)

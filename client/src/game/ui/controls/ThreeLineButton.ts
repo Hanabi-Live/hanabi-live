@@ -1,6 +1,6 @@
-import Konva from 'konva';
-import Button from './Button';
-import FitText from './FitText';
+import Konva from "konva";
+import Button from "./Button";
+import FitText from "./FitText";
 
 export default class ThreeLineButton extends Button {
   textElement1: Konva.Text;
@@ -25,9 +25,9 @@ export default class ThreeLineButton extends Button {
       width: w,
       height: 0.2 * h,
       fontSize: 0.2 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
-      align: 'center',
+      fontFamily: "Verdana",
+      fill: "white",
+      align: "center",
       text: config.text as string | undefined,
       listening: false,
     });
@@ -46,11 +46,7 @@ export default class ThreeLineButton extends Button {
     this.add(this.textElement3);
   }
 
-  setText(lines: {
-    line1?: string;
-    line2?: string;
-    line3?: string;
-  }) {
+  setText(lines: { line1?: string; line2?: string; line3?: string }): void {
     if (lines.line1 !== undefined) {
       this.textElement1.text(lines.line1);
     }
@@ -62,12 +58,12 @@ export default class ThreeLineButton extends Button {
     }
   }
 
-  setEnabled(enabled: boolean) {
+  setEnabled(enabled: boolean): void {
     if (enabled === this.enabled) {
       return;
     }
 
-    const color = enabled ? 'white' : '#444444';
+    const color = enabled ? "white" : "#444444";
     this.textElement1.fill(color);
     this.textElement2.fill(color);
     this.textElement3.fill(color);

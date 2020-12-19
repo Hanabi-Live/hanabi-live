@@ -31,7 +31,7 @@ func httpVariant(c *gin.Context) {
 
 	// Validate that it is a valid variant ID
 	var variantName string
-	if v, ok := variantsID[variantID]; !ok {
+	if v, ok := variantIDMap[variantID]; !ok {
 		http.Error(w, "Error: That is not a valid variant ID.", http.StatusBadRequest)
 		return
 	} else {
@@ -41,8 +41,8 @@ func httpVariant(c *gin.Context) {
 	// Get the stats for this variant
 	var variantStats VariantStatsRow
 	if v, err := models.VariantStats.Get(variantID); err != nil {
-		logger.Error("Failed to get the variant stats for variant "+
-			strconv.Itoa(variantID)+":", err)
+		logger.Error("Failed to get the variant stats for variant " +
+			strconv.Itoa(variantID) + ": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -75,7 +75,8 @@ func httpVariant(c *gin.Context) {
 	// Get additional stats (that are not part of the "variant_stats" table)
 	var stats Stats
 	if v, err := models.Games.GetVariantStats(variantID); err != nil {
-		logger.Error("Failed to get the stats for variant "+strconv.Itoa(variantID)+":", err)
+		logger.Error("Failed to get the stats for variant " + strconv.Itoa(variantID) + ": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -90,8 +91,8 @@ func httpVariant(c *gin.Context) {
 	timePlayed := ""
 	if stats.TimePlayed != 0 {
 		if v, err := secondsToDurationString(stats.TimePlayed); err != nil {
-			logger.Error("Failed to parse the duration of "+
-				"\""+strconv.Itoa(stats.TimePlayed)+"\" for the variant stats:", err)
+			logger.Error("Failed to parse the duration of " +
+				"\"" + strconv.Itoa(stats.TimePlayed) + "\" for the variant stats: " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -107,8 +108,9 @@ func httpVariant(c *gin.Context) {
 	timePlayedSpeedrun := ""
 	if stats.TimePlayedSpeedrun != 0 {
 		if v, err := secondsToDurationString(stats.TimePlayedSpeedrun); err != nil {
-			logger.Error("Failed to parse the duration of "+
-				"\""+strconv.Itoa(stats.TimePlayedSpeedrun)+"\" for the variant stats:", err)
+			logger.Error("Failed to parse the duration of " +
+				"\"" + strconv.Itoa(stats.TimePlayedSpeedrun) + "\" for the variant stats: " +
+				err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -123,7 +125,8 @@ func httpVariant(c *gin.Context) {
 	// Get recent games played on this variant
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsVariant(variantID, 50); err != nil {
-		logger.Error("Failed to get the game IDs for variant "+strconv.Itoa(variantID)+":", err)
+		logger.Error("Failed to get the game IDs for variant " + strconv.Itoa(variantID) + ": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -137,7 +140,7 @@ func httpVariant(c *gin.Context) {
 	// Get the games corresponding to these IDs
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the games from the database:", err)
+		logger.Error("Failed to get the games from the database: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -148,10 +151,10 @@ func httpVariant(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Variant Stats",
 
-		Name:               variantsID[variantID],
+		Name:               variantIDMap[variantID],
 		NumGames:           stats.NumGames,
 		TimePlayed:         timePlayed,
 		NumGamesSpeedrun:   stats.NumGamesSpeedrun,

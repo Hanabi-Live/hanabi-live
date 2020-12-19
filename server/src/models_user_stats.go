@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sort"
 	"strconv"
 
@@ -20,57 +19,16 @@ type UserStatsRow struct {
 	NumStrikeouts int          `json:"numStrikeouts"`
 }
 
-func NewUserStatsRow() UserStatsRow {
-	return UserStatsRow{
-		BestScores: NewBestScores(),
+func NewUserStatsRow() *UserStatsRow {
+	return &UserStatsRow{
+		NumGames:      0,
+		BestScores:    NewBestScores(),
+		AverageScore:  0,
+		NumStrikeouts: 0,
 	}
 }
 
-type BestScore struct {
-	NumPlayers   int     `json:"numPlayers"`
-	Score        int     `json:"score"`
-	Modifier     Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
-	DeckPlays    bool    `json:"deckPlays"`
-	EmptyClues   bool    `json:"emptyClues"`
-	OneExtraCard bool    `json:"oneExtraCard"`
-	OneLessCard  bool    `json:"oneLessCard"`
-	AllOrNothing bool    `json:"allOrNothing"`
-}
-
-func NewBestScores() []*BestScore {
-	bestScores := make([]*BestScore, 5) // From 2 to 6 players
-	for i := range bestScores {
-		// This will not work if written as "for i, bestScore :="
-		bestScores[i] = &BestScore{}
-		bestScores[i].NumPlayers = i + 2
-	}
-	return bestScores
-}
-
-func FillBestScores(bestScores []*BestScore) {
-	// The modifiers are stored as a bitmask in the database,
-	// so use the bitmask to set the boolean values
-	for i := range bestScores {
-		modifier := bestScores[i].Modifier
-		if modifier.HasFlag(ScoreModifierDeckPlays) {
-			bestScores[i].DeckPlays = true
-		}
-		if modifier.HasFlag(ScoreModifierEmptyClues) {
-			bestScores[i].EmptyClues = true
-		}
-		if modifier.HasFlag(ScoreModifierOneExtraCard) {
-			bestScores[i].OneExtraCard = true
-		}
-		if modifier.HasFlag(ScoreModifierOneLessCard) {
-			bestScores[i].OneLessCard = true
-		}
-		if modifier.HasFlag(ScoreModifierAllOrNothing) {
-			bestScores[i].AllOrNothing = true
-		}
-	}
-}
-
-func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
+func (*UserStats) Get(userID int, variantID int) (*UserStatsRow, error) {
 	stats := NewUserStatsRow()
 
 	if err := db.QueryRow(context.Background(), `
@@ -90,8 +48,8 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 			num_strikeouts
 		FROM user_stats
 		WHERE user_id = $1
-			AND variant = $2
-	`, userID, variant).Scan(
+			AND variant_id = $2
+	`, userID, variantID).Scan(
 		&stats.NumGames,
 		&stats.BestScores[0].Score, // 2-player
 		&stats.BestScores[0].Modifier,
@@ -105,7 +63,7 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 		&stats.BestScores[4].Modifier,
 		&stats.AverageScore,
 		&stats.NumStrikeouts,
-	); err == pgx.ErrNoRows {
+	); errors.Is(err, pgx.ErrNoRows) {
 		// This user has not played this variant before,
 		// so return a stats object that contains all zero values
 		return stats, nil
@@ -113,16 +71,19 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 		return stats, err
 	}
 
-	FillBestScores(stats.BestScores)
+	fillBestScores(stats.BestScores)
 
 	return stats, nil
 }
 
-func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
+func (*UserStats) GetAll(userID int) (map[int]*UserStatsRow, error) {
+	statsMap := make(map[int]*UserStatsRow)
+
 	// Get all of the statistics for this user (for every individual variant)
-	rows, err := db.Query(context.Background(), `
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT
-			variant,
+			variant_id,
 			num_games,
 			best_score2,
 			best_score2_mod,
@@ -138,16 +99,19 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			num_strikeouts
 		FROM user_stats
 		WHERE user_id = $1
-		ORDER BY variant ASC
-	`, userID)
+		ORDER BY variant_id ASC
+	`, userID); err != nil {
+		return statsMap, err
+	} else {
+		rows = v
+	}
 
 	// Go through the stats for each variant
-	statsMap := make(map[int]UserStatsRow)
 	for rows.Next() {
-		var variant int
+		var variantID int
 		stats := NewUserStatsRow()
-		if err2 := rows.Scan(
-			&variant,
+		if err := rows.Scan(
+			&variantID,
 			&stats.NumGames,
 			&stats.BestScores[0].Score, // 2-player
 			&stats.BestScores[0].Modifier,
@@ -161,24 +125,27 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			&stats.BestScores[4].Modifier,
 			&stats.AverageScore,
 			&stats.NumStrikeouts,
-		); err2 != nil {
-			return nil, err2
+		); err != nil {
+			return statsMap, err
 		}
 
-		FillBestScores(stats.BestScores)
+		fillBestScores(stats.BestScores)
 
-		statsMap[variant] = stats
+		statsMap[variantID] = stats
 	}
 
-	if rows.Err() != nil {
-		return nil, err
+	if err := rows.Err(); err != nil {
+		return statsMap, err
 	}
 	rows.Close()
 
 	return statsMap, nil
 }
 
-func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
+// Update inserts or updates the row for the user's stats
+// The stats passed in as an argument do not have to contain "NumGames", "AverageScore",
+// or "NumStrikeouts"; those will be calculated from the database
+func (*UserStats) Update(userID int, variantID int, stats *UserStatsRow) error {
 	// Validate that the BestScores slice contains 5 entries
 	if len(stats.BestScores) != 5 {
 		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
@@ -191,15 +158,20 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 		SELECT COUNT(user_id)
 		FROM user_stats
 		WHERE user_id = $1
-			AND variant = $2
-	`, userID, variant).Scan(&numRows); err != nil {
+			AND variant_id = $2
+	`, userID, variantID).Scan(&numRows); err != nil {
 		return err
+	}
+	if numRows > 1 {
+		return errors.New("found " + strconv.Itoa(numRows) +
+			" rows in the \"user_stats\" table for user " + strconv.Itoa(userID) +
+			" (instead of 1 row)")
 	}
 	if numRows == 0 {
 		if _, err := db.Exec(context.Background(), `
-			INSERT INTO user_stats (user_id, variant)
+			INSERT INTO user_stats (user_id, variant_id)
 			VALUES ($1, $2)
-		`, userID, variant); err != nil {
+		`, userID, variantID); err != nil {
 			return err
 		}
 	}
@@ -215,7 +187,7 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 						JOIN game_participants
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = $1
-						AND games.variant = $2
+						AND games.variant_id = $2
 						AND games.speedrun = FALSE
 				),
 				best_score2 = $3,
@@ -239,7 +211,7 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = $1
 						AND games.score != 0
-						AND games.variant = $2
+						AND games.variant_id = $2
 						AND games.speedrun = FALSE
 				),
 				num_strikeouts = (
@@ -249,14 +221,14 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = $1
 						AND games.score = 0
-						AND games.variant = $2
+						AND games.variant_id = $2
 						AND games.speedrun = FALSE
 				)
 			WHERE user_id = $1
-				AND variant = $2
+				AND variant_id = $2
 		`,
 		userID, // num_games
-		variant,
+		variantID,
 		stats.BestScores[0].Score, // 2-player
 		stats.BestScores[0].Modifier,
 		stats.BestScores[1].Score, // 3-player
@@ -278,18 +250,23 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	}
 
 	// Get all of the users
-	rows, err := db.Query(context.Background(), "SELECT id FROM users")
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), "SELECT id FROM users"); err != nil {
+		return err
+	} else {
+		rows = v
+	}
 
-	var userIDs []int
+	userIDs := make([]int, 0)
 	for rows.Next() {
 		var userID int
-		if err2 := rows.Scan(&userID); err2 != nil {
-			return err2
+		if err := rows.Scan(&userID); err != nil {
+			return err
 		}
 		userIDs = append(userIDs, userID)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return err
 	}
 	rows.Close()
@@ -298,117 +275,151 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	sort.Slice(userIDs, func(i, j int) bool {
 		return userIDs[i] < userIDs[j]
 	})
-	fmt.Println("Total users:", len(userIDs))
-	fmt.Println("(From user " + strconv.Itoa(userIDs[0]) + " " +
+	logger.Debug("Total users: " + strconv.Itoa(len(userIDs)))
+	logger.Debug("(From user " + strconv.Itoa(userIDs[0]) + " " +
 		"to user " + strconv.Itoa(userIDs[len(userIDs)-1]) + ".)")
 
 	// Go through each user
 	for _, userID := range userIDs {
-		fmt.Println("Updating user:", userID)
-		for variant := 0; variant <= highestVariantID; variant++ {
-			// Check to see if this user has played any games of this variant
-			var numRows int
-			if err := db.QueryRow(context.Background(), `
-				SELECT COUNT(game_participants.game_id)
-				FROM games
-					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE game_participants.user_id = $1
-					AND games.variant = $2
-			`, userID, variant).Scan(&numRows); err != nil {
-				return err
+		logger.Debug("Updating user: " + strconv.Itoa(userID))
+
+		// Get the game IDs for this player
+		var gameIDs []int
+		if v, err := models.Games.GetGameIDsUser(userID, 0, 0); err != nil {
+			return err
+		} else {
+			gameIDs = v
+		}
+
+		// Get the history for these game IDs
+		var gameHistoryList []*GameHistory
+		if v, err := models.Games.GetHistory(gameIDs); err != nil {
+			return err
+		} else {
+			gameHistoryList = v
+		}
+
+		// Calculate their best scores for every variant
+		statsMap := make(map[int]*UserStatsRow)
+		for variantID := 0; variantID <= highestVariantID; variantID++ {
+			// Go through the history, looking for games of this specific variant
+			stats := NewUserStatsRow()
+			totalScore := 0
+			for _, gameHistory := range gameHistoryList {
+				variant := variants[gameHistory.Options.VariantName]
+				if variant.ID != variantID {
+					continue
+				}
+
+				stats.NumGames++
+				totalScore += gameHistory.Score
+				if gameHistory.Score == 0 {
+					stats.NumStrikeouts++
+				}
+
+				bestScoresIndex := gameHistory.Options.NumPlayers - 2
+				bestScore := stats.BestScores[bestScoresIndex]
+				modifier := gameHistory.Options.GetModifier()
+				thisScore := &BestScore{ // nolint: exhaustivestruct
+					NumPlayers: gameHistory.Options.NumPlayers,
+					Score:      gameHistory.Score,
+					Modifier:   modifier,
+				}
+				if thisScore.IsBetterThan(bestScore) {
+					bestScore.Score = gameHistory.Score
+					bestScore.Modifier = modifier
+				}
 			}
-			if numRows == 0 {
+
+			if stats.NumGames == 0 {
 				// We don't need to insert a new row for this variant
 				continue
 			}
 
-			// Update scores for players 2 through 6
-			stats := NewUserStatsRow()
-			for numPlayers := 2; numPlayers <= 6; numPlayers++ {
-				overallBestScore := 0
-				var overallBestScoreMod Bitmask
+			stats.AverageScore = float64(totalScore) / float64(stats.NumGames)
 
-				// Go through each modifier
-				var modifier Bitmask
-				for modifier = 0; modifier <= 7; modifier++ {
-					// Get the score for this player count and modifier
-					SQLString := `
-						/*
-						 * We enclose this query in an "COALESCE" so that it defaults to 0
-						 * (instead of NULL) if the user has not played any games in this variant
-						 */
-						SELECT COALESCE(MAX(games.score), 0)
-						FROM games
-							JOIN game_participants
-								ON game_participants.game_id = games.id
-						WHERE game_participants.user_id = $1
-							AND games.variant = $2
-							AND games.num_players = $3
-					`
+			statsMap[variantID] = stats
+		}
 
-					SQLString += "AND games.deck_plays = "
-					if modifier.HasFlag(ScoreModifierDeckPlays) {
-						SQLString += "TRUE "
-					} else {
-						SQLString += "FALSE "
-					}
-
-					SQLString += "AND games.empty_clues = "
-					if modifier.HasFlag(ScoreModifierEmptyClues) {
-						SQLString += "TRUE "
-					} else {
-						SQLString += "FALSE "
-					}
-
-					SQLString += "AND games.one_extra_card = "
-					if modifier.HasFlag(ScoreModifierOneExtraCard) {
-						SQLString += "TRUE "
-					} else {
-						SQLString += "FALSE "
-					}
-
-					SQLString += "AND games.one_less_card = "
-					if modifier.HasFlag(ScoreModifierOneLessCard) {
-						SQLString += "TRUE "
-					} else {
-						SQLString += "FALSE "
-					}
-
-					SQLString += "AND games.all_or_nothing = "
-					if modifier.HasFlag(ScoreModifierAllOrNothing) {
-						SQLString += "TRUE "
-					} else {
-						SQLString += "FALSE "
-					}
-
-					var bestScore int
-					if err := db.QueryRow(
-						context.Background(),
-						SQLString,
-						userID,
-						variant,
-						numPlayers,
-					).Scan(&bestScore); err != nil {
-						return err
-					}
-
-					if bestScore > overallBestScore {
-						overallBestScore = bestScore
-						overallBestScoreMod = modifier
-					}
-				}
-
-				i := numPlayers - 2
-				stats.BestScores[i].Score = overallBestScore
-				stats.BestScores[i].Modifier = overallBestScoreMod
-			}
-
-			// Insert a new row for this user + variant
-			if err := us.Update(userID, variant, stats); err != nil {
+		// Bulk inserts rows for every variant that this user has played
+		if len(statsMap) > 0 {
+			if err := us.BulkInsert(userID, statsMap); err != nil {
 				return err
 			}
 		}
 	}
 
 	return nil
+}
+
+func (*UserStats) BulkInsert(userID int, statsMap map[int]*UserStatsRow) error {
+	SQLString := `
+		INSERT INTO user_stats (
+			user_id,
+			variant_id,
+			num_games,
+			best_score2,
+			best_score2_mod,
+			best_score3,
+			best_score3_mod,
+			best_score4,
+			best_score4_mod,
+			best_score5,
+			best_score5_mod,
+			best_score6,
+			best_score6_mod,
+			average_score,
+			num_strikeouts
+		)
+		VALUES %s
+	`
+	numArgsPerRow := 15
+	valueArgs := make([]interface{}, 0, numArgsPerRow*len(statsMap))
+	for variantID, stats := range statsMap {
+		valueArgs = append(
+			valueArgs,
+			userID,
+			variantID,
+			stats.NumGames,
+			stats.BestScores[0].Score,
+			stats.BestScores[0].Modifier,
+			stats.BestScores[1].Score,
+			stats.BestScores[1].Modifier,
+			stats.BestScores[2].Score,
+			stats.BestScores[2].Modifier,
+			stats.BestScores[3].Score,
+			stats.BestScores[3].Modifier,
+			stats.BestScores[4].Score,
+			stats.BestScores[4].Modifier,
+			stats.AverageScore,
+			stats.NumStrikeouts,
+		)
+	}
+	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(statsMap))
+
+	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
+	return err
+}
+
+func fillBestScores(bestScores []*BestScore) {
+	// The modifiers are stored as a bitmask in the database,
+	// so use the bitmask to set the boolean values
+	for i := range bestScores {
+		modifier := bestScores[i].Modifier
+		if modifier.HasFlag(ScoreModifierDeckPlays) {
+			bestScores[i].DeckPlays = true
+		}
+		if modifier.HasFlag(ScoreModifierEmptyClues) {
+			bestScores[i].EmptyClues = true
+		}
+		if modifier.HasFlag(ScoreModifierOneExtraCard) {
+			bestScores[i].OneExtraCard = true
+		}
+		if modifier.HasFlag(ScoreModifierOneLessCard) {
+			bestScores[i].OneLessCard = true
+		}
+		if modifier.HasFlag(ScoreModifierAllOrNothing) {
+			bestScores[i].AllOrNothing = true
+		}
+	}
 }

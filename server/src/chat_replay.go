@@ -1,25 +1,27 @@
 package main
 
 import (
+	"context"
 	"sort"
 	"strconv"
 )
 
 // /suggest
-func chatSuggest(s *Session, d *CommandData, t *Table) {
+func chatSuggest(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(ChatCommandNotReplayFail, d.Room)
+		chatServerSend(ctx, NotReplayFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	// Validate that they only sent one argument
 	if len(d.Args) != 1 {
-		chatServerSend("The format of the /suggest command is: /suggest [turn]", d.Room)
+		msg := "The format of the /suggest command is: /suggest [turn]"
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -32,7 +34,7 @@ func chatSuggest(s *Session, d *CommandData, t *Table) {
 		} else {
 			msg = "The /suggest command only accepts integers."
 		}
-		chatServerSend(msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -40,22 +42,22 @@ func chatSuggest(s *Session, d *CommandData, t *Table) {
 }
 
 // /tags
-func chatTags(s *Session, d *CommandData, t *Table) {
+func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(ChatCommandNotReplayFail, d.Room)
+		chatServerSend(ctx, NotReplayFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	// Get the tags from the database
 	var tags []string
 	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
-		logger.Error("Failed to get the tags for game ID "+
-			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
+		logger.Error("Failed to get the tags for game ID " +
+			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -63,7 +65,8 @@ func chatTags(s *Session, d *CommandData, t *Table) {
 	}
 
 	if len(tags) == 0 {
-		chatServerSend("There are not yet any tags for this game.", d.Room)
+		msg := "There are not yet any tags for this game."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		return
 	}
 
@@ -71,9 +74,10 @@ func chatTags(s *Session, d *CommandData, t *Table) {
 	// lowercase
 	sort.Strings(tags)
 
-	chatServerSend("The list of tags for this game are as follows:", d.Room)
+	msg := "The list of tags for this game are as follows:"
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	for i, tag := range tags {
 		msg := strconv.Itoa(i+1) + ") " + tag
-		chatServerSend(msg, d.Room)
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 }

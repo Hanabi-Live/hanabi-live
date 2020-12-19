@@ -12,7 +12,7 @@ func httpLocalhostTimeLeft(c *gin.Context) {
 
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
-		logger.Error("Failed to get the time left:", err)
+		logger.Error("Failed to get the time left: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

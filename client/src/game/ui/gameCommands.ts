@@ -2,32 +2,34 @@
 // The client also sends these messages to itself in order to emulate actions coming from the server
 // for e.g. in-game replays
 
-import { createStore } from 'redux';
-import { initArray, trimReplaySuffixFromURL } from '../../misc';
-import * as sentry from '../../sentry';
-import { getVariant } from '../data/gameData';
-import initialState from '../reducers/initialStates/initialState';
-import stateReducer from '../reducers/stateReducer';
-import { deckRules } from '../rules';
-import { GameAction, ActionIncludingHypothetical } from '../types/actions';
-import CardIdentity from '../types/CardIdentity';
-import GameMetadata from '../types/GameMetadata';
-import LegacyGameMetadata from '../types/LegacyGameMetadata';
-import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import Spectator from '../types/Spectator';
-import SpectatorNote from '../types/SpectatorNote';
-import State from '../types/State';
-import * as arrows from './arrows';
-import globals from './globals';
-import * as hypothetical from './hypothetical';
-import * as notes from './notes';
-import StateObserver from './reactive/StateObserver';
-import * as replay from './replay';
-import * as timer from './timer';
-import * as turn from './turn';
-import uiInit from './uiInit';
+import { createStore } from "redux";
+import { initArray, parseIntSafe, setBrowserAddressBarPath } from "../../misc";
+import * as sentry from "../../sentry";
+import { getVariant } from "../data/gameData";
+import initialState from "../reducers/initialStates/initialState";
+import stateReducer from "../reducers/stateReducer";
+import { handRules, hyphenatedRules, statsRules, turnRules } from "../rules";
+import { ActionIncludingHypothetical, GameAction } from "../types/actions";
+import CardIdentity from "../types/CardIdentity";
+import GameMetadata from "../types/GameMetadata";
+import InitData from "../types/InitData";
+import ReplayArrowOrder from "../types/ReplayArrowOrder";
+import Spectator from "../types/Spectator";
+import SpectatorNote from "../types/SpectatorNote";
+import State from "../types/State";
+import * as arrows from "./arrows";
+import getCardOrStackBase from "./getCardOrStackBase";
+import globals from "./globals";
+import * as hypothetical from "./hypothetical";
+import * as notes from "./notes";
+import StateObserver from "./reactive/StateObserver";
+import * as replay from "./replay";
+import * as stats from "./stats";
+import * as timer from "./timer";
+import uiInit from "./uiInit";
 
 // Define a command handler map
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
 export default commands;
@@ -36,27 +38,22 @@ export default commands;
 // Command handlers
 // ----------------
 
-// Received when it is our turn
-commands.set('yourTurn', () => {
-  turn.begin();
-});
-
 // Received when the server wants to force the client to go back to the lobby
-commands.set('boot', () => {
+commands.set("boot", () => {
   timer.stop();
   globals.game!.hide();
 });
 
 // Updates the clocks to show how much time people are taking
 // or how much time people have left
-commands.set('clock', (data: timer.ClockData) => {
+commands.set("clock", (data: timer.ClockData) => {
   timer.update(data);
 });
 
 interface ConnectedData {
   list: boolean[];
 }
-commands.set('connected', (data: ConnectedData) => {
+commands.set("connected", (data: ConnectedData) => {
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
@@ -70,9 +67,9 @@ interface CardIdentitiesData {
   tableID: number;
   cardIdentities: CardIdentity[];
 }
-commands.set('cardIdentities', (data: CardIdentitiesData) => {
+commands.set("cardIdentities", (data: CardIdentitiesData) => {
   globals.store!.dispatch({
-    type: 'cardIdentities',
+    type: "cardIdentities",
     cardIdentities: data.cardIdentities,
   });
 });
@@ -81,19 +78,31 @@ interface FinishOngoingGameData {
   databaseID: number;
   sharedReplayLeader: string;
 }
-commands.set('finishOngoingGame', (data: FinishOngoingGameData) => {
+commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
+  // Zero out the user-created efficiency modifier, if any
+  // In a shared replay, this must be synced with the shared replay leader
   globals.store!.dispatch({
-    type: 'finishOngoingGame',
+    type: "setEffMod",
+    mod: 0,
+  });
+
+  // Set the browser address bar
+  setBrowserAddressBarPath(`/shared-replay/${data.databaseID}`);
+
+  // Begin the process of converting an ongoing game to a shared replay
+  globals.store!.dispatch({
+    type: "finishOngoingGame",
     databaseID: data.databaseID,
     sharedReplayLeader: data.sharedReplayLeader,
+    datetimeFinished: new Date().toString(),
   });
 });
 
 interface HypotheticalData {
-  drawnCardsShown: boolean;
+  showDrawnCards: boolean;
   actions: string[];
 }
-commands.set('hypothetical', (data: HypotheticalData) => {
+commands.set("hypothetical", (data: HypotheticalData) => {
   // We are joining an ongoing shared replay that is currently playing through a hypothetical line
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
   // have taken place
@@ -106,54 +115,51 @@ commands.set('hypothetical', (data: HypotheticalData) => {
   }
 
   globals.store!.dispatch({
-    type: 'hypoStart',
-    drawnCardsShown: data.drawnCardsShown,
+    type: "hypoStart",
+    showDrawnCards: data.showDrawnCards,
     actions,
   });
 });
 
-commands.set('hypoAction', (data: string) => {
+commands.set("hypoAction", (data: string) => {
   const action = JSON.parse(data) as ActionIncludingHypothetical;
   globals.store!.dispatch({
-    type: 'hypoAction',
+    type: "hypoAction",
     action,
   });
   hypothetical.checkToggleRevealedButton(action);
 });
 
-commands.set('hypoBack', () => {
+commands.set("hypoBack", () => {
   globals.store!.dispatch({
-    type: 'hypoBack',
+    type: "hypoBack",
   });
 });
 
-commands.set('hypoEnd', () => {
+commands.set("hypoEnd", () => {
   hypothetical.end();
 });
 
-interface HypoDrawnCardsShownData {
-  drawnCardsShown: boolean;
+interface HypoShowDrawnCardsData {
+  showDrawnCards: boolean;
 }
-commands.set('hypoDrawnCardsShown', (data: HypoDrawnCardsShownData) => {
+commands.set("hypoShowDrawnCards", (data: HypoShowDrawnCardsData) => {
   globals.store!.dispatch({
-    type: 'hypoDrawnCardsShown',
-    drawnCardsShown: data.drawnCardsShown,
+    type: "hypoShowDrawnCards",
+    showDrawnCards: data.showDrawnCards,
   });
 });
 
-commands.set('hypoStart', () => {
+commands.set("hypoStart", () => {
   hypothetical.start();
 });
 
-commands.set('init', (metadata: LegacyGameMetadata) => {
+commands.set("init", (metadata: InitData) => {
   // Data contains the game settings for the game we are entering;
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
 
-  // Copy it the legacy metadata to the globals
-  // TODO: remove this
-  globals.metadata = metadata;
-
+  setURL(metadata);
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -165,17 +171,21 @@ interface NoteData {
   order: number;
   notes: SpectatorNote[];
 }
-commands.set('note', (data: NoteData) => {
+commands.set("note", (data: NoteData) => {
   // If we are an active player and we got this message, something has gone wrong
   if (globals.state.playing) {
     return;
   }
 
-  // Store the combined notes for this card
-  globals.allNotes.set(data.order, data.notes);
+  globals.store!.dispatch({
+    type: "receiveNote",
+    order: data.order,
+    notes: data.notes,
+  });
 
   // Set the note indicator
-  notes.setCardIndicator(data.order);
+  const card = getCardOrStackBase(data.order);
+  card.setNoteIndicator();
 });
 
 // Received when:
@@ -187,39 +197,21 @@ interface NoteListData {
   notes: NoteList[];
 }
 interface NoteList {
-  id: number;
   name: string;
   notes: string[];
 }
-commands.set('noteList', (data: NoteListData) => {
-  // Reset any existing notes
-  // (we could be getting a fresh copy of all notes after an ongoing game has ended)
-  for (let i = 0; i < globals.allNotes.size; i++) {
-    globals.allNotes.set(i, []);
-  }
-
-  // Data comes from the server as an array of player & spectator notes
-  // We want to convert this to an array of objects for each card
+commands.set("noteList", (data: NoteListData) => {
+  const names = [] as string[];
+  const noteTextLists = [] as string[][];
   for (const noteList of data.notes) {
-    // If we are a spectator, copy our notes from the combined list
-    if (
-      !globals.state.playing
-      && !globals.state.finished
-      && noteList.name === globals.state.metadata.ourUsername
-    ) {
-      globals.ourNotes.clear();
-      noteList.notes.forEach((note, i) => globals.ourNotes.set(i, note));
-    }
-
-    for (let i = 0; i < noteList.notes.length; i++) {
-      const note = noteList.notes[i];
-      globals.allNotes.get(i)!.push({
-        name: noteList.name,
-        note,
-      });
-    }
+    names.push(noteList.name);
+    noteTextLists.push(noteList.notes);
   }
-
+  globals.store!.dispatch({
+    type: "noteList",
+    names,
+    noteTextLists,
+  });
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
 });
@@ -229,10 +221,12 @@ commands.set('noteList', (data: NoteListData) => {
 interface NoteListPlayerData {
   notes: string[];
 }
-commands.set('noteListPlayer', (data: NoteListPlayerData) => {
+commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   // Store our notes
-  globals.ourNotes.clear();
-  data.notes.forEach((note, i) => globals.ourNotes.set(i, note));
+  globals.store!.dispatch({
+    type: "noteListPlayer",
+    texts: data.notes,
+  });
 
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
@@ -240,7 +234,7 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Check for special notes
   const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
   for (let i = 0; i <= indexOfLastDrawnCard; i++) {
-    const card = globals.deck[i];
+    const card = getCardOrStackBase(i);
     card.checkSpecialNote();
   }
 
@@ -255,7 +249,7 @@ interface GameActionData {
   tableID: number;
   action: GameAction;
 }
-commands.set('gameAction', (data: GameActionData) => {
+commands.set("gameAction", (data: GameActionData) => {
   // Update the game state
   globals.store!.dispatch(data.action);
 });
@@ -264,17 +258,26 @@ interface GameActionListData {
   tableID: number;
   list: GameAction[];
 }
-commands.set('gameActionList', (data: GameActionListData) => {
+commands.set("gameActionList", (data: GameActionListData) => {
+  // Users can load a specific turn in a replay by using a URL hash
+  // e.g. "/replay/123#5"
+  // Record the hash before we load the UI (which will overwrite the hash with "#1",
+  // corresponding to the first turn)
+  let specificTurnString = null;
+  if (window.location.hash !== "") {
+    specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#"
+  }
+
   // The server has sent us the list of the game actions that have occurred in the game thus far
   // (in response to the "getGameInfo2" command)
   // Send this list to the reducers
   globals.store!.dispatch({
-    type: 'gameActionList',
+    type: "gameActionList",
     actions: data.list,
   });
 
-  if (validateReplayURL()) {
-    checkLoadSpecificReplayTurn();
+  if (specificTurnString !== null) {
+    loadSpecificReplayTurn(specificTurnString);
   }
 });
 
@@ -282,68 +285,49 @@ interface PauseData {
   active: boolean;
   playerIndex: number;
 }
-commands.set('pause', (data: PauseData) => {
+commands.set("pause", (data: PauseData) => {
   globals.store!.dispatch({
-    type: 'pause',
+    type: "pause",
     active: data.active,
     playerIndex: data.playerIndex,
   });
+});
+
+interface ReplayEfficiencyModData {
+  tableID: number;
+  mod: number;
+}
+commands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
+  if (
+    globals.state.replay.shared === null ||
+    // Shared replay leaders already set the efficiency after sending the "replayAction" message
+    globals.state.replay.shared.amLeader
+  ) {
+    return;
+  }
+
+  stats.setEfficiencyMod(data.mod);
 });
 
 // This is used in shared replays to highlight a specific card (or UI element)
 interface ReplayIndicatorData {
   order: ReplayArrowOrder;
 }
-commands.set('replayIndicator', (data: ReplayIndicatorData) => {
+commands.set("replayIndicator", (data: ReplayIndicatorData) => {
   if (
-    globals.state.replay.shared === null
+    globals.state.replay.shared === null ||
     // Shared replay leaders already drew the arrow after sending the "replayAction" message
-    || globals.state.replay.shared.amLeader
+    globals.state.replay.shared.amLeader ||
     // If we are not currently using the shared segments,
     // the arrow that the shared replay leader is highlighting will not be applicable
-    || !globals.state.replay.shared.useSharedSegments
+    !globals.state.replay.shared.useSharedSegments
   ) {
     return;
   }
 
-  if (data.order >= 0) {
-    // This is an arrow for a card
-    // Ensure that the card exists as a sanity-check
-    // (the server does not validate the order that the leader sends)
-    let card = globals.deck[data.order];
-    if (card === undefined) {
-      card = globals.stackBases[data.order - deckRules.totalCards(globals.variant)];
-    }
-    if (card === undefined) {
-      return;
-    }
-
-    arrows.toggle(card);
-  } else {
-    // This is an arrow for some other UI element
-    let element;
-    if (data.order === ReplayArrowOrder.Deck) {
-      element = globals.elements.deck;
-    } else if (data.order === ReplayArrowOrder.Turn) {
-      element = globals.elements.turnNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Score) {
-      element = globals.elements.scoreNumberLabel;
-    } else if (data.order === ReplayArrowOrder.MaxScore) {
-      element = globals.elements.maxScoreNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Clues) {
-      element = globals.elements.cluesNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Pace) {
-      element = globals.elements.paceNumberLabel;
-    } else if (data.order === ReplayArrowOrder.Efficiency) {
-      element = globals.elements.efficiencyNumberLabel;
-    } else if (data.order === ReplayArrowOrder.MinEfficiency) {
-      element = globals.elements.efficiencyNumberLabelMinNeeded;
-    } else {
-      console.warn('Received a "replayIndicator" for an unknown element.');
-      return;
-    }
-
-    arrows.toggle(element);
+  arrows.hideAll();
+  if (data.order !== ReplayArrowOrder.Nothing) {
+    arrows.toggle(data.order);
   }
 });
 
@@ -351,13 +335,13 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 interface ReplayLeaderData {
   name: string;
 }
-commands.set('replayLeader', (data: ReplayLeaderData) => {
+commands.set("replayLeader", (data: ReplayLeaderData) => {
   if (globals.state.replay.shared === null) {
     return;
   }
 
   globals.store!.dispatch({
-    type: 'replayLeader',
+    type: "replayLeader",
     name: data.name,
   });
 });
@@ -366,18 +350,23 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 interface ReplaySegmentData {
   segment: number;
 }
-commands.set('replaySegment', (data: ReplaySegmentData) => {
+commands.set("replaySegment", (data: ReplaySegmentData) => {
   // If we are the replay leader,
   // we will already have the shared segment set to be equal to what the server is broadcasting
-  if (globals.state.replay.shared === null || globals.state.replay.shared.amLeader) {
+  if (
+    globals.state.replay.shared === null ||
+    globals.state.replay.shared.amLeader
+  ) {
     return;
   }
 
-  if (typeof data.segment !== 'number' || data.segment < 0) {
-    throw new Error('Received an invalid segment from the "replaySegment" command.');
+  if (typeof data.segment !== "number" || data.segment < 0) {
+    throw new Error(
+      'Received an invalid segment from the "replaySegment" command.',
+    );
   }
   globals.store!.dispatch({
-    type: 'replaySharedSegment',
+    type: "replaySharedSegment",
     segment: data.segment,
   });
 });
@@ -386,7 +375,7 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
 interface ReplaySoundData {
   sound: string;
 }
-commands.set('replaySound', (data: ReplaySoundData) => {
+commands.set("replaySound", (data: ReplaySoundData) => {
   globals.game!.sounds.play(data.sound);
 });
 
@@ -395,7 +384,7 @@ export interface SpectatorsData {
   tableID: number;
   spectators: Spectator[];
 }
-commands.set('spectators', (data: SpectatorsData) => {
+commands.set("spectators", (data: SpectatorsData) => {
   // The shadowing index will be -1 if they are not shadowing a player
   // Convert this to null
   for (let i = 0; i < data.spectators.length; i++) {
@@ -405,25 +394,28 @@ commands.set('spectators', (data: SpectatorsData) => {
   }
 
   globals.store!.dispatch({
-    type: 'spectators',
+    type: "spectators",
     spectators: data.spectators,
   });
-});
-
-interface SoundData {
-  file: string;
-}
-commands.set('sound', (data: SoundData) => {
-  if (globals.lobby.settings.soundMove) {
-    globals.game!.sounds.play(data.file);
-  }
 });
 
 // -----------
 // Subroutines
 // -----------
 
-const initStateStore = (data: LegacyGameMetadata) => {
+function setURL(data: InitData) {
+  let path;
+  if (data.sharedReplay) {
+    path = `/shared-replay/${data.databaseID}`;
+  } else if (data.replay) {
+    path = `/replay/${data.databaseID}`;
+  } else {
+    path = `/game/${data.tableID}`;
+  }
+  setBrowserAddressBarPath(path, window.location.hash);
+}
+
+function initStateStore(data: InitData) {
   // Set the variant (as a helper reference)
   globals.variant = getVariant(data.options.variantName);
 
@@ -439,6 +431,12 @@ const initStateStore = (data: LegacyGameMetadata) => {
   }
 
   // Create the state store (using the Redux library)
+  const minEfficiency = statsRules.minEfficiency(
+    data.options.numPlayers,
+    turnRules.endGameLength(data.options, data.characterAssignments),
+    globals.variant,
+    handRules.cardsPerHand(data.options),
+  );
   const metadata: GameMetadata = {
     ourUsername: globals.lobby.username,
     options: data.options,
@@ -446,6 +444,12 @@ const initStateStore = (data: LegacyGameMetadata) => {
     ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
+
+    minEfficiency,
+    hardVariant: hyphenatedRules.hardVariant(globals.variant, minEfficiency),
+
+    hasCustomSeed: data.hasCustomSeed,
+    seed: data.seed,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
 
@@ -457,72 +461,41 @@ const initStateStore = (data: LegacyGameMetadata) => {
     window.state = globals.state;
   });
 
-  if (data.spectating) {
-    globals.store.dispatch({
-      type: 'spectating',
-    });
-  }
+  globals.store.dispatch({
+    type: "init",
+    spectating: data.spectating,
+    datetimeStarted: data.datetimeStarted.toString(),
+    datetimeFinished: data.datetimeFinished.toString(),
+    replay: data.replay,
+    sharedReplay: data.sharedReplay,
+    databaseID: data.databaseID,
+    sharedReplaySegment: data.sharedReplaySegment,
+    sharedReplayLeader: data.sharedReplayLeader,
+    paused: data.paused,
+    pausePlayerIndex: data.pausePlayerIndex,
+    efficiencyModifier: data.sharedReplayEffMod,
+  });
 
-  if (data.replay) {
-    globals.store.dispatch({
-      type: 'replayEnterDedicated',
-      shared: data.sharedReplay,
-      databaseID: data.databaseID,
-      sharedReplaySegment: data.sharedReplaySegment,
-      sharedReplayLeader: data.sharedReplayLeader,
-    });
+  // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
+  // We must wait until the game is initialized first,
+  // because the "hypoEnter" handler requires there to be a valid state
+}
 
-    // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
-    // We must wait until the game is initialized first,
-    // because the "hypoEnter" handler requires there to be a valid state
-  }
-
-  if (data.paused) {
-    globals.store.dispatch({
-      type: 'pause',
-      active: true,
-      playerIndex: data.pausePlayerIndex,
-    });
-  }
-};
-
-// Validate that the database ID in the URL matches the one in the game that just loaded
-// (e.g. "/replay/150" for database game 150)
-const validateReplayURL = () => {
-  const match1 = window.location.pathname.match(/\/replay\/(\d+).*/);
-  const match2 = window.location.pathname.match(/\/shared-replay\/(\d+).*/);
-  let databaseID;
-  if (match1 && globals.state.finished && globals.state.replay.shared === null) {
-    databaseID = parseInt(match1[1], 10);
-  } else if (match2 && globals.state.finished && globals.state.replay.shared !== null) {
-    databaseID = parseInt(match2[1], 10);
-  }
-  if (databaseID === globals.state.replay.databaseID) {
-    return true;
-  }
-
-  trimReplaySuffixFromURL();
-  return false;
-};
-
-// Check to see if we are loading a specific replay to a specific turn
-// (as specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
-const checkLoadSpecificReplayTurn = () => {
-  // If we get here, we should be in a replay that matches the database ID
-  let segment;
-  const match1 = window.location.pathname.match(/\/replay\/\d+\/(\d+)/);
-  const match2 = window.location.pathname.match(/\/shared-replay\/\d+\/(\d+)/);
-  // We minus one from the segment since turns are represented to the user as starting from 1
-  // (instead of from 0)
-  if (match1) {
-    segment = parseInt(match1[1], 10) - 1;
-  } else if (match2) {
-    segment = parseInt(match2[1], 10) - 1;
-  } else {
+// We might need to go to a specific turn
+// (e.g. we loaded a URL of "http://localhost/replay/123#5")
+function loadSpecificReplayTurn(turnString: string) {
+  let turn = parseIntSafe(turnString);
+  if (Number.isNaN(turn)) {
+    // The turn is not a number, so ignore it
     return;
   }
-  replay.goToSegment(segment, true);
-};
+
+  // We minus one from the turn since turns are represented to the user as starting from 1
+  // (instead of from 0)
+  turn -= 1;
+
+  replay.goToSegment(turn, true); // A turn is an approximation for a segment
+}
 
 // Allow TypeScript to modify the browser's "window" object
 declare global {

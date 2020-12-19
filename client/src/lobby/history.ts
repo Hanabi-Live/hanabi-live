@@ -1,37 +1,34 @@
 // The screens that show past games and other scores
 
-import { getVariant, VARIANTS } from '../game/data/gameData';
-import Variant from '../game/types/Variant';
-import globals from '../globals';
-import { timerFormatter, dateTimeFormatter } from '../misc';
-import Options from '../types/Options';
-import * as nav from './nav';
-import tablesDraw from './tablesDraw';
-import GameHistory from './types/GameHistory';
-import Screen from './types/Screen';
-import * as usersDraw from './usersDraw';
+import { getVariant, VARIANTS } from "../game/data/gameData";
+import Variant from "../game/types/Variant";
+import globals from "../globals";
+import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
+import Options from "../types/Options";
+import * as nav from "./nav";
+import tablesDraw from "./tablesDraw";
+import GameHistory from "./types/GameHistory";
+import Screen from "./types/Screen";
+import * as usersDraw from "./usersDraw";
 
 // Constants
 const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
-  animation: 'grow',
+  animation: "grow",
   contentAsHTML: true,
   delay: 0,
-  theme: [
-    'tooltipster-shadow',
-    'tooltipster-shadow-big',
-  ],
+  theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
 };
 
-export const init = () => {
-  $('#lobby-history-show-more').on('click', () => {
+export function init(): void {
+  $("#lobby-history-show-more").on("click", () => {
     globals.showMoreHistoryClicked = true;
     let command: string;
     let offset: number;
     if (globals.currentScreen === Screen.History) {
-      command = 'historyGet';
+      command = "historyGet";
       offset = Object.keys(globals.history).length;
     } else if (globals.currentScreen === Screen.HistoryFriends) {
-      command = 'historyFriendsGet';
+      command = "historyFriendsGet";
       offset = Object.keys(globals.historyFriends).length;
     } else {
       return;
@@ -41,74 +38,78 @@ export const init = () => {
       amount: 10,
     });
   });
-};
+}
 
-export const show = () => {
+export function show(): void {
   globals.currentScreen = Screen.History;
 
-  $('#lobby-history').show();
-  $('#lobby-top-half').hide();
-  $('#lobby-separator').hide();
-  $('#lobby-bottom-half').hide();
+  $("#lobby-history").show();
+  $("#lobby-top-half").addClass("hidden");
+  $("#lobby-separator").addClass("hidden");
+  $("#lobby-bottom-half").addClass("hidden");
+  $("#lobby-small-screen-buttons").addClass("hidden");
 
   // Update the nav
-  nav.show('history');
+  nav.show("history");
   if (globals.friends.length === 0) {
-    $('#nav-buttons-history-show-friends').hide();
+    $("#nav-buttons-history-show-friends").hide();
   } else {
-    $('#nav-buttons-history-show-friends').show();
+    $("#nav-buttons-history-show-friends").show();
   }
 
   // It might be hidden if we are returning from the "Show History of Friends" view
-  $('#lobby-history-show-all').show();
-  $('#lobby-history-show-all').attr('href', `/history/${globals.username}`);
+  $("#lobby-history-show-all").show();
+  $("#lobby-history-show-all").attr("href", `/history/${globals.username}`);
 
   // Draw the history table
   draw(false);
-};
+}
 
-export const hide = () => {
+export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
 
-  $('#lobby-history').hide();
-  $('#lobby-history-other-scores').hide();
-  $('#lobby-top-half').show();
-  $('#lobby-separator').show();
-  $('#lobby-bottom-half').show();
-  nav.show('games');
-};
+  $("#lobby-history").hide();
+  $("#lobby-history-other-scores").hide();
+  $("#lobby-top-half").removeClass("hidden");
+  $("#lobby-separator").removeClass("hidden");
+  $("#lobby-bottom-half").removeClass("hidden");
+  $("#lobby-small-screen-buttons").removeClass("hidden");
+  nav.show("lobby");
+}
 
-export const draw = (friends: boolean) => {
-  const tbody = $('#lobby-history-table-tbody');
+export function draw(friends: boolean): void {
+  const tbody = $("#lobby-history-table-tbody");
 
   // Clear all of the existing rows
-  tbody.html('');
+  tbody.html("");
 
   // JavaScript keys come as strings, so we need to convert them to integers
   let ids: number[];
   if (!friends) {
-    ids = Object.keys(globals.history).map((i) => parseInt(i, 10));
+    ids = Object.keys(globals.history).map((i) => parseIntSafe(i));
   } else {
-    ids = Object.keys(globals.historyFriends).map((i) => parseInt(i, 10));
+    ids = Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
   }
 
   // Handle if the user has no history
   if (ids.length === 0) {
-    $('#lobby-history-no').show();
+    $("#lobby-history-no").show();
     if (!friends) {
-      $('#lobby-history-no').html('No game history. Play some games!');
+      $("#lobby-history-no").html("No game history. Play some games!");
     } else {
-      $('#lobby-history-no').html('None of your friends have played any games yet.');
+      $("#lobby-history-no").html(
+        "None of your friends have played any games yet.",
+      );
     }
-    $('#lobby-history').addClass('align-center-v');
-    $('#lobby-history-table-container').hide();
+    $("#lobby-history").addClass("align-center-v");
+    $("#lobby-history-table-container").hide();
     return;
   }
-  $('#lobby-history-no').hide();
-  $('#lobby-history').removeClass('align-center-v');
-  $('#lobby-history-table-container').show();
+  $("#lobby-history-no").hide();
+  $("#lobby-history").removeClass("align-center-v");
+  $("#lobby-history-table-container").show();
 
   // Sort the game IDs in reverse order (so that the most recent ones are near the top)
   // By default, JavaScript will sort them in alphabetical order,
@@ -127,47 +128,49 @@ export const draw = (friends: boolean) => {
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
-    const row = $('<tr>');
+    const row = $("<tr>");
 
     // Column 1 - Game ID
-    $('<td>').html(`#${ids[i]}`).appendTo(row);
+    $("<td>").html(`#${ids[i]}`).appendTo(row);
 
     // Column 2 - # of Players
-    $('<td>').html(gameData.options.numPlayers.toString()).appendTo(row);
+    $("<td>").html(gameData.options.numPlayers.toString()).appendTo(row);
 
     // Column 3 - Score
-    $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
+    $("<td>").html(`${gameData.score}/${maxScore}`).appendTo(row);
 
     // Column 4 - Variant
-    $('<td>').html(gameData.options.variantName).appendTo(row);
+    $("<td>").html(gameData.options.variantName).appendTo(row);
 
     // Column 5 - Options
     const options = makeOptions(i, gameData.options, false);
-    $('<td>').html(options).appendTo(row);
+    $("<td>").html(options).appendTo(row);
 
     // Column 6 - Other Players / Players
     // (depending on if we are in the "Friends" view or not)
     const playerNames = gameData.playerNames.slice();
-    let playerNamesString = playerNames.join(', ');
+    let playerNamesString = playerNames.join(", ");
     if (!friends) {
       // Remove our name from the list of players
       const ourIndex = gameData.playerNames.indexOf(globals.username);
       playerNames.splice(ourIndex, 1);
-      playerNamesString = playerNames.join(', ');
+      playerNamesString = playerNames.join(", ");
     }
-    $('<td>').html(playerNamesString).appendTo(row);
+    $("<td>").html(playerNamesString).appendTo(row);
 
     // Column 7 - Date Played
-    const datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
-    $('<td>').html(datePlayed).appendTo(row);
+    const datePlayed = dateTimeFormatter.format(
+      new Date(gameData.datetimeFinished),
+    );
+    $("<td>").html(datePlayed).appendTo(row);
 
     // Column 8 - Watch Replay
-    const watchReplayButton = makeReplayButton(ids[i], 'solo');
-    $('<td>').html(watchReplayButton as any).appendTo(row);
+    const watchReplayButton = makeReplayButton(ids[i], "solo");
+    $("<td>").html(watchReplayButton[0]).appendTo(row);
 
     // Column 9 - Share Replay
-    const shareReplayButton = makeReplayButton(ids[i], 'shared');
-    $('<td>').html(shareReplayButton as any).appendTo(row);
+    const shareReplayButton = makeReplayButton(ids[i], "shared");
+    $("<td>").html(shareReplayButton[0]).appendTo(row);
 
     // Column 10 - Other Scores
     const otherScoresButton = makeOtherScoresButton(
@@ -175,7 +178,7 @@ export const draw = (friends: boolean) => {
       gameData.seed,
       gameData.numGamesOnThisSeed,
     );
-    $('<td>').html(otherScoresButton as any).appendTo(row);
+    $("<td>").html(otherScoresButton[0]).appendTo(row);
 
     row.appendTo(tbody);
 
@@ -186,21 +189,25 @@ export const draw = (friends: boolean) => {
 
   // Don't show the "Show More History" if we have 10 or less games played
   if (globals.totalGames <= 10) {
-    $('#lobby-history-show-more').hide();
+    $("#lobby-history-show-more").hide();
   } else {
-    $('#lobby-history-show-more').show();
+    $("#lobby-history-show-more").show();
   }
-};
+}
 
-const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
-  const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-  button.html(`<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`);
-  button.attr('id', `history-other-scores-${id}`);
+function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
+  const button = $("<button>")
+    .attr("type", "button")
+    .addClass("button fit margin0");
+  button.html(
+    `<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`,
+  );
+  button.attr("id", `history-other-scores-${id}`);
   if (gameCount - 1 === 0) {
-    button.addClass('disabled');
+    button.addClass("disabled");
   } else {
-    button.on('click', () => {
-      globals.conn!.send('historyGetSeed', {
+    button.on("click", () => {
+      globals.conn!.send("historyGetSeed", {
         seed,
         friends: globals.currentScreen === Screen.HistoryFriends,
       });
@@ -209,61 +216,61 @@ const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
   }
 
   return button;
-};
+}
 
-export const showFriends = () => {
+export function showFriends(): void {
   globals.currentScreen = Screen.HistoryFriends;
-  nav.show('history-friends');
-  $('#lobby-history-table-players').html('Players');
-  $('#lobby-history-show-all').hide();
+  nav.show("history-friends");
+  $("#lobby-history-table-players").html("Players");
+  $("#lobby-history-show-all").hide();
   draw(true);
-};
+}
 
-export const hideFriends = () => {
+export function hideFriends(): void {
   globals.currentScreen = Screen.History;
-  nav.show('history');
-  $('#lobby-history-table-players').html('Other Players');
-  $('#lobby-history-show-all').show();
+  nav.show("history");
+  $("#lobby-history-table-players").html("Other Players");
+  $("#lobby-history-show-all").show();
   draw(false);
-};
+}
 
-export const showOtherScores = () => {
+export function showOtherScores(): void {
   globals.currentScreen = Screen.HistoryOtherScores;
-  $('#lobby-history').hide();
-  $('#lobby-history-other-scores').show();
-  nav.show('history-other-scores');
-};
+  $("#lobby-history").hide();
+  $("#lobby-history-other-scores").show();
+  nav.show("history-other-scores");
+}
 
-export const hideOtherScores = () => {
+export function hideOtherScores(): void {
   globals.currentScreen = Screen.History;
-  $('#lobby-history').show();
-  $('#lobby-history-other-scores').hide();
-  nav.show('history');
-};
+  $("#lobby-history").show();
+  $("#lobby-history-other-scores").hide();
+  nav.show("history");
+}
 
-export const hideOtherScoresToFriends = () => {
+export function hideOtherScoresToFriends(): void {
   globals.currentScreen = Screen.HistoryFriends;
-  $('#lobby-history').show();
-  $('#lobby-history-other-scores').hide();
-  nav.show('history-friends');
-};
+  $("#lobby-history").show();
+  $("#lobby-history-other-scores").hide();
+  nav.show("history-friends");
+}
 
-export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
+export function drawOtherScores(games: GameHistory[], friends: boolean): void {
   // Define the functionality of the "Return to History" button
   if (!friends) {
-    $('#nav-buttons-history-other-scores-return').on('click', () => {
+    $("#nav-buttons-history-other-scores-return").on("click", () => {
       hideOtherScores();
     });
   } else {
-    $('#nav-buttons-history-other-scores-return').on('click', () => {
+    $("#nav-buttons-history-other-scores-return").on("click", () => {
       hideOtherScoresToFriends();
     });
   }
 
-  const tbody = $('#lobby-history-other-scores-table-tbody');
+  const tbody = $("#lobby-history-other-scores-table-tbody");
 
   // Clear all of the existing rows
-  tbody.html('');
+  tbody.html("");
 
   // The game played by the user will also include its variant
   let variant: Variant | undefined;
@@ -291,133 +298,141 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
     // Find out if this game was played by us
     const ourGame = gameData.playerNames.includes(globals.username);
 
-    const row = $('<tr>');
+    const row = $("<tr>");
 
     // Column 1 - Game ID
     let id = `#${gameData.id}`;
     if (ourGame) {
       id = `<strong>${id}</strong>`;
     }
-    $('<td>').html(id).appendTo(row);
+    $("<td>").html(id).appendTo(row);
 
     // Column 2 - Score
     let score = `${gameData.score}/${variant.maxScore}`;
     if (ourGame) {
       score = `<strong>${score}</strong>`;
     }
-    $('<td>').html(score).appendTo(row);
+    $("<td>").html(score).appendTo(row);
 
     // Column 3 - Options
     const options = makeOptions(i, gameData.options, true);
-    $('<td>').html(options).appendTo(row);
+    $("<td>").html(options).appendTo(row);
 
     // Column 4 - Players
-    let playerNamesString = gameData.playerNames.join(', ');
+    let playerNamesString = gameData.playerNames.join(", ");
     if (ourGame) {
       playerNamesString = `<strong>${playerNamesString}</strong>`;
     }
-    $('<td>').html(playerNamesString).appendTo(row);
+    $("<td>").html(playerNamesString).appendTo(row);
 
     // Column 5 - Date Played
-    let datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
+    let datePlayed = dateTimeFormatter.format(
+      new Date(gameData.datetimeFinished),
+    );
     if (ourGame) {
       datePlayed = `<strong>${datePlayed}</strong>`;
     }
-    $('<td>').html(datePlayed).appendTo(row);
+    $("<td>").html(datePlayed).appendTo(row);
 
     // Column 6 - Seed
     // Chop off the prefix
-    const match = gameData.seed.match(/p\dv\d+s(\d+)/);
+    const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
     let seed;
     if (match === null || match.length < 2) {
-      seed = 'Unknown';
+      seed = "Unknown";
     } else {
       seed = match[1];
     }
     if (ourGame) {
       seed = `<strong>${seed}</strong>`;
     }
-    $('<td>').html(seed).appendTo(row);
+    $("<td>").html(seed).appendTo(row);
 
     // Column 7 - Watch Replay
-    const watchReplayButton = makeReplayButton(gameData.id, 'solo');
-    $('<td>').html(watchReplayButton as any).appendTo(row);
+    const watchReplayButton = makeReplayButton(gameData.id, "solo");
+    $("<td>").html(watchReplayButton[0]).appendTo(row);
 
     // Column 8 - Share Replay
-    const shareReplayButton = makeReplayButton(gameData.id, 'shared');
-    $('<td>').html(shareReplayButton as any).appendTo(row);
+    const shareReplayButton = makeReplayButton(gameData.id, "shared");
+    $("<td>").html(shareReplayButton[0]).appendTo(row);
 
     row.appendTo(tbody);
 
     // Initialize the tooltips, if any
     // (this has to be done after adding the HTML to the page)
-    $(`#lobby-history-table-${i}-options-other-scores`).tooltipster(tooltipOptions);
+    $(`#lobby-history-table-${i}-options-other-scores`).tooltipster(
+      tooltipOptions,
+    );
   }
-};
+}
 
 // -----------
 // Subroutines
 // -----------
 
-const makeOptions = (i: number, options: Options, otherScores: boolean) => {
+function makeOptions(i: number, options: Options, otherScores: boolean) {
   // Start to build the tooltip content HTML, if any
-  let tooltipHTML = '';
+  let tooltipHTML = "";
 
   if (options.timed) {
     tooltipHTML += '<li><i class="fas fa-clock"></i>&nbsp; ';
-    tooltipHTML += `Timed (${timerFormatter(options.timeBase)} + ${timerFormatter(options.timePerTurn)})`;
-    tooltipHTML += '</li>';
+    tooltipHTML += `Timed (${timerFormatter(
+      options.timeBase,
+    )} + ${timerFormatter(options.timePerTurn)})`;
+    tooltipHTML += "</li>";
   }
 
   if (options.speedrun) {
     tooltipHTML += '<li><i class="fas fa-running"></i>&nbsp; ';
-    tooltipHTML += 'Speedrun</li>';
+    tooltipHTML += "Speedrun</li>";
   }
 
   if (options.cardCycle) {
     tooltipHTML += '<li><i class="fas fa-sync-alt"></i>&nbsp; ';
-    tooltipHTML += 'Card Cycling</li>';
+    tooltipHTML += "Card Cycling</li>";
   }
 
   if (options.deckPlays) {
-    tooltipHTML += '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>&nbsp; ';
-    tooltipHTML += 'Bottom-Deck Blind-Plays</li>';
+    tooltipHTML +=
+      '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>&nbsp; ';
+    tooltipHTML += "Bottom-Deck Blind-Plays</li>";
   }
 
   if (options.emptyClues) {
     tooltipHTML += '<li><i class="fas fa-expand"></i>&nbsp; ';
-    tooltipHTML += 'Empty Clues</li>';
+    tooltipHTML += "Empty Clues</li>";
   }
 
   if (options.oneExtraCard) {
     tooltipHTML += '<li><i class="fas fa-plus-circle"></i>&nbsp; ';
-    tooltipHTML += 'One Extra Card</li>';
+    tooltipHTML += "One Extra Card</li>";
   }
 
   if (options.oneLessCard) {
     tooltipHTML += '<li><i class="fas fa-minus-circle"></i>&nbsp; ';
-    tooltipHTML += 'One Less Card</li>';
+    tooltipHTML += "One Less Card</li>";
   }
 
   if (options.allOrNothing) {
     tooltipHTML += '<li><i class="fas fa-layer-group"></i>&nbsp; ';
-    tooltipHTML += 'All or Nothing</li>';
+    tooltipHTML += "All or Nothing</li>";
   }
 
   if (options.detrimentalCharacters) {
-    tooltipHTML += '<li><span style="position: relative; right: 0.2em;">🤔</span>';
-    tooltipHTML += 'Detrimental Characters</li>';
+    tooltipHTML +=
+      '<li><span style="position: relative; right: 0.2em;">🤔</span>';
+    tooltipHTML += "Detrimental Characters</li>";
   }
 
-  if (tooltipHTML === '') {
-    return '-';
+  if (tooltipHTML === "") {
+    return "[none]";
   }
 
   let id = `lobby-history-table-${i}-options`;
   if (otherScores) {
-    id += '-other-scores';
+    id += "-other-scores";
   }
-  let html = `<i id="${id}" class="fas fa-plus" `;
+  let html = `<i id="${id}" class="fas fa-ellipsis-h" `;
   html += `data-tooltip-content="#${id}-tooltip"></i>`;
   html += `
     <div class="hidden">
@@ -430,34 +445,38 @@ const makeOptions = (i: number, options: Options, otherScores: boolean) => {
   `;
 
   return html;
-};
+}
 
-const makeReplayButton = (id: number, visibility: string) => {
-  const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
+function makeReplayButton(databaseID: number, visibility: string) {
+  const button = $("<button>")
+    .attr("type", "button")
+    .addClass("button fit margin0");
   let text;
-  if (visibility === 'solo') {
+  if (visibility === "solo") {
     text = '<i class="fas fa-eye lobby-button-icon"></i>';
-  } else if (visibility === 'shared') {
+  } else if (visibility === "shared") {
     text = '<i class="fas fa-users lobby-button-icon"></i>';
   } else {
-    throw new Error('The "makeReplayButton()" function was provided an invalid visibility argument.');
+    throw new Error(
+      'The "makeReplayButton()" function was provided an invalid visibility argument.',
+    );
   }
   button.html(text);
-  button.addClass('history-table');
-  button.addClass('enter-history-game');
-  button.attr('id', `replay-${id}`);
+  button.addClass("history-table");
+  button.addClass("enter-history-game");
+  button.attr("id", `replay-${databaseID}`);
 
-  button.on('click', () => {
-    globals.conn!.send('replayCreate', {
-      source: 'id',
-      gameID: id,
+  button.on("click", () => {
+    globals.conn!.send("replayCreate", {
+      source: "id",
+      databaseID,
       visibility,
       shadowingPlayerIndex: -1,
     });
-    if (visibility === 'shared') {
+    if (visibility === "shared") {
       hide();
     }
   });
 
   return button;
-};
+}

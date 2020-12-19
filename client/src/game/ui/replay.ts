@@ -1,16 +1,18 @@
 // Functions for progressing forward and backward through time
 
-import Konva from 'konva';
-import * as arrows from './arrows';
-import Shuttle from './controls/Shuttle';
-import globals from './globals';
-import { animate } from './konvaHelpers';
+import Konva from "konva";
+import { parseIntSafe } from "../../misc";
+import * as arrows from "./arrows";
+import Shuttle from "./controls/Shuttle";
+import getCardOrStackBase from "./getCardOrStackBase";
+import globals from "./globals";
+import { animate } from "./konvaHelpers";
 
 // ---------------------
 // Main replay functions
 // ---------------------
 
-export const enter = (customSegment?: number) => {
+export function enter(customSegment?: number): void {
   if (globals.state.replay.active) {
     return;
   }
@@ -19,38 +21,41 @@ export const enter = (customSegment?: number) => {
   const segment = customSegment ?? globals.state.ongoingGame.turn.segment ?? 0;
 
   globals.store!.dispatch({
-    type: 'replayEnter',
+    type: "replayEnter",
     segment,
   });
-};
+}
 
-export const exit = () => {
+export function exit(): void {
   if (!globals.state.replay.active) {
     return;
   }
 
   // Always animate fast if we are exiting a replay, even if we are only jumping to an adjacent turn
   globals.store!.dispatch({
-    type: 'replayExit',
+    type: "replayExit",
   });
-};
+}
 
-export const getCurrentReplaySegment = () => {
+export function getCurrentReplaySegment(): number {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
-  return globals.state.replay.active ? globals.state.replay.segment : finalSegment;
-};
+  return globals.state.replay.active
+    ? globals.state.replay.segment
+    : finalSegment;
+}
 
-export const goToSegment = (
+export function goToSegment(
   segment: number,
-  breakFree: boolean = false,
-  force: boolean = false,
-) => {
+  breakFree = false,
+  force = false,
+): void {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const currentSegment = getCurrentReplaySegment();
 
   // Validate the target segment
   // The target must be between 0 and the final replay segment
-  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+  const clamp = (n: number, min: number, max: number) =>
+    Math.max(min, Math.min(n, max));
   const newSegment = clamp(segment, 0, finalSegment);
   if (currentSegment === newSegment) {
     return;
@@ -70,103 +75,111 @@ export const goToSegment = (
   // However, if we are navigating to a new segment as the shared replay leader,
   // do not disable shared segments
   if (
-    breakFree
-    && globals.state.replay.shared !== null
-    && globals.state.replay.shared.useSharedSegments
-    && !globals.state.replay.shared.amLeader
+    breakFree &&
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.useSharedSegments &&
+    !globals.state.replay.shared.amLeader
   ) {
     globals.store!.dispatch({
-      type: 'replayUseSharedSegments',
+      type: "replayUseSharedSegments",
       useSharedSegments: false,
     });
   }
 
   globals.store!.dispatch({
-    type: 'replaySegment',
+    type: "replaySegment",
     segment: newSegment,
   });
 
   if (
-    globals.state.replay.shared !== null
-    && globals.state.replay.shared.amLeader
-    && globals.state.replay.shared.useSharedSegments
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader &&
+    globals.state.replay.shared.useSharedSegments
   ) {
     globals.store!.dispatch({
-      type: 'replaySharedSegment',
+      type: "replaySharedSegment",
       segment: newSegment,
     });
   }
-};
+}
 
-export const goToSegmentAndIndicateCard = (segment: number, order: number) => {
+export function goToSegmentAndIndicateCard(
+  segment: number,
+  order: number,
+): void {
   goToSegment(segment, true);
 
   // We indicate the card to make it easier to see
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
-  arrows.toggle(globals.deck[order]);
-};
+  const card = getCardOrStackBase(order);
+  arrows.toggle(card.state.order);
+}
 
 // ---------------------------
 // Replay navigation functions
 // ---------------------------
 
-export const back = (breakFree: boolean = true) => {
+export function back(breakFree = true): void {
   goToSegment(getCurrentReplaySegment() - 1, breakFree);
-};
+}
 
-export const forward = () => {
+export function forward(): void {
   goToSegment(getCurrentReplaySegment() + 1, true);
-};
+}
 
-export const backRound = () => {
+export function backRound(): void {
   goToSegment(getCurrentReplaySegment() - globals.options.numPlayers, true);
-};
+}
 
-export const forwardRound = () => {
+export function forwardRound(): void {
   goToSegment(getCurrentReplaySegment() + globals.options.numPlayers, true);
-};
+}
 
-export const backFull = () => {
+export function backFull(): void {
   goToSegment(0, true);
-};
+}
 
-export const forwardFull = () => {
+export function forwardFull(): void {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   goToSegment(finalSegment, true);
-};
+}
 
 // ------------------------
 // The "Exit Replay" button
 // ------------------------
 
-export const exitButton = () => {
+export function exitButton(): void {
   // Mark the time that the user clicked the "Exit Replay" button
   // (so that we can avoid an accidental "Give Clue" double-click)
   globals.UIClickTime = Date.now();
 
   exit();
-};
+}
 
 // ------------------
 // The replay shuttle
 // ------------------
 
 // Gets the current segment from an X position relative to a maximum width
-const segmentFromBarPosition = (x: number, w: number) => {
+function segmentFromBarPosition(x: number, w: number) {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const step = w / finalSegment;
-  return Math.floor((x + (step / 2)) / step);
-};
+  return Math.floor((x + step / 2) / step);
+}
 
 // Called when a position in the bar is clicked
-export function barClick(this: Konva.Rect) {
-  const rectX = globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
+export function barClick(this: Konva.Rect): void {
+  const rectX =
+    globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
   const w = globals.elements.replayBar!.width();
   goToSegment(segmentFromBarPosition(rectX, w), true);
 }
 
 // Called when a position in the bar is clicked
-export function barScroll(this: Konva.Rect, e: Konva.KonvaEventObject<WheelEvent>) {
+export function barScroll(
+  this: Konva.Rect,
+  e: Konva.KonvaEventObject<WheelEvent>,
+): void {
   let delta = 0;
   if (e.evt.deltaY > 0) {
     delta = 1;
@@ -181,10 +194,15 @@ export function barScroll(this: Konva.Rect, e: Konva.KonvaEventObject<WheelEvent
 
 // Restricts the positions of the replay shuttle
 // Given a desired position, returns the allowed position closest to it
-export function shuttleDragBound(this: Konva.Rect, pos: Konva.Vector2d) {
-  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+export function shuttleDragBound(
+  this: Konva.Rect,
+  pos: Konva.Vector2d,
+): { x: number; y: number } {
+  const clamp = (n: number, min: number, max: number) =>
+    Math.max(min, Math.min(n, max));
 
-  const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
+  const min =
+    globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
   const w = globals.elements.replayBar!.width() - this.width();
 
   const shuttleX = clamp(pos.x - min, 0, w);
@@ -194,29 +212,33 @@ export function shuttleDragBound(this: Konva.Rect, pos: Konva.Vector2d) {
   const step = w / finalSegment;
 
   return {
-    x: min + (segment * step),
+    x: min + segment * step,
     y: this.getAbsolutePosition().y,
   };
 }
 
 // Called when the shuttle moves. The position is guaranteed to be valid by shuttleDragBound
-export function shuttleDragMove(this: Konva.Rect) {
-  const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
+export function shuttleDragMove(this: Konva.Rect): void {
+  const min =
+    globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
   const w = globals.elements.replayBar!.width() - this.width();
-  const newSegment = segmentFromBarPosition(this.getAbsolutePosition().x - min, w);
+  const newSegment = segmentFromBarPosition(
+    this.getAbsolutePosition().x - min,
+    w,
+  );
   goToSegment(newSegment, true);
 }
 
-const positionReplayShuttle = (
+function positionReplayShuttle(
   shuttle: Shuttle,
   targetSegment: number,
   smaller: boolean,
   fast: boolean,
-) => {
+) {
   let finalSegment = globals.state.ongoingGame.turn.segment;
   if (
-    finalSegment === null // The final segment is null during initialization
-    || finalSegment === 0 // The final segment is 0 before a move is made
+    finalSegment === null || // The final segment is null during initialization
+    finalSegment === 0 // The final segment is 0 before a move is made
   ) {
     // For the purposes of the replay shuttle calculation,
     // we need to assume that there are at least two possible locations
@@ -224,32 +246,37 @@ const positionReplayShuttle = (
   }
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();
-  const x = (
-    globals.elements.replayBar!.x()
-    + (sliderW / finalSegment * targetSegment)
-    + (shuttle.width() / 2)
-  );
-  let y = globals.elements.replayBar!.y() + (shuttle.height() * 0.55);
+  const x =
+    globals.elements.replayBar!.x() +
+    (sliderW / finalSegment) * targetSegment +
+    shuttle.width() / 2;
+  let y = globals.elements.replayBar!.y() + shuttle.height() * 0.55;
   if (smaller) {
     y -= 0.003 * winH;
   }
   const scale = smaller ? 0.7 : 1;
-  animate(shuttle, {
-    duration: 0.25,
-    x,
-    y,
-    scale,
-    easing: Konva.Easings.EaseOut,
-  }, true, fast);
-};
+  animate(
+    shuttle,
+    {
+      duration: 0.25,
+      x,
+      y,
+      scale,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      easing: Konva.Easings.EaseOut,
+    },
+    true,
+    fast,
+  );
+}
 
-export const adjustShuttles = (fast: boolean) => {
+export function adjustShuttles(fast: boolean): void {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
   if (
-    globals.state.replay.shared !== null
-    && !globals.state.replay.shared.useSharedSegments
-    && globals.state.replay.segment === globals.state.replay.shared.segment
+    globals.state.replay.shared !== null &&
+    !globals.state.replay.shared.useSharedSegments &&
+    globals.state.replay.segment === globals.state.replay.shared.segment
   ) {
     smaller = true;
   }
@@ -266,30 +293,31 @@ export const adjustShuttles = (fast: boolean) => {
   );
 
   // Adjust the shared replay shuttle along the bar based on the shared segment
-  globals.elements.replayShuttleShared!.visible(globals.state.replay.shared !== null);
+  globals.elements.replayShuttleShared!.visible(
+    globals.state.replay.shared !== null,
+  );
   if (globals.state.replay.shared !== null) {
     positionReplayShuttle(
       globals.elements.replayShuttleShared!,
       globals.state.replay.shared.segment,
       false,
-      fast || (
-        draggingShuttle
-        && globals.state.replay.shared.segment === globals.state.replay.segment
-      ),
+      fast ||
+        (draggingShuttle &&
+          globals.state.replay.shared.segment === globals.state.replay.segment),
     );
   }
-};
+}
 
 // -----------------------------
 // Right-clicking the turn count
 // -----------------------------
 
-export const promptTurn = () => {
-  const turnString = window.prompt('Which turn do you want to go to?');
+export function promptTurn(): void {
+  const turnString = window.prompt("Which turn do you want to go to?");
   if (turnString === null) {
     return;
   }
-  let targetTurn = parseInt(turnString, 10);
+  let targetTurn = parseIntSafe(turnString);
   if (Number.isNaN(targetTurn)) {
     return;
   }
@@ -299,19 +327,19 @@ export const promptTurn = () => {
   targetTurn -= 1;
 
   goToSegment(targetTurn, true);
-};
+}
 
 // --------------------------------
 // The "Toggle Shared Turns" button
 // --------------------------------
 
-export const toggleSharedSegments = () => {
+export function toggleSharedSegments(): void {
   if (globals.state.replay.shared === null) {
     return;
   }
 
   globals.store!.dispatch({
-    type: 'replayUseSharedSegments',
+    type: "replayUseSharedSegments",
     useSharedSegments: !globals.state.replay.shared.useSharedSegments,
   });
-};
+}

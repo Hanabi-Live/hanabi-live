@@ -9,10 +9,10 @@ enum Status {
 export default Status;
 
 export const StatusText = [
-  'Lobby',
-  'Pre-Game',
-  'Playing',
-  'Spectating',
-  'Replay',
-  'Shared Replay',
+  "Lobby",
+  "Pre-Game",
+  "Playing",
+  "Spectating",
+  "Replay",
+  "Shared Replay",
 ];

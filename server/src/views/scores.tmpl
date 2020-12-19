@@ -61,15 +61,30 @@
                 {{if eq .Modifier 0}}
                   <i class="fas fa-check score-modifier green"></i>
                 {{else if .AllOrNothing }}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-allornothing"></i>
+                  <i
+                    class="fas fa-times score-modifier red tooltip"
+                    data-tooltip-content="#modifier-allornothing"
+                  ></i>
                 {{else if .OneExtraCard }}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-oneextracard"></i>
+                  <i
+                    class="fas fa-times score-modifier red tooltip"
+                    data-tooltip-content="#modifier-oneextracard"
+                  ></i>
                 {{else if .OneLessCard }}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-onelesscard"></i>
+                  <i
+                    class="fas fa-times score-modifier red tooltip"
+                    data-tooltip-content="#modifier-onelesscard"
+                  ></i>
                 {{else if .EmptyClues }}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+                  <i
+                    class="fas fa-times score-modifier red tooltip"
+                    data-tooltip-content="#modifier-emptyclues"
+                  ></i>
                 {{else if .DeckPlays }}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+                  <i
+                    class="fas fa-times score-modifier red tooltip"
+                    data-tooltip-content="#modifier-deckplays"
+                  ></i>
                 {{end}}
               {{end}}
             </td>

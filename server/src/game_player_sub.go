@@ -3,8 +3,6 @@
 package main
 
 import (
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -24,9 +22,10 @@ func (p *GamePlayer) GetChopIndex() int {
 
 func (p *GamePlayer) InitTime(options *Options) {
 	if options.Timed {
+		// In timed games, each player starts with the base time specified in the options
 		p.Time = time.Duration(options.TimeBase) * time.Second
 	} else {
-		// In non-timed games, start each player with 0 "time left"
+		// In non-timed games, each player starts with 0 "time left"
 		// It will decrement into negative numbers to show how much time they are taking
 		p.Time = time.Duration(0)
 	}
@@ -91,95 +90,20 @@ func (p *GamePlayer) GetCardSlot(order int) int {
 	return -1
 }
 
-// GetLeftPlayer returns the index of the player that is sitting to this player's left
-func (p *GamePlayer) GetLeftPlayer() int {
-	g := p.Game
-	return (p.Index + 1) % len(g.Players)
+func (p *GamePlayer) GetNextPlayer() int {
+	i := p.Index + 1
+	if i == len(p.Game.Players) {
+		return 0
+	}
+	return i
 }
 
-// GetRightPlayer returns the index of the player that is sitting to this player's right
-func (p *GamePlayer) GetRightPlayer() int {
-	g := p.Game
-
-	// In Golang, "%" will give the remainder and not the modulus, so we need to ensure that the
-	// result is not negative or we will get a "index out of range" error
-	return (p.Index - 1 + len(g.Players)) % len(g.Players)
-}
-
-// CheckSurprise checks to see if a player has a "wrong" note on a card that
-// they just played or discarded
-// This code mirrors the "morph()" client-side function
-func (p *GamePlayer) CheckSurprise(c *Card) {
-	// Local variables
-	g := p.Game
-
-	// Disable the surprise sound in certain variants
-	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
-		return
+func (p *GamePlayer) GetPreviousPlayer() int {
+	i := p.Index - 1
+	if i == -1 {
+		return len(p.Game.Players) - 1
 	}
-
-	note := p.Notes[c.Order]
-	if note == "" {
-		return
-	}
-
-	// Only examine the text to the right of the rightmost pipe
-	// (pipes are a conventional way to append new information to a note
-	if strings.Contains(note, "|") {
-		match := noteRegExp.FindStringSubmatch(note)
-		if match != nil {
-			note = match[1]
-		}
-	}
-	note = strings.ToLower(note)   // Make all letters lowercase to simply the matching logic below
-	note = strings.TrimSpace(note) // Remove all leading and trailing whitespace
-
-	var noteSuit *Suit
-	noteRank := -1
-	for _, rank := range []int{1, 2, 3, 4, 5} {
-		rankStr := strconv.Itoa(rank)
-		if note == rankStr {
-			noteRank = rank
-			break
-		}
-
-		for _, suit := range variants[g.Options.VariantName].Suits {
-			suitAbbrev := strings.ToLower(suit.Abbreviation)
-			suitName := strings.ToLower(suit.Name)
-			if note == suitAbbrev+rankStr || // e.g. "b1" or "B1"
-				note == suitName+rankStr || // e.g. "blue1" or "Blue1" or "BLUE1"
-				note == suitName+" "+rankStr || // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-				note == rankStr+suitAbbrev || // e.g. "1b" or "1B"
-				note == rankStr+suitName || // e.g. "1blue" or "1Blue" or "1BLUE"
-				note == rankStr+" "+suitName { // e.g. "1 blue" or "1 Blue" or "1 BLUE"
-
-				noteSuit = suit
-				noteRank = rank
-				break
-			}
-		}
-		if noteSuit != nil || noteRank != -1 {
-			break
-		}
-	}
-
-	// Only the rank was specified
-	if noteSuit == nil && noteRank != -1 {
-		if noteRank != c.Rank {
-			p.Surprised = true
-			return
-		}
-	}
-
-	// The suit and the rank were specified
-	if noteSuit != nil && noteRank != -1 {
-		variant := variants[g.Options.VariantName]
-		suit := variant.Suits[c.SuitIndex]
-		if noteSuit.Name != suit.Name || noteRank != c.Rank {
-			p.Surprised = true
-			return
-		}
-	}
+	return i
 }
 
 func (p *GamePlayer) CycleHand() {

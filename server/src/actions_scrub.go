@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strings"
-)
-
 // CheckScrub removes some information from the action to prevent players having more knowledge
 // than they should have, if necessary (e.g. when a card is drawn to a player's hand)
 func CheckScrub(t *Table, action interface{}, userID int) interface{} {
@@ -60,13 +56,14 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 func (a *ActionPlay) Scrub(t *Table, userID int) {
 	// Local variables
 	p := getEquivalentPlayer(t, userID)
+	variant := variants[t.Options.VariantName]
 
 	if p == nil {
 		// Spectators get to see the identities of played cards
 		return
 	}
 
-	if strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") {
+	if variant.IsThrowItInAHole() {
 		a.Rank = -1
 		a.SuitIndex = -1
 	}
@@ -77,13 +74,14 @@ func (a *ActionPlay) Scrub(t *Table, userID int) {
 func (a *ActionDiscard) Scrub(t *Table, userID int) {
 	// Local variables
 	p := getEquivalentPlayer(t, userID)
+	variant := variants[t.Options.VariantName]
 
 	if p == nil {
 		// Spectators get to see the identities of discarded cards
 		return
 	}
 
-	if strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") && a.Failed {
+	if variant.IsThrowItInAHole() && a.Failed {
 		// For the purposes of hiding information, failed discards are equivalent to plays
 		a.Rank = -1
 		a.SuitIndex = -1
@@ -110,15 +108,15 @@ func (a *ActionCardIdentity) Scrub(t *Table, userID int) {
 func getEquivalentPlayer(t *Table, userID int) *GamePlayer {
 	// Local variables
 	g := t.Game
-	i := t.GetPlayerIndexFromID(userID)
-	j := t.GetSpectatorIndexFromID(userID)
+	playerIndex := t.GetPlayerIndexFromID(userID)
+	spectatorIndex := t.GetSpectatorIndexFromID(userID)
 
-	if i > -1 {
+	if playerIndex > -1 {
 		// The action is going to be sent to one of the active players
-		return g.Players[i]
-	} else if j > -1 && t.Spectators[j].ShadowingPlayerIndex != -1 {
+		return g.Players[playerIndex]
+	} else if spectatorIndex > -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
 		// The action is going to be sent to a spectator that is shadowing one of the active players
-		return g.Players[t.Spectators[j].ShadowingPlayerIndex]
+		return g.Players[t.Spectators[spectatorIndex].ShadowingPlayerIndex]
 	}
 
 	// The action is going to be sent to a spectator that can see every hand

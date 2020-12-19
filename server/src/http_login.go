@@ -19,23 +19,38 @@ const (
 	MaxUsernameLength = 15
 )
 
+type HTTPLoginData struct {
+	IP                 string
+	Username           string
+	Password           string
+	NormalizedUsername string
+}
+
 // httpLogin handles part 1 of 2 for login authentication
 // The user must POST to "/login" with the values of "username", "password", and "version"
 // If successful, they will receive a cookie from the server with an expiry of N seconds
 // Part 2 is found in "httpWS.go"
+//
+// By allowing this function to run concurrently with no locking, there is a race condition where
+// a new user can login twice at the same time and "models.Users.Insert()" will be called twice
+// However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row will
+// prevent the 2nd insersion from completing, and the second goroutine will return at that point
 func httpLogin(c *gin.Context) {
 	// Local variables
-	r := c.Request
 	w := c.Writer
 
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	var data *HTTPLoginData
+	if v, success := httpLoginValidate(c); !success {
+		return
+	} else {
+		data = v
+	}
 
-	// Parse the IP address
-	var ip string
-	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address in the login function:", err)
+	// Check to see if this username exists in the database
+	var exists bool
+	var user User
+	if v1, v2, err := models.Users.Get(data.Username); err != nil {
+		logger.Error("Failed to get user \"" + data.Username + "\": " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -43,22 +58,199 @@ func httpLogin(c *gin.Context) {
 		)
 		return
 	} else {
-		ip = v
+		exists = v1
+		user = v2
 	}
 
-	/*
-		Validation
-	*/
+	if exists {
+		// First, check to see if they have a a legacy password hash stored in the database
+		if user.OldPasswordHash.Valid {
+			// This is the first time that they are logging in after the password hash transition
+			// Hash the submitted password with SHA256
+			passwordSalt := "Hanabi password "
+			combined := passwordSalt + data.Password
+			oldPasswordHashBytes := sha256.Sum256([]byte(combined))
+			oldPasswordHashString := fmt.Sprintf("%x", oldPasswordHashBytes)
+			if oldPasswordHashString != user.OldPasswordHash.String {
+				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+				return
+			}
 
-	// Check to see if their IP is banned
-	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+			// Create an Argon2id hash of the plain-text password
+			var passwordHash string
+			if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
+				logger.Error("Failed to create a hash from the submitted password for " +
+					"\"" + data.Username + "\": " + err.Error())
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			} else {
+				passwordHash = v
+			}
+
+			// Update their password to the new Argon2 format
+			if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
+				logger.Error("Failed to set the new hash for \"" + data.Username + "\": " +
+					err.Error())
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+		} else {
+			// Check to see if their password is correct
+			if !user.PasswordHash.Valid {
+				logger.Error("Failed to get the Argon2 hash from the database for " +
+					"\"" + data.Username + "\".")
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+			if match, err := argon2id.ComparePasswordAndHash(
+				data.Password,
+				user.PasswordHash.String,
+			); err != nil {
+				logger.Error("Failed to compare the password to the Argon2 hash for " +
+					"\"" + data.Username + "\": " + err.Error())
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			} else if !match {
+				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+				return
+			}
+		}
+	} else {
+		// Check to see if any other users have a normalized version of this username
+		// This prevents username-spoofing attacks and homoglyph usage
+		// e.g. "alice" trying to impersonate "Alice"
+		// e.g. "Alicé" trying to impersonate "Alice"
+		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
+		if data.NormalizedUsername == "" {
+			http.Error(
+				w,
+				"That username cannot be transliterated to ASCII. "+
+					"Please try using a simpler username or try using less special characters.",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+		if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
+			data.NormalizedUsername,
+		); err != nil {
+			logger.Error("Failed to check for normalized password uniqueness for " +
+				"\"" + data.Username + "\": " + err.Error())
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else if normalizedExists {
+			http.Error(
+				w,
+				"That username is too similar to the existing user of "+"\""+similarUsername+"\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
+		// Create an Argon2id hash of the plain-text password
+		var passwordHash string
+		if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
+			logger.Error("Failed to create a hash from the submitted password for " +
+				"\"" + data.Username + "\": " + err.Error())
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			passwordHash = v
+		}
+
+		// Create the new user in the database
+		if v, err := models.Users.Insert(
+			data.Username,
+			data.NormalizedUsername,
+			passwordHash,
+			data.IP,
+		); err != nil {
+			logger.Error("Failed to insert user \"" + data.Username + "\": " + err.Error())
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			user = v
+		}
+	}
+
+	// Save the information to the session cookie
+	session := gsessions.Default(c)
+	session.Set("userID", user.ID)
+	if err := session.Save(); err != nil {
+		logger.Error("Failed to write to the login cookie for user \"" + user.Username + "\": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
 		return
+	}
+
+	// Log the login request and give a "200 OK" HTTP code
+	// (returning a code is not actually necessary but Firefox will complain otherwise)
+	logger.Info("User \"" + user.Username + "\" logged in from: " + data.IP)
+	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
+
+	// Next, the client will attempt to establish a WebSocket connection,
+	// which is handled in "httpWS.go"
+}
+
+func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
+	// Local variables
+	r := c.Request
+	w := c.Writer
+
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
+		logger.Error("Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return nil, false
+	} else {
+		ip = v
+	}
+
+	// Check to see if their IP is banned
+	if banned, err := models.BannedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return nil, false
 	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
 		http.Error(
@@ -67,7 +259,7 @@ func httpLogin(c *gin.Context) {
 				"Please contact an administrator if you think this is a mistake.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the user sent the required POST values
@@ -80,7 +272,7 @@ func httpLogin(c *gin.Context) {
 			"You must provide the \"username\" parameter to log in.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 	password := c.PostForm("password")
 	if password == "" {
@@ -91,7 +283,7 @@ func httpLogin(c *gin.Context) {
 			"You must provide the \"password\" parameter to log in.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 	version := c.PostForm("version")
 	if version == "" {
@@ -102,7 +294,7 @@ func httpLogin(c *gin.Context) {
 			"You must provide the \"version\" parameter to log in.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Trim whitespace from both sides
@@ -118,7 +310,7 @@ func httpLogin(c *gin.Context) {
 				"Usernames cannot contain any whitespace characters.",
 				http.StatusUnauthorized,
 			)
-			return
+			return nil, false
 		}
 	}
 
@@ -132,7 +324,7 @@ func httpLogin(c *gin.Context) {
 			"Usernames must be "+strconv.Itoa(MinUsernameLength)+" characters or more.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the username is not excessively long
@@ -145,7 +337,7 @@ func httpLogin(c *gin.Context) {
 			"Usernames must be "+strconv.Itoa(MaxUsernameLength)+" characters or less.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the username does not have any special characters in it
@@ -158,7 +350,7 @@ func httpLogin(c *gin.Context) {
 			"Usernames cannot contain any special characters other than underscores, hyphens, and periods.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the username does not have any emojis in it
@@ -170,7 +362,7 @@ func httpLogin(c *gin.Context) {
 			"Usernames cannot contain any emojis.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the username does not contain an unreasonable amount of consecutive diacritics
@@ -184,12 +376,12 @@ func httpLogin(c *gin.Context) {
 			"Usernames cannot contain two or more consecutive diacritics.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the username is not reserved
 	normalizedUsername := normalizeString(username)
-	if normalizedUsername == normalizeString(websiteName) ||
+	if normalizedUsername == normalizeString(WebsiteName) ||
 		normalizedUsername == "hanab" ||
 		normalizedUsername == "hanabi" ||
 		normalizedUsername == "live" ||
@@ -205,7 +397,7 @@ func httpLogin(c *gin.Context) {
 			"That username is reserved. Please choose a different one.",
 			http.StatusUnauthorized,
 		)
-		return
+		return nil, false
 	}
 
 	// Validate that the version is correct
@@ -221,7 +413,7 @@ func httpLogin(c *gin.Context) {
 				"The submitted version must be an integer.",
 				http.StatusUnauthorized,
 			)
-			return
+			return nil, false
 		} else {
 			versionNum = v
 		}
@@ -244,197 +436,15 @@ func httpLogin(c *gin.Context) {
 					"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
 				http.StatusUnauthorized,
 			)
-			return
+			return nil, false
 		}
 	}
 
-	/*
-		Login
-	*/
-
-	// Check to see if this username exists in the database
-	var exists bool
-	var user User
-	if v1, v2, err := models.Users.Get(username); err != nil {
-		logger.Error("Failed to get user \""+username+"\":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		exists = v1
-		user = v2
+	data := &HTTPLoginData{
+		IP:                 ip,
+		Username:           username,
+		Password:           password,
+		NormalizedUsername: normalizedUsername,
 	}
-
-	if exists {
-		// First, check to see if they have a a legacy password hash stored in the database
-		if user.OldPasswordHash.Valid {
-			// This is the first time that they are logging in after the password hash transition
-			// Hash the submitted password with SHA256
-			passwordSalt := "Hanabi password "
-			combined := passwordSalt + password
-			oldPasswordHashBytes := sha256.Sum256([]byte(combined))
-			oldPasswordHashString := fmt.Sprintf("%x", oldPasswordHashBytes)
-			if oldPasswordHashString != user.OldPasswordHash.String {
-				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-				return
-			}
-
-			// Create an Argon2id hash of the plain-text password
-			var passwordHash string
-			if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
-				logger.Error("Failed to create a hash from the submitted password for "+
-					"\""+username+"\":", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			} else {
-				passwordHash = v
-			}
-
-			// Update their password to the new Argon2 format
-			if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
-				logger.Error("Failed to set the new hash for \""+username+"\":", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-		} else {
-			// Check to see if their password is correct
-			if !user.PasswordHash.Valid {
-				logger.Error("Failed to get the Argon2 hash from the database for " +
-					"\"" + username + "\".")
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-			if match, err := argon2id.ComparePasswordAndHash(
-				password,
-				user.PasswordHash.String,
-			); err != nil {
-				logger.Error("Failed to compare the password to the Argon2 hash for "+
-					"\""+username+"\":", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			} else if !match {
-				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-				return
-			}
-		}
-
-		// Update the database with "datetime_last_login" and "last_ip"
-		if err := models.Users.Update(user.ID, ip); err != nil {
-			logger.Error("Failed to set the login values for user "+
-				"\""+strconv.Itoa(user.ID)+"\":", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	} else {
-		// Check to see if any other users have a normalized version of this username
-		// This prevents username-spoofing attacks and homoglyph usage
-		// e.g. "alice" trying to impersonate "Alice"
-		// e.g. "Alicé" trying to impersonate "Alice"
-		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
-		if normalizedUsername == "" {
-			http.Error(
-				w,
-				"That username cannot be transliterated to ASCII. "+
-					"Please try using a simpler username or try using less special characters.",
-				http.StatusUnauthorized,
-			)
-			return
-		}
-		if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
-			normalizedUsername,
-		); err != nil {
-			logger.Error("Failed to check for normalized password uniqueness for "+
-				"\""+username+"\":", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else if normalizedExists {
-			http.Error(
-				w,
-				"That username is too similar to the existing user of "+"\""+similarUsername+"\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
-				http.StatusUnauthorized,
-			)
-			return
-		}
-
-		// Create an Argon2id hash of the plain-text password
-		var passwordHash string
-		if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
-			logger.Error("Failed to create a hash from the submitted password for "+
-				"\""+username+"\":", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else {
-			passwordHash = v
-		}
-
-		// Create the new user in the database
-		if v, err := models.Users.Insert(
-			username,
-			normalizedUsername,
-			passwordHash,
-			ip,
-		); err != nil {
-			logger.Error("Failed to insert user \""+username+"\":", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else {
-			user = v
-		}
-	}
-
-	// Save the information to the session cookie
-	session := gsessions.Default(c)
-	session.Set("userID", user.ID)
-	if err := session.Save(); err != nil {
-		logger.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Log the login request and give a "200 OK" HTTP code
-	// (returning a code is not actually necessary but Firefox will complain otherwise)
-	logger.Info("User \""+user.Username+"\" logged in from:", ip)
-	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
-
-	// Next, the client will attempt to establish a WebSocket connection,
-	// which is handled in "httpWS.go"
+	return data, true
 }

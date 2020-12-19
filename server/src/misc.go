@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"net/url"
 	"os/exec"
 	"path"
 	"regexp"
@@ -17,28 +18,35 @@ import (
 	"time"
 	"unicode"
 
+	sentry "github.com/getsentry/sentry-go"
 	"github.com/mozillazg/go-unidecode"
+	"go.uber.org/zap"
 	"golang.org/x/text/unicode/norm"
 )
+
+// From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
+func containsAllPrintableASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] < 32 || s[i] > 126 { // 32 is " " and 126 is "~"
+			return false
+		}
+	}
+	return true
+}
 
 func executeScript(script string) error {
 	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
 	cmd.Dir = projectPath
-	output, err := cmd.CombinedOutput()
+	outputBytes, err := cmd.CombinedOutput()
+	output := strings.TrimSpace(string(outputBytes))
+	logger.Info("\""+script+"\" completed.", zap.String("output", output))
 	if err != nil {
 		// The "cmd.CombinedOutput()" function will throw an error if the return code is not equal
 		// to 0
-		logger.Error("Failed to execute \""+script+"\":", err)
-		if string(output) != "" {
-			logger.Error("Output is as follows:")
-			logger.Error(string(output))
-		}
-		return err
-	}
-	logger.Info("\"" + script + "\" completed.")
-	if string(output) != "" {
-		logger.Info("Output is as follows:")
-		logger.Info(string(output))
+		sentry.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetTag("scriptOutput", output)
+		})
+		return fmt.Errorf("failed to execute \"%s\": %w", script, err)
 	}
 	return nil
 }
@@ -59,7 +67,15 @@ func getRandom(min int, max int) int {
 		return 0
 	}
 	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min
+	return rand.Intn(max-min) + min // nolint: gosec
+}
+
+func getURLFromPath(path string) string {
+	protocol := "http"
+	if useTLS {
+		protocol = "https"
+	}
+	return protocol + "://" + domain + path
 }
 
 // getVersion will get the current version of the JavaScript client,
@@ -69,7 +85,7 @@ func getRandom(min int, max int) int {
 func getVersion() int {
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(versionPath); err != nil {
-		logger.Error("Failed to read the \""+versionPath+"\" file:", err)
+		logger.Error("Failed to read the \"" + versionPath + "\" file: " + err.Error())
 		return 0
 	} else {
 		fileContents = v
@@ -77,12 +93,22 @@ func getVersion() int {
 	versionString := string(fileContents)
 	versionString = strings.TrimSpace(versionString)
 	if v, err := strconv.Atoi(versionString); err != nil {
-		logger.Error("Failed to convert \""+versionString+"\" "+
-			"(the contents of the version file) to a number:", err)
+		logger.Error("Failed to convert \"" + versionString + "\" " +
+			"(the contents of the version file) to a number: " + err.Error())
 		return 0
 	} else {
 		return v
 	}
+}
+
+func indexOf(value uint64, slice []uint64) int {
+	for i, v := range slice {
+		if v == value {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func intInSlice(a int, slice []int) bool {
@@ -94,19 +120,24 @@ func intInSlice(a int, slice []int) bool {
 	return false
 }
 
-// From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
-func isPrintableASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] < 32 || s[i] > 126 { // 32 is " " and 126 is "~"
-			return false
-		}
+// isValidUrl tests a string to determine if it is a well-structured url or not
+// From: https://golangcode.com/how-to-check-if-a-string-is-a-url/
+func isValidURL(toTest string) bool {
+	_, err := url.ParseRequestURI(toTest)
+	if err != nil {
+		return false
 	}
+
+	u, err := url.Parse(toTest)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
 	return true
 }
 
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
 var isAlphanumericHyphen = regexp.MustCompile(`^[a-zA-Z0-9\-]+$`).MatchString
-var isAlphanumericSpacesSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\-_=\+;:,\.\?]+$`).MatchString
 
 // From: https://gist.github.com/stoewer/fbe273b711e6a06315d19552dd4d33e6
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -150,6 +181,19 @@ func numConsecutiveDiacritics(s string) int {
 	}
 
 	return maxConsecutive
+}
+
+func removeNonPrintableCharacters(s string) string {
+	return strings.Map(func(r rune) rune {
+		if !unicode.IsPrint(r) {
+			// This character is not printable by Go
+			// https://golang.org/pkg/unicode/#IsPrint
+			// Returning a negative value will drop the character from the string with no
+			// replacement
+			return -1
+		}
+		return r
+	}, s)
 }
 
 func secondsToDurationString(seconds int) (string, error) {

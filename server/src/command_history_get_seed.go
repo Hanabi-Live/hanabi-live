@@ -1,19 +1,23 @@
 package main
 
+import (
+	"context"
+)
+
 // commandHistoryGetSeed is sent when the user clicks on the "Compare Scores" button
 //
 // Example data:
 // {
 //   seed: 'p2v0s1',
 // }
-func commandHistoryGetSeed(s *Session, d *CommandData) {
+func commandHistoryGetSeed(ctx context.Context, s *Session, d *CommandData) {
 	if d.Seed == "" {
 		s.Warning("You must provide a seed.")
 		return
 	}
 
 	// Check for non-ASCII characters
-	if !isPrintableASCII(d.Seed) {
+	if !containsAllPrintableASCII(d.Seed) {
 		s.Warning("Seeds can only contain ASCII characters.")
 		return
 	}
@@ -27,7 +31,7 @@ func commandHistoryGetSeed(s *Session, d *CommandData) {
 	// Get the list of game IDs played on this seed
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsSeed(d.Seed); err != nil {
-		logger.Error("Failed to get the game IDs for seed \""+d.Seed+"\":", err)
+		logger.Error("Failed to get the game IDs for seed \"" + d.Seed + "\": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -35,9 +39,10 @@ func commandHistoryGetSeed(s *Session, d *CommandData) {
 	}
 
 	// Get the history for these game IDs
+	// (with a custom sort by score)
 	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the history:", err)
+	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
+		logger.Error("Failed to get the history: " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

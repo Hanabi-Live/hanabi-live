@@ -1,12 +1,27 @@
-import Konva from 'konva';
-import Screen from '../../lobby/types/Screen';
-import { TOOLTIP_DELAY } from './constants';
-import NodeWithTooltip from './controls/NodeWithTooltip';
-import TextWithTooltip from './controls/TextWithTooltip';
-import globals from './globals';
+import Konva from "konva";
+import Screen from "../../lobby/types/Screen";
+import { TOOLTIP_DELAY } from "./constants";
+import NodeWithTooltip from "./controls/NodeWithTooltip";
+import TextWithTooltip from "./controls/TextWithTooltip";
+import globals from "./globals";
 
-export const init = (element: NodeWithTooltip, delayed: boolean, customContent: boolean) => {
-  element.on('mouseover touchstart', function mouseOver(this: Konva.Node) {
+export function init(
+  element: NodeWithTooltip,
+  delayed: boolean,
+  customContent: boolean,
+): void {
+  if (element.tooltipName === undefined) {
+    throw new Error(
+      'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+    );
+  }
+  if (element.tooltipContent === undefined) {
+    throw new Error(
+      'An element that is supposed to have a tooltip does not have a "tooltipContent" property.',
+    );
+  }
+
+  element.on("mouseover touchstart", function mouseOver(this: Konva.Node) {
     resetActiveHover();
     globals.activeHover = this;
     if (!delayed) {
@@ -17,12 +32,14 @@ export const init = (element: NodeWithTooltip, delayed: boolean, customContent: 
       }, TOOLTIP_DELAY);
     }
   });
-  element.on('mouseout touchend', () => {
-    if (globals.activeHover !== element) {
-      return;
+  element.on("mouseout touchend", () => {
+    if (element.tooltipName === undefined) {
+      throw new Error(
+        'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+      );
     }
     globals.activeHover = null;
-    $(`#tooltip-${element.tooltipName}`).tooltipster('close');
+    $(`#tooltip-${element.tooltipName}`).tooltipster("close");
   });
   let content = element.tooltipContent;
   if (!customContent) {
@@ -30,10 +47,10 @@ export const init = (element: NodeWithTooltip, delayed: boolean, customContent: 
     content += '<i class="fas fa-info-circle fa-sm"></i>';
     content += ` &nbsp;${element.tooltipContent}</span>`;
   }
-  $(`#tooltip-${element.tooltipName}`).tooltipster('instance').content(content);
-};
+  $(`#tooltip-${element.tooltipName}`).tooltipster("instance").content(content);
+}
 
-export const show = (element: NodeWithTooltip) => {
+export function show(element: NodeWithTooltip): void {
   // Don't do anything if we are no longer in the game
   if (globals.lobby.currentScreen !== Screen.Game) {
     return;
@@ -44,6 +61,11 @@ export const show = (element: NodeWithTooltip) => {
     return;
   }
 
+  if (element.tooltipName === undefined) {
+    throw new Error(
+      'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+    );
+  }
   const tooltip = $(`#tooltip-${element.tooltipName}`);
   const pos = element.getAbsolutePosition();
   let width = element.width();
@@ -58,15 +80,14 @@ export const show = (element: NodeWithTooltip) => {
       width = element.width();
     }
   }
-  const tooltipX = pos.x + (width / 2);
-  tooltip.css('left', tooltipX);
-  tooltip.css('top', pos.y);
-  tooltip.tooltipster('open');
-};
+  const tooltipX = pos.x + width / 2;
+  tooltip.css("left", tooltipX);
+  tooltip.css("top", pos.y);
+  tooltip.tooltipster("open");
+}
 
-export const resetActiveHover = () => {
-  if (globals.activeHover) {
-    globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
-    globals.activeHover = null;
+export function resetActiveHover(): void {
+  if (globals.activeHover !== null) {
+    globals.activeHover.dispatchEvent(new MouseEvent("mouseout"));
   }
-};
+}

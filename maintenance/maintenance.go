@@ -16,7 +16,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var (
+const (
 	HTTPReadTimeout  = 5 * time.Second
 	HTTPWriteTimeout = 10 * time.Second
 )
@@ -43,6 +43,7 @@ func main() {
 
 	// Get the parent directory
 	// https://stackoverflow.com/questions/48570228/get-the-parent-path
+	// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
 	projectPath = filepath.Dir(projectPath)
 
 	// Check to see if the ".env" file exists
@@ -84,8 +85,8 @@ func main() {
 	}
 
 	// Create a new Gin HTTP router
-	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
-	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
+	gin.SetMode(gin.ReleaseMode)                       // Comment this out to debug HTTP stuff
+	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 	httpRouter.StaticFile("/", path.Join(projectPath, "maintenance", "index.html"))
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
@@ -128,7 +129,7 @@ func main() {
 
 	// Redirect mostly everything to the main maintenance page, e.g. "/"
 	httpRouter.Use(func(c *gin.Context) {
-		path := c.Request.URL.Path // "c.FullPath()" does not work for some reason
+		path := c.Request.URL.Path
 		if path != "/" &&
 			!strings.HasPrefix(path, "/public/") {
 

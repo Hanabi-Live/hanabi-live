@@ -1,3 +1,5 @@
+import Color from "./Color";
+
 export default interface CardState {
   readonly order: number;
   // If location is a number, it is the index of the player that holds this card
@@ -5,21 +7,24 @@ export default interface CardState {
   readonly suitIndex: number | null;
   readonly rank: number | null;
 
-  // The following are the variables that are refreshed
-
-  // possibleCardsFromClues = Array<[suitIndex, rank]>
-  //  = which specific cards are still possible based on clues received
+  // possibleCardsFromClues is a one-dimensional array of tuples
+  // It contains a tuple for each specific card that is still possible based on the clues touching
+  // the card so far
+  // Do not access this by the index; filter the array to find the remaining cards that you need
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
-  // possibleCardsFromDeduction = Array<[suitIndex, rank]>
-  //  = which specific cards are still possible based on everything the player should know
+  // possibleCardsFromDeduction is a one-dimensional array of tuples
+  // It contains a tuple for each specific card that is still possible based on everything the
+  // player holding it should know so far
+  // Do not access this by the index; filter the array to find the remaining cards that you need
   readonly possibleCardsFromDeduction: ReadonlyArray<readonly [number, number]>;
 
   // An array that specifies whether the card is revealed to a particular player index
   readonly revealedToPlayer: readonly boolean[];
 
   // We need this to highlight pips (e.g. on Pink variants)
-  readonly positiveRankClues : number[];
+  readonly positiveColorClues: Color[]; // The elements of this array will always be unique
+  readonly positiveRankClues: number[]; // The elements of this array will always be unique
 
   // TODO: save positive rank clues and highlight them (e.g. on Rainbow-Ones variants)
 
@@ -34,6 +39,10 @@ export default interface CardState {
 
   // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
+
+  // Needed for special sound effects
+  readonly dealtToStartingHand: boolean;
+  readonly firstCluedWhileOnChop: boolean | null;
 }
 
-export type CardLocation = 'deck' | 'discard' | 'playStack' | number;
+export type CardLocation = "deck" | "discard" | "playStack" | number;

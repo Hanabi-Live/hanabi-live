@@ -5,26 +5,15 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path"
-	"sort"
 	"strconv"
-	"strings"
 )
-
-type Character struct {
-	// Similar to variants, each character must have a unique numerical ID (for the database)
-	ID                      int    `json:"id"`
-	Description             string `json:"description"`
-	Emoji                   string `json:"emoji"`
-	WriteMetadataToDatabase bool   `json:"writeMetadataToDatabase"`
-	Not2P                   bool   `json:"not2P"`
-}
 
 var (
 	characters      map[string]*Character
+	characterIDMap  map[int]string
 	characterNames  []string
-	charactersID    map[int]string
 	debugCharacters = []string{
-		"n/a",
+		"Genius",
 		"n/a",
 		"n/a",
 		"n/a",
@@ -54,52 +43,67 @@ var (
 func charactersInit() {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "characters.json")
-	var contents []byte
+	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {
-		contents = v
+		fileContents = v
 	}
-	characters = make(map[string]*Character)
-	if err := json.Unmarshal(contents, &characters); err != nil {
-		logger.Fatal("Failed to convert the characters file to JSON:", err)
+	var charactersArray []*Character
+	if err := json.Unmarshal(fileContents, &charactersArray); err != nil {
+		logger.Fatal("Failed to convert the characters file to JSON: " + err.Error())
 		return
 	}
 
-	uniqueNameMap := make(map[string]struct{})
-	uniqueIDMap := make(map[int]struct{})
+	// Convert the array to a map
+	characters = make(map[string]*Character)
+	characterIDMap = make(map[int]string)
 	characterNames = make([]string, 0)
-	charactersID = make(map[int]string)
-	for name, character := range characters {
+	for _, character := range charactersArray {
+		// Validate the name
+		if character.Name == "" {
+			logger.Fatal("There is a character with an empty name in the \"characters.json\" file.")
+		}
+
+		// Validate the ID
+		if character.ID < 0 { // The first character has an ID of 0
+			logger.Fatal("The \"" + character.Name + "\" character has an invalid ID.")
+		}
+
+		// Validate the description
+		if character.Description == "" {
+			logger.Fatal("The \"" + character.Name + "\" character does not have a description.")
+		}
+
+		// Validate the emoji
+		if character.Emoji == "" {
+			logger.Fatal("The \"" + character.Name + "\" character does not have an emoji.")
+		}
+
 		// Validate that all of the names are unique
-		if _, ok := uniqueNameMap[name]; ok {
-			logger.Fatal("There are two characters with the name of \"" + name + "\".")
+		if _, ok := characters[character.Name]; ok {
+			logger.Fatal("There are two characters with the name of \"" + character.Name + "\".")
 			return
 		}
-		uniqueNameMap[name] = struct{}{}
+
+		// Add it to the map
+		characters[character.Name] = character
 
 		// Validate that all of the ID's are unique
-		if _, ok := uniqueIDMap[character.ID]; ok {
+		// And create a reverse mapping of ID to name
+		// (so that we can easily find the associated character from a database entry)
+		if _, ok := characterIDMap[character.ID]; ok {
 			logger.Fatal("There are two characters with the ID of " +
 				"\"" + strconv.Itoa(character.ID) + "\".")
 			return
 		}
-		uniqueIDMap[character.ID] = struct{}{}
+		characterIDMap[character.ID] = character.Name
 
 		// Create an array with every character name
-		// (so that later we have the ability to get a random character)
-		characterNames = append(characterNames, name)
-
-		// Create a reverse mapping of ID to name
-		// (so that we can easily find the associated character from a database entry)
-		charactersID[character.ID] = name
+		// (so that later we have the ability to easily get a random character)
+		characterNames = append(characterNames, character.Name)
 	}
-
-	// The characters map was iterated over in a random order,
-	// so the "characterNames" array will be in a random order every time the server starts
-	// Alphabetize it to prevent this
-	sort.Strings(characterNames)
 }
 
 func charactersGenerate(g *Game) {
@@ -107,46 +111,31 @@ func charactersGenerate(g *Game) {
 		return
 	}
 
-	// If this is a JSON replay, use the character selections from the JSON input
-	if g.ExtraOptions.DatabaseID == 0 {
-		if len(g.ExtraOptions.CustomCharacters) != len(g.Players) {
-			logger.Error("There are " + strconv.Itoa(len(g.ExtraOptions.CustomCharacters)) +
-				" custom characters, but there are " + strconv.Itoa(len(g.Players)) +
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
+	// If predefined character selections were specified, use those
+	if g.ExtraOptions.CustomCharacterAssignments != nil &&
+		len(g.ExtraOptions.CustomCharacterAssignments) != 0 {
+
+		if len(g.ExtraOptions.CustomCharacterAssignments) != len(g.Players) {
+			logger.Error("There are " +
+				strconv.Itoa(len(g.ExtraOptions.CustomCharacterAssignments)) +
+				" predefined characters, but there are " + strconv.Itoa(len(g.Players)) +
 				" players in the game.")
 			return
 		}
 
 		for i, p := range g.Players {
-			p.Character = g.ExtraOptions.CustomCharacters[i].Name
-			p.CharacterMetadata = g.ExtraOptions.CustomCharacters[i].Metadata
+			p.Character = g.ExtraOptions.CustomCharacterAssignments[i].Name
+			p.CharacterMetadata = g.ExtraOptions.CustomCharacterAssignments[i].Metadata
 		}
 		return
 	}
 
-	// If this is a database replay (or a "!replay" game),
-	// use the character selections from the database instead of generating new random ones
-	if g.ExtraOptions.DatabaseID != -1 {
-		// Get the players from the database
-		var dbPlayers []*DBPlayer
-		if v, err := models.Games.GetPlayers(g.ExtraOptions.DatabaseID); err != nil {
-			logger.Error("Failed to get the players from the database for game "+
-				strconv.Itoa(g.ExtraOptions.DatabaseID)+":", err)
-			return
-		} else {
-			dbPlayers = v
-		}
-
-		for i, dbP := range dbPlayers {
-			g.Players[i].Character = charactersID[dbP.CharacterAssignment]
-
-			// Metadata is stored in the database as value + 1
-			g.Players[i].CharacterMetadata = dbP.CharacterMetadata - 1
-		}
-		return
-	}
-
-	// Seed the random number generator
-	setSeed(g.Seed)
+	// This is not a replay,
+	// so we must generate new random character selections based on the game's seed
+	setSeed(g.Seed) // Seed the random number generator
 
 	for i, p := range g.Players {
 		// Set the character
@@ -158,7 +147,7 @@ func charactersGenerate(g *Game) {
 				// Get a random character assignment
 				// We don't have to seed the PRNG,
 				// since that was done just a moment ago when the deck was shuffled
-				randomIndex := rand.Intn(len(characterNames))
+				randomIndex := rand.Intn(len(characterNames)) // nolint: gosec
 				p.Character = characterNames[randomIndex]
 
 				// Check to see if any other players have this assignment already
@@ -196,16 +185,16 @@ func charactersGenerate(g *Game) {
 		} else {
 			if p.Character == "Fuming" { // 0
 				// A random number from 0 to the number of colors in this variant
-				p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
+				p.CharacterMetadata = rand.Intn(len(variant.ClueColors)) // nolint: gosec
 			} else if p.Character == "Dumbfounded" { // 1
 				// A random number from 1 to 5
-				p.CharacterMetadata = rand.Intn(4) + 1
+				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
 			} else if p.Character == "Inept" { // 2
-				// A random number from 0 to the number of suits in this variant
-				p.CharacterMetadata = rand.Intn(len(g.Stacks))
+				// A random number from 0 to the number of colors in this variant
+				p.CharacterMetadata = rand.Intn(len(variant.ClueColors)) // nolint: gosec
 			} else if p.Character == "Awkward" { // 3
 				// A random number from 1 to 5
-				p.CharacterMetadata = rand.Intn(4) + 1
+				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
 			}
 		}
 	}
@@ -297,6 +286,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		return false
 	}
 
+	// Local variables
+	variant := variants[g.Options.VariantName]
 	clue := NewClue(d)        // Convert the incoming data to a clue object
 	p2 := g.Players[d.Target] // Get the target of the clue
 
@@ -372,8 +363,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 			return true
 		}
 	} else if p.Character == "Miser" && // 10
-		(g.ClueTokens < 4 ||
-			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens < 8)) {
+		g.ClueTokens < variant.GetAdjustedClueTokens(4) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot give a clue unless there are 4 or more clues available.")
@@ -410,9 +400,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	} else if p.Character == "Genius" && // 24
 		p.CharacterMetadata == -1 {
 
-		if g.ClueTokens < 2 ||
-			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens < 4) {
-
+		if g.ClueTokens < variant.GetAdjustedClueTokens(2) {
 			s.Warning("You are " + p.Character + ", " +
 				"so there needs to be at least two clues available for you to give a clue.")
 			return true
@@ -484,6 +472,9 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	if p.Character == "Anxious" && // 21
 		g.ClueTokens%2 == 0 { // Even amount of clues
 
@@ -497,8 +488,7 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 			"so you cannot discard when there is an odd number of clues available.")
 		return true
 	} else if p.Character == "Wasteful" && // 23
-		((!strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens >= 2) ||
-			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens >= 4)) {
+		g.ClueTokens >= variant.GetAdjustedClueTokens(2) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot discard if there are 2 or more clues available.")
@@ -599,6 +589,9 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		return false
 	}
 
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	if p.Character == "Genius" { // 24
 		// Must clue both a color and a number (uses 2 clues)
 		// The clue target is stored in "p.CharacterMetadata"
@@ -614,10 +607,7 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 
 		// After discarding, discards again if there are 4 clues or less
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
-		if p.CharacterMetadata == -1 &&
-			(g.ClueTokens <= 4 ||
-				(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens <= 8)) {
-
+		if p.CharacterMetadata == -1 && g.ClueTokens <= variant.GetAdjustedClueTokens(4) {
 			p.CharacterMetadata = 0
 			return true
 		} else if p.CharacterMetadata == 0 {
@@ -634,9 +624,9 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && a.PlayerIndex == p.GetLeftPlayer() { // 29
+	if p.Character == "Blind Spot" && a.PlayerIndex == p.GetNextPlayer() { // 29
 		return true
-	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetRightPlayer() { // 30
+	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetPreviousPlayer() { // 30
 		return true
 	} else if p.Character == "Slow-Witted" { // 33
 		return true
@@ -689,9 +679,34 @@ func characterAdjustEndTurn(g *Game) {
 	// the final go-around of the table
 	for _, p := range g.Players {
 		if p.Character == "Contrarian" { // 27
-			g.EndTurn = g.Turn + 2
+			// 3 instead of 2 because it should be 2 turns after the final card is drawn
+			g.EndTurn = g.Turn + 3
 		}
 	}
+}
+
+func characterHasTakenLastTurn(g *Game) bool {
+	if g.EndTurn == -1 {
+		return false
+	}
+	originalPlayer := g.ActivePlayerIndex
+	activePlayer := g.ActivePlayerIndex
+	turnsInverted := g.TurnsInverted
+	for turn := g.Turn + 1; turn <= g.EndTurn; turn++ {
+		if turnsInverted {
+			activePlayer += len(g.Players)
+			activePlayer = (activePlayer - 1) % len(g.Players)
+		} else {
+			activePlayer = (activePlayer + 1) % len(g.Players)
+		}
+		if activePlayer == originalPlayer {
+			return false
+		}
+		if g.Players[activePlayer].Character == "Contrarian" { // 27
+			turnsInverted = !turnsInverted
+		}
+	}
+	return true
 }
 
 func characterCheckSoftlock(g *Game, p *GamePlayer) {
@@ -699,7 +714,10 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 		return
 	}
 
-	if g.ClueTokens == 0 &&
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
+	if g.ClueTokens < variant.GetAdjustedClueTokens(1) &&
 		p.CharacterMetadata == 0 && // The character's "special ability" is currently enabled
 		(p.Character == "Vindictive" || // 9
 			p.Character == "Insistent") { // 13
@@ -709,16 +727,25 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 	}
 }
 
-func characterEmptyClueAllowed(d *CommandData, g *Game, p *GamePlayer) bool {
+func characterSeesCard(g *Game, p *GamePlayer, p2 *GamePlayer, cardOrder int) bool {
 	if !g.Options.DetrimentalCharacters {
+		return true
+	}
+
+	if p.Character == "Blind Spot" && p2.Index == p.GetNextPlayer() { // 29
+		// Cannot see the cards of the next player
 		return false
 	}
 
-	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer() { // 29
-		return true
-	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer() { // 30
-		return true
+	if p.Character == "Oblivious" && p2.Index == p.GetPreviousPlayer() { // 30
+		// Cannot see the cards of the previous player
+		return false
 	}
 
-	return false
+	if p.Character == "Slow-Witted" && p2.GetCardSlot(cardOrder) == 1 { // 33
+		// Cannot see cards in slot 1
+		return false
+	}
+
+	return true
 }

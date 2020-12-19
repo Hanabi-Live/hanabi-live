@@ -15,16 +15,12 @@ func httpLocalhostSendError(c *gin.Context, userID int) {
 		return
 	}
 
-	var s *Session
-	if v, ok := sessions[userID]; !ok {
+	if s, ok := sessions.Get(userID); !ok {
 		msg2 := "Failed to get the session for the user ID of \"" + strconv.Itoa(userID) + "\"."
 		logger.Error(msg2)
 		c.String(http.StatusInternalServerError, msg2)
-		return
 	} else {
-		s = v
+		s.Error(msg)
+		c.String(http.StatusOK, "success\n")
 	}
-
-	s.Error(msg)
-	c.String(http.StatusOK, "success\n")
 }

@@ -1,9 +1,10 @@
-import Status from './Status';
+import Status from "./Status";
 
 export default interface User {
-  id: number;
+  userID: number;
   name: string;
   status: Status;
-  table: number;
+  tableID: number;
+  hyphenated: boolean;
   inactive: boolean;
 }

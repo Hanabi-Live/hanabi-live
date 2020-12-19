@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -13,30 +14,28 @@ import (
 //     variant: 'Black & Rainbow (6 Suit)',
 //   },
 // }
-func commandTableSetVariant(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandTableSetVariant(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
 	}
 
 	if t.Running {
-		s.Warning(ChatCommandStartedFail)
+		s.Warning(StartedFail)
 		return
 	}
 
-	if s.UserID() != t.Owner {
-		s.Warning(ChatCommandNotOwnerFail)
+	if s.UserID != t.OwnerID {
+		s.Warning(NotOwnerFail)
 		return
 	}
 
-	// Validate that they send the options object
+	// Validate that they sent the options object
 	if d.Options == nil {
-		d.Options = &Options{}
+		d.Options = NewOptions()
 	}
 
 	if len(d.Options.VariantName) == 0 {
@@ -49,22 +48,29 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 
+	tableSetVariant(ctx, s, d, t)
+}
+
+func tableSetVariant(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	// Local variables
+	variant := variants[d.Options.VariantName]
+
 	// First, change the variant
 	t.Options.VariantName = d.Options.VariantName
 
 	// Update the variant-specific stats for each player at the table
 	for _, p := range t.Players {
-		var variantStats UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variants[t.Options.VariantName].ID); err != nil {
-			logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
-				"for variant "+strconv.Itoa(variants[t.Options.VariantName].ID)+":", err)
+		var variantStats *UserStatsRow
+		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
+			logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
+				strconv.Itoa(variant.ID) + ": " + err.Error())
 			s.Error(DefaultErrorMsg)
 			return
 		} else {
 			variantStats = v
 		}
 
-		p.Stats = PregameStats{
+		p.Stats = &PregameStats{
 			NumGames: p.Stats.NumGames,
 			Variant:  variantStats,
 		}
@@ -77,6 +83,6 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	// Update the variant in the table list for everyone in the lobby
 	notifyAllTable(t)
 
-	room := "table" + strconv.Itoa(tableID)
-	chatServerSend(s.Username()+" has changed the variant to: "+d.Options.VariantName, room)
+	msg := s.Username + " has changed the variant to: " + d.Options.VariantName
+	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }

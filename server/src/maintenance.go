@@ -1,11 +1,17 @@
 package main
 
-var (
-	maintenanceMode bool
+import (
+	"context"
+
+	"github.com/tevino/abool"
 )
 
-func maintenance(enabled bool) {
-	maintenanceMode = enabled
+var (
+	maintenanceMode = abool.New()
+)
+
+func maintenance(ctx context.Context, enabled bool) {
+	maintenanceMode.SetTo(enabled)
 	notifyAllMaintenance()
 	msg := ""
 	if enabled {
@@ -19,5 +25,10 @@ func maintenance(enabled bool) {
 	} else {
 		msg += "disabled."
 	}
-	chatServerSendAll(msg)
+
+	// We must acquires the tables lock before entering the "chatServerSendAll()" function
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
+	chatServerSendAll(ctx, msg)
 }

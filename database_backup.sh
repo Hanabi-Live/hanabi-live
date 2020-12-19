@@ -20,7 +20,12 @@ BACKUPS_DIR="$DIR/backups"
 FILENAME=$REPO-`date +%s`.sql # "date +%s" returns the epoch timestamp
 
 # Import the database information
-source "$DIR/.env"
+ENV_PATH="$DIR/.env"
+if [[ ! -f $ENV_PATH ]]; then
+  echo "Failed to find the \".env\" file at: $ENV_PATH"
+  exit 1
+fi
+source "$ENV_PATH"
 if [[ -z $DB_HOST ]]; then
   DB_HOST=localhost
 fi
@@ -44,18 +49,18 @@ if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
   AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
   if [[ $AMOUNT_FULL -gt 80 ]]; then
     # Delete the oldest file in the backups directory
-    echo "Hard drive over 80% full; deleting one of the older backups."
+    echo "Hard drive over 80% full; deleting the oldest backup."
     rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
   fi
 fi
 
-# Upload it to Google Drive (see "INSTALL.md")
-if [[ -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
-  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
+# Detect to see if we have Google Drive backups configured (see "INSTALL.md")
+if [[ -z $GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME ]]; then
+  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME\" is not set in the \".env\" file."
   exit 0
 fi
-if [[ -z $GOOGLE_DRIVE_PARENT_DIRECTORY ]]; then
-  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_PARENT_DIRECTORY\" is not set in the \".env\" file."
+if [[ -z $GOOGLE_DRIVE_PARENT_DIRECTORY_ID ]]; then
+  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_PARENT_DIRECTORY_ID\" is not set in the \".env\" file."
   exit 0
 fi
 if command -v "gdrive" > /dev/null; then
@@ -70,4 +75,19 @@ if [[ -z $GDRIVE_PATH ]]; then
   echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
   exit 1
 fi
-$GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
+
+# Check for free space; if we have less than a gig left,
+# then start deleting old files until we have at least a gig of storage left
+function delete_file_if_near_full {
+  if [[ $($GDRIVE_PATH about --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | grep Free | grep GB) ]]; then
+    return
+  fi
+  echo "Google Drive account has under 1 gig of free space left; deleting the oldest backup."
+  OLDEST_FILE_ID=$($GDRIVE_PATH list --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO'" | head -n 1 | cut -f 1 -d " ")
+  $GDRIVE_PATH delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$OLDEST_FILE_ID"
+  delete_file_if_near_full
+}
+delete_file_if_near_full
+
+# Upload the file to Google Drive
+$GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY_ID"

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -15,53 +16,45 @@ const (
 // {
 //   tableID: 15103,
 // }
-func commandChatTyping(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandChatTyping(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that they are in the game or are a spectator
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot report that you are typing in the chat.")
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+	if playerIndex == -1 && spectatorIndex == -1 {
+		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+			", so you cannot report that you are typing.")
 		return
 	}
-	if t.Replay && j == -1 {
-		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
-			"so you cannot report that you are typing in the chat.")
+	if spectatorIndex == -1 && t.Replay {
+		s.Warning("You are not spectating replay " + strconv.FormatUint(t.ID, 10) +
+			", so you cannot report that you are typing.")
 		return
 	}
 
-	/*
-		Alert everyone else that this person is now typing
-	*/
+	chatTyping(ctx, s, t, playerIndex, spectatorIndex)
+}
 
+func chatTyping(ctx context.Context, s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	// Update the "LastTyped" and "Typing" fields
 	// Check for spectators first in case this is a shared replay that the player happened to be in
 	name := ""
-	if j != -1 {
-		// They are a spectator
-		s := t.Spectators[j]
-		s.LastTyped = time.Now()
-		if !s.Typing {
-			s.Typing = true
-			name = s.Name
+	if spectatorIndex != -1 {
+		sp := t.Spectators[spectatorIndex]
+		sp.LastTyped = time.Now()
+		if !sp.Typing {
+			sp.Typing = true
+			name = sp.Name
 		}
-	} else if i != -1 {
-		// They are a player
-		p := t.Players[i]
+	} else if playerIndex != -1 {
+		p := t.Players[playerIndex]
 		p.LastTyped = time.Now()
 		if !p.Typing {
 			p.Typing = true
@@ -75,38 +68,39 @@ func commandChatTyping(s *Session, d *CommandData) {
 	}
 
 	// X seconds from now, check to see if they have stopped typing
-	go commandChatTypingCheckStopped(t, s.UserID())
+	go chatTypingCheckStopped(ctx, t, s.UserID)
 }
 
-func commandChatTypingCheckStopped(t *Table, userID int) {
+// chatTypingCheckStopped is meant to be run in a new goroutine
+func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	time.Sleep(TypingDelay)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
 
 	// Check to see if the table still exists
-	if _, ok := tables[t.ID]; !ok {
+	t2, exists := getTableAndLock(ctx, nil, t.ID, false, true)
+	if !exists || t != t2 {
 		return
 	}
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 
 	// Validate that they are in the game or are a spectator
-	i := t.GetPlayerIndexFromID(userID)
-	j := t.GetSpectatorIndexFromID(userID)
-	if i == -1 && j == -1 {
+	playerIndex := t.GetPlayerIndexFromID(userID)
+	spectatorIndex := t.GetSpectatorIndexFromID(userID)
+	if playerIndex == -1 && spectatorIndex == -1 {
 		// They left the game shortly after they started typing
 		// The "typing" message is automatically removed when a player leaves a table,
 		// so we don't have to do anything
 		return
 	}
-	if t.Replay && j == -1 {
+	if spectatorIndex == -1 && t.Replay {
 		// Same as above
 		return
 	}
 
 	// Check for spectators first in case this is a shared replay that the player happened to be in
 	name := ""
-	if j != -1 {
-		// They are a spectator
-		sp := t.Spectators[j]
+	if spectatorIndex != -1 {
+		sp := t.Spectators[spectatorIndex]
 		if !sp.Typing {
 			return
 		}
@@ -114,9 +108,8 @@ func commandChatTypingCheckStopped(t *Table, userID int) {
 			sp.Typing = false
 			name = sp.Name
 		}
-	} else if i != -1 {
-		// They are a player
-		p := t.Players[i]
+	} else if playerIndex != -1 {
+		p := t.Players[playerIndex]
 		if !p.Typing {
 			return
 		}

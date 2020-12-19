@@ -1,85 +1,81 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import { getCharacter } from '../data/gameData';
-import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
-import Clue, { colorClue, rankClue } from '../types/Clue';
-import ClueType from '../types/ClueType';
-import GameMetadata from '../types/GameMetadata';
-import MsgClue from '../types/MsgClue';
-import Variant from '../types/Variant';
-import * as variantRules from './variant';
+import { getCharacter } from "../data/gameData";
+import { getCharacterIDForPlayer } from "../reducers/reducerHelpers";
+import Clue, { colorClue, rankClue } from "../types/Clue";
+import ClueType from "../types/ClueType";
+import { START_CARD_RANK } from "../types/constants";
+import GameMetadata from "../types/GameMetadata";
+import MsgClue from "../types/MsgClue";
+import Variant from "../types/Variant";
+import * as variantRules from "./variant";
 
-export const getClueName = (
+export function getClueName(
   clueType: ClueType,
   clueValue: number,
   variant: Variant,
   characterID: number | null,
-) => {
-  let characterName = '';
+): string {
+  let characterName = "";
   if (characterID !== null) {
     const character = getCharacter(characterID);
     characterName = character.name;
   }
 
-  let clueName;
+  let clueName: string;
   if (clueType === ClueType.Color) {
     clueName = variant.clueColors[clueValue].name;
   } else if (clueType === ClueType.Rank) {
     clueName = clueValue.toString();
+  } else {
+    throw new Error("Invalid clue type.");
   }
   if (variantRules.isCowAndPig(variant)) {
     if (clueType === ClueType.Color) {
-      clueName = 'Moo';
+      clueName = "Moo";
     } else if (clueType === ClueType.Rank) {
-      clueName = 'Oink';
+      clueName = "Oink";
     }
-  } else if (
-    variantRules.isDuck(variant)
-     || characterName === 'Quacker'
-  ) {
-    clueName = 'Quack';
+  } else if (variantRules.isDuck(variant) || characterName === "Quacker") {
+    clueName = "Quack";
   }
   return clueName;
-};
+}
 
 // Convert a clue from the format used by the server to the format used by the client
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
-export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
+export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   let clueValue;
   if (msgClue.type === ClueType.Color) {
     clueValue = variant.clueColors[msgClue.value]; // This is a Color object
     return colorClue(clueValue);
-  } if (msgClue.type === ClueType.Rank) {
+  }
+  if (msgClue.type === ClueType.Rank) {
     clueValue = msgClue.value;
     return rankClue(clueValue);
   }
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
-};
+}
 
-// This mirrors the function "variantIsCardTouched" in "variants.go"
-export const touchesCard = (
+// This mirrors the function "variantIsCardTouched()" in "variants.go"
+export function touchesCard(
   variant: Variant,
   clue: Clue,
-  suitIndex: number | null,
-  rank: number | null,
-) => {
-  // Some detrimental characters are not able to see other people's hands
-  if (suitIndex === null) {
-    return false;
-  }
-
-  const suitObject = variant.suits[suitIndex];
+  suitIndex: number,
+  rank: number,
+): boolean {
+  const suit = variant.suits[suitIndex];
 
   if (clue.type === ClueType.Color) {
     if (variant.colorCluesTouchNothing) {
       return false;
     }
 
-    if (suitObject.allClueColors) {
+    if (suit.allClueColors) {
       return true;
     }
-    if (suitObject.noClueColors) {
+    if (suit.noClueColors) {
       return false;
     }
 
@@ -92,7 +88,18 @@ export const touchesCard = (
       }
     }
 
-    return suitObject.clueColors.map((c) => c.name).includes(clue.value.name);
+    if (suit.prism) {
+      // The color that touches a prism card is contingent upon the card's rank
+      let prismColorIndex = (rank - 1) % variant.clueColors.length;
+      if (rank === START_CARD_RANK) {
+        // "START" cards count as rank 0, so they are touched by the final color
+        prismColorIndex = variant.clueColors.length - 1;
+      }
+      const prismColorName = variant.clueColors[prismColorIndex].name;
+      return clue.value.name === prismColorName;
+    }
+
+    return suit.clueColors.map((c) => c.name).includes(clue.value.name);
   }
 
   if (clue.type === ClueType.Rank) {
@@ -100,10 +107,10 @@ export const touchesCard = (
       return false;
     }
 
-    if (suitObject.allClueRanks) {
+    if (suit.allClueRanks) {
       return true;
     }
-    if (suitObject.noClueRanks) {
+    if (suit.noClueRanks) {
       return false;
     }
 
@@ -114,32 +121,38 @@ export const touchesCard = (
       if (variant.specialNoClueRanks) {
         return false;
       }
+      if (variant.specialDeceptive) {
+        // The rank that touches a deceptive card is contingent upon the card's suit
+        const deceptiveRank =
+          variant.clueRanks[suitIndex % variant.clueRanks.length];
+        return clue.value === deceptiveRank;
+      }
     }
 
     return clue.value === rank;
   }
 
   return false;
-};
+}
 
-export const shouldApplyClue = (
+export function shouldApplyClue(
   giverIndex: number,
   metadata: GameMetadata,
   variant: Variant,
-) => {
+): boolean {
   const giverCharacterID = getCharacterIDForPlayer(
     giverIndex,
     metadata.characterAssignments,
   );
-  let giverCharacterName = '';
+  let giverCharacterName = "";
   if (giverCharacterID !== null) {
     const giverCharacter = getCharacter(giverCharacterID);
     giverCharacterName = giverCharacter.name;
   }
 
   return (
-    !variantRules.isCowAndPig(variant)
-    && !variantRules.isDuck(variant)
-    && giverCharacterName !== 'Quacker'
+    !variantRules.isCowAndPig(variant) &&
+    !variantRules.isDuck(variant) &&
+    giverCharacterName !== "Quacker"
   );
-};
+}

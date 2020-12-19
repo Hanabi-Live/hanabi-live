@@ -1,9 +1,13 @@
 package main
 
+import (
+	"context"
+)
+
 type CommandData struct {
 	// various
-	TableID int `json:"tableID"`
-	GameID  int `json:"gameID"`
+	TableID    uint64 `json:"tableID"`
+	DatabaseID int    `json:"databaseID"`
 
 	// setting
 	Setting string `json:"setting"`
@@ -31,9 +35,9 @@ type CommandData struct {
 	ShadowingPlayerIndex int `json:"shadowingPlayerIndex"`
 
 	// replayCreate
-	Source     string   `json:"source"`
-	GameJSON   GameJSON `json:"gameJSON"`
-	Visibility string   `json:"visibility"`
+	Source     string    `json:"source"`
+	GameJSON   *GameJSON `json:"gameJSON"`
+	Visibility string    `json:"visibility"`
 
 	// sharedReplay
 	Segment int    `json:"segment"`
@@ -60,17 +64,23 @@ type CommandData struct {
 	Username string `json:"-"` // Used to mark the username of a chat message
 	Discord  bool   `json:"-"` // Used to mark if a chat message originated from Discord
 	Server   bool   `json:"-"` // Used to mark if the server generated the chat message
+	// Used to prevent pre-games of restarted games from showing up in the lobby
+	HidePregame bool `json:"-"`
 	// True if this is a chat message that should only go to Discord
 	OnlyDiscord          bool   `json:"-"`
 	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`
+	// Used when a command handler calls another command handler
+	// (e.g. the mutex lock is already acquired and does not need to be acquired again)
+	NoTableLock  bool `json:"-"` // To avoid "t.Lock()"
+	NoTablesLock bool `json:"-"` // To avoid "tables.Lock()"
 }
 
 var (
 	// Used to store all of the functions that handle each command
-	commandMap = make(map[string]func(*Session, *CommandData))
+	commandMap = make(map[string]func(context.Context, *Session, *CommandData))
 )
 
 // Define all of the WebSocket commands
@@ -108,6 +118,7 @@ func commandInit() {
 	// Game and replay commands
 	commandMap["getGameInfo1"] = commandGetGameInfo1
 	commandMap["getGameInfo2"] = commandGetGameInfo2
+	commandMap["loaded"] = commandLoaded
 	commandMap["tag"] = commandTag
 	commandMap["tagDelete"] = commandTagDelete
 

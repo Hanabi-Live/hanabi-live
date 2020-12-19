@@ -6,122 +6,74 @@ import (
 	"path"
 	"strconv"
 	"strings"
-
-	orderedJSON "github.com/virtuald/go-ordered-json"
 )
 
 var (
 	variants     map[string]*Variant
-	variantsID   map[int]string
-	variantsList []string
+	variantIDMap map[int]string
+	variantNames []string
 )
 
-type JSONVariant struct {
+// VariantJSON is very similar to Variant,
+// but the latter is comprised of some more complicated objects
+type VariantJSON struct {
+	Name  string   `json:"name"`
 	ID    int      `json:"id"`
 	Suits []string `json:"suits"`
 	// ClueColors and ClueRanks are optional elements
 	// Thus, they must be pointers so that we can tell if the values were specified or not
 	ClueColors             *[]string `json:"clueColors"`
 	ClueRanks              *[]int    `json:"clueRanks"`
-	ColorCluesTouchNothing bool
-	RankCluesTouchNothing  bool
-	SpecialRank            int  `json:"specialRank"` // For e.g. Rainbow-Ones
-	SpecialAllClueColors   bool `json:"specialAllClueColors"`
-	SpecialAllClueRanks    bool `json:"specialAllClueRanks"`
-	SpecialNoClueColors    bool `json:"specialNoClueColors"`
-	SpecialNoClueRanks     bool `json:"specialNoClueRanks"`
-}
-
-type Variant struct {
-	Name string
-	// Each variant must have a unique numerical ID for seed generation purposes
-	// (and for the database)
-	ID                     int
-	Suits                  []*Suit
-	Ranks                  []int
-	ClueColors             []string
-	ClueRanks              []int
-	ColorCluesTouchNothing bool
-	RankCluesTouchNothing  bool
-	SpecialRank            int // For e.g. Rainbow-Ones
-	SpecialAllClueColors   bool
-	SpecialAllClueRanks    bool
-	SpecialNoClueColors    bool
-	SpecialNoClueRanks     bool
-	MaxScore               int
-}
-
-func (v *Variant) IsUpOrDown() bool {
-	return strings.HasPrefix(v.Name, "Up or Down")
-}
-
-func (v *Variant) HasReversedSuits() bool {
-	if v.IsUpOrDown() {
-		return true
-	}
-
-	for _, s := range v.Suits {
-		if s.Reversed {
-			return true
-		}
-	}
-	return false
-}
-
-func (v *Variant) GetDeckSize() int {
-	deckSize := 0
-	for _, s := range v.Suits {
-		if s.OneOfEach {
-			deckSize += 5
-		} else {
-			deckSize += 10
-		}
-	}
-	if v.IsUpOrDown() {
-		deckSize -= len(v.Suits)
-	}
-	return deckSize
+	ColorCluesTouchNothing bool      `json:"colorCluesTouchNothing"`
+	RankCluesTouchNothing  bool      `json:"rankCluesTouchNothing"`
+	SpecialRank            int       `json:"specialRank"` // For e.g. Rainbow-Ones
+	SpecialAllClueColors   bool      `json:"specialAllClueColors"`
+	SpecialAllClueRanks    bool      `json:"specialAllClueRanks"`
+	SpecialNoClueColors    bool      `json:"specialNoClueColors"`
+	SpecialNoClueRanks     bool      `json:"specialNoClueRanks"`
+	SpecialDeceptive       bool      `json:"specialDeceptive"`
 }
 
 func variantsInit() {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "variants.json")
-	var contents []byte
+	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
+		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {
-		contents = v
+		fileContents = v
 	}
-	var JSONVariants map[string]JSONVariant
-	if err := json.Unmarshal(contents, &JSONVariants); err != nil {
-		logger.Fatal("Failed to convert the variants file to JSON:", err)
+	var variantsArray []VariantJSON
+	if err := json.Unmarshal(fileContents, &variantsArray); err != nil {
+		logger.Fatal("Failed to convert the variants file to JSON: " + err.Error())
 		return
 	}
 
-	uniqueNameMap := make(map[string]struct{})
-	uniqueIDMap := make(map[int]struct{})
+	// Convert the array to a map
 	variants = make(map[string]*Variant)
-	variantsID = make(map[int]string)
-	for name, variant := range JSONVariants {
-		// Validate that all of the names are unique
-		if _, ok := uniqueNameMap[name]; ok {
-			logger.Fatal("There are two variants with the name of \"" + name + "\".")
-			return
+	variantIDMap = make(map[int]string)
+	variantNames = make([]string, 0)
+	for _, variant := range variantsArray {
+		// Validate the name
+		if variant.Name == "" {
+			logger.Fatal("There is a variant with an empty name in the \"variants.json\" file.")
 		}
-		uniqueNameMap[name] = struct{}{}
 
-		// Validate that all of the ID's are unique
-		if _, ok := uniqueIDMap[variant.ID]; ok {
-			logger.Fatal("There are two variants with the ID of " +
-				"\"" + strconv.Itoa(variant.ID) + "\".")
+		// Validate the ID
+		if variant.ID < 0 { // The first variant has an ID of 0
+			logger.Fatal("The \"" + variant.Name + "\" variant has an invalid ID.")
+		}
+
+		// Validate that all of the names are unique
+		if _, ok := variants[variant.Name]; ok {
+			logger.Fatal("There are two variants with the name of \"" + variant.Name + "\".")
 			return
 		}
-		uniqueIDMap[variant.ID] = struct{}{}
 
 		// Validate that there is at least one suit
 		if len(variant.Suits) < 1 {
-			logger.Fatal("The variant of \"" + name + "\" does not have at least one suit.")
+			logger.Fatal("The variant of \"" + variant.Name + "\" does not have at least one suit.")
 			return
 		}
 
@@ -130,7 +82,7 @@ func variantsInit() {
 		for _, suitName := range variant.Suits {
 			if suit, ok := suits[suitName]; !ok {
 				logger.Fatal("The suit of \"" + suitName + "\" " +
-					"in variant \"" + name + "\" does not exist.")
+					"in variant \"" + variant.Name + "\" does not exist.")
 				return
 			} else {
 				variantSuits = append(variantSuits, suit)
@@ -140,7 +92,7 @@ func variantsInit() {
 		// Derive the card ranks (the ranks that the cards of each suit will be)
 		// By default, assume ranks 1 through 5
 		variantRanks := []int{1, 2, 3, 4, 5}
-		if strings.HasPrefix(name, "Up or Down") {
+		if strings.HasPrefix(variant.Name, "Up or Down") {
 			// The "Up or Down" variants have START cards
 			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
 			variantRanks = append(variantRanks, StartCardRank)
@@ -168,7 +120,7 @@ func variantsInit() {
 			// The clue colors were specified in the JSON, so validate that they map to colors
 			for _, colorName := range *variant.ClueColors {
 				if _, ok := colors[colorName]; !ok {
-					logger.Fatal("The variant of \"" + name + "\" has a clue color of " +
+					logger.Fatal("The variant of \"" + variant.Name + "\" has a clue color of " +
 						"\"" + colorName + "\", but that color does not exist.")
 					return
 				}
@@ -190,8 +142,8 @@ func variantsInit() {
 		}
 
 		// Convert the JSON variant into a variant object and store it in the map
-		variants[name] = &Variant{
-			Name:                   name,
+		variants[variant.Name] = &Variant{
+			Name:                   variant.Name,
 			ID:                     variant.ID,
 			Suits:                  variantSuits,
 			Ranks:                  variantRanks,
@@ -204,58 +156,55 @@ func variantsInit() {
 			SpecialAllClueRanks:    variant.SpecialAllClueRanks,
 			SpecialNoClueColors:    variant.SpecialNoClueColors,
 			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
+			SpecialDeceptive:       variant.SpecialDeceptive,
 			MaxScore:               len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
 
-		// Create a reverse mapping of ID to name
+		// Validate that all of the ID's are unique
+		// And create a reverse mapping of ID to name
 		// (so that we can easily find the associated variant from a database entry)
-		variantsID[variant.ID] = name
+		if _, ok := variantIDMap[variant.ID]; ok {
+			logger.Fatal("There are two variants with the ID of " +
+				"\"" + strconv.Itoa(variant.ID) + "\".")
+			return
+		}
+		variantIDMap[variant.ID] = variant.Name
+
+		// Create an array with every variant name
+		variantNames = append(variantNames, variant.Name)
 	}
 
 	// Validate that there are no skipped ID numbers
-	for i := 0; i < len(JSONVariants); i++ {
-		foundID := false
-		for _, variant := range JSONVariants {
-			if variant.ID == i {
-				foundID = true
-				break
+	// (commented out for now since we have deleted some variants in the last round of changes)
+	/*
+		for i := 0; i < len(variantNames); i++ {
+			if _, ok := variantIDMap[i]; !ok {
+				logger.Fatal("There is no variant with an ID of \"" + strconv.Itoa(i) + "\". " +
+					"(Variant IDs must be sequential.)")
+				return
 			}
 		}
-		if !foundID {
-			logger.Fatal("There is no variant with an ID of \"" + strconv.Itoa(i) + "\". " +
-				"(Variant IDs must be sequential.)")
-			return
-		}
-	}
-
-	// We also need an ordered list of the variants
-	var variantsOrdered orderedJSON.OrderedObject
-	if err := orderedJSON.Unmarshal(contents, &variantsOrdered); err != nil {
-		logger.Fatal("Failed to convert the variants file to ordered JSON:", err)
-		return
-	}
-	variantsList = make([]string, 0)
-	for _, orderedObject := range variantsOrdered {
-		variantsList = append(variantsList, orderedObject.Key)
-	}
+	*/
 }
 
 // variantIsCardTouched returns true if a clue will touch a particular suit
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant
+// This mirrors the function "touchesCard()" in "clues.ts"
 func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	variant := variants[variantName]
+	suit := variant.Suits[card.SuitIndex]
 
 	if clue.Type == ClueTypeColor {
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
 
-		if variant.Suits[card.SuitIndex].AllClueColors {
+		if suit.AllClueColors {
 			return true
 		}
-		if variant.Suits[card.SuitIndex].NoClueColors {
+		if suit.NoClueColors {
 			return false
 		}
 
@@ -268,9 +217,20 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 		}
 
-		clueColor := variant.ClueColors[clue.Value]
-		cardColors := variant.Suits[card.SuitIndex].ClueColors
-		return stringInSlice(clueColor, cardColors)
+		clueColorName := variant.ClueColors[clue.Value]
+
+		if suit.Prism {
+			// The color that touches a prism card is contingent upon the card's rank
+			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
+			if card.Rank == StartCardRank {
+				// "START" cards count as rank 0, so they are touched by the final color
+				prismColorIndex = len(variant.ClueColors) - 1
+			}
+			prismColorName := variant.ClueColors[prismColorIndex]
+			return clueColorName == prismColorName
+		}
+
+		return stringInSlice(clueColorName, suit.ClueColors)
 	}
 
 	if clue.Type == ClueTypeRank {
@@ -291,6 +251,11 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 			if variant.SpecialNoClueRanks {
 				return false
+			}
+			if variant.SpecialDeceptive {
+				// The rank that touches a deceptive card is contingent upon the card's suit
+				deceptiveRank := variant.ClueRanks[card.SuitIndex%len(variant.ClueRanks)]
+				return clue.Value == deceptiveRank
 			}
 		}
 

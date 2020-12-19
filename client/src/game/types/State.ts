@@ -1,10 +1,11 @@
-import CardIdentity from './CardIdentity';
-import ClientAction from './ClientAction';
-import GameMetadata from './GameMetadata';
-import GameState from './GameState';
-import PauseState from './PauseState';
-import ReplayState from './ReplayState';
-import Spectator from './Spectator';
+import CardIdentity from "./CardIdentity";
+import ClientAction from "./ClientAction";
+import GameMetadata from "./GameMetadata";
+import GameState from "./GameState";
+import NotesState from "./NotesState";
+import PauseState from "./PauseState";
+import ReplayState from "./ReplayState";
+import Spectator from "./Spectator";
 
 export default interface State {
   readonly visibleState: GameState | null; // Null during initialization
@@ -20,8 +21,15 @@ export default interface State {
   readonly finished: boolean;
 
   readonly metadata: GameMetadata;
+
+  // We don't use a Date object for dates in order to speed up state copying
+  readonly datetimeStarted: string | null;
+  readonly datetimeFinished: string | null;
+
   readonly cardIdentities: readonly CardIdentity[];
   readonly premove: ClientAction | null;
   readonly pause: PauseState;
   readonly spectators: Spectator[];
+
+  readonly notes: NotesState;
 }

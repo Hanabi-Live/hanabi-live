@@ -1,7 +1,7 @@
-import Konva from 'konva';
-import ColorButton from './ColorButton';
-import PlayerButton from './controls/PlayerButton';
-import RankButton from './RankButton';
+import Konva from "konva";
+import ColorButton from "./ColorButton";
+import PlayerButton from "./controls/PlayerButton";
+import RankButton from "./RankButton";
 
 type ClueButton = PlayerButton | ColorButton | RankButton;
 
@@ -15,25 +15,28 @@ export default class ButtonGroup extends Konva.Group {
     this.list = [];
   }
 
-  addList(button: ClueButton) {
-    const self = this;
+  addList(button: ClueButton): void {
+    const self = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
     this.list.push(button);
 
-    (button as Konva.Node).on('click tap', function buttonClick(this: Konva.Node) {
-      (this as ClueButton).setPressed(true);
+    (button as Konva.Node).on(
+      "click tap",
+      function buttonClick(this: Konva.Node) {
+        (this as ClueButton).setPressed(true);
 
-      for (let i = 0; i < self.list.length; i++) {
-        if (self.list[i] !== this && self.list[i].pressed) {
-          self.list[i].setPressed(false);
+        for (let i = 0; i < self.list.length; i++) {
+          if (self.list[i] !== this && self.list[i].pressed) {
+            self.list[i].setPressed(false);
+          }
         }
-      }
 
-      self.fire('change', null);
-    });
+        self.fire("change", null);
+      },
+    );
   }
 
-  getPressed() {
+  getPressed(): ClueButton | null {
     for (const button of this.list) {
       if (button.pressed) {
         return button;
@@ -43,7 +46,7 @@ export default class ButtonGroup extends Konva.Group {
     return null;
   }
 
-  clearPressed() {
+  clearPressed(): void {
     for (let i = 0; i < this.list.length; i++) {
       if (this.list[i].pressed) {
         this.list[i].setPressed(false);
@@ -51,14 +54,39 @@ export default class ButtonGroup extends Konva.Group {
     }
   }
 
-  selectNextTarget() {
-    let newSelectionIndex = 0;
+  // selectNextTarget is only used for groups of "PlayerButton"
+  selectNextTarget(): void {
+    let buttonIndex;
     for (let i = 0; i < this.list.length; i++) {
       if (this.list[i].pressed) {
-        newSelectionIndex = (i + 1) % this.list.length;
+        buttonIndex = i;
         break;
       }
     }
-    this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
+
+    // It is possible that no buttons are currently pressed
+    if (buttonIndex === undefined) {
+      buttonIndex = -1;
+    }
+
+    // Find the next button in the group
+    // As a guard against an infinite loop,
+    // only loop as many times as needed to go through every button
+    let button: PlayerButton | undefined;
+    for (let i = 0; i < this.list.length; i++) {
+      buttonIndex += 1;
+      if (buttonIndex > this.list.length - 1) {
+        buttonIndex = 0;
+      }
+
+      button = this.list[buttonIndex] as PlayerButton;
+      if (button.enabled) {
+        break;
+      }
+    }
+
+    if (button !== undefined) {
+      button.dispatchEvent(new MouseEvent("click"));
+    }
   }
 }

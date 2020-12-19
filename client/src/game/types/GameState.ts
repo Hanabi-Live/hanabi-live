@@ -1,14 +1,14 @@
-import CardState from './CardState';
-import CardStatus from './CardStatus';
-import StackDirection from './StackDirection';
-import StatsState from './StatsState';
-import TurnState from './TurnState';
+import CardState from "./CardState";
+import CardStatus from "./CardStatus";
+import StackDirection from "./StackDirection";
+import StatsState from "./StatsState";
+import TurnState from "./TurnState";
 
 export default interface GameState {
   readonly turn: TurnState;
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];
-  readonly deckSize: number;
+  readonly cardsRemainingInTheDeck: number;
   readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
   readonly score: number;
   readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants
@@ -38,7 +38,9 @@ export interface StateClue {
   readonly giver: number;
   readonly target: number;
   readonly segment: number;
+  // The list of cards that the clue touches
   readonly list: readonly number[];
+  // The list of cards in the same hand that the clue does not touch
   readonly negativeList: readonly number[];
 }
 
@@ -48,4 +50,4 @@ export interface StateCardClue {
   readonly positive: boolean;
 }
 
-export type PaceRisk = 'LowRisk' | 'MediumRisk' | 'HighRisk' | 'Zero' | 'Null';
+export type PaceRisk = "LowRisk" | "MediumRisk" | "HighRisk" | "Zero" | "Null";

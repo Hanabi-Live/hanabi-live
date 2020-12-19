@@ -16,12 +16,12 @@ import (
 // etc.)
 func httpGoogleAnalytics(c *gin.Context) {
 	// Local variables
-	w := c.Writer
 	r := c.Request
+	w := c.Writer
 
 	// We only want to track page views for "/", "/scores/Alice", etc.
 	// (this goroutine will be entered for requests to "/public/css/main.min.css", for example)
-	path := c.FullPath()
+	path := c.Request.URL.Path
 	if path != "/" &&
 		!strings.HasPrefix(path, "/scores/") &&
 		!strings.HasPrefix(path, "/profile/") &&
@@ -40,15 +40,31 @@ func httpGoogleAnalytics(c *gin.Context) {
 	if cookie, err := r.Cookie("_ga"); err != nil {
 		// They don't have a cookie set, so set a new one
 		clientID = uuid.NewV4().String()
-		http.SetCookie(w, &http.Cookie{
+		http.SetCookie(w, &http.Cookie{ // nolint: exhaustivestruct
 			// This is the standard cookie name used by the Google Analytics JavaScript library
 			Name:  "_ga",
 			Value: clientID,
+
 			// The standard library does not have definitions for units of day
 			// or larger to avoid confusion across daylight savings
 			// We use 2 years because it is recommended by Google:
 			// https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage
 			Expires: time.Now().Add(2 * 365 * 24 * time.Hour), // 2 years
+
+			// Bind the cookie to this specific domain for security purposes
+			Domain: domain,
+
+			// Only send the cookie over HTTPS:
+			// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
+			Secure: useTLS,
+
+			// Mitigate XSS attacks:
+			// https://www.owasp.org/index.php/HttpOnly
+			HttpOnly: true,
+
+			// Mitigate CSRF attacks:
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
+			SameSite: http.SameSiteStrictMode,
 		})
 	} else {
 		clientID = cookie.Value
@@ -85,7 +101,7 @@ func sendGoogleAnalytics(c *gin.Context, clientID string) {
 	if err != nil {
 		// POSTs to Google Analytics will occasionally time out; if this occurs,
 		// do not bother retrying, since losing a single page view is fairly meaningless
-		logger.Info("Failed to send a page hit to Google Analytics:", err)
+		logger.Info("Failed to send a page hit to Google Analytics: " + err.Error())
 		return
 	}
 	defer resp.Body.Close()

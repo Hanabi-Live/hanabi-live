@@ -5,42 +5,50 @@
 
 /* source-sans-pro-300 - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 300;
-  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'),
-       url('/public/webfonts/source-sans-pro-v11-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v11-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Light"), local("SourceSansPro-Light"),
+    url("/public/webfonts/source-sans-pro-v11-latin-300.woff2") format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v11-latin-300.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-300italic - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 300;
-  src: local('Source Sans Pro Light Italic'), local('SourceSansPro-LightItalic'),
-       url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Light Italic"), local("SourceSansPro-LightItalic"),
+    url("/public/webfonts/source-sans-pro-v11-latin-300italic.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v11-latin-300italic.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-regular - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 400;
-  src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
-       url('/public/webfonts/source-sans-pro-v11-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v11-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Regular"), local("SourceSansPro-Regular"),
+    url("/public/webfonts/source-sans-pro-v11-latin-regular.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v11-latin-regular.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-italic - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 400;
-  src: local('Source Sans Pro Italic'), local('SourceSansPro-Italic'),
-       url('/public/fonts/source-sans-pro-v11-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/fonts/source-sans-pro-v11-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Italic"), local("SourceSansPro-Italic"),
+    url("/public/fonts/source-sans-pro-v11-latin-italic.woff2") format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/fonts/source-sans-pro-v11-latin-italic.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /*
@@ -57,6 +65,10 @@ input[type="radio"] + label:before,
 /*
   Alpha edits
 */
+
+#header a {
+  cursor: pointer;
+}
 
 #main > header p {
   border-top: 0;
@@ -92,24 +104,13 @@ a {
   color: hotpink;
 }
 
-#header nav > ul > li .button {
-  /* Decrease the padding of the nav buttons on the left and the right sides */
-  padding: 0 0.8em;
-  /* Center it vertically */
-  vertical-align: middle;
-}
-
-@media screen and (min-width: 1440px) {
-  #header nav > ul > li .button {
-    margin-bottom: 3px;
-  }
-}
-
 /*
   Common
 */
 
-html, body, #page-wrapper {
+html,
+body,
+#page-wrapper {
   height: 100%;
 }
 
@@ -262,7 +263,6 @@ table td {
 /*
   Nav (the top bar)
 */
-
 .nav-icon {
   position: relative;
   top: 0.05em;
@@ -270,7 +270,15 @@ table td {
 }
 
 .nav-hotkey-indicator {
-  border-bottom: dotted 1px;
+  border-bottom: 1px solid #999;
+}
+
+.help-button {
+  background-color: rgb(68, 150, 68) !important;
+}
+
+.help-button:hover {
+  background-color: #84c884 !important;
 }
 
 /*
@@ -279,7 +287,7 @@ table td {
 
 #lobby {
   margin-top: 1.5em;
-  margin-bottom: 1.5em;
+  margin-bottom: 0.5em;
   /* Left and right margins are handled on the rows in "alpha.css" */
   height: calc(100% - 3em); /* The header is 3em */
 }
@@ -323,6 +331,20 @@ table td {
 }
 
 /*
+  Row overlay div
+*/
+.overlay {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  opacity: 0.1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+}
+
+/*
   The list of ongoing tables / games
 */
 
@@ -345,6 +367,31 @@ table td {
 .lobby-games-table-replay {
   background-color: #fff0ff !important;
 }
+
+.lobby-games-table-joined:hover {
+  background-color: #e0e0ff !important;
+  cursor: url('/public/img/hover-cursors/play.png') 28 12.5, pointer;
+}
+.lobby-games-table-unstarted:hover {
+  background-color: #ffffe1 !important;
+  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+}
+.lobby-games-table-unstarted-password:hover {
+  background-color: #ffd5d5 !important;
+  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+}
+.lobby-games-table-started:hover {
+  background-color: #cdffdd !important;
+  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+}
+.lobby-games-table-replay:hover {
+  background-color: #ffe1ff !important;
+  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+}
+.lobby-games-table-unstarted.full:hover, .lobby-games-table-unstarted-password.full:hover {
+  cursor: url('/public/img/hover-cursors/forbid.png') 28 12.5, pointer;
+}
+
 
 /*
   Lobby chat
@@ -393,19 +440,36 @@ table td {
   Pregame
 */
 
-#lobby-pregame > div {
+.lobby-pregame-container {
   height: 100%;
+  display: flex;
 }
 
-#lobby-pregame-left {
+.lobby-pregame-info {
   font-size: 0.85em;
+  width: 200px;
+  padding-right: 0.5em;
+  overflow-y: auto;
+}
+
+.lobby-pregame-players {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
+  height: 100%;
+  overflow-y: auto;
+  justify-content: flex-start;
 }
 
 .lobby-pregame-player {
   border: 1px solid black;
   border-radius: 5px;
-  padding: 1em;
-  height: 100%;
+  padding: 0.8em;
+  flex: 1 1 160px;
+  margin: 0 0.5em 0.5em 0;
+  max-width: 300px;
+  max-height: calc(100% - 0.5em);
+  overflow-y: auto;
 }
 
 .lobby-pregame-player-away {
@@ -415,10 +479,14 @@ table td {
 
 #lobby-pregame-options {
   padding-left: 1em;
+  list-style-type: none;
+  padding: 0;
 }
 
-#lobby-pregame-options > li {
+#lobby-pregame-options li {
   padding-left: 0;
+  display: inline-block;
+  margin-right: 0.5em;
 }
 
 .lobby-pregame-tooltip {
@@ -496,7 +564,8 @@ table td {
   top: 0.5em;
 }
 
-#create-game-submit {
+#create-game-submit,
+#change-variant-submit {
   font-size: 1em;
 }
 
@@ -505,7 +574,7 @@ table td {
 }
 
 input::-webkit-calendar-picker-indicator {
-	display: none;
+  display: none;
 }
 
 #create-game-variant-dropdown2 {
@@ -614,12 +683,23 @@ input::-webkit-calendar-picker-indicator {
 
 .modal {
   position: absolute;
-  z-index: 1;
-  top: 5em;
+  z-index: 1000;
+  top: 15%;
   left: 5em;
   right: 5em;
   bottom: 5em;
   overflow: auto;
+}
+
+#page-cover {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #001805;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  opacity: 0;
 }
 
 /*
@@ -638,7 +718,8 @@ input::-webkit-calendar-picker-indicator {
   position: absolute;
 }
 
-.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big .tooltipster-content {
+.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big
+  .tooltipster-content {
   font-size: 1.5em;
   padding: 0.5em;
   line-height: 1em;
@@ -678,6 +759,7 @@ input::-webkit-calendar-picker-indicator {
   background-color: black;
   border-radius: 10px; /* This has to match the border-radius below */
   border: 3px solid black;
+  touch-action: none;
 }
 
 #game-chat-modal-header {
@@ -714,12 +796,26 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /* From: https://codepen.io/ZeroX-DG/pen/vjdoYe */
-.resizable .resizers{
+.resizable .resizers {
   width: 100%;
   height: 100%;
   border: 3px solid black;
   border-radius: 10px; /* This has to match the border-radius above */
   box-sizing: border-box;
+}
+
+.efficiency-description {
+  display: inline-block;
+  width: 12em;
+}
+
+.turns-description {
+  display: inline-block;
+  width: 8em;
+}
+
+.container.max {
+  width: 80%;
 }
 
 /*
@@ -752,44 +848,99 @@ input::-webkit-calendar-picker-indicator {
   width: 19em;
 }
 
+/* Make pregame name and variant appear on next line always */
+#lobby-pregame-name, #lobby-pregame-variant {
+  display: block;
+}
+
+
+
+/*
+  Media Responsive Utilities
+  Breakpoints:
+    Alpha names   Max Res   Media names
+    Wide:          1680px   xxl
+    Normal:        1280px   xl
+    Narrow:         980px   lg
+    Narrower:       840px   md
+    Mobile:         736px   sm
+    Portrait:       480px   xs
+
+    hidden-*:      hidden on this and all smaller screens
+*/
+@media screen and (max-width: 1680px) {
+  .hidden-xxl {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 1280px) {
+  .hidden-xl {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 980px) {
+  .hidden-lg {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 840px) {
+  .hidden-md {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 736px) {
+  .hidden-sm {
+    display: none!important;
+  }
+}
+@media screen and (max-width: 480px) {
+  .hidden-xs {
+    display: none!important;
+  }
+}
+
 /*
   Media edits
 */
-
-/* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
-@media screen and (min-width: 1280px) {
+@media screen and (max-width: 1500px) {
+  .lobby-pregame-info {
+    width: 150px;
+  }
   .container.max {
-    width: 80%;
+    width: calc(100% - 2em) !important;
   }
 }
 
-/*
-  Make the lobby nav bar show only the button icons for low priority buttons on smaller resolutions
-*/
-@media screen and (max-width: 1220px) {
-  #nav-buttons-games .pri2 .mobile-hide {
-    display: none;
-  }
-  #nav-buttons-games .pri2 .nav-icon {
-    margin-right: 0em;
+/* Tighter nav buttons before text disappears */
+@media screen and (max-width: 1086px) {
+  #header nav > ul > li .button {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
   }
 }
 
-/* Make the lobby nav bar show only the button icons for all buttons on smaller resolutions */
-@media screen and (max-width: 970px) {
-  #nav-buttons-games .pri1 .mobile-hide {
+@media screen and (max-width: 980px) {
+  .lobby-pregame-player {
+    max-width: 200px;
+  }
+}
+
+/* Hide the logo text */
+@media screen and (max-width: 950px) {
+  #logo-text {
     display: none;
   }
-  #nav-buttons-games .pri1 .nav-icon {
-    margin-right: 0em;
+}
+
+/* Reinstate the containers round box */
+@media screen and (max-width: 480px) {
+  .box {
+    border-radius: 6px;
   }
 }
 
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 400px) {
-  #nav-buttons-pregame .mobile-hide {
-    display: none;
-  }
   #nav-buttons-pregame .nav-icon {
     margin-right: 0em;
   }
@@ -797,46 +948,31 @@ input::-webkit-calendar-picker-indicator {
 
 /* Make the history nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 290px) {
-  #nav-buttons-history .mobile-hide {
-    display: none;
-  }
   #nav-buttons-history .nav-icon {
     margin-right: 0em;
   }
 }
 
-/* Hide the logo on the header when it overlaps with the lobby nav bar buttons */
-@media screen and (max-width: 650px) {
-  .lobby-header #logo-text {
-    display: none;
-  }
-}
-@media screen and (max-width: 490px) {
-  .lobby-header {
-    display: none;
-  }
-}
-
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
-@media screen and (max-width: 830px) {
-  #profile-buttons { /* These lines are copied from alpha.css which has breakpoint 480 px */
+@media screen and (max-width: 840px) {
+  #profile-buttons {
+    /* These lines are copied from alpha.css which has breakpoint 480 px */
     display: flex;
     flex-wrap: wrap;
     box-sizing: border-box;
     align-items: stretch;
   }
 
-    #profile-buttons li {
-      padding-top: 1em
-    }
-}
-
-/* Make the main screen appear the same way, even on smaller resolutions */
-@media screen and (max-width: 840px) {
-  #header {
-    display: block;
+  /* Remove extra space from nav icons */
+  .nav-icon {
+    margin-right: 0;
   }
 
+  #profile-buttons li {
+    padding-top: 1em;
+  }
+
+  /* Make the main screen appear the same way, even on smaller resolutions */
   #page-wrapper {
     padding-top: 3em;
   }
@@ -855,4 +991,191 @@ input::-webkit-calendar-picker-indicator {
     padding: 1.5em !important;
     overflow-y: hidden;
   }
+}
+
+/*
+  Tables headers
+*/
+table th {
+  padding: 0 0.75em 0.25em 0.75em;
+  font-size: 0.8em;
+}
+
+/*
+  Media queries for lobby redesign on smaller screens
+*/
+@media screen and (max-width: 980px) {
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.8em;
+  }
+}
+@media screen and (max-width: 840px) {
+  /* override alpha.css default behavior */
+  #header {
+    display: block;
+  }
+
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.5em;
+  }
+
+  /* hide column '# of Players' */
+  #lobby-games-table th:nth-child(2),
+  #lobby-games-table td:nth-child(2) {
+    display: none;
+  }
+}
+@media screen and (max-width: 670px) {
+  /* hide column 'Name' */
+  #lobby-games-table th:nth-child(1),
+  #lobby-games-table td:nth-child(1) {
+    display: none;
+  }
+
+  /* fix border of column 'Variant' */
+  #lobby-games-table th:nth-child(3),
+  #lobby-games-table td:nth-child(3) {
+    border-left-width: 1px;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(7),
+  #lobby-games-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 570px) {
+  /* hide 'help' nav menu */
+  #header nav > ul > li a#nav-buttons-lobby-stats,
+  #header nav > ul > li a#nav-buttons-lobby-resources {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(4),
+  #lobby-games-table td:nth-child(4) {
+    display: none;
+  }
+}
+@media screen and (max-width: 410px) {
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.3em;
+  }
+  /* hide column 'Status' */
+  #lobby-games-table th:nth-child(5),
+  #lobby-games-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+/*
+  Small screen toggle buttons
+*/
+#lobby-small-screen-buttons {
+  margin-top: 1em;
+  height: 2em;
+  display: none;
+}
+#lobby-small-screen-buttons nav > ul {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+#lobby-small-screen-buttons nav > ul li:first-child {
+  padding-left: 0;
+}
+
+.only-on-narrow-screen {
+  display: none;
+}
+
+@media screen and (max-height: 530px) {
+  /* Put pregame chat boxes side by side */
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout {
+    flex: 1 1 50%;
+    height: 100%;
+    padding-left: 2em!important;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* Put pregame chat boxes on top of each other */
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout {
+    flex: 1 1 100%;
+    height: calc((100% - 1em) / 2);
+  }
+}
+
+@media screen and (max-height: 530px), screen and (max-width: 620px) {
+  #lobby-top-half,
+  #lobby-bottom-half {
+    display: none;
+    height: calc(100% - 4em);
+  }
+  #lobby-separator {
+    display: none;
+  }
+  #lobby-top-half.toggle-active {
+    display: flex;
+  }
+  #lobby-bottom-half.toggle-active {
+    display: flex;
+  }
+
+  #lobby-small-screen-buttons {
+    display: block;
+  }
+
+  #lobby-top-half.hidden,
+  #lobby-bottom-half.hidden,
+  #lobby-small-screen-buttons.hidden {
+    display: none;
+  }
+
+  #lobby {
+    height: calc(100% - 1.25em); /* The header is 3em */
+  }
+
+  .pregame-hidden {
+    display: none;
+  }
+  .pregame-lobby-chat {
+    margin-bottom: 1em;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  #lobby-users-table th:nth-child(2),
+  #lobby-users-table td:nth-child(2) {
+    display: none;
+  }
+  #small-screen-toggle-users-h3 {
+    display: none;
+  }
+  .only-on-narrow-screen {
+    display: inline;
+  }
+}
+@media screen and (max-width: 520px) {
+  .narrow-screen-toggle {
+    display: none;
+  }
+  .row > #lobby-chat-container {
+    width: 100%;
+  }
+}
+
+a.toggle-active {
+  background-color: rgb(68, 150, 68) !important;
 }

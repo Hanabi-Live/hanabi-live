@@ -1,82 +1,115 @@
-import State from '../../../types/State';
-import * as clues from '../../clues';
-import PlayerButton from '../../controls/PlayerButton';
-import globals from '../../globals';
-import * as turn from '../../turn';
+import State from "../../../types/State";
+import * as clues from "../../clues";
+import PlayerButton from "../../controls/PlayerButton";
+import globals from "../../globals";
+import * as turn from "../../turn";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations
-export const shouldEnableEnterHypoButton = (state: State): boolean => (
-  state.replay.shared !== null
-  && state.replay.shared.useSharedSegments
-  && state.replay.shared.amLeader
-  // We can't start a hypothetical on a segment where the game has already ended
-  && state.visibleState !== null
-  && state.visibleState.turn.currentPlayerIndex !== null
-);
+export const shouldEnableEnterHypoButton = (state: State): boolean =>
+  (state.replay.shared === null && state.replay.active) ||
+  (state.replay.shared !== null &&
+    state.replay.shared.useSharedSegments &&
+    state.replay.shared.amLeader &&
+    // We can't start a hypothetical on a segment where the game has already ended
+    state.visibleState !== null &&
+    state.visibleState.turn.currentPlayerIndex !== null);
 
-export const shouldEnableEnterHypoButtonChanged = (enabled: boolean) => {
-  globals.elements.enterHypoButton!.setEnabled(enabled);
+export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
+  globals.elements.enterHypoButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onActiveChanged = (active: boolean) => {
-  if (globals.state.replay.shared === null) {
-    return;
+export const shouldShowReplayArea = (state: State): boolean =>
+  (state.replay.active || state.replay.shared !== null) &&
+  state.replay.hypothetical === null;
+
+export function shouldShowReplayAreaChanged(shouldShow: boolean): void {
+  globals.elements.replayArea?.visible(shouldShow);
+  globals.layers.UI.batchDraw();
+}
+
+export function onActiveChanged(data: {
+  hypotheticalActive: boolean;
+  replayActive: boolean;
+}): void {
+  if (!data.hypotheticalActive && data.replayActive) {
+    turn.hideArrowsAndDisableDragging();
   }
-
-  globals.elements.replayArea!.visible(!active);
 
   checkSetDraggableAllHands();
 
-  if (active) {
-    // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
-    // changes in the middle of a hypothetical
-    if (globals.options.numPlayers !== 2) {
-      globals.elements.clueTargetButtonGroup!.hide();
-      globals.elements.clueTargetButtonGroup2!.show();
-    }
-    globals.elements.restartButton!.visible(!active);
-  }
+  // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
+  // changes in the middle of a hypothetical
+  globals.elements.clueTargetButtonGroup?.visible(
+    globals.options.numPlayers !== 2 && !data.hypotheticalActive,
+  );
+  globals.elements.clueTargetButtonGroup2?.visible(
+    globals.options.numPlayers !== 2 && data.hypotheticalActive,
+  );
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onActiveOrAmLeaderChanged = (data: {
+export const shouldShowHypoControls = (state: State): boolean =>
+  state.replay.hypothetical !== null &&
+  (state.replay.shared === null || state.replay.shared.amLeader);
+
+export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
+  globals.elements.hypoButtonsArea?.visible(shouldShow);
+  if (shouldShow) {
+    // the lower part of the clue area and the "no clues" indicators slide left during hypo
+    globals.elements.lowerClueArea?.setLeft();
+    globals.elements.clueAreaDisabled?.setLeft();
+  } else {
+    globals.elements.lowerClueArea?.setCenter();
+    globals.elements.clueAreaDisabled?.setCenter();
+  }
+  // We might need to change the draggable property of a hand
+  checkSetDraggableAllHands();
+  globals.layers.UI.batchDraw();
+}
+
+export const shouldShowToggleDrawnCards = (state: State): boolean =>
+  state.finished &&
+  state.replay.hypothetical !== null &&
+  (state.replay.shared === null || state.replay.shared.amLeader);
+
+export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {
+  globals.elements.toggleDrawnCardsButton?.setEnabled(shouldShow);
+  globals.layers.UI.batchDraw();
+}
+
+export function onActiveOrAmLeaderChanged(data: {
   active: boolean;
-  amLeader: boolean | undefined;
-}) => {
-  if (data.amLeader === undefined) {
-    return;
-  }
-
-  const visibleForLeaderInHypo = data.active && data.amLeader;
-  globals.elements.endHypotheticalButton!.visible(visibleForLeaderInHypo);
-  globals.elements.toggleRevealedButton!.visible(visibleForLeaderInHypo);
-  globals.elements.clueArea!.visible(visibleForLeaderInHypo);
-
+  amLeader: boolean;
+  sharedReplay: boolean;
+}): void {
   const visibleForFollowersInHypo = data.active && !data.amLeader;
-  globals.elements.hypoCircle!.visible(visibleForFollowersInHypo);
+  globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
 
-  const visibleForLeaderOutOfHypo = !data.active && data.amLeader;
-  globals.elements.restartButton!.visible(visibleForLeaderOutOfHypo);
-  if (visibleForLeaderOutOfHypo) {
-    turn.hideClueUIAndDisableDragging();
+  if (visibleForFollowersInHypo) {
+    turn.hideArrowsAndDisableDragging();
   }
 
-  // We might to change the draggable property of a hand
-  checkSetDraggableAllHands();
-};
+  const visibleForLeaderInSharedReplay =
+    !data.active && data.sharedReplay && data.amLeader;
+  globals.elements.restartButton?.visible(visibleForLeaderInSharedReplay);
+
+  globals.layers.UI.batchDraw();
+}
 
 // Either we have entered a hypothetical, gone forward one action in a hypothetical,
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
-export const onStatesLengthChanged = () => {
+export function onStatesLengthChanged(): void {
+  turn.resetSelectedClue();
+
   // Enable or disable the individual clue target buttons, depending on whose turn it is
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
-    const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
+    const { currentPlayerIndex } = globals.state.visibleState!.turn;
     const enabled = button.targetIndex !== currentPlayerIndex;
     button.setEnabled(enabled);
 
@@ -87,37 +120,35 @@ export const onStatesLengthChanged = () => {
     }
   }
 
-  turn.showClueUI();
-
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();
-};
 
-export const shouldShowHypoBackButton = (state: State): boolean => (
-  state.replay.shared !== null
-  && state.replay.shared.amLeader
-  && state.replay.hypothetical !== null
-  && state.replay.hypothetical.states.length > 1
-);
-
-export const shouldShowHypoBackButtonChanged = (enabled: boolean) => {
-  globals.elements.hypoBackButton!.visible(enabled);
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onDrawnCardsInHypotheticalChanged = (drawnCardsInHypothetical: boolean) => {
-  globals.elements.toggleRevealedButton!.setText({
-    line1: drawnCardsInHypothetical ? 'Hide' : 'Show',
-  });
+export const shouldShowHypoBackButton = (state: State): boolean =>
+  (state.replay.shared === null || state.replay.shared.amLeader) &&
+  state.replay.hypothetical !== null &&
+  state.replay.hypothetical.states.length > 1;
+
+export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
+  globals.elements.hypoBackButton?.setEnabled(enabled);
+  globals.layers.UI.batchDraw();
+}
+
+export function onDrawnCardsInHypotheticalChanged(
+  drawnCardsInHypothetical: boolean,
+): void {
+  globals.elements.toggleDrawnCardsButton?.setPressed(drawnCardsInHypothetical);
 
   // Check if the ability to give a clue changed
   clues.checkLegal();
 
   globals.layers.UI.batchDraw();
-};
+}
 
-const checkSetDraggableAllHands = () => {
+function checkSetDraggableAllHands() {
   for (const hand of globals.elements.playerHands) {
     hand.checkSetDraggableAll();
   }
-};
+}

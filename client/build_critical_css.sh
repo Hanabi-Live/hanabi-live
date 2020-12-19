@@ -5,7 +5,12 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Import the domain and port
-source "$DIR/../.env"
+ENV_PATH="$DIR/../.env"
+if [[ ! -f $ENV_PATH ]]; then
+  echo "Failed to find the \".env\" file at: $ENV_PATH"
+  exit 1
+fi
+source "$ENV_PATH"
 if [[ -z $DOMAIN ]]; then
   DOMAIN="localhost"
 fi

@@ -7,5 +7,6 @@ enum ReplayActionType {
   HypoAction,
   HypoBack,
   HypoToggleRevealed,
+  EfficiencyMod,
 }
 export default ReplayActionType;

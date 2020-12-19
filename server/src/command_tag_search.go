@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"strings"
 )
@@ -11,7 +12,7 @@ import (
 // {
 //   msg: 'inverted priority finesse',
 // }
-func commandTagSearch(s *Session, d *CommandData) {
+func commandTagSearch(ctx context.Context, s *Session, d *CommandData) {
 	// Sanitize, validate, and normalize the tag
 	if v, err := sanitizeTag(d.Msg); err != nil {
 		s.Warning(err.Error())
@@ -23,7 +24,8 @@ func commandTagSearch(s *Session, d *CommandData) {
 	// Search through the database for games matching this tag
 	var gameIDs []int
 	if v, err := models.GameTags.SearchByTag(d.Msg); err != nil {
-		logger.Error("Failed to search for games matching a tag of \""+d.Msg+"\":", err)
+		logger.Error("Failed to search for games matching a tag of \"" + d.Msg + "\": " +
+			err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

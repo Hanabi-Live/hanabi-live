@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -11,46 +12,42 @@ import (
 // {
 //   tableID: 5,
 // }
-func commandGetGameInfo2(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandGetGameInfo2(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
 	}
-	g := t.Game
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
+	}
 
 	// Validate that the game has started
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 
 	// Validate that they are either a player or a spectator
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
-		s.Warning("You are not a player or a spectator at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot ready up for it.")
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+	if playerIndex == -1 && spectatorIndex == -1 {
+		s.Warning("You are not a player or a spectator at table " +
+			strconv.FormatUint(t.ID, 10) + ", so you cannot be ready for it.")
 		return
 	}
 
-	/*
-		Ready
-	*/
+	getGameInfo2(s, t, playerIndex, spectatorIndex)
+}
+
+func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
+	// Local variables
+	g := t.Game
 
 	// Check to see if we need to remove some card information
-	var scrubbedActions []interface{}
+	scrubbedActions := make([]interface{}, 0)
 	if !t.Replay {
 		for _, action := range g.Actions {
-			scrubbedAction := CheckScrub(t, action, s.UserID())
+			scrubbedAction := CheckScrub(t, action, s.UserID)
 			scrubbedActions = append(scrubbedActions, scrubbedAction)
 		}
 	} else {
@@ -61,7 +58,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 	// Send them all the actions in the game that have happened thus far
 	type GameActionListMessage struct {
-		TableID int           `json:"tableID"`
+		TableID uint64        `json:"tableID"`
 		List    []interface{} `json:"list"`
 	}
 	s.Emit("gameActionList", &GameActionListMessage{
@@ -72,11 +69,6 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	// Send them the full list of all the cards in the deck if the game is already over
 	if t.Replay {
 		s.NotifyCardIdentities(t)
-	}
-
-	// If it is their turn, send a "yourTurn" message
-	if !t.Replay && g.ActivePlayerIndex == i {
-		s.NotifyYourTurn(t)
 	}
 
 	// Check if the game is still in progress
@@ -90,32 +82,22 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		// Send them the current time for all player's clocks
 		s.NotifyTime(t)
 
-		// If this is the first turn, send them a sound so that they know the game started
-		if g.Turn == 0 {
-			s.NotifySound(t, i)
-		}
-
-		if i > -1 {
+		if playerIndex > -1 {
 			// They are a player in an ongoing game
-			p := g.Players[i]
+			p := g.Players[playerIndex]
 
 			// Send them a list of only their notes
 			type NoteListPlayerMessage struct {
-				TableID int      `json:"tableID"`
+				TableID uint64   `json:"tableID"`
 				Notes   []string `json:"notes"`
 			}
 			s.Emit("noteListPlayer", &NoteListPlayerMessage{
 				TableID: t.ID,
 				Notes:   p.Notes,
 			})
-
-			// Set their "present" variable back to true,
-			// which will turn their name from red to black
-			t.Players[i].Present = true
-			t.NotifyConnected()
-		} else if j > -1 {
+		} else if spectatorIndex > -1 {
 			// They are a spectator in an ongoing game
-			sp := t.Spectators[j]
+			sp := t.Spectators[spectatorIndex]
 			s.NotifyNoteList(t, sp.ShadowingPlayerIndex)
 		}
 	}
@@ -142,12 +124,12 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 	if g.Hypothetical {
 		type HypotheticalMessage struct {
-			DrawnCardsShown bool     `json:"drawnCardsShown"`
-			Actions         []string `json:"actions"`
+			ShowDrawnCards bool     `json:"showDrawnCards"`
+			Actions        []string `json:"actions"`
 		}
 		s.Emit("hypothetical", &HypotheticalMessage{
-			DrawnCardsShown: g.HypoDrawnCardsShown,
-			Actions:         g.HypoActions,
+			ShowDrawnCards: g.HypoShowDrawnCards,
+			Actions:        g.HypoActions,
 		})
 	}
 }

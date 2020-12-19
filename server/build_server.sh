@@ -10,15 +10,34 @@ REPO="$(dirname "$DIR")"
 REPO="$(basename "$REPO")"
 
 # For non-interactive shells (e.g. the server running this script to build itself),
-# $HOME must be specified or it will result in a cache error when compiling the Go code
-# (but don't do this in Travis, since doing this will cause it to break)
-if [[ -z $CI ]]; then
+# the "HOME" environment variable must be specified or there will be a cache error when compiling
+# the Go code (but don't do this in Travis, since doing this will cause it to break)
+if [[ -z $HOME ]] && [[ -z $CI ]]; then
   export HOME=/root
+fi
+
+# Import the domain
+if [[ -z $CI ]]; then
+  ENV_PATH="$DIR/../.env"
+  if [[ ! -f $ENV_PATH ]]; then
+    echo "Failed to find the \".env\" file at: $ENV_PATH"
+    exit 1
+  fi
+  source "$ENV_PATH"
+  if [[ -z $DOMAIN ]]; then
+    DOMAIN="localhost"
+  fi
 fi
 
 # Compile the Golang code
 cd "$DIR/src"
-go build -o "$DIR/../$REPO"
+if [[ $DOMAIN == "localhost" ]]; then
+  # In development environments, turn on the Go race condition detector
+  # https://blog.golang.org/race-detector
+  go build -o "$DIR/../$REPO" -race
+else
+  go build -o "$DIR/../$REPO"
+fi
 if [[ $? -ne 0 ]]; then
   echo "$REPO - Go compilation failed!"
   exit 1

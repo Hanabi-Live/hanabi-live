@@ -1,9 +1,10 @@
+// The configuration file for TypeScript
 {
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
     // "outDir" specifies the output directory
-    // By default, it will put the compiled ".js" and ".js.map" next to the respective ".ts"
-    // file, which will clutter the "src" directory
+    // By default, it will put the compiled ".js" and ".js.map" next to the respective ".ts" file,
+    // which will clutter the "src" directory
     "outDir": "./dist",
 
     // "target" specifies the ECMAScript target version
@@ -12,8 +13,8 @@
     "target": "ES2018",
 
     // "newLine" specifies the end of line sequence
-    // By default, it is "crlf" on Windows; we want to always use "lf" in order to match the
-    // code base and reduce the file size of the output
+    // By default, it is "crlf" on Windows; we want to always use "lf" in order to match the code
+    // base and reduce the file size of the output
     "newLine": "lf",
 
     // "moduleResolution" specifies how modules (imports) get resolved
@@ -43,6 +44,7 @@
     // We want the compiler to be as strict as possible to catch all the things
     // By default, these flags are false
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -57,9 +59,5 @@
 
   "include": [
     "./src/**/*.ts",
-
-    // These files are not intended to be compiled, but we include them to suppress ESLint warnings
-    "./Gruntfile.js",
-    "./webpack.config.js",
   ],
 }

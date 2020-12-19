@@ -53,18 +53,18 @@ func (t *Table) NotifyPlayerChange() {
 
 		// First, make the array that contains information about all of the players in the game
 		type GamePlayerMessage struct {
-			Index   int          `json:"index"`
-			Name    string       `json:"name"`
-			You     bool         `json:"you"`
-			Present bool         `json:"present"`
-			Stats   PregameStats `json:"stats"`
+			Index   int           `json:"index"`
+			Name    string        `json:"name"`
+			You     bool          `json:"you"`
+			Present bool          `json:"present"`
+			Stats   *PregameStats `json:"stats"`
 		}
 		gamePlayers := make([]*GamePlayerMessage, 0)
 		for j, p2 := range t.Players {
 			gamePlayer := &GamePlayerMessage{
 				Index:   j,
 				Name:    p2.Name,
-				You:     p.ID == p2.ID,
+				You:     p.UserID == p2.UserID,
 				Present: p2.Present,
 				Stats:   p2.Stats,
 			}
@@ -73,7 +73,7 @@ func (t *Table) NotifyPlayerChange() {
 
 		// Second, send information about the game and the players in one big message
 		type GameMessage struct {
-			TableID           int                  `json:"tableID"`
+			TableID           uint64               `json:"tableID"`
 			Name              string               `json:"name"`
 			Owner             int                  `json:"owner"`
 			Players           []*GamePlayerMessage `json:"players"`
@@ -83,7 +83,7 @@ func (t *Table) NotifyPlayerChange() {
 		p.Session.Emit("game", &GameMessage{
 			TableID:           t.ID,
 			Name:              t.Name,
-			Owner:             t.Owner,
+			Owner:             t.OwnerID,
 			Players:           gamePlayers,
 			Options:           t.Options,
 			PasswordProtected: t.PasswordHash != "",
@@ -167,11 +167,10 @@ func (t *Table) NotifyGameAction() {
 func (t *Table) NotifyStatus() {
 	g := t.Game
 	g.Actions = append(g.Actions, ActionStatus{
-		Type:          "status",
-		Clues:         g.ClueTokens,
-		Score:         g.Score,
-		MaxScore:      g.MaxScore,
-		DoubleDiscard: g.DoubleDiscard,
+		Type:     "status",
+		Clues:    g.ClueTokens,
+		Score:    g.Score,
+		MaxScore: g.MaxScore,
 	})
 	t.NotifyGameAction()
 }
@@ -191,23 +190,9 @@ func (t *Table) NotifyTurn() {
 	t.NotifyGameAction()
 }
 
-// NotifySound sends a sound notification to everyone in the game
-// (signifying that an action just occurred)
-func (t *Table) NotifySound() {
-	for i, p := range t.Players {
-		if p.Present {
-			p.Session.NotifySound(t, i)
-		}
-	}
-
-	for _, sp := range t.Spectators {
-		sp.Session.NotifySound(t, -1)
-	}
-}
-
 func (t *Table) NotifyFinishOngoingGame() {
 	type FinishOngoingGameMessage struct {
-		TableID            int    `json:"tableID"`
+		TableID            uint64 `json:"tableID"`
 		DatabaseID         int    `json:"databaseID"`
 		SharedReplayLeader string `json:"sharedReplayLeader"`
 	}
@@ -269,14 +254,14 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		// the shadowed player
 		type Note struct {
 			Name string `json:"name"`
-			Note string `json:"note"`
+			Text string `json:"text"`
 		}
 		notes := make([]Note, 0)
 		for _, p := range g.Players {
 			if sp.ShadowingPlayerIndex == -1 || sp.ShadowingPlayerIndex == p.Index {
 				notes = append(notes, Note{
 					Name: p.Name,
-					Note: p.Notes[order],
+					Text: p.Notes[order],
 				})
 			}
 		}
@@ -284,13 +269,13 @@ func (t *Table) NotifySpectatorsNote(order int) {
 			for _, sp2 := range t.Spectators {
 				notes = append(notes, Note{
 					Name: sp2.Name,
-					Note: sp2.Notes[order],
+					Text: sp2.Notes[order],
 				})
 			}
 		}
 
 		type NoteMessage struct {
-			TableID int `json:"tableID"`
+			TableID uint64 `json:"tableID"`
 			// The order of the card in the deck that these notes correspond to
 			Order int    `json:"order"`
 			Notes []Note `json:"notes"`

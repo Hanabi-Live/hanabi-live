@@ -27,12 +27,12 @@ func httpSharedMissingScores(c *gin.Context) {
 	}
 
 	// Get all of the variant-specific stats for each player
-	variantStatsListList := make([][]UserVariantStats, 0)
+	variantStatsListList := make([][]*UserVariantStats, 0)
 	for i, playerID := range playerIDs {
-		var statsMap map[int]UserStatsRow
+		var statsMap map[int]*UserStatsRow
 		if v, err := models.UserStats.GetAll(playerID); err != nil {
-			logger.Error("Failed to get all of the variant-specific stats for player "+
-				"\""+playerNames[i]+"\":", err)
+			logger.Error("Failed to get all of the variant-specific stats for player " +
+				"\"" + playerNames[i] + "\": " + err.Error())
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -56,15 +56,16 @@ func httpSharedMissingScores(c *gin.Context) {
 			continue
 		}
 		for j, variantStats := range variantStatsList {
-			for k, bestScore := range variantStats.BestScores {
-				if bestScore.Score > combinedVariantStatsList[j].BestScores[k].Score {
-					combinedVariantStatsList[j].BestScores[k] = bestScore
+			for k, candidateResult := range variantStats.BestScores {
+				workingBestResult := combinedVariantStatsList[j].BestScores[k]
+				if candidateResult.IsBetterThan(workingBestResult) {
+					combinedVariantStatsList[j].BestScores[k] = candidateResult
 				}
 			}
 		}
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:               "Missing Scores",
 		NamesTitle:          "Missing Scores for [" + strings.Join(playerNames, ", ") + "]",
 		RequestedNumPlayers: len(playerIDs),

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"regexp"
 	"strconv"
 	"strings"
@@ -18,36 +19,31 @@ var (
 // {
 //   tableID: 15103,
 // }
-func commandTableRestart(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
+	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoTableLock {
+		defer t.Unlock(ctx)
 	}
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
-		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, " +
+		s.Warning("Table " + strconv.FormatUint(t.ID, 10) + " is not a shared replay, " +
 			"so you cannot send a restart action.")
 		return
 	}
 
 	// Validate that this person is spectating the shared replay
-	j := t.GetSpectatorIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID)
 	if j < -1 {
-		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
+		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
+		return
 	}
 
 	// Validate that this person is leading the shared replay
-	if s.UserID() != t.Owner {
+	if s.UserID != t.OwnerID {
 		s.Warning("You cannot restart a game unless you are the leader.")
 		return
 	}
@@ -55,7 +51,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Validate that this person was one of the players in the game
 	leaderPlayedInOriginalGame := false
 	for _, p := range t.Players {
-		if p.ID == s.UserID() {
+		if p.UserID == s.UserID {
 			leaderPlayedInOriginalGame = true
 			break
 		}
@@ -85,7 +81,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		}
 		playedInOriginalGame := false
 		for _, p := range t.Players {
-			if p.ID == sp.ID {
+			if p.UserID == sp.UserID {
 				playedInOriginalGame = true
 				break
 			}
@@ -118,29 +114,39 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that the server is not undergoing maintenance
-	if maintenanceMode {
+	if maintenanceMode.IsSet() {
 		s.Warning("The server is undergoing maintenance. " +
 			"You cannot start any new games for the time being.")
 		return
 	}
 
-	// Validate that no-one in the game are currently playing in any other games
-	if s.GetJoinedTable() != nil {
-		s.Warning("You cannot join more than one table at a time. " +
-			"Terminate your other game before restarting a replay.")
-		return
+	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions)
+}
+
+func tableRestart(
+	ctx context.Context,
+	s *Session,
+	d *CommandData,
+	t *Table,
+	playerSessions []*Session,
+	spectatorSessions []*Session,
+) {
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	if !d.NoTablesLock {
+		tables.Lock(ctx)
+		defer tables.Unlock(ctx)
 	}
+
+	// Validate that the selected players are not playing in another game
+	// (this cannot be in the "commandTableRestart()" function because we need the tables lock)
 	for _, s2 := range playerSessions {
-		if s2.GetJoinedTable() != nil {
-			s.Warning("You cannot restart the game because " + s2.Username() +
+		if len(tables.GetTablesUserPlaying(s2.UserID)) > 0 {
+			s.Warning("You cannot restart the game because " + s2.Username +
 				" is already playing in another game.")
 			return
 		}
 	}
-
-	/*
-		Restart
-	*/
 
 	// Before the table is deleted, make a copy of the chat, if any
 	oldChat := make([]*TableChatMessage, len(t.Chat))
@@ -152,27 +158,35 @@ func commandTableRestart(s *Session, d *CommandData) {
 		oldChatRead[k] = v
 	}
 
-	// Force the client of all of the spectators to go back to the lobby
+	// Force everyone to go back to the lobby
 	t.NotifyBoot()
 
 	// On the server side, all of the spectators will still be in the game,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
-		commandTableUnattend(s2, &CommandData{
-			TableID: t.ID,
+		commandTableUnattend(ctx, s2, &CommandData{ // nolint: exhaustivestruct
+			TableID:      t.ID,
+			NoTableLock:  true,
+			NoTablesLock: true,
 		})
 	}
 	for _, s2 := range spectatorSessions {
-		commandTableUnattend(s2, &CommandData{
-			TableID: t.ID,
+		commandTableUnattend(ctx, s2, &CommandData{ // nolint: exhaustivestruct
+			TableID:      t.ID,
+			NoTableLock:  true,
+			NoTablesLock: true,
 		})
 	}
 
 	newTableName := ""
 
-	// Generate a new name for the game based on which iteration of the room this is
-	// For example, a game named "logic only" will be "logic only (#2)" and then "logic only (#3)"
-	if t.InitialName != "" {
+	if t.InitialName == "" {
+		// If players spawn a shared replay and then restart,
+		// there will not be an initial name for the table
+		newTableName = getName()
+	} else {
+		// Generate a new name for the game based on how many times the players have restarted
+		// e.g. "logic only" --> "logic only (#2)" --> "logic only (#3)"
 		oldTableName := t.InitialName
 		gameNumber := 2 // By default, this is the second game of a particular table
 		match := roomNameRegExp.FindAllStringSubmatch(oldTableName, -1)
@@ -181,22 +195,38 @@ func commandTableRestart(s *Session, d *CommandData) {
 			gameNumber, _ = strconv.Atoi(match[0][2])
 			gameNumber++
 		}
-		newTableName = oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
-	} else {
-		newTableName = getName()
+		tableNameSuffix := " (#" + strconv.Itoa(gameNumber) + ")"
+		maxGameNameLengthWithoutSuffix := MaxGameNameLength - len(tableNameSuffix)
+		if len(oldTableName) > maxGameNameLengthWithoutSuffix {
+			oldTableName = oldTableName[0 : maxGameNameLengthWithoutSuffix-1]
+		}
+		newTableName = oldTableName + tableNameSuffix
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby
-	createTable(s, &CommandData{
+	commandTableCreate(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		Name:    newTableName,
 		Options: t.Options,
-	}, false)
+		// We want to prevent the pre-game from showing up in the lobby for a brief second
+		HidePregame:  true,
+		NoTablesLock: true,
+	})
 
 	// Find the table ID for the new game
+	tableList := tables.GetList(false)
 	var t2 *Table
-	for _, existingTable := range tables {
+	for _, existingTable := range tableList {
+		foundTable := false
+		// TODO: removing the lock here temporarily because it is somehow causing a deadlock
+		// The lock isn't super needed here because the only time a name changes is when a game ends
+		// existingTable.Lock(ctx)
 		if existingTable.Name == newTableName {
+			foundTable = true
+		}
+		// existingTable.Unlock(ctx)
+
+		if foundTable {
 			t2 = existingTable
 			break
 		}
@@ -209,14 +239,19 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	t2.Lock(ctx)
+	defer t2.Unlock(ctx)
+
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
-		if s2.UserID() == s.UserID() {
+		if s2.UserID == s.UserID {
 			// The creator of the game does not need to join
 			continue
 		}
-		commandTableJoin(s2, &CommandData{
-			TableID: t2.ID,
+		commandTableJoin(ctx, s2, &CommandData{ // nolint: exhaustivestruct
+			TableID:      t2.ID,
+			NoTableLock:  true,
+			NoTablesLock: true,
 		})
 	}
 
@@ -234,20 +269,28 @@ func commandTableRestart(s *Session, d *CommandData) {
 	t2.ExtraOptions.Restarted = true
 
 	// Emulate the game owner clicking on the "Start Game" button
-	commandTableStart(s, &CommandData{
-		TableID: t2.ID,
+	commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
+		TableID:      t2.ID,
+		NoTableLock:  true,
+		NoTablesLock: true,
 	})
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
-		commandTableSpectate(s2, &CommandData{
+		commandTableSpectate(ctx, s2, &CommandData{ // nolint: exhaustivestruct
 			TableID:              t2.ID,
 			ShadowingPlayerIndex: -1,
+			NoTableLock:          true,
+			NoTablesLock:         true,
 		})
 	}
 
 	// Add a message to the chat to indicate that the game was restarted
-	chatServerSend("The game has been restarted.", "table"+strconv.Itoa(t2.ID))
+	path := "/replay/" + strconv.Itoa(t.ExtraOptions.DatabaseID)
+	url := getURLFromPath(path)
+	link := "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener noreferrer\">#" + strconv.Itoa(t.ExtraOptions.DatabaseID) + "</a>"
+	msg := "The game has been restarted (from game " + link + ")."
+	chatServerSend(ctx, msg, t2.GetRoomName(), true)
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "restarted" message, since it is superfluous

@@ -1,5 +1,6 @@
 // Actions represent a change in the game state
 // Different actions will have different fields
+// Any actions implemented here must also be accounted for in the "restoreTables()" function
 
 package main
 
@@ -67,11 +68,10 @@ type ActionStrike struct {
 }
 
 type ActionStatus struct {
-	Type          string `json:"type"`
-	Clues         int    `json:"clues"`
-	Score         int    `json:"score"`
-	MaxScore      int    `json:"maxScore"`
-	DoubleDiscard bool   `json:"doubleDiscard"`
+	Type     string `json:"type"`
+	Clues    int    `json:"clues"`
+	Score    int    `json:"score"`
+	MaxScore int    `json:"maxScore"`
 }
 
 type ActionTurn struct {

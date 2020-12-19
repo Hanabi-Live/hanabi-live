@@ -1,95 +1,102 @@
 package main
 
 import (
+	"context"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/tevino/abool"
 )
 
 var (
-	shuttingDown         = false
-	datetimeShutdownInit time.Time
+	shuttingDown             = abool.New()
+	blockAllIncomingMessages = abool.New()
+	datetimeShutdownInit     time.Time
 )
 
-func shutdown() {
-	shuttingDown = true
+func shutdown(ctx context.Context) {
+	shuttingDown.Set()
 	datetimeShutdownInit = time.Now()
 
-	numGames := countActiveTables()
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
+	numGames := countActiveTables(ctx)
 	logger.Info("Initiating a graceful server shutdown (with " + strconv.Itoa(numGames) +
 		" active games).")
 	if numGames == 0 {
-		shutdownImmediate()
+		shutdownImmediate(ctx)
 	} else {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
 		numMinutes := strconv.Itoa(int(ShutdownTimeout.Minutes()))
-		chatServerSendAll("The server will shutdown in " + numMinutes + " minutes.")
-		go shutdownXMinutesLeft(5)
-		go shutdownXMinutesLeft(10)
-		go shutdownWait()
+		chatServerSendAll(ctx, "The server will shutdown in "+numMinutes+" minutes.")
+		go shutdownXMinutesLeft(ctx, 5)
+		go shutdownXMinutesLeft(ctx, 10)
+		go shutdownWait(ctx)
 	}
 }
 
-func shutdownXMinutesLeft(minutesLeft int) {
+func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 	time.Sleep(ShutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
 	// Do nothing if the shutdown was canceled
-	if !shuttingDown {
+	if shuttingDown.IsNotSet() {
 		return
 	}
 
-	// Automatically end all unstarted games,
-	// since they will almost certainly not have time to finish
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
 	if minutesLeft == 5 {
-		for _, t := range tables {
-			if !t.Running {
-				s := t.GetOwnerSession()
-				commandTableLeave(s, &CommandData{
-					TableID: t.ID,
-				})
-			}
-		}
+		// Automatically end all unstarted tables,
+		// since they will almost certainly not have time to finish
+		terminateAllUnstartedTables(ctx)
 	}
 
-	// Send a warning message to the lobby and to the people still playing
+	// Send a warning message to the lobby
 	msg := "The server will shutdown in " + strconv.Itoa(minutesLeft) + " minutes."
-	chatServerSend(msg, "lobby")
+	chatServerSend(ctx, msg, "lobby", false)
+
+	// Send a warning message to the people still playing
+	tableList := tables.GetList(false)
+	roomNames := make([]string, 0)
+	for _, t := range tableList {
+		t.Lock(ctx)
+		roomNames = append(roomNames, t.GetRoomName())
+		t.Unlock(ctx)
+	}
+
 	msg += " Finish your game soon or it will be automatically terminated!"
-	for _, t := range tables {
-		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
+	for _, roomName := range roomNames {
+		chatServerSend(ctx, msg, roomName, false)
 	}
 }
 
-func shutdownWait() {
+func terminateAllUnstartedTables(ctx context.Context) {
+	// It is assumed that the tables mutex is locked when calling this function
+	for _, t := range tables.GetList(false) {
+		t.Lock(ctx)
+		if !t.Running {
+			s := t.GetOwnerSession()
+			commandTableLeave(ctx, s, &CommandData{ // nolint: exhaustivestruct
+				TableID:      t.ID,
+				NoTableLock:  true,
+				NoTablesLock: true,
+			})
+		}
+		t.Unlock(ctx)
+	}
+}
+
+func shutdownWait(ctx context.Context) {
 	for {
-		if !shuttingDown {
-			logger.Info("The shutdown was aborted.")
-			break
-		}
-
-		if countActiveTables() > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
-			// It has been a long time since the server shutdown/restart was initiated,
-			// so automatically terminate any remaining ongoing games
-			for _, t := range tables {
-				if t.Running && !t.Replay {
-					s := t.GetOwnerSession()
-					commandAction(s, &CommandData{
-						TableID: t.ID,
-						Type:    ActionTypeEndGame,
-						Target:  -1,
-						Value:   EndConditionTerminated,
-					})
-				}
-			}
-		}
-
-		if countActiveTables() == 0 {
-			// Wait 10 seconds so that the players are not immediately booted upon finishing
-			time.Sleep(time.Second * 10)
-
-			logger.Info("There are 0 active tables left.")
-			shutdownImmediate()
+		if shutdownWaitSub(ctx) {
 			break
 		}
 
@@ -97,58 +104,105 @@ func shutdownWait() {
 	}
 }
 
-func countActiveTables() int {
-	numTables := 0
-	for _, t := range tables {
-		if !t.Running || // Pre-game tables that have not started yet
-			t.Replay { // Solo replays and shared replays
+// shutdownWaitSub runs at an interval while the server is waiting to shutdown
+// It returns whether or not to break out of the infinite loop
+func shutdownWaitSub(ctx context.Context) bool {
+	if shuttingDown.IsNotSet() {
+		logger.Info("The shutdown was aborted.")
+		return true
+	}
 
-			continue
+	// Since this is a function that changes a user's relationship to tables,
+	// we must acquires the tables lock to prevent race conditions
+	tables.Lock(ctx)
+	defer tables.Unlock(ctx)
+
+	numActiveTables := countActiveTables(ctx)
+
+	if numActiveTables == 0 {
+		// Wait 10 seconds so that the players are not immediately booted upon finishing
+		time.Sleep(time.Second * 10)
+
+		logger.Info("There are 0 active tables left.")
+		shutdownImmediate(ctx)
+		return true
+	}
+
+	if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
+		// It has been a long time since the server shutdown/restart was initiated,
+		// so automatically terminate any remaining ongoing games
+		terminateAllStartedTables(ctx)
+	}
+
+	return false
+}
+
+func terminateAllStartedTables(ctx context.Context) {
+	// It is assumed that the tables mutex is locked when calling this function
+	for _, t := range tables.GetList(false) {
+		t.Lock(ctx)
+		if t.Running && !t.Replay {
+			s := t.GetOwnerSession()
+			commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
+				TableID:      t.ID,
+				Type:         ActionTypeEndGame,
+				Target:       -1,
+				Value:        EndConditionTerminated,
+				NoTableLock:  true,
+				NoTablesLock: true,
+			})
 		}
-		numTables++
+		t.Unlock(ctx)
+	}
+}
+
+func countActiveTables(ctx context.Context) int {
+	// It is assumed that the tables mutex is locked when calling this function
+	tableList := tables.GetList(false)
+	numTables := 0
+	for _, t := range tableList {
+		t.Lock(ctx)
+		if t.Running && !t.Replay {
+			numTables++
+		}
+		t.Unlock(ctx)
 	}
 
 	return numTables
 }
 
-func shutdownImmediate() {
+func shutdownImmediate(ctx context.Context) {
+	// It is assumed that the tables mutex is locked when calling this function
 	logger.Info("Initiating an immediate server shutdown.")
 
-	// Lock the command mutex to prevent any more moves from being submitted
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	waitForAllWebSocketCommandsToFinish()
 
-	for _, s := range sessions {
-		s.Error("The server is going down for scheduled maintenance. " +
-			"The server might be down for a while; please see the Discord server for more specific updates.")
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
+		s.Error("The server is going down for scheduled maintenance.<br />" +
+			"The server might be down for a while; " +
+			"please see the Discord server for more specific updates.")
+		s.NotifySoundLobby("shutdown")
 	}
 
-	commandChat(nil, &CommandData{
-		Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
-		Room:   "lobby",
-		Server: true,
-	})
+	msg := "The server successfully shut down at: " + getCurrentTimestamp()
+	chatServerSend(ctx, msg, "lobby", false)
 
-	if runtime.GOOS != "windows" {
-		if err := executeScript("stop.sh"); err != nil {
-			logger.Error("Failed to execute the \"stop.sh\" script:", err)
-		}
-	} else {
+	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")
+	} else if err := executeScript("stop.sh"); err != nil {
+		logger.Error("Failed to execute the \"stop.sh\" script: " + err.Error())
 	}
-
-	// Block until the process is killed so that no more moves can be submitted
-	select {}
 }
 
-func cancel() {
-	shuttingDown = false
+func cancel(ctx context.Context) {
+	shuttingDown.UnSet()
 	notifyAllShutdown()
-	chatServerSendAll("Server shutdown has been canceled.")
+	chatServerSendAll(ctx, "Server shutdown has been canceled.")
 }
 
 func checkImminentShutdown(s *Session) bool {
-	if !shuttingDown {
+	if shuttingDown.IsNotSet() {
 		return false
 	}
 
@@ -169,4 +223,11 @@ func checkImminentShutdown(s *Session) bool {
 	}
 
 	return false
+}
+
+func waitForAllWebSocketCommandsToFinish() {
+	logger.Info("Waiting for all ongoing WebSocket commands to finish execution...")
+	blockAllIncomingMessages.Set()
+	commandWaitGroup.Wait() // Will block until it the counter becomes 0
+	logger.Info("All WebSocket commands have completed.")
 }

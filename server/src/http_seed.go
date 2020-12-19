@@ -17,12 +17,11 @@ func httpSeed(c *gin.Context) {
 		return
 	}
 
-	logger.Debug("/seed HTTP endpoint - Getting here #1.")
-
-	// Get all games played on this seed
+	// Get the list of game IDs played on this seed
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsSeed(seed); err != nil {
-		logger.Error("Failed to get the game IDs from the database for seed \""+seed+"\":", err)
+		logger.Error("Failed to get the game IDs from the database for seed \"" + seed + "\": " +
+			err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -33,12 +32,11 @@ func httpSeed(c *gin.Context) {
 		gameIDs = v
 	}
 
-	logger.Debug("/seed HTTP endpoint - Getting here #2.")
-
-	// Get the games corresponding to these IDs
+	// Get the history for these game IDs
+	// (with a custom sort by score)
 	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the games from the database:", err)
+	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
+		logger.Error("Failed to get the history: " + err.Error())
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -49,14 +47,12 @@ func httpSeed(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	logger.Debug("/seed HTTP endpoint - Getting here #3.")
-
 	if _, ok := c.Request.URL.Query()["api"]; ok {
 		c.JSON(http.StatusOK, gameHistoryList)
 		return
 	}
 
-	data := TemplateData{
+	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:        "History",
 		History:      gameHistoryList,
 		NamesTitle:   "seed: " + seed,

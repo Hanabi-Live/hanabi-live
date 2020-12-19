@@ -3,47 +3,58 @@
 package main
 
 func notifyAllUser(s *Session) {
-	for _, s2 := range sessions {
+	sessionList := sessions.GetList()
+	for _, s2 := range sessionList {
 		s2.NotifyUser(s)
 	}
 }
 
 func notifyAllUserLeft(s *Session) {
-	for _, s2 := range sessions {
+	sessionList := sessions.GetList()
+	for _, s2 := range sessionList {
 		s2.NotifyUserLeft(s)
 	}
 }
 
 func notifyAllUserInactive(s *Session) {
-	for _, s2 := range sessions {
+	sessionList := sessions.GetList()
+	for _, s2 := range sessionList {
 		s2.NotifyUserInactive(s)
 	}
 }
 
 func notifyAllTable(t *Table) {
-	if t.Visible {
-		for _, s := range sessions {
-			s.NotifyTable(t)
-		}
+	if !t.Visible {
+		return
+	}
+
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
+		s.NotifyTable(t)
 	}
 }
 
 func notifyAllTableGone(t *Table) {
-	if t.Visible {
-		for _, s := range sessions {
-			s.NotifyTableGone(t)
-		}
+	if !t.Visible {
+		return
+	}
+
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
+		s.NotifyTableGone(t)
 	}
 }
 
 func notifyAllShutdown() {
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.NotifyShutdown()
 	}
 }
 
 func notifyAllMaintenance() {
-	for _, s := range sessions {
+	sessionList := sessions.GetList()
+	for _, s := range sessionList {
 		s.NotifyMaintenance()
 	}
 }
