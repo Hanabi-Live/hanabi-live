@@ -52,11 +52,11 @@ func (m *Manager) googleAnalyticsMiddleware(c *gin.Context) {
 			Expires: time.Now().Add(2 * 365 * 24 * time.Hour), // 2 years
 
 			// Bind the cookie to this specific domain for security purposes
-			Domain: m.Domain,
+			Domain: m.domain,
 
 			// Only send the cookie over HTTPS:
 			// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-			Secure: m.UseTLS,
+			Secure: m.useTLS,
 
 			// Mitigate XSS attacks:
 			// https://www.owasp.org/index.php/HttpOnly

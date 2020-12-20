@@ -1,9 +1,9 @@
 package main
 
-// IsCardTouched returns true if a clue will touch a particular suit
+// TouchesCard returns true if a clue will touch a particular suit.
 // For example, a yellow clue will not touch a green card in a normal game,
-// but it will the "Dual-Color" variant
-// This mirrors the client function "touchesCard()" in "clues.ts"
+// but it will the "Dual-Color" variant.
+// This mirrors the client function "touchesCard()" in "clues.ts".
 func (m *Manager) TouchesCard(variantName string, clue Clue, card *Card) bool {
 	variant := variants[variantName]
 	suit := variant.Suits[card.SuitIndex]

@@ -28,7 +28,7 @@ func (m *Manager) SuitsInit(dataPath string) {
 		}
 
 		// Validate that all of the names are unique
-		if _, ok := m.Suits[suit.Name]; ok {
+		if _, ok := m.suits[suit.Name]; ok {
 			m.logger.Fatalf("There are two suits with the name of: %v", suit.Name)
 		}
 
@@ -36,7 +36,7 @@ func (m *Manager) SuitsInit(dataPath string) {
 		// If it is not specified, use the abbreviation of the color with the same name
 		// Otherwise, assume that it is the first letter of the suit
 		if suit.Abbreviation == "" && len(suit.ClueColors) > 0 {
-			if color, ok := m.Colors[suit.ClueColors[0]]; ok {
+			if color, ok := m.colors[suit.ClueColors[0]]; ok {
 				if color.Abbreviation != "" {
 					suit.Abbreviation = color.Abbreviation
 				}
@@ -55,7 +55,7 @@ func (m *Manager) SuitsInit(dataPath string) {
 		// Validate the clue colors (the colors that touch this suit)
 		if len(suit.ClueColors) > 0 {
 			for _, colorName := range suit.ClueColors {
-				if _, ok := m.Colors[colorName]; !ok {
+				if _, ok := m.colors[colorName]; !ok {
 					m.logger.Fatalf(
 						"The suit of \"%v\" has a clue color of \"%v\", but that color does not exist.",
 						suit.Name,
@@ -65,7 +65,7 @@ func (m *Manager) SuitsInit(dataPath string) {
 			}
 		} else if !suit.AllClueColors && !suit.NoClueColors && !suit.Prism {
 			// The clue colors were not specified; by default, use the color of the same name
-			if _, ok := m.Colors[suit.Name]; ok {
+			if _, ok := m.colors[suit.Name]; ok {
 				suit.ClueColors = []string{suit.Name}
 			} else if suit.Name != "Unknown" { // The "Unknown" suit is not supposed to have clue colors
 				m.logger.Fatalf(
@@ -81,14 +81,14 @@ func (m *Manager) SuitsInit(dataPath string) {
 		}
 
 		// Add it to the map
-		m.Suits[suit.Name] = suit
+		m.suits[suit.Name] = suit
 	}
 
 	// For every suit, add a reversed version of that suit
-	for name, suit := range m.Suits {
+	for name, suit := range m.suits {
 		// In Go, this dereference assignment is a shallow copy
 		suitReversed := *suit
 		suitReversed.Reversed = true
-		m.Suits[name+suitReversedSuffix] = &suitReversed
+		m.suits[name+suitReversedSuffix] = &suitReversed
 	}
 }

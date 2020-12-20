@@ -2,18 +2,11 @@ package sessions
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/settings"
-	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/gin-gonic/gin"
 	"nhooyr.io/websocket"
 )
@@ -41,6 +34,7 @@ type NewData struct {
 
 	// History
 	LobbyChatHistory   []*models.DBChatMessage
+	MotD               string
 	GameHistory        []*models.GameHistory
 	GameHistoryFriends []*models.GameHistory
 
@@ -49,20 +43,14 @@ type NewData struct {
 
 // New will request a new session.
 // It will block until an error is received (e.g. the connection closes).
-func (m *Manager) New(data *NewData) error {
-	if m.requestsClosed.IsSet() {
-		return errors.New("impending server termination")
+func (m *Manager) New(d *NewData) error {
+	d.errChannel = make(chan error)
+
+	if err := m.newRequest(requestTypeNew, d); err != nil {
+		return err
 	}
 
-	errChannel := make(chan error)
-
-	data.errChannel = errChannel
-	m.requests <- &request{
-		Type: requestTypeNew,
-		Data: data,
-	}
-
-	return <-errChannel
+	return <-d.errChannel
 }
 
 func (m *Manager) new(data interface{}) {
@@ -116,26 +104,25 @@ func (m *Manager) new(data interface{}) {
 	logSession(m, d.UserID, d.Username, true)
 
 	// Send them a welcome message and the information that they need to initialize the lobby
-	m.newSendInit(d)
+	m.newSend(d)
 
 	// Alert everyone that a user has logged in
 	m.NotifyAllUser(s.userID)
 }
 
-func (m *Manager) newSendInit(d *NewData) {
-	m.newSendInitWelcome(d)
-	m.newSendInitUserList(d)
-	m.newSendInitTableList(d)
-	m.newSendInitChat(d)
-	m.newSendInitHistory(d)
-	if len(d.Friends) > 0 {
-		m.newSendInitHistoryFriends(d)
-	}
+// newSend sends a new WebSocket user all of the data that they need in order to properly initialize
+// the lobby.
+func (m *Manager) newSend(d *NewData) {
+	m.newSendWelcome(d)
+	m.newSendUserList(d)
+	m.newSendTableList(d)
+	m.newSendChat(d)
+	m.newSendHistory(d)
 }
 
-// newSendInitWelcome sends an initial message that contains information about who they are and the
+// newSendWelcome sends an initial message that contains information about who they are and the
 // current state of the server.
-func (m *Manager) newSendInitWelcome(d *NewData) {
+func (m *Manager) newSendWelcome(d *NewData) {
 	type WelcomeData struct {
 		UserID        int               `json:"userID"`
 		Username      string            `json:"username"`
@@ -187,9 +174,9 @@ func (m *Manager) newSendInitWelcome(d *NewData) {
 	})
 }
 
-// newSendInitUserList sends a "userList" message that contains info for every user.
+// newSendUserList sends a "userList" message that contains info for every user.
 // (This is much more performant than sending N "user" messages.)
-func (m *Manager) newSendInitUserList(d *NewData) {
+func (m *Manager) newSendUserList(d *NewData) {
 	userList := make([]*User, 0)
 	for _, s := range m.sessions {
 		userList = append(userList, makeUser(s))
@@ -197,89 +184,35 @@ func (m *Manager) newSendInitUserList(d *NewData) {
 	m.send(d.UserID, "userList", userList)
 }
 
-// newSendInitTableList sends a "tableList" message that contains info for every table.
+// newSendTableList sends a "tableList" message that contains info for every table.
 // (This is much more performant than sending N "table" messages.)
-func (m *Manager) newSendInitTableList(d *NewData) {
+func (m *Manager) newSendTableList(d *NewData) {
 	tableList := m.Dispatcher.Tables.GetTables(d.UserID) // Blocking on a disparate server component
 	m.send(d.UserID, "tableList", tableList)
 }
 
-// newSendInitHistory sends the chat history for the lobby.
+// newSendChat sends the chat history for the lobby.
 // (But only the last N games to prevent wasted bandwidth.)
-func (m *Manager) newSendInitChat(d *NewData) {
+func (m *Manager) newSendChat(d *NewData) {
 	// Send the past N chat messages from the lobby
 	m.chatSendHistoryFromDatabase(d.UserID, "lobby", d.LobbyChatHistory)
 
 	// Send them a message about the Discord server
 	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>."
-	m.send(d.UserID, "chat", &ChatData{
-		Msg:       msg,
-		Who:       "",
-		Discord:   false,
-		Server:    true,
-		Datetime:  time.Now(),
-		Room:      "lobby",
-		Recipient: "",
-	})
+	m.chatSendServerMsg(d.UserID, msg, "lobby")
 
 	// Send them the message of the day, if any
-	motdPath := path.Join(projectPath, "motd.txt")
-	exists := true
-	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
-		exists = false
-	} else if err != nil {
-		hLog.Errorf("Failed to check if the \"%v\" file exists: %v", motdPath, err)
-		exists = false
-	}
-	if exists {
-		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
-			hLog.Errorf("Failed to read the \"%v\" file: %v", motdPath, err)
-		} else {
-			motd := string(fileContents)
-			motd = strings.TrimSpace(motd)
-			if len(motd) > 0 {
-				msg := fmt.Sprintf("[Server Notice] %v", motd)
-				s.Emit("chat", &ChatMessage{
-					Msg:       msg,
-					Who:       "",
-					Discord:   false,
-					Server:    true,
-					Datetime:  time.Now(),
-					Room:      "lobby",
-					Recipient: "",
-				})
-			}
-		}
+	if len(d.MotD) > 0 {
+		m.chatSendServerMsg(d.UserID, d.MotD, "lobby")
 	}
 }
 
-// newSendInitHistory sends the user's game history.
+// newSendHistory sends the user's game history.
 // (But only the last N games to prevent wasted bandwidth.)
-func (m *Manager) newSendInitHistory(d *NewData) {
-	var gameIDs []int
-	s.Emit("gameHistory", &gameHistoryList)
-}
+func (m *Manager) newSendHistory(d *NewData) {
+	m.send(d.UserID, "gameHistory", &d.GameHistory)
 
-// newSendInitHistoryFriends sends the game history of the user's friends.
-// (But only the last N games to prevent wasted bandwidth.)
-func (m *Manager) newSendInitHistoryFriends(d *NewData) {
-	var gameIDs []int
-	if v, err := models.Games.GetGameIDsFriends(s.UserID, s.Friends(), 0, 10); err != nil {
-		hLog.Errorf(
-			"Failed to get the friend game IDs for %v: %v",
-			util.PrintUser(s.UserID, s.Username),
-			err,
-		)
-		return
-	} else {
-		gameIDs = v
+	if len(d.FriendsList) > 0 {
+		m.send(d.UserID, "gameHistoryFriends", &d.GameHistoryFriends)
 	}
-	var gameHistoryFriendsList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		hLog.Errorf("Failed to get the history: %v", err)
-		return
-	} else {
-		gameHistoryFriendsList = v
-	}
-	s.Emit("gameHistoryFriends", &gameHistoryFriendsList)
 }

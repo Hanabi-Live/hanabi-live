@@ -1,8 +1,10 @@
 package sessions
 
+import "errors"
+
 type request struct {
-	Type int // See the requestType constants below
-	Data interface{}
+	reqType int // See the requestType constants below
+	data    interface{}
 }
 
 const (
@@ -41,17 +43,30 @@ func (m *Manager) ListenForRequests() {
 	for {
 		req := <-m.requests
 
-		if req.Type == requestTypeTerminate {
+		if req.reqType == requestTypeTerminate {
 			break
 		}
 
-		if requestFunc, ok := m.requestFuncMap[req.Type]; ok {
-			requestFunc(req.Data)
+		if requestFunc, ok := m.requestFuncMap[req.reqType]; ok {
+			requestFunc(req.data)
 		} else {
 			m.logger.Errorf(
 				"The sessions manager received an invalid request type of: %v",
-				req.Type,
+				req.reqType,
 			)
 		}
 	}
+}
+
+func (m *Manager) newRequest(reqType int, data interface{}) error {
+	if m.requestsClosed.IsSet() {
+		return errors.New("sessions manager is closed to new requests")
+	}
+
+	m.requests <- &request{
+		reqType: reqType,
+		data:    data,
+	}
+
+	return nil
 }

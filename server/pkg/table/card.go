@@ -6,7 +6,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
-type Card struct {
+type card struct {
 	Order     int // Assigned after the deck is shuffled
 	SuitIndex int
 	Rank      int
@@ -21,32 +21,18 @@ type Card struct {
 	InsistentTouched bool // Used by the "Insistent" character
 }
 
-func NewCard(suit int, rank int) *Card {
-	c := &Card{
-		Order:            0, // We can't set the order here because the deck will be shuffled later
-		SuitIndex:        suit,
-		Rank:             rank,
-		Slot:             0,
-		Touched:          false,
-		Discarded:        false,
-		Played:           false,
-		Failed:           false,
-		CannotBePlayed:   false,
-		InsistentTouched: false,
-	}
+func newCard(suitIndex int, rank int) *card {
+	c := &card{}
+
+	// We can't set the order here because the deck will be shuffled later
+	c.SuitIndex = suitIndex
+	c.Rank = rank
 
 	return c
 }
 
-func (c *Card) Name(g *Game) string {
-	var variant *variants.Variant
-	if v, ok := g.Table.variantsManager.Variants[g.Options.VariantName]; !ok {
-		return "Unknown"
-	} else {
-		variant = v
-	}
-
-	suit := variant.Suits[c.SuitIndex]
+func (c *card) name(g *game) string {
+	suit := g.Variant.Suits[c.SuitIndex]
 	name := suit.Name
 	name += " "
 	if c.Rank == variants.StartCardRank {

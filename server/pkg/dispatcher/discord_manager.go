@@ -1,4 +1,5 @@
 package dispatcher
 
-type discordManager interface {
+type DiscordManager interface {
+	GetNickname(discordID string) string
 }

@@ -18,7 +18,11 @@ type Description struct {
 	Spectators        []string `json:"spectators"`
 }
 
-func makeDescription(t *Table, userID int) *Description {
+func makeDescription(t *table, userID int) *Description {
+	if !t.Visible {
+		return nil
+	}
+
 	playerIndex := t.GetPlayerIndexFromID(userID)
 
 	players := make([]string, 0)

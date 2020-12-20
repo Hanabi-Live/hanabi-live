@@ -33,7 +33,7 @@ type Options struct {
 // To minimize JSON output, we need to use pointers to each option instead of the normal type.
 type JSON struct {
 	StartingPlayer        *int    `json:"startingPlayer,omitempty"`
-	Variant               *string `json:"variant,omitempty"`
+	VariantName           *string `json:"variantName,omitempty"`
 	Timed                 *bool   `json:"timed,omitempty"`
 	TimeBase              *int    `json:"timeBase,omitempty"`
 	TimePerTurn           *int    `json:"timePerTurn,omitempty"`
@@ -61,7 +61,7 @@ type ExtraOptions struct {
 
 	// Replays have some predetermined values
 	// Some special game types also use these fields (e.g. "!replay" games)
-	CustomNumPlayers           int
+	CustomRequiredNumPlayers   int
 	CustomCharacterAssignments []*CharacterAssignment
 	CustomSeed                 string
 	CustomDeck                 []*CardIdentity

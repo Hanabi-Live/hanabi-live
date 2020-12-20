@@ -5,16 +5,9 @@ type notifyAllErrorData struct {
 }
 
 func (m *Manager) NotifyAllError(msg string) {
-	if m.requestsClosed.IsSet() {
-		return
-	}
-
-	m.requests <- &request{
-		Type: requestTypeNotifyAllError,
-		Data: &notifyAllErrorData{
-			msg: msg,
-		},
-	}
+	m.newRequest(requestTypeNotifyAllError, &notifyAllErrorData{ // nolint: errcheck
+		msg: msg,
+	})
 }
 
 func (m *Manager) notifyAllError(data interface{}) {

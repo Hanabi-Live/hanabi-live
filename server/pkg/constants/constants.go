@@ -95,7 +95,6 @@ const (
 	DefaultErrorMsg = "Something went wrong. Please contact an administrator."
 	CreateGameFail  = "Failed to create the game. Please contact an administrator."
 	StartGameFail   = "Failed to start the game. Please contact an administrator."
-	InitGameFail    = "Failed to initialize the game. Please contact an administrator."
 	NotInLobbyFail  = "You can only perform this command from the lobby."
 	NotInGameFail   = "You can only perform this command while in a game."
 	NotReplayFail   = "You can only perform this command while in a replay."

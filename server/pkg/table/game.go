@@ -8,11 +8,13 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
-// Game is a sub-object of a table.
+// game is a sub-object of a table.
 // It represents all of the particular state associated with a game.
-// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
-// (which is used in this case to prevent circular references).
-type Game struct {
+// We need to export most fields so that the JSON encoder can serialize them during a graceful
+// server restart. Fields that do not need to be encoded are still exported for object consistency.
+// Instead, we use a tag of `json:"-"` to denote that the JSON serializer should skip the field.
+// (Several fields must be skipped in order to prevent circular references.)
+type game struct {
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
 	// the database yet
@@ -23,19 +25,19 @@ type Game struct {
 	DatetimeFinished time.Time
 
 	// This is a reference to the parent object; every game must have a parent Table object
-	Table *Table `json:"-"`
-	// This is a reference to the Options field of the Table object (for convenience purposes)
+	Table *table `json:"-"`
+	// These are references to the respective fields of the Table object (for convenience purposes)
 	Options      *options.Options      `json:"-"`
 	ExtraOptions *options.ExtraOptions `json:"-"`
-	// (circular references must also be restored in the "restoreTables()" function)
+	Variant      *variants.Variant
 
 	// Game state related fields
-	Players []*GamePlayer
+	Players []*gamePlayer
 	// The seed specifies how the deck is dealt
-	// It is either entered manually by players before the game starts or
-	// randomly selected by the server upon starting a game
+	// It is either entered manually by players before the game starts or randomly selected by the
+	// server upon starting a game
 	Seed                string
-	Deck                []*Card
+	Deck                []*card
 	CardIdentities      []*options.CardIdentity // A bare-bones version of the deck
 	DeckIndex           int
 	Stacks              []int
@@ -53,11 +55,10 @@ type Game struct {
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
-	// In the future, we will just send Actions2 to the client and delete Actions
 	Actions []interface{}
-	// Actions2 is a database-compatible representation of in-game moves
+	// DBActions is a database-compatible representation of in-game moves
 	// (it is much less verbose when compared with Actions)
-	Actions2              []*options.GameAction
+	DBActions             []*options.GameAction
 	InvalidActionOccurred bool // Used when emulating game actions in replays
 	EndCondition          int  // The values for this are listed in "constants.go"
 	// The index of the player who ended the game, if any
@@ -85,60 +86,34 @@ type Game struct {
 	Tags map[string]int // Keys are the tags, values are the user ID that created it
 }
 
-type GameJSON struct {
-	ID      int                     `json:"id,omitempty"` // Optional element only used for game exports
-	Players []string                `json:"players"`
-	Deck    []*options.CardIdentity `json:"deck"`
-	Actions []*options.GameAction   `json:"actions"`
-	// Options is an optional element
-	// Thus, it must be a pointer so that we can tell if the value was specified or not
-	Options *options.JSON `json:"options,omitempty"`
-	// Notes is an optional element that contains the notes for each player
-	Notes [][]string `json:"notes,omitempty"`
-	// Characters is an optional element that specifies the "Detrimental Character" assignment for
-	// each player, if any
-	Characters []*options.CharacterAssignment `json:"characters,omitempty"`
-	// Seed is an optional value that specifies the server-side seed for the game (e.g. "p2v0s1")
-	// This allows the server to reconstruct the game without the deck being present and to properly
-	// write the game back to the database
-	Seed string `json:"seed,omitempty"`
-}
-
-func NewGame(t *Table) *Game {
-	var variant *variants.Variant
-	if v, ok := t.variantsManager.Variants[t.Options.VariantName]; !ok {
-		t.logger.Errorf("Failed to find the variant of: %v", t.Options.VariantName)
-		variant = t.variantsManager.NoVariant
-	} else {
-		variant = v
-	}
-
-	g := &Game{
+func (m *Manager) newGame(t *table) *game {
+	g := &game{
 		DatetimeStarted:  time.Time{},
 		DatetimeFinished: time.Time{},
 
 		Table:        t,
 		Options:      t.Options,
 		ExtraOptions: t.ExtraOptions,
+		Variant:      t.Variant,
 
-		Players:               make([]*GamePlayer, 0),
+		Players:               make([]*gamePlayer, 0),
 		Seed:                  "",
-		Deck:                  make([]*Card, 0),
+		Deck:                  make([]*card, 0),
 		CardIdentities:        make([]*options.CardIdentity, 0),
 		DeckIndex:             0,
-		Stacks:                make([]int, len(variant.Suits)),
-		PlayStackDirections:   make([]int, len(variant.Suits)),
+		Stacks:                make([]int, len(t.Variant.Suits)),
+		PlayStackDirections:   make([]int, len(t.Variant.Suits)),
 		Turn:                  0,
 		DatetimeTurnBegin:     time.Time{},
 		TurnsInverted:         false,
 		ActivePlayerIndex:     0,
-		ClueTokens:            variant.GetAdjustedClueTokens(constants.MaxClueNum),
+		ClueTokens:            t.Variant.GetAdjustedClueTokens(constants.MaxClueNum),
 		Score:                 0,
-		MaxScore:              len(variant.Suits) * constants.PointsPerSuit,
+		MaxScore:              len(t.Variant.Suits) * constants.PointsPerSuit,
 		Strikes:               0,
 		LastClueTypeGiven:     -1,
 		Actions:               make([]interface{}, 0),
-		Actions2:              make([]*options.GameAction, 0),
+		DBActions:             make([]*options.GameAction, 0),
 		InvalidActionOccurred: false,
 		EndCondition:          0,
 		EndPlayer:             -1,
@@ -158,10 +133,10 @@ func NewGame(t *Table) *Game {
 		Tags: make(map[string]int),
 	}
 
-	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
-	// that uses the "Undecided" direction.
-	if variant.HasReversedSuits() && !variant.IsUpOrDown() {
-		for i, s := range variant.Suits {
+	// Reverse the stack direction of reversed suits,
+	// except on the "Up or Down" variant that uses the "Undecided" direction
+	if t.Variant.HasReversedSuits() && !t.Variant.IsUpOrDown() {
+		for i, s := range t.Variant.Suits {
 			if s.Reversed {
 				g.PlayStackDirections[i] = variants.StackDirectionDown
 			} else {

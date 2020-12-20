@@ -53,7 +53,13 @@ func (m *Manager) seed(c *gin.Context) {
 		return
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type seedData struct {
+		Title        string
+		History      []*models.GameHistory
+		NamesTitle   string
+		SpecificSeed bool
+	}
+	data := &seedData{
 		Title:        "History",
 		History:      gameHistoryList,
 		NamesTitle:   fmt.Sprintf("seed: %v", seed),

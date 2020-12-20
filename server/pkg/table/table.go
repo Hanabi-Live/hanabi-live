@@ -3,22 +3,22 @@ package table
 import (
 	"time"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
-	"github.com/sasha-s/go-deadlock"
 )
 
-// Table describes the container that a player can join, whether it is an unstarted game,
-// an ongoing game, a solo replay, a shared replay, etc.
-// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing.
-type Table struct {
+// table describes the container that a player can join.
+// (e.g. an unstarted game, an ongoing game, a solo replay, a shared replay, etc.)
+// We need to export most fields so that the JSON encoder can serialize them during a graceful
+// server restart. Fields that do not need to be encoded are still exported for object consistency.
+// Instead, we use a tag of `json:"-"` to denote that the JSON serializer should skip the field.
+type table struct {
 	ID          uint64
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay
 
-	Players    []*Player
-	Spectators []*Spectator `json:"-"`
+	Players    []*player
+	Spectators []*spectator `json:"-"`
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
 	KickedPlayers map[int]struct{} `json:"-"`
@@ -43,24 +43,18 @@ type Table struct {
 	DatetimeLastAction time.Time
 
 	// All of the game state is contained within the "Game" object
-	Game *Game
+	Game *game
 
 	// The variant and other game settings are contained within the "Options" object
 	Options      *options.Options      // Options that are stored in the database
 	ExtraOptions *options.ExtraOptions // Options that are not stored in the database
+	Variant      *variants.Variant     // A reference to the variant object for convenience purposes
 
-	Chat     []*ChatMessage // All of the in-game chat history
+	Chat     []*chatMessage // All of the in-game chat history
 	ChatRead map[int]int    // A map of which users have read which messages
-	Deleted  bool           `json:"-"` // Used to prevent race conditions
-
-	// Each table has its own mutex to ensure that only one action can occur at the same time
-	mutex *deadlock.Mutex
-
-	variantsManager *variants.Manager
-	logger          *logger.Logger // TODO move this to table manager
 }
 
-type ChatMessage struct {
+type chatMessage struct {
 	UserID   int
 	Username string
 	Msg      string
@@ -68,20 +62,30 @@ type ChatMessage struct {
 	Server   bool
 }
 
-func NewTable(name string, ownerID int) *Table {
-	// Create the table object
-	return &Table{
-		ID:          0, // TODO
-		Name:        name,
-		InitialName: "", // This must stay blank in shared replays
+type NewTableData struct {
+	ID           uint64
+	Name         string
+	OwnerID      int
+	HidePregame  bool
+	PasswordHash string
+	Options      *options.Options
+	ExtraOptions *options.ExtraOptions
+	Variant      *variants.Variant
+}
 
-		Players:       make([]*Player, 0),
-		Spectators:    make([]*Spectator, 0),
+func newTable(d *NewTableData) *table {
+	t := &table{
+		ID:          d.ID,
+		Name:        d.Name,
+		InitialName: "",
+
+		Players:       make([]*player, 0),
+		Spectators:    make([]*spectator, 0),
 		KickedPlayers: make(map[int]struct{}),
 
-		OwnerID:        ownerID,
-		Visible:        true, // Tables are visible by default
-		PasswordHash:   "",
+		OwnerID:        d.OwnerID,
+		Visible:        !d.HidePregame, // Tables are visible by default
+		PasswordHash:   d.PasswordHash,
 		Running:        false,
 		Replay:         false,
 		AutomaticStart: 0,
@@ -94,18 +98,18 @@ func NewTable(name string, ownerID int) *Table {
 
 		Game: nil,
 
-		Options:      options.NewOptions(),
-		ExtraOptions: &options.ExtraOptions{},
+		Options:      d.Options,
+		ExtraOptions: d.ExtraOptions,
+		Variant:      d.Variant,
 
-		Chat:     make([]*ChatMessage, 0),
+		Chat:     make([]*chatMessage, 0),
 		ChatRead: make(map[int]int),
-		Deleted:  false,
-
-		mutex: &deadlock.Mutex{},
 	}
+
+	return t
 }
 
-func (t *Table) GetPlayerIndexFromID(userID int) int {
+func (t *table) GetPlayerIndexFromID(userID int) int {
 	for i, p := range t.Players {
 		if p.UserID == userID {
 			return i
@@ -115,7 +119,7 @@ func (t *Table) GetPlayerIndexFromID(userID int) int {
 	return -1
 }
 
-func (t *Table) GetSpectatorIndexFromID(userID int) int {
+func (t *table) GetSpectatorIndexFromID(userID int) int {
 	for i, sp := range t.Spectators {
 		if sp.UserID == userID {
 			return i

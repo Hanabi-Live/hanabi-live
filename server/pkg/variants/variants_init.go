@@ -36,7 +36,7 @@ func (m *Manager) VariantsInit(dataPath string) {
 		}
 
 		// Validate that all of the names are unique
-		if _, ok := m.Variants[variantJSON.Name]; ok {
+		if _, ok := m.variantsNameMap[variantJSON.Name]; ok {
 			m.logger.Fatalf("There are two variants with the name of: %v", variantJSON.Name)
 		}
 
@@ -51,7 +51,7 @@ func (m *Manager) VariantsInit(dataPath string) {
 		// Validate that all of the suits exist and convert suit strings to objects
 		variantSuits := make([]*Suit, 0)
 		for _, suitName := range variantJSON.Suits {
-			if suit, ok := m.Suits[suitName]; !ok {
+			if suit, ok := m.suits[suitName]; !ok {
 				m.logger.Fatalf(
 					"The suit of \"%v\" in variant \"%v\" does not exist.",
 					suitName,
@@ -92,7 +92,7 @@ func (m *Manager) VariantsInit(dataPath string) {
 		} else {
 			// The clue colors were specified in the JSON, so validate that they map to colors
 			for _, colorName := range *variantJSON.ClueColors {
-				if _, ok := m.Colors[colorName]; !ok {
+				if _, ok := m.colors[colorName]; !ok {
 					m.logger.Fatalf(
 						"The variant of \"%v\" has a clue color of \"%v\", but that color does not exist.",
 						variantJSON.Name,
@@ -134,29 +134,29 @@ func (m *Manager) VariantsInit(dataPath string) {
 			SpecialDeceptive:       variantJSON.SpecialDeceptive,
 			MaxScore:               len(variantSuits) * pointsPerStack,
 		}
-		m.Variants[variant.Name] = variant
+		m.variantsNameMap[variant.Name] = variant
 
 		// We store the default variant as a convenience field
 		if variant.Name == DefaultVariantName {
-			m.NoVariant = variant
+			m.noVariant = variant
 		}
 
 		// Validate that all of the ID's are unique
 		// And create a reverse mapping of ID to name
 		// (so that we can easily find the associated variant from a database entry)
-		if _, ok := m.VariantsIDMap[variant.ID]; ok {
+		if _, ok := m.variantsIDMap[variant.ID]; ok {
 			m.logger.Fatalf("There are two variants with the ID of: %v", variant.ID)
 		}
-		m.VariantsIDMap[variant.ID] = variant
+		m.variantsIDMap[variant.ID] = variant
 
 		// Create an array with every variant name
-		m.VariantNames = append(m.VariantNames, variant.Name)
+		m.variantNames = append(m.variantNames, variant.Name)
 	}
 
 	// Validate that there are no skipped ID numbers
 	// (commented out for now since we have deleted some variants in the last round of changes)
-	for i := 0; i < len(m.VariantNames); i++ {
-		if _, ok := m.VariantsIDMap[i]; !ok {
+	for i := 0; i < len(m.variantNames); i++ {
+		if _, ok := m.variantsIDMap[i]; !ok {
 			m.logger.Fatalf(
 				"There is no variant with an ID of \"%v\". (Variant IDs must be sequential.)",
 				i,
@@ -165,7 +165,7 @@ func (m *Manager) VariantsInit(dataPath string) {
 	}
 
 	// Validate that we filled in the default variant convenience field
-	if m.NoVariant == nil {
+	if m.noVariant == nil {
 		m.logger.Fatalf("Failed to find the default variant of: %v", DefaultVariantName)
 	}
 }

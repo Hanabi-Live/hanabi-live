@@ -1,5 +1,5 @@
 package dispatcher
 
-type commandsManager interface {
+type CommandsManager interface {
 	Send(userID int, command string, data interface{})
 }

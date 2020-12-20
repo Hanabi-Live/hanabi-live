@@ -1,7 +1,7 @@
 // This is a JSON object that represents a game of Hanabi
 // This also matches how games are stored in the database for the website
 // Created by Zamiel
-// Format version: 3.0.0
+// Format version: 4.0.0
 {
   // "players" is an array that contains the names of the players
   // The 0th player will always go first
@@ -147,7 +147,7 @@
     // A full list of variants can be found here:
     // https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md#full-variant-listing
     // If this value is not specified, "No Variant" will be assumed
-    "variant": "No Variant",
+    "variantName": "No Variant",
 
     // Any other website option can be specified, such as "cardCycle" or "emptyClues"
     // A full list of options can be found in the "OptionsJSON" struct, located here:

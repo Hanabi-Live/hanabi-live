@@ -4,8 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
@@ -16,6 +20,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 	"nhooyr.io/websocket"
+)
+
+const (
+	lobbyChatHistoryAmount = 50
 )
 
 // ws handles part 2 of 2 for login authentication. (Part 1 is found in "login.go".)
@@ -132,7 +140,7 @@ func (m *Manager) wsNew(c *gin.Context, userID int, username string, ip string) 
 	// Send a request to add the WebSocket connection to the sessions manager
 	// (which listens on a separate goroutine)
 	// This will block until an error is received from the channel
-	err := m.sessionsManager.New(data)
+	err := m.Dispatcher.Sessions.New(data)
 	if errors.Is(err, context.Canceled) ||
 		websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
@@ -294,26 +302,62 @@ func (m *Manager) wsGetData(
 	// Information about their current activity
 	// ----------------------------------------
 
-	playingAtTables, _ := m.tablesManager.GetUserTables(userID)
+	playingAtTables, _ := m.Dispatcher.Tables.GetUserTables(userID)
 
 	// -------
 	// History
 	// -------
 
-	var lobbyChatHistory []*DBChatMessage
-	if v, err := models.ChatLog.Get("lobby", lobbyChatHistoryAmount); err != nil {
+	var lobbyChatHistory []*models.DBChatMessage
+	if v, err := m.models.ChatLog.Get(c, "lobby", lobbyChatHistoryAmount); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the lobby chat history for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
+		m.wsError(c, msg)
 		return nil
 	} else {
 		lobbyChatHistory = v
 	}
 
+	motdPath := path.Join(m.projectPath, "motd.txt")
+	exists := true
+	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
+		exists = false
+	} else if err != nil {
+		msg := fmt.Sprintf(
+			"Failed to check if the \"%v\" file exists for %v: %v",
+			motdPath,
+			util.PrintUser(userID, username),
+			err,
+		)
+		m.wsError(c, msg)
+		return nil
+	}
+
+	var motd string
+	if exists {
+		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
+			msg := fmt.Sprintf(
+				"Failed to read the \"%v\" file for %v: %v",
+				motdPath,
+				util.PrintUser(userID, username),
+				err,
+			)
+			m.wsError(c, msg)
+			return nil
+		} else {
+			motd = string(fileContents)
+			motd = strings.TrimSpace(motd)
+			if len(motd) > 0 {
+				motd = fmt.Sprintf("[Server Notice] %v", motd)
+			}
+		}
+	}
+
 	var gameIDs []int
-	if v, err := models.Games.GetGameIDsUser(userID, 0, 10); err != nil {
+	if v, err := m.models.Games.GetGameIDsUser(c, userID, 0, 10); err != nil {
 		msg := fmt.Sprintf(
 			"Failed to get the game IDs for %v: %v",
 			util.PrintUser(userID, username),
@@ -325,10 +369,10 @@ func (m *Manager) wsGetData(
 		gameIDs = v
 	}
 
-	var gameHistory []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+	var gameHistory []*models.GameHistory
+	if v, err := m.models.Games.GetHistory(c, gameIDs); err != nil {
 		msg := fmt.Sprintf(
-			"Failed to get the history for %v: %v",
+			"Failed to get the game history for %v: %v",
 			util.PrintUser(userID, username),
 			err,
 		)
@@ -338,9 +382,32 @@ func (m *Manager) wsGetData(
 		gameHistory = v
 	}
 
-	gameHistoryFriends := make([]*GameHistory, 0)
+	gameHistoryFriends := make([]*models.GameHistory, 0)
 	if len(friendsList) > 0 {
+		var gameIDs []int
+		if v, err := m.models.Games.GetGameIDsFriends(c, userID, friends, 0, 10); err != nil {
+			msg := fmt.Sprintf(
+				"Failed to get the friend game IDs for %v: %v",
+				util.PrintUser(userID, username),
+				err,
+			)
+			m.wsError(c, msg)
+			return nil
+		} else {
+			gameIDs = v
+		}
 
+		if v, err := m.models.Games.GetHistory(c, gameIDs); err != nil {
+			msg := fmt.Sprintf(
+				"Failed to get the friend game history for %v: %v",
+				util.PrintUser(userID, username),
+				err,
+			)
+			m.wsError(c, msg)
+			return nil
+		} else {
+			gameHistoryFriends = v
+		}
 	}
 
 	// ----
@@ -351,22 +418,26 @@ func (m *Manager) wsGetData(
 		Ctx:  c,
 		Conn: conn,
 
-		UserID:   userID,
-		Username: username,
-
+		// Data that will be attached to the session
+		UserID:         userID,
+		Username:       username,
+		Muted:          muted,
 		Friends:        friends,
 		ReverseFriends: reverseFriends,
 		Hyphenated:     hyphenated,
-		Muted:          muted,
 
+		// Other stats
 		FirstTimeUser: firstTimeUser,
 		TotalGames:    totalGames,
 		Settings:      settings,
 		FriendsList:   friendsList,
 
+		// Information about their current activity
 		PlayingAtTables: playingAtTables,
 
+		// History
 		LobbyChatHistory:   lobbyChatHistory,
+		MotD:               motd,
 		GameHistory:        gameHistory,
 		GameHistoryFriends: gameHistoryFriends,
 	}

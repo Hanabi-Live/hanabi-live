@@ -56,10 +56,17 @@ func (m *Manager) tag(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type tagData struct {
+		Title      string
+		NamesTitle string
+		History    []*models.GameHistory
+		Common     *commonData
+	}
+	data := &tagData{
 		Title:      "History",
 		NamesTitle: fmt.Sprintf("Games With a Tag of: %v", tag),
 		History:    gameHistoryList,
+		Common:     m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "profile", "history")
 }

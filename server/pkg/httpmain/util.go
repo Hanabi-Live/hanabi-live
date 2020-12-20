@@ -12,6 +12,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
+	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,8 +39,15 @@ func (m *Manager) getVariantStatsList(
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]*UserVariantStats, 0)
-	for _, name := range m.variantsManager.VariantNames {
-		variant := m.variantsManager.Variants[name]
+	for _, name := range m.Dispatcher.Variants.VariantNames() {
+		var variant *variants.Variant
+		if v, err := m.Dispatcher.Variants.GetVariant(name); err != nil {
+			m.logger.Errorf("Failed to get the variant: %v", err)
+			variant = m.Dispatcher.Variants.NoVariant()
+		} else {
+			variant = v
+		}
+
 		maxScore := len(variant.Suits) * constants.PointsPerSuit
 		variantStats := &UserVariantStats{ // nolint: exhaustivestruct
 			ID:       variant.ID,
@@ -93,7 +101,7 @@ func (m *Manager) getPercentageMaxScores(
 	numMaxScores int,
 	numMaxScoresPerType []int,
 ) (string, []string) {
-	numVariants := len(m.variantsManager.VariantNames)
+	numVariants := m.Dispatcher.Variants.GetNumVariants()
 	numTotalScores := numVariants * bestscore.NumPlayerGameTypes
 
 	percentageMaxScoresPerType := make([]string, 0)
@@ -111,7 +119,7 @@ func (m *Manager) getPercentageMaxScores(
 	return percentageMaxScoresString, percentageMaxScoresPerType
 }
 
-// getVersion will get the current version of the JavaScript client,
+// getVersion will get the current version of the JavaScript client / CSS,
 // which is contained in the "version.txt" file.
 // We want to read this file every time (as opposed to just reading it on server start) so that we
 // can update the client without having to restart the entire server.

@@ -5,24 +5,24 @@ import (
 )
 
 type Manager struct {
-	Colors        map[string]*Color
-	Suits         map[string]*Suit
-	Variants      map[string]*Variant
-	VariantsIDMap map[int]*Variant
-	VariantNames  []string
-	NoVariant     *Variant
+	colors          map[string]*Color
+	suits           map[string]*Suit
+	variantsNameMap map[string]*Variant
+	variantsIDMap   map[int]*Variant
+	variantNames    []string
+	noVariant       *Variant
 
 	logger *logger.Logger
 }
 
 func NewManager(logger *logger.Logger, dataPath string) *Manager {
 	m := &Manager{
-		Colors:        make(map[string]*Color),
-		Suits:         make(map[string]*Suit),
-		Variants:      make(map[string]*Variant),
-		VariantsIDMap: make(map[int]*Variant),
-		VariantNames:  make([]string, 0),
-		NoVariant:     nil, // Set in "manager.VariantsInit()"
+		colors:          make(map[string]*Color),
+		suits:           make(map[string]*Suit),
+		variantsNameMap: make(map[string]*Variant),
+		variantsIDMap:   make(map[int]*Variant),
+		variantNames:    make([]string, 0),
+		noVariant:       nil, // Set in "manager.VariantsInit()"
 
 		logger: logger,
 	}

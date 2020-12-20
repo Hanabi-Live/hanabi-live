@@ -10,12 +10,9 @@ type spectateData struct {
 
 // Spectate requests that the user is added as a spectator (in either an ongoing game or a replay).
 func (m *Manager) Spectate(userID int) {
-	m.requests <- &request{
-		Type: requestTypeSpectate,
-		Data: &spectateData{
-			userID: userID,
-		},
-	}
+	m.newRequest(requestTypeSpectate, &spectateData{ // nolint: errcheck
+		userID: userID,
+	})
 }
 
 func (m *Manager) spectate(data interface{}) {

@@ -12,7 +12,7 @@
     {{if eq .Title "Dev"}}
       Test
     {{else}}
-      {{.WebsiteName}}{{if ne .Title "Main"}} - {{.Title}}{{end}}
+      {{.Common.WebsiteName}}{{if ne .Title "Main"}} - {{.Title}}{{end}}
     {{end}}
   </title>
   <meta charset="utf-8" />
@@ -48,8 +48,8 @@
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
   {{else}}
     <!-- Delay loading non-critical CSS -->
-    <link rel="preload" type="text/css" href="/public/css/main.{{.Version}}.min.css" as="style">
-    <link rel="stylesheet" type="text/css" href="/public/css/main.{{.Version}}.min.css">
+    <link rel="preload" type="text/css" href="/public/css/main.{{.Common.Version}}.min.css" as="style">
+    <link rel="stylesheet" type="text/css" href="/public/css/main.{{.Common.Version}}.min.css">
   {{end}}
   <link rel="icon" type="image/png" sizes="32x32" href="/public/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/public/img/favicon-16x16.png">

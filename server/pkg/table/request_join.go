@@ -10,12 +10,9 @@ type joinData struct {
 
 // Join will request that the given user joins the table (which must be in a pre-game state).
 func (m *Manager) Join(userID int) {
-	m.requests <- &request{
-		Type: requestTypeJoin,
-		Data: &joinData{
-			userID: userID,
-		},
-	}
+	m.newRequest(requestTypeJoin, &joinData{ // nolint: errcheck
+		userID: userID,
+	})
 }
 
 func (m *Manager) join(data interface{}) {

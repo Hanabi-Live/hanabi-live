@@ -22,7 +22,6 @@ const (
 	// If the private key filename is changed,
 	// then the entry in the ".gitignore" file should also be changed.
 	privateKeyFilename = "GitHub_private_key.pem"
-	repositoryOwner    = "Zamiell"
 )
 
 func NewManager(logger *logger.Logger, projectPath string, projectName string) *Manager {

@@ -10,21 +10,10 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"unicode"
 
 	sentry "github.com/getsentry/sentry-go"
 	"go.uber.org/zap"
 )
-
-// From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
-func containsAllPrintableASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] < 32 || s[i] > 126 { // 32 is " " and 126 is "~"
-			return false
-		}
-	}
-	return true
-}
 
 func executeScript(scriptName string) error {
 	scriptPath := path.Join(projectPath, scriptName)
@@ -69,19 +58,6 @@ func max(x, y int) int {
 		return x
 	}
 	return y
-}
-
-func removeNonPrintableCharacters(s string) string {
-	return strings.Map(func(r rune) rune {
-		if !unicode.IsPrint(r) {
-			// This character is not printable by Go
-			// https://golang.org/pkg/unicode/#IsPrint
-			// Returning a negative value will drop the character from the string with no
-			// replacement
-			return -1
-		}
-		return r
-	}, s)
 }
 
 // setSeed seeds the random number generator with a string

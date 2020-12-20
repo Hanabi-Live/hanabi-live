@@ -5,16 +5,9 @@ type notifyAllUserData struct {
 }
 
 func (m *Manager) NotifyAllUser(changedUserID int) {
-	if m.requestsClosed.IsSet() {
-		return
-	}
-
-	m.requests <- &request{
-		Type: requestTypeNotifyAllUserLeft,
-		Data: &notifyAllUserData{
-			changedUserID: changedUserID,
-		},
-	}
+	m.newRequest(requestTypeNotifyAllUser, &notifyAllUserData{ // nolint: errcheck
+		changedUserID: changedUserID,
+	})
 }
 
 func (m *Manager) notifyAllUser(data interface{}) {

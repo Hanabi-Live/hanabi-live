@@ -6,12 +6,9 @@ type disconnectUserData struct {
 
 // DisconnectUser requests that a user leaves all of their joined tables.
 func (m *Manager) DisconnectUser(userID int) {
-	m.requests <- &request{
-		Type: requestTypeDisconnectUser,
-		Data: &disconnectUserData{
-			userID: userID,
-		},
-	}
+	m.newRequest(requestTypeDisconnectUser, &disconnectUserData{ // nolint: errcheck
+		userID: userID,
+	})
 }
 
 func (m *Manager) disconnectUser(data interface{}) {

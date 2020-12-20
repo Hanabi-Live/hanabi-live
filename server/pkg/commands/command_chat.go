@@ -2,8 +2,8 @@ package commands
 
 /*
 const (
-	MaxChatLength       = 300
-	MaxChatLengthServer = 600
+	maxChatLength       = 300
+	maxChatLengthServer = 600
 )
 
 var (

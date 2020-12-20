@@ -153,7 +153,7 @@ func getTimeLeft() (string, error) {
 		return "The server is not scheduled to shutdown any time soon.", nil
 	}
 
-	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
+	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
 	timeLeftSeconds := int(timeLeft.Seconds())
 	var durationString string
 	if v, err := secondsToDurationString(timeLeftSeconds); err != nil {

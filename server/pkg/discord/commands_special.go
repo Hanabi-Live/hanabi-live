@@ -12,7 +12,7 @@ import (
 // nolint: godot
 // /issue
 func (m *Manager) commandIssue(ctx context.Context, mc *discordgo.MessageCreate, args []string) {
-	if m.gitHubManager == nil {
+	if m.Dispatcher.GitHub == nil {
 		msg := "The GitHub client is not initialized."
 		m.Send(mc.ChannelID, "", msg)
 		return
@@ -27,10 +27,10 @@ func (m *Manager) commandIssue(ctx context.Context, mc *discordgo.MessageCreate,
 	title := strings.Join(args, " ")
 	body := fmt.Sprintf(
 		"Issue opened by Discord user: %v#%v",
-		m.getNickname(mc.Author.ID),
+		m.GetNickname(mc.Author.ID),
 		mc.Author.Discriminator,
 	)
-	if err := m.gitHubManager.NewIssue(ctx, title, body); err != nil {
+	if err := m.Dispatcher.GitHub.NewIssue(ctx, title, body); err != nil {
 		m.logger.Errorf("Failed to create a new issue on GitHub: %v", err)
 		m.Send(mc.ChannelID, "", constants.DefaultErrorMsg)
 		return

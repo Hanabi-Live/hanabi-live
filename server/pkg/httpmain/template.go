@@ -8,60 +8,28 @@ import (
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
-	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/sentry"
 )
 
-type TemplateData struct {
-	// Shared
+// commonData contains fields that should be injected into every template.
+// Note that all fields must be exported in template data structs,
+// otherwise templates cannot use them.
+type commonData struct {
 	WebsiteName string
-	Title       string // Used to populate the "<title>" tag
-	Domain      string // Used to validate that the user is going to the correct URL
 	Version     int
-	Compiling   bool // True if we are currently recompiling the TypeScript client
-	WebpackPort int
+}
 
-	// Profile
-	Name       string
-	NamesTitle string
-
-	// History
-	History      []*models.GameHistory
-	SpecificSeed bool
-	Tags         map[int][]string
-
-	// Scores
-	DateJoined                 string
-	NumGames                   int
-	TimePlayed                 string
-	NumGamesSpeedrun           int
-	TimePlayedSpeedrun         string
-	NumMaxScores               int
-	TotalMaxScores             int
-	PercentageMaxScores        string
-	RequestedNumPlayers        int      // Used on the "Missing Scores" page
-	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
-	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
-	SharedMissingScores        bool     // Used on the "Missing Scores" page
-	VariantStats               []*UserVariantStats
-
-	// Stats
-	NumVariants int
-	Variants    []*VariantStatsData
-
-	// Variants
-	BestScores    []int
-	MaxScoreRate  string
-	MaxScore      int
-	AverageScore  string
-	NumStrikeouts int
-	StrikeoutRate string
-	RecentGames   []*models.GameHistory
+// getCommonData adds extra data that should be the same for every template / page request.
+func (m *Manager) getCommonData() *commonData {
+	return &commonData{
+		WebsiteName: constants.WebsiteName,
+		Version:     m.getVersion(),
+	}
 }
 
 // serveTemplate combines a standard HTML header with the body for a specific page.
 // (We want the same HTML header for all pages.)
-func (m *Manager) serveTemplate(w http.ResponseWriter, data *TemplateData, templateName ...string) {
+func (m *Manager) serveTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
 	// Since we are using the GZip middleware, we have to specify the content type,
 	// or else the page will be downloaded by the browser as "download.gz"
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -116,10 +84,6 @@ func (m *Manager) serveTemplate(w http.ResponseWriter, data *TemplateData, templ
 	} else {
 		tmpl = v
 	}
-
-	// Add extra data that should be the same for every page request
-	data.WebsiteName = constants.WebsiteName
-	data.Version = m.getVersion()
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {

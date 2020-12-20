@@ -257,8 +257,9 @@ func (g *Games) GetHistoryCustomSort(
 		}
 
 		// Get the name of the variant that corresponds to the variant ID
-		if variant, ok := g.m.variantsManager.VariantsIDMap[gameHistory.Options.VariantID]; !ok {
-			err := fmt.Errorf("the variant ID of %v is not valid", gameHistory.Options.VariantID)
+		if variant, err := g.m.variantsManager.GetVariantByID(
+			gameHistory.Options.VariantID,
+		); err != nil {
 			return games, err
 		} else {
 			gameHistory.Options.VariantName = variant.Name
@@ -659,11 +660,7 @@ func (g *Games) GetOptions(ctx context.Context, databaseID int) (*options.Option
 	}
 
 	// Validate that the variant exists
-	if variant, ok := g.m.variantsManager.VariantsIDMap[options.VariantID]; !ok {
-		err := fmt.Errorf(
-			"failed to find a variant definition for variant ID %v",
-			options.VariantID,
-		)
+	if variant, err := g.m.variantsManager.GetVariantByID(options.VariantID); err != nil {
 		return &options, err
 	} else {
 		options.VariantName = variant.Name

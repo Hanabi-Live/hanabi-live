@@ -13,11 +13,10 @@ const (
 	// When sending the in-game chat history,
 	// only send the last X messages to prevent clients from becoming overloaded
 	// (in case someone maliciously spams a lot of messages)
-	ChatLimit = 1000
+	chatLimit = 1000
 )
 
 var (
-	mentionRegExp = regexp.MustCompile(`&lt;@!*(\d+?)&gt;`)
 	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
 )
 

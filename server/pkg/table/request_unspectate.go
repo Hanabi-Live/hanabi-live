@@ -11,12 +11,9 @@ type unspectateData struct {
 // Unspectate requests that the user is removed from being a spectator (in either an ongoing game or
 // a replay).
 func (m *Manager) Unspectate(userID int) {
-	m.requests <- &request{
-		Type: requestTypeUnspectate,
-		Data: &unspectateData{
-			userID: userID,
-		},
-	}
+	m.newRequest(requestTypeUnspectate, &unspectateData{ // nolint: errcheck
+		userID: userID,
+	})
 }
 
 func (m *Manager) unspectate(data interface{}) {

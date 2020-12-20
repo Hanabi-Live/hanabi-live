@@ -6,17 +6,10 @@ type notifyWarningData struct {
 }
 
 func (m *Manager) NotifyWarning(userID int, msg string) {
-	if m.requestsClosed.IsSet() {
-		return
-	}
-
-	m.requests <- &request{
-		Type: requestTypeNotifyWarning,
-		Data: &notifyWarningData{
-			userID: userID,
-			msg:    msg,
-		},
-	}
+	m.newRequest(requestTypeNotifyWarning, &notifyWarningData{ // nolint: errcheck
+		userID: userID,
+		msg:    msg,
+	})
 }
 
 func (m *Manager) notifyWarning(data interface{}) {

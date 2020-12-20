@@ -7,18 +7,19 @@ type getDescriptionData struct {
 
 // GetDescription gets a high-level description of a table for use in showing a table row in the
 // lobby.
-func (m *Manager) GetDescription(userID int) *Description {
+func (m *Manager) GetDescription(userID int) (*Description, error) {
 	resultsChannel := make(chan *Description)
 
-	m.requests <- &request{
-		Type: requestTypeGetDescription,
-		Data: &getDescriptionData{
-			userID:         userID,
-			resultsChannel: resultsChannel,
-		},
+	if err := m.newRequest(requestTypeGetDescription, &getDescriptionData{
+		userID:         userID,
+		resultsChannel: resultsChannel,
+	}); err != nil {
+		return nil, err
 	}
 
-	return <-resultsChannel
+	result := <-resultsChannel
+
+	return result, nil
 }
 
 func (m *Manager) getDescription(data interface{}) {

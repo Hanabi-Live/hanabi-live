@@ -35,11 +35,19 @@ func (m *Manager) main(c *gin.Context) {
 		title = "Dev"
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type mainData struct {
+		Title       string
+		Domain      string
+		Compiling   bool
+		WebpackPort int
+		Common      *commonData
+	}
+	data := &mainData{
 		Title:       title,
-		Domain:      m.Domain,
+		Domain:      m.domain,
 		Compiling:   compiling,
 		WebpackPort: m.webpackPort,
+		Common:      m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "main")
 }

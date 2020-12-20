@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+func (m *Manager) GitCommitOnStart() string {
+	return m.gitCommitOnStart
+}
+
 func (m *Manager) ShuttingDown() bool {
 	return m.shuttingDown.IsSet()
 }

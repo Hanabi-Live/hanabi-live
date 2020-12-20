@@ -5,9 +5,16 @@ import (
 )
 
 func (m *Manager) videos(c *gin.Context) {
+	// Local variables
 	w := c.Writer
-	data := &TemplateData{ // nolint: exhaustivestruct
-		Title: "Videos",
+
+	type videosData struct {
+		Title  string
+		Common *commonData
+	}
+	data := &videosData{
+		Title:  "Videos",
+		Common: m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "informational", "videos")
 }

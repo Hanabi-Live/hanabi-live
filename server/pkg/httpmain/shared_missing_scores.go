@@ -71,7 +71,15 @@ func (m *Manager) sharedMissingScores(c *gin.Context) {
 		}
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type sharedMissingScoresData struct {
+		Title               string
+		NamesTitle          string
+		RequestedNumPlayers int
+		SharedMissingScores bool
+		VariantStats        []*UserVariantStats
+		Common              *commonData
+	}
+	data := &sharedMissingScoresData{
 		Title: "Missing Scores",
 		NamesTitle: fmt.Sprintf(
 			"Missing Scores for [%v]",
@@ -79,8 +87,8 @@ func (m *Manager) sharedMissingScores(c *gin.Context) {
 		),
 		RequestedNumPlayers: len(playerIDs),
 		SharedMissingScores: true,
-
-		VariantStats: combinedVariantStatsList,
+		VariantStats:        combinedVariantStatsList,
+		Common:              m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "profile", "missing-scores")
 }

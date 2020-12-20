@@ -15,7 +15,7 @@ func (g *Game) InitDeck() {
 		g.ExtraOptions.CustomSeed == "" { // Custom seeds override custom decks
 
 		for _, card := range g.ExtraOptions.CustomDeck {
-			g.Deck = append(g.Deck, NewCard(card.SuitIndex, card.Rank))
+			g.Deck = append(g.Deck, newCard(card.SuitIndex, card.Rank))
 			g.CardIdentities = append(g.CardIdentities, &CardIdentity{
 				SuitIndex: card.SuitIndex,
 				Rank:      card.Rank,
@@ -58,7 +58,7 @@ func (g *Game) InitDeck() {
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
-				g.Deck = append(g.Deck, NewCard(suitIndex, rank))
+				g.Deck = append(g.Deck, newCard(suitIndex, rank))
 				g.CardIdentities = append(g.CardIdentities, &CardIdentity{
 					SuitIndex: suitIndex,
 					Rank:      rank,

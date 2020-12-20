@@ -5,43 +5,43 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
-	"github.com/Zamiell/hanabi-live/server/pkg/sessions"
-	"github.com/Zamiell/hanabi-live/server/pkg/tables"
-	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
 type Manager struct {
-	Domain string
-	UseTLS bool
-
 	httpClientWithTimeout *http.Client // Used for the Google Analytics middleware
+	emojiRegExp           *regexp.Regexp
 
-	logger          *logger.Logger
-	models          *models.Models
-	sessionsManager *sessions.Manager
-	tablesManager   *tables.Manager
-	variantsManager *variants.Manager
-	projectPath     string
-	versionPath     string
-	isDev           bool
-	usingSentry     bool
-	gaTrackingID    string
-	webpackPort     int
+	logger     *logger.Logger
+	models     *models.Models
+	Dispatcher *dispatcher.Dispatcher
+
+	projectPath  string
+	versionPath  string
+	isDev        bool
+	domain       string
+	useTLS       bool
+	gaTrackingID string
+	webpackPort  int
 }
+
+const (
+	defaultHTTPPort    = 80
+	defaultHTTPSPort   = 443
+	defaultWebpackPort = 8080
+)
 
 func NewManager(
 	logger *logger.Logger,
 	models *models.Models,
-	sessionsManager *sessions.Manager,
-	tablesManager *tables.Manager,
-	variantsManager *variants.Manager,
 	projectPath string,
 	versionPath string,
 	isDev bool,
@@ -54,27 +54,25 @@ func NewManager(
 	}
 
 	m := &Manager{
-		Domain: envVars.domain,
-		UseTLS: len(envVars.tlsCertFile) > 0 && len(envVars.tlsKeyFile) > 0,
-
 		// We don't want to use the default http.Client because it has no default timeout set
 		httpClientWithTimeout: &http.Client{ // nolint: exhaustivestruct
 			Timeout: constants.HTTPWriteTimeout,
 		},
+		emojiRegExp: regexp.MustCompile(emojiPattern),
 
-		logger:          logger,
-		models:          models,
-		sessionsManager: sessionsManager,
-		tablesManager:   tablesManager,
-		variantsManager: variantsManager,
-		projectPath:     projectPath,
-		versionPath:     versionPath,
-		isDev:           isDev,
-		usingSentry:     usingSentry,
-		gaTrackingID:    envVars.gaTrackingID,
-		webpackPort:     envVars.webpackPort,
+		logger:     logger,
+		models:     models,
+		Dispatcher: nil, // This will be filled in after this object is instantiated
+
+		projectPath:  projectPath,
+		versionPath:  versionPath,
+		isDev:        isDev,
+		domain:       envVars.domain,
+		useTLS:       len(envVars.tlsCertFile) > 0 && len(envVars.tlsKeyFile) > 0,
+		gaTrackingID: envVars.gaTrackingID,
+		webpackPort:  envVars.webpackPort,
 	}
-	go m.start(envVars)
+	go m.start(envVars, usingSentry)
 
 	return m
 }
@@ -165,15 +163,15 @@ func getEnvVars(logger *logger.Logger) *envVars {
 
 // start launches the HTTP server.
 // It is meant to be run in a new goroutine.
-func (m *Manager) start(envVars *envVars) {
+func (m *Manager) start(envVars *envVars, usingSentry bool) {
 	// Create a new Gin HTTP router
 	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 
-	attachMiddleware(httpRouter, m, envVars)
-	attachPathHandlers(httpRouter, m)
+	attachMiddleware(m, httpRouter, envVars, usingSentry)
+	attachPathHandlers(m, httpRouter)
 
-	if m.UseTLS {
+	if m.useTLS {
 		m.createLetsEncryptDirs()
 
 		// ListenAndServe is blocking, so we need to start listening in a new goroutine
@@ -195,7 +193,7 @@ func (m *Manager) start(envVars *envVars) {
 
 	// Start listening and serving requests (which is blocking)
 	m.logger.Infof("Listening on port: %v", envVars.port)
-	if m.UseTLS {
+	if m.useTLS {
 		if err := HTTPServerWithTimeout.ListenAndServeTLS(
 			envVars.tlsCertFile,
 			envVars.tlsKeyFile,
@@ -211,7 +209,7 @@ func (m *Manager) start(envVars *envVars) {
 	}
 }
 
-func attachPathHandlers(httpRouter *gin.Engine, m *Manager) {
+func attachPathHandlers(m *Manager, httpRouter *gin.Engine) {
 	// Path handlers (for cookies and logging in)
 	httpRouter.POST("/login", m.login)
 	httpRouter.GET("/logout", m.logout)

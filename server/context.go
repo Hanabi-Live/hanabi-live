@@ -18,7 +18,7 @@ type HanabiContext struct {
 }
 
 const (
-	HanabiContextKey HanabiContextKeyType = 0
+	hanabiContextKey HanabiContextKeyType = 0
 )
 
 var (

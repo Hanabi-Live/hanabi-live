@@ -10,17 +10,10 @@ type deleteData struct {
 }
 
 func (m *Manager) Delete(s *session) {
-	if m.requestsClosed.IsSet() {
-		return
-	}
-
-	m.requests <- &request{
-		Type: requestTypeDelete,
-		Data: &deleteData{
-			userID:   s.userID,
-			username: s.username,
-		},
-	}
+	m.newRequest(requestTypeDelete, &deleteData{ // nolint: errcheck
+		userID:   s.userID,
+		username: s.username,
+	})
 }
 
 func (m *Manager) delete(data interface{}) {

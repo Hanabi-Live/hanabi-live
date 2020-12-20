@@ -10,12 +10,9 @@ type leaveData struct {
 
 // Leave will request the given user to leave the table (which must be in a pre-game state).
 func (m *Manager) Leave(userID int) {
-	m.requests <- &request{
-		Type: requestTypeLeave,
-		Data: &leaveData{
-			userID: userID,
-		},
-	}
+	m.newRequest(requestTypeLeave, &leaveData{ // nolint: errcheck
+		userID: userID,
+	})
 }
 
 func (m *Manager) leave(data interface{}) {

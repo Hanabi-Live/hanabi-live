@@ -56,7 +56,19 @@ func (m *Manager) missingScores(c *gin.Context) {
 		numMaxScoresPerType,
 	)
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type missingScoresData struct {
+		Title                      string
+		Name                       string
+		RequestedNumPlayers        int
+		NumMaxScores               int
+		PercentageMaxScores        string
+		NumMaxScoresPerType        []int
+		PercentageMaxScoresPerType []string
+		SharedMissingScores        bool
+		VariantStats               []*UserVariantStats
+		Common                     *commonData
+	}
+	data := &missingScoresData{
 		Title:                      "Missing Scores",
 		Name:                       user.Username,
 		RequestedNumPlayers:        numPlayers,
@@ -65,8 +77,8 @@ func (m *Manager) missingScores(c *gin.Context) {
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 		SharedMissingScores:        false,
-
-		VariantStats: variantStatsList,
+		VariantStats:               variantStatsList,
+		Common:                     m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "profile", "missing-scores")
 }

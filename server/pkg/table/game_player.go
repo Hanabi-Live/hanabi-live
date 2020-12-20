@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-// GamePlayer is the object that represents the game state related aspects of the player.
+// gamePlayer is the object that represents the game state related aspects of the player.
 // (We separate the player object into two different objects;
 // one for the table and one for the game.)
-type GamePlayer struct {
+type gamePlayer struct {
 	// Some entries are copied from the Player object for convenience
 	Name  string
 	Index int
 	// This is a reference to the parent game
-	Game *Game `json:"-"` // Skip circular references when encoding
+	Game *game `json:"-"` // Skip circular references when encoding
 
 	// These relate to the game state
-	Hand              []*Card
+	Hand              []*card
 	Time              time.Duration
 	Notes             []string
 	RequestedPause    bool

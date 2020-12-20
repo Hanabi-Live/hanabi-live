@@ -8,6 +8,8 @@ linters:
     # gocritic complains about needing to make case statements,
     # even for if statements with only 2 blocks, which is excessive
     - gocritic
+    # gocyclo complains about having large functions
+    - gocyclo
     # goerr113 complains about creating new static errors;
     # making a package-level constructor for every single error is excessive
     - goerr113

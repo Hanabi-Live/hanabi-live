@@ -115,8 +115,25 @@ func (m *Manager) scores(c *gin.Context) {
 		numMaxScores,
 		numMaxScoresPerType,
 	)
+	totalMaxScores := m.Dispatcher.Variants.GetNumVariants() * bestscore.NumPlayerGameTypes
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type scoresData struct {
+		Title                      string
+		Name                       string
+		DateJoined                 string
+		NumGames                   int
+		TimePlayed                 string
+		NumGamesSpeedrun           int
+		TimePlayedSpeedrun         string
+		NumMaxScores               int
+		TotalMaxScores             int
+		PercentageMaxScores        string
+		NumMaxScoresPerType        []int
+		PercentageMaxScoresPerType []string
+		VariantStats               []*UserVariantStats
+		Common                     *commonData
+	}
+	data := &scoresData{
 		Title:                      "Scores",
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
@@ -125,12 +142,12 @@ func (m *Manager) scores(c *gin.Context) {
 		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,
 		NumMaxScores:               numMaxScores,
-		TotalMaxScores:             len(m.variantsManager.VariantNames) * bestscore.NumPlayerGameTypes,
+		TotalMaxScores:             totalMaxScores,
 		PercentageMaxScores:        percentageMaxScoresString,
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
-
-		VariantStats: variantStatsList,
+		VariantStats:               variantStatsList,
+		Common:                     m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "profile", "scores")
 }

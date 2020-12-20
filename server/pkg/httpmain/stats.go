@@ -9,6 +9,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
+	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +28,7 @@ type VariantStatsData struct {
 func (m *Manager) stats(c *gin.Context) {
 	// Local variables
 	w := c.Writer
-	numVariants := len(m.variantsManager.VariantNames)
+	numVariants := m.Dispatcher.Variants.GetNumVariants()
 
 	// Get some global statistics
 	var globalStats models.Stats
@@ -102,8 +103,20 @@ func (m *Manager) stats(c *gin.Context) {
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]*VariantStatsData, 0)
-	for _, name := range m.variantsManager.VariantNames {
-		variant := m.variantsManager.Variants[name]
+	for _, name := range m.Dispatcher.Variants.VariantNames() {
+		var variant *variants.Variant
+		if v, err := m.Dispatcher.Variants.GetVariant(name); err != nil {
+			m.logger.Errorf("Failed to get the variant: %v", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			variant = v
+		}
+
 		maxScore := len(variant.Suits) * constants.PointsPerSuit
 		variantStats := &VariantStatsData{ // nolint: exhaustivestruct
 			ID:   variant.ID,
@@ -166,9 +179,22 @@ func (m *Manager) stats(c *gin.Context) {
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
 
-	data := &TemplateData{ // nolint: exhaustivestruct
-		Title: "Stats",
-
+	type statsData struct {
+		Title                      string
+		NumGames                   int
+		TimePlayed                 string
+		NumGamesSpeedrun           int
+		TimePlayedSpeedrun         string
+		NumVariants                int
+		NumMaxScoresPerType        []int
+		PercentageMaxScoresPerType []string
+		NumMaxScores               int
+		PercentageMaxScores        string
+		Variants                   []*VariantStatsData
+		Common                     *commonData
+	}
+	data := &statsData{
+		Title:                      "Stats",
 		NumGames:                   globalStats.NumGames,
 		TimePlayed:                 timePlayed,
 		NumGamesSpeedrun:           globalStats.NumGamesSpeedrun,
@@ -178,8 +204,8 @@ func (m *Manager) stats(c *gin.Context) {
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 		NumMaxScores:               numMaxScores,
 		PercentageMaxScores:        percentageMaxScoresString,
-
-		Variants: variantStatsList,
+		Variants:                   variantStatsList,
+		Common:                     m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "stats")
 }

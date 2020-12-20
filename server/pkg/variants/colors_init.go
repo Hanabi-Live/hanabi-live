@@ -44,11 +44,11 @@ func (m *Manager) ColorsInit(dataPath string) {
 		}
 
 		// Validate that all of the names are unique
-		if _, ok := m.Colors[color.Name]; ok {
+		if _, ok := m.colors[color.Name]; ok {
 			m.logger.Fatalf("There are two colors with the name of: %v", color.Name)
 		}
 
 		// Add it to the map
-		m.Colors[color.Name] = color
+		m.colors[color.Name] = color
 	}
 }

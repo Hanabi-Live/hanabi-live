@@ -132,10 +132,10 @@ func (m *Manager) export(c *gin.Context) {
 
 	// Get the variant
 	var variant *variants.Variant
-	if v, ok := m.variantsManager.Variants[g.Options.VariantName]; !ok {
+	if v, err := m.Dispatcher.Variants.GetVariant(g.Options.VariantName); err != nil {
 		m.logger.Errorf(
-			"Failed to get the variant of \"%v\" from the variants map.",
-			g.Options.VariantName,
+			"Failed to get the variant from the variants map: %v",
+			err,
 		)
 		http.Error(
 			w,

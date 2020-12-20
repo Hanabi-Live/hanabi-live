@@ -6,10 +6,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/core"
-	"github.com/Zamiell/hanabi-live/server/pkg/github"
-	"github.com/Zamiell/hanabi-live/server/pkg/httpmain"
+	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
+	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/bwmarrin/discordgo"
 	"github.com/tevino/abool"
 )
@@ -22,27 +21,13 @@ type Manager struct {
 	ready                *abool.AtomicBool
 	commandFuncMap       map[string]func(context.Context, *discordgo.MessageCreate, []string)
 
-	logger        *logger.Logger
-	httpManager   *httpmain.Manager
-	gitHubManager *github.Manager
-	coreManager   *core.Manager
+	logger     *logger.Logger
+	Dispatcher *dispatcher.Dispatcher
 }
-
-/*
-var (
-	discordBotID                string
-	discordIsReady              = abool.New()
-)
-*/
 
 // NewManager will return nil if the Discord manager should not be initialized.
 // (Discord integration is an optional component of the server.)
-func NewManager(
-	logger *logger.Logger,
-	httpManager *httpmain.Manager,
-	githubManager *github.Manager,
-	coreManager *core.Manager,
-) *Manager {
+func NewManager(logger *logger.Logger, variantsManager *variants.Manager) *Manager {
 	// Get environment variables
 	envVars := getEnvVars(logger)
 	if envVars == nil {
@@ -57,9 +42,8 @@ func NewManager(
 		ready:                abool.New(),
 		commandFuncMap:       make(map[string]func(context.Context, *discordgo.MessageCreate, []string)),
 
-		logger:      logger,
-		httpManager: httpManager,
-		coreManager: coreManager,
+		logger:     logger,
+		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
 	m.commandFuncMapInit()
 
@@ -118,8 +102,6 @@ func getEnvVars(logger *logger.Logger) *envVars {
 }
 
 func (m *Manager) connect(envVars *envVars) {
-	// ctx := context.Background()
-
 	// Discord requires that bot accounts are prefixed with "Bot"
 	botUsername := fmt.Sprintf("Bot %v", envVars.token)
 	if v, err := discordgo.New(botUsername); err != nil {
@@ -141,49 +123,13 @@ func (m *Manager) connect(envVars *envVars) {
 
 	// Announce that the server has started
 	// (we wait for Discord to connect before displaying this message)
-	// TODO
 	/*
 		msg := fmt.Sprintf(
 			"The server has successfully started at: %v (%v)",
 			util.GetCurrentTimestamp(),
-			m.coreManager.GitCommitOnStart,
+			m.Dispatcher.Core.GitCommitOnStart(),
 		)
-		// chatServerSend(ctx, msg, "lobby", false)
+		// SEND TO COMMAND MANAGER PROBABLY
+		chatServerSend(ctx, msg, "lobby", false)
 	*/
-}
-
-// -----------------------
-// Miscellaneous functions
-// -----------------------
-
-func (m *Manager) getNickname(discordID string) string {
-	if member, err := m.session.GuildMember(m.guildID, discordID); err != nil {
-		// This can occasionally fail, so we don't want to report the error to Sentry
-		m.logger.Infof(
-			"Failed to get the Discord guild member corresponding to user ID \"%v\": %v",
-			discordID,
-			err,
-		)
-		return "[error]"
-	} else {
-		if member.Nick != "" {
-			return member.Nick
-		}
-
-		return member.User.Username
-	}
-}
-
-func (m *Manager) getChannelName(channelID string) string {
-	if channel, err := m.session.Channel(channelID); err != nil {
-		// This can occasionally fail, so we don't want to report the error to Sentry
-		m.logger.Infof(
-			"Failed to get the Discord channel corresponding to channel ID \"%v\": %v",
-			channelID,
-			err,
-		)
-		return "[error]"
-	} else {
-		return channel.Name
-	}
 }

@@ -10,12 +10,11 @@ type getUserTablesData struct {
 func (m *Manager) GetUserTables(userID int) ([]uint64, []uint64) {
 	resultsChannel := make(chan []uint64)
 
-	m.requests <- &request{
-		Type: requestTypeGetUserTables,
-		Data: &getUserTablesData{
-			userID:         userID,
-			resultsChannel: resultsChannel,
-		},
+	if err := m.newRequest(requestTypeGetUserTables, &getUserTablesData{
+		userID:         userID,
+		resultsChannel: resultsChannel,
+	}); err != nil {
+		return make([]uint64, 0), make([]uint64, 0)
 	}
 
 	playingAtTables := <-resultsChannel

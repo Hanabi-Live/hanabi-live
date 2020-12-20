@@ -8,9 +8,16 @@ import (
 )
 
 func (m *Manager) passwordReset(c *gin.Context) {
+	// Local variables
 	w := c.Writer
-	data := &TemplateData{ // nolint: exhaustivestruct
-		Title: "Password Reset",
+
+	type passwordResetData struct {
+		Title  string
+		Common *commonData
+	}
+	data := &passwordResetData{
+		Title:  "Password Reset",
+		Common: m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "informational", "password-reset")
 }

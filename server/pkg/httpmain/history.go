@@ -60,13 +60,24 @@ func (m *Manager) history(c *gin.Context) {
 		return
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
-		Title:   "History",
-		Name:    playerNames[0],
-		History: gameHistoryList,
-	}
+	namesTitle := ""
 	if len(playerNames) > 1 {
-		data.NamesTitle = fmt.Sprintf("Game History for [%v]", strings.Join(playerNames, ", "))
+		namesTitle = fmt.Sprintf("Game History for [%v]", strings.Join(playerNames, ", "))
+	}
+
+	type historyData struct {
+		Title      string
+		Name       string
+		NamesTitle string
+		History    []*models.GameHistory
+		Common     *commonData
+	}
+	data := &historyData{
+		Title:      "History",
+		Name:       playerNames[0],
+		NamesTitle: namesTitle,
+		History:    gameHistoryList,
+		Common:     m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "profile", "history")
 }

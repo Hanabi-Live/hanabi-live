@@ -15,11 +15,10 @@ type printData struct {
 func (m *Manager) Print() string {
 	resultsChannel := make(chan string)
 
-	m.requests <- &request{
-		Type: requestTypePrint,
-		Data: &printData{
-			resultsChannel: resultsChannel,
-		},
+	if err := m.newRequest(requestTypePrint, &printData{
+		resultsChannel: resultsChannel,
+	}); err != nil {
+		return err.Error()
 	}
 
 	return <-resultsChannel

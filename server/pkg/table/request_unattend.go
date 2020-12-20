@@ -10,12 +10,9 @@ type unattendData struct {
 
 // Unattend requests that a user playing in an ongoing game is marked as being disconnected.
 func (m *Manager) Unattend(userID int) {
-	m.requests <- &request{
-		Type: requestTypeUnattend,
-		Data: &unattendData{
-			userID: userID,
-		},
-	}
+	m.newRequest(requestTypeUnattend, &unattendData{ // nolint: errcheck
+		userID: userID,
+	})
 }
 
 func (m *Manager) unattend(data interface{}) {

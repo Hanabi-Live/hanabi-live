@@ -7,6 +7,10 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const (
+	repositoryOwner = "Zamiell"
+)
+
 // NewIssue opens a new issue on GitHub for this repository.
 func (m *Manager) NewIssue(ctx context.Context, title string, body string) error {
 	if _, _, err := m.ghClient.Issues.Create(

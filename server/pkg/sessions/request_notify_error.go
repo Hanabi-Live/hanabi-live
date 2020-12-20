@@ -8,17 +8,10 @@ type notifyErrorData struct {
 // NotifyError is used to inform a user if their command was unsuccessful or something else went
 // wrong.
 func (m *Manager) NotifyError(userID int, msg string) {
-	if m.requestsClosed.IsSet() {
-		return
-	}
-
-	m.requests <- &request{
-		Type: requestTypeNotifyError,
-		Data: &notifyErrorData{
-			userID: userID,
-			msg:    msg,
-		},
-	}
+	m.newRequest(requestTypeNotifyError, &notifyErrorData{ // nolint: errcheck
+		userID: userID,
+		msg:    msg,
+	})
 }
 
 func (m *Manager) notifyError(data interface{}) {

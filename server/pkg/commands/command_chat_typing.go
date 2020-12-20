@@ -1,12 +1,10 @@
 package commands
 
-import (
-	"time"
-)
-
+/*
 const (
-	TypingDelay = 2 * time.Second
+	typingDelay = 2 * time.Second
 )
+*/
 
 /*
 // commandChatTyping is sent when the user types something into a chat box

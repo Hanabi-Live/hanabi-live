@@ -6,10 +6,10 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 )
 
-// Player is the object that represents the player before the game has started.
+// player is the object that represents the player before the game has started.
 // (We separate the player object into two different objects;
 // one for the table and one for the game.)
-type Player struct {
+type player struct {
 	UserID int // This is equal to the database ID for the user
 	Name   string
 	// The user session corresponding to the player is copied here for convenience
@@ -17,11 +17,12 @@ type Player struct {
 	// and it is safe to manually perform actions on their behalf with the orphaned session
 	// Session   *Session `json:"-"` // Skip when serializing // TODO
 	Present   bool
-	Stats     *PregameStats
+	Stats     *pregameStats
 	Typing    bool
 	LastTyped time.Time
 }
-type PregameStats struct {
+
+type pregameStats struct {
 	NumGames int                  `json:"numGames"`
 	Variant  *models.UserStatsRow `json:"variant"`
 }

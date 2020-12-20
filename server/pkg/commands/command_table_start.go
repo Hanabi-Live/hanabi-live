@@ -40,12 +40,12 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that the right amount of players is in the game
 	// for games with a set amount of players
 	// (e.g. "!replay" games and games with custom JSON)
-	if t.ExtraOptions.CustomNumPlayers != 0 {
-		if len(t.Players) != t.ExtraOptions.CustomNumPlayers {
+	if t.ExtraOptions.CustomRequiredNumPlayers != 0 {
+		if len(t.Players) != t.ExtraOptions.CustomRequiredNumPlayers {
 			s.Warningf(
 				"You currently have %v players, but this game needs %v players.",
 				len(t.Players),
-				t.ExtraOptions.CustomNumPlayers,
+				t.ExtraOptions.CustomRequiredNumPlayers,
 			)
 			return
 		}

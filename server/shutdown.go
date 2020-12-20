@@ -32,7 +32,7 @@ func shutdown(ctx context.Context) {
 	} else {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
-		numMinutes := strconv.Itoa(int(ShutdownTimeout.Minutes()))
+		numMinutes := strconv.Itoa(int(shutdownTimeout.Minutes()))
 		msg := fmt.Sprintf("The server will shutdown in %v minutes.", numMinutes)
 		chatServerSendAll(ctx, msg)
 		go shutdownXMinutesLeft(ctx, 5)
@@ -42,7 +42,7 @@ func shutdown(ctx context.Context) {
 }
 
 func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
-	time.Sleep(ShutdownTimeout - time.Duration(minutesLeft)*time.Minute)
+	time.Sleep(shutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
 	// Do nothing if the shutdown was canceled
 	if shuttingDown.IsNotSet() {
@@ -129,7 +129,7 @@ func shutdownWaitSub(ctx context.Context) bool {
 		return true
 	}
 
-	if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
+	if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= shutdownTimeout {
 		// It has been a long time since the server shutdown/restart was initiated,
 		// so automatically terminate any remaining ongoing games
 		terminateAllStartedTables(ctx)
@@ -200,33 +200,6 @@ func cancel(ctx context.Context) {
 	shuttingDown.UnSet()
 	notifyAllShutdown()
 	chatServerSendAll(ctx, "Server shutdown has been canceled.")
-}
-
-func checkImminentShutdown(s *Session) bool {
-	if shuttingDown.IsNotSet() {
-		return false
-	}
-
-	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
-	minutesLeft := int(timeLeft.Minutes())
-	if minutesLeft <= 5 {
-		var timeString string
-		if minutesLeft == 0 {
-			timeString = "momentarily"
-		} else if minutesLeft == 1 {
-			timeString = "in 1 minute"
-		} else {
-			timeString = fmt.Sprintf("in %v minutes", minutesLeft)
-		}
-
-		s.Warningf(
-			"The server is shutting down %v. You cannot start any new games for the time being.",
-			timeString,
-		)
-		return true
-	}
-
-	return false
 }
 
 func waitForAllWebSocketCommandsToFinish() {

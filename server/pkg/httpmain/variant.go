@@ -34,7 +34,7 @@ func (m *Manager) variant(c *gin.Context) {
 
 	// Validate that it is a valid variant ID
 	var variantObject *variants.Variant
-	if v, ok := m.variantsManager.VariantsIDMap[variantID]; !ok {
+	if v, err := m.Dispatcher.Variants.GetVariantByID(variantID); err != nil {
 		http.Error(w, "Error: That is not a valid variant ID.", http.StatusBadRequest)
 		return
 	} else {
@@ -156,9 +156,25 @@ func (m *Manager) variant(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
-		Title: "Variant Stats",
-
+	type variantData struct {
+		Title              string
+		Name               string
+		NumGames           int
+		TimePlayed         string
+		NumGamesSpeedrun   int
+		TimePlayedSpeedrun string
+		BestScores         []int
+		AverageScore       string
+		NumMaxScores       int
+		MaxScoreRate       string
+		MaxScore           int
+		NumStrikeouts      int
+		StrikeoutRate      string
+		RecentGames        []*models.GameHistory
+		Common             *commonData
+	}
+	data := &variantData{
+		Title:              "Variant Stats",
 		Name:               variantObject.Name,
 		NumGames:           stats.NumGames,
 		TimePlayed:         timePlayed,
@@ -171,8 +187,8 @@ func (m *Manager) variant(c *gin.Context) {
 		MaxScore:           variantObject.MaxScore,
 		NumStrikeouts:      variantStats.NumStrikeouts,
 		StrikeoutRate:      strikeoutRate,
-
-		RecentGames: gameHistoryList,
+		RecentGames:        gameHistoryList,
+		Common:             m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "variant")
 }

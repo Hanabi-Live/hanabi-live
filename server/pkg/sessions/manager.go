@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"regexp"
 	"sync"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
@@ -14,7 +15,8 @@ import (
 // It listens for requests in a new goroutine.
 type Manager struct {
 	// We don't need a mutex for the map because only the manager goroutine will access it
-	sessions map[int]*session
+	sessions      map[int]*session
+	mentionRegExp *regexp.Regexp
 
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
@@ -28,7 +30,8 @@ type Manager struct {
 
 func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
-		sessions: make(map[int]*session),
+		sessions:      make(map[int]*session),
+		mentionRegExp: regexp.MustCompile(`&lt;@!*(\d+?)&gt;`),
 
 		requests:       make(chan *request),
 		requestFuncMap: make(map[int]func(interface{})),
@@ -39,7 +42,6 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
 	m.requestFuncMapInit()
-
 	go m.ListenForRequests()
 
 	return m

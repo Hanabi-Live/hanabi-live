@@ -66,11 +66,19 @@ func (m *Manager) tags(c *gin.Context) {
 		}
 	}
 
-	data := &TemplateData{ // nolint: exhaustivestruct
+	type tagsData struct {
+		Title   string
+		Name    string
+		History []*models.GameHistory
+		Tags    map[int][]string
+		Common  *commonData
+	}
+	data := &tagsData{
 		Title:   "Tagged Games",
 		Name:    user.Username,
 		History: gameHistoryList,
 		Tags:    gamesMap,
+		Common:  m.getCommonData(),
 	}
 	m.serveTemplate(w, data, "profile", "history")
 }

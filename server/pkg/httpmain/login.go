@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	MinUsernameLength = 2
-	MaxUsernameLength = 15
+	minUsernameLength = 2
+	maxUsernameLength = 15
 )
 
 type HTTPLoginData struct {
@@ -355,32 +355,32 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	}
 
 	// Validate that the username is not excessively short
-	if len(username) < MinUsernameLength {
+	if len(username) < minUsernameLength {
 		m.logger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it is shorter than %v characters.",
 			ip,
 			username,
-			MinUsernameLength,
+			minUsernameLength,
 		)
 		http.Error(
 			w,
-			fmt.Sprintf("Usernames must be %v characters or more.", MinUsernameLength),
+			fmt.Sprintf("Usernames must be %v characters or more.", minUsernameLength),
 			http.StatusUnauthorized,
 		)
 		return nil, false
 	}
 
 	// Validate that the username is not excessively long
-	if len(username) > MaxUsernameLength {
+	if len(username) > maxUsernameLength {
 		m.logger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it is longer than %v characters.",
 			ip,
 			username,
-			MaxUsernameLength,
+			maxUsernameLength,
 		)
 		http.Error(
 			w,
-			fmt.Sprintf("Usernames must be %v characters or less.", MaxUsernameLength),
+			fmt.Sprintf("Usernames must be %v characters or less.", maxUsernameLength),
 			http.StatusUnauthorized,
 		)
 		return nil, false
@@ -403,7 +403,7 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	}
 
 	// Validate that the username does not have any emojis in it
-	if match := emojiRegExp.FindStringSubmatch(username); match != nil {
+	if match := m.emojiRegExp.FindStringSubmatch(username); match != nil {
 		m.logger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but it has emojis in it.",
 			ip,
@@ -439,15 +439,7 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Validate that the username is not reserved
 	normalizedUsername := util.NormalizeString(username)
-	if normalizedUsername == util.NormalizeString(constants.WebsiteName) ||
-		normalizedUsername == "hanab" ||
-		normalizedUsername == "hanabi" ||
-		normalizedUsername == "live" ||
-		normalizedUsername == "hlive" ||
-		normalizedUsername == "hanablive" ||
-		normalizedUsername == "hanabilive" ||
-		normalizedUsername == "nabilive" {
-
+	if isReservedUsername(normalizedUsername) {
 		m.logger.Infof(
 			"User from IP \"%v\" tried to log in with a username of \"%v\", but that username is reserved.",
 			ip,
@@ -516,4 +508,31 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		NormalizedUsername: normalizedUsername,
 	}
 	return data, true
+}
+
+func isReservedUsername(username string) bool {
+	reservedUsernames := []string{
+		util.NormalizeString(constants.WebsiteName),
+		"hanabi",
+		"hanab",
+		"live",
+
+		"hanabilive",
+		"hanabi.live",
+		"hanabi-live",
+
+		"hanablive",
+		"hanab.live",
+		"hanab-live",
+
+		"nabilive",
+		"nabi.live",
+		"nabi-live",
+
+		"hlive",
+		"h.live",
+		"h-live",
+	}
+
+	return util.StringInSlice(username, reservedUsernames)
 }

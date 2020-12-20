@@ -10,10 +10,9 @@ import (
 )
 
 type Manager struct {
-	gitCommitOnStart string
-	datetimeStarted  time.Time
-	wordList         []string
-
+	gitCommitOnStart     string
+	datetimeStarted      time.Time
+	wordList             []string
 	shuttingDown         *abool.AtomicBool
 	datetimeShutdownInit time.Time
 	maintenanceMode      *abool.AtomicBool
@@ -23,10 +22,9 @@ type Manager struct {
 
 func NewManager(logger *logger.Logger, dataPath string) *Manager {
 	m := &Manager{
-		gitCommitOnStart: getGitCommit(logger),
-		datetimeStarted:  time.Now(), // Record the time that the server started
-		wordList:         make([]string, 0),
-
+		gitCommitOnStart:     getGitCommit(logger),
+		datetimeStarted:      time.Now(), // Record the time that the server started
+		wordList:             make([]string, 0),
 		shuttingDown:         abool.New(),
 		datetimeShutdownInit: time.Time{},
 		maintenanceMode:      abool.New(),

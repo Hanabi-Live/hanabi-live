@@ -94,6 +94,20 @@ func chatSendPastFromTable(s *Session, t *Table) {
 }
 */
 
+// chatSendServerMsg is a helper function for sending an ephemeral message from the server to a
+// user. (The message will not be written to the database.)
+func (m *Manager) chatSendServerMsg(userID int, msg string, room string) {
+	m.send(userID, "chat", &chatData{
+		Msg:       msg,
+		Who:       "",
+		Discord:   false,
+		Server:    true,
+		Datetime:  time.Now(),
+		Room:      room,
+		Recipient: "",
+	})
+}
+
 func (m *Manager) chatFillMentions(msg string) string {
 	if m.Dispatcher.Discord == nil {
 		return msg
@@ -106,14 +120,15 @@ func (m *Manager) chatFillMentions(msg string) string {
 	// We want to convert this to the username,
 	// so that the lobby displays messages in a manner similar to the Discord client
 	for {
-		match := mentionRegExp.FindStringSubmatch(msg)
+		match := m.mentionRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {
 			break
 		}
 		discordID := match[1]
-		username := discordGetNickname(discordID)
+		username := m.Dispatcher.Discord.GetNickname(discordID)
 		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+username)
 		msg = strings.ReplaceAll(msg, "&lt;@!"+discordID+"&gt;", "@"+username)
 	}
+
 	return msg
 }

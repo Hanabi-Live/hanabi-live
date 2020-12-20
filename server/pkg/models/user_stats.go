@@ -327,11 +327,10 @@ func (us *UserStats) UpdateAll(ctx context.Context, highestVariantID int) error 
 			stats := NewUserStatsRow()
 			totalScore := 0
 			for _, gameHistory := range gameHistoryList {
-				if variant, ok := us.m.variantsManager.Variants[gameHistory.Options.VariantName]; !ok {
-					return fmt.Errorf(
-						"failed to find the variant named \"%v\"",
-						gameHistory.Options.VariantName,
-					)
+				if variant, err := us.m.variantsManager.GetVariant(
+					gameHistory.Options.VariantName,
+				); err != nil {
+					return err
 				} else if variant.ID != variantID {
 					continue
 				}

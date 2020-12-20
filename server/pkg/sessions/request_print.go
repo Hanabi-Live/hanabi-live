@@ -11,17 +11,12 @@ type printData struct {
 // Print will return a description of all current sessions.
 // It will block until the message is received.
 func (m *Manager) Print() string {
-	if m.requestsClosed.IsSet() {
-		return "impending server termination"
-	}
-
 	resultsChannel := make(chan string)
 
-	m.requests <- &request{
-		Type: requestTypePrint,
-		Data: &printData{
-			resultsChannel: resultsChannel,
-		},
+	if err := m.newRequest(requestTypePrint, &printData{
+		resultsChannel: resultsChannel,
+	}); err != nil {
+		return "impending server termination"
 	}
 
 	return <-resultsChannel

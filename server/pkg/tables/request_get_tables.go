@@ -13,12 +13,11 @@ type getTablesData struct {
 func (m *Manager) GetTables(userID int) []*table.Description {
 	resultsChannel := make(chan []*table.Description)
 
-	m.requests <- &request{
-		Type: requestTypeGetTables,
-		Data: &getTablesData{
-			userID:         userID,
-			resultsChannel: resultsChannel,
-		},
+	if err := m.newRequest(requestTypeGetTables, &getTablesData{
+		userID:         userID,
+		resultsChannel: resultsChannel,
+	}); err != nil {
+		return make([]*table.Description, 0)
 	}
 
 	return <-resultsChannel
@@ -35,8 +34,12 @@ func (m *Manager) getTables(data interface{}) {
 
 	tables := make([]*table.Description, 0)
 	for _, t := range m.tables {
-		tableData := t.GetDescription(d.userID)
-		tables = append(tables, tableData)
+		if tableData, err := t.GetDescription(d.userID); err != nil {
+			// This table has stopped listening to requests, so skip it
+		} else if tableData != nil {
+			// Non-visible tables will return a nil description, so skip those
+			tables = append(tables, tableData)
+		}
 	}
 
 	d.resultsChannel <- tables
