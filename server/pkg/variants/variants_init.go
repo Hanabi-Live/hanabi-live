@@ -9,7 +9,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 )
 
-func (m *Manager) VariantsInit(dataPath string) {
+func (m *Manager) variantsInit(dataPath string) {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "variants.json")
 	var fileContents []byte

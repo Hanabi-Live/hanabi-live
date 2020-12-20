@@ -1,18 +1,18 @@
 package tables
 
 // addUserTable adds a table ID to the list for the respective user.
-func addUserTable(userID int, tableID uint64, usersMap map[int][]uint64) {
+func addUserTable(userID int, tableID int, usersMap map[int][]int) {
 	tableList, ok := usersMap[userID]
 	if !ok {
 		// This will be the first table for this user
-		tableList = make([]uint64, 0)
+		tableList = make([]int, 0)
 	}
 	tableList = append(tableList, tableID)
 	usersMap[userID] = tableList
 }
 
 // deleteUserTable deletes a table ID from the list for the respective user.
-func deleteUserTable(userID int, tableID uint64, usersMap map[int][]uint64) {
+func deleteUserTable(userID int, tableID int, usersMap map[int][]int) {
 	tableList, ok := usersMap[userID]
 	if !ok {
 		// This user is not in the map,
@@ -38,14 +38,14 @@ func deleteUserTable(userID int, tableID uint64, usersMap map[int][]uint64) {
 }
 
 // getUserTables gets the list of tables for the respective user.
-func getUserTables(userID int, usersMap map[int][]uint64) []uint64 {
+func getUserTables(userID int, usersMap map[int][]int) []int {
 	if tablesList, ok := usersMap[userID]; ok {
 		return tablesList
 	}
-	return make([]uint64, 0)
+	return make([]int, 0)
 }
 
-func indexOf(value uint64, slice []uint64) int {
+func indexOf(value int, slice []int) int {
 	for i, v := range slice {
 		if v == value {
 			return i

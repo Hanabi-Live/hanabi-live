@@ -43,7 +43,7 @@ func (m *Manager) login(c *gin.Context) {
 	w := c.Writer
 
 	var data *HTTPLoginData
-	if v, success := m.loginValidate(c); !success {
+	if v, valid := m.loginValidate(c); !valid {
 		return
 	} else {
 		data = v

@@ -1,16 +1,7 @@
-package main
+package characters
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"math/rand"
-	"path"
-)
-
+/*
 var (
-	characters      map[string]*Character
-	characterIDMap  map[int]string
-	characterNames  []string
 	debugCharacters = []string{
 		"Genius",
 		"n/a",
@@ -38,67 +29,6 @@ var (
 		"test7",
 	}
 )
-
-func charactersInit() {
-	// Import the JSON file
-	filePath := path.Join(dataPath, "characters.json")
-	var fileContents []byte
-	if v, err := ioutil.ReadFile(filePath); err != nil {
-		hLog.Fatalf("Failed to read the \"%v\" file: %v", filePath, err)
-	} else {
-		fileContents = v
-	}
-	var charactersArray []*Character
-	if err := json.Unmarshal(fileContents, &charactersArray); err != nil {
-		hLog.Fatalf("Failed to convert the characters file to JSON: %v", err)
-	}
-
-	// Convert the array to a map
-	characters = make(map[string]*Character)
-	characterIDMap = make(map[int]string)
-	characterNames = make([]string, 0)
-	for _, character := range charactersArray {
-		// Validate the name
-		if character.Name == "" {
-			hLog.Fatal("There is a character with an empty name in the \"characters.json\" file.")
-		}
-
-		// Validate the ID
-		if character.ID < 0 { // The first character has an ID of 0
-			hLog.Fatalf("The \"%v\" character has an invalid ID.", character.Name)
-		}
-
-		// Validate the description
-		if character.Description == "" {
-			hLog.Fatalf("The \"%v\" character does not have a description.", character.Name)
-		}
-
-		// Validate the emoji
-		if character.Emoji == "" {
-			hLog.Fatalf("The \"%v\" character does not have an emoji.", character.Name)
-		}
-
-		// Validate that all of the names are unique
-		if _, ok := characters[character.Name]; ok {
-			hLog.Fatalf("There are two characters with the name of: %v", character.Name)
-		}
-
-		// Add it to the map
-		characters[character.Name] = character
-
-		// Validate that all of the ID's are unique
-		// And create a reverse mapping of ID to name
-		// (so that we can easily find the associated character from a database entry)
-		if _, ok := characterIDMap[character.ID]; ok {
-			hLog.Fatalf("There are two characters with the ID of: %v", character.ID)
-		}
-		characterIDMap[character.ID] = character.Name
-
-		// Create an array with every character name
-		// (so that later we have the ability to easily get a random character)
-		characterNames = append(characterNames, character.Name)
-	}
-}
 
 func charactersGenerate(g *Game) {
 	if !g.Options.DetrimentalCharacters {
@@ -786,3 +716,4 @@ func characterSeesCard(g *Game, p *GamePlayer, p2 *GamePlayer, cardOrder int) bo
 
 	return true
 }
+*/

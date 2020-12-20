@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-func (m *Manager) ColorsInit(dataPath string) {
+func (m *Manager) colorsInit(dataPath string) {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "colors.json")
 	var fileContents []byte

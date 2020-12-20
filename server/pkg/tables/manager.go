@@ -16,9 +16,10 @@ import (
 // It listens for requests in a new goroutine.
 type Manager struct {
 	// We don't need a mutex for the map because only the manager goroutine will access it
-	tables           map[uint64]*table.Manager // Indexed by table ID
-	usersPlaying     map[int][]uint64          // Indexed by user ID, values are table IDs
-	usersSpectating  map[int][]uint64          // Indexed by user ID, values are table IDs
+	tables           map[int]*table.Manager // Indexed by table ID
+	tableIDCounter   int
+	usersPlaying     map[int][]int // Indexed by user ID, values are table IDs
+	usersSpectating  map[int][]int // Indexed by user ID, values are table IDs
 	isValidTableName func(string) bool
 
 	requests          chan *request
@@ -33,9 +34,10 @@ type Manager struct {
 
 func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
-		tables:           make(map[uint64]*table.Manager),
-		usersPlaying:     make(map[int][]uint64),
-		usersSpectating:  make(map[int][]uint64),
+		tables:           make(map[int]*table.Manager),
+		tableIDCounter:   0, // The first table ID will be 1 and will increase from there
+		usersPlaying:     make(map[int][]int),
+		usersSpectating:  make(map[int][]int),
 		isValidTableName: regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString,
 
 		requests:       make(chan *request),

@@ -1,4 +1,4 @@
-package main
+package characters
 
 type Character struct {
 	// Similar to variants, each character must have a unique numerical ID (for the database)

@@ -13,7 +13,7 @@ import (
 // server restart. Fields that do not need to be encoded are still exported for object consistency.
 // Instead, we use a tag of `json:"-"` to denote that the JSON serializer should skip the field.
 type table struct {
-	ID          uint64
+	ID          int
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay
 
@@ -63,10 +63,10 @@ type chatMessage struct {
 }
 
 type NewTableData struct {
-	ID           uint64
+	ID           int
 	Name         string
 	OwnerID      int
-	HidePregame  bool
+	Visible      bool
 	PasswordHash string
 	Options      *options.Options
 	ExtraOptions *options.ExtraOptions
@@ -77,14 +77,14 @@ func newTable(d *NewTableData) *table {
 	t := &table{
 		ID:          d.ID,
 		Name:        d.Name,
-		InitialName: "",
+		InitialName: "", // Set when this game converts from ongoing --> shared replay
 
 		Players:       make([]*player, 0),
 		Spectators:    make([]*spectator, 0),
 		KickedPlayers: make(map[int]struct{}),
 
 		OwnerID:        d.OwnerID,
-		Visible:        !d.HidePregame, // Tables are visible by default
+		Visible:        d.Visible,
 		PasswordHash:   d.PasswordHash,
 		Running:        false,
 		Replay:         false,

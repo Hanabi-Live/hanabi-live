@@ -40,5 +40,6 @@ func (c *card) name(g *game) string {
 	} else {
 		name += strconv.Itoa(c.Rank)
 	}
+
 	return name
 }

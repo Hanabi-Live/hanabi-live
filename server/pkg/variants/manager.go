@@ -26,10 +26,9 @@ func NewManager(logger *logger.Logger, dataPath string) *Manager {
 
 		logger: logger,
 	}
-
-	m.ColorsInit(dataPath)
-	m.SuitsInit(dataPath)
-	m.VariantsInit(dataPath)
+	m.colorsInit(dataPath)
+	m.suitsInit(dataPath)
+	m.variantsInit(dataPath)
 
 	return m
 }

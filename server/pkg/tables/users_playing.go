@@ -1,13 +1,13 @@
 package tables
 
-func (m *Manager) addUserPlaying(userID int, tableID uint64) {
+func (m *Manager) addUserPlaying(userID int, tableID int) {
 	addUserTable(userID, tableID, m.usersPlaying)
 }
 
-func (m *Manager) deleteUserPlaying(userID int, tableID uint64) {
+func (m *Manager) deleteUserPlaying(userID int, tableID int) {
 	deleteUserTable(userID, tableID, m.usersPlaying)
 }
 
-func (m *Manager) getUserPlaying(userID int) []uint64 {
+func (m *Manager) getUserPlaying(userID int) []int {
 	return getUserTables(userID, m.usersPlaying)
 }

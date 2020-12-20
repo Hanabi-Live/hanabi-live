@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-func (m *Manager) SuitsInit(dataPath string) {
+func (m *Manager) suitsInit(dataPath string) {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "suits.json")
 	var fileContents []byte

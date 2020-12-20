@@ -43,12 +43,12 @@ func (m *Manager) print(data interface{}) {
 	d.resultsChannel <- msg
 }
 
-func printUsersMap(usersMap map[int][]uint64) string {
+func printUsersMap(usersMap map[int][]int) string {
 	msg := ""
 	for userID, tableIDs := range usersMap {
 		tableIDStrings := make([]string, 0)
 		for _, tableID := range tableIDs {
-			tableIDStrings = append(tableIDStrings, strconv.FormatUint(tableID, 10))
+			tableIDStrings = append(tableIDStrings, strconv.Itoa(tableID))
 		}
 		tablesString := strings.Join(tableIDStrings, ", ")
 		msg += fmt.Sprintf("  User %v --> Tables: [%v]\n", userID, tablesString)

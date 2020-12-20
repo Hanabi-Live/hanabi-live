@@ -1,7 +1,7 @@
 package table
 
 type Description struct {
-	ID                uint64   `json:"id"`
+	ID                int      `json:"id"`
 	Name              string   `json:"name"`
 	PasswordProtected bool     `json:"passwordProtected"`
 	Joined            bool     `json:"joined"`

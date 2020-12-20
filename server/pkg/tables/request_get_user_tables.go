@@ -2,19 +2,19 @@ package tables
 
 type getUserTablesData struct {
 	userID         int
-	resultsChannel chan []uint64
+	resultsChannel chan []int
 }
 
 // GetUserTables requests a list of all of the tables that a user is currently playing in and
 // spectating.
-func (m *Manager) GetUserTables(userID int) ([]uint64, []uint64) {
-	resultsChannel := make(chan []uint64)
+func (m *Manager) GetUserTables(userID int) ([]int, []int) {
+	resultsChannel := make(chan []int)
 
 	if err := m.newRequest(requestTypeGetUserTables, &getUserTablesData{
 		userID:         userID,
 		resultsChannel: resultsChannel,
 	}); err != nil {
-		return make([]uint64, 0), make([]uint64, 0)
+		return make([]int, 0), make([]int, 0)
 	}
 
 	playingAtTables := <-resultsChannel
