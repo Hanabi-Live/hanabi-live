@@ -1,5 +1,5 @@
 import { Draft } from "immer";
-import { getCharacter, getVariant } from "../data/gameData";
+import { getVariant } from "../data/gameData";
 import { cardRules, handRules, variantRules } from "../rules";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
@@ -9,7 +9,7 @@ import GameMetadata from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import SoundType from "../types/SoundType";
 import StatsState from "../types/StatsState";
-import { getCharacterIDForPlayer } from "./reducerHelpers";
+import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export default function getSoundType(
   stats: Draft<StatsState>,
@@ -39,15 +39,10 @@ export default function getSoundType(
   switch (action.type) {
     case "clue": {
       if (metadata.options.detrimentalCharacters) {
-        const giverCharacterID = getCharacterIDForPlayer(
+        const giverCharacterName = getCharacterNameForPlayer(
           action.giver,
           metadata.characterAssignments,
         );
-        let giverCharacterName = "";
-        if (giverCharacterID !== null) {
-          const giverCharacter = getCharacter(giverCharacterID);
-          giverCharacterName = giverCharacter.name;
-        }
 
         if (giverCharacterName === "Quacker") {
           return SoundType.Quack;

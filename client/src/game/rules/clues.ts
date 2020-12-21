@@ -1,7 +1,6 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import { getCharacter } from "../data/gameData";
-import { getCharacterIDForPlayer } from "../reducers/reducerHelpers";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import Clue, { colorClue, rankClue } from "../types/Clue";
 import ClueType from "../types/ClueType";
 import { START_CARD_RANK } from "../types/constants";
@@ -14,14 +13,8 @@ export function getClueName(
   clueType: ClueType,
   clueValue: number,
   variant: Variant,
-  characterID: number | null,
+  characterName: string,
 ): string {
-  let characterName = "";
-  if (characterID !== null) {
-    const character = getCharacter(characterID);
-    characterName = character.name;
-  }
-
   let clueName: string;
   if (clueType === ClueType.Color) {
     clueName = variant.clueColors[clueValue].name;
@@ -140,15 +133,10 @@ export function shouldApplyClue(
   metadata: GameMetadata,
   variant: Variant,
 ): boolean {
-  const giverCharacterID = getCharacterIDForPlayer(
+  const giverCharacterName = getCharacterNameForPlayer(
     giverIndex,
     metadata.characterAssignments,
   );
-  let giverCharacterName = "";
-  if (giverCharacterID !== null) {
-    const giverCharacter = getCharacter(giverCharacterID);
-    giverCharacterName = giverCharacter.name;
-  }
 
   return (
     !variantRules.isCowAndPig(variant) &&

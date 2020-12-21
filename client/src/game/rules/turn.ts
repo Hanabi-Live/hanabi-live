@@ -7,7 +7,7 @@ import Variant from "../types/Variant";
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
   cardsDiscardedThisTurn: number,
-  characterID: number | null,
+  characterName: string,
   clueTokens: number,
   variant: Variant,
 ): boolean {
@@ -16,8 +16,7 @@ export function shouldEndTurnAfterDraw(
   const panickyFirstDiscard =
     cardsDiscardedThisTurn === 1 &&
     clueTokens <= clueTokensRules.getAdjusted(4, variant) &&
-    characterID !== null &&
-    getCharacter(characterID).name === "Panicky";
+    characterName === "Panicky";
 
   // Otherwise, the turn always increments when:
   // 1) a play or discard happens and
@@ -27,32 +26,16 @@ export function shouldEndTurnAfterDraw(
 
 export function shouldEndTurnAfterClue(
   cluesGivenThisTurn: number,
-  characterID: number | null,
+  characterName: string,
 ): boolean {
   // Some "Detrimental Characters" are able to perform two clues
-  if (characterID !== null) {
-    const character = getCharacter(characterID);
-
-    if (character.name === "Genius") {
-      return cluesGivenThisTurn === 2;
-    }
-  }
-
   // Otherwise, the turn always increments when a clue is given
-  return true;
+  return characterName !== "Genius" || cluesGivenThisTurn === 2;
 }
 
-export function shouldPlayOrderInvert(characterID: number | null): boolean {
+export function shouldPlayOrderInvert(characterName: string): boolean {
   // Some "Detrimental Characters" are able to invert the play order
-  if (characterID !== null) {
-    const character = getCharacter(characterID);
-
-    if (character.name === "Contrarian") {
-      return true;
-    }
-  }
-
-  return false;
+  return characterName === "Contrarian";
 }
 
 export function getNextPlayerIndex(

@@ -1,7 +1,7 @@
 // Calculates the state of the deck after an action
 
 import { ensureAllCases, nullIfNegative } from "../../misc";
-import { getCharacter, getVariant } from "../data/gameData";
+import { getVariant } from "../data/gameData";
 import { cluesRules, deckRules, handRules } from "../rules";
 import * as characterRules from "../rules/variants/characters";
 import { GameAction } from "../types/actions";
@@ -13,7 +13,7 @@ import GameState from "../types/GameState";
 import cardDeductionReducer from "./cardDeductionReducer";
 import cardPossibilitiesReducer from "./cardPossibilitiesReducer";
 import initialCardState from "./initialStates/initialCardState";
-import { getCharacterIDForPlayer } from "./reducerHelpers";
+import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export default function cardsReducer(
   deck: readonly CardState[],
@@ -34,7 +34,10 @@ export default function cardsReducer(
       let card = getCard(deck, order);
       card = {
         ...card,
-        revealedToPlayer: cardIdentityRevealedToPlayer(card, metadata),
+        revealedToPlayer: cardIdentityRevealedToPlayer(
+          card,
+          metadata.characterAssignments,
+        ),
       };
       newDeck[order] = card;
       if (characterRules.shouldSeeSlot2CardIdentity(metadata) === false) {
@@ -194,7 +197,7 @@ export default function cardsReducer(
         segmentDrawn: game.turn.segment,
         revealedToPlayer: drawnCardRevealedToPlayer(
           action.playerIndex,
-          metadata,
+          metadata.characterAssignments,
         ),
         // The segment will be null during the initial deal
         dealtToStartingHand: game.turn.segment === null,
@@ -240,48 +243,54 @@ export default function cardsReducer(
 // Helpers
 // -------
 
-const cardIdentityRevealedToPlayer = (
+function cardIdentityRevealedToPlayer(
   card: CardState,
-  metadata: GameMetadata,
-) => {
+  characterAssignments: Readonly<Array<number | null>>,
+) {
   const revealedToPlayer: boolean[] = [];
-  for (let i = 0; i < metadata.characterAssignments.length; i++) {
-    if (
-      i !== card.location &&
-      getCharacterName(i, metadata) === "Slow-Witted"
-    ) {
+  for (let i = 0; i < characterAssignments.length; i++) {
+    const characterName = getCharacterNameForPlayer(i, characterAssignments);
+    if (i !== card.location && characterName === "Slow-Witted") {
       revealedToPlayer.push(true);
     } else {
       revealedToPlayer.push(card.revealedToPlayer[i]);
     }
   }
   return revealedToPlayer;
-};
+}
 
-const drawnCardRevealedToPlayer = (
+function drawnCardRevealedToPlayer(
   drawLocation: number,
-  metadata: GameMetadata,
-) => {
+  characterAssignments: Readonly<Array<number | null>>,
+) {
   const revealedToPlayer: boolean[] = [];
-  const numPlayers = metadata.characterAssignments.length;
+  const numPlayers = characterAssignments.length;
   for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
     revealedToPlayer.push(
-      canPlayerSeeDrawnCard(playerIndex, drawLocation, numPlayers, metadata),
+      canPlayerSeeDrawnCard(
+        playerIndex,
+        drawLocation,
+        numPlayers,
+        characterAssignments,
+      ),
     );
   }
   return revealedToPlayer;
-};
+}
 
-const canPlayerSeeDrawnCard = (
+function canPlayerSeeDrawnCard(
   playerIndex: number,
   drawLocation: number,
   numPlayers: number,
-  metadata: GameMetadata,
-) => {
+  characterAssignments: Readonly<Array<number | null>>,
+) {
   if (playerIndex === drawLocation) {
     return false;
   }
-  const characterName = getCharacterName(playerIndex, metadata);
+  const characterName = getCharacterNameForPlayer(
+    playerIndex,
+    characterAssignments,
+  );
   switch (characterName) {
     case "Slow-Witted":
       return false;
@@ -292,20 +301,7 @@ const canPlayerSeeDrawnCard = (
     default:
       return true;
   }
-};
-
-const getCharacterName = (playerIndex: number, metadata: GameMetadata) => {
-  const characterID = getCharacterIDForPlayer(
-    playerIndex,
-    metadata.characterAssignments,
-  );
-  let characterName = "";
-  if (characterID !== null) {
-    const giverCharacter = getCharacter(characterID);
-    characterName = giverCharacter.name;
-  }
-  return characterName;
-};
+}
 
 function getCard(deck: readonly CardState[], order: number) {
   const card = deck[order];

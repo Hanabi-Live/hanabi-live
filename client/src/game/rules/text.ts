@@ -1,6 +1,6 @@
 import { ensureAllCases } from "../../misc";
-import { getCharacter, getVariant } from "../data/gameData";
-import { getCharacterIDForPlayer } from "../reducers/reducerHelpers";
+import { getVariant } from "../data/gameData";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { cardRules, cluesRules, handRules, variantRules } from "../rules";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import ClueType from "../types/ClueType";
@@ -19,15 +19,10 @@ export function clue(
   const variant = getVariant(metadata.options.variantName);
 
   // First, handle the case of clue text in some special variants
-  const characterID = getCharacterIDForPlayer(
+  const characterName = getCharacterNameForPlayer(
     action.giver,
     metadata.characterAssignments,
   );
-  let characterName = "";
-  if (characterID !== null) {
-    const character = getCharacter(characterID);
-    characterName = character.name;
-  }
   if (
     variantRules.isCowAndPig(variant) ||
     variantRules.isDuck(variant) ||
@@ -75,7 +70,7 @@ export function clue(
     action.clue.type,
     action.clue.value,
     variant,
-    characterID,
+    characterName,
   );
   if (action.list.length !== 1) {
     clueName += "s";
