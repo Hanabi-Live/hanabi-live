@@ -13,11 +13,17 @@ export default interface CardState {
   // Do not access this by the index; filter the array to find the remaining cards that you need
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
-  // possibleCardsFromDeduction is a one-dimensional array of tuples
+  // possibleCards is a one-dimensional array of tuples
+  // It contains a tuple for each specific card that is still possible
+  // based on everything we know so far
+  // Do not access this by the index; filter the array to find the remaining cards that you need
+  readonly possibleCards: ReadonlyArray<readonly [number, number]>;
+
+  // possibleCardsForEmpathy is a one-dimensional array of tuples
   // It contains a tuple for each specific card that is still possible based on everything the
   // player holding it should know so far
   // Do not access this by the index; filter the array to find the remaining cards that you need
-  readonly possibleCardsFromDeduction: ReadonlyArray<readonly [number, number]>;
+  readonly possibleCardsForEmpathy: ReadonlyArray<readonly [number, number]>;
 
   // An array that specifies whether the card is revealed to a particular player index
   readonly revealedToPlayer: readonly boolean[];

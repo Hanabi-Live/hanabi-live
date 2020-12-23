@@ -26,7 +26,11 @@ export default function cardPossibilitiesReducer(
     ([suitIndex, rank]) =>
       cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
-  const possibleCardsFromDeduction = state.possibleCardsFromDeduction.filter(
+  const possibleCards = state.possibleCards.filter(
+    ([suitIndex, rank]) =>
+      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+  );
+  const possibleCardsForEmpathy = state.possibleCardsForEmpathy.filter(
     ([suitIndex, rank]) =>
       cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
@@ -64,7 +68,8 @@ export default function cardPossibilitiesReducer(
     suitDetermined,
     rankDetermined,
     possibleCardsFromClues,
-    possibleCardsFromDeduction,
+    possibleCards,
+    possibleCardsForEmpathy,
     positiveColorClues,
     positiveRankClues,
     revealedToPlayer,

@@ -12,7 +12,7 @@ const defaultCard = initialCardState(0, variant);
 
 // Count possible cards, respecting both clues and observations.
 function countPossibleCards(state: CardState) {
-  return state.possibleCardsFromDeduction.length;
+  return state.possibleCardsForEmpathy.length;
 }
 
 function possibilities(

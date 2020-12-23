@@ -63,6 +63,7 @@ export default function cardsReducer(
         ...card,
         suitIndex: action.suitIndex,
         rank: action.rank,
+        possibleCards: [[action.suitIndex, action.rank]],
       };
 
       break;
@@ -166,6 +167,9 @@ export default function cardsReducer(
           action.suitIndex >= 0 && action.rank >= 0
             ? new Array(6).fill(true)
             : card.revealedToPlayer,
+        possibleCards: identityDetermined
+          ? [[suitIndex!, rank!]]
+          : card.possibleCards,
       };
       break;
     }
@@ -189,6 +193,12 @@ export default function cardsReducer(
 
       const initial = initialCardState(action.order, variant);
 
+      let { possibleCards } = initial;
+
+      if (action.suitIndex >= 0 && action.rank >= 0) {
+        possibleCards = [[action.suitIndex, action.rank]];
+      }
+
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
@@ -199,6 +209,7 @@ export default function cardsReducer(
           action.playerIndex,
           metadata.characterAssignments,
         ),
+        possibleCards,
         // The segment will be null during the initial deal
         dealtToStartingHand: game.turn.segment === null,
       };

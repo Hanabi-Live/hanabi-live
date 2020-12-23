@@ -5,7 +5,7 @@ import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { KonvaEventObject } from "konva/types/Node";
 import { ensureAllCases } from "../../misc";
-import { getCharacter } from "../data/gameData";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { cardRules, variantRules } from "../rules";
 import Clue from "../types/Clue";
 import ClueType from "../types/ClueType";
@@ -111,14 +111,10 @@ export function set(
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given
-    let giverCharacterName = "";
-    if (giver !== null) {
-      const giverCharacterID = globals.metadata.characterAssignments[giver];
-      if (giverCharacterID !== null) {
-        const giverCharacter = getCharacter(giverCharacterID);
-        giverCharacterName = giverCharacter.name;
-      }
-    }
+    const giverCharacterName = getCharacterNameForPlayer(
+      giver,
+      globals.metadata.characterAssignments,
+    );
     if (
       variantRules.isDuck(globals.variant) ||
       (giverCharacterName === "Quacker" && !globals.state.finished)

@@ -1,4 +1,4 @@
-import { getCharacter } from "../data/gameData";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { cluesRules, clueTokensRules } from "../rules";
 import ActionType from "../types/ActionType";
 import Clue from "../types/Clue";
@@ -49,13 +49,10 @@ export function checkLegal(): void {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-  const ourCharacterID =
-    globals.metadata.characterAssignments[globals.metadata.ourPlayerIndex];
-  let ourCharacterName = "";
-  if (ourCharacterID !== null) {
-    const ourCharacter = getCharacter(ourCharacterID);
-    ourCharacterName = ourCharacter.name;
-  }
+  const ourCharacterName = getCharacterNameForPlayer(
+    globals.metadata.ourPlayerIndex,
+    globals.metadata.characterAssignments,
+  );
 
   // By default, only enable the "Give Clue" button if the clue "touched"
   // one or more cards in the hand

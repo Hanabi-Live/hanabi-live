@@ -141,7 +141,7 @@ function subscribeToCardChanges(order: number) {
   sub(
     (c) => ({
       possibleCardsFromClues: c.possibleCardsFromClues,
-      possibleCardsFromDeduction: c.possibleCardsFromDeduction,
+      possibleCardsForEmpathy: c.possibleCardsForEmpathy,
     }),
     () => checkNoteDisproved(order),
   );
@@ -150,7 +150,7 @@ function subscribeToCardChanges(order: number) {
   sub(
     (c) => ({
       numPossibleCardsFromClues: c.possibleCardsFromClues.length,
-      possibleCardsFromDeduction: c.possibleCardsFromDeduction,
+      possibleCardsForEmpathy: c.possibleCardsForEmpathy,
       numPositiveRankClues: c.positiveRankClues.length,
     }),
     () => updatePips(order),

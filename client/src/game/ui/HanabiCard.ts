@@ -443,7 +443,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         ? possibleCardsFromNoteAndClues(this.note, this.state)
         : this.state.possibleCardsFromClues;
     return possibleCardsWithoutObservation.filter(([suitIndexB, rankB]) =>
-      this.state.possibleCardsFromDeduction.some(
+      this.state.possibleCardsForEmpathy.some(
         ([suitIndexC, rankC]) => suitIndexB === suitIndexC && rankB === rankC,
       ),
     );
@@ -607,7 +607,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // We look through each card that should have a visible pip (eliminated or not)
     for (const [suitIndex, rank] of possibleCards) {
       // If the card is impossible, eliminate it
-      const pipState = this.state.possibleCardsFromDeduction.some(
+      const pipState = this.state.possibleCardsForEmpathy.some(
         ([s, r]) => s === suitIndex && r === rank,
       )
         ? PipState.Visible

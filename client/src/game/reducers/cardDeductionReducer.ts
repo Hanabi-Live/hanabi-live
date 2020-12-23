@@ -34,70 +34,103 @@ function makeDeductions(
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
 
-  // We need to calculate our own hand first because those possibilities will be needed for
-  // pretending like we know what the other players see in our hand.
-  calculateHandPossibilities(
-    hands[metadata.ourPlayerIndex],
-    hands,
+  // We need to calculate our own unknown cards first because those possibilities will be needed for
+  // pretending like we know what the other players see.
+  calculatePlayerPossibilities(
+    metadata.ourPlayerIndex,
+    metadata.ourPlayerIndex,
     newDeck,
     cardCountMap,
   );
-  hands
-    .filter((hand) => hand !== hands[metadata.ourPlayerIndex])
-    .forEach((hand) => {
-      calculateHandPossibilities(hand, hands, newDeck, cardCountMap);
-    });
+  for (let playerIndex = 0; playerIndex < hands.length; playerIndex++) {
+    if (playerIndex !== metadata.ourPlayerIndex) {
+      calculatePlayerPossibilities(
+        playerIndex,
+        metadata.ourPlayerIndex,
+        newDeck,
+        cardCountMap,
+      );
+    }
+  }
   return newDeck;
 }
 
-function calculateHandPossibilities(
-  handToCalculate: readonly number[],
-  hands: ReadonlyArray<readonly number[]>,
+function calculatePlayerPossibilities(
+  playerIndex: number,
+  ourPlayerIndex: number,
   deck: CardState[],
   cardCountMap: readonly number[][],
 ) {
-  const playerIndex = hands.indexOf(handToCalculate);
   const cardCountMapForHand = Array.from(cardCountMap, (arr) =>
     Array.from(arr),
   );
   const unknownCards: number[] = [];
+  const cardsToCalculate: CardState[] = [];
 
   for (const card of deck) {
-    if (
-      card.revealedToPlayer[playerIndex] &&
-      card.suitIndex !== null &&
-      card.rank !== null
-    ) {
-      cardCountMapForHand[card.suitIndex][card.rank] -= 1;
-    } else if (card.location !== "deck") {
+    if (card.location !== "deck") {
       unknownCards.push(card.order);
+      const cardPossibilitiesForPlayer = getCardPossibilitiesForPlayer(
+        card,
+        playerIndex,
+        ourPlayerIndex,
+      );
+      if (
+        !card.revealedToPlayer[playerIndex] &&
+        cardPossibilitiesForPlayer.length > 1
+      ) {
+        cardsToCalculate.push(card);
+      }
     }
   }
 
-  handToCalculate.forEach((o) => {
-    const card = deck[o];
-    if (
-      card.revealedToPlayer[playerIndex] &&
-      card.suitIndex !== null &&
-      card.rank !== null
-    ) {
-      // The player already knows this card.
-      return;
-    }
+  cardsToCalculate.forEach((card) => {
     const possibilities = generatePossibilitiesForUnknownCards(
       unknownCards,
-      o,
+      card.order,
       deck,
       playerIndex,
+      ourPlayerIndex,
     );
-    deck[o] = {
+    let { possibleCards, possibleCardsForEmpathy } = card;
+    if (playerIndex === ourPlayerIndex) {
+      possibleCards = possibleCards.filter((possibility) =>
+        possibilityValid(possibility, possibilities, 0, cardCountMapForHand),
+      );
+      if (playerIndex === card.location) {
+        possibleCardsForEmpathy = possibleCards;
+      }
+    } else if (playerIndex === card.location) {
+      possibleCardsForEmpathy = possibleCardsForEmpathy.filter((possibility) =>
+        possibilityValid(possibility, possibilities, 0, cardCountMapForHand),
+      );
+    }
+    deck[card.order] = {
       ...card,
-      possibleCardsFromDeduction: card.possibleCardsFromDeduction.filter(
-        (possibility) =>
-          possibilityValid(possibility, possibilities, 0, cardCountMapForHand),
-      ),
+      possibleCards,
+      possibleCardsForEmpathy,
     };
   });
+}
+
+function getCardPossibilitiesForPlayer(
+  card: CardState,
+  playerIndex: number,
+  ourPlayerIndex: number,
+): ReadonlyArray<readonly [number, number]> {
+  if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]) {
+    // This is revealed to the player or we are the requested player => just use our best knowledge.
+    return card.possibleCards;
+  }
+  if (card.location === playerIndex) {
+    // If this card is in the players hand, then use our best (empathy) guess.
+    return card.possibleCardsForEmpathy;
+  }
+  // This is an unrevealed card not in the players hand but not revealed to them.
+  // That can happen with something like a detrimental character (like 'Slow-Witted')
+  // or throw it in the hole.  We can't use our best (empathy) guess, because the player
+  // might only know what's clued about it.
+  return card.possibleCardsFromClues;
 }
 
 function generatePossibilitiesForUnknownCards(
@@ -105,6 +138,7 @@ function generatePossibilitiesForUnknownCards(
   excludeCardOrder: number,
   deck: CardState[],
   playerIndex: number,
+  ourPlayerIndex: number,
 ) {
   const possibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
   for (const cardOrder of unknownCardOrders) {
@@ -114,20 +148,13 @@ function generatePossibilitiesForUnknownCards(
     const unknownCard = deck[cardOrder];
     if (unknownCard.revealedToPlayer[playerIndex]) {
       // If this card is revealed to the player, then use our best guess.
-      possibilities.push(unknownCard.possibleCardsFromDeduction);
+      possibilities.push(unknownCard.possibleCards);
     } else if (unknownCard.hasClueApplied) {
       // We know more than nothing about it, so it could be useful disproving a possibility in
       // the players hand.
-      if (unknownCard.location === playerIndex) {
-        // If this card is in the players hand, then use our best (empathy) guess.
-        possibilities.push(unknownCard.possibleCardsFromDeduction);
-      } else {
-        // This is an unrevealed card not in the players hand but not revealed to them.
-        // That can happen with something like a detrimental character (like 'Slow-Witted')
-        // or throw it in the hole.  We can't use our best (empathy) guess, because the player
-        // might only know what's clued about it.
-        possibilities.push(unknownCard.possibleCardsFromClues);
-      }
+      possibilities.push(
+        getCardPossibilitiesForPlayer(unknownCard, playerIndex, ourPlayerIndex),
+      );
     }
   }
   // start with the more stable possibilities
@@ -143,6 +170,9 @@ function possibilityValid(
 ) {
   if (possibilities.length === index) {
     return cardCountMap[suit][rank] > 0;
+  }
+  if (suit < 0 || rank < 0) {
+    console.log("what??");
   }
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit
   cardCountMap[suit][rank] -= 1;
