@@ -67,7 +67,7 @@ describe("integration", () => {
             order
           ];
           checkPossibilitiesEliminatedByClues(card, expected);
-          checkPossibilitiesEliminatedByObservation(card, expected);
+          checkPossibleCardsForEmpathy(card, expected);
         },
       );
     });
@@ -114,7 +114,7 @@ describe("integration", () => {
             order
           ];
           checkPossibilitiesEliminatedByClues(card, expected);
-          checkPossibilitiesEliminatedByObservation(card, expected);
+          checkPossibleCardsForEmpathy(card, expected);
         },
       );
     });
@@ -160,14 +160,8 @@ function checkPossibilitiesEliminatedByClues(
   expect(card.possibleCardsFromClues).toEqual(expected.possibleCardsFromClues);
 }
 
-function checkPossibilitiesEliminatedByObservation(
-  card: CardState,
-  expected: CardState,
-) {
-  // TODO: switch this back to the proper expectation
-  expect(card).toEqual(card);
-  expect(expected).toEqual(expected);
-  // expect(card.possibleCardsForEmpathy).toEqual(
-  //  expected.possibleCardsForEmpathy,
-  // );
+function checkPossibleCardsForEmpathy(card: CardState, expected: CardState) {
+  expect(card.possibleCardsForEmpathy).toEqual(
+    expected.possibleCardsForEmpathy,
+  );
 }

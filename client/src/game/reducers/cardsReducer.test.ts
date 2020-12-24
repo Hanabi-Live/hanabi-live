@@ -570,7 +570,8 @@ describe("cardsReducer", () => {
       const gameStateDrawP1 = { ...gameState, hands: [[], [1], [0]] };
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
-      // Expect the remaining card to not remove a possibility for a red 5
+      // The remaining card cannot be a red 5 but the other player doesn't know that
+      expect(isPossible(deck[0], 0, 5)).toBe(false);
       expect(empathyPossible(deck[0], 0, 5)).toBe(true);
     });
     test("does not eliminate that possibility on Oblivious cards for next player", () => {
@@ -587,7 +588,8 @@ describe("cardsReducer", () => {
       const gameStateDrawP1 = { ...gameState, hands: [[], [1], [0]] };
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
-      // Expect the remaining card to not remove a possibility for a red 5
+      // The remaining card cannot be a red 5 but the other player doesn't know that
+      expect(isPossible(deck[0], 0, 5)).toBe(false);
       expect(empathyPossible(deck[0], 0, 5)).toBe(true);
     });
     test("does eliminate that possibility on Oblivious cards for previous player", () => {
@@ -621,7 +623,8 @@ describe("cardsReducer", () => {
       const gameStateDrawP1 = { ...gameState, hands: [[], [0], [1]] };
       deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
 
-      // Expect the remaining card to not remove a possibility for a red 5
+      // The remaining card cannot be a red 5 but the other player doesn't know that
+      expect(isPossible(deck[0], 0, 5)).toBe(false);
       expect(empathyPossible(deck[0], 0, 5)).toBe(true);
     });
     test("does eliminate that possibility on Blind Spot cards for next player", () => {
@@ -830,6 +833,62 @@ describe("cardsReducer", () => {
 
       // Expect the Slow-Witted card to remove a possibility for a red 5
       expect(empathyPossible(deck[0], 0, 5)).toBe(false);
+    });
+  });
+  describe("play", () => {
+    test("eliminates a possibility on our own hand", () => {
+      const metaData = defaultMetadata;
+      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      // P0 draws an unknown red 5
+      const gameStateDrawR5 = { ...gameState, hands: [[0], [], []] };
+      deck = cardsReducer(deck, draw(0, 0, -1, -1), gameStateDrawR5, metaData);
+
+      // P0 draws an unknown red 2
+      const gameStateDrawR2 = { ...gameState, hands: [[0, 1], [], []] };
+      deck = cardsReducer(deck, draw(0, 1, -1, -1), gameStateDrawR2, metaData);
+
+      // P0 clued that both cards are red
+      deck = cardsReducer(
+        deck,
+        colorClue(0, 1, [0, 1], 0, 1),
+        gameStateDrawR2,
+        metaData,
+      );
+
+      // P0 plays red 5
+      const gameStatePlayR5 = { ...gameState, hands: [[1], [], []] };
+      deck = cardsReducer(deck, play(0, 0, 0, 5), gameStatePlayR5, metaData);
+
+      // Expect the red 2 to remove red 5 possibility
+      expect(isPossible(deck[1], 0, 5)).toBe(false);
+      expect(empathyPossible(deck[1], 0, 5)).toBe(false);
+    });
+    test("eliminates a possibility on our own hand2", () => {
+      const metaData = defaultMetadata;
+      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      // P0 draws an unknown red 5
+      const gameStateDrawR5 = { ...gameState, hands: [[0], [], []] };
+      deck = cardsReducer(deck, draw(0, 0, 0, 5), gameStateDrawR5, metaData);
+
+      // P0 draws an unknown red 2
+      const gameStateDrawR2 = { ...gameState, hands: [[0, 1], [], []] };
+      deck = cardsReducer(deck, draw(0, 1, 0, 2), gameStateDrawR2, metaData);
+
+      // P0 clued that both cards are red
+      deck = cardsReducer(
+        deck,
+        colorClue(0, 1, [0, 1], 0, 1),
+        gameStateDrawR2,
+        metaData,
+      );
+
+      // P0 plays red 5
+      const gameStatePlayR5 = { ...gameState, hands: [[1], [], []] };
+      deck = cardsReducer(deck, play(0, 0, 0, 5), gameStatePlayR5, metaData);
+
+      // Expect the red 2 to remove red 5 possibility
+      expect(isPossible(deck[1], 0, 5)).toBe(false);
+      expect(empathyPossible(deck[1], 0, 5)).toBe(false);
     });
   });
 });

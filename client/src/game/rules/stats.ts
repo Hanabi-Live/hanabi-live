@@ -208,7 +208,6 @@ export function cardsGottenByNotes(
         (note.finessed || (cardRules.isClued(card) && !note.unclued))
           ? 1
           : 0;
-      console.log([order, note, a, b]);
 
       currentCardsGottenByNotes += b - a;
     }

@@ -140,8 +140,7 @@ function subscribeToCardChanges(order: number) {
   // Notes
   sub(
     (c) => ({
-      possibleCardsFromClues: c.possibleCardsFromClues,
-      possibleCardsForEmpathy: c.possibleCardsForEmpathy,
+      possibleCards: c.possibleCards,
     }),
     () => checkNoteDisproved(order),
   );
@@ -150,6 +149,7 @@ function subscribeToCardChanges(order: number) {
   sub(
     (c) => ({
       numPossibleCardsFromClues: c.possibleCardsFromClues.length,
+      possibleCards: c.possibleCards,
       possibleCardsForEmpathy: c.possibleCardsForEmpathy,
       numPositiveRankClues: c.positiveRankClues.length,
     }),

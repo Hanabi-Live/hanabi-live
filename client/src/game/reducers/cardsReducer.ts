@@ -167,9 +167,10 @@ export default function cardsReducer(
           action.suitIndex >= 0 && action.rank >= 0
             ? new Array(6).fill(true)
             : card.revealedToPlayer,
-        possibleCards: identityDetermined
-          ? [[suitIndex!, rank!]]
-          : card.possibleCards,
+        possibleCards:
+          action.suitIndex >= 0 && action.rank >= 0
+            ? [[action.suitIndex, action.rank]]
+            : card.possibleCards,
       };
       break;
     }
