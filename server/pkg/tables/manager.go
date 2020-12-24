@@ -15,6 +15,8 @@ import (
 // as well as user relationships to tables.
 // It listens for requests in a new goroutine.
 type Manager struct {
+	name string
+
 	// We don't need a mutex for the map because only the manager goroutine will access it
 	tables           map[int]*table.Manager // Indexed by table ID
 	tableIDCounter   int
@@ -24,7 +26,7 @@ type Manager struct {
 
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
-	requestFuncMap    map[int]func(interface{})
+	requestFuncMap    map[requestType]func(interface{}) interface{}
 	requestsClosed    *abool.AtomicBool
 
 	logger     *logger.Logger
@@ -34,6 +36,8 @@ type Manager struct {
 
 func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
+		name: "tables",
+
 		tables:           make(map[int]*table.Manager),
 		tableIDCounter:   0, // The first table ID will be 1 and will increase from there
 		usersPlaying:     make(map[int][]int),
@@ -41,7 +45,7 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 		isValidTableName: regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString,
 
 		requests:       make(chan *request),
-		requestFuncMap: make(map[int]func(interface{})),
+		requestFuncMap: make(map[requestType]func(interface{}) interface{}),
 		requestsClosed: abool.New(),
 
 		logger:     logger,

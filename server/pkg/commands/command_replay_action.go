@@ -2,12 +2,12 @@ package commands
 
 /*
 var (
-	replayActionFunctions map[int]func(*Session, *CommandData, *Table)
+	replayActionFunctions map[constants.ReplayActionType]func(*Session, *CommandData, *Table)
 	actionTypeTurnRegExp  = regexp.MustCompile(`"type":\s*"turn"`)
 )
 
 func replayActionsFunctionsInit() {
-	replayActionFunctions = map[int]func(*Session, *CommandData, *Table){
+	replayActionFunctions = map[constants.ReplayActionType]func(*Session, *CommandData, *Table){
 		ReplayActionTypeSegment:        replayActionSegment,
 		ReplayActionTypeArrow:          replayActionArrow,
 		ReplayActionTypeSound:          replayActionSound,

@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
 )
 
 const (
@@ -11,6 +13,39 @@ const (
 	shutdownTimeout                = time.Minute * 30
 	minuteCutoffForNewGameCreation = 5
 )
+
+func (m *Manager) GetNewTableShutdownWarning() string {
+	if m.shuttingDown.IsNotSet() {
+		return ""
+	}
+
+	timeLeft := shutdownTimeout - time.Since(m.datetimeShutdownInit)
+	minutesLeft := int(timeLeft.Minutes())
+
+	return fmt.Sprintf(
+		"The server is shutting down in %v minutes. Keep in mind that if your game is not finished in time, it will be terminated.",
+		minutesLeft,
+	)
+}
+
+func (m *Manager) GetShutdownTimeLeft() (string, error) {
+	if m.shuttingDown.IsNotSet() {
+		return "The server is not scheduled to shutdown any time soon.", nil
+	}
+
+	timeLeft := shutdownTimeout - time.Since(m.datetimeShutdownInit)
+	timeLeftSeconds := int(timeLeft.Seconds())
+
+	var durationString string
+	if v, err := util.SecondsToDurationString(timeLeftSeconds); err != nil {
+		return "", err
+	} else {
+		durationString = v
+	}
+
+	msg := fmt.Sprintf("Time left until server shutdown: %v", durationString)
+	return msg, nil
+}
 
 func (m *Manager) IsNewTablesAllowed() (bool, string) {
 	if m.maintenanceMode.IsSet() {

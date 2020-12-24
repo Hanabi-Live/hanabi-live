@@ -1,18 +1,24 @@
 package sessions
 
-import "errors"
+import "fmt"
 
 type request struct {
-	reqType int // See the requestType constants below
+	reqType requestType
 	data    interface{}
 }
 
+type requestType int
+
 const (
-	requestTypeNew = iota
+	requestTypeNew requestType = iota
 	requestTypeDelete
 
-	requestTypeNotifyAllUser
-	requestTypeNotifyAllUserLeft
+	requestTypeNotifyAllChat
+	requestTypeNotifyAllTable
+	requestTypeNotifyAllTableGone
+
+	requestTypeNotifyGame
+
 	requestTypeNotifyWarning
 	requestTypeNotifyError
 	requestTypeNotifyAllError
@@ -25,8 +31,9 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNew] = m.new
 	m.requestFuncMap[requestTypeDelete] = m.delete
 
-	m.requestFuncMap[requestTypeNotifyAllUser] = m.notifyAllUser
-	m.requestFuncMap[requestTypeNotifyAllUserLeft] = m.notifyAllUserLeft
+	m.requestFuncMap[requestTypeNotifyAllTable] = m.notifyAllTable
+	m.requestFuncMap[requestTypeNotifyAllTableGone] = m.notifyAllTableGone
+
 	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
 	m.requestFuncMap[requestTypeNotifyError] = m.notifyError
 	m.requestFuncMap[requestTypeNotifyAllError] = m.notifyAllError
@@ -51,16 +58,17 @@ func (m *Manager) ListenForRequests() {
 			requestFunc(req.data)
 		} else {
 			m.logger.Errorf(
-				"The sessions manager received an invalid request type of: %v",
+				"The %v manager received an invalid request type of: %v",
+				m.name,
 				req.reqType,
 			)
 		}
 	}
 }
 
-func (m *Manager) newRequest(reqType int, data interface{}) error {
+func (m *Manager) newRequest(reqType requestType, data interface{}) error {
 	if m.requestsClosed.IsSet() {
-		return errors.New("sessions manager is closed to new requests")
+		return fmt.Errorf("%v manager is closed to new requests", m.name)
 	}
 
 	m.requests <- &request{

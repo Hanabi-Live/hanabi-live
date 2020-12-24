@@ -1,10 +1,10 @@
 package sessions
 
 import (
-	"strings"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/table"
 )
 
 type chatData struct {
@@ -21,6 +21,12 @@ type chatListData struct {
 	List   []*chatData `json:"list"`
 	Unread int         `json:"unread"`
 }
+
+const (
+	// When sending the in-game chat history, only send the last X messages to prevent clients from
+	// becoming overloaded (in case someone maliciously spams a lot of messages).
+	chatLimit = 1000
+)
 
 func (m *Manager) chatSendHistoryFromDatabase(
 	userID int,
@@ -46,7 +52,10 @@ func (m *Manager) chatSendHistoryFromDatabase(
 			dbChatMessage.Name = dbChatMessage.DiscordName.String
 		}
 
-		dbChatMessage.Message = m.chatFillMentions(dbChatMessage.Message)
+		if m.Dispatcher.Discord != nil {
+			// Convert Discord objects to plain text (e.g. channel links from number to name)
+			dbChatMessage.Message = m.Dispatcher.Discord.ChatFill(dbChatMessage.Message)
+		}
 
 		chatData := &chatData{
 			Msg:       dbChatMessage.Message,
@@ -66,36 +75,42 @@ func (m *Manager) chatSendHistoryFromDatabase(
 	})
 }
 
-/*
-func chatSendPastFromTable(s *Session, t *Table) {
-	chatList := make([]*ChatMessage, 0)
+func (m *Manager) chatSendPastFromTable(
+	userID int,
+	room string,
+	chat []*table.ChatMessage,
+	chatRead int,
+) {
+	chatDataList := make([]*chatData, 0)
+
+	// See the "chatLimit" comment above
 	i := 0
-	if len(t.Chat) > ChatLimit {
-		i = len(t.Chat) - ChatLimit
+	if len(chat) > chatLimit {
+		i = len(chat) - chatLimit
 	}
-	for ; i < len(t.Chat); i++ {
-		// We have to convert the *GameChatMessage to a *ChatMessage
-		gcm := t.Chat[i]
-		cm := &ChatMessage{
-			Msg:       gcm.Msg,
-			Who:       gcm.Username,
+	for ; i < len(chat); i++ {
+		// We have to convert the *table.ChatMessage to a *chatData
+		cm := chat[i]
+		chatData := &chatData{
+			Msg:       cm.Msg,
+			Who:       cm.Username,
 			Discord:   false,
-			Server:    gcm.Server,
-			Datetime:  gcm.Datetime,
-			Room:      t.GetRoomName(),
+			Server:    cm.Server,
+			Datetime:  cm.Datetime,
+			Room:      room,
 			Recipient: "",
 		}
-		chatList = append(chatList, cm)
+		chatDataList = append(chatDataList, chatData)
 	}
-	s.Emit("chatList", &ChatListMessage{
-		List:   chatList,
-		Unread: len(t.Chat) - t.ChatRead[s.UserID],
+
+	m.send(userID, "chatList", &chatListData{
+		List:   chatDataList,
+		Unread: len(chat) - chatRead,
 	})
 }
-*/
 
-// chatSendServerMsg is a helper function for sending an ephemeral message from the server to a
-// user. (The message will not be written to the database.)
+// chatSendServerMsg is a helper function for sending a private message from the server to a user.
+// (The message will not be written to the database.)
 func (m *Manager) chatSendServerMsg(userID int, msg string, room string) {
 	m.send(userID, "chat", &chatData{
 		Msg:       msg,
@@ -106,29 +121,4 @@ func (m *Manager) chatSendServerMsg(userID int, msg string, room string) {
 		Room:      room,
 		Recipient: "",
 	})
-}
-
-func (m *Manager) chatFillMentions(msg string) string {
-	if m.Dispatcher.Discord == nil {
-		return msg
-	}
-
-	// Discord mentions are in the form of "<@12345678901234567>"
-	// By the time the message gets here, it will be sanitized to "&lt;@12345678901234567&gt;"
-	// They can also be in the form of "<@!12345678901234567>" (with a "!" after the "@"),
-	// if a nickname is set for that person
-	// We want to convert this to the username,
-	// so that the lobby displays messages in a manner similar to the Discord client
-	for {
-		match := m.mentionRegExp.FindStringSubmatch(msg)
-		if match == nil || len(match) <= 1 {
-			break
-		}
-		discordID := match[1]
-		username := m.Dispatcher.Discord.GetNickname(discordID)
-		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+username)
-		msg = strings.ReplaceAll(msg, "&lt;@!"+discordID+"&gt;", "@"+username)
-	}
-
-	return msg
 }

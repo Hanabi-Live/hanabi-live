@@ -1,19 +1,23 @@
 package sessions
 
-type User struct {
-	UserID   int    `json:"userID"`
-	Username string `json:"username"`
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+)
 
-	Status     int    `json:"status"`
-	TableID    uint64 `json:"tableID"`
-	Hyphenated bool   `json:"hyphenated"`
-	Inactive   bool   `json:"inactive"`
+type user struct {
+	UserID int    `json:"userID"`
+	Name   string `json:"name"`
+
+	Status     constants.Status `json:"status"`
+	TableID    int              `json:"tableID"`
+	Hyphenated bool             `json:"hyphenated"`
+	Inactive   bool             `json:"inactive"`
 }
 
-func makeUser(s *session) *User {
-	return &User{
-		UserID:   s.userID,
-		Username: s.username,
+func makeUser(s *session) *user {
+	return &user{
+		UserID: s.userID,
+		Name:   s.username,
 
 		Status:     s.status,
 		TableID:    s.tableID,

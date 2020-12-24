@@ -23,15 +23,17 @@ func (m *Manager) GetUserTables(userID int) ([]int, []int) {
 	return playingAtTables, spectatingTables
 }
 
-func (m *Manager) getUserTables(data interface{}) {
+func (m *Manager) getUserTables(data interface{}) interface{} {
 	var d *getUserTablesData
 	if v, ok := data.(*getUserTablesData); !ok {
 		m.logger.Errorf("Failed type assertion for data of type: %T", d)
-		return
+		return false
 	} else {
 		d = v
 	}
 
 	d.resultsChannel <- m.getUserPlaying(d.userID)
 	d.resultsChannel <- m.getUserSpectating(d.userID)
+
+	return true
 }

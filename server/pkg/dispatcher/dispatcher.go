@@ -4,6 +4,7 @@ package dispatcher
 // (The different sub-packages of the server need to communicate with each other.)
 type Dispatcher struct {
 	Characters CharactersManager
+	Chat       ChatManager
 	Commands   CommandsManager
 	Core       CoreManager
 	Discord    DiscordManager

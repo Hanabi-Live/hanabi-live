@@ -133,7 +133,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 
 	if p.Character == "Vindictive" && // 9
 		p.CharacterMetadata == 0 &&
-		(d.Type != ActionTypeColorClue && d.Type != ActionTypeRankClue) {
+		(d.Type != constants.ActionTypeColorClue && d.Type != constants.ActionTypeRankClue) {
 
 		s.Warningf(
 			"You are %v, so you must give a clue if you have been given a clue on this go-around.",
@@ -142,7 +142,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 		return true
 	} else if p.Character == "Insistent" && // 13
 		p.CharacterMetadata != -1 &&
-		(d.Type != ActionTypeColorClue && d.Type != ActionTypeRankClue) {
+		(d.Type != constants.ActionTypeColorClue && d.Type != constants.ActionTypeRankClue) {
 
 		s.Warningf(
 			"You are %v, so you must continue to clue the same card until it is played or discarded.",
@@ -151,7 +151,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 		return true
 	} else if p.Character == "Impulsive" && // 17
 		p.CharacterMetadata == 0 &&
-		(d.Type != ActionTypePlay ||
+		(d.Type != constants.ActionTypePlay ||
 			d.Target != p.Hand[len(p.Hand)-1].Order) {
 
 		s.Warningf(
@@ -160,7 +160,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 		)
 		return true
 	} else if p.Character == "Indolent" && // 18
-		d.Type == ActionTypePlay &&
+		d.Type == constants.ActionTypePlay &&
 		p.CharacterMetadata == 0 {
 
 		s.Warningf(
@@ -170,8 +170,8 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 		return true
 	} else if p.Character == "Stubborn" && // 28
 		(d.Type == p.CharacterMetadata ||
-			(d.Type == ActionTypeColorClue && p.CharacterMetadata == ActionTypeRankClue) ||
-			(d.Type == ActionTypeRankClue && p.CharacterMetadata == ActionTypeColorClue)) {
+			(d.Type == constants.ActionTypeColorClue && p.CharacterMetadata == constants.ActionTypeRankClue) ||
+			(d.Type == constants.ActionTypeRankClue && p.CharacterMetadata == constants.ActionTypeColorClue)) {
 
 		s.Warningf(
 			"You are %v, so you cannot perform the same kind of action that the previous player did.",
@@ -534,7 +534,7 @@ func characterPostAction(d *CommandData, g *Game, p *GamePlayer) {
 	} else if p.Character == "Impulsive" { // 17
 		p.CharacterMetadata = -1
 	} else if p.Character == "Indolent" { // 18
-		if d.Type == ActionTypePlay {
+		if d.Type == constants.ActionTypePlay {
 			p.CharacterMetadata = 0
 		} else {
 			p.CharacterMetadata = -1
@@ -562,10 +562,10 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 	if p.Character == "Genius" { // 24
 		// Must clue both a color and a number (uses 2 clues)
 		// The clue target is stored in "p.CharacterMetadata"
-		if d.Type == ActionTypeColorClue {
+		if d.Type == constants.ActionTypeColorClue {
 			p.CharacterMetadata = d.Target
 			return true
-		} else if d.Type == ActionTypeRankClue {
+		} else if d.Type == constants.ActionTypeRankClue {
 			p.CharacterMetadata = -1
 			return false
 		}

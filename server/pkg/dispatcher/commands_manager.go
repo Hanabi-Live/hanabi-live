@@ -1,5 +1,5 @@
 package dispatcher
 
 type CommandsManager interface {
-	Send(userID int, command string, data interface{})
+	Send(sessionData interface{}, commandName string, commandData []byte)
 }

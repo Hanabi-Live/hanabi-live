@@ -34,63 +34,6 @@ func (t *Table) NotifyChatTyping(name string, typing bool) {
 	}
 }
 
-// ---------------------------------------
-// Notifications before a game has started
-// ---------------------------------------
-
-// NotifyPlayerChange sends the people in the pre-game an update about the new amount of players
-// This is only called in situations where the game has not started yet
-func (t *Table) NotifyPlayerChange() {
-	if t.Running {
-		hLog.Error("The \"NotifyPlayerChange()\" function was called on a game that has already started.")
-		return
-	}
-
-	for _, p := range t.Players {
-		if !p.Present {
-			continue
-		}
-
-		// First, make the array that contains information about all of the players in the game
-		type GamePlayerMessage struct {
-			Index   int           `json:"index"`
-			Name    string        `json:"name"`
-			You     bool          `json:"you"`
-			Present bool          `json:"present"`
-			Stats   *PregameStats `json:"stats"`
-		}
-		gamePlayers := make([]*GamePlayerMessage, 0)
-		for j, p2 := range t.Players {
-			gamePlayer := &GamePlayerMessage{
-				Index:   j,
-				Name:    p2.Name,
-				You:     p.UserID == p2.UserID,
-				Present: p2.Present,
-				Stats:   p2.Stats,
-			}
-			gamePlayers = append(gamePlayers, gamePlayer)
-		}
-
-		// Second, send information about the game and the players in one big message
-		type GameMessage struct {
-			TableID           uint64               `json:"tableID"`
-			Name              string               `json:"name"`
-			Owner             int                  `json:"owner"`
-			Players           []*GamePlayerMessage `json:"players"`
-			Options           *Options             `json:"options"`
-			PasswordProtected bool                 `json:"passwordProtected"`
-		}
-		p.Session.Emit("game", &GameMessage{
-			TableID:           t.ID,
-			Name:              t.Name,
-			Owner:             t.OwnerID,
-			Players:           gamePlayers,
-			Options:           t.Options,
-			PasswordProtected: t.PasswordHash != "",
-		})
-	}
-}
-
 // --------------------------------------
 // Notifications after a game has started
 // --------------------------------------

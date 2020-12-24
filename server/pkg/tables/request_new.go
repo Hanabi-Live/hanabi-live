@@ -14,15 +14,19 @@ import (
 	"github.com/alexedwards/argon2id"
 )
 
-type NewData struct {
-	Name     string           `json:"name"`
-	Options  *options.Options `json:"options"`
-	Password string           `json:"password"`
-	GameJSON *table.GameJSON  `json:"gameJSON"`
-
+type newData struct {
 	userID      int
 	username    string
+	name        string
+	options     *options.Options
+	password    string
+	gameJSON    *table.GameJSON
 	hidePregame bool
+}
+
+type newReturnData struct {
+	tableID int
+	ok      bool
 }
 
 const (
@@ -31,40 +35,55 @@ const (
 	oneHourInSeconds   = 3600
 )
 
-func (m *Manager) New(userID int, username string, hidePregame bool, d *NewData) {
-	d.userID = userID
-	d.username = username
-	d.hidePregame = hidePregame
-	m.newRequest(requestTypeNew, d) // nolint: errcheck
+func (m *Manager) New(
+	userID int,
+	username string,
+	name string,
+	options *options.Options,
+	password string,
+	gameJSON *table.GameJSON,
+	hidePregame bool,
+) {
+	m.newRequest(requestTypeNew, &newData{ // nolint: errcheck
+		userID:      userID,
+		username:    username,
+		name:        name,
+		options:     options,
+		password:    password,
+		gameJSON:    gameJSON,
+		hidePregame: hidePregame,
+	})
 }
 
-func (m *Manager) new(data interface{}) {
-	var d *NewData
-	if v, ok := data.(*NewData); !ok {
+// new returns the table ID of the creator table, or -1 if table creation failed.
+func (m *Manager) new(data interface{}) interface{} {
+	var d *newData
+	if v, ok := data.(*newData); !ok {
 		m.logger.Errorf("Failed type assertion for data of type: %T", d)
-		return
+		return -1
 	} else {
 		d = v
 	}
 
 	if !m.newValidatePlayingOtherGame(d.userID, d.username) {
-		return
+		return -1
 	}
 
+	// Validate and sanitize the table name
 	var name string
-	if v, valid := m.newValidateName(d.userID, d.Name); !valid {
-		return
+	if v, valid := m.newValidateName(d.userID, d.name); !valid {
+		return -1
 	} else {
 		name = v
 	}
 
-	// Prepare the options for the table that will not be written to the database
-	opts := d.Options
+	opts := d.options
 	extraOpts := &options.ExtraOptions{}
 	extraOpts.DatabaseID = -1 // Normally, the database ID for an ongoing game should be -1
 
-	if v1, v2, valid := m.newValidateSpecialTable(d.userID, name, d.GameJSON); !valid {
-		return
+	// A special table may override the submitted options and/or special options
+	if v1, v2, valid := m.newValidateSpecialTable(d.userID, name, d.gameJSON); !valid {
+		return -1
 	} else if v1 != nil && v2 != nil {
 		opts = v1
 		extraOpts = v2
@@ -72,45 +91,79 @@ func (m *Manager) new(data interface{}) {
 		extraOpts = v2
 	}
 
-	if v1, v2, valid := m.newValidateJSONTable(d.userID, d.GameJSON); !valid {
-		return
+	// A JSON table overrides the submitted options and special options
+	if v1, v2, valid := m.newValidateJSONTable(d.userID, d.gameJSON); !valid {
+		return -1
 	} else if v1 != nil && v2 != nil {
 		opts = v1
 		extraOpts = v2
 	}
 
+	// The options may be changed during validation
 	var variant *variants.Variant
 	if v1, v2, valid := m.newValidateOptions(d.userID, opts); !valid {
-		return
+		return -1
 	} else {
 		opts = v1
 		variant = v2
 	}
 
 	passwordHash := ""
-	if d.Password != "" {
+	if d.password != "" {
 		// Create an Argon2id hash of the plain-text password
-		if v, err := argon2id.CreateHash(d.Password, argon2id.DefaultParams); err != nil {
+		if v, err := argon2id.CreateHash(d.password, argon2id.DefaultParams); err != nil {
 			m.logger.Errorf("Failed to create a hash from the submitted table password: %v", err)
 			m.Dispatcher.Sessions.NotifyError(d.userID, constants.CreateGameFail)
-			return
+			return newReturnData{-1, false}
 		} else {
 			passwordHash = v
 		}
 	}
 
-	t := table.NewManager(m.logger, &table.NewTableData{
-		ID:           m.newTableID(),
-		Name:         name,
-		OwnerID:      d.userID,
-		Visible:      !d.hidePregame,
-		PasswordHash: passwordHash,
-		Options:      opts,
-		ExtraOptions: extraOpts,
-		Variant:      variant,
+	tableID := m.newTableID()
+	t := table.NewManager(m.logger, m.models, m.Dispatcher, &table.NewTableData{
+		ID:              tableID,
+		Name:            name,
+		OwnerID:         d.userID,
+		OwnerUsername:   d.username,
+		Visible:         !d.hidePregame,
+		PasswordHash:    passwordHash,
+		Options:         opts,
+		ExtraOptions:    extraOpts,
+		Variant:         variant,
+		ShutdownWarning: m.Dispatcher.Core.GetNewTableShutdownWarning(),
 	})
 
-	fmt.Println(t)
+	// Add the table manager to a map so that we can keep track of all of the active tables
+	m.tables[tableID] = t
+
+	// Join the user to the new table
+	if ok := m.join(&joinData{
+		userID:   d.userID,
+		username: d.username,
+		tableID:  tableID,
+		password: d.password,
+	}); !ok.(bool) {
+		// The creator of the table failed to join the table; this should never happen
+		// Stop the table goroutine that is listening for requests
+		t.Terminate()
+
+		// Remove the table manager from the map
+		delete(m.tables, tableID)
+
+		// Now, there should be no more references to the table manager,
+		// and it should be garbage collected
+		return -1
+	}
+
+	m.logger.Infof(
+		"tablesManager - %v created table %v: %v",
+		util.PrintUserCapitalized(d.userID, d.username),
+		tableID,
+		name,
+	)
+
+	return tableID
 }
 
 func (m *Manager) newValidatePlayingOtherGame(userID int, username string) bool {
@@ -134,21 +187,19 @@ func (m *Manager) newValidateName(userID int, name string) (string, bool) {
 		return "", false
 	}
 
-	// Truncate long table names
+	// Validate long table names
 	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
 	if len(name) > maxTableNameLength {
-		name = name[0 : maxTableNameLength-1]
+		msg := fmt.Sprintf("Table names cannot be longer than %v characters.", maxTableNameLength)
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
+		return "", false
 	}
 
-	// Remove any non-printable characters, if any
-	name = util.RemoveNonPrintableCharacters(name)
-
-	// Trim whitespace from both sides
-	name = strings.TrimSpace(name)
-
-	// Make a default game name if they did not provide one
-	if len(name) == 0 {
-		name = m.Dispatcher.Core.GetRandomTableName()
+	// Check for non-printable characters
+	if util.ContainsNonPrintableCharacters(name) {
+		msg := "Table names cannot contain non-printable characters."
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
+		return "", false
 	}
 
 	// Check for non-ASCII characters
@@ -181,7 +232,17 @@ func (m *Manager) newValidateName(userID int, name string) (string, bool) {
 		return "", false
 	}
 
-	return name, true
+	newName := name
+
+	// Trim whitespace from both sides
+	newName = strings.TrimSpace(newName)
+
+	// Make a default game name if they did not provide one
+	if len(newName) == 0 {
+		newName = m.Dispatcher.Core.GetRandomTableName()
+	}
+
+	return newName, true
 }
 
 func (m *Manager) newValidateSpecialTable(
@@ -461,40 +522,3 @@ func (m *Manager) newTableID() int {
 		}
 	}
 }
-
-/*
-	// Add the table to a map so that we can keep track of all of the active tables
-	tables.Set(t.ID, t)
-
-	hLog.Infof(
-		"%v %v created a table.",
-		t.GetName(),
-		util.PrintUserCapitalized(s.UserID, s.Username),
-	)
-	// (a "table" message will be sent in the "commandTableJoin" function below)
-
-	// Log a chat message so that future players can see a timestamp of when the table was created
-	msg := fmt.Sprintf("%v created the table.", s.Username)
-	chatServerSend(ctx, msg, t.GetRoomName(), true)
-
-	// If the server is shutting down / restarting soon, warn the players
-	if shuttingDown.IsSet() {
-		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
-		minutesLeft := int(timeLeft.Minutes())
-
-		msg := fmt.Sprintf(
-			"The server is shutting down in %v minutes. Keep in mind that if your game is not finished in time, it will be terminated.",
-			minutesLeft,
-		)
-		chatServerSend(ctx, msg, t.GetRoomName(), true)
-	}
-
-	// Join the user to the new table
-	commandTableJoin(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID:      t.ID,
-		Password:     d.Password,
-		NoTableLock:  true,
-		NoTablesLock: true,
-	})
-}
-*/

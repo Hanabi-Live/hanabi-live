@@ -1,18 +1,22 @@
 package tables
 
-import (
-	"errors"
-)
+import "fmt"
 
 type request struct {
-	reqType int // See the requestType constants below
+	reqType requestType
 	data    interface{}
 }
 
+type requestType int
+
 const (
-	requestTypeNew = iota
-	requestTypeDelete
+	requestTypeNew requestType = iota
+	requestTypeJoin
+	requestTypeLeave
+	requestTypeSpectate
+	requestTypeUnspectate
 	requestTypeDisconnectUser
+	requestTypeGetTable
 	requestTypeGetTables
 	requestTypeGetUserTables
 	requestTypePrint
@@ -21,8 +25,12 @@ const (
 
 func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNew] = m.new
-	m.requestFuncMap[requestTypeDelete] = func(interface{}) {}
+	m.requestFuncMap[requestTypeJoin] = m.join
+	m.requestFuncMap[requestTypeLeave] = m.leave
+	m.requestFuncMap[requestTypeSpectate] = m.spectate
+	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 	m.requestFuncMap[requestTypeDisconnectUser] = m.disconnectUser
+	m.requestFuncMap[requestTypeGetTable] = m.getTable
 	m.requestFuncMap[requestTypeGetTables] = m.getTables
 	m.requestFuncMap[requestTypeGetUserTables] = m.getUserTables
 	m.requestFuncMap[requestTypePrint] = m.print
@@ -45,16 +53,17 @@ func (m *Manager) ListenForRequests() {
 			requestFunc(req.data)
 		} else {
 			m.logger.Errorf(
-				"The tables manager received an invalid request type of: %v",
+				"The %v manager received an invalid request type of: %v",
+				m.name,
 				req.reqType,
 			)
 		}
 	}
 }
 
-func (m *Manager) newRequest(reqType int, data interface{}) error {
+func (m *Manager) newRequest(reqType requestType, data interface{}) error {
 	if m.requestsClosed.IsSet() {
-		return errors.New("tables manager is closed to new requests")
+		return fmt.Errorf("%v manager is closed to new requests", m.name)
 	}
 
 	m.requests <- &request{

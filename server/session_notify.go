@@ -8,33 +8,6 @@ import (
 // Lobby notify functions
 // ----------------------
 
-// NotifyUser will notify someone about a new user that connected or a change in an existing user
-func (s *Session) NotifyUser(s2 *Session) {
-	s.Emit("user", makeUserMessage(s2))
-}
-
-// NotifyUserInactive will notify someone about a user that is either
-// inactive or coming back from inactive status
-func (s *Session) NotifyUserInactive(s2 *Session) {
-	type UserInactiveMessage struct {
-		UserID   int  `json:"userID"`
-		Inactive bool `json:"inactive"`
-	}
-	s.Emit("userInactive", &UserInactiveMessage{
-		UserID:   s2.UserID,
-		Inactive: s2.Inactive(),
-	})
-}
-
-func (s *Session) NotifyTableJoined(t *Table) {
-	type JoinedMessage struct {
-		TableID uint64 `json:"tableID"`
-	}
-	s.Emit("joined", &JoinedMessage{
-		TableID: t.ID,
-	})
-}
-
 func (s *Session) NotifyTableProgress(t *Table) {
 	type TableProgressMessage struct {
 		TableID  uint64 `json:"tableID"`
@@ -43,16 +16,6 @@ func (s *Session) NotifyTableProgress(t *Table) {
 	s.Emit("tableProgress", &TableProgressMessage{
 		TableID:  t.ID,
 		Progress: t.Progress,
-	})
-}
-
-// NotifyTableGone will notify someone about a game that ended
-func (s *Session) NotifyTableGone(t *Table) {
-	type TableGoneMessage struct {
-		TableID uint64 `json:"tableID"`
-	}
-	s.Emit("tableGone", &TableGoneMessage{
-		TableID: t.ID,
 	})
 }
 

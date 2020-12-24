@@ -2,11 +2,11 @@ package commands
 
 /*
 var (
-	actionFunctions map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool
+	actionFunctions map[ActionType]func(*Session, *CommandData, *Game, *GamePlayer) bool
 )
 
 func actionsFunctionsInit() {
-	actionFunctions = map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool{
+	actionFunctions = map[ActionType]func(*Session, *CommandData, *Game, *GamePlayer) bool{
 		ActionTypePlay:      commandActionPlay,
 		ActionTypeDiscard:   commandActionDiscard,
 		ActionTypeColorClue: commandActionClue,

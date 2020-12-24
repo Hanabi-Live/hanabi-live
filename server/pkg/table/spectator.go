@@ -7,13 +7,11 @@ import (
 // spectator is an object that represents either a spectator in an ongoing game or a viewer of a
 // dedicated replay. It is sent directly to the client in the "spectators" command, so we ensure
 // that the only valid JSON fields are "name" and "shadowingPlayerIndex".
+// (We want to keep all of the fields public for consistency with the "player" object.)
 type spectator struct {
-	UserID int    `json:"-"` // This is equal to the database ID for the user
-	Name   string `json:"name"`
-	// The user session corresponding to the spectator is copied here for convenience
-	// The session should always be valid because when a user disconnects,
-	// they will automatically stop spectating all games
-	// Session   *Session  `json:"-"` // TODO
+	UserID   int    `json:"-"` // This is equal to the database ID for the user
+	Username string `json:"username"`
+
 	Typing    bool      `json:"-"`
 	LastTyped time.Time `json:"-"`
 

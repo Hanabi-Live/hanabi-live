@@ -5,12 +5,14 @@ import (
 )
 
 type request struct {
-	reqType int // See the requestType constants below
+	reqType requestType
 	data    interface{}
 }
 
+type requestType int
+
 const (
-	requestTypeJoin = iota
+	requestTypeJoin requestType = iota
 	requestTypeLeave
 	requestTypeUnattend
 	requestTypeSpectate
@@ -45,16 +47,17 @@ func (m *Manager) ListenForRequests() {
 			requestFunc(req.data)
 		} else {
 			m.logger.Errorf(
-				"The session manager received an invalid request type of: %v",
+				"The %v manager received an invalid request type of: %v",
+				m.name,
 				req.reqType,
 			)
 		}
 	}
 }
 
-func (m *Manager) newRequest(reqType int, data interface{}) error {
+func (m *Manager) newRequest(reqType requestType, data interface{}) error {
 	if m.requestsClosed.IsSet() {
-		return fmt.Errorf("table %v manager is closed to new requests", m.table.ID)
+		return fmt.Errorf("%v manager is closed to new requests", m.name)
 	}
 
 	m.requests <- &request{

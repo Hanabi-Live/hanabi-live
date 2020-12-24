@@ -34,8 +34,10 @@ export default function tablesDraw(): void {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
-        //  Tables that we are currently in
-        if (friends && i === 1 && table.joined && !table.sharedReplay) {
+        const joined = table.players.includes(globals.username);
+
+        // Tables that we are currently in
+        if (friends && i === 1 && joined && !table.sharedReplay) {
           tableIDsOfThisType.push(id);
         }
 
@@ -45,28 +47,18 @@ export default function tablesDraw(): void {
           continue;
         }
 
-        if (
-          i === 2 &&
-          !table.running &&
-          !table.passwordProtected &&
-          !table.joined
-        ) {
+        if (i === 2 && !table.running && !table.passwordProtected && !joined) {
           // Unstarted tables
           tableIDsOfThisType.push(id);
         } else if (
           i === 3 &&
           !table.running &&
           table.passwordProtected &&
-          !table.joined
+          !joined
         ) {
           // Unstarted & password-protected tables
           tableIDsOfThisType.push(id);
-        } else if (
-          i === 4 &&
-          table.running &&
-          !table.sharedReplay &&
-          !table.joined
-        ) {
+        } else if (i === 4 && table.running && !table.sharedReplay && !joined) {
           // Ongoing tables
           tableIDsOfThisType.push(id);
         } else if (i === 5 && table.running && table.sharedReplay) {
@@ -86,12 +78,13 @@ export default function tablesDraw(): void {
     if (table === undefined) {
       throw new Error(`Failed to get the table for the ID of "${id}".`);
     }
+    const joined = table.players.includes(globals.username);
 
     // Set the background color of the row, depending on what kind of game it is
     let htmlClass;
     if (table.sharedReplay) {
       htmlClass = "replay";
-    } else if (table.joined) {
+    } else if (joined) {
       htmlClass = "joined";
     } else if (table.running) {
       htmlClass = "started";
@@ -113,7 +106,7 @@ export default function tablesDraw(): void {
     $("<td>").html(table.numPlayers.toString()).appendTo(row);
 
     // Column 3 - Variant
-    $("<td>").html(table.variant).appendTo(row);
+    $("<td>").html(table.variantName).appendTo(row);
 
     // Column 4 - Timed
     let timed = "No";
@@ -173,7 +166,7 @@ export default function tablesDraw(): void {
     // Add a class to the first relevant row to facilitate this
     if (
       !table.running &&
-      !table.joined &&
+      !joined &&
       table.numPlayers < 6 &&
       !addedJoinFirstTableButton
     ) {
@@ -182,7 +175,7 @@ export default function tablesDraw(): void {
     }
 
     // Setup click actions
-    if (table.sharedReplay || (!table.joined && table.running)) {
+    if (table.sharedReplay || (!joined && table.running)) {
       row
         .attr("id", `spectate-${table.id}`)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
@@ -196,7 +189,7 @@ export default function tablesDraw(): void {
             tableSpectate(table);
           }
         });
-    } else if (!table.joined) {
+    } else if (!joined) {
       row.attr("id", `join-${table.id}`);
       if (table.numPlayers >= 6) {
         row.addClass("full");

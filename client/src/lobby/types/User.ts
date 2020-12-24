@@ -2,7 +2,7 @@ import Status from "./Status";
 
 export default interface User {
   userID: number;
-  username: string;
+  name: string;
   status: Status;
   tableID: number;
   hyphenated: boolean;

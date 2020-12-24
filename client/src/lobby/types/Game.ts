@@ -1,6 +1,7 @@
 import Options from "../../types/Options";
 
 export default interface Game {
+  tableID: number;
   name: string;
   owner: number;
   players: Player[];

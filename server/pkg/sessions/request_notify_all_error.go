@@ -19,10 +19,10 @@ func (m *Manager) notifyAllError(data interface{}) {
 		d = v
 	}
 
-	type ErrorData struct {
+	type errorData struct {
 		Error string `json:"error"`
 	}
-	m.sendAll("error", &ErrorData{
+	m.sendAll("error", &errorData{
 		Error: d.msg,
 	})
 

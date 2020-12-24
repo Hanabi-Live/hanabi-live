@@ -5,19 +5,22 @@ import (
 )
 
 type request struct {
-	reqType int // See the requestType constants below
-	userID  int
-	command string
-	data    interface{}
+	reqType     requestType
+	sessionData *SessionData
+	commandName string
+	commandData []byte
 }
 
+type requestType int
+
 const (
-	requestTypeNormal = iota
+	requestTypeNormal requestType = iota
 	requestTypeTerminate
 )
 
 func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap["tableCreate"] = m.tableCreate
+	m.requestFuncMap["tableJoin"] = m.tableJoin
 }
 
 // ListenForRequests will block until messages are sent on the request channel.
@@ -33,15 +36,29 @@ func (m *Manager) ListenForRequests() {
 			break
 		}
 
-		if requestFunc, ok := m.requestFuncMap[req.command]; ok {
-			requestFunc(req.userID, req.data)
+		if requestFunc, ok := m.requestFuncMap[req.commandName]; ok {
+			requestFunc(req.sessionData, req.commandData)
 		} else {
 			m.logger.Warnf(
-				"The commands manager received an invalid command type of: %v",
-				req.command,
+				"The %v manager received an invalid command of: %v",
+				m.name,
+				req.commandName,
 			)
-			msg := fmt.Sprintf("The command of \"%s\" is invalid.", req.command)
-			m.Dispatcher.Sessions.NotifyError(req.userID, msg)
+			msg := fmt.Sprintf("The command of \"%s\" is invalid.", req.commandName)
+			m.Dispatcher.Sessions.NotifyError(req.sessionData.UserID, msg)
 		}
+	}
+}
+
+func (m *Manager) Send(sessionData *SessionData, commandName string, commandData []byte) {
+	if m.requestsClosed.IsSet() {
+		return
+	}
+
+	m.requests <- &request{
+		reqType:     requestTypeNormal,
+		sessionData: sessionData,
+		commandName: commandName,
+		commandData: commandData,
 	}
 }

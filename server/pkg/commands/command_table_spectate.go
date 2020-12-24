@@ -102,7 +102,7 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		Name:                 s.Username,
 		Session:              s,
 		Typing:               false,
-		LastTyped:            time.Time{},
+		LastTyped:            time.Now(),
 		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
 		Notes:                make([]string, g.GetNotesSize()),
 	}

@@ -298,12 +298,6 @@ func (m *Manager) wsGetData(
 		friendsList = v
 	}
 
-	// ----------------------------------------
-	// Information about their current activity
-	// ----------------------------------------
-
-	playingAtTables, _ := m.Dispatcher.Tables.GetUserTables(userID)
-
 	// -------
 	// History
 	// -------
@@ -431,9 +425,6 @@ func (m *Manager) wsGetData(
 		TotalGames:    totalGames,
 		Settings:      settings,
 		FriendsList:   friendsList,
-
-		// Information about their current activity
-		PlayingAtTables: playingAtTables,
 
 		// History
 		LobbyChatHistory:   lobbyChatHistory,

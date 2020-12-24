@@ -21,15 +21,16 @@ type card struct {
 	InsistentTouched bool // Used by the "Insistent" character
 }
 
+/*
 func newCard(suitIndex int, rank int) *card {
-	c := &card{}
-
 	// We can't set the order here because the deck will be shuffled later
+	c := &card{}
 	c.SuitIndex = suitIndex
 	c.Rank = rank
 
 	return c
 }
+*/
 
 func (c *card) name(g *game) string {
 	suit := g.Variant.Suits[c.SuitIndex]

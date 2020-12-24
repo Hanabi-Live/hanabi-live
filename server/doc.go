@@ -23,9 +23,8 @@
 
 	The list of managers is as follows:
 
+	- chat  (has requests, so uses a wait group)
 	- commands (has requests, so uses a wait group)
-		Blocking requests:
-		- NONE by design
 	- core
 	- discord
 	- github
@@ -37,21 +36,21 @@
 		- Print
 	- table (has requests, so uses a wait group)
 		Blocking requests:
-		- ? FILL THIS OUT
+		- SHOULD HAVE NONE, DOUBLE CHECK
 	- tables (has requests, so uses a wait group)
 		Blocking requests:
-		- New
-		- GetTables
-		- GetUserTables
+		- GetTables  !!! fix
+		- GetUserTables !!! fix
 		- Print
 
 	Managers that block on other managers:
 
 	- sessions requests tables (in newSendTableList)
-	- commands requests tables (in tableCreate)
 	- tables requests table, but never the other way around
 
 	Managers that block on other managers should use a comment of the following:
 	// Blocking on a disparate server component
+
+	TODO - REMOVE BLOCKING, USE A NEW GOROUTINE TO HANDLE BLOCKING SHIT
 */
 package main

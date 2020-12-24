@@ -27,6 +27,18 @@ func ContainsAllPrintableASCII(s string) bool {
 	return true
 }
 
+func ContainsNonPrintableCharacters(s string) bool {
+	for _, r := range s {
+		if !unicode.IsPrint(r) {
+			// This character is not printable by Go
+			// https://golang.org/pkg/unicode/#IsPrint
+			return false
+		}
+	}
+
+	return true
+}
+
 func FormatTimestampUnix(datetime time.Time) string {
 	return datetime.Format("Mon Jan 02 15:04:05 MST 2006")
 }
@@ -97,6 +109,16 @@ func getURLFromPath(useTLS bool, domain string, path string) string {
 	return fmt.Sprintf("%v://%v%v", protocol, domain, path)
 }
 
+func IntInSlice(a int, slice []int) bool {
+	for _, b := range slice {
+		if b == a {
+			return true
+		}
+	}
+
+	return false
+}
+
 func NormalizeString(str string) string {
 	// First, we transliterate the string to pure ASCII
 	// Second, we lowercase it
@@ -135,19 +157,6 @@ func PrintUser(userID int, username string) string {
 
 func PrintUserCapitalized(userID int, username string) string {
 	return fmt.Sprintf("User \"%v\" (%v)", username, userID)
-}
-
-func RemoveNonPrintableCharacters(s string) string {
-	return strings.Map(func(r rune) rune {
-		if !unicode.IsPrint(r) {
-			// This character is not printable by Go
-			// https://golang.org/pkg/unicode/#IsPrint
-			// Returning a negative value will drop the character from the string with no
-			// replacement
-			return -1
-		}
-		return r
-	}, s)
 }
 
 func SanitizeTag(tag string) (string, string) {
@@ -268,5 +277,6 @@ func StringInSlice(a string, slice []string) bool {
 			return true
 		}
 	}
+
 	return false
 }

@@ -10,12 +10,9 @@ import (
 // (We separate the player object into two different objects;
 // one for the table and one for the game.)
 type player struct {
-	UserID int // This is equal to the database ID for the user
-	Name   string
-	// The user session corresponding to the player is copied here for convenience
-	// Even if the user disconnects, the orphaned session will remain,
-	// and it is safe to manually perform actions on their behalf with the orphaned session
-	// Session   *Session `json:"-"` // Skip when serializing // TODO
+	UserID   int // This is equal to the database ID for the user
+	Username string
+
 	Present   bool
 	Stats     *pregameStats
 	Typing    bool

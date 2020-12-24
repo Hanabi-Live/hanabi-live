@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/commands"
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"nhooyr.io/websocket"
 )
@@ -18,8 +20,8 @@ type session struct {
 	userID   int
 	username string
 
-	status         int
-	tableID        uint64
+	status         constants.Status
+	tableID        int
 	friends        map[int]struct{}
 	reverseFriends map[int]struct{}
 	hyphenated     bool
@@ -66,7 +68,7 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 		}
 
 		// Find out if they sent a coherent WebSocket message
-		if command, data, err := unpackMsg(msg); err != nil {
+		if commandName, commandData, err := unpackMsg(msg); err != nil {
 			m.logger.Warnf(
 				"%v sent an invalid WebSocket message: %v",
 				util.PrintUserCapitalized(s.userID, s.username),
@@ -75,7 +77,12 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 			m.NotifyError(s.userID, "That is an invalid WebSocket message.")
 		} else {
 			// This is a coherent message; forward it along to the command manager
-			m.Dispatcher.Commands.Send(s.userID, command, data)
+			sessionData := &commands.SessionData{
+				UserID:   s.userID,
+				Username: s.username,
+				Muted:    s.muted,
+			}
+			m.Dispatcher.Commands.Send(sessionData, commandName, commandData)
 		}
 	}
 }

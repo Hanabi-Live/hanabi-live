@@ -103,7 +103,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
-	g.Actions2 = append(g.Actions2, &GameAction{
+	g.DBActions = append(g.DBActions, &GameAction{
 		Type:   ActionTypePlay,
 		Target: c.Order,
 		Value:  0, // This is unused for play actions

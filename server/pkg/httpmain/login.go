@@ -532,6 +532,8 @@ func isReservedUsername(username string) bool {
 		"hlive",
 		"h.live",
 		"h-live",
+
+		"server",
 	}
 
 	return util.StringInSlice(username, reservedUsernames)

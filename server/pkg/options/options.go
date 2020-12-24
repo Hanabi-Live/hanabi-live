@@ -85,9 +85,9 @@ type CardIdentity struct {
 
 // These fields are described in "database_schema.sql".
 type GameAction struct {
-	Type   int `json:"type"`
-	Target int `json:"target"`
-	Value  int `json:"value"`
+	Type   constants.ActionType `json:"type"`
+	Target int                  `json:"target"`
+	Value  int                  `json:"value"`
 }
 
 func NewOptions() *Options {
@@ -112,22 +112,22 @@ func NewOptions() *Options {
 
 // GetModifier computes the integer modifier for the game options,
 // corresponding to the "ScoreModifier" constants in "constants.go".
-func (o *Options) GetModifier() bitmask.Bitmask {
+func (opts *Options) GetModifier() bitmask.Bitmask {
 	var modifier bitmask.Bitmask
 
-	if o.DeckPlays {
+	if opts.DeckPlays {
 		modifier.AddFlag(constants.ScoreModifierDeckPlays)
 	}
-	if o.EmptyClues {
+	if opts.EmptyClues {
 		modifier.AddFlag(constants.ScoreModifierEmptyClues)
 	}
-	if o.OneExtraCard {
+	if opts.OneExtraCard {
 		modifier.AddFlag(constants.ScoreModifierOneExtraCard)
 	}
-	if o.OneLessCard {
+	if opts.OneLessCard {
 		modifier.AddFlag(constants.ScoreModifierOneLessCard)
 	}
-	if o.AllOrNothing {
+	if opts.AllOrNothing {
 		modifier.AddFlag(constants.ScoreModifierAllOrNothing)
 	}
 

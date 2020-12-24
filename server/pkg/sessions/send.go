@@ -6,12 +6,22 @@ import (
 
 // send sends a command to a particular user.
 // It never blocks, so commands to slow sessions are dropped.
-func (m *Manager) send(userID int, command string, data interface{}) {
+func (m *Manager) send(userID int, commandName string, commandData interface{}) {
+	// Server tasks and fake users use IDs with negative values
+	if userID < 0 {
+		m.logger.Errorf(
+			"Attempted to send a \"%v\" command to negative user ID: %v",
+			commandName,
+			userID,
+		)
+		return
+	}
+
 	var msg string
-	if v, err := packMsg(command, data); err != nil {
+	if v, err := packMsg(commandName, commandData); err != nil {
 		m.logger.Errorf(
 			"Failed to marshal the data when sending a \"%v\" command to WebSocket user %v: %v",
-			command,
+			commandName,
 			userID,
 			err,
 		)
@@ -32,12 +42,12 @@ func (m *Manager) send(userID int, command string, data interface{}) {
 	putMsgOnChannel(msg, s)
 }
 
-func (m *Manager) sendAll(command string, data interface{}) {
+func (m *Manager) sendAll(commandName string, commandData interface{}) {
 	var msg string
-	if v, err := packMsg(command, data); err != nil {
+	if v, err := packMsg(commandName, commandData); err != nil {
 		m.logger.Errorf(
 			"Failed to marshal the data when sending a \"%v\" command to all WebSocket users: %v",
-			command,
+			commandName,
 			err,
 		)
 		return

@@ -1,6 +1,7 @@
 package table
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
@@ -10,18 +11,17 @@ import (
 // table describes the container that a player can join.
 // (e.g. an unstarted game, an ongoing game, a solo replay, a shared replay, etc.)
 // We need to export most fields so that the JSON encoder can serialize them during a graceful
-// server restart. Fields that do not need to be encoded are still exported for object consistency.
-// Instead, we use a tag of `json:"-"` to denote that the JSON serializer should skip the field.
+// server restart.
 type table struct {
 	ID          int
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*player
-	Spectators []*spectator `json:"-"`
+	spectators []*spectator
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
-	KickedPlayers map[int]struct{} `json:"-"`
+	kickedPlayers map[int]struct{}
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -32,7 +32,7 @@ type table struct {
 	PasswordHash   string
 	Running        bool
 	Replay         bool
-	AutomaticStart int // See "chatTable.go"
+	automaticStart int // See "chatTable.go"
 	Progress       int // Displayed as a percentage on the main lobby screen
 
 	DatetimeCreated      time.Time
@@ -50,11 +50,11 @@ type table struct {
 	ExtraOptions *options.ExtraOptions // Options that are not stored in the database
 	Variant      *variants.Variant     // A reference to the variant object for convenience purposes
 
-	Chat     []*chatMessage // All of the in-game chat history
+	Chat     []*ChatMessage // All of the in-game chat history
 	ChatRead map[int]int    // A map of which users have read which messages
 }
 
-type chatMessage struct {
+type ChatMessage struct {
 	UserID   int
 	Username string
 	Msg      string
@@ -63,14 +63,16 @@ type chatMessage struct {
 }
 
 type NewTableData struct {
-	ID           int
-	Name         string
-	OwnerID      int
-	Visible      bool
-	PasswordHash string
-	Options      *options.Options
-	ExtraOptions *options.ExtraOptions
-	Variant      *variants.Variant
+	ID              int
+	Name            string
+	OwnerID         int
+	OwnerUsername   string
+	Visible         bool
+	PasswordHash    string
+	Options         *options.Options
+	ExtraOptions    *options.ExtraOptions
+	Variant         *variants.Variant
+	ShutdownWarning string
 }
 
 func newTable(d *NewTableData) *table {
@@ -80,21 +82,21 @@ func newTable(d *NewTableData) *table {
 		InitialName: "", // Set when this game converts from ongoing --> shared replay
 
 		Players:       make([]*player, 0),
-		Spectators:    make([]*spectator, 0),
-		KickedPlayers: make(map[int]struct{}),
+		spectators:    make([]*spectator, 0),
+		kickedPlayers: make(map[int]struct{}),
 
 		OwnerID:        d.OwnerID,
 		Visible:        d.Visible,
 		PasswordHash:   d.PasswordHash,
 		Running:        false,
 		Replay:         false,
-		AutomaticStart: 0,
+		automaticStart: 0,
 		Progress:       0,
 
 		DatetimeCreated:      time.Now(),
-		DatetimeLastJoined:   time.Time{},
+		DatetimeLastJoined:   time.Now(),
 		DatetimePlannedStart: time.Time{},
-		DatetimeLastAction:   time.Time{},
+		DatetimeLastAction:   time.Now(),
 
 		Game: nil,
 
@@ -102,14 +104,25 @@ func newTable(d *NewTableData) *table {
 		ExtraOptions: d.ExtraOptions,
 		Variant:      d.Variant,
 
-		Chat:     make([]*chatMessage, 0),
+		Chat:     make([]*ChatMessage, 0),
 		ChatRead: make(map[int]int),
+	}
+
+	// Log a chat message so that future players can see a timestamp of when the table was created
+	msg := fmt.Sprintf("%v created the table.", d.OwnerUsername)
+	chatMsg := newChatMessage(0, "", msg, true)
+	t.Chat = append(t.Chat, chatMsg)
+
+	// Log a chat message if the server is shutting down / restarting soon
+	if d.ShutdownWarning != "" {
+		chatMsg := newChatMessage(0, "", d.ShutdownWarning, true)
+		t.Chat = append(t.Chat, chatMsg)
 	}
 
 	return t
 }
 
-func (t *table) GetPlayerIndexFromID(userID int) int {
+func (t *table) getPlayerIndexFromID(userID int) int {
 	for i, p := range t.Players {
 		if p.UserID == userID {
 			return i
@@ -119,14 +132,24 @@ func (t *table) GetPlayerIndexFromID(userID int) int {
 	return -1
 }
 
-func (t *table) GetSpectatorIndexFromID(userID int) int {
-	for i, sp := range t.Spectators {
+func (t *table) getSpectatorIndexFromID(userID int) int {
+	for i, sp := range t.spectators {
 		if sp.UserID == userID {
 			return i
 		}
 	}
 
 	return -1
+}
+
+func newChatMessage(userID int, username string, msg string, server bool) *ChatMessage {
+	return &ChatMessage{
+		UserID:   userID,
+		Username: username,
+		Msg:      msg,
+		Datetime: time.Now(),
+		Server:   server,
+	}
 }
 
 /*

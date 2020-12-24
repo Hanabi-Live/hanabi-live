@@ -1,7 +1,6 @@
 package sessions
 
 import (
-	"regexp"
 	"sync"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
@@ -14,13 +13,14 @@ import (
 // using the "nhooyr.io/websocket" library.
 // It listens for requests in a new goroutine.
 type Manager struct {
+	name string
+
 	// We don't need a mutex for the map because only the manager goroutine will access it
-	sessions      map[int]*session
-	mentionRegExp *regexp.Regexp
+	sessions map[int]*session
 
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
-	requestFuncMap    map[int]func(interface{})
+	requestFuncMap    map[requestType]func(interface{})
 	requestsClosed    *abool.AtomicBool
 
 	logger     *logger.Logger
@@ -30,11 +30,12 @@ type Manager struct {
 
 func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
-		sessions:      make(map[int]*session),
-		mentionRegExp: regexp.MustCompile(`&lt;@!*(\d+?)&gt;`),
+		name: "sessions",
+
+		sessions: make(map[int]*session),
 
 		requests:       make(chan *request),
-		requestFuncMap: make(map[int]func(interface{})),
+		requestFuncMap: make(map[requestType]func(interface{})),
 		requestsClosed: abool.New(),
 
 		logger:     logger,

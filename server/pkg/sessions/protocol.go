@@ -14,19 +14,19 @@ import (
 //   tableJoin {"tableID":1}
 //   action {"target":1,"type":2}
 
-func packMsg(command string, data interface{}) (string, error) {
+func packMsg(commandName string, commandData interface{}) (string, error) {
 	// Convert the data to JSON
-	var dataString string
-	if dataJSON, err := json.Marshal(data); err != nil {
+	var commandDataString string
+	if commandDataJSON, err := json.Marshal(commandData); err != nil {
 		return "", err
 	} else {
-		dataString = string(dataJSON)
+		commandDataString = string(commandDataJSON)
 	}
 
-	return command + " " + dataString, nil
+	return commandName + " " + commandDataString, nil
 }
 
-func unpackMsg(msg string) (string, interface{}, error) {
+func unpackMsg(msg string) (string, []byte, error) {
 	// This code is taken from Golem:
 	// https://github.com/trevex/golem/blob/master/protocol.go
 	// We use SplitN() with a value of 2 instead of Split() so that if there is a space in the JSON,
@@ -36,15 +36,8 @@ func unpackMsg(msg string) (string, interface{}, error) {
 		err := fmt.Errorf("no data attached to the command")
 		return "", nil, err
 	}
-	command := result[0]
-	jsonData := []byte(result[1])
+	commandName := result[0]
+	commandData := []byte(result[1])
 
-	// Unmarshal the JSON
-	var data interface{}
-	if err := json.Unmarshal(jsonData, &data); err != nil {
-		err2 := fmt.Errorf("the command of \"%v\" has invalid data: %w", command, err)
-		return "", nil, err2
-	}
-
-	return command, data, nil
+	return commandName, commandData, nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
+	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/tevino/abool"
 )
 
@@ -13,23 +14,35 @@ import (
 // move in an ongoing game, and so forth).
 // Manager listens for requests in a new goroutine.
 type Manager struct {
+	name string
+
 	// We don't need a mutex for the map because only the manager goroutine will access it
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
-	requestFuncMap    map[string]func(int, interface{})
+	requestFuncMap    map[string]func(*SessionData, []byte)
 	requestsClosed    *abool.AtomicBool
 
 	logger     *logger.Logger
+	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
 }
 
-func NewManager(logger *logger.Logger) *Manager {
+type SessionData struct {
+	UserID   int
+	Username string
+	Muted    bool
+}
+
+func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
+		name: "commands",
+
 		requests:       make(chan *request),
-		requestFuncMap: make(map[string]func(int, interface{})),
+		requestFuncMap: make(map[string]func(*SessionData, []byte)),
 		requestsClosed: abool.New(),
 
 		logger:     logger,
+		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
 	m.requestFuncMapInit()

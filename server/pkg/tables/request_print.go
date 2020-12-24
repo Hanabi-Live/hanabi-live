@@ -24,11 +24,11 @@ func (m *Manager) Print() string {
 	return <-resultsChannel
 }
 
-func (m *Manager) print(data interface{}) {
+func (m *Manager) print(data interface{}) interface{} {
 	var d *printData
 	if v, ok := data.(*printData); !ok {
 		m.logger.Errorf("Failed type assertion for data of type: %T", d)
-		return
+		return false
 	} else {
 		d = v
 	}
@@ -41,6 +41,8 @@ func (m *Manager) print(data interface{}) {
 	msg += "\n"
 
 	d.resultsChannel <- msg
+
+	return true
 }
 
 func printUsersMap(usersMap map[int][]int) string {

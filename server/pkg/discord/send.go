@@ -7,7 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (m *Manager) Send(to string, username string, msg string) {
+func (m *Manager) send(channelID string, username string, msg string) {
 	if m == nil {
 		// The manager is not initialized
 		return
@@ -44,10 +44,14 @@ func (m *Manager) Send(to string, username string, msg string) {
 		// This prevents people from abusing the bot to spam @everyone, for example
 		AllowedMentions: &discordgo.MessageAllowedMentions{},
 	}
-	if _, err := m.session.ChannelMessageSendComplex(to, messageSendData); err != nil {
+	if _, err := m.session.ChannelMessageSendComplex(channelID, messageSendData); err != nil {
 		// Occasionally, sending messages to Discord can time out; if this occurs,
 		// do not bother retrying, since losing a single message is fairly meaningless
 		m.logger.Infof("Failed to send \"%v\" to Discord: %v", fullMsg, err)
 		return
 	}
+}
+
+func (m *Manager) LobbySync(username string, msg string) {
+	m.send(m.channelSyncWithLobby, username, msg)
 }

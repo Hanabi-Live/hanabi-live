@@ -23,10 +23,10 @@ func (m *Manager) notifyError(data interface{}) {
 		d = v
 	}
 
-	type ErrorData struct {
+	type errorData struct {
 		Error string `json:"error"`
 	}
-	m.send(d.userID, "error", &ErrorData{
+	m.send(d.userID, "error", &errorData{
 		Error: d.msg,
 	})
 

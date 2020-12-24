@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
@@ -20,6 +21,8 @@ type Manager struct {
 	botID                string
 	ready                *abool.AtomicBool
 	commandFuncMap       map[string]func(context.Context, *discordgo.MessageCreate, []string)
+	channelRegExp        *regexp.Regexp
+	mentionRegExp        *regexp.Regexp
 
 	logger     *logger.Logger
 	Dispatcher *dispatcher.Dispatcher
@@ -41,6 +44,8 @@ func NewManager(logger *logger.Logger, variantsManager *variants.Manager) *Manag
 		botID:                "",
 		ready:                abool.New(),
 		commandFuncMap:       make(map[string]func(context.Context, *discordgo.MessageCreate, []string)),
+		channelRegExp:        regexp.MustCompile(`&lt;#(\d+?)&gt;`),
+		mentionRegExp:        regexp.MustCompile(`&lt;@!*(\d+?)&gt;`),
 
 		logger:     logger,
 		Dispatcher: nil, // This will be filled in after this object is instantiated

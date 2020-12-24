@@ -47,5 +47,5 @@ func (m *Manager) delete(data interface{}) {
 	m.Dispatcher.Tables.DisconnectUser(d.userID)
 
 	// Alert everyone that a user has logged out
-	m.NotifyAllUserLeft(s.userID)
+	m.notifyAllUserLeft(s.userID)
 }

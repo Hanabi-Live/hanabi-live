@@ -29,9 +29,6 @@ type NewData struct {
 	Settings      settings.Settings
 	FriendsList   []string
 
-	// Information about their current activity
-	PlayingAtTables []uint64
-
 	// History
 	LobbyChatHistory   []*models.DBChatMessage
 	MotD               string
@@ -82,7 +79,7 @@ func (m *Manager) new(data interface{}) {
 		ip:       d.Ctx.Request.RemoteAddr,
 
 		status:         constants.StatusLobby,
-		tableID:        uint64(0),
+		tableID:        0,
 		friends:        d.Friends,
 		reverseFriends: d.ReverseFriends,
 		hyphenated:     d.Hyphenated,
@@ -107,7 +104,7 @@ func (m *Manager) new(data interface{}) {
 	m.newSend(d)
 
 	// Alert everyone that a user has logged in
-	m.NotifyAllUser(s.userID)
+	m.notifyAllUser(s)
 }
 
 // newSend sends a new WebSocket user all of the data that they need in order to properly initialize
@@ -147,12 +144,9 @@ func (m *Manager) newSendWelcome(d *NewData) {
 		// wrong case, and the client needs to know their exact username or various bugs will occur
 		Username: d.Username,
 
-		// We also send the total amount of games that they have played
-		// (to be shown in the nav bar on the history page)
-		TotalGames: d.TotalGames,
-
-		Muted:         d.Muted,         // Some users are muted (as a resulting of spamming, etc.)
+		TotalGames:    d.TotalGames,    // Shown in the nav bar on the history page
 		FirstTimeUser: d.FirstTimeUser, // First time users get a quick tutorial
+		Muted:         d.Muted,         // Some users are muted (as a resulting of spamming, etc.)
 
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
@@ -177,7 +171,7 @@ func (m *Manager) newSendWelcome(d *NewData) {
 // newSendUserList sends a "userList" message that contains info for every user.
 // (This is much more performant than sending N "user" messages.)
 func (m *Manager) newSendUserList(d *NewData) {
-	userList := make([]*User, 0)
+	userList := make([]*user, 0)
 	for _, s := range m.sessions {
 		userList = append(userList, makeUser(s))
 	}
@@ -187,7 +181,10 @@ func (m *Manager) newSendUserList(d *NewData) {
 // newSendTableList sends a "tableList" message that contains info for every table.
 // (This is much more performant than sending N "table" messages.)
 func (m *Manager) newSendTableList(d *NewData) {
-	tableList := m.Dispatcher.Tables.GetTables(d.UserID) // Blocking on a disparate server component
+	// TODO REMOVE BLOCKING
+	playingAtTables, _ := m.Dispatcher.Tables.GetUserTables(userID)
+
+	tableList := m.Dispatcher.Tables.GetTables() // Blocking on a disparate server component
 	m.send(d.UserID, "tableList", tableList)
 }
 

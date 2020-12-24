@@ -227,7 +227,7 @@ func loadFakePlayers(t *Table, playerNames []string) {
 			Present:   true,
 			Stats:     &PregameStats{},
 			Typing:    false,
-			LastTyped: time.Time{},
+			LastTyped: time.Now(),
 		}
 		t.Players = append(t.Players, player)
 	}

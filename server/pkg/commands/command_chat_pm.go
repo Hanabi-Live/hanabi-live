@@ -16,14 +16,14 @@ func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Sanitize and validate the chat message
-	if v, valid := sanitizeChatInput(s, d.Msg, false); !valid {
+	if v, valid := chatSanitize(s, d.Msg, false); !valid {
 		return
 	} else {
 		d.Msg = v
 	}
 
 	// Sanitize and validate the private message recipient
-	if v, valid := sanitizeChatInput(s, d.Recipient, false); !valid {
+	if v, valid := chatSanitize(s, d.Recipient, false); !valid {
 		return
 	} else {
 		d.Recipient = v

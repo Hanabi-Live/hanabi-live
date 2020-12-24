@@ -11,18 +11,18 @@ func (m *Manager) DisconnectUser(userID int) {
 	})
 }
 
-func (m *Manager) disconnectUser(data interface{}) {
+func (m *Manager) disconnectUser(data interface{}) interface{} {
 	var d *disconnectUserData
 	if v, ok := data.(*disconnectUserData); !ok {
 		m.logger.Errorf("Failed type assertion for data of type: %T", d)
-		return
+		return false
 	} else {
 		d = v
 	}
 
 	// Go through every table that this user is playing in and unattend them
-	tablesPlayingList := m.getUserPlaying(d.userID)
-	for _, tableID := range tablesPlayingList {
+	playingAtTables := m.getUserPlaying(d.userID)
+	for _, tableID := range playingAtTables {
 		if tableManager, ok := m.tables[tableID]; ok {
 			tableManager.Unattend(d.userID)
 		} else {
@@ -51,4 +51,6 @@ func (m *Manager) disconnectUser(data interface{}) {
 
 		m.deleteUserSpectating(d.userID, tableID)
 	}
+
+	return true
 }

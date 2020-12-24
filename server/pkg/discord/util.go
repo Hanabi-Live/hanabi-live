@@ -18,7 +18,7 @@ func (m *Manager) getChannelName(channelID string) string {
 	}
 }
 
-func (m *Manager) GetNickname(discordID string) string {
+func (m *Manager) getNickname(discordID string) string {
 	if member, err := m.session.GuildMember(m.guildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
 		m.logger.Infof(

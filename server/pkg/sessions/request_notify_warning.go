@@ -21,10 +21,10 @@ func (m *Manager) notifyWarning(data interface{}) {
 		d = v
 	}
 
-	type WarningData struct {
+	type warningData struct {
 		Warning string `json:"warning"`
 	}
-	m.send(d.userID, "warning", &WarningData{
+	m.send(d.userID, "warning", &warningData{
 		Warning: d.msg,
 	})
 
