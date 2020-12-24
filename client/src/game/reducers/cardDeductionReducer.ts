@@ -64,9 +64,6 @@ function calculatePlayerPossibilities(
   deck: CardState[],
   cardCountMap: readonly number[][],
 ) {
-  const cardCountMapForHand = Array.from(cardCountMap, (arr) =>
-    Array.from(arr),
-  );
   const cardsToCalculate = getCardsToCalculate(
     playerIndex,
     ourPlayerIndex,
@@ -84,7 +81,7 @@ function calculatePlayerPossibilities(
     let { possibleCards, possibleCardsForEmpathy } = card;
     if (playerIndex === ourPlayerIndex) {
       possibleCards = possibleCards.filter((possibility) =>
-        possibilityValid(possibility, possibilities, 0, cardCountMapForHand),
+        possibilityValid(possibility, possibilities, 0, cardCountMap),
       );
       if (playerIndex === card.location) {
         // If the card is in our own hand then we also need to update empathy
@@ -98,18 +95,13 @@ function calculatePlayerPossibilities(
           // empathy.
           possibleCardsForEmpathy = possibleCardsForEmpathy.filter(
             (possibility) =>
-              possibilityValid(
-                possibility,
-                possibilities,
-                0,
-                cardCountMapForHand,
-              ),
+              possibilityValid(possibility, possibilities, 0, cardCountMap),
           );
         }
       }
     } else if (playerIndex === card.location) {
       possibleCardsForEmpathy = possibleCardsForEmpathy.filter((possibility) =>
-        possibilityValid(possibility, possibilities, 0, cardCountMapForHand),
+        possibilityValid(possibility, possibilities, 0, cardCountMap),
       );
     }
     deck[card.order] = {
