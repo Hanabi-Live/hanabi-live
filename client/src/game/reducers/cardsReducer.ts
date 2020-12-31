@@ -248,7 +248,7 @@ export default function cardsReducer(
     return newDeck;
   }
 
-  return cardDeductionReducer(newDeck, action, hands, metadata);
+  return cardDeductionReducer(newDeck, deck, action, hands, metadata);
 }
 
 // -------

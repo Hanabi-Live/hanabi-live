@@ -713,7 +713,12 @@ describe("cardsReducer", () => {
       // The two fives must be blue/purple in some order.  The newly drawn card can't be
       // one of those fives.
       nextGameState = { ...gameState, hands: [[0, 1], [2]] };
-      deck = cardsReducer(deck, draw(1, 2), nextGameState, defaultMetadata);
+      deck = cardsReducer(
+        deck,
+        draw(1, 2, 0, 5),
+        nextGameState,
+        defaultMetadata,
+      );
 
       expect(empathyPossible(deck[2], 3, 5)).toBe(false);
       expect(empathyPossible(deck[2], 4, 5)).toBe(false);

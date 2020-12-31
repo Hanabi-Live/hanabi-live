@@ -7,6 +7,7 @@ import Variant from "../types/Variant";
 
 export default function cardDeductionReducer(
   deck: readonly CardState[],
+  oldDeck: readonly CardState[],
   action: GameAction,
   hands: ReadonlyArray<readonly number[]>,
   metadata: GameMetadata,
@@ -17,7 +18,7 @@ export default function cardDeductionReducer(
     case "discard":
     case "play":
     case "draw": {
-      return makeDeductions(deck, hands, metadata);
+      return makeDeductions(deck, oldDeck, hands, metadata);
     }
     default: {
       return Array.from(deck);
@@ -27,6 +28,7 @@ export default function cardDeductionReducer(
 
 function makeDeductions(
   deck: readonly CardState[],
+  oldDeck: readonly CardState[],
   hands: ReadonlyArray<readonly number[]>,
   metadata: GameMetadata,
 ) {
@@ -41,6 +43,7 @@ function makeDeductions(
     metadata.ourPlayerIndex,
     hands,
     newDeck,
+    oldDeck,
     cardCountMap,
   );
   for (let playerIndex = 0; playerIndex < hands.length; playerIndex++) {
@@ -50,6 +53,7 @@ function makeDeductions(
         metadata.ourPlayerIndex,
         hands,
         newDeck,
+        oldDeck,
         cardCountMap,
       );
     }
@@ -62,6 +66,7 @@ function calculatePlayerPossibilities(
   ourPlayerIndex: number,
   hands: ReadonlyArray<readonly number[]>,
   deck: CardState[],
+  oldDeck: readonly CardState[],
   cardCountMap: readonly number[][],
 ) {
   const cardsToCalculate = getCardsToCalculate(
@@ -69,6 +74,7 @@ function calculatePlayerPossibilities(
     ourPlayerIndex,
     hands,
     deck,
+    oldDeck,
   );
 
   cardsToCalculate.forEach((card) => {
@@ -117,25 +123,60 @@ function getCardsToCalculate(
   ourPlayerIndex: number,
   hands: ReadonlyArray<readonly number[]>,
   deck: CardState[],
+  oldDeck: readonly CardState[],
 ): CardState[] {
   const cardsToCalculate: CardState[] = [];
 
-  for (const card of deck) {
-    if (hands.some((hand) => hand.includes(card.order))) {
-      const cardPossibilitiesForPlayer = getCardPossibilitiesForPlayer(
-        card,
-        playerIndex,
-        ourPlayerIndex,
-      );
+  hands.forEach((hand) => {
+    hand.forEach((order) => {
+      const card = deck[order];
       if (
-        !card.revealedToPlayer[playerIndex] &&
-        cardPossibilitiesForPlayer.length > 1
+        shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
       ) {
         cardsToCalculate.push(card);
       }
-    }
-  }
+    });
+  });
   return cardsToCalculate;
+}
+
+function shouldCalculateCard(
+  card: CardState,
+  playerIndex: number,
+  ourPlayerIndex: number,
+  deck: CardState[],
+  oldDeck: readonly CardState[],
+) {
+  const cardPossibilitiesForPlayer = getCardPossibilitiesForPlayer(
+    card,
+    playerIndex,
+    ourPlayerIndex,
+  );
+
+  if (
+    card.revealedToPlayer[playerIndex] ||
+    cardPossibilitiesForPlayer.length === 1
+  ) {
+    // The player already knows what this card is.
+    return false;
+  }
+
+  const oldCard = oldDeck[card.order];
+
+  if (typeof oldCard === "undefined" || oldCard.location === "deck") {
+    // this is a newly drawn card and hasn't had any calculations yet.
+    return true;
+  }
+
+  // If the possibilities on the unknown cards don't change, then the result of our calculation
+  // won't change.  We only need to recalculate the card if the input (possibilities) changed.
+  return unknownCardPossibilitiesDifferent(
+    card.order,
+    deck,
+    oldDeck,
+    playerIndex,
+    ourPlayerIndex,
+  );
 }
 
 function getCardPossibilitiesForPlayer(
@@ -161,29 +202,91 @@ function getCardPossibilitiesForPlayer(
 
 function generatePossibilitiesForUnknownCards(
   excludeCardOrder: number,
-  deck: CardState[],
+  deck: readonly CardState[],
   playerIndex: number,
   ourPlayerIndex: number,
-) {
+): ReadonlyArray<ReadonlyArray<readonly [number, number]>> {
+  const unknownCards = generateUnknownCards(
+    excludeCardOrder,
+    deck,
+    playerIndex,
+  );
   const possibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
-  for (const card of deck) {
-    if (card.order === excludeCardOrder) {
-      continue;
-    }
-    if (card.revealedToPlayer[playerIndex]) {
-      // If this card is revealed to the player, then use our best guess.
-      possibilities.push(card.possibleCards);
-    } else if (card.hasClueApplied) {
-      // We know more than nothing about it, so it could be useful disproving a possibility in
-      // the players hand.
-      possibilities.push(
-        getCardPossibilitiesForPlayer(card, playerIndex, ourPlayerIndex),
-      );
-    }
+  for (const card of unknownCards) {
+    possibilities.push(
+      getCardPossibilitiesForPlayer(card, playerIndex, ourPlayerIndex),
+    );
   }
   // start with the more stable possibilities
   possibilities.sort((a, b) => a.length - b.length);
   return possibilities;
+}
+
+function generateUnknownCards(
+  excludeCardOrder: number,
+  deck: readonly CardState[],
+  playerIndex: number,
+) {
+  const unknownCards = [];
+  for (const card of deck) {
+    if (card.order === excludeCardOrder) {
+      continue;
+    }
+    if (card.revealedToPlayer[playerIndex] || card.hasClueApplied) {
+      // It's revealed to the player / we know more than nothing about it, so it could be useful
+      // disproving a possibility in the players hand.
+      unknownCards.push(card);
+    }
+  }
+  return unknownCards;
+}
+
+function unknownCardPossibilitiesDifferent(
+  excludeCardOrder: number,
+  deck: readonly CardState[],
+  oldDeck: readonly CardState[],
+  playerIndex: number,
+  ourPlayerIndex: number,
+) {
+  const unknownCards = generateUnknownCards(
+    excludeCardOrder,
+    deck,
+    playerIndex,
+  );
+  const oldUnknownCards = generateUnknownCards(
+    excludeCardOrder,
+    oldDeck,
+    playerIndex,
+  );
+  if (unknownCards.length !== oldUnknownCards.length) {
+    return true;
+  }
+  for (let i = 0; i < unknownCards.length; i++) {
+    const possibilities = getCardPossibilitiesForPlayer(
+      unknownCards[i],
+      playerIndex,
+      ourPlayerIndex,
+    );
+    const oldPossibilities = getCardPossibilitiesForPlayer(
+      oldUnknownCards[i],
+      playerIndex,
+      ourPlayerIndex,
+    );
+    if (possibilities.length !== oldPossibilities.length) {
+      return true;
+    }
+  }
+  // We are dealing with the same number of unknown cards, and each unknown card has the same
+  // number of possibilities it had previously.  Once a card joins the set of "unknown" cards
+  // then it will always remain in that set, even if it has only one possibility.  So if we have
+  // the same number of unknown cards, then they will be the same set of unknown cards.
+  // Similar logic can be applied to the possibilities for each unknown card.  The new possible
+  // values for an unknown card can only be a subset of the possible values.  In other words, if
+  // an unknown card could not previously be a red 5, then it won't suddenly regain the ability to
+  // be a red 5 in a later turn.
+  // Therefore, if the count of possible suit/rank combinations remains the same, then the
+  // underlying suit/rank combinations should also be the same.
+  return false;
 }
 
 function possibilityValid(
