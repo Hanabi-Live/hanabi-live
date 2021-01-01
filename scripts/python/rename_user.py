@@ -26,6 +26,10 @@ if port == "":
     port = "5432"
 database = os.getenv("DB_NAME")
 
+# Subroutines
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(
     host=host, port=port, user=user, password=password, database=database,
@@ -44,7 +48,7 @@ row = cursor.fetchone()
 cursor.close()
 count = row[0]
 if count == 0:
-    print("That user does not exist in the database.")
+    print("The user of \"" + username + "\" does not exist in the database.")
     sys.exit(1)
 
 # Display the last IP address of the user
@@ -60,11 +64,28 @@ if len(new_username) == 0:
     print("You cannot enter a blank username.")
     sys.exit(1)
 
-# Update the password hash
+# Check for non-ASCII characters
+if not is_ascii(new_username):
+    print("This username contains non-ASCII characters. Transliteration to ASCII is required; see the Go source code for creating a new user.")
+    sys.exit(1)
+
+new_username_normalized = new_username.lower()
+
+# Check to see if the new username exists already
+cursor = conn.cursor()
+cursor.execute("SELECT COUNT(id) FROM users WHERE normalized_username = %s", (new_username_normalized,))
+row = cursor.fetchone()
+cursor.close()
+count = row[0]
+if count != 0:
+    print("The normalized username of \"" + new_username_normalized + "\" already exists in the database, so you cannot rename someone else to that username.")
+    sys.exit(1)
+
+# Update the username
 cursor = conn.cursor()
 cursor.execute(
     "UPDATE users SET (username, normalized_username) = (%s, %s) WHERE username = %s",
-    (new_username, new_username.lower(), username),
+    (new_username, new_username_normalized, username),
 )
 cursor.close()
 conn.commit()
