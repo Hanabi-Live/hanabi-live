@@ -48,7 +48,7 @@ row = cursor.fetchone()
 cursor.close()
 count = row[0]
 if count == 0:
-    print("The user of \"" + username + "\" does not exist in the database.")
+    print("The username of \"" + username + "\" does not exist in the database.")
     sys.exit(1)
 
 # Display the last IP address of the user
@@ -66,7 +66,7 @@ if len(new_username) == 0:
 
 # Check for non-ASCII characters
 if not is_ascii(new_username):
-    print("This username contains non-ASCII characters. Transliteration to ASCII is required; see the Go source code for creating a new user.")
+    print("The username of \"" + new_username + "\" contains non-ASCII characters. Transliteration to ASCII is required; see the Go source code for creating a new user.")
     sys.exit(1)
 
 new_username_normalized = new_username.lower()
