@@ -68,7 +68,7 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	if now.Sub(t.DatetimeLastJoined) < time.Second*2 || now.Sub(t.DatetimeLastLeft) < time.Second*2 {
-		s.Warning("Cannot start game immediately after a player joins or leaves. Try again in 2 seconds")
+		s.Warning("You must wait 2 seconds after a player joins or leaves before starting the game.")
 		return
 	}
 
