@@ -57,6 +57,8 @@ export default class HanabiUI {
 
   // eslint-disable-next-line class-methods-use-this
   suggestTurn(who: string, segment: number): void {
+    // We minus one to account for the fact that turns are presented to the user starting from 1
+    const internalSegment = segment - 1;
     if (
       globals.state.finished &&
       globals.state.replay.shared !== null &&
@@ -64,10 +66,11 @@ export default class HanabiUI {
       globals.state.replay.hypothetical === null
     ) {
       if (
+        internalSegment === globals.state.replay.shared.segment ||
+        who === globals.metadata.ourUsername ||
         window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)
       ) {
-        // We minus one to account for the fact that turns are presented to the user starting from 1
-        replay.goToSegment(segment - 1);
+        replay.goToSegment(internalSegment);
       }
     }
   }
