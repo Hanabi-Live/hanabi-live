@@ -25,6 +25,8 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 		defer t.Unlock(ctx)
 	}
 
+	now := time.Now()
+
 	// Validate that this is the owner of the table
 	if s.UserID != t.OwnerID {
 		s.Warning("Only the owner of a table can start the game.")
@@ -63,6 +65,11 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 				return
 			}
 		}
+	}
+
+	if now.Sub(t.DatetimeLastJoined) < time.Second*2 || now.Sub(t.DatetimeLastLeft) < time.Second*2 {
+		s.Warning("Cannot start game immediately after a player joins or leaves. Try again in 2 seconds")
+		return
 	}
 
 	tableStart(ctx, s, d, t)

@@ -58,6 +58,9 @@ func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playe
 	t.Players = append(t.Players[:playerIndex], t.Players[playerIndex+1:]...)
 	tables.DeletePlaying(s.UserID, t.ID) // Keep track of user to table relationships
 
+	// Update the "DatetimeLastLeft" field
+	t.DatetimeLastLeft = time.Now()
+
 	notifyAllTable(t)
 	t.NotifyPlayerChange()
 

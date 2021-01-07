@@ -37,6 +37,7 @@ type Table struct {
 
 	DatetimeCreated      time.Time
 	DatetimeLastJoined   time.Time
+	DatetimeLastLeft     time.Time
 	DatetimePlannedStart time.Time
 	// This is updated any time a player interacts with the game / replay
 	// (used to determine when a game is idle)
@@ -92,6 +93,7 @@ func NewTable(name string, ownerID int) *Table {
 
 		DatetimeCreated:      time.Now(),
 		DatetimeLastJoined:   time.Time{},
+		DatetimeLastLeft:     time.Time{},
 		DatetimePlannedStart: time.Time{},
 		DatetimeLastAction:   time.Time{},
 
