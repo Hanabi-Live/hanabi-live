@@ -2,6 +2,7 @@
 // It is re-created every time when going into a new game
 // (and destroyed when going to the lobby)
 
+import { addSelf } from "../../chat";
 import { Globals as LobbyGlobals } from "../../globals";
 import { GameExports } from "../main";
 import * as cursor from "./cursor";
@@ -56,18 +57,28 @@ export default class HanabiUI {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  suggestTurn(who: string, segment: number): void {
+  suggestTurn(who: string, room: string, segment: number): void {
+    // We minus one to account for the fact that turns are presented to the user starting from 1
+    const internalSegment = segment - 1;
     if (
       globals.state.finished &&
       globals.state.replay.shared !== null &&
       globals.state.replay.shared.amLeader &&
       globals.state.replay.hypothetical === null
     ) {
+      const leaderSuggested = who === globals.metadata.ourUsername;
       if (
+        leaderSuggested ||
+        internalSegment === globals.state.replay.shared.segment ||
         window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)
       ) {
-        // We minus one to account for the fact that turns are presented to the user starting from 1
-        replay.goToSegment(segment - 1);
+        replay.goToSegment(internalSegment);
+      }
+      if (leaderSuggested) {
+        addSelf(
+          "You are the shared replay leader, so you can simply click on the turn number instead of using the <code>/suggest</code> command.",
+          room,
+        );
       }
     }
   }

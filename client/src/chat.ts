@@ -605,7 +605,7 @@ export function add(data: ChatMessage, fast: boolean): void {
       globals.currentScreen === Screen.Game &&
       globals.ui !== null
     ) {
-      globals.ui.suggestTurn(data.who, segment);
+      globals.ui.suggestTurn(data.who, data.room, segment);
     }
   }
 }
