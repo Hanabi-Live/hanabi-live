@@ -47,6 +47,28 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
   return { suitIndex, rank };
 }
 
+function possibilitiesComplement(
+  variant: Variant,
+  possibilities: Array<[number, number]>,
+): Array<[number, number]> {
+  const complement: Array<[number, number]> = [];
+  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+    for (const rank of variant.ranks) {
+      // Ensure that this possibility is not present in the source list
+      if (
+        !possibilities.some(
+          ([negatedSuitIndex, negatedRank]) =>
+            negatedSuitIndex === suitIndex && negatedRank === rank,
+        )
+      ) {
+        complement.push([suitIndex, rank]);
+      }
+    }
+  }
+
+  return complement;
+}
+
 // Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
 // card possibilities that it declares
 //
@@ -54,9 +76,11 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 // and the note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`
 function getPossibilitiesFromKeyword(
   variant: Variant,
-  keyword: string,
+  keywordPreTrim: string,
 ): Array<[number, number]> | null {
   const possibilities: Array<[number, number]> = [];
+  const negative = keywordPreTrim.startsWith("!");
+  const keyword = negative ? keywordPreTrim.substring(1) : keywordPreTrim;
   for (const substring of keyword.split(",")) {
     const identity = parseIdentity(variant, substring.trim());
     if (identity.suitIndex !== null && identity.rank !== null) {
@@ -104,6 +128,9 @@ function getPossibilitiesFromKeyword(
     }
   }
 
+  if (negative) {
+    return possibilitiesComplement(variant, possibilities);
+  }
   return possibilities;
 }
 
