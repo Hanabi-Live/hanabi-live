@@ -76,7 +76,7 @@ export default class HanabiUI {
       }
       if (leaderSuggested) {
         addSelf(
-          "As shared replay leader, consider clicking on the turn number to change turns rather than using /suggest",
+          "You are the shared replay leader, so you can simply click on the turn number instead of using the <code>/suggest</code> command.",
           room,
         );
       }
