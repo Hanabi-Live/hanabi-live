@@ -66,8 +66,9 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 			}
 		}
 	}
-
-	if now.Sub(t.DatetimeLastJoined) < time.Millisecond*1500 || now.Sub(t.DatetimeLastLeft) < time.Millisecond*1500 {
+	recencyThreshold := 1500 * time.Millisecond
+	playersRecentlyChanged := now.Sub(t.DatetimeLastJoined) < recencyThreshold || now.Sub(t.DatetimeLastLeft) < recencyThreshold
+	if playersRecentlyChanged {
 		s.Warning("You must wait 1.5 seconds after a player joins or leaves before starting the game.")
 		return
 	}
