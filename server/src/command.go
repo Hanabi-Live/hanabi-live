@@ -22,6 +22,9 @@ type CommandData struct {
 	Options  *Options `json:"options"`
 	Password string   `json:"password"`
 
+	// tableStart
+	IntendedPlayers *[]string `json:"intendedPlayers"`
+
 	// action
 	Type   int `json:"type"`
 	Target int `json:"target"`

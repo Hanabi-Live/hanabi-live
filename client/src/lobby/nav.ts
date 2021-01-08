@@ -99,6 +99,7 @@ export function init(): void {
     if (!$("#nav-buttons-pregame-start").hasClass("disabled")) {
       globals.conn!.send("tableStart", {
         tableID: globals.tableID,
+        intendedPlayers: globals.game?.players.map((player) => player.name),
       });
       $("#nav-buttons-pregame-start").addClass("disabled");
     }
