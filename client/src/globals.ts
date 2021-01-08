@@ -41,6 +41,10 @@ export class Globals {
   showMoreHistoryClicked = false;
   idleMinutes = 0;
 
+  // If the start game button is disabled due to a player leaving or joining, stores the ID of a
+  // timeout designed to re-enable it
+  enableStartGameButtonTimeout: NodeJS.Timeout | null = null;
+
   game: Game | null = null; // Equal to the data from the "game" command
 
   currentScreen: Screen = Screen.Login;
