@@ -179,7 +179,7 @@ function getCardPossibilitiesForPlayer(
   }
   // This is an unrevealed card outside of the players hand but not revealed to them.
   // That can happen with something like a detrimental character (such as 'Slow-Witted')
-  // or "Throw It in a Hole". We can't use our best (empathy) guess, because it might be in our own
+  // or 'Throw It in a Hole'. We can't use our best (empathy) guess, because it might be in our own
   // hand and we might know more about the card then the other player does. We know the other
   // player at least knows about the clues for it, so we'll use that set of possibilities.
   return card.possibleCardsFromClues;
