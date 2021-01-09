@@ -403,7 +403,7 @@ describe("cardsReducer", () => {
       );
 
       // The other player has inferred their first two fours are red/yellow in some order.
-      // Therefore they know their other four is not red/yellow
+      // Therefore they know their other four is not red/yellow.
       expect(empathyPossible(deck[4], 0, 4)).toBe(false);
       expect(empathyPossible(deck[4], 1, 4)).toBe(false);
 
@@ -762,7 +762,7 @@ describe("cardsReducer", () => {
         expect(empathyPossible(deck[2], 4, 5)).toBe(false);
 
         // In addition, we know that Bob knows that his newly drawn card can't
-        // be one of those fives either.
+        // be one of those fives either
         expect(empathyPossible(deck[3], 3, 5)).toBe(false);
         expect(empathyPossible(deck[3], 4, 5)).toBe(false);
       });
@@ -794,7 +794,7 @@ describe("cardsReducer", () => {
         deck = cardsReducer(deck, redClue, nextGameState, bobMetadata);
         deck = cardsReducer(deck, yellowClue, nextGameState, bobMetadata);
 
-        // Alice draws green 5.
+        // Alice draws green 5
         nextGameState = { ...gameState, hands: [[3], [0, 1, 2]] };
         deck = cardsReducer(deck, draw(0, 3, 2, 5), nextGameState, bobMetadata);
 
@@ -804,7 +804,7 @@ describe("cardsReducer", () => {
         expect(empathyPossible(deck[2], 4, 5)).toBe(false);
 
         // In addition, we know that Alice knows that her newly drawn card can't
-        // be one of those fives either.
+        // be one of those fives either
         expect(empathyPossible(deck[3], 3, 5)).toBe(false);
         expect(empathyPossible(deck[3], 4, 5)).toBe(false);
       });

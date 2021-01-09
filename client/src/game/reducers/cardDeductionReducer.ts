@@ -37,7 +37,7 @@ function makeDeductions(
   const cardCountMap = getCardCountMap(variant);
 
   // We need to calculate our own unknown cards first because those possibilities will be needed for
-  // pretending like we know what the other players see.
+  // pretending like we know what the other players see
   calculatePlayerPossibilities(
     metadata.ourPlayerIndex,
     metadata.ourPlayerIndex,
@@ -142,14 +142,14 @@ function shouldCalculateCard(
     card.revealedToPlayer[playerIndex] ||
     cardPossibilitiesForPlayer.length === 1
   ) {
-    // The player already knows what this card is.
+    // The player already knows what this card is
     return false;
   }
 
   const oldCard = oldDeck[card.order];
 
   if (typeof oldCard === "undefined" || oldCard.location === "deck") {
-    // this is a newly drawn card and hasn't had any calculations yet.
+    // this is a newly drawn card and hasn't had any calculations yet
     return true;
   }
 
@@ -170,11 +170,11 @@ function getCardPossibilitiesForPlayer(
   ourPlayerIndex: number,
 ): ReadonlyArray<readonly [number, number]> {
   if (card.location === playerIndex) {
-    // If this card is in the players hand, then use our best (empathy) guess.
+    // If this card is in the players hand, then use our best (empathy) guess
     return card.possibleCardsForEmpathy;
   }
   if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]) {
-    // This is revealed to the player or we are the requested player => just use our best knowledge.
+    // This is revealed to the player or we are the requested player => just use our best knowledge
     return card.possibleCards;
   }
   // This is an unrevealed card not in the players hand but not revealed to them.
@@ -219,7 +219,7 @@ function generateUnknownCards(
     }
     if (card.revealedToPlayer[playerIndex] || card.hasClueApplied) {
       // It's revealed to the player / we know more than nothing about it, so it could be useful
-      // disproving a possibility in the players hand.
+      // disproving a possibility in the players hand
       unknownCards.push(card);
     }
   }
