@@ -89,23 +89,8 @@ function calculatePlayerPossibilities(
       possibleCards = possibleCards.filter((possibility) =>
         possibilityValid(possibility, possibilities, 0, cardCountMap),
       );
-      if (playerIndex === card.location) {
-        // If the card is in our own hand then we also need to update empathy
-        if (card.revealedToPlayer[playerIndex]) {
-          // If it's revealed to us then we can safely just use possibleCards and don't
-          // need to do a separate calculation run for possibleCardsForEmpathy.
-          possibleCardsForEmpathy = possibleCards;
-        } else {
-          // This could be a replay where all cards are known but if it's not supposed to be
-          // revealed to us when we were in the game then we still want to be able to show some
-          // empathy.
-          possibleCardsForEmpathy = possibleCardsForEmpathy.filter(
-            (possibility) =>
-              possibilityValid(possibility, possibilities, 0, cardCountMap),
-          );
-        }
-      }
-    } else if (playerIndex === card.location) {
+    }
+    if (playerIndex === card.location) {
       possibleCardsForEmpathy = possibleCardsForEmpathy.filter((possibility) =>
         possibilityValid(possibility, possibilities, 0, cardCountMap),
       );
