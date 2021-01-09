@@ -265,7 +265,7 @@ describe("cardsReducer", () => {
       const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
       deck = cardsReducer(deck, fivesClue, nextGameState, defaultMetadata);
 
-      // The two fives in our hand must be blue/purple in some order.  The other person will know
+      // The two fives in our hand must be blue/purple in some order. The other person will know
       // their card is not one of those fives.
       expect(empathyPossible(deck[2], 3, 5)).toBe(false);
       expect(empathyPossible(deck[2], 4, 5)).toBe(false);
@@ -308,7 +308,7 @@ describe("cardsReducer", () => {
       const foursClue = rankClue(4, 2, [0, 1], 0, 0);
       deck = cardsReducer(deck, foursClue, nextGameState, defaultMetadata);
 
-      // The two fours in our hand must be red/yellow in some order.  The other person will know
+      // The two fours in our hand must be red/yellow in some order. The other person will know
       // their cards are not one of those fours, but they obviously don't rule out both copies
       // of each four.
       expect(empathyPossible(deck[2], 0, 4)).toBe(true);
@@ -684,7 +684,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
       deck = cardsReducer(deck, greenClue, nextGameState, defaultMetadata);
 
-      // The two fives must be blue/purple in some order.  The newly drawn card can't be
+      // The two fives must be blue/purple in some order. The newly drawn card can't be
       // one of those fives.
       nextGameState = { ...gameState, hands: [[0, 1, 2]] };
       deck = cardsReducer(deck, draw(0, 2), nextGameState, defaultMetadata);
@@ -710,7 +710,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, yellowClue, nextGameState, defaultMetadata);
       deck = cardsReducer(deck, greenClue, nextGameState, defaultMetadata);
 
-      // The two fives must be blue/purple in some order.  The newly drawn card can't be
+      // The two fives must be blue/purple in some order. The newly drawn card can't be
       // one of those fives.
       nextGameState = { ...gameState, hands: [[0, 1], [2]] };
       deck = cardsReducer(

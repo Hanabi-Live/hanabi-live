@@ -154,7 +154,7 @@ function shouldCalculateCard(
   }
 
   // If the possibilities on the unknown cards don't change, then the result of our calculation
-  // won't change.  We only need to recalculate the card if the input (possibilities) changed.
+  // won't change. We only need to recalculate the card if the input (possibilities) changed.
   return unknownCardPossibilitiesDifferent(
     card.order,
     deck,
@@ -177,10 +177,10 @@ function getCardPossibilitiesForPlayer(
     // This is revealed to the player or we are the requested player => just use our best knowledge
     return card.possibleCards;
   }
-  // This is an unrevealed card not in the players hand but not revealed to them.
+  // This is an unrevealed card outside of the players hand but not revealed to them.
   // That can happen with something like a detrimental character (such as 'Slow-Witted')
-  // or throw it in the hole.  We can't use our best (empathy) guess, because it might be in our own
-  // hand and we might know more about the card then the other player does.  We know the other
+  // or "Throw It in a Hole". We can't use our best (empathy) guess, because it might be in our own
+  // hand and we might know more about the card then the other player does. We know the other
   // player at least knows about the clues for it, so we'll use that set of possibilities.
   return card.possibleCardsFromClues;
 }
@@ -262,11 +262,11 @@ function unknownCardPossibilitiesDifferent(
     }
   }
   // We are dealing with the same number of unknown cards, and each unknown card has the same
-  // number of possibilities it had previously.  Once a card joins the set of "unknown" cards
-  // then it will always remain in that set, even if it has only one possibility.  So if we have
+  // number of possibilities it had previously. Once a card joins the set of "unknown" cards
+  // then it will always remain in that set, even if it has only one possibility. So if we have
   // the same number of unknown cards, then they will be the same set of unknown cards.
-  // Similar logic can be applied to the possibilities for each unknown card.  The new possible
-  // values for an unknown card can only be a subset of the possible values.  In other words, if
+  // Similar logic can be applied to the possibilities for each unknown card. The new possible
+  // values for an unknown card can only be a subset of the possible values. In other words, if
   // an unknown card could not previously be a red 5, then it won't suddenly regain the ability to
   // be a red 5 in a later turn.
   // Therefore, if the count of possible suit/rank combinations remains the same, then the
