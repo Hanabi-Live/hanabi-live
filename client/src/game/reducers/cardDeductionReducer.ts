@@ -149,7 +149,7 @@ function shouldCalculateCard(
   const oldCard = oldDeck[card.order];
 
   if (typeof oldCard === "undefined" || oldCard.location === "deck") {
-    // this is a newly drawn card and hasn't had any calculations yet
+    // This is a newly drawn card and hasn't had any calculations yet
     return true;
   }
 
@@ -202,7 +202,7 @@ function generatePossibilitiesForUnknownCards(
       getCardPossibilitiesForPlayer(card, playerIndex, ourPlayerIndex),
     );
   }
-  // start with the more stable possibilities
+  // Start with the more stable possibilities
   possibilities.sort((a, b) => a.length - b.length);
   return possibilities;
 }
