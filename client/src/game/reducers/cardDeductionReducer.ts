@@ -298,11 +298,11 @@ function possibilityValid(
   return false;
 }
 
-let cachedVariantName: string | null = null;
+let cachedVariantId: number | null = null;
 let cachedCardCountMap: number[][] = [];
 
 function getCardCountMap(variant: Variant) {
-  if (variant.name === cachedVariantName) {
+  if (variant.id === cachedVariantId) {
     return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
   }
 
@@ -321,7 +321,7 @@ function getCardCountMap(variant: Variant) {
     });
   });
 
-  cachedVariantName = variant.name;
+  cachedVariantId = variant.id;
   cachedCardCountMap = Array.from(possibleCardMap, (arr) => Array.from(arr));
 
   return possibleCardMap;
