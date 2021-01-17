@@ -1,19 +1,19 @@
 /**
  * Notes:
- * - The website uses PostgreSQL
- * - Initializing the database is accomplished in the "install_database_schema.sh" script
+ * - The website uses PostgreSQL.
+ * - Initializing the database is accomplished in the "install_database_schema.sh" script.
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial
  * - PostgreSQL automatically creates indexes for columns with primary keys, foreign keys, and
- *   constraints, so we only have to explicitly create a few indexes
- * - PostgreSQL automatically handles Unicode text, emojis, and so forth
+ *   constraints, so we only have to explicitly create a few indexes.
+ * - PostgreSQL automatically handles Unicode text, emojis, and so forth.
  * - "ON DELETE CASCADE" means that if the parent row is deleted, the child row will also be
- *   automatically deleted
+ *   automatically deleted.
  */
 
 /*
- * By default, PostgreSQL will show us notices about dropping tables
- * (even with the "--quiet" flag enabled);  we only want messages to display on warnings or errors
+ * By default, PostgreSQL will show us notices about dropping tables (even with the "--quiet" flag
+ * enabled). We only want messages to display on warnings or errors.
  */
 SET client_min_messages TO WARNING;
 
@@ -23,22 +23,17 @@ CREATE TABLE users (
     username             TEXT         NOT NULL  UNIQUE,
     /**
      * PostgreSQL is not case-sensitive unique by default,
-     * meaning that it will allow a username of "Alice" and "alice" to exist
+     * meaning that it will allow a username of "Alice" and "alice" to exist.
      * Furthermore, because of Unicode, it would be possible for "Αlice" with a Greek letter A
-     * (0x391) and "Alice" with a normal A (0x41) to exist
+     * (0x391) and "Alice" with a normal A (0x41) to exist.
      * To guard against users impersonating each other & phishing attacks, we also store a
      * normalized version of the username that is transliterated to ASCII with the go-unidecode
-     * library and then lower-cased
+     * library and then lower-cased.
      * Importantly, we must verify that all new usernames are unique in code before adding them to
-     * the database
+     * the database.
      */
     normalized_username  TEXT         NOT NULL  UNIQUE,
-    /*
-     * TODO set "password_hash" to NOT NULL in April 2022; passwords not set at that time can be
-     * manually reset by an administrator if needed
-     */
-    password_hash        TEXT         NULL, /* An Argon2id hash */
-    old_password_hash    TEXT         NULL, /* A SHA-256 hash */
+    password_hash        TEXT         NOT NULL, /* An Argon2id hash */
     last_ip              TEXT         NOT NULL,
     datetime_created     TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
@@ -124,8 +119,8 @@ CREATE TABLE games (
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
     /**
-     * By default, the starting player is always at index (seat) 0
-     * This field is only needed for legacy games before April 2020
+     * By default, the starting player is always at index (seat) 0.
+     * This field is only needed for legacy games before April 2020.
      */
     starting_player         SMALLINT     NOT NULL  DEFAULT 0,
     /* The ID for a particular variant can be found in the "variants.json" file */
@@ -144,7 +139,7 @@ CREATE TABLE games (
     seed                    TEXT         NOT NULL, /* e.g. "p2v0s1" */
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,
-    /* See the "endCondition" values in "constants.go" */
+    /* See the values in "endCondition.go" */
     end_condition           SMALLINT     NOT NULL,
     datetime_started        TIMESTAMPTZ  NOT NULL,
     datetime_finished       TIMESTAMPTZ  NOT NULL
@@ -182,19 +177,19 @@ CREATE TABLE game_actions (
     /* 0 - play, 1 - discard, 2 - color clue, 3 - rank clue, 4 - game over */
     type     SMALLINT  NOT NULL,
     /**
-     * If a play or a discard, corresponds to the order of the the card that was played/discarded
-     * If a clue, corresponds to the index of the player that received the clue
-     * If a game over, corresponds to the index of the player that caused the game to end
+     * If a play or a discard, corresponds to the order of the the card that was played/discarded.
+     * If a clue, corresponds to the index of the player that received the clue.
+     * If a game over, corresponds to the index of the player that caused the game to end.
      */
     target   SMALLINT  NOT NULL,
     /**
-     * If a play or discard, then 0 (as NULL)
-     * It uses less database space and reduces code complexity to use a value of 0 for NULL
-     * than to use a SQL NULL
+     * If a play or discard, then 0 (as NULL).
+     * It uses less database space and reduces code complexity to use a value of 0 for NULL than to
+     * use a SQL NULL.
      * https://dev.mysql.com/doc/refman/8.0/en/data-size.html
      * If a color clue, then 0 if red, 1 if yellow, etc.
      * If a rank clue, then 1 if 1, 2 if 2, etc.
-     * If a game over, then the value corresponds to the "endCondition" values in "constants.go"
+     * If a game over, then the value corresponds to the values in "endCondition.go".
      */
     value    SMALLINT  NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
@@ -243,7 +238,7 @@ CREATE TABLE chat_log (
     datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
     /**
      * There is no foreign key for "user_id" because it would not exist for Discord messages or
-     * server messages
+     * server messages.
      */
 );
 CREATE INDEX chat_log_index_user_id       ON chat_log (user_id);
@@ -303,7 +298,7 @@ CREATE TABLE metadata (
     value  TEXT    NOT NULL
 );
 /**
- * We want at least one entry in the metadata table so that the "TestDatabase()" function works
- * correctly
+ * The metadata table is not currently used for anything besides testing to see if the database
+ * connection works.
  */
 INSERT INTO metadata (name, value) VALUES ('test_key', 'test_value');

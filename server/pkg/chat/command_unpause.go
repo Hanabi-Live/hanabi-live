@@ -1,20 +1,17 @@
 package chat
 
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
+)
+
+// nolint: godot
 // /unpause
-func (m *Manager) commandUnpause() {
-	if t == nil || d.Room == "lobby" {
-		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
+func (m *Manager) commandUnpause(d *chatData, args []string, t dispatcher.TableManager) {
+	if t == nil || d.room == constants.Lobby {
+		m.ChatServer(constants.NotInGameFail, d.room)
 		return
 	}
 
-	if !t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
-		return
-	}
-
-	commandPause(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID:     t.ID,
-		Setting:     "unpause",
-		NoTableLock: true,
-	})
+	t.Pause(d.userID, "unpause")
 }

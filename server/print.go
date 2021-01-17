@@ -220,7 +220,7 @@ func printTableChat(t *Table) {
 	if t.Chat == nil {
 		hLog.Debug("      [Chat is nil; this should never happen]")
 	} else {
-		for j, m := range t.Chat { // This is a []*TableChatMessage
+		for j, m := range t.Chat { // This is a []*ChatMessage
 			hLog.Debugf(
 				"        %v - [Server: %v] [User ID: %v] <%v> %v",
 				j,

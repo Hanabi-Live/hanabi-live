@@ -5,10 +5,10 @@ import (
 )
 
 type VariantsManager interface {
-	VariantNames() []string
-	NoVariant() *variants.Variant
-
 	GetVariant(variantName string) (*variants.Variant, error)
 	GetVariantByID(variantID int) (*variants.Variant, error)
+	GetVariants() map[string]*variants.Variant
+	GetVariantNames() []string
 	GetNumVariants() int
+	NoVariant() *variants.Variant
 }

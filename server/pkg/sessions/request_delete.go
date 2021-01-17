@@ -41,7 +41,7 @@ func (m *Manager) delete(data interface{}) {
 
 	// Delete the entry from the sessions map
 	delete(m.sessions, d.userID)
-	logSession(m, d.userID, d.username, false)
+	s.logConnected(m, false)
 
 	// Remove this player from any tables
 	m.Dispatcher.Tables.DisconnectUser(d.userID)

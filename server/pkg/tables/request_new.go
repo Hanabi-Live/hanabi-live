@@ -121,7 +121,7 @@ func (m *Manager) new(data interface{}) interface{} {
 	}
 
 	tableID := m.newTableID()
-	t := table.NewManager(m.logger, m.models, m.Dispatcher, &table.NewTableData{
+	t := table.NewManager(m.logger, m.models, m.Dispatcher, m.useTLS, m.domain, &table.NewTableData{
 		ID:              tableID,
 		Name:            name,
 		OwnerID:         d.userID,
@@ -146,7 +146,7 @@ func (m *Manager) new(data interface{}) interface{} {
 	}); !ok.(bool) {
 		// The creator of the table failed to join the table; this should never happen
 		// Stop the table goroutine that is listening for requests
-		t.Terminate()
+		t.Shutdown()
 
 		// Remove the table manager from the map
 		delete(m.tables, tableID)

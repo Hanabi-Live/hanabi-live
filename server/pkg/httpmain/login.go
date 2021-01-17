@@ -1,7 +1,6 @@
 package httpmain
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"net"
 	"net/http"
@@ -37,7 +36,7 @@ type HTTPLoginData struct {
 // condition where a new user can login twice at the same time and "models.Users.Insert()" will be
 // called twice. However, the UNIQUE SQL constraint on the "username" row and the
 // "normalized_username" row will prevent the 2nd insersion from completing, and the second
-// goroutine will return at that point.
+// goroutine will error and return.
 func (m *Manager) login(c *gin.Context) {
 	// Local variables
 	w := c.Writer
@@ -51,7 +50,7 @@ func (m *Manager) login(c *gin.Context) {
 
 	// Check to see if this username exists in the database
 	var exists bool
-	var user models.User
+	var user *models.User
 	if v1, v2, err := m.models.Users.Get(c, data.Username); err != nil {
 		m.logger.Errorf("Failed to get user \"%v\": %v", data.Username, err)
 		http.Error(
@@ -66,163 +65,13 @@ func (m *Manager) login(c *gin.Context) {
 	}
 
 	if exists {
-		// First, check to see if they have a a legacy password hash stored in the database
-		if user.OldPasswordHash.Valid {
-			// This is the first time that they are logging in after the password hash transition
-			// that occurred in April 2020
-			// Hash the submitted password with SHA256
-			passwordSalt := "Hanabi password "
-			combined := passwordSalt + data.Password
-			oldPasswordHashBytes := sha256.Sum256([]byte(combined))
-			oldPasswordHashString := fmt.Sprintf("%x", oldPasswordHashBytes)
-			if oldPasswordHashString != user.OldPasswordHash.String {
-				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-				return
-			}
-
-			// Create an Argon2id hash of the plain-text password
-			var passwordHash string
-			if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-				m.logger.Errorf(
-					"Failed to create a hash from the submitted password for %v: %v",
-					util.PrintUser(user.ID, user.Username),
-					err,
-				)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			} else {
-				passwordHash = v
-			}
-
-			// Update their password to the new Argon2 format
-			if err := m.models.Users.UpdatePassword(c, user.ID, passwordHash); err != nil {
-				m.logger.Errorf(
-					"Failed to set the new hash for %v: %v",
-					util.PrintUser(user.ID, user.Username),
-					err,
-				)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-		} else {
-			// Check to see if their password is correct
-			if !user.PasswordHash.Valid {
-				m.logger.Errorf(
-					"Failed to get the Argon2 hash from the database for %v.",
-					util.PrintUser(user.ID, user.Username),
-				)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-			if match, err := argon2id.ComparePasswordAndHash(
-				data.Password,
-				user.PasswordHash.String,
-			); err != nil {
-				m.logger.Errorf(
-					"Failed to compare the password to the Argon2 hash for %v: %v",
-					util.PrintUser(user.ID, user.Username),
-					err,
-				)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			} else if !match {
-				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-				return
-			}
+		if !m.loginCheckPassword(c, user, data) {
+			return
 		}
+	} else if v, ok := m.loginCreateNewUser(c, data); !ok {
+		return
 	} else {
-		// Check to see if any other users have a normalized version of this username
-		// This prevents username-spoofing attacks and homoglyph usage
-		// e.g. "alice" trying to impersonate "Alice"
-		// e.g. "Alicé" trying to impersonate "Alice"
-		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
-		if data.NormalizedUsername == "" {
-			http.Error(
-				w,
-				"That username cannot be transliterated to ASCII. Please try using a simpler username or try using less special characters.",
-				http.StatusUnauthorized,
-			)
-			return
-		}
-		if normalizedExists, similarUsername, err := m.models.Users.NormalizedUsernameExists(
-			c,
-			data.NormalizedUsername,
-		); err != nil {
-			m.logger.Errorf(
-				"Failed to check for normalized password uniqueness for \"%v\": %v",
-				data.Username,
-				err,
-			)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else if normalizedExists {
-			http.Error(
-				w,
-				fmt.Sprintf(
-					"That username is too similar to the existing user of "+"\"%v\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
-					similarUsername,
-				),
-				http.StatusUnauthorized,
-			)
-			return
-		}
-
-		// Create an Argon2id hash of the plain-text password
-		var passwordHash string
-		if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-			m.logger.Errorf(
-				"Failed to create a hash from the submitted password for \"%v\": %v",
-				data.Username,
-				err,
-			)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else {
-			passwordHash = v
-		}
-
-		// Create the new user in the database
-		if v, err := m.models.Users.Insert(
-			c,
-			data.Username,
-			data.NormalizedUsername,
-			passwordHash,
-			data.IP,
-		); err != nil {
-			m.logger.Errorf("Failed to insert user \"%v\": %v", data.Username, err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else {
-			user = v
-		}
+		user = v
 	}
 
 	// Save the information to the session cookie
@@ -508,6 +357,132 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		NormalizedUsername: normalizedUsername,
 	}
 	return data, true
+}
+
+func (m *Manager) loginCheckPassword(c *gin.Context, user *models.User, data *HTTPLoginData) bool {
+	// Local variables
+	w := c.Writer
+
+	if !user.PasswordHash.Valid {
+		m.logger.Errorf(
+			"Failed to get the Argon2 hash from the database for %v.",
+			util.PrintUser(user.ID, user.Username),
+		)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return false
+	}
+
+	if match, err := argon2id.ComparePasswordAndHash(
+		data.Password,
+		user.PasswordHash.String,
+	); err != nil {
+		m.logger.Errorf(
+			"Failed to compare the password to the Argon2 hash for %v: %v",
+			util.PrintUser(user.ID, user.Username),
+			err,
+		)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return false
+	} else if !match {
+		http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+		return false
+	}
+
+	return true
+}
+
+func (m *Manager) loginCreateNewUser(c *gin.Context, data *HTTPLoginData) (*models.User, bool) {
+	// Local variables
+	w := c.Writer
+
+	// Check to see if any other users have a normalized version of this username
+	// This prevents username-spoofing attacks and homoglyph usage
+	// e.g. "alice" trying to impersonate "Alice"
+	// e.g. "Alicé" trying to impersonate "Alice"
+	// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
+	if data.NormalizedUsername == "" {
+		http.Error(
+			w,
+			"That username cannot be transliterated to ASCII. Please try using a simpler username or try using less special characters.",
+			http.StatusUnauthorized,
+		)
+		return nil, false
+	}
+
+	if normalizedExists, similarUsername, err := m.models.Users.NormalizedUsernameExists(
+		c,
+		data.NormalizedUsername,
+	); err != nil {
+		m.logger.Errorf(
+			"Failed to check for normalized password uniqueness for \"%v\": %v",
+			data.Username,
+			err,
+		)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return nil, false
+	} else if normalizedExists {
+		http.Error(
+			w,
+			fmt.Sprintf(
+				"That username is too similar to the existing user of "+"\"%v\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
+				similarUsername,
+			),
+			http.StatusUnauthorized,
+		)
+		return nil, false
+	}
+
+	// Create an Argon2id hash of the plain-text password
+	var passwordHash string
+	if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
+		m.logger.Errorf(
+			"Failed to create a hash from the submitted password for \"%v\": %v",
+			data.Username,
+			err,
+		)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return nil, false
+	} else {
+		passwordHash = v
+	}
+
+	// Create the new user in the database
+	var user *models.User
+	if v, err := m.models.Users.Insert(
+		c,
+		data.Username,
+		data.NormalizedUsername,
+		passwordHash,
+		data.IP,
+	); err != nil {
+		m.logger.Errorf("Failed to insert user \"%v\": %v", data.Username, err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return nil, false
+	} else {
+		user = v
+	}
+
+	return user, true
 }
 
 func isReservedUsername(username string) bool {

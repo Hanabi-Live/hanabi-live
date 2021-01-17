@@ -107,11 +107,12 @@ commands.set("chatTyping", (data: ChatTypingMessage) => {
 // The "chatList" command is sent upon initial connection
 // to give the client a list of past lobby chat messages
 // It is also sent upon connecting to a game to give a list of past in-game chat messages
-interface ChatListData {
+export interface ChatListData {
+  // There is no "room" field because that is contained within each chat message
   list: ChatMessage[];
   unread: number;
 }
-commands.set("chatList", (data: ChatListData) => {
+export function chatList(data: ChatListData): void {
   for (const line of data.list) {
     chat.add(line, true); // The second argument is "fast"
   }
@@ -120,4 +121,5 @@ commands.set("chatList", (data: ChatListData) => {
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();
   }
-});
+}
+commands.set("chatList", chatList);

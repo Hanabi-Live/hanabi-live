@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
@@ -122,6 +123,16 @@ func newTable(d *NewTableData) *table {
 	return t
 }
 
+func newChatMessage(userID int, username string, msg string, server bool) *ChatMessage {
+	return &ChatMessage{
+		UserID:   userID,
+		Username: username,
+		Msg:      msg,
+		Datetime: time.Now(),
+		Server:   server,
+	}
+}
+
 func (t *table) getPlayerIndexFromID(userID int) int {
 	for i, p := range t.Players {
 		if p.UserID == userID {
@@ -142,14 +153,21 @@ func (t *table) getSpectatorIndexFromID(userID int) int {
 	return -1
 }
 
-func newChatMessage(userID int, username string, msg string, server bool) *ChatMessage {
-	return &ChatMessage{
-		UserID:   userID,
-		Username: username,
-		Msg:      msg,
-		Datetime: time.Now(),
-		Server:   server,
+func (t *table) getName() string {
+	g := t.Game
+
+	var turn string
+	if g == nil {
+		turn = "not started"
+	} else {
+		turn = fmt.Sprintf("turn %v", g.Turn)
 	}
+
+	return fmt.Sprintf("Table %v (%v)", t.ID, turn)
+}
+
+func (t *table) getRoomName() string {
+	return fmt.Sprintf("%v%v", constants.TableRoomPrefix, t.ID)
 }
 
 /*
@@ -274,24 +292,6 @@ func (t *Table) EndIdle(ctx context.Context) {
 			NoTablesLock: true,
 		})
 	}
-}
-
-func (t *Table) GetName() string {
-	g := t.Game
-
-	var turn string
-	if g == nil {
-		turn = "not started"
-	} else {
-		turn = fmt.Sprintf("turn %v", g.Turn)
-	}
-
-	return fmt.Sprintf("Table %v (%v) -", t.ID, turn)
-}
-
-func (t *Table) GetRoomName() string {
-	// Various places in the code base check for room names with a prefix of "table"
-	return fmt.Sprintf("table%v", t.ID)
 }
 
 func (t *Table) GetOwnerSession() *Session {

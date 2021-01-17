@@ -1,5 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
+import { chatList } from "../commands";
 import * as gameMain from "../game/main";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
 import globals from "../globals";
@@ -59,7 +60,7 @@ commands.set("game", (data: Game) => {
   pregame.draw();
 });
 
-commands.set("gameHistory", (dataArray: GameHistory[]) => {
+function gameHistory(dataArray: GameHistory[]) {
   // data will be an array of all of the games that we have previously played
   for (const data of dataArray) {
     globals.history[data.id] = data;
@@ -82,9 +83,10 @@ commands.set("gameHistory", (dataArray: GameHistory[]) => {
   if (shownGames === globals.totalGames) {
     $("#lobby-history-show-more").hide();
   }
-});
+}
+commands.set("gameHistory", gameHistory);
 
-commands.set("gameHistoryFriends", (dataArray: GameHistory[]) => {
+function gameHistoryFriends(dataArray: GameHistory[]) {
   // data will be an array of all of the games that our friends have previously played
   for (const data of dataArray) {
     globals.historyFriends[data.id] = data;
@@ -96,7 +98,8 @@ commands.set("gameHistoryFriends", (dataArray: GameHistory[]) => {
     globals.showMoreHistoryClicked = false;
     history.draw(true);
   }
-});
+}
+commands.set("gameHistoryFriends", gameHistoryFriends);
 
 interface GameHistoryOtherScoresData {
   games: GameHistory[];
@@ -171,16 +174,6 @@ commands.set("tableGone", (data: TableGoneData) => {
   }
 });
 
-// Received by the client upon initial connection
-commands.set("tableList", (dataList: Table[]) => {
-  for (const data of dataList) {
-    globals.tableMap.set(data.id, data);
-  }
-  if (globals.currentScreen === Screen.Lobby) {
-    tablesDraw();
-  }
-});
-
 interface TableProgressData {
   tableID: number;
   progress: number;
@@ -214,18 +207,6 @@ commands.set("tableStart", (data: TableStartData) => {
 // Received by the client when a user connects or has a new status
 commands.set("user", (data: User) => {
   globals.userMap.set(data.userID, data);
-  if (
-    globals.currentScreen === Screen.Lobby ||
-    globals.currentScreen === Screen.PreGame
-  ) {
-    usersDraw.draw();
-  }
-});
-
-commands.set("userList", (dataList: User[]) => {
-  for (const data of dataList) {
-    globals.userMap.set(data.userID, data);
-  }
   if (
     globals.currentScreen === Screen.Lobby ||
     globals.currentScreen === Screen.PreGame
@@ -268,20 +249,39 @@ commands.set("userInactive", (data: UserInactiveData) => {
 
 // Received by the client upon first connecting
 commands.set("welcome", (data: WelcomeData) => {
-  // Store some variables (mostly relating to our user account)
+  // Static data
   globals.userID = data.userID;
   globals.username = data.username; // We might have logged-in with a different stylization
-  globals.totalGames = data.totalGames;
+
+  // Dynamic data
+  globals.friends = data.friendsList;
+  // (the global variable name is different because on the server,
+  // "friends" corresponds to a map instead of a list)
   globals.muted = data.muted;
+
+  // Other
   globals.settings = data.settings;
-  globals.friends = data.friends;
+  globals.totalGames = data.totalGames;
   globals.randomTableName = data.randomTableName;
+
+  // Server status
   globals.shuttingDown = data.shuttingDown;
   globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
   globals.maintenanceMode = data.maintenanceMode;
 
   // Now that we know what our user ID and username are, we can attach them to the Sentry context
   sentry.setUserContext(globals.userID, globals.username);
+
+  // Lobby initialization
+  for (const user of data.userList) {
+    globals.userMap.set(user.userID, user);
+  }
+  chatList(data.chatList);
+  for (const table of data.tableList) {
+    globals.tableMap.set(table.id, table);
+  }
+  gameHistory(data.gameHistory);
+  gameHistoryFriends(data.gameHistoryFriends);
 
   // Update various elements of the UI to reflect our settings
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
@@ -299,17 +299,7 @@ commands.set("welcome", (data: WelcomeData) => {
     return;
   }
 
-  // If the server has informed us that were previously spectating an ongoing shared replay,
-  // automatically spectate that table
-  // (and ignore any specific custom path that the user has entered)
-  if (data.disconSpectatingTable !== 0) {
-    globals.conn!.send("tableSpectate", {
-      tableID: data.disconSpectatingTable,
-      shadowingPlayerIndex: -1,
-    });
-    return;
-  }
-
-  // If we have entered a specific URL, we might want to go somewhere specific instead of the lobby
+  // Otherwise, if we have entered a specific URL,
+  // we might want to go somewhere specific instead of the lobby
   url.parseAndGoto(data);
 });

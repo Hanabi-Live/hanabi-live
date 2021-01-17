@@ -6,6 +6,7 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20200802152012-2464efd3196b
 	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/bwmarrin/discordgo v0.22.0
+	github.com/dgraph-io/badger v1.6.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth/v6 v6.0.2
 	github.com/gabstv/melody v1.0.2

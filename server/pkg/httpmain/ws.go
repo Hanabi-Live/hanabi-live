@@ -4,26 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
-	"path"
-	"strings"
-	"time"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/models"
-	"github.com/Zamiell/hanabi-live/server/pkg/sessions"
-	"github.com/Zamiell/hanabi-live/server/pkg/settings"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 	"nhooyr.io/websocket"
-)
-
-const (
-	lobbyChatHistoryAmount = 50
 )
 
 // ws handles part 2 of 2 for login authentication. (Part 1 is found in "login.go".)
@@ -116,6 +104,17 @@ func (m *Manager) wsNew(c *gin.Context, userID int, username string, ip string) 
 	r := c.Request
 	w := c.Writer
 
+	// Update the database with "datetime_last_login" and "last_ip"
+	if err := m.models.Users.Update(c, userID, ip); err != nil {
+		msg := fmt.Sprintf(
+			"Failed to set \"datetime_last_login\" and \"last_ip\" for %v: %v",
+			util.PrintUser(userID, username),
+			err,
+		)
+		m.wsError(c, msg)
+		return
+	}
+
 	// Upgrade the HTTP request to a WebSocket connection
 	var conn *websocket.Conn
 	if v, err := websocket.Accept(w, r, nil); err != nil {
@@ -131,16 +130,13 @@ func (m *Manager) wsNew(c *gin.Context, userID int, username string, ip string) 
 	}
 	defer conn.Close(websocket.StatusInternalError, "")
 
-	// Next, perform all the expensive database calls to gather the data we need
-	data := m.wsGetData(c, conn, userID, username, ip)
-	if data == nil {
-		return
-	}
+	// Convert the Gin context to a normal context
+	ctx := context.Context(c)
 
 	// Send a request to add the WebSocket connection to the sessions manager
 	// (which listens on a separate goroutine)
 	// This will block until an error is received from the channel
-	err := m.Dispatcher.Sessions.New(data)
+	err := m.Dispatcher.Sessions.New(ctx, conn, userID, username, ip)
 	if errors.Is(err, context.Canceled) ||
 		websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
@@ -154,283 +150,6 @@ func (m *Manager) wsNew(c *gin.Context, userID int, username string, ip string) 
 			err,
 		)
 		return
-	}
-}
-
-func (m *Manager) wsGetData(
-	c *gin.Context,
-	conn *websocket.Conn,
-	userID int,
-	username string,
-	ip string,
-) *sessions.NewData {
-	// Update the database with "datetime_last_login" and "last_ip"
-	if err := m.models.Users.Update(c, userID, ip); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to set \"datetime_last_login\" and \"last_ip\" for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	}
-
-	// -----------------------------------------
-	// Data that will be attached to the session
-	// -----------------------------------------
-
-	// Check to see if their IP is muted
-	var muted bool
-	if v, err := m.models.MutedIPs.Check(c, ip); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to check to see if the IP \"%v\" is muted: %v",
-			ip,
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		muted = v
-	}
-
-	// Get their friends
-	var friends map[int]struct{}
-	if v, err := m.models.UserFriends.GetMap(c, userID); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the friends map for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		friends = v
-	}
-
-	// Get their reverse friends
-	var reverseFriends map[int]struct{}
-	if v, err := m.models.UserReverseFriends.GetMap(c, userID); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the reverse friends map for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		reverseFriends = v
-	}
-
-	// Get whether or not they are a member of the Hyphen-ated group
-	var hyphenated bool
-	if v, err := m.models.UserSettings.IsHyphenated(c, userID); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the Hyphen-ated setting for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		hyphenated = v
-	}
-
-	// -----------
-	// Other stats
-	// -----------
-
-	// Get their join date from the database
-	var datetimeCreated time.Time
-	if v, err := m.models.Users.GetDatetimeCreated(c, userID); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the join date for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		datetimeCreated = v
-	}
-	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second // nolint: gomnd
-	// (10 seconds is an reasonable arbitrary value to use,
-	// which accounts for if they accidentally refresh the page after logging in for the first time)
-
-	// Get their total number of games played from the database
-	var totalGames int
-	if v, err := m.models.Games.GetUserNumGames(c, userID, true); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the number of games played for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		totalGames = v
-	}
-
-	// Get their settings from the database
-	var settings settings.Settings
-	if v, err := m.models.UserSettings.Get(c, userID); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the settings for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		settings = v
-	}
-
-	// Get their friends from the database
-	var friendsList []string
-	if v, err := m.models.UserFriends.GetAllUsernames(c, userID); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the friends for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		friendsList = v
-	}
-
-	// -------
-	// History
-	// -------
-
-	var lobbyChatHistory []*models.DBChatMessage
-	if v, err := m.models.ChatLog.Get(c, "lobby", lobbyChatHistoryAmount); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the lobby chat history for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		lobbyChatHistory = v
-	}
-
-	motdPath := path.Join(m.projectPath, "motd.txt")
-	exists := true
-	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
-		exists = false
-	} else if err != nil {
-		msg := fmt.Sprintf(
-			"Failed to check if the \"%v\" file exists for %v: %v",
-			motdPath,
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	}
-
-	var motd string
-	if exists {
-		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
-			msg := fmt.Sprintf(
-				"Failed to read the \"%v\" file for %v: %v",
-				motdPath,
-				util.PrintUser(userID, username),
-				err,
-			)
-			m.wsError(c, msg)
-			return nil
-		} else {
-			motd = string(fileContents)
-			motd = strings.TrimSpace(motd)
-			if len(motd) > 0 {
-				motd = fmt.Sprintf("[Server Notice] %v", motd)
-			}
-		}
-	}
-
-	var gameIDs []int
-	if v, err := m.models.Games.GetGameIDsUser(c, userID, 0, 10); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the game IDs for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		gameIDs = v
-	}
-
-	var gameHistory []*models.GameHistory
-	if v, err := m.models.Games.GetHistory(c, gameIDs); err != nil {
-		msg := fmt.Sprintf(
-			"Failed to get the game history for %v: %v",
-			util.PrintUser(userID, username),
-			err,
-		)
-		m.wsError(c, msg)
-		return nil
-	} else {
-		gameHistory = v
-	}
-
-	gameHistoryFriends := make([]*models.GameHistory, 0)
-	if len(friendsList) > 0 {
-		var gameIDs []int
-		if v, err := m.models.Games.GetGameIDsFriends(c, userID, friends, 0, 10); err != nil {
-			msg := fmt.Sprintf(
-				"Failed to get the friend game IDs for %v: %v",
-				util.PrintUser(userID, username),
-				err,
-			)
-			m.wsError(c, msg)
-			return nil
-		} else {
-			gameIDs = v
-		}
-
-		if v, err := m.models.Games.GetHistory(c, gameIDs); err != nil {
-			msg := fmt.Sprintf(
-				"Failed to get the friend game history for %v: %v",
-				util.PrintUser(userID, username),
-				err,
-			)
-			m.wsError(c, msg)
-			return nil
-		} else {
-			gameHistoryFriends = v
-		}
-	}
-
-	// ----
-	// Done
-	// ----
-
-	return &sessions.NewData{
-		Ctx:  c,
-		Conn: conn,
-
-		// Data that will be attached to the session
-		UserID:         userID,
-		Username:       username,
-		Muted:          muted,
-		Friends:        friends,
-		ReverseFriends: reverseFriends,
-		Hyphenated:     hyphenated,
-
-		// Other stats
-		FirstTimeUser: firstTimeUser,
-		TotalGames:    totalGames,
-		Settings:      settings,
-		FriendsList:   friendsList,
-
-		// History
-		LobbyChatHistory:   lobbyChatHistory,
-		MotD:               motd,
-		GameHistory:        gameHistory,
-		GameHistoryFriends: gameHistoryFriends,
 	}
 }
 

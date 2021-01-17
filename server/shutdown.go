@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/tevino/abool"
 )
 
@@ -62,7 +63,7 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
 
 	// Send a warning message to the lobby
 	msg := fmt.Sprintf("The server will shutdown in %v minutes.", minutesLeft)
-	chatServerSend(ctx, msg, "lobby", false)
+	chatServerSend(ctx, msg, constants.Lobby, false)
 
 	// Send a warning message to the people still playing
 	tableList := tables.GetList(false)
@@ -187,7 +188,7 @@ func shutdownImmediate(ctx context.Context) {
 	}
 
 	msg := fmt.Sprintf("The server successfully shut down at: %v", getCurrentTimestamp())
-	chatServerSend(ctx, msg, "lobby", false)
+	chatServerSend(ctx, msg, constants.Lobby, false)
 
 	if runtime.GOOS == "windows" {
 		hLog.Info("Manually kill the server now.")

@@ -16,32 +16,37 @@ import (
 type Manager struct {
 	name string
 
-	// We don't need a mutex for the map because only the manager goroutine will access it
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
 	requestFuncMap    map[requestType]func(interface{})
 	requestsClosed    *abool.AtomicBool
-	commandMap        map[string]func()
+	commandMap        map[string]func(*chatData, []string, dispatcher.TableManager)
 	lobbyRoomRegExp   *regexp.Regexp
 
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
+
+	domain string
+	useTLS bool
 }
 
-func NewManager(logger *logger.Logger, models *models.Models) *Manager {
+func NewManager(logger *logger.Logger, models *models.Models, domain string, useTLS bool) *Manager {
 	m := &Manager{
 		name: "chat",
 
 		requests:        make(chan *request),
 		requestFuncMap:  make(map[requestType]func(interface{})),
 		requestsClosed:  abool.New(),
-		commandMap:      make(map[string]func()),
+		commandMap:      make(map[string]func(*chatData, []string, dispatcher.TableManager)),
 		lobbyRoomRegExp: regexp.MustCompile(`table(\d+)`),
 
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
+
+		domain: domain,
+		useTLS: useTLS,
 	}
 	m.requestFuncMapInit()
 	m.commandMapInit()

@@ -60,7 +60,7 @@ func charactersGenerate(g *Game) {
 
 	// This is not a replay,
 	// so we must generate new random character selections based on the game's seed
-	setSeed(g.Seed) // Seed the random number generator
+	util.SetSeedFromString(g.Seed) // Seed the random number generator
 
 	for i, p := range g.Players {
 		// Set the character

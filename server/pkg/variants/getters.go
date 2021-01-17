@@ -4,14 +4,6 @@ import (
 	"fmt"
 )
 
-func (m *Manager) VariantNames() []string {
-	return m.variantNames
-}
-
-func (m *Manager) NoVariant() *Variant {
-	return m.noVariant
-}
-
 func (m *Manager) GetVariant(variantName string) (*Variant, error) {
 	variant, ok := m.variantsNameMap[variantName]
 	if !ok {
@@ -30,6 +22,18 @@ func (m *Manager) GetVariantByID(variantID int) (*Variant, error) {
 	return variant, nil
 }
 
+func (m *Manager) GetVariants() map[string]*Variant {
+	return m.variantsNameMap
+}
+
+func (m *Manager) GetVariantNames() []string {
+	return m.variantNames
+}
+
 func (m *Manager) GetNumVariants() int {
 	return len(m.variantNames)
+}
+
+func (m *Manager) NoVariant() *Variant {
+	return m.noVariant
 }

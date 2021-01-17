@@ -24,7 +24,7 @@ func (m *Manager) scores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	var user models.User
+	var user *models.User
 	if v, ok := m.parsePlayerName(c); !ok {
 		return
 	} else {

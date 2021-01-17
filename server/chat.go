@@ -5,26 +5,15 @@ package main
 import (
 	"context"
 	"time"
-)
 
-// chatServerSend is a helper function to send a message from the server
-// (e.g. to give feedback to a user after they type a command,
-// to notify that the server is shutting down, etc.)
-func chatServerSend(ctx context.Context, msg string, room string, noTablesLock bool) {
-	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-		Msg:          msg,
-		Room:         room,
-		Server:       true,
-		NoTableLock:  true,
-		NoTablesLock: noTablesLock,
-	})
-}
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+)
 
 // chatServerSendAll is a helper function to broadcast a message to everyone on the server,
 // whether they are in the lobby or in the middle of a game
 // It is assumed that the tables mutex is locked when calling this function
 func chatServerSendAll(ctx context.Context, msg string) {
-	chatServerSend(ctx, msg, "lobby", false)
+	chatServerSend(ctx, msg, constants.Lobby, false)
 
 	tableList := tables.GetList(true)
 	roomNames := make([]string, 0)

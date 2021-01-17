@@ -14,10 +14,9 @@ type Users struct {
 }
 
 type User struct {
-	ID              int
-	Username        string
-	PasswordHash    sql.NullString
-	OldPasswordHash sql.NullString
+	ID           int
+	Username     string
+	PasswordHash sql.NullString
 }
 
 func (u *Users) Insert(
@@ -26,7 +25,7 @@ func (u *Users) Insert(
 	normalizedUsername string,
 	passwordHash string,
 	lastIP string,
-) (User, error) {
+) (*User, error) {
 	// https://www.postgresql.org/docs/9.5/dml-returning.html
 	// https://github.com/jackc/pgx/issues/411
 	SQLString := `
@@ -35,7 +34,6 @@ func (u *Users) Insert(
 		RETURNING id
 	`
 
-	var user User
 	var id int
 	if err := u.m.db.QueryRow(
 		ctx,
@@ -45,26 +43,24 @@ func (u *Users) Insert(
 		passwordHash,
 		lastIP,
 	).Scan(&id); err != nil {
-		return user, err
+		return nil, err
 	}
 
-	return User{
-		ID:              id,
-		Username:        username,
-		PasswordHash:    sql.NullString{},
-		OldPasswordHash: sql.NullString{},
+	return &User{
+		ID:           id,
+		Username:     username,
+		PasswordHash: sql.NullString{},
 	}, nil
 }
 
 // Get retrieves data for a user from the database corresponding to a username.
 // We need to return the existing username in case the end-user submitted the wrong case.
-func (u *Users) Get(ctx context.Context, username string) (bool, User, error) {
+func (u *Users) Get(ctx context.Context, username string) (bool, *User, error) {
 	SQLString := `
 		SELECT
 			id,
 			username,
-			password_hash,
-			old_password_hash
+			password_hash
 		FROM users
 		WHERE username = $1
 	`
@@ -74,20 +70,19 @@ func (u *Users) Get(ctx context.Context, username string) (bool, User, error) {
 		&user.ID,
 		&user.Username,
 		&user.PasswordHash,
-		&user.OldPasswordHash,
 	); errors.Is(err, pgx.ErrNoRows) {
-		return false, user, nil
+		return false, &user, nil
 	} else if err != nil {
-		return false, user, err
+		return false, &user, err
 	}
 
-	return true, user, nil
+	return true, &user, nil
 }
 
 func (u *Users) GetUserFromNormalizedUsername(
 	ctx context.Context,
 	normalizedUsername string,
-) (bool, User, error) {
+) (bool, *User, error) {
 	SQLString := `
 		SELECT
 			id,
@@ -101,12 +96,12 @@ func (u *Users) GetUserFromNormalizedUsername(
 		&user.ID,
 		&user.Username,
 	); errors.Is(err, pgx.ErrNoRows) {
-		return false, user, nil
+		return false, &user, nil
 	} else if err != nil {
-		return false, user, err
+		return false, &user, err
 	}
 
-	return true, user, nil
+	return true, &user, nil
 }
 
 func (u *Users) GetUsername(ctx context.Context, userID int) (string, error) {
@@ -179,20 +174,5 @@ func (u *Users) Update(ctx context.Context, userID int, lastIP string) error {
 	`
 
 	_, err := u.m.db.Exec(ctx, SQLString, lastIP, userID)
-	return err
-}
-
-// UpdatePassword is a legacy function; delete this when all users have logged in or in 2022,
-// whichever comes first.
-func (u *Users) UpdatePassword(ctx context.Context, userID int, passwordHash string) error {
-	SQLString := `
-		UPDATE users
-		SET
-			password_hash = $1,
-			old_password_hash = NULL
-		WHERE id = $2
-	`
-
-	_, err := u.m.db.Exec(ctx, SQLString, passwordHash, userID)
 	return err
 }

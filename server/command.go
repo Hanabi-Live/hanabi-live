@@ -67,10 +67,7 @@ type CommandData struct {
 	Discord  bool   `json:"-"` // Used to mark if a chat message originated from Discord
 	Server   bool   `json:"-"` // Used to mark if the server generated the chat message
 	// Used to prevent pre-games of restarted games from showing up in the lobby
-	HidePregame bool `json:"-"`
-	// True if this is a chat message that should only go to Discord
-	OnlyDiscord          bool   `json:"-"`
-	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby
+	HidePregame          bool   `json:"-"`
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`

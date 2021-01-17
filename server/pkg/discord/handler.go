@@ -57,17 +57,9 @@ func (m *Manager) handlerMessageCreate(s *discordgo.Session, mc *discordgo.Messa
 	}
 
 	// Send everyone the notification
-	// TODO
-	/*
-		commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-			Username: discordGetNickname(m.Author.ID),
-			Msg:      m.Content,
-			Discord:  true,
-			Room:     "lobby",
-			// Pass through the ID in case we need it for a custom command
-			DiscordID: m.Author.ID,
-			// Pass through the discriminator so we can append it to the username
-			DiscordDiscriminator: m.Author.Discriminator,
-		})
-	*/
+	m.Dispatcher.Chat.ChatDiscord(
+		m.getNickname(mc.Author.ID),
+		mc.Content,
+		mc.Author.Discriminator,
+	)
 }

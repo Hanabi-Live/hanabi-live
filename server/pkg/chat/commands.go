@@ -1,84 +1,85 @@
 package chat
 
 import (
-	"context"
 	"fmt"
 	"strings"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 )
 
 func (m *Manager) commandMapInit() {
 	// General commands (that work both in the lobby and at a table)
-	m.commandMap["help"] = commandHelp
-	m.commandMap["commands"] = commandHelp
-	m.commandMap["?"] = commandHelp
-	m.commandMap["discord"] = commandDiscord
-	m.commandMap["rules"] = commandRules
-	m.commandMap["guidelines"] = commandRules
-	m.commandMap["new"] = commandNew
-	m.commandMap["beginner"] = commandNew
-	m.commandMap["beginners"] = commandNew
-	m.commandMap["guide"] = commandNew
-	m.commandMap["doc"] = commandDoc
-	m.commandMap["document"] = commandDoc
-	m.commandMap["reference"] = commandDoc
-	m.commandMap["bga"] = commandBGA
-	m.commandMap["efficiency"] = commandEfficiency
-	m.commandMap["replay"] = commandReplay
-	m.commandMap["random"] = commandRandom
-	m.commandMap["uptime"] = commandUptime
-	m.commandMap["timeleft"] = commandTimeLeft
+	m.commandMap["help"] = m.commandHelp
+	m.commandMap["commands"] = m.commandHelp
+	m.commandMap["?"] = m.commandHelp
+	m.commandMap["discord"] = m.commandDiscord
+	m.commandMap["rules"] = m.commandRules
+	m.commandMap["guidelines"] = m.commandRules
+	m.commandMap["new"] = m.commandNew
+	m.commandMap["beginner"] = m.commandNew
+	m.commandMap["beginners"] = m.commandNew
+	m.commandMap["guide"] = m.commandNew
+	m.commandMap["doc"] = m.commandDoc
+	m.commandMap["document"] = m.commandDoc
+	m.commandMap["reference"] = m.commandDoc
+	m.commandMap["bga"] = m.commandBGA
+	m.commandMap["efficiency"] = m.commandEfficiency
+	m.commandMap["replay"] = m.commandReplay
+	m.commandMap["random"] = m.commandRandom
+	m.commandMap["uptime"] = m.commandUptime
+	m.commandMap["timeleft"] = m.commandTimeLeft
 
 	// Undocumented info commands (that work only in the lobby)
-	m.commandMap["here"] = commandHere
-	m.commandMap["wrongchannel"] = commandWrongChannel
+	m.commandMap["here"] = m.commandHere
+	m.commandMap["wrongchannel"] = m.commandWrongChannel
 
 	// Table-only commands (pregame only, table owner only)
-	m.commandMap["s"] = commandS
-	m.commandMap["s2"] = commandS2
-	m.commandMap["s3"] = commandS3
-	m.commandMap["s4"] = commandS4
-	m.commandMap["s5"] = commandS5
-	m.commandMap["s6"] = commandS6
-	m.commandMap["startin"] = commandStartIn
-	m.commandMap["kick"] = commandKick
-	m.commandMap["impostor"] = commandImpostor
+	m.commandMap["s"] = m.commandS
+	m.commandMap["s2"] = m.commandS2
+	m.commandMap["s3"] = m.commandS3
+	m.commandMap["s4"] = m.commandS4
+	m.commandMap["s5"] = m.commandS5
+	m.commandMap["s6"] = m.commandS6
+	m.commandMap["startin"] = m.commandStartIn
+	m.commandMap["kick"] = m.commandKick
+	m.commandMap["impostor"] = m.commandImpostor
 
 	// Table-only commands (pregame or game)
-	m.commandMap["missing"] = commandMissingScores
-	m.commandMap["missingscores"] = commandMissingScores
-	m.commandMap["missing-scores"] = commandMissingScores
-	m.commandMap["sharedmissingscores"] = commandMissingScores
-	m.commandMap["shared-missing-scores"] = commandMissingScores
-	m.commandMap["findvariant"] = commandFindVariant
-	m.commandMap["find-variant"] = commandFindVariant
-	m.commandMap["randomvariant"] = commandFindVariant
-	m.commandMap["random-variant"] = commandFindVariant
+	m.commandMap["missing"] = m.commandMissingScores
+	m.commandMap["missingscores"] = m.commandMissingScores
+	m.commandMap["missing-scores"] = m.commandMissingScores
+	m.commandMap["sharedmissingscores"] = m.commandMissingScores
+	m.commandMap["shared-missing-scores"] = m.commandMissingScores
+	m.commandMap["findvariant"] = m.commandFindVariant
+	m.commandMap["find-variant"] = m.commandFindVariant
+	m.commandMap["randomvariant"] = m.commandFindVariant
+	m.commandMap["random-variant"] = m.commandFindVariant
 
 	// Table-only commands (game only)
-	m.commandMap["pause"] = commandPause
-	m.commandMap["unpause"] = commandUnpause
+	m.commandMap["pause"] = m.commandPause
+	m.commandMap["unpause"] = m.commandUnpause
 
 	// Table-only commands (replay only)
-	m.commandMap["suggest"] = commandSuggest
-	m.commandMap["tags"] = commandTags
-	m.commandMap["taglist"] = commandTags
+	m.commandMap["suggest"] = m.commandSuggest
+	m.commandMap["tags"] = m.commandTags
+	m.commandMap["taglist"] = m.commandTags
 
 	// Error handlers for website-only commands
-	m.commandMap["pm"] = commandCommandWebsiteOnly
-	m.commandMap["w"] = commandCommandWebsiteOnly
-	m.commandMap["whisper"] = commandCommandWebsiteOnly
-	m.commandMap["msg"] = commandCommandWebsiteOnly
-	m.commandMap["friend"] = commandCommandWebsiteOnly
-	m.commandMap["friends"] = commandCommandWebsiteOnly
-	m.commandMap["unfriend"] = commandCommandWebsiteOnly
-	m.commandMap["version"] = commandCommandWebsiteOnly
+	m.commandMap["pm"] = m.commandWebsiteOnly
+	m.commandMap["w"] = m.commandWebsiteOnly
+	m.commandMap["whisper"] = m.commandWebsiteOnly
+	m.commandMap["msg"] = m.commandWebsiteOnly
+	m.commandMap["friend"] = m.commandWebsiteOnly
+	m.commandMap["friends"] = m.commandWebsiteOnly
+	m.commandMap["unfriend"] = m.commandWebsiteOnly
+	m.commandMap["version"] = m.commandWebsiteOnly
 }
 
-func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func (m *Manager) checkCommand(d *chatData, t dispatcher.TableManager) {
 	// Parse the command
-	args := strings.Split(d.Msg, " ")
+	args := strings.Split(d.msg, " ")
 	command := args[0]
-	d.Args = args[1:] // This will be an empty slice if there is nothing after the command
+	args = args[1:] // This will be an empty slice if there is nothing after the command
 	// (we need to pass the arguments through to the command handler)
 
 	// Commands will start with a "/", so we can ignore everything else
@@ -89,16 +90,16 @@ func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	// Check to see if there is a command handler for this command
-	chatCommandFunction, ok := chatCommandMap[command]
+	commandFunction, ok := m.commandMap[command]
 	if ok {
-		chatCommandFunction(ctx, s, d, t)
+		commandFunction(d, args, t)
 	} else {
 		msg := fmt.Sprintf("The chat command of \"/%v\" is not valid.", command)
-		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+		m.ChatServer(msg, d.room)
 	}
 }
 
-func commandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func (m *Manager) commandWebsiteOnly(d *chatData, args []string, t dispatcher.TableManager) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+	m.ChatServer(msg, d.room)
 }

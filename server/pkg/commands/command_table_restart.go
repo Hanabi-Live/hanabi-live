@@ -144,7 +144,7 @@ func tableRestart(
 	}
 
 	// Before the table is deleted, make a copy of the chat, if any
-	oldChat := make([]*TableChatMessage, len(t.Chat))
+	oldChat := make([]*ChatMessage, len(t.Chat))
 	copy(oldChat, t.Chat)
 
 	// Additionally, make a copy of the ChatRead map
@@ -263,7 +263,7 @@ func tableRestart(
 	}
 
 	// Copy over the old chat
-	t2.Chat = make([]*TableChatMessage, len(oldChat))
+	t2.Chat = make([]*ChatMessage, len(oldChat))
 	copy(t2.Chat, oldChat)
 
 	// Copy over the old ChatRead map

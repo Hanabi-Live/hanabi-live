@@ -145,7 +145,7 @@ func (m *Manager) getVersion() int {
 	}
 }
 
-func (m *Manager) parsePlayerName(c *gin.Context) (models.User, bool) {
+func (m *Manager) parsePlayerName(c *gin.Context) (*models.User, bool) {
 	// Local variables
 	w := c.Writer
 
@@ -153,7 +153,7 @@ func (m *Manager) parsePlayerName(c *gin.Context) (models.User, bool) {
 	player := c.Param("player1")
 	if player == "" {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
-		return models.User{}, false
+		return nil, false
 	}
 	normalizedUsername := util.NormalizeString(player)
 
@@ -168,12 +168,12 @@ func (m *Manager) parsePlayerName(c *gin.Context) (models.User, bool) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
-		return models.User{}, false
+		return nil, false
 	} else if exists {
 		return v, true
 	} else {
 		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
-		return models.User{}, false
+		return nil, false
 	}
 }
 
@@ -211,7 +211,7 @@ func (m *Manager) parsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 		}
 
 		// Check if the player exists
-		var user models.User
+		var user *models.User
 		if exists, v, err := m.models.Users.GetUserFromNormalizedUsername(
 			c,
 			normalizedUsername,

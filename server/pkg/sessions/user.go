@@ -21,7 +21,7 @@ func makeUser(s *session) *user {
 
 		Status:     s.status,
 		TableID:    s.tableID,
-		Hyphenated: s.hyphenated,
+		Hyphenated: s.data.hyphenated,
 		Inactive:   s.inactive,
 	}
 }

@@ -1,6 +1,8 @@
 package sessions
 
 import (
+	"fmt"
+
 	"nhooyr.io/websocket"
 )
 
@@ -17,6 +19,15 @@ func (m *Manager) send(userID int, commandName string, commandData interface{}) 
 		return
 	}
 
+	var s *session
+	if v, ok := m.sessions[userID]; !ok {
+		// Other server components might be trying to send a message to a user who has already
+		// disconnected, so just ignore this request
+		return
+	} else {
+		s = v
+	}
+
 	var msg string
 	if v, err := packMsg(commandName, commandData); err != nil {
 		m.logger.Errorf(
@@ -28,15 +39,6 @@ func (m *Manager) send(userID int, commandName string, commandData interface{}) 
 		return
 	} else {
 		msg = v
-	}
-
-	var s *session
-	if v, ok := m.sessions[userID]; !ok {
-		// Other server components might be trying to send a message to a user who has already
-		// disconnected, so just ignore this request
-		return
-	} else {
-		s = v
 	}
 
 	putMsgOnChannel(msg, s)
@@ -72,4 +74,27 @@ func putMsgOnChannel(msg string, s *session) {
 			)
 		}()
 	}
+}
+
+// sendWithChannelBypass is used when we need to synchronously send a message directly to a session
+// without going through the normal send channel. This is used during before the session's channel
+// monitoring goroutine has been initialized.
+func (m *Manager) sendWithChannelBypass(s *session, commandName string, commandData interface{}) error {
+	var msg string
+	if v, err := packMsg(commandName, commandData); err != nil {
+		return fmt.Errorf(
+			"failed to marshal the data when sending a \"%v\" command to WebSocket user %v: %w",
+			commandName,
+			s.userID,
+			err,
+		)
+	} else {
+		msg = v
+	}
+
+	if err := writeToConnWithTimeout(s.ctx, s.conn, msg); err != nil {
+		return err
+	}
+
+	return nil
 }

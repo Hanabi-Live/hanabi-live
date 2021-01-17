@@ -1,6 +1,8 @@
 package chat
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type request struct {
 	reqType requestType
@@ -11,11 +13,15 @@ type requestType int
 
 const (
 	requestTypeChat requestType = iota
-	requestTypeTerminate
+	requestTypeChatDiscord
+	requestTypeChatServer
+	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeChat] = m.chat
+	m.requestFuncMap[requestTypeChatDiscord] = m.chatDiscord
+	m.requestFuncMap[requestTypeChatServer] = m.chatServer
 }
 
 // ListenForRequests will block until messages are sent on the request channel.
@@ -27,7 +33,7 @@ func (m *Manager) ListenForRequests() {
 	for {
 		req := <-m.requests
 
-		if req.reqType == requestTypeTerminate {
+		if req.reqType == requestTypeShutdown {
 			break
 		}
 

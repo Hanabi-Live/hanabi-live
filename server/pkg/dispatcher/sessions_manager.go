@@ -1,16 +1,20 @@
 package dispatcher
 
 import (
+	"context"
+
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+	"nhooyr.io/websocket"
 )
 
 type SessionsManager interface {
-	New(data interface{}) error
+	New(ctx context.Context, conn *websocket.Conn, userID int, username string, ip string) error
 
 	NotifyAllChat(msg string, who string, discord bool, server bool, room string)
 	NotifyAllError(msg string)
 	NotifyAllTable(tableDescription interface{})
 	NotifyAllUser(changedUserID int)
+	NotifyChatServer(userID int, msg string, room string)
 	NotifyError(userID int, msg string)
 	NotifyGame(userID int, gameData interface{})
 	NotifyJoined(userID int, tableID int)

@@ -17,7 +17,6 @@ import (
 type Manager struct {
 	name string
 
-	// We don't need a mutex for the map because only the manager goroutine will access it
 	tables           map[int]*table.Manager // Indexed by table ID
 	tableIDCounter   int
 	usersPlaying     map[int][]int // Indexed by user ID, values are table IDs
@@ -32,9 +31,12 @@ type Manager struct {
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
+
+	useTLS bool
+	domain string
 }
 
-func NewManager(logger *logger.Logger, models *models.Models) *Manager {
+func NewManager(logger *logger.Logger, models *models.Models, useTLS bool, domain string) *Manager {
 	m := &Manager{
 		name: "tables",
 
@@ -51,6 +53,9 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
+
+		useTLS: useTLS,
+		domain: domain,
 	}
 	m.requestFuncMapInit()
 	go m.ListenForRequests()

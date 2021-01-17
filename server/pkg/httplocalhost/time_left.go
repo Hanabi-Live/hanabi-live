@@ -14,7 +14,7 @@ func (m *Manager) timeLeft(c *gin.Context) {
 		w := c.Writer
 
 		var timeLeft string
-		if v, err := getTimeLeft(); err != nil {
+		if v, err := m.Dispatcher.Core.GetShutdownTimeLeft(); err != nil {
 			hLog.Errorf("Failed to get the time left: %v", err)
 			http.Error(
 				w,

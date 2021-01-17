@@ -8,7 +8,8 @@ type ChatManager interface {
 		room string,
 		discord bool,
 		discordDiscriminator string,
-		onlyDiscord bool,
 		server bool,
 	)
+	ChatDiscord(username string, msg string, discordDiscriminator string)
+	ChatServer(msg string, room string)
 }

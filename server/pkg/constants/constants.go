@@ -22,6 +22,12 @@ const (
 	NotOwnerFail    = "Only the table owner can use that command."
 )
 
+// These are constants relating to chat.
+const (
+	Lobby           = "lobby"
+	TableRoomPrefix = "table"
+)
+
 const (
 	WebsiteName = "Hanab Live"
 

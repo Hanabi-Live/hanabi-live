@@ -69,7 +69,7 @@ function drawUser(
   tbody: JQuery<HTMLElement>,
   friend: boolean,
 ) {
-  // Find the status of this user from the "userList" map
+  // Find the status of this user from the map
   const userID = usernameMapping.get(username);
   if (userID === undefined) {
     throw new Error(`Failed to get the ID for the username of "${username}".`);

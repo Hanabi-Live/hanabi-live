@@ -13,9 +13,8 @@ type UserSettings struct {
 	m *Models // Reverse reference
 }
 
-func (us *UserSettings) Get(ctx context.Context, userID int) (settings.Settings, error) {
+func (us *UserSettings) Get(ctx context.Context, userID int) (*settings.Settings, error) {
 	// The database schema must also be configured with any default settings
-	// This cannot be a pointer because we need to copy it
 	defaultSettings := settings.Settings{ // nolint: exhaustivestruct
 		SoundMove:                     true,
 		SoundTimer:                    true,
@@ -84,12 +83,12 @@ func (us *UserSettings) Get(ctx context.Context, userID int) (settings.Settings,
 		&settings.CreateTableAllOrNothing,
 		&settings.CreateTableDetrimentalCharacters,
 	); errors.Is(err, pgx.ErrNoRows) {
-		return defaultSettings, nil
+		return &defaultSettings, nil
 	} else if err != nil {
-		return defaultSettings, err
+		return nil, err
 	}
 
-	return settings, nil
+	return &settings, nil
 }
 
 func (us *UserSettings) Set(ctx context.Context, userID int, name string, value string) error {

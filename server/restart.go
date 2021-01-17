@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 )
 
 // We want to record all of the ongoing games to a flat file on the disk
@@ -50,7 +52,7 @@ func gracefulRestart(ctx context.Context) {
 		getCurrentTimestamp(),
 		gitCommitOnStart,
 	)
-	chatServerSend(ctx, msg, "lobby", false)
+	chatServerSend(ctx, msg, constants.Lobby, false)
 
 	if runtime.GOOS == "windows" {
 		hLog.Info("Manually kill the server now.")

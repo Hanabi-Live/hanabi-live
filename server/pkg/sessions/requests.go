@@ -1,6 +1,8 @@
 package sessions
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type request struct {
 	reqType requestType
@@ -24,7 +26,7 @@ const (
 	requestTypeNotifyAllError
 
 	requestTypePrint
-	requestTypeTerminate
+	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
@@ -50,7 +52,7 @@ func (m *Manager) ListenForRequests() {
 	for {
 		req := <-m.requests
 
-		if req.reqType == requestTypeTerminate {
+		if req.reqType == requestTypeShutdown {
 			break
 		}
 

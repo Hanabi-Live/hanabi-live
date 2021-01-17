@@ -16,7 +16,6 @@ import (
 type Manager struct {
 	name string
 
-	// We don't need a mutex for the map because only the manager goroutine will access it
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
 	requestFuncMap    map[string]func(*SessionData, []byte)

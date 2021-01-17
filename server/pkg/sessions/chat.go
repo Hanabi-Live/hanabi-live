@@ -18,6 +18,7 @@ type chatData struct {
 }
 
 type chatListData struct {
+	// There is no "room" field because that is contained within each chat message
 	List   []*chatData `json:"list"`
 	Unread int         `json:"unread"`
 }
@@ -28,11 +29,10 @@ const (
 	chatLimit = 1000
 )
 
-func (m *Manager) chatSendHistoryFromDatabase(
-	userID int,
+func (m *Manager) chatGetListFromDatabaseHistory(
 	room string,
 	chatHistory []*models.DBChatMessage,
-) {
+) *chatListData {
 	chatDataList := make([]*chatData, 0)
 
 	// The chat messages were queried from the database in order from newest to oldest
@@ -69,10 +69,10 @@ func (m *Manager) chatSendHistoryFromDatabase(
 		chatDataList = append(chatDataList, chatData)
 	}
 
-	m.send(userID, "chatList", &chatListData{
+	return &chatListData{
 		List:   chatDataList,
 		Unread: 0,
-	})
+	}
 }
 
 func (m *Manager) chatSendPastFromTable(
@@ -106,19 +106,5 @@ func (m *Manager) chatSendPastFromTable(
 	m.send(userID, "chatList", &chatListData{
 		List:   chatDataList,
 		Unread: len(chat) - chatRead,
-	})
-}
-
-// chatSendServerMsg is a helper function for sending a private message from the server to a user.
-// (The message will not be written to the database.)
-func (m *Manager) chatSendServerMsg(userID int, msg string, room string) {
-	m.send(userID, "chat", &chatData{
-		Msg:       msg,
-		Who:       "",
-		Discord:   false,
-		Server:    true,
-		Datetime:  time.Now(),
-		Room:      room,
-		Recipient: "",
 	})
 }

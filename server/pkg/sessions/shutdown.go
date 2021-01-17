@@ -1,9 +1,9 @@
 package sessions
 
-// Terminate stops all requests to prepare for an impending server termination.
+// Shutdown stops all requests to prepare for an impending server shutdown.
 // It will block until all existing requests are finished processing.
-func (m *Manager) Terminate() {
-	// Do nothing if we are already in the process of terminating
+func (m *Manager) Shutdown() {
+	// Do nothing if we are already in the process of shutting down
 	if m.requestsClosed.IsSet() {
 		return
 	}
@@ -11,14 +11,14 @@ func (m *Manager) Terminate() {
 	// Prevent new requests
 	m.requestsClosed.Set()
 
-	// Put the termination request on the request queue
+	// Put the shutdown request on the request queue
 	m.requests <- &request{
-		reqType: requestTypeTerminate,
+		reqType: requestTypeShutdown,
 		data:    nil,
 	}
 
 	// The request processing goroutine will continue to process all of the queued requests
-	// When it reaches the termination request, then it will exit
+	// When it reaches the shutdown request, then it will exit
 	// Wait for this to happen
 	m.requestsWaitGroup.Wait()
 }

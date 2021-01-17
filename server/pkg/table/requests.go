@@ -17,8 +17,24 @@ const (
 	requestTypeUnattend
 	requestTypeSpectate
 	requestTypeUnspectate
+
 	requestTypeGetDescription
+	requestTypeStart
+	requestTypePause
 	requestTypeTerminate
+
+	requestTypeChat
+	requestTypeAutomaticStart
+	requestTypeStartIn
+	requestTypeStartInWaitComplete
+	requestTypeMissingScores
+	requestTypeFindVariant
+	requestTypeKick
+	requestTypeSuggest
+	requestTypeTags
+	requestTypeImpostor
+
+	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
@@ -27,7 +43,22 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeUnattend] = m.unattend
 	m.requestFuncMap[requestTypeSpectate] = m.spectate
 	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
+
 	m.requestFuncMap[requestTypeGetDescription] = m.getDescription
+	m.requestFuncMap[requestTypeStart] = m.start
+	m.requestFuncMap[requestTypePause] = m.pause
+	m.requestFuncMap[requestTypeTerminate] = m.terminate
+
+	m.requestFuncMap[requestTypeChat] = m.chat
+	m.requestFuncMap[requestTypeAutomaticStart] = m.automaticStart
+	m.requestFuncMap[requestTypeStartIn] = m.startIn
+	m.requestFuncMap[requestTypeStartInWaitComplete] = m.startInWaitComplete
+	m.requestFuncMap[requestTypeMissingScores] = m.missingScores
+	m.requestFuncMap[requestTypeFindVariant] = m.findVariant
+	m.requestFuncMap[requestTypeKick] = m.kick
+	m.requestFuncMap[requestTypeSuggest] = m.suggest
+	m.requestFuncMap[requestTypeTags] = m.tags
+	m.requestFuncMap[requestTypeImpostor] = m.impostor
 }
 
 // ListenForRequests will block until messages are sent on the request channel.
@@ -39,7 +70,7 @@ func (m *Manager) ListenForRequests() {
 	for {
 		req := <-m.requests
 
-		if req.reqType == requestTypeTerminate {
+		if req.reqType == requestTypeShutdown {
 			break
 		}
 

@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"hash/crc64"
 	"math"
 	"math/rand"
 	"sort"
@@ -47,15 +48,23 @@ func GetCurrentTimestamp() string {
 	return FormatTimestampUnix(time.Now())
 }
 
-// From: http://golangcookbook.blogspot.com/2012/11/generate-random-number-in-given-range.html
-func GetRandom(min int, max int) (int, error) {
-	max++
-	if max-min <= 0 {
-		err := fmt.Errorf("invalid arguments of %v and %v", min, max)
-		return 0, err
+// From: https://golang.cafe/blog/golang-random-number-generator.html
+func GetRandom(min int, max int) int {
+	if min == max {
+		return min
 	}
+
+	// The "rand.Intn()" function panics if n <= 0
+	if max < min {
+		// Swap them
+		temp := max
+		max = min
+		min = temp
+	}
+
+	max++
 	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min, nil // nolint: gosec
+	return rand.Intn(max-min) + min // nolint: gosec
 }
 
 func GetReplayURL(domain string, useTLS bool, args []string) string {
@@ -79,7 +88,7 @@ func GetReplayURL(domain string, useTLS bool, args []string) string {
 	if len(args) == 0 {
 		// They specified an ID but not a turn
 		path := fmt.Sprintf("/replay/%v", id)
-		url := getURLFromPath(useTLS, domain, path)
+		url := GetURLFromPath(useTLS, domain, path)
 		return url
 	}
 
@@ -97,11 +106,11 @@ func GetReplayURL(domain string, useTLS bool, args []string) string {
 
 	// They specified an ID and a turn
 	path := fmt.Sprintf("/replay/%v#%v", id, turn)
-	url := getURLFromPath(useTLS, domain, path)
+	url := GetURLFromPath(useTLS, domain, path)
 	return url
 }
 
-func getURLFromPath(useTLS bool, domain string, path string) string {
+func GetURLFromPath(useTLS bool, domain string, path string) string {
 	protocol := "http"
 	if useTLS {
 		protocol = "https"
@@ -261,6 +270,16 @@ func SecondsToDurationString(seconds int) (string, error) {
 	}
 
 	return msg, nil
+}
+
+// SetSeedFromString seeds the random number generator with a string.
+// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64.
+// We use the CRC64 hash function to do this.
+// Also note that seeding with negative numbers will not work.
+func SetSeedFromString(seed string) {
+	crc64Table := crc64.MakeTable(crc64.ECMA)
+	intSeed := crc64.Checksum([]byte(seed), crc64Table)
+	rand.Seed(int64(intSeed))
 }
 
 // From: https://stackoverflow.com/questions/51997276
