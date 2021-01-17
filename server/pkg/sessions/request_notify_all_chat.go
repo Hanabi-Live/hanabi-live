@@ -5,20 +5,26 @@ import (
 )
 
 type notifyAllChatData struct {
-	msg     string
-	who     string
-	discord bool
-	server  bool
-	room    string
+	username string
+	msg      string
+	room     string
+	discord  bool
+	server   bool
 }
 
-func (m *Manager) NotifyAllChat(msg string, who string, discord bool, server bool, room string) {
+func (m *Manager) NotifyAllChat(
+	username string,
+	msg string,
+	room string,
+	discord bool,
+	server bool,
+) {
 	m.newRequest(requestTypeNotifyAllChat, &notifyAllChatData{ // nolint: errcheck
-		msg:     msg,
-		who:     who,
-		discord: discord,
-		server:  server,
-		room:    room,
+		username: username,
+		msg:      msg,
+		room:     room,
+		discord:  discord,
+		server:   server,
 	})
 }
 
@@ -32,12 +38,12 @@ func (m *Manager) notifyAllChat(data interface{}) {
 	}
 
 	m.sendAll("chat", &chatData{
+		Username:  d.username,
 		Msg:       d.msg,
-		Who:       d.who,
+		Room:      d.room,
 		Discord:   d.discord,
 		Server:    d.server,
 		Datetime:  time.Now(),
-		Room:      d.room,
 		Recipient: "",
 	})
 }

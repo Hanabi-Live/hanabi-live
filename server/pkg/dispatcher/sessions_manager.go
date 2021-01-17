@@ -10,7 +10,7 @@ import (
 type SessionsManager interface {
 	New(ctx context.Context, conn *websocket.Conn, userID int, username string, ip string) error
 
-	NotifyAllChat(msg string, who string, discord bool, server bool, room string)
+	NotifyAllChat(username string, msg string, room string, discord bool, server bool)
 	NotifyAllError(msg string)
 	NotifyAllTable(tableDescription interface{})
 	NotifyAllUser(changedUserID int)

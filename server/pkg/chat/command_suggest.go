@@ -10,21 +10,21 @@ import (
 
 // nolint: godot
 // /suggest
-func (m *Manager) commandSuggest(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandSuggest(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return
 	}
 
 	// Validate that they only sent one argument
-	if len(args) != 1 {
+	if len(d.args) != 1 {
 		msg := "The format of the /suggest command is: /suggest [turn]"
 		m.ChatServer(msg, d.room)
 		return
 	}
 
 	// Validate that the argument is an integer
-	turnString := args[0]
+	turnString := d.args[0]
 	var turn int
 	if v, err := strconv.Atoi(turnString); err != nil {
 		var msg string

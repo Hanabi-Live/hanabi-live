@@ -8,12 +8,12 @@ import (
 )
 
 type chatData struct {
+	Username  string    `json:"username"`
 	Msg       string    `json:"msg"`
-	Who       string    `json:"who"`
+	Room      string    `json:"room"`
 	Discord   bool      `json:"discord"`
 	Server    bool      `json:"server"`
 	Datetime  time.Time `json:"datetime"`
-	Room      string    `json:"room"`
 	Recipient string    `json:"recipient"`
 }
 
@@ -58,12 +58,12 @@ func (m *Manager) chatGetListFromDatabaseHistory(
 		}
 
 		chatData := &chatData{
+			Username:  dbChatMessage.Name,
 			Msg:       dbChatMessage.Message,
-			Who:       dbChatMessage.Name,
+			Room:      room,
 			Discord:   discord,
 			Server:    server,
 			Datetime:  dbChatMessage.Datetime,
-			Room:      room,
 			Recipient: "",
 		}
 		chatDataList = append(chatDataList, chatData)
@@ -92,12 +92,12 @@ func (m *Manager) chatSendPastFromTable(
 		// We have to convert the *table.ChatMessage to a *chatData
 		cm := chat[i]
 		chatData := &chatData{
+			Username:  cm.Username,
 			Msg:       cm.Msg,
-			Who:       cm.Username,
+			Room:      room,
 			Discord:   false,
 			Server:    cm.Server,
 			Datetime:  cm.Datetime,
-			Room:      room,
 			Recipient: "",
 		}
 		chatDataList = append(chatDataList, chatData)

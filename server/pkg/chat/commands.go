@@ -7,6 +7,13 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 )
 
+type commandData struct {
+	userID   int
+	username string
+	room     string
+	args     []string
+}
+
 func (m *Manager) commandMapInit() {
 	// General commands (that work both in the lobby and at a table)
 	m.commandMap["help"] = m.commandHelp
@@ -92,14 +99,19 @@ func (m *Manager) checkCommand(d *chatData, t dispatcher.TableManager) {
 	// Check to see if there is a command handler for this command
 	commandFunction, ok := m.commandMap[command]
 	if ok {
-		commandFunction(d, args, t)
+		commandFunction(&commandData{
+			userID:   d.userID,
+			username: d.username,
+			room:     d.room,
+			args:     args,
+		}, t)
 	} else {
 		msg := fmt.Sprintf("The chat command of \"/%v\" is not valid.", command)
 		m.ChatServer(msg, d.room)
 	}
 }
 
-func (m *Manager) commandWebsiteOnly(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandWebsiteOnly(d *commandData, t dispatcher.TableManager) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
 	m.ChatServer(msg, d.room)
 }

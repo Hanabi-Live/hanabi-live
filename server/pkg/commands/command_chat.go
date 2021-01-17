@@ -25,5 +25,5 @@ func (m *Manager) chat(sessionData *SessionData, commandData []byte) {
 		return
 	}
 
-	// m.Dispatcher.Chat.Chat(sessionData.UserID, sessionData.Username, d.TableID, d.Password)
+	m.Dispatcher.Chat.ChatNormal(sessionData.UserID, sessionData.Username, d.Msg, d.Room)
 }

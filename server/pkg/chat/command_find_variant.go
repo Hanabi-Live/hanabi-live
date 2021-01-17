@@ -7,7 +7,7 @@ import (
 
 // /findvariant
 // This function does not consider modifiers (e.g. "Empty Clues").
-func (m *Manager) commandFindVariant(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandFindVariant(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return

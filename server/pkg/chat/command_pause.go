@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /pause
-func (m *Manager) commandPause(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandPause(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return

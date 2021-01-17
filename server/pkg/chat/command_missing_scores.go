@@ -6,7 +6,7 @@ import (
 )
 
 // /missingscores - Display a link to the missing scores of the current players in the game.
-func (m *Manager) commandMissingScores(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandMissingScores(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return

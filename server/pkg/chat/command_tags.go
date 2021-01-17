@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /tags
-func (m *Manager) commandTags(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandTags(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return

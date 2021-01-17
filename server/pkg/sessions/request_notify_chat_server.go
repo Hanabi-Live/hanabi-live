@@ -5,17 +5,18 @@ import (
 )
 
 type notifyChatServerData struct {
-	userID int
-	msg    string
-	room   string
+	recipientUserID int
+	msg             string
+	room            string
 }
 
 // NotifyChatServer is a helper function for sending a private message from the server to a user.
 // (The message will not be written to the database.)
-func (m *Manager) NotifyChatServer(userID int, msg string, room string) {
-	m.newRequest(requestTypeNotifyAllChat, &notifyChatServerData{ // nolint: errcheck
-		msg:  msg,
-		room: room,
+func (m *Manager) NotifyChatServer(recipientUserID int, msg string, room string) {
+	m.newRequest(requestTypeNotifyChatServer, &notifyChatServerData{ // nolint: errcheck
+		recipientUserID: recipientUserID,
+		msg:             msg,
+		room:            room,
 	})
 }
 
@@ -28,13 +29,13 @@ func (m *Manager) notifyChatServer(data interface{}) {
 		d = v
 	}
 
-	m.send(d.userID, "chat", &chatData{
+	m.send(d.recipientUserID, "chat", &chatData{
+		Username:  "",
 		Msg:       d.msg,
-		Who:       "",
+		Room:      d.room,
 		Discord:   false,
 		Server:    true,
 		Datetime:  time.Now(),
-		Room:      d.room,
 		Recipient: "",
 	})
 }

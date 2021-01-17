@@ -19,6 +19,7 @@ const (
 	requestTypeNotifyAllTable
 	requestTypeNotifyAllTableGone
 
+	requestTypeNotifyChatServer
 	requestTypeNotifyGame
 
 	requestTypeNotifyWarning
@@ -35,6 +36,9 @@ func (m *Manager) requestFuncMapInit() {
 
 	m.requestFuncMap[requestTypeNotifyAllTable] = m.notifyAllTable
 	m.requestFuncMap[requestTypeNotifyAllTableGone] = m.notifyAllTableGone
+
+	m.requestFuncMap[requestTypeNotifyChatServer] = m.notifyChatServer
+	m.requestFuncMap[requestTypeNotifyGame] = m.notifyGame
 
 	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
 	m.requestFuncMap[requestTypeNotifyError] = m.notifyError

@@ -12,14 +12,14 @@ type request struct {
 type requestType int
 
 const (
-	requestTypeChat requestType = iota
+	requestTypeChatNormal requestType = iota
 	requestTypeChatDiscord
 	requestTypeChatServer
 	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap[requestTypeChat] = m.chat
+	m.requestFuncMap[requestTypeChatNormal] = m.chatNormal
 	m.requestFuncMap[requestTypeChatDiscord] = m.chatDiscord
 	m.requestFuncMap[requestTypeChatServer] = m.chatServer
 }

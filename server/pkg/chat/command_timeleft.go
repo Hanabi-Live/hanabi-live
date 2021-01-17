@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /timeleft
-func (m *Manager) commandTimeLeft(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandTimeLeft(d *commandData, t dispatcher.TableManager) {
 	var timeLeft string
 	if v, err := m.Dispatcher.Core.GetShutdownTimeLeft(); err != nil {
 		m.logger.Errorf("Failed to get the time left: %v", err)

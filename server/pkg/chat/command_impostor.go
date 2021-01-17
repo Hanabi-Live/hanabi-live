@@ -5,7 +5,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 )
 
-func (m *Manager) commandImpostor(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandImpostor(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return

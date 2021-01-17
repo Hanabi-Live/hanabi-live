@@ -10,9 +10,9 @@ import (
 
 // nolint: godot
 // /random [min] [max]
-func (m *Manager) commandRandom(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandRandom(d *commandData, t dispatcher.TableManager) {
 	// We expect something like "/random 2" or "/random 1 2"
-	if len(args) != 1 && len(args) != 2 {
+	if len(d.args) != 1 && len(d.args) != 2 {
 		msg := "The format of the /random command is: /random [min] [max]"
 		m.ChatServer(msg, d.room)
 		return
@@ -20,9 +20,9 @@ func (m *Manager) commandRandom(d *chatData, args []string, t dispatcher.TableMa
 
 	// Ensure that both arguments are numbers
 	var arg1, arg2 int
-	if v, err := strconv.Atoi(args[0]); err != nil {
-		if _, err := strconv.ParseFloat(args[0], 64); err != nil {
-			msg := fmt.Sprintf("\"%v\" is not an integer.", args[0])
+	if v, err := strconv.Atoi(d.args[0]); err != nil {
+		if _, err := strconv.ParseFloat(d.args[0], 64); err != nil {
+			msg := fmt.Sprintf("\"%v\" is not an integer.", d.args[0])
 			m.ChatServer(msg, d.room)
 		} else {
 			msg := "The /random command only accepts integers."
@@ -32,10 +32,10 @@ func (m *Manager) commandRandom(d *chatData, args []string, t dispatcher.TableMa
 	} else {
 		arg1 = v
 	}
-	if len(args) == 2 { // nolint: gomnd
-		if v, err := strconv.Atoi(args[1]); err != nil {
-			if _, err := strconv.ParseFloat(args[1], 64); err != nil {
-				msg := fmt.Sprintf("\"%v\" is not an integer.", args[1])
+	if len(d.args) == 2 { // nolint: gomnd
+		if v, err := strconv.Atoi(d.args[1]); err != nil {
+			if _, err := strconv.ParseFloat(d.args[1], 64); err != nil {
+				msg := fmt.Sprintf("\"%v\" is not an integer.", d.args[1])
 				m.ChatServer(msg, d.room)
 			} else {
 				msg := "The /random command only accepts integers."
@@ -49,10 +49,10 @@ func (m *Manager) commandRandom(d *chatData, args []string, t dispatcher.TableMa
 
 	// Assign min and max, depending on how many arguments were passed
 	var min, max int
-	if len(args) == 1 {
+	if len(d.args) == 1 {
 		min = 1
 		max = arg1
-	} else if len(args) == 2 { // nolint: gomnd
+	} else if len(d.args) == 2 { // nolint: gomnd
 		min = arg1
 		max = arg2
 	}

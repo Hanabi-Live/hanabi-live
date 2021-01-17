@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /here
-func (m *Manager) commandHere(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandHere(d *commandData, t dispatcher.TableManager) {
 	if t != nil {
 		m.ChatServer(constants.NotInLobbyFail, d.room)
 		return

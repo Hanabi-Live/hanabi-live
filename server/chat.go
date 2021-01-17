@@ -31,12 +31,12 @@ func chatServerSendAll(ctx context.Context, msg string) {
 // chatServerSendPM is for sending non-public messages to specific users
 func chatServerSendPM(s *Session, msg string, room string) {
 	s.Emit("chat", &ChatMessage{
+		Username:  WebsiteName,
 		Msg:       msg,
-		Who:       WebsiteName,
+		Room:      room,
 		Discord:   false,
 		Server:    true,
 		Datetime:  time.Now(),
-		Room:      room,
 		Recipient: s.Username,
 	})
 }

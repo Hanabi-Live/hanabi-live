@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /uptime
-func (m *Manager) commandUptime(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandUptime(d *commandData, t dispatcher.TableManager) {
 	cameOnline := m.Dispatcher.Core.GetCameOnline()
 	m.ChatServer(cameOnline, d.room)
 

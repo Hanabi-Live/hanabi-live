@@ -71,7 +71,7 @@ const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
-let lastPM = "";
+let lastPMUsername = "";
 let datetimeLastChatInput = new Date().getTime();
 let typedChatHistory: string[] = [];
 let typedChatHistoryIndex: number | null = null;
@@ -157,8 +157,8 @@ function input(this: HTMLElement, event: JQuery.Event) {
   }
 
   // /r - A PM reply
-  if (text === "/r " && lastPM !== "") {
-    element.val(`/pm ${lastPM} `);
+  if (text === "/r " && lastPMUsername !== "") {
+    element.val(`/pm ${lastPMUsername} `);
     return;
   }
 
@@ -493,7 +493,7 @@ export function add(data: ChatMessage, fast: boolean): void {
     if (data.recipient === globals.username) {
       // This is a private message (PM) that we are receiving
       // Record who our last PM is from
-      lastPM = data.who;
+      lastPMUsername = data.username;
     }
 
     if (globals.currentScreen === Screen.PreGame) {
@@ -539,7 +539,7 @@ export function add(data: ChatMessage, fast: boolean): void {
   line += `[${datetime}]&nbsp; `;
   if (data.recipient !== "") {
     if (data.recipient === globals.username) {
-      line += `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `;
+      line += `<span class="red">[PM from <strong>${data.username}</strong>]</span>&nbsp; `;
     } else {
       line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
     }
@@ -549,8 +549,8 @@ export function add(data: ChatMessage, fast: boolean): void {
     (data.recipient !== undefined && data.recipient !== "")
   ) {
     line += data.msg;
-  } else if (data.who) {
-    line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
+  } else if (data.username) {
+    line += `&lt;<strong>${data.username}</strong>&gt;&nbsp; `;
     line += data.msg;
   } else {
     line += data.msg;
@@ -589,7 +589,7 @@ export function add(data: ChatMessage, fast: boolean): void {
   }
 
   // Remove the person from the typing list, if present
-  const index = globals.peopleTyping.indexOf(data.who);
+  const index = globals.peopleTyping.indexOf(data.username);
   if (index !== -1) {
     globals.peopleTyping.splice(index, 1);
     updatePeopleTyping();
@@ -605,7 +605,7 @@ export function add(data: ChatMessage, fast: boolean): void {
       globals.currentScreen === Screen.Game &&
       globals.ui !== null
     ) {
-      globals.ui.suggestTurn(data.who, segment);
+      globals.ui.suggestTurn(data.username, segment);
     }
   }
 }
@@ -614,12 +614,12 @@ export function add(data: ChatMessage, fast: boolean): void {
 export function addSelf(msg: string, room: string): void {
   add(
     {
+      username: "",
       msg,
-      who: "",
+      room,
       discord: false,
       server: true,
       datetime: new Date().toString(),
-      room,
       recipient: "",
     },
     false,

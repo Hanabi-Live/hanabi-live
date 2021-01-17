@@ -20,7 +20,7 @@ type Manager struct {
 	requestsWaitGroup sync.WaitGroup
 	requestFuncMap    map[requestType]func(interface{})
 	requestsClosed    *abool.AtomicBool
-	commandMap        map[string]func(*chatData, []string, dispatcher.TableManager)
+	commandMap        map[string]func(*commandData, dispatcher.TableManager)
 	lobbyRoomRegExp   *regexp.Regexp
 
 	logger     *logger.Logger
@@ -38,7 +38,7 @@ func NewManager(logger *logger.Logger, models *models.Models, domain string, use
 		requests:        make(chan *request),
 		requestFuncMap:  make(map[requestType]func(interface{})),
 		requestsClosed:  abool.New(),
-		commandMap:      make(map[string]func(*chatData, []string, dispatcher.TableManager)),
+		commandMap:      make(map[string]func(*commandData, dispatcher.TableManager)),
 		lobbyRoomRegExp: regexp.MustCompile(`table(\d+)`),
 
 		logger:     logger,

@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /replay [databaseID] [turn]
-func (m *Manager) commandReplay(d *chatData, args []string, t dispatcher.TableManager) {
-	msg := util.GetReplayURL(m.domain, m.useTLS, args)
+func (m *Manager) commandReplay(d *commandData, t dispatcher.TableManager) {
+	msg := util.GetReplayURL(m.domain, m.useTLS, d.args)
 	m.ChatServer(msg, d.room)
 }

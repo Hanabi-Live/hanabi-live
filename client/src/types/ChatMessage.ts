@@ -1,9 +1,9 @@
 export default interface ChatMessage {
+  username: string;
   msg: string;
-  who: string;
+  room: string;
   discord: boolean;
   server: boolean;
   datetime: string; // Converted to a date in the "chat.add()" function
-  room: string;
   recipient: string;
 }

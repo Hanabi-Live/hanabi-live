@@ -7,7 +7,7 @@ import (
 
 // nolint: godot
 // /wrongchannel
-func (m *Manager) commandWrongChannel(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandWrongChannel(d *commandData, t dispatcher.TableManager) {
 	if t != nil {
 		m.ChatServer(constants.NotInLobbyFail, d.room)
 		return

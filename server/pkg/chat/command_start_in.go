@@ -14,21 +14,21 @@ const (
 
 // nolint: godot
 // /startin [minutes]
-func (m *Manager) commandStartIn(d *chatData, args []string, t dispatcher.TableManager) {
+func (m *Manager) commandStartIn(d *commandData, t dispatcher.TableManager) {
 	if t == nil || d.room == constants.Lobby {
 		m.ChatServer(constants.NotInGameFail, d.room)
 		return
 	}
 
 	// Validate the amount of minutes to wait
-	if len(args) != 1 {
+	if len(d.args) != 1 {
 		msg := "You must specify the amount of minutes to wait. (e.g. \"/startin 1\")"
 		m.ChatServer(msg, d.room)
 	}
 
 	var minutesToWait float64
-	if v, err := strconv.ParseFloat(args[0], 64); err != nil {
-		msg := fmt.Sprintf("\"%v\" is not a valid number.", args[0])
+	if v, err := strconv.ParseFloat(d.args[0], 64); err != nil {
+		msg := fmt.Sprintf("\"%v\" is not a valid number.", d.args[0])
 		m.ChatServer(msg, d.room)
 		return
 	} else {

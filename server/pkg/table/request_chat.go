@@ -57,7 +57,7 @@ func (m *Manager) chat(data interface{}) {
 	m.table.Chat = append(m.table.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	m.Dispatcher.Sessions.NotifyAllChat(d.msg, d.username, false, d.server, m.table.getRoomName())
+	m.Dispatcher.Sessions.NotifyAllChat(d.username, d.msg, m.table.getRoomName(), false, d.server)
 
 	// If this user was typing, set them so that they are not typing
 	// Check for spectators first in case this is a shared replay that the player happened to be in
