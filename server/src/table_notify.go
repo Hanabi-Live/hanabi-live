@@ -88,7 +88,7 @@ func (t *Table) NotifyPlayerChange() {
 			Players:           gamePlayers,
 			Options:           t.Options,
 			PasswordProtected: t.PasswordHash != "",
-			MaxPlayers:        t.ExtraOptions.MaxPlayers,
+			MaxPlayers:        t.MaxPlayers,
 		})
 	}
 }

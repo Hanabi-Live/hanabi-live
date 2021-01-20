@@ -109,7 +109,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		Progress:          t.Progress,
 		Players:           players,
 		Spectators:        spectators,
-		MaxPlayers:        t.ExtraOptions.MaxPlayers,
+		MaxPlayers:        t.MaxPlayers,
 	}
 }
 
