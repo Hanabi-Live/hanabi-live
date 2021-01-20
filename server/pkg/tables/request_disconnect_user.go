@@ -1,13 +1,15 @@
 package tables
 
 type disconnectUserData struct {
-	userID int
+	userID   int
+	username string
 }
 
 // DisconnectUser requests that a user leaves all of their joined tables.
-func (m *Manager) DisconnectUser(userID int) {
+func (m *Manager) DisconnectUser(userID int, username string) {
 	m.newRequest(requestTypeDisconnectUser, &disconnectUserData{ // nolint: errcheck
-		userID: userID,
+		userID:   userID,
+		username: username,
 	})
 }
 
@@ -23,33 +25,23 @@ func (m *Manager) disconnectUser(data interface{}) interface{} {
 	// Go through every table that this user is playing in and unattend them
 	playingAtTables := m.getUserPlaying(d.userID)
 	for _, tableID := range playingAtTables {
-		if tableManager, ok := m.tables[tableID]; ok {
-			tableManager.Unattend(d.userID)
-		} else {
-			m.logger.Errorf(
-				"User %v was marked as playing in table %v, but that table does not exist in the tables map.",
-				d.userID,
-				tableID,
-			)
-		}
-
+		/*
+			m.unattend(&unattendData{
+				userID: d.userID,
+			})
+		*/
+		// TODO
 		m.deleteUserPlaying(d.userID, tableID)
 	}
 
 	// Go through every table that this user is spectating and unspectate them
 	tablesSpectatingList := m.getUserSpectating(d.userID)
 	for _, tableID := range tablesSpectatingList {
-		if tableManager, ok := m.tables[tableID]; ok {
-			tableManager.Unspectate(d.userID)
-		} else {
-			m.logger.Errorf(
-				"User %v was marked as spectating table %v, but that table does not exist in the tables map.",
-				d.userID,
-				tableID,
-			)
-		}
-
-		m.deleteUserSpectating(d.userID, tableID)
+		m.unspectate(&unspectateData{
+			userID:   d.userID,
+			username: d.username,
+			tableID:  tableID,
+		})
 	}
 
 	return true

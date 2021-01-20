@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"fmt"
@@ -252,3 +254,5 @@ func printUserRelationships(ctx context.Context) {
 func printLine() {
 	hLog.Debug("------------------------------------")
 }
+
+*/

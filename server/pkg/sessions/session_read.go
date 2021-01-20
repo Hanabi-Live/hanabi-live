@@ -50,6 +50,7 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 			sessionData := &commands.SessionData{
 				UserID:   s.userID,
 				Username: s.username,
+				Friends:  s.data.friends,
 				Muted:    s.data.muted,
 			}
 			m.Dispatcher.Commands.Send(sessionData, commandName, commandData)

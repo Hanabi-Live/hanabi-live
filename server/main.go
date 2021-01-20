@@ -2,6 +2,8 @@ package main // In Go, executable commands must always use package main
 
 // This file contains the entry point for the server software
 
+/*
+
 import (
 	"fmt"
 	"os"
@@ -214,3 +216,5 @@ func main() {
 	// (the "ListenAndServe" functions located inside here are blocking)
 	httpInit()
 }
+
+*/

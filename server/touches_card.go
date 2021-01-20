@@ -1,5 +1,7 @@
 package main
 
+/*
+
 // TouchesCard returns true if a clue will touch a particular suit.
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant.
@@ -76,3 +78,5 @@ func (m *Manager) TouchesCard(variantName string, clue Clue, card *Card) bool {
 
 	return false
 }
+
+*/

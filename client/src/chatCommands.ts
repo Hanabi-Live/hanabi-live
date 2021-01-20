@@ -26,7 +26,7 @@ function friend(_room: string, args: string[]) {
     modals.warningShow("You cannot friend yourself.");
   }
 
-  globals.conn!.send("chatFriend", {
+  globals.conn!.send("friend", {
     name,
   });
 }
@@ -232,7 +232,7 @@ chatCommands.set("unfriend", (_room: string, args: string[]) => {
     modals.warningShow("You cannot unfriend yourself.");
   }
 
-  globals.conn!.send("chatUnfriend", {
+  globals.conn!.send("unfriend", {
     name,
   });
 });

@@ -11,4 +11,5 @@ type TableManager interface {
 	StartIn(userID int, minutesToWait float64)
 	Suggest(turn int)
 	Tags()
+	Unattend(userID int, username string)
 }

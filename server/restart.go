@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"fmt"
@@ -64,3 +66,5 @@ func gracefulRestart(ctx context.Context) {
 		}
 	}
 }
+
+*/

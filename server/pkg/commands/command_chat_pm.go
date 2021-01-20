@@ -1,86 +1,26 @@
 package commands
 
-/*
-// commandChatPM is sent when a user sends a private message
-//
-// Example data:
-// {
-//   msg: 'i secretly adore you',
-//   recipient: 'Alice',
-// }
-func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
-	// Check to see if their IP has been muted
-	if s != nil && s.Muted {
-		s.Warning("You have been muted by an administrator.")
-		return
-	}
+import (
+	"encoding/json"
+)
 
-	// Sanitize and validate the chat message
-	if v, valid := chatSanitize(s, d.Msg, false); !valid {
-		return
-	} else {
-		d.Msg = v
-	}
-
-	// Sanitize and validate the private message recipient
-	if v, valid := chatSanitize(s, d.Recipient, false); !valid {
-		return
-	} else {
-		d.Recipient = v
-	}
-
-	// Validate that they are not sending a private message to themselves
-	normalizedUsername := normalizeString(d.Recipient)
-	if normalizedUsername == normalizeString(s.Username) {
-		s.Warning("You cannot send a private message to yourself.")
-		return
-	}
-
-	// Validate that the recipient is online
-	sessionList := sessions2.GetList()
-	var recipientSession *Session
-	for _, s2 := range sessionList {
-		if normalizeString(s2.Username) == normalizedUsername {
-			recipientSession = s2
-			break
-		}
-	}
-	if recipientSession == nil {
-		s.Warningf("User \"%v\" is not currently online.", d.Recipient)
-		return
-	}
-
-	// Escape all HTML special characters (to stop various attacks against other players)
-	d.Msg = html.EscapeString(d.Msg)
-
-	chatPM(s, d, recipientSession)
+type chatPMData struct {
+	Msg       string `json:"msg"`
+	Recipient string `json:"recipient"`
 }
 
-func chatPM(s *Session, d *CommandData, recipientSession *Session) {
-	// Log the message
-	hLog.Infof("PM <%v> --> <%v> %v", s.Username, recipientSession.Username, d.Msg)
-
-	// Add the message to the database
-	if err := models.ChatLogPM.Insert(s.UserID, d.Msg, recipientSession.UserID); err != nil {
-		hLog.Errorf("Failed to insert a private message into the database: %v", err)
-		s.Error(DefaultErrorMsg)
+// chatPM is sent when a user sends a private message.
+func (m *Manager) commandChatPM(sessionData *SessionData, commandData []byte) {
+	var d *chatPMData
+	if err := json.Unmarshal(commandData, &d); err != nil {
+		msg := "Your \"chatPM\" command contained invalid data."
+		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}
 
-	chatMessage := &ChatMessage{
-		Username:       s.Username,
-		Msg:       d.Msg,
-		Room:      "",
-		Discord:   false,
-		Server:    false,
-		Datetime:  time.Now(),
-		Recipient: recipientSession.Username,
+	if m.chatCheckMuted(sessionData) {
+		return
 	}
 
-	// Echo the private message back to the person who sent it
-	s.Emit("chat", chatMessage)
-
-	// Send the private message to the recipient
-	recipientSession.Emit("chat", chatMessage)
+	m.Dispatcher.Chat.ChatPM(sessionData.UserID, sessionData.Username, d.Msg, d.Recipient)
 }
-*/

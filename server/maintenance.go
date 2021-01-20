@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"fmt"
@@ -32,3 +34,5 @@ func maintenance(ctx context.Context, enabled bool) {
 	msg := fmt.Sprintf("%v New game creation has been %v.", whatsHappeningString, verb)
 	chatServerSendAll(ctx, msg)
 }
+
+*/

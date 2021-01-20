@@ -18,12 +18,19 @@ func (m *Manager) chat(sessionData *SessionData, commandData []byte) {
 		return
 	}
 
-	// Check to see if their IP has been muted
-	if sessionData.Muted {
-		msg := "You have been muted by an administrator."
-		m.Dispatcher.Sessions.NotifyWarning(sessionData.UserID, msg)
+	if m.chatCheckMuted(sessionData) {
 		return
 	}
 
 	m.Dispatcher.Chat.ChatNormal(sessionData.UserID, sessionData.Username, d.Msg, d.Room)
+}
+
+func (m *Manager) chatCheckMuted(sessionData *SessionData) bool {
+	if sessionData.Muted {
+		msg := "You have been muted by an administrator."
+		m.Dispatcher.Sessions.NotifyWarning(sessionData.UserID, msg)
+		return true
+	}
+
+	return false
 }

@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"encoding/json"
@@ -249,3 +251,5 @@ func restoreTableActionFatal(i int, tableID uint64, actionType string) {
 		actionType,
 	)
 }
+
+*/

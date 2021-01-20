@@ -30,16 +30,19 @@ func (m *Manager) chat(data interface{}) {
 		d = v
 	}
 
+	// Local variables
+	t := m.table
+
 	// Validate that this player is in the game or spectating
 	var playerIndex int
 	var spectatorIndex int
 	if !d.server {
-		playerIndex = m.table.getPlayerIndexFromID(d.userID)
-		spectatorIndex = m.table.getSpectatorIndexFromID(d.userID)
+		playerIndex = t.getPlayerIndexFromID(d.userID)
+		spectatorIndex = t.getSpectatorIndexFromID(d.userID)
 		if playerIndex == -1 && spectatorIndex == -1 {
 			msg := fmt.Sprintf(
 				"You are not playing or spectating at table %v, so you cannot send chat to it.",
-				m.table.ID,
+				t.ID,
 			)
 			m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
 			return
@@ -54,10 +57,10 @@ func (m *Manager) chat(data interface{}) {
 		Datetime: time.Now(),
 		Server:   d.server,
 	}
-	m.table.Chat = append(m.table.Chat, chatMsg)
+	t.Chat = append(t.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	m.Dispatcher.Sessions.NotifyAllChat(d.username, d.msg, m.table.getRoomName(), false, d.server)
+	m.Dispatcher.Sessions.NotifyAllChat(d.username, d.msg, t.getRoomName(), false, d.server)
 
 	// If this user was typing, set them so that they are not typing
 	// Check for spectators first in case this is a shared replay that the player happened to be in
@@ -65,12 +68,12 @@ func (m *Manager) chat(data interface{}) {
 		return
 	}
 	if spectatorIndex != -1 {
-		sp := m.table.spectators[spectatorIndex]
-		if sp.Typing {
-			sp.Typing = false
+		sp := t.spectators[spectatorIndex]
+		if sp.typing {
+			sp.typing = false
 		}
 	} else if playerIndex != -1 {
-		p := m.table.Players[playerIndex]
+		p := t.Players[playerIndex]
 		if p.Typing {
 			p.Typing = false
 		}

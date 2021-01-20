@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"fmt"
@@ -209,3 +211,5 @@ func waitForAllWebSocketCommandsToFinish() {
 	commandWaitGroup.Wait() // Will block until it the counter becomes 0
 	hLog.Info("All WebSocket commands have completed.")
 }
+
+*/

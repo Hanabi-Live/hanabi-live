@@ -103,7 +103,7 @@ func (m *Manager) stats(c *gin.Context) {
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]*VariantStatsData, 0)
-	for _, name := range m.Dispatcher.Variants.VariantNames() {
+	for _, name := range m.Dispatcher.Variants.GetVariantNames() {
 		var variant *variants.Variant
 		if v, err := m.Dispatcher.Variants.GetVariant(name); err != nil {
 			m.logger.Errorf("Failed to get the variant: %v", err)

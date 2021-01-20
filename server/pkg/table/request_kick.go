@@ -28,32 +28,35 @@ func (m *Manager) kick(data interface{}) {
 		d = v
 	}
 
-	if m.table.Running {
-		m.Dispatcher.Chat.ChatServer(constants.NotStartedFail, m.table.getRoomName())
+	// Local variables
+	t := m.table
+
+	if t.Running {
+		m.Dispatcher.Chat.ChatServer(constants.NotStartedFail, t.getRoomName())
 		return
 	}
 
-	if d.userID != m.table.OwnerID {
-		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, m.table.getRoomName())
+	if d.userID != t.OwnerID {
+		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, t.getRoomName())
 		return
 	}
 
 	// Check to see if this person is in the game
 	normalizedTargetUsername := util.NormalizeString(d.targetUsername)
-	for _, p := range m.table.Players {
+	for _, p := range t.Players {
 		if normalizedTargetUsername == util.NormalizeString(p.Username) {
 			// Record this player's user ID so that they cannot rejoin the table afterward
-			m.table.kickedPlayers[p.UserID] = struct{}{}
+			t.kickedPlayers[p.UserID] = struct{}{}
 
 			// Submit a request to remove them from the table
-			m.Dispatcher.Tables.Leave(p.UserID, p.Username, m.table.ID)
+			m.Dispatcher.Tables.Leave(p.UserID, p.Username, t.ID)
 
 			msg := fmt.Sprintf("Kicked \"%v\" from the game.", p.Username)
-			m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+			m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 			return
 		}
 	}
 
 	msg := fmt.Sprintf("\"%v\" is not joined to this game.", d.targetUsername)
-	m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+	m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 }

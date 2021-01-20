@@ -1,9 +1,5 @@
 package tables
 
-import (
-	"fmt"
-)
-
 type spectateData struct {
 	userID   int
 	username string
@@ -27,7 +23,7 @@ func (m *Manager) spectate(data interface{}) interface{} {
 		d = v
 	}
 
-	fmt.Println(d)
+	m.logger.Infof("%v", d.userID)
 
 	return true
 }

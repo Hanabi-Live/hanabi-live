@@ -1,5 +1,7 @@
 package main
 
+/*
+
 // CheckScrub removes some information from the action to prevent players having more knowledge
 // than they should have, if necessary (e.g. when a card is drawn to a player's hand)
 func CheckScrub(t *Table, action interface{}, userID int) interface{} {
@@ -122,3 +124,5 @@ func getEquivalentPlayer(t *Table, userID int) *GamePlayer {
 	// The action is going to be sent to a spectator that can see every hand
 	return nil
 }
+
+*/

@@ -16,7 +16,6 @@ func (m *Manager) GetDescription() (*Description, error) {
 	}
 
 	result := <-resultsChannel
-
 	return result, nil
 }
 

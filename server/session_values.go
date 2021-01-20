@@ -3,6 +3,8 @@
 
 package main
 
+/*
+
 import (
 	"time"
 )
@@ -171,3 +173,5 @@ func (s *Session) Banned() bool {
 	defer s.DataMutex.RUnlock()
 	return s.Data.Banned
 }
+
+*/

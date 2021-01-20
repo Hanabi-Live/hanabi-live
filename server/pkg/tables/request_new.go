@@ -145,11 +145,12 @@ func (m *Manager) new(data interface{}) interface{} {
 		password: d.password,
 	}); !ok.(bool) {
 		// The creator of the table failed to join the table; this should never happen
-		// Stop the table goroutine that is listening for requests
-		t.Shutdown()
-
-		// Remove the table manager from the map
-		delete(m.tables, tableID)
+		m.logger.Errorf(
+			"tablesManager - Failed to join %v to the new table %v. Deleting it.",
+			util.PrintUser(d.userID, d.username),
+			tableID,
+		)
+		m.delete(tableID, t)
 
 		// Now, there should be no more references to the table manager,
 		// and it should be garbage collected

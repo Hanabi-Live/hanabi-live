@@ -145,12 +145,27 @@ func (t *table) getPlayerIndexFromID(userID int) int {
 
 func (t *table) getSpectatorIndexFromID(userID int) int {
 	for i, sp := range t.spectators {
-		if sp.UserID == userID {
+		if sp.userID == userID {
 			return i
 		}
 	}
 
 	return -1
+}
+
+func (t *table) getOwner() *player {
+	if t.Replay {
+		// This function is only meant to be used for ongoing games
+		return nil
+	}
+
+	for _, p := range t.Players {
+		if p.UserID == t.OwnerID {
+			return p
+		}
+	}
+
+	return nil
 }
 
 func (t *table) getName() string {

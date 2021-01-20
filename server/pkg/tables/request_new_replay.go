@@ -2,7 +2,6 @@ package tables
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
@@ -31,7 +30,7 @@ func (m *Manager) newReplay(data interface{}) {
 		d = v
 	}
 
-	fmt.Println(d)
+	m.logger.Infof("%v", d.userID)
 }
 
 func (m *Manager) newReplayGetDatabaseOptions(

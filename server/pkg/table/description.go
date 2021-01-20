@@ -1,26 +1,26 @@
 package table
 
 type Description struct {
-	ID                int      `json:"id"`
-	Name              string   `json:"name"`
-	PasswordProtected bool     `json:"passwordProtected"`
-	NumPlayers        int      `json:"numPlayers"`
-	Running           bool     `json:"running"`
-	VariantName       string   `json:"variantName"`
-	Timed             bool     `json:"timed"`
-	TimeBase          int      `json:"timeBase"`
-	TimePerTurn       int      `json:"timePerTurn"`
-	SharedReplay      bool     `json:"sharedReplay"`
-	Progress          int      `json:"progress"`
-	Players           []string `json:"players"`
-	Spectators        []string `json:"spectators"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+
+	Players    []string `json:"players"`
+	Spectators []string `json:"spectators"`
+
+	Visible           bool `json:"visible"`
+	PasswordProtected bool `json:"passwordProtected"`
+	Running           bool `json:"running"`
+	Replay            bool `json:"replay"`
+	Progress          int  `json:"progress"`
+
+	NumPlayers  int    `json:"numPlayers"`
+	VariantName string `json:"variantName"`
+	Timed       bool   `json:"timed"`
+	TimeBase    int    `json:"timeBase"`
+	TimePerTurn int    `json:"timePerTurn"`
 }
 
 func newDescription(t *table) *Description {
-	if !t.Visible {
-		return nil
-	}
-
 	players := make([]string, 0)
 	for _, p := range t.Players {
 		players = append(players, p.Username)
@@ -28,22 +28,26 @@ func newDescription(t *table) *Description {
 
 	spectators := make([]string, 0)
 	for _, sp := range t.spectators {
-		spectators = append(spectators, sp.Username)
+		spectators = append(spectators, sp.username)
 	}
 
 	return &Description{
-		ID:                t.ID,
-		Name:              t.Name,
+		ID:   t.ID,
+		Name: t.Name,
+
+		Players:    players,
+		Spectators: spectators,
+
+		Visible:           t.Visible,
 		PasswordProtected: len(t.PasswordHash) > 0,
-		NumPlayers:        len(t.Players),
 		Running:           t.Running,
-		VariantName:       t.Options.VariantName,
-		Timed:             t.Options.Timed,
-		TimeBase:          t.Options.TimeBase,
-		TimePerTurn:       t.Options.TimePerTurn,
-		SharedReplay:      t.Replay,
+		Replay:            t.Replay,
 		Progress:          t.Progress,
-		Players:           players,
-		Spectators:        spectators,
+
+		NumPlayers:  len(t.Players),
+		VariantName: t.Options.VariantName,
+		Timed:       t.Options.Timed,
+		TimeBase:    t.Options.TimeBase,
+		TimePerTurn: t.Options.TimePerTurn,
 	}
 }

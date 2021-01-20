@@ -12,39 +12,49 @@ type request struct {
 type requestType int
 
 const (
-	requestTypeNew requestType = iota
+	requestTypeChatPM requestType = iota
 	requestTypeDelete
-
+	requestTypeNew
 	requestTypeNotifyAllChat
+	requestTypeNotifyAllError
 	requestTypeNotifyAllTable
 	requestTypeNotifyAllTableGone
-
+	requestTypeNotifyChatListFromTable
 	requestTypeNotifyChatServer
-	requestTypeNotifyGame
-
-	requestTypeNotifyWarning
+	requestTypeNotifyChatTyping
 	requestTypeNotifyError
-	requestTypeNotifyAllError
-
+	requestTypeNotifyFriends
+	requestTypeNotifyGame
+	requestTypeNotifyNote
+	requestTypeNotifySoundLobby
+	requestTypeNotifySpectators
+	requestTypeNotifyWarning
 	requestTypePrint
+	requestTypeSetStatus
+
 	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap[requestTypeNew] = m.new
+	m.requestFuncMap[requestTypeChatPM] = m.chatPM
 	m.requestFuncMap[requestTypeDelete] = m.delete
-
+	m.requestFuncMap[requestTypeNew] = m.new
+	m.requestFuncMap[requestTypeNotifyAllChat] = m.notifyAllChat
+	m.requestFuncMap[requestTypeNotifyAllError] = m.notifyAllError
 	m.requestFuncMap[requestTypeNotifyAllTable] = m.notifyAllTable
 	m.requestFuncMap[requestTypeNotifyAllTableGone] = m.notifyAllTableGone
-
+	m.requestFuncMap[requestTypeNotifyChatListFromTable] = m.notifyChatListFromTable
 	m.requestFuncMap[requestTypeNotifyChatServer] = m.notifyChatServer
-	m.requestFuncMap[requestTypeNotifyGame] = m.notifyGame
-
-	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
+	m.requestFuncMap[requestTypeNotifyChatTyping] = m.notifyChatTyping
 	m.requestFuncMap[requestTypeNotifyError] = m.notifyError
-	m.requestFuncMap[requestTypeNotifyAllError] = m.notifyAllError
-
+	m.requestFuncMap[requestTypeNotifyFriends] = m.notifyFriends
+	m.requestFuncMap[requestTypeNotifyGame] = m.notifyGame
+	m.requestFuncMap[requestTypeNotifyNote] = m.notifyNote
+	m.requestFuncMap[requestTypeNotifySoundLobby] = m.notifySoundLobby
+	m.requestFuncMap[requestTypeNotifySpectators] = m.notifySpectators
+	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
 	m.requestFuncMap[requestTypePrint] = m.print
+	m.requestFuncMap[requestTypeSetStatus] = m.setStatus
 }
 
 // ListenForRequests will block until messages are sent on the request channel.

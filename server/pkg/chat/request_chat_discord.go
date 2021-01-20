@@ -1,6 +1,8 @@
 package chat
 
-import "github.com/Zamiell/hanabi-live/server/pkg/constants"
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+)
 
 type chatDiscordData struct {
 	username             string

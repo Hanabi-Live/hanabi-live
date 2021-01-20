@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"math/rand"
 )
@@ -76,3 +78,5 @@ func (g *Game) ShuffleDeck() {
 		g.CardIdentities[i], g.CardIdentities[j] = g.CardIdentities[j], g.CardIdentities[i]
 	}
 }
+
+*/

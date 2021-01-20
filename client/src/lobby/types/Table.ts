@@ -9,7 +9,7 @@ export default interface Table {
   timeBase: number;
   timePerTurn: number;
   ourTurn: boolean;
-  sharedReplay: boolean;
+  replay: boolean;
   progress: number;
   players: string[]; // e.g. ['Alice', 'Bob']
   spectators: string;

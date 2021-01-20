@@ -13,11 +13,6 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 )
 
-const (
-	maxChatLength       = 300
-	maxChatLengthServer = 600
-)
-
 type chatData struct {
 	userID               int
 	username             string
@@ -28,6 +23,11 @@ type chatData struct {
 	server               bool
 }
 
+const (
+	maxChatLength       = 300
+	maxChatLengthServer = 600
+)
+
 func (m *Manager) chat(d *chatData) {
 	// Validate the room
 	if d.room != constants.Lobby && !strings.HasPrefix(d.room, constants.TableRoomPrefix) {
@@ -37,7 +37,7 @@ func (m *Manager) chat(d *chatData) {
 	}
 
 	// Validate and sanitize the chat message
-	if v, valid := m.chatSanitize(d); !valid {
+	if v, valid := m.chatSanitize(d.userID, d.msg, d.server); !valid {
 		return
 	} else {
 		d.msg = v
@@ -71,64 +71,64 @@ func (m *Manager) chat(d *chatData) {
 	}
 }
 
-func (m *Manager) chatSanitize(d *chatData) (string, bool) {
+func (m *Manager) chatSanitize(userID int, text string, server bool) (string, bool) {
 	// Validate long messages
 	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
 	maxLength := maxChatLength
-	if d.server {
+	if server {
 		maxLength = maxChatLengthServer
 	}
-	if len(d.msg) > maxLength {
+	if len(text) > maxLength {
 		msg := fmt.Sprintf("Chat messages cannot be longer than %v characters.", maxLength)
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
 		return "", false
 	}
 
 	// Check for non-printable characters
-	if util.ContainsNonPrintableCharacters(d.msg) {
+	if util.ContainsNonPrintableCharacters(text) {
 		msg := "Chat messages cannot contain non-printable characters."
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
 		return "", false
 	}
 
 	// Check for valid UTF8
-	if !utf8.Valid([]byte(d.msg)) {
+	if !utf8.Valid([]byte(text)) {
 		msg := "Chat messages must contain valid UTF8 characters."
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
 		return "", false
 	}
 
 	// Validate that the message does not contain an unreasonable amount of consecutive diacritics
 	// (accents)
-	if util.NumConsecutiveDiacritics(d.msg) > constants.ConsecutiveDiacriticsAllowed {
+	if util.NumConsecutiveDiacritics(text) > constants.ConsecutiveDiacriticsAllowed {
 		msg := fmt.Sprintf(
 			"Chat messages cannot contain more than %v consecutive diacritics.",
 			constants.ConsecutiveDiacriticsAllowed,
 		)
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
 		return "", false
 	}
 
-	newMsg := d.msg
+	newText := text
 
 	// Replace any whitespace that is not a space with a space
-	for _, r := range d.msg {
+	for _, r := range text {
 		if unicode.IsSpace(r) && r != ' ' {
-			newMsg = strings.ReplaceAll(newMsg, string(r), " ")
+			newText = strings.ReplaceAll(newText, string(r), " ")
 		}
 	}
 
 	// Trim whitespace from both sides
-	newMsg = strings.TrimSpace(newMsg)
+	newText = strings.TrimSpace(newText)
 
 	// Validate blank messages
-	if newMsg == "" {
+	if newText == "" {
 		msg := "Chat messages cannot be blank."
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
+		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
 		return "", false
 	}
 
-	return newMsg, true
+	return newText, true
 }
 
 func (m *Manager) chatLobby(d *chatData, rawMsg string) {

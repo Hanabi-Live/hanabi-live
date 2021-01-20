@@ -14,29 +14,32 @@ func (m *Manager) FindVariant() {
 }
 
 func (m *Manager) findVariant(data interface{}) {
+	// Local variables
+	t := m.table
+
 	// If this is a pregame or ongoing game, make a list of the players
 	// If this is a shared replay, make a list of the spectators
 	userIDs := make([]int, 0)
-	if m.table.Replay {
-		for _, sp := range m.table.spectators {
-			userIDs = append(userIDs, sp.UserID)
+	if t.Replay {
+		for _, sp := range t.spectators {
+			userIDs = append(userIDs, sp.userID)
 		}
 	} else {
-		for _, p := range m.table.Players {
+		for _, p := range t.Players {
 			userIDs = append(userIDs, p.UserID)
 		}
 	}
 
 	if len(userIDs) < 2 || len(userIDs) > 6 {
 		noun := "game"
-		if m.table.Replay {
+		if t.Replay {
 			noun = "shared replay"
 		}
 		msg := fmt.Sprintf(
 			"You can only perform this command if the %v has between 2 and 6 players.",
 			noun,
 		)
-		m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 		return
 	}
 
@@ -49,7 +52,7 @@ func (m *Manager) findVariant(data interface{}) {
 				userID,
 				err,
 			)
-			m.Dispatcher.Chat.ChatServer(constants.DefaultErrorMsg, m.table.getRoomName())
+			m.Dispatcher.Chat.ChatServer(constants.DefaultErrorMsg, t.getRoomName())
 			return
 		} else {
 			statsMaps = append(statsMaps, statsMap)
@@ -86,5 +89,5 @@ func (m *Manager) findVariant(data interface{}) {
 		len(userIDs),
 		randomVariant,
 	)
-	m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+	m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 }

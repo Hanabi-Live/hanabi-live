@@ -25,18 +25,22 @@ func (m *Manager) suggest(data interface{}) {
 		d = v
 	}
 
-	if !m.table.Replay {
-		m.Dispatcher.Chat.ChatServer(constants.NotReplayFail, m.table.getRoomName())
+	// Local variables
+	t := m.table
+	g := t.Game
+
+	if !t.Replay {
+		m.Dispatcher.Chat.ChatServer(constants.NotReplayFail, t.getRoomName())
 		return
 	}
 
-	if d.turn > m.table.Game.EndTurn {
+	if d.turn > g.EndTurn {
 		msg := fmt.Sprintf(
 			"The turn of %v is not valid. (There are only %v turns in this game.)",
 			d.turn,
-			m.table.Game.EndTurn,
+			g.EndTurn,
 		)
-		m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 	}
 
 	// The logic for this command is handled client-side

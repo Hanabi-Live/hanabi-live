@@ -21,6 +21,8 @@ const (
 func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap["tableCreate"] = m.tableCreate
 	m.requestFuncMap["tableJoin"] = m.tableJoin
+	m.requestFuncMap["tableUnattend"] = m.tableUnattend
+	m.requestFuncMap["tableUnspectate"] = m.tableUnspectate
 }
 
 // ListenForRequests will block until messages are sent on the request channel.

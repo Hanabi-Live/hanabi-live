@@ -1,5 +1,7 @@
 package main
 
+/*
+
 // -----------------------------------------------
 // Notifications for both before and during a game
 // -----------------------------------------------
@@ -57,26 +59,6 @@ func (t *Table) NotifyConnected() {
 
 	for _, sp := range t.Spectators {
 		sp.Session.NotifyConnected(t)
-	}
-}
-
-func (t *Table) NotifySpectators() {
-	if !t.Visible {
-		return
-	}
-
-	// If this is a replay, then all of the players are also spectators,
-	// so we do not want to send them a duplicate message
-	if !t.Replay {
-		for _, p := range t.Players {
-			if p.Present {
-				p.Session.NotifySpectators(t)
-			}
-		}
-	}
-
-	for _, sp := range t.Spectators {
-		sp.Session.NotifySpectators(t)
 	}
 }
 
@@ -187,50 +169,6 @@ func (t *Table) NotifyReplayLeader() {
 	}
 }
 
-func (t *Table) NotifySpectatorsNote(order int) {
-	g := t.Game
-
-	for _, sp := range t.Spectators {
-		// Make an array that contains the combined notes for all the players & spectators
-		// (for a specific card)
-		// However, if this spectator is shadowing a specific player, then only include the note for
-		// the shadowed player
-		type Note struct {
-			Name string `json:"name"`
-			Text string `json:"text"`
-		}
-		notes := make([]Note, 0)
-		for _, p := range g.Players {
-			if sp.ShadowingPlayerIndex == -1 || sp.ShadowingPlayerIndex == p.Index {
-				notes = append(notes, Note{
-					Name: p.Name,
-					Text: p.Notes[order],
-				})
-			}
-		}
-		if sp.ShadowingPlayerIndex == -1 {
-			for _, sp2 := range t.Spectators {
-				notes = append(notes, Note{
-					Name: sp2.Name,
-					Text: sp2.Notes[order],
-				})
-			}
-		}
-
-		type NoteMessage struct {
-			TableID uint64 `json:"tableID"`
-			// The order of the card in the deck that these notes correspond to
-			Order int    `json:"order"`
-			Notes []Note `json:"notes"`
-		}
-		sp.Session.Emit("note", &NoteMessage{
-			TableID: t.ID,
-			Order:   order,
-			Notes:   notes,
-		})
-	}
-}
-
 func (t *Table) NotifyProgress() {
 	if !t.Running {
 		// We might be doing the initial actions;
@@ -262,3 +200,5 @@ func (t *Table) NotifyBoot() {
 		sp.Session.NotifyBoot(t)
 	}
 }
+
+*/

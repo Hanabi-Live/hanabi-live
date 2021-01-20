@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 	"fmt"
@@ -450,6 +452,8 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		sp.Session.NotifyNoteList(t, -1)
 	}
 
-	notifyAllTable(t)    // Update the spectator list for the row in the lobby
-	t.NotifySpectators() // Update the in-game spectator list
+	notifyAllTable(t)           // Update the spectator list for the row in the lobby
+	t.NotifySpectatorsChanged() // Update the in-game spectator list
 }
+
+*/

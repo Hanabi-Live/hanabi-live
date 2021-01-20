@@ -2,6 +2,8 @@
 
 package main
 
+/*
+
 import (
 	"fmt"
 	"os/exec"
@@ -54,3 +56,5 @@ func toSnakeCase(str string) string {
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
 }
+
+*/

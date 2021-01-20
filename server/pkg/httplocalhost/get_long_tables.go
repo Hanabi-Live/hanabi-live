@@ -2,12 +2,15 @@ package httplocalhost
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-const longTableLength = time.Minute * 150 // 2.5 hours
+/*
+const (
+	longTableLength = time.Minute * 150 // 2.5 hours
+)
+*/
 
 func (m *Manager) getLongTables(c *gin.Context) {
 	// TODO

@@ -146,6 +146,7 @@ func (s *session) initializeWelcomeMessage(m *Manager, userList []*user) error {
 		lobbyChatHistory = v
 	}
 
+	// We can't name this "chatListData" because it prevents compilation
 	chatList := m.chatGetListFromDatabaseHistory("lobby", lobbyChatHistory)
 
 	// Get their total number of games played from the database

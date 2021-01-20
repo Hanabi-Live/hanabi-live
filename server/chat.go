@@ -2,6 +2,8 @@
 
 package main
 
+/*
+
 import (
 	"context"
 	"time"
@@ -40,3 +42,5 @@ func chatServerSendPM(s *Session, msg string, room string) {
 		Recipient: s.Username,
 	})
 }
+
+*/

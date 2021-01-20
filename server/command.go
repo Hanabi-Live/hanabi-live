@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 
@@ -103,8 +105,6 @@ func commandInit() {
 	commandMap["chatPM"] = commandChatPM
 	commandMap["chatRead"] = commandChatRead
 	commandMap["chatTyping"] = commandChatTyping
-	commandMap["chatFriend"] = commandChatFriend
-	commandMap["chatUnfriend"] = commandChatUnfriend
 	commandMap["chatPlayerInfo"] = commandChatPlayerInfo
 	commandMap["getName"] = commandGetName
 	commandMap["inactive"] = commandInactive
@@ -129,3 +129,5 @@ func commandInit() {
 	// Replay commands
 	commandMap["replayAction"] = commandReplayAction
 }
+
+*/

@@ -86,7 +86,7 @@ func (v *Variant) GetAdjustedClueTokens(clueTokens int) int {
 	// This is represented on the server by discards granting 1 clue token and clues costing 2 tokens
 	// (to avoid having to use floating point numbers)
 	if v.IsClueStarved() {
-		return clueTokens * 2
+		return clueTokens * 2 // nolint: gomnd
 	}
 
 	return clueTokens

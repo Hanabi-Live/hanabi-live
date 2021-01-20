@@ -29,14 +29,7 @@ func (m *Manager) wordListInit(dataPath string) {
 func (m *Manager) GetRandomTableName() string {
 	words := make([]string, 0)
 	for len(words) < numRandomWords {
-		var i int
-		if v, err := util.GetRandom(0, len(m.wordList)-1); err != nil {
-			m.logger.Errorf("Failed to get a random number: %v", err)
-			return "[error]"
-		} else {
-			i = v
-		}
-
+		i := util.GetRandom(0, len(m.wordList)-1)
 		word := m.wordList[i]
 
 		// We want 3 unique words

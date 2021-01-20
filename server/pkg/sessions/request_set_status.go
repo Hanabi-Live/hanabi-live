@@ -13,7 +13,7 @@ type setStatusData struct {
 // SetStatus updates both the status and the table ID values within a user's session object.
 // Then, it notifies all other online users about this user's new status.
 func (m *Manager) SetStatus(userID int, status constants.Status, tableID int) {
-	m.newRequest(requestTypeNotifyAllError, &setStatusData{ // nolint: errcheck
+	m.newRequest(requestTypeSetStatus, &setStatusData{ // nolint: errcheck
 		userID:  userID,
 		status:  status,
 		tableID: tableID,

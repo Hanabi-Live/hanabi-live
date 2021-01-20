@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"context"
 )
@@ -22,7 +24,6 @@ func debugFunction(ctx context.Context) {
 	hLog.Debug("Debug function(s) complete.")
 }
 
-/*
 func updateAllSeedNumGames() {
 	if err := models.Seeds.UpdateAll(); err != nil {
 		hLog.Errorf("Failed to update the number of games for every seed: %v", err)
@@ -166,9 +167,7 @@ func updateStatsFromGameHistory(gameHistory *GameHistory) {
 		return
 	}
 }
-*/
 
-/*
 func variantGetHighestID() int {
 	highestID := 0
 	for k := range variantIDMap {
@@ -207,4 +206,5 @@ func getBadGameIDs() {
 	hLog.Debug("BAD GAME IDS:")
 	hLog.Debug(strings.Join(badGameIDs, ", "))
 }
+
 */

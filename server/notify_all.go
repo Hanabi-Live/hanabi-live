@@ -2,6 +2,8 @@
 
 package main
 
+/*
+
 func notifyAllShutdown() {
 	sessionList := sessions2.GetList()
 	for _, s := range sessionList {
@@ -15,3 +17,5 @@ func notifyAllMaintenance() {
 		s.NotifyMaintenance()
 	}
 }
+
+*/

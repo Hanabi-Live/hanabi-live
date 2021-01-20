@@ -7,6 +7,12 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/table"
 )
 
+const (
+	// When sending the in-game chat history, only send the last X messages to prevent clients from
+	// becoming overloaded (in case someone maliciously spams a lot of messages).
+	chatLimit = 1000
+)
+
 type chatData struct {
 	Username  string    `json:"username"`
 	Msg       string    `json:"msg"`
@@ -22,12 +28,6 @@ type chatListData struct {
 	List   []*chatData `json:"list"`
 	Unread int         `json:"unread"`
 }
-
-const (
-	// When sending the in-game chat history, only send the last X messages to prevent clients from
-	// becoming overloaded (in case someone maliciously spams a lot of messages).
-	chatLimit = 1000
-)
 
 func (m *Manager) chatGetListFromDatabaseHistory(
 	room string,
@@ -75,22 +75,21 @@ func (m *Manager) chatGetListFromDatabaseHistory(
 	}
 }
 
-func (m *Manager) chatSendPastFromTable(
-	userID int,
+func (m *Manager) chatGetListFromTableHistory(
 	room string,
-	chat []*table.ChatMessage,
+	chatHistory []*table.ChatMessage,
 	chatRead int,
-) {
+) *chatListData {
 	chatDataList := make([]*chatData, 0)
 
 	// See the "chatLimit" comment above
 	i := 0
-	if len(chat) > chatLimit {
-		i = len(chat) - chatLimit
+	if len(chatHistory) > chatLimit {
+		i = len(chatHistory) - chatLimit
 	}
-	for ; i < len(chat); i++ {
+	for ; i < len(chatHistory); i++ {
 		// We have to convert the *table.ChatMessage to a *chatData
-		cm := chat[i]
+		cm := chatHistory[i]
 		chatData := &chatData{
 			Username:  cm.Username,
 			Msg:       cm.Msg,
@@ -103,8 +102,8 @@ func (m *Manager) chatSendPastFromTable(
 		chatDataList = append(chatDataList, chatData)
 	}
 
-	m.send(userID, "chatList", &chatListData{
+	return &chatListData{
 		List:   chatDataList,
-		Unread: len(chat) - chatRead,
-	})
+		Unread: len(chatHistory) - chatRead,
+	}
 }

@@ -87,16 +87,17 @@ commands.set("chat", (data: ChatMessage) => {
 
 // Received by the client when someone either starts or stops typing
 interface ChatTypingMessage {
-  name: string;
+  tableID: number;
+  username: string;
   typing: boolean;
 }
 commands.set("chatTyping", (data: ChatTypingMessage) => {
   if (data.typing) {
-    if (!globals.peopleTyping.includes(data.name)) {
-      globals.peopleTyping.push(data.name);
+    if (!globals.peopleTyping.includes(data.username)) {
+      globals.peopleTyping.push(data.username);
     }
   } else {
-    const index = globals.peopleTyping.indexOf(data.name);
+    const index = globals.peopleTyping.indexOf(data.username);
     if (index !== -1) {
       globals.peopleTyping.splice(index, 1);
     }

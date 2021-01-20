@@ -13,8 +13,11 @@ func (m *Manager) Tags() {
 }
 
 func (m *Manager) tags(data interface{}) {
-	if !m.table.Replay {
-		m.Dispatcher.Chat.ChatServer(constants.NotReplayFail, m.table.getRoomName())
+	// Local variables
+	t := m.table
+
+	if !t.Replay {
+		m.Dispatcher.Chat.ChatServer(constants.NotReplayFail, t.getRoomName())
 		return
 	}
 
@@ -22,14 +25,14 @@ func (m *Manager) tags(data interface{}) {
 	var tags []string
 	if v, err := m.models.GameTags.GetAll(
 		context.Background(),
-		m.table.ExtraOptions.DatabaseID,
+		t.ExtraOptions.DatabaseID,
 	); err != nil {
 		m.logger.Errorf(
 			"Failed to get the tags for game ID %v: %v",
-			m.table.ExtraOptions.DatabaseID,
+			t.ExtraOptions.DatabaseID,
 			err,
 		)
-		m.Dispatcher.Chat.ChatServer(constants.DefaultErrorMsg, m.table.getRoomName())
+		m.Dispatcher.Chat.ChatServer(constants.DefaultErrorMsg, t.getRoomName())
 		return
 	} else {
 		tags = v
@@ -37,7 +40,7 @@ func (m *Manager) tags(data interface{}) {
 
 	if len(tags) == 0 {
 		msg := "There are not yet any tags for this game."
-		m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 		return
 	}
 
@@ -46,10 +49,10 @@ func (m *Manager) tags(data interface{}) {
 	sort.Strings(tags)
 
 	msg := "The list of tags for this game are as follows:"
-	m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+	m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 
 	for i, tag := range tags {
 		msg := fmt.Sprintf("%v) %v", i+1, tag)
-		m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 	}
 }

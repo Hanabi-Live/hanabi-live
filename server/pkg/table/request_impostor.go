@@ -26,20 +26,24 @@ func (m *Manager) impostor(data interface{}) {
 		d = v
 	}
 
-	if m.table.Running {
-		m.Dispatcher.Chat.ChatServer(constants.NotStartedFail, m.table.getRoomName())
+	// Local variables
+	t := m.table
+	g := t.Game
+
+	if t.Running {
+		m.Dispatcher.Chat.ChatServer(constants.NotStartedFail, t.getRoomName())
 		return
 	}
 
-	if d.userID != m.table.OwnerID {
-		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, m.table.getRoomName())
+	if d.userID != t.OwnerID {
+		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, t.getRoomName())
 		return
 	}
 
-	util.SetSeedFromString(m.table.Game.Seed)      // Seed the random number generator
-	randomIndex := rand.Intn(len(m.table.Players)) // nolint: gosec
+	util.SetSeedFromString(g.Seed)           // Seed the random number generator
+	randomIndex := rand.Intn(len(t.Players)) // nolint: gosec
 
-	for i, p := range m.table.Players {
+	for i, p := range t.Players {
 		var msg string
 		if i == randomIndex {
 			msg = "You are an IMPOSTOR."
@@ -47,6 +51,6 @@ func (m *Manager) impostor(data interface{}) {
 			msg = "You are a CREWMATE."
 		}
 
-		m.Dispatcher.Sessions.NotifyChatServer(p.UserID, msg, m.table.getRoomName())
+		m.Dispatcher.Sessions.NotifyChatServer(p.UserID, msg, t.getRoomName())
 	}
 }

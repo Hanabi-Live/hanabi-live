@@ -33,20 +33,23 @@ func (m *Manager) startIn(data interface{}) {
 		d = v
 	}
 
-	if m.table.Running {
-		m.Dispatcher.Chat.ChatServer(constants.NotStartedFail, m.table.getRoomName())
+	// Local variables
+	t := m.table
+
+	if t.Running {
+		m.Dispatcher.Chat.ChatServer(constants.NotStartedFail, t.getRoomName())
 		return
 	}
 
-	if d.userID != m.table.OwnerID {
-		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, m.table.getRoomName())
+	if d.userID != t.OwnerID {
+		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, t.getRoomName())
 		return
 	}
 
 	secondsToWait := int(math.Ceil(d.minutesToWait * secondsInAMinute))
 	timeToWait := time.Duration(secondsToWait) * time.Second
 	timeToStart := time.Now().Add(timeToWait)
-	m.table.DatetimePlannedStart = timeToStart
+	t.DatetimePlannedStart = timeToStart
 
 	var startTimeString string
 	if secondsToWait < secondsInAMinute {
@@ -58,7 +61,7 @@ func (m *Manager) startIn(data interface{}) {
 	}
 
 	msg := fmt.Sprintf("The game will automatically start in %v.", startTimeString)
-	m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+	m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 
 	go m.startInWait(timeToWait, timeToStart)
 }

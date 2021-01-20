@@ -14,10 +14,13 @@ type TablesManager interface {
 		gameJSON interface{},
 		hidePregame bool,
 	)
-	DisconnectUser(userID int)
+	Delete(tableID int)
+	DisconnectUser(userID int, username string)
 	GetTable(tableID int) TableManager
 	GetTables() []interface{}
 	GetUserTables(userID int) ([]uint64, []uint64)
 	Join(userID int, username string, tableID int, password string)
 	Leave(userID int, username string, tableID int)
+	Unattend(userID int, username string, tableID int)
+	Unspectate(userID int, username string, tableID int)
 }

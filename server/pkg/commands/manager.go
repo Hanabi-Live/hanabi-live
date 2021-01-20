@@ -29,6 +29,7 @@ type Manager struct {
 type SessionData struct {
 	UserID   int
 	Username string
+	Friends  map[int]struct{}
 	Muted    bool
 }
 

@@ -23,39 +23,42 @@ func (m *Manager) startInWaitComplete(data interface{}) {
 		d = v
 	}
 
+	// Local variables
+	t := m.table
+
 	// Check to see if the game has already started
-	if m.table.Running {
+	if t.Running {
 		return
 	}
 
 	// Check to see if the planned start time has changed
-	if d.datetimePlannedStart != m.table.DatetimePlannedStart {
+	if d.datetimePlannedStart != t.DatetimePlannedStart {
 		return
 	}
 
 	// Check to see if the owner is present
-	for _, p := range m.table.Players {
-		if p.UserID == m.table.OwnerID {
+	for _, p := range t.Players {
+		if p.UserID == t.OwnerID {
 			if !p.Present {
 				msg := "Aborting automatic game start since the table creator is away."
-				m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+				m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 				return
 			}
 
 			m.logger.Infof(
 				"%v - Automatically starting (from the /startin command).",
-				m.table.getName(),
+				t.getName(),
 			)
-			m.Start(m.table.OwnerID)
+			m.Start(t.OwnerID)
 			return
 		}
 	}
 
 	msg := "Aborting automatic game start since the owner was not found."
-	m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+	m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 
 	m.logger.Errorf(
 		"%v - Failed to find the owner of the game when attempting to automatically start it.",
-		m.table.getName(),
+		t.getName(),
 	)
 }

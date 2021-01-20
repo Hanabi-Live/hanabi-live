@@ -4,6 +4,8 @@
 
 package main
 
+/*
+
 func variantReversiblePlay(g *Game, c *Card) bool {
 	// Local variables
 	variant := variants[g.Options.VariantName]
@@ -210,3 +212,5 @@ func variantReversibleCheckAllDead(g *Game) bool {
 	// If we got this far, nothing can be played
 	return true
 }
+
+*/

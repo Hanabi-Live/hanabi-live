@@ -12,30 +12,31 @@ type request struct {
 type requestType int
 
 const (
-	requestTypeNew requestType = iota
-	requestTypeJoin
-	requestTypeLeave
-	requestTypeSpectate
-	requestTypeUnspectate
-	requestTypeDisconnectUser
+	requestTypeDisconnectUser requestType = iota
 	requestTypeGetTable
 	requestTypeGetTables
 	requestTypeGetUserTables
+	requestTypeJoin
+	requestTypeLeave
+	requestTypeNew
 	requestTypePrint
+	requestTypeSpectate
+	requestTypeUnspectate
+
 	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap[requestTypeNew] = m.new
-	m.requestFuncMap[requestTypeJoin] = m.join
-	m.requestFuncMap[requestTypeLeave] = m.leave
-	m.requestFuncMap[requestTypeSpectate] = m.spectate
-	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 	m.requestFuncMap[requestTypeDisconnectUser] = m.disconnectUser
 	m.requestFuncMap[requestTypeGetTable] = m.getTable
 	m.requestFuncMap[requestTypeGetTables] = m.getTables
 	m.requestFuncMap[requestTypeGetUserTables] = m.getUserTables
+	m.requestFuncMap[requestTypeJoin] = m.join
+	m.requestFuncMap[requestTypeLeave] = m.leave
+	m.requestFuncMap[requestTypeNew] = m.new
 	m.requestFuncMap[requestTypePrint] = m.print
+	m.requestFuncMap[requestTypeSpectate] = m.spectate
+	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 }
 
 // ListenForRequests will block until messages are sent on the request channel.

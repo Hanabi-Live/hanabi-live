@@ -4,6 +4,8 @@
 
 package main
 
+/*
+
 // Used to implement the "Slow-Witted" detrimental character
 type ActionCardIdentity struct {
 	Type        string `json:"type"`
@@ -79,3 +81,5 @@ type ActionTurn struct {
 	Num                int    `json:"num"`
 	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
 }
+
+*/

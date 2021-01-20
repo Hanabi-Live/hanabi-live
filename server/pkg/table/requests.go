@@ -12,53 +12,49 @@ type request struct {
 type requestType int
 
 const (
-	requestTypeJoin requestType = iota
-	requestTypeLeave
-	requestTypeUnattend
-	requestTypeSpectate
-	requestTypeUnspectate
-
-	requestTypeGetDescription
-	requestTypeStart
-	requestTypePause
-	requestTypeTerminate
-
+	requestTypeAutomaticStart requestType = iota
 	requestTypeChat
-	requestTypeAutomaticStart
+	requestTypeFindVariant
+	requestTypeGetDescription
+	requestTypeImpostor
+	requestTypeJoin
+	requestTypeKick
+	requestTypeLeave
+	requestTypeMissingScores
+	requestTypePause
+	requestTypeSpectate
+	requestTypeStart
 	requestTypeStartIn
 	requestTypeStartInWaitComplete
-	requestTypeMissingScores
-	requestTypeFindVariant
-	requestTypeKick
 	requestTypeSuggest
 	requestTypeTags
-	requestTypeImpostor
+	requestTypeTerminate
+	requestTypeUnattend
+	requestTypeUnspectate
 
 	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap[requestTypeJoin] = m.join
-	m.requestFuncMap[requestTypeLeave] = m.leave
-	m.requestFuncMap[requestTypeUnattend] = m.unattend
-	m.requestFuncMap[requestTypeSpectate] = m.spectate
-	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
-
-	m.requestFuncMap[requestTypeGetDescription] = m.getDescription
-	m.requestFuncMap[requestTypeStart] = m.start
-	m.requestFuncMap[requestTypePause] = m.pause
-	m.requestFuncMap[requestTypeTerminate] = m.terminate
-
-	m.requestFuncMap[requestTypeChat] = m.chat
 	m.requestFuncMap[requestTypeAutomaticStart] = m.automaticStart
+	m.requestFuncMap[requestTypeChat] = m.chat
+	m.requestFuncMap[requestTypeFindVariant] = m.findVariant
+	m.requestFuncMap[requestTypeGetDescription] = m.getDescription
+	m.requestFuncMap[requestTypeImpostor] = m.impostor
+	m.requestFuncMap[requestTypeJoin] = m.join
+	m.requestFuncMap[requestTypeKick] = m.kick
+	m.requestFuncMap[requestTypeLeave] = m.leave
+	m.requestFuncMap[requestTypeMissingScores] = m.missingScores
+	m.requestFuncMap[requestTypePause] = m.pause
+	m.requestFuncMap[requestTypeSpectate] = m.spectate
+	m.requestFuncMap[requestTypeStart] = m.start
 	m.requestFuncMap[requestTypeStartIn] = m.startIn
 	m.requestFuncMap[requestTypeStartInWaitComplete] = m.startInWaitComplete
-	m.requestFuncMap[requestTypeMissingScores] = m.missingScores
-	m.requestFuncMap[requestTypeFindVariant] = m.findVariant
-	m.requestFuncMap[requestTypeKick] = m.kick
 	m.requestFuncMap[requestTypeSuggest] = m.suggest
 	m.requestFuncMap[requestTypeTags] = m.tags
-	m.requestFuncMap[requestTypeImpostor] = m.impostor
+	m.requestFuncMap[requestTypeTerminate] = m.terminate
+	m.requestFuncMap[requestTypeUnattend] = m.unattend
+	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 }
 
 // ListenForRequests will block until messages are sent on the request channel.

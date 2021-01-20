@@ -27,27 +27,30 @@ func (m *Manager) automaticStart(data interface{}) {
 		d = v
 	}
 
+	// Local variables
+	t := m.table
+
 	// If they did not specify the number of players,
 	// automatically start the game when the next player joins
 	if d.numPlayers == 0 {
-		d.numPlayers = len(m.table.Players) + 1
+		d.numPlayers = len(t.Players) + 1
 	}
 
-	if m.table.Running {
-		m.Dispatcher.Chat.ChatServer(constants.StartedFail, m.table.getRoomName())
+	if t.Running {
+		m.Dispatcher.Chat.ChatServer(constants.StartedFail, t.getRoomName())
 		return
 	}
 
-	if d.userID != m.table.OwnerID {
-		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, m.table.getRoomName())
+	if d.userID != t.OwnerID {
+		m.Dispatcher.Chat.ChatServer(constants.NotOwnerFail, t.getRoomName())
 		return
 	}
 
-	if len(m.table.Players) == d.numPlayers {
+	if len(t.Players) == d.numPlayers {
 		m.Start(d.userID)
 	} else {
-		m.table.automaticStart = d.numPlayers
+		t.automaticStart = d.numPlayers
 		msg := fmt.Sprintf("The game will start as soon as %v players have joined.", d.numPlayers)
-		m.Dispatcher.Chat.ChatServer(msg, m.table.getRoomName())
+		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 	}
 }

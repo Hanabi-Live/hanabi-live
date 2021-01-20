@@ -37,7 +37,7 @@ export default function tablesDraw(): void {
         const joined = table.players.includes(globals.username);
 
         // Tables that we are currently in
-        if (friends && i === 1 && joined && !table.sharedReplay) {
+        if (friends && i === 1 && joined && !table.replay) {
           tableIDsOfThisType.push(id);
         }
 
@@ -58,10 +58,10 @@ export default function tablesDraw(): void {
         ) {
           // Unstarted & password-protected tables
           tableIDsOfThisType.push(id);
-        } else if (i === 4 && table.running && !table.sharedReplay && !joined) {
+        } else if (i === 4 && table.running && !table.replay && !joined) {
           // Ongoing tables
           tableIDsOfThisType.push(id);
-        } else if (i === 5 && table.running && table.sharedReplay) {
+        } else if (i === 5 && table.running && table.replay) {
           // Shared replays
           tableIDsOfThisType.push(id);
         }
@@ -82,7 +82,7 @@ export default function tablesDraw(): void {
 
     // Set the background color of the row, depending on what kind of game it is
     let htmlClass;
-    if (table.sharedReplay) {
+    if (table.replay) {
       htmlClass = "replay";
     } else if (joined) {
       htmlClass = "joined";
@@ -97,7 +97,7 @@ export default function tablesDraw(): void {
 
     // Column 1 - Name
     let { name } = table;
-    if (table.passwordProtected && !table.running && !table.sharedReplay) {
+    if (table.passwordProtected && !table.running && !table.replay) {
       name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
     }
     $("<td>").html(name).appendTo(row);
@@ -119,7 +119,7 @@ export default function tablesDraw(): void {
 
     // Column 5 - Status
     let status;
-    if (table.sharedReplay) {
+    if (table.replay) {
       status = "Reviewing";
     } else if (table.running) {
       status = "Running";
@@ -175,13 +175,13 @@ export default function tablesDraw(): void {
     }
 
     // Setup click actions
-    if (table.sharedReplay || (!joined && table.running)) {
+    if (table.replay || (!joined && table.running)) {
       row
         .attr("id", `spectate-${table.id}`)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
             // Copy the URL that would occur from clicking on this table row
-            const path = table.sharedReplay
+            const path = table.replay
               ? `/shared-replay/${table.id}`
               : `/game/${table.id}`;
             copyURLToClipboard(path, row);
@@ -260,7 +260,7 @@ function tableReattend(table: Table) {
 }
 
 function tableHasFriends(table: Table) {
-  if (!table.sharedReplay) {
+  if (!table.replay) {
     for (const player of table.players) {
       if (globals.friends.includes(player)) {
         return true;

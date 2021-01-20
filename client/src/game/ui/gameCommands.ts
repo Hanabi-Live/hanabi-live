@@ -168,6 +168,7 @@ commands.set("init", (metadata: InitData) => {
 
 // Received when spectating a game
 interface NoteData {
+  tableID: number;
   order: number;
   notes: SpectatorNote[];
 }

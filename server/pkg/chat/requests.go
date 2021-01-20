@@ -12,16 +12,23 @@ type request struct {
 type requestType int
 
 const (
-	requestTypeChatNormal requestType = iota
-	requestTypeChatDiscord
+	requestTypeChatDiscord requestType = iota
+	requestTypeChatNormal
+	requestTypeChatPMNormal
+	requestTypeChatPMServer
 	requestTypeChatServer
+	requestTypeFriend
+
 	requestTypeShutdown
 )
 
 func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap[requestTypeChatNormal] = m.chatNormal
 	m.requestFuncMap[requestTypeChatDiscord] = m.chatDiscord
+	m.requestFuncMap[requestTypeChatNormal] = m.chatNormal
+	m.requestFuncMap[requestTypeChatPMNormal] = m.chatPMNormal
+	m.requestFuncMap[requestTypeChatPMServer] = m.chatPMServer
 	m.requestFuncMap[requestTypeChatServer] = m.chatServer
+	m.requestFuncMap[requestTypeFriend] = m.friend
 }
 
 // ListenForRequests will block until messages are sent on the request channel.

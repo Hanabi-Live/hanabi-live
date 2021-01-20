@@ -44,7 +44,7 @@ func (m *Manager) delete(data interface{}) {
 	s.logConnected(m, false)
 
 	// Remove this player from any tables
-	m.Dispatcher.Tables.DisconnectUser(d.userID)
+	m.Dispatcher.Tables.DisconnectUser(d.userID, d.username)
 
 	// Alert everyone that a user has logged out
 	m.notifyAllUserLeft(s.userID)

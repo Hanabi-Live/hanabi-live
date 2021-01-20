@@ -1,5 +1,7 @@
 package main
 
+/*
+
 import (
 	"time"
 )
@@ -16,19 +18,6 @@ func (s *Session) NotifyTableProgress(t *Table) {
 	s.Emit("tableProgress", &TableProgressMessage{
 		TableID:  t.ID,
 		Progress: t.Progress,
-	})
-}
-
-func (s *Session) NotifyChatTyping(t *Table, name string, typing bool) {
-	type ChatTypingMessage struct {
-		TableID uint64 `json:"tableID"`
-		Name    string `json:"name"`
-		Typing  bool   `json:"typing"`
-	}
-	s.Emit("chatTyping", &ChatTypingMessage{
-		TableID: t.ID,
-		Name:    name,
-		Typing:  typing,
 	})
 }
 
@@ -60,15 +49,6 @@ func (s *Session) NotifyMaintenance() {
 	}
 	s.Emit("maintenance", &MaintenanceMessage{
 		MaintenanceMode: maintenanceMode.IsSet(),
-	})
-}
-
-func (s *Session) NotifySoundLobby(file string) {
-	type SoundLobbyMessage struct {
-		File string `json:"file"`
-	}
-	s.Emit("soundLobby", &SoundLobbyMessage{
-		File: file,
 	})
 }
 
@@ -157,17 +137,6 @@ func (s *Session) NotifyPause(t *Table) {
 	})
 }
 
-func (s *Session) NotifySpectators(t *Table) {
-	type SpectatorsMessage struct {
-		TableID    uint64       `json:"tableID"`
-		Spectators []*Spectator `json:"spectators"`
-	}
-	s.Emit("spectators", &SpectatorsMessage{
-		TableID:    t.ID,
-		Spectators: t.Spectators,
-	})
-}
-
 func (s *Session) NotifyBoot(t *Table) {
 	type BootMessage struct {
 		TableID uint64
@@ -244,3 +213,5 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 		Notes:   notes,
 	})
 }
+
+*/

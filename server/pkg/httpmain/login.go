@@ -16,17 +16,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	minUsernameLength = 2
-	maxUsernameLength = 15
-)
-
-type HTTPLoginData struct {
+type loginData struct {
 	IP                 string
 	Username           string
 	Password           string
 	NormalizedUsername string
 }
+
+const (
+	minUsernameLength = 2
+	maxUsernameLength = 15
+)
 
 // login handles part 1 of 2 for login authentication. (Part 2 is found in "ws.go".)
 // The user must POST to "/login" with the values of "username", "password", and "version".
@@ -41,7 +41,7 @@ func (m *Manager) login(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	var data *HTTPLoginData
+	var data *loginData
 	if v, valid := m.loginValidate(c); !valid {
 		return
 	} else {
@@ -104,7 +104,7 @@ func (m *Manager) login(c *gin.Context) {
 	// which is handled in "httpWS.go"
 }
 
-func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
+func (m *Manager) loginValidate(c *gin.Context) (*loginData, bool) {
 	// Local variables
 	r := c.Request
 	w := c.Writer
@@ -350,7 +350,7 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		}
 	}
 
-	data := &HTTPLoginData{
+	data := &loginData{
 		IP:                 ip,
 		Username:           username,
 		Password:           password,
@@ -359,7 +359,7 @@ func (m *Manager) loginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	return data, true
 }
 
-func (m *Manager) loginCheckPassword(c *gin.Context, user *models.User, data *HTTPLoginData) bool {
+func (m *Manager) loginCheckPassword(c *gin.Context, user *models.User, data *loginData) bool {
 	// Local variables
 	w := c.Writer
 
@@ -399,7 +399,7 @@ func (m *Manager) loginCheckPassword(c *gin.Context, user *models.User, data *HT
 	return true
 }
 
-func (m *Manager) loginCreateNewUser(c *gin.Context, data *HTTPLoginData) (*models.User, bool) {
+func (m *Manager) loginCreateNewUser(c *gin.Context, data *loginData) (*models.User, bool) {
 	// Local variables
 	w := c.Writer
 

@@ -3,6 +3,8 @@
 
 package main
 
+/*
+
 import (
 	"context"
 	"sync/atomic"
@@ -37,3 +39,5 @@ func NewMiscContext(contextType string) context.Context {
 
 	return ctx
 }
+
+*/

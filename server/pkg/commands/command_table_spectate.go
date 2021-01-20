@@ -111,7 +111,7 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships
 
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby
-	t.NotifySpectators() // Update the in-game spectator list
+	t.NotifySpectatorsChanged() // Update the in-game spectator list
 
 	// Set their status
 	status := constants.StatusSpectating

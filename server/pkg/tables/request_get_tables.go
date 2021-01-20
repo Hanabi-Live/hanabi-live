@@ -34,8 +34,8 @@ func (m *Manager) getTables(data interface{}) interface{} {
 	for _, t := range m.tables {
 		if tableDescription, err := t.GetDescription(); err != nil {
 			// This table has stopped listening to requests, so skip it
-		} else if tableDescription != nil {
-			// Non-visible tables will return a nil description, so skip those
+		} else if tableDescription.Visible {
+			// Skip non-visible tables
 			tables = append(tables, tableDescription)
 		}
 	}
