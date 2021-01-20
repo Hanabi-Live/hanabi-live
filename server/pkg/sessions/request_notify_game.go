@@ -1,15 +1,15 @@
 package sessions
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type notifyGameData struct {
 	userID   int
-	gameData *table.GameData
+	gameData *types.GameData
 }
 
-func (m *Manager) NotifyGame(userID int, gameData *table.GameData) {
+func (m *Manager) NotifyGame(userID int, gameData *types.GameData) {
 	m.newRequest(requestTypeNotifyGame, &notifyGameData{ // nolint: errcheck
 		userID:   userID,
 		gameData: gameData,

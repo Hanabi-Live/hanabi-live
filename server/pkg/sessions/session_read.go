@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/commands"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"nhooyr.io/websocket"
 )
@@ -47,7 +47,7 @@ func (s *session) waitForIncomingMsgs(ctx context.Context, m *Manager) error {
 			m.NotifyError(s.userID, "That is an invalid WebSocket message.")
 		} else {
 			// This is a coherent message; forward it along to the command manager
-			sessionData := &commands.SessionData{
+			sessionData := &types.SessionData{
 				UserID:   s.userID,
 				Username: s.username,
 				Friends:  s.data.friends,

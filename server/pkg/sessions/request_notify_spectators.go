@@ -1,19 +1,19 @@
 package sessions
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type notifySpectatorsData struct {
 	userID     int
 	tableID    int
-	spectators []*table.SpectatorDescription
+	spectators []*types.SpectatorDescription
 }
 
 func (m *Manager) NotifySpectators(
 	userID int,
 	tableID int,
-	spectators []*table.SpectatorDescription,
+	spectators []*types.SpectatorDescription,
 ) {
 	m.newRequest(requestTypeNotifySpectators, &notifySpectatorsData{ // nolint: errcheck
 		userID:     userID,
@@ -33,7 +33,7 @@ func (m *Manager) notifySpectators(data interface{}) {
 
 	type spectatorsData struct {
 		TableID    int                           `json:"tableID"`
-		Spectators []*table.SpectatorDescription `json:"spectators"`
+		Spectators []*types.SpectatorDescription `json:"spectators"`
 	}
 	m.send(d.userID, "spectators", &spectatorsData{
 		TableID:    d.tableID,

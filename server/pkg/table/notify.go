@@ -1,7 +1,7 @@
 package table
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/options"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 func (m *Manager) notifyTable() {
@@ -50,23 +50,6 @@ func (m *Manager) notifyAllStopTyping(username string) {
 // Notifications before a game has started
 // ---------------------------------------
 
-type GameData struct {
-	TableID           int               `json:"tableID"`
-	Name              string            `json:"name"`
-	Owner             int               `json:"owner"`
-	Players           []*GamePlayerData `json:"players"`
-	Options           *options.Options  `json:"options"`
-	PasswordProtected bool              `json:"passwordProtected"`
-}
-
-type GamePlayerData struct {
-	Index   int           `json:"index"`
-	Name    string        `json:"name"`
-	You     bool          `json:"you"`
-	Present bool          `json:"present"`
-	Stats   *pregameStats `json:"stats"`
-}
-
 // notifyPlayerChanged sends the people in the pre-game an update about the new amount of players.
 // This is only called in situations where the game has not started yet.
 func (m *Manager) notifyPlayerChanged() {
@@ -84,9 +67,9 @@ func (m *Manager) notifyPlayerChanged() {
 		}
 
 		// First, make the array that contains information about all of the players in the game
-		gamePlayers := make([]*GamePlayerData, 0)
+		gamePlayers := make([]*types.GamePlayerData, 0)
 		for j, p2 := range t.Players {
-			gamePlayer := &GamePlayerData{
+			gamePlayer := &types.GamePlayerData{
 				Index:   j,
 				Name:    p2.Username,
 				You:     p.UserID == p2.UserID,
@@ -97,7 +80,7 @@ func (m *Manager) notifyPlayerChanged() {
 		}
 
 		// Second, send information about the game and the players in one big message
-		m.Dispatcher.Sessions.NotifyGame(p.UserID, &GameData{
+		m.Dispatcher.Sessions.NotifyGame(p.UserID, &types.GameData{
 			TableID:           t.ID,
 			Name:              t.Name,
 			Owner:             t.OwnerID,
@@ -120,9 +103,9 @@ func (m *Manager) notifySpectatorsChanged() {
 		return
 	}
 
-	spectators := make([]*SpectatorDescription, 0)
+	spectators := make([]*types.SpectatorDescription, 0)
 	for _, sp := range t.spectators {
-		spectators = append(spectators, &SpectatorDescription{
+		spectators = append(spectators, &types.SpectatorDescription{
 			Username:             sp.username,
 			ShadowingPlayerIndex: sp.shadowingPlayerIndex,
 		})
@@ -131,11 +114,6 @@ func (m *Manager) notifySpectatorsChanged() {
 	m.notifyAll(func(userID int) {
 		m.Dispatcher.Sessions.NotifySpectators(userID, t.ID, spectators)
 	})
-}
-
-type Note struct {
-	Name string `json:"name"`
-	Text string `json:"text"`
 }
 
 func (m *Manager) notifySpectatorsNote(order int) {
@@ -148,10 +126,10 @@ func (m *Manager) notifySpectatorsNote(order int) {
 		// (for a specific card)
 		// However, if this spectator is shadowing a specific player,
 		// then only include the note for the shadowed player
-		notes := make([]Note, 0)
+		notes := make([]*types.Note, 0)
 		for _, p := range g.Players {
 			if sp.shadowingPlayerIndex == -1 || sp.shadowingPlayerIndex == p.Index {
-				notes = append(notes, Note{
+				notes = append(notes, &types.Note{
 					Name: p.Name,
 					Text: p.Notes[order],
 				})
@@ -160,7 +138,7 @@ func (m *Manager) notifySpectatorsNote(order int) {
 
 		if sp.shadowingPlayerIndex == -1 {
 			for _, sp2 := range t.spectators {
-				notes = append(notes, Note{
+				notes = append(notes, &types.Note{
 					Name: sp2.username,
 					Text: sp2.notes[order],
 				})

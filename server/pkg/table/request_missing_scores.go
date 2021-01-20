@@ -42,6 +42,6 @@ func (m *Manager) missingScores(data interface{}) {
 	}
 
 	path := fmt.Sprintf("/shared-missing-scores/%v", strings.Join(usernames, "/"))
-	msg := util.GetURLFromPath(m.useTLS, m.domain, path)
+	msg := util.GetURLFromPath(m.Dispatcher.HTTP.Domain(), m.Dispatcher.HTTP.UseTLS(), path)
 	m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/settings"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 )
 
@@ -235,11 +236,11 @@ func (s *session) initializeWelcomeMessage(m *Manager, userList []*user) error {
 		MaintenanceMode      bool      `json:"maintenanceMode"`
 
 		// Lobby initialization
-		UserList           []*user               `json:"userList"`
-		ChatList           *chatListData         `json:"chatList"`
-		TableList          []interface{}         `json:"tableList"`
-		GameHistory        []*models.GameHistory `json:"gameHistory"`
-		GameHistoryFriends []*models.GameHistory `json:"gameHistoryFriends"`
+		UserList           []*user                   `json:"userList"`
+		ChatList           *chatListData             `json:"chatList"`
+		TableList          []*types.TableDescription `json:"tableList"`
+		GameHistory        []*models.GameHistory     `json:"gameHistory"`
+		GameHistoryFriends []*models.GameHistory     `json:"gameHistoryFriends"`
 	}
 	data := &welcomeData{
 		// Static data

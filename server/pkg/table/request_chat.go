@@ -3,6 +3,8 @@ package table
 import (
 	"fmt"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type chatData struct {
@@ -50,7 +52,7 @@ func (m *Manager) chat(data interface{}) {
 	}
 
 	// Store the chat in memory
-	chatMsg := &ChatMessage{
+	chatMsg := &types.TableChatMessage{
 		UserID:   d.userID,
 		Username: d.username,
 		Msg:      d.msg,

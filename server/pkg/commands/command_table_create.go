@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type tableCreateData struct {
 	Name     string           `json:"name"`
 	Options  *options.Options `json:"options"`
 	Password string           `json:"password"`
-	GameJSON *table.GameJSON  `json:"gameJSON"`
+	GameJSON *types.GameJSON  `json:"gameJSON"`
 }
 
 // tableCreate is sent when the user submits the "Create a New Game" form.
-func (m *Manager) tableCreate(sessionData *SessionData, commandData []byte) {
+func (m *Manager) tableCreate(sessionData *types.SessionData, commandData []byte) {
 	var d *tableCreateData
 	if err := json.Unmarshal(commandData, &d); err != nil {
 		msg := "Your \"tableCreate\" command contained invalid data."
@@ -23,7 +23,7 @@ func (m *Manager) tableCreate(sessionData *SessionData, commandData []byte) {
 		return
 	}
 
-	m.Dispatcher.Tables.New(
+	m.Dispatcher.Tables.NewTable(
 		sessionData.UserID,
 		sessionData.Username,
 		d.Name,

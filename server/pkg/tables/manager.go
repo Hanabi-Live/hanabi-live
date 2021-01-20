@@ -31,9 +31,6 @@ type Manager struct {
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
-
-	useTLS bool
-	domain string
 }
 
 func NewManager(logger *logger.Logger, models *models.Models, useTLS bool, domain string) *Manager {
@@ -53,9 +50,6 @@ func NewManager(logger *logger.Logger, models *models.Models, useTLS bool, domai
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
-
-		useTLS: useTLS,
-		domain: domain,
 	}
 	m.requestFuncMapInit()
 	go m.ListenForRequests()

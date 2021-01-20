@@ -18,7 +18,8 @@ const (
 	requestTypeGetUserTables
 	requestTypeJoin
 	requestTypeLeave
-	requestTypeNew
+	requestTypeNewReplay
+	requestTypeNewTable
 	requestTypePrint
 	requestTypeSpectate
 	requestTypeUnspectate
@@ -33,7 +34,8 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeGetUserTables] = m.getUserTables
 	m.requestFuncMap[requestTypeJoin] = m.join
 	m.requestFuncMap[requestTypeLeave] = m.leave
-	m.requestFuncMap[requestTypeNew] = m.new
+	m.requestFuncMap[requestTypeNewReplay] = m.newReplay
+	m.requestFuncMap[requestTypeNewTable] = m.newTable
 	m.requestFuncMap[requestTypePrint] = m.print
 	m.requestFuncMap[requestTypeSpectate] = m.spectate
 	m.requestFuncMap[requestTypeUnspectate] = m.unspectate

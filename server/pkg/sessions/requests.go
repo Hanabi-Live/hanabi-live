@@ -26,6 +26,7 @@ const (
 	requestTypeNotifyError
 	requestTypeNotifyFriends
 	requestTypeNotifyGame
+	requestTypeNotifyJoined
 	requestTypeNotifyNote
 	requestTypeNotifySoundLobby
 	requestTypeNotifySpectators
@@ -52,6 +53,7 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNotifyError] = m.notifyError
 	m.requestFuncMap[requestTypeNotifyFriends] = m.notifyFriends
 	m.requestFuncMap[requestTypeNotifyGame] = m.notifyGame
+	m.requestFuncMap[requestTypeNotifyJoined] = m.notifyJoined
 	m.requestFuncMap[requestTypeNotifyNote] = m.notifyNote
 	m.requestFuncMap[requestTypeNotifySoundLobby] = m.notifySoundLobby
 	m.requestFuncMap[requestTypeNotifySpectators] = m.notifySpectators

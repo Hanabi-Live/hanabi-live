@@ -24,17 +24,12 @@ type Manager struct {
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
-
-	useTLS bool
-	domain string
 }
 
 func NewManager(
 	logger *logger.Logger,
 	models *models.Models,
 	dispatcher *dispatcher.Dispatcher,
-	useTLS bool,
-	domain string,
 	d *NewTableData,
 ) *Manager {
 	m := &Manager{
@@ -48,9 +43,6 @@ func NewManager(
 		logger:     logger,
 		models:     models,
 		Dispatcher: dispatcher,
-
-		useTLS: useTLS,
-		domain: domain,
 	}
 	m.requestFuncMapInit()
 	go m.ListenForRequests()

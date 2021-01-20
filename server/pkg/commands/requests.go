@@ -2,11 +2,13 @@ package commands
 
 import (
 	"fmt"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type request struct {
 	reqType     requestType
-	sessionData *SessionData
+	sessionData *types.SessionData
 	commandName string
 	commandData []byte
 }
@@ -19,6 +21,9 @@ const (
 )
 
 func (m *Manager) requestFuncMapInit() {
+	m.requestFuncMap["chat"] = m.chat
+	m.requestFuncMap["chatPM"] = m.chatPM
+	m.requestFuncMap["friend"] = m.friend
 	m.requestFuncMap["tableCreate"] = m.tableCreate
 	m.requestFuncMap["tableJoin"] = m.tableJoin
 	m.requestFuncMap["tableUnattend"] = m.tableUnattend
@@ -52,7 +57,7 @@ func (m *Manager) ListenForRequests() {
 	}
 }
 
-func (m *Manager) Send(sessionData *SessionData, commandName string, commandData []byte) {
+func (m *Manager) Send(sessionData *types.SessionData, commandName string, commandData []byte) {
 	if m.requestsClosed.IsSet() {
 		return
 	}

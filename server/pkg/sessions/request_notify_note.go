@@ -1,17 +1,17 @@
 package sessions
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type notifyNoteData struct {
 	userID  int
 	tableID int
 	order   int
-	notes   []table.Note
+	notes   []*types.Note
 }
 
-func (m *Manager) NotifyNote(userID int, tableID int, order int, notes []table.Note) {
+func (m *Manager) NotifyNote(userID int, tableID int, order int, notes []*types.Note) {
 	m.newRequest(requestTypeNotifyNote, &notifyNoteData{ // nolint: errcheck
 		userID:  userID,
 		tableID: tableID,
@@ -32,8 +32,8 @@ func (m *Manager) notifyNote(data interface{}) {
 	type noteData struct {
 		TableID int `json:"tableID"`
 		// The order of the card in the deck that these notes correspond to
-		Order int          `json:"order"`
-		Notes []table.Note `json:"notes"`
+		Order int           `json:"order"`
+		Notes []*types.Note `json:"notes"`
 	}
 	m.send(d.userID, "note", &noteData{
 		TableID: d.tableID,

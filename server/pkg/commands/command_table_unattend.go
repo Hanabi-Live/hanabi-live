@@ -3,6 +3,8 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type unattendData struct {
@@ -11,7 +13,7 @@ type unattendData struct {
 
 // tableUnattend is sent when the user clicks on the "Lobby" button while they are playing in an
 // ongoing game.
-func (m *Manager) tableUnattend(sessionData *SessionData, commandData []byte) {
+func (m *Manager) tableUnattend(sessionData *types.SessionData, commandData []byte) {
 	var d *unattendData
 	if err := json.Unmarshal(commandData, &d); err != nil {
 		msg := "Your \"unattend\" command contained invalid data."

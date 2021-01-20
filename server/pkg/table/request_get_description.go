@@ -1,13 +1,17 @@
 package table
 
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
+)
+
 type getDescriptionData struct {
-	resultsChannel chan *Description
+	resultsChannel chan *types.TableDescription
 }
 
 // GetDescription gets a high-level description of a table for use in showing a table row in the
 // lobby.
-func (m *Manager) GetDescription() (*Description, error) {
-	resultsChannel := make(chan *Description)
+func (m *Manager) GetDescription() (*types.TableDescription, error) {
+	resultsChannel := make(chan *types.TableDescription)
 
 	if err := m.newRequest(requestTypeGetDescription, &getDescriptionData{
 		resultsChannel: resultsChannel,

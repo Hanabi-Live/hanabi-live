@@ -6,6 +6,7 @@ import (
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
@@ -54,16 +55,8 @@ type table struct {
 	ExtraOptions *options.ExtraOptions // Options that are not stored in the database
 	Variant      *variants.Variant     // A reference to the variant object for convenience purposes
 
-	Chat     []*ChatMessage // All of the in-game chat history
-	ChatRead map[int]int    // A map of which users have read which messages
-}
-
-type ChatMessage struct {
-	UserID   int
-	Username string
-	Msg      string
-	Datetime time.Time
-	Server   bool
+	Chat     []*types.TableChatMessage // All of the in-game chat history
+	ChatRead map[int]int               // A map of which users have read which messages
 }
 
 type NewTableData struct {
@@ -108,7 +101,7 @@ func newTable(d *NewTableData) *table {
 		ExtraOptions: d.ExtraOptions,
 		Variant:      d.Variant,
 
-		Chat:     make([]*ChatMessage, 0),
+		Chat:     make([]*types.TableChatMessage, 0),
 		ChatRead: make(map[int]int),
 	}
 
@@ -126,8 +119,8 @@ func newTable(d *NewTableData) *table {
 	return t
 }
 
-func newChatMessage(userID int, username string, msg string, server bool) *ChatMessage {
-	return &ChatMessage{
+func newChatMessage(userID int, username string, msg string, server bool) *types.TableChatMessage {
+	return &types.TableChatMessage{
 		UserID:   userID,
 		Username: username,
 		Msg:      msg,

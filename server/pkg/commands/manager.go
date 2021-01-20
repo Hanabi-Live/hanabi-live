@@ -6,6 +6,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/tevino/abool"
 )
 
@@ -18,7 +19,7 @@ type Manager struct {
 
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
-	requestFuncMap    map[string]func(*SessionData, []byte)
+	requestFuncMap    map[string]func(*types.SessionData, []byte)
 	requestsClosed    *abool.AtomicBool
 
 	logger     *logger.Logger
@@ -26,19 +27,12 @@ type Manager struct {
 	Dispatcher *dispatcher.Dispatcher
 }
 
-type SessionData struct {
-	UserID   int
-	Username string
-	Friends  map[int]struct{}
-	Muted    bool
-}
-
 func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
 		name: "commands",
 
 		requests:       make(chan *request),
-		requestFuncMap: make(map[string]func(*SessionData, []byte)),
+		requestFuncMap: make(map[string]func(*types.SessionData, []byte)),
 		requestsClosed: abool.New(),
 
 		logger:     logger,

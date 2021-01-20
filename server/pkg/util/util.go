@@ -88,7 +88,7 @@ func GetReplayURL(domain string, useTLS bool, args []string) string {
 	if len(args) == 0 {
 		// They specified an ID but not a turn
 		path := fmt.Sprintf("/replay/%v", id)
-		url := GetURLFromPath(useTLS, domain, path)
+		url := GetURLFromPath(domain, useTLS, path)
 		return url
 	}
 
@@ -106,11 +106,11 @@ func GetReplayURL(domain string, useTLS bool, args []string) string {
 
 	// They specified an ID and a turn
 	path := fmt.Sprintf("/replay/%v#%v", id, turn)
-	url := GetURLFromPath(useTLS, domain, path)
+	url := GetURLFromPath(domain, useTLS, path)
 	return url
 }
 
-func GetURLFromPath(useTLS bool, domain string, path string) string {
+func GetURLFromPath(domain string, useTLS bool, path string) string {
 	protocol := "http"
 	if useTLS {
 		protocol = "https"

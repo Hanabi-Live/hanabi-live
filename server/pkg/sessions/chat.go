@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 const (
@@ -77,7 +77,7 @@ func (m *Manager) chatGetListFromDatabaseHistory(
 
 func (m *Manager) chatGetListFromTableHistory(
 	room string,
-	chatHistory []*table.ChatMessage,
+	chatHistory []*types.TableChatMessage,
 	chatRead int,
 ) *chatListData {
 	chatDataList := make([]*chatData, 0)

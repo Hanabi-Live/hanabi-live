@@ -9,22 +9,23 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
 	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/alexedwards/argon2id"
 )
 
-type newData struct {
+type newTableData struct {
 	userID      int
 	username    string
 	name        string
 	options     *options.Options
 	password    string
-	gameJSON    *table.GameJSON
+	gameJSON    *types.GameJSON
 	hidePregame bool
 }
 
-type newReturnData struct {
+type newTableReturnData struct {
 	tableID int
 	ok      bool
 }
@@ -35,16 +36,16 @@ const (
 	oneHourInSeconds   = 3600
 )
 
-func (m *Manager) New(
+func (m *Manager) NewTable(
 	userID int,
 	username string,
 	name string,
 	options *options.Options,
 	password string,
-	gameJSON *table.GameJSON,
+	gameJSON *types.GameJSON,
 	hidePregame bool,
 ) {
-	m.newRequest(requestTypeNew, &newData{ // nolint: errcheck
+	m.newRequest(requestTypeNewTable, &newTableData{ // nolint: errcheck
 		userID:      userID,
 		username:    username,
 		name:        name,
@@ -55,24 +56,24 @@ func (m *Manager) New(
 	})
 }
 
-// new returns the table ID of the creator table, or -1 if table creation failed.
-func (m *Manager) new(data interface{}) interface{} {
-	var d *newData
-	if v, ok := data.(*newData); !ok {
+// newTable returns the table ID of the new table, or -1 if table creation failed.
+func (m *Manager) newTable(data interface{}) interface{} {
+	var d *newTableData
+	if v, ok := data.(*newTableData); !ok {
 		m.logger.Errorf("Failed type assertion for data of type: %T", d)
-		return -1
+		return &newTableReturnData{-1, false}
 	} else {
 		d = v
 	}
 
 	if !m.newValidatePlayingOtherGame(d.userID, d.username) {
-		return -1
+		return &newTableReturnData{-1, false}
 	}
 
 	// Validate and sanitize the table name
 	var name string
 	if v, valid := m.newValidateName(d.userID, d.name); !valid {
-		return -1
+		return &newTableReturnData{-1, false}
 	} else {
 		name = v
 	}
@@ -83,7 +84,7 @@ func (m *Manager) new(data interface{}) interface{} {
 
 	// A special table may override the submitted options and/or special options
 	if v1, v2, valid := m.newValidateSpecialTable(d.userID, name, d.gameJSON); !valid {
-		return -1
+		return &newTableReturnData{-1, false}
 	} else if v1 != nil && v2 != nil {
 		opts = v1
 		extraOpts = v2
@@ -93,7 +94,7 @@ func (m *Manager) new(data interface{}) interface{} {
 
 	// A JSON table overrides the submitted options and special options
 	if v1, v2, valid := m.newValidateJSONTable(d.userID, d.gameJSON); !valid {
-		return -1
+		return &newTableReturnData{-1, false}
 	} else if v1 != nil && v2 != nil {
 		opts = v1
 		extraOpts = v2
@@ -102,7 +103,7 @@ func (m *Manager) new(data interface{}) interface{} {
 	// The options may be changed during validation
 	var variant *variants.Variant
 	if v1, v2, valid := m.newValidateOptions(d.userID, opts); !valid {
-		return -1
+		return &newTableReturnData{-1, false}
 	} else {
 		opts = v1
 		variant = v2
@@ -114,14 +115,14 @@ func (m *Manager) new(data interface{}) interface{} {
 		if v, err := argon2id.CreateHash(d.password, argon2id.DefaultParams); err != nil {
 			m.logger.Errorf("Failed to create a hash from the submitted table password: %v", err)
 			m.Dispatcher.Sessions.NotifyError(d.userID, constants.CreateGameFail)
-			return newReturnData{-1, false}
+			return &newTableReturnData{-1, false}
 		} else {
 			passwordHash = v
 		}
 	}
 
 	tableID := m.newTableID()
-	t := table.NewManager(m.logger, m.models, m.Dispatcher, m.useTLS, m.domain, &table.NewTableData{
+	t := table.NewManager(m.logger, m.models, m.Dispatcher, &table.NewTableData{
 		ID:              tableID,
 		Name:            name,
 		OwnerID:         d.userID,
@@ -154,7 +155,7 @@ func (m *Manager) new(data interface{}) interface{} {
 
 		// Now, there should be no more references to the table manager,
 		// and it should be garbage collected
-		return -1
+		return &newTableReturnData{-1, false}
 	}
 
 	m.logger.Infof(
@@ -164,7 +165,7 @@ func (m *Manager) new(data interface{}) interface{} {
 		name,
 	)
 
-	return tableID
+	return &newTableReturnData{tableID, true}
 }
 
 func (m *Manager) newValidatePlayingOtherGame(userID int, username string) bool {
@@ -249,7 +250,7 @@ func (m *Manager) newValidateName(userID int, name string) (string, bool) {
 func (m *Manager) newValidateSpecialTable(
 	userID int,
 	name string,
-	gameJSON *table.GameJSON,
+	gameJSON *types.GameJSON,
 ) (*options.Options, *options.ExtraOptions, bool) {
 	if !strings.HasPrefix(name, "!") {
 		return nil, nil, true
@@ -398,14 +399,14 @@ func (m *Manager) newValidateSpecialTableReplay(
 
 func (m *Manager) newValidateJSONTable(
 	userID int,
-	gameJSON *table.GameJSON,
+	gameJSON *types.GameJSON,
 ) (*options.Options, *options.ExtraOptions, bool) {
 	if gameJSON == nil {
 		return nil, nil, true
 	}
 
 	// Validate games with custom JSON
-	if valid, msg := gameJSON.Validate(m.Dispatcher.Variants); !valid {
+	if valid, msg := m.newReplayValidateJSON(gameJSON); !valid {
 		m.Dispatcher.Sessions.NotifyWarning(userID, msg)
 		return nil, nil, false
 	}

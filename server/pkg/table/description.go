@@ -1,26 +1,10 @@
 package table
 
-type Description struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
+)
 
-	Players    []string `json:"players"`
-	Spectators []string `json:"spectators"`
-
-	Visible           bool `json:"visible"`
-	PasswordProtected bool `json:"passwordProtected"`
-	Running           bool `json:"running"`
-	Replay            bool `json:"replay"`
-	Progress          int  `json:"progress"`
-
-	NumPlayers  int    `json:"numPlayers"`
-	VariantName string `json:"variantName"`
-	Timed       bool   `json:"timed"`
-	TimeBase    int    `json:"timeBase"`
-	TimePerTurn int    `json:"timePerTurn"`
-}
-
-func newDescription(t *table) *Description {
+func newDescription(t *table) *types.TableDescription {
 	players := make([]string, 0)
 	for _, p := range t.Players {
 		players = append(players, p.Username)
@@ -31,7 +15,7 @@ func newDescription(t *table) *Description {
 		spectators = append(spectators, sp.username)
 	}
 
-	return &Description{
+	return &types.TableDescription{
 		ID:   t.ID,
 		Name: t.Name,
 

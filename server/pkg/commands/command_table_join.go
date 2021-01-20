@@ -2,6 +2,8 @@ package commands
 
 import (
 	"encoding/json"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type tableJoinData struct {
@@ -10,7 +12,7 @@ type tableJoinData struct {
 }
 
 // tableJoin is sent when the user clicks on a table row in the lobby.
-func (m *Manager) tableJoin(sessionData *SessionData, commandData []byte) {
+func (m *Manager) tableJoin(sessionData *types.SessionData, commandData []byte) {
 	var d *tableJoinData
 	if err := json.Unmarshal(commandData, &d); err != nil {
 		msg := "Your \"tableJoin\" command contained invalid data."

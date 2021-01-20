@@ -1,14 +1,14 @@
 package sessions
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type notifyAllTableData struct {
-	tableDescription *table.Description
+	tableDescription *types.TableDescription
 }
 
-func (m *Manager) NotifyAllTable(tableDescription *table.Description) {
+func (m *Manager) NotifyAllTable(tableDescription *types.TableDescription) {
 	m.newRequest(requestTypeNotifyAllTable, &notifyAllTableData{ // nolint: errcheck
 		tableDescription: tableDescription,
 	})

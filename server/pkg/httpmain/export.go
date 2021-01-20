@@ -7,6 +7,7 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
 	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/gin-gonic/gin"
 )
@@ -117,10 +118,15 @@ func (m *Manager) export(c *gin.Context) {
 	}
 
 	// Make a deck and shuffle it
-	t := table.NewManager(m.logger, m.models, m.Dispatcher, m.useTLS, m.domain, &table.NewTableData{
-		Options: opts,
-		Variant: variant,
-	})
+	t := table.NewManager(
+		m.logger,
+		m.models,
+		m.Dispatcher,
+		&table.NewTableData{ // nolint: exhaustivestruct
+			Options: opts,
+			Variant: variant,
+		},
+	)
 	cardIdentities := t.Export(seed)
 	t.Shutdown()
 
@@ -237,7 +243,7 @@ func (m *Manager) export(c *gin.Context) {
 	}
 
 	// Create a JSON game
-	gameJSON := &table.GameJSON{
+	gameJSON := &types.GameJSON{
 		ID:         databaseID,
 		Players:    playerNames,
 		Deck:       cardIdentities,

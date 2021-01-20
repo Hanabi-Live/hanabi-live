@@ -6,7 +6,7 @@ type notifyJoinedData struct {
 }
 
 func (m *Manager) NotifyJoined(userID int, tableID int) {
-	m.newRequest(requestTypeNotifyGame, &notifyJoinedData{ // nolint: errcheck
+	m.newRequest(requestTypeNotifyJoined, &notifyJoinedData{ // nolint: errcheck
 		userID:  userID,
 		tableID: tableID,
 	})

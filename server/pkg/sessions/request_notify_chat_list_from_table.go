@@ -1,20 +1,20 @@
 package sessions
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type notifyChatListFromTableData struct {
 	recipientUserID int
 	room            string
-	chatHistory     []*table.ChatMessage
+	chatHistory     []*types.TableChatMessage
 	chatRead        int
 }
 
 func (m *Manager) NotifyChatListFromTable(
 	recipientUserID int,
 	room string,
-	chatHistory []*table.ChatMessage,
+	chatHistory []*types.TableChatMessage,
 	chatRead int,
 ) {
 	m.newRequest(requestTypeNotifyChatListFromTable, &notifyChatListFromTableData{ // nolint: errcheck

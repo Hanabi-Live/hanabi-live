@@ -7,6 +7,7 @@ import (
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/alexedwards/argon2id"
 )
@@ -71,7 +72,7 @@ func (m *Manager) join(data interface{}) {
 		UserID:   d.userID,
 		Username: d.username,
 		Present:  true,
-		Stats: &pregameStats{
+		Stats: &types.PregameStats{
 			NumGames: numGames,
 			Variant:  variantStats,
 		},

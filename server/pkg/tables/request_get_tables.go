@@ -1,21 +1,19 @@
 package tables
 
-import (
-	"github.com/Zamiell/hanabi-live/server/pkg/table"
-)
+import "github.com/Zamiell/hanabi-live/server/pkg/types"
 
 type getTablesData struct {
-	resultsChannel chan []*table.Description
+	resultsChannel chan []*types.TableDescription
 }
 
 // GetTables requests a list of all of the public tables.
-func (m *Manager) GetTables() []*table.Description {
-	resultsChannel := make(chan []*table.Description)
+func (m *Manager) GetTables() []*types.TableDescription {
+	resultsChannel := make(chan []*types.TableDescription)
 
 	if err := m.newRequest(requestTypeGetTables, &getTablesData{
 		resultsChannel: resultsChannel,
 	}); err != nil {
-		return make([]*table.Description, 0)
+		return make([]*types.TableDescription, 0)
 	}
 
 	return <-resultsChannel
@@ -30,7 +28,7 @@ func (m *Manager) getTables(data interface{}) interface{} {
 		d = v
 	}
 
-	tables := make([]*table.Description, 0)
+	tables := make([]*types.TableDescription, 0)
 	for _, t := range m.tables {
 		if tableDescription, err := t.GetDescription(); err != nil {
 			// This table has stopped listening to requests, so skip it

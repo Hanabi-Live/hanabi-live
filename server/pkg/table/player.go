@@ -3,7 +3,7 @@ package table
 import (
 	"time"
 
-	"github.com/Zamiell/hanabi-live/server/pkg/models"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 // player is the object that represents the player before the game has started.
@@ -14,12 +14,7 @@ type player struct {
 	Username string
 
 	Present   bool
-	Stats     *pregameStats
+	Stats     *types.PregameStats
 	Typing    bool
 	LastTyped time.Time
-}
-
-type pregameStats struct {
-	NumGames int                  `json:"numGames"`
-	Variant  *models.UserStatsRow `json:"variant"`
 }

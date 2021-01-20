@@ -15,8 +15,3 @@ type spectator struct {
 
 	notes []string
 }
-
-type SpectatorDescription struct {
-	Username             string
-	ShadowingPlayerIndex int
-}

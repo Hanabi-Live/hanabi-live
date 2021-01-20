@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 	"nhooyr.io/websocket"
 )
 
@@ -13,12 +14,12 @@ type SessionsManager interface {
 
 	NotifyAllChat(username string, msg string, room string, discord bool, server bool)
 	NotifyAllError(msg string)
-	NotifyAllTable(tableDescription interface{})
+	NotifyAllTable(tableDescription *types.TableDescription)
 	NotifyAllUser(changedUserID int)
 	NotifyChatListFromTable(
 		recipientUserID int,
 		room string,
-		chatHistory interface{},
+		chatHistory []*types.TableChatMessage,
 		chatRead int,
 	)
 	NotifyChatServer(recipientUserID int, msg string, room string)
@@ -26,10 +27,10 @@ type SessionsManager interface {
 	NotifyChatTyping(recipientUserID int, tableID int, username string, typing bool)
 	NotifyError(userID int, msg string)
 	NotifyFriends(userID int, friends []string)
-	NotifyGame(userID int, gameData interface{})
+	NotifyGame(userID int, gameData *types.GameData)
 	NotifyJoined(userID int, tableID int)
-	NotifyNote(userID int, tableID int, order int, notes interface{})
-	NotifySpectators(userID int, tableID int, spectators interface{})
+	NotifyNote(userID int, tableID int, order int, notes []*types.Note)
+	NotifySpectators(userID int, tableID int, spectators []*types.SpectatorDescription)
 	NotifySoundLobby(userID int, file string)
 	NotifyWarning(userID int, msg string)
 
