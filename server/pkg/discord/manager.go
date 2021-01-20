@@ -9,6 +9,7 @@ import (
 
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 	"github.com/bwmarrin/discordgo"
 	"github.com/tevino/abool"
@@ -128,13 +129,10 @@ func (m *Manager) connect(envVars *envVars) {
 
 	// Announce that the server has started
 	// (we wait for Discord to connect before displaying this message)
-	/*
-		msg := fmt.Sprintf(
-			"The server has successfully started at: %v (%v)",
-			util.GetCurrentTimestamp(),
-			m.Dispatcher.Core.GitCommitOnStart(),
-		)
-		// SEND TO COMMAND MANAGER PROBABLY
-		chatServerSend(ctx, msg, "lobby", false)
-	*/
+	msg := fmt.Sprintf(
+		"The server has successfully started at: %v (%v)",
+		util.GetCurrentTimestamp(),
+		m.Dispatcher.Core.GitCommitOnStart(),
+	)
+	m.Dispatcher.Chat.ChatServer(msg, "lobby")
 }

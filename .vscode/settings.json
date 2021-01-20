@@ -35,6 +35,7 @@
     "./client",
   ],
 
+
   // The default Golang linter is golint, which is only concerned with coding style
   // GolangCI-Lint does a suite of different checks
   "go.lintTool": "golangci-lint",
@@ -44,6 +45,11 @@
   "go.lintFlags": [
       "--fast",
   ],
+
+  // The Go Language Server is recommended, but it is not yet the default setting
+  // https://github.com/golang/vscode-go
+  // TODO: Remove this in Feb 2021 when it is the default
+  "go.useLanguageServer": true,
 
   // This is needed because the "jest.config.js" is not located in the root of the repository
   "jest.rootPath": "client",

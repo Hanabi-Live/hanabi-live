@@ -11,10 +11,16 @@ import (
 // game is a sub-object of a table.
 // It represents all of the particular state associated with a game.
 // We need to export most fields so that the JSON encoder can serialize them during a graceful
-// server restart. Fields that do not need to be encoded are still exported for object consistency.
-// Instead, we use a tag of `json:"-"` to denote that the JSON serializer should skip the field.
+// server restart.
 // (Several fields must be skipped in order to prevent circular references.)
 type game struct {
+	// This is a reference to the parent object; every game must have a parent Table object
+	table *table
+	// These are references to the respective fields of the Table object (for convenience purposes)
+	options      *options.Options
+	extraOptions *options.ExtraOptions
+	variant      *variants.Variant
+
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
 	// the database yet
@@ -23,13 +29,6 @@ type game struct {
 	// This corresponds to the database field of "datetime_finished"
 	// It will be blank in an ongoing game that has not been written to the database yet
 	DatetimeFinished time.Time
-
-	// This is a reference to the parent object; every game must have a parent Table object
-	Table *table `json:"-"`
-	// These are references to the respective fields of the Table object (for convenience purposes)
-	Options      *options.Options      `json:"-"`
-	ExtraOptions *options.ExtraOptions `json:"-"`
-	Variant      *variants.Variant
 
 	// Game state related fields
 	Players []*gamePlayer
@@ -88,13 +87,13 @@ type game struct {
 
 func (m *Manager) newGame(t *table) *game {
 	g := &game{
+		table:        t,
+		options:      t.Options,
+		extraOptions: t.ExtraOptions,
+		variant:      t.Variant,
+
 		DatetimeStarted:  time.Time{},
 		DatetimeFinished: time.Time{},
-
-		Table:        t,
-		Options:      t.Options,
-		ExtraOptions: t.ExtraOptions,
-		Variant:      t.Variant,
 
 		Players:               make([]*gamePlayer, 0),
 		Seed:                  "",
@@ -144,9 +143,6 @@ func (m *Manager) newGame(t *table) *game {
 			}
 		}
 	}
-
-	// Also, attach this new Game object to the parent table
-	g.Table.Game = g
 
 	return g
 }

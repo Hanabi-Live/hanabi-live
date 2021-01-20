@@ -14,6 +14,9 @@ import (
 // We need to export most fields so that the JSON encoder can serialize them during a graceful
 // server restart.
 type table struct {
+	// This is a reference to the parent object; every game must have a parent Manager object
+	manager *Manager
+
 	ID          int
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay

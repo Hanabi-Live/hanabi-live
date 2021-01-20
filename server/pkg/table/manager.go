@@ -56,6 +56,7 @@ func NewManager(
 	go m.ListenForRequests()
 
 	m.table = newTable(d)
+	m.table.manager = m
 
 	return m
 }

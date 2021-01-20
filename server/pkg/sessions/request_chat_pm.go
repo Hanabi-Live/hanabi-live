@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html"
+	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
@@ -80,23 +81,20 @@ func (m *Manager) chatPM(data interface{}) {
 		})
 		return
 	}
-}
 
-/*
-	chatMessage := &ChatMessage{
-		Username:       s.Username,
-		Msg:       d.Msg,
+	chatData := &chatData{
+		Username:  d.username,
+		Msg:       d.msg,
 		Room:      "",
 		Discord:   false,
 		Server:    false,
 		Datetime:  time.Now(),
-		Recipient: recipientSession.Username,
+		Recipient: recipientSession.username,
 	}
 
-	// Echo the private message back to the person who sent it
-	s.Emit("chat", chatMessage)
-
 	// Send the private message to the recipient
-	recipientSession.Emit("chat", chatMessage)
+	m.send(recipientSession.userID, "chat", chatData)
+
+	// Echo the private message back to the person who sent it
+	m.send(d.userID, "chat", chatData)
 }
-*/

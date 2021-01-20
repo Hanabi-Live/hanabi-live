@@ -83,6 +83,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	// Create the game object
 	g := NewGame(t)
+	t.Game = g
 
 	// Start the idle timeout
 	go t.CheckIdle(ctx)

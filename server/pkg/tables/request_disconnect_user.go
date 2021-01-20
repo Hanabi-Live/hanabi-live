@@ -1,5 +1,10 @@
 package tables
 
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/table"
+	"github.com/Zamiell/hanabi-live/server/pkg/util"
+)
+
 type disconnectUserData struct {
 	userID   int
 	username string
@@ -25,13 +30,7 @@ func (m *Manager) disconnectUser(data interface{}) interface{} {
 	// Go through every table that this user is playing in and unattend them
 	playingAtTables := m.getUserPlaying(d.userID)
 	for _, tableID := range playingAtTables {
-		/*
-			m.unattend(&unattendData{
-				userID: d.userID,
-			})
-		*/
-		// TODO
-		m.deleteUserPlaying(d.userID, tableID)
+		m.disconnectUserUnattend(d.userID, d.username, tableID)
 	}
 
 	// Go through every table that this user is spectating and unspectate them
@@ -45,4 +44,20 @@ func (m *Manager) disconnectUser(data interface{}) interface{} {
 	}
 
 	return true
+}
+
+func (m *Manager) disconnectUserUnattend(userID int, username string, tableID int) {
+	var t *table.Manager
+	if v, ok := m.tables[tableID]; !ok {
+		m.logger.Errorf(
+			"Failed to find table %v in the map when unattending user %v.",
+			tableID,
+			util.PrintUser(userID, username),
+		)
+		return
+	} else {
+		t = v
+	}
+
+	t.Unattend(userID, username)
 }

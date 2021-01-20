@@ -1,11 +1,5 @@
 package table
 
-import (
-	"strconv"
-
-	"github.com/Zamiell/hanabi-live/server/pkg/variants"
-)
-
 type card struct {
 	Order     int // Assigned after the deck is shuffled
 	SuitIndex int
@@ -21,17 +15,17 @@ type card struct {
 	InsistentTouched bool // Used by the "Insistent" character
 }
 
-/*
 func newCard(suitIndex int, rank int) *card {
 	// We can't set the order here because the deck will be shuffled later
-	c := &card{}
-	c.SuitIndex = suitIndex
-	c.Rank = rank
+	c := &card{ // nolint: exhaustivestruct
+		SuitIndex: suitIndex,
+		Rank:      rank,
+	}
 
 	return c
 }
-*/
 
+/*
 func (c *card) name(g *game) string {
 	suit := g.Variant.Suits[c.SuitIndex]
 	name := suit.Name
@@ -44,3 +38,5 @@ func (c *card) name(g *game) string {
 
 	return name
 }
+
+*/

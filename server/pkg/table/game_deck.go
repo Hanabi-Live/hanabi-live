@@ -1,29 +1,39 @@
-package main
-
-/*
+package table
 
 import (
 	"math/rand"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/options"
+	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
-func (g *Game) InitDeck() {
+func (g *game) initDeck() error {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	t := g.table
+	m := t.manager
+
+	var variant *variants.Variant
+	if v, err := m.Dispatcher.Variants.GetVariant(g.options.VariantName); err != nil {
+		return err
+	} else {
+		variant = v
+	}
 
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified
-	if g.ExtraOptions.CustomDeck != nil &&
-		len(g.ExtraOptions.CustomDeck) != 0 &&
-		g.ExtraOptions.CustomSeed == "" { // Custom seeds override custom decks
+	if g.extraOptions.CustomDeck != nil &&
+		len(g.extraOptions.CustomDeck) != 0 &&
+		g.extraOptions.CustomSeed == "" { // Custom seeds override custom decks
 
-		for _, card := range g.ExtraOptions.CustomDeck {
+		for _, card := range g.extraOptions.CustomDeck {
 			g.Deck = append(g.Deck, newCard(card.SuitIndex, card.Rank))
-			g.CardIdentities = append(g.CardIdentities, &CardIdentity{
+			g.CardIdentities = append(g.CardIdentities, &options.CardIdentity{
 				SuitIndex: card.SuitIndex,
 				Rank:      card.Rank,
 			})
 		}
-		return
+
+		return nil
 	}
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
@@ -44,12 +54,12 @@ func (g *Game) InitDeck() {
 				if variant.IsUpOrDown() || suit.Reversed {
 					amountToAdd = 1
 				}
-			} else if rank == 5 {
+			} else if rank == 5 { // nolint: gomnd
 				amountToAdd = 1
 				if suit.Reversed {
 					amountToAdd = 3
 				}
-			} else if rank == StartCardRank {
+			} else if rank == variants.StartCardRank {
 				amountToAdd = 1
 			} else {
 				amountToAdd = 2
@@ -61,16 +71,19 @@ func (g *Game) InitDeck() {
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
 				g.Deck = append(g.Deck, newCard(suitIndex, rank))
-				g.CardIdentities = append(g.CardIdentities, &CardIdentity{
+				g.CardIdentities = append(g.CardIdentities, &options.CardIdentity{
 					SuitIndex: suitIndex,
 					Rank:      rank,
 				})
 			}
 		}
 	}
+
+	return nil
 }
 
-func (g *Game) ShuffleDeck() {
+func (g *game) shuffleDeck() {
+	// It is assumed that "rand.Seed()" is already set before getting here
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	for i := range g.Deck {
 		j := rand.Intn(i + 1) // nolint: gosec
@@ -78,5 +91,3 @@ func (g *Game) ShuffleDeck() {
 		g.CardIdentities[i], g.CardIdentities[j] = g.CardIdentities[j], g.CardIdentities[i]
 	}
 }
-
-*/

@@ -14,6 +14,7 @@ type requestType int
 const (
 	requestTypeAutomaticStart requestType = iota
 	requestTypeChat
+	requestTypeExport
 	requestTypeFindVariant
 	requestTypeGetDescription
 	requestTypeImpostor
@@ -38,6 +39,7 @@ const (
 func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeAutomaticStart] = m.automaticStart
 	m.requestFuncMap[requestTypeChat] = m.chat
+	m.requestFuncMap[requestTypeExport] = m.export
 	m.requestFuncMap[requestTypeFindVariant] = m.findVariant
 	m.requestFuncMap[requestTypeGetDescription] = m.getDescription
 	m.requestFuncMap[requestTypeImpostor] = m.impostor
