@@ -257,7 +257,7 @@ function submit() {
   }
   localStorage.setItem("createTablePassword", password);
 
-  // Max players must be a number between 2 and 6, default to 5 if validation fails
+  // Max players must be a number between 2 and 6. Default to 5 if validation fails
   let maxPlayers = Number($("#createTableMaxPlayers").val());
   if (maxPlayers < 2 || maxPlayers > 6) {
     maxPlayers = 5;
