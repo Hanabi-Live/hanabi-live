@@ -46,6 +46,7 @@ type ExtraOptions struct {
 	SetSeedSuffix string // Parsed from the game name for "!seed" games
 	SetReplay     bool   // True during "!replay" games
 	SetReplayTurn int    // Parsed from the game name for "!replay" games
+	MaxPlayers    int    // Maximum players in this game
 }
 
 // To minimize JSON output, we need to use pointers to each option instead of the normal type

@@ -103,6 +103,9 @@ export function draw(): void {
   // Update the information on the left-hand side of the screen
   $("#lobby-pregame-name").text(globals.game.name);
   $("#lobby-pregame-variant").text(globals.game.options.variantName);
+  $("#lobby-pregame-seats").text(
+    `${globals.game.players.length.toString()} / ${globals.game.maxPlayers.toString()}`,
+  );
 
   drawOptions();
 

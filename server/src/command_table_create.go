@@ -15,6 +15,11 @@ const (
 	MaxGameNameLength = 45
 )
 
+const (
+	// The default player limit in a game
+	DefaultMaxPlayers = 5
+)
+
 var (
 	isValidTableName = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
 )
@@ -266,6 +271,13 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
+	// Validate that the maximum player count is valid
+	// Default to 5
+	logger.Info("Table created with Max Players = " + strconv.Itoa(d.MaxPlayers))
+	if d.MaxPlayers < 2 || d.MaxPlayers > 6 {
+		d.MaxPlayers = DefaultMaxPlayers
+	}
+
 	tableCreate(ctx, s, d, data)
 }
 
@@ -319,6 +331,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 		SetSeedSuffix:              data.SetSeedSuffix,
 		SetReplay:                  false,
 		SetReplayTurn:              0,
+		MaxPlayers:                 d.MaxPlayers,
 	}
 
 	// If this is a "!replay" game, override the options with the ones found in the database

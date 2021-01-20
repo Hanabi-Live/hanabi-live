@@ -18,9 +18,10 @@ type CommandData struct {
 	Recipient string `json:"recipient"`
 
 	// tableCreate
-	Name     string   `json:"name"`
-	Options  *Options `json:"options"`
-	Password string   `json:"password"`
+	Name       string   `json:"name"`
+	Options    *Options `json:"options"`
+	Password   string   `json:"password"`
+	MaxPlayers int      `json:"maxPlayers"`
 
 	// action
 	Type   int `json:"type"`

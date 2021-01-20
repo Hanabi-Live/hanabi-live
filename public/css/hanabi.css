@@ -848,8 +848,8 @@ input::-webkit-calendar-picker-indicator {
   width: 19em;
 }
 
-/* Make pregame name and variant appear on next line always */
-#lobby-pregame-name, #lobby-pregame-variant {
+/* Make pregame name, variant, and number of players appear on next line always */
+#lobby-pregame-name, #lobby-pregame-variant, #lobby-pregame-seats {
   display: block;
 }
 

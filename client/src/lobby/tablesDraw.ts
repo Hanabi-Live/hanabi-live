@@ -110,7 +110,13 @@ export default function tablesDraw(): void {
     $("<td>").html(name).appendTo(row);
 
     // Column 2 - # of Players
-    $("<td>").html(table.numPlayers.toString()).appendTo(row);
+    $("<td>")
+      .html(
+        table.running || table.sharedReplay
+          ? table.numPlayers.toString()
+          : `${table.numPlayers.toString()} / ${table.maxPlayers.toString()}`,
+      )
+      .appendTo(row);
 
     // Column 3 - Variant
     $("<td>").html(table.variant).appendTo(row);

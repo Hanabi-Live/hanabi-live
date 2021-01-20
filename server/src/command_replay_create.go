@@ -433,6 +433,7 @@ func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlay
 		SetSeedSuffix: "",
 		SetReplay:     false,
 		SetReplayTurn: 0,
+		MaxPlayers:    5,
 	}
 
 	return dbPlayers, true

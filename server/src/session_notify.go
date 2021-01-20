@@ -77,6 +77,7 @@ type TableMessage struct {
 	Progress          int      `json:"progress"`
 	Players           []string `json:"players"`
 	Spectators        []string `json:"spectators"`
+	MaxPlayers        int      `json:"maxPlayers"`
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
@@ -108,6 +109,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		Progress:          t.Progress,
 		Players:           players,
 		Spectators:        spectators,
+		MaxPlayers:        t.ExtraOptions.MaxPlayers,
 	}
 }
 
