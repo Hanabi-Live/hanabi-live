@@ -16,13 +16,14 @@ type SessionsManager interface {
 	NotifyAllTable(tableDescription interface{})
 	NotifyAllUser(changedUserID int)
 	NotifyChatListFromTable(
-		userID int,
+		recipientUserID int,
 		room string,
 		chatHistory interface{},
 		chatRead int,
 	)
-	NotifyChatServer(userID int, msg string, room string)
-	NotifyChatTyping(userID int, tableID int, username string, typing bool)
+	NotifyChatServer(recipientUserID int, msg string, room string)
+	NotifyChatServerPM(recipientUserID int, recipientUsername string, msg string)
+	NotifyChatTyping(recipientUserID int, tableID int, username string, typing bool)
 	NotifyError(userID int, msg string)
 	NotifyFriends(userID int, friends []string)
 	NotifyGame(userID int, gameData interface{})
@@ -32,5 +33,6 @@ type SessionsManager interface {
 	NotifySoundLobby(userID int, file string)
 	NotifyWarning(userID int, msg string)
 
+	SetFriend(userID int, friendID int, add bool)
 	SetStatus(userID int, status constants.Status, tableID int)
 }

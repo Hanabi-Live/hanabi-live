@@ -21,6 +21,7 @@ const (
 	requestTypeNotifyAllTableGone
 	requestTypeNotifyChatListFromTable
 	requestTypeNotifyChatServer
+	requestTypeNotifyChatServerPM
 	requestTypeNotifyChatTyping
 	requestTypeNotifyError
 	requestTypeNotifyFriends
@@ -30,6 +31,7 @@ const (
 	requestTypeNotifySpectators
 	requestTypeNotifyWarning
 	requestTypePrint
+	requestTypeSetFriend
 	requestTypeSetStatus
 
 	requestTypeShutdown
@@ -45,6 +47,7 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNotifyAllTableGone] = m.notifyAllTableGone
 	m.requestFuncMap[requestTypeNotifyChatListFromTable] = m.notifyChatListFromTable
 	m.requestFuncMap[requestTypeNotifyChatServer] = m.notifyChatServer
+	m.requestFuncMap[requestTypeNotifyChatServerPM] = m.notifyChatServerPM
 	m.requestFuncMap[requestTypeNotifyChatTyping] = m.notifyChatTyping
 	m.requestFuncMap[requestTypeNotifyError] = m.notifyError
 	m.requestFuncMap[requestTypeNotifyFriends] = m.notifyFriends
@@ -55,6 +58,7 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
 	m.requestFuncMap[requestTypePrint] = m.print
 	m.requestFuncMap[requestTypeSetStatus] = m.setStatus
+	m.requestFuncMap[requestTypeSetFriend] = m.setFriend
 }
 
 // ListenForRequests will block until messages are sent on the request channel.

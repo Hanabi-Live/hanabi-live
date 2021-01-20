@@ -35,7 +35,6 @@
     "./client",
   ],
 
-
   // The default Golang linter is golint, which is only concerned with coding style
   // GolangCI-Lint does a suite of different checks
   "go.lintTool": "golangci-lint",

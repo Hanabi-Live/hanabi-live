@@ -155,15 +155,10 @@ func (m *Manager) friendAdd(d *friendData, friend *models.User) bool {
 	}
 
 	// Submit a request to modify the friend map in memory
-	/*
-		friendMap[friend.ID] = struct{}{}
-		if reverseFriendMap != nil {
-			reverseFriendMap[s.UserID] = struct{}{}
-		}
+	m.Dispatcher.Sessions.SetFriend(d.userID, friend.ID, true)
 
-		msg = fmt.Sprintf("Successfully added \"%v\" to your friends list.", d.Name)
-		chatServerSendPM(s, msg, d.Room)
-	*/
+	msg := fmt.Sprintf("Successfully added \"%v\" to your friends list.", d.targetUsername)
+	m.Dispatcher.Sessions.NotifyChatServerPM(d.userID, d.username, msg)
 
 	return true
 }
@@ -206,19 +201,10 @@ func (m *Manager) friendDelete(d *friendData, friend *models.User) bool {
 	}
 
 	// Submit a request to modify the friend map in memory
+	m.Dispatcher.Sessions.SetFriend(d.userID, friend.ID, false)
 
-	/*
-		// Remove the friend from the map
-		delete(friendMap, friend.ID)
-		if reverseFriendMap != nil {
-			delete(reverseFriendMap, s.UserID)
-		}
-	*/
-
-	/*
-		msg = fmt.Sprintf("Successfully removed \"%v\" from your friends list.", d.Name)
-		chatServerSendPM(s, msg, d.Room)
-	*/
+	msg := fmt.Sprintf("Successfully removed \"%v\" from your friends list.", d.targetUsername)
+	m.Dispatcher.Sessions.NotifyChatServerPM(d.userID, d.username, msg)
 
 	return true
 }

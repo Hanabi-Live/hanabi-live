@@ -11,7 +11,7 @@ type notifyChatServerData struct {
 }
 
 // NotifyChatServer is a helper function for sending a private message from the server to a user.
-// (The message will not be written to the database.)
+// (The message will not be written to the database and will not have the "[PM]" prefix.)
 func (m *Manager) NotifyChatServer(recipientUserID int, msg string, room string) {
 	m.newRequest(requestTypeNotifyChatServer, &notifyChatServerData{ // nolint: errcheck
 		recipientUserID: recipientUserID,

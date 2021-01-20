@@ -86,7 +86,7 @@ jobs:
       - uses: golangci/golangci-lint-action@v2
         with:
           version: v1.33
-          working-directory: ${{ env.working-directory }}/src
+          working-directory: ${{ env.working-directory }}
 
   spell_check:
     name: Spell Check
