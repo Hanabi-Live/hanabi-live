@@ -42,7 +42,7 @@ func (m *Manager) ban(c *gin.Context, username string, ip string, userID int) {
 		return
 	}
 
-	logoutUser(userID)
+	m.Dispatcher.Sessions.Logout(userID, username)
 
 	c.String(http.StatusOK, "success\n")
 }

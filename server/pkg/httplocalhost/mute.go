@@ -44,7 +44,7 @@ func (m *Manager) mute(c *gin.Context, username string, ip string, userID int) {
 
 	// They need to re-login for the mute to take effect,
 	// so disconnect their existing connection, if any
-	logoutUser(userID)
+	m.Dispatcher.Sessions.Logout(userID, username)
 
 	c.String(http.StatusOK, "success\n")
 }

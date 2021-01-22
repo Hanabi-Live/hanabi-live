@@ -6,4 +6,5 @@ import (
 
 type CommandsManager interface {
 	Send(sessionData *types.SessionData, commandName string, commandData []byte)
+	Shutdown()
 }

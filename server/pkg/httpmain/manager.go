@@ -17,20 +17,19 @@ import (
 )
 
 type Manager struct {
-	httpClientWithTimeout *http.Client // Used for the Google Analytics middleware
-	emojiRegExp           *regexp.Regexp
-
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
 
-	projectPath  string
-	versionPath  string
-	isDev        bool
-	domain       string
-	useTLS       bool
-	gaTrackingID string
-	webpackPort  int
+	httpClientWithTimeout *http.Client // Used for the Google Analytics middleware
+	projectPath           string
+	versionPath           string
+	isDev                 bool
+	domain                string
+	useTLS                bool
+	gaTrackingID          string
+	webpackPort           int
+	emojiRegExp           *regexp.Regexp
 }
 
 const (
@@ -54,16 +53,14 @@ func NewManager(
 	}
 
 	m := &Manager{
-		// We don't want to use the default http.Client because it has no default timeout set
-		httpClientWithTimeout: &http.Client{ // nolint: exhaustivestruct
-			Timeout: constants.HTTPWriteTimeout,
-		},
-		emojiRegExp: regexp.MustCompile(emojiPattern),
-
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 
+		// We don't want to use the default http.Client because it has no default timeout set
+		httpClientWithTimeout: &http.Client{ // nolint: exhaustivestruct
+			Timeout: constants.HTTPWriteTimeout,
+		},
 		projectPath:  projectPath,
 		versionPath:  versionPath,
 		isDev:        isDev,
@@ -71,6 +68,7 @@ func NewManager(
 		useTLS:       len(envVars.tlsCertFile) > 0 && len(envVars.tlsKeyFile) > 0,
 		gaTrackingID: envVars.gaTrackingID,
 		webpackPort:  envVars.webpackPort,
+		emojiRegExp:  regexp.MustCompile(emojiPattern),
 	}
 	go m.start(envVars, usingSentry)
 

@@ -13,10 +13,10 @@ type unattendData struct {
 
 // tableUnattend is sent when the user clicks on the "Lobby" button while they are playing in an
 // ongoing game.
-func (m *Manager) tableUnattend(sessionData *types.SessionData, commandData []byte) {
+func (m *Manager) tableUnattend(commandName string, commandData []byte, sessionData *types.SessionData) {
 	var d *unattendData
 	if err := json.Unmarshal(commandData, &d); err != nil {
-		msg := "Your \"unattend\" command contained invalid data."
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
 		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}

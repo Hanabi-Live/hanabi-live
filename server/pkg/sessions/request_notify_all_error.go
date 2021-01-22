@@ -19,9 +19,6 @@ func (m *Manager) notifyAllError(data interface{}) {
 		d = v
 	}
 
-	type errorData struct {
-		Error string `json:"error"`
-	}
 	m.sendAll("error", &errorData{
 		Error: d.msg,
 	})

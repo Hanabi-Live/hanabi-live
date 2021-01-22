@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
 	"github.com/Zamiell/hanabi-live/server/pkg/types"
@@ -15,10 +16,10 @@ type tableCreateData struct {
 }
 
 // tableCreate is sent when the user submits the "Create a New Game" form.
-func (m *Manager) tableCreate(sessionData *types.SessionData, commandData []byte) {
+func (m *Manager) tableCreate(commandName string, commandData []byte, sessionData *types.SessionData) {
 	var d *tableCreateData
 	if err := json.Unmarshal(commandData, &d); err != nil {
-		msg := "Your \"tableCreate\" command contained invalid data."
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
 		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}

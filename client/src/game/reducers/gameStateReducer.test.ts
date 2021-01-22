@@ -32,7 +32,7 @@ describe("gameStateReducer", () => {
       const initialState = initialGameState(defaultMetadata);
       let state = initialGameStateTest(defaultMetadata);
 
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameStateReducer(state, testClue, true, defaultMetadata);
       expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
     });
@@ -43,7 +43,7 @@ describe("gameStateReducer", () => {
       const initialState = initialGameState(defaultMetadata);
       let state = initialGameStateTest(defaultMetadata);
 
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameStateReducer(state, testClue, true, defaultMetadata);
       expect(state.turn.currentPlayerIndex).not.toEqual(
         initialState.turn.currentPlayerIndex,
@@ -97,7 +97,7 @@ describe("gameStateReducer", () => {
       }
 
       // Give a 3-for-1 clue touching the 3 red cards
-      const clueAction = colorClue(0, 1, [0, 1, 2], 0, 0);
+      const clueAction = colorClue(0, 1, [0, 1, 2], 0);
       state = gameStateReducer(state, clueAction, true, defaultMetadata);
 
       const efficiency = getEfficiency(state);
@@ -116,7 +116,7 @@ describe("gameStateReducer", () => {
       state = gameStateReducer(state, drawRed1Action, true, defaultMetadata);
 
       // Give a 1-for-1 clue
-      const clueAction = colorClue(0, 0, [0], 1, 0);
+      const clueAction = colorClue(0, 0, [0], 1);
       state = gameStateReducer(state, clueAction, true, defaultMetadata);
 
       // Play that red 1
@@ -156,7 +156,7 @@ describe("gameStateReducer", () => {
       state = gameStateReducer(state, drawRed1Action2, true, defaultMetadata);
 
       // Player 0 gives a 1-for-1 clue
-      const clueAction = rankClue(1, 0, [3, 5], 1, 0);
+      const clueAction = rankClue(1, 0, [3, 5], 1);
       state = gameStateReducer(state, clueAction, true, defaultMetadata);
 
       // Player 1 plays the red 1
@@ -249,7 +249,7 @@ describe("gameStateReducer", () => {
         );
 
         // Player 0 gives a 1-for-1 clue
-        const clueAction = rankClue(1, 0, [3, 5, 6], 1, 0);
+        const clueAction = rankClue(1, 0, [3, 5, 6], 1);
         state = gameStateReducer(state, clueAction, true, clueStarvedMetadata);
 
         // Player 1 plays the red 1
@@ -330,7 +330,7 @@ describe("gameStateReducer", () => {
       let state = initialGameStateTest(defaultMetadata);
 
       // Player 1 gives a random clue to player 0
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameStateReducer(state, testClue, true, defaultMetadata);
 
       expect(state.clues.length).toBe(initialState.clues.length + 1);
@@ -352,7 +352,7 @@ describe("gameStateReducer", () => {
       }
 
       // Player 0 gives a clue that touches cards 0, 1, and 2
-      const testClue = rankClue(5, 0, [0, 1, 2], 1, 2);
+      const testClue = rankClue(5, 0, [0, 1, 2], 1);
       state = gameStateReducer(state, testClue, true, defaultMetadata);
 
       expect(state.clues[0].list).toEqual([0, 1, 2]);
@@ -363,7 +363,7 @@ describe("gameStateReducer", () => {
       let state = initialGameStateTest(defaultMetadata);
 
       // Player 1 gives a random clue to player 0
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameStateReducer(state, testClue, true, defaultMetadata);
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM - 1);

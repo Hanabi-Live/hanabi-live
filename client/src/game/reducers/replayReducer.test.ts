@@ -41,7 +41,7 @@ describe("replayReducer", () => {
       let state = replayReducer(testState.replay, hypoStart(), metadata);
 
       // Give a number 3 clue in the new hypothetical
-      const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
+      const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, testState.metadata);
 
       // Using "?" is better than "!" since it will fail with a a slightly better error message
@@ -53,7 +53,7 @@ describe("replayReducer", () => {
     test("can go back on a hypothetical after giving a clue", () => {
       let state = replayReducer(testState.replay, hypoStart(), metadata);
 
-      const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
+      const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, metadata);
       state = replayReducer(state, hypoBack(), metadata);
 
@@ -64,7 +64,7 @@ describe("replayReducer", () => {
     test("can end hypothetical after giving a clue", () => {
       let state = replayReducer(testState.replay, hypoStart(), metadata);
 
-      const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
+      const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, metadata);
       state = replayReducer(state, hypoEnd(), metadata);
       expect(state.hypothetical).toBeNull();

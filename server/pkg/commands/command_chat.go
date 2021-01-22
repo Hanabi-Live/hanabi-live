@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
@@ -12,10 +13,10 @@ type chatData struct {
 }
 
 // chat is sent when the user presses enter after typing a text message.
-func (m *Manager) chat(sessionData *types.SessionData, commandData []byte) {
+func (m *Manager) chat(commandName string, commandData []byte, sessionData *types.SessionData) {
 	var d *chatData
 	if err := json.Unmarshal(commandData, &d); err != nil {
-		msg := "Your \"chat\" command contained invalid data."
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
 		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}

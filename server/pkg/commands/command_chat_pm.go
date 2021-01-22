@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
@@ -12,10 +13,10 @@ type chatPMData struct {
 }
 
 // chatPM is sent when a user sends a private message.
-func (m *Manager) chatPM(sessionData *types.SessionData, commandData []byte) {
+func (m *Manager) chatPM(commandName string, commandData []byte, sessionData *types.SessionData) {
 	var d *chatPMData
 	if err := json.Unmarshal(commandData, &d); err != nil {
-		msg := "Your \"chatPM\" command contained invalid data."
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
 		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}

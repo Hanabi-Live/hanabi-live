@@ -141,7 +141,7 @@ describe("cardsReducer", () => {
         turn: { ...gameState.turn, segment: clue1Segment },
       };
 
-      const testClue1 = rankClue(5, 1, [0], 0, gameStateFirstTurn.turn.turnNum);
+      const testClue1 = rankClue(5, 1, [0], 0);
       deck = cardsReducer(
         deck,
         testClue1,
@@ -157,7 +157,7 @@ describe("cardsReducer", () => {
         turn: { ...gameStateFirstTurn.turn, segment: clue2Segment },
       };
 
-      const testClue2 = colorClue(2, 2, [0], 0, gameStateNextTurn.turn.turnNum);
+      const testClue2 = colorClue(2, 2, [0], 0);
       deck = cardsReducer(
         deck,
         testClue2,
@@ -231,7 +231,7 @@ describe("cardsReducer", () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
 
-      const clueToCardZero = rankClue(1, 2, [0], 0, 0);
+      const clueToCardZero = rankClue(1, 2, [0], 0);
       deck = cardsReducer(
         deck,
         clueToCardZero,
@@ -241,7 +241,7 @@ describe("cardsReducer", () => {
       );
       expect(deck[0].numPositiveClues).toBe(1);
 
-      const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
+      const anotherClueToCardZero = colorClue(0, 1, [0], 0);
       deck = cardsReducer(
         deck,
         anotherClueToCardZero,
@@ -257,7 +257,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
       deck = cardsReducer(deck, draw(0, 1), gameState, true, defaultMetadata);
 
-      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
+      const clueToCardOne = rankClue(1, 2, [1], 0);
       deck = cardsReducer(
         deck,
         clueToCardOne,
@@ -267,7 +267,7 @@ describe("cardsReducer", () => {
       );
       expect(deck[0].numPositiveClues).toBe(0);
 
-      const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
+      const anotherClueToCardOne = colorClue(0, 1, [1], 0);
       deck = cardsReducer(
         deck,
         anotherClueToCardOne,

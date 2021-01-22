@@ -7,18 +7,12 @@ import (
 )
 
 func (m *Manager) maintenance(c *gin.Context) {
-	// TODO
-	/*
-		// Local variables
-		w := c.Writer
+	if m.Dispatcher.Core.MaintenanceMode() {
+		msg := "The server is already in maintenance mode."
+		c.String(http.StatusBadRequest, msg)
+		return
+	}
 
-		if maintenanceMode.IsSet() {
-			http.Error(w, "The server is already in maintenance mode.", http.StatusBadRequest)
-			return
-		}
-
-		maintenance(c, true)
-	*/
-
+	m.Dispatcher.Core.SetMaintenance(true)
 	c.String(http.StatusOK, "success\n")
 }

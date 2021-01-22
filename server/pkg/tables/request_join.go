@@ -33,15 +33,6 @@ func (m *Manager) join(data interface{}) interface{} {
 		d = v
 	}
 
-	var t *table.Manager
-	if v, ok := m.tables[d.tableID]; !ok {
-		msg := fmt.Sprintf("Table %v does not exist.", d.tableID)
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
-		return false
-	} else {
-		t = v
-	}
-
 	// Validate that the player is not already joined to this table
 	playingAtTables := m.getUserPlaying(d.userID)
 	if util.IntInSlice(d.tableID, playingAtTables) {
@@ -58,6 +49,16 @@ func (m *Manager) join(data interface{}) interface{} {
 			m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
 			return false
 		}
+	}
+
+	// Get the associated table manager
+	var t *table.Manager
+	if v, ok := m.tables[d.tableID]; !ok {
+		msg := fmt.Sprintf("Table %v does not exist.", d.tableID)
+		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
+		return false
+	} else {
+		t = v
 	}
 
 	if ok := t.Join(d.userID, d.username, d.password); !ok {

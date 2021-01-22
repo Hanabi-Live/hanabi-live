@@ -1,34 +1,25 @@
 package httplocalhost
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (m *Manager) uptime(c *gin.Context) {
-	// TODO
-	/*
-		// Local variables
-		w := c.Writer
+	cameOnline := m.Dispatcher.Core.GetCameOnline()
 
-		cameOnline := getCameOnline()
-		var uptime string
-		if v, err := getUptime(); err != nil {
-			hLog.Errorf("Failed to get the uptime: %v", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else {
-			uptime = v
-		}
+	var uptime string
+	if v, err := m.Dispatcher.Core.GetUptime(); err != nil {
+		msg := fmt.Sprintf("Failed to get the uptime: %v", err)
+		m.logger.Error(msg)
+		c.String(http.StatusInternalServerError, msg)
+		return
+	} else {
+		uptime = v
+	}
 
-		msg := fmt.Sprintf("%v\n%v\n", cameOnline, uptime)
-	*/
-
-	msg := ""
+	msg := fmt.Sprintf("%v\n%v\n", cameOnline, uptime)
 	c.String(http.StatusOK, msg)
 }

@@ -32,26 +32,6 @@ func (s *Session) NotifyTableStart(t *Table) {
 	})
 }
 
-func (s *Session) NotifyShutdown() {
-	type ShutdownMessage struct {
-		ShuttingDown         bool      `json:"shuttingDown"`
-		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
-	}
-	s.Emit("shutdown", &ShutdownMessage{
-		ShuttingDown:         shuttingDown.IsSet(),
-		DatetimeShutdownInit: datetimeShutdownInit,
-	})
-}
-
-func (s *Session) NotifyMaintenance() {
-	type MaintenanceMessage struct {
-		MaintenanceMode bool `json:"maintenanceMode"`
-	}
-	s.Emit("maintenance", &MaintenanceMessage{
-		MaintenanceMode: maintenanceMode.IsSet(),
-	})
-}
-
 // ------------------------
 // In-game notify functions
 // ------------------------

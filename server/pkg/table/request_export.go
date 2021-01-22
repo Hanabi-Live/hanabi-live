@@ -16,10 +16,12 @@ type exportData struct {
 func (m *Manager) Export(seed string) []*options.CardIdentity {
 	resultsChannel := make(chan []*options.CardIdentity)
 
-	m.newRequest(requestTypeExport, &exportData{ // nolint: errcheck
+	if err := m.newRequest(requestTypeExport, &exportData{
 		seed:           seed,
 		resultsChannel: resultsChannel,
-	})
+	}); err != nil {
+		return make([]*options.CardIdentity, 0)
+	}
 
 	return <-resultsChannel
 }

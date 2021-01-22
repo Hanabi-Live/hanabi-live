@@ -15,17 +15,17 @@ import (
 type Manager struct {
 	name string
 
-	sessions map[int]*session
-
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
 	requestFuncMap    map[requestType]func(interface{})
 	requestsClosed    *abool.AtomicBool
+	shutdownMutex     sync.Mutex
 
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
 
+	sessions    map[int]*session
 	projectPath string
 }
 
@@ -33,16 +33,16 @@ func NewManager(logger *logger.Logger, models *models.Models, projectPath string
 	m := &Manager{
 		name: "sessions",
 
-		sessions: make(map[int]*session),
-
 		requests:       make(chan *request),
 		requestFuncMap: make(map[requestType]func(interface{})),
 		requestsClosed: abool.New(),
+		shutdownMutex:  sync.Mutex{},
 
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 
+		sessions:    make(map[int]*session),
 		projectPath: projectPath,
 	}
 	m.requestFuncMapInit()

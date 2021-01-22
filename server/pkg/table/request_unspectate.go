@@ -41,9 +41,10 @@ func (m *Manager) unspectate(data interface{}) {
 	t := m.table
 	j := t.getSpectatorIndexFromID(d.userID)
 
+	// Validate that they are spectating the table
 	if j == -1 {
-		// The tables manager should detect if a user is spectating this table via the
-		// relationship map
+		// The tables manager should detect if a user is spectating this table via the relationship
+		// map
 		// Thus, if we are getting here, the table must have become desynchronized with the tables
 		// manager
 		m.logger.Errorf(

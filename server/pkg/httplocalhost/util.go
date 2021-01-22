@@ -61,30 +61,6 @@ func (m *Manager) userAction(c *gin.Context) {
 		m.sendError(c, userID)
 	} else {
 		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
+		return
 	}
-}
-
-func logoutUser(userID int) {
-	// TODO
-	/*
-		s, ok := sessions2.Get(userID)
-
-		if !ok {
-			hLog.Infof(
-				"Attempted to manually log out user ID %v, but they were not online.",
-				userID,
-			)
-			return
-		}
-
-		if err := s.ms.Close(); err != nil {
-			hLog.Errorf(
-				"Failed to manually close the WebSocket session for user ID %v: %v",
-				userID,
-				err,
-			)
-		} else {
-			hLog.Infof("Successfully terminated the WebSocket session for user ID: %v")
-		}
-	*/
 }

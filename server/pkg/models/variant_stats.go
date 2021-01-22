@@ -31,7 +31,7 @@ func NewVariantStatsRow() VariantStatsRow {
 	}
 }
 
-func (vs *VariantStats) Get(ctx context.Context, variantID int) (VariantStatsRow, error) {
+func (vs *VariantStats) Get(ctx context.Context, variantID int) (*VariantStatsRow, error) {
 	SQLString := `
 		SELECT
 			num_games,
@@ -60,15 +60,15 @@ func (vs *VariantStats) Get(ctx context.Context, variantID int) (VariantStatsRow
 		&stats.AverageScore,
 		&stats.NumStrikeouts,
 	); errors.Is(err, pgx.ErrNoRows) {
-		return stats, nil
+		return &stats, nil
 	} else if err != nil {
-		return stats, err
+		return &stats, err
 	}
 
-	return stats, nil
+	return &stats, nil
 }
 
-func (vs *VariantStats) GetAll(ctx context.Context) (map[int]VariantStatsRow, error) {
+func (vs *VariantStats) GetAll(ctx context.Context) (map[int]*VariantStatsRow, error) {
 	SQLString := `
 		SELECT
 			variant_id,
@@ -84,7 +84,7 @@ func (vs *VariantStats) GetAll(ctx context.Context) (map[int]VariantStatsRow, er
 		FROM variant_stats
 	`
 
-	statsMap := make(map[int]VariantStatsRow)
+	statsMap := make(map[int]*VariantStatsRow)
 	var rows pgx.Rows
 	if v, err := vs.m.db.Query(ctx, SQLString); err != nil {
 		return statsMap, err
@@ -112,7 +112,7 @@ func (vs *VariantStats) GetAll(ctx context.Context) (map[int]VariantStatsRow, er
 			return statsMap, err
 		}
 
-		statsMap[variantID] = stats
+		statsMap[variantID] = &stats
 	}
 
 	if err := rows.Err(); err != nil {
@@ -127,7 +127,7 @@ func (vs *VariantStats) Update(
 	ctx context.Context,
 	variantID int,
 	maxScore int,
-	stats VariantStatsRow,
+	stats *VariantStatsRow,
 ) error {
 	// Validate that the BestScores slice contains entries for every player amount
 	if len(stats.BestScores) != bestscore.NumPlayerGameTypes {
@@ -285,7 +285,7 @@ func (vs *VariantStats) UpdateAll(ctx context.Context, highestVariantID int, max
 		}
 
 		// Insert a new row for this variant
-		if err := vs.Update(ctx, variantID, maxScores[variantID], stats); err != nil {
+		if err := vs.Update(ctx, variantID, maxScores[variantID], &stats); err != nil {
 			return err
 		}
 	}

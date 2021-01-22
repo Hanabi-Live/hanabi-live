@@ -5,10 +5,10 @@ import (
 )
 
 type CoreManager interface {
-	GitCommitOnStart() string
-	ShuttingDown() bool
 	DatetimeShutdownInit() time.Time
+	GitCommitOnStart() string
 	MaintenanceMode() bool
+	ShuttingDown() bool
 
 	GetCameOnline() string
 	GetNewTableShutdownWarning() string
@@ -16,4 +16,7 @@ type CoreManager interface {
 	GetShutdownTimeLeft() (string, error)
 	GetUptime() (string, error)
 	IsNewTablesAllowed() (bool, string)
+	SetMaintenance(enabled bool)
+	SetShutdown(enabled bool)
+	Shutdown()
 }

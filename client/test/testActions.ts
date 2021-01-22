@@ -25,7 +25,6 @@ const clue = (
   giver: number,
   list: number[],
   target: number,
-  turn: number,
 ): ActionClue => ({
   type: "clue",
   clue: {
@@ -35,7 +34,6 @@ const clue = (
   giver,
   list,
   target,
-  turn,
 });
 
 export const colorClue = (
@@ -43,16 +41,14 @@ export const colorClue = (
   giver: number,
   list: number[],
   target: number,
-  turn: number,
-): ActionClue => clue(ClueType.Color, value, giver, list, target, turn);
+): ActionClue => clue(ClueType.Color, value, giver, list, target);
 
 export const rankClue = (
   value: number,
   giver: number,
   list: number[],
   target: number,
-  turn: number,
-): ActionClue => clue(ClueType.Rank, value, giver, list, target, turn);
+): ActionClue => clue(ClueType.Rank, value, giver, list, target);
 
 export const draw = (
   playerIndex: number,

@@ -5,6 +5,10 @@ type notifyErrorData struct {
 	msg    string
 }
 
+type errorData struct {
+	Error string `json:"error"`
+}
+
 // NotifyError is used to inform a user if their command was unsuccessful or something else went
 // wrong.
 func (m *Manager) NotifyError(userID int, msg string) {
@@ -23,9 +27,6 @@ func (m *Manager) notifyError(data interface{}) {
 		d = v
 	}
 
-	type errorData struct {
-		Error string `json:"error"`
-	}
 	m.send(d.userID, "error", &errorData{
 		Error: d.msg,
 	})

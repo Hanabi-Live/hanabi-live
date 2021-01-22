@@ -2,6 +2,42 @@
 
 package table
 
+import (
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
+)
+
+// FindCardsTouchedByClue returns a slice of card orders
+// (in this context, "orders" are the card positions in the deck, not in the hand)
+func (p *gamePlayer) findCardsTouchedByClue(clue *types.Clue) []int {
+	// Local variables
+	g := p.game
+
+	list := make([]int, 0)
+	for _, card := range p.Hand {
+		if g.touchesCard(clue, card) {
+			list = append(list, card.Order)
+		}
+	}
+
+	return list
+}
+
+func (p *gamePlayer) isFirstCardTouchedByClue(clue *types.Clue) bool {
+	// Local variables
+	g := p.game
+	card := p.Hand[len(p.Hand)-1]
+
+	return g.touchesCard(clue, card)
+}
+
+func (p *gamePlayer) isLastCardTouchedByClue(clue *types.Clue) bool {
+	// Local variables
+	g := p.game
+	card := p.Hand[0]
+
+	return g.touchesCard(clue, card)
+}
+
 /*
 
 // GetChopIndex gets the index of the oldest (right-most) unclued card
@@ -27,34 +63,6 @@ func (p *GamePlayer) InitTime(options *options.Options) {
 		// It will decrement into negative numbers to show how much time they are taking
 		p.Time = time.Duration(0)
 	}
-}
-
-// FindCardsTouchedByClue returns a slice of card orders
-// (in this context, "orders" are the card positions in the deck, not in the hand)
-func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
-	// Local variables
-	g := p.Game
-
-	list := make([]int, 0)
-	for _, c := range p.Hand {
-		if variantIsCardTouched(g.Options.VariantName, clue, c) {
-			list = append(list, c.Order)
-		}
-	}
-
-	return list
-}
-
-func (p *GamePlayer) IsFirstCardTouchedByClue(clue Clue) bool {
-	g := p.Game
-	card := p.Hand[len(p.Hand)-1]
-	return variantIsCardTouched(g.Options.VariantName, clue, card)
-}
-
-func (p *GamePlayer) IsLastCardTouchedByClue(clue Clue) bool {
-	g := p.Game
-	card := p.Hand[0]
-	return variantIsCardTouched(g.Options.VariantName, clue, card)
 }
 
 func (p *GamePlayer) InHand(order int) bool {

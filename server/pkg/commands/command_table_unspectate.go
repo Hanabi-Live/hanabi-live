@@ -2,11 +2,12 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
-type unspectateData struct {
+type tableUnspectateData struct {
 	TableID int `json:"tableID"`
 }
 
@@ -15,10 +16,10 @@ type unspectateData struct {
 // 1) spectating an ongoing game
 // 2) viewing a reply
 // 3) viewing a shared replay
-func (m *Manager) tableUnspectate(sessionData *types.SessionData, commandData []byte) {
-	var d *unspectateData
+func (m *Manager) tableUnspectate(commandName string, commandData []byte, sessionData *types.SessionData) {
+	var d *tableUnspectateData
 	if err := json.Unmarshal(commandData, &d); err != nil {
-		msg := "Your \"unspectate\" command contained invalid data."
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
 		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}

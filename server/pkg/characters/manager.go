@@ -2,23 +2,24 @@ package characters
 
 import (
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type Manager struct {
-	charactersNameMap map[string]*Character
-	charactersIDMap   map[int]*Character
-	characterNames    []string
-
 	logger *logger.Logger
+
+	charactersNameMap map[string]*types.Character
+	charactersIDMap   map[int]*types.Character
+	characterNames    []string
 }
 
 func NewManager(logger *logger.Logger, dataPath string) *Manager {
 	m := &Manager{
-		charactersNameMap: make(map[string]*Character),
-		charactersIDMap:   make(map[int]*Character),
-		characterNames:    make([]string, 0),
-
 		logger: logger,
+
+		charactersNameMap: make(map[string]*types.Character),
+		charactersIDMap:   make(map[int]*types.Character),
+		characterNames:    make([]string, 0),
 	}
 	m.charactersInit(dataPath)
 

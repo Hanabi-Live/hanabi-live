@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
 )
 
 const (
-	// shutdownTimeout is the amount of time that players have to finish their game once a graceful
-	// server shutdown is initiated.
-	shutdownTimeout                = time.Minute * 30
 	minuteCutoffForNewGameCreation = 5
 )
 
@@ -19,7 +17,7 @@ func (m *Manager) GetNewTableShutdownWarning() string {
 		return ""
 	}
 
-	timeLeft := shutdownTimeout - time.Since(m.datetimeShutdownInit)
+	timeLeft := constants.ShutdownTimeout - time.Since(m.datetimeShutdownInit)
 	minutesLeft := int(timeLeft.Minutes())
 
 	return fmt.Sprintf(
@@ -33,7 +31,7 @@ func (m *Manager) GetShutdownTimeLeft() (string, error) {
 		return "The server is not scheduled to shutdown any time soon.", nil
 	}
 
-	timeLeft := shutdownTimeout - time.Since(m.datetimeShutdownInit)
+	timeLeft := constants.ShutdownTimeout - time.Since(m.datetimeShutdownInit)
 	timeLeftSeconds := int(timeLeft.Seconds())
 
 	var durationString string
@@ -56,7 +54,7 @@ func (m *Manager) IsNewTablesAllowed() (bool, string) {
 	if m.shuttingDown.IsSet() {
 		// Even if the server is shutting down,
 		// we allow new tables to be created up until the cutoff time
-		timeLeft := shutdownTimeout - time.Since(m.datetimeShutdownInit)
+		timeLeft := constants.ShutdownTimeout - time.Since(m.datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
 		if minutesLeft <= minuteCutoffForNewGameCreation {
 			var timeString string

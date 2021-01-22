@@ -20,14 +20,14 @@ const (
 	requestTypeShutdown
 )
 
-func (m *Manager) requestFuncMapInit() {
-	m.requestFuncMap["chat"] = m.chat
-	m.requestFuncMap["chatPM"] = m.chatPM
-	m.requestFuncMap["friend"] = m.friend
-	m.requestFuncMap["tableCreate"] = m.tableCreate
-	m.requestFuncMap["tableJoin"] = m.tableJoin
-	m.requestFuncMap["tableUnattend"] = m.tableUnattend
-	m.requestFuncMap["tableUnspectate"] = m.tableUnspectate
+func (m *Manager) commandFuncMapInit() {
+	m.commandFuncMap["chat"] = m.chat
+	m.commandFuncMap["chatPM"] = m.chatPM
+	m.commandFuncMap["friend"] = m.friend
+	m.commandFuncMap["tableCreate"] = m.tableCreate
+	m.commandFuncMap["tableJoin"] = m.tableJoin
+	m.commandFuncMap["tableUnattend"] = m.tableUnattend
+	m.commandFuncMap["tableUnspectate"] = m.tableUnspectate
 }
 
 // ListenForRequests will block until messages are sent on the request channel.
@@ -43,8 +43,8 @@ func (m *Manager) ListenForRequests() {
 			break
 		}
 
-		if requestFunc, ok := m.requestFuncMap[req.commandName]; ok {
-			requestFunc(req.sessionData, req.commandData)
+		if commandFunc, ok := m.commandFuncMap[req.commandName]; ok {
+			commandFunc(req.commandName, req.commandData, req.sessionData)
 		} else {
 			m.logger.Warnf(
 				"The %v manager received an invalid command of: %v",

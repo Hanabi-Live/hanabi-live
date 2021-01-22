@@ -10,14 +10,16 @@ import (
 	"strconv"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
+	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/gin-gonic/gin"
 )
 
 type Manager struct {
-	logger *logger.Logger
-	models *models.Models
+	logger     *logger.Logger
+	models     *models.Models
+	Dispatcher *dispatcher.Dispatcher
 }
 
 func NewManager(logger *logger.Logger, models *models.Models) *Manager {
@@ -28,8 +30,9 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	}
 
 	m := &Manager{
-		logger: logger,
-		models: models,
+		logger:     logger,
+		models:     models,
+		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
 	go m.start(envVars)
 
@@ -95,21 +98,17 @@ func (m *Manager) start(envVars *envVars) {
 
 func attachPathHandlers(httpRouter *gin.Engine, m *Manager) {
 	httpRouter.POST("/ban", m.userAction)
-	httpRouter.GET("/cancel", m.cancel)
-	httpRouter.GET("/clearEmptyTables", m.clearEmptyTables)
 	httpRouter.GET("/debugFunction", m.debugFunction)
-	httpRouter.GET("/getLongTables", m.getLongTables)
-	httpRouter.GET("/maintenance", m.maintenance)
-	httpRouter.POST("/mute", m.userAction)
-	httpRouter.GET("/print", m.print)
 	httpRouter.GET("/gracefulRestart", m.gracefulRestart)
+	httpRouter.GET("/maintenance", m.maintenance)
+	httpRouter.GET("/maintenanceCancel", m.maintenanceCancel)
+	httpRouter.POST("/mute", m.userAction)
 	httpRouter.GET("/saveTables", m.saveTables)
 	httpRouter.POST("/sendWarning", m.userAction)
 	httpRouter.POST("/sendError", m.userAction)
 	httpRouter.GET("/shutdown", m.shutdown)
-	httpRouter.GET("/terminate", m.terminate)
+	httpRouter.GET("/shutdownCancel", m.shutdownCancel)
 	httpRouter.GET("/timeLeft", m.timeLeft)
 	httpRouter.GET("/uptime", m.uptime)
 	httpRouter.GET("/version", m.version)
-	httpRouter.GET("/unmaintenance", m.unmaintenance)
 }

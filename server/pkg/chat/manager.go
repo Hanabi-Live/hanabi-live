@@ -20,27 +20,32 @@ type Manager struct {
 	requestsWaitGroup sync.WaitGroup
 	requestFuncMap    map[requestType]func(interface{})
 	requestsClosed    *abool.AtomicBool
-	commandMap        map[string]func(*commandData, dispatcher.TableManager)
-	lobbyRoomRegExp   *regexp.Regexp
+	shutdownMutex     sync.Mutex
 
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
+
+	commandMap      map[string]func(*commandData, dispatcher.TableManager)
+	lobbyRoomRegExp *regexp.Regexp
 }
 
 func NewManager(logger *logger.Logger, models *models.Models, domain string, useTLS bool) *Manager {
 	m := &Manager{
 		name: "chat",
 
-		requests:        make(chan *request),
-		requestFuncMap:  make(map[requestType]func(interface{})),
-		requestsClosed:  abool.New(),
-		commandMap:      make(map[string]func(*commandData, dispatcher.TableManager)),
-		lobbyRoomRegExp: regexp.MustCompile(`table(\d+)`),
+		requests:          make(chan *request),
+		requestsWaitGroup: sync.WaitGroup{},
+		requestFuncMap:    make(map[requestType]func(interface{})),
+		requestsClosed:    abool.New(),
+		shutdownMutex:     sync.Mutex{},
 
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
+
+		commandMap:      make(map[string]func(*commandData, dispatcher.TableManager)),
+		lobbyRoomRegExp: regexp.MustCompile(`table(\d+)`),
 	}
 	m.requestFuncMapInit()
 	m.commandMapInit()

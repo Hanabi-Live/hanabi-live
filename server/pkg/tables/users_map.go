@@ -42,6 +42,7 @@ func getUserTables(userID int, usersMap map[int][]int) []int {
 	if tablesList, ok := usersMap[userID]; ok {
 		return tablesList
 	}
+
 	return make([]int, 0)
 }
 

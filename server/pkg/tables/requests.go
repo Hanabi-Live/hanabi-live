@@ -16,11 +16,11 @@ const (
 	requestTypeGetTable
 	requestTypeGetTables
 	requestTypeGetUserTables
+	requestTypeGracefulShutdown
 	requestTypeJoin
 	requestTypeLeave
 	requestTypeNewReplay
 	requestTypeNewTable
-	requestTypePrint
 	requestTypeSpectate
 	requestTypeUnspectate
 
@@ -32,11 +32,11 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeGetTable] = m.getTable
 	m.requestFuncMap[requestTypeGetTables] = m.getTables
 	m.requestFuncMap[requestTypeGetUserTables] = m.getUserTables
+	m.requestFuncMap[requestTypeGracefulShutdown] = m.gracefulShutdown
 	m.requestFuncMap[requestTypeJoin] = m.join
 	m.requestFuncMap[requestTypeLeave] = m.leave
 	m.requestFuncMap[requestTypeNewReplay] = m.newReplay
 	m.requestFuncMap[requestTypeNewTable] = m.newTable
-	m.requestFuncMap[requestTypePrint] = m.print
 	m.requestFuncMap[requestTypeSpectate] = m.spectate
 	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 }

@@ -8,17 +8,6 @@ import (
 )
 
 func (g *game) initDeck() error {
-	// Local variables
-	t := g.table
-	m := t.manager
-
-	var variant *variants.Variant
-	if v, err := m.Dispatcher.Variants.GetVariant(g.options.VariantName); err != nil {
-		return err
-	} else {
-		variant = v
-	}
-
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified
 	if g.extraOptions.CustomDeck != nil &&
@@ -38,10 +27,10 @@ func (g *game) initDeck() error {
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
 	// (e.g. [0, 1, 2, 3, 4] for a "No Variant" game)
-	for suitIndex, suit := range variant.Suits {
+	for suitIndex, suit := range g.variant.Suits {
 		// Ranks are represented as a slice of integers
 		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
-		for _, rank := range variant.Ranks {
+		for _, rank := range g.variant.Ranks {
 			// In a normal suit, there are:
 			// - three 1's
 			// - two 2's
@@ -51,7 +40,7 @@ func (g *game) initDeck() error {
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
-				if variant.IsUpOrDown() || suit.Reversed {
+				if g.variant.IsUpOrDown() || suit.Reversed {
 					amountToAdd = 1
 				}
 			} else if rank == 5 { // nolint: gomnd

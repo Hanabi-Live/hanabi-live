@@ -1,52 +1,35 @@
 package commands
 
-/*
-// commandTableTerminate is sent when the user clicks the terminate button in the bottom-left-hand
-// corner
-//
-// Example data:
-// {
-//   tableID: 5,
-//   server: true, // True if a server-initiated termination, otherwise omitted
-// }
-func commandTableTerminate(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
-	if !exists {
-		return
-	}
-	if !d.NoTableLock {
-		defer t.Unlock(ctx)
-	}
+import (
+	"encoding/json"
+	"fmt"
 
-	// Validate that they are in the game
-	playerIndex := t.GetPlayerIndexFromID(s.UserID)
-	if playerIndex == -1 {
-		s.Warningf("You are not playing at table %v, so you cannot terminate it.", t.ID)
-		return
-	}
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
+)
 
-	// Validate that the game has started
-	if !t.Running {
-		s.Warning("You can not terminate a game that has not started yet.")
-		return
-	}
-
-	// Validate that it is not a replay
-	if t.Replay {
-		s.Warning("You can not terminate a replay.")
-		return
-	}
-
-	terminate(ctx, s, d, t, playerIndex)
+type terminateData struct {
+	TableID int `json:"tableID"`
 }
 
-func terminate(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
-	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID:     t.ID,
-		Type:        ActionTypeEndGame,
-		Target:      playerIndex,
-		Value:       EndConditionTerminated,
-		NoTableLock: true,
-	})
+// tableTerminate is sent when the user clicks the terminate button.
+func (m *Manager) tableTerminate(
+	commandName string,
+	commandData []byte,
+	sessionData *types.SessionData,
+) {
+	var d *terminateData
+	if err := json.Unmarshal(commandData, &d); err != nil {
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
+		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
+		return
+	}
+
+	t := m.Dispatcher.Tables.GetTable(d.TableID)
+	if t == nil {
+		msg := fmt.Sprintf("Table %v does not exist, so you cannot unattend it.", d.TableID)
+		m.Dispatcher.Sessions.NotifyWarning(sessionData.UserID, msg)
+		return
+	}
+
+	t.TerminateNormal(sessionData.UserID)
 }
-*/

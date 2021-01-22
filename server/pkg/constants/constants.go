@@ -49,4 +49,8 @@ const (
 
 	// Tags are user-generated strings that can be arbitrarily assigned to games.
 	MaxTagLength = 100
+
+	// ShutdownTimeout is the amount of time that players have to finish their game once a graceful
+	// server shutdown is initiated.
+	ShutdownTimeout = time.Minute * 30
 )

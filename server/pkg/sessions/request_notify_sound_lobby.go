@@ -5,6 +5,10 @@ type notifySoundLobbyData struct {
 	file   string
 }
 
+type soundLobbyData struct {
+	File string `json:"file"`
+}
+
 func (m *Manager) NotifySoundLobby(userID int, file string) {
 	m.newRequest(requestTypeNotifySoundLobby, &notifySoundLobbyData{ // nolint: errcheck
 		userID: userID,
@@ -21,9 +25,6 @@ func (m *Manager) notifySoundLobby(data interface{}) {
 		d = v
 	}
 
-	type soundLobbyData struct {
-		File string `json:"file"`
-	}
 	m.send(d.userID, "soundLobby", &soundLobbyData{
 		File: d.file,
 	})

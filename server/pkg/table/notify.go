@@ -37,6 +37,15 @@ func (m *Manager) notifyAll(notifyFunc func(int)) {
 // Notifications before or after a game has started
 // ------------------------------------------------
 
+func (m *Manager) notifyAllChat(username string, msg string) {
+	// Local variables
+	t := m.table
+
+	m.notifyAll(func(userID int) {
+		m.Dispatcher.Sessions.NotifyChat(userID, username, msg, t.getRoomName())
+	})
+}
+
 func (m *Manager) notifyAllStopTyping(username string) {
 	// Local variables
 	t := m.table

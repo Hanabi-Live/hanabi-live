@@ -85,7 +85,7 @@ func (m *Manager) stats(c *gin.Context) {
 	}
 
 	// Get the stats for all variants
-	var statsMap map[int]models.VariantStatsRow
+	var statsMap map[int]*models.VariantStatsRow
 	if v, err := m.models.VariantStats.GetAll(c); err != nil {
 		m.logger.Errorf("Failed to get the stats for all the variants: %v", err)
 		http.Error(

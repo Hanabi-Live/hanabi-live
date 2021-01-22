@@ -6,4 +6,5 @@ type ChatManager interface {
 	ChatPM(userID int, username string, msg string, recipient string)
 	ChatServer(msg string, room string)
 	Friend(userID int, username string, friends map[int]struct{}, targetUsername string, add bool)
+	Shutdown()
 }

@@ -3,9 +3,38 @@ package types
 import (
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/options"
 )
+
+type Character struct {
+	Name string `json:"name"`
+	// Similar to variants, each character must have a unique numerical ID (for the database)
+	ID                      int    `json:"id"`
+	Description             string `json:"description"`
+	Emoji                   string `json:"emoji"`
+	WriteMetadataToDatabase bool   `json:"writeMetadataToDatabase"`
+	Not2P                   bool   `json:"not2P"`
+}
+
+type Clue struct {
+	Type  constants.ClueType `json:"type"`
+	Value int                `json:"value"`
+}
+
+func NewClue(actionType constants.ActionType, value int) *Clue {
+	// A color clue is action type 2
+	// A rank clue is action type 3
+	// Remap these to 0 and 1, respectively
+	modifiedActionType := int(actionType) - 2 // nolint: gomnd
+	clueType := constants.ClueType(modifiedActionType)
+
+	return &Clue{
+		Type:  clueType,
+		Value: value,
+	}
+}
 
 type GameData struct {
 	TableID           int               `json:"tableID"`

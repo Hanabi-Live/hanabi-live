@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/util"
@@ -16,6 +17,9 @@ import (
 )
 
 type Manager struct {
+	logger     *logger.Logger
+	Dispatcher *dispatcher.Dispatcher
+
 	session              *discordgo.Session
 	guildID              string
 	channelSyncWithLobby string
@@ -24,9 +28,6 @@ type Manager struct {
 	commandFuncMap       map[string]func(context.Context, *discordgo.MessageCreate, []string)
 	channelRegExp        *regexp.Regexp
 	mentionRegExp        *regexp.Regexp
-
-	logger     *logger.Logger
-	Dispatcher *dispatcher.Dispatcher
 }
 
 // NewManager will return nil if the Discord manager should not be initialized.
@@ -39,6 +40,9 @@ func NewManager(logger *logger.Logger, variantsManager *variants.Manager) *Manag
 	}
 
 	m := &Manager{
+		logger:     logger,
+		Dispatcher: nil, // This will be filled in after this object is instantiated
+
 		session:              nil,
 		guildID:              envVars.guildID,
 		channelSyncWithLobby: envVars.channelSyncWithLobby,
@@ -47,9 +51,6 @@ func NewManager(logger *logger.Logger, variantsManager *variants.Manager) *Manag
 		commandFuncMap:       make(map[string]func(context.Context, *discordgo.MessageCreate, []string)),
 		channelRegExp:        regexp.MustCompile(`&lt;#(\d+?)&gt;`),
 		mentionRegExp:        regexp.MustCompile(`&lt;@!*(\d+?)&gt;`),
-
-		logger:     logger,
-		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
 	m.commandFuncMapInit()
 
@@ -134,5 +135,5 @@ func (m *Manager) connect(envVars *envVars) {
 		util.GetCurrentTimestamp(),
 		m.Dispatcher.Core.GitCommitOnStart(),
 	)
-	m.Dispatcher.Chat.ChatServer(msg, "lobby")
+	m.Dispatcher.Chat.ChatServer(msg, constants.Lobby)
 }

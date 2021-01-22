@@ -7,18 +7,12 @@ import (
 )
 
 func (m *Manager) shutdown(c *gin.Context) {
-	// TODO
-	/*
-		// Local variables
-		w := c.Writer
+	if m.Dispatcher.Core.ShuttingDown() {
+		msg := "The server is already shutting down."
+		c.String(http.StatusBadRequest, msg)
+		return
+	}
 
-		if shuttingDown.IsSet() {
-			http.Error(w, "The server is already shutting down.", http.StatusBadRequest)
-			return
-		}
-
-		shutdown(c)
-	*/
-
+	m.Dispatcher.Core.SetShutdown(true)
 	c.String(http.StatusOK, "success\n")
 }

@@ -14,11 +14,17 @@ type requestType int
 const (
 	requestTypeChatPM requestType = iota
 	requestTypeDelete
+	requestTypeLogout
 	requestTypeNew
 	requestTypeNotifyAllChat
 	requestTypeNotifyAllError
+	requestTypeNotifyAllMaintenance
+	requestTypeNotifyAllShutdown
+	requestTypeNotifyAllShutdownImmediate
+	requestTypeNotifyAllSoundLobby
 	requestTypeNotifyAllTable
 	requestTypeNotifyAllTableGone
+	requestTypeNotifyChat
 	requestTypeNotifyChatListFromTable
 	requestTypeNotifyChatServer
 	requestTypeNotifyChatServerPM
@@ -30,8 +36,9 @@ const (
 	requestTypeNotifyNote
 	requestTypeNotifySoundLobby
 	requestTypeNotifySpectators
+	requestTypeNotifyTableLeft
+	requestTypeNotifyTableStart
 	requestTypeNotifyWarning
-	requestTypePrint
 	requestTypeSetFriend
 	requestTypeSetStatus
 
@@ -41,11 +48,17 @@ const (
 func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeChatPM] = m.chatPM
 	m.requestFuncMap[requestTypeDelete] = m.delete
+	m.requestFuncMap[requestTypeLogout] = m.logout
 	m.requestFuncMap[requestTypeNew] = m.new
 	m.requestFuncMap[requestTypeNotifyAllChat] = m.notifyAllChat
 	m.requestFuncMap[requestTypeNotifyAllError] = m.notifyAllError
+	m.requestFuncMap[requestTypeNotifyAllMaintenance] = m.notifyAllMaintenance
+	m.requestFuncMap[requestTypeNotifyAllShutdown] = m.notifyAllShutdown
+	m.requestFuncMap[requestTypeNotifyAllShutdownImmediate] = m.notifyAllShutdownImmediate
+	m.requestFuncMap[requestTypeNotifyAllSoundLobby] = m.notifyAllSoundLobby
 	m.requestFuncMap[requestTypeNotifyAllTable] = m.notifyAllTable
 	m.requestFuncMap[requestTypeNotifyAllTableGone] = m.notifyAllTableGone
+	m.requestFuncMap[requestTypeNotifyChat] = m.notifyChat
 	m.requestFuncMap[requestTypeNotifyChatListFromTable] = m.notifyChatListFromTable
 	m.requestFuncMap[requestTypeNotifyChatServer] = m.notifyChatServer
 	m.requestFuncMap[requestTypeNotifyChatServerPM] = m.notifyChatServerPM
@@ -57,8 +70,9 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNotifyNote] = m.notifyNote
 	m.requestFuncMap[requestTypeNotifySoundLobby] = m.notifySoundLobby
 	m.requestFuncMap[requestTypeNotifySpectators] = m.notifySpectators
+	m.requestFuncMap[requestTypeNotifyTableLeft] = m.notifyTableLeft
+	m.requestFuncMap[requestTypeNotifyTableStart] = m.notifyTableStart
 	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
-	m.requestFuncMap[requestTypePrint] = m.print
 	m.requestFuncMap[requestTypeSetStatus] = m.setStatus
 	m.requestFuncMap[requestTypeSetFriend] = m.setFriend
 }

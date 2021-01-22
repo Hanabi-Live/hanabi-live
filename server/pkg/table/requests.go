@@ -12,8 +12,10 @@ type request struct {
 type requestType int
 
 const (
-	requestTypeAutomaticStart requestType = iota
-	requestTypeChat
+	requestTypeAction requestType = iota
+	requestTypeAutomaticStart
+	requestTypeChatNormal
+	requestTypeChatServer
 	requestTypeExport
 	requestTypeFindVariant
 	requestTypeGetDescription
@@ -23,13 +25,16 @@ const (
 	requestTypeLeave
 	requestTypeMissingScores
 	requestTypePause
+	requestTypeReplay
+	requestTypeRunning
 	requestTypeSpectate
 	requestTypeStart
 	requestTypeStartIn
 	requestTypeStartInWaitComplete
 	requestTypeSuggest
 	requestTypeTags
-	requestTypeTerminate
+	requestTypeTerminateNormal
+	requestTypeTerminateServer
 	requestTypeUnattend
 	requestTypeUnspectate
 
@@ -37,8 +42,10 @@ const (
 )
 
 func (m *Manager) requestFuncMapInit() {
+	m.requestFuncMap[requestTypeAction] = m.action
 	m.requestFuncMap[requestTypeAutomaticStart] = m.automaticStart
-	m.requestFuncMap[requestTypeChat] = m.chat
+	m.requestFuncMap[requestTypeChatNormal] = m.chatNormal
+	m.requestFuncMap[requestTypeChatServer] = m.chatServer
 	m.requestFuncMap[requestTypeExport] = m.export
 	m.requestFuncMap[requestTypeFindVariant] = m.findVariant
 	m.requestFuncMap[requestTypeGetDescription] = m.getDescription
@@ -48,13 +55,16 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeLeave] = m.leave
 	m.requestFuncMap[requestTypeMissingScores] = m.missingScores
 	m.requestFuncMap[requestTypePause] = m.pause
+	m.requestFuncMap[requestTypeReplay] = m.replay
+	m.requestFuncMap[requestTypeRunning] = m.running
 	m.requestFuncMap[requestTypeSpectate] = m.spectate
 	m.requestFuncMap[requestTypeStart] = m.start
 	m.requestFuncMap[requestTypeStartIn] = m.startIn
 	m.requestFuncMap[requestTypeStartInWaitComplete] = m.startInWaitComplete
 	m.requestFuncMap[requestTypeSuggest] = m.suggest
 	m.requestFuncMap[requestTypeTags] = m.tags
-	m.requestFuncMap[requestTypeTerminate] = m.terminate
+	m.requestFuncMap[requestTypeTerminateNormal] = m.terminateNormal
+	m.requestFuncMap[requestTypeTerminateServer] = m.terminateServer
 	m.requestFuncMap[requestTypeUnattend] = m.unattend
 	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 }

@@ -19,8 +19,9 @@ type Manager struct {
 
 	requests          chan *request
 	requestsWaitGroup sync.WaitGroup
-	requestFuncMap    map[string]func(*types.SessionData, []byte)
+	commandFuncMap    map[string]func(string, []byte, *types.SessionData)
 	requestsClosed    *abool.AtomicBool
+	shutdownMutex     sync.Mutex
 
 	logger     *logger.Logger
 	models     *models.Models
@@ -31,15 +32,17 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 	m := &Manager{
 		name: "commands",
 
-		requests:       make(chan *request),
-		requestFuncMap: make(map[string]func(*types.SessionData, []byte)),
-		requestsClosed: abool.New(),
+		requests:          make(chan *request),
+		requestsWaitGroup: sync.WaitGroup{},
+		commandFuncMap:    make(map[string]func(string, []byte, *types.SessionData)),
+		requestsClosed:    abool.New(),
+		shutdownMutex:     sync.Mutex{},
 
 		logger:     logger,
 		models:     models,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
-	m.requestFuncMapInit()
+	m.commandFuncMapInit()
 	go m.ListenForRequests()
 
 	return m

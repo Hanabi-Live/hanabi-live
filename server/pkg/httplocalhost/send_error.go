@@ -14,15 +14,6 @@ func (m *Manager) sendError(c *gin.Context, userID int) {
 		return
 	}
 
-	// TODO
-	/*
-		if s, ok := sessions2.Get(userID); !ok {
-			msg2 := fmt.Sprintf("Failed to get the session for user ID: %v", userID)
-			hLog.Error(msg2)
-			c.String(http.StatusInternalServerError, msg2)
-		} else {
-			s.Error(msg)
-			c.String(http.StatusOK, "success\n")
-		}
-	*/
+	m.Dispatcher.Sessions.NotifyError(userID, msg)
+	c.String(http.StatusOK, "success\n")
 }

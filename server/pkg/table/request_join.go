@@ -25,16 +25,18 @@ const (
 
 // Join will request that the given user joins the table (which must be in a pre-game state).
 // It will block until the player has successfully joined or not.
-// It returns whether or not the join was successful.
+// It returns whether or not the request was successful.
 func (m *Manager) Join(userID int, username string, password string) bool {
 	resultsChannel := make(chan bool)
 
-	m.newRequest(requestTypeJoin, &joinData{ // nolint: errcheck
+	if err := m.newRequest(requestTypeJoin, &joinData{
 		userID:         userID,
 		username:       username,
 		password:       password,
 		resultsChannel: resultsChannel,
-	})
+	}); err != nil {
+		return false
+	}
 
 	return <-resultsChannel
 }
@@ -79,7 +81,6 @@ func (m *Manager) join(data interface{}) {
 		Typing:    false,
 		LastTyped: time.Now(),
 	}
-
 	t.Players = append(t.Players, p)
 
 	m.logger.Infof(
@@ -153,6 +154,20 @@ func (m *Manager) join(data interface{}) {
 func (m *Manager) joinValidate(d *joinData) bool {
 	// Local variables
 	t := m.table
+	i := t.getPlayerIndexFromID(d.userID)
+
+	// Validate that they are not already joined to the table
+	if i != -1 {
+		// The tables manager should detect if a user is joined this table via the relationship map
+		// Thus, if we are getting here, the table must have become desynchronized with the tables
+		// manager
+		m.logger.Errorf(
+			"%v - Failed to join %v, since they were already joined.",
+			t.getName(),
+			util.PrintUser(d.userID, d.username),
+		)
+		return false
+	}
 
 	// Validate that this table is not full
 	if len(t.Players) >= numMaxPlayers {
@@ -164,7 +179,7 @@ func (m *Manager) joinValidate(d *joinData) bool {
 		return false
 	}
 
-	// Validate that the game is not started yet
+	// Validate that the game has not started
 	if t.Running {
 		msg := "That game has already started, so you cannot join it."
 		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
@@ -173,7 +188,7 @@ func (m *Manager) joinValidate(d *joinData) bool {
 
 	// Validate that it is not a replay
 	if t.Replay {
-		msg := "You can not join a replay."
+		msg := "You can not join a replay. (You must spectate it.)"
 		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
 		return false
 	}
@@ -250,13 +265,7 @@ func (m *Manager) joinCheckAutomaticStart() bool {
 		return false
 	}
 
-	// Check to see if the owner is present
-	owner := t.getOwner()
-	if owner == nil {
-		m.logger.Error("Failed to find the owner of the game when attempting to automatically start it.")
-		return false
-	}
-	if !owner.Present {
+	if !t.isOwnerPresent() {
 		msg := "Aborting automatic game start since the table creator is away."
 		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 		return false

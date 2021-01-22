@@ -30,6 +30,7 @@ func (m *Manager) unspectate(data interface{}) interface{} {
 		d = v
 	}
 
+	// Get the associated table manager
 	var t *table.Manager
 	if v, ok := m.tables[d.tableID]; !ok {
 		msg := fmt.Sprintf("Table %v does not exist.", d.tableID)
@@ -53,7 +54,7 @@ func (m *Manager) unspectate(data interface{}) interface{} {
 	// Keep track of user to table relationships
 	m.deleteUserSpectating(d.userID, d.tableID)
 
-	// Remove the spectator on the table itself
+	// Remove the spectator from the table
 	if shouldDelete, err := t.Unspectate(d.userID, d.username); err != nil {
 		m.logger.Errorf(
 			"Failed to unspectate %v from table %v: %v",
@@ -63,8 +64,12 @@ func (m *Manager) unspectate(data interface{}) interface{} {
 		)
 		return false
 	} else if shouldDelete {
-		// This was the last spectator to leave the replay, so delete it
 		m.delete(d.tableID, t)
+		m.logger.Infof(
+			"tablesManager - Ended replay table %v from an unspectate request.",
+			d.tableID,
+		)
+		return true
 	}
 
 	return true

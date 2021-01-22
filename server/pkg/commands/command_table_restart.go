@@ -224,9 +224,6 @@ func tableRestart(
 	var t2 *Table
 	for _, existingTable := range tableList {
 		foundTable := false
-		// TODO: removing the lock here temporarily because it is somehow causing a deadlock
-		// The lock isn't super needed here because the only time a name changes is when a game ends
-		// existingTable.Lock(ctx)
 		if existingTable.Name == newTableName {
 			foundTable = true
 		}

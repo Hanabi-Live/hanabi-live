@@ -1,9 +1,9 @@
 package dispatcher
 
 import (
-	"github.com/Zamiell/hanabi-live/server/pkg/characters"
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 type CharactersManager interface {
-	GetCharacterByID(characterID int) (*characters.Character, error)
+	GetCharacterByID(characterID int) (*types.Character, error)
 }

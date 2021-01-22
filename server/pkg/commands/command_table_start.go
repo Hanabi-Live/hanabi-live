@@ -68,7 +68,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Local variables
 	variant := variants[t.Options.VariantName]
 
-	hLog.Infof("%v Starting the game.", t.GetName())
+	m.logger.Infof("%v Starting the game.", t.GetName())
 
 	// Record the number of players
 	t.Options.NumPlayers = len(t.Players)
@@ -126,7 +126,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		for _, p := range t.Players {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(p.UserID, variant.ID); err != nil {
-				hLog.Errorf(
+				m.logger.Errorf(
 					"Failed to get the past seeds for %v on variant %v: %v",
 					util.PrintUser(p.UserID, p.Username),
 					variant.ID,
@@ -154,9 +154,9 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			}
 		}
 	}
-	hLog.Infof("%v Using seed: %v", t.GetName(), g.Seed)
-	hLog.Infof("%v Shuffling deck: %v", t.GetName(), shuffleDeck)
-	hLog.Infof("%v Shuffling players: %v", t.GetName(), shufflePlayers)
+	m.logger.Infof("%v Using seed: %v", t.GetName(), g.Seed)
+	m.logger.Infof("%v Shuffling deck: %v", t.GetName(), shuffleDeck)
+	m.logger.Infof("%v Shuffling players: %v", t.GetName(), shufflePlayers)
 
 	setSeed(g.Seed) // Seed the random number generator
 	if shuffleDeck {
@@ -300,7 +300,7 @@ func emulateActions(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		})
 
 		if g.InvalidActionOccurred {
-			hLog.Infof(
+			m.logger.Infof(
 				"An invalid action occurred for game %v; not emulating the rest of the actions.",
 				d.DatabaseID,
 			)

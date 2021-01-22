@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
 	"github.com/Zamiell/hanabi-live/server/pkg/settings"
 	"github.com/Zamiell/hanabi-live/server/pkg/types"
@@ -137,7 +138,7 @@ func (s *session) initializeWelcomeMessage(m *Manager, userList []*user) error {
 
 	// Get the past N chat messages sent in the lobby
 	var lobbyChatHistory []*models.DBChatMessage
-	if v, err := m.models.ChatLog.Get(s.ctx, "lobby", lobbyChatHistoryAmount); err != nil {
+	if v, err := m.models.ChatLog.Get(s.ctx, constants.Lobby, lobbyChatHistoryAmount); err != nil {
 		return fmt.Errorf(
 			"failed to get the lobby chat history for %v: %w",
 			util.PrintUser(s.userID, s.username),
@@ -148,7 +149,7 @@ func (s *session) initializeWelcomeMessage(m *Manager, userList []*user) error {
 	}
 
 	// We can't name this "chatListData" because it prevents compilation
-	chatList := m.chatGetListFromDatabaseHistory("lobby", lobbyChatHistory)
+	chatList := m.chatGetListFromDatabaseHistory(constants.Lobby, lobbyChatHistory)
 
 	// Get their total number of games played from the database
 	var totalGames int
@@ -330,7 +331,7 @@ func (s *session) initializeChatMotD(m *Manager) error {
 	}
 
 	motd = fmt.Sprintf("[Server Notice] %v", motd)
-	m.NotifyChatServer(s.userID, motd, "lobby")
+	m.NotifyChatServer(s.userID, motd, constants.Lobby)
 
 	return nil
 }
@@ -338,5 +339,5 @@ func (s *session) initializeChatMotD(m *Manager) error {
 // initializeChatDiscord sends a Discord reminder.
 func (s *session) initializeChatDiscord(m *Manager) {
 	msg := "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>."
-	m.NotifyChatServer(s.userID, msg, "lobby")
+	m.NotifyChatServer(s.userID, msg, constants.Lobby)
 }

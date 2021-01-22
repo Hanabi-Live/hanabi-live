@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
@@ -12,10 +13,10 @@ type friendData struct {
 }
 
 // friend is sent when a user adds a new friend.
-func (m *Manager) friend(sessionData *types.SessionData, commandData []byte) {
+func (m *Manager) friend(commandName string, commandData []byte, sessionData *types.SessionData) {
 	var d *friendData
 	if err := json.Unmarshal(commandData, &d); err != nil {
-		msg := "Your \"friend\" command contained invalid data."
+		msg := fmt.Sprintf("Your \"%v\" command contained invalid data.", commandName)
 		m.Dispatcher.Sessions.NotifyError(sessionData.UserID, msg)
 		return
 	}

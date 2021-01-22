@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path"
+
+	"github.com/Zamiell/hanabi-live/server/pkg/types"
 )
 
 func (m *Manager) charactersInit(dataPath string) {
@@ -15,14 +17,14 @@ func (m *Manager) charactersInit(dataPath string) {
 	} else {
 		fileContents = v
 	}
-	var charactersArray []*Character
+	var charactersArray []*types.Character
 	if err := json.Unmarshal(fileContents, &charactersArray); err != nil {
 		m.logger.Fatalf("Failed to convert the characters file to JSON: %v", err)
 	}
 
 	// Convert the array to a map
-	m.charactersNameMap = make(map[string]*Character)
-	m.charactersIDMap = make(map[int]*Character)
+	m.charactersNameMap = make(map[string]*types.Character)
+	m.charactersIDMap = make(map[int]*types.Character)
 	m.characterNames = make([]string, 0)
 	for _, character := range charactersArray {
 		// Validate the name

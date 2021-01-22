@@ -30,7 +30,7 @@ Dispatcher struct is populated with references to the other managers.
 | chat          | Yes         | Yes              | Handles chat, chat commands, and friends
 | commands      | Yes         | Yes              | Handles incoming commands (e.g. messages) from users
 | constants     | No          | No               | Contains shared constants
-| core          | Yes         | No               | Handles functionality like seeing the server uptime and shutting down
+| core          | Yes         | Yes              | Handles misc. functionality like gracefully shutting everything down
 | discord       | Yes         | No               | Handles sending and receiving messages from Discord
 | dispatcher    | No          | No               | An abstraction for dependency injection (to prevent circular imports)
 | github        | Yes         | No               | Handles interfacing with GitHub.com
@@ -45,7 +45,7 @@ Dispatcher struct is populated with references to the other managers.
 | settings      | No          | No               | The struct for the settings that a user can configure
 | table         | Yes         | Yes              | Handles a single table
 | tables        | Yes         | Yes              | Handles all tables (e.g. creating a new table, deleting a table, etc.)
-| types         | No          | No               | Defines structs that the dispatcher needs to know about
+| types         | No          | No               | Defines some commonly-used structs that the dispatcher needs to know about
 | util          | No          | No               | Shared utility functions
 | variants      | No          | No               | Handles access to data for different variants
 

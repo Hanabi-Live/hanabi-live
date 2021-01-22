@@ -15,27 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-func executeScript(scriptName string) error {
-	scriptPath := path.Join(projectPath, scriptName)
-	cmd := exec.Command(scriptPath)
-	cmd.Dir = projectPath
-	outputBytes, err := cmd.CombinedOutput()
-	output := strings.TrimSpace(string(outputBytes))
-	hLog.Info(
-		fmt.Sprintf("Script \"%v\" completed.", scriptName),
-		zap.String("output", output),
-	)
-	if err != nil {
-		// The "cmd.CombinedOutput()" function will throw an error if the return code is not equal
-		// to 0
-		sentry.ConfigureScope(func(scope *sentry.Scope) {
-			scope.SetTag("scriptOutput", output)
-		})
-		return fmt.Errorf("failed to execute \"%v\": %w", scriptPath, err)
-	}
-	return nil
-}
-
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
 var isAlphanumericHyphen = regexp.MustCompile(`^[a-zA-Z0-9\-]+$`).MatchString
 

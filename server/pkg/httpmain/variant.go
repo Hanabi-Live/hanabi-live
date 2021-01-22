@@ -42,7 +42,7 @@ func (m *Manager) variant(c *gin.Context) {
 	}
 
 	// Get the stats for this variant
-	var variantStats models.VariantStatsRow
+	var variantStats *models.VariantStatsRow
 	if v, err := m.models.VariantStats.Get(c, variantID); err != nil {
 		m.logger.Errorf("Failed to get the variant stats for variant %v: %v", variantID, err)
 		http.Error(

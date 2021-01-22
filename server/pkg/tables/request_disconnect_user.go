@@ -47,6 +47,7 @@ func (m *Manager) disconnectUser(data interface{}) interface{} {
 }
 
 func (m *Manager) disconnectUserUnattend(userID int, username string, tableID int) {
+	// Get the associated table manager
 	var t *table.Manager
 	if v, ok := m.tables[tableID]; !ok {
 		m.logger.Errorf(

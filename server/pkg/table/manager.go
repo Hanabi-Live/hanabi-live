@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/Zamiell/hanabi-live/server/pkg/models"
@@ -20,10 +21,13 @@ type Manager struct {
 	requestsWaitGroup sync.WaitGroup
 	requestFuncMap    map[requestType]func(interface{})
 	requestsClosed    *abool.AtomicBool
+	shutdownMutex     sync.Mutex
 
 	logger     *logger.Logger
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
+
+	actionFuncMap map[constants.ActionType]func() bool
 }
 
 func NewManager(
@@ -36,15 +40,20 @@ func NewManager(
 		name:  fmt.Sprintf("table %v", d.ID),
 		table: nil,
 
-		requests:       make(chan *request),
-		requestFuncMap: make(map[requestType]func(interface{})),
-		requestsClosed: abool.New(),
+		requests:          make(chan *request),
+		requestsWaitGroup: sync.WaitGroup{},
+		requestFuncMap:    make(map[requestType]func(interface{})),
+		requestsClosed:    abool.New(),
+		shutdownMutex:     sync.Mutex{},
 
 		logger:     logger,
 		models:     models,
 		Dispatcher: dispatcher,
+
+		actionFuncMap: make(map[constants.ActionType]func() bool),
 	}
 	m.requestFuncMapInit()
+	m.actionFuncMapInit()
 	go m.ListenForRequests()
 
 	m.table = newTable(d)

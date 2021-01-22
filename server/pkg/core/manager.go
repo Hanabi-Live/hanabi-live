@@ -3,35 +3,57 @@ package core
 import (
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/server/pkg/dispatcher"
 	"github.com/Zamiell/hanabi-live/server/pkg/logger"
 	"github.com/tevino/abool"
 )
 
 type Manager struct {
+	name string
+
+	requests          chan *request
+	requestsWaitGroup sync.WaitGroup
+	requestFuncMap    map[requestType]func(interface{})
+	requestsClosed    *abool.AtomicBool
+
+	logger     *logger.Logger
+	Dispatcher *dispatcher.Dispatcher
+
+	projectPath          string
 	gitCommitOnStart     string
 	datetimeStarted      time.Time
 	wordList             []string
 	shuttingDown         *abool.AtomicBool
 	datetimeShutdownInit time.Time
 	maintenanceMode      *abool.AtomicBool
-
-	logger *logger.Logger
 }
 
-func NewManager(logger *logger.Logger, dataPath string) *Manager {
+func NewManager(logger *logger.Logger, projectPath string, dataPath string) *Manager {
 	m := &Manager{
+		name: "core",
+
+		requests:          make(chan *request),
+		requestsWaitGroup: sync.WaitGroup{},
+		requestFuncMap:    make(map[requestType]func(interface{})),
+		requestsClosed:    abool.New(),
+
+		logger:     logger,
+		Dispatcher: nil, // This will be filled in after this object is instantiated
+
+		projectPath:          projectPath,
 		gitCommitOnStart:     getGitCommit(logger),
 		datetimeStarted:      time.Now(), // Record the time that the server started
 		wordList:             make([]string, 0),
 		shuttingDown:         abool.New(),
 		datetimeShutdownInit: time.Time{},
 		maintenanceMode:      abool.New(),
-
-		logger: logger,
 	}
+	m.requestFuncMapInit()
 	m.wordListInit(dataPath)
+	go m.ListenForRequests()
 
 	m.logger.Infof("Current git commit: %v", m.gitCommitOnStart)
 
@@ -47,5 +69,6 @@ func getGitCommit(logger *logger.Logger) string {
 	if err != nil {
 		logger.Fatalf("Failed to perform a \"git rev-parse HEAD\": %v", err)
 	}
+
 	return strings.TrimSpace(string(stdout))
 }
