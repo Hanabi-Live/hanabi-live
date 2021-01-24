@@ -59,8 +59,8 @@ func chatCommandInit() {
 	chatCommandMap["random-variant"] = chatFindVariant
 
 	// Table-only commands (game only)
-	chatCommandMap["pause"] = chatPause
-	chatCommandMap["unpause"] = chatUnpause
+	// chatCommandMap["pause"] = chatPause
+	// chatCommandMap["unpause"] = chatUnpause
 
 	// Table-only commands (replay only)
 	chatCommandMap["suggest"] = chatSuggest
