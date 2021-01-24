@@ -1,6 +1,6 @@
 // The main reducer for the game mode, contemplating replays and game actions
 
-import produce, { castDraft, Draft, original, setAutoFreeze } from "immer";
+import produce, { castDraft, Draft, original } from "immer";
 import * as segmentRules from "../rules/segment";
 import { Action, GameAction } from "../types/actions";
 import CardIdentity from "../types/CardIdentity";
@@ -11,11 +11,6 @@ import gameStateReducer from "./gameStateReducer";
 import initialGameState from "./initialStates/initialGameState";
 import notesReducer from "./notesReducer";
 import replayReducer from "./replayReducer";
-
-// Ensure that immer will always auto-freeze recursive structures (like replay states)
-// This is necessary to prevent massive lag when WebPack bundles in production made
-// This only has to be called once
-setAutoFreeze(true);
 
 const stateReducer = produce(stateReducerFunction, {} as State);
 export default stateReducer;
