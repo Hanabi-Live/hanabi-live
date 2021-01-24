@@ -128,6 +128,15 @@ func IntInSlice(a int, slice []int) bool {
 	return false
 }
 
+// From: https://mrekucci.blogspot.com/2015/07/dont-abuse-mathmax-mathmin.html
+func Max(x, y int) int {
+	if x > y {
+		return x
+	}
+
+	return y
+}
+
 func NormalizeString(str string) string {
 	// First, we transliterate the string to pure ASCII
 	// Second, we lowercase it

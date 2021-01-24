@@ -23,7 +23,7 @@ const (
 func attachMiddleware(m *Manager, httpRouter *gin.Engine, envVars *envVars, usingSentry bool) {
 	// We do not want to use the rate-limiter in development, since we might have multiple tabs open
 	// that are automatically-refreshing with webpack-dev-server
-	if !m.isDev {
+	if !m.Dispatcher.Core.IsDev() {
 		attachMiddlewareTollbooth(httpRouter)
 	}
 
@@ -71,7 +71,7 @@ func attachMiddlewareSessionStore(m *Manager, httpRouter *gin.Engine, envVars *e
 		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: httpSessionTimeout, // In seconds
 	}
-	if !m.isDev {
+	if !m.Dispatcher.Core.IsDev() {
 		// Bind the cookie to this specific domain for security purposes
 		sessionsOptions.Domain = m.domain
 

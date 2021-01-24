@@ -10,17 +10,6 @@ import (
 // Lobby notify functions
 // ----------------------
 
-func (s *Session) NotifyTableProgress(t *Table) {
-	type TableProgressMessage struct {
-		TableID  uint64 `json:"tableID"`
-		Progress int    `json:"progress"`
-	}
-	s.Emit("tableProgress", &TableProgressMessage{
-		TableID:  t.ID,
-		Progress: t.Progress,
-	})
-}
-
 func (s *Session) NotifyTableStart(t *Table) {
 	type TableStartMessage struct {
 		TableID uint64 `json:"tableID"`
@@ -53,19 +42,6 @@ func (s *Session) NotifyConnected(t *Table) {
 	s.Emit("connected", &ConnectedMessage{
 		TableID: t.ID,
 		List:    list,
-	})
-}
-
-func (s *Session) NotifyGameAction(t *Table, action interface{}) {
-	scrubbedAction := CheckScrub(t, action, s.UserID)
-
-	type GameActionMessage struct {
-		TableID uint64      `json:"tableID"`
-		Action  interface{} `json:"action"`
-	}
-	s.Emit("gameAction", &GameActionMessage{
-		TableID: t.ID,
-		Action:  scrubbedAction,
 	})
 }
 

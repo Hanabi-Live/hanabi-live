@@ -33,6 +33,10 @@ func (m *Manager) Shutdown() {
 	// Wait for this to happen
 	m.requestsWaitGroup.Wait()
 
+	// Terminate any children goroutines by putting a message on the channel
+	t.idleDetectorChannel <- true
+	t.timerDetectorChannel <- true
+
 	// If this is an unstarted game, remove all existing players from the table
 	if !t.Running {
 		for len(t.Players) > 0 {

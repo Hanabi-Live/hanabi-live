@@ -7,30 +7,33 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
-func (g *game) initDeck() error {
+func (g *game) initDeck() {
+	// Local variables
+	t := g.table
+
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified
-	if g.extraOptions.CustomDeck != nil &&
-		len(g.extraOptions.CustomDeck) != 0 &&
-		g.extraOptions.CustomSeed == "" { // Custom seeds override custom decks
+	if t.ExtraOptions.CustomDeck != nil &&
+		len(t.ExtraOptions.CustomDeck) != 0 &&
+		t.ExtraOptions.CustomSeed == "" { // Custom seeds override custom decks
 
-		for _, card := range g.extraOptions.CustomDeck {
-			g.Deck = append(g.Deck, newCard(card.SuitIndex, card.Rank))
+		for _, c := range t.ExtraOptions.CustomDeck {
+			g.Deck = append(g.Deck, newCard(c.SuitIndex, c.Rank))
 			g.CardIdentities = append(g.CardIdentities, &options.CardIdentity{
-				SuitIndex: card.SuitIndex,
-				Rank:      card.Rank,
+				SuitIndex: c.SuitIndex,
+				Rank:      c.Rank,
 			})
 		}
 
-		return nil
+		return
 	}
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
 	// (e.g. [0, 1, 2, 3, 4] for a "No Variant" game)
-	for suitIndex, suit := range g.variant.Suits {
+	for suitIndex, suit := range t.Variant.Suits {
 		// Ranks are represented as a slice of integers
 		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
-		for _, rank := range g.variant.Ranks {
+		for _, rank := range t.Variant.Ranks {
 			// In a normal suit, there are:
 			// - three 1's
 			// - two 2's
@@ -40,7 +43,7 @@ func (g *game) initDeck() error {
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
-				if g.variant.IsUpOrDown() || suit.Reversed {
+				if t.Variant.IsUpOrDown() || suit.Reversed {
 					amountToAdd = 1
 				}
 			} else if rank == 5 { // nolint: gomnd
@@ -67,8 +70,6 @@ func (g *game) initDeck() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (g *game) shuffleDeck() {

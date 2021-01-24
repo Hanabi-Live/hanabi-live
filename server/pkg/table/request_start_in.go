@@ -49,7 +49,7 @@ func (m *Manager) startIn(data interface{}) {
 	secondsToWait := int(math.Ceil(d.minutesToWait * secondsInAMinute))
 	timeToWait := time.Duration(secondsToWait) * time.Second
 	timeToStart := time.Now().Add(timeToWait)
-	t.DatetimePlannedStart = timeToStart
+	t.datetimePlannedStart = timeToStart
 
 	var startTimeString string
 	if secondsToWait < secondsInAMinute {

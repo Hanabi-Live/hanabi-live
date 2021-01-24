@@ -377,20 +377,20 @@ func (m *Manager) newReplayValidateJSON(g *types.GameJSON) (bool, string) {
 		msg := fmt.Sprintf("The deck must have %v cards in it.", deckSize)
 		return false, msg
 	}
-	for i, card := range g.Deck {
-		if card.SuitIndex < 0 || card.SuitIndex > len(variant.Suits)-1 {
+	for i, c := range g.Deck {
+		if c.SuitIndex < 0 || c.SuitIndex > len(variant.Suits)-1 {
 			msg := fmt.Sprintf(
 				"The card at index %v has an invalid suit number of: %v",
 				i,
-				card.SuitIndex,
+				c.SuitIndex,
 			)
 			return false, msg
 		}
-		if (card.Rank < 1 || card.Rank > 5) && card.Rank != variants.StartCardRank {
+		if (c.Rank < 1 || c.Rank > 5) && c.Rank != variants.StartCardRank {
 			msg := fmt.Sprintf(
 				"The card at index %v has an invalid rank number of: %v",
 				i,
-				card.Rank,
+				c.Rank,
 			)
 			return false, msg
 		}

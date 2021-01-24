@@ -85,9 +85,6 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	g := NewGame(t)
 	t.Game = g
 
-	// Start the idle timeout
-	go t.CheckIdle(ctx)
-
 	g.InitDeck()
 
 	// Handle setting the seed

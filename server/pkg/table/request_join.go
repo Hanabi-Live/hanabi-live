@@ -121,8 +121,8 @@ func (m *Manager) join(data interface{}) {
 	}
 
 	// Update the "DatetimeLastJoined" field, but make a copy first
-	datetimeLastJoined := t.DatetimeLastJoined
-	t.DatetimeLastJoined = time.Now()
+	datetimeLastJoined := t.datetimeLastJoined
+	t.datetimeLastJoined = time.Now()
 
 	// Play a notification sound if it has been more than 15 seconds since the last person joined
 	if time.Since(datetimeLastJoined) > time.Second*15 {
@@ -135,8 +135,8 @@ func (m *Manager) join(data interface{}) {
 	}
 
 	// If there is an automatic start countdown, cancel it
-	if !t.DatetimePlannedStart.IsZero() {
-		t.DatetimePlannedStart = time.Time{} // Assign a zero value
+	if !t.datetimePlannedStart.IsZero() {
+		t.datetimePlannedStart = time.Time{} // Assign a zero value
 		msg := "Automatic game start has been canceled."
 		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 	}

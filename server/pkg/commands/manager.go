@@ -43,7 +43,7 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 	}
 	m.commandFuncMapInit()
-	go m.ListenForRequests()
+	go m.listenForRequests()
 
 	return m
 }

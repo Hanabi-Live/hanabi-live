@@ -46,7 +46,7 @@ func NewManager(logger *logger.Logger, models *models.Models, projectPath string
 		projectPath: projectPath,
 	}
 	m.requestFuncMapInit()
-	go m.ListenForRequests()
+	go m.listenForRequests()
 
 	return m
 }

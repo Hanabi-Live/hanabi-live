@@ -37,7 +37,7 @@ func (m *Manager) notifyAll(notifyFunc func(int)) {
 // Notifications before or after a game has started
 // ------------------------------------------------
 
-func (m *Manager) notifyAllChat(username string, msg string) {
+func (m *Manager) notifyChat(username string, msg string) {
 	// Local variables
 	t := m.table
 
@@ -46,7 +46,7 @@ func (m *Manager) notifyAllChat(username string, msg string) {
 	})
 }
 
-func (m *Manager) notifyAllStopTyping(username string) {
+func (m *Manager) notifyStopTyping(username string) {
 	// Local variables
 	t := m.table
 
@@ -104,6 +104,53 @@ func (m *Manager) notifyPlayerChanged() {
 // Notifications after a game has started
 // --------------------------------------
 
+func (m *Manager) notifyGameAction() {
+	// Local variables
+	t := m.table
+	g := t.Game
+
+	if !t.Running {
+		// We might be doing the initial actions;
+		// don't send any messages to players if this is the case
+		return
+	}
+
+	// Get the last action of the game
+	lastAction := g.Actions[len(g.Actions)-1]
+
+	for _, gp := range g.Players {
+		p := t.Players[gp.Index]
+		if p.Present {
+			scrubbedAction := m.checkScrub(t, lastAction, p.UserID)
+			m.Dispatcher.Sessions.NotifyGameAction(p.UserID, t.ID, scrubbedAction)
+		}
+	}
+
+	for _, sp := range t.spectators {
+		// We don't need to scrub any actions for spectators
+		m.Dispatcher.Sessions.NotifyGameAction(sp.userID, t.ID, lastAction)
+	}
+}
+
+func (m *Manager) notifyProgress() {
+	// Local variables
+	t := m.table
+
+	if !t.Running {
+		// We might be doing the initial actions;
+		// don't send any messages to players if this is the case
+		return
+	}
+
+	if !t.Visible {
+		// Don't send progress for solo replays
+		return
+	}
+
+	// Table progress only gets sent to interested users
+	m.Dispatcher.Sessions.NotifyTableProgress(m.getNotifyUserIDs(), t.ID, t.Progress)
+}
+
 func (m *Manager) notifySpectatorsChanged() {
 	// Local variables
 	t := m.table
@@ -156,4 +203,27 @@ func (m *Manager) notifySpectatorsNote(order int) {
 
 		m.Dispatcher.Sessions.NotifyNote(sp.userID, t.ID, order, notes)
 	}
+}
+
+// -----------
+// Subroutines
+// -----------
+
+func (m *Manager) getNotifyUserIDs() []int {
+	// Local variables
+	t := m.table
+
+	userIDs := make([]int, 0)
+
+	if !t.Replay {
+		for _, p := range t.Players {
+			userIDs = append(userIDs, p.UserID)
+		}
+	}
+
+	for _, sp := range t.spectators {
+		userIDs = append(userIDs, sp.userID)
+	}
+
+	return userIDs
 }

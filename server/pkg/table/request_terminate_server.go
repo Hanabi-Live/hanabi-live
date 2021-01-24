@@ -1,5 +1,7 @@
 package table
 
+import "github.com/Zamiell/hanabi-live/server/pkg/constants"
+
 func (m *Manager) TerminateServer() {
 	m.newRequest(requestTypeTerminateServer, nil) // nolint: errcheck
 }
@@ -13,13 +15,11 @@ func (m *Manager) terminateServer(data interface{}) {
 		return
 	}
 
-	/*
-		// TODO
-		m.action(&actionData{
-			type:        constants.ActionTypeEndGame,
-			 // A player index of -1 indicates that it is the server performing the termination
-			target: -1,
-			value:       constants.EndConditionTerminated,
-		})
-	*/
+	m.action(&actionData{
+		userID:     0,
+		username:   constants.WebsiteName,
+		actionType: constants.ActionTypeEndGame,
+		target:     serverPlayerTargetIndex,
+		value:      int(constants.EndConditionTerminated),
+	})
 }

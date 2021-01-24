@@ -1,12 +1,6 @@
-// Actions represent a change in the game state
-// Different actions will have different fields
-// Any actions implemented here must also be accounted for in the "restoreTables()" function
+package types
 
-package main
-
-/*
-
-// Used to implement the "Slow-Witted" detrimental character
+// ActionCardIdentity is used to implement the "Slow-Witted" detrimental character.
 type ActionCardIdentity struct {
 	Type        string `json:"type"`
 	PlayerIndex int    `json:"playerIndex"` // Needed so that we can validate who holds the card
@@ -17,7 +11,7 @@ type ActionCardIdentity struct {
 
 type ActionClue struct {
 	Type   string `json:"type"`
-	Clue   Clue   `json:"clue"`
+	Clue   *Clue  `json:"clue"`
 	Giver  int    `json:"giver"`
 	List   []int  `json:"list"` // The list of cards that the clue "touches"
 	Target int    `json:"target"`
@@ -81,5 +75,3 @@ type ActionTurn struct {
 	Num                int    `json:"num"`
 	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
 }
-
-*/

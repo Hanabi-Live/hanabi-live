@@ -16,10 +16,6 @@ import (
 type game struct {
 	// This is a reference to the parent object; every game must have a parent Table object
 	table *table
-	// These are references to the respective fields of the Table object (for convenience purposes)
-	options      *options.Options
-	extraOptions *options.ExtraOptions
-	variant      *variants.Variant
 
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
@@ -49,7 +45,7 @@ type game struct {
 	Score               int
 	MaxScore            int
 	Strikes             int
-	LastClueTypeGiven   int // Used in "Alternating Clues" variants
+	LastClueTypeGiven   constants.ClueType // Used in "Alternating Clues" variants
 	// Actions is a list of all of the in-game moves that players have taken thus far
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
@@ -58,8 +54,8 @@ type game struct {
 	// DBActions is a database-compatible representation of in-game moves
 	// (it is much less verbose when compared with Actions)
 	DBActions             []*options.GameAction
-	InvalidActionOccurred bool // Used when emulating game actions in replays
-	EndCondition          int  // The values for this are listed in "constants.go"
+	InvalidActionOccurred bool                   // Used when emulating game actions in replays
+	EndCondition          constants.EndCondition // The values for this are listed in "constants.go"
 	// The index of the player who ended the game, if any
 	// (needed for writing a "game over" terminate action to the database)
 	EndPlayer int
@@ -87,10 +83,7 @@ type game struct {
 
 func (m *Manager) newGame(t *table) *game {
 	g := &game{
-		table:        t,
-		options:      t.Options,
-		extraOptions: t.ExtraOptions,
-		variant:      t.Variant,
+		table: t,
 
 		DatetimeStarted:  time.Time{},
 		DatetimeFinished: time.Time{},

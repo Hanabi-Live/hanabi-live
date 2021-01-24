@@ -27,7 +27,7 @@ type Manager struct {
 	models     *models.Models
 	Dispatcher *dispatcher.Dispatcher
 
-	actionFuncMap map[constants.ActionType]func() bool
+	actionFuncMap map[constants.ActionType]func(*actionData) bool
 }
 
 func NewManager(
@@ -50,14 +50,22 @@ func NewManager(
 		models:     models,
 		Dispatcher: dispatcher,
 
-		actionFuncMap: make(map[constants.ActionType]func() bool),
+		actionFuncMap: make(map[constants.ActionType]func(*actionData) bool),
 	}
 	m.requestFuncMapInit()
 	m.actionFuncMapInit()
-	go m.ListenForRequests()
+	go m.listenForRequests()
 
-	m.table = newTable(d)
-	m.table.manager = m
+	t := newTable(d)
+
+	// Glue the two objects together
+	m.table = t
+	t.manager = m
+
+	// Disable idle timeouts in development
+	if !m.Dispatcher.Core.IsDev() {
+		go t.idleDetector()
+	}
 
 	return m
 }

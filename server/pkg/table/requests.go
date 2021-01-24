@@ -69,9 +69,9 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeUnspectate] = m.unspectate
 }
 
-// ListenForRequests will block until messages are sent on the request channel.
+// listenForRequests will block until messages are sent on the request channel.
 // It is meant to be run in a new goroutine.
-func (m *Manager) ListenForRequests() {
+func (m *Manager) listenForRequests() {
 	m.requestsWaitGroup.Add(1)
 	defer m.requestsWaitGroup.Done()
 

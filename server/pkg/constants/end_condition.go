@@ -2,7 +2,6 @@ package constants
 
 type EndCondition int
 
-/*
 const (
 	EndConditionInProgress EndCondition = iota
 	EndConditionNormal
@@ -15,4 +14,3 @@ const (
 	EndConditionAllOrNothingFail
 	EndConditionAllOrNothingSoftlock
 )
-*/

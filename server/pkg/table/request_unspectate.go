@@ -57,7 +57,7 @@ func (m *Manager) unspectate(data interface{}) {
 	}
 
 	// If they were typing, remove the message
-	m.notifyAllStopTyping(d.username)
+	m.notifyStopTyping(d.username)
 
 	// If this is an ongoing game, create a list of any notes that they wrote
 	cardOrderList := make([]int, 0)

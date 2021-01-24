@@ -24,7 +24,6 @@ type Manager struct {
 	httpClientWithTimeout *http.Client // Used for the Google Analytics middleware
 	projectPath           string
 	versionPath           string
-	isDev                 bool
 	domain                string
 	useTLS                bool
 	gaTrackingID          string
@@ -43,7 +42,6 @@ func NewManager(
 	models *models.Models,
 	projectPath string,
 	versionPath string,
-	isDev bool,
 	usingSentry bool,
 ) *Manager {
 	// Get environment variables
@@ -63,7 +61,6 @@ func NewManager(
 		},
 		projectPath:  projectPath,
 		versionPath:  versionPath,
-		isDev:        isDev,
 		domain:       envVars.domain,
 		useTLS:       len(envVars.tlsCertFile) > 0 && len(envVars.tlsKeyFile) > 0,
 		gaTrackingID: envVars.gaTrackingID,

@@ -80,11 +80,11 @@ func (m *Manager) leave(data interface{}) {
 	m.Dispatcher.Sessions.NotifyTableLeft(d.userID, t.ID)
 
 	// If they were typing, remove the message
-	m.notifyAllStopTyping(d.username)
+	m.notifyStopTyping(d.username)
 
 	// If there is an automatic start countdown, cancel it
-	if !t.DatetimePlannedStart.IsZero() {
-		t.DatetimePlannedStart = time.Time{} // Assign a zero value
+	if !t.datetimePlannedStart.IsZero() {
+		t.datetimePlannedStart = time.Time{} // Assign a zero value
 		msg := "Automatic game start has been canceled."
 		m.Dispatcher.Chat.ChatServer(msg, t.getRoomName())
 	}

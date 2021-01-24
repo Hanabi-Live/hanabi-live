@@ -21,12 +21,7 @@ func getCommonHTTPErrors() []string {
 	}
 }
 
-func Init(logger *logger.Logger, isDev bool, gitCommitOnStart string) bool {
-	// We only want to report errors in production
-	if isDev {
-		return false
-	}
-
+func Init(logger *logger.Logger, gitCommitOnStart string) bool {
 	// Read some configuration values from environment variables
 	// (they were loaded from the ".env" file in "main.go")
 	sentryDSN := os.Getenv("SENTRY_DSN")

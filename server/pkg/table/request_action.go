@@ -2,6 +2,7 @@ package table
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 )
@@ -50,6 +51,12 @@ func (m *Manager) action(data interface{}) {
 
 	// i := t.getPlayerIndexFromID(d.userID)
 	// p := g.Players[i]
+
+	// Keep track that an action happened (so that the game is not terminated due to idleness)
+	// But don't update it if we are ending the game
+	if d.actionType != constants.ActionTypeEndGame {
+		t.datetimeLastAction = time.Now()
+	}
 }
 
 func (m *Manager) actionValidate(d *actionData) bool {
@@ -111,15 +118,10 @@ func (m *Manager) actionValidate(d *actionData) bool {
 }
 
 /*
-	// Start the idle timeout
-	// (but don't update the idle variable if we are ending the game)
-	if d.Type != ActionTypeEndGame {
-		go t.CheckIdle(ctx)
-	}
-
 	// Do different tasks depending on the action
 	if actionFunction, ok := actionFunctions[d.Type]; ok {
 		if !actionFunction(s, d, g, p) {
+			g.InvalidActionOccurred = true
 			return
 		}
 	} else {
@@ -229,210 +231,4 @@ func (m *Manager) actionValidate(d *actionData) bool {
 	}
 }
 
-func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// Validate "Detrimental Character Assignment" restrictions
-	if characterCheckPlay(s, d, g, p) {
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate deck plays
-	if g.Options.DeckPlays &&
-		g.DeckIndex == len(g.Deck)-1 && // There is 1 card left in the deck
-		d.Target == g.DeckIndex { // The target is the last card left in the deck
-
-		p.PlayDeck()
-		return true
-	}
-
-	// Validate that the card is in their hand
-	if !p.InHand(d.Target) {
-		s.Warning("You cannot play a card that is not in your hand.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	c := p.RemoveCard(d.Target)
-	p.PlayCard(c)
-	p.DrawCard()
-
-	return true
-}
-
-func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// Local variables
-	variant := variants[g.Options.VariantName]
-
-	// Validate that the card is in their hand
-	if !p.InHand(d.Target) {
-		s.Warning("You cannot play a card that is not in your hand.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate that the team is not at the maximum amount of clues
-	if variant.AtMaxClueTokens(g.ClueTokens) {
-		s.Warningf("You cannot discard while the team has %v clues.", MaxClueNum)
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate "Detrimental Character Assignment" restrictions
-	if characterCheckDiscard(s, g, p) {
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	g.ClueTokens++
-	c := p.RemoveCard(d.Target)
-	p.DiscardCard(c)
-	p.DrawCard()
-
-	return true
-}
-
-func actionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// Local variables
-	variant := variants[g.Options.VariantName]
-
-	// Validate that the target of the clue is sane
-	if d.Target < 0 || d.Target > len(g.Players)-1 {
-		s.Warning("That is an invalid clue target.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate that the player is not giving a clue to themselves
-	if g.ActivePlayerIndex == d.Target {
-		s.Warning("You cannot give a clue to yourself.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate that there are clues available to use
-	if g.ClueTokens < variant.GetAdjustedClueTokens(1) {
-		s.Warning("You need at least 1 clue token available in order to give a clue.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Convert the incoming data to a clue object
-	clue := NewClue(d)
-
-	// Validate the clue value
-	if clue.Type == ClueTypeColor {
-		if clue.Value < 0 || clue.Value > len(variant.ClueColors)-1 {
-			s.Warningf("You cannot give a color clue with a value of: %v", clue.Value)
-			g.InvalidActionOccurred = true
-			return false
-		}
-	} else if clue.Type == ClueTypeRank {
-		if !intInSlice(clue.Value, variant.ClueRanks) {
-			s.Warningf("You cannot give a rank clue with a value of: %v", clue.Value)
-			g.InvalidActionOccurred = true
-			return false
-		}
-	} else {
-		s.Warningf("The clue type of %v is invalid.", clue.Type)
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate special variant restrictions
-	if variant.IsAlternatingClues() && clue.Type == g.LastClueTypeGiven {
-		s.Warning("You cannot give two clues of the same time in a row in this variant.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Validate "Detrimental Character Assignment" restrictions
-	p2 := g.Players[d.Target] // The target of the clue
-	if g.Options.DetrimentalCharacters {
-		if !m.Dispatcher.Characters.ValidateClueGiver(d, p, p2) {
-			g.InvalidActionOccurred = true
-			return false
-		}
-		if !m.Dispatcher.Characters.ValidateClueReceiver() {
-			g.InvalidActionOccurred = true
-			return false
-		}
-	}
-
-	// Validate that the clue touches at least one card
-	touchedAtLeastOneCard := false
-	for _, c := range p2.Hand {
-		// Prevent characters from cluing cards that they are not supposed to see
-		if !characterSeesCard(g, p, p2, c.Order) {
-			continue
-		}
-
-		if variantIsCardTouched(g.Options.VariantName, clue, c) {
-			touchedAtLeastOneCard = true
-			break
-		}
-	}
-	if !touchedAtLeastOneCard &&
-		// Make an exception if they have the optional setting for "Empty Clues" turned on
-		!g.Options.EmptyClues &&
-		// Make an exception for variants where color clues are always allowed
-		(!variant.ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
-		// Make an exception for variants where rank clues are always allowed
-		(!variant.RankCluesTouchNothing || clue.Type != ClueTypeRank) {
-
-		s.Warning("You cannot give a clue that touches 0 cards in the hand.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	p.GiveClue(d)
-
-	return true
-}
-
-func actionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// An "endGame" action is a special action type sent by the server to itself
-	// The value will correspond to the end condition (see "endCondition" in "constants.go")
-	// The target will correspond to the index of the player who ended the game
-
-	// Validate the value
-	if d.Value != EndConditionTimeout &&
-		d.Value != EndConditionTerminated &&
-		d.Value != EndConditionIdleTimeout {
-
-		s.Warning("That is not a valid value for the end game action.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-
-	// Mark that the game should be ended
-	g.EndCondition = d.Value
-	g.EndPlayer = d.Target
-
-	// Insert an "end game" action
-	var endGameAction *GameAction
-	if g.EndCondition == EndConditionTimeout {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGame,
-			Target: g.EndPlayer,
-			Value:  EndConditionTimeout,
-		}
-	} else if g.EndCondition == EndConditionTerminated {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGame,
-			Target: g.EndPlayer,
-			Value:  EndConditionTerminated,
-		}
-	} else if g.EndCondition == EndConditionIdleTimeout {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGame,
-			Target: -1,
-			Value:  EndConditionIdleTimeout,
-		}
-	}
-	if endGameAction != nil {
-		g.Actions2 = append(g.Actions2, endGameAction)
-	}
-
-	return true
-}
 */

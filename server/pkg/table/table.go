@@ -40,11 +40,11 @@ type table struct {
 	Progress       int // Displayed as a percentage on the main lobby screen
 
 	DatetimeCreated      time.Time
-	DatetimeLastJoined   time.Time
-	DatetimePlannedStart time.Time
+	datetimeLastJoined   time.Time
+	datetimePlannedStart time.Time
 	// This is updated any time a player interacts with the game / replay
 	// (used to determine when a game is idle)
-	DatetimeLastAction time.Time
+	datetimeLastAction time.Time
 
 	// All of the game state is contained within the "Game" object
 	Game *game
@@ -56,6 +56,10 @@ type table struct {
 
 	Chat     []*types.TableChatMessage // All of the in-game chat history
 	ChatRead map[int]int               // A map of which users have read which messages
+
+	// Used for terminating child goroutines
+	idleDetectorChannel  chan bool
+	timerDetectorChannel chan bool
 }
 
 type NewTableData struct {
@@ -90,9 +94,9 @@ func newTable(d *NewTableData) *table {
 		Progress:       0,
 
 		DatetimeCreated:      time.Now(),
-		DatetimeLastJoined:   time.Now(),
-		DatetimePlannedStart: time.Time{},
-		DatetimeLastAction:   time.Now(),
+		datetimeLastJoined:   time.Now(),
+		datetimePlannedStart: time.Time{},
+		datetimeLastAction:   time.Now(),
 
 		Game: nil,
 
@@ -102,6 +106,9 @@ func newTable(d *NewTableData) *table {
 
 		Chat:     make([]*types.TableChatMessage, 0),
 		ChatRead: make(map[int]int),
+
+		idleDetectorChannel:  make(chan bool),
+		timerDetectorChannel: make(chan bool),
 	}
 
 	// Log a chat message so that future players can see a timestamp of when the table was created

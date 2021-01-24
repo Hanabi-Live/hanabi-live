@@ -49,7 +49,7 @@ func NewManager(logger *logger.Logger, models *models.Models, domain string, use
 	}
 	m.requestFuncMapInit()
 	m.commandMapInit()
-	go m.ListenForRequests()
+	go m.listenForRequests()
 
 	return m
 }

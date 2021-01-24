@@ -54,7 +54,7 @@ func NewManager(logger *logger.Logger, models *models.Models) *Manager {
 		isValidTableName: regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString,
 	}
 	m.requestFuncMapInit()
-	go m.ListenForRequests()
+	go m.listenForRequests()
 
 	return m
 }

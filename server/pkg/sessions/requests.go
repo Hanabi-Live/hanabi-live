@@ -32,11 +32,13 @@ const (
 	requestTypeNotifyError
 	requestTypeNotifyFriends
 	requestTypeNotifyGame
+	requestTypeNotifyGameAction
 	requestTypeNotifyJoined
 	requestTypeNotifyNote
 	requestTypeNotifySoundLobby
 	requestTypeNotifySpectators
 	requestTypeNotifyTableLeft
+	requestTypeNotifyTableProgress
 	requestTypeNotifyTableStart
 	requestTypeNotifyWarning
 	requestTypeSetFriend
@@ -66,20 +68,22 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeNotifyError] = m.notifyError
 	m.requestFuncMap[requestTypeNotifyFriends] = m.notifyFriends
 	m.requestFuncMap[requestTypeNotifyGame] = m.notifyGame
+	m.requestFuncMap[requestTypeNotifyGameAction] = m.notifyGameAction
 	m.requestFuncMap[requestTypeNotifyJoined] = m.notifyJoined
 	m.requestFuncMap[requestTypeNotifyNote] = m.notifyNote
 	m.requestFuncMap[requestTypeNotifySoundLobby] = m.notifySoundLobby
 	m.requestFuncMap[requestTypeNotifySpectators] = m.notifySpectators
 	m.requestFuncMap[requestTypeNotifyTableLeft] = m.notifyTableLeft
+	m.requestFuncMap[requestTypeNotifyTableProgress] = m.notifyTableProgress
 	m.requestFuncMap[requestTypeNotifyTableStart] = m.notifyTableStart
 	m.requestFuncMap[requestTypeNotifyWarning] = m.notifyWarning
 	m.requestFuncMap[requestTypeSetStatus] = m.setStatus
 	m.requestFuncMap[requestTypeSetFriend] = m.setFriend
 }
 
-// ListenForRequests will block until messages are sent on the request channel.
+// listenForRequests will block until messages are sent on the request channel.
 // It is meant to be run in a new goroutine.
-func (m *Manager) ListenForRequests() {
+func (m *Manager) listenForRequests() {
 	m.requestsWaitGroup.Add(1)
 	defer m.requestsWaitGroup.Done()
 

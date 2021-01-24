@@ -62,32 +62,6 @@ func (t *Table) NotifyConnected() {
 	}
 }
 
-// NotifyGameAction sends the people in the game an update about the new action
-func (t *Table) NotifyGameAction() {
-	g := t.Game
-
-	if !t.Running {
-		// We might be doing the initial actions;
-		// don't send any messages to players if this is the case
-		return
-	}
-
-	// Get the last action of the game
-	a := g.Actions[len(g.Actions)-1]
-
-	for _, gp := range g.Players {
-		p := t.Players[gp.Index]
-		if p.Present {
-			p.Session.NotifyGameAction(t, a)
-		}
-	}
-
-	// Also send the spectators an update
-	for _, sp := range t.Spectators {
-		sp.Session.NotifyGameAction(t, a)
-	}
-}
-
 // NotifyStatus appends a new "status" action and alerts everyone
 func (t *Table) NotifyStatus() {
 	g := t.Game
@@ -166,23 +140,6 @@ func (t *Table) NotifyPause() {
 func (t *Table) NotifyReplayLeader() {
 	for _, sp := range t.Spectators {
 		sp.Session.NotifyReplayLeader(t)
-	}
-}
-
-func (t *Table) NotifyProgress() {
-	if !t.Running {
-		// We might be doing the initial actions;
-		// don't send any messages to players if this is the case
-		return
-	}
-
-	if !t.Visible {
-		// Don't send progress for solo replays
-		return
-	}
-
-	for _, s := range t.GetNotifySessions(false) {
-		s.NotifyTableProgress(t)
 	}
 }
 

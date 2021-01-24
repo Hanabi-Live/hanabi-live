@@ -31,5 +31,5 @@ func (m *Manager) tableTerminate(
 		return
 	}
 
-	t.TerminateNormal(sessionData.UserID)
+	t.TerminateNormal(sessionData.UserID, sessionData.Username)
 }

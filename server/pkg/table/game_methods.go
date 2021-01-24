@@ -7,24 +7,73 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/variants"
 )
 
+// GetMaxScore calculates what the maximum score is, accounting for stacks that cannot be completed
+// due to discarded cards.
+func (g *game) getMaxScore() int {
+	// Local variables
+	t := g.table
+
+	// Getting the maximum score is much more complicated if we are playing a
+	// "Reversed" or "Up or Down" variant
+	if t.Variant.HasReversedSuits() {
+		return variantReversibleGetMaxScore(g)
+	}
+
+	maxScore := 0
+	for suit := range g.Stacks {
+		for rank := 1; rank <= 5; rank++ {
+			// Search through the deck to see if all the copies of this card are discarded already
+			total, discarded := g.getSpecificCardNum(suit, rank)
+			if total > discarded {
+				maxScore++
+			} else {
+				break
+			}
+		}
+	}
+
+	return maxScore
+}
+
 func (g *game) getNotesSize() int {
+	// Local variables
+	t := g.table
+
 	// There are notes for every card in the deck + the stack bases for each suit
 	numCards := len(g.Deck)
-	numSuits := len(g.variant.Suits)
+	numSuits := len(t.Variant.Suits)
 
 	return numCards + numSuits
+}
+
+// getSpecificCardNum returns the total cards in the deck of the specified suit and rank.
+// It also returns how many of those that have been already discarded.
+func (g *game) getSpecificCardNum(suitIndex int, rank int) (int, int) {
+	total := 0
+	discarded := 0
+	for _, c := range g.Deck {
+		if c.SuitIndex == suitIndex && c.Rank == rank {
+			total++
+			if c.Discarded {
+				discarded++
+			}
+		}
+	}
+
+	return total, discarded
 }
 
 // touchesCard returns true if a clue will touch a particular suit.
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant.
 // This mirrors the client function "touchesCard()" in "clues.ts".
-func (g *game) touchesCard(clue *types.Clue, card *card) bool {
+func (g *game) touchesCard(clue *types.Clue, c *card) bool {
 	// Local variables
-	suit := g.variant.Suits[card.SuitIndex]
+	t := g.table
+	suit := t.Variant.Suits[c.SuitIndex]
 
 	if clue.Type == constants.ClueTypeColor {
-		if g.variant.ColorCluesTouchNothing {
+		if t.Variant.ColorCluesTouchNothing {
 			return false
 		}
 
@@ -35,25 +84,25 @@ func (g *game) touchesCard(clue *types.Clue, card *card) bool {
 			return false
 		}
 
-		if g.variant.SpecialRank == card.Rank {
-			if g.variant.SpecialAllClueColors {
+		if t.Variant.SpecialRank == c.Rank {
+			if t.Variant.SpecialAllClueColors {
 				return true
 			}
-			if g.variant.SpecialNoClueColors {
+			if t.Variant.SpecialNoClueColors {
 				return false
 			}
 		}
 
-		clueColorName := g.variant.ClueColors[clue.Value]
+		clueColorName := t.Variant.ClueColors[clue.Value]
 
 		if suit.Prism {
 			// The color that touches a prism card is contingent upon the card's rank
-			prismColorIndex := (card.Rank - 1) % len(g.variant.ClueColors)
-			if card.Rank == variants.StartCardRank {
+			prismColorIndex := (c.Rank - 1) % len(t.Variant.ClueColors)
+			if c.Rank == variants.StartCardRank {
 				// "START" cards count as rank 0, so they are touched by the final color
-				prismColorIndex = len(g.variant.ClueColors) - 1
+				prismColorIndex = len(t.Variant.ClueColors) - 1
 			}
-			prismColorName := g.variant.ClueColors[prismColorIndex]
+			prismColorName := t.Variant.ClueColors[prismColorIndex]
 			return clueColorName == prismColorName
 		}
 
@@ -61,32 +110,32 @@ func (g *game) touchesCard(clue *types.Clue, card *card) bool {
 	}
 
 	if clue.Type == constants.ClueTypeRank {
-		if g.variant.RankCluesTouchNothing {
+		if t.Variant.RankCluesTouchNothing {
 			return false
 		}
 
-		if g.variant.Suits[card.SuitIndex].AllClueRanks {
+		if t.Variant.Suits[c.SuitIndex].AllClueRanks {
 			return true
 		}
-		if g.variant.Suits[card.SuitIndex].NoClueRanks {
+		if t.Variant.Suits[c.SuitIndex].NoClueRanks {
 			return false
 		}
 
-		if g.variant.SpecialRank == card.Rank {
-			if g.variant.SpecialAllClueRanks {
+		if t.Variant.SpecialRank == c.Rank {
+			if t.Variant.SpecialAllClueRanks {
 				return true
 			}
-			if g.variant.SpecialNoClueRanks {
+			if t.Variant.SpecialNoClueRanks {
 				return false
 			}
-			if g.variant.SpecialDeceptive {
+			if t.Variant.SpecialDeceptive {
 				// The rank that touches a deceptive card is contingent upon the card's suit
-				deceptiveRank := g.variant.ClueRanks[card.SuitIndex%len(g.variant.ClueRanks)]
+				deceptiveRank := t.Variant.ClueRanks[c.SuitIndex%len(t.Variant.ClueRanks)]
 				return clue.Value == deceptiveRank
 			}
 		}
 
-		return clue.Value == card.Rank
+		return clue.Value == c.Rank
 	}
 
 	return false
@@ -146,7 +195,7 @@ func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 	// Local variables
 	t := g.Table
 
-	hLog.Infof("%v Time ran out for: %v", t.GetName(), gp.Name)
+	m.logger.Infof("%v Time ran out for: %v", t.GetName(), gp.Name)
 
 	// Adjust the final player's time (for the purposes of displaying the correct ending times)
 	gp.Time = 0
@@ -308,51 +357,6 @@ func (g *Game) GetHandSizeForNormalGame() int {
 
 	hLog.Errorf("Failed to get the hand size for %v players for table: %v", numPlayers, t.Name)
 	return 4
-}
-
-// GetMaxScore calculates what the maximum score is,
-// accounting for stacks that cannot be completed due to discarded cards
-func (g *Game) GetMaxScore() int {
-	// Local variables
-	variant := variants[g.Options.VariantName]
-
-	// Getting the maximum score is much more complicated if we are playing a
-	// "Reversed" or "Up or Down" variant
-	if variant.HasReversedSuits() {
-		return variantReversibleGetMaxScore(g)
-	}
-
-	maxScore := 0
-	for suit := range g.Stacks {
-		for rank := 1; rank <= 5; rank++ {
-			// Search through the deck to see if all the copies of this card are discarded already
-			total, discarded := g.GetSpecificCardNum(suit, rank)
-			if total > discarded {
-				maxScore++
-			} else {
-				break
-			}
-		}
-	}
-
-	return maxScore
-}
-
-// GetSpecificCardNum returns the total cards in the deck of the specified suit and rank
-// as well as how many of those that have been already discarded
-func (g *Game) GetSpecificCardNum(suitIndex int, rank int) (int, int) {
-	total := 0
-	discarded := 0
-	for _, c := range g.Deck {
-		if c.SuitIndex == suitIndex && c.Rank == rank {
-			total++
-			if c.Discarded {
-				discarded++
-			}
-		}
-	}
-
-	return total, discarded
 }
 
 */

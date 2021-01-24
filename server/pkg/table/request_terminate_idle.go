@@ -6,21 +6,21 @@ import (
 	"github.com/Zamiell/hanabi-live/server/pkg/constants"
 )
 
-type terminateNormalData struct {
+type terminateIdleData struct {
 	userID   int
 	username string
 }
 
-func (m *Manager) TerminateNormal(userID int, username string) {
-	m.newRequest(requestTypeTerminateNormal, &terminateNormalData{ // nolint: errcheck
+func (m *Manager) TerminateIdle(userID int, username string) {
+	m.newRequest(requestTypeTerminateNormal, &terminateIdleData{ // nolint: errcheck
 		userID:   userID,
 		username: username,
 	})
 }
 
-func (m *Manager) terminateNormal(data interface{}) {
-	var d *terminateNormalData
-	if v, ok := data.(*terminateNormalData); !ok {
+func (m *Manager) terminateIdle(data interface{}) {
+	var d *terminateIdleData
+	if v, ok := data.(*terminateIdleData); !ok {
 		m.logger.Errorf("Failed type assertion for data of type: %T", d)
 		return
 	} else {
@@ -31,11 +31,8 @@ func (m *Manager) terminateNormal(data interface{}) {
 	t := m.table
 	i := t.getPlayerIndexFromID(d.userID)
 
-	// Validate that the game has started
 	if !t.Running {
-		msg := "You can not terminate a game that has not started yet."
-		m.Dispatcher.Sessions.NotifyWarning(d.userID, msg)
-		return
+
 	}
 
 	// Validate that it is not a replay

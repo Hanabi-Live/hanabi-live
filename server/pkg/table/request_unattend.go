@@ -51,7 +51,7 @@ func (m *Manager) unattend(data interface{}) {
 	p.Present = false
 
 	// If they were typing, remove the message
-	m.notifyAllStopTyping(d.username)
+	m.notifyStopTyping(d.username)
 
 	// Update the status of this player and send everyone a message
 	m.Dispatcher.Sessions.SetStatus(d.userID, constants.StatusPregame, t.ID)

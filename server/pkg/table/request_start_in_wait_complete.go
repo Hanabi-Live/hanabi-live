@@ -32,7 +32,7 @@ func (m *Manager) startInWaitComplete(data interface{}) {
 	}
 
 	// Check to see if the planned start time has changed
-	if d.datetimePlannedStart != t.DatetimePlannedStart {
+	if d.datetimePlannedStart != t.datetimePlannedStart {
 		return
 	}
 

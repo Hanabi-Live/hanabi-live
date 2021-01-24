@@ -22,6 +22,7 @@ type Manager struct {
 	logger     *logger.Logger
 	Dispatcher *dispatcher.Dispatcher
 
+	isDev                bool
 	projectPath          string
 	gitCommitOnStart     string
 	datetimeStarted      time.Time
@@ -31,7 +32,7 @@ type Manager struct {
 	maintenanceMode      *abool.AtomicBool
 }
 
-func NewManager(logger *logger.Logger, projectPath string, dataPath string) *Manager {
+func NewManager(logger *logger.Logger, isDev bool, projectPath string, dataPath string) *Manager {
 	m := &Manager{
 		name: "core",
 
@@ -43,6 +44,7 @@ func NewManager(logger *logger.Logger, projectPath string, dataPath string) *Man
 		logger:     logger,
 		Dispatcher: nil, // This will be filled in after this object is instantiated
 
+		isDev:                isDev,
 		projectPath:          projectPath,
 		gitCommitOnStart:     getGitCommit(logger),
 		datetimeStarted:      time.Now(), // Record the time that the server started
@@ -53,7 +55,7 @@ func NewManager(logger *logger.Logger, projectPath string, dataPath string) *Man
 	}
 	m.requestFuncMapInit()
 	m.wordListInit(dataPath)
-	go m.ListenForRequests()
+	go m.listenForRequests()
 
 	m.logger.Infof("Current git commit: %v", m.gitCommitOnStart)
 

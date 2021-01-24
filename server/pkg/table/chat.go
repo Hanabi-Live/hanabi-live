@@ -34,7 +34,7 @@ func (m *Manager) chat(userID int, username string, msg string, server bool) {
 	t.Chat = append(t.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	m.notifyAllChat(username, msg)
+	m.notifyChat(username, msg)
 
 	// If this user was typing, set them so that they are not typing
 	if !server {

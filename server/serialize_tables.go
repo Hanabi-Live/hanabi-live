@@ -158,10 +158,6 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 		hLog.Fatalf("Failed to delete file \"%v\": %v", tablePath, err)
 	}
 
-	// Restored tables will never be automatically terminated due to idleness because the
-	// "CheckIdle()" function was never initiated; manually do this
-	go t.CheckIdle(ctx)
-
 	return true
 }
 

@@ -39,17 +39,11 @@ func (m *Manager) export(data interface{}) {
 	t := m.table
 
 	g := &game{ // nolint: exhaustivestruct
-		options:      t.Options,
-		extraOptions: t.ExtraOptions,
-		Seed:         d.seed,
+		table: t,
+		Seed:  d.seed,
 	}
 
-	if err := g.initDeck(); err != nil {
-		m.logger.Errorf("Failed to initialize the deck: %T", err)
-		d.resultsChannel <- g.CardIdentities
-		return
-	}
-
+	g.initDeck()
 	util.SetSeedFromString(g.Seed) // Seed the random number generator
 	g.shuffleDeck()
 

@@ -11,6 +11,10 @@ func (m *Manager) GitCommitOnStart() string {
 	return m.gitCommitOnStart
 }
 
+func (m *Manager) IsDev() bool {
+	return m.isDev
+}
+
 func (m *Manager) MaintenanceMode() bool {
 	return m.maintenanceMode.IsSet()
 }
