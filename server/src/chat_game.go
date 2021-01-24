@@ -1,9 +1,6 @@
 package main
 
-import (
-	"context"
-)
-
+/*
 // /pause
 func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
@@ -41,3 +38,4 @@ func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		NoTableLock: true,
 	})
 }
+*/
