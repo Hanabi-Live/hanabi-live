@@ -51,7 +51,7 @@ describe("cardsReducer", () => {
     });
 
     test("is discard when discarded", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const discardAction = discard(0, 0, 1, 2, false);
@@ -65,7 +65,7 @@ describe("cardsReducer", () => {
     });
 
     test("is playStack when played", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const playAction = play(0, 0, 1, 2);
@@ -86,7 +86,7 @@ describe("cardsReducer", () => {
     });
 
     test("is correct when discarded", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const discardAction = discard(0, 0, 1, 2, false);
@@ -100,7 +100,7 @@ describe("cardsReducer", () => {
     });
 
     test("is null when played", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const playAction = play(0, 0, 1, 2);
@@ -114,7 +114,7 @@ describe("cardsReducer", () => {
     });
 
     test("is correct when misplayed", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const misplay = discard(0, 0, 1, 2, true); // A misplay is a discard with "failed = true"
@@ -125,7 +125,7 @@ describe("cardsReducer", () => {
 
   describe("segmentFirstClued", () => {
     test("remembers the segment when the first clue happened", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
       expect(deck[0].segmentFirstClued).toBeNull();
 
@@ -158,7 +158,7 @@ describe("cardsReducer", () => {
     });
 
     test("is false when discarded", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const discardAction = discard(0, 0, 1, 2, false);
@@ -172,7 +172,7 @@ describe("cardsReducer", () => {
     });
 
     test("is false when played", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const playAction = play(0, 0, 1, 2);
@@ -186,7 +186,7 @@ describe("cardsReducer", () => {
     });
 
     test("is true when misplayed", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const misplay = discard(0, 0, 1, 2, true); // A misplay is a discard with failed = true
@@ -202,7 +202,7 @@ describe("cardsReducer", () => {
     });
 
     test("increments by 1 after each positive clue", () => {
-      let deck: CardState[] = [defaultCard];
+      let deck: readonly CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const clueToCardZero = rankClue(1, 2, [0], 0, 0);
@@ -220,7 +220,7 @@ describe("cardsReducer", () => {
     });
 
     test("does not change after negative clues", () => {
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
       deck = cardsReducer(deck, draw(0, 1), gameState, defaultMetadata);
 
@@ -241,7 +241,7 @@ describe("cardsReducer", () => {
 
   describe("clue", () => {
     test("removes inferred negative possibilities on clued cards in other hand", () => {
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard, thirdCard];
       let nextGameState = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], []] };
@@ -271,7 +271,12 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[2], 4, 5)).toBe(false);
     });
     test("can remove just one copy of a card from inference to other hand, if necessary", () => {
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
+      let deck: readonly CardState[] = [
+        defaultCard,
+        secondCard,
+        thirdCard,
+        fourthCard,
+      ];
       let nextGameState = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], []] };
@@ -317,7 +322,7 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[3], 1, 4)).toBe(true);
     });
     test("inferences within other hands stay within those hands (we know their cards)", () => {
-      let deck: CardState[] = [
+      let deck: readonly CardState[] = [
         defaultCard,
         secondCard,
         thirdCard,
@@ -419,7 +424,7 @@ describe("cardsReducer", () => {
 
   describe("discard", () => {
     test("eliminates a possibility on other cards", () => {
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
       deck = cardsReducer(deck, draw(0, 1), gameState, defaultMetadata);
 
@@ -438,7 +443,7 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[0], 0, 5)).toBe(false);
     });
     test("does not eliminate a possibility if there are other copies still available", () => {
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
       deck = cardsReducer(deck, draw(0, 1), gameState, defaultMetadata);
 
@@ -457,7 +462,7 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[0], 0, 1)).toBe(true);
     });
     test("does not eliminate a possibility on other cards if we're playing throw it in the hole", () => {
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       deck = cardsReducer(
         deck,
         draw(1, 0, 0, 1),
@@ -487,7 +492,12 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[0], 0, 5)).toBe(true);
     });
     test("only eliminates possibility on card inferred with it", () => {
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard, fourthCard];
+      let deck: readonly CardState[] = [
+        defaultCard,
+        secondCard,
+        thirdCard,
+        fourthCard,
+      ];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
       let nextGameState = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 1), nextGameState, defaultMetadata);
@@ -540,7 +550,7 @@ describe("cardsReducer", () => {
   });
   describe("draw", () => {
     test("eliminates a possibility on other players' cards", () => {
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 0), gameStateDrawP0, defaultMetadata);
 
@@ -561,7 +571,7 @@ describe("cardsReducer", () => {
         ...defaultMetadata,
         characterAssignments: [null, null, 33],
       };
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       // P2 draws a yellow 1
       const gameStateDrawP2 = { ...gameState, hands: [[], [], [0]] };
       deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
@@ -579,7 +589,7 @@ describe("cardsReducer", () => {
         ...defaultMetadata,
         characterAssignments: [null, null, 30],
       };
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       // P2 draws a yellow 1
       const gameStateDrawP2 = { ...gameState, hands: [[], [], [0]] };
       deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
@@ -597,7 +607,7 @@ describe("cardsReducer", () => {
         ...defaultMetadata,
         characterAssignments: [null, 30, null],
       };
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       // P1 draws a yellow 1
       const gameStateDrawP2 = { ...gameState, hands: [[], [0], []] };
       deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metaData);
@@ -614,7 +624,7 @@ describe("cardsReducer", () => {
         ...defaultMetadata,
         characterAssignments: [null, 29, null],
       };
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       // P1 draws a yellow 1
       const gameStateDrawP2 = { ...gameState, hands: [[], [0], []] };
       deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metaData);
@@ -632,7 +642,7 @@ describe("cardsReducer", () => {
         ...defaultMetadata,
         characterAssignments: [null, null, 29],
       };
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       // P2 draws a yellow 1
       const gameStateDrawP2 = { ...gameState, hands: [[], [], [0]] };
       deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
@@ -645,7 +655,7 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[0], 0, 5)).toBe(false);
     });
     test("eliminates possibilities from previously drawn cards", () => {
-      let deck: CardState[] = [defaultCard, secondCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard];
       // P0 draws a red 5
       const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(
@@ -667,7 +677,7 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[1], 0, 5)).toBe(false);
     });
     test("removes inferred negative possibilities on newly drawn card in own hand", () => {
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard, thirdCard];
       let nextGameState = { ...gameState, hands: [[0]] };
       deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1]] };
@@ -693,7 +703,7 @@ describe("cardsReducer", () => {
       expect(empathyPossible(deck[2], 4, 5)).toBe(false);
     });
     test("removes inferred negative possibilities on newly drawn card in other hand", () => {
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard, thirdCard];
       let nextGameState = { ...gameState, hands: [[0], []] };
       deck = cardsReducer(deck, draw(0, 0), nextGameState, defaultMetadata);
       nextGameState = { ...gameState, hands: [[0, 1], []] };
@@ -725,7 +735,7 @@ describe("cardsReducer", () => {
     });
     describe("from other hand allows new inferences in own hand", () => {
       test("as Alice", () => {
-        let deck: CardState[] = [
+        let deck: readonly CardState[] = [
           defaultCard,
           secondCard,
           thirdCard,
@@ -772,7 +782,7 @@ describe("cardsReducer", () => {
           ourUsername: "Bob",
           ourPlayerIndex: 1,
         };
-        let deck: CardState[] = [
+        let deck: readonly CardState[] = [
           defaultCard,
           secondCard,
           thirdCard,
@@ -816,7 +826,7 @@ describe("cardsReducer", () => {
         ...defaultMetadata,
         characterAssignments: [null, null, 33],
       };
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard, thirdCard];
       // P2 draws a yellow 1
       const gameStateDrawY1 = { ...gameState, hands: [[], [], [0]] };
       deck = cardsReducer(deck, draw(2, 0, 1, 5), gameStateDrawY1, metaData);
@@ -843,7 +853,7 @@ describe("cardsReducer", () => {
   describe("play", () => {
     test("eliminates a possibility on our own hand", () => {
       const metaData = defaultMetadata;
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard, thirdCard];
       // P0 draws an unknown red 5
       const gameStateDrawR5 = { ...gameState, hands: [[0], [], []] };
       deck = cardsReducer(deck, draw(0, 0, -1, -1), gameStateDrawR5, metaData);
@@ -870,7 +880,7 @@ describe("cardsReducer", () => {
     });
     test("eliminates a possibility on our own hand2", () => {
       const metaData = defaultMetadata;
-      let deck: CardState[] = [defaultCard, secondCard, thirdCard];
+      let deck: readonly CardState[] = [defaultCard, secondCard, thirdCard];
       // P0 draws an unknown red 5
       const gameStateDrawR5 = { ...gameState, hands: [[0], [], []] };
       deck = cardsReducer(deck, draw(0, 0, 0, 5), gameStateDrawR5, metaData);

@@ -142,7 +142,7 @@ export function isPotentiallyPlayable(
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
 ): boolean {
-  for (const [suitIndex, rank] of card.possibleCardsForEmpathy) {
+  for (const [suitIndex, rank] of card.possibleCards) {
     const nextRanksArray = playStacksRules.nextRanks(
       playStacks[suitIndex],
       playStackDirections[suitIndex],
@@ -191,7 +191,7 @@ export function allPossibilitiesTrash(
   }
 
   // Otherwise, check based on possibilities from clues/deduction
-  return !card.possibleCardsForEmpathy.some(([suitIndex, rank]) =>
+  return !card.possibleCards.some(([suitIndex, rank]) =>
     needsToBePlayed(
       suitIndex,
       rank,

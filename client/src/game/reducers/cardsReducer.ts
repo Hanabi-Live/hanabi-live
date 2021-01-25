@@ -20,7 +20,7 @@ export default function cardsReducer(
   action: GameAction,
   game: GameState,
   metadata: GameMetadata,
-): CardState[] {
+): readonly CardState[] {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = Array.from(deck);
   const hands = Array.from(game.hands, (arr) => Array.from(arr));

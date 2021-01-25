@@ -11,7 +11,7 @@ export default function cardDeductionReducer(
   action: GameAction,
   hands: ReadonlyArray<readonly number[]>,
   metadata: GameMetadata,
-): CardState[] {
+): readonly CardState[] {
   switch (action.type) {
     case "cardIdentity":
     case "clue":
@@ -21,7 +21,7 @@ export default function cardDeductionReducer(
       return makeDeductions(deck, oldDeck, hands, metadata);
     }
     default: {
-      return Array.from(deck);
+      return deck;
     }
   }
 }
@@ -69,60 +69,51 @@ function calculatePlayerPossibilities(
   oldDeck: readonly CardState[],
   cardCountMap: readonly number[][],
 ) {
-  const cardsToCalculate = getCardsToCalculate(
-    playerIndex,
-    ourPlayerIndex,
-    hands,
-    deck,
-    oldDeck,
-  );
-
-  cardsToCalculate.forEach((card) => {
-    const possibilities = generatePossibilitiesForUnknownCards(
-      card.order,
-      deck,
-      playerIndex,
-      ourPlayerIndex,
-    );
-    let { possibleCards, possibleCardsForEmpathy } = card;
-    if (playerIndex === ourPlayerIndex) {
-      possibleCards = possibleCards.filter((possibility) =>
-        possibilityValid(possibility, possibilities, 0, cardCountMap),
-      );
-    }
-    if (playerIndex === card.location) {
-      possibleCardsForEmpathy = possibleCardsForEmpathy.filter((possibility) =>
-        possibilityValid(possibility, possibilities, 0, cardCountMap),
-      );
-    }
-    deck[card.order] = {
-      ...card,
-      possibleCards,
-      possibleCardsForEmpathy,
-    };
-  });
-}
-
-function getCardsToCalculate(
-  playerIndex: number,
-  ourPlayerIndex: number,
-  hands: ReadonlyArray<readonly number[]>,
-  deck: CardState[],
-  oldDeck: readonly CardState[],
-): CardState[] {
-  const cardsToCalculate: CardState[] = [];
-
   hands.forEach((hand) => {
     hand.forEach((order) => {
       const card = deck[order];
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
       ) {
-        cardsToCalculate.push(card);
+        calculateCard(card, playerIndex, ourPlayerIndex, deck, cardCountMap);
       }
     });
   });
-  return cardsToCalculate;
+}
+
+function calculateCard(
+  card: CardState,
+  playerIndex: number,
+  ourPlayerIndex: number,
+  deck: CardState[],
+  cardCountMap: readonly number[][],
+) {
+  const deckPossibilities = generateDeckPossibilities(
+    card.order,
+    deck,
+    playerIndex,
+    ourPlayerIndex,
+  );
+  let { possibleCards, possibleCardsForEmpathy } = card;
+  if (playerIndex === ourPlayerIndex) {
+    possibleCards = filterCardPossibilities(
+      card.possibleCards,
+      deckPossibilities,
+      cardCountMap,
+    );
+  }
+  if (playerIndex === card.location) {
+    possibleCardsForEmpathy = filterCardPossibilities(
+      card.possibleCardsForEmpathy,
+      deckPossibilities,
+      cardCountMap,
+    );
+  }
+  deck[card.order] = {
+    ...card,
+    possibleCards,
+    possibleCardsForEmpathy,
+  };
 }
 
 function shouldCalculateCard(
@@ -132,16 +123,23 @@ function shouldCalculateCard(
   deck: CardState[],
   oldDeck: readonly CardState[],
 ) {
+  if (playerIndex !== ourPlayerIndex && playerIndex !== card.location) {
+    // Both possibleCards and possibleCardsFromEmpathy are not calculated by the player at
+    // playerIndex
+    return false;
+  }
+  if (card.revealedToPlayer[playerIndex]) {
+    // The player already knows what this card is
+    return false;
+  }
+
   const cardPossibilitiesForPlayer = getCardPossibilitiesForPlayer(
     card,
     playerIndex,
     ourPlayerIndex,
   );
 
-  if (
-    card.revealedToPlayer[playerIndex] ||
-    cardPossibilitiesForPlayer.length === 1
-  ) {
+  if (cardPossibilitiesForPlayer.length === 1) {
     // The player already knows what this card is
     return false;
   }
@@ -153,9 +151,10 @@ function shouldCalculateCard(
     return true;
   }
 
-  // If the possibilities on the unknown cards don't change, then the result of our calculation
-  // won't change. We only need to recalculate the card if the input (possibilities) changed.
-  return unknownCardPossibilitiesDifferent(
+  // If the possibilities on the other cards in the deck don't change, then the result of our
+  // calculation won't change. We only need to recalculate the card if the input (possibilities)
+  // changed.
+  return deckPossibilitiesDifferent(
     card.order,
     deck,
     oldDeck,
@@ -185,80 +184,95 @@ function getCardPossibilitiesForPlayer(
   return card.possibleCardsFromClues;
 }
 
-function generatePossibilitiesForUnknownCards(
+function generateDeckPossibilities(
   excludeCardOrder: number,
   deck: readonly CardState[],
   playerIndex: number,
   ourPlayerIndex: number,
-): ReadonlyArray<ReadonlyArray<readonly [number, number]>> {
-  const unknownCards = generateUnknownCards(
-    excludeCardOrder,
-    deck,
-    playerIndex,
-  );
-  const possibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
-  for (const card of unknownCards) {
-    possibilities.push(
-      getCardPossibilitiesForPlayer(card, playerIndex, ourPlayerIndex),
-    );
+): Array<ReadonlyArray<readonly [number, number]>> {
+  const deckPossibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
+  for (const card of deck) {
+    if (canBeUsedToDisprovePossibility(card, excludeCardOrder, playerIndex)) {
+      deckPossibilities.push(
+        getCardPossibilitiesForPlayer(card, playerIndex, ourPlayerIndex),
+      );
+    }
   }
-  // Start with the more stable possibilities
-  possibilities.sort((a, b) => a.length - b.length);
-  return possibilities;
+  // Start with the more stable possibilities. This is for performance. It seemed to have a
+  // measurable difference.
+  // The possibilityValid method will short-circuit if it finds a branch that's impossible or if it
+  // finds a possibility that's valid. Here's an attempt at an example:
+  //
+  // deckPossibilities=[[red 5 or yellow 5],[green or blue],[green or blue],[green or blue],[red 5]]
+  //
+  // possibilityValid would initially start with the first card being red 5. It would then check
+  // about 1000 combinations of the next three cards before finding each one is impossible at the
+  // very end of each combination.  If we reorder that to:
+  //
+  // deckPossibilities=[[red 5],[red 5 or yellow 5],[green or blue],[green or blue],[green or blue]]
+  //
+  // Then when it attempts to resolve [red 5 or yellow 5] to red 5, it will realize that's
+  // impossible and short-circuit that branch (not checking the next 1000 combinations of the next
+  // 3 cards). It would switch to checking if the combination would work when [red 5 or yellow 5]
+  // resolves to yellow 5 (by finding a combination of the next 3 cards that fit).
+  // So it should get to a fitting combination quicker or find that there is no fitting combination
+  // quicker.  This applies to more than just cards that have one possibility (such as red 5 in
+  // the example).
+  deckPossibilities.sort((a, b) => a.length - b.length);
+  return deckPossibilities;
 }
 
-function generateUnknownCards(
+function canBeUsedToDisprovePossibility(
+  card: CardState,
   excludeCardOrder: number,
-  deck: readonly CardState[],
   playerIndex: number,
 ) {
-  const unknownCards = [];
-  for (const card of deck) {
-    if (card.order === excludeCardOrder) {
-      continue;
-    }
-    if (card.revealedToPlayer[playerIndex] || card.hasClueApplied) {
-      // It's revealed to the player / we know more than nothing about it, so it could be useful
-      // disproving a possibility in the players hand
-      unknownCards.push(card);
-    }
-  }
-  return unknownCards;
+  return (
+    typeof card !== "undefined" &&
+    card.order !== excludeCardOrder &&
+    // It's revealed to the player / we know more than nothing about it, so it could be useful
+    // disproving a possibility in the players hand
+    (card.revealedToPlayer[playerIndex] || card.hasClueApplied)
+  );
 }
 
-function unknownCardPossibilitiesDifferent(
+function deckPossibilitiesDifferent(
   excludeCardOrder: number,
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
   playerIndex: number,
   ourPlayerIndex: number,
 ) {
-  const unknownCards = generateUnknownCards(
-    excludeCardOrder,
-    deck,
-    playerIndex,
-  );
-  const oldUnknownCards = generateUnknownCards(
-    excludeCardOrder,
-    oldDeck,
-    playerIndex,
-  );
-  if (unknownCards.length !== oldUnknownCards.length) {
-    return true;
-  }
-  for (let i = 0; i < unknownCards.length; i++) {
-    const possibilities = getCardPossibilitiesForPlayer(
-      unknownCards[i],
+  for (let order = 0; order < deck.length; order++) {
+    const oldCard = oldDeck[order];
+    const card = deck[order];
+    const previouslyUsed = canBeUsedToDisprovePossibility(
+      oldCard,
+      excludeCardOrder,
       playerIndex,
-      ourPlayerIndex,
     );
-    const oldPossibilities = getCardPossibilitiesForPlayer(
-      oldUnknownCards[i],
+    const currentlyUsed = canBeUsedToDisprovePossibility(
+      card,
+      excludeCardOrder,
       playerIndex,
-      ourPlayerIndex,
     );
-    if (possibilities.length !== oldPossibilities.length) {
+    if (previouslyUsed !== currentlyUsed) {
       return true;
+    }
+    if (currentlyUsed) {
+      const previousPossibilities = getCardPossibilitiesForPlayer(
+        oldCard,
+        playerIndex,
+        ourPlayerIndex,
+      );
+      const currentPossibilities = getCardPossibilitiesForPlayer(
+        card,
+        playerIndex,
+        ourPlayerIndex,
+      );
+      if (previousPossibilities.length !== currentPossibilities.length) {
+        return true;
+      }
     }
   }
   // We are dealing with the same number of unknown cards, and each unknown card has the same
@@ -274,28 +288,96 @@ function unknownCardPossibilitiesDifferent(
   return false;
 }
 
-function possibilityValid(
-  [suit, rank]: readonly [number, number],
-  possibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
-  index: number,
+function filterCardPossibilities(
+  cardPossibilities: ReadonlyArray<readonly [number, number]>,
+  deckPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
   cardCountMap: readonly number[][],
 ) {
-  if (possibilities.length === index) {
-    return cardCountMap[suit][rank] > 0;
+  let possibilitiesToValidate: Array<readonly [number, number]> = [];
+  possibilitiesToValidate = Array.from(cardPossibilities);
+  return cardPossibilities.filter((possibility) => {
+    // if the possibility is not in the list that still needs validation then it must mean the
+    // possibility is already validated and we can exit early
+    if (!hasPossibility(possibilitiesToValidate, possibility)) {
+      return true;
+    }
+    return possibilityValid(
+      possibility,
+      deckPossibilities,
+      0,
+      cardCountMap,
+      possibilitiesToValidate,
+    );
+  });
+}
+
+function hasPossibility(
+  possibilitiesToValidate: ReadonlyArray<readonly [number, number]>,
+  [suit, rank]: readonly [number, number],
+) {
+  return possibilitiesToValidate.some(
+    ([suitCandidate, rankCandidate]) =>
+      suitCandidate === suit && rankCandidate === rank,
+  );
+}
+
+function possibilityValid(
+  [suit, rank]: readonly [number, number],
+  deckPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  index: number,
+  cardCountMap: readonly number[][],
+  possibilitiesToValidate: Array<readonly [number, number]>,
+) {
+  if (deckPossibilities.length === index) {
+    if (cardCountMap[suit][rank] > 0) {
+      cardCountMap[suit][rank] -= 1;
+      updatePossibilitiesToValidate(cardCountMap, possibilitiesToValidate);
+      cardCountMap[suit][rank] += 1;
+      return true;
+    }
+    return false;
   }
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit
   cardCountMap[suit][rank] -= 1;
-  if (
-    cardCountMap[suit][rank] >= 0 &&
-    possibilities[index].some((possibility) =>
-      possibilityValid(possibility, possibilities, index + 1, cardCountMap),
-    )
-  ) {
-    cardCountMap[suit][rank] += 1;
-    return true;
+  if (cardCountMap[suit][rank] >= 0) {
+    const { length } = deckPossibilities[index];
+    for (let i = 0; i < length; i++) {
+      const possibility = deckPossibilities[index][(i + index) % length];
+      if (
+        possibilityValid(
+          possibility,
+          deckPossibilities,
+          index + 1,
+          cardCountMap,
+          possibilitiesToValidate,
+        )
+      ) {
+        cardCountMap[suit][rank] += 1;
+        return true;
+      }
+    }
   }
   cardCountMap[suit][rank] += 1;
   return false;
+}
+
+// We've found a working combination of cards. If the cardCountMap is not 0 for a particular
+// possibility then that possibility is now validated and we no longer need to do a separate search
+// for it. Conversely, if the cardCountMap is 0 for a possibility, then we need to leave it in the
+// list of possibilities to validate, so we can do a separate search for it.
+function updatePossibilitiesToValidate(
+  cardCountMap: readonly number[][],
+  possibilitiesToValidate: Array<readonly [number, number]>,
+) {
+  let j = 0;
+  for (let i = 0; i < possibilitiesToValidate.length; i++) {
+    const [suit, rank] = possibilitiesToValidate[i];
+    if (cardCountMap[suit][rank] === 0) {
+      possibilitiesToValidate[j] = [suit, rank];
+      j += 1;
+    }
+  }
+  possibilitiesToValidate.length = j;
 }
 
 let cachedVariantId: number | null = null;
