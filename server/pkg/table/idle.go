@@ -26,14 +26,13 @@ func (t *table) idleDetector() {
 		}
 
 		if time.Since(t.datetimeLastAction) >= constants.IdleGameTimeout {
-			t.idleEnd()
+			t.IdleEnd()
 			return
 		}
 	}
 }
 
 // EndIdle is called when a table has been idle for a while and should be automatically ended
-// The table lock is assumed to be acquired in this function
 func (t *table) idleEnd() {
 	// Local variables
 	m := t.manager

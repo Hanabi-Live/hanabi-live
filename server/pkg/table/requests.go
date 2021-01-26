@@ -19,6 +19,7 @@ const (
 	requestTypeExport
 	requestTypeFindVariant
 	requestTypeGetDescription
+	requestTypeIdleEnd
 	requestTypeImpostor
 	requestTypeJoin
 	requestTypeKick
@@ -49,6 +50,7 @@ func (m *Manager) requestFuncMapInit() {
 	m.requestFuncMap[requestTypeExport] = m.export
 	m.requestFuncMap[requestTypeFindVariant] = m.findVariant
 	m.requestFuncMap[requestTypeGetDescription] = m.getDescription
+	m.requestFuncMap[requestTypeIdleEnd] = m.idleEnd
 	m.requestFuncMap[requestTypeImpostor] = m.impostor
 	m.requestFuncMap[requestTypeJoin] = m.join
 	m.requestFuncMap[requestTypeKick] = m.kick
