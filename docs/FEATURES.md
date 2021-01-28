@@ -308,6 +308,8 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 - If you don't know the exact identity of a card, but you do have it narrowed it down to a few possibilities, then you can also express that as a note on the card.
 - List all the possibilities separated by commas.
 - For example, a note of "r2, r3" on a red card will tell the game that "even though this card only has a red clue and nothing else, represent it as having a negative 1 clue, a negative 4 clue, and a negative 5 clue".
+- You can also remove card possibilities with an exclamation point.
+- For example, a note of "!r2" will remove the possibility of that card being the red 2.
 
 #### Special Note Borders
 
