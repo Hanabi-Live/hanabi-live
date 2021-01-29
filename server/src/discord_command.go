@@ -28,6 +28,8 @@ func discordCommandInit() {
 
 	// Special commands for use in other channels
 	discordCommandMap["issue"] = discordCommandIssue
+	discordCommandMap["ping"] = discordCommandPing
+	discordCommandMap["unping"] = discordCommandUnping
 
 	// Duplicated commands (e.g. commands that also work in the lobby)
 	discordCommandMap["replay"] = discordCommandReplay
