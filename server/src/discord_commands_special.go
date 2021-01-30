@@ -42,10 +42,10 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 // /ping
 func discordCommandPing(ctx context.Context, m *discordgo.MessageCreate, args []string){
     roleID := "804838844104835072"
-    err := discordAddRoleToMember(ctx, m.Author.ID, roleID)
-    if err == nil {
-        msg := "Successfully added " + discordGetNickname(m.Author.ID) + "to the role Ping"
-        discordSend(m.ChannelID, "", msg)
+    discordAddRoleToMember(ctx, m.Author.ID, roleID)
+
+    msg := "Successfully added " + discordGetNickname(m.Author.ID) + "to the role Ping"
+    discordSend(m.ChannelID, "", msg)
     }
 }
 
@@ -53,8 +53,8 @@ func discordCommandPing(ctx context.Context, m *discordgo.MessageCreate, args []
 func discordCommandUnping(ctx context.Context, m *discordgo.MessageCreate, args []string){
     roleID := "804838844104835072"
     err := discordRemoveRoleFromMember(ctx, m.Author.ID, roleID)
-    if err == nil {
-        msg := "Successfully removed " + discordGetNickname(m.Author.ID) + "from the role Ping"
-        discordSend(m.ChannelID, "", msg)
+
+    msg := "Successfully removed " + discordGetNickname(m.Author.ID) + "from the role Ping"
+    discordSend(m.ChannelID, "", msg)
     }
 }
