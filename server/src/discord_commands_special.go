@@ -55,5 +55,4 @@ func discordCommandUnping(ctx context.Context, m *discordgo.MessageCreate, args 
 		msg := "Successfully removed " + discordGetNickname(m.Author.ID) + "from the role Ping"
 		discordSend(m.ChannelID, "", msg)
 	}
-
 }
