@@ -51,7 +51,7 @@ func discordCommandPing(ctx context.Context, m *discordgo.MessageCreate, args []
 // /unping
 func discordCommandUnping(ctx context.Context, m *discordgo.MessageCreate, args []string){
     roleID := "804838844104835072"
-    err := discordRemoveRoleFromMember(m.Author.ID, roleID)
+    discordRemoveRoleFromMember(m.Author.ID, roleID)
 
     msg := "Successfully removed " + discordGetNickname(m.Author.ID) + "from the role Ping"
     discordSend(m.ChannelID, "", msg)
