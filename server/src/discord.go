@@ -231,7 +231,7 @@ func discordAddRoleToMember(userID string, roleID string) {
 }
 
 func discordRemoveRoleFromMember(userID string, roleID string) {
-	err := session.GuildMemberRoleRemove(discordGuildID, userID, roleID)
+	err := discord.GuildMemberRoleRemove(discordGuildID, userID, roleID)
 	if err != nil {
 	    logger.Info("Failed to remove a role to a user " + err.Error())
     }
