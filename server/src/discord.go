@@ -223,15 +223,15 @@ func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 	discordCommand(ctx, m, command, args)
 }
 
-func discordAddRoleToMember(ctx context.Context, userID string, roleID string) {
-	err := discord.GuildMemberRoleAddWithContext(ctx, discordGuildID, userID, roleID)
+func discordAddRoleToMember(userID string, roleID string) {
+	err := discord.GuildMemberRoleAdd(discordGuildID, userID, roleID)
 	if err != nil {
 	    logger.Info("Failed to add a role to a user " + err.Error())
 	}
 }
 
-func discordRemoveRoleFromMember(ctx context.Context, userID string, roleID string) {
-	err := session.GuildMemberRoleRemoveWithContext(ctx, discordGuildID, userID, roleID)
+func discordRemoveRoleFromMember(userID string, roleID string) {
+	err := session.GuildMemberRoleRemove(discordGuildID, userID, roleID)
 	if err != nil {
 	    logger.Info("Failed to remove a role to a user " + err.Error())
     }
