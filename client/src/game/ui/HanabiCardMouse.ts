@@ -244,22 +244,17 @@ const shouldShowEmpathy = (
   event: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
 ) =>
   // Disable Empathy if a modifier key is pressed
-  // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
-  (!event.evt.ctrlKey ||
-    globals.options.speedrun ||
-    globals.lobby.settings.speedrunMode) &&
-  (event.evt.ctrlKey ||
-    (!globals.options.speedrun && !globals.lobby.settings.speedrunMode) ||
-    !globals.state.playing) &&
   !event.evt.shiftKey &&
   !event.evt.altKey &&
   !event.evt.metaKey &&
-  !card.tweening && // Disable Empathy if the card is tweening
+  // Disable Empathy if the card is tweening
+  !card.tweening &&
+  // Disable empathy for the stack bases
+  card.state.rank !== STACK_BASE_RANK &&
   // Clicking on a played card goes to the turn that it was played
   !cardRules.isPlayed(card.state) &&
   // Clicking on a discarded card goes to the turn that it was discarded
-  !cardRules.isDiscarded(card.state) &&
-  card.state.rank !== STACK_BASE_RANK; // Disable empathy for the stack bases
+  !cardRules.isDiscarded(card.state);
 
 // In a game, click and hold the left mouse button on a teammate's hand to show the cards as they
 // appear to that teammate

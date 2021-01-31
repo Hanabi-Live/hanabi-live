@@ -44,8 +44,7 @@ export default function HanabiCardClick(
 }
 
 function clickLeft(card: HanabiCard, event: MouseEvent) {
-  // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
-  // so we don't have to worry about it here
+  // The "Empathy" feature is handled elsewhere, so we don't have to worry about it here
 
   // If we're in "edit cards" mode, left clicking a card morphs it
   if (

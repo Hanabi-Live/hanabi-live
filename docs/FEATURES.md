@@ -170,7 +170,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   - Right-clicking on a card in your hand hand will discard it.
   - Left-clicking on a card in your teammate's hand will give it a color clue.
   - Right-clicking on a card in your teammate's hand will give it a rank clue.
-  - Empathy can still be used by Ctrl + Left-clicking.
+  - Empathy can still be used by holding down the space bar.
 - Speedrunning games will not count towards your statistics.
 - If this mode is enabled, then the "Timed" option will be disabled.
 
