@@ -247,7 +247,7 @@ const shouldShowEmpathy = (
   !event.evt.shiftKey &&
   !event.evt.altKey &&
   !event.evt.metaKey &&
-  // Disable Empathy if the card is tweening
+  // Disable Empathy if the card is tweening (e.g. moving)
   !card.tweening &&
   // Disable empathy for the stack bases
   card.state.rank !== STACK_BASE_RANK &&

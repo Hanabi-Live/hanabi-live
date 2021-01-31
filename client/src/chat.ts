@@ -566,12 +566,8 @@ export function add(data: ChatMessage, fast: boolean): void {
   // Find out if we should automatically scroll down after adding the new line of chat
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
   // If we are already scrolled to the bottom, then it is ok to automatically scroll
-  let autoScroll = false;
-  const topPositionOfScrollBar = chat.scrollTop() ?? 0;
-  const innerHeight = chat.innerHeight() ?? 0;
-  if (topPositionOfScrollBar + Math.ceil(innerHeight) >= chat[0].scrollHeight) {
-    autoScroll = true;
-  }
+  const autoScroll =
+    chat[0].scrollHeight - chat[0].scrollTop >= chat[0].clientHeight;
 
   // Add the new line and fade it in
   chat.append(line);
