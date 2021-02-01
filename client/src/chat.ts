@@ -585,7 +585,14 @@ export function add(data: ChatMessage, fast: boolean): void {
   // Automatically scroll down
   if (autoScroll) {
     // From: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div?rq=1
-    chat[0].scrollTop = chat[0].scrollHeight;
+    // This must be executable asynchronously in order to work properly
+    setTimeout(
+      (element: HTMLElement) => {
+        element.scrollTop = element.scrollHeight;
+      },
+      0,
+      chat[0],
+    );
   }
 
   // Remove the person from the typing list, if present
