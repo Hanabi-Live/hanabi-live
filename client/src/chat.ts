@@ -568,6 +568,10 @@ export function add(data: ChatMessage, fast: boolean): void {
   // If we are already scrolled to the bottom, then it is ok to automatically scroll
   const autoScroll =
     chat[0].scrollHeight - chat[0].scrollTop === chat[0].clientHeight;
+  console.log("DEBUG for chat msg:", data.msg);
+  console.log("scrollHeight:", chat[0].scrollHeight);
+  console.log("scrollTop:", chat[0].scrollTop);
+  console.log("clientHeight:", chat[0].clientHeight);
 
   // Add the new line and fade it in
   chat.append(line);
