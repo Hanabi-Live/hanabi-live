@@ -1,5 +1,7 @@
 # Rules
 
+If you want to learn the basics of the game with a helpful video, then [watch this](https://www.youtube.com/watch?v=VrFCekQb4nY). Otherwise, read on.
+
 <br />
 
 ## Overview
