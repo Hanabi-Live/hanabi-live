@@ -91,7 +91,7 @@ If you want to learn the basics of the game with a helpful video, then [watch th
   - Two 3s
   - Two 4s
   - One 5
-- It is important for players to keep in mind how many copies of each card there are - if all copies of a card are discarded, then the team can no longer score a perfect score.
+- It is important for players to keep in mind how many copies of each card there are - if all copies of a card are discarded, then the team can no longer get a perfect score.
 
 <br />
 
