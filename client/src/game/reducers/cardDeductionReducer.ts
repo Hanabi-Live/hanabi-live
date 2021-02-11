@@ -293,6 +293,12 @@ function filterCardPossibilities(
   deckPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
   cardCountMap: readonly number[][],
 ) {
+  // possibilitiesToValidate tracks what possibilities have yet to be validated for a specific card
+  // from a specific perspective. When a specific possibility/identity for that card is validated in
+  // the possibilityValid method (by finding a working combination of card identities), it will
+  // check if it's possible to swap the identity for our specific card and still have a working
+  // combination. If so, then the new identity for our specific card is also valid and doesn't need
+  // to be validated again (so it's removed from possibilitiesToValidate).
   let possibilitiesToValidate: Array<readonly [number, number]> = [];
   possibilitiesToValidate = Array.from(cardPossibilities);
   return cardPossibilities.filter((possibility) => {
@@ -361,10 +367,6 @@ function possibilityValid(
   return false;
 }
 
-// We've found a working combination of cards. If the cardCountMap is not 0 for a particular
-// possibility then that possibility is now validated and we no longer need to do a separate search
-// for it. Conversely, if the cardCountMap is 0 for a possibility, then we need to leave it in the
-// list of possibilities to validate, so we can do a separate search for it.
 function updatePossibilitiesToValidate(
   cardCountMap: readonly number[][],
   possibilitiesToValidate: Array<readonly [number, number]>,
