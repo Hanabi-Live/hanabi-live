@@ -616,7 +616,7 @@ describe("cardsReducer", () => {
       const gameStateDrawP1 = { ...gameState, hands: [[], [0], [1]] };
       deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
 
-      // Expect the remaining card to not a possibility for a red 5
+      // Expect the remaining card to not have a possibility for a red 5
       expect(empathyPossible(deck[0], 0, 5)).toBe(false);
     });
     test("does not eliminate that possibility on Blind Spot cards for previous player", () => {
