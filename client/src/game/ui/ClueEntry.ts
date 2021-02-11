@@ -1,6 +1,7 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI)
 
 import Konva from "konva";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { cluesRules } from "../rules";
 import { StateClue } from "../types/GameState";
 import FitText from "./controls/FitText";
@@ -68,7 +69,10 @@ export default class ClueEntry extends Konva.Group {
     });
     this.add(target);
 
-    const characterID = globals.metadata.characterAssignments[clue.giver];
+    const characterName = getCharacterNameForPlayer(
+      clue.giver,
+      globals.metadata.characterAssignments,
+    );
     const name = new Konva.Text({
       x: 0.75 * w,
       y: 0,
@@ -82,7 +86,7 @@ export default class ClueEntry extends Konva.Group {
         clue.type,
         clue.value,
         globals.variant,
-        characterID,
+        characterName,
       ),
       verticalAlign: "middle",
       listening: false,

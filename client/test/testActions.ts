@@ -2,6 +2,7 @@
 // For use in tests
 
 import {
+  ActionCardIdentity,
   ActionClue,
   ActionDiscard,
   ActionDraw,
@@ -89,6 +90,19 @@ export const play = (
   rank: number,
 ): ActionPlay => ({
   type: "play",
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
+});
+
+export const cardIdentity = (
+  playerIndex: number,
+  order: number,
+  suitIndex: number,
+  rank: number,
+): ActionCardIdentity => ({
+  type: "cardIdentity",
   playerIndex,
   order,
   suitIndex,

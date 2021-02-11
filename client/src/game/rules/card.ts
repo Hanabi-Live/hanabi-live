@@ -142,8 +142,7 @@ export function isPotentiallyPlayable(
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
 ): boolean {
-  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
-    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
+  for (const [suitIndex, rank] of card.possibleCards) {
     const nextRanksArray = playStacksRules.nextRanks(
       playStacks[suitIndex],
       playStackDirections[suitIndex],
@@ -166,11 +165,9 @@ export function canPossiblyBe(
     // We have nothing to check
     return true;
   }
-  return card.possibleCardsFromClues.some(
+  return card.possibleCardsForEmpathy.some(
     ([s, r]) =>
-      (suitIndex === null || suitIndex === s) &&
-      (rank === null || rank === r) &&
-      card.possibleCardsFromObservation[s][r] > 0,
+      (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
   );
 }
 
@@ -193,22 +190,15 @@ export function allPossibilitiesTrash(
     );
   }
 
-  // Otherwise, check based on possibilities from clues
-  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
-    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
-    if (
-      needsToBePlayed(
-        suitIndex,
-        rank,
-        deck,
-        playStacks,
-        playStackDirections,
-        variant,
-      )
-    ) {
-      return false;
-    }
-  }
-
-  return true;
+  // Otherwise, check based on possibilities from clues/deduction
+  return !card.possibleCards.some(([suitIndex, rank]) =>
+    needsToBePlayed(
+      suitIndex,
+      rank,
+      deck,
+      playStacks,
+      playStackDirections,
+      variant,
+    ),
+  );
 }

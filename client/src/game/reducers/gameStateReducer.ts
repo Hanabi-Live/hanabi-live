@@ -269,7 +269,7 @@ function gameStateReducerFunction(
 
   // Use a sub-reducer to calculate changes on cards
   state.deck = castDraft(
-    cardsReducer(original(state.deck)!, action, state, playing, metadata),
+    cardsReducer(original(state.deck)!, action, state, metadata),
   );
 
   // Resolve the stack direction

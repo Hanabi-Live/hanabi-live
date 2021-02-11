@@ -7,7 +7,7 @@ import EndCondition from "../types/EndCondition";
 import GameMetadata from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import TurnState from "../types/TurnState";
-import { getCharacterIDForPlayer } from "./reducerHelpers";
+import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 const turnReducer = produce(turnReducerFunction, {} as TurnState);
 export default turnReducer;
@@ -19,7 +19,7 @@ function turnReducerFunction(
   metadata: GameMetadata,
 ) {
   const variant = getVariant(metadata.options.variantName);
-  const characterID = getCharacterIDForPlayer(
+  const characterName = getCharacterNameForPlayer(
     turn.currentPlayerIndex,
     metadata.characterAssignments,
   );
@@ -33,7 +33,7 @@ function turnReducerFunction(
         nextTurn(
           turn,
           currentState.cardsRemainingInTheDeck,
-          characterID,
+          characterName,
           metadata,
         );
       }
@@ -53,7 +53,7 @@ function turnReducerFunction(
           turnRules.shouldEndTurnAfterDraw(
             turn.cardsPlayedOrDiscardedThisTurn,
             turn.cardsDiscardedThisTurn,
-            characterID,
+            characterName,
             currentState.clueTokens,
             variant,
           )
@@ -61,7 +61,7 @@ function turnReducerFunction(
           nextTurn(
             turn,
             currentState.cardsRemainingInTheDeck,
-            characterID,
+            characterName,
             metadata,
           );
         }
@@ -81,12 +81,12 @@ function turnReducerFunction(
       turn.segment += 1;
 
       if (
-        turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterID)
+        turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterName)
       ) {
         nextTurn(
           turn,
           currentState.cardsRemainingInTheDeck,
-          characterID,
+          characterName,
           metadata,
         );
       }
@@ -115,7 +115,7 @@ function turnReducerFunction(
           turnRules.shouldEndTurnAfterDraw(
             turn.cardsPlayedOrDiscardedThisTurn,
             turn.cardsDiscardedThisTurn,
-            characterID,
+            characterName,
             currentState.clueTokens,
             variant,
           )
@@ -123,7 +123,7 @@ function turnReducerFunction(
           nextTurn(
             turn,
             currentState.cardsRemainingInTheDeck,
-            characterID,
+            characterName,
             metadata,
           );
         }
@@ -184,12 +184,12 @@ function turnReducerFunction(
 function nextTurn(
   state: Draft<TurnState>,
   deckSize: number,
-  characterID: number | null,
+  characterName: string,
   metadata: GameMetadata,
 ) {
   state.turnNum += 1;
 
-  if (turnRules.shouldPlayOrderInvert(characterID)) {
+  if (turnRules.shouldPlayOrderInvert(characterName)) {
     state.playOrderInverted = !state.playOrderInverted;
   }
 

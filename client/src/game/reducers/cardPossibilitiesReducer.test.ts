@@ -10,12 +10,9 @@ const defaultMetadata = testMetadata(numPlayers);
 const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
-// Count possible cards, respecting both clues and observations.
+// Count possible cards, respecting both clues and observations
 function countPossibleCards(state: CardState) {
-  return state.possibleCardsFromClues.filter(
-    ([suitIndex, rank]) =>
-      state.possibleCardsFromObservation[suitIndex][rank] > 0,
-  ).length;
+  return state.possibleCardsForEmpathy.length;
 }
 
 function possibilities(

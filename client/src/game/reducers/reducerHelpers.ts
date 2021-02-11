@@ -1,5 +1,6 @@
 // Miscellaneous helpers used by several reducers
 
+import { getCharacter } from "../data/gameData";
 import { statsRules } from "../rules";
 import Color from "../types/Color";
 import GameState from "../types/GameState";
@@ -38,6 +39,17 @@ export function getIndexConverter(
   }
 
   return getIndex;
+}
+
+export function getCharacterNameForPlayer(
+  playerIndex: number | null,
+  characterAssignments: Readonly<Array<number | null>>,
+): string {
+  const characterID = getCharacterIDForPlayer(
+    playerIndex,
+    characterAssignments,
+  );
+  return characterID === null ? "" : getCharacter(characterID).name;
 }
 
 export function getCharacterIDForPlayer(

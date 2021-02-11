@@ -26,6 +26,14 @@ export default function cardPossibilitiesReducer(
     ([suitIndex, rank]) =>
       cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
+  const possibleCards = state.possibleCards.filter(
+    ([suitIndex, rank]) =>
+      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+  );
+  const possibleCardsForEmpathy = state.possibleCardsForEmpathy.filter(
+    ([suitIndex, rank]) =>
+      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+  );
 
   let { positiveColorClues } = state;
   if (
@@ -45,10 +53,13 @@ export default function cardPossibilitiesReducer(
     positiveRankClues = [...positiveRankClues, clue.value];
   }
 
-  const { suitIndex, rank, suitDetermined, rankDetermined } = updateIdentity(
-    state,
-    possibleCardsFromClues,
-  );
+  const {
+    suitIndex,
+    rank,
+    suitDetermined,
+    rankDetermined,
+    revealedToPlayer,
+  } = updateIdentity(state, possibleCardsFromClues);
 
   const newState: CardState = {
     ...state,
@@ -57,8 +68,11 @@ export default function cardPossibilitiesReducer(
     suitDetermined,
     rankDetermined,
     possibleCardsFromClues,
+    possibleCards,
+    possibleCardsForEmpathy,
     positiveColorClues,
     positiveRankClues,
+    revealedToPlayer,
   };
 
   return newState;
@@ -74,12 +88,15 @@ function updateIdentity(
   const possibleSuits = new Set(possibleCardsFromClues.map((x) => x[0]));
   const possibleRanks = new Set(possibleCardsFromClues.map((x) => x[1]));
 
-  if (possibleSuits.size === 1) {
+  const suitDetermined = possibleSuits.size === 1;
+  const rankDetermined = possibleRanks.size === 1;
+
+  if (suitDetermined) {
     // We have discovered the true suit of the card
     [suitIndex] = possibleSuits;
   }
 
-  if (possibleRanks.size === 1) {
+  if (rankDetermined) {
     // We have discovered the true rank of the card
     [rank] = possibleRanks;
   }
@@ -87,7 +104,11 @@ function updateIdentity(
   return {
     suitIndex,
     rank,
-    suitDetermined: possibleSuits.size === 1,
-    rankDetermined: possibleRanks.size === 1,
+    suitDetermined,
+    rankDetermined,
+    revealedToPlayer:
+      suitDetermined && rankDetermined
+        ? new Array(6).fill(true)
+        : state.revealedToPlayer,
   };
 }

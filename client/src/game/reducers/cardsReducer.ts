@@ -2,7 +2,7 @@
 
 import { ensureAllCases, nullIfNegative } from "../../misc";
 import { getVariant } from "../data/gameData";
-import { cluesRules, handRules } from "../rules";
+import { cluesRules, deckRules, handRules } from "../rules";
 import * as characterRules from "../rules/variants/characters";
 import { GameAction } from "../types/actions";
 import CardState from "../types/CardState";
@@ -10,24 +10,36 @@ import { colorClue, rankClue } from "../types/Clue";
 import ClueType from "../types/ClueType";
 import GameMetadata from "../types/GameMetadata";
 import GameState from "../types/GameState";
+import cardDeductionReducer from "./cardDeductionReducer";
 import cardPossibilitiesReducer from "./cardPossibilitiesReducer";
 import initialCardState from "./initialStates/initialCardState";
+import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export default function cardsReducer(
   deck: readonly CardState[],
   action: GameAction,
   game: GameState,
-  playing: boolean,
   metadata: GameMetadata,
-): CardState[] {
+): readonly CardState[] {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = Array.from(deck);
+  const hands = Array.from(game.hands, (arr) => Array.from(arr));
 
   switch (action.type) {
     // If we are in a game with a "Slow-Witted" character,
     // the server will announce the identities of the cards that slide from slot 1 to slot 2
     // { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case "cardIdentity": {
+      const { order } = action;
+      let card = getCard(deck, order);
+      card = {
+        ...card,
+        revealedToPlayer: cardIdentityRevealedToPlayer(
+          card,
+          metadata.characterAssignments,
+        ),
+      };
+      newDeck[order] = card;
       if (characterRules.shouldSeeSlot2CardIdentity(metadata) === false) {
         break;
       }
@@ -42,23 +54,16 @@ export default function cardsReducer(
         break;
       }
 
-      const { order } = action;
-      const card = getCard(deck, order);
       if (card.suitIndex !== null && card.rank !== null) {
         // We already know the full identity of this card, so we can safely ignore this action
         break;
       }
 
-      const { suitIndex } = action;
-      const { rank } = action;
-
-      // Now that we know the identity of this card, we can remove card possibilities on other cards
-      revealCard(suitIndex, rank, card, newDeck, game, playing, metadata);
-
       newDeck[order] = {
         ...card,
-        suitIndex,
-        rank,
+        suitIndex: action.suitIndex,
+        rank: action.rank,
+        possibleCards: [[action.suitIndex, action.rank]],
       };
 
       break;
@@ -77,8 +82,6 @@ export default function cardsReducer(
         }
 
         const card = getCard(newDeck, order);
-        const wasKnown = card.possibleCardsFromClues.length === 1;
-
         const newCard = cardPossibilitiesReducer(
           card,
           clue,
@@ -86,26 +89,6 @@ export default function cardsReducer(
           metadata,
         );
         newDeck[order] = newCard;
-
-        if (!wasKnown && newCard.possibleCardsFromClues.length === 1) {
-          // Since this card is now fully identified,
-          // update the possibilities on the cards in people's hands
-          const hands = handsSeeingCardForFirstTime(
-            game,
-            card,
-            playing,
-            metadata,
-          );
-          for (const hand of hands) {
-            removePossibilityOnHand(
-              newDeck,
-              hand,
-              order,
-              newCard.suitIndex!,
-              newCard.rank!,
-            );
-          }
-        }
       };
 
       // Positive clues
@@ -113,12 +96,13 @@ export default function cardsReducer(
         const card = getCard(newDeck, order);
         const hand = game.hands[action.target];
         newDeck[order] = {
-          ...getCard(newDeck, order),
+          ...card,
           numPositiveClues: card.numPositiveClues + 1,
           segmentFirstClued:
             card.segmentFirstClued === null
               ? game.turn.segment!
               : card.segmentFirstClued,
+          hasClueApplied: true,
           firstCluedWhileOnChop:
             card.firstCluedWhileOnChop === null
               ? handRules.cardIsOnChop(hand, deck, card)
@@ -128,9 +112,16 @@ export default function cardsReducer(
       });
 
       // Negative clues
-      game.hands[action.target]
+      hands[action.target]
         .filter((order) => !action.list.includes(order))
-        .forEach((order) => applyClue(order, false));
+        .forEach((order) => {
+          const card = getCard(newDeck, order);
+          newDeck[order] = {
+            ...card,
+            hasClueApplied: true,
+          };
+          applyClue(order, false);
+        });
 
       break;
     }
@@ -144,16 +135,7 @@ export default function cardsReducer(
       const suitIndex = nullIfNegative(action.suitIndex) ?? card.suitIndex;
       const rank = nullIfNegative(action.rank) ?? card.rank;
 
-      // If we know the full identity of this card, we can remove card possibilities on other cards
-      const identityDetermined = revealCard(
-        suitIndex,
-        rank,
-        card,
-        newDeck,
-        game,
-        playing,
-        metadata,
-      );
+      const identityDetermined = revealCard(suitIndex, rank, card);
 
       let { segmentPlayed } = card;
       let { segmentDiscarded } = card;
@@ -181,6 +163,14 @@ export default function cardsReducer(
         isMisplayed,
         suitDetermined: card.suitDetermined || identityDetermined,
         rankDetermined: card.rankDetermined || identityDetermined,
+        revealedToPlayer:
+          action.suitIndex >= 0 && action.rank >= 0
+            ? new Array(6).fill(true)
+            : card.revealedToPlayer,
+        possibleCards:
+          action.suitIndex >= 0 && action.rank >= 0
+            ? [[action.suitIndex, action.rank]]
+            : card.possibleCards,
       };
       break;
     }
@@ -203,52 +193,29 @@ export default function cardsReducer(
       }
 
       const initial = initialCardState(action.order, variant);
-      const possibleCardsFromObservation = Array.from(
-        initial.possibleCardsFromObservation,
-        (arr) => Array.from(arr),
-      );
 
-      // Remove all possibilities of all cards previously drawn and visible
-      deck
-        .slice(0, action.order)
-        .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter(
-          (card) =>
-            card.location !== action.playerIndex ||
-            card.possibleCardsFromClues.length === 1,
-        )
-        .forEach((card) => {
-          possibleCardsFromObservation[card.suitIndex!][card.rank!] -= 1;
-        });
+      let { possibleCards } = initial;
+
+      if (action.suitIndex >= 0 && action.rank >= 0) {
+        possibleCards = [[action.suitIndex, action.rank]];
+      }
 
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
-        possibleCardsFromObservation,
         segmentDrawn: game.turn.segment,
+        revealedToPlayer: drawnCardRevealedToPlayer(
+          action.playerIndex,
+          metadata.characterAssignments,
+        ),
+        possibleCards,
         // The segment will be null during the initial deal
         dealtToStartingHand: game.turn.segment === null,
       };
 
       newDeck[action.order] = drawnCard;
-
-      // If the card was drawn by a player we can see, update possibilities
-      // on all hands, except for the player that didn't see it
-      if (drawnCard.suitIndex != null && drawnCard.rank != null) {
-        for (const hand of game.hands.filter(
-          (_, i) => i !== drawnCard.location,
-        )) {
-          removePossibilityOnHand(
-            newDeck,
-            hand,
-            action.order,
-            drawnCard.suitIndex,
-            drawnCard.rank,
-          );
-        }
-      }
 
       break;
     }
@@ -272,49 +239,80 @@ export default function cardsReducer(
     }
   }
 
-  return newDeck;
+  if (
+    game.turn.turnNum === 0 &&
+    action.type === "draw" &&
+    !deckRules.isInitialDealFinished(newDeck.length, metadata)
+  ) {
+    // No need to do deduction while cards are being drawn
+    return newDeck;
+  }
+
+  return cardDeductionReducer(newDeck, deck, action, hands, metadata);
 }
 
 // -------
 // Helpers
 // -------
 
-function removePossibilityOnHand(
-  deck: CardState[],
-  hand: readonly number[],
-  order: number,
-  suitIndex: number,
-  rank: number,
+function cardIdentityRevealedToPlayer(
+  card: CardState,
+  characterAssignments: Readonly<Array<number | null>>,
 ) {
-  const cardsExceptCardBeingRemoved = hand
-    .filter((o) => o !== order)
-    .map((o) => deck[o]);
-
-  for (const handCard of cardsExceptCardBeingRemoved) {
-    const newCard = removePossibility(handCard, suitIndex, rank);
-    deck[handCard.order] = newCard;
+  const revealedToPlayer: boolean[] = [];
+  for (let i = 0; i < characterAssignments.length; i++) {
+    const characterName = getCharacterNameForPlayer(i, characterAssignments);
+    if (i !== card.location && characterName === "Slow-Witted") {
+      revealedToPlayer.push(true);
+    } else {
+      revealedToPlayer.push(card.revealedToPlayer[i]);
+    }
   }
+  return revealedToPlayer;
 }
 
-function removePossibility(state: CardState, suitIndex: number, rank: number) {
-  // Every card has a possibility map that maps card identities to count
-  const possibleCardsFromObservation = Array.from(
-    state.possibleCardsFromObservation,
-    (arr) => Array.from(arr),
-  );
-  const cardsLeft = possibleCardsFromObservation[suitIndex][rank];
-  if (cardsLeft === undefined) {
-    throw new Error(
-      `Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCardsFromObservation" map for card.`,
+function drawnCardRevealedToPlayer(
+  drawLocation: number,
+  characterAssignments: Readonly<Array<number | null>>,
+) {
+  const revealedToPlayer: boolean[] = [];
+  const numPlayers = characterAssignments.length;
+  for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
+    revealedToPlayer.push(
+      canPlayerSeeDrawnCard(
+        playerIndex,
+        drawLocation,
+        numPlayers,
+        characterAssignments,
+      ),
     );
   }
+  return revealedToPlayer;
+}
 
-  possibleCardsFromObservation[suitIndex][rank] = cardsLeft - 1;
-
-  return {
-    ...state,
-    possibleCardsFromObservation,
-  };
+function canPlayerSeeDrawnCard(
+  playerIndex: number,
+  drawLocation: number,
+  numPlayers: number,
+  characterAssignments: Readonly<Array<number | null>>,
+) {
+  if (playerIndex === drawLocation) {
+    return false;
+  }
+  const characterName = getCharacterNameForPlayer(
+    playerIndex,
+    characterAssignments,
+  );
+  switch (characterName) {
+    case "Slow-Witted":
+      return false;
+    case "Oblivious":
+      return drawLocation !== (playerIndex - 1) % numPlayers;
+    case "Blind Spot":
+      return drawLocation !== (playerIndex + 1) % numPlayers;
+    default:
+      return true;
+  }
 }
 
 function getCard(deck: readonly CardState[], order: number) {
@@ -329,10 +327,6 @@ function revealCard(
   suitIndex: number | null,
   rank: number | null,
   card: CardState,
-  newDeck: CardState[],
-  game: GameState,
-  playing: boolean,
-  metadata: GameMetadata,
 ) {
   // The action from the server did not specify the identity of the card, so we cannot reveal it
   // (e.g. we are playing a special variant where cards are not revealed when they are played)
@@ -346,28 +340,5 @@ function revealCard(
     return true;
   }
 
-  // Since this card is now fully identified,
-  // update the possibilities on the cards in people's hands
-  const hands = handsSeeingCardForFirstTime(game, card, playing, metadata);
-  for (const hand of hands) {
-    removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank);
-  }
-
   return true;
-}
-
-function handsSeeingCardForFirstTime(
-  game: GameState,
-  card: CardState,
-  playing: boolean,
-  metadata: GameMetadata,
-) {
-  if (playing && metadata.ourPlayerIndex === card.location) {
-    // All hands see this card now, from our perspective
-    return game.hands;
-  }
-
-  // We already knew about this card,
-  // so the only person seeing it for the first time is the person that is holding the card
-  return [game.hands[card.location as number]];
 }

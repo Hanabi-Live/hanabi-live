@@ -1,4 +1,3 @@
-import * as deckRules from "../../rules/deck";
 import CardState from "../../types/CardState";
 import Variant from "../../types/Variant";
 
@@ -10,39 +9,26 @@ export default function initialCardState(
   // from knowledge of the true suit and rank
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
   const possibleRanks: number[] = variant.ranks.slice();
-  const possibleCardsFromObservation: number[][] = [];
 
-  const possibleCardsFromClues: Array<[number, number]> = [];
-  for (const suitIndex of possibleSuits) {
-    for (const rank of possibleRanks) {
-      possibleCardsFromClues.push([suitIndex, rank]);
-    }
-  }
-
-  // Possible cards (based on both clues given and cards seen) are also tracked separately
-  possibleSuits.forEach((suitIndex) => {
-    possibleCardsFromObservation[suitIndex] = [];
-    const suit = variant.suits[suitIndex];
-    possibleRanks.forEach((rank) => {
-      possibleCardsFromObservation[suitIndex][rank] = deckRules.numCopiesOfCard(
-        suit,
-        rank,
-        variant,
-      );
-    });
-  });
+  const possibleCards: Array<[number, number]> = [];
+  possibleSuits.forEach((s) =>
+    possibleRanks.forEach((r) => possibleCards.push([s, r])),
+  );
 
   return {
     order,
     location: "deck",
     suitIndex: null,
     rank: null,
-    possibleCardsFromObservation,
-    possibleCardsFromClues,
+    possibleCardsFromClues: possibleCards,
+    possibleCards,
+    possibleCardsForEmpathy: possibleCards,
+    revealedToPlayer: new Array(6).fill(false),
     positiveColorClues: [],
     positiveRankClues: [],
     suitDetermined: false,
     rankDetermined: false,
+    hasClueApplied: false,
     numPositiveClues: 0,
     segmentDrawn: null,
     segmentFirstClued: null,
