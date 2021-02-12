@@ -10,7 +10,6 @@ type disconnectUserData struct {
 	username string
 }
 
-// Delete requests that a table is shut down.
 func (m *Manager) DisconnectUser(userID int, username string) {
 	m.newRequest(requestTypeDisconnectUser, &disconnectUserData{ // nolint: errcheck
 		userID:   userID,
