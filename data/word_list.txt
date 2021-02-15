@@ -1493,7 +1493,6 @@ Btu
 Buber
 Buchanan
 Bucharest
-Buchenwald
 Buchwald
 Buck
 Buckingham
@@ -2470,7 +2469,6 @@ Czechs
 Czerny
 DPs
 DVRs
-Dachau
 Dacron
 Dacrons
 Dada
@@ -3986,8 +3984,6 @@ Gwen
 Gwendoline
 Gwendolyn
 Gwyn
-Gypsies
-Gypsy
 Ha
 Haas
 Habakkuk
