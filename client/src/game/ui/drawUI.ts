@@ -906,6 +906,10 @@ function drawScoreArea() {
     this: StrikeSquare | StrikeX,
     event: Konva.KonvaEventObject<MouseEvent>,
   ) {
+    if (variantRules.isThrowItInAHole(globals.variant)) {
+      return;
+    }
+
     switch (event.evt.button) {
       case 0: {
         // Left-click
