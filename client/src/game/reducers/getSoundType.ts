@@ -77,7 +77,10 @@ export default function getSoundType(
         return SoundType.Fail1;
       }
 
-      if (stats.maxScore < originalState.stats.maxScore && !variantRules.isThrowItInAHole(variant)) {
+      if (
+        stats.maxScore < originalState.stats.maxScore &&
+        !variantRules.isThrowItInAHole(variant)
+      ) {
         return SoundType.Sad;
       }
 
@@ -132,7 +135,10 @@ export default function getSoundType(
     }
 
     case "play": {
-      if (stats.maxScore < originalState.stats.maxScore && !variantRules.isThrowItInAHole(variant)) {
+      if (
+        stats.maxScore < originalState.stats.maxScore &&
+        !variantRules.isThrowItInAHole(variant)
+      ) {
         return SoundType.Sad;
       }
 
