@@ -255,7 +255,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 #### Hyphen-ated Conventions
 
-If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanabi-conventions), some additional UI elements are enabled:
+If you are playing with the [Hyphen-ated group](https://hanabi.github.io/), some additional UI elements are enabled:
 
 - an "H" indicator next to the username in the "Online Users" section.
 - double discard situation notification (as a border around the discard pile and in the "Current Player" area)
