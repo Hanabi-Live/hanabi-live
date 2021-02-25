@@ -19,4 +19,4 @@ if [[ -z $WEBPACK_DEV_SERVER_PORT ]]; then
 fi
 
 cd "$DIR/client"
-npx serve --host "$DOMAIN" --port "$WEBPACK_DEV_SERVER_PORT"
+npx webpack serve --host "$DOMAIN" --port "$WEBPACK_DEV_SERVER_PORT"
