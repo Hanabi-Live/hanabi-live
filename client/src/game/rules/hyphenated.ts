@@ -4,7 +4,7 @@ import { variantRules } from "../rules";
 import Variant from "../types/Variant";
 
 // The Hyphen-ated group makes a distinction between a "Hard Variant" and an "Easy Variant"
-// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#hard-variants--easy-variants
+// https://hanabi.github.io/docs/variant_specific/#hard-variants--easy-variants
 export function hardVariant(variant: Variant, minEfficiency: number): boolean {
   // Some variants are defined as always being hard, regardless of what the efficiency is
   if (

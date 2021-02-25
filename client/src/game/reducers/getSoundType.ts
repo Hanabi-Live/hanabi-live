@@ -177,10 +177,10 @@ export default function getSoundType(
   }
 }
 
-// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#playing-multiple-1s---play-order-inversion-in-the-starting-hand-part-1
-// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#playing-multiple-1s---the-fresh-1s-rule-part-2
-// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#playing-multiple-1s---the-chop-focus-exception-part-3
-// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#the-order-chop-move-ocm
+// https://hanabi.github.io/docs/level_2/#playing-multiple-1s---play-order-inversion-in-the-starting-hand-part-1
+// https://hanabi.github.io/docs/level_3/#playing-multiple-1s---the-fresh-1s-rule-part-2
+// https://hanabi.github.io/docs/level_3/#playing-multiple-1s---the-chop-focus-exception-part-3
+// https://hanabi.github.io/docs/level_5/#the-order-chop-move-ocm
 function isOrderChopMove(
   action: ActionPlay,
   originalState: GameState,
