@@ -11,8 +11,8 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/help`                               | Get the link to this page
 | `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)
 | `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
-| `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md)
-| `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md)
+| `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner)
+| `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://hanabi.github.io/docs/reference)
 | `/bga`                                | Get the link for the [Board Game Arena guide](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md)
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md)
 | `/playerinfo`                         | Get the number of games played for all the players in the current game
