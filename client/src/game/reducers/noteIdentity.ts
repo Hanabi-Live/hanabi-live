@@ -69,6 +69,98 @@ function possibilitiesComplement(
   return complement;
 }
 
+function identityMapToArray(
+  cardMap: Array<Array<number>>,
+): Array<[number, number]> {
+  const rows = cardMap.length;
+  const cols = cardMap[0].length;
+  const possibilities: Array<[number, number]> = [];
+  for (let row = 0; row < rows; ++row) {
+    for (let col = 0; col < cols; ++col) {
+      if (cardMap[row][col]) {
+        possibilities.push([col, row + 1]);
+      }
+    }
+  }
+  return possibilities;
+}
+
+/*
+function identityArrayToMap(
+  possibilities: Array<[number, number]>,
+): Array<Array<number>> {
+  const zeros = [0, 0, 0, 0, 0, 0];
+  let identityMap = [zeros.slice(), zeros.slice(), zeros.slice(), zeros.slice(), zeros.slice()];
+  for (const card of possibilities) {
+    identityMap[card[1] - 1][card[0]] = 1;
+  }
+  return identityMap;
+}
+*/
+
+// Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
+// card possibilities that it declares
+//
+// e.g. the note keyword `red` would return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
+// and the note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`
+// and the note keyword `r,b,2,3, blue 3` would return `[[0,2], [1,2], [0,3], [1,3]]`
+// and the note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
+function getPossibilitiesFromKeyword_(
+  variant: Variant,
+  keywordPreTrim: string,
+): Array<[number, number]> | null {
+  const positiveIdent = [], negativeIdent = [];
+  let positiveRanks = new Set() as Set<number>, positiveSuits = new Set() as Set<number>;
+  for (const substring of keywordPreTrim.split(",")) {
+    const trimmed = substring.trim();
+    const negative = trimmed.startsWith("!");
+    const identity = parseIdentity(variant, (negative ? trimmed.substring(1) : trimmed).trim());
+    if (negative) {
+      negativeIdent.push(identity);
+    } else if (identity.rank === null) {
+      if (identity.suitIndex === null) {
+        return null;
+      }
+      positiveSuits.add(identity.suitIndex);
+    } else if (identity.suitIndex === null) {
+      positiveRanks.add(identity.rank);
+    } else {
+      positiveIdent.push(identity);
+    }
+  }
+  // Start with the cross of the positive ranks and suits.
+  const hasSuits = positiveSuits.size > 0;
+  positiveSuits = positiveSuits.size ? positiveSuits : new Set([0, 1, 2, 3, 4, 5]);
+  positiveRanks = (!hasSuits || positiveRanks.size) ? positiveRanks : new Set([1, 2, 3, 4, 5]);
+  const zeros = [0, 0, 0, 0, 0, 0];
+  const positiveSuitsTemplate = zeros.slice();
+  positiveSuits.forEach((suit) => {
+    positiveSuitsTemplate[suit] = 1;
+  });
+  let identityMap = [];
+  for (let rank = 1; rank <= 5; ++rank ) {
+    identityMap.push(positiveRanks.has(rank) ? positiveSuitsTemplate.slice() : zeros.slice());
+  }
+  // Then add individual items and remove all negatives.
+  for (const identities of [positiveIdent, negativeIdent]) {
+    const negative = (identities === negativeIdent);
+    for (const identity of identities) {
+      for (let rank = 1; rank <= 5; ++rank) {
+        if (identity.rank !== null && identity.rank !== rank) {
+          continue;
+        }
+        for (let suitIndex = 0; suitIndex < variant.suits.length; ++suitIndex) {
+          if (identity.suitIndex !== null && identity.suitIndex !== suitIndex) {
+            continue;
+          }
+          identityMap[rank - 1][suitIndex] = negative ? 0 : 1;
+        }
+      }
+    }
+  }
+  return identityMapToArray(identityMap);
+}
+
 // Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
 // card possibilities that it declares
 //
@@ -78,6 +170,9 @@ function getPossibilitiesFromKeyword(
   variant: Variant,
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
+  if (1) {
+    return getPossibilitiesFromKeyword_(variant, keywordPreTrim);
+  }
   const possibilities: Array<[number, number]> = [];
   const negative = keywordPreTrim.startsWith("!");
   const keyword = negative ? keywordPreTrim.substring(1) : keywordPreTrim;
@@ -191,6 +286,7 @@ export function createIdentityNotePattern(
   abbreviations: string[],
   isUpOrDown: boolean,
 ): string {
+  // debugger;
   const suitPattern = createSuitPattern(suits, abbreviations);
   const rankPattern = createRankPattern(ranks, isUpOrDown);
   return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern})$`;
