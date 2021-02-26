@@ -61,6 +61,7 @@ function identityMapToArray(cardMap: number[][]): Array<[number, number]> {
   return possibilities;
 }
 
+// Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
 // card possibilities that it declares
 //
 // e.g. the note keyword `red` would return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
