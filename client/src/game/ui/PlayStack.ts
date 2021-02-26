@@ -19,47 +19,47 @@ export default class PlayStack extends Konva.Group {
   doLayout(): void {
     const lh = this.height();
 
-    for (const layoutChild of this.children.toArray() as LayoutChild[]) {
-      const scale = lh / layoutChild.height();
-      const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
+    const layoutChildren = this.children.toArray() as LayoutChild[];
+    const layoutChild = layoutChildren[layoutChildren.length - 1];
+    const scale = lh / layoutChild.height();
+    const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
 
-      // Hide cards in "Throw It in a Hole" variants
-      const opacity =
-        variantRules.isThrowItInAHole(globals.variant) &&
-        globals.state.playing && // Revert to the normal behavior for spectators of ongoing games
-        !globals.state.finished && // Revert to the normal behavior for dedicated replays
-        !stackBase // We want the stack bases to always be visible
-          ? 0
-          : 1;
+    // Hide cards in "Throw It in a Hole" variants
+    const opacity =
+      variantRules.isThrowItInAHole(globals.variant) &&
+      globals.state.playing && // Revert to the normal behavior for spectators of ongoing games
+      !globals.state.finished && // Revert to the normal behavior for dedicated replays
+      !stackBase // We want the stack bases to always be visible
+        ? 0
+        : 1;
 
-      // Animate the card leaving the hand to the play stacks (or vice versa)
-      // (tweening from the hand to the discard pile is handled in the "CardLayout" object)
-      layoutChild.card.startedTweening();
-      layoutChild.card.setRaiseAndShadowOffset();
-      animate(
-        layoutChild,
-        {
-          duration: 0.8,
-          x: 0,
-          y: 0,
-          scale,
-          rotation: 0,
-          opacity,
-          // eslint-disable-next-line @typescript-eslint/unbound-method
-          easing: Konva.Easings.EaseOut,
-          onFinish: () => {
-            if (layoutChild.tween !== null) {
-              layoutChild.tween.destroy();
-              layoutChild.tween = null;
-            }
-            layoutChild.card.finishedTweening();
-            layoutChild.checkSetDraggable();
-            this.hideCardsUnderneathTheTopCard();
-          },
+    // Animate the card leaving the hand to the play stacks (or vice versa)
+    // (tweening from the hand to the discard pile is handled in the "CardLayout" object)
+    layoutChild.card.startedTweening();
+    layoutChild.card.setRaiseAndShadowOffset();
+    animate(
+      layoutChild,
+      {
+        duration: 0.8,
+        x: 0,
+        y: 0,
+        scale,
+        rotation: 0,
+        opacity,
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        easing: Konva.Easings.EaseOut,
+        onFinish: () => {
+          if (layoutChild.tween !== null) {
+            layoutChild.tween.destroy();
+            layoutChild.tween = null;
+          }
+          layoutChild.card.finishedTweening();
+          layoutChild.checkSetDraggable();
+          this.hideCardsUnderneathTheTopCard();
         },
-        true,
-      );
-    }
+      },
+      true,
+    );
   }
 
   hideCardsUnderneathTheTopCard(): void {
