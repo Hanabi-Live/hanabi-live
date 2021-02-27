@@ -1,6 +1,6 @@
 import produce, { Draft } from "immer";
-import { getVariant } from "../data/gameData";
 import { ensureAllCases } from "../../misc";
+import { getVariant } from "../data/gameData";
 import { NoteAction } from "../types/actions";
 import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";
@@ -153,6 +153,7 @@ function parseNote(variant: Variant, text: string): CardNote {
   );
   const blank = checkNoteKeywordsForMatch(["blank"], keywords);
   const unclued = checkNoteKeywordsForMatch(["unclued"], keywords);
+  const critical = checkNoteKeywordsForMatch(["critical", "crit"], keywords);
 
   return {
     possibilities,
@@ -162,6 +163,7 @@ function parseNote(variant: Variant, text: string): CardNote {
     needsFix,
     blank,
     unclued,
+    critical,
     text,
   };
 }

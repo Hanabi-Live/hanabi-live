@@ -7,5 +7,6 @@ export default interface CardNote {
   readonly finessed: boolean;
   readonly blank: boolean;
   readonly unclued: boolean;
+  readonly critical: boolean;
   readonly text: string;
 }

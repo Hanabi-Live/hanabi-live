@@ -43,6 +43,7 @@ export default function initialState(metadata: GameMetadata): State {
         finessed: false,
         blank: false,
         unclued: false,
+        critical: false,
         text: "",
       }),
       allNotes: initArray(totalCards + variant.suits.length + 1, []),
