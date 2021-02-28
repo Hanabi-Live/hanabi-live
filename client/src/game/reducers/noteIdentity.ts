@@ -48,13 +48,11 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 }
 
 function identityMapToArray(cardMap: number[][]): Array<[number, number]> {
-  const rows = cardMap.length;
-  const cols = cardMap[0].length;
   const possibilities: Array<[number, number]> = [];
-  for (let row = 0; row < rows; ++row) {
-    for (let col = 0; col < cols; ++col) {
-      if (cardMap[row][col]) {
-        possibilities.push([col, row + 1]);
+  for (let rank = 1; rank <= cardMap.length; ++rank) {
+    for (let suit = 0; suit < cardMap[0].length; ++suit) {
+      if (cardMap[rank - 1][suit]) {
+        possibilities.push([suit, rank]);
       }
     }
   }
@@ -102,10 +100,8 @@ function getPossibilitiesFromKeyword(
   const hasRanks = positiveRanks.size > 0;
   const hasPositives = hasSuits || hasRanks || positiveIdent.length > 0;
   if (!positiveSuits.size) positiveSuits = new Set([0, 1, 2, 3, 4, 5]);
-  console.log(positiveSuits);
   if (!hasPositives || (hasSuits && !hasRanks))
     positiveRanks = new Set([1, 2, 3, 4, 5]);
-  console.log(positiveRanks);
   const zeros = [0, 0, 0, 0, 0, 0];
   const positiveSuitsTemplate = zeros.slice();
   positiveSuits.forEach((suit) => {

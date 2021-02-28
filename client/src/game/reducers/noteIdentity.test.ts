@@ -64,7 +64,9 @@ describe("noteIdentity", () => {
     });
     // and the note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
     test("positive and negative", () => {
-      const possibles = getPossibilitiesFromKeywords(testVariant, ["r, !2, !3"]);
+      const possibles = getPossibilitiesFromKeywords(testVariant, [
+        "r, ! 2, !3",
+      ]);
       expect(possibles).toEqual([
         [0, 1],
         [0, 4],
