@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { LABEL_COLOR } from "./constants";
 import drawCards from "./drawCards";
+import * as drawCardsBrowser from "./drawCardsBrowser";
 import drawUI from "./drawUI";
 import globals from "./globals";
 import * as keyboard from "./keyboard";
@@ -94,6 +95,8 @@ function finishedDownloadingImages() {
     globals.variant,
     globals.lobby.settings.colorblindMode,
     globals.lobby.settings.styleNumbers,
+    drawCardsBrowser.initCanvas,
+    drawCardsBrowser.cloneCanvas,
   );
 
   // Draw the user interface

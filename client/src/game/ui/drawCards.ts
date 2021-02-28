@@ -20,6 +20,8 @@ export default function drawCards(
   variant: Variant,
   colorblindMode: boolean,
   styleNumbers: boolean,
+  initCanvas: () => HTMLCanvasElement,
+  cloneCanvas: (oldCvs: HTMLCanvasElement) => HTMLCanvasElement,
 ): Map<string, HTMLCanvasElement> {
   const cardImages: Map<string, HTMLCanvasElement> = new Map<
     string,
@@ -147,32 +149,16 @@ export default function drawCards(
   // Unknown 6 is a card that is completely unknown
   // This is a special case; we want to render completely unknown cards as a blank gray card
   // (instead of a blank white card)
-  cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, makeUnknownCard());
+  cardImages.set(
+    `card-Unknown-${UNKNOWN_CARD_RANK}`,
+    makeUnknownCard(initCanvas),
+  );
 
   // Additionally, create an image for the deck back
   // This is similar to the Unknown 6 card, except it has pips for each suit
-  cardImages.set("deck-back", makeDeckBack(variant));
+  cardImages.set("deck-back", makeDeckBack(variant, initCanvas));
 
   return cardImages;
-}
-
-function initCanvas() {
-  const cvs = document.createElement("canvas");
-  cvs.width = CARD_W;
-  cvs.height = CARD_H;
-  return cvs;
-}
-
-function cloneCanvas(oldCvs: HTMLCanvasElement) {
-  const newCvs = document.createElement("canvas");
-  newCvs.width = oldCvs.width;
-  newCvs.height = oldCvs.height;
-  const ctx = newCvs.getContext("2d");
-  if (ctx === null) {
-    throw new Error("Failed to get the context for a new canvas element.");
-  }
-  ctx.drawImage(oldCvs, 0, 0);
-  return newCvs;
 }
 
 function drawSuitPips(
@@ -279,7 +265,7 @@ function drawSuitPips(
   }
 }
 
-function makeUnknownCard() {
+function makeUnknownCard(initCanvas: () => HTMLCanvasElement) {
   const cvs = initCanvas();
   const ctx = cvs.getContext("2d");
   if (ctx === null) {
@@ -307,8 +293,8 @@ function makeUnknownCard() {
   return cvs;
 }
 
-function makeDeckBack(variant: Variant) {
-  const cvs = makeUnknownCard();
+function makeDeckBack(variant: Variant, initCanvas: () => HTMLCanvasElement) {
+  const cvs = makeUnknownCard(initCanvas);
   const ctx = cvs.getContext("2d");
   if (ctx === null) {
     throw new Error("Failed to get the context for a new canvas element.");
