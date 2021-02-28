@@ -813,10 +813,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private shouldSetCritical(critical: boolean) {
-    // use the critical note if it's on another player's card
+    // use the critical note if present
     return (
-      (this.note.critical &&
-        this.state.location !== globals.metadata.ourPlayerIndex) ||
+      this.note.critical ||
       (critical &&
         !cardRules.isPlayed(this.state) &&
         !cardRules.isDiscarded(this.state) &&
