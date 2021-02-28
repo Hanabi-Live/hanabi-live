@@ -41,11 +41,12 @@ Building the client code can be memory intensive. Make sure that your system has
   (so that Git automatically rebases when pulling)
 - Install [PostgreSQL](https://www.postgresql.org/):
   - Manually download it and install it. (Don't use `choco`, because the package is bugged.)
+  - Check to see if `psql` works. If not, you'll have to [manually add it to your PATH variable](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
 - Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
-  - `notepad "C:\Program Files\PostgreSQL\12\data\postgresql.conf"`
+  - `notepad "C:\Program Files\PostgreSQL\13\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
-  - `net stop postgresql-x64-12`
-  - `net start postgresql-x64-12`
+  - `net stop postgresql-x64-13`
+  - `net start postgresql-x64-13`
 - Create a new database and set up a database user:
   - `refreshenv`
   - `psql -U postgres`
