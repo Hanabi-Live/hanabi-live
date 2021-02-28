@@ -65,17 +65,17 @@ function identityMapToArray(cardMap: number[][]): Array<[number, number]> {
 // card possibilities that it declares
 //
 // e.g. the note keyword `red` would return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
-// and the note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`
-// and the note keyword `r,b,2,3, blue 3` would return `[[0,2], [1,2], [0,3], [1,3]]`
+// and the note keyword `red 3, blue 3` would return `[[0,3], [3,3]]`
+// and the note keyword `r,b,2,3, blue 3` would return `[[0,2], [3,2], [0,3], [3,3]]`
 // and the note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
 function getPossibilitiesFromKeyword(
   variant: Variant,
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
-  const positiveIdent = [];
-  const negativeIdent = [];
-  let positiveRanks = new Set<number>();
-  let positiveSuits = new Set<number>();
+  const positiveIdent = []; // single cards `r1` `b3`
+  const negativeIdent = []; // any negative cluing `!r1` `!3`
+  let positiveRanks = new Set<number>(); // all matching positive ranks `2` `3`
+  let positiveSuits = new Set<number>(); // all matching positive suits `r` `b`
   for (const substring of keywordPreTrim.split(",")) {
     const trimmed = substring.trim();
     const negative = trimmed.startsWith("!");
@@ -87,6 +87,7 @@ function getPossibilitiesFromKeyword(
       negativeIdent.push(identity);
     } else if (identity.rank === null) {
       if (identity.suitIndex === null) {
+        // keyword substring fails to parse as an identity.
         return null;
       }
       positiveSuits.add(identity.suitIndex);
@@ -98,15 +99,20 @@ function getPossibilitiesFromKeyword(
   }
   // Start with the cross of the positive ranks and suits.
   const hasSuits = positiveSuits.size > 0;
+  const hasRanks = positiveRanks.size > 0;
+  const hasPositives = hasSuits || hasRanks || positiveIdent.length > 0;
   if (!positiveSuits.size) positiveSuits = new Set([0, 1, 2, 3, 4, 5]);
-  if (hasSuits && !positiveRanks.size) positiveRanks = new Set([1, 2, 3, 4, 5]);
+  console.log(positiveSuits);
+  if (!hasPositives || (hasSuits && !hasRanks))
+    positiveRanks = new Set([1, 2, 3, 4, 5]);
+  console.log(positiveRanks);
   const zeros = [0, 0, 0, 0, 0, 0];
   const positiveSuitsTemplate = zeros.slice();
   positiveSuits.forEach((suit) => {
     positiveSuitsTemplate[suit] = 1;
   });
   const identityMap = [];
-  for (let rank = 1; rank <= 5; ++rank) {
+  for (let rank = 1; rank <= 5; rank++) {
     identityMap.push(
       positiveRanks.has(rank) ? positiveSuitsTemplate.slice() : zeros.slice(),
     );
@@ -115,15 +121,20 @@ function getPossibilitiesFromKeyword(
   for (const identities of [positiveIdent, negativeIdent]) {
     const negative = identities === negativeIdent;
     for (const identity of identities) {
-      for (let rank = 1; rank <= 5; ++rank) {
-        if (identity.rank !== null && identity.rank !== rank) {
-          continue;
-        }
-        for (let suitIndex = 0; suitIndex < variant.suits.length; ++suitIndex) {
-          if (identity.suitIndex !== null && identity.suitIndex !== suitIndex) {
-            continue;
+      for (let rank = 1; rank <= 5; rank++) {
+        if (identity.rank === null || identity.rank === rank) {
+          for (
+            let suitIndex = 0;
+            suitIndex < variant.suits.length;
+            suitIndex++
+          ) {
+            if (
+              identity.suitIndex === null ||
+              identity.suitIndex === suitIndex
+            ) {
+              identityMap[rank - 1][suitIndex] = negative ? 0 : 1;
+            }
           }
-          identityMap[rank - 1][suitIndex] = negative ? 0 : 1;
         }
       }
     }
