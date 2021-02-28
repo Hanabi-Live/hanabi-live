@@ -49,8 +49,8 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 
 function identityMapToArray(cardMap: number[][]): Array<[number, number]> {
   const possibilities: Array<[number, number]> = [];
-  for (let rank = 1; rank <= cardMap.length; ++rank) {
-    for (let suitIndex = 0; suitIndex < cardMap[0].length; ++suitIndex) {
+  for (let rank = 1; rank <= cardMap.length; rank++) {
+    for (let suitIndex = 0; suitIndex < cardMap[0].length; suitIndex++) {
       if (cardMap[rank - 1][suitIndex]) {
         possibilities.push([suitIndex, rank]);
       }
@@ -70,10 +70,10 @@ function getPossibilitiesFromKeyword(
   variant: Variant,
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
-  const positiveIdent = []; // single cards `r1` `b3`
-  const negativeIdent = []; // any negative cluing `!r1` `!3`
-  let positiveRanks = new Set<number>(); // all matching positive ranks `2` `3`
-  let positiveSuits = new Set<number>(); // all matching positive suits `r` `b`
+  const positiveIdent = []; // Single cards `r1` `b3`
+  const negativeIdent = []; // Any negative cluing `!r1` `!3`
+  let positiveRanks = new Set<number>(); // All matching positive ranks `2` `3`
+  let positiveSuits = new Set<number>(); // All matching positive suits `r` `b`
   for (const substring of keywordPreTrim.split(",")) {
     const trimmed = substring.trim();
     const negative = trimmed.startsWith("!");
@@ -85,7 +85,7 @@ function getPossibilitiesFromKeyword(
       negativeIdent.push(identity);
     } else if (identity.rank === null) {
       if (identity.suitIndex === null) {
-        // keyword substring fails to parse as an identity.
+        // Keyword substring fails to parse as an identity.
         return null;
       }
       positiveSuits.add(identity.suitIndex);
@@ -99,13 +99,16 @@ function getPossibilitiesFromKeyword(
   const hasSuits = positiveSuits.size > 0;
   const hasRanks = positiveRanks.size > 0;
   const hasPositives = hasSuits || hasRanks || positiveIdent.length > 0;
-  if (!positiveSuits.size) positiveSuits = new Set([0, 1, 2, 3, 4, 5]);
-  if (!hasPositives || (hasSuits && !hasRanks))
+  if (!positiveSuits.size) {
+    positiveSuits = new Set([0, 1, 2, 3, 4, 5]);
+  }
+  if (!hasPositives || (hasSuits && !hasRanks)) {
     positiveRanks = new Set([1, 2, 3, 4, 5]);
+  }
   const zeros = [0, 0, 0, 0, 0, 0];
   const positiveSuitsTemplate = zeros.slice();
-  positiveSuits.forEach((suit) => {
-    positiveSuitsTemplate[suit] = 1;
+  positiveSuits.forEach((suitIndex) => {
+    positiveSuitsTemplate[suitIndex] = 1;
   });
   const identityMap = [];
   for (let rank = 1; rank <= 5; rank++) {
