@@ -85,23 +85,29 @@ function pad2(num: number) {
   return `${num}`;
 }
 
+// parseIntSafe is a more reliable version of parseInt
 // By default, "parseInt('1a')" will return "1", which is unexpected
-// Thus, we use a helper function as a stand-in for parseInt so that we can handle this properly
+// This returns either an integer or NaN
 export function parseIntSafe(input: string): number {
-  let trimmedInput = input.trim(); // Remove all leading and trailing whitespace
+  // Remove all leading and trailing whitespace
+  let trimmedInput = input.trim();
+
   const isNegativeNumber = trimmedInput.startsWith("-");
   if (isNegativeNumber) {
     // Remove the leading minus sign before we match the regular expression
     trimmedInput = trimmedInput.substring(1);
   }
+
   if (/^\d+$/.exec(trimmedInput) === null) {
     // "\d" matches any digit (same as "[0-9]")
     return NaN;
   }
+
   if (isNegativeNumber) {
     // Add the leading minus sign back
     trimmedInput = `-${trimmedInput}`;
   }
+
   return parseInt(trimmedInput, 10);
 }
 
