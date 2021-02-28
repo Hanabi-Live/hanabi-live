@@ -39,6 +39,7 @@ describe("noteIdentity", () => {
         [0, 5],
       ]);
     });
+
     // and the note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`
     test("positive", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["r3,b2"]);
@@ -47,11 +48,13 @@ describe("noteIdentity", () => {
         [0, 3],
       ]);
     });
+
     test("negative", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["!2, !3"]);
       const identMap = rankMap(new Set([1, 4, 5]));
       expect(identityArrayToMap(possibles)).toEqual(identMap);
     });
+
     // and the note keyword `r,b,2,3, blue 3` would return `[[0,2], [1,2], [0,3], [1,3]]`
     test("positive suit and rank", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["r,3,b,2"]);
@@ -62,6 +65,7 @@ describe("noteIdentity", () => {
         [3, 3],
       ]);
     });
+
     // and the note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
     test("positive and negative", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, [
