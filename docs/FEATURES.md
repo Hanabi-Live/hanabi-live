@@ -82,6 +82,11 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - When the cursor is hovering over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
 - You can click on an entry in the clue log to go to the turn when the clue was given.
 
+#### Termination
+
+- Games will be automatically terminated by the server if no move is performed in 30 minutes. (This helps to clean the lobby of games that will never be finished.)
+- Players can manually terminate a game by clicking on the X button where the strike indicators are (near the bottom of the screen).
+
 #### Spectators
 
 - All games have the ability to be spectated by others.
