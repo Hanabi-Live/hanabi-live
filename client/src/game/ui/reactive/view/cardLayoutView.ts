@@ -1,11 +1,13 @@
 import equal from "fast-deep-equal";
 import Konva from "konva";
 import { variantRules } from "../../../rules";
+import * as deck from "../../../rules/deck";
 import { STACK_BASE_RANK } from "../../../types/constants";
 import StackDirection from "../../../types/StackDirection";
 import globals from "../../globals";
 import HanabiCard from "../../HanabiCard";
 import LayoutChild from "../../LayoutChild";
+import { updateCardVisuals } from "./cardsView";
 
 const stackStringsReversed = new Map<StackDirection, string>([
   [StackDirection.Undecided, ""],
@@ -140,6 +142,13 @@ export function onHoleChanged(
   );
 
   globals.layers.card.batchDraw();
+}
+
+export function updatePlayStackVisuals(): void {
+  const totalCards: number = deck.totalCards(globals.variant);
+  for (let i = 0; i < globals.variant.suits.length; i++) {
+    updateCardVisuals(totalCards + i);
+  }
 }
 
 function syncChildren(

@@ -390,6 +390,14 @@ const replayObservers: Subscriptions = [
     }),
     cardsView.onMorphedIdentitiesChanged,
   ),
+
+  // Remove notes morph from play stacks after game finishes
+  subAfterInit(
+    (s) => ({
+      finished: s.finished,
+    }),
+    cardLayoutView.updatePlayStackVisuals,
+  ),
 ];
 
 const otherObservers = [

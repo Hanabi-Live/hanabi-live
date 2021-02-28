@@ -330,6 +330,22 @@ function drawPlayStacks() {
     playStackValues.x += (cardWidth + playStackValues.spacing) * 1.5;
   }
 
+  // Make the invisible "hole" play stack for "Throw It in a Hole" variants
+  // (centered in the middle of the rest of the stacks)
+  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+    const playStackX =
+      playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
+    const playStack = new PlayStack({
+      x: playStackX * winW,
+      y: playStackValues.y * winH,
+      width: cardWidth * winW,
+      height: cardHeight * winH,
+      listening: false,
+    });
+    globals.elements.playStacks.set("hole", playStack);
+    globals.layers.card.add((playStack as unknown) as Konva.Group);
+  }
+
   for (let i = 0; i < globals.variant.suits.length; i++) {
     const suit = globals.variant.suits[i];
 
@@ -395,22 +411,6 @@ function drawPlayStacks() {
       globals.layers.UI.add(suitLabelText);
       globals.elements.suitLabelTexts.push(suitLabelText);
     }
-  }
-
-  // Make the invisible "hole" play stack for "Throw It in a Hole" variants
-  // (centered in the middle of the rest of the stacks)
-  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
-    const playStackX =
-      playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
-    const playStack = new PlayStack({
-      x: playStackX * winW,
-      y: playStackValues.y * winH,
-      width: cardWidth * winW,
-      height: cardHeight * winH,
-      listening: false,
-    });
-    globals.elements.playStacks.set("hole", playStack);
-    globals.layers.card.add((playStack as unknown) as Konva.Group);
   }
 
   // This is the invisible rectangle that players drag cards to in order to play them
