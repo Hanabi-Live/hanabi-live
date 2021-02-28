@@ -50,9 +50,9 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 function identityMapToArray(cardMap: number[][]): Array<[number, number]> {
   const possibilities: Array<[number, number]> = [];
   for (let rank = 1; rank <= cardMap.length; ++rank) {
-    for (let suit = 0; suit < cardMap[0].length; ++suit) {
-      if (cardMap[rank - 1][suit]) {
-        possibilities.push([suit, rank]);
+    for (let suitIndex = 0; suitIndex < cardMap[0].length; ++suitIndex) {
+      if (cardMap[rank - 1][suitIndex]) {
+        possibilities.push([suitIndex, rank]);
       }
     }
   }
