@@ -76,7 +76,7 @@ export default function drawCards(
         colorblindMode,
       );
       ctx.strokeStyle = "black";
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 2;
       ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
@@ -407,10 +407,10 @@ function drawText(
   indexLabel: string,
 ) {
   ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0)";
-  ctx.strokeText(indexLabel, 19, textYPos);
   ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   ctx.fillText(indexLabel, 19, textYPos);
+  ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  ctx.strokeText(indexLabel, 19, textYPos);
   ctx.restore();
 }
 
