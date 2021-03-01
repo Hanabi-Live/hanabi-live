@@ -197,7 +197,7 @@ function updatePips(order: number) {
   globals.layers.card.batchDraw();
 }
 
-function updateCardVisuals(order: number) {
+export function updateCardVisuals(order: number): void {
   const card = getCardOrStackBase(order);
   card.setBareImage();
   globals.layers.card.batchDraw();
