@@ -1,8 +1,13 @@
 import { parseIntSafe } from "../../misc";
 import CardIdentity from "../types/CardIdentity";
-import { START_CARD_RANK } from "../types/constants";
+import { MAX_RANK, START_CARD_RANK } from "../types/constants";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
+
+interface CardIdentities {
+  readonly suitIndices: number[];
+  readonly ranks: number[];
+}
 
 function parseSuit(variant: Variant, suitText: string): number | null {
   const suitAbbreviationIndex = variant.abbreviations.findIndex(
@@ -47,91 +52,123 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
   return { suitIndex, rank };
 }
 
-function possibilitiesComplement(
-  variant: Variant,
-  possibilities: Array<[number, number]>,
-): Array<[number, number]> {
-  const complement: Array<[number, number]> = [];
-  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-    for (const rank of variant.ranks) {
-      // Ensure that this possibility is not present in the source list
-      if (
-        !possibilities.some(
-          ([negatedSuitIndex, negatedRank]) =>
-            negatedSuitIndex === suitIndex && negatedRank === rank,
-        )
-      ) {
-        complement.push([suitIndex, rank]);
+function parseIdentities(variant: Variant, keyword: string): CardIdentities {
+  const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
+  let suitIndex = null;
+  let rank = null;
+  if (identityMatch !== null) {
+    const squishText = extractSquishText(identityMatch);
+    const suitIndices: number[] = [];
+    const ranks: number[] = [];
+    if (squishText !== null) {
+      [].map.call(squishText, (letter) => {
+        suitIndex = parseSuit(variant, letter);
+        rank = parseRank(letter);
+        if (suitIndex !== null) {
+          suitIndices.push(suitIndex);
+        } else if (rank !== null) {
+          ranks.push(rank);
+        }
+      });
+      if (suitIndices.length + ranks.length > 0) {
+        return { suitIndices, ranks };
       }
+    }
+    const suitText = extractSuitText(identityMatch);
+    if (suitText !== null) {
+      suitIndex = parseSuit(variant, suitText);
+    }
+    const rankText = extractRankText(identityMatch);
+    if (rankText !== null) {
+      rank = parseRank(rankText);
     }
   }
 
-  return complement;
+  return {
+    suitIndices: suitIndex === null ? [] : [suitIndex],
+    ranks: rank === null ? [] : [rank],
+  };
+}
+
+function range(
+  _start: number,
+  _stop: number | null = null,
+  step = 1,
+): number[] {
+  const start: number = _stop === null ? 0 : _start;
+  const stop: number = _stop === null ? _start : _stop;
+  const ret: number[] = [];
+  for (let i = start; i < stop; i += step) {
+    ret.push(i);
+  }
+  return ret;
+}
+
+export function identityMapToArray(
+  cardMap: number[][],
+): Array<[number, number]> {
+  const possibilities: Array<[number, number]> = [];
+  for (let rank = 1; rank <= cardMap.length; rank++) {
+    for (let suitIndex = 0; suitIndex < cardMap[0].length; suitIndex++) {
+      if (cardMap[rank - 1][suitIndex]) {
+        possibilities.push([suitIndex, rank]);
+      }
+    }
+  }
+  return possibilities;
 }
 
 // Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
 // card possibilities that it declares
 //
 // e.g. the note keyword `red` would return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
-// and the note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`
+// and the note keyword `red 3, blue 3` would return `[[0,3], [3,3]]`
+// and the note keyword `rb23` would return `[[0,2], [3,2], [0,3], [3,3]]`
+// and the note keyword `r,b,2,3` would return all reds, blues, 2's, and 3's
+// and the note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
 function getPossibilitiesFromKeyword(
   variant: Variant,
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
-  const possibilities: Array<[number, number]> = [];
-  const negative = keywordPreTrim.startsWith("!");
-  const keyword = negative ? keywordPreTrim.substring(1) : keywordPreTrim;
-  for (const substring of keyword.split(",")) {
-    const identity = parseIdentity(variant, substring.trim());
-    if (identity.suitIndex !== null && identity.rank !== null) {
-      // Encountered an identity item, add it
-
-      // Check that this identity is not already present in the list
-      if (
-        !possibilities.some(
-          (possibility) =>
-            possibility[0] === identity.suitIndex &&
-            possibility[1] === identity.rank,
-        )
-      ) {
-        possibilities.push([identity.suitIndex, identity.rank]);
-      }
-    } else if (identity.suitIndex !== null && identity.rank === null) {
-      // Encountered a suit item, expand to all cards of that suit
-      for (const rank of variant.ranks) {
-        // Check that this identity is not already present in the list
-        if (
-          !possibilities.some(
-            (possibility) =>
-              possibility[0] === identity.suitIndex && possibility[1] === rank,
-          )
-        ) {
-          possibilities.push([identity.suitIndex, rank]);
-        }
-      }
-    } else if (identity.suitIndex === null && identity.rank !== null) {
-      // Encountered a rank item, expand to all cards of that rank
-      for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-        // Check that this identity is not already present in the list
-        if (
-          !possibilities.some(
-            (possibility) =>
-              possibility[0] === suitIndex && possibility[1] === identity.rank,
-          )
-        ) {
-          possibilities.push([suitIndex, identity.rank]);
-        }
-      }
+  const positiveIdent = []; // Any combination of suits and ranks
+  const negativeIdent = []; // Any negative cluing `!r1` `!3`
+  for (const substring of keywordPreTrim.split(",")) {
+    const trimmed = substring.trim();
+    const negative = trimmed.startsWith("!");
+    const identity = parseIdentities(
+      variant,
+      (negative ? trimmed.substring(1) : trimmed).trim(),
+    );
+    if (negative) {
+      negativeIdent.push(identity);
     } else {
-      // Encountered invalid identity; do not parse keyword as an identity list
-      return null;
+      positiveIdent.push(identity);
     }
   }
-
-  if (negative) {
-    return possibilitiesComplement(variant, possibilities);
+  // Start with all 1's if no positive info, else all 0's
+  const identityMap = [];
+  const positiveRanks = new Set(positiveIdent.length > 0 ? [] : variant.ranks);
+  for (let rank = 1; rank <= MAX_RANK; rank++) {
+    identityMap.push(
+      Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
+    );
   }
-  return possibilities;
+  // Then add positive items and remove all negatives.
+  for (const identities of [positiveIdent, negativeIdent]) {
+    const negative = identities === negativeIdent;
+    for (const identity of identities) {
+      const ranks = identity.ranks.length ? identity.ranks : variant.ranks;
+      for (const rank of ranks) {
+        const suitIndices = identity.suitIndices.length
+          ? identity.suitIndices
+          : range(variant.suits.length);
+        for (const suitIndex of suitIndices) {
+          identityMap[rank - 1][suitIndex] = negative ? 0 : 1;
+        }
+      }
+    }
+  }
+  return identityMapToArray(identityMap);
 }
 
 // Examines a whole note and for each keyword that declares card possibilities, merges them into one list.
@@ -185,6 +222,19 @@ function createRankPattern(ranks: number[], isUpOrDown: boolean): string {
   return `(${rankStrings.join("|")})`;
 }
 
+function createSquishPattern(
+  abbreviations: string[],
+  ranks: number[],
+  isUpOrDown: boolean,
+): string {
+  let rankStrings = ranks.map((r) => r.toString());
+  if (isUpOrDown) {
+    rankStrings = rankStrings.concat("0", "s");
+  }
+  const allNoteLetters = rankStrings.concat(abbreviations);
+  return `([${allNoteLetters.join("").toLowerCase()}]+)`;
+}
+
 export function createIdentityNotePattern(
   suits: Suit[],
   ranks: number[],
@@ -193,7 +243,8 @@ export function createIdentityNotePattern(
 ): string {
   const suitPattern = createSuitPattern(suits, abbreviations);
   const rankPattern = createRankPattern(ranks, isUpOrDown);
-  return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern})$`;
+  const squishPattern = createSquishPattern(abbreviations, ranks, isUpOrDown);
+  return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern}|${squishPattern})$`;
 }
 
 export const extractSuitText = (match: RegExpMatchArray): string | null =>
@@ -201,3 +252,6 @@ export const extractSuitText = (match: RegExpMatchArray): string | null =>
 
 export const extractRankText = (match: RegExpMatchArray): string | null =>
   match[2] ?? match[3] ?? match[6] ?? null;
+
+export const extractSquishText = (match: RegExpMatchArray): string | null =>
+  match[7] ?? null;
