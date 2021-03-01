@@ -341,7 +341,7 @@ function drawCardBase(
   colorblindMode: boolean,
 ) {
   // Draw the background
-  ctx.save()
+  ctx.save();
   ctx.fillStyle = getSuitStyle(
     suit,
     rank,
