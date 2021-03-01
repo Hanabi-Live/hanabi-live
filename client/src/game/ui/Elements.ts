@@ -29,7 +29,7 @@ export default class Elements {
   stageFade: Konva.Rect | null = null;
   playArea: Konva.Rect | null = null;
 
-  playStack = new Map<Suit | "hole", PlayStack>();
+  playStacks = new Map<Suit | "hole", PlayStack>();
 
   suitLabelTexts: FitText[] = [];
   discardArea: Konva.Rect | null = null;
