@@ -153,7 +153,7 @@ function getPossibilitiesFromKeyword(
       Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
     );
   }
-  // Then add positive items and remove all negatives.
+  // Then add positive items and remove all negatives
   for (const identities of [positiveIdent, negativeIdent]) {
     const negative = identities === negativeIdent;
     for (const identity of identities) {
