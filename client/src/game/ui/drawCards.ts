@@ -77,7 +77,7 @@ export default function drawCards(
         colorblindMode,
       );
       ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = enableShadows ? 2 : 8;
       ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
@@ -137,7 +137,7 @@ export default function drawCards(
       // The "Unknown" suit does not have pips
       // (it is a white suit that is used for cards that are clued with rank)
       if (suit.name !== "Unknown") {
-        drawSuitPips(ctx, rank, suit, colorblindMode);
+        drawSuitPips(ctx, rank, suit, colorblindMode, enableShadows);
       }
 
       const cardImagesIndex = `card-${suit.name}-${rank}`;
@@ -171,6 +171,7 @@ function drawSuitPips(
   rank: number,
   suit: Suit,
   colorblindMode: boolean,
+  enableShadows: boolean,
 ) {
   const scale = 0.4;
 
@@ -179,7 +180,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.8, scale * 1.8);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 
@@ -190,7 +191,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -198,7 +199,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 
@@ -209,7 +210,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -217,7 +218,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 
@@ -227,7 +228,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(-90, 0);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -235,7 +236,7 @@ function drawSuitPips(
     ctx.translate(90, 0);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 
@@ -245,7 +246,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.2, scale * 1.2);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 
@@ -255,7 +256,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 2.5, scale * 2.5);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 
@@ -265,7 +266,7 @@ function drawSuitPips(
     ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
-    drawPip(ctx, suit, true);
+    drawPip(ctx, suit, enableShadows);
     ctx.restore();
   }
 }
@@ -415,12 +416,13 @@ function drawText(
   ctx.save();
   if (enableShadows) {
     ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-  }
-  ctx.fillText(indexLabel, 19, textYPos);
-  if (enableShadows) {
+    ctx.fillText(indexLabel, 19, textYPos);
     ctx.shadowColor = "rgba(0, 0, 0, 0)";
+    ctx.strokeText(indexLabel, 19, textYPos);
+  } else {
+    ctx.strokeText(indexLabel, 19, textYPos);
+    ctx.fillText(indexLabel, 19, textYPos);
   }
-  ctx.strokeText(indexLabel, 19, textYPos);
   ctx.restore();
 }
 
