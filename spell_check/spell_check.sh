@@ -12,6 +12,7 @@ DIR="$(dirname "$DIR")"
 FILES=$(find "$DIR" -type f \
   -not -path "$DIR/.git/*" \
   -not -path "$DIR/backups/*" \
+  -not -path "$DIR/client/card-images/*" \
   -not -path "$DIR/client/lib/*" \
   -not -path "$DIR/client/node_modules/*" \
   -not -path "$DIR/client/test_data/*" \
