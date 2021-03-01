@@ -21,10 +21,13 @@ export default function drawCards(
   colorblindMode: boolean,
   styleNumbers: boolean,
   initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
-  cloneCanvas: (oldCvs: HTMLCanvasElement) => HTMLCanvasElement,
+  cloneCanvas: (
+    oldCvs: HTMLCanvasElement,
+    oldCtx: CanvasRenderingContext2D,
+  ) => HTMLCanvasElement,
   saveCanvas: (
     cvs: HTMLCanvasElement,
-    ctx?: CanvasRenderingContext2D,
+    ctx: CanvasRenderingContext2D,
   ) => HTMLCanvasElement,
 ): Map<string, HTMLCanvasElement> {
   const cardImages: Map<string, HTMLCanvasElement> = new Map<
@@ -98,8 +101,8 @@ export default function drawCards(
         ctx.font = `bold ${fontSize}pt Arial`;
 
         // Draw the rank on the top left
+        ctx.save();
         if (styleNumbers && !colorblindMode) {
-          ctx.save();
           drawStylizedRank(ctx, rank);
           ctx.restore();
           ctx.fill();
@@ -112,7 +115,7 @@ export default function drawCards(
         // "Index" cards are used to draw cards of learned but not yet known rank
         // (e.g. for in-game replays)
         const cardImagesIndex = `Index-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cloneCanvas(cvs));
+        cardImages.set(cardImagesIndex, cloneCanvas(cvs, ctx));
 
         // Draw the rank on the bottom right
         if (!variantRules.isUpOrDown(variant) && !suit.reversed) {
@@ -142,7 +145,7 @@ export default function drawCards(
       }
 
       const cardImagesIndex = `card-${suit.name}-${rank}`;
-      const cardImage = saveCanvas(cvs);
+      const cardImage = saveCanvas(cvs, ctx);
       cardImages.set(cardImagesIndex, cardImage);
     }
   }
@@ -151,16 +154,16 @@ export default function drawCards(
   // This is a special case; we want to render completely unknown cards as a blank gray card
   // (instead of a blank white card)
   {
-    const [cvs] = makeUnknownCard(initCanvas);
-    const cardUnknown = saveCanvas(cvs);
+    const [cvs, ctx] = makeUnknownCard(initCanvas);
+    const cardUnknown = saveCanvas(cvs, ctx);
     cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, cardUnknown);
   }
 
   // Additionally, create an image for the deck back
   // This is similar to the Unknown 6 card, except it has pips for each suit
   {
-    const [cvs] = makeDeckBack(variant, initCanvas);
-    const deckBack = saveCanvas(cvs);
+    const [cvs, ctx] = makeDeckBack(variant, initCanvas);
+    const deckBack = saveCanvas(cvs, ctx);
     cardImages.set("deck-back", deckBack);
   }
 

@@ -20,7 +20,13 @@ export function initCanvas(): [
   return namedTuple;
 }
 
-export function cloneCanvas(oldCvs: HTMLCanvasElement): HTMLCanvasElement {
+export function cloneCanvas(
+  oldCvs: HTMLCanvasElement,
+  oldCtx: CanvasRenderingContext2D,
+): HTMLCanvasElement {
+  // The next line prevents TypeScript errors
+  if (oldCtx) {} // eslint-disable-line
+
   const newCvs = document.createElement("canvas");
   newCvs.width = oldCvs.width;
   newCvs.height = oldCvs.height;
@@ -36,7 +42,7 @@ export function cloneCanvas(oldCvs: HTMLCanvasElement): HTMLCanvasElement {
 
 export function saveCanvas(
   cvs: HTMLCanvasElement,
-  ctx?: CanvasRenderingContext2D,
+  ctx: CanvasRenderingContext2D,
 ): HTMLCanvasElement {
   // The next line prevents TypeScript errors
   if (ctx) {} // eslint-disable-line
