@@ -30,8 +30,8 @@ export class Globals {
   datetimeShutdownInit = new Date();
   maintenanceMode = false;
 
-  userMap: Map<number, User> = new Map<number, User>(); // Keys are IDs
-  tableMap: Map<number, Table> = new Map<number, Table>(); // Keys are IDs
+  userMap = new Map<number, User>(); // Keys are IDs
+  tableMap = new Map<number, Table>(); // Keys are IDs
   history: GameHistory[] = [];
   historyFriends: GameHistory[] = [];
   totalGamesFriends = 0;

@@ -43,15 +43,8 @@ export class Globals {
   elements: Elements = new Elements();
   activeHover: Konva.Node | null = null; // The element that the mouse cursor is currently over
 
-  cardImages: Map<string, HTMLCanvasElement> = new Map<
-    string,
-    HTMLCanvasElement
-  >();
-
-  scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map<
-    string,
-    HTMLCanvasElement[]
-  >();
+  cardImages = new Map<string, HTMLCanvasElement>();
+  scaledCardImages = new Map<string, HTMLCanvasElement[]>();
 
   // Replay feature
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game

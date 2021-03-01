@@ -25,8 +25,8 @@ export function getFutureEfficiency(state: GameState): number | null {
 export function getIndexConverter(
   variant: Variant,
 ): <T extends Color | Suit>(value: T) => number {
-  const suitIndexes: Map<string, number> = new Map<string, number>();
-  const colorIndexes: Map<Color, number> = new Map<Color, number>();
+  const suitIndexes = new Map<string, number>();
+  const colorIndexes = new Map<Color, number>();
   variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
   variant.clueColors.forEach((color, index) => colorIndexes.set(color, index));
 

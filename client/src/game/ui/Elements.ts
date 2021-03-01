@@ -29,14 +29,11 @@ export default class Elements {
   stageFade: Konva.Rect | null = null;
   playArea: Konva.Rect | null = null;
 
-  playStacks: Map<Suit | "hole", PlayStack> = new Map<
-    Suit | "hole",
-    PlayStack
-  >();
+  playStack = new Map<Suit | "hole", PlayStack>();
 
   suitLabelTexts: FitText[] = [];
   discardArea: Konva.Rect | null = null;
-  discardStacks: Map<Suit, CardLayout> = new Map<Suit, CardLayout>();
+  discardStacks = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];
   playerHandTurnRects: Konva.Rect[] = [];
   playerHandBlackLines: Konva.Rect[] = [];

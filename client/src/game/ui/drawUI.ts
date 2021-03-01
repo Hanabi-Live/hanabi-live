@@ -1206,7 +1206,7 @@ function drawSharedReplay() {
       return;
     }
 
-    const spectatorMap: Map<number, string> = new Map<number, string>();
+    const spectatorMap = new Map<number, string>();
 
     let msg =
       "What is the number of the person that you want to pass the replay leader to?\n\n";

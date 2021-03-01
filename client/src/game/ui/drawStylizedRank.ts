@@ -1,8 +1,5 @@
 type DrawFunction = (ctx: CanvasRenderingContext2D) => void;
-const shapeFunctions: Map<number, DrawFunction> = new Map<
-  number,
-  DrawFunction
->();
+const shapeFunctions = new Map<number, DrawFunction>();
 const sf = 2.2; // Scale factor
 
 shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {

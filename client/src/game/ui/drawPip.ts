@@ -1,10 +1,7 @@
 import Suit from "../types/Suit";
 
 type DrawFunction = (ctx: CanvasRenderingContext2D, colors?: string[]) => void;
-const shapeFunctions: Map<string, DrawFunction> = new Map<
-  string,
-  DrawFunction
->();
+const shapeFunctions = new Map<string, DrawFunction>();
 const scaleFactor = 3;
 
 shapeFunctions.set("hanabiRed", (ctx: CanvasRenderingContext2D) => {

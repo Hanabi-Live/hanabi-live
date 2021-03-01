@@ -33,10 +33,10 @@ const fileIDs = [
 ];
 
 export default class Loader {
-  filePathMap: Map<string, string> = new Map<string, string>();
+  filePathMap = new Map<string, string>();
   numLoaded = 0;
   finished = false;
-  imageMap: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
+  imageMap = new Map<string, HTMLImageElement>();
   progressCallback: ProgressCallback | null = null;
   finishedCallback: FinishedCallback | null = null;
 

@@ -30,10 +30,7 @@ export default function drawCards(
     ctx: CanvasRenderingContext2D,
   ) => HTMLCanvasElement,
 ): Map<string, HTMLCanvasElement> {
-  const cardImages: Map<string, HTMLCanvasElement> = new Map<
-    string,
-    HTMLCanvasElement
-  >();
+  const cardImages = new Map<string, HTMLCanvasElement>();
 
   // Add the "Unknown" suit to the list of suits for this variant
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit
