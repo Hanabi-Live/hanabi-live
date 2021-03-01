@@ -1,0 +1,34 @@
+// These are Visual Studio Code settings that should apply to this particular repository
+{
+  // This matches the Airbnb JavaScript style guide
+  "editor.rulers": [100],
+  "editor.tabSize": 2,
+
+  // Linux line endings are used in this project
+  "files.eol": "\n",
+
+  // Automatically removing all trailing whitespace when saving a file
+  "files.trimTrailingWhitespace": true,
+
+  // Configure glob patterns for excluding files and folders in full text searches and quick open
+  "search.exclude": {
+    "**/*.js*": true,
+  },
+
+  // Automatically run the formatter when a TypeScript or JavaScript file is saved
+  // "Organize Imports" must be before ESLint because it will delete trailing commas
+  "[typescript]": {
+    "editor.codeActionsOnSave": [
+      "source.organizeImports",
+      "source.fixAll.eslint",
+    ],
+    "editor.tabSize": 2,
+  },
+  "[javascript]": {
+    "editor.codeActionsOnSave": [
+      "source.organizeImports",
+      "source.fixAll.eslint",
+    ],
+    "editor.tabSize": 2,
+  },
+}

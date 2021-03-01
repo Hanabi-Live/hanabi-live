@@ -1,0 +1,41 @@
+{
+  // https://www.typescriptlang.org/docs/handbook/compiler-options.html
+  "compilerOptions": {
+    "outDir": "./dist",
+
+    // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
+    "lib": ["ES2020", "dom"],
+    "module": "commonjs",
+    "target": "ES2020",
+
+    // "newLine" specifies the end of line sequence
+    // By default, it is "crlf" on Windows; we want to always use "lf" in order to match the code
+    // base and reduce the file size of the output
+    "newLine": "lf",
+
+    // "resolveJsonModule" includes modules imported with ".json" extensions
+    // By default, it is false
+    // We import JSON files in the code base, so this is needed
+    "resolveJsonModule": true,
+
+    // "esModuleInterop" emits "__importStar" and "__importDefault" helpers for ecosystem
+    // compatibility and enables the "--allowSyntheticDefaultImports" flag for typesystem
+    // compatibility
+    // By default, it is false
+    // Specifying this is needed for various JavaScript libraries to work with TypeScript
+    "esModuleInterop": true,
+
+    // We want the compiler to be as strict as possible to catch all the things
+    // By default, these flags are false
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+  },
+
+  "include": [
+    "./canvas2svg_node.js",
+    "./*.ts",
+  ],
+}
