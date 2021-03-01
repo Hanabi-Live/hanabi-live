@@ -20,6 +20,7 @@ export default function drawCards(
   variant: Variant,
   colorblindMode: boolean,
   styleNumbers: boolean,
+  enableShadows: boolean,
   initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
   cloneCanvas: (
     oldCvs: HTMLCanvasElement,
@@ -60,7 +61,7 @@ export default function drawCards(
 
       // Make the special corners on the cards for dual-color suits
       if (suit.clueColors.length === 2) {
-        drawMixedCardHelper(ctx, suit.clueColors);
+        drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
       }
 
       // Draw the background and the borders around the card
@@ -104,7 +105,7 @@ export default function drawCards(
           ctx.fill();
           ctx.stroke();
         } else {
-          drawText(ctx, textYPos, rankLabel);
+          drawText(ctx, textYPos, rankLabel, enableShadows);
         }
         ctx.restore();
 
@@ -127,7 +128,7 @@ export default function drawCards(
             ctx.translate(CARD_W, CARD_H);
             ctx.rotate(Math.PI);
           } else {
-            drawText(ctx, textYPos, rankLabel);
+            drawText(ctx, textYPos, rankLabel, enableShadows);
           }
           ctx.restore();
         }
@@ -394,10 +395,14 @@ function cardBorderPath(ctx: CanvasRenderingContext2D, padding: number) {
   ctx.quadraticCurveTo(0, 0, padding, yRadians + padding);
 }
 
-function drawShape(ctx: CanvasRenderingContext2D) {
-  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+function drawShape(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
+  if (enableShadows) {
+    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  }
   ctx.fill();
-  ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  if (enableShadows) {
+    ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  }
   ctx.stroke();
 }
 
@@ -405,11 +410,16 @@ function drawText(
   ctx: CanvasRenderingContext2D,
   textYPos: number,
   indexLabel: string,
+  enableShadows: boolean,
 ) {
   ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  if (enableShadows) {
+    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  }
   ctx.fillText(indexLabel, 19, textYPos);
-  ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  if (enableShadows) {
+    ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  }
   ctx.strokeText(indexLabel, 19, textYPos);
   ctx.restore();
 }
@@ -417,6 +427,7 @@ function drawText(
 function drawMixedCardHelper(
   ctx: CanvasRenderingContext2D,
   clueColors: Color[],
+  enableShadows: boolean,
 ) {
   const [clueColor1, clueColor2] = clueColors;
 
@@ -436,7 +447,7 @@ function drawMixedCardHelper(
   );
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor1.fill;
-  drawShape(ctx);
+  drawShape(ctx, enableShadows);
 
   // Draw the second half of the top-right triangle
   ctx.beginPath();
@@ -449,7 +460,7 @@ function drawMixedCardHelper(
   );
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
-  drawShape(ctx);
+  drawShape(ctx, enableShadows);
 
   // Draw the first half of the bottom-left triangle
   ctx.beginPath();
@@ -462,7 +473,7 @@ function drawMixedCardHelper(
   );
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor1.fill;
-  drawShape(ctx);
+  drawShape(ctx, enableShadows);
 
   // Draw the second half of the bottom-left triangle
   ctx.beginPath();
@@ -475,7 +486,7 @@ function drawMixedCardHelper(
   );
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
-  drawShape(ctx);
+  drawShape(ctx, enableShadows);
 
   ctx.restore();
 }

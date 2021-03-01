@@ -23,6 +23,7 @@ const cardImages = drawCards(
   noVariant,
   false,
   false,
+  false,
   drawCardsNode.initCanvas,
   drawCardsNode.cloneCanvas,
   drawCardsNode.saveCanvas,

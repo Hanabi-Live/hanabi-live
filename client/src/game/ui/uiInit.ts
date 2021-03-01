@@ -95,6 +95,7 @@ function finishedDownloadingImages() {
     globals.variant,
     globals.lobby.settings.colorblindMode,
     globals.lobby.settings.styleNumbers,
+    true,
     drawCardsBrowser.initCanvas,
     drawCardsBrowser.cloneCanvas,
     drawCardsBrowser.saveCanvas,
