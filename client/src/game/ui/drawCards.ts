@@ -76,7 +76,7 @@ export default function drawCards(
         colorblindMode,
       );
       ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 8;
       ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
