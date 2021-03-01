@@ -20,8 +20,12 @@ export default function drawCards(
   variant: Variant,
   colorblindMode: boolean,
   styleNumbers: boolean,
-  initCanvas: () => HTMLCanvasElement,
+  initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
   cloneCanvas: (oldCvs: HTMLCanvasElement) => HTMLCanvasElement,
+  saveCanvas: (
+    cvs: HTMLCanvasElement,
+    ctx?: CanvasRenderingContext2D,
+  ) => HTMLCanvasElement,
 ): Map<string, HTMLCanvasElement> {
   const cardImages: Map<string, HTMLCanvasElement> = new Map<
     string,
@@ -47,11 +51,7 @@ export default function drawCards(
         continue;
       }
 
-      const cvs = initCanvas();
-      const ctx = cvs.getContext("2d");
-      if (ctx === null) {
-        throw new Error("Failed to get the context for a new canvas element.");
-      }
+      const [cvs, ctx] = initCanvas();
 
       // We don't need the background on the stack base
       if (rank !== STACK_BASE_RANK) {
@@ -142,21 +142,27 @@ export default function drawCards(
       }
 
       const cardImagesIndex = `card-${suit.name}-${rank}`;
-      cardImages.set(cardImagesIndex, cvs);
+      const cardImage = saveCanvas(cvs);
+      cardImages.set(cardImagesIndex, cardImage);
     }
   }
 
   // Unknown 6 is a card that is completely unknown
   // This is a special case; we want to render completely unknown cards as a blank gray card
   // (instead of a blank white card)
-  cardImages.set(
-    `card-Unknown-${UNKNOWN_CARD_RANK}`,
-    makeUnknownCard(initCanvas),
-  );
+  {
+    const [cvs] = makeUnknownCard(initCanvas);
+    const cardUnknown = saveCanvas(cvs);
+    cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, cardUnknown);
+  }
 
   // Additionally, create an image for the deck back
   // This is similar to the Unknown 6 card, except it has pips for each suit
-  cardImages.set("deck-back", makeDeckBack(variant, initCanvas));
+  {
+    const [cvs] = makeDeckBack(variant, initCanvas);
+    const deckBack = saveCanvas(cvs);
+    cardImages.set("deck-back", deckBack);
+  }
 
   return cardImages;
 }
@@ -265,12 +271,10 @@ function drawSuitPips(
   }
 }
 
-function makeUnknownCard(initCanvas: () => HTMLCanvasElement) {
-  const cvs = initCanvas();
-  const ctx = cvs.getContext("2d");
-  if (ctx === null) {
-    throw new Error("Failed to get the context for a new canvas element.");
-  }
+function makeUnknownCard(
+  initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+) {
+  const [cvs, ctx] = initCanvas();
 
   drawCardBackground(ctx);
   ctx.fillStyle = "black";
@@ -290,15 +294,18 @@ function makeUnknownCard(initCanvas: () => HTMLCanvasElement) {
 
   ctx.translate(CARD_W / 2, CARD_H / 2);
 
-  return cvs;
+  const namedTuple: [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D] = [
+    cvs,
+    ctx,
+  ];
+  return namedTuple;
 }
 
-function makeDeckBack(variant: Variant, initCanvas: () => HTMLCanvasElement) {
-  const cvs = makeUnknownCard(initCanvas);
-  const ctx = cvs.getContext("2d");
-  if (ctx === null) {
-    throw new Error("Failed to get the context for a new canvas element.");
-  }
+function makeDeckBack(
+  variant: Variant,
+  initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+) {
+  const [cvs, ctx] = makeUnknownCard(initCanvas);
 
   const sf = 0.4; // Scale factor
   const nSuits = variant.suits.length;
@@ -321,7 +328,11 @@ function makeDeckBack(variant: Variant, initCanvas: () => HTMLCanvasElement) {
   }
   ctx.scale(1 / sf, 1 / sf);
 
-  return cvs;
+  const namedTuple: [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D] = [
+    cvs,
+    ctx,
+  ];
+  return namedTuple;
 }
 
 function drawCardBase(

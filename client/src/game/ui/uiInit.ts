@@ -97,6 +97,7 @@ function finishedDownloadingImages() {
     globals.lobby.settings.styleNumbers,
     drawCardsBrowser.initCanvas,
     drawCardsBrowser.cloneCanvas,
+    drawCardsBrowser.saveCanvas,
   );
 
   // Draw the user interface

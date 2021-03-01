@@ -85,4 +85,5 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
   },
+  "git.ignoreLimitWarning": true,
 }
