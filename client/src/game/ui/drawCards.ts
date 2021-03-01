@@ -66,8 +66,6 @@ export default function drawCards(
       // Draw the background and the borders around the card
       drawCardBase(ctx, suit, rank, variant, colorblindMode);
 
-      continue;
-
       ctx.shadowBlur = 10;
       ctx.fillStyle = getSuitStyle(
         suit,
@@ -344,7 +342,6 @@ function drawCardBase(
   variant: Variant,
   colorblindMode: boolean,
 ) {
-  /*
   // Draw the background
   ctx.fillStyle = getSuitStyle(
     suit,
@@ -376,43 +373,6 @@ function drawCardBase(
   }
   ctx.stroke();
   ctx.restore();
-  */
-
-  // Draw the border (1/2; we need a white border first to clip)
-  cardBorderPath(ctx, 0);
-  ctx.fillStyle = "white";
-  ctx.fill();
-  ctx.clip();
-
-  // Draw the border (2/2; this is the colored border)
-  ctx.fillStyle = getSuitStyle(
-    suit,
-    rank,
-    ctx,
-    "background",
-    variant,
-    colorblindMode,
-  );
-  ctx.strokeStyle = getSuitStyle(
-    suit,
-    rank,
-    ctx,
-    "background",
-    variant,
-    colorblindMode,
-  );
-  /*
-  if (ctx.fillStyle === SUITS.White.fill || black) {
-    ctx.strokeStyle = COLORS.Black.fill;
-  }
-  */
-  cardBorderPath(ctx, 0);
-  ctx.globalAlpha = 0.3;
-  ctx.fill();
-  ctx.globalAlpha = 0.7;
-  ctx.lineWidth = 16;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
 }
 
 function cardBorderPath(ctx: CanvasRenderingContext2D, padding: number) {
