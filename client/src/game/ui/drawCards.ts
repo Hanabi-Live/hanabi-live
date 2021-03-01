@@ -101,7 +101,6 @@ export default function drawCards(
         ctx.save();
         if (styleNumbers && !colorblindMode) {
           drawStylizedRank(ctx, rank);
-          ctx.restore();
           ctx.fill();
           ctx.stroke();
         } else {
@@ -121,7 +120,6 @@ export default function drawCards(
           ctx.rotate(Math.PI);
           if (styleNumbers && !colorblindMode) {
             drawStylizedRank(ctx, rank);
-            ctx.restore();
             ctx.translate(CARD_W, CARD_H);
             ctx.rotate(Math.PI);
             ctx.fill();
@@ -343,6 +341,7 @@ function drawCardBase(
   colorblindMode: boolean,
 ) {
   // Draw the background
+  ctx.save()
   ctx.fillStyle = getSuitStyle(
     suit,
     rank,
@@ -362,7 +361,6 @@ function drawCardBase(
   cardBorderPath(ctx, 4);
 
   // Draw the borders (on visible cards) and the color fill
-  ctx.save();
   ctx.globalAlpha = 0.3;
   ctx.fill();
   ctx.globalAlpha = 0.7;
@@ -408,10 +406,12 @@ function drawText(
   textYPos: number,
   indexLabel: string,
 ) {
-  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-  ctx.fillText(indexLabel, 19, textYPos);
+  ctx.save();
   ctx.shadowColor = "rgba(0, 0, 0, 0)";
   ctx.strokeText(indexLabel, 19, textYPos);
+  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  ctx.fillText(indexLabel, 19, textYPos);
+  ctx.restore();
 }
 
 function drawMixedCardHelper(
@@ -481,6 +481,7 @@ function drawMixedCardHelper(
 }
 
 function drawCardBackground(ctx: CanvasRenderingContext2D) {
+  ctx.save();
   cardBorderPath(ctx, 4);
 
   ctx.fillStyle = "white";
