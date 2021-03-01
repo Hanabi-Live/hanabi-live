@@ -3388,9 +3388,11 @@ export default function drawPip(
   }
 
   // Draw a black border around the shape
-  ctx.lineWidth = hasCustomFill ? 8 : 5;
   if (shadow === true) {
+    ctx.lineWidth = hasCustomFill ? 8 : 5;
     ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  } else {
+    ctx.lineWidth = 3;
   }
   ctx.stroke();
 }

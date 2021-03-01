@@ -10,7 +10,7 @@ import drawCards from "../src/game/ui/drawCards";
 import * as drawCardsNode from "./drawCardsNode";
 
 // Get the "No Variant" variant
-const variantName = "No Variant";
+const variantName = "Rainbow (6 Suits)";
 const noVariant = VARIANTS.get(variantName);
 if (noVariant === undefined) {
   console.error(

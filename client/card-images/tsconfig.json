@@ -4,9 +4,9 @@
     "outDir": "./dist",
 
     // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
-    "lib": ["ES2020", "dom"],
+    "lib": ["ES2018", "dom"],
     "module": "commonjs",
-    "target": "ES2020",
+    "target": "ES2018",
 
     // "newLine" specifies the end of line sequence
     // By default, it is "crlf" on Windows; we want to always use "lf" in order to match the code
