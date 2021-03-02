@@ -56,7 +56,7 @@ export default function drawCards(
 
       // We don't need the background on the stack base
       if (rank !== STACK_BASE_RANK) {
-        drawCardBackground(ctx);
+        drawCardBackground(ctx, enableShadows);
       }
 
       // Make the special corners on the cards for dual-color suits
@@ -65,7 +65,7 @@ export default function drawCards(
       }
 
       // Draw the background and the borders around the card
-      drawCardBase(ctx, suit, rank, variant, colorblindMode);
+      drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
 
       ctx.shadowBlur = 10;
       ctx.fillStyle = getSuitStyle(
@@ -150,7 +150,7 @@ export default function drawCards(
   // This is a special case; we want to render completely unknown cards as a blank gray card
   // (instead of a blank white card)
   {
-    const [cvs, ctx] = makeUnknownCard(initCanvas);
+    const [cvs, ctx] = makeUnknownCard(initCanvas, enableShadows);
     const cardUnknown = saveCanvas(cvs, ctx);
     cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, cardUnknown);
   }
@@ -158,7 +158,7 @@ export default function drawCards(
   // Additionally, create an image for the deck back
   // This is similar to the Unknown 6 card, except it has pips for each suit
   {
-    const [cvs, ctx] = makeDeckBack(variant, initCanvas);
+    const [cvs, ctx] = makeDeckBack(variant, initCanvas, enableShadows);
     const deckBack = saveCanvas(cvs, ctx);
     cardImages.set("deck-back", deckBack);
   }
@@ -273,12 +273,13 @@ function drawSuitPips(
 
 function makeUnknownCard(
   initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+  enableShadows: boolean,
 ) {
   const [cvs, ctx] = initCanvas();
 
-  drawCardBackground(ctx);
+  drawCardBackground(ctx, enableShadows);
   ctx.fillStyle = "black";
-  cardBorderPath(ctx, 4);
+  cardBorderPath(ctx, 4, enableShadows);
 
   ctx.save();
   ctx.globalAlpha = 0.5;
@@ -304,8 +305,9 @@ function makeUnknownCard(
 function makeDeckBack(
   variant: Variant,
   initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+  enableShadows: boolean,
 ) {
-  const [cvs, ctx] = makeUnknownCard(initCanvas);
+  const [cvs, ctx] = makeUnknownCard(initCanvas, enableShadows);
 
   const sf = 0.4; // Scale factor
   const nSuits = variant.suits.length;
@@ -341,6 +343,7 @@ function drawCardBase(
   rank: number,
   variant: Variant,
   colorblindMode: boolean,
+  enableShadows: boolean,
 ) {
   // Draw the background
   ctx.save();
@@ -360,7 +363,7 @@ function drawCardBase(
     variant,
     colorblindMode,
   );
-  cardBorderPath(ctx, 4);
+  cardBorderPath(ctx, 4, enableShadows);
 
   // Draw the borders (on visible cards) and the color fill
   ctx.globalAlpha = 0.3;
@@ -375,9 +378,14 @@ function drawCardBase(
   ctx.restore();
 }
 
-function cardBorderPath(ctx: CanvasRenderingContext2D, padding: number) {
-  const xRadians = CARD_W * 0.08;
-  const yRadians = CARD_W * 0.08;
+function cardBorderPath(
+  ctx: CanvasRenderingContext2D,
+  padding: number,
+  enableShadows: boolean,
+) {
+  const roundedCornerSeverity = enableShadows ? 0.08 : 0.16;
+  const xRadians = CARD_W * roundedCornerSeverity;
+  const yRadians = CARD_W * roundedCornerSeverity;
   // (we want them to both have the same value so that the curve has a 45 degree angle)
   ctx.beginPath();
   ctx.moveTo(padding, yRadians + padding); // Top-left corner
@@ -493,9 +501,12 @@ function drawMixedCardHelper(
   ctx.restore();
 }
 
-function drawCardBackground(ctx: CanvasRenderingContext2D) {
+function drawCardBackground(
+  ctx: CanvasRenderingContext2D,
+  enableShadows: boolean,
+) {
   ctx.save();
-  cardBorderPath(ctx, 4);
+  cardBorderPath(ctx, 4, enableShadows);
 
   ctx.fillStyle = "white";
   ctx.fill();
