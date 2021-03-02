@@ -383,7 +383,7 @@ function cardBorderPath(
   padding: number,
   enableShadows: boolean,
 ) {
-  const roundedCornerSeverity = enableShadows ? 0.08 : 0.16;
+  const roundedCornerSeverity = enableShadows ? 0.08 : 0.12;
   const xRadians = CARD_W * roundedCornerSeverity;
   const yRadians = CARD_W * roundedCornerSeverity;
   // (we want them to both have the same value so that the curve has a 45 degree angle)
