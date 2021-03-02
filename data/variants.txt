@@ -1779,4 +1779,5 @@ Up or Down & Light Pink (6 Suits) (#865)
 Up or Down & Light Pink (5 Suits) (#866)
 Up or Down & Prism (6 Suits) (#1669)
 Up or Down & Prism (5 Suits) (#1670)
+Sudoku (#1792)
 

@@ -6,6 +6,7 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20200802152012-2464efd3196b
 	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/bwmarrin/discordgo v0.22.0
+	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/gabstv/melody v1.0.2
 	github.com/getsentry/sentry-go v0.9.0
 	github.com/gin-contrib/gzip v0.0.3
@@ -20,12 +21,15 @@ require (
 	github.com/jackc/pgx/v4 v4.10.0
 	github.com/joho/godotenv v1.3.0
 	github.com/json-iterator/go v1.1.10 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/kr/pty v1.1.8 // indirect
 	github.com/mitchellh/mapstructure v1.4.0
 	github.com/mozillazg/go-unidecode v0.1.1
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sasha-s/go-deadlock v0.2.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/tevino/abool v1.2.0
 	github.com/ugorji/go v1.2.1 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
@@ -34,6 +38,7 @@ require (
 	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d // indirect
 	golang.org/x/text v0.3.4
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	google.golang.org/appengine v1.4.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

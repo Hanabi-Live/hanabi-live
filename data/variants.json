@@ -27281,5 +27281,17 @@
       "Prism"
     ],
     "showSuitNames": true
+  },
+  {
+    "name": "Sudoku",
+    "id": 1792,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "showSuitNames": true
   }
 ]

@@ -29,8 +29,14 @@ export const isDuck = (variant: Variant): boolean =>
 export const isThrowItInAHole = (variant: Variant): boolean =>
   variant.name.startsWith("Throw It in a Hole");
 
+export const isSudoku = (variant: Variant): boolean =>
+  isNameSudoku(variant.name);
+
 export const isUpOrDown = (variant: Variant): boolean =>
   isNameUpOrDown(variant.name);
+
+export const isNameSudoku = (variantName: string): boolean =>
+  variantName.startsWith("Sudoku");
 
 export const isNameUpOrDown = (variantName: string): boolean =>
   variantName.startsWith("Up or Down");

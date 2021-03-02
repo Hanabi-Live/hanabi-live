@@ -33,7 +33,9 @@ export function numCopiesOfCard(
   // In a normal suit of Hanabi,
   // there are three 1's, two 2's, two 3's, two 4's, and one 5
   let amountToAdd = 2;
-  if (rank === 1) {
+  if (variantRules.isSudoku(variant)) {
+    // Always 2 cards
+  } else if (rank === 1) {
     amountToAdd = 3;
     if (variantRules.isUpOrDown(variant) || suit.reversed) {
       amountToAdd = 1;

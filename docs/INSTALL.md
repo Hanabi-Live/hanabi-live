@@ -172,7 +172,9 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
 - Install [Golang](https://golang.org/):
-  - `sudo apt install golang -y`
+  - `wget https://golang.org/dl/go1.16.linux-amd64.tar.gz`
+  - `tar -xvf go1.16.linux-amd64.tar.gz`
+  - `sudo ln -s $HOME/go/bin/go /usr/local/bin`
 - Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
   - `sudo apt install postgresql -y` <br />
   - `sudo -u postgres psql` <br />

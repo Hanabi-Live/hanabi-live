@@ -37,7 +37,10 @@ func (g *Game) InitDeck() {
 			// - two 4's
 			// - one five
 			var amountToAdd int
-			if rank == 1 {
+			if variant.IsSudoku() {
+    			// Always 2 cards
+				amountToAdd = 2
+			} else if rank == 1 {
 				amountToAdd = 3
 				if variant.IsUpOrDown() || suit.Reversed {
 					amountToAdd = 1

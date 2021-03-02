@@ -48,6 +48,10 @@ func (v *Variant) IsUpOrDown() bool {
 	return strings.HasPrefix(v.Name, "Up or Down")
 }
 
+func (v *Variant) IsSudoku() bool {
+	return strings.HasPrefix(v.Name, "Sudoku")
+}
+
 func (v *Variant) HasReversedSuits() bool {
 	if v.IsUpOrDown() {
 		return true

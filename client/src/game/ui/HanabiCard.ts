@@ -1122,16 +1122,20 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   appendNote(note: string): void {
-    // By default, set the note directly on the card
-    let newNote = note;
-
-    // If we had an existing note, append the new note to the end using pipe notation
     const existingNote = globals.state.notes.ourNotes[this.state.order].text;
+    let noteText = "";
     if (existingNote !== undefined && existingNote !== "") {
-      newNote = `${existingNote} | ${note}`;
+      const lastPipe = existingNote.lastIndexOf("|");
+      let lastNote = existingNote.slice(lastPipe + 1);
+      if (lastNote.trim()[0] !== "[") {
+        const bracketedNote = `[${lastNote}]`;
+        lastNote = bracketedNote;
+      }
+      // If we had an existing note, append the new note to the end using new brackets
+      noteText =
+        (lastPipe === -1 ? "" : existingNote.slice(0, lastPipe)) + lastNote;
     }
-
-    this.setNote(newNote);
+    this.setNote(`${noteText}[${note}]`);
   }
 
   checkSpecialNote(): void {
