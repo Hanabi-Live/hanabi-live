@@ -3,6 +3,7 @@
 import { VARIANTS } from "../game/data/gameData";
 import globals from "../globals";
 import { closeAllTooltips } from "../misc";
+import { sendText } from "../chat";
 import * as modals from "../modals";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -148,12 +149,16 @@ export function init(): void {
         if (VARIANTS.get(variantName) === undefined) {
           return;
         }
-        globals.conn!.send("tableSetVariant", {
-          tableID: globals.tableID,
-          options: {
-            variantName,
-          },
-        });
+        if (globals.game!.owner === globals.userID) {
+          globals.conn!.send("tableSetVariant", {
+            tableID: globals.tableID,
+            options: {
+              variantName,
+            },
+          });
+        } else {
+          sendText("table", variantName);
+        }
         // Close the tooltips
         closeAllTooltips();
       });

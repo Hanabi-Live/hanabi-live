@@ -208,7 +208,6 @@ function send(room: string, element: JQuery<HTMLElement>) {
     throw new Error("The value of the element is not a string.");
   }
   msg = msg.trim();
-
   // Validate that they are accidentally broadcasting a private message reply
   if (msg.startsWith("/r ")) {
     modals.warningShow(
@@ -220,8 +219,12 @@ function send(room: string, element: JQuery<HTMLElement>) {
   // Clear the chat box
   element.val("");
 
+  sendText(room, msg);
+}
+
+export function sendText(room: string, _msg: string): void {
   // Validate that they did not send an empty message
-  if (msg === "") {
+  if (_msg === "") {
     return;
   }
 
@@ -234,7 +237,7 @@ function send(room: string, element: JQuery<HTMLElement>) {
   // However, if they tab-complete an emoji and then press enter before entering in any other
   // keystrokes, then the non-replaced emoji will be sent over the wire
   // Replace any non-replaced emoji before that happens
-  msg = fillEmojis(msg);
+  const msg = fillEmojis(_msg);
 
   // Use "startsWith" instead of "===" to work around an bug where
   // the room can already have the table number appended (e.g. "table123")
