@@ -208,6 +208,7 @@ function send(room: string, element: JQuery<HTMLElement>) {
     throw new Error("The value of the element is not a string.");
   }
   msg = msg.trim();
+
   // Validate that they are accidentally broadcasting a private message reply
   if (msg.startsWith("/r ")) {
     modals.warningShow(

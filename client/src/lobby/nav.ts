@@ -149,7 +149,7 @@ export function init(): void {
         if (VARIANTS.get(variantName) === undefined) {
           return;
         }
-        if (globals.game!.owner === globals.userID) {
+        if (globals.game?.owner === globals.userID) {
           globals.conn!.send("tableSetVariant", {
             tableID: globals.tableID,
             options: {
