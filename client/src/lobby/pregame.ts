@@ -463,10 +463,4 @@ export function enableStartGameButton(): void {
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
-
-  if (globals.game.owner !== globals.userID) {
-    $("#nav-buttons-pregame-change-variant").addClass("disabled");
-  } else {
-    $("#nav-buttons-pregame-change-variant").removeClass("disabled");
-  }
 }
