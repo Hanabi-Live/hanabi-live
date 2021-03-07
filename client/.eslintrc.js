@@ -28,7 +28,7 @@ module.exports = {
     "plugin:prettier/recommended",
 
     // Disable any ESLint rules that conflict with Prettier
-    // (otherwise, we will get duplicate errors with ESLint)
+    // (otherwise, we will have unfixable ESLint errors)
     // https://github.com/prettier/eslint-config-prettier
     "prettier",
   ],
