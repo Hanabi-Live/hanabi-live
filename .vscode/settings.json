@@ -26,44 +26,23 @@
     "**/misc/keldon/**": true,
   },
 
-  // ------------------
-  // Extension settings
-  // ------------------
+  // -----------------------
+  // JavaScript / TypeScript
+  // -----------------------
 
   // This is needed because the ".eslintrc.js" is not located in the root of the repository
   "eslint.workingDirectories": [
     "./client",
   ],
 
-  // The default Golang linter is golint, which is only concerned with coding style
-  // GolangCI-Lint does a suite of different checks
-  "go.lintTool": "golangci-lint",
-
-  // This is recommended as per the GolangCI-Lint README file
-  // https://github.com/golangci/golangci-lint/blob/master/README.md
-  "go.lintFlags": [
-      "--fast",
-  ],
-
   // This is needed because the "jest.config.js" is not located in the root of the repository
   "jest.rootPath": "client",
 
-  // Use "black" to automatically format Python files
-  // https://github.com/psf/black
-  "python.formatting.provider": "black",
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
+  // By default, VSCode will not automatically fill-in function arguments
+  "javascript.suggest.completeFunctionCalls": true,
+  "typescript.suggest.completeFunctionCalls": true,
 
-  // -----------------
-  // Language settings
-  // -----------------
-
-  "[go]": {
-    "editor.tabSize": 4,
-    "editor.insertSpaces": false,
-  },
-
-  // Automatically run the formatter when a TypeScript or JavaScript file is saved
+  // Automatically run the formatter when a JavaScript or TypeScript file is saved
   // "Organize Imports" must be before ESLint because it will delete trailing commas
   "[typescript]": {
     "editor.codeActionsOnSave": [
@@ -79,6 +58,35 @@
     ],
     "editor.tabSize": 2,
   },
+
+  // ------
+  // Golang
+  // ------
+
+  // The default Golang linter is golint, which is only concerned with coding style
+  // GolangCI-Lint does a suite of different checks
+  "go.lintTool": "golangci-lint",
+
+  // This is recommended as per the GolangCI-Lint README file
+  // https://github.com/golangci/golangci-lint/blob/master/README.md
+  "go.lintFlags": [
+      "--fast",
+  ],
+
+  "[go]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false,
+  },
+
+  // ------
+  // Python
+  // ------
+
+  // Use "black" to automatically format Python files
+  // https://github.com/psf/black
+  "python.formatting.provider": "black",
+  "python.linting.pylintEnabled": true,
+  "python.linting.enabled": true,
 
   // Automatically run the formatter when a Python file is saved
   "[python]": {
