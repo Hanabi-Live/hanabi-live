@@ -117,7 +117,9 @@ const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
 function parseNote(variant: Variant, text: string): CardNote {
   // Make all letters lowercase to simply the matching logic below
   // and remove all leading and trailing whitespace
-  const fullNote = text.toLowerCase().trim();
+  const pipeIdx = text.lastIndexOf("|");
+  const lastPipe = text.slice(pipeIdx >= 0 ? pipeIdx + 1 : 0);
+  const fullNote = lastPipe.toLowerCase().trim();
   const keywords = getNoteKeywords(fullNote);
   const possibilities = noteIdentity.getPossibilitiesFromKeywords(
     variant,

@@ -1133,7 +1133,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
       // If we had an existing note, append the new note to the end using new brackets
       noteText =
-        (lastPipe === -1 ? "" : existingNote.slice(0, lastPipe)) + lastNote;
+        (lastPipe === -1 ? "" : existingNote.slice(0, lastPipe + 1)) + lastNote;
     }
     this.setNote(`${noteText}[${note}]`);
   }
