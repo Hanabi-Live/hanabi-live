@@ -2,6 +2,14 @@ import produce, { Draft } from "immer";
 import { getVariant } from "../data/gameData";
 import { ensureAllCases } from "../../misc";
 import { NoteAction } from "../types/actions";
+import {
+  BLANK_NOTES,
+  CHOP_MOVED_NOTES,
+  FINESSED_NOTES,
+  KNOWN_TRASH_NOTES,
+  NEEDS_FIX_NOTES,
+  UNCLUED_NOTES,
+} from "./constants";
 import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";
 import NotesState from "../types/NotesState";
@@ -125,36 +133,12 @@ function parseNote(variant: Variant, text: string): CardNote {
     variant,
     keywords,
   );
-
-  const chopMoved = checkNoteKeywordsForMatch(
-    [
-      "cm",
-      "chop move",
-      "chop moved",
-      "5cm",
-      "e5cm",
-      "tcm",
-      "tccm",
-      "sdcm",
-      "sbpcm",
-      "ocm",
-      "tocm",
-      "utfcm",
-      "utbcm",
-    ],
-    keywords,
-  );
-  const finessed = checkNoteKeywordsForMatch(["f", "hf", "pf", "gd"], keywords);
-  const knownTrash = checkNoteKeywordsForMatch(
-    ["kt", "trash", "stale", "bad"],
-    keywords,
-  );
-  const needsFix = checkNoteKeywordsForMatch(
-    ["fix", "fixme", "needs fix"],
-    keywords,
-  );
-  const blank = checkNoteKeywordsForMatch(["blank"], keywords);
-  const unclued = checkNoteKeywordsForMatch(["unclued"], keywords);
+  const chopMoved = checkNoteKeywordsForMatch(CHOP_MOVED_NOTES, keywords);
+  const finessed = checkNoteKeywordsForMatch(FINESSED_NOTES, keywords);
+  const knownTrash = checkNoteKeywordsForMatch(KNOWN_TRASH_NOTES, keywords);
+  const needsFix = checkNoteKeywordsForMatch(NEEDS_FIX_NOTES, keywords);
+  const blank = checkNoteKeywordsForMatch(BLANK_NOTES, keywords);
+  const unclued = checkNoteKeywordsForMatch(UNCLUED_NOTES, keywords);
 
   return {
     possibilities,
