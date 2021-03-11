@@ -5,7 +5,7 @@ import linkifyHtml from "linkifyjs/html";
 import emojis from "../../data/emojis.json";
 import emoteCategories from "../../data/emotes.json";
 import chatCommands from "./chatCommands";
-import { FADE_TIME } from "./constants";
+import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import globals from "./globals";
 import Screen from "./lobby/types/Screen";
 import { parseIntSafe } from "./misc";
@@ -75,6 +75,7 @@ let lastPM = "";
 let datetimeLastChatInput = new Date().getTime();
 let typedChatHistory: string[] = [];
 let typedChatHistoryIndex: number | null = null;
+let typedChatHistoryPrefix = "";
 let tabCompleteWordListIndex: number | null = null;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
@@ -196,6 +197,7 @@ const keypress = (room: string) =>
     // We have typed a new character, so reset the tab-complete variables
     tabCompleteWordList = [];
     tabCompleteWordListIndex = null;
+    typedChatHistoryIndex = null;
 
     if (event.key === "Enter") {
       send(room, element);
@@ -249,20 +251,23 @@ export function sendText(room: string, msgRaw: string): void {
 
   // Add the chat message to the typed history so that we can use the up arrow later
   // (but only if it isn't in the history already)
-  if (!typedChatHistory.includes(msg)) {
-    const newLength = typedChatHistory.unshift(msg);
+  const index = typedChatHistory.indexOf(msg, 0);
+  if (index > -1) {
+    typedChatHistory.splice(index, 1);
+  }
+  const newLength = typedChatHistory.unshift(msg);
 
-    // Prevent the typed history from getting too large
-    if (newLength > 100) {
-      // Pop off the final element
-      typedChatHistory.pop();
-    }
-
-    // Save the typed chat history to local storage (cookie)
-    localStorage.setItem("typedChatHistory", JSON.stringify(typedChatHistory));
+  // Prevent the typed history from getting too large
+  if (newLength > TYPED_HISTORY_MAX_LENGTH) {
+    // Pop off the final element
+    typedChatHistory.pop();
   }
 
+  // Save the typed chat history to local storage (cookie)
+  localStorage.setItem("typedChatHistory", JSON.stringify(typedChatHistory));
+
   // Reset the typed history index
+  typedChatHistoryPrefix = "";
   typedChatHistoryIndex = null;
 
   // Check for chat commands
@@ -305,49 +310,56 @@ function keydown(this: HTMLElement, event: JQuery.Event) {
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus
   if (event.key === "ArrowUp") {
+    event.preventDefault();
     arrowUp(element);
   } else if (event.key === "ArrowDown") {
+    event.preventDefault();
     arrowDown(element);
   } else if (event.key === "Tab") {
     event.preventDefault();
     tab(element, event);
+  } else if (["Backspace", "Delete"].indexOf(event.key ?? "") !== -1) {
+    typedChatHistoryIndex = null;
   }
+}
+
+function historyMatchNext(current: string, increment: number): string | null {
+  if (typedChatHistoryIndex === null) {
+    if (increment < 0) {
+      return null;
+    }
+    typedChatHistoryIndex = -1;
+    typedChatHistoryPrefix = current;
+  }
+  const oldIndex = typedChatHistoryIndex;
+  do {
+    typedChatHistoryIndex += increment;
+    // Stay within bounds of history
+    if (typedChatHistoryIndex >= typedChatHistory.length) {
+      typedChatHistoryIndex = oldIndex;
+      return current;
+    }
+    if (typedChatHistoryIndex < 0) {
+      typedChatHistoryIndex = -1;
+      return typedChatHistoryPrefix;
+    }
+  } while (
+    // Only accept history if it matches prefix
+    !typedChatHistory[typedChatHistoryIndex].startsWith(typedChatHistoryPrefix)
+  );
+  return typedChatHistory[typedChatHistoryIndex];
 }
 
 export function arrowUp(element: JQuery<HTMLElement>): void {
-  if (typedChatHistoryIndex === null) {
-    typedChatHistoryIndex = 0;
-  } else {
-    typedChatHistoryIndex += 1;
-  }
-
-  // Check to see if we have reached the end of the history list
-  const finalIndex = typedChatHistory.length - 1;
-  if (typedChatHistoryIndex > finalIndex) {
-    typedChatHistoryIndex = finalIndex;
-    return;
-  }
-
+  const retrievedHistory = historyMatchNext(String(element.val() ?? ""), 1);
   // Set the chat input box to what we last typed
-  const retrievedHistory = typedChatHistory[typedChatHistoryIndex];
-  element.val(retrievedHistory);
+  element.val(retrievedHistory ?? "");
 }
 
 export function arrowDown(element: JQuery<HTMLElement>): void {
-  if (typedChatHistoryIndex !== null) {
-    typedChatHistoryIndex -= 1;
-    if (typedChatHistoryIndex < 0) {
-      typedChatHistoryIndex = null;
-    }
-  }
-  if (typedChatHistoryIndex === null) {
-    element.val("");
-    return;
-  }
-
+  const retrievedHistory = historyMatchNext(String(element.val() ?? ""), -1);
   // Set the chat input box to what we last typed
-  const retrievedHistory = typedChatHistory[typedChatHistoryIndex];
-  element.val(retrievedHistory);
+  element.val(retrievedHistory ?? "");
 }
 
 export function tab(element: JQuery<HTMLElement>, event: JQuery.Event): void {
