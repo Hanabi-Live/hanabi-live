@@ -5,7 +5,7 @@ import linkifyHtml from "linkifyjs/html";
 import emojis from "../../data/emojis.json";
 import emoteCategories from "../../data/emotes.json";
 import chatCommands from "./chatCommands";
-import { FADE_TIME } from "./constants";
+import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import globals from "./globals";
 import Screen from "./lobby/types/Screen";
 import { parseIntSafe } from "./misc";
@@ -13,7 +13,6 @@ import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
 // Constants
-const TYPED_HISTORY_MAX_LENGTH = 250;
 const serverSideOnlyCommands = [
   // General commands
   "help",
