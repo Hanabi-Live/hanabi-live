@@ -332,7 +332,7 @@ function historyMatchNext(current: string, increment: number): string | null {
     typedChatHistoryPrefix = current;
   }
   const oldIndex = typedChatHistoryIndex;
-  while (1) {
+  do {
     typedChatHistoryIndex += increment;
     // Stay within bounds of history
     if (typedChatHistoryIndex >= typedChatHistory.length) {
@@ -343,13 +343,10 @@ function historyMatchNext(current: string, increment: number): string | null {
       typedChatHistoryIndex = -1;
       return typedChatHistoryPrefix;
     }
+  } while (
     // Only accept history if it matches prefix
-    if (
-      typedChatHistory[typedChatHistoryIndex].startsWith(typedChatHistoryPrefix)
-    ) {
-      break;
-    }
-  }
+    !typedChatHistory[typedChatHistoryIndex].startsWith(typedChatHistoryPrefix)
+  );
   return typedChatHistory[typedChatHistoryIndex];
 }
 
