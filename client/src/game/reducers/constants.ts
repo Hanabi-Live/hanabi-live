@@ -11,6 +11,7 @@ export const CHOP_MOVED_NOTES = [
   "ocm",
   "tocm",
   "utfcm",
+  "utdcm",
   "utbcm",
 ];
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"];
