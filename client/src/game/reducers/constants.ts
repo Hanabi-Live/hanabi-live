@@ -14,12 +14,13 @@ export const CHOP_MOVED_NOTES = [
   "utbcm",
 ];
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"];
-export const FINESSED_NOTES = ["f", "hf", "pf", "gd"];
+export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
 export const BLANK_NOTES = ["blank"];
 export const UNCLUED_NOTES = ["unclued"];
 export const CLUED_NOTES = ["clued"];
-export const ALL_RESERVED_NOTES = KNOWN_TRASH_NOTES.concat(
+export const ALL_RESERVED_NOTES = (<string[]>[]).concat(
+  KNOWN_TRASH_NOTES,
   CHOP_MOVED_NOTES,
   FINESSED_NOTES,
   NEEDS_FIX_NOTES,
