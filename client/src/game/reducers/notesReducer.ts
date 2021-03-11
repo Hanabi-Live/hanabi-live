@@ -1,3 +1,4 @@
+import equal from "fast-deep-equal";
 import produce, { Draft } from "immer";
 import { getVariant } from "../data/gameData";
 import { ensureAllCases } from "../../misc";
@@ -17,6 +18,7 @@ import Variant from "../types/Variant";
 import * as noteIdentity from "./noteIdentity";
 
 const notesReducer = produce(notesReducerFunction, {} as NotesState);
+const emptyNotes: Map<string, CardNote> = new Map<string, CardNote>();
 export default notesReducer;
 
 function notesReducerFunction(
@@ -122,7 +124,37 @@ function getNoteKeywords(note: string) {
 const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
   keywords.some((k) => patterns.some((pattern) => k === pattern));
 
-function parseNote(variant: Variant, text: string): CardNote {
+function getEmptyNote(variant: Variant): CardNote {
+  const note: CardNote = emptyNotes.get(variant.name) ?? parseNote(variant, "");
+  emptyNotes.set(variant.name, note);
+  return note;
+}
+
+function noteWithoutText(note: CardNote): CardNote {
+  interface CardNoteModifiable {
+    possibilities: Array<[number, number]>;
+    knownTrash: boolean;
+    needsFix: boolean;
+    chopMoved: boolean;
+    finessed: boolean;
+    blank: boolean;
+    unclued: boolean;
+    text: string;
+  }
+  const newNote: CardNoteModifiable = note;
+  newNote.text = "";
+  return newNote;
+}
+
+export function noteEqual(note1: CardNote, note2: CardNote): boolean {
+  return equal(noteWithoutText(note1), noteWithoutText(note2));
+}
+
+export function noteHasMeaning(variant: Variant, note: CardNote): boolean {
+  return !noteEqual(noteWithoutText(note), getEmptyNote(variant));
+}
+
+export function parseNote(variant: Variant, text: string): CardNote {
   // Make all letters lowercase to simply the matching logic below
   // and remove all leading and trailing whitespace
   const pipeIdx = text.lastIndexOf("|");

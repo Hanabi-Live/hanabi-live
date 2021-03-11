@@ -4,6 +4,7 @@
 import Konva from "konva";
 import { getSuit } from "../data/gameData";
 import initialCardState from "../reducers/initialStates/initialCardState";
+import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
 import CardIdentity from "../types/CardIdentity";
@@ -1123,19 +1124,26 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   appendNote(note: string): void {
     const existingNote = globals.state.notes.ourNotes[this.state.order].text;
-    let noteText = "";
-    if (existingNote !== undefined && existingNote !== "") {
-      const lastPipe = existingNote.lastIndexOf("|");
-      let lastNote = existingNote.slice(lastPipe + 1);
-      if (lastNote.trim()[0] !== "[") {
-        const bracketedNote = `[${lastNote}]`;
-        lastNote = bracketedNote;
+    const noteText = (existingNote ?? "").trim();
+    if (noteText === "") {
+      this.setNote(`[${note}]`);
+    } else {
+      const lastPipe = noteText.lastIndexOf("|");
+      const lastNote = noteText.slice(lastPipe + 1).trim();
+      const currentNote = parseNote(this.variant, lastNote);
+      const bracketedNote =
+        lastNote[0] === "[" ? `${lastNote}` : `[${lastNote}]`;
+      const appendedNote = `${bracketedNote} [${note}]`;
+      // Case of: adding note does not change note meaning
+      if (noteEqual(currentNote, parseNote(this.variant, appendedNote))) {
+        return;
       }
-      // If we had an existing note, append the new note to the end using new brackets
-      noteText =
-        (lastPipe === -1 ? "" : existingNote.slice(0, lastPipe + 1)) + lastNote;
+      if (!noteHasMeaning(this.variant, currentNote)) {
+        this.setNote(`${noteText} | [${note}]`);
+      } else {
+        this.setNote(`${noteText} | ${appendedNote}`);
+      }
     }
-    this.setNote(`${noteText}[${note}]`);
   }
 
   checkSpecialNote(): void {
