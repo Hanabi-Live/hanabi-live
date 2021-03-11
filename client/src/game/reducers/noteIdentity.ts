@@ -178,7 +178,8 @@ export function getPossibilitiesFromKeywords(
 ): Array<[number, number]> {
   let possibilities: Array<[number, number]> = [];
 
-  for (const keyword of keywords) {
+  // Empty keyword list returns all possibilities
+  for (const keyword of keywords.length ? keywords : [""]) {
     const newPossibilities = getPossibilitiesFromKeyword(variant, keyword);
     if (newPossibilities === null) {
       continue;
