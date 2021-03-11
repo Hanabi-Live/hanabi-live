@@ -3,6 +3,7 @@ import CardIdentity from "../types/CardIdentity";
 import { MAX_RANK, START_CARD_RANK } from "../types/constants";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
+import { ALL_RESERVED_NOTES } from "./constants";
 
 interface CardIdentities {
   readonly suitIndices: number[];
@@ -253,5 +254,10 @@ export const extractSuitText = (match: RegExpMatchArray): string | null =>
 export const extractRankText = (match: RegExpMatchArray): string | null =>
   match[2] ?? match[3] ?? match[6] ?? null;
 
-export const extractSquishText = (match: RegExpMatchArray): string | null =>
-  match[7] ?? null;
+export const extractSquishText = (match: RegExpMatchArray): string | null => {
+  const text = match[7]?.trim();
+  if (ALL_RESERVED_NOTES.indexOf(text) === -1) {
+    return text ?? null;
+  }
+  return null;
+};

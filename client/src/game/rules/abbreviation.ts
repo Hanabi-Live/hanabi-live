@@ -1,3 +1,4 @@
+import { ALL_RESERVED_NOTES } from "../reducers/constants";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
 
@@ -11,13 +12,21 @@ export function makeAll(variantName: string, suits: Suit[]): string[] {
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
     if (!abbreviations.includes(suit.abbreviation)) {
+      if (ALL_RESERVED_NOTES.indexOf(suit.abbreviation) !== -1) {
+        throw new Error(
+          `Suit abbreviation for "${suit.name}" in the variant of "${variantName}" conflicts with a reserved word.`,
+        );
+      }
       // There is no overlap with the normal abbreviation
       abbreviationToUse = suit.abbreviation;
     } else {
       // There is an overlap with the normal abbreviation
       for (let i = 0; i < suit.displayName.length; i++) {
         const suitLetter = suit.displayName[i].toUpperCase();
-        if (!abbreviations.includes(suitLetter)) {
+        if (
+          !abbreviations.includes(suitLetter) &&
+          ALL_RESERVED_NOTES.indexOf(suitLetter) === -1
+        ) {
           abbreviationToUse = suitLetter;
           break;
         }
