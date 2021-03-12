@@ -140,13 +140,13 @@ One of each card per suit (e.g. 5 in total):
   - The fourth suit is touched by a rank 4 clue
   - The fifth suit is touched by a rank 1 clue (wrapping around)
 
-### Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Brown)
+### Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
 
 - Suit-Ones or Suit-Fives of a special suit inherit the special suit's properties.
-  - For example, consider the "Rainbow-Fives & Pink" variant:
+  - For example, consider the "Rainbow-Ones & Pink" variant:
     - The rainbow suit has the property of being touched by all colors.
     - The pink suit has the property of being touched by all ranks.
-    - These add together and the pink 5 is touched by all colors and touched by all ranks.
+    - These add together and the pink 1 is touched by all colors and touched by all ranks.
 - If a conflict is present, the suit property will override the special property.
   - For example, consider the "Null-Ones & Rainbow" variant:
     - The null suit has the property of being touched by no colors and touched by no ranks.
