@@ -114,11 +114,11 @@ One of each card per suit (e.g. 5 in total):
 
 - Two suits are replaced with special suits.
 
-### Rainbow-Ones, Pink-Ones, White-Ones, etc.
+### Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
 
 - Ones have the property of the suit prefix. For example, rainbow-ones are "touched" by all colors.
 
-### Rainbow-Fives, Pink-Fives, White-Fives, etc.
+### Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
 
 - Fives have the property of the suit prefix. For example, rainbow-fives are "touched" by all colors.
 
