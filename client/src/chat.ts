@@ -577,6 +577,15 @@ export function add(data: ChatMessage, fast: boolean): void {
       '<span class="red">[Server Notice]</span>',
     );
   }
+  // Replace chat suggestions with anchors which, when clicked, are chat commands
+  if (chat.is($("#lobby-chat-pregame-text"))) {
+    const regex = /(.*)(@(\/.*)@)(.*)/;
+    let match = regex.exec(line);
+    while (match) {
+      line = `${match[1]}<a href="#" class="suggestion">${match[3]}</a>${match[4]}`;
+      match = regex.exec(line);
+    }
+  }
   line += "</span><br />";
 
   // Find out if we should automatically scroll down after adding the new line of chat
@@ -593,6 +602,14 @@ export function add(data: ChatMessage, fast: boolean): void {
   // Add the new line and fade it in
   chat.append(line);
   $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME);
+  $(`#chat-line-${chatLineNum} a.suggestion`).each((_, el) => {
+    const text = el.innerText;
+    const chatInput = $("#lobby-chat-pregame-input");
+    $(el).on("click", () => {
+      chatInput.val(text);
+      chatInput.focus();
+    });
+  });
   chatLineNum += 1;
 
   // Automatically scroll down

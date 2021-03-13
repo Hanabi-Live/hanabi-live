@@ -157,7 +157,7 @@ export function init(): void {
             },
           });
         } else {
-          sendText("table", variantName);
+          sendText("table", `Please @/setvariant ${variantName}@`);
         }
         // Close the tooltips
         closeAllTooltips();
