@@ -147,6 +147,66 @@ function setVariant(_room: string, args: string[]) {
 chatCommands.set("setvariant", setVariant);
 chatCommands.set("changevariant", setVariant);
 
+// /settimer [base] [perTurn]
+function setTimer(_room: string, args: string[]) {
+  if (globals.tableID === -1) {
+    modals.warningShow(
+      "You are not currently at a table, so you cannot use that command.",
+    );
+    return;
+  }
+
+  // Validate the parameters given
+  if (args.length !== 2) {
+    modals.warningShow("Please use /settimer [base] [per-turn]");
+    return;
+  }
+
+  const timeBaseMinutes = parseFloat(args[0]);
+  const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
+  const timePerTurn = parseFloat(args[1]);
+
+  if (!Number.isInteger(timeBaseSeconds) || !Number.isInteger(timePerTurn)) {
+    modals.warningShow(
+      "Please use integer values in /settimer [base] [per-turn]",
+    );
+    return;
+  }
+
+  globals.conn!.send("tableSetTimer", {
+    tableID: globals.tableID,
+    options: {
+      timeBase: timeBaseSeconds,
+      timePerTurn,
+    },
+  });
+
+  // Update our stored create table setting to be equal to this variant
+  createGame.checkChanged("createTableTimed", true);
+  createGame.checkChanged("createTableTimeBaseMinutes", args[0]);
+  createGame.checkChanged("createTableTimePerTurnSeconds", args[1]);
+}
+chatCommands.set("settimer", setTimer);
+
+// /removetimer
+function removeTimer() {
+  if (globals.tableID === -1) {
+    modals.warningShow(
+      "You are not currently at a table, so you cannot use that command.",
+    );
+    return;
+  }
+
+  globals.conn!.send("tableRemoveTimer", {
+    tableID: globals.tableID,
+    options: {},
+  });
+
+  // Update our stored create table setting to be equal to this variant
+  createGame.checkChanged("createTableTimed", false);
+}
+chatCommands.set("removetimer", removeTimer);
+
 // /tag [tag]
 chatCommands.set("tag", (_room: string, args: string[]) => {
   if (globals.tableID === -1) {

@@ -91,6 +91,8 @@ func commandInit() {
 	commandMap["tableLeave"] = commandTableLeave
 	commandMap["tableUnattend"] = commandTableUnattend
 	commandMap["tableReattend"] = commandTableReattend
+	commandMap["tableRemoveTimer"] = commandTableRemoveTimer
+	commandMap["tableSetTimer"] = commandTableSetTimer
 	commandMap["tableSetVariant"] = commandTableSetVariant
 	commandMap["tableSetLeader"] = commandTableSetLeader
 	commandMap["tableStart"] = commandTableStart
