@@ -111,10 +111,15 @@
         // s is the date and time string
         // format "YYYY-MM-DD — hh:mm:ss Z", e.g. "2021-03-14 — 16:33:05 UTC"
         // parsing the date and time string (regex), converting it to a date and then to unix timestamp/seconds
-        const regexDateAndTime = new RegExp(`(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2}) — (?<hours>\\d{2}):(?<minutes>\\d{2}):(?<seconds>\\d{2})`);
-        const d = regexDateAndTime.exec(s).groups;
-        const time = (new Date(d.year, d.month - 1, d.day, d.hours, d.minutes, d.seconds)).getTime();
-        return time;
+        try {
+          const regexDateAndTime = new RegExp(`(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2}) — (?<hours>\\d{2}):(?<minutes>\\d{2}):(?<seconds>\\d{2})`);
+          const d = regexDateAndTime.exec(s).groups;
+          const time = (new Date(d.year, d.month - 1, d.day, d.hours, d.minutes, d.seconds)).getTime();
+          return time;
+        } catch {
+          // date and time string was not in expected format
+          return 0;
+        }
       },
       type: 'numeric'
     });
