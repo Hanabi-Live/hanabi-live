@@ -154,7 +154,7 @@ export function openEditTooltip(card: HanabiCard): void {
     globals.editingNote = null;
 
     let newNote;
-    if (keyEvent.which === KeyCode.KEY_ESCAPE {
+    if (keyEvent.which === KeyCode.KEY_ESCAPE) {
       // Use the existing note, if any
       newNote = get(card.state.order, true);
     } else if (keyEvent.which === KeyCode.KEY_RETURN) {
