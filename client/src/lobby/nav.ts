@@ -1,9 +1,9 @@
 // The navigation bar at the top of the lobby
 
+import { sendText } from "../chat";
 import { VARIANTS } from "../game/data/gameData";
 import globals from "../globals";
 import { closeAllTooltips } from "../misc";
-import { sendText } from "../chat";
 import * as modals from "../modals";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -111,7 +111,8 @@ export function init(): void {
 
   $("#nav-buttons-pregame-change-variant").on("click", () => {
     if (!$("#nav-buttons-pregame-change-variant").hasClass("disabled")) {
-      $("#nav-buttons-pregame-change-variant").tooltipster("open");
+      $("#nav-buttons-lobby-create-game").tooltipster("open");
+      // $("#nav-buttons-pregame-change-variant").tooltipster("open");
     }
   });
 

@@ -12,6 +12,7 @@ import {
   parseIntSafe,
 } from "../misc";
 import * as modals from "../modals";
+import Screen from "./types/Screen";
 import Settings from "./types/Settings";
 
 // Constants
@@ -443,15 +444,37 @@ export function before(): boolean {
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
 export function ready(): void {
-  // Fill in the "Name" box
-  if (debug.amTestUser(globals.username)) {
-    $("#createTableName").val("test game");
-  } else {
-    $("#createTableName").val(globals.randomTableName);
+  // Change the UI if we are in a pre-game screen
+  let dialogTitle = "Create a New Game";
+  let buttonTitle = "Create";
+  let gameName = "";
+  let dialogOptions = null;
+  let isNew = true;
 
-    // Get a new random name from the server for the next time we click the button
-    globals.conn!.send("getName");
+  if (globals.game === null || globals.currentScreen === Screen.Lobby) {
+    // Create New Game
+    if (debug.amTestUser(globals.username)) {
+      gameName = "test game";
+    } else {
+      gameName = globals.randomTableName;
+
+      // Get a new random name from the server for the next time we click the button
+      globals.conn!.send("getName");
+    }
+    dialogOptions = globals.settings;
+  } else {
+    // Change Options
+    isNew = false;
+    dialogTitle = "Change Game Options";
+    buttonTitle = "Change";
+    gameName = globals.game.name;
+    dialogOptions = globals.game.options;
   }
+
+  // Set UI Elements and values
+  $("#create-game-tooltip-title").text(dialogTitle);
+  $("#create-game-submit").text(buttonTitle);
+  $("#createTableName").val(gameName);
 
   // Focus the "Name" box
   // (this has to be in a callback in order to work)
@@ -461,7 +484,7 @@ export function ready(): void {
 
   // Fill in the rest of form with the settings that we used last time
   // (which is stored on the server)
-  for (const [key, value] of Object.entries(globals.settings)) {
+  for (const [key, value] of Object.entries(dialogOptions)) {
     const element = $(`#${key}`);
     if (key === "createTableVariant") {
       // Setting the variant dropdown is a special case;
@@ -482,6 +505,13 @@ export function ready(): void {
   const password = localStorage.getItem("createTablePassword");
   if (password !== null && password !== "") {
     $("#createTablePassword").val(password);
+  }
+
+  if (isNew) {
+    $("#password-row").removeClass("hidden");
+  } else {
+    // Can't change the password once the game is created
+    $("#password-row").addClass("hidden");
   }
 
   // Hide the extra options if we do not have any selected
