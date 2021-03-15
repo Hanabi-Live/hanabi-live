@@ -39,9 +39,14 @@ export function init(): void {
 
   // Add "1", "2", "3", "4", and "5" (for rank clues)
   for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
-    // The button for "1" is at array index 0, etc.
+    // Normal keyboard
     hotkeyClueMap.set(
       i + KeyCode.KEY_1,
+      click(globals.elements.rankClueButtons[i]),
+    );
+    // Numpad
+    hotkeyClueMap.set(
+      i + KeyCode.KEY_NUMPAD1,
       click(globals.elements.rankClueButtons[i]),
     );
   }
