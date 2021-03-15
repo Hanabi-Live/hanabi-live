@@ -1,5 +1,6 @@
 // The "Create Game" nav button
 
+import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
 import { VARIANTS } from "../game/data/gameData";
@@ -152,7 +153,7 @@ export function init(): void {
 
   // Pressing enter anywhere will submit the form
   $("#create-game-tooltip").on("keypress", (event) => {
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
       $("#create-game-submit").click();
     }

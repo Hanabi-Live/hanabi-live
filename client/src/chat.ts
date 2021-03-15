@@ -1,6 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
+import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkifyjs/html";
 import emojis from "../../data/emojis.json";
 import emoteCategories from "../../data/emotes.json";
@@ -199,7 +200,7 @@ const keypress = (room: string) =>
     tabCompleteWordListIndex = null;
     typedChatHistoryIndex = null;
 
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       send(room, element);
     }
   };
@@ -309,16 +310,19 @@ function keydown(this: HTMLElement, event: JQuery.Event) {
   // The up and down arrows are only caught in the "keydown" event
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus
-  if (event.key === "ArrowUp") {
+  if (event.which === KeyCode.KEY_UP) {
     event.preventDefault();
     arrowUp(element);
-  } else if (event.key === "ArrowDown") {
+  } else if (event.which === KeyCode.KEY_DOWN) {
     event.preventDefault();
     arrowDown(element);
-  } else if (event.key === "Tab") {
+  } else if (event.which === KeyCode.KEY_TAB) {
     event.preventDefault();
     tab(element, event);
-  } else if (["Backspace", "Delete"].indexOf(event.key ?? "") !== -1) {
+  } else if (
+    [KeyCode.KEY_BACK_SPACE, KeyCode.KEY_DELETE].indexOf(event.which ?? 0) !==
+    -1
+  ) {
     typedChatHistoryIndex = null;
   }
 }

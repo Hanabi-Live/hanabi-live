@@ -1,9 +1,10 @@
 // The navigation bar at the top of the lobby
 
+import * as KeyCode from "keycode-js";
+import { sendText } from "../chat";
 import { VARIANTS } from "../game/data/gameData";
 import globals from "../globals";
 import { closeAllTooltips } from "../misc";
-import { sendText } from "../chat";
 import * as modals from "../modals";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -135,7 +136,7 @@ export function init(): void {
 
       // Pressing enter anywhere will submit the form
       $("#change-variant-dropdown").on("keypress", (event) => {
-        if (event.key === "Enter") {
+        if (event.which === KeyCode.KEY_RETURN) {
           event.preventDefault();
           $("#change-variant-submit").click();
         }
@@ -255,7 +256,7 @@ function initTooltips() {
 
   // Map the escape key to close all tooltips / modals
   $(document).keydown((event) => {
-    if (event.key === "Escape") {
+    if (event.which === KeyCode.KEY_ESCAPE) {
       event.preventDefault();
       closeAllTooltips();
       modals.closeAll();

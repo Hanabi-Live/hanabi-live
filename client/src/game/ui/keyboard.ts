@@ -1,5 +1,6 @@
 // Functions for handling all of the keyboard shortcuts
 
+import * as KeyCode from "keycode-js";
 import Konva from "konva";
 import Screen from "../../lobby/types/Screen";
 import { copyStringToClipboard, parseIntSafe } from "../../misc";
@@ -85,7 +86,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     return;
   }
 
-  if (event.key === "Escape") {
+  if (event.which === KeyCode.KEY_ESCAPE) {
     // Don't do anything if there is a warning or error visible
     if (globals.lobby.modalShowing) {
       return;
@@ -114,7 +115,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     return;
   }
 
-  if (event.key === " ") {
+  if (event.which === KeyCode.KEY_SPACE) {
     // Space bar
     // Don't activate global empathy if we are typing in the in-game chat
     if ($("#game-chat-input").is(":focus")) {
@@ -128,14 +129,14 @@ function keydown(event: JQuery.KeyDownEvent) {
   // Ctrl hotkeys
   if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
     // Ctrl + Enter = Give a clue / click on the "Give Clue" button
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       clues.give(); // This function has validation inside of it
       return;
     }
 
     // Ctrl + c = Copy the current game ID
     if (
-      event.key === "c" &&
+      event.which === KeyCode.KEY_C &&
       globals.state.finished &&
       // Account for users copying text from the chat window
       !$("#game-chat-modal").is(":visible")
@@ -150,25 +151,25 @@ function keydown(event: JQuery.KeyDownEvent) {
   // Alt hotkeys
   if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
     // Sound hotkeys
-    if (event.key === "b" || event.key === "∫") {
+    if (event.which === KeyCode.KEY_B) {
       // Alt + b
       // This is used for fun in shared replays
       sharedReplaySendSound("buzz");
       return;
     }
-    if (event.key === "h" || event.key === "˙") {
+    if (event.which === KeyCode.KEY_H) {
       // Alt + h
       // This is used for fun in shared replays
       sharedReplaySendSound("holy");
       return;
     }
-    if (event.key === "n" || event.key === "˜") {
+    if (event.which === KeyCode.KEY_N) {
       // Alt + n
       // This is used for fun in shared replays
       sharedReplaySendSound("nooo");
       return;
     }
-    if (event.key === "z" || event.key === "Ω") {
+    if (event.which === KeyCode.KEY_Z) {
       // Alt + z
       // This is used as a sound test
       globals.game!.sounds.play("turn_us");
@@ -176,17 +177,17 @@ function keydown(event: JQuery.KeyDownEvent) {
     }
 
     // Other
-    if (event.key === "c") {
+    if (event.which === KeyCode.KEY_C) {
       // Alt + c
       globals.game!.chat.toggle();
       return;
     }
-    if (event.key === "l" || event.key === "¬") {
+    if (event.which === KeyCode.KEY_L) {
       // Alt + l
       backToLobby();
       return;
     }
-    if (event.key === "t" || event.key === "†") {
+    if (event.which === KeyCode.KEY_T) {
       // Alt + t
       replay.promptTurn();
       return;
@@ -207,7 +208,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any
   if (
-    event.key === "Delete" &&
+    event.which === KeyCode.KEY_DELETE &&
     globals.activeHover !== null &&
     globals.activeHover instanceof HanabiCard
   ) {
@@ -218,24 +219,24 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Replay hotkeys
   if (globals.state.replay.hypothetical !== null) {
-    if (event.key === "ArrowLeft") {
+    if (event.which === KeyCode.KEY_LEFT) {
       hypothetical.sendBack();
       return;
     }
   } else {
-    switch (event.key) {
-      case "ArrowLeft": {
+    switch (event.which) {
+      case KeyCode.KEY_LEFT: {
         replay.back();
         return;
       }
 
-      case "ArrowRight": {
+      case KeyCode.KEY_RIGHT: {
         replay.forward();
         return;
       }
 
-      case "ArrowUp":
-      case "ArrowDown": {
+      case KeyCode.KEY_UP:
+      case KeyCode.KEY_DOWN: {
         if (globals.state.replay.shared !== null) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
@@ -306,7 +307,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 }
 
 function keyup(event: JQuery.KeyUpEvent) {
-  if (event.key === " ") {
+  if (event.which === KeyCode.KEY_SPACE) {
     // Space bar
     setGlobalEmpathy(false);
   }
