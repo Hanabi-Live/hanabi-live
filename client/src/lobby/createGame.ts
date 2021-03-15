@@ -67,6 +67,7 @@ export function init(): void {
     // Remember the new setting
     getCheckbox("createTableTimed");
   });
+
   $("#createTableSpeedrun").change(() => {
     if ($("#createTableSpeedrun").prop("checked")) {
       $("#create-game-timed-row").hide();
@@ -107,6 +108,7 @@ export function init(): void {
     // Remember the new setting
     getCheckbox("createTableOneLessCard");
   });
+
   $("#createTableOneLessCard").change(() => {
     if ($("#createTableOneLessCard").is(":checked")) {
       $("#createTableOneExtraCardRow").fadeTo(0, 0.3);
@@ -307,6 +309,7 @@ function submit() {
       password,
       gameJSON,
     });
+    $("#nav-buttons-lobby-create-game").addClass("disabled");
   } else {
     globals.conn!.send("tableUpdate", {
       tableID: globals.tableID,
@@ -316,7 +319,6 @@ function submit() {
   }
 
   closeAllTooltips();
-  $("#nav-buttons-lobby-create-game").addClass("disabled");
 }
 
 function getCheckbox(setting: keyof Settings) {
@@ -416,11 +418,6 @@ export function checkChanged(
 // This function is executed every time the "Create Game" button is clicked
 // (before the tooltip is added to the DOM)
 export function before(): boolean {
-  // Don't allow the tooltip to open if the button is currently disabled
-  if ($("#nav-buttons-lobby-create-game").hasClass("disabled")) {
-    return false;
-  }
-
   if (globals.shuttingDown) {
     const now = new Date();
     const elapsedTimeMilliseconds =

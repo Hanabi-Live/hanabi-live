@@ -61,11 +61,11 @@ export default function keyboardInit(): void {
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-start").click();
       }
-    } else if (event.altKey && (event.key === "v" || event.key === "√")) {
-      // Alt + v
-      // Click on the "Change Variant" button
+    } else if (event.altKey && event.key === "c") {
+      // Alt + c
+      // Click on the "Change Options" button
       if (globals.currentScreen === Screen.PreGame) {
-        $("#nav-buttons-pregame-change-variant").click();
+        $("#nav-buttons-pregame-change-options").click();
       }
     } else if (event.altKey && (event.key === "l" || event.key === "¬")) {
       // Alt + l
