@@ -113,7 +113,7 @@ export function init(): void {
     }
   });
 
-  // The "Change Variant" button
+  // The "Change Options" button
   // (also initialized in the "initTooltips()" function)
   $("#nav-buttons-pregame-change-options").unbind("click");
 
