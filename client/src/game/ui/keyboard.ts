@@ -18,9 +18,9 @@ import * as turn from "./turn";
 
 // Variables
 type Callback = () => void;
-const hotkeyClueMap = new Map<string, Callback>();
-const hotkeyPlayMap = new Map<string, Callback>();
-const hotkeyDiscardMap = new Map<string, Callback>();
+const hotkeyClueMap = new Map<number, Callback>();
+const hotkeyPlayMap = new Map<number, Callback>();
+const hotkeyDiscardMap = new Map<number, Callback>();
 
 // Build a mapping of hotkeys to functions
 export function init(): void {
@@ -29,7 +29,7 @@ export function init(): void {
   hotkeyDiscardMap.clear();
 
   // Add "Tab" for player selection
-  hotkeyClueMap.set("Tab", () => {
+  hotkeyClueMap.set(KeyCode.KEY_TAB, () => {
     if (globals.state.replay.hypothetical === null) {
       globals.elements.clueTargetButtonGroup!.selectNextTarget();
     } else {
@@ -40,13 +40,23 @@ export function init(): void {
   // Add "1", "2", "3", "4", and "5" (for rank clues)
   for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
     // The button for "1" is at array index 0, etc.
-    hotkeyClueMap.set(`${i + 1}`, click(globals.elements.rankClueButtons[i]));
+    hotkeyClueMap.set(
+      i + KeyCode.KEY_1,
+      click(globals.elements.rankClueButtons[i]),
+    );
   }
 
   // Add "q", "w", "e", "r", "t", and "y" (for color clues)
   // (we use qwert since they are conveniently next to 12345,
   // and also because the clue colors can change between different variants)
-  const clueKeyRow = ["q", "w", "e", "r", "t", "y"];
+  const clueKeyRow = [
+    KeyCode.KEY_Q,
+    KeyCode.KEY_W,
+    KeyCode.KEY_E,
+    KeyCode.KEY_R,
+    KeyCode.KEY_T,
+    KeyCode.KEY_Y,
+  ];
   for (
     let i = 0;
     i < globals.elements.colorClueButtons.length && i < clueKeyRow.length;
@@ -58,10 +68,10 @@ export function init(): void {
     );
   }
 
-  hotkeyPlayMap.set("a", play); // The main play hotkey
-  hotkeyPlayMap.set("+", play); // For numpad users
-  hotkeyDiscardMap.set("d", discard); // The main discard hotkey
-  hotkeyDiscardMap.set("-", discard); // For numpad users
+  hotkeyPlayMap.set(KeyCode.KEY_A, play); // The main play hotkey
+  hotkeyPlayMap.set(KeyCode.KEY_ADD, play); // For numpad users
+  hotkeyDiscardMap.set(KeyCode.KEY_D, discard); // The main discard hotkey
+  hotkeyDiscardMap.set(KeyCode.KEY_SUBTRACT, discard); // For numpad users
 
   // Enable all of the keyboard hotkeys
   $(document).keydown(keydown);
@@ -245,22 +255,22 @@ function keydown(event: JQuery.KeyDownEvent) {
         return;
       }
 
-      case "[": {
+      case KeyCode.KEY_OPEN_BRACKET: {
         replay.backRound();
         return;
       }
 
-      case "]": {
+      case KeyCode.KEY_CLOSE_BRACKET: {
         replay.forwardRound();
         return;
       }
 
-      case "Home": {
+      case KeyCode.KEY_HOME: {
         replay.backFull();
         return;
       }
 
-      case "End": {
+      case KeyCode.KEY_END: {
         replay.forwardFull();
         return;
       }
@@ -294,12 +304,12 @@ function keydown(event: JQuery.KeyDownEvent) {
     ongoingGameState.clueTokens >=
     clueTokensRules.getAdjusted(1, globals.variant)
   ) {
-    hotkeyFunction = hotkeyClueMap.get(event.key);
+    hotkeyFunction = hotkeyClueMap.get(event.which);
   }
   if (!clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)) {
-    hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.key);
+    hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.which);
   }
-  hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.key);
+  hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.which);
   if (hotkeyFunction !== undefined) {
     event.preventDefault();
     hotkeyFunction();
