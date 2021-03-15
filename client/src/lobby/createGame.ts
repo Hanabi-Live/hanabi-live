@@ -242,6 +242,10 @@ function secondVariantDropdownInit() {
 }
 
 function submit() {
+  // Check the data attribute of the submit button to see
+  // if this is a new game or a change of options
+  const isNew = $("#create-game-table-number").val() === "";
+
   // We need to mutate some values before sending them to the server
   const timeBaseMinutes = getTextboxForTimeBase("createTableTimeBaseMinutes");
   const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
@@ -251,12 +255,14 @@ function submit() {
 
   // Passwords are not stored on the server; instead, they are stored locally as cookies
   const password = $("#createTablePassword").val();
-  if (typeof password !== "string") {
-    throw new Error(
-      'The value of the "createTablePassword" element was not a string.',
-    );
+  if (isNew) {
+    if (typeof password !== "string") {
+      throw new Error(
+        'The value of the "createTablePassword" element was not a string.',
+      );
+    }
+    localStorage.setItem("createTablePassword", password);
   }
-  localStorage.setItem("createTablePassword", password);
 
   // Game JSON is not saved
   const gameJSONString = $("#createTableJSON").val();
@@ -279,25 +285,35 @@ function submit() {
     }
   }
 
-  globals.conn!.send("tableCreate", {
-    name,
-    options: {
-      variantName: getVariant("createTableVariant"), // This is a hidden span field
-      timed: getCheckbox("createTableTimed"),
-      timeBase: timeBaseSeconds,
-      timePerTurn: getTextboxForTimePerTurn("createTableTimePerTurnSeconds"),
-      speedrun: getCheckbox("createTableSpeedrun"),
-      cardCycle: getCheckbox("createTableCardCycle"),
-      deckPlays: getCheckbox("createTableDeckPlays"),
-      emptyClues: getCheckbox("createTableEmptyClues"),
-      oneExtraCard: getCheckbox("createTableOneExtraCard"),
-      oneLessCard: getCheckbox("createTableOneLessCard"),
-      allOrNothing: getCheckbox("createTableAllOrNothing"),
-      detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
-    },
-    password,
-    gameJSON,
-  });
+  const options = {
+    variantName: getVariant("createTableVariant"), // This is a hidden span field
+    timed: getCheckbox("createTableTimed"),
+    timeBase: timeBaseSeconds,
+    timePerTurn: getTextboxForTimePerTurn("createTableTimePerTurnSeconds"),
+    speedrun: getCheckbox("createTableSpeedrun"),
+    cardCycle: getCheckbox("createTableCardCycle"),
+    deckPlays: getCheckbox("createTableDeckPlays"),
+    emptyClues: getCheckbox("createTableEmptyClues"),
+    oneExtraCard: getCheckbox("createTableOneExtraCard"),
+    oneLessCard: getCheckbox("createTableOneLessCard"),
+    allOrNothing: getCheckbox("createTableAllOrNothing"),
+    detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
+  };
+
+  if (isNew) {
+    globals.conn!.send("tableCreate", {
+      name,
+      options,
+      password,
+      gameJSON,
+    });
+  } else {
+    globals.conn!.send("tableUpdate", {
+      tableID: globals.tableID,
+      name,
+      options,
+    });
+  }
 
   closeAllTooltips();
   $("#nav-buttons-lobby-create-game").addClass("disabled");
@@ -449,7 +465,6 @@ export function ready(): void {
   let buttonTitle = "Create";
   let gameName = "";
   let dialogOptions = null;
-  let isNew = true;
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game
@@ -462,13 +477,24 @@ export function ready(): void {
       globals.conn!.send("getName");
     }
     dialogOptions = globals.settings;
+
+    // Show the password row
+    $("#password-row").removeClass("hidden");
+
+    // Ensure create-game-table-number is empty
+    $("#create-game-table-number").val("");
   } else {
     // Change Options
-    isNew = false;
     dialogTitle = "Change Game Options";
     buttonTitle = "Change";
     gameName = globals.game.name;
     dialogOptions = globals.game.options;
+
+    // Can't change the password once the game is created
+    $("#password-row").addClass("hidden");
+
+    // Ensure create-game-table-number has a value
+    $("#create-game-table-number").val(globals.tableID);
   }
 
   // Set UI Elements and values
@@ -505,13 +531,6 @@ export function ready(): void {
   const password = localStorage.getItem("createTablePassword");
   if (password !== null && password !== "") {
     $("#createTablePassword").val(password);
-  }
-
-  if (isNew) {
-    $("#password-row").removeClass("hidden");
-  } else {
-    // Can't change the password once the game is created
-    $("#password-row").addClass("hidden");
   }
 
   // Hide the extra options if we do not have any selected
