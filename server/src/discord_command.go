@@ -25,6 +25,7 @@ func discordCommandInit() {
 	discordCommandMap["oop"] = discordCommandOOP
 	discordCommandMap["screenshot"] = discordCommandScreenshot
 	discordCommandMap["undefined"] = discordCommandUndefined
+	discordCommandMap["rtfm"] = discordCommandRTFM
 
 	// Special commands for use in other channels
 	discordCommandMap["issue"] = discordCommandIssue
