@@ -1,5 +1,6 @@
 // Modals (boxes that hover on top of the UI)
 
+import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "./constants";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
@@ -21,7 +22,7 @@ export function init(): void {
 
   // Password
   $("#password-modal-password").on("keypress", (event) => {
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
       $("#password-modal-submit").click();
     }

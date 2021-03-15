@@ -1,5 +1,6 @@
 // The initial login page
 
+import * as KeyCode from "keycode-js";
 import version from "../../../data/version.json";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
@@ -15,7 +16,7 @@ export function init(): void {
     $("#login-form").submit();
   });
   $("#login-form").on("keypress", (event) => {
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
       $("#login-form").submit();
     }

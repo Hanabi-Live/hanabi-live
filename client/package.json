@@ -19,6 +19,7 @@
     "immer": "^8.0.1",
     "interactjs": "^1.10.8",
     "jquery": "^3.6.0",
+    "keycode-js": "^3.1.0",
     "konva": "3.4.1",
     "linkifyjs": "^2.1.9",
     "redux": "^4.0.5",
