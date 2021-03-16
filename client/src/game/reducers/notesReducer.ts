@@ -6,6 +6,7 @@ import { NoteAction } from "../types/actions";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
+  CLUED_NOTES,
   FINESSED_NOTES,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
@@ -139,6 +140,7 @@ function noteWithoutText(note: CardNote): CardNote {
     finessed: boolean;
     blank: boolean;
     unclued: boolean;
+    clued: boolean;
     text: string;
   }
   const newNote: CardNoteModifiable = note;
@@ -171,6 +173,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
   const needsFix = checkNoteKeywordsForMatch(NEEDS_FIX_NOTES, keywords);
   const blank = checkNoteKeywordsForMatch(BLANK_NOTES, keywords);
   const unclued = checkNoteKeywordsForMatch(UNCLUED_NOTES, keywords);
+  const clued = checkNoteKeywordsForMatch(CLUED_NOTES, keywords);
 
   return {
     possibilities,
@@ -180,6 +183,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
     needsFix,
     blank,
     unclued,
+    clued,
     text,
   };
 }
