@@ -542,12 +542,11 @@ export function add(data: ChatMessage, fast: boolean): void {
   data.msg = fillDiscordEmotes(data.msg);
   data.msg = fillTwitchEmotes(data.msg);
 
-  // Get the hours and minutes from the time
-  const datetime = new Intl.DateTimeFormat(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date(data.datetime));
+  // Typescript hasn't implemented the required DateTimeFormat option (hourCycle: h23)
+  // So we format the hours manually
+  const datetime = `${`0${new Date(data.datetime).getHours()}`.slice(
+    -2,
+  )}:${`0${new Date(data.datetime).getMinutes()}`.slice(-2)}`;
 
   let line = `<span id="chat-line-${chatLineNum}" class="${
     fast ? "" : "hidden"
