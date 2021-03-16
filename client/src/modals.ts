@@ -88,7 +88,14 @@ export function warningShow(msg: string): void {
   globals.modalShowing = true;
 
   $("#warning-modal-description").html(msg);
-  $("#warning-modal").fadeIn(FADE_TIME);
+
+  // store the screen's active element
+  globals.lastActiveElement = document.activeElement as HTMLElement;
+
+  // show the modal and focus the close button
+  $("#warning-modal").fadeIn(FADE_TIME, () => {
+    $("#warning-modal-button").focus();
+  });
 }
 
 export function errorShow(msg: string): void {
@@ -139,6 +146,9 @@ export function setShadeOpacity(
 function warningClose() {
   $("#warning-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
+  if (globals.lastActiveElement) {
+    globals.lastActiveElement.focus();
+  }
 }
 
 export function closeAll(): void {
