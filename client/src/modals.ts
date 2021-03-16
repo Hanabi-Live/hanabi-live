@@ -89,10 +89,10 @@ export function warningShow(msg: string): void {
 
   $("#warning-modal-description").html(msg);
 
-  // store the screen's active element
+  // Store the screen's active element
   globals.lastActiveElement = document.activeElement as HTMLElement;
 
-  // show the modal and focus the close button
+  // Show the modal and focus the close button
   $("#warning-modal").fadeIn(FADE_TIME, () => {
     $("#warning-modal-button").focus();
   });
