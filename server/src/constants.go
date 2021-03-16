@@ -119,4 +119,5 @@ const (
 	StartedFail     = "The game is already started, so you cannot use that command."
 	NotStartedFail  = "The game has not started yet, so you cannot use that command."
 	NotOwnerFail    = "Only the table owner can use that command."
+	NotInTwoPlayers = "You can only perform this command when there are more than two players."
 )

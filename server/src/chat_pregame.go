@@ -376,12 +376,17 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	if t.Running {
-		chatServerSend(ctx, NotStartedFail, d.Room, d.NoTablesLock)
+		chatServerSend(ctx, StartedFail, d.Room, d.NoTablesLock)
 		return
 	}
 
 	if s.UserID != t.OwnerID {
 		chatServerSend(ctx, NotOwnerFail, d.Room, d.NoTablesLock)
+		return
+	}
+
+	if len(t.Players) == 2 {
+		chatServerSend(ctx, NotInTwoPlayers, d.Room, d.NoTablesLock)
 		return
 	}
 
