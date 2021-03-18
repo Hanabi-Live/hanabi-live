@@ -218,6 +218,12 @@ export function sendBack(): void {
     return;
   }
 
+  // If something was being dragged, stop it
+  if (globals.lastDraggedCard) {
+    globals.lastDraggedCard.stopDrag();
+    globals.lastDraggedCard = null;
+  }
+
   if (globals.state.replay.shared !== null) {
     if (globals.state.replay.shared.amLeader) {
       globals.lobby.conn!.send("replayAction", {
