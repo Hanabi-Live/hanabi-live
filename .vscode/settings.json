@@ -43,17 +43,14 @@
   "typescript.suggest.completeFunctionCalls": true,
 
   // Automatically run the formatter when a JavaScript or TypeScript file is saved
-  // "Organize Imports" must be before ESLint because it will delete trailing commas
   "[typescript]": {
     "editor.codeActionsOnSave": [
-      "source.organizeImports",
       "source.fixAll.eslint",
     ],
     "editor.tabSize": 2,
   },
   "[javascript]": {
     "editor.codeActionsOnSave": [
-      "source.organizeImports",
       "source.fixAll.eslint",
     ],
     "editor.tabSize": 2,
