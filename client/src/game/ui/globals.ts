@@ -82,7 +82,7 @@ export class Globals {
   cardSubscriptions: Redux.Unsubscribe[] = [];
   cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
 
-  // Used to stop draging if "back" is used via keyboard during hypothesis
+  // Used to stop dragging if "back" is used via keyboard during hypothesis
   lastDraggedCard: HanabiCard | null = null;
 
   get state(): State {
