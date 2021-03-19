@@ -13,7 +13,7 @@ for EXTENSION in $EXTENSIONS; do
   code --install-extension "$EXTENSION"
 done
 
-"$DIR/../client/install_client_linter.sh"
+# The client linter is installed automatically during an "npm install", which happens automatically in the "install_dependencies.sh" script
 "$DIR/../server/install_server_linter.sh"
 
 echo "Successfully installed development dependencies."
