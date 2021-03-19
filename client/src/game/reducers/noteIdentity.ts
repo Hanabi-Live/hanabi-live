@@ -105,9 +105,7 @@ function range(
   return ret;
 }
 
-export function identityMapToArray(
-  cardMap: number[][],
-): Array<[number, number]> {
+function identityMapToArray(cardMap: number[][]): Array<[number, number]> {
   const possibilities: Array<[number, number]> = [];
   for (let rank = 1; rank <= cardMap.length; rank++) {
     for (let suitIndex = 0; suitIndex < cardMap[0].length; suitIndex++) {
@@ -249,13 +247,13 @@ export function createIdentityNotePattern(
   return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern}|${squishPattern})$`;
 }
 
-export const extractSuitText = (match: RegExpMatchArray): string | null =>
+const extractSuitText = (match: RegExpMatchArray): string | null =>
   match[1] ?? match[4] ?? match[5] ?? null;
 
-export const extractRankText = (match: RegExpMatchArray): string | null =>
+const extractRankText = (match: RegExpMatchArray): string | null =>
   match[2] ?? match[3] ?? match[6] ?? null;
 
-export const extractSquishText = (match: RegExpMatchArray): string | null => {
+const extractSquishText = (match: RegExpMatchArray): string | null => {
   const text = match[7]?.trim();
   if (ALL_RESERVED_NOTES.indexOf(text) === -1) {
     return text ?? null;

@@ -156,7 +156,7 @@ export function automaticLogin(): void {
 // Miscellaneous subroutines
 // -------------------------
 
-export function show(): void {
+function show(): void {
   $("#loading").hide();
   $("#firefox-warning").hide();
   $("#sign-in").show();
@@ -207,7 +207,7 @@ export function hide(firstTimeUser: boolean): void {
   );
 }
 
-export function formError(msg: string): void {
+function formError(msg: string): void {
   // For some reason this has to be invoked asynchronously in order to work properly
   setTimeout(() => {
     $("#login-ajax").hide();

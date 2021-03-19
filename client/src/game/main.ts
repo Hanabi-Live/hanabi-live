@@ -37,7 +37,7 @@ export function show(): void {
   });
 }
 
-export function hide(): void {
+function hide(): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();

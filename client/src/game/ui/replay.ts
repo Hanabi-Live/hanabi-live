@@ -37,7 +37,7 @@ export function exit(): void {
   });
 }
 
-export function getCurrentReplaySegment(): number {
+function getCurrentReplaySegment(): number {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   return globals.state.replay.active
     ? globals.state.replay.segment

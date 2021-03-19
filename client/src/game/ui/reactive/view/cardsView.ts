@@ -209,7 +209,7 @@ function checkNoteDisproved(order: number) {
   globals.layers.card.batchDraw();
 }
 
-export function updateCardStatus(order: number): void {
+function updateCardStatus(order: number): void {
   const card = getCardOrStackBase(order);
   card.setStatus();
   globals.layers.card.batchDraw();

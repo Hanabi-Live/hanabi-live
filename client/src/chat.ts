@@ -354,19 +354,19 @@ function historyMatchNext(current: string, increment: number): string | null {
   return typedChatHistory[typedChatHistoryIndex];
 }
 
-export function arrowUp(element: JQuery<HTMLElement>): void {
+function arrowUp(element: JQuery<HTMLElement>): void {
   const retrievedHistory = historyMatchNext(String(element.val() ?? ""), 1);
   // Set the chat input box to what we last typed
   element.val(retrievedHistory ?? "");
 }
 
-export function arrowDown(element: JQuery<HTMLElement>): void {
+function arrowDown(element: JQuery<HTMLElement>): void {
   const retrievedHistory = historyMatchNext(String(element.val() ?? ""), -1);
   // Set the chat input box to what we last typed
   element.val(retrievedHistory ?? "");
 }
 
-export function tab(element: JQuery<HTMLElement>, event: JQuery.Event): void {
+function tab(element: JQuery<HTMLElement>, event: JQuery.Event): void {
   // Parse the final word from what we have typed so far
   let message = element.val();
   if (typeof message !== "string") {
