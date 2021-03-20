@@ -124,7 +124,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - At the end of each game, you will automatically be put into a shared replay with everyone who played the game.
 - The leader controls what turn is being shown. By default, the leader will be the person who created the game or created the shared replay.
 - Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resynchronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
-- The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
+- The leader can right-click on a card to highlight it with an arrow (to point out things to the other players).
   - Other players can create "local" arrows by Ctrl + Right-clicking. These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
 - The leader role can be transferred by clicking or double-tapping the crown.
