@@ -234,21 +234,21 @@ export function hideFriends(): void {
   draw(false);
 }
 
-function showOtherScores(): void {
+function showOtherScores() {
   globals.currentScreen = Screen.HistoryOtherScores;
   $("#lobby-history").hide();
   $("#lobby-history-other-scores").show();
   nav.show("history-other-scores");
 }
 
-function hideOtherScores(): void {
+function hideOtherScores() {
   globals.currentScreen = Screen.History;
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
   nav.show("history");
 }
 
-function hideOtherScoresToFriends(): void {
+function hideOtherScoresToFriends() {
   globals.currentScreen = Screen.HistoryFriends;
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
