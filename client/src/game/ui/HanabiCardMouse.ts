@@ -286,6 +286,7 @@ function dragStart(card: HanabiCard) {
   }
 
   card.dragging = true;
+  globals.store!.dispatch({ type: "dragStart", card });
 
   // Enable the dragging raise effect
   card.setRaiseAndShadowOffset();
