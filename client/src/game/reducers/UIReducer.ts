@@ -1,27 +1,33 @@
-import produce, { Draft } from "immer";
 import { UIAction } from "../types/UI";
 import UIState from "../types/UIState";
+import HanabiCard from "../ui/HanabiCard";
 
-const UIReducer = produce(UIReducerFunction, {} as UIState);
-export default UIReducer;
-
-function UIReducerFunction(state: Draft<UIState>, action: UIAction) {
+export default function UIReducer(state: UIState, action: UIAction): UIState {
   switch (action.type) {
     case "dragStart": {
-      state.cardDragged = action.card;
-      break;
-    }
-
-    case "dragReset": {
-      if (state.cardDragged !== null) {
-        state.cardDragged.setShadowOffset();
-        state.cardDragged = null;
+      if (action.card instanceof HanabiCard) {
+        return {
+          ...state,
+          // This is required due to Konva bug
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          cardDragged: JSON.parse(JSON.stringify(action.card)),
+        };
       }
-      break;
+      return state;
     }
-
-    default: {
-      break;
+    case "dragReset": {
+      if (
+        state.cardDragged !== null &&
+        state.cardDragged instanceof HanabiCard
+      ) {
+        state.cardDragged.setShadowOffset();
+      }
+      return {
+        ...state,
+        cardDragged: null,
+      };
     }
+    default:
+      return state;
   }
 }
