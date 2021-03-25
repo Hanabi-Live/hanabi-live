@@ -1,5 +1,8 @@
 // The navigation bar at the top of the lobby
 
+import * as KeyCode from "keycode-js";
+import { sendText } from "../chat";
+import { VARIANTS } from "../game/data/gameData";
 import globals from "../globals";
 import { closeAllTooltips } from "../misc";
 import * as modals from "../modals";
@@ -15,23 +18,13 @@ export function init(): void {
   // Initialize all of the navigation tooltips using Tooltipster
   initTooltips();
 
-  // The "Create Game" and "Change Options" buttons
+  // The "Create Game" button
   $("#nav-buttons-lobby-create-game").tooltipster(
     "option",
     "functionBefore",
     createGame.before,
   );
   $("#nav-buttons-lobby-create-game").tooltipster(
-    "option",
-    "functionReady",
-    createGame.ready,
-  );
-  $("#nav-buttons-pregame-change-options").tooltipster(
-    "option",
-    "functionBefore",
-    createGame.before,
-  );
-  $("#nav-buttons-pregame-change-options").tooltipster(
     "option",
     "functionReady",
     createGame.ready,
@@ -113,15 +106,65 @@ export function init(): void {
     }
   });
 
-  // The "Change Options" button
+  // The "Change Variant" button
   // (also initialized in the "initTooltips()" function)
-  $("#nav-buttons-pregame-change-options").unbind("click");
+  $("#nav-buttons-pregame-change-variant").unbind("click");
 
-  $("#nav-buttons-pregame-change-options").on("click", () => {
-    if (!$("#nav-buttons-pregame-change-options").hasClass("disabled")) {
-      $("#nav-buttons-pregame-change-options").tooltipster("open");
+  $("#nav-buttons-pregame-change-variant").on("click", () => {
+    if (!$("#nav-buttons-pregame-change-variant").hasClass("disabled")) {
+      $("#nav-buttons-pregame-change-variant").tooltipster("open");
     }
   });
+
+  $("#nav-buttons-pregame-change-variant").tooltipster(
+    "option",
+    "functionReady",
+    () => {
+      // Clear/focus the selector
+      $("#change-variant-dropdown").val("");
+      $("#change-variant-dropdown").focus();
+
+      if ($("#change-variant-dropdown-list").children().length !== 0) {
+        return; // already initialized, don't need to do again
+      }
+
+      // Populate variant list
+      for (const variantName of VARIANTS.keys()) {
+        const option = new Option(variantName, variantName);
+        $("#change-variant-dropdown-list").append($(option));
+      }
+
+      // Pressing enter anywhere will submit the form
+      $("#change-variant-dropdown").on("keypress", (event) => {
+        if (event.which === KeyCode.KEY_RETURN) {
+          event.preventDefault();
+          $("#change-variant-submit").click();
+        }
+      });
+
+      // Update button trigger
+      $("#change-variant-submit").on("click", () => {
+        const variantName = ($(
+          "#change-variant-dropdown",
+        ).val() as string).trim();
+        if (VARIANTS.get(variantName) === undefined) {
+          return;
+        }
+        if (globals.game?.owner === globals.userID) {
+          globals.conn!.send("tableSetVariant", {
+            tableID: globals.tableID,
+            options: {
+              variantName,
+            },
+          });
+        } else {
+          sendText("table", `Please @/setvariant ${variantName}@`);
+        }
+        // Close the tooltips
+        closeAllTooltips();
+      });
+    },
+  );
 
   // The "Return to Lobby" button (from the "Pregame" screen)
   $("#nav-buttons-pregame-unattend").on("click", () => {
@@ -164,7 +207,7 @@ function initTooltips() {
     "lobby-replay",
     "lobby-resources",
     "lobby-settings",
-    "pregame-change-options",
+    "pregame-change-variant",
   ];
 
   const tooltipsterOptions = {
