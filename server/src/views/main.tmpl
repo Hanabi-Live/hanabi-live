@@ -95,13 +95,13 @@
         </li>
         <li>
           <a
-            id="nav-buttons-pregame-change-variant"
+            id="nav-buttons-pregame-change-options"
             class="button tooltip"
-            data-tooltip-content="#change-variant-tooltip"
+            data-tooltip-content="#create-game-tooltip"
           >
             <i class="fas fa-rainbow nav-icon"></i>
             <span class="hidden-xs">
-              <span class="hidden-md">Change </span><span class="nav-hotkey-indicator">V</span>ariant <!-- cspell:disable-line -->
+              <span class="hidden-md"><span class="nav-hotkey-indicator">C</span>hange Options <!-- cspell:disable-line -->
             </span>
           </a>
         </li>
@@ -839,7 +839,7 @@
       <br /><br />
     </span>
 
-    <div class="row">
+    <div class="row" id="password-row">
       <div class="col-4 input-text">
         <div class="create-game-icon">
           <i class="fas fa-key nav-icon" style="position: relative; left: 1px;"></i>
@@ -1064,6 +1064,7 @@
       <i class="fas fa-check"></i>&nbsp;
       Create
     </button>
+    <input id="create-game-table-number" type="hidden" value="" />
   </div>
 
   <div id="resources-tooltip">
@@ -1172,37 +1173,6 @@
       </li>
     </ul>
     </div>
-  </div>
-
-  <div id="change-variant-tooltip">
-    <h2>Change Variant</h2>
-    <div class="row">
-      <div class="col-10">
-        <input
-          id="change-variant-dropdown"
-          type="text"
-          list="change-variant-dropdown-list"
-          autocomplete="off"
-        />
-        <datalist id="change-variant-dropdown-list"></datalist>
-      </div>
-      <div class="col-1 input-text align-center">
-        <a
-          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <i class="fas fa-question-circle question-mark"></i>
-        </a>
-      </div>
-    </div>
-  <br />
-    <p class="margin1">
-      <button id="change-variant-submit" class="button fit" type="submit">
-        <i class="fas fa-check"></i>&nbsp;
-        Update
-      </button>
-    </p>
   </div>
 
   <div id="settings-tooltip">

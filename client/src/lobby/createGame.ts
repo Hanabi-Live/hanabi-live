@@ -13,6 +13,7 @@ import {
   parseIntSafe,
 } from "../misc";
 import * as modals from "../modals";
+import Screen from "./types/Screen";
 import Settings from "./types/Settings";
 
 // Constants
@@ -67,6 +68,7 @@ export function init(): void {
     // Remember the new setting
     getCheckbox("createTableTimed");
   });
+
   $("#createTableSpeedrun").change(() => {
     if ($("#createTableSpeedrun").prop("checked")) {
       $("#create-game-timed-row").hide();
@@ -107,6 +109,7 @@ export function init(): void {
     // Remember the new setting
     getCheckbox("createTableOneLessCard");
   });
+
   $("#createTableOneLessCard").change(() => {
     if ($("#createTableOneLessCard").is(":checked")) {
       $("#createTableOneExtraCardRow").fadeTo(0, 0.3);
@@ -242,6 +245,10 @@ function secondVariantDropdownInit() {
 }
 
 function submit() {
+  // Check the data attribute of the submit button to see
+  // if this is a new game or a change of options
+  const isNew = $("#create-game-table-number").val() === "";
+
   // We need to mutate some values before sending them to the server
   const timeBaseMinutes = getTextboxForTimeBase("createTableTimeBaseMinutes");
   const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
@@ -251,12 +258,14 @@ function submit() {
 
   // Passwords are not stored on the server; instead, they are stored locally as cookies
   const password = $("#createTablePassword").val();
-  if (typeof password !== "string") {
-    throw new Error(
-      'The value of the "createTablePassword" element was not a string.',
-    );
+  if (isNew) {
+    if (typeof password !== "string") {
+      throw new Error(
+        'The value of the "createTablePassword" element was not a string.',
+      );
+    }
+    localStorage.setItem("createTablePassword", password);
   }
-  localStorage.setItem("createTablePassword", password);
 
   // Game JSON is not saved
   const gameJSONString = $("#createTableJSON").val();
@@ -279,28 +288,38 @@ function submit() {
     }
   }
 
-  globals.conn!.send("tableCreate", {
-    name,
-    options: {
-      variantName: getVariant("createTableVariant"), // This is a hidden span field
-      timed: getCheckbox("createTableTimed"),
-      timeBase: timeBaseSeconds,
-      timePerTurn: getTextboxForTimePerTurn("createTableTimePerTurnSeconds"),
-      speedrun: getCheckbox("createTableSpeedrun"),
-      cardCycle: getCheckbox("createTableCardCycle"),
-      deckPlays: getCheckbox("createTableDeckPlays"),
-      emptyClues: getCheckbox("createTableEmptyClues"),
-      oneExtraCard: getCheckbox("createTableOneExtraCard"),
-      oneLessCard: getCheckbox("createTableOneLessCard"),
-      allOrNothing: getCheckbox("createTableAllOrNothing"),
-      detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
-    },
-    password,
-    gameJSON,
-  });
+  const options = {
+    variantName: getVariant("createTableVariant"), // This is a hidden span field
+    timed: getCheckbox("createTableTimed"),
+    timeBase: timeBaseSeconds,
+    timePerTurn: getTextboxForTimePerTurn("createTableTimePerTurnSeconds"),
+    speedrun: getCheckbox("createTableSpeedrun"),
+    cardCycle: getCheckbox("createTableCardCycle"),
+    deckPlays: getCheckbox("createTableDeckPlays"),
+    emptyClues: getCheckbox("createTableEmptyClues"),
+    oneExtraCard: getCheckbox("createTableOneExtraCard"),
+    oneLessCard: getCheckbox("createTableOneLessCard"),
+    allOrNothing: getCheckbox("createTableAllOrNothing"),
+    detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
+  };
+
+  if (isNew) {
+    globals.conn!.send("tableCreate", {
+      name,
+      options,
+      password,
+      gameJSON,
+    });
+    $("#nav-buttons-lobby-create-game").addClass("disabled");
+  } else {
+    globals.conn!.send("tableUpdate", {
+      tableID: globals.tableID,
+      name,
+      options,
+    });
+  }
 
   closeAllTooltips();
-  $("#nav-buttons-lobby-create-game").addClass("disabled");
 }
 
 function getCheckbox(setting: keyof Settings) {
@@ -400,11 +419,6 @@ export function checkChanged(
 // This function is executed every time the "Create Game" button is clicked
 // (before the tooltip is added to the DOM)
 export function before(): boolean {
-  // Don't allow the tooltip to open if the button is currently disabled
-  if ($("#nav-buttons-lobby-create-game").hasClass("disabled")) {
-    return false;
-  }
-
   if (globals.shuttingDown) {
     const now = new Date();
     const elapsedTimeMilliseconds =
@@ -444,15 +458,47 @@ export function before(): boolean {
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
 export function ready(): void {
-  // Fill in the "Name" box
-  if (debug.amTestUser(globals.username)) {
-    $("#createTableName").val("test game");
-  } else {
-    $("#createTableName").val(globals.randomTableName);
+  // Change the UI if we are in a pre-game screen
+  let dialogTitle = "Create a New Game";
+  let buttonTitle = "Create";
+  let gameName = "";
+  let dialogOptions = null;
 
-    // Get a new random name from the server for the next time we click the button
-    globals.conn!.send("getName");
+  if (globals.game === null || globals.currentScreen === Screen.Lobby) {
+    // Create New Game
+    if (debug.amTestUser(globals.username)) {
+      gameName = "test game";
+    } else {
+      gameName = globals.randomTableName;
+
+      // Get a new random name from the server for the next time we click the button
+      globals.conn!.send("getName");
+    }
+    dialogOptions = globals.settings;
+
+    // Show the password row
+    $("#password-row").removeClass("hidden");
+
+    // Ensure create-game-table-number is empty
+    $("#create-game-table-number").val("");
+  } else {
+    // Change Options
+    dialogTitle = "Change Game Options";
+    buttonTitle = "Change";
+    gameName = globals.game.name;
+    dialogOptions = globals.game.options;
+
+    // Can't change the password once the game is created
+    $("#password-row").addClass("hidden");
+
+    // Ensure create-game-table-number has a value
+    $("#create-game-table-number").val(globals.tableID);
   }
+
+  // Set UI Elements and values
+  $("#create-game-tooltip-title").text(dialogTitle);
+  $("#create-game-submit").text(buttonTitle);
+  $("#createTableName").val(gameName);
 
   // Focus the "Name" box
   // (this has to be in a callback in order to work)
@@ -462,7 +508,7 @@ export function ready(): void {
 
   // Fill in the rest of form with the settings that we used last time
   // (which is stored on the server)
-  for (const [key, value] of Object.entries(globals.settings)) {
+  for (const [key, value] of Object.entries(dialogOptions)) {
     const element = $(`#${key}`);
     if (key === "createTableVariant") {
       // Setting the variant dropdown is a special case;
