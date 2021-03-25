@@ -203,6 +203,8 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `cd hanabi-live`
 - Install the project dependencies:
   - `./install/install_dependencies.sh`
+- Install the project development dependencies (but only if this is not a production installation):
+  - `./install/install_development_dependencies.sh`
 - Set up environment variables:
   - `nano .env`
   (the two important ones to verify are "DOMAIN" and "DB_PASS")

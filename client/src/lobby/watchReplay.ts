@@ -1,5 +1,6 @@
 // The "Watch Specific Replay" nav button
 
+import * as KeyCode from "keycode-js";
 import globals from "../globals";
 import { closeAllTooltips, parseIntSafe } from "../misc";
 
@@ -9,7 +10,7 @@ export function init(): void {
   $("#replay-source-json").change(replaySourceChange);
 
   $("#replay-tooltip").on("keypress", (event) => {
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
       $("#replay-submit").click();
     }

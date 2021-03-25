@@ -1,5 +1,6 @@
 // Users can right-click cards to record information on them
 
+import * as KeyCode from "keycode-js";
 import * as variantRules from "../rules/variant";
 import { STACK_BASE_RANK } from "../types/constants";
 import getCardOrStackBase from "./getCardOrStackBase";
@@ -143,17 +144,20 @@ export function openEditTooltip(card: HanabiCard): void {
 
   $(`#tooltip-${card.tooltipName}-input`).on("keydown", (keyEvent) => {
     keyEvent.stopPropagation();
-    if (keyEvent.key !== "Enter" && keyEvent.key !== "Escape") {
+    if (
+      keyEvent.which !== KeyCode.KEY_RETURN &&
+      keyEvent.which !== KeyCode.KEY_ESCAPE
+    ) {
       return;
     }
 
     globals.editingNote = null;
 
     let newNote;
-    if (keyEvent.key === "Escape") {
+    if (keyEvent.which === KeyCode.KEY_ESCAPE) {
       // Use the existing note, if any
       newNote = get(card.state.order, true);
-    } else if (keyEvent.key === "Enter") {
+    } else if (keyEvent.which === KeyCode.KEY_RETURN) {
       // Get the value of the input box
       const element = $(`#tooltip-${card.tooltipName}-input`);
       if (element === undefined) {

@@ -44,10 +44,4 @@ export interface StateClue {
   readonly negativeList: readonly number[];
 }
 
-export interface StateCardClue {
-  readonly type: number;
-  readonly value: number;
-  readonly positive: boolean;
-}
-
 export type PaceRisk = "LowRisk" | "MediumRisk" | "HighRisk" | "Zero" | "Null";

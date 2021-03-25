@@ -1,12 +1,12 @@
 import ClueType from "./ClueType";
 import Color from "./Color";
 
-export interface RankClue {
+interface RankClue {
   readonly type: ClueType.Rank;
   readonly value: number;
 }
 
-export interface ColorClue {
+interface ColorClue {
   readonly type: ClueType.Color;
   readonly value: Color;
 }

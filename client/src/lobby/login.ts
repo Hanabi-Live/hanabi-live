@@ -1,5 +1,6 @@
 // The initial login page
 
+import * as KeyCode from "keycode-js";
 import version from "../../../data/version.json";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
@@ -15,7 +16,7 @@ export function init(): void {
     $("#login-form").submit();
   });
   $("#login-form").on("keypress", (event) => {
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
       $("#login-form").submit();
     }
@@ -155,7 +156,7 @@ export function automaticLogin(): void {
 // Miscellaneous subroutines
 // -------------------------
 
-export function show(): void {
+function show() {
   $("#loading").hide();
   $("#firefox-warning").hide();
   $("#sign-in").show();
@@ -206,7 +207,7 @@ export function hide(firstTimeUser: boolean): void {
   );
 }
 
-export function formError(msg: string): void {
+function formError(msg: string) {
   // For some reason this has to be invoked asynchronously in order to work properly
   setTimeout(() => {
     $("#login-ajax").hide();

@@ -1,6 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
+import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkifyjs/html";
 import emojis from "../../data/emojis.json";
 import emoteCategories from "../../data/emotes.json";
@@ -199,7 +200,7 @@ const keypress = (room: string) =>
     tabCompleteWordListIndex = null;
     typedChatHistoryIndex = null;
 
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       send(room, element);
     }
   };
@@ -309,16 +310,19 @@ function keydown(this: HTMLElement, event: JQuery.Event) {
   // The up and down arrows are only caught in the "keydown" event
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus
-  if (event.key === "ArrowUp") {
+  if (event.which === KeyCode.KEY_UP) {
     event.preventDefault();
     arrowUp(element);
-  } else if (event.key === "ArrowDown") {
+  } else if (event.which === KeyCode.KEY_DOWN) {
     event.preventDefault();
     arrowDown(element);
-  } else if (event.key === "Tab") {
+  } else if (event.which === KeyCode.KEY_TAB) {
     event.preventDefault();
     tab(element, event);
-  } else if (["Backspace", "Delete"].indexOf(event.key ?? "") !== -1) {
+  } else if (
+    [KeyCode.KEY_BACK_SPACE, KeyCode.KEY_DELETE].indexOf(event.which ?? 0) !==
+    -1
+  ) {
     typedChatHistoryIndex = null;
   }
 }
@@ -350,19 +354,19 @@ function historyMatchNext(current: string, increment: number): string | null {
   return typedChatHistory[typedChatHistoryIndex];
 }
 
-export function arrowUp(element: JQuery<HTMLElement>): void {
+function arrowUp(element: JQuery<HTMLElement>) {
   const retrievedHistory = historyMatchNext(String(element.val() ?? ""), 1);
   // Set the chat input box to what we last typed
   element.val(retrievedHistory ?? "");
 }
 
-export function arrowDown(element: JQuery<HTMLElement>): void {
+function arrowDown(element: JQuery<HTMLElement>) {
   const retrievedHistory = historyMatchNext(String(element.val() ?? ""), -1);
   // Set the chat input box to what we last typed
   element.val(retrievedHistory ?? "");
 }
 
-export function tab(element: JQuery<HTMLElement>, event: JQuery.Event): void {
+function tab(element: JQuery<HTMLElement>, event: JQuery.Event) {
   // Parse the final word from what we have typed so far
   let message = element.val();
   if (typeof message !== "string") {
@@ -542,12 +546,11 @@ export function add(data: ChatMessage, fast: boolean): void {
   data.msg = fillDiscordEmotes(data.msg);
   data.msg = fillTwitchEmotes(data.msg);
 
-  // Get the hours and minutes from the time
-  const datetime = new Intl.DateTimeFormat(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date(data.datetime));
+  // Typescript hasn't implemented the required DateTimeFormat option (hourCycle: h23)
+  // So we format the hours manually
+  const datetime = `${`0${new Date(data.datetime).getHours()}`.slice(
+    -2,
+  )}:${`0${new Date(data.datetime).getMinutes()}`.slice(-2)}`;
 
   let line = `<span id="chat-line-${chatLineNum}" class="${
     fast ? "" : "hidden"

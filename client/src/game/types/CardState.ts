@@ -1,5 +1,7 @@
 import Color from "./Color";
 
+type CardLocation = "deck" | "discard" | "playStack" | number;
+
 export default interface CardState {
   readonly order: number;
   // If location is a number, it is the index of the player that holds this card
@@ -50,5 +52,3 @@ export default interface CardState {
   readonly dealtToStartingHand: boolean;
   readonly firstCluedWhileOnChop: boolean | null;
 }
-
-export type CardLocation = "deck" | "discard" | "playStack" | number;

@@ -520,7 +520,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return (
       this.shouldShowAnyBorder() &&
       !(this.note.unclued && globals.state.playing) &&
-      cardRules.isClued(this.state)
+      (cardRules.isClued(this.state) || this.note.clued)
     );
   }
 

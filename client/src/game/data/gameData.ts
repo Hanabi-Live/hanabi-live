@@ -8,10 +8,10 @@ import suitsInit from "./suitsInit";
 import variantsInit from "./variantsInit";
 
 // Objects representing JSON files
-export const COLORS = colorsInit();
-export const SUITS = suitsInit(COLORS);
+const COLORS = colorsInit();
+const SUITS = suitsInit(COLORS);
 export const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
-export const CHARACTERS = charactersInit();
+const CHARACTERS = charactersInit();
 
 export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);

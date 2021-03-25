@@ -111,7 +111,11 @@ export function draw(): void {
     drawPlayerBox(i);
   }
 
-  enableStartGameButton();
+  // Disable Start game for 2 seconds
+  enableStartGameButton(true);
+  setTimeout(() => {
+    enableStartGameButton();
+  }, 2000);
 }
 
 function drawOptions() {
@@ -446,10 +450,13 @@ function drawPlayerBox(i: number) {
   $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltips.options);
 }
 
-export function enableStartGameButton(): void {
+export function enableStartGameButton(forAll = false): void {
   // Enable or disable the "Start Game" and "Change Variant" button.
   // "Start Game" enabled if game owner and enough players
   // "Change Variant" enabled if game owner
+  //
+  // If forAll is true, it is disabled for everyone.
+  // This is used to delay game start when players enter / leave
   $("#nav-buttons-pregame-start").addClass("disabled");
 
   if (globals.game === null) {
@@ -459,7 +466,8 @@ export function enableStartGameButton(): void {
   if (
     globals.game.owner === globals.userID &&
     globals.game.players.length >= 2 &&
-    globals.game.players.length <= 6
+    globals.game.players.length <= 6 &&
+    !forAll
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }

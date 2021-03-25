@@ -1,5 +1,6 @@
 // Modals (boxes that hover on top of the UI)
 
+import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "./constants";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
@@ -21,7 +22,7 @@ export function init(): void {
 
   // Password
   $("#password-modal-password").on("keypress", (event) => {
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
       $("#password-modal-submit").click();
     }
@@ -88,7 +89,14 @@ export function warningShow(msg: string): void {
   globals.modalShowing = true;
 
   $("#warning-modal-description").html(msg);
-  $("#warning-modal").fadeIn(FADE_TIME);
+
+  // Store the screen's active element
+  globals.lastActiveElement = document.activeElement as HTMLElement;
+
+  // Show the modal and focus the close button
+  $("#warning-modal").fadeIn(FADE_TIME, () => {
+    $("#warning-modal-button").focus();
+  });
 }
 
 export function errorShow(msg: string): void {
@@ -139,6 +147,9 @@ export function setShadeOpacity(
 function warningClose() {
   $("#warning-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
+  if (globals.lastActiveElement) {
+    globals.lastActiveElement.focus();
+  }
 }
 
 export function closeAll(): void {

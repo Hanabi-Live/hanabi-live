@@ -380,7 +380,7 @@ commands.set("replaySound", (data: ReplaySoundData) => {
 });
 
 // This is used to update the names of the people currently spectating the game
-export interface SpectatorsData {
+interface SpectatorsData {
   tableID: number;
   spectators: Spectator[];
 }

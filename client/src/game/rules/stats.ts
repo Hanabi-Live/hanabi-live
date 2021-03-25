@@ -205,7 +205,9 @@ export function cardsGottenByNotes(
       // Contribution desired based on notes
       const b =
         !note.knownTrash &&
-        (note.finessed || (cardRules.isClued(card) && !note.unclued))
+        (note.finessed ||
+          note.clued ||
+          (cardRules.isClued(card) && !note.unclued))
           ? 1
           : 0;
 

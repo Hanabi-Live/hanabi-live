@@ -1,20 +1,21 @@
 import equal from "fast-deep-equal";
 import produce, { Draft } from "immer";
-import { getVariant } from "../data/gameData";
 import { ensureAllCases } from "../../misc";
+import { getVariant } from "../data/gameData";
 import { NoteAction } from "../types/actions";
+import CardNote from "../types/CardNote";
+import GameMetadata from "../types/GameMetadata";
+import NotesState from "../types/NotesState";
+import Variant from "../types/Variant";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
+  CLUED_NOTES,
   FINESSED_NOTES,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
   UNCLUED_NOTES,
 } from "./constants";
-import CardNote from "../types/CardNote";
-import GameMetadata from "../types/GameMetadata";
-import NotesState from "../types/NotesState";
-import Variant from "../types/Variant";
 import * as noteIdentity from "./noteIdentity";
 
 const notesReducer = produce(notesReducerFunction, {} as NotesState);
@@ -139,6 +140,7 @@ function noteWithoutText(note: CardNote): CardNote {
     finessed: boolean;
     blank: boolean;
     unclued: boolean;
+    clued: boolean;
     text: string;
   }
   const newNote: CardNoteModifiable = note;
@@ -171,6 +173,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
   const needsFix = checkNoteKeywordsForMatch(NEEDS_FIX_NOTES, keywords);
   const blank = checkNoteKeywordsForMatch(BLANK_NOTES, keywords);
   const unclued = checkNoteKeywordsForMatch(UNCLUED_NOTES, keywords);
+  const clued = checkNoteKeywordsForMatch(CLUED_NOTES, keywords);
 
   return {
     possibilities,
@@ -180,6 +183,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
     needsFix,
     blank,
     unclued,
+    clued,
     text,
   };
 }

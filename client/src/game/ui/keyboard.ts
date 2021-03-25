@@ -1,5 +1,6 @@
 // Functions for handling all of the keyboard shortcuts
 
+import * as KeyCode from "keycode-js";
 import Konva from "konva";
 import Screen from "../../lobby/types/Screen";
 import { copyStringToClipboard, parseIntSafe } from "../../misc";
@@ -17,9 +18,9 @@ import * as turn from "./turn";
 
 // Variables
 type Callback = () => void;
-const hotkeyClueMap = new Map<string, Callback>();
-const hotkeyPlayMap = new Map<string, Callback>();
-const hotkeyDiscardMap = new Map<string, Callback>();
+const hotkeyClueMap = new Map<number, Callback>();
+const hotkeyPlayMap = new Map<number, Callback>();
+const hotkeyDiscardMap = new Map<number, Callback>();
 
 // Build a mapping of hotkeys to functions
 export function init(): void {
@@ -28,7 +29,7 @@ export function init(): void {
   hotkeyDiscardMap.clear();
 
   // Add "Tab" for player selection
-  hotkeyClueMap.set("Tab", () => {
+  hotkeyClueMap.set(KeyCode.KEY_TAB, () => {
     if (globals.state.replay.hypothetical === null) {
       globals.elements.clueTargetButtonGroup!.selectNextTarget();
     } else {
@@ -38,14 +39,29 @@ export function init(): void {
 
   // Add "1", "2", "3", "4", and "5" (for rank clues)
   for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
-    // The button for "1" is at array index 0, etc.
-    hotkeyClueMap.set(`${i + 1}`, click(globals.elements.rankClueButtons[i]));
+    // Normal keyboard
+    hotkeyClueMap.set(
+      i + KeyCode.KEY_1,
+      click(globals.elements.rankClueButtons[i]),
+    );
+    // Numpad
+    hotkeyClueMap.set(
+      i + KeyCode.KEY_NUMPAD1,
+      click(globals.elements.rankClueButtons[i]),
+    );
   }
 
   // Add "q", "w", "e", "r", "t", and "y" (for color clues)
   // (we use qwert since they are conveniently next to 12345,
   // and also because the clue colors can change between different variants)
-  const clueKeyRow = ["q", "w", "e", "r", "t", "y"];
+  const clueKeyRow = [
+    KeyCode.KEY_Q,
+    KeyCode.KEY_W,
+    KeyCode.KEY_E,
+    KeyCode.KEY_R,
+    KeyCode.KEY_T,
+    KeyCode.KEY_Y,
+  ];
   for (
     let i = 0;
     i < globals.elements.colorClueButtons.length && i < clueKeyRow.length;
@@ -57,10 +73,10 @@ export function init(): void {
     );
   }
 
-  hotkeyPlayMap.set("a", play); // The main play hotkey
-  hotkeyPlayMap.set("+", play); // For numpad users
-  hotkeyDiscardMap.set("d", discard); // The main discard hotkey
-  hotkeyDiscardMap.set("-", discard); // For numpad users
+  hotkeyPlayMap.set(KeyCode.KEY_A, play); // The main play hotkey
+  hotkeyPlayMap.set(KeyCode.KEY_ADD, play); // For numpad users
+  hotkeyDiscardMap.set(KeyCode.KEY_D, discard); // The main discard hotkey
+  hotkeyDiscardMap.set(KeyCode.KEY_SUBTRACT, discard); // For numpad users
 
   // Enable all of the keyboard hotkeys
   $(document).keydown(keydown);
@@ -85,7 +101,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     return;
   }
 
-  if (event.key === "Escape") {
+  if (event.which === KeyCode.KEY_ESCAPE) {
     // Don't do anything if there is a warning or error visible
     if (globals.lobby.modalShowing) {
       return;
@@ -114,7 +130,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     return;
   }
 
-  if (event.key === " ") {
+  if (event.which === KeyCode.KEY_SPACE) {
     // Space bar
     // Don't activate global empathy if we are typing in the in-game chat
     if ($("#game-chat-input").is(":focus")) {
@@ -128,14 +144,14 @@ function keydown(event: JQuery.KeyDownEvent) {
   // Ctrl hotkeys
   if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
     // Ctrl + Enter = Give a clue / click on the "Give Clue" button
-    if (event.key === "Enter") {
+    if (event.which === KeyCode.KEY_RETURN) {
       clues.give(); // This function has validation inside of it
       return;
     }
 
     // Ctrl + c = Copy the current game ID
     if (
-      event.key === "c" &&
+      event.which === KeyCode.KEY_C &&
       globals.state.finished &&
       // Account for users copying text from the chat window
       !$("#game-chat-modal").is(":visible")
@@ -150,25 +166,25 @@ function keydown(event: JQuery.KeyDownEvent) {
   // Alt hotkeys
   if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
     // Sound hotkeys
-    if (event.key === "b" || event.key === "∫") {
+    if (event.which === KeyCode.KEY_B) {
       // Alt + b
       // This is used for fun in shared replays
       sharedReplaySendSound("buzz");
       return;
     }
-    if (event.key === "h" || event.key === "˙") {
+    if (event.which === KeyCode.KEY_H) {
       // Alt + h
       // This is used for fun in shared replays
       sharedReplaySendSound("holy");
       return;
     }
-    if (event.key === "n" || event.key === "˜") {
+    if (event.which === KeyCode.KEY_N) {
       // Alt + n
       // This is used for fun in shared replays
       sharedReplaySendSound("nooo");
       return;
     }
-    if (event.key === "z" || event.key === "Ω") {
+    if (event.which === KeyCode.KEY_Z) {
       // Alt + z
       // This is used as a sound test
       globals.game!.sounds.play("turn_us");
@@ -176,17 +192,17 @@ function keydown(event: JQuery.KeyDownEvent) {
     }
 
     // Other
-    if (event.key === "c") {
+    if (event.which === KeyCode.KEY_C) {
       // Alt + c
       globals.game!.chat.toggle();
       return;
     }
-    if (event.key === "l" || event.key === "¬") {
+    if (event.which === KeyCode.KEY_L) {
       // Alt + l
       backToLobby();
       return;
     }
-    if (event.key === "t" || event.key === "†") {
+    if (event.which === KeyCode.KEY_T) {
       // Alt + t
       replay.promptTurn();
       return;
@@ -207,7 +223,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any
   if (
-    event.key === "Delete" &&
+    event.which === KeyCode.KEY_DELETE &&
     globals.activeHover !== null &&
     globals.activeHover instanceof HanabiCard
   ) {
@@ -218,24 +234,24 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Replay hotkeys
   if (globals.state.replay.hypothetical !== null) {
-    if (event.key === "ArrowLeft") {
+    if (event.which === KeyCode.KEY_LEFT) {
       hypothetical.sendBack();
       return;
     }
   } else {
-    switch (event.key) {
-      case "ArrowLeft": {
+    switch (event.which) {
+      case KeyCode.KEY_LEFT: {
         replay.back();
         return;
       }
 
-      case "ArrowRight": {
+      case KeyCode.KEY_RIGHT: {
         replay.forward();
         return;
       }
 
-      case "ArrowUp":
-      case "ArrowDown": {
+      case KeyCode.KEY_UP:
+      case KeyCode.KEY_DOWN: {
         if (globals.state.replay.shared !== null) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
@@ -244,22 +260,22 @@ function keydown(event: JQuery.KeyDownEvent) {
         return;
       }
 
-      case "[": {
+      case KeyCode.KEY_OPEN_BRACKET: {
         replay.backRound();
         return;
       }
 
-      case "]": {
+      case KeyCode.KEY_CLOSE_BRACKET: {
         replay.forwardRound();
         return;
       }
 
-      case "Home": {
+      case KeyCode.KEY_HOME: {
         replay.backFull();
         return;
       }
 
-      case "End": {
+      case KeyCode.KEY_END: {
         replay.forwardFull();
         return;
       }
@@ -293,12 +309,12 @@ function keydown(event: JQuery.KeyDownEvent) {
     ongoingGameState.clueTokens >=
     clueTokensRules.getAdjusted(1, globals.variant)
   ) {
-    hotkeyFunction = hotkeyClueMap.get(event.key);
+    hotkeyFunction = hotkeyClueMap.get(event.which);
   }
   if (!clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)) {
-    hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.key);
+    hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.which);
   }
-  hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.key);
+  hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.which);
   if (hotkeyFunction !== undefined) {
     event.preventDefault();
     hotkeyFunction();
@@ -306,7 +322,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 }
 
 function keyup(event: JQuery.KeyUpEvent) {
-  if (event.key === " ") {
+  if (event.which === KeyCode.KEY_SPACE) {
     // Space bar
     setGlobalEmpathy(false);
   }

@@ -213,7 +213,7 @@ function initTooltips() {
 
   // Map the escape key to close all tooltips / modals
   $(document).keydown((event) => {
-    if (event.key === "Escape") {
+    if (event.which === KeyCode.KEY_ESCAPE) {
       event.preventDefault();
       closeAllTooltips();
       modals.closeAll();
