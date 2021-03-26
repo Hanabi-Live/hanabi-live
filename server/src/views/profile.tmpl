@@ -197,7 +197,7 @@
     }
 
     if (variantFilterEnabled) {
-      $(`${historySelector}[data-variant="${variant}"]`).show();
+      $(`${historySelector}[data-variant*="${variant}" i]`).show();
     } else {
       $(historySelector).show();
     }
