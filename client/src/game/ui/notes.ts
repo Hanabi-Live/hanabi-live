@@ -226,6 +226,5 @@ function convertHTMLEntities(input: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/\//g, "&sol;")
-    .replace(/'/g, "&apos;")
-    .replace(/'/g, "&apos;");
+    .replace(/'/g, "&apos;"); // cspell:disable-line
 }
