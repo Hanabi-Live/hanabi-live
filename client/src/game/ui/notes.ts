@@ -170,9 +170,9 @@ export function openEditTooltip(card: HanabiCard): void {
         );
       }
 
-      // Strip any HTML elements
+      // Convert symbols to HTML entities
       // (to be thorough, the server will also perform this validation)
-      newNote = stripHTMLTags(newNote);
+      newNote = convertHTMLEntities(newNote);
 
       set(card.state.order, newNote);
     }
@@ -219,7 +219,8 @@ export function setAllCardIndicators(): void {
   }
 }
 
-function stripHTMLTags(input: string) {
-  const doc = new DOMParser().parseFromString(input, "text/html");
-  return doc.body.textContent ?? "";
+function convertHTMLEntities(input: string) {
+  const p = document.createElement("p");
+  p.appendChild(document.createTextNode(input));
+  return p.innerHTML;
 }
