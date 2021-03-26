@@ -1265,7 +1265,7 @@ function drawYourTurn() {
     stroke: "black",
     strokeWidth: 0.00422 * winH,
     offset: {
-      x: -0.025 * winW,
+      x: -0.0175 * winW,
       y: -0.036 * winH,
     },
     listening: false,
@@ -1273,7 +1273,7 @@ function drawYourTurn() {
   globals.elements.yourTurn.add(circle);
 
   const text = new Konva.Text({
-    x: 0.003 * winW,
+    x: -0.004 * winW,
     y: 0.003 * winH,
     fontSize: 0.034 * winH,
     fontFamily: "Verdana",
