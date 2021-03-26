@@ -1552,8 +1552,8 @@ function drawTimers() {
   // A circle around the timer indicates that we have queued a pause
   // (we want the timer to be on top of this so that it does not interfere with mouse events)
   globals.elements.timer1Circle = new Konva.Ellipse({
-    x: (timerValues.x1 + 0.04) * winW,
-    y: (timerValues.y1 + 0.035) * winH,
+    x: (timerValues.x1 + 0.0328) * winW,
+    y: (timerValues.y1 + 0.034) * winH,
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: "#ffe03b", // Yellow
