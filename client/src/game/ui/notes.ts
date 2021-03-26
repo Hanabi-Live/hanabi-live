@@ -170,7 +170,7 @@ export function openEditTooltip(card: HanabiCard): void {
         );
       }
 
-      // Convert &, <, >, " to HTML entities
+      // Convert symbols to HTML entities
       // (to be thorough, the server will also perform this validation)
       newNote = convertHTMLEntities(newNote);
 
@@ -224,5 +224,8 @@ function convertHTMLEntities(input: string) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/\//g, "&sol;")
+    .replace(/'/g, "&apos;")
+    .replace(/'/g, "&apos;");
 }
