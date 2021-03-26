@@ -14,6 +14,10 @@ import State from "../types/State";
 import replayReducer from "./replayReducer";
 import stateReducer from "./stateReducer";
 
+jest.mock("./UIReducer", () => ({
+  UIReducer: jest.fn(),
+}));
+
 let testState: State;
 let metadata: GameMetadata;
 

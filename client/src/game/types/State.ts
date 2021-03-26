@@ -6,6 +6,7 @@ import NotesState from "./NotesState";
 import PauseState from "./PauseState";
 import ReplayState from "./ReplayState";
 import Spectator from "./Spectator";
+import UIState from "./UIState";
 
 export default interface State {
   readonly visibleState: GameState | null; // Null during initialization
@@ -32,4 +33,5 @@ export default interface State {
   readonly spectators: Spectator[];
 
   readonly notes: NotesState;
+  readonly UI: UIState;
 }

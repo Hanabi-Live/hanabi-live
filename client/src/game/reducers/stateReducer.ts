@@ -11,6 +11,7 @@ import gameStateReducer from "./gameStateReducer";
 import initialGameState from "./initialStates/initialGameState";
 import notesReducer from "./notesReducer";
 import replayReducer from "./replayReducer";
+import UIReducer from "./UIReducer";
 
 const stateReducer = produce(stateReducerFunction, {} as State);
 export default stateReducer;
@@ -162,6 +163,15 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypoAction":
     case "hypoShowDrawnCards": {
       state.replay = replayReducer(state.replay, action, state.metadata);
+      break;
+    }
+
+    case "dragStart": {
+      state.UI = UIReducer(state.UI, action);
+      break;
+    }
+    case "dragReset": {
+      state.UI = UIReducer(state.UI, action);
       break;
     }
 

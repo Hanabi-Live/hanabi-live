@@ -62,5 +62,8 @@ export default function initialState(metadata: GameMetadata): State {
       queued: false,
     },
     spectators: [],
+    UI: {
+      cardDragged: null,
+    },
   };
 }

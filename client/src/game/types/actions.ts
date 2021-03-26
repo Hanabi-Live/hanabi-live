@@ -4,6 +4,7 @@ import EndCondition from "./EndCondition";
 import MsgClue from "./MsgClue";
 import Spectator from "./Spectator";
 import SpectatorNote from "./SpectatorNote";
+import { UIAction } from "./UI";
 
 export type Action =
   | ActionInit
@@ -15,7 +16,8 @@ export type Action =
   | ActionPause
   | ActionPauseQueue
   | ActionSpectators
-  | ActionFinishOngoingGame;
+  | ActionFinishOngoingGame
+  | UIAction;
 
 export type GameAction =
   | ActionCardIdentity

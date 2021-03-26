@@ -14,6 +14,7 @@ import CardStatus from "../types/CardStatus";
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "../types/constants";
 import StackDirection from "../types/StackDirection";
 import Suit from "../types/Suit";
+import UICard from "../types/UICard";
 import Variant from "../types/Variant";
 import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
 import NodeWithTooltip from "./controls/NodeWithTooltip";
@@ -36,7 +37,9 @@ import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
 
-export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
+export default class HanabiCard
+  extends Konva.Group
+  implements NodeWithTooltip, UICard {
   // ---------------
   // Class variables
   // ---------------
@@ -822,14 +825,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
   }
 
-  setRaiseAndShadowOffset(): void {
-    // Early return: no parent (being removed from scene)
-    if (this.layout.parent === null) {
-      return;
-    }
-
-    const duration = 0.05;
-
+  setShadowOffset(duration = 0.05): void {
     // Shadow special effects
     const shadowOffset = this.dragging
       ? Math.floor(0.12 * CARD_W)
@@ -845,6 +841,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         duration,
       });
     }
+  }
+
+  setRaiseAndShadowOffset(): void {
+    // Early return: no parent (being removed from scene)
+    if (this.layout.parent === null) {
+      return;
+    }
+
+    const duration = 0.05;
+    this.setShadowOffset(duration);
 
     // Cards are raised when:
     // - they have one or more positive clues on them
