@@ -1265,7 +1265,7 @@ function drawYourTurn() {
     stroke: "black",
     strokeWidth: 0.00422 * winH,
     offset: {
-      x: -0.025 * winW,
+      x: -0.0175 * winW,
       y: -0.036 * winH,
     },
     listening: false,
@@ -1273,7 +1273,7 @@ function drawYourTurn() {
   globals.elements.yourTurn.add(circle);
 
   const text = new Konva.Text({
-    x: 0.003 * winW,
+    x: -0.004 * winW,
     y: 0.003 * winH,
     fontSize: 0.034 * winH,
     fontFamily: "Verdana",
@@ -1552,8 +1552,8 @@ function drawTimers() {
   // A circle around the timer indicates that we have queued a pause
   // (we want the timer to be on top of this so that it does not interfere with mouse events)
   globals.elements.timer1Circle = new Konva.Ellipse({
-    x: (timerValues.x1 + 0.04) * winW,
-    y: (timerValues.y1 + 0.035) * winH,
+    x: (timerValues.x1 + 0.0328) * winW,
+    y: (timerValues.y1 + 0.034) * winH,
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: "#ffe03b", // Yellow
@@ -2075,7 +2075,12 @@ function drawHypotheticalArea() {
   // The "Back 1 Turn" button (to the right of the give clue button)
   const hypoBackButtonValues = {
     // eslint-disable-next-line prettier/prettier
-    x: clueAreaValues.x + lowerClueAreaValues.x + giveClueValues.x + giveClueValues.w! - 0.05,
+    x:
+      clueAreaValues.x +
+      lowerClueAreaValues.x +
+      giveClueValues.x +
+      giveClueValues.w! -
+      0.05,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
     w: 0.035,
     h: 0.051,
