@@ -202,6 +202,12 @@
       $(historySelector).show();
     }
 
+    // Correct total games
+    $('#total-number-of-games').html(
+      $('#history-table tr').filter(function () {
+        return $(this).css("display") !== "none"
+      }).length - 1
+    );
     setRowColors();
   };
 
