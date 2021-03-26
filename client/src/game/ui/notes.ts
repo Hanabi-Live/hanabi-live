@@ -220,11 +220,7 @@ export function setAllCardIndicators(): void {
 }
 
 function convertHTMLEntities(input: string) {
-  return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/\//g, "&sol;")
-    .replace(/'/g, "&apos;"); // cspell:disable-line
+  const p = document.createElement("p");
+  p.appendChild(document.createTextNode(input));
+  return p.innerHTML;
 }
