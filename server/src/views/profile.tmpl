@@ -181,13 +181,6 @@
     const scoreFilterEnabled = score !== NaN && score >= 0 && score <= 30;
     const variantFilterEnabled = typeof variant === 'string' && variant !== '';
 
-    // If no filters are active, show everything
-    if (!numPlayersFilterEnabled && !scoreFilterEnabled && !variantFilterEnabled) {
-      $('.history-row').show();
-      setRowColors();
-      return;
-    }
-
     let historySelector = '';
     if (numPlayersFilterEnabled) {
       historySelector += `.history-row-players-${numPlayers}`;
@@ -195,19 +188,24 @@
     if (scoreFilterEnabled) {
       historySelector += `.history-row-score-${score}`;
     }
-
     if (variantFilterEnabled) {
-      $(`${historySelector}[data-variant*="${variant}" i]`).show();
-    } else {
-      $(historySelector).show();
+      // Contains variant name, case insensitive
+      historySelector += `[data-variant*="${variant}" i]`;
     }
 
+    // If nothing selected, show everyting
+    if (historySelector === '') {
+      historySelector = '.history-row';
+    }
+    $(`${historySelector}`).show();
+
     // Correct total games
-    $('#total-number-of-games').html(
-      $('#history-table tr').filter(function () {
-        return $(this).css("display") !== "none"
-      }).length - 1
-    );
+    const games = $('#history-table tr').filter(function () {
+      return $(this).css("display") !== "none"
+    }).length - 1;
+    const filtered = historySelector === '.history-row' ? '' : ' (filtered)';
+    $('#total-number-of-games').html(`${games}${filtered}`);
+
     setRowColors();
   };
 
