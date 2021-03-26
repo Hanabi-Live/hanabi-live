@@ -204,6 +204,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       queued: false,
     },
     spectators: [],
+    UI: {
+      cardDragged: null,
+    },
   };
 }
 

@@ -235,12 +235,14 @@ function keydown(event: JQuery.KeyDownEvent) {
   // Replay hotkeys
   if (globals.state.replay.hypothetical !== null) {
     if (event.which === KeyCode.KEY_LEFT) {
+      globals.store!.dispatch({ type: "dragReset" });
       hypothetical.sendBack();
       return;
     }
   } else {
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
+        globals.store!.dispatch({ type: "dragReset" });
         replay.back();
         return;
       }
