@@ -214,9 +214,6 @@ func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 			command := args[0]
 			args = args[1:] // This will be an empty slice if there is nothing after the command
 
-			logger.Info("Possible command" + command)
-			logger.Info("Args: " + strings.Join(args, ", "))
-
 			// (we need to pass the arguments through to the command handler)
 
 			// Commands will start with a "/", so we can ignore everything else
