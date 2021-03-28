@@ -31,6 +31,7 @@ const serverSideOnlyCommands = [
   "document",
   "reference",
   "efficiency",
+  "replay",
   "random",
   "uptime",
   "timeleft",
