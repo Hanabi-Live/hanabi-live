@@ -207,7 +207,7 @@ func discordGetChannel(discordID string) string {
 // We need to check for special commands that occur in Discord channels other than #general
 // (because the messages will not flow to the normal "chatCommandMap")
 func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
-	//There could be a command on any line
+	// There could be a command on any line
 	for _, line := range strings.Split(m.Content, "\n") {
 		// This code is duplicated from the "chatCommand()" function
 		args := strings.Split(line, " ")
