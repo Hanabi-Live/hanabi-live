@@ -43,16 +43,19 @@ func chatCommandInit() {
 	chatCommandMap["s4"] = chatS4
 	chatCommandMap["s5"] = chatS5
 	chatCommandMap["s6"] = chatS6
+	chatCommandMap["si"] = chatStartIn
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["kick"] = chatKick
 	chatCommandMap["impostor"] = chatImpostor
 
 	// Table-only commands (pregame or game)
+	chatCommandMap["m"] = chatMissingScores
 	chatCommandMap["missing"] = chatMissingScores
 	chatCommandMap["missingscores"] = chatMissingScores
 	chatCommandMap["missing-scores"] = chatMissingScores
 	chatCommandMap["sharedmissingscores"] = chatMissingScores
 	chatCommandMap["shared-missing-scores"] = chatMissingScores
+	chatCommandMap["fv"] = chatFindVariant
 	chatCommandMap["findvariant"] = chatFindVariant
 	chatCommandMap["find-variant"] = chatFindVariant
 	chatCommandMap["randomvariant"] = chatFindVariant
@@ -72,6 +75,7 @@ func chatCommandInit() {
 	chatCommandMap["w"] = chatCommandWebsiteOnly
 	chatCommandMap["whisper"] = chatCommandWebsiteOnly
 	chatCommandMap["msg"] = chatCommandWebsiteOnly
+	chatCommandMap["f"] = chatCommandWebsiteOnly
 	chatCommandMap["friend"] = chatCommandWebsiteOnly
 	chatCommandMap["friends"] = chatCommandWebsiteOnly
 	chatCommandMap["unfriend"] = chatCommandWebsiteOnly
