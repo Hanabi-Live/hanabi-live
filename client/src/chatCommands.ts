@@ -43,6 +43,7 @@ function friends(room: string) {
   }
   chat.addSelf(msg, room);
 }
+chatCommands.set("f", friends);
 chatCommands.set("friends", friends);
 chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
