@@ -213,7 +213,7 @@ function playerinfo(_room: string, args: string[]) {
     });
   }
 }
-chatCommands.set("p ", playerinfo);
+chatCommands.set("p", playerinfo);
 chatCommands.set("playerinfo", playerinfo);
 chatCommands.set("games", playerinfo);
 chatCommands.set("stats", playerinfo);
