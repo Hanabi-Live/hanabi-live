@@ -65,6 +65,15 @@ export function touchesCard(
       return false;
     }
 
+    if (variantRules.isSynesthesia(variant) && !suit.noClueRanks) {
+      // A card matches if it would match a prism card, in addition to normal color matches.
+      const prismColorIndex = (rank - 1) % variant.clueColors.length;
+      const prismColorName = variant.clueColors[prismColorIndex].name;
+      if (clue.value.name === prismColorName) {
+        return true;
+      }
+    }
+
     if (suit.allClueColors) {
       return true;
     }

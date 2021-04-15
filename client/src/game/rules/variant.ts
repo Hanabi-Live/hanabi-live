@@ -35,5 +35,11 @@ export const isUpOrDown = (variant: Variant): boolean =>
 export const isNameUpOrDown = (variantName: string): boolean =>
   variantName.startsWith("Up or Down");
 
+export const isSynesthesia = (variant: Variant): boolean =>
+  isNameSynesthesia(variant.name);
+
+export const isNameSynesthesia = (variantName: string): boolean =>
+  variantName.startsWith("Synesthesia");
+
 export const hasReversedSuits = (variant: Variant): boolean =>
   isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0;

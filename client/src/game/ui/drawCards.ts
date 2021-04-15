@@ -547,6 +547,16 @@ function getSuitStyle(
     return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix it with white by 50%
   }
 
+  // In Synesthesia variants, color the number itself with the color that it contributes to the card.
+  if (variantRules.isSynesthesia(variant) && cardArea === "number") {
+    if (rank === 0) {
+      return suit.fill;
+    }
+    const prismColorIndex = (rank - 1) % variant.clueColors.length;
+
+    return variant.clueColors[prismColorIndex].fill;
+  }
+
   // Nearly all other suits have a solid fill
   if (suit.fill !== "multi") {
     return colorblindMode ? suit.fillColorblind : suit.fill;
