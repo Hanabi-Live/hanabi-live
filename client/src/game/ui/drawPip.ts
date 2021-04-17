@@ -1759,6 +1759,7 @@ shapeFunctions.set("kanji", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(scaleFactor, scaleFactor);
   ctx.transform(1.0, 0.0, 0.0, 1.0, -9.007581, -241.9803);
+  ctx.moveTo(-3.0, 222.0);
   ctx.bezierCurveTo(
     -4.390911,
     222.14016,
