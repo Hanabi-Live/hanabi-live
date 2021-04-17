@@ -11,9 +11,9 @@ import drawCards from "../src/game/ui/drawCards";
 import * as drawCardsNode from "./drawCardsNode";
 
 // Get the "No Variant" variant
-const variantName = "Rainbow (6 Suits)";
-const noVariant = VARIANTS.get(variantName);
-if (noVariant === undefined) {
+const variantName = "Brown (6 Suits)";
+const variant = VARIANTS.get(variantName);
+if (variant === undefined) {
   console.error(
     `Failed to get the ${variantName} variant from the variants map.`,
   );
@@ -21,7 +21,7 @@ if (noVariant === undefined) {
 }
 
 const cardImages = drawCards(
-  noVariant,
+  variant,
   false,
   false,
   false,
@@ -56,11 +56,6 @@ for (const [key, value] of allCardImages.entries()) {
       continue;
     }
 
-    let suitAbbrev = suit.toLowerCase()[0];
-    if (suit === "Rainbow") {
-      suitAbbrev = "m";
-    }
-
     if (type === "card") {
       if (suit === "Unknown") {
         // We only care about the real unknown ranks
@@ -68,6 +63,7 @@ for (const [key, value] of allCardImages.entries()) {
           fileName = rank.toString();
         }
       } else {
+	let suitAbbrev = variant.suits.find(s => s.name === suit)?.abbreviation.toLowerCase();
         fileName = rank === UNKNOWN_CARD_RANK ? suitAbbrev : `${suitAbbrev}${rank}`;
       }
     }
