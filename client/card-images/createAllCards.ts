@@ -10,7 +10,7 @@ import { START_CARD_RANK, UNKNOWN_CARD_RANK } from "../src/game/types/constants"
 import drawCards from "../src/game/ui/drawCards";
 import * as drawCardsNode from "./drawCardsNode";
 
-// Get the "No Variant" variant
+// Get the specified variant
 const variantName = "Brown (6 Suits)";
 const variant = VARIANTS.get(variantName);
 if (variant === undefined) {
@@ -63,7 +63,7 @@ for (const [key, value] of allCardImages.entries()) {
           fileName = rank.toString();
         }
       } else {
-	let suitAbbrev = variant.suits.find(s => s.name === suit)?.abbreviation.toLowerCase();
+        let suitAbbrev = variant.suits.find(s => s.name === suit)?.abbreviation.toLowerCase();
         fileName = rank === UNKNOWN_CARD_RANK ? suitAbbrev : `${suitAbbrev}${rank}`;
       }
     }
