@@ -324,10 +324,22 @@ func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) 
 func (*Games) GetGameIDsSeed(seed string) ([]int, error) {
 	gameIDs := make([]int, 0)
 
+	// Neither % nor _ chars are permitted in seed names, so the change in comparator
+	// from '=' to 'LIKE' should not affect any previously working queries.
+	//
+	// I chose this approach over regex after realizing that regex would affect the way previously valid queries
+	// would work, due to regex requiring a leading '^' and trailing '$' for exact match (vs. contains).
+	// And adding the latter is a pain, because these metachars are not idempotent in all regex implementations
+	// (unsure about postgres), and you'd have to check if a trailing '$' was escaped, or if there was a trailing
+	// single backslash, meaning we're now getting into the territory of validating the regex... just messy.
+	//
+	// Someone can in principle select all games ever played by simply specifying '%' as the seed pattern.
+	// If this is a concern for whatever reason, we could add something like a 'LIMIT 10000' clause, which would not
+	// affect most of the query space.
 	SQLString := `
 		SELECT id
 		FROM games
-		WHERE seed = $1
+		WHERE seed LIKE $1
 	`
 
 	var rows pgx.Rows
