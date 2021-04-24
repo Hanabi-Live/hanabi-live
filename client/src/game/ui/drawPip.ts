@@ -1759,6 +1759,7 @@ shapeFunctions.set("kanji", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(scaleFactor, scaleFactor);
   ctx.transform(1.0, 0.0, 0.0, 1.0, -9.007581, -241.9803);
+  ctx.moveTo(-3.0, 222.0);
   ctx.bezierCurveTo(
     -4.390911,
     222.14016,
@@ -3348,8 +3349,8 @@ shapeFunctions.set("triangle", (ctx: CanvasRenderingContext2D) => {
   ctx.moveTo(-16.997733, 26.070432);
   ctx.lineTo(-9.12009, 12.425835);
   ctx.lineTo(-24.875376, 12.425835);
-  ctx.transform(1.0, 0.0, 0.0, 1.0, -16.9774, 22.3191);
   ctx.closePath();
+  ctx.transform(1.0, 0.0, 0.0, 1.0, -16.9774, 22.3191);
   ctx.scale(42 / 150, 42 / 150);
 });
 
