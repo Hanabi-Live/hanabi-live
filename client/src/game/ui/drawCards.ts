@@ -251,7 +251,7 @@ function drawSuitPips(
   }
 
   // Size, position, and alpha adjustment for the central icon on stack base
-  if (rank === 0) {
+  if (rank === STACK_BASE_RANK) {
     ctx.globalAlpha = 1;
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -260,10 +260,14 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Unknown rank, so draw large faint suit
-  if (rank === 6) {
+  // Draw large faint suit
+  if (rank === UNKNOWN_CARD_RANK || rank === START_CARD_RANK) {
     ctx.save();
-    ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
+    if (rank === START_CARD_RANK) {
+      ctx.globalAlpha = 0.6;
+    } else {
+      ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
+    }
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
     drawPip(ctx, suit, enableShadows);
