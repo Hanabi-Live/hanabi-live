@@ -1,5 +1,6 @@
 import Color from "./Color";
 
+// "playStack" is an empty play stack, "deck" is a play stack with some cards on it
 type CardLocation = "deck" | "discard" | "playStack" | number;
 
 export default interface CardState {

@@ -104,7 +104,14 @@ export function show(card: HanabiCard): void {
 
   // Update the tooltip content
   const note = get(card.state.order, false);
-  tooltipInstance.content(note);
+  let shownNote = note;
+  if (card.isOnPlayStack()) {
+    if (shownNote) {
+      shownNote += "<br><br>";
+    }
+    shownNote += card.suitDescriptionNote();
+  }
+  tooltipInstance.content(shownNote);
 
   tooltip.tooltipster("open");
 }

@@ -139,11 +139,13 @@ function mouseUp(this: HanabiCard) {
 // -----------
 
 function checkShowNoteTooltip(card: HanabiCard) {
-  if (
-    !card.noteIndicator.isVisible() || // Don't do anything if there is not a note on this card
+  if (globals.editingNote !== null) {
     // Don't open any more note tooltips if the user is currently editing a note
-    globals.editingNote !== null
-  ) {
+    return;
+  }
+
+  if (!card.noteIndicator.isVisible() && !card.isOnPlayStack()) {
+    // Don't do anything if there is not a note on this card in hand
     return;
   }
 
