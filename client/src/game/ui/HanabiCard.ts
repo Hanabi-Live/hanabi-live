@@ -1196,12 +1196,12 @@ export default class HanabiCard
   }
 
   isOnPlayStack(): boolean {
-    const location = this.state.location;
+    const { location } = this.state;
     return location === "playStack" || location === "deck";
   }
 
   suitDescriptionNote(): string {
-    const index = this.state.suitIndex || 0;
+    const index = this.state.suitIndex ?? 0;
     const suit = this.variant.suits[index];
     const lines = [];
     if (suit.oneOfEach) {
@@ -1219,8 +1219,8 @@ export default class HanabiCard
     if (suit.noClueRanks) {
       lines.push("Not touched by any rank clue");
     }
-    return '<div style="font-size: 0.75em;">' +
-        `<div style="text-align: center">${suit.displayName} (${suit.abbreviation})</div>` +
-        lines.join("<br>") + "</div>";
+    return `<div style="font-size: 0.75em;"><div style="text-align: center">${
+      suit.displayName
+    } (${suit.abbreviation})</div>${lines.join("<br>")}</div>`;
   }
 }
