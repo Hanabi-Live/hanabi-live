@@ -1195,11 +1195,6 @@ export default class HanabiCard
     this.updatePips();
   }
 
-  isOnPlayStack(): boolean {
-    const { location } = this.state;
-    return location === "playStack" || location === "deck";
-  }
-
   suitDescriptionNote(): string {
     const index = this.state.suitIndex ?? 0;
     const suit = this.variant.suits[index];

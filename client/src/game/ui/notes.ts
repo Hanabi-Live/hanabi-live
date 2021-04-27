@@ -105,7 +105,7 @@ export function show(card: HanabiCard): void {
   // Update the tooltip content
   const note = get(card.state.order, false);
   let shownNote = note;
-  if (card.isOnPlayStack()) {
+  if (card.state.location === "playStack") {
     if (shownNote) {
       shownNote += "<br><br>";
     }

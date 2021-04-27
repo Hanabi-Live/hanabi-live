@@ -144,7 +144,7 @@ function checkShowNoteTooltip(card: HanabiCard) {
     return;
   }
 
-  if (!card.noteIndicator.isVisible() && !card.isOnPlayStack()) {
+  if (!card.noteIndicator.isVisible() && card.state.location !== "playStack") {
     // Don't do anything if there is not a note on this card in hand
     return;
   }
