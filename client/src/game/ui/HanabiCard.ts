@@ -5,6 +5,7 @@ import Konva from "konva";
 import { getSuit } from "../data/gameData";
 import initialCardState from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
+import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
 import CardIdentity from "../types/CardIdentity";
@@ -1214,8 +1215,9 @@ export default class HanabiCard
     if (suit.noClueRanks) {
       lines.push("Not touched by any rank clue");
     }
+    const abbreviation = abbreviationRules.get(suit.name, this.variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${
       suit.displayName
-    } (${suit.abbreviation})</div>${lines.join("<br>")}</div>`;
+    } (${abbreviation})</div>${lines.join("<br>")}</div>`;
   }
 }
