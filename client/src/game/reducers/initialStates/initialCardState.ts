@@ -1,3 +1,4 @@
+import * as deck from "../../rules/deck";
 import CardState from "../../types/CardState";
 import Variant from "../../types/Variant";
 
@@ -15,9 +16,11 @@ export default function initialCardState(
     possibleRanks.forEach((r) => possibleCards.push([s, r])),
   );
 
+  const total = deck.totalCards(variant);
+
   return {
     order,
-    location: "deck",
+    location: order < total ? "deck" : "playStack",
     suitIndex: null,
     rank: null,
     possibleCardsFromClues: possibleCards,
