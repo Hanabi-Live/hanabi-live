@@ -1201,19 +1201,19 @@ export default class HanabiCard
     const suit = this.variant.suits[index];
     const lines = [];
     if (suit.oneOfEach) {
-      lines.push("Every card is unique");
+      lines.push("Every card is unique.");
     }
     if (suit.allClueColors) {
-      lines.push("Touched by every color clue");
+      lines.push("Touched by every color clue.");
     }
     if (suit.noClueColors) {
-      lines.push("Not touched by any color clue");
+      lines.push("Not touched by any color clue.");
     }
     if (suit.allClueRanks) {
-      lines.push("Touched by every rank clue");
+      lines.push("Touched by every rank clue.");
     }
     if (suit.noClueRanks) {
-      lines.push("Not touched by any rank clue");
+      lines.push("Not touched by any rank clue.");
     }
     const abbreviation = abbreviationRules.get(suit.name, this.variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${
