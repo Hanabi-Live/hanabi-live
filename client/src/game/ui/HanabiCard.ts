@@ -12,6 +12,7 @@ import CardIdentity from "../types/CardIdentity";
 import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import CardStatus from "../types/CardStatus";
+import Color from "../types/Color";
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "../types/constants";
 import StackDirection from "../types/StackDirection";
 import Suit from "../types/Suit";
@@ -1198,10 +1199,38 @@ export default class HanabiCard
 
   suitDescriptionNote(): string {
     const index = this.state.suitIndex ?? 0;
-    const suit = this.variant.suits[index];
+    const { variant } = this;
+    const suit = variant.suits[index];
+    function colorName(color: Color) {
+      return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
+    }
     const lines = [];
     if (suit.oneOfEach) {
       lines.push("Every card is unique.");
+    }
+    if (suit.clueColors.length > 1) {
+      const colors = [];
+      for (const color of suit.clueColors) {
+        colors.push(colorName(color));
+      }
+      lines.push(`Touched by ${colors.join(", ")} color clues`);
+    }
+    if (suit.prism) {
+      const cards = [];
+      if (variantRules.isUpOrDown(variant)) {
+        cards.push(
+          `START is ${colorName(
+            variant.clueColors[variant.clueColors.length - 1],
+          )}`,
+        );
+      }
+      for (let rank = 1; rank <= 5; ++rank) {
+        const prismColorIndex = (rank - 1) % variant.clueColors.length;
+        cards.push(
+          `${rank} is ${colorName(variant.clueColors[prismColorIndex])}`,
+        );
+      }
+      lines.push(`Colors: ${cards.join(", ")}`);
     }
     if (suit.allClueColors) {
       lines.push("Touched by every color clue.");
@@ -1210,12 +1239,12 @@ export default class HanabiCard
       lines.push("Not touched by any color clue.");
     }
     if (suit.allClueRanks) {
-      lines.push("Touched by every rank clue.");
+      lines.push("Touched by every number clue.");
     }
     if (suit.noClueRanks) {
-      lines.push("Not touched by any rank clue.");
+      lines.push("Not touched by any number clue.");
     }
-    const abbreviation = abbreviationRules.get(suit.name, this.variant);
+    const abbreviation = abbreviationRules.get(suit.name, variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${
       suit.displayName
     } (${abbreviation})</div>${lines.join("<br>")}</div>`;
