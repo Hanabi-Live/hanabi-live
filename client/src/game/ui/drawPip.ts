@@ -3359,6 +3359,7 @@ export default function drawPip(
   suit: Suit,
   shadow?: boolean,
   customFill?: string,
+  lineWidth?: number,
 ): void {
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
@@ -3390,7 +3391,7 @@ export default function drawPip(
 
   // Draw a black border around the shape
   if (shadow === true) {
-    ctx.lineWidth = hasCustomFill ? 8 : 5;
+    ctx.lineWidth = lineWidth ?? (hasCustomFill ? 8 : 5);
     ctx.shadowColor = "rgba(0, 0, 0, 0)";
   } else {
     ctx.lineWidth = 3;

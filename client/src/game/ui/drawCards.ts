@@ -260,17 +260,19 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Draw large faint suit
+  // Draw large suit pip
   if (rank === UNKNOWN_CARD_RANK || rank === START_CARD_RANK) {
     ctx.save();
+    let lineWidth;
     if (rank === START_CARD_RANK) {
-      ctx.globalAlpha = 0.6;
+      lineWidth = 2;
     } else {
+      // Make the pip faint
       ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
     }
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, enableShadows, undefined, lineWidth);
     ctx.restore();
   }
 }
