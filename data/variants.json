@@ -27281,5 +27281,494 @@
       "Prism"
     ],
     "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous (6 Suits)",
+    "id": 1353,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Lime",
+      "Forest",
+      "Sky",
+      "Navy"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Rainbow (5 Suits)",
+    "id": 1383,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Pink (5 Suits)",
+    "id": 1386,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & White (5 Suits)",
+    "id": 1387,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "White"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Brown (5 Suits)",
+    "id": 1642,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Brown"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Omni (5 Suits)",
+    "id": 1644,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Omni"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Null (5 Suits)",
+    "id": 1645,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Null"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Muddy Rainbow (5 Suits)",
+    "id": 1646,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Muddy Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Light Pink (5 Suits)",
+    "id": 1647,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Prism (5 Suits)",
+    "id": 1648,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Very Ambiguous (6 Suits)",
+    "id": 1791,
+    "suits": [
+      "Tomato VA",
+      "Ruby VA",
+      "Mahogany VA",
+      "Sky VA",
+      "Berry VA",
+      "Navy VA"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous (6 Suits)",
+    "id": 1792,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Ocean EA"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous (5 Suits)",
+    "id": 1793,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Pink (6 Suits)",
+    "id": 1794,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Pink (5 Suits)",
+    "id": 1795,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & White (6 Suits)",
+    "id": 1796,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "White"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & White (5 Suits)",
+    "id": 1797,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "White"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Brown (6 Suits)",
+    "id": 1798,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Brown"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Brown (5 Suits)",
+    "id": 1799,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Brown"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Omni (6 Suits)",
+    "id": 1800,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Omni"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Omni (5 Suits)",
+    "id": 1801,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Omni"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Null (6 Suits)",
+    "id": 1802,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Null"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Null (5 Suits)",
+    "id": 1803,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Null"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Muddy Rainbow (6 Suits)",
+    "id": 1804,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Muddy Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Muddy Rainbow (5 Suits)",
+    "id": 1805,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Muddy Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Light Pink (6 Suits)",
+    "id": 1806,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Extremely Ambiguous & Light Pink (5 Suits)",
+    "id": 1807,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color (6 Suits)",
+    "id": 1808,
+    "suits": [
+      "Orange D",
+      "Purple D",
+      "Mahogany D",
+      "Green D",
+      "Tan D",
+      "Navy D"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color (5 Suits)",
+    "id": 1809,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Rainbow (6 Suits)",
+    "id": 1810,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Pink (6 Suits)",
+    "id": 1811,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & White (6 Suits)",
+    "id": 1812,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "White"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Brown (6 Suits)",
+    "id": 1813,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Brown"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Omni (6 Suits)",
+    "id": 1814,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Omni"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Null (6 Suits)",
+    "id": 1815,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Null"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Muddy Rainbow (6 Suits)",
+    "id": 1816,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Muddy Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Light Pink (6 Suits)",
+    "id": 1817,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Dual-Color & Prism (6 Suits)",
+    "id": 1818,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Ambiguous & Dual-Color",
+    "id": 1819,
+    "suits": [
+      "Tangelo AD",
+      "Peach AD",
+      "Orchid AD",
+      "Violet AD",
+      "Lime AD",
+      "Forest AD"
+    ],
+    "showSuitNames": true
   }
 ]

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # This script generates a new "variants.json" file
 # Note that we must preserve the variant IDs between versions of "variants.json" because it is used
 # in the seed string (e.g. "p2v5s1")
@@ -11,6 +12,7 @@ if sys.version_info < (3, 0):
 # Imports
 import json
 import os
+import re
 import sys
 
 # Constants
@@ -941,6 +943,27 @@ def main():
                     "showSuitNames": True,
                 }
             )
+    # Ambiguous Up/Down
+    ambiguous_up_down = []
+    for variant in variants:
+        if not re.search(r"Ambiguous|Dual-Color", variant["name"]):
+            continue
+        if re.search(r"\([34] Suits\)", variant["name"]):
+            # This would be too difficult
+            continue
+        # Filter out variants with dark suits
+        for suit in variant["suits"]:
+            if suits[suit]["oneOfEach"]:
+                break
+        else:
+            variant_name = "Up or Down & " + variant["name"]
+            ambiguous_up_down.append({
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": variant["suits"],
+                "showSuitNames": variant["showSuitNames"],
+            })
+    variants += ambiguous_up_down
 
     # Create a map for the new variants
     new_variants_map = {}
