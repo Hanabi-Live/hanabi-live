@@ -437,10 +437,10 @@ function drawDiscardStacks() {
   // Local variables
   let discardStackSpacing;
   if (globals.variant.suits.length === 6) {
-    discardStackSpacing = 0.04;
+    discardStackSpacing = 0.038;
   } else {
     // 3, 4, or 5 stacks
-    discardStackSpacing = 0.05;
+    discardStackSpacing = 0.047;
   }
 
   for (let i = 0; i < globals.variant.suits.length; i++) {
@@ -449,9 +449,9 @@ function drawDiscardStacks() {
     // Make the discard stack for this suit
     const discardStack = new CardLayout({
       x: 0.81 * winW,
-      y: (0.61 + discardStackSpacing * i) * winH,
+      y: (0.64 + discardStackSpacing * i) * winH,
       width: 0.17 * winW,
-      height: 0.17 * winH,
+      height: 0.15 * winH,
       listening: false,
     });
     globals.elements.discardStacks.set(suit, discardStack);
@@ -1321,7 +1321,7 @@ function drawStatistics() {
     x: clueLogValues.x * winW,
     y: 0.53 * winH,
     width: clueLogValues.w! * winW,
-    height: 0.06 * winH,
+    height: 0.09 * winH,
     fill: "black",
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
@@ -1329,10 +1329,49 @@ function drawStatistics() {
   });
   globals.layers.UI.add(statsRect);
 
+  const variantLabel = new FitText({
+    text: globals.variant.name.replace(/\s*\(\d Suits\)/, ""),
+    x: 0.825 * winW,
+    y: 0.54 * winH,
+    width: 0.15 * winW,
+    height: 0.03 * winH,
+    fontSize: 0.02 * winH,
+    fontFamily: "Verdana",
+    fill: LABEL_COLOR,
+    shadowColor: "black",
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    align: "center",
+    listening: false,
+  });
+  globals.layers.UI.add(variantLabel);
+  globals.elements.variantLabel = variantLabel;
+
+  const variantUnderline = new Konva.Line({
+    points: [0.825 * winW, 0.56 * winH, 0.965 * winW, 0.56 * winH],
+    stroke: LABEL_COLOR,
+    strokeWidth: 1,
+    lineJoin: "round",
+    shadowColor: "black",
+    shadowBlur: 5,
+    shadowOffset: {
+      x: 0,
+      y: 3,
+    },
+    shadowOpacity: 0,
+    listening: false,
+  });
+  globals.layers.UI.add(variantUnderline);
+  globals.elements.variantUnderline = variantUnderline;
+
   const paceTextLabel = basicTextLabel.clone({
     text: "Pace",
     x: 0.825 * winW,
-    y: 0.54 * winH,
+    y: 0.57 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as TextWithTooltip;
@@ -1352,7 +1391,7 @@ function drawStatistics() {
   const paceNumberLabel = basicNumberLabel.clone({
     text: "-",
     x: 0.9 * winW,
-    y: 0.54 * winH,
+    y: 0.57 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as Konva.Text;
@@ -1372,7 +1411,7 @@ function drawStatistics() {
   const efficiencyTextLabel = basicTextLabel.clone({
     text: "Efficiency",
     x: 0.825 * winW,
-    y: 0.56 * winH,
+    y: 0.59 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as TextWithTooltip;
@@ -1402,7 +1441,7 @@ function drawStatistics() {
   const efficiencyNumberLabel = basicNumberLabel.clone({
     text: "-",
     x: 0.9 * winW,
-    y: 0.56 * winH,
+    y: 0.59 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as TextWithTooltip;
@@ -1415,7 +1454,7 @@ function drawStatistics() {
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
     x: 0.905 * winW,
-    y: 0.56 * winH,
+    y: 0.59 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as Konva.Text;
@@ -1425,7 +1464,7 @@ function drawStatistics() {
   const efficiencyMinNeededLabel = basicNumberLabel.clone({
     text: globals.metadata.minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
     x: 0.918 * winW,
-    y: 0.56 * winH,
+    y: 0.59 * winH,
     fontSize: 0.02 * winH,
     // "Easy" variants use the default color (off-white)
     // "Hard" variants use pink
@@ -1450,9 +1489,9 @@ function drawDiscardArea() {
   // The red border that surrounds the discard pile when the team is at 8 clues
   globals.elements.noDiscardBorder = new Konva.Rect({
     x: 0.8 * winW,
-    y: 0.6 * winH,
+    y: 0.63 * winH,
     width: 0.19 * winW,
-    height: 0.39 * winH,
+    height: 0.36 * winH,
     stroke: "#df1c2d",
     strokeWidth: 0.005 * winW,
     cornerRadius: 0.01 * winW,
@@ -1464,9 +1503,9 @@ function drawDiscardArea() {
   // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
   globals.elements.noDoubleDiscardBorder = new Konva.Rect({
     x: 0.8 * winW,
-    y: 0.6 * winH,
+    y: 0.63 * winH,
     width: 0.19 * winW,
-    height: 0.39 * winH,
+    height: 0.36 * winH,
     stroke: "yellow",
     strokeWidth: 0.004 * winW,
     cornerRadius: 0.01 * winW,
@@ -1479,9 +1518,9 @@ function drawDiscardArea() {
   // The faded rectangle around the trash can
   const discardAreaRect = new Konva.Rect({
     x: 0.8 * winW,
-    y: 0.6 * winH,
+    y: 0.63 * winH,
     width: 0.19 * winW,
-    height: 0.39 * winH,
+    height: 0.36 * winH,
     fill: "black",
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
@@ -1491,9 +1530,9 @@ function drawDiscardArea() {
   // The trash can icon over the discard pile
   const trashcan = new Konva.Image({
     x: 0.82 * winW,
-    y: 0.62 * winH,
+    y: 0.65 * winH,
     width: 0.15 * winW,
-    height: 0.35 * winH,
+    height: 0.33 * winH,
     opacity: 0.2,
     image: globals.imageLoader!.get("trashcan")!,
     listening: false,
@@ -1503,9 +1542,9 @@ function drawDiscardArea() {
   // This is the invisible rectangle that players drag cards to in order to discard them
   globals.elements.discardArea = new Konva.Rect({
     x: 0.8 * winW,
-    y: 0.6 * winH,
+    y: 0.63 * winH,
     width: 0.2 * winW,
-    height: 0.4 * winH,
+    height: 0.37 * winH,
     listening: false,
   });
 }
