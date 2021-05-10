@@ -473,10 +473,10 @@ export const wrench = (): Konva.Image =>
 
 export const ddaIndicator = (): Konva.Image =>
   new Konva.Image({
-    x: 0.8 * CARD_W,
+    x: 0.05 * CARD_W,
     y: 0.05 * CARD_H,
-    width: 0.15 * CARD_W,
-    height: 0.15 * CARD_W,
+    width: 0.25 * CARD_W,
+    height: 0.25 * CARD_W,
     image: globals.imageLoader!.get("dda")!,
     visible: false,
     listening: false,
