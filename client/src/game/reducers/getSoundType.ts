@@ -105,7 +105,7 @@ export default function getSoundType(
       }
       const nextPlayerHand = currentState.hands[action.playerIndex];
       if (
-        originalState.stats.doubleDiscard &&
+        originalState.stats.doubleDiscard !== null &&
         couldBeLastDiscardedCard &&
         !metadata.hardVariant &&
         !handRules.isLocked(nextPlayerHand, currentState.deck)
@@ -114,7 +114,7 @@ export default function getSoundType(
         return SoundType.DoubleDiscard;
       }
 
-      if (stats.doubleDiscard && !metadata.hardVariant) {
+      if (stats.doubleDiscard !== null && !metadata.hardVariant) {
         // A player has discarded to *cause* a double discard situation
         return SoundType.DoubleDiscardCause;
       }
