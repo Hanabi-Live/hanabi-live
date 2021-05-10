@@ -146,7 +146,7 @@ function statsReducerFunction(
       variant,
     );
   } else if (action.type === "play" || action.type === "clue") {
-    stats.doubleDiscard = false;
+    stats.doubleDiscard = null;
   }
 
   // Record the last action

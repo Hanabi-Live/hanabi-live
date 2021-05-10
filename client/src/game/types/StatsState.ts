@@ -24,7 +24,8 @@ export default interface StatsState {
   // (future efficiency is simply "cardsNotGotten / cluesStillUsable")
 
   // Other
-  readonly doubleDiscard: boolean;
+  // store the order of the double-discard candidate, or null if not in DDA
+  readonly doubleDiscard: number | null;
   readonly lastAction: GameAction | null; // Used for determining sound effects
   readonly soundTypeForLastAction: SoundType;
 }

@@ -180,7 +180,7 @@ export function onClueTokensChanged(clueTokens: number): void {
 
 export function onClueTokensOrDoubleDiscardChanged(data: {
   clueTokens: number;
-  doubleDiscard: boolean;
+  doubleDiscard: number | null;
 }): void {
   if (globals.lobby.settings.realLifeMode) {
     return;
@@ -197,7 +197,7 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   globals.elements.noDoubleDiscardBorder?.visible(
     globals.lobby.settings.hyphenatedConventions &&
       !noDiscard &&
-      data.doubleDiscard,
+      data.doubleDiscard !== null,
   );
 
   globals.layers.UI.batchDraw();
