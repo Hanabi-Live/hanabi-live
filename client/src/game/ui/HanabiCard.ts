@@ -788,8 +788,35 @@ export default class HanabiCard
       status = visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
     }
 
+    const dda = visibleState.stats.doubleDiscard;
+    this.setDDA(
+      dda !== null &&
+        !this.shouldShowClueBorder() &&
+        this.state.location === visibleState.turn.currentPlayerIndex &&
+        this.state.possibleCardsFromClues.some(
+          ([suitIndex, rank]) =>
+            suitIndex === visibleState.deck[dda].suitIndex &&
+            rank === visibleState.deck[dda].rank,
+        ),
+    );
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
+  }
+
+  private setDDA(dda: boolean) {
+    const visible = this.shouldSetDDA(dda);
+    this.ddaIndicator.visible(visible);
+  }
+
+  private shouldSetDDA(dda: boolean) {
+    return (
+      dda &&
+      !globals.state.finished &&
+      globals.lobby.settings.hyphenatedConventions &&
+      !this.trashcan.isVisible() &&
+      !globals.lobby.settings.realLifeMode &&
+      !globals.metadata.hardVariant
+    );
   }
 
   private setFade(isTrash: boolean) {

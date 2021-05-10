@@ -132,6 +132,7 @@ function subscribeToCardChanges(order: number) {
         status,
         clued: card.numPositiveClues >= 1,
         location: card.location,
+        doubleDiscard: s.visibleState!.stats.doubleDiscard,
       };
     },
     () => updateCardStatus(order),
