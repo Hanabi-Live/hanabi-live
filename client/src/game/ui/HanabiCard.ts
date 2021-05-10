@@ -76,7 +76,8 @@ export default class HanabiCard
   noteIndicator: NoteIndicator;
   private trashcan: Konva.Image;
   private wrench: Konva.Image;
-  private ddaIndicator: Konva.Image;
+  private ddaIndicatorTop: Konva.Image;
+  private ddaIndicatorBottom: Konva.Image;
 
   // -------------------
   // Getters and setters
@@ -204,8 +205,12 @@ export default class HanabiCard
     this.add(this.trashcan);
     this.wrench = HanabiCardInit.wrench();
     this.add(this.wrench);
-    this.ddaIndicator = HanabiCardInit.ddaIndicator();
-    this.add(this.ddaIndicator);
+    this.ddaIndicatorTop = HanabiCardInit.ddaIndicatorTop();
+    this.add(this.ddaIndicatorTop);
+    this.ddaIndicatorBottom = HanabiCardInit.ddaIndicatorBottom(
+      this.variant.offsetCornerElements,
+    );
+    this.add(this.ddaIndicatorBottom);
 
     // Register mouse events for hovering, clicking, etc.
     this.registerMouseHandlers();
@@ -791,8 +796,8 @@ export default class HanabiCard
     const dda = visibleState.stats.doubleDiscard;
     this.setDDA(
       dda !== null &&
-        !this.shouldShowClueBorder() &&
         this.state.location === visibleState.turn.currentPlayerIndex &&
+        status !== CardStatus.Critical &&
         this.state.possibleCardsFromClues.some(
           ([suitIndex, rank]) =>
             suitIndex === visibleState.deck[dda].suitIndex &&
@@ -805,13 +810,20 @@ export default class HanabiCard
 
   private setDDA(dda: boolean) {
     const visible = this.shouldSetDDA(dda);
-    this.ddaIndicator.visible(visible);
+    const known = this.visibleSuitIndex !== null || this.visibleRank !== null;
+    if (visible) {
+      this.ddaIndicatorTop.visible(!known);
+      this.ddaIndicatorBottom.visible(known);
+    } else {
+      this.ddaIndicatorTop.visible(false);
+      this.ddaIndicatorBottom.visible(false);
+    }
   }
 
   private shouldSetDDA(dda: boolean) {
     return (
       dda &&
-      !globals.state.finished &&
+      !this.shouldShowClueBorder() &&
       globals.lobby.settings.hyphenatedConventions &&
       !this.trashcan.isVisible() &&
       !globals.lobby.settings.realLifeMode &&

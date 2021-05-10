@@ -471,7 +471,7 @@ export const wrench = (): Konva.Image =>
     listening: false,
   });
 
-export const ddaIndicator = (): Konva.Image =>
+export const ddaIndicatorTop = (): Konva.Image =>
   new Konva.Image({
     x: 0.05 * CARD_W,
     y: 0.05 * CARD_H,
@@ -481,6 +481,27 @@ export const ddaIndicator = (): Konva.Image =>
     visible: false,
     listening: false,
   });
+
+export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
+  // Define the critical indicator image
+  const ddaX = 0.06;
+  const ddaY = 0.82;
+  const size = 0.2 * CARD_W;
+  const indicator = new Konva.Image({
+    // If the cards have triangles on the corners that show the color composition,
+    // the images will overlap
+    // Thus, we move it upwards if this is the case
+    x: (offsetCornerElements ? ddaX + 0.05 : ddaX) * CARD_W,
+    y: (offsetCornerElements ? ddaY - 0.05 : ddaY) * CARD_H,
+    align: "center",
+    image: globals.imageLoader!.get("dda")!,
+    width: size,
+    height: size,
+    visible: false,
+    listening: false,
+  });
+  return indicator;
+}
 
 function scaleCardImage(
   ctx: CanvasRenderingContext2D,
