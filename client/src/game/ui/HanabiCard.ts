@@ -76,6 +76,7 @@ export default class HanabiCard
   noteIndicator: NoteIndicator;
   private trashcan: Konva.Image;
   private wrench: Konva.Image;
+  private ddaIndicator: Konva.Image;
 
   // -------------------
   // Getters and setters
@@ -203,6 +204,8 @@ export default class HanabiCard
     this.add(this.trashcan);
     this.wrench = HanabiCardInit.wrench();
     this.add(this.wrench);
+    this.ddaIndicator = HanabiCardInit.ddaIndicator();
+    this.add(this.ddaIndicator);
 
     // Register mouse events for hovering, clicking, etc.
     this.registerMouseHandlers();

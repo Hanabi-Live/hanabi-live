@@ -10,6 +10,7 @@ const fileIDs = [
   "checkbox-off-disabled",
   "crown",
   "critical",
+  "dda",
   "eyes",
   "home",
   "note",
