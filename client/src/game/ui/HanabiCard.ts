@@ -793,19 +793,19 @@ export default class HanabiCard
       status = visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
     }
 
+    this.setFade(status === CardStatus.Trash);
+    this.setCritical(status === CardStatus.Critical);
     const dda = visibleState.stats.doubleDiscard;
     this.setDDA(
       dda !== null &&
         this.state.location === visibleState.turn.currentPlayerIndex &&
         status !== CardStatus.Critical &&
-        this.state.possibleCardsFromClues.some(
-          ([suitIndex, rank]) =>
-            suitIndex === visibleState.deck[dda].suitIndex &&
-            rank === visibleState.deck[dda].rank,
+        cardRules.canPossiblyBe(
+          this.state,
+          visibleState.deck[dda].suitIndex,
+          visibleState.deck[dda].rank,
         ),
     );
-    this.setFade(status === CardStatus.Trash);
-    this.setCritical(status === CardStatus.Critical);
   }
 
   private setDDA(dda: boolean) {
