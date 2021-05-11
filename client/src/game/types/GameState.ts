@@ -24,6 +24,7 @@ export default interface GameState {
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;
 }
+
 export interface LogEntry {
   readonly turn: number;
   readonly text: string;
