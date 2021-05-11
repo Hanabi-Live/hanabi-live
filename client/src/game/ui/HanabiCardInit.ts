@@ -483,7 +483,6 @@ export const ddaIndicatorTop = (): Konva.Image =>
   });
 
 export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
-  // Define the critical indicator image
   const ddaX = 0.06;
   const ddaY = 0.82;
   const size = 0.2 * CARD_W;
