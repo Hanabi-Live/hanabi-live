@@ -265,6 +265,7 @@ If you are playing with the [Hyphen-ated group](https://hanabi.github.io/), some
 
 - an "H" indicator next to the username in the "Online Users" section.
 - double discard situation notification (as a border around the discard pile and in the "Current Player" area)
+- a blue question mark drawn on cards potentially in a double discard situation based on the empathy of the card
 - locked hand notification (in the "Current Player" area)
 - *Low Score Phase* notification (via the score being cyan)
 - a [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)

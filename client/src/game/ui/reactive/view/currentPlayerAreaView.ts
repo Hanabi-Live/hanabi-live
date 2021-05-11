@@ -76,7 +76,7 @@ export function onChanged(
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.state.ongoingGame.stats.doubleDiscard &&
+      globals.state.ongoingGame.stats.doubleDiscard !== null &&
       globals.lobby.settings.hyphenatedConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';

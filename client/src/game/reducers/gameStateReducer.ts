@@ -20,6 +20,7 @@ import GameMetadata, { getPlayerName } from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import Variant from "../types/Variant";
 import cardsReducer from "./cardsReducer";
+import ddaReducer from "./ddaReducer";
 import statsReducer from "./statsReducer";
 import turnReducer from "./turnReducer";
 
@@ -317,6 +318,15 @@ function gameStateReducerFunction(
     playing,
     metadata,
     ourNotes ?? null,
+  );
+
+  // After stats calculated, compute DDA property on all card states
+  state.deck = castDraft(
+    ddaReducer(
+      state.deck,
+      state.stats.doubleDiscard,
+      state.turn.currentPlayerIndex,
+    ),
   );
 }
 

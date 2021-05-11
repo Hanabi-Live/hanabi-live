@@ -180,7 +180,7 @@ export interface ActionStatus {
   readonly clues: number;
   readonly score: number;
   readonly maxScore: number;
-  readonly doubleDiscard: boolean;
+  readonly doubleDiscard: number | null;
 }
 
 export interface ActionStrike {

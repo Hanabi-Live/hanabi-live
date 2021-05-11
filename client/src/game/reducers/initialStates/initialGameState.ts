@@ -106,7 +106,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
 
       cluesStillUsable,
 
-      doubleDiscard: false,
+      doubleDiscard: null,
       lastAction: null,
       soundTypeForLastAction: SoundType.Standard,
     },

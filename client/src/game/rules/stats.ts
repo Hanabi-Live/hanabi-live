@@ -360,10 +360,10 @@ export function doubleDiscard(
   orderOfDiscardedCard: number,
   state: GameState,
   variant: Variant,
-): boolean {
+): number | null {
   // It is never a double discard situation if the game is over
   if (state.turn.currentPlayerIndex === null) {
-    return false;
+    return null;
   }
 
   // It is never a double discard situation if the next player has one or more positive clues on
@@ -379,14 +379,14 @@ export function doubleDiscard(
     }
   }
   if (allClued) {
-    return false;
+    return null;
   }
 
   // It is never a double discard situation if we do not know the identity of the discarded card
   // (which can happen in certain variants)
   const cardDiscarded = state.deck[orderOfDiscardedCard];
   if (cardDiscarded.suitIndex === null || cardDiscarded.rank === null) {
-    return false;
+    return null;
   }
 
   // It is never a double discard situation if the discarded card does not need to be played
@@ -399,7 +399,7 @@ export function doubleDiscard(
     variant,
   );
   if (!needsToBePlayed) {
-    return false;
+    return null;
   }
 
   // It is never a double discard situation if another player has a copy of the card in their hand
@@ -412,7 +412,7 @@ export function doubleDiscard(
       typeof cardInDeck.location === "number" && // The card is in a player's hand
       cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
     ) {
-      return false;
+      return null;
     }
   }
 
@@ -428,5 +428,5 @@ export function doubleDiscard(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
   );
-  return numCopiesTotal === numDiscarded + 1;
+  return numCopiesTotal === numDiscarded + 1 ? orderOfDiscardedCard : null;
 }

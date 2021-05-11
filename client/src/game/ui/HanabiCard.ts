@@ -76,6 +76,8 @@ export default class HanabiCard
   noteIndicator: NoteIndicator;
   private trashcan: Konva.Image;
   private wrench: Konva.Image;
+  private ddaIndicatorTop: Konva.Image;
+  private ddaIndicatorBottom: Konva.Image;
 
   // -------------------
   // Getters and setters
@@ -203,6 +205,12 @@ export default class HanabiCard
     this.add(this.trashcan);
     this.wrench = HanabiCardInit.wrench();
     this.add(this.wrench);
+    this.ddaIndicatorTop = HanabiCardInit.ddaIndicatorTop();
+    this.add(this.ddaIndicatorTop);
+    this.ddaIndicatorBottom = HanabiCardInit.ddaIndicatorBottom(
+      this.variant.offsetCornerElements,
+    );
+    this.add(this.ddaIndicatorBottom);
 
     // Register mouse events for hovering, clicking, etc.
     this.registerMouseHandlers();
@@ -787,6 +795,30 @@ export default class HanabiCard
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
+    this.setDDA(this.state.inDoubleDiscard && status !== CardStatus.Critical);
+  }
+
+  private setDDA(dda: boolean) {
+    const visible = this.shouldSetDDA(dda);
+    const known = this.visibleSuitIndex !== null || this.visibleRank !== null;
+    if (visible) {
+      this.ddaIndicatorTop.visible(!known);
+      this.ddaIndicatorBottom.visible(known);
+    } else {
+      this.ddaIndicatorTop.visible(false);
+      this.ddaIndicatorBottom.visible(false);
+    }
+  }
+
+  private shouldSetDDA(dda: boolean) {
+    return (
+      dda &&
+      !this.shouldShowClueBorder() &&
+      !this.trashcan.isVisible() &&
+      globals.lobby.settings.hyphenatedConventions &&
+      !globals.lobby.settings.realLifeMode &&
+      !globals.metadata.hardVariant
+    );
   }
 
   private setFade(isTrash: boolean) {
