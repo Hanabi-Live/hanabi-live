@@ -795,17 +795,7 @@ export default class HanabiCard
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
-    const dda = visibleState.stats.doubleDiscard;
-    this.setDDA(
-      dda !== null &&
-        this.state.location === visibleState.turn.currentPlayerIndex &&
-        status !== CardStatus.Critical &&
-        cardRules.canPossiblyBe(
-          this.state,
-          visibleState.deck[dda].suitIndex,
-          visibleState.deck[dda].rank,
-        ),
-    );
+    this.setDDA(this.state.inDoubleDiscard && status !== CardStatus.Critical);
   }
 
   private setDDA(dda: boolean) {
@@ -824,8 +814,8 @@ export default class HanabiCard
     return (
       dda &&
       !this.shouldShowClueBorder() &&
-      globals.lobby.settings.hyphenatedConventions &&
       !this.trashcan.isVisible() &&
+      globals.lobby.settings.hyphenatedConventions &&
       !globals.lobby.settings.realLifeMode &&
       !globals.metadata.hardVariant
     );

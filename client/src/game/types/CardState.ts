@@ -45,6 +45,9 @@ export default interface CardState {
   readonly segmentDiscarded: number | null;
   readonly segmentPlayed: number | null;
 
+  // Whether the card is in DDA
+  readonly inDoubleDiscard: boolean;
+
   // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
 

@@ -40,5 +40,6 @@ export default function initialCardState(
     isMisplayed: false,
     dealtToStartingHand: false,
     firstCluedWhileOnChop: null,
+    inDoubleDiscard: false,
   };
 }
