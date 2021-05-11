@@ -1434,6 +1434,13 @@ function drawStatistics() {
       globals.lobby.settings.hyphenatedConventions
         ? "#ffb2b2"
         : LABEL_COLOR,
+    // If colorblindMode is activated, indicate make font bold if "Hard"
+    fontStyle:
+      globals.metadata.hardVariant &&
+      globals.lobby.settings.hyphenatedConventions &&
+      globals.lobby.settings.colorblindMode
+        ? "bold"
+        : "normal",
     listening: true,
   }) as Konva.Text;
   globals.layers.UI.add(efficiencyMinNeededLabel);
