@@ -94,9 +94,12 @@ export function onScoreOrMaxScoreChanged(data: {
     lowScorePhase && globals.lobby.settings.hyphenatedConventions
       ? "cyan"
       : LABEL_COLOR;
-  if (lowScorePhase && globals.lobby.settings.hyphenatedConventions &&
-      globals.lobby.settings.colorblindMode) {
-    scoreLabel.fontStyle('bold');
+  if (
+    lowScorePhase &&
+    globals.lobby.settings.hyphenatedConventions &&
+    globals.lobby.settings.colorblindMode
+  ) {
+    scoreLabel.fontStyle("bold");
   }
   scoreLabel.fill(scoreLabelColor);
 
