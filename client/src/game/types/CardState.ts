@@ -48,7 +48,7 @@ export default interface CardState {
   // Whether the card is potentially in DDA
   // Since DDA status depends on the card's location and empathy
   // rather than just the identity of the card,
-  // it's tracked as a subproperty of CardState, not CardStatus
+  // it's tracked as a sub-property of CardState, not CardStatus
   readonly inDoubleDiscard: boolean;
 
   // Needed so that we can animate a misplayed card different from a discarded card
