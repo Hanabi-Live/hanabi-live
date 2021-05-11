@@ -132,10 +132,7 @@ function subscribeToCardChanges(order: number) {
         status,
         clued: card.numPositiveClues >= 1,
         location: card.location,
-        doubleDiscardTurn:
-          s.visibleState!.stats.doubleDiscard === null
-            ? -1
-            : s.visibleState!.turn,
+        doubleDiscard: card.inDoubleDiscard,
       };
     },
     () => updateCardStatus(order),
