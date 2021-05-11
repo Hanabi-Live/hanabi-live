@@ -9,6 +9,8 @@ export default interface GameState {
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];
   readonly cardsRemainingInTheDeck: number;
+  // Card statuses only depend on a card's identity, not the card itself,
+  // so it is stored here rather than as a sub-property of cardstate
   readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
   readonly score: number;
   readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants
