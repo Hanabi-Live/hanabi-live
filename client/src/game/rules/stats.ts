@@ -122,7 +122,7 @@ export function startingDeckSize(
 //   + number of turns in the final round
 //   - (number of cards in a player's hand * number of players)
 //   - (5 * number of suits)
-// https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
+// https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
 export function startingPace(
   deckSize: number,
   maxScore: number,
@@ -312,7 +312,7 @@ export function cluesStillUsable(
 
 // This is used as the denominator of an efficiency calculation:
 // (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
-// https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
+// https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
 export function startingCluesUsable(
   endGameLength: number,
   deckSize: number,

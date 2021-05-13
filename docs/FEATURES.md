@@ -198,7 +198,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 - By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 - Each game has the option to allow empty clues.
-- More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Empty_Clues.md#history).
+- More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/hanabi/hanabi.github.io/blob/main/misc/empty-clues.md#history).
 
 #### One Extra Card
 
@@ -217,7 +217,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The game immediately ends with a score of 0 if the team gets 3 strikes, as per normal.
 - The game immediately ends with a score of 0 if a "critical" card is discarded. (Critical cards are cards that have not been played yet and have only one copy remaining.)
 - The game immediately ends with a score of 0 if a player has no cards in their hand and no clue tokens are available.
-- (This is the fourth [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
+- (This is the fourth [official variant](https://github.com/hanabi/hanabi.github.io/blob/main/misc/rules.md#multicolor-variants).)
 
 #### Detrimental Character Assignments
 

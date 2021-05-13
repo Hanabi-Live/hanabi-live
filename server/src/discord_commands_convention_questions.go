@@ -51,6 +51,6 @@ func discordCommandScreenshot(ctx context.Context, m *discordgo.MessageCreate, a
 // /undefined
 func discordCommandUndefined(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	msg := "**Why isn't [situation X] defined in the conventions document?**\n\n"
-	msg += "Not everything has to have a meaning. We intentionally want to have some situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Convention_Goals.md>"
+	msg += "Not everything has to have a meaning. We intentionally want to have some situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/hanabi/hanabi.github.io/blob/main/misc/convention-goals.md>"
 	discordSend(m.ChannelID, "", msg)
 }
