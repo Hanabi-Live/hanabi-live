@@ -49,6 +49,8 @@ export default class Elements {
   deckTurnsRemainingLabel1: Konva.Text | null = null;
   deckTurnsRemainingLabel2: Konva.Text | null = null;
   deckPlayAvailableLabel: Konva.Rect | null = null;
+  variantLabel: FitText | null = null;
+  variantUnderline: Konva.Line | null = null;
 
   // Extra elements on the right-hand side + the bottom
   clueLog: ClueLog | null = null;
