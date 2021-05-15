@@ -1276,6 +1276,12 @@ export default class HanabiCard
     if (suit.noClueRanks) {
       lines.push("Not touched by any number clue.");
     }
+    if (variant.specialDeceptive) {
+      const deceptiveRank = variant.clueRanks[index % variant.clueRanks.length];
+      lines.push(
+        `Deceptive: ${variant.specialRank} is touched by number ${deceptiveRank} clue.`,
+      );
+    }
     const abbreviation = abbreviationRules.get(suit.name, variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${
       suit.displayName
