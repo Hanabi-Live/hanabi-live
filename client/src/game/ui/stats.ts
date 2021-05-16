@@ -43,7 +43,12 @@ export function efficiencyLabelClick(
 
   // A normal right click is a arrow to highlight the efficiency
   if (!event.evt.altKey) {
-    arrows.click(event, ReplayArrowOrder.Efficiency);
+    arrows.click(
+      event,
+      event.currentTarget === globals.elements.efficiencyCurrentNumberLabel
+        ? ReplayArrowOrder.CurrentEfficiency
+        : ReplayArrowOrder.FutureEfficiency,
+    );
     return;
   }
 

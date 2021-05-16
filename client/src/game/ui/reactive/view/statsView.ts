@@ -15,22 +15,34 @@ export function onEfficiencyChanged(data: {
   finalRoundEffectivelyStarted: boolean;
 }): void {
   // Ensure that the labels exist
-  const effLabel = globals.elements.efficiencyNumberLabel;
-  if (!effLabel) {
+  const effCurrentLabel = globals.elements.efficiencyCurrentNumberLabel;
+  if (!effCurrentLabel) {
     throw new Error(
-      'efficiencyNumberLabel is not initialized in the "onEfficiencyChanged()" function.',
+      'efficiencyCurrentNumberLabel is not initialized in the "onEfficiencyChanged()" function.',
     );
   }
-  const effPipeLabel = globals.elements.efficiencyPipeLabel;
-  if (!effPipeLabel) {
+  const effPipe1Label = globals.elements.efficiencyPipe1Label;
+  if (!effPipe1Label) {
     throw new Error(
-      'efficiencyPipeLabel is not initialized in the "onEfficiencyChanged()" function.',
+      'efficiencyPipe1Label is not initialized in the "onEfficiencyChanged()" function.',
     );
   }
-  const effMinLabel = globals.elements.efficiencyMinNeededLabel;
+  const effFutureLabel = globals.elements.efficiencyFutureRequiredNumberLabel;
+  if (!effFutureLabel) {
+    throw new Error(
+      'efficiencyFutureRequiredNumberLabel is not initialized in the "onEfficiencyChanged()" function.',
+    );
+  }
+  const effPipe2Label = globals.elements.efficiencyPipe2Label;
+  if (!effPipe2Label) {
+    throw new Error(
+      'efficiencyPipe2Label is not initialized in the "onEfficiencyChanged()" function.',
+    );
+  }
+  const effMinLabel = globals.elements.efficiencyMinNeededConstLabel;
   if (!effMinLabel) {
     throw new Error(
-      'efficiencyNumberLabelMinNeeded is not initialized in the "onEfficiencyChanged()" function.',
+      'efficiencyMinNeededConstLabel is not initialized in the "onEfficiencyChanged()" function.',
     );
   }
 
@@ -77,37 +89,50 @@ export function onEfficiencyChanged(data: {
       : statsRules.efficiency(cardsNotGotten, data.cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
+  if (shouldShowEfficiency) {
+    // Show the efficiency and round it to 2 decimal places
+    effCurrentLabel.text(efficiency.toFixed(2));
+  } else {
+    // Handle the case in which the game didn't start yet.
+    effCurrentLabel.text("-");
+  }
+  effCurrentLabel.width(
+    effCurrentLabel.measureSize(effCurrentLabel.text()).width,
+  );
+
   if (shouldShowFutureEfficiency) {
     // Show the efficiency and round it to 2 decimal places
-    effLabel.text(futureEfficiency.toFixed(2));
+    effFutureLabel.text(futureEfficiency.toFixed(2));
   } else {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
-    effLabel.text("-");
+    effFutureLabel.text("-");
   }
-  effLabel.width(effLabel.measureSize(effLabel.text()).width);
+  effFutureLabel.width(effFutureLabel.measureSize(effFutureLabel.text()).width);
 
-  // Reposition the two labels to the right of the efficiency label so that they are aligned
+  // Reposition the labels to the right of the efficiency label so that they are aligned
   // properly
-  // The type of Konva.Text.width is "any" for some reason
-  const effLabelSize = effLabel.measureSize(effLabel.text()).width as number;
-  if (typeof effLabelSize !== "number") {
-    throw new Error("The width of effLabel was not a number.");
+  let x = effCurrentLabel.x();
+  for (const label of [
+    effCurrentLabel,
+    effPipe1Label,
+    effFutureLabel,
+    effPipe2Label,
+    effMinLabel,
+  ]) {
+    if (label === null) continue;
+    label.x(x);
+    // The type of Konva.Text.width is "any" for some reason
+    const size = label.measureSize(label.text()).width as number;
+    if (typeof size !== "number") {
+      throw new Error("The width of eff label was not a number.");
+    }
+    x += size;
   }
-  const pipeX = effLabel.x() + effLabelSize;
-  effPipeLabel.x(pipeX);
-
-  // The type of Konva.Text.width is "any" for some reason
-  const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text())
-    .width as number;
-  if (typeof effPipeLabelSize !== "number") {
-    throw new Error("The width of effPipeLabel was not a number.");
-  }
-  const minEffX = pipeX + effPipeLabelSize;
-  effMinLabel.x(minEffX);
 
   // Change the color of the efficiency label if there is a custom modification
   const effLabelColor = cardsGottenModified ? "#00ffff" : LABEL_COLOR;
-  effLabel.fill(effLabelColor);
+  effCurrentLabel.fill(effLabelColor);
+  effFutureLabel.fill(effLabelColor);
 
   // Update the tooltip
   function formatLine(left: string, right: number | string, usePadding = true) {
@@ -149,8 +174,10 @@ export function onEfficiencyChanged(data: {
     <br />
     Alt + right click this number to add a modifier.
   `;
-  effLabel.tooltipContent = tooltipContent;
-  tooltips.init(effLabel, true, false);
+  effCurrentLabel.tooltipContent = tooltipContent;
+  effFutureLabel.tooltipContent = tooltipContent;
+  tooltips.init(effCurrentLabel, true, false);
+  tooltips.init(effFutureLabel, true, false);
 
   globals.layers.UI.batchDraw();
 }

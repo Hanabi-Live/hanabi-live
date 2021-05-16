@@ -435,11 +435,14 @@ function getElementFromNegativeOrder(order: ReplayArrowOrder): NodeWithTooltip {
     case ReplayArrowOrder.Pace: {
       return globals.elements.paceNumberLabel!;
     }
-    case ReplayArrowOrder.Efficiency: {
-      return globals.elements.efficiencyNumberLabel!;
+    case ReplayArrowOrder.CurrentEfficiency: {
+      return globals.elements.efficiencyCurrentNumberLabel!;
+    }
+    case ReplayArrowOrder.FutureEfficiency: {
+      return globals.elements.efficiencyFutureRequiredNumberLabel!;
     }
     case ReplayArrowOrder.MinEfficiency: {
-      return globals.elements.efficiencyMinNeededLabel!;
+      return globals.elements.efficiencyMinNeededConstLabel!;
     }
     default: {
       ensureAllCases(order);

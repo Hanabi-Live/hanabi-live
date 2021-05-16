@@ -12,7 +12,8 @@ enum ReplayArrowOrder {
   Strike2 = -8,
   Strike3 = -9,
   Pace = -10,
-  Efficiency = -11,
+  CurrentEfficiency = -11,
   MinEfficiency = -12,
+  FutureEfficiency = -13,
 }
 export default ReplayArrowOrder;

@@ -55,9 +55,11 @@ export default class Elements {
   // Extra elements on the right-hand side + the bottom
   clueLog: ClueLog | null = null;
   paceNumberLabel: Konva.Text | null = null;
-  efficiencyNumberLabel: TextWithTooltip | null = null;
-  efficiencyPipeLabel: Konva.Text | null = null;
-  efficiencyMinNeededLabel: Konva.Text | null = null;
+  efficiencyCurrentNumberLabel: TextWithTooltip | null = null;
+  efficiencyPipe1Label: Konva.Text | null = null;
+  efficiencyFutureRequiredNumberLabel: TextWithTooltip | null = null;
+  efficiencyPipe2Label: Konva.Text | null = null;
+  efficiencyMinNeededConstLabel: Konva.Text | null = null;
   noDiscardBorder: Konva.Rect | null = null;
   noDoubleDiscardBorder: Konva.Rect | null = null;
 

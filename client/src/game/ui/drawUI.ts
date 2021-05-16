@@ -1331,9 +1331,9 @@ function drawStatistics() {
 
   const variantLabel = new FitText({
     text: globals.variant.name.replace(/\s*\(\d Suits\)/, ""),
-    x: 0.825 * winW,
+    x: 0.81 * winW,
     y: 0.54 * winH,
-    width: 0.15 * winW,
+    width: 0.18 * winW,
     height: 0.03 * winH,
     fontSize: 0.02 * winH,
     fontFamily: "Verdana",
@@ -1352,7 +1352,7 @@ function drawStatistics() {
   globals.elements.variantLabel = variantLabel;
 
   const variantUnderline = new Konva.Line({
-    points: [0.825 * winW, 0.56 * winH, 0.965 * winW, 0.56 * winH],
+    points: [0.81 * winW, 0.56 * winH, 0.98 * winW, 0.56 * winH],
     stroke: LABEL_COLOR,
     strokeWidth: 1,
     lineJoin: "round",
@@ -1370,7 +1370,7 @@ function drawStatistics() {
 
   const paceTextLabel = basicTextLabel.clone({
     text: "Pace",
-    x: 0.825 * winW,
+    x: 0.81 * winW,
     y: 0.57 * winH,
     fontSize: 0.02 * winH,
     listening: true,
@@ -1390,7 +1390,7 @@ function drawStatistics() {
 
   const paceNumberLabel = basicNumberLabel.clone({
     text: "-",
-    x: 0.9 * winW,
+    x: 0.88 * winW,
     y: 0.57 * winH,
     fontSize: 0.02 * winH,
     listening: true,
@@ -1410,7 +1410,7 @@ function drawStatistics() {
 
   const efficiencyTextLabel = basicTextLabel.clone({
     text: "Efficiency",
-    x: 0.825 * winW,
+    x: 0.81 * winW,
     y: 0.59 * winH,
     fontSize: 0.02 * winH,
     listening: true,
@@ -1422,11 +1422,12 @@ function drawStatistics() {
     Efficiency is calculated by: <br />
     ${padding}&nbsp; &nbsp; <em>(number of cards played +<br />
     ${padding}&nbsp; &nbsp; number of touched cards) /<br />
-    ${padding}&nbsp; &nbsp; number of clues given or lost</em><br />
-    ${padding}The first number is the minimum amount of efficiency needed from <br />
-    ${padding}this turn onward in order to win (i.e. future required efficiency).<br />
-    ${padding}The second number shows the minimum possible efficiency needed<br />
-    ${padding}to win with the current number of players and the current variant.<br />
+    ${padding}&nbsp; &nbsp; number of clues given or lost</em><br /><br />
+    ${padding}The first number is the current efficiency so far.<br /><br />
+    ${padding}The second number is the minimum amount of efficiency needed from <br />
+    ${padding}this turn onward in order to win (i.e. future required efficiency).<br /><br />
+    ${padding}The third number shows the minimum possible efficiency needed<br />
+    ${padding}to win with the current number of players and the current variant.<br /><br />
     ${padding}(For more information, click on the "Help" button in the lobby.)
   `;
   efficiencyTextLabel.tooltipContent = efficiencyTextLabelContent;
@@ -1434,36 +1435,62 @@ function drawStatistics() {
   efficiencyTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Efficiency);
+      arrows.click(event, ReplayArrowOrder.FutureEfficiency);
     },
   );
 
-  const efficiencyNumberLabel = basicNumberLabel.clone({
+  const efficiencyCurrentNumberLabel = basicNumberLabel.clone({
     text: "-",
-    x: 0.9 * winW,
+    x: 0.88 * winW,
     y: 0.59 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as TextWithTooltip;
-  globals.layers.UI.add(efficiencyNumberLabel);
-  globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
-  efficiencyNumberLabel.on("click tap", stats.efficiencyLabelClick);
-  efficiencyNumberLabel.tooltipName = "efficiency-number";
+  globals.layers.UI.add(efficiencyCurrentNumberLabel);
+  globals.elements.efficiencyCurrentNumberLabel = efficiencyCurrentNumberLabel;
+  efficiencyCurrentNumberLabel.on("click tap", stats.efficiencyLabelClick);
+  efficiencyCurrentNumberLabel.tooltipName = "efficiency-number";
   // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
 
-  const efficiencyPipeLabel = basicNumberLabel.clone({
+  const efficiencyPipe1Label = basicNumberLabel.clone({
     text: " | ",
-    x: 0.905 * winW,
+    x: 0.89 * winW,
     y: 0.59 * winH,
     fontSize: 0.02 * winH,
     listening: true,
   }) as Konva.Text;
-  globals.layers.UI.add(efficiencyPipeLabel);
-  globals.elements.efficiencyPipeLabel = efficiencyPipeLabel;
+  globals.layers.UI.add(efficiencyPipe1Label);
+  globals.elements.efficiencyPipe1Label = efficiencyPipe1Label;
 
-  const efficiencyMinNeededLabel = basicNumberLabel.clone({
+  const efficiencyFutureRequiredNumberLabel = basicNumberLabel.clone({
+    text: "-",
+    x: 0.91 * winW,
+    y: 0.59 * winH,
+    fontSize: 0.02 * winH,
+    listening: true,
+  }) as TextWithTooltip;
+  globals.layers.UI.add(efficiencyFutureRequiredNumberLabel);
+  globals.elements.efficiencyFutureRequiredNumberLabel = efficiencyFutureRequiredNumberLabel;
+  efficiencyFutureRequiredNumberLabel.on(
+    "click tap",
+    stats.efficiencyLabelClick,
+  );
+  efficiencyFutureRequiredNumberLabel.tooltipName = "efficiency-number";
+  // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
+
+  const efficiencyPipe2Label = basicNumberLabel.clone({
+    text: " | ",
+    x: 0.92 * winW,
+    y: 0.59 * winH,
+    fontSize: 0.02 * winH,
+    listening: true,
+  }) as Konva.Text;
+  globals.layers.UI.add(efficiencyPipe2Label);
+  globals.elements.efficiencyPipe2Label = efficiencyPipe2Label;
+
+  const efficiencyMinNeededConstLabel = basicNumberLabel.clone({
     text: globals.metadata.minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
-    x: 0.918 * winW,
+    x: 0.94 * winW,
     y: 0.59 * winH,
     fontSize: 0.02 * winH,
     // "Easy" variants use the default color (off-white)
@@ -1482,14 +1509,14 @@ function drawStatistics() {
         : "normal",
     listening: true,
   }) as Konva.Text;
-  globals.layers.UI.add(efficiencyMinNeededLabel);
-  efficiencyMinNeededLabel.on(
+  globals.layers.UI.add(efficiencyMinNeededConstLabel);
+  efficiencyMinNeededConstLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(event, ReplayArrowOrder.MinEfficiency);
     },
   );
-  globals.elements.efficiencyMinNeededLabel = efficiencyMinNeededLabel;
+  globals.elements.efficiencyMinNeededConstLabel = efficiencyMinNeededConstLabel;
 }
 
 function drawDiscardArea() {
