@@ -5,7 +5,7 @@ import (
 )
 
 // iota starts at 0 and counts upwards
-// i.e. statusLobby = 0, statusPregame = 1, etc.
+// i.e. StatusLobby = 0, StatusPregame = 1, etc.
 
 // Every player has a status associated with them for the purposes of showing "where they are" on
 // the user list in the lobby
