@@ -321,8 +321,12 @@ func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) 
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsSeed(seed string) ([]int, error) {
+const PageSize = 1000
+
+func (*Games) GetGameIDsSeed(seed string, page uint) ([]int, error) {
 	gameIDs := make([]int, 0)
+    record_number_lower_bound := page * PageSize
+    record_number_upper_bound := (page + 1) * PageSize
 
 	// Neither % nor _ chars are permitted in seed names, so the change in comparator
 	// from '=' to 'LIKE' should not affect any previously working queries.
