@@ -90,17 +90,29 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       const clueColorIndex = suit.clueColors.findIndex(
         (cardColor: Color) => cardColor === clueColor,
       );
-      if (clueColorIndex === -1) {
+      // Ignore clue validation if suit has no clueColors
+      if (suit.clueColors.length > 0 && clueColorIndex === -1) {
         // It is not possible to clue this color to this card,
         // so default to using the first valid color
         clueColor = suit.clueColors[0];
       }
     }
 
+    let colorIndex = colorToColorIndex(clueColor, globals.variant);
+    if (suit.clueColors.length === 0) {
+      if (suit.fillColors.length === 0) {
+        // Send invalid action to server since we tried to color clue a card that truly has no color
+        colorIndex = -1;
+      } else if (clueColor === undefined) {
+        // Use whatever color is index 0, since the suit had no defined clueColors but has colors
+        colorIndex = 0;
+      }
+    }
+
     turn.end({
       type: ActionType.ColorClue,
       target: card.state.location as number,
-      value: colorToColorIndex(clueColor, globals.variant),
+      value: colorIndex,
     });
   }
 }
