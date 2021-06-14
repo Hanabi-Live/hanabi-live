@@ -35,13 +35,13 @@ export function show(): void {
   // (even if the lobby chat is already at the bottom, it will change size and cause it to not
   // be scrolled all the way down)
   const chat1 = document.getElementById("lobby-chat-text");
-  if (chat1) {
+  if (chat1 !== null) {
     chat1.scrollTop = chat1.scrollHeight;
   } else {
     throw new Error('Failed to get the "lobby-chat-text" element.');
   }
   const chat2 = document.getElementById("lobby-chat-pregame-text");
-  if (chat2) {
+  if (chat2 !== null) {
     chat2.scrollTop = chat2.scrollHeight;
   } else {
     throw new Error('Failed to get the "lobby-chat-pregame-text" element.');

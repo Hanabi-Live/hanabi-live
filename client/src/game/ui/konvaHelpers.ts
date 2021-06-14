@@ -4,7 +4,7 @@ import globals from "./globals";
 
 export const drawLayer = (node: Konva.Node): void => {
   const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;
-  if (layer) {
+  if (layer !== null) {
     layer.batchDraw();
   }
 };

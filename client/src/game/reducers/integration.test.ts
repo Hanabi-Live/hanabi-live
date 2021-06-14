@@ -63,7 +63,7 @@ describe("integration", () => {
           const turn5State = getStateAtTurn(testState, 4);
           const card = turn5State.deck[order];
           // The compiler won't accept a list of tuples from JSON
-          const expected = ((upOrDownTurn5Cards as unknown) as CardState[])[
+          const expected = (upOrDownTurn5Cards as unknown as CardState[])[
             order
           ];
           checkPossibilitiesEliminatedByClues(card, expected);
@@ -110,7 +110,7 @@ describe("integration", () => {
         (order) => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
-          const expected = ((upOrDownFinalCards as unknown) as CardState[])[
+          const expected = (upOrDownFinalCards as unknown as CardState[])[
             order
           ];
           checkPossibilitiesEliminatedByClues(card, expected);

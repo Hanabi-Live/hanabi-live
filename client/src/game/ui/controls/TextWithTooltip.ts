@@ -3,7 +3,8 @@ import NodeWithTooltip from "./NodeWithTooltip";
 
 export default class TextWithTooltip
   extends Konva.Text
-  implements NodeWithTooltip {
+  implements NodeWithTooltip
+{
   tooltipName = "";
   tooltipContent = "";
   // Whether or not this element contains only emoji (which is used for alignment purposes)

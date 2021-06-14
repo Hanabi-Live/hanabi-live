@@ -41,7 +41,8 @@ const DECK_BACK_IMAGE = "deck-back";
 
 export default class HanabiCard
   extends Konva.Group
-  implements NodeWithTooltip, UICard {
+  implements NodeWithTooltip, UICard
+{
   // ---------------
   // Class variables
   // ---------------
@@ -94,7 +95,7 @@ export default class HanabiCard
   private _state: CardState;
   get state(): CardState {
     return (
-      globals.store?.getState()?.visibleState?.deck[this._state.order] ||
+      globals.store?.getState()?.visibleState?.deck[this._state.order] || // eslint-disable-line
       this._state
     );
   }
@@ -1014,7 +1015,7 @@ export default class HanabiCard
     } else {
       layoutChild.opacity(1); // Cards can be hidden in certain variants
       const pos = layoutChild.getAbsolutePosition();
-      globals.elements.deck.add((layoutChild as unknown) as Konva.Group);
+      globals.elements.deck.add(layoutChild as unknown as Konva.Group);
       layoutChild.setAbsolutePosition(pos);
 
       // Animate to the deck
@@ -1125,7 +1126,7 @@ export default class HanabiCard
 
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
-    if (!this.layout.parent) {
+    if (this.layout.parent === null) {
       // If a tween is destroyed in the middle of animation,
       // it can cause a card to be orphaned
       // Ensure the position is reset to the deck, if unset

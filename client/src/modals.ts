@@ -1,6 +1,5 @@
 // Modals (boxes that hover on top of the UI)
 
-import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "./constants";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
@@ -22,7 +21,7 @@ export function init(): void {
 
   // Password
   $("#password-modal-password").on("keypress", (event) => {
-    if (event.which === KeyCode.KEY_RETURN) {
+    if (event.key === "Enter") {
       event.preventDefault();
       $("#password-modal-submit").click();
     }
@@ -117,7 +116,9 @@ export function errorShow(msg: string): void {
   $("#error-modal").fadeIn(FADE_TIME);
 
   // Play a sound if the server has shut down
-  if (/The server is going down for scheduled maintenance./.exec(msg)) {
+  if (
+    /The server is going down for scheduled maintenance./.exec(msg) !== null
+  ) {
     sounds.play("turn_double_discard");
   }
 }
@@ -147,7 +148,7 @@ export function setShadeOpacity(
 function warningClose() {
   $("#warning-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
-  if (globals.lastActiveElement) {
+  if (globals.lastActiveElement !== null) {
     globals.lastActiveElement.focus();
   }
 }

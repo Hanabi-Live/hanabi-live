@@ -109,7 +109,7 @@ function identityMapToArray(cardMap: number[][]) {
   const possibilities: Array<[number, number]> = [];
   for (let rank = 1; rank <= cardMap.length; rank++) {
     for (let suitIndex = 0; suitIndex < cardMap[0].length; suitIndex++) {
-      if (cardMap[rank - 1][suitIndex]) {
+      if (cardMap[rank - 1][suitIndex]) { // eslint-disable-line
         possibilities.push([suitIndex, rank]);
       }
     }
@@ -156,11 +156,12 @@ function getPossibilitiesFromKeyword(
   for (const identities of [positiveIdent, negativeIdent]) {
     const negative = identities === negativeIdent;
     for (const identity of identities) {
-      const ranks = identity.ranks.length ? identity.ranks : variant.ranks;
+      const ranks = identity.ranks.length > 0 ? identity.ranks : variant.ranks;
       for (const rank of ranks) {
-        const suitIndices = identity.suitIndices.length
-          ? identity.suitIndices
-          : range(variant.suits.length);
+        const suitIndices =
+          identity.suitIndices.length > 0
+            ? identity.suitIndices
+            : range(variant.suits.length);
         for (const suitIndex of suitIndices) {
           identityMap[rank - 1][suitIndex] = negative ? 0 : 1;
         }
@@ -178,7 +179,7 @@ export function getPossibilitiesFromKeywords(
   let possibilities: Array<[number, number]> = [];
 
   // Empty keyword list returns all possibilities
-  for (const keyword of keywords.length ? keywords : [""]) {
+  for (const keyword of keywords.length > 0 ? keywords : [""]) {
     const newPossibilities = getPossibilitiesFromKeyword(variant, keyword);
     if (newPossibilities === null) {
       continue;

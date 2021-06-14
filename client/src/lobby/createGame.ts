@@ -305,7 +305,7 @@ function submit() {
 
 function getCheckbox(setting: keyof Settings) {
   const element = document.getElementById(setting) as HTMLInputElement | null;
-  if (!element) {
+  if (element === null) {
     throw new Error(`Failed to get the element of "${setting}".`);
   }
   const value = element.checked;

@@ -48,7 +48,7 @@ export default class StateObserver {
   }
 
   unregisterObservers(): void {
-    if (this.unsubscribe) {
+    if (this.unsubscribe !== null) {
       this.unsubscribe();
     }
   }
@@ -149,8 +149,8 @@ const visibleStateObservers: Subscriptions = [
       potentialCluesLost: s.visibleState!.stats.potentialCluesLost,
       maxScore: s.visibleState!.stats.maxScore,
       cluesStillUsable: s.visibleState!.stats.cluesStillUsable,
-      finalRoundEffectivelyStarted: s.visibleState!.stats
-        .finalRoundEffectivelyStarted,
+      finalRoundEffectivelyStarted:
+        s.visibleState!.stats.finalRoundEffectivelyStarted,
     }),
     statsView.onEfficiencyChanged,
   ),
@@ -372,7 +372,7 @@ const replayObservers: Subscriptions = [
 
   // Replay button
   subAfterInit(
-    (s) => !s.replay.hypothetical && !globals.state.finished,
+    (s) => s.replay.hypothetical !== null && !globals.state.finished,
     replayView.onShouldShowReplayButtonChanged,
   ),
 
@@ -428,5 +428,5 @@ const lateObservers = [
 
   // Initialization finished
   // (this will get called when the visible state becomes valid and after all other view updates)
-  sub((s) => !!s.visibleState, initView.onInitializationChanged),
+  sub((s) => !!s.visibleState, initView.onInitializationChanged), // eslint-disable-line
 ];

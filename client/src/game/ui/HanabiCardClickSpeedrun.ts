@@ -71,7 +71,8 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     // A card may be cluable by more than one color,
     // so we need to figure out which color to use
     // First, find out if they have a clue color button selected
-    const clueButton = globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
+    const clueButton =
+      globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
     let clueColor: Color;
     const suit = globals.variant.suits[card.state.suitIndex];
     if (clueButton === null) {

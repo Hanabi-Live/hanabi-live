@@ -11,7 +11,7 @@ import LayoutChild from "./LayoutChild";
 export default class PlayStack extends Konva.Group {
   addChild(layoutChild: LayoutChild): void {
     const pos = layoutChild.getAbsolutePosition();
-    this.add((layoutChild as unknown) as Konva.Group);
+    this.add(layoutChild as unknown as Konva.Group);
     layoutChild.setAbsolutePosition(pos);
     this.doLayout();
   }
@@ -66,7 +66,7 @@ export default class PlayStack extends Konva.Group {
     const stackLength = this.children.length;
 
     for (let i = 0; i < stackLength; i++) {
-      const layoutChild = (this.children[i] as unknown) as LayoutChild;
+      const layoutChild = this.children[i] as unknown as LayoutChild;
       if (layoutChild.tween !== null) {
         // Don't hide anything if one of the cards on the stack is still tweening
         return;

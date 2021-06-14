@@ -76,7 +76,7 @@ function touchStart(
     // A tap will trigger when the "touchend" event occurs
     // The next tap action will not run because it will appear like the second tap of a double tap
     // Don't worry about this if we actually double-tapped
-    if (!this.wasRecentlyTapped && globals.editingNote == null) {
+    if (!this.wasRecentlyTapped && globals.editingNote === null) {
       this.wasRecentlyTapped = true;
     }
   }, DOUBLE_TAP_DELAY);
@@ -101,7 +101,7 @@ function mouseDown(
   }
 
   const editMode =
-    globals.elements.editCardsButton != null &&
+    globals.elements.editCardsButton !== null &&
     globals.elements.editCardsButton.pressed &&
     globals.state.replay.hypothetical !== null;
   // Empathy
@@ -170,7 +170,7 @@ function getCursorType(card: HanabiCard) {
   }
 
   if (
-    globals.elements.editCardsButton &&
+    globals.elements.editCardsButton !== null &&
     globals.elements.editCardsButton.pressed &&
     globals.state.replay.hypothetical !== null
   ) {
@@ -269,7 +269,7 @@ function setEmpathyOnHand(card: HanabiCard, enabled: boolean) {
   }
 
   // As a sanity check, ensure that the hand object exists
-  const hand = (card.layout.parent as unknown) as CardLayout;
+  const hand = card.layout.parent as unknown as CardLayout;
   if (hand === undefined || hand === null || hand.children.length === 0) {
     return;
   }

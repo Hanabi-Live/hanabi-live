@@ -131,7 +131,7 @@ export default class CheckButton extends Konva.Group {
     }
     this.enabled = enabled;
 
-    if (this.textElement) {
+    if (this.textElement !== null) {
       this.textElement.fill(enabled ? "white" : "#444444");
     }
 
@@ -155,7 +155,7 @@ export default class CheckButton extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement) {
+    if (this.textElement !== null) {
       this.textElement.text(newText);
     } else {
       throw new Error('The "text()" method was called on a non-text Button.');
@@ -163,7 +163,7 @@ export default class CheckButton extends Konva.Group {
   }
 
   fill(newFill: string): void {
-    if (this.textElement) {
+    if (this.textElement !== null) {
       this.textElement.fill(newFill);
     } else {
       throw new Error('The "fill()" method was called on a non-text Button.');

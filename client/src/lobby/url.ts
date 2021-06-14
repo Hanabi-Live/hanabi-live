@@ -55,7 +55,7 @@ export function parseAndGoto(data: WelcomeData): void {
 
   // Automatically join a pre-game if we are using a "/pre-game/123" URL
   const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
-  if (preGameMatch) {
+  if (preGameMatch !== null) {
     // The server expects the game ID as an integer
     const tableID = parseIntSafe(preGameMatch[1]);
     globals.conn!.send("tableJoin", {
@@ -68,7 +68,7 @@ export function parseAndGoto(data: WelcomeData): void {
   // (we want to spectate it instead of reattend it because if we are at this point,
   // it is assumed that if we were in the respective game, we would have already tried to join it)
   const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
-  if (gameMatch) {
+  if (gameMatch !== null) {
     const tableID = parseIntSafe(gameMatch[1]); // The server expects the game ID as an integer
     globals.conn!.send("tableSpectate", {
       tableID,
@@ -79,7 +79,7 @@ export function parseAndGoto(data: WelcomeData): void {
 
   // Automatically go into a replay if we are using a "/replay/123" URL
   const replayMatch = /\/replay\/(\d+)/.exec(window.location.pathname);
-  if (replayMatch) {
+  if (replayMatch !== null) {
     // The server expects the game ID as an integer
     const databaseID = parseIntSafe(replayMatch[1]);
     globals.conn!.send("replayCreate", {
@@ -97,7 +97,7 @@ export function parseAndGoto(data: WelcomeData): void {
   const sharedReplayMatch = /\/shared-replay\/(\d+)/.exec(
     window.location.pathname,
   );
-  if (sharedReplayMatch) {
+  if (sharedReplayMatch !== null) {
     // The server expects the game ID as an integer
     const databaseID = parseIntSafe(sharedReplayMatch[1]);
     globals.conn!.send("replayCreate", {

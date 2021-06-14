@@ -83,7 +83,7 @@ export default class FullActionLog extends Konva.Group {
       "This player has not taken any actions yet.",
     );
     this.playerLogEmptyMessage.hide();
-    this.add((this.playerLogEmptyMessage as unknown) as Konva.Text);
+    this.add(this.playerLogEmptyMessage as unknown as Konva.Text);
 
     for (let i = 0; i < globals.options.numPlayers; i++) {
       this.playerLogs.push(null);
@@ -136,14 +136,14 @@ export default class FullActionLog extends Konva.Group {
 
     this.show();
 
-    if (!globals.elements.stageFade) {
+    if (globals.elements.stageFade === null) {
       throw new Error('The "stageFade" element was not initialized.');
     }
     globals.elements.stageFade.show();
     globals.layers.UI2.batchDraw();
 
     globals.elements.stageFade.on("click tap", () => {
-      if (!globals.elements.stageFade) {
+      if (globals.elements.stageFade === null) {
         throw new Error('The "stageFade" element was not initialized.');
       }
       globals.elements.stageFade.off("click tap");
@@ -166,16 +166,16 @@ export default class FullActionLog extends Konva.Group {
 
   private makeLog() {
     this.logText = new MultiFitText(this.textOptions, this.maxLines);
-    this.add((this.logText as unknown) as Konva.Group);
+    this.add(this.logText as unknown as Konva.Group);
     this.logNumbers = new MultiFitText(this.numbersOptions, this.maxLines);
-    this.add((this.logNumbers as unknown) as Konva.Group);
+    this.add(this.logNumbers as unknown as Konva.Group);
   }
 
   private makePlayerLog(i: number) {
     const playerLog = new MultiFitText(this.textOptions, this.maxLines);
     playerLog.hide();
     this.playerLogs[i] = playerLog;
-    this.add((playerLog as unknown) as Konva.Group);
+    this.add(playerLog as unknown as Konva.Group);
 
     const playerLogNumber = new MultiFitText(
       this.numbersOptions,
@@ -183,7 +183,7 @@ export default class FullActionLog extends Konva.Group {
     );
     playerLogNumber.hide();
     this.playerLogNumbers[i] = playerLogNumber;
-    this.add((playerLogNumber as unknown) as Konva.Group);
+    this.add(playerLogNumber as unknown as Konva.Group);
   }
 
   private refreshText() {

@@ -23,8 +23,8 @@ export function init(): void {
       onmove: (event: Interact.InteractEvent) => {
         // Get the new position based on the delta between the event and the old position
         // (which is conveniently stored in the "data-x" and "data-y" attributes)
-        const x = (Number(event.target.getAttribute("data-x")) || 0) + event.dx;
-        const y = (Number(event.target.getAttribute("data-y")) || 0) + event.dy;
+        const x = (Number(event.target.getAttribute("data-x")) || 0) + event.dx; // eslint-disable-line
+        const y = (Number(event.target.getAttribute("data-y")) || 0) + event.dy; // eslint-disable-line
 
         // Move it
         const element = $(`#${event.target.id}`);
@@ -64,8 +64,8 @@ export function init(): void {
     .on("resizemove", (event: Interact.ResizeEvent) => {
       // Get the new position based on the delta between the event and the old position
       // (which is conveniently stored in the "data-x" and "data-y" attributes)
-      let x = Number(event.target.getAttribute("data-x")) || 0;
-      let y = Number(event.target.getAttribute("data-y")) || 0;
+      let x = Number(event.target.getAttribute("data-x")) || 0; // eslint-disable-line
+      let y = Number(event.target.getAttribute("data-y")) || 0; // eslint-disable-line
 
       // Translate when resizing from top or left edges
       x += event.deltaRect!.left;
@@ -118,7 +118,7 @@ export function show(): void {
     globals.chatUnread = 0;
 
     // We need to notify the server that we have read everything
-    if (globals.conn) {
+    if (globals.conn !== null) {
       globals.conn.send("chatRead", {
         tableID: globals.tableID,
       });
@@ -127,7 +127,7 @@ export function show(): void {
     }
 
     // Reset the "Chat" UI button back to normal
-    if (globals.ui) {
+    if (globals.ui !== null) {
       globals.ui.updateChatLabel();
     } else {
       throw new Error('The "globals.ui" object is not initialized.');
@@ -180,7 +180,7 @@ export function show(): void {
 
   // Scroll to the bottom of the chat
   const chat = document.getElementById("game-chat-text");
-  if (chat) {
+  if (chat !== null) {
     chat.scrollTop = chat.scrollHeight;
   } else {
     throw new Error('Failed to get the "game-chat-text" element.');

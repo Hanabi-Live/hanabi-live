@@ -60,7 +60,7 @@ export default class Loader {
         this.progress();
         if (this.numLoaded === this.filePathMap.size) {
           this.finished = true;
-          if (this.finishedCallback) {
+          if (this.finishedCallback !== null) {
             this.finishedCallback();
           }
         }
@@ -74,7 +74,7 @@ export default class Loader {
   }
 
   progress(): void {
-    if (this.progressCallback) {
+    if (this.progressCallback !== null) {
       this.progressCallback(this.numLoaded, this.filePathMap.size);
     }
   }

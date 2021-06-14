@@ -29,13 +29,13 @@ export default class Connection {
   }
 
   onOpen(evt: Event): void {
-    if (this.callbacks.open) {
+    if (this.callbacks.open !== undefined) {
       this.callbacks.open(evt);
     }
   }
 
   onClose(evt: CloseEvent): void {
-    if (this.callbacks.close) {
+    if (this.callbacks.close !== undefined) {
       this.callbacks.close(evt);
     }
   }
@@ -60,7 +60,7 @@ export default class Connection {
   }
 
   onError(evt: Event): void {
-    if (this.callbacks.socketError) {
+    if (this.callbacks.socketError !== undefined) {
       this.callbacks.socketError(evt);
     }
   }

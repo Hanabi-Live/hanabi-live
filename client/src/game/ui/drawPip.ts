@@ -2359,7 +2359,7 @@ shapeFunctions.set(
     ctx.scale(1 / scaleFactor, 1 / scaleFactor);
     ctx.closePath();
     ctx.scale(5 / 6, 5 / 6);
-    if (colors) {
+    if (colors !== undefined) {
       // When multiple colors are passed, create a gradient
       const gradient = ctx.createLinearGradient(500, 0, 700, 0);
       for (let i = 0; i < colors.length; ++i) {
@@ -2478,7 +2478,7 @@ shapeFunctions.set(
       120.70491,
       112.94779,
     );
-    if (colors) {
+    if (colors !== undefined) {
       ctx.fillStyle = colors[1];
       ctx.fill();
     }
@@ -2585,7 +2585,7 @@ shapeFunctions.set(
       118.98964,
       90.934275,
     );
-    if (colors) {
+    if (colors !== undefined) {
       ctx.fillStyle = colors[4];
       ctx.fill();
     }
@@ -2708,7 +2708,7 @@ shapeFunctions.set(
       109.89577,
       106.21146,
     );
-    if (colors) {
+    if (colors !== undefined) {
       ctx.fillStyle = colors[0];
       ctx.fill();
     }
@@ -2821,7 +2821,7 @@ shapeFunctions.set(
       129.44442,
       90.856545,
     );
-    if (colors) {
+    if (colors !== undefined) {
       ctx.fillStyle = colors[3];
       ctx.fill();
     }
@@ -2920,7 +2920,7 @@ shapeFunctions.set(
       142.648,
       111.57048,
     );
-    if (colors) {
+    if (colors !== undefined) {
       ctx.fillStyle = colors[2];
       ctx.fill();
     }
@@ -2995,7 +2995,7 @@ shapeFunctions.set(
       121.05746,
       112.24663,
     );
-    if (colors) {
+    if (colors !== undefined) {
       ctx.fillStyle = "#000000";
       ctx.fill();
     }
@@ -3363,7 +3363,7 @@ export default function drawPip(
 ): void {
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
-  if (!shapeFunction) {
+  if (shapeFunction === undefined) {
     throw new Error(`Failed to find the shape function for pip "${suit.pip}".`);
   }
 

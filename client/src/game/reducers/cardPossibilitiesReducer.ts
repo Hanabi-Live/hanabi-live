@@ -53,13 +53,8 @@ export default function cardPossibilitiesReducer(
     positiveRankClues = [...positiveRankClues, clue.value];
   }
 
-  const {
-    suitIndex,
-    rank,
-    suitDetermined,
-    rankDetermined,
-    revealedToPlayer,
-  } = updateIdentity(state, possibleCardsFromClues);
+  const { suitIndex, rank, suitDetermined, rankDetermined, revealedToPlayer } =
+    updateIdentity(state, possibleCardsFromClues);
 
   const newState: CardState = {
     ...state,

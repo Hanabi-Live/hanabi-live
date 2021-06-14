@@ -613,7 +613,7 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
 // From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
+  return result !== null
     ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),

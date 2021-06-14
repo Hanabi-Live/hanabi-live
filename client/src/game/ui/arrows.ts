@@ -63,8 +63,8 @@ export function set(
     element.state.rank !== STACK_BASE_RANK
   ) {
     if (
-      element.parent &&
-      element.parent.parent &&
+      element.parent !== null &&
+      element.parent.parent !== null &&
       element.parent.parent instanceof CardLayout
     ) {
       rot = element.parent.parent.origRotation;
@@ -150,7 +150,7 @@ export function set(
             if (matchingSuits.length === 1) {
               arrow.suitPip!.sceneFunc((ctx: KonvaContext.Context) => {
                 drawPip(
-                  (ctx as unknown) as CanvasRenderingContext2D,
+                  ctx as unknown as CanvasRenderingContext2D,
                   matchingSuits[0],
                 );
               });

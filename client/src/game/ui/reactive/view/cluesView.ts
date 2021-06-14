@@ -56,7 +56,7 @@ function updateLog(clues: readonly StateClue[]) {
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
   clues.slice(startingIndex).forEach((clue, i) => {
     if (i < clueLog.children.length) {
-      const clueEntry = (clueLog.children[i] as unknown) as ClueEntry;
+      const clueEntry = clueLog.children[i] as unknown as ClueEntry;
       if (equal(clue, clueEntry.clue)) {
         // No change
         return;

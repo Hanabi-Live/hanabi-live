@@ -141,7 +141,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
     );
     globals.elements.replayBackFullButton.on("click tap", replay.backFull);
     globals.elements.replayArea.add(
-      (globals.elements.replayBackFullButton as unknown) as Konva.Group,
+      globals.elements.replayBackFullButton as unknown as Konva.Group,
     );
 
     // Go back one turn (the second left-most button)
@@ -168,7 +168,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       replay.back();
     });
     globals.elements.replayArea.add(
-      (globals.elements.replayBackButton as unknown) as Konva.Group,
+      globals.elements.replayBackButton as unknown as Konva.Group,
     );
 
     // Go forward one turn (the second right-most button)
@@ -195,7 +195,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       replay.forward();
     });
     globals.elements.replayArea.add(
-      (globals.elements.replayForwardButton as unknown) as Konva.Group,
+      globals.elements.replayForwardButton as unknown as Konva.Group,
     );
 
     // Go forward to the end (the right-most button)
@@ -217,7 +217,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       replay.forwardFull,
     );
     globals.elements.replayArea.add(
-      (globals.elements.replayForwardFullButton as unknown) as Konva.Group,
+      globals.elements.replayForwardFullButton as unknown as Konva.Group,
     );
   }
 
@@ -246,7 +246,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   });
   globals.elements.replayExitButton.on("click tap", replay.exitButton);
   globals.elements.replayArea.add(
-    (globals.elements.replayExitButton as unknown) as Konva.Group,
+    globals.elements.replayExitButton as unknown as Konva.Group,
   );
 
   // The next two buttons will be moved to the left for replay leaders
@@ -275,7 +275,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   globals.elements.pauseSharedTurnsButton.setCenter(); // Set it to be center by default
   globals.elements.pauseSharedTurnsButton.setLeft = setLeft;
   globals.elements.replayArea.add(
-    (globals.elements.pauseSharedTurnsButton as unknown) as Konva.Group,
+    globals.elements.pauseSharedTurnsButton as unknown as Konva.Group,
   );
 
   // The "Use Shared Turns" button
@@ -295,7 +295,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   globals.elements.useSharedTurnsButton.setCenter(); // Set it to be center by default
   globals.elements.useSharedTurnsButton.setLeft = setLeft;
   globals.elements.replayArea.add(
-    (globals.elements.useSharedTurnsButton as unknown) as Konva.Group,
+    globals.elements.useSharedTurnsButton as unknown as Konva.Group,
   );
 
   // The "Enter Hypothetical" button
@@ -307,7 +307,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   });
   globals.elements.enterHypoButton.on("click tap", hypothetical.start);
   globals.elements.replayArea.add(
-    (globals.elements.enterHypoButton as unknown) as Konva.Group,
+    globals.elements.enterHypoButton as unknown as Konva.Group,
   );
 
   // This button will be moved to the left during in-game replay, centered during private replay,

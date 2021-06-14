@@ -35,7 +35,7 @@ export default class LayoutChild extends Konva.Group {
   }
 
   private addCard(child: HanabiCard) {
-    this.add((child as unknown) as Konva.Group);
+    this.add(child as unknown as Konva.Group);
     this.width(child.width());
     this.height(child.height());
 
@@ -45,8 +45,8 @@ export default class LayoutChild extends Konva.Group {
         return;
       }
       this.width(changeEvent.newVal);
-      if (this.parent) {
-        ((this.parent as unknown) as CardLayout | PlayStack).doLayout();
+      if (this.parent !== null) {
+        (this.parent as unknown as CardLayout | PlayStack).doLayout();
       }
     };
 
@@ -159,7 +159,7 @@ export default class LayoutChild extends Konva.Group {
 
     if (draggedTo === null) {
       // The card was dragged to an invalid location; tween it back to the hand
-      ((this.parent as unknown) as CardLayout | PlayStack).doLayout();
+      (this.parent as unknown as CardLayout | PlayStack).doLayout();
       return;
     }
 

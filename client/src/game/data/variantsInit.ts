@@ -137,7 +137,7 @@ export default function variantsInit(
 
     // Validate the clue ranks (the ranks available to clue in this variant)
     // If it is not specified, assume that players can clue ranks 1 through 5
-    const clueRanks: number[] = variantJSON.clueRanks || [1, 2, 3, 4, 5];
+    const clueRanks: number[] = variantJSON.clueRanks || [1, 2, 3, 4, 5]; // eslint-disable-line
 
     // Validate the "colorCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing colors in this variant works normally)

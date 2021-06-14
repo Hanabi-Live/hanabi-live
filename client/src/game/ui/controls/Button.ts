@@ -55,7 +55,7 @@ export default class Button extends Konva.Group {
         listening: false,
       });
       this.add(this.textElement);
-    } else if (images && images.length > 0) {
+    } else if (images !== undefined && images.length > 0) {
       this.imageElement = new Konva.Image({
         x: 0.2 * w,
         y: 0.2 * h,
@@ -106,11 +106,11 @@ export default class Button extends Konva.Group {
     }
     this.enabled = enabled;
 
-    if (this.textElement) {
+    if (this.textElement !== null) {
       this.textElement.fill(enabled ? "white" : "#444444");
     }
 
-    if (this.imageElement && this.imageDisabledElement) {
+    if (this.imageElement !== null && this.imageDisabledElement !== null) {
       this.imageElement.visible(enabled);
       this.imageDisabledElement.visible(!enabled);
     }
@@ -127,7 +127,7 @@ export default class Button extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement) {
+    if (this.textElement !== null) {
       if (this.assignedTextSize) {
         this.textElement.text(newText);
       } else {
@@ -140,7 +140,7 @@ export default class Button extends Konva.Group {
   }
 
   fill(newFill: string): void {
-    if (this.textElement) {
+    if (this.textElement !== null) {
       this.textElement.fill(newFill);
     } else {
       throw new Error('The "fill()" method was called on a non-text Button.');

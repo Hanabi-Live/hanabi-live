@@ -187,7 +187,7 @@ interface TableProgressData {
 }
 commands.set("tableProgress", (data: TableProgressData) => {
   const table = globals.tableMap.get(data.tableID);
-  if (!table) {
+  if (table === undefined) {
     return;
   }
   table.progress = data.progress;
@@ -255,14 +255,15 @@ interface UserInactiveData {
 }
 commands.set("userInactive", (data: UserInactiveData) => {
   const user = globals.userMap.get(data.userID);
-  if (user) {
-    user.inactive = data.inactive;
-    if (
-      globals.currentScreen === Screen.Lobby ||
-      globals.currentScreen === Screen.PreGame
-    ) {
-      usersDraw.setInactive(user.userID, user.inactive);
-    }
+  if (user === undefined) {
+    return;
+  }
+  user.inactive = data.inactive;
+  if (
+    globals.currentScreen === Screen.Lobby ||
+    globals.currentScreen === Screen.PreGame
+  ) {
+    usersDraw.setInactive(user.userID, user.inactive);
   }
 });
 

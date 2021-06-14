@@ -16,7 +16,7 @@ export function HanabiCardTap(this: HanabiCard): void {
   }
   this.wasRecentlyTapped = true;
 
-  if (this.touchstartTimeout) {
+  if (this.touchstartTimeout !== null) {
     // We executed a tap, so prevent the code from considering a long press is happening
     clearTimeout(this.touchstartTimeout);
   }

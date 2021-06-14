@@ -46,8 +46,9 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
     "noUnusedParameters": true,
+    // (we prefer the "@typescript-eslint/no-unused-vars" ESLint rule over the "noUnusedLocals"
+    // compiler flag since unused local variables can be useful while debugging)
 
     // By default, TypeScript will remove all blank lines
     // This will cause the source maps to report the wrong line numbers

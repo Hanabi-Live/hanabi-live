@@ -8,7 +8,7 @@ export default class ClueLog extends Konva.Group {
   readonly maxLength = 27; // Just enough to fill the parent rectangle
 
   addClue(clue: ClueEntry): void {
-    this.add((clue as unknown) as Konva.Group);
+    this.add(clue as unknown as Konva.Group);
   }
 
   updateClue(index: number, clue: ClueEntry): void {

@@ -1,7 +1,6 @@
 // This is the configuration file for ESLint, the TypeScript linter
 // https://eslint.org/docs/user-guide/configuring
 module.exports = {
-  // This configuration first imports rules from other places
   extends: [
     // The linter base is the Airbnb style guide,
     // which is the most popular JavaScript style guide in the world:
@@ -10,6 +9,7 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules
     // The TypeScript config extends it:
     // https://github.com/iamturns/eslint-config-airbnb-typescript/blob/master/lib/shared.js
+    // This includes the "parser" declaration of "@typescript-eslint/parser"
     "airbnb-typescript/base",
 
     // We extend the Airbnb rules with the "recommended" and "recommended-requiring-type-checking"
@@ -31,6 +31,10 @@ module.exports = {
     // (otherwise, we will have unfixable ESLint errors)
     // https://github.com/prettier/eslint-config-prettier
     "prettier",
+
+    // This provides a version of the "eqeqeq" rule that the "--fix" flag can fix
+    // https://github.com/Zamiell/eslint-plugin-eqeqeq-fix
+    "plugin:eqeqeq-fix/recommended",
   ],
 
   env: {
@@ -50,8 +54,6 @@ module.exports = {
 
   // We modify the linting rules from the base for some specific things
   // (listed in alphabetical order)
-  // Note that currently, the "arrow-body-style" rule is bugged:
-  // https://github.com/prettier/eslint-config-prettier/blob/master/README.md#arrow-body-style-and-prefer-arrow-callback
   rules: {
     // Documentation:
     // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/array-type.md
@@ -102,13 +104,29 @@ module.exports = {
     ],
 
     // Documentation:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/restrict-template-expressions.md
+    // Defined at:
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended-requiring-type-checking.ts
+    // This rule disallows booleans and nulls in template expressions
+    // However, it is common use-case of template strings as a means to coerce everything to a string
+    "@typescript-eslint/restrict-template-expressions": "off",
+
+    // Documentation:
     // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/strict-boolean-expressions.md
     // Not defined in parent configs
-    // This prevents comparing false/true to null/undefined
-    // We specify "allowAny" because Konva uses them a lot
+    // This rule prevents bugs when refactoring a boolean to a number
     "@typescript-eslint/strict-boolean-expressions": [
       "error",
-      { allowAny: true },
+      {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+        allowNullableBoolean: false,
+        allowNullableString: false,
+        allowNullableNumber: false,
+        // We allow any because Konva uses it a lot
+        allowAny: true,
+      },
     ],
 
     // Documentation:
@@ -168,7 +186,24 @@ module.exports = {
     // Defined at:
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
     // "for..of" loops are necessary to write efficient code in some situations
-    "no-restricted-syntax": "off",
+    "no-restricted-syntax": [
+      "warn",
+      {
+        selector: "ForInStatement",
+        message:
+          "for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.",
+      },
+      {
+        selector: "LabeledStatement",
+        message:
+          "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.",
+      },
+      {
+        selector: "WithStatement",
+        message:
+          "`with` is disallowed in strict mode because it makes code impossible to predict and optimize.",
+      },
+    ],
 
     // Documentation:
     // https://eslint.org/docs/rules/no-underscore-dangle
@@ -182,22 +217,15 @@ module.exports = {
     // Defined at:
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/es6.js
     // Array destructuring can result in non-intuitive code
-    // Keep the Airbnb config for object destructuring
-    "prefer-destructuring": [
-      "error",
-      {
-        VariableDeclarator: {
-          array: false,
-          object: true,
-        },
-        AssignmentExpression: {
-          array: false,
-          object: false,
-        },
-      },
-      {
-        enforceForRenamedProperties: false,
-      },
-    ],
+    // Object destructuring is disgustingly verbose in TypeScript
+    // e.g. "const foo: string = bar.foo;" vs "const { foo }: { foo: string } = bar;"
+    "prefer-destructuring": "off",
+
+    // Documentation:
+    // https://github.com/prettier/eslint-plugin-prettier
+    // Defined at:
+    // https://github.com/prettier/eslint-plugin-prettier/blob/master/eslint-plugin-prettier.js
+    // Change prettier to a warning instead of an error
+    "prettier/prettier": ["warn"],
   },
 };

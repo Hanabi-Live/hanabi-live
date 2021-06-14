@@ -16,19 +16,19 @@ export function onEfficiencyChanged(data: {
 }): void {
   // Ensure that the labels exist
   const effLabel = globals.elements.efficiencyNumberLabel;
-  if (!effLabel) {
+  if (effLabel === null) {
     throw new Error(
       'efficiencyNumberLabel is not initialized in the "onEfficiencyChanged()" function.',
     );
   }
   const effPipeLabel = globals.elements.efficiencyPipeLabel;
-  if (!effPipeLabel) {
+  if (effPipeLabel === null) {
     throw new Error(
       'efficiencyPipeLabel is not initialized in the "onEfficiencyChanged()" function.',
     );
   }
   const effMinLabel = globals.elements.efficiencyMinNeededLabel;
-  if (!effMinLabel) {
+  if (effMinLabel === null) {
     throw new Error(
       'efficiencyNumberLabelMinNeeded is not initialized in the "onEfficiencyChanged()" function.',
     );
@@ -161,7 +161,7 @@ export function onPaceOrPaceRiskChanged(data: {
   finalRoundEffectivelyStarted: boolean;
 }): void {
   const label = globals.elements.paceNumberLabel;
-  if (!label) {
+  if (label === null) {
     throw new Error("paceNumberLabel is not initialized.");
   }
 
@@ -248,7 +248,7 @@ export function onMaxTurnsChanged(data: {
   const maxTotalTurns = turnNum + maxTurnsLeft;
 
   const label = globals.elements.turnNumberLabel;
-  if (!label) {
+  if (label === null) {
     throw new Error("turnNumberLabel is not initialized.");
   }
   label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />

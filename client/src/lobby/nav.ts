@@ -144,9 +144,9 @@ export function init(): void {
 
       // Update button trigger
       $("#change-variant-submit").on("click", () => {
-        const variantName = ($(
-          "#change-variant-dropdown",
-        ).val() as string).trim();
+        const variantName = (
+          $("#change-variant-dropdown").val() as string
+        ).trim();
         if (VARIANTS.get(variantName) === undefined) {
           return;
         }

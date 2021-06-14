@@ -130,7 +130,7 @@ function replayReducerFunction(
           `A "${action.type}" action was dispatched with a non-null hypothetical state.`,
         );
       }
-      if (state.shared) {
+      if (state.shared !== null) {
         // Bring us to the current shared replay turn, if we are not already there
         state.segment = state.shared.segment;
         state.shared.useSharedSegments = true;

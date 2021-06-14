@@ -257,12 +257,12 @@ function drawActionLog() {
     },
     maxLines,
   );
-  actionLogGroup.add((globals.elements.actionLog as unknown) as Konva.Group);
+  actionLogGroup.add(globals.elements.actionLog as unknown as Konva.Group);
 
   // The full action log (that appears when you click on the action log)
   globals.elements.fullActionLog = new FullActionLog(winW, winH);
   globals.layers.UI2.add(
-    (globals.elements.fullActionLog as unknown) as Konva.Group,
+    globals.elements.fullActionLog as unknown as Konva.Group,
   );
 }
 
@@ -343,7 +343,7 @@ function drawPlayStacks() {
       listening: false,
     });
     globals.elements.playStacks.set("hole", playStack);
-    globals.layers.card.add((playStack as unknown) as Konva.Group);
+    globals.layers.card.add(playStack as unknown as Konva.Group);
   }
 
   for (let i = 0; i < globals.variant.suits.length; i++) {
@@ -360,7 +360,7 @@ function drawPlayStacks() {
       listening: false,
     });
     globals.elements.playStacks.set(suit, playStack);
-    globals.layers.card.add((playStack as unknown) as Konva.Group);
+    globals.layers.card.add(playStack as unknown as Konva.Group);
 
     // Add the stack base to the play stack
     const order = deck.totalCards(globals.variant) + i;
@@ -455,7 +455,7 @@ function drawDiscardStacks() {
       listening: false,
     });
     globals.elements.discardStacks.set(suit, discardStack);
-    globals.layers.card.add((discardStack as unknown) as Konva.Group);
+    globals.layers.card.add(discardStack as unknown as Konva.Group);
   }
 }
 
@@ -485,7 +485,7 @@ function drawBottomLeftButtons() {
       replay.enter();
     }
   });
-  globals.layers.UI.add((replayButton as unknown) as Konva.Group);
+  globals.layers.UI.add(replayButton as unknown as Konva.Group);
   replayButton.tooltipName = "replay";
   replayButton.tooltipContent =
     "Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.";
@@ -502,7 +502,7 @@ function drawBottomLeftButtons() {
     text: "Restart",
     visible: false,
   });
-  globals.layers.UI.add((restartButton as unknown) as Konva.Group);
+  globals.layers.UI.add(restartButton as unknown as Konva.Group);
   restartButton.on("click tap", () => {
     if (
       globals.options.speedrun ||
@@ -530,7 +530,7 @@ function drawBottomLeftButtons() {
     text: "💬",
     visible: !globals.state.finished || globals.state.replay.shared !== null,
   });
-  globals.layers.UI.add((chatButton as unknown) as Konva.Group);
+  globals.layers.UI.add(chatButton as unknown as Konva.Group);
   chatButton.on("click tap", () => {
     globals.game!.chat.toggle();
   });
@@ -552,7 +552,7 @@ function drawBottomLeftButtons() {
     height: lobbyButtonValues.h! * winH,
     text: "Lobby",
   });
-  globals.layers.UI.add((lobbyButton as unknown) as Konva.Group);
+  globals.layers.UI.add(lobbyButton as unknown as Konva.Group);
   lobbyButton.on("click tap", lobbyButtonClick);
   lobbyButton.tooltipName = "lobby";
   lobbyButton.tooltipContent = "Return to the lobby.";
@@ -635,7 +635,7 @@ function drawDeck() {
     suits: globals.variant.suits,
     listening: false,
   });
-  globals.layers.card.add((globals.elements.deck as unknown) as Konva.Group);
+  globals.layers.card.add(globals.elements.deck as unknown as Konva.Group);
 
   // Also apply the card deck tooltip to the faded background rectangle
   deckRect.tooltipName = "deck";
@@ -1039,7 +1039,7 @@ function drawScoreArea() {
       },
       [globals.imageLoader!.get("skull")!],
     );
-    globals.elements.scoreArea.add((terminateButton as unknown) as Konva.Group);
+    globals.elements.scoreArea.add(terminateButton as unknown as Konva.Group);
     terminateButton.on("click tap", () => {
       if (
         globals.options.speedrun ||
@@ -1312,7 +1312,7 @@ function drawClueLog() {
     height: (clueLogValues.h! - spacing * 2) * winH,
     listening: false,
   });
-  globals.layers.UI.add((globals.elements.clueLog as unknown) as Konva.Group);
+  globals.layers.UI.add(globals.elements.clueLog as unknown as Konva.Group);
 }
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
@@ -1559,7 +1559,7 @@ function drawDiscardArea() {
 function drawArrows() {
   for (let i = 0; i < 6; i++) {
     const arrow = new Arrow(winW, winH, globals.lobby.settings.colorblindMode);
-    globals.layers.arrow.add((arrow as unknown) as Konva.Group);
+    globals.layers.arrow.add(arrow as unknown as Konva.Group);
     globals.elements.arrows.push(arrow);
   }
 }
@@ -1622,7 +1622,7 @@ function drawTimers() {
     visible: false,
     listening: true,
   });
-  globals.layers.timer.add((globals.elements.timer1 as unknown) as Konva.Group);
+  globals.layers.timer.add(globals.elements.timer1 as unknown as Konva.Group);
   const timerClick = () => {
     if (
       !globals.options.timed || // We don't need to pause if this is not a timed game
@@ -1683,7 +1683,7 @@ function drawTimers() {
     visible: false,
     listening: true,
   });
-  globals.layers.timer.add((globals.elements.timer2 as unknown) as Konva.Group);
+  globals.layers.timer.add(globals.elements.timer2 as unknown as Konva.Group);
   if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
     globals.elements.timer2.tooltipName = "time-taken";
     // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
@@ -1746,13 +1746,13 @@ function drawClueArea() {
         j,
       );
       globals.elements.clueTargetButtonGroup.add(
-        (button as unknown) as Konva.Group,
+        button as unknown as Konva.Group,
       );
       globals.elements.clueTargetButtonGroup.addList(button);
     }
   }
   globals.elements.clueArea.add(
-    (globals.elements.clueTargetButtonGroup as unknown) as Konva.Group,
+    globals.elements.clueTargetButtonGroup as unknown as Konva.Group,
   );
   if (numPlayers === 2) {
     // The clue target buttons are pointless if we are playing a 2-player game
@@ -1787,13 +1787,13 @@ function drawClueArea() {
         j,
       );
       globals.elements.clueTargetButtonGroup2.add(
-        (button as unknown) as Konva.Group,
+        button as unknown as Konva.Group,
       );
       globals.elements.clueTargetButtonGroup2.addList(button);
     }
   }
   globals.elements.clueArea.add(
-    (globals.elements.clueTargetButtonGroup2 as unknown) as Konva.Group,
+    globals.elements.clueTargetButtonGroup2 as unknown as Konva.Group,
   );
   globals.elements.clueTargetButtonGroup2.hide();
 
@@ -1836,7 +1836,7 @@ function drawClueArea() {
   globals.elements.lowerClueArea.setCenter = setCenter;
   globals.elements.lowerClueArea.setCenter();
   globals.elements.clueArea.add(
-    (globals.elements.lowerClueArea as unknown) as Konva.Group,
+    globals.elements.lowerClueArea as unknown as Konva.Group,
   );
 
   // Color buttons
@@ -1875,9 +1875,7 @@ function drawClueArea() {
       matchingSuit,
     );
 
-    globals.elements.clueTypeButtonGroup.add(
-      (button as unknown) as Konva.Group,
-    );
+    globals.elements.clueTypeButtonGroup.add(button as unknown as Konva.Group);
     globals.elements.clueTypeButtonGroup.addList(button);
     globals.elements.colorClueButtons.push(button);
   }
@@ -1900,9 +1898,7 @@ function drawClueArea() {
       clue: rankClue(rank),
     });
 
-    globals.elements.clueTypeButtonGroup.add(
-      (button as unknown) as Konva.Group,
-    );
+    globals.elements.clueTypeButtonGroup.add(button as unknown as Konva.Group);
     globals.elements.clueTypeButtonGroup.addList(button);
     globals.elements.rankClueButtons.push(button);
   }
@@ -1913,7 +1909,7 @@ function drawClueArea() {
   globals.elements.clueTypeButtonGroup.on("change", clues.checkLegal);
 
   globals.elements.lowerClueArea.add(
-    (globals.elements.clueTypeButtonGroup as unknown) as Konva.Group,
+    globals.elements.clueTypeButtonGroup as unknown as Konva.Group,
   );
 
   // The "Give Clue" button
@@ -1933,7 +1929,7 @@ function drawClueArea() {
   });
   globals.elements.giveClueButton.setEnabled(false);
   globals.elements.lowerClueArea.add(
-    (globals.elements.giveClueButton as unknown) as Konva.Group,
+    globals.elements.giveClueButton as unknown as Konva.Group,
   );
   globals.elements.giveClueButton.on("click tap", clues.give);
 
@@ -2021,7 +2017,7 @@ function drawClueAreaDisabled(offsetX: number) {
 
   globals.elements.clueAreaDisabled.hide();
   globals.layers.UI.add(
-    (globals.elements.clueAreaDisabled as unknown) as Konva.Group,
+    globals.elements.clueAreaDisabled as unknown as Konva.Group,
   );
 }
 
@@ -2041,7 +2037,7 @@ function drawCurrentPlayerArea() {
     winH,
   );
   globals.layers.UI.add(
-    (globals.elements.currentPlayerArea as unknown) as Konva.Group,
+    globals.elements.currentPlayerArea as unknown as Konva.Group,
   );
 }
 
@@ -2059,7 +2055,7 @@ function drawPreplayArea() {
     visible: false,
   });
   globals.layers.UI.add(
-    (globals.elements.premoveCancelButton as unknown) as Konva.Group,
+    globals.elements.premoveCancelButton as unknown as Konva.Group,
   );
   globals.elements.premoveCancelButton.on("click tap", () => {
     globals.store!.dispatch({
@@ -2148,7 +2144,7 @@ function drawHypotheticalArea() {
 
   globals.elements.hypoBackButton.on("click tap", hypothetical.sendBack);
   globals.elements.hypoButtonsArea.add(
-    (globals.elements.hypoBackButton as unknown) as Konva.Group,
+    globals.elements.hypoBackButton as unknown as Konva.Group,
   );
 
   const hypoButtonWidth = 0.075;
@@ -2170,7 +2166,7 @@ function drawHypotheticalArea() {
     fontSize: 0.019 * winH,
   });
   globals.elements.hypoButtonsArea.add(
-    (endHypotheticalButton as unknown) as Konva.Group,
+    endHypotheticalButton as unknown as Konva.Group,
   );
   endHypotheticalButton.on("click tap", () => {
     hypothetical.end();
@@ -2202,7 +2198,7 @@ function drawHypotheticalArea() {
     );
   });
   globals.elements.hypoButtonsArea.add(
-    (globals.elements.editCardsButton as unknown) as Konva.Group,
+    globals.elements.editCardsButton as unknown as Konva.Group,
   );
 
   // The "Show Drawn Cards" / "Hide Drawn Cards" button (above the edit cards button)
@@ -2228,7 +2224,7 @@ function drawHypotheticalArea() {
     hypothetical.toggleRevealed,
   );
   globals.elements.hypoButtonsArea.add(
-    (globals.elements.toggleDrawnCardsButton as unknown) as Konva.Group,
+    globals.elements.toggleDrawnCardsButton as unknown as Konva.Group,
   );
 }
 
@@ -2312,7 +2308,7 @@ function drawPauseArea() {
     });
   });
   globals.elements.pauseArea.add(
-    (globals.elements.pauseButton as unknown) as Konva.Group,
+    globals.elements.pauseButton as unknown as Konva.Group,
   );
 
   const chatButton = new Button({
@@ -2322,7 +2318,7 @@ function drawPauseArea() {
     height: 0.1 * winH,
     text: "💬",
   });
-  globals.elements.pauseArea.add((chatButton as unknown) as Konva.Group);
+  globals.elements.pauseArea.add(chatButton as unknown as Konva.Group);
   chatButton.on("click tap", () => {
     globals.game!.chat.toggle();
   });
@@ -2336,7 +2332,7 @@ function drawPauseArea() {
     },
     [globals.imageLoader!.get("home")!],
   );
-  globals.elements.pauseArea.add((pauseLobbyButton as unknown) as Konva.Group);
+  globals.elements.pauseArea.add(pauseLobbyButton as unknown as Konva.Group);
   pauseLobbyButton.on("click tap", lobbyButtonClick);
 }
 

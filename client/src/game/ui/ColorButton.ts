@@ -77,7 +77,7 @@ export default class ColorButton extends Konva.Group {
             y: h * -2,
           },
           sceneFunc: (ctx: KonvaContext.Context) => {
-            drawPip((ctx as unknown) as CanvasRenderingContext2D, suit);
+            drawPip(ctx as unknown as CanvasRenderingContext2D, suit);
           },
           listening: false,
         });

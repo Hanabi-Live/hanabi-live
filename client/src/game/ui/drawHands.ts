@@ -315,7 +315,7 @@ export default function drawHands(winW: number, winH: number): void {
       listening: true,
     });
     globals.layers.card.add(
-      (globals.elements.playerHands[i] as unknown) as Konva.Group,
+      globals.elements.playerHands[i] as unknown as Konva.Group,
     );
 
     if (globals.lobby.settings.keldonMode) {
@@ -428,7 +428,7 @@ export default function drawHands(winW: number, winH: number): void {
       playerIndex: i,
     });
     globals.layers.UI.add(
-      (globals.elements.nameFrames[i] as unknown) as Konva.Group,
+      globals.elements.nameFrames[i] as unknown as Konva.Group,
     );
 
     drawDetrimentalCharacters(winW, winH, numPlayers, i, j);

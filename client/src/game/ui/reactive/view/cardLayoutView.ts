@@ -69,7 +69,7 @@ export function onPlayStackDirectionsChanged(
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
   syncChildren(
     hands,
-    (i) => (globals.elements.playerHands[i] as unknown) as Konva.Container,
+    (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
     (card, i) => card.animateToPlayerHand(i),
   );
 
@@ -83,9 +83,9 @@ export function onDiscardStacksChanged(
     discardStacks,
     (i) => {
       const suit = globals.variant.suits[i];
-      return (globals.elements.discardStacks.get(
+      return globals.elements.discardStacks.get(
         suit,
-      )! as unknown) as Konva.Container;
+      )! as unknown as Konva.Container;
     },
     (card) => {
       if (card.state.isMisplayed) {
@@ -106,9 +106,9 @@ export function onPlayStacksChanged(
     playStacks,
     (i) => {
       const suit = globals.variant.suits[i];
-      return (globals.elements.playStacks.get(
+      return globals.elements.playStacks.get(
         suit,
-      )! as unknown) as Konva.Container;
+      )! as unknown as Konva.Container;
     },
     (card) => card.animateToPlayStacks(),
   );
@@ -136,8 +136,7 @@ export function onHoleChanged(
   }
   syncChildren(
     [hole],
-    () =>
-      (globals.elements.playStacks.get("hole") as unknown) as Konva.Container,
+    () => globals.elements.playStacks.get("hole") as unknown as Konva.Container,
     (card) => card.animateToHole(),
   );
 
@@ -172,10 +171,9 @@ function syncChildren(
       .filter((n) => !collection.includes(n))
       .map(getCard)
       .forEach((card) => {
-        const realState = globals.store?.getState().visibleState?.deck[
-          card.state.order
-        ];
-        if (!realState || realState.location === "deck") {
+        const realState =
+          globals.store?.getState().visibleState?.deck[card.state.order];
+        if (realState === undefined || realState.location === "deck") {
           card.animateToDeck();
         } else {
           card.removeLayoutChildFromParent();
@@ -195,7 +193,7 @@ function syncChildren(
         throw new Error("The UI collection is out of sync with the state.");
       }
 
-      const layoutChild = (getCard(order).parent as unknown) as LayoutChild;
+      const layoutChild = getCard(order).parent as unknown as LayoutChild;
       let sourcePosition = current.indexOf(order);
       while (sourcePosition < pos) {
         layoutChild.moveUp();

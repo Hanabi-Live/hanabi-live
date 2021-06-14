@@ -3,7 +3,8 @@ import NodeWithTooltip from "./NodeWithTooltip";
 
 export default class ImageWithTooltip
   extends Konva.Image
-  implements NodeWithTooltip {
+  implements NodeWithTooltip
+{
   tooltipName = "";
   tooltipContent = "";
 }

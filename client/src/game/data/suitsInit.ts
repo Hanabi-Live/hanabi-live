@@ -182,7 +182,7 @@ export default function suitsInit(
         `The "fillColor" array for the suit "${suitJSON.name}" is empty.`,
       );
     }
-    const fillColors: string[] = suitJSON.fillColors || [];
+    const fillColors: string[] = suitJSON.fillColors || []; // eslint-disable-line
 
     // Validate the "oneOfEach" property
     // If it is not specified, the suit is not one of each (e.g. every card is not critical)
@@ -197,7 +197,7 @@ export default function suitsInit(
     const oneOfEach: boolean = suitJSON.oneOfEach ?? false;
 
     // Validate the "pip" property
-    const pip: string = suitJSON.pip || "";
+    const pip: string = suitJSON.pip || ""; // eslint-disable-line
     if (pip === "" && suitJSON.name !== "Unknown") {
       throw new Error(
         `Failed to find the pip for the "${suitJSON.name}" suit.`,

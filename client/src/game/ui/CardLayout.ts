@@ -51,7 +51,7 @@ export default class CardLayout extends Konva.Group {
   // to worry about the relative position
   addChild(child: LayoutChild): void {
     const pos = child.getAbsolutePosition();
-    this.add((child as unknown) as Konva.Group);
+    this.add(child as unknown as Konva.Group);
     child.setAbsolutePosition(pos);
     if (this.empathy) {
       child.card.setEmpathy(true);
@@ -72,9 +72,9 @@ export default class CardLayout extends Konva.Group {
 
     let uw = 0;
     for (let i = 0; i < numCards; i++) {
-      const layoutChild = (this.children[i] as unknown) as LayoutChild;
+      const layoutChild = this.children[i] as unknown as LayoutChild;
 
-      if (!layoutChild.height()) {
+      if (layoutChild.height() <= 0) {
         continue;
       }
 
@@ -104,12 +104,12 @@ export default class CardLayout extends Konva.Group {
     }
 
     for (let i = 0; i < numCards; i++) {
-      const layoutChild = (this.children[i] as unknown) as LayoutChild;
+      const layoutChild = this.children[i] as unknown as LayoutChild;
 
       // Ensure this card is not hidden at the bottom of a play stack
       layoutChild.show();
 
-      if (!layoutChild.height()) {
+      if (layoutChild.height() <= 0) {
         continue;
       }
 
@@ -200,7 +200,7 @@ export default class CardLayout extends Konva.Group {
 
   checkSetDraggableAll(): void {
     this.children.each((layoutChild) => {
-      ((layoutChild as unknown) as LayoutChild).checkSetDraggable();
+      (layoutChild as unknown as LayoutChild).checkSetDraggable();
     });
   }
 

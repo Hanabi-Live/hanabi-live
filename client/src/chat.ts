@@ -174,7 +174,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
   // Check for emoji substitution
   // e.g. :100: --> 💯
   const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
-  if (matches) {
+  if (matches !== null) {
     for (const match of matches) {
       const emojiName = match.slice(1, -1); // Strip off the colons
 
@@ -569,7 +569,7 @@ export function add(data: ChatMessage, fast: boolean): void {
     (data.recipient !== undefined && data.recipient !== "")
   ) {
     line += data.msg;
-  } else if (data.who) {
+  } else if (data.who !== "") {
     line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
     line += data.msg;
   } else {
@@ -585,7 +585,7 @@ export function add(data: ChatMessage, fast: boolean): void {
   if (chat.is($("#lobby-chat-pregame-text"))) {
     const regex = /(.*)(@(\/.*)@)(.*)/;
     let match = regex.exec(line);
-    while (match) {
+    while (match !== null) {
       line = `${match[1]}<a href="#" class="suggestion">${match[3]}</a>${match[4]}`;
       match = regex.exec(line);
     }
@@ -638,7 +638,7 @@ export function add(data: ChatMessage, fast: boolean): void {
 
   // Handle client-side commands
   const match = /^\/suggest (\d+)$/.exec(data.msg);
-  if (match) {
+  if (match !== null) {
     const segmentString = match[1];
     const segment = parseIntSafe(segmentString);
     if (
@@ -673,7 +673,7 @@ function fillDiscordEmotes(message: string) {
   let filledMessed = message;
   while (true) {
     const match = /&lt;:(.+?):(\d+?)&gt;/.exec(filledMessed);
-    if (!match) {
+    if (match === null) {
       break;
     }
     const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match[2]}.png" title="${match[1]}" height="28">`;

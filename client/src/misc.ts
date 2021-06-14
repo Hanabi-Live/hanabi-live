@@ -89,6 +89,10 @@ function pad2(num: number) {
 // By default, "parseInt('1a')" will return "1", which is unexpected
 // This returns either an integer or NaN
 export function parseIntSafe(input: string): number {
+  if (typeof input !== "string") {
+    return NaN;
+  }
+
   // Remove all leading and trailing whitespace
   let trimmedInput = input.trim();
 

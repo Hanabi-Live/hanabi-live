@@ -158,9 +158,8 @@ export function onChanged(
     if (previousPlayerIndex === -1) {
       previousPlayerIndex = numPlayers - 1;
     }
-    const previousRotation = getArrowRotationCorrespondingToPlayer(
-      previousPlayerIndex,
-    );
+    const previousRotation =
+      getArrowRotationCorrespondingToPlayer(previousPlayerIndex);
     currentPlayerArea.arrow?.rotation(previousRotation);
 
     // We want the arrow to always be moving clockwise
@@ -209,7 +208,8 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
     centerPos.y -= distanceToImaginaryPlayer * Math.cos(rot); // cos(x) = sin(x + PI / 2)
   }
 
-  const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();
+  const thisPos =
+    globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();
   const x = centerPos.x - thisPos.x;
   const y = centerPos.y - thisPos.y;
   const radians = Math.atan(y / x);

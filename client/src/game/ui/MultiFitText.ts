@@ -47,7 +47,7 @@ export default class MultiFitText extends Konva.Group {
   refreshText(): void {
     for (let i = 0; i < this.children.length; i++) {
       let msg = this.smallHistory[i];
-      if (!msg) {
+      if (msg === undefined) {
         msg = "";
       }
       (this.children[i] as FitText).fitText(msg);

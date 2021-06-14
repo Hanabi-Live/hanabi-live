@@ -106,7 +106,7 @@ export function show(card: HanabiCard): void {
   const note = get(card.state.order, false);
   let shownNote = note;
   if (card.state.location === "playStack") {
-    if (shownNote) {
+    if (shownNote !== "") {
       shownNote += "<br><br>";
     }
     shownNote += card.suitDescriptionNote();

@@ -29,7 +29,7 @@ export function image(getBareName: () => string): Konva.Image {
   const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
-    image: (null as unknown) as ImageBitmapSource,
+    image: null as unknown as ImageBitmapSource,
     shadowEnabled: false,
     shadowColor: "black",
     shadowOffset: {
@@ -196,7 +196,7 @@ function makeCachedPips(variant: Variant) {
       shadowOpacity: 0.4,
       shadowForStrokeEnabled: true,
       sceneFunc: (ctx: KonvaContext.Context) => {
-        drawPip((ctx as unknown) as CanvasRenderingContext2D, suit, false);
+        drawPip(ctx as unknown as CanvasRenderingContext2D, suit, false);
       },
       listening: false,
     });
