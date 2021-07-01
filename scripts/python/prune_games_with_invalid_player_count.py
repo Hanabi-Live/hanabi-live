@@ -28,7 +28,11 @@ database = os.getenv("DB_NAME")
 
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(
-    host=host, port=port, user=user, password=password, database=database,
+    host=host,
+    port=port,
+    user=user,
+    password=password,
+    database=database,
 )
 
 # Get all the games

@@ -28,7 +28,11 @@ database = os.getenv("DB_NAME")
 
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(
-    host=host, port=port, user=user, password=password, database=database,
+    host=host,
+    port=port,
+    user=user,
+    password=password,
+    database=database,
 )
 
 # Prompt for the username
@@ -44,7 +48,7 @@ row = cursor.fetchone()
 cursor.close()
 count = row[0]
 if count == 0:
-    print("The username of \"" + username + "\" does not exist in the database.")
+    print('The username of "' + username + '" does not exist in the database.')
     sys.exit(1)
 
 # Display the last IP address of the user
@@ -62,7 +66,7 @@ row = cursor.fetchone()
 cursor.close()
 count = row[0]
 if count == 0:
-    print("The IP address of \"" + last_ip + "\" is not banned.")
+    print('The IP address of "' + last_ip + '" is not banned.')
     sys.exit(1)
 
 # Delete the row for this IP
