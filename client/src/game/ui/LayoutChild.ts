@@ -94,15 +94,6 @@ export default class LayoutChild extends Konva.Group {
       );
     }
 
-    // Next, handle the case of being in an in-game replay
-    if (
-      globals.state.replay.active &&
-      !globals.options.speedrun &&
-      !globals.state.finished
-    ) {
-      return false;
-    }
-
     return (
       // If it is not our turn, then the card should not need to be draggable yet
       // (unless we have the "Enable pre-playing cards" feature enabled)
