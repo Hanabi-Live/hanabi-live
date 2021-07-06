@@ -372,7 +372,7 @@ const replayObservers: Subscriptions = [
 
   // Replay button
   subAfterInit(
-    (s) => s.replay.hypothetical !== null && !globals.state.finished,
+    (s) => s.replay.hypothetical === null && !globals.state.finished,
     replayView.onShouldShowReplayButtonChanged,
   ),
 
