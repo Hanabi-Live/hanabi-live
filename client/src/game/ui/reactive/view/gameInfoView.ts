@@ -94,13 +94,13 @@ export function onScoreOrMaxScoreChanged(data: {
     lowScorePhase && globals.lobby.settings.hyphenatedConventions
       ? "cyan"
       : LABEL_COLOR;
-  if (
+  const scoreLabelStyle =
     lowScorePhase &&
     globals.lobby.settings.hyphenatedConventions &&
     globals.lobby.settings.colorblindMode
-  ) {
-    scoreLabel.fontStyle("bold");
-  }
+      ? "bold"
+      : "normal";
+  scoreLabel.fontStyle(scoreLabelStyle);
   scoreLabel.fill(scoreLabelColor);
 
   // Reposition the maximum score
