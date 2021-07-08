@@ -650,10 +650,6 @@ export default class HanabiCard
     }
 
     for (const [rank, pipState] of rankPipStates.entries()) {
-      if (rank > 5) {
-        // Don't show the pip for START cards (in "Up or Down" games)
-        continue;
-      }
       const pip = this.rankPipsMap.get(rank);
       const x = this.rankPipsXMap.get(rank);
       const hasPositiveRankClue = this.state.positiveRankClues.includes(rank);
