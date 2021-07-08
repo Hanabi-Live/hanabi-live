@@ -255,12 +255,12 @@ function makeCachedPips(variant: Variant) {
   const rankPipsMap = new Map<number, RankPip>();
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
-    if (rank === START_CARD_RANK) {
-      // We don't want to create a rank pip that corresponds to the "START" card
-      continue;
-    }
-
-    const x = Math.floor(CARD_W * (rank * 0.19 - 0.14));
+    const x =
+      variant.ranks.length === 5
+        ? Math.floor(CARD_W * (rank * 0.19 - 0.14))
+        : Math.floor(
+            CARD_W * ((rank === START_CARD_RANK ? 0 : rank) * 0.15 + 0.05),
+          );
     const y = 0;
     const rankPip = new RankPip({
       x,
@@ -269,7 +269,7 @@ function makeCachedPips(variant: Variant) {
       fontStyle: "bold",
       fontSize: 63,
       align: "center",
-      text: rank.toString(),
+      text: rank === START_CARD_RANK ? "s" : rank.toString(),
       width: Math.floor(CARD_H * 0.1),
       height: Math.floor(CARD_H * 0.1),
       fill: "white",
@@ -355,11 +355,6 @@ export function pips(variant: Variant): Pips {
   }
 
   for (const rank of variant.ranks) {
-    if (rank === START_CARD_RANK) {
-      // We don't want to create a rank pip that corresponds to the "START" card
-      continue;
-    }
-
     const rankPip = cachedPips.rankPipsMap.get(rank)!.clone() as RankPip;
     const rankPipX = cachedPips.rankPipsXMap.get(rank)!.clone() as Konva.Shape;
     rankPips.add(rankPip);
