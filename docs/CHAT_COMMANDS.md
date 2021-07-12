@@ -11,7 +11,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/help`                               | Get the link to this page
 | `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)
 | `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
-| `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner/intro/)
+| `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner)
 | `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://hanabi.github.io/docs/reference)
 | `/bga`                                | Get the link for the [Board Game Arena guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)
