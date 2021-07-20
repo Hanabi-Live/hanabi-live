@@ -280,7 +280,7 @@ If you are playing with the [Hyphen-ated group](https://hanabi.github.io/), some
 #### Basic Description
 
 - When in the middle of an ongoing game, players can right-click or double-tap on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
-- This is useful for storing contextual information about a card for later. (e.g. "they should know that this card is exactly red 2 from the clue on turn 3)
+- This is useful for storing contextual information about a card for later. (e.g. "they should know that this card is exactly red 2 from the clue on turn 3")
 - Notes can also be written during an in-game replay as a way to track a card as it moves throughout your hand.
 - Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 - Notes are saved in the database and will persist into the replay.
