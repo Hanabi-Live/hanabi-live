@@ -37,6 +37,17 @@ export function exit(): void {
   });
 }
 
+export function exitIfFinalSegment(): void {
+  const finalSegment = globals.state.ongoingGame.turn.segment;
+  if (
+    globals.state.replay.active &&
+    globals.state.replay.hypothetical === null &&
+    getCurrentReplaySegment() === finalSegment
+  ) {
+    exit();
+  }
+}
+
 function getCurrentReplaySegment() {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   return globals.state.replay.active

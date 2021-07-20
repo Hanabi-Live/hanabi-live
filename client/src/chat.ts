@@ -598,7 +598,9 @@ export function add(data: ChatMessage, fast: boolean): void {
   // scrollTop can be a fractional value for some reason.
   // pxEpsilon is an acceptable range defined in pixels e.g. +-2 px
   const pxEpsilon = 2;
-  const autoScroll = Math.abs(chat[0].clientHeight + chat[0].scrollTop - chat[0].scrollHeight) < pxEpsilon;
+  const autoScroll =
+    Math.abs(chat[0].clientHeight + chat[0].scrollTop - chat[0].scrollHeight) <
+    pxEpsilon;
 
   // Add the new line and fade it in
   chat.append(line);
