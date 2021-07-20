@@ -8,7 +8,6 @@
   },
   "license": "GPL-3.0",
   "scripts": {
-    "lint": "eslint src",
     "grunt": "grunt",
     "test": "jest",
     "webpack": "webpack"
