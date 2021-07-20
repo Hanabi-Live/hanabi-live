@@ -40,7 +40,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
       - run: ./set_version.sh
         working-directory: ${{ env.working-directory }}
-      - run: npm run lint
+      - run: ./lint_client.sh
         working-directory: ${{ env.working-directory }}
 
   client_test:
