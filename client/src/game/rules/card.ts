@@ -156,7 +156,7 @@ export function isPotentiallyPlayable(
   return false;
 }
 
-export function canPossiblyBeFromClues(
+export function canPossiblyBeFromCluesOnly(
   card: CardState,
   suitIndex: number | null,
   rank: number | null,

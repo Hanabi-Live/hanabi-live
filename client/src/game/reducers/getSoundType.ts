@@ -99,7 +99,7 @@ export default function getSoundType(
         const previouslyDiscardedCard =
           originalState.deck[originalState.stats.doubleDiscard];
         if (
-          cardRules.canPossiblyBeFromClues(
+          cardRules.canPossiblyBeFromCluesOnly(
             discardedCard,
             previouslyDiscardedCard.suitIndex,
             previouslyDiscardedCard.rank,

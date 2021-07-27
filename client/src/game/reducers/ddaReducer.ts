@@ -23,7 +23,7 @@ export default function ddaReducer(
         ...card,
         inDoubleDiscard:
           card.location === currentPlayerIndex &&
-          cardRules.canPossiblyBeFromClues(card, suitIndex, rank),
+          cardRules.canPossiblyBeFromCluesOnly(card, suitIndex, rank),
       };
     }
   }
