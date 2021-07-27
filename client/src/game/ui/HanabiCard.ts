@@ -1207,7 +1207,7 @@ export default class HanabiCard
     if (
       this.note.possibilities.every(
         ([suitIndex, rank]) =>
-          !cardRules.canPossiblyBe(this.state, suitIndex, rank),
+          !cardRules.canPossiblyBeFromEmpathy(this.state, suitIndex, rank),
       )
     ) {
       // Unmorph

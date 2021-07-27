@@ -156,7 +156,22 @@ export function isPotentiallyPlayable(
   return false;
 }
 
-export function canPossiblyBe(
+export function canPossiblyBeFromCluesOnly(
+  card: CardState,
+  suitIndex: number | null,
+  rank: number | null,
+): boolean {
+  if (suitIndex === null && rank === null) {
+    // We have nothing to check
+    return true;
+  }
+  return card.possibleCardsFromClues.some(
+    ([s, r]) =>
+      (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
+  );
+}
+
+export function canPossiblyBeFromEmpathy(
   card: CardState,
   suitIndex: number | null,
   rank: number | null,
