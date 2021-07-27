@@ -96,7 +96,8 @@ export default function getSoundType(
         !metadata.hardVariant &&
         !handRules.isLocked(nextPlayerHand, currentState.deck)
       ) {
-        const previouslyDiscardedCard = originalState.deck[originalState.stats.doubleDiscard];
+        const previouslyDiscardedCard =
+          originalState.deck[originalState.stats.doubleDiscard];
         if (
           cardRules.canPossiblyBe(
             discardedCard,
