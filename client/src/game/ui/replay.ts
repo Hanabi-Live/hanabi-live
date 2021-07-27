@@ -42,6 +42,7 @@ export function exitIfFinalSegment(): void {
   if (
     globals.state.replay.active &&
     globals.state.replay.hypothetical === null &&
+    !globals.state.finished &&
     getCurrentReplaySegment() === finalSegment
   ) {
     exit();
