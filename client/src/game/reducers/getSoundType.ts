@@ -99,10 +99,10 @@ export default function getSoundType(
         const previouslyDiscardedCard =
           originalState.deck[originalState.stats.doubleDiscard];
         if (
-          cardRules.canPossiblyBe(
-            discardedCard,
-            previouslyDiscardedCard.suitIndex,
-            previouslyDiscardedCard.rank,
+          discardedCard.possibleCardsFromClues.some(
+            ([suitIndex, rank]) =>
+              previouslyDiscardedCard.suitIndex === suitIndex &&
+              previouslyDiscardedCard.rank === rank,
           )
         ) {
           // A player has discarded *in* a double discard situation
