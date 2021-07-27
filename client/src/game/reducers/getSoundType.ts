@@ -90,28 +90,23 @@ export default function getSoundType(
         return SoundType.DiscardClued;
       }
 
-      const { lastAction } = originalState.stats;
-      let couldBeLastDiscardedCard = true;
-      if (
-        lastAction !== null &&
-        lastAction.type === "discard" &&
-        lastAction.suitIndex !== null &&
-        lastAction.rank !== null
-      ) {
-        couldBeLastDiscardedCard = discardedCard.possibleCardsFromClues.some(
-          ([suitIndex, rank]) =>
-            suitIndex === lastAction.suitIndex && rank === lastAction.rank,
-        );
-      }
       const nextPlayerHand = currentState.hands[action.playerIndex];
       if (
         originalState.stats.doubleDiscard !== null &&
-        couldBeLastDiscardedCard &&
         !metadata.hardVariant &&
         !handRules.isLocked(nextPlayerHand, currentState.deck)
       ) {
-        // A player has discarded *in* a double discard situation
-        return SoundType.DoubleDiscard;
+        const previouslyDiscardedCard = originalState.deck[originalState.stats.doubleDiscard];
+        if (
+          cardRules.canPossiblyBe(
+            discardedCard,
+            previouslyDiscardedCard.suitIndex,
+            previouslyDiscardedCard.rank,
+          )
+        ) {
+          // A player has discarded *in* a double discard situation
+          return SoundType.DoubleDiscard;
+        }
       }
 
       if (stats.doubleDiscard !== null && !metadata.hardVariant) {
