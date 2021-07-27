@@ -1,5 +1,5 @@
 import * as modals from "../../modals";
-import { canPossiblyBe } from "../rules/card";
+import { canPossiblyBeFromEmpathy } from "../rules/card";
 import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import { STACK_BASE_RANK, START_CARD_RANK } from "../types/constants";
@@ -31,7 +31,7 @@ export function checkNoteImpossibility(
   if (
     !(cardState.location === globals.metadata.ourPlayerIndex) ||
     possibilities.some((possibility) =>
-      canPossiblyBe(cardState, possibility[0], possibility[1]),
+      canPossiblyBeFromEmpathy(cardState, possibility[0], possibility[1]),
     )
   ) {
     return;
