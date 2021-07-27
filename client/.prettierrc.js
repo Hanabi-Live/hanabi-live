@@ -12,4 +12,5 @@ module.exports = {
   // Prettier will change the default in the future:
   // https://github.com/prettier/prettier/issues/9369
   trailingComma: "all",
+  endOfLine: "lf",
 };
