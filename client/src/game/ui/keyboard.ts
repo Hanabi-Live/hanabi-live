@@ -240,17 +240,16 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
   } else {
-    let didAdjustReplay = true;
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
         globals.store!.dispatch({ type: "dragReset" });
         replay.back();
-        break;
+        return;
       }
 
       case KeyCode.KEY_RIGHT: {
         replay.forward();
-        break;
+        return;
       }
 
       case KeyCode.KEY_UP:
@@ -269,33 +268,27 @@ function keydown(event: JQuery.KeyDownEvent) {
 
       case KeyCode.KEY_OPEN_BRACKET: {
         replay.backRound();
-        break;
+        return;
       }
 
       case KeyCode.KEY_CLOSE_BRACKET: {
         replay.forwardRound();
-        break;
+        return;
       }
 
       case KeyCode.KEY_HOME: {
         replay.backFull();
-        break;
+        return;
       }
 
       case KeyCode.KEY_END: {
         replay.forwardFull();
-        break;
+        return;
       }
 
       default: {
-        didAdjustReplay = false;
-        break;
+        return;
       }
-    }
-
-    if (didAdjustReplay) {
-      replay.exitIfFinalSegment();
-      return;
     }
   }
 
