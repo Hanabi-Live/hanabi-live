@@ -258,9 +258,13 @@ function keydown(event: JQuery.KeyDownEvent) {
         if (globals.state.replay.shared !== null) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
-          replay.exit();
+          if (globals.state.replay.active) {
+            replay.exit();
+          } else {
+            replay.enter();
+          }
         }
-        break;
+        return;
       }
 
       case KeyCode.KEY_OPEN_BRACKET: {
