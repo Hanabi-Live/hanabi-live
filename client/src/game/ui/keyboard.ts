@@ -287,7 +287,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       }
 
       default: {
-        return;
+        break;
       }
     }
   }
