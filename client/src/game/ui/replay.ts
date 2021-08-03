@@ -52,14 +52,17 @@ export function goToSegment(
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const currentSegment = getCurrentReplaySegment();
 
-
   // Validate the target segment
   // The target must be between 0 and the final replay segment
   const clamp = (n: number, min: number, max: number) =>
     Math.max(min, Math.min(n, max));
   const newSegment = clamp(segment, 0, finalSegment);
   if (currentSegment === newSegment) {
-    if (newSegment === finalSegment && globals.state.replay.hypothetical === null && !globals.state.finished) {
+    if (
+      newSegment === finalSegment &&
+      globals.state.replay.hypothetical === null &&
+      !globals.state.finished
+    ) {
       exit();
     }
     return;

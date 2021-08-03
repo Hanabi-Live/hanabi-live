@@ -257,7 +257,11 @@ function keydown(event: JQuery.KeyDownEvent) {
         if (globals.state.replay.shared !== null) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
-          replay.exit();
+          if (globals.state.replay.active) {
+            replay.exit();
+          } else {
+            replay.enter();
+          }
         }
         return;
       }
@@ -283,7 +287,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       }
 
       default: {
-        return;
+        break;
       }
     }
   }
