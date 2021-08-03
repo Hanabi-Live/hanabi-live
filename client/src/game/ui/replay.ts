@@ -37,18 +37,6 @@ export function exit(): void {
   });
 }
 
-export function exitIfFinalSegment(): void {
-  const finalSegment = globals.state.ongoingGame.turn.segment;
-  if (
-    globals.state.replay.active &&
-    globals.state.replay.hypothetical === null &&
-    !globals.state.finished &&
-    getCurrentReplaySegment() === finalSegment
-  ) {
-    exit();
-  }
-}
-
 function getCurrentReplaySegment() {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   return globals.state.replay.active
@@ -64,12 +52,16 @@ export function goToSegment(
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const currentSegment = getCurrentReplaySegment();
 
+
   // Validate the target segment
   // The target must be between 0 and the final replay segment
   const clamp = (n: number, min: number, max: number) =>
     Math.max(min, Math.min(n, max));
   const newSegment = clamp(segment, 0, finalSegment);
   if (currentSegment === newSegment) {
+    if (newSegment === finalSegment && globals.state.replay.hypothetical === null && !globals.state.finished) {
+      exit();
+    }
     return;
   }
 
