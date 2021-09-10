@@ -3398,12 +3398,11 @@ export default function drawPip(
     }
     // Workaround for Konva.Shape's Context not supporting evenodd
     // This is used in e.g. Empathy view
-    // eslint-disable-next-line
     type Keyable = Record<string, any>;
     // eslint-disable-next-line
-    if ((ctx as Keyable)["_context"] !== undefined) {
-      // eslint-disable-next-line
-      ((ctx as Keyable)["_context"] as CanvasRenderingContext2D).fill("evenodd");
+    const real_ctx = (ctx as Keyable)["_context"];
+    if (real_ctx !== undefined) {
+      (real_ctx as CanvasRenderingContext2D).fill("evenodd");
     } else {
       ctx.fill("evenodd");
     }
