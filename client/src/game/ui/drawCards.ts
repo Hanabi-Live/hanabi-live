@@ -37,8 +37,12 @@ export default function drawCards(
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit
   const unknownSuit = getSuit("Unknown");
   const suits = variant.suits.concat(unknownSuit);
+  const pipTypes = new Set<string>();
 
   for (const suit of suits) {
+    const secondaryPip = pipTypes.has(suit.pip);
+    pipTypes.add(suit.pip);
+
     // Rank 0 is the stack base
     // Rank 1-5 are the normal cards
     // Rank 6 is a card of unknown rank
@@ -137,7 +141,14 @@ export default function drawCards(
       // The "Unknown" suit does not have pips
       // (it is a white suit that is used for cards that are clued with rank)
       if (suit.name !== "Unknown") {
-        drawSuitPips(ctx, rank, suit, colorblindMode, enableShadows);
+        drawSuitPips(
+          ctx,
+          rank,
+          suit,
+          secondaryPip,
+          colorblindMode,
+          enableShadows,
+        );
       }
 
       const cardImagesIndex = `card-${suit.name}-${rank}`;
@@ -170,6 +181,7 @@ function drawSuitPips(
   ctx: CanvasRenderingContext2D,
   rank: number,
   suit: Suit,
+  secondaryPip: boolean,
   colorblindMode: boolean,
   enableShadows: boolean,
 ) {
@@ -180,7 +192,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.8, scale * 1.8);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
   }
 
@@ -191,7 +203,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -199,7 +211,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
   }
 
@@ -210,7 +222,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -218,7 +230,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
   }
 
@@ -228,7 +240,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(-90, 0);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -236,7 +248,7 @@ function drawSuitPips(
     ctx.translate(90, 0);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
   }
 
@@ -246,7 +258,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.2, scale * 1.2);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
   }
 
@@ -256,7 +268,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 2.5, scale * 2.5);
-    drawPip(ctx, suit, enableShadows);
+    drawPip(ctx, suit, secondaryPip, enableShadows);
     ctx.restore();
   }
 
@@ -272,7 +284,7 @@ function drawSuitPips(
     }
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
-    drawPip(ctx, suit, enableShadows, undefined, lineWidth);
+    drawPip(ctx, suit, secondaryPip, enableShadows, undefined, lineWidth);
     ctx.restore();
   }
 }
@@ -314,12 +326,15 @@ function makeDeckBack(
   enableShadows: boolean,
 ) {
   const [cvs, ctx] = makeUnknownCard(initCanvas, enableShadows);
+  const pipTypes = new Set<string>();
 
   const sf = 0.4; // Scale factor
   const nSuits = variant.suits.length;
   ctx.scale(sf, sf);
   for (let i = 0; i < variant.suits.length; i++) {
     const suit = variant.suits[i];
+    const secondaryPip = pipTypes.has(suit.pip);
+    pipTypes.add(suit.pip);
 
     // Transform polar to cartesian coordinates
     const x =
@@ -331,7 +346,7 @@ function makeDeckBack(
 
     ctx.save();
     ctx.translate(x, y);
-    drawPip(ctx, suit, true, "#444444"); // Pips on the back of the deck should be gray
+    drawPip(ctx, suit, secondaryPip, true, "#444444"); // Pips on the back of the deck should be gray
     ctx.restore();
   }
   ctx.scale(1 / sf, 1 / sf);

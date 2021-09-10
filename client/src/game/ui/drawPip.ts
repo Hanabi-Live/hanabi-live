@@ -1392,6 +1392,7 @@ shapeFunctions.set("moon", (ctx: CanvasRenderingContext2D) => {
 });
 
 shapeFunctions.set("hashtag", (ctx: CanvasRenderingContext2D) => {
+  ctx.translate(0, 6);
   ctx.scale(1 / 3, 1 / 3);
   ctx.beginPath();
   ctx.scale(scaleFactor, scaleFactor);
@@ -3357,6 +3358,7 @@ shapeFunctions.set("triangle", (ctx: CanvasRenderingContext2D) => {
 export default function drawPip(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
+  secondary?: boolean,
   shadow?: boolean,
   customFill?: string,
   lineWidth?: number,
@@ -3373,6 +3375,48 @@ export default function drawPip(
   }
 
   const hasCustomFill = customFill !== undefined && customFill !== "";
+  if (secondary === true) {
+    ctx.scale(0.8, 0.8);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 80, 80, 0, 0, 2 * Math.PI);
+    ctx.moveTo(90, 0);
+    ctx.ellipse(0, 0, 90, 90, 0, 0, 2 * Math.PI);
+
+    if (hasCustomFill) {
+      ctx.fillStyle = customFill!;
+    } else if (suit.fill === "multi") {
+      const colors = suit.fillColors;
+      const grad = ctx.createLinearGradient(0, -100, 30, 100);
+      for (let i = 0; i < colors.length; ++i) {
+        grad.addColorStop(i / (colors.length - 1), colors[i]);
+      }
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = suit.fill;
+    }
+
+    // Workaround for Konva.Shape's Context not supporting evenodd
+    // This is used in e.g. Empathy view
+    interface KonvaCanvas {
+      _context: CanvasRenderingContext2D | undefined;
+    }
+    const konvaCanvas = ctx as unknown as KonvaCanvas;
+
+    const canvasFillRule = "evenodd";
+    if (konvaCanvas._context !== undefined) {
+      konvaCanvas._context.fill(canvasFillRule);
+    } else {
+      ctx.fill(canvasFillRule);
+    }
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+    ctx.restore();
+  }
+
   if (hasCustomFill) {
     // The parent function has specified a custom fill color
     ctx.fillStyle = customFill!;

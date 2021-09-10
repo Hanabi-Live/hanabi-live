@@ -158,8 +158,11 @@ function makeCachedPips(variant: Variant) {
 
   const suitPipsMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
+  const pipTypes = new Set<string>();
   for (let i = 0; i < variant.suits.length; i++) {
     const suit = variant.suits[i];
+    const secondaryPip = pipTypes.has(suit.pip);
+    pipTypes.add(suit.pip);
 
     // Set the pip at the middle of the card
     const x = Math.floor(CARD_W * 0.5);
@@ -196,7 +199,12 @@ function makeCachedPips(variant: Variant) {
       shadowOpacity: 0.4,
       shadowForStrokeEnabled: true,
       sceneFunc: (ctx: KonvaContext.Context) => {
-        drawPip(ctx as unknown as CanvasRenderingContext2D, suit, false);
+        drawPip(
+          ctx as unknown as CanvasRenderingContext2D,
+          suit,
+          secondaryPip,
+          false,
+        );
       },
       listening: false,
     });
