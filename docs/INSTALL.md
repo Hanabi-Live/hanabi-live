@@ -69,9 +69,9 @@ Building the client code can be memory intensive. Make sure that your system has
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
     - `git clone https://github.com/[Your_Username]/hanabi-live.git`
 - Enter the cloned repository:
-    - `cd hanabi-live`
+  - `cd hanabi-live`
 - Change from the Windows Command Prompt to Git Bash
-  -  `"%PROGRAMFILES%\Git\bin\sh.exe"`
+  - `"%PROGRAMFILES%\Git\bin\sh.exe"`
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`

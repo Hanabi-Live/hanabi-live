@@ -3396,15 +3396,19 @@ export default function drawPip(
     } else {
       ctx.fillStyle = suit.fill;
     }
+
     // Workaround for Konva.Shape's Context not supporting evenodd
     // This is used in e.g. Empathy view
-    type Keyable = Record<string, unknown>;
-    // eslint-disable-next-line
-    const real_ctx = (ctx as unknown as Keyable)["_context"];
-    if (real_ctx !== undefined) {
-      (real_ctx as CanvasRenderingContext2D).fill("evenodd");
+    interface KonvaCanvas {
+      _context: CanvasRenderingContext2D | undefined;
+    }
+    const konvaCanvas = ctx as unknown as KonvaCanvas;
+
+    const canvasFillRule = "evenodd";
+    if (konvaCanvas._context !== undefined) {
+      konvaCanvas._context.fill(canvasFillRule);
     } else {
-      ctx.fill("evenodd");
+      ctx.fill(canvasFillRule);
     }
 
     ctx.lineWidth = 1;
