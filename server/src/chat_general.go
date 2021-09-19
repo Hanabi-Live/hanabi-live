@@ -50,7 +50,7 @@ func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 // /efficiency
 func chatEfficiency(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Info on efficiency calculation: https://github.com/hanabi/hanabi.github.io/blob/main/misc/Efficiency.md"
+	msg := "Info on efficiency calculation: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md"
 	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
