@@ -1,5 +1,5 @@
 ## first build the client
-FROM node:12-buster
+FROM node:16-buster
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
