@@ -1,0 +1,25 @@
+version: "3"
+services:
+  hanab-live-db:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: "liubowei/hanab-live-db"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: 1234567890
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  hanab-live-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "liubowei/hanab-live-server"
+    ports:
+      - "1212:80"
+    volumes:
+      - ./.env:/root/hanabi-live/.env
+    command: ["-c", "sleep 5 && /root/hanabi-live/hanabi-live"]
+volumes:
+  pgdata:

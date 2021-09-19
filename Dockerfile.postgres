@@ -1,0 +1,6 @@
+FROM postgres:12
+
+COPY install/database_schema.sql /docker-entrypoint-initdb.d/init.sql
+
+ENV POSTGRES_USER hanabiuser
+ENV POSTGRES_DB hanabi
