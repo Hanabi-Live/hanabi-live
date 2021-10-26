@@ -62,38 +62,74 @@ export function init(): void {
   // The "Games" bottom screen toggle button
   $("#lobby-toggle-show-tables").on("click", () => {
     $("#lobby-toggle-show-tables").addClass("toggle-active");
+    $("#lobby-toggle-show-online").removeClass("toggle-active");
     $("#lobby-toggle-show-chat").removeClass("toggle-active");
     $("#lobby-toggle-show-game-chat").removeClass("toggle-active");
+    // Show top half for small screens
     $("#lobby-top-half").addClass("toggle-active");
+    // Hide bottom half for small screens
     $("#lobby-bottom-half").removeClass("toggle-active");
-    // Restore online users and chat for small screens
-    $("#lobby-online-users").removeClass("pregame-hidden");
+    // Fix chat margin for small screens
     $("#lobby-chat-container")
       .removeClass("pregame-chat-layout")
       .removeClass("pregame-lobby-chat");
     $("#lobby-chat-pregame-container").removeClass("pregame-chat-layout");
+    $("#lobby-online-users").removeClass("pregame-chat-layout");
+  });
+
+  // The "Who's online" bottom screen toggle button
+  $("#lobby-toggle-show-online").on("click", () => {
+    // Set active button
+    $("#lobby-toggle-show-tables").removeClass("toggle-active");
+    $("#lobby-toggle-show-online").addClass("toggle-active");
+    $("#lobby-toggle-show-chat").removeClass("toggle-active");
+    $("#lobby-toggle-show-game-chat").removeClass("toggle-active");
+    // Hide top half for small screens
+    $("#lobby-top-half").removeClass("toggle-active");
+    // Show bottom half for small screens
+    $("#lobby-bottom-half").addClass("toggle-active");
+    // Show online and hide chat, pregame chat
+    $("#lobby-online-users").removeClass("narrow-screen-hidden");
+    $("#lobby-chat-container").addClass("narrow-screen-hidden");
+    $("#lobby-chat-pregame-container").addClass("narrow-screen-hidden");
   });
 
   // The "Chat & Users" bottom screen toggle button
   $("#lobby-toggle-show-chat").on("click", () => {
+    // Set active button
     $("#lobby-toggle-show-tables").removeClass("toggle-active");
+    $("#lobby-toggle-show-online").removeClass("toggle-active");
     $("#lobby-toggle-show-chat").addClass("toggle-active");
+    // Hide top half for small screens
     $("#lobby-top-half").removeClass("toggle-active");
+    // Show bottom half for small screens
     $("#lobby-bottom-half").addClass("toggle-active");
+    // Show chat and hide online, pregame chat
+    $("#lobby-chat-container").removeClass("narrow-screen-hidden");
+    $("#lobby-online-users").addClass("narrow-screen-hidden");
   });
 
   // The "Pregame Chat" bottom screen toggle button
   $("#lobby-toggle-show-game-chat").on("click", () => {
+    // Set active button
     $("#lobby-toggle-show-tables").removeClass("toggle-active");
+    $("#lobby-toggle-show-online").removeClass("toggle-active");
     $("#lobby-toggle-show-game-chat").addClass("toggle-active");
+    // Hide top half for small screens
     $("#lobby-top-half").removeClass("toggle-active");
+    // Show bottom half for small screens
     $("#lobby-bottom-half").addClass("toggle-active");
-    // Setup online users and chat for small screens
-    $("#lobby-online-users").addClass("pregame-hidden");
+    // Show chat, pregame chat and hide online
+    $("#lobby-chat-container").removeClass("narrow-screen-hidden");
+    $("#lobby-chat-pregame-container").removeClass("narrow-screen-hidden");
+    $("#lobby-chat-pregame").removeClass("narrow-screen-hidden");
+    $("#lobby-online-users").addClass("narrow-screen-hidden");
+    // Fix chat margin for small screens
     $("#lobby-chat-container")
       .addClass("pregame-chat-layout")
       .addClass("pregame-lobby-chat");
     $("#lobby-chat-pregame-container").addClass("pregame-chat-layout");
+    $("#lobby-online-users").addClass("pregame-chat-layout");
   });
 
   // The "Start Game" button
