@@ -1090,19 +1090,35 @@ table th {
 @media screen and (max-height: 530px) {
   /* Put pregame chat boxes side by side */
   #lobby-chat-container.pregame-chat-layout,
-  #lobby-chat-pregame-container.pregame-chat-layout {
-    flex: 1 1 50%;
+  #lobby-chat-pregame-container.pregame-chat-layout,
+  #lobby-users-box-container.pregame-chat-layout {
+    flex: 1 1 33%;
     height: 100%;
-    padding-left: 2em!important;
+  }
+  #lobby-toggle-show-online {
+    display: none;
   }
 }
 
 @media screen and (max-width: 530px) {
   /* Put pregame chat boxes on top of each other */
   #lobby-chat-container.pregame-chat-layout,
-  #lobby-chat-pregame-container.pregame-chat-layout {
+  #lobby-chat-pregame-container.pregame-chat-layout,
+  #lobby-users-box-container.pregame-chat-layout {
     flex: 1 1 100%;
     height: calc((100% - 1em) / 2);
+  }
+  #lobby-chat-pregame-container {
+    margin-left: 0.5em!important;
+  }
+  .narrow-screen-hidden {
+    display: none!important;
+  }
+}
+
+@media screen and (max-height: 530px) and (max-width: 620px) {
+  #lobby-toggle-show-online {
+    display: inline-block;
   }
 }
 
@@ -1155,12 +1171,16 @@ table th {
   .only-on-narrow-screen {
     display: inline;
   }
-}
-@media screen and (max-width: 520px) {
-  .narrow-screen-toggle {
-    display: none;
+  .lobby-users-box-container {
+    padding-left: 2em!important;
+  }
+  .narrow-screen-hidden {
+    display: none!important;
   }
   .row > #lobby-chat-container {
+    width: 100%;
+  }
+  .row > #lobby-online-users {
     width: 100%;
   }
 }

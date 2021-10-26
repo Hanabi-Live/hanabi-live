@@ -17,11 +17,17 @@ export function show(): void {
   // Replace the list of current games with a list of the current players
   $("#lobby-pregame").show();
   $("#lobby-games").hide();
+  // Fix online and chat boxes layout for small screens
+  $("#lobby-chat-container").addClass("pregame-chat-layout");
+  $("#lobby-chat-pregame-container").addClass("pregame-chat-layout");
 
   // Fix bottom nav buttons for small screens
   $("#lobby-toggle-show-tables").text("Game");
   $("#lobby-toggle-show-chat").addClass("hidden");
   $("#lobby-toggle-show-game-chat").removeClass("hidden");
+
+  // Click the games button
+  $("#lobby-toggle-show-tables").trigger("click");
 
   // Add an extra chat box
   $("#lobby-chat-container").removeClass("col-8");
@@ -70,12 +76,17 @@ export function hide(): void {
   // Replace the list of current players with a list of the current games
   $("#lobby-pregame").hide();
   $("#lobby-games").show();
+  // Fix online and chat boxes layout for small screens
+  $("#lobby-chat-container").removeClass("pregame-chat-layout");
+  $("#lobby-chat-pregame-container").removeClass("pregame-chat-layout");
 
   // Fix bottom nav buttons for small screens
-  $("#lobby-toggle-show-tables").text("Games");
+  $("#lobby-toggle-show-tables").text("Tables");
   $("#lobby-toggle-show-chat").removeClass("hidden");
   $("#lobby-toggle-show-game-chat").addClass("hidden");
-  $("#lobby-toggle-show-tables").click();
+
+  // Click the games button
+  $("#lobby-toggle-show-tables").trigger("click");
 
   // Remove the extra chat box
   $("#lobby-chat-container").addClass("col-8");
