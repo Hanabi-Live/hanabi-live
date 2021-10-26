@@ -915,7 +915,6 @@ export default class HanabiCard
 
     return (
       this.shouldShowClueBorder() &&
-      !this.note.unclued &&
       !this.layout.isDragging() &&
       (!globals.lobby.settings.keldonMode || shouldShowOnKeldonMode)
     );
