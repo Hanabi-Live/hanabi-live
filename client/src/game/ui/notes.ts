@@ -116,7 +116,7 @@ export function show(card: HanabiCard): void {
   tooltip.tooltipster("open");
 }
 
-export function openEditTooltip(card: HanabiCard): void {
+export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   // Don't edit any notes in dedicated replays
   if (globals.state.finished) {
     return;
@@ -134,9 +134,10 @@ export function openEditTooltip(card: HanabiCard): void {
   // the "focusout" handler will automatically close the tooltip,
   // but then this code will run and immediately re-open the tooltip
   // Detect if this is happening and do nothing
+  // The "focusout" event does not fire on mobile, therefore we only check for desktop clients.
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const status = tooltip.tooltipster("status");
-  if (status.state === "disappearing") {
+  if (isDesktop && status.state === "disappearing") {
     return;
   }
 

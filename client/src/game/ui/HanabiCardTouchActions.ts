@@ -59,5 +59,7 @@ export function HanabiCardDblTap(this: HanabiCard): void {
     return;
   }
 
-  notes.openEditTooltip(this);
+  // open notes from mobile
+  const isDesktop = false;
+  notes.openEditTooltip(this, isDesktop);
 }
