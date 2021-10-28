@@ -36,7 +36,9 @@ function parseRank(rankText: string): number {
 }
 
 export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
-  const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
+  const identityMatch = new RegExp(
+    variant.identityNotePattern.toLowerCase(),
+  ).exec(keyword.toLowerCase());
   let suitIndex = null;
   let rank = null;
   if (identityMatch !== null) {
