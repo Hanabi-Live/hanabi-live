@@ -42,6 +42,12 @@ func discordCommandOOP(ctx context.Context, m *discordgo.MessageCreate, args []s
 	discordSend(m.ChannelID, "", msg)
 }
 
+// /rtfm
+func discordCommandRTFM(ctx context.Context, m *discordgo.MessageCreate, args []string) {
+	msg := "Make sure you have thoroughly read the relevant documentation before asking questions. Try the #rules-and-resources first."
+	discordSend(m.ChannelID, "", msg)
+}
+
 // /screenshot
 func discordCommandScreenshot(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	msg := "It looks like you have posted a screenshot of a game state. When asking questions in the #convention-questions channel, please **do not post a screenshot** and instead use the `/replay` command to generate a link to the specific turn of the game in question."
