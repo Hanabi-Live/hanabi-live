@@ -76,8 +76,13 @@ function touchStart(
     // A tap will trigger when the "touchend" event occurs
     // The next tap action will not run because it will appear like the second tap of a double tap
     // Don't worry about this if we actually double-tapped
-    if (!this.wasRecentlyTapped && globals.editingNote === null) {
+    if (!this.wasRecentlyTapped) {
       this.wasRecentlyTapped = true;
+    }
+    if (globals.editingNote !== null) {
+      const tooltip = $(`#tooltip-${this.tooltipName}`);
+      globals.editingNote = null;
+      tooltip.tooltipster("close");
     }
   }, DOUBLE_TAP_DELAY);
 
