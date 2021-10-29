@@ -42,6 +42,10 @@ func (g *Game) InitDeck() {
 				if variant.IsUpOrDown() || suit.Reversed {
 					amountToAdd = 1
 				}
+			} else if rank == 4 {
+				if variant.IsCriticalFours() {
+					amountToAdd = 1
+				}
 			} else if rank == 5 {
 				amountToAdd = 1
 				if suit.Reversed {

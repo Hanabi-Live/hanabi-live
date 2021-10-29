@@ -985,6 +985,36 @@ def main():
                 }
             )
 
+    # Add "Critical Fours" variants
+    for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
+        variant_name = "Critical Fours (" + str(suit_num) + " Suits)"
+        variants.append(
+            {
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": variant_suits[suit_num],
+            }
+        )
+    for [suit_name, suit] in suits.items():
+        if not suit["createVariants"]:
+            continue
+
+        if suit["oneOfEach"]:
+            # A one of each suit in combination with Critical Fours would be too difficult
+            continue
+
+        for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
+            variant_name = (
+                "Critical Fours & " + suit_name + " (" + str(suit_num) + " Suits)"
+            )
+            variants.append(
+                {
+                    "name": variant_name,
+                    "id": get_variant_id(variant_name),
+                    "suits": variant_suits[suit_num - 1].copy() + [suit_name],
+                }
+            )
+
     # Create a map for the new variants
     new_variants_map = {}
     for variant in variants:

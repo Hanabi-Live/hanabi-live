@@ -16,7 +16,10 @@ export function totalCards(variant: Variant): number {
     totalCardsInTheDeck += 10;
     if (suit.oneOfEach) {
       totalCardsInTheDeck -= 5;
-    } else if (variantRules.isUpOrDown(variant)) {
+    } else if (
+      variantRules.isUpOrDown(variant) ||
+      variantRules.isCriticalFours(variant)
+    ) {
       totalCardsInTheDeck -= 1;
     }
   }
@@ -36,6 +39,10 @@ export function numCopiesOfCard(
   if (rank === 1) {
     amountToAdd = 3;
     if (variantRules.isUpOrDown(variant) || suit.reversed) {
+      amountToAdd = 1;
+    }
+  } else if (rank === 4) {
+    if (variantRules.isCriticalFours(variant)) {
       amountToAdd = 1;
     }
   } else if (rank === 5) {

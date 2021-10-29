@@ -52,6 +52,10 @@ func (v *Variant) IsSynesthesia() bool {
 	return strings.HasPrefix(v.Name, "Synesthesia")
 }
 
+func (v *Variant) IsCriticalFours() bool {
+	return strings.HasPrefix(v.Name, "Critical Fours")
+}
+
 func (v *Variant) HasReversedSuits() bool {
 	if v.IsUpOrDown() {
 		return true
@@ -74,7 +78,7 @@ func (v *Variant) GetDeckSize() int {
 			deckSize += 10
 		}
 	}
-	if v.IsUpOrDown() {
+	if v.IsUpOrDown() || v.IsCriticalFours() {
 		deckSize -= len(v.Suits)
 	}
 	return deckSize
