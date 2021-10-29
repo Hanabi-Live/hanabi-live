@@ -942,6 +942,49 @@ def main():
                 }
             )
 
+    # Add "Synesthesia" variants
+    suits_that_cause_duplicated_variants_with_synesthesia = [
+        "Prism", # Same as White
+        "Muddy Rainbow", # Same as Rainbow
+        "Light Pink", # Same as Rainbow
+        "Pink", # Same as Rainbow
+        "Omni", # Same as Rainbow
+        "Dark Prism", # Same as White
+        "Cocoa Rainbow", # Same as Dark Rainbow
+        "Gray Pink", # Same as Dark Rainbow
+        "Dark Pink", # Same as Dark Rainbow
+        "Dark Omni", # Same as Dark Rainbow
+    ]
+    for suit_num in [6, 5, 4, 3]:
+        variant_name = "Synesthesia (" + str(suit_num) + " Suits)"
+        variants.append(
+            {
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": variant_suits[suit_num],
+                "clueRanks": [],
+            }
+        )
+    for [suit_name, suit] in suits.items():
+        if not suit["createVariants"]:
+            continue
+
+        if suit_name in suits_that_cause_duplicated_variants_with_synesthesia:
+            continue
+
+        for suit_num in [6, 5, 4, 3]:
+            variant_name = (
+                "Synesthesia & " + suit_name + " (" + str(suit_num) + " Suits)"
+            )
+            variants.append(
+                {
+                    "name": variant_name,
+                    "id": get_variant_id(variant_name),
+                    "suits": variant_suits[suit_num - 1].copy() + [suit_name],
+                    "clueRanks": [],
+                }
+            )
+
     # Create a map for the new variants
     new_variants_map = {}
     for variant in variants:

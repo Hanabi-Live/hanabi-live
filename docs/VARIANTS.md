@@ -283,6 +283,12 @@ One of each card per suit (e.g. 5 in total):
 - A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
 - This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 
+### Synesthesia
+
+- Only color clues may be given.
+- In addition to their normal color, cards with rank 1 count as the first color, cards with rank 2 count as the second color, and so on.
+- If the brown suit is in use, its cards only get clued by brown, and not as the color of their rank.
+
 <br />
 
 ## Full Variant Listing
