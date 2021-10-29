@@ -43,6 +43,7 @@ function friends(room: string) {
   }
   chat.addSelf(msg, room);
 }
+chatCommands.set("f", friends);
 chatCommands.set("friends", friends);
 chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
@@ -144,6 +145,7 @@ function setVariant(_room: string, args: string[]) {
   // Update our stored create table setting to be equal to this variant
   createGame.checkChanged("createTableVariant", variantName);
 }
+chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
 chatCommands.set("changevariant", setVariant);
 
@@ -212,6 +214,7 @@ function playerinfo(_room: string, args: string[]) {
     });
   }
 }
+chatCommands.set("p", playerinfo);
 chatCommands.set("playerinfo", playerinfo);
 chatCommands.set("games", playerinfo);
 chatCommands.set("stats", playerinfo);
