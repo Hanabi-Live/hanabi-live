@@ -62,11 +62,9 @@ export default function keyboardInit(): void {
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-start").click();
       }
-    } else if (event.altKey && event.which === KeyCode.KEY_V) {
-      // Alt + v
-      // Click on the "Change Variant" button
+    } else if (event.altKey && event.which === KeyCode.KEY_C) {
       if (globals.currentScreen === Screen.PreGame) {
-        $("#nav-buttons-pregame-change-variant").click();
+        $("#nav-buttons-pregame-change-options").click();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_L) {
       // Alt + l
