@@ -59,6 +59,7 @@ export function set(order: number, text: string): void {
 
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
+  card.setRaiseAndShadowOffset();
 }
 
 export function update(card: HanabiCard, text: string): void {
