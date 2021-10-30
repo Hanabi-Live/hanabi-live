@@ -92,6 +92,7 @@ export function init(): void {
 
     // Redraw the tooltip so that the new elements will fit better
     $("#nav-buttons-lobby-create-game").tooltipster("reposition");
+    $("#nav-buttons-pregame-change-options").tooltipster("reposition");
   });
 
   // Disable some checkboxes if a checkbox is checked
@@ -556,6 +557,7 @@ export function ready(): void {
 
   // Redraw the tooltip so that the new elements will fit better
   $("#nav-buttons-lobby-create-game").tooltipster("reposition");
+  $("#nav-buttons-pregame-change-options").tooltipster("reposition");
 }
 
 function readyVariant(value: string) {
