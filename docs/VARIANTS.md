@@ -289,10 +289,6 @@ One of each card per suit (e.g. 5 in total):
 - In addition to their normal color, cards with rank 1 count as the first color, cards with rank 2 count as the second color, and so on.
 - If the brown suit is in use, its cards only get clued by brown, and not as the color of their rank.
 
-### Critical Fours
-
-- One 4 is removed from each suit.
-
 <br />
 
 ## Full Variant Listing
