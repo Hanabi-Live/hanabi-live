@@ -16,7 +16,10 @@ export function totalCards(variant: Variant): number {
     totalCardsInTheDeck += 10;
     if (suit.oneOfEach) {
       totalCardsInTheDeck -= 5;
-    } else if (variantRules.isUpOrDown(variant)) {
+    } else if (
+      variantRules.isUpOrDown(variant) ||
+      variantRules.isCriticalFours(variant)
+    ) {
       totalCardsInTheDeck -= 1;
     }
   }
@@ -30,33 +33,41 @@ export function numCopiesOfCard(
   rank: number,
   variant: Variant,
 ): number {
-  // In a normal suit of Hanabi,
-  // there are three 1's, two 2's, two 3's, two 4's, and one 5
-  let amountToAdd = 2;
+  // This implementation mirrors numCopiesOfCard in server/src/game_deck.go
+  if (suit.oneOfEach) {
+    return 1;
+  }
+
   if (rank === 1) {
-    amountToAdd = 3;
     if (variantRules.isUpOrDown(variant) || suit.reversed) {
-      amountToAdd = 1;
+      return 1;
     }
-  } else if (rank === 5) {
-    amountToAdd = 1;
-    if (suit.reversed) {
-      amountToAdd = 3;
-    }
-  } else if (rank === START_CARD_RANK) {
-    if (variantRules.isUpOrDown(variant)) {
-      amountToAdd = 1;
-    } else {
-      throw new Error(
-        "Trying to add a Start card to a variant that is not Up or Down",
-      );
+    return 3;
+  }
+
+  if (rank === 4) {
+    if (variantRules.isCriticalFours(variant)) {
+      return 1;
     }
   }
 
-  if (suit.oneOfEach) {
-    amountToAdd = 1;
+  if (rank === 5) {
+    if (suit.reversed) {
+      return 3;
+    }
+    return 1;
   }
-  return amountToAdd;
+
+  if (rank === START_CARD_RANK) {
+    if (variantRules.isUpOrDown(variant)) {
+      return 1;
+    }
+    throw new Error(
+      "Trying to add a Start card to a variant that is not Up or Down",
+    );
+  }
+
+  return 2;
 }
 
 // Returns how many cards of a specific suit/rank that have been already discarded
