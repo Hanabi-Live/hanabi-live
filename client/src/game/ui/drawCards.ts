@@ -573,6 +573,7 @@ function getSuitStyle(
     if (rank === 0) {
       return suit.fill;
     }
+
     // If the suit does not get clued by its rank, then coloring the rank is misleading, so use the suit color.
     if (suit.noClueRanks) {
       return suit.fill;
