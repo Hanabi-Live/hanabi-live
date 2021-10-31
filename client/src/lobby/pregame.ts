@@ -462,9 +462,8 @@ function drawPlayerBox(i: number) {
 }
 
 export function toggleStartGameButton(forAll = false): void {
-  // Enable or disable the "Start Game" and "Change Variant" button.
+  // Enable or disable the "Start Game" button.
   // "Start Game" enabled if game owner and enough players
-  // "Change Variant" enabled if game owner
   //
   // If forAll is true, it is disabled for everyone.
   // This is used to delay game start when players enter / leave
