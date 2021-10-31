@@ -63,6 +63,7 @@ export function show(): void {
   // Adjust the top navigation bar
   nav.show("pregame");
   toggleStartGameButton();
+  disableGameOptionsButtonForNonTableOwner();
 
   // Set the browser address bar
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
@@ -480,5 +481,19 @@ export function toggleStartGameButton(forAll = false): void {
     !forAll
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
+  }
+}
+
+export function disableGameOptionsButtonForNonTableOwner(): void {
+  // Disable the "Change Options" button if player is not the table owner.
+
+  $("#nav-buttons-pregame-change-options").addClass("disabled");
+
+  if (globals.game === null) {
+    return;
+  }
+
+  if (globals.game.owner === globals.userID) {
+    $("#nav-buttons-pregame-change-options").removeClass("disabled");
   }
 }
