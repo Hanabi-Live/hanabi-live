@@ -62,7 +62,7 @@ export function show(): void {
 
   // Adjust the top navigation bar
   nav.show("pregame");
-  enableStartGameButton();
+  toggleStartGameButton();
 
   // Set the browser address bar
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
@@ -123,9 +123,9 @@ export function draw(): void {
   }
 
   // Disable Start game for 2 seconds
-  enableStartGameButton(true);
+  toggleStartGameButton(true);
   setTimeout(() => {
-    enableStartGameButton();
+    toggleStartGameButton();
   }, 2000);
 }
 
@@ -461,7 +461,7 @@ function drawPlayerBox(i: number) {
   $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltips.options);
 }
 
-export function enableStartGameButton(forAll = false): void {
+export function toggleStartGameButton(forAll = false): void {
   // Enable or disable the "Start Game" and "Change Variant" button.
   // "Start Game" enabled if game owner and enough players
   // "Change Variant" enabled if game owner

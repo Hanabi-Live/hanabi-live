@@ -24,7 +24,7 @@ commands.set("warning", (data: WarningData) => {
   // Re-activate some lobby elements
   $("#nav-buttons-lobby-create-game").removeClass("disabled");
   if (globals.currentScreen === Screen.PreGame) {
-    pregame.enableStartGameButton();
+    pregame.toggleStartGameButton();
   }
 });
 
