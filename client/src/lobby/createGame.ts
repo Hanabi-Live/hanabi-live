@@ -64,6 +64,7 @@ export function init(): void {
 
     // Redraw the tooltip so that the new elements will fit better
     $("#nav-buttons-lobby-create-game").tooltipster("reposition");
+    $("#nav-buttons-pregame-change-options").tooltipster("reposition");
 
     // Remember the new setting
     getCheckbox("createTableTimed");
@@ -80,6 +81,7 @@ export function init(): void {
 
     // Redraw the tooltip so that the new elements will fit better
     $("#nav-buttons-lobby-create-game").tooltipster("reposition");
+    $("#nav-buttons-pregame-change-options").tooltipster("reposition");
 
     // Remember the new setting
     getCheckbox("createTableSpeedrun");

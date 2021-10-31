@@ -62,7 +62,8 @@ export function show(): void {
 
   // Adjust the top navigation bar
   nav.show("pregame");
-  enableStartGameButton();
+  toggleStartGameButton();
+  disableGameOptionsButtonForNonTableOwner();
 
   // Set the browser address bar
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
@@ -123,9 +124,9 @@ export function draw(): void {
   }
 
   // Disable Start game for 2 seconds
-  enableStartGameButton(true);
+  toggleStartGameButton(true);
   setTimeout(() => {
-    enableStartGameButton();
+    toggleStartGameButton();
   }, 2000);
 }
 
@@ -461,10 +462,9 @@ function drawPlayerBox(i: number) {
   $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltips.options);
 }
 
-export function enableStartGameButton(forAll = false): void {
-  // Enable or disable the "Start Game" and "Change Variant" button.
+export function toggleStartGameButton(forAll = false): void {
+  // Enable or disable the "Start Game" button.
   // "Start Game" enabled if game owner and enough players
-  // "Change Variant" enabled if game owner
   //
   // If forAll is true, it is disabled for everyone.
   // This is used to delay game start when players enter / leave
@@ -481,5 +481,19 @@ export function enableStartGameButton(forAll = false): void {
     !forAll
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
+  }
+}
+
+export function disableGameOptionsButtonForNonTableOwner(): void {
+  // Disable the "Change Options" button if player is not the table owner.
+
+  $("#nav-buttons-pregame-change-options").addClass("disabled");
+
+  if (globals.game === null) {
+    return;
+  }
+
+  if (globals.game.owner === globals.userID) {
+    $("#nav-buttons-pregame-change-options").removeClass("disabled");
   }
 }
