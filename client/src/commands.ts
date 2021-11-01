@@ -25,7 +25,6 @@ commands.set("warning", (data: WarningData) => {
   $("#nav-buttons-lobby-create-game").removeClass("disabled");
   if (globals.currentScreen === Screen.PreGame) {
     pregame.toggleStartGameButton();
-    pregame.disableGameOptionsButtonForNonTableOwner();
   }
 });
 
