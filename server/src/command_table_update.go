@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"strconv"
-	"strings"
 )
 
 // commandTableUpdate is sent when the user submits
@@ -36,48 +35,12 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Truncate long table names
-	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
-	if len(d.Name) > MaxGameNameLength {
-		d.Name = d.Name[0 : MaxGameNameLength-1]
-	}
+	// Perform name fixes
+	d.Name = fixTableName(d.Name)
 
-	// Remove any non-printable characters, if any
-	d.Name = removeNonPrintableCharacters(d.Name)
-
-	// Trim whitespace from both sides
-	d.Name = strings.TrimSpace(d.Name)
-
-	// Make a default game name if they did not provide one
-	if len(d.Name) == 0 {
-		d.Name = getName()
-	}
-
-	// Check for non-ASCII characters
-	if !containsAllPrintableASCII(d.Name) {
-		s.Warning("Game names can only contain ASCII characters.")
-		return
-	}
-
-	// Validate that the game name does not contain any special characters
-	// (this mitigates XSS attacks)
-	if !isValidTableName(d.Name) {
-		msg := "Game names can only contain English letters, numbers, spaces, " +
-			"<code>!</code>, " +
-			"<code>@</code>, " +
-			"<code>#</code>, " +
-			"<code>$</code>, " +
-			"<code>(</code>, " +
-			"<code>)</code>, " +
-			"<code>-</code>, " +
-			"<code>_</code>, " +
-			"<code>=</code>, " +
-			"<code>+</code>, " +
-			"<code>;</code>, " +
-			"<code>:</code>, " +
-			"<code>,</code>, " +
-			"<code>.</code>, " +
-			"and <code>?</code>."
+	// Check for valid name
+	isValid, msg := isTableNameValid(d.Name, true)
+	if !isValid {
 		s.Warning(msg)
 		return
 	}
@@ -93,62 +56,14 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		SetReplayTurn: 0,
 	}
 
-	// Handle special game option creation
-	if strings.HasPrefix(d.Name, "!") {
-		msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
+	// Perform options fixes
+	d.Options = fixGameOptions(d.Options)
+
+	// Check for valid options
+	isValid, msg = areGameOptionsValid(d.Options)
+	if !isValid {
 		s.Warning(msg)
 		return
-	}
-
-	// Validate that they sent the options object
-	if d.Options == nil {
-		d.Options = NewOptions()
-	}
-
-	// Validate that the variant name is valid
-	if _, ok := variants[d.Options.VariantName]; !ok {
-		s.Warning("\"" + d.Options.VariantName + "\" is not a valid variant.")
-		return
-	}
-
-	// Validate that the time controls are sane
-	if d.Options.Timed {
-		if d.Options.TimeBase <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.Options.TimeBase) + "\" is too small of a value for \"Base Time\".")
-			return
-		}
-		if d.Options.TimeBase > 604800 { // 1 week in seconds
-			s.Warning("\"" + strconv.Itoa(d.Options.TimeBase) + "\" is too large of a value for \"Base Time\".")
-			return
-		}
-		if d.Options.TimePerTurn <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.Options.TimePerTurn) + "\" is too small of a value for \"Time per Turn\".")
-			return
-		}
-		if d.Options.TimePerTurn > 86400 { // 1 day in seconds
-			s.Warning("\"" + strconv.Itoa(d.Options.TimePerTurn) + "\" is too large of a value for \"Time per Turn\".")
-			return
-		}
-	}
-
-	// Validate that there can be no time controls if this is not a timed game
-	if !d.Options.Timed {
-		d.Options.TimeBase = 0
-		d.Options.TimePerTurn = 0
-	}
-
-	// Validate that a speedrun cannot be timed
-	if d.Options.Speedrun {
-		d.Options.Timed = false
-		d.Options.TimeBase = 0
-		d.Options.TimePerTurn = 0
-	}
-
-	// Validate that they did not send both the "One Extra Card" and the "One Less Card" option at
-	// the same time (they effectively cancel each other out)
-	if d.Options.OneExtraCard && d.Options.OneLessCard {
-		d.Options.OneExtraCard = false
-		d.Options.OneLessCard = false
 	}
 
 	tableUpdate(ctx, s, d, data, t)

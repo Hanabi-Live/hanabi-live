@@ -295,3 +295,133 @@ func toSnakeCase(str string) string {
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
 }
+
+// Performs fixes on given table name
+// - Truncate long name
+// - Remove non-printable characters
+// - Trim whitespace
+// - Get a default name in none provided
+//
+func fixTableName(name string) string {
+	// Truncate long table names
+	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
+	if len(name) > MaxGameNameLength {
+		name = name[0 : MaxGameNameLength-1]
+	}
+
+	// Remove any non-printable characters, if any
+	name = removeNonPrintableCharacters(name)
+
+	// Trim whitespace from both sides
+	name = strings.TrimSpace(name)
+
+	// Make a default game name if they did not provide one
+	if len(name) == 0 {
+		name = getName()
+	}
+
+	return name
+}
+
+// Performs checks on given table name
+// - Cannot contain non-ASCII, special characters or start with !
+//
+func isTableNameValid(name string, checkForExclamation bool) (bool, string) {
+	// Check for non-ASCII characters
+	if !containsAllPrintableASCII(name) {
+		return false, "Game names can only contain ASCII characters."
+	}
+
+	// Validate that the game name does not contain any special characters
+	// (this mitigates XSS attacks)
+	if !isValidTableName(name) {
+		msg := "Game names can only contain English letters, numbers, spaces, " +
+			"<code>!</code>, " +
+			"<code>@</code>, " +
+			"<code>#</code>, " +
+			"<code>$</code>, " +
+			"<code>(</code>, " +
+			"<code>)</code>, " +
+			"<code>-</code>, " +
+			"<code>_</code>, " +
+			"<code>=</code>, " +
+			"<code>+</code>, " +
+			"<code>;</code>, " +
+			"<code>:</code>, " +
+			"<code>,</code>, " +
+			"<code>.</code>, " +
+			"and <code>?</code>."
+		return false, msg
+	}
+
+	// Handle special game option creation
+	if checkForExclamation && strings.HasPrefix(name, "!") {
+		return false, "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
+	}
+
+	return true, ""
+}
+
+// Performs fixes on given game options
+// - Must not be nil
+// - There should be no time controls for non-timed game
+// - Speedrun cannot be timed
+// - Not both "One Extra" and "One Less" card options
+//
+func fixGameOptions(options *Options) *Options {
+	// Validate that they sent the options object
+	if options == nil {
+		options = NewOptions()
+	}
+
+	// Validate that there can be no time controls if this is not a timed game
+	if !options.Timed {
+		options.TimeBase = 0
+		options.TimePerTurn = 0
+	}
+
+	// Validate that a speedrun cannot be timed
+	if options.Speedrun {
+		options.Timed = false
+		options.TimeBase = 0
+		options.TimePerTurn = 0
+	}
+
+	// Validate that they did not send both the "One Extra Card" and the "One Less Card" option at
+	// the same time (they effectively cancel each other out)
+	if options.OneExtraCard && options.OneLessCard {
+		options.OneExtraCard = false
+		options.OneLessCard = false
+	}
+
+	return options
+}
+
+// Performs checks on game options
+// - Must contain valid variant name
+// - Time controls are sane
+//
+func areGameOptionsValid(options *Options) (bool, string) {
+	// Validate that the variant name is valid
+	if _, ok := variants[options.VariantName]; !ok {
+		return false, "\"" + options.VariantName + "\" is not a valid variant."
+	}
+
+	// Validate that the time controls are sane
+	if options.Timed {
+		if options.TimeBase <= 0 {
+			return false, "\"" + strconv.Itoa(options.TimeBase) + "\" is too small of a value for \"Base Time\"."
+		}
+		if options.TimeBase > 604800 { // 1 week in seconds
+			return false, "\"" + strconv.Itoa(options.TimeBase) + "\" is too large of a value for \"Base Time\"."
+		}
+		if options.TimePerTurn <= 0 {
+			return false, "\"" + strconv.Itoa(options.TimePerTurn) + "\" is too small of a value for \"Time per Turn\"."
+		}
+		if options.TimePerTurn > 86400 { // 1 day in seconds
+			return false, "\"" + strconv.Itoa(options.TimePerTurn) + "\" is too large of a value for \"Time per Turn\"."
+		}
+	}
+
+	return true, ""
+}
