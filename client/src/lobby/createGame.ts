@@ -531,10 +531,10 @@ export function ready(): void {
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
 
-  // Focus the "Name" box
+  // Focus the Change Variant dropdown
   // (this has to be in a callback in order to work)
   setTimeout(() => {
-    $("#createTableName").focus();
+    $("#create-game-variant-dropdown1").trigger("focus");
   }, 0);
 
   // Fill in the rest of form with the settings that we used last time
