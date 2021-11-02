@@ -13,6 +13,7 @@ import {
   parseIntSafe,
 } from "../misc";
 import * as modals from "../modals";
+import Options from "../types/Options";
 import Screen from "./types/Screen";
 import Settings from "./types/Settings";
 
@@ -28,21 +29,6 @@ const variantNames = Array.from(VARIANTS.keys());
 // Local variables
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
-
-interface GameOptions {
-  variantName: string;
-  timed: boolean;
-  timeBase: number;
-  timePerTurn: number;
-  speedrun: boolean;
-  cardCycle: boolean;
-  deckPlays: boolean;
-  emptyClues: boolean;
-  oneExtraCard: boolean;
-  oneLessCard: boolean;
-  allOrNothing: boolean;
-  detrimentalCharacters: boolean;
-}
 
 export function init(): void {
   dropdown1 = $("#create-game-variant-dropdown1");
@@ -187,8 +173,10 @@ export function init(): void {
     const data = String($(e.target).data("new-options"));
     const reg = new RegExp("'", "g");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const options: GameOptions = JSON.parse(data.replace(reg, '"'));
+    const options: Options = JSON.parse(data.replace(reg, '"'));
     acceptOptionsFromGuest(options);
+    // disable the button
+    $(e.target).text("sent").prop("disabled", true);
   });
 }
 
@@ -349,29 +337,14 @@ function submit() {
   closeAllTooltips();
 }
 
-function acceptOptionsFromGuest(data: GameOptions) {
+function acceptOptionsFromGuest(data: Options) {
   // Table names are not saved
   const name = $("#createTableName").val();
-
-  const options = {
-    variantName: data.variantName,
-    timed: data.timed,
-    timeBase: data.timeBase,
-    timePerTurn: data.timePerTurn,
-    speedrun: data.speedrun,
-    cardCycle: data.cardCycle,
-    deckPlays: data.deckPlays,
-    emptyClues: data.emptyClues,
-    oneExtraCard: data.oneExtraCard,
-    oneLessCard: data.oneLessCard,
-    allOrNothing: data.allOrNothing,
-    detrimentalCharacters: data.detrimentalCharacters,
-  };
 
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,
     name,
-    options,
+    data,
   });
 }
 
