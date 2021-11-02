@@ -175,7 +175,6 @@ export function init(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const options: Options = JSON.parse(data.replace(reg, '"'));
     acceptOptionsFromGuest(options);
-    // disable the button
     $(e.target).text("sent").prop("disabled", true);
   });
 }
