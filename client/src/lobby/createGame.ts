@@ -166,6 +166,14 @@ export function init(): void {
   });
 
   $("#create-game-submit").on("click", submit);
+
+  // Add delegate handler for new options buttons
+  $("#lobby-chat-pregame-text").on("click", "button.new-options", (e) => {
+    const data = String($(e.target).data("new-options"));
+    const reg = new RegExp("'", "g");
+    acceptOptionsFromGuest(JSON.parse(data.replace(reg, '"')));
+    // console.log(JSON.parse(data.replace(reg, '"')));
+  });
 }
 
 // The website offers over 1000+ variants
@@ -323,6 +331,45 @@ function submit() {
   }
 
   closeAllTooltips();
+}
+
+function acceptOptionsFromGuest(data: {
+  variantName: string;
+  timed: boolean;
+  timeBase: number;
+  timePerTurn: number;
+  speedrun: boolean;
+  cardCycle: boolean;
+  deckPlays: boolean;
+  emptyClues: boolean;
+  oneExtraCard: boolean;
+  oneLessCard: boolean;
+  allOrNothing: boolean;
+  detrimentalCharacters: boolean;
+}) {
+  // Table names are not saved
+  const name = $("#createTableName").val();
+
+  const options = {
+    variantName: data.variantName,
+    timed: data.timed,
+    timeBase: data.timeBase,
+    timePerTurn: data.timePerTurn,
+    speedrun: data.speedrun,
+    cardCycle: data.cardCycle,
+    deckPlays: data.deckPlays,
+    emptyClues: data.emptyClues,
+    oneExtraCard: data.oneExtraCard,
+    oneLessCard: data.oneLessCard,
+    allOrNothing: data.allOrNothing,
+    detrimentalCharacters: data.detrimentalCharacters,
+  };
+
+  globals.conn!.send("tableUpdate", {
+    tableID: globals.tableID,
+    name,
+    options,
+  });
 }
 
 function getCheckbox(setting: keyof Settings) {
@@ -484,6 +531,9 @@ export function ready(): void {
 
     // Ensure create-game-table-number is empty
     $("#create-game-table-number").val("");
+
+    // Show JSON row
+    $("#create-game-json-row").removeClass("hidden");
   } else {
     // Change Options
     dialogTitle = "Change Game Options";
@@ -496,6 +546,9 @@ export function ready(): void {
 
     // Ensure create-game-table-number has a value
     $("#create-game-table-number").val(globals.tableID);
+
+    // Hide JSON row
+    $("#create-game-json-row").addClass("hidden");
   }
 
   // Set UI Elements and values

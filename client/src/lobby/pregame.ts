@@ -100,6 +100,9 @@ export function hide(): void {
   // Adjust the navigation bar
   nav.show("lobby");
 
+  // Remove delegate handlers
+  $("#lobby-chat-pregame-text").off();
+
   // Set the browser address bar
   setBrowserAddressBarPath("/lobby");
 }

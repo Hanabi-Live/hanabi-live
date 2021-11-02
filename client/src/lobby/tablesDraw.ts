@@ -3,6 +3,7 @@
 import globals from "../globals";
 import { copyStringToClipboard, getURLFromPath, timerFormatter } from "../misc";
 import * as modals from "../modals";
+import * as createGame from "./createGame";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
 
@@ -250,6 +251,9 @@ export function tableJoin(table: Table): void {
     globals.conn!.send("tableJoin", {
       tableID: table.id,
     });
+
+    // Prepare the Change Options dialog for guest
+    createGame.ready();
     // (we will get a "joined" response back from the server)
   }
 }

@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"strconv"
+	"time"
+	"encoding/json"
+	"strings"
 )
 
 // commandTableUpdate is sent when the user submits
@@ -31,7 +34,98 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	if s.UserID != t.OwnerID {
-		s.Warning(NotOwnerFail)
+		// Non game host sends new options
+		// They are sent to the table chat as a proposal
+
+		// Perform options fixes
+		d.Options = fixGameOptions(d.Options)
+
+		// Check for valid options
+		isValid, msg := areGameOptionsValid(d.Options)
+		if !isValid {
+			s.Warning(msg)
+			return
+		}
+
+		nOpt := d.Options
+		tOpt := t.Options
+
+		room := t.GetRoomName()
+		msg = s.Username + " proposes the following options:"
+		span := "<span class=\"cp\">"
+		endspan := "</b></span>"
+
+		// output in chat only what's changed
+		options := ""
+
+		if nOpt.VariantName != tOpt.VariantName {
+			options += span + "Variant: <b>" + nOpt.VariantName + endspan
+		}
+		if nOpt.Timed && !tOpt.Timed {
+			options += span + "Timed: <b>" + strconv.Itoa(nOpt.TimeBase) + " / " + strconv.Itoa(nOpt.TimePerTurn) + endspan
+		} else if tOpt.Timed {
+			options += span + "Timed: <b>No" + endspan
+		}
+
+		if nOpt.Speedrun != tOpt.Speedrun {
+			options += span + "Speedrun: <b>" + yesNoFromBoolean(nOpt.Speedrun) + endspan
+		}
+		if nOpt.CardCycle != tOpt.CardCycle {
+			options += span + "Card Cycling: <b>" + yesNoFromBoolean(nOpt.CardCycle) + endspan
+		}
+		if nOpt.DeckPlays != tOpt.DeckPlays {
+			options += span + "Bottom-Deck: <b>" + yesNoFromBoolean(nOpt.DeckPlays) + endspan
+		}
+		if nOpt.EmptyClues != tOpt.EmptyClues {
+			options += span + "Empty Clues: <b>" + yesNoFromBoolean(nOpt.EmptyClues) + endspan
+		}
+		if nOpt.OneExtraCard != tOpt.OneExtraCard {
+			options += span + "One Extra Card: <b>" + yesNoFromBoolean(nOpt.OneExtraCard) + endspan
+		}
+		if nOpt.OneLessCard != tOpt.OneLessCard {
+			options += span + "One Less Card: <b>" + yesNoFromBoolean(nOpt.OneLessCard) + endspan
+		}
+		if nOpt.AllOrNothing != tOpt.AllOrNothing {
+			options += span + "All or Nothing: <b>" + yesNoFromBoolean(nOpt.AllOrNothing) + endspan
+		}
+		if nOpt.DetrimentalCharacters != tOpt.DetrimentalCharacters {
+			options += span + "Detrimental Characters: <b>" + yesNoFromBoolean(nOpt.DetrimentalCharacters) + endspan
+		}
+
+		if options == "" {
+			// nothing is changed
+			s.Warning("There are no new options proposed.")
+			return
+		}
+
+		msg += options
+		chatServerSend(ctx, msg, room, d.NoTablesLock)
+
+		// New options
+		jsonOptions, err := json.Marshal(nOpt)
+		if err != nil {
+			return
+		}
+
+		// Send a hyperlink to the table owner to apply the changes
+		out := strings.ReplaceAll(string(jsonOptions), "\"", "'")
+		msg = span + "<button class=\"new-options\" data-new-options=\"" +
+			out +
+			"\">click to apply the suggestion</button></span>"
+		for _, p := range t.Players {
+			if p.UserID == t.OwnerID {
+				p.Session.Emit("chat", &ChatMessage{
+					Msg:       msg,
+					Who:       WebsiteName,
+					Discord:   false,
+					Server:    true,
+					Datetime:  time.Now(),
+					Room:      room,
+					Recipient: p.Name,
+				})
+				break
+			}
+		}
 		return
 	}
 
