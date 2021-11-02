@@ -13,6 +13,7 @@ import {
   parseIntSafe,
 } from "../misc";
 import * as modals from "../modals";
+import Options from "../types/Options";
 import Screen from "./types/Screen";
 import Settings from "./types/Settings";
 
@@ -166,6 +167,16 @@ export function init(): void {
   });
 
   $("#create-game-submit").on("click", submit);
+
+  // Add delegate handler for new options buttons
+  $("#lobby-chat-pregame-text").on("click", "button.new-options", (e) => {
+    const data = String($(e.target).data("new-options"));
+    const reg = new RegExp("'", "g");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const options: Options = JSON.parse(data.replace(reg, '"'));
+    acceptOptionsFromGuest(options);
+    $(e.target).text("sent").prop("disabled", true);
+  });
 }
 
 // The website offers over 1000+ variants
@@ -323,6 +334,17 @@ function submit() {
   }
 
   closeAllTooltips();
+}
+
+function acceptOptionsFromGuest(data: Options) {
+  // Table names are not saved
+  const name = $("#createTableName").val();
+
+  globals.conn!.send("tableUpdate", {
+    tableID: globals.tableID,
+    name,
+    data,
+  });
 }
 
 function getCheckbox(setting: keyof Settings) {
@@ -484,6 +506,9 @@ export function ready(): void {
 
     // Ensure create-game-table-number is empty
     $("#create-game-table-number").val("");
+
+    // Show JSON row
+    $("#create-game-json-row").removeClass("hidden");
   } else {
     // Change Options
     dialogTitle = "Change Game Options";
@@ -496,6 +521,9 @@ export function ready(): void {
 
     // Ensure create-game-table-number has a value
     $("#create-game-table-number").val(globals.tableID);
+
+    // Hide JSON row
+    $("#create-game-json-row").addClass("hidden");
   }
 
   // Set UI Elements and values
