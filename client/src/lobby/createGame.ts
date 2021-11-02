@@ -29,6 +29,21 @@ const variantNames = Array.from(VARIANTS.keys());
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
 
+interface GameOptions {
+  variantName: string;
+  timed: boolean;
+  timeBase: number;
+  timePerTurn: number;
+  speedrun: boolean;
+  cardCycle: boolean;
+  deckPlays: boolean;
+  emptyClues: boolean;
+  oneExtraCard: boolean;
+  oneLessCard: boolean;
+  allOrNothing: boolean;
+  detrimentalCharacters: boolean;
+}
+
 export function init(): void {
   dropdown1 = $("#create-game-variant-dropdown1");
   dropdown2 = $("#create-game-variant-dropdown2");
@@ -171,8 +186,9 @@ export function init(): void {
   $("#lobby-chat-pregame-text").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
     const reg = new RegExp("'", "g");
-    acceptOptionsFromGuest(JSON.parse(data.replace(reg, '"')));
-    // console.log(JSON.parse(data.replace(reg, '"')));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const options: GameOptions = JSON.parse(data.replace(reg, '"'));
+    acceptOptionsFromGuest(options);
   });
 }
 
@@ -333,20 +349,7 @@ function submit() {
   closeAllTooltips();
 }
 
-function acceptOptionsFromGuest(data: {
-  variantName: string;
-  timed: boolean;
-  timeBase: number;
-  timePerTurn: number;
-  speedrun: boolean;
-  cardCycle: boolean;
-  deckPlays: boolean;
-  emptyClues: boolean;
-  oneExtraCard: boolean;
-  oneLessCard: boolean;
-  allOrNothing: boolean;
-  detrimentalCharacters: boolean;
-}) {
+function acceptOptionsFromGuest(data: GameOptions) {
   // Table names are not saved
   const name = $("#createTableName").val();
 

@@ -296,12 +296,6 @@ func toSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-// Performs fixes on given table name
-// - Truncate long name
-// - Remove non-printable characters
-// - Trim whitespace
-// - Get a default name in none provided
-//
 func fixTableName(name string) string {
 	// Truncate long table names
 	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
@@ -323,9 +317,6 @@ func fixTableName(name string) string {
 	return name
 }
 
-// Performs checks on given table name
-// - Cannot contain non-ASCII, special characters or start with !
-//
 func isTableNameValid(name string, checkForExclamation bool) (bool, string) {
 	// Check for non-ASCII characters
 	if !containsAllPrintableASCII(name) {
@@ -362,12 +353,6 @@ func isTableNameValid(name string, checkForExclamation bool) (bool, string) {
 	return true, ""
 }
 
-// Performs fixes on given game options
-// - Must not be nil
-// - There should be no time controls for non-timed game
-// - Speedrun cannot be timed
-// - Not both "One Extra" and "One Less" card options
-//
 func fixGameOptions(options *Options) *Options {
 	// Validate that they sent the options object
 	if options == nil {
@@ -397,10 +382,6 @@ func fixGameOptions(options *Options) *Options {
 	return options
 }
 
-// Performs checks on game options
-// - Must contain valid variant name
-// - Time controls are sane
-//
 func areGameOptionsValid(options *Options) (bool, string) {
 	// Validate that the variant name is valid
 	if _, ok := variants[options.VariantName]; !ok {
