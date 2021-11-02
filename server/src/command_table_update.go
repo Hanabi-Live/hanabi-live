@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"strconv"
-	"time"
 	"encoding/json"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // commandTableUpdate is sent when the user submits
