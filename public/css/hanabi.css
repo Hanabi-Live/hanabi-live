@@ -59,6 +59,10 @@ input[type="radio"] + label:before,
   cursor: pointer;
 }
 
+#header a.disabled {
+  cursor: not-allowed;
+}
+
 #main > header p {
   border-top: 0;
   margin-top: 0;
