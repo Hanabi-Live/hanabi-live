@@ -40,10 +40,12 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		// Perform options fixes
 		d.Options = fixGameOptions(d.Options)
 
+		var message string
+
 		// Check for valid options
-		isValid, msg := areGameOptionsValid(d.Options)
+		isValid, message := areGameOptionsValid(d.Options)
 		if !isValid {
-			s.Warning(msg)
+			s.Warning(message)
 			return
 		}
 
@@ -51,7 +53,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		tOpt := t.Options
 
 		room := t.GetRoomName()
-		msg = s.Username + " proposes the following options:"
+		message = s.Username + " proposes the following options:"
 		span := "<span class=\"cp\">"
 		endspan := "</b></span>"
 
@@ -98,8 +100,8 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 			return
 		}
 
-		msg += options
-		chatServerSend(ctx, msg, room, d.NoTablesLock)
+		message += options
+		chatServerSend(ctx, message, room, d.NoTablesLock)
 
 		// New options
 		jsonOptions, err := json.Marshal(nOpt)
@@ -109,13 +111,13 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 
 		// Send a hyperlink to the table owner to apply the changes
 		out := strings.ReplaceAll(string(jsonOptions), "\"", "'")
-		msg = span + "<button class=\"new-options\" data-new-options=\"" +
+		message = span + "<button class=\"new-options\" data-new-options=\"" +
 			out +
 			"\">click to apply the suggestion</button></span>"
 		for _, p := range t.Players {
 			if p.UserID == t.OwnerID {
 				p.Session.Emit("chat", &ChatMessage{
-					Msg:       msg,
+					Msg:       message,
 					Who:       WebsiteName,
 					Discord:   false,
 					Server:    true,

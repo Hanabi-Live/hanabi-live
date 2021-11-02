@@ -429,7 +429,6 @@ func areGameOptionsValid(options *Options) (bool, string) {
 func yesNoFromBoolean(option bool) string {
 	if option {
 		return "Yes"
-	} else {
-		return "No"
 	}
+	return "No"
 }
