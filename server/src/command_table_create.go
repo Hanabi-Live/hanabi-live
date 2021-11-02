@@ -57,10 +57,11 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 	// Perform name fixes
 	d.Name = fixTableName(d.Name)
 
+	var message string
 	// Check for valid name
-	isValid, msg := isTableNameValid(d.Name, d.GameJSON == nil)
+	isValid, message := isTableNameValid(d.Name, d.GameJSON == nil)
 	if !isValid {
-		s.Warning(msg)
+		s.Warning(message)
 		return
 	}
 
@@ -166,7 +167,8 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 
 			data.SetReplay = true
 		} else {
-			s.Warning"You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command.")
+			warn := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
+			s.Warning(warn)
 			return
 		}
 	}
@@ -175,9 +177,9 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 	d.Options = fixGameOptions(d.Options)
 
 	// Check for valid options
-	isValid, msg = areGameOptionsValid(d.Options)
+	isValid, message = areGameOptionsValid(d.Options)
 	if !isValid {
-		s.Warning(msg)
+		s.Warning(message)
 		return
 	}
 
