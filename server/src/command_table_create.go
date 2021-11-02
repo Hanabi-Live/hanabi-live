@@ -166,8 +166,7 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 
 			data.SetReplay = true
 		} else {
-			msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
-			s.Warning(msg)
+			s.Warning"You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command.")
 			return
 		}
 	}
