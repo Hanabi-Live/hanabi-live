@@ -1195,6 +1195,15 @@ a.toggle-active {
 
 /* chat padding for options proposal */
 span.cp {
-  padding-left: 43px;
+  padding-left: 52px;
   display: block;
+}
+
+/* make all chat text display as block */
+#lobby-chat-pregame-text > span {
+  display: block;
+}
+
+#lobby-chat-pregame-text > span.hidden {
+  display: none;
 }

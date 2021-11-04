@@ -590,7 +590,7 @@ export function add(data: ChatMessage, fast: boolean): void {
       match = regex.exec(line);
     }
   }
-  line += "</span><br />";
+  line += "</span>";
 
   // Find out if we should automatically scroll down after adding the new line of chat
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
@@ -604,7 +604,7 @@ export function add(data: ChatMessage, fast: boolean): void {
 
   // Add the new line and fade it in
   chat.append(line);
-  $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME);
+  $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME).css("display", "block");
   $(`#chat-line-${chatLineNum} a.suggestion`).each((_, el) => {
     const text = el.innerText;
     const chatInput = $("#lobby-chat-pregame-input");
