@@ -4,6 +4,7 @@ import {
   millisecondsToClockString,
   timerFormatter,
 } from "../../misc";
+import { OptionIcons } from "../../types/Options";
 import { deckRules } from "../rules";
 import ActionType from "../types/ActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
@@ -241,8 +242,7 @@ function getTooltipContent() {
   content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
 
   if (globals.options.timed) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.TIMED}"></i></span>`;
     content += "&nbsp; Timed: ";
     content += timerFormatter(globals.options.timeBase);
     content += " + ";
@@ -251,52 +251,44 @@ function getTooltipContent() {
   }
 
   if (globals.options.speedrun) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.SPEEDRUN}"></i></span>`;
     content += "&nbsp; Speedrun</li>";
   }
 
   if (globals.options.cardCycle) {
     content += '<li><span class="game-tooltips-icon">';
-    content += '<i class="fas fa-sync-alt"></i></span>';
+    content += `<i class="${OptionIcons.CARD_CYCLE}"></i></span>`;
     content += "&nbsp; Card Cycling</li>";
   }
 
   if (globals.options.deckPlays) {
     content += '<li><span class="game-tooltips-icon">';
-    content +=
-      '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
+    content += `<i class="${OptionIcons.DECK_PLAYS}" style="position: relative; left: 0.2em;"></i></span>`;
     content += "&nbsp; Bottom-Deck Blind Plays</li>";
   }
 
   if (globals.options.emptyClues) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.EMPTY_CLUES}"></i></span>`;
     content += "&nbsp; Empty Clues</li>";
   }
 
   if (globals.options.oneExtraCard) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-plus-circle"></i></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.ONE_EXTRA_CARD}"></i></span>`;
     content += "&nbsp; One Extra Card</li>";
   }
 
   if (globals.options.oneLessCard) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-minus-circle"></i></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.ONE_LESS_CARD}"></i></span>`;
     content += "&nbsp; One Less Card</li>";
   }
 
   if (globals.options.allOrNothing) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-layer-group"></i></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.ALL_OR_NOTHING}"></i></span>`;
     content += "&nbsp; All or Nothing</li>";
   }
 
   if (globals.options.detrimentalCharacters) {
-    content += '<li><span class="game-tooltips-icon">';
-    content +=
-      '<span style="position: relative; right: 0.4em;">🤔</span></span>';
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.DETRIMENTAL_CHARACTERS}"></i></span>`;
     content += "&nbsp; Detrimental Characters</li>";
   }
 
