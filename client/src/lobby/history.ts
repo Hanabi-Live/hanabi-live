@@ -4,7 +4,7 @@ import { getVariant, VARIANTS } from "../game/data/gameData";
 import Variant from "../game/types/Variant";
 import globals from "../globals";
 import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
-import Options from "../types/Options";
+import Options, { OptionIcons } from "../types/Options";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
 import GameHistory from "./types/GameHistory";
@@ -373,9 +373,11 @@ export function drawOtherScores(games: GameHistory[], friends: boolean): void {
 function makeOptions(i: number, options: Options, otherScores: boolean) {
   // Start to build the tooltip content HTML, if any
   let tooltipHTML = "";
+  const icons: string[] = [];
 
   if (options.timed) {
-    tooltipHTML += '<li><i class="fas fa-clock"></i>&nbsp; ';
+    icons.push(OptionIcons.TIMED);
+    tooltipHTML += `<li><i class="${OptionIcons.TIMED}"></i>&nbsp; `;
     tooltipHTML += `Timed (${timerFormatter(
       options.timeBase,
     )} + ${timerFormatter(options.timePerTurn)})`;
@@ -383,44 +385,50 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   }
 
   if (options.speedrun) {
-    tooltipHTML += '<li><i class="fas fa-running"></i>&nbsp; ';
+    icons.push(OptionIcons.SPEEDRUN);
+    tooltipHTML += `<li><i class="${OptionIcons.SPEEDRUN}"></i>&nbsp; `;
     tooltipHTML += "Speedrun</li>";
   }
 
   if (options.cardCycle) {
-    tooltipHTML += '<li><i class="fas fa-sync-alt"></i>&nbsp; ';
+    icons.push(OptionIcons.CARD_CYCLE);
+    tooltipHTML += `<li><i class="${OptionIcons.CARD_CYCLE}"></i>&nbsp; `;
     tooltipHTML += "Card Cycling</li>";
   }
 
   if (options.deckPlays) {
-    tooltipHTML +=
-      '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>&nbsp; ';
+    icons.push(OptionIcons.DECK_PLAYS);
+    tooltipHTML += `<li><i class="${OptionIcons.DECK_PLAYS}" style="position: relative; left: 0.2em;"></i>&nbsp; `;
     tooltipHTML += "Bottom-Deck Blind-Plays</li>";
   }
 
   if (options.emptyClues) {
-    tooltipHTML += '<li><i class="fas fa-expand"></i>&nbsp; ';
+    icons.push(OptionIcons.EMPTY_CLUES);
+    tooltipHTML += `<li><i class="${OptionIcons.EMPTY_CLUES}"></i>&nbsp; `;
     tooltipHTML += "Empty Clues</li>";
   }
 
   if (options.oneExtraCard) {
-    tooltipHTML += '<li><i class="fas fa-plus-circle"></i>&nbsp; ';
+    icons.push(OptionIcons.ONE_EXTRA_CARD);
+    tooltipHTML += `<li><i class="${OptionIcons.ONE_EXTRA_CARD}"></i>&nbsp; `;
     tooltipHTML += "One Extra Card</li>";
   }
 
   if (options.oneLessCard) {
-    tooltipHTML += '<li><i class="fas fa-minus-circle"></i>&nbsp; ';
+    icons.push(OptionIcons.ONE_LESS_CARD);
+    tooltipHTML += `<li><i class="${OptionIcons.ONE_LESS_CARD}"></i>&nbsp; `;
     tooltipHTML += "One Less Card</li>";
   }
 
   if (options.allOrNothing) {
-    tooltipHTML += '<li><i class="fas fa-layer-group"></i>&nbsp; ';
+    icons.push(OptionIcons.ALL_OR_NOTHING);
+    tooltipHTML += `<li><i class="${OptionIcons.ALL_OR_NOTHING}"></i>&nbsp; `;
     tooltipHTML += "All or Nothing</li>";
   }
 
   if (options.detrimentalCharacters) {
-    tooltipHTML +=
-      '<li><span style="position: relative; right: 0.2em;">🤔</span>';
+    icons.push(OptionIcons.DETRIMENTAL_CHARACTERS);
+    tooltipHTML += `<li><i class="${OptionIcons.DETRIMENTAL_CHARACTERS}"></i>&nbsp; `;
     tooltipHTML += "Detrimental Characters</li>";
   }
 
@@ -432,8 +440,10 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   if (otherScores) {
     id += "-other-scores";
   }
-  let html = `<i id="${id}" class="fas fa-ellipsis-h" `;
-  html += `data-tooltip-content="#${id}-tooltip"></i>`;
+  // let html = `<i id="${id}" class="${mainClassFromIcons(icons)}" `;
+  let html = `<div id="${id}" data-tooltip-content="#${id}-tooltip">`;
+  html += `${iconsFromOptions(icons)}`;
+  html += "</div>";
   html += `
     <div class="hidden">
       <div id="${id}-tooltip">
@@ -445,6 +455,21 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   `;
 
   return html;
+}
+
+function iconsFromOptions(icons: string[]): string {
+  let answer = "";
+  switch (icons.length) {
+    case 1:
+    case 2:
+    case 3:
+      for (let i = 0; i < icons.length; i++) {
+        answer += `<i class="${icons[i]}"></i> `;
+      }
+      return answer.trim();
+    default:
+      return '<i class="fas fa-ellipsis-h"></i>';
+  }
 }
 
 function makeReplayButton(databaseID: number, visibility: string) {

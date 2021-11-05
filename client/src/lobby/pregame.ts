@@ -5,6 +5,7 @@ import { getVariant } from "../game/data/gameData";
 import globals from "../globals";
 import { setBrowserAddressBarPath, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
+import { OptionIcons } from "../types/Options";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";
@@ -155,7 +156,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.timed) {
-    html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
+    html += `<li><i id="lobby-pregame-options-timer" class="${OptionIcons.TIMED}" `;
     html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
     html += timerFormatter(globals.game.options.timeBase);
     html += " + ";
@@ -171,8 +172,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.speedrun) {
-    html +=
-      '<li><i id="lobby-pregame-options-speedrun" class="fas fa-running" ';
+    html += `<li><i id="lobby-pregame-options-speedrun" class="${OptionIcons.SPEEDRUN}" `;
     html += 'data-tooltip-content="#pregame-tooltip-speedrun"></i></li>';
     html += `
       <div class="hidden">
@@ -184,8 +184,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.cardCycle) {
-    html +=
-      '<li><i id="lobby-pregame-options-card-cycle" class="fas fa-sync-alt" ';
+    html += `<li><i id="lobby-pregame-options-card-cycle" class="${OptionIcons.CARD_CYCLE}" `;
     html += 'data-tooltip-content="#pregame-tooltip-card-cycle"></i></li>';
     html += `
       <div class="hidden">
@@ -197,8 +196,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.deckPlays) {
-    html +=
-      '<li><i id="lobby-pregame-options-deck-plays" class="fas fa-blind" ';
+    html += `<li><i id="lobby-pregame-options-deck-plays" class="${OptionIcons.DECK_PLAYS}" `;
     html += 'style="position: relative; left: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-deck-plays"></i></li>';
     html += `
@@ -211,8 +209,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.emptyClues) {
-    html +=
-      '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-expand" ';
+    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.EMPTY_CLUES}" `;
     html += 'data-tooltip-content="#pregame-tooltip-empty-clues"></i></li>';
     html += `
       <div class="hidden">
@@ -224,8 +221,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.oneExtraCard) {
-    html +=
-      '<li><i id="lobby-pregame-options-one-extra-card" class="fas fa-plus-circle" ';
+    html += `<li><i id="lobby-pregame-options-one-extra-card" class="${OptionIcons.ONE_EXTRA_CARD}" `;
     html += 'data-tooltip-content="#pregame-tooltip-one-extra-card"></i></li>';
     html += `
       <div class="hidden">
@@ -237,8 +233,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.oneLessCard) {
-    html +=
-      '<li><i id="lobby-pregame-options-one-less-card" class="fas fa-minus-circle" ';
+    html += `<li><i id="lobby-pregame-options-one-less-card" class="${OptionIcons.ONE_LESS_CARD}" `;
     html += 'data-tooltip-content="#pregame-tooltip-one-less-card"></i></li>';
     html += `
       <div class="hidden">
@@ -250,8 +245,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.allOrNothing) {
-    html +=
-      '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-layer-group" ';
+    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.ALL_OR_NOTHING}" `;
     html += 'data-tooltip-content="#pregame-tooltip-all-or-nothing"></i></li>';
     html += `
       <div class="hidden">
@@ -263,9 +257,8 @@ function drawOptions() {
   }
 
   if (globals.game.options.detrimentalCharacters) {
-    html += '<li><span id="lobby-pregame-options-characters" ';
-    html += 'style="position: relative; right: 0.2em;" ';
-    html += 'data-tooltip-content="#pregame-tooltip-characters">🤔</span></li>';
+    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
+    html += 'data-tooltip-content="#pregame-tooltip-characters"></i></li>';
     html += `
       <div class="hidden">
         <div id="pregame-tooltip-characters" class="lobby-pregame-tooltip-icon">
