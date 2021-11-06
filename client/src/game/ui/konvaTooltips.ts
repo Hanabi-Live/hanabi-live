@@ -1,6 +1,6 @@
 import Konva from "konva";
 import Screen from "../../lobby/types/Screen";
-import { TOOLTIP_DELAY } from "./constants";
+import * as tooltips from "../../tooltips";
 import NodeWithTooltip from "./controls/NodeWithTooltip";
 import TextWithTooltip from "./controls/TextWithTooltip";
 import globals from "./globals";
@@ -29,7 +29,7 @@ export function init(
     } else {
       setTimeout(() => {
         show(this);
-      }, TOOLTIP_DELAY);
+      }, tooltips.TOOLTIP_DELAY);
     }
   });
   element.on("mouseout touchend", () => {
@@ -39,7 +39,7 @@ export function init(
       );
     }
     globals.activeHover = null;
-    $(`#tooltip-${element.tooltipName}`).tooltipster("close");
+    tooltips.close(`#tooltip-${element.tooltipName}`);
   });
   let content = element.tooltipContent;
   if (!customContent) {
@@ -47,7 +47,7 @@ export function init(
     content += '<i class="fas fa-info-circle fa-sm"></i>';
     content += ` &nbsp;${element.tooltipContent}</span>`;
   }
-  $(`#tooltip-${element.tooltipName}`).tooltipster("instance").content(content);
+  tooltips.setInstanceContent(`#tooltip-${element.tooltipName}`, content);
 }
 
 export function show(element: NodeWithTooltip): void {
@@ -66,7 +66,6 @@ export function show(element: NodeWithTooltip): void {
       'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
     );
   }
-  const tooltip = $(`#tooltip-${element.tooltipName}`);
   const pos = element.getAbsolutePosition();
   let width = element.width();
   if (element instanceof Konva.Text) {
@@ -80,10 +79,10 @@ export function show(element: NodeWithTooltip): void {
       width = element.width();
     }
   }
+  const tooltip = `#tooltip-${element.tooltipName}`;
   const tooltipX = pos.x + width / 2;
-  tooltip.css("left", tooltipX);
-  tooltip.css("top", pos.y);
-  tooltip.tooltipster("open");
+  tooltips.setPosition(tooltip, tooltipX, pos.y);
+  tooltips.open(tooltip);
 }
 
 export function resetActiveHover(): void {

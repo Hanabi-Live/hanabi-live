@@ -5,6 +5,7 @@ import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { KonvaEventObject } from "konva/types/Node";
 import { ensureAllCases } from "../../misc";
+import * as tooltips from "../../tooltips";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { cardRules, variantRules } from "../rules";
 import Clue from "../types/Clue";
@@ -373,8 +374,7 @@ export function toggle(order: number, alwaysShow = false): void {
       element.tooltipName !== undefined &&
       element.tooltipName !== ""
     ) {
-      const tooltip = $(`#tooltip-${element.tooltipName}`);
-      tooltip.tooltipster("close");
+      tooltips.close(`#tooltip-${element.tooltipName}`);
     }
   }
 

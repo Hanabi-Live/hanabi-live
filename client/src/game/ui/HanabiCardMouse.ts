@@ -1,4 +1,5 @@
 import Konva from "konva";
+import * as tooltips from "../../tooltips";
 import { cardRules } from "../rules";
 import { STACK_BASE_RANK } from "../types/constants";
 import * as arrows from "./arrows";
@@ -10,9 +11,9 @@ import HanabiCard from "./HanabiCard";
 import HanabiCardClick from "./HanabiCardClick";
 import HanabiCardClickSpeedrun from "./HanabiCardClickSpeedrun";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
+import * as konvaTooltips from "./konvaTooltips";
 import LayoutChild from "./LayoutChild";
 import * as notes from "./notes";
-import * as tooltips from "./tooltips";
 
 export function registerMouseHandlers(this: HanabiCard): void {
   // https://konvajs.org/docs/events/Binding_Events.html
@@ -33,7 +34,7 @@ export function registerMouseHandlers(this: HanabiCard): void {
 
 function mouseEnter(this: HanabiCard) {
   // Keep track of which element we are hovering over
-  tooltips.resetActiveHover();
+  konvaTooltips.resetActiveHover();
   globals.activeHover = this;
 
   // When we hover over a card, show a tooltip that contains the note
@@ -80,9 +81,8 @@ function touchStart(
       this.wasRecentlyTapped = true;
     }
     if (globals.editingNote !== null) {
-      const tooltip = $(`#tooltip-${this.tooltipName}`);
+      tooltips.close(`#tooltip-${this.tooltipName}`);
       globals.editingNote = null;
-      tooltip.tooltipster("close");
     }
   }, DOUBLE_TAP_DELAY);
 
@@ -238,8 +238,7 @@ function checkHideNoteTooltip(card: HanabiCard) {
     return;
   }
 
-  const tooltipElement = $(`#tooltip-${card.tooltipName}`);
-  tooltipElement.tooltipster("close");
+  tooltips.close(`#tooltip-${card.tooltipName}`);
 }
 
 const useSpeedrunClickHandlers = () =>

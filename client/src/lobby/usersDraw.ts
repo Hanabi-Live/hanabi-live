@@ -131,7 +131,8 @@ function drawUser(
     ...tooltips.options,
     content,
   };
-  $(`#hyphenated-tooltip-${userID}`).tooltipster(tooltipOptions);
+
+  tooltips.create(`#hyphenated-tooltip-${userID}`, tooltipOptions);
 }
 
 function setLink(userID: number) {

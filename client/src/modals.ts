@@ -3,8 +3,9 @@
 import { FADE_TIME } from "./constants";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
-import { closeAllTooltips, parseIntSafe } from "./misc";
+import { parseIntSafe } from "./misc";
 import * as sounds from "./sounds";
+import * as tooltips from "./tooltips";
 
 // The list of all of the modals
 const lobbyModals = [
@@ -41,7 +42,7 @@ export function init(): void {
 
 export function passwordShow(tableID: number): void {
   setShadeOpacity(0.75);
-  closeAllTooltips();
+  tooltips.closeAllTooltips();
   globals.modalShowing = true;
 
   $("#password-modal-id").val(tableID);
@@ -83,7 +84,7 @@ function passwordSubmit() {
 }
 
 export function warningShow(msg: string): void {
-  closeAllTooltips();
+  tooltips.closeAllTooltips();
   setShadeOpacity(0.75);
   globals.modalShowing = true;
 
@@ -105,7 +106,7 @@ export function errorShow(msg: string): void {
   }
   globals.errorOccurred = true;
 
-  closeAllTooltips();
+  tooltips.closeAllTooltips();
   setShadeOpacity(0.9);
   globals.modalShowing = true;
 

@@ -1,6 +1,7 @@
 // Functions for timed games (and the timer that ticks up in untimed games)
 
 import { millisecondsToClockString } from "../../misc";
+import * as tooltips from "../../tooltips";
 import TimerDisplay from "./controls/TimerDisplay";
 import globals from "./globals";
 import { drawLayer } from "./konvaHelpers";
@@ -175,7 +176,7 @@ function setTickingDownTimeTooltip(i: number) {
   content += ":<br /><strong>";
   content += millisecondsToClockString(time);
   content += "</strong>";
-  $(`#tooltip-player-${i}`).tooltipster("instance").content(content);
+  tooltips.setInstanceContent(`#tooltip-player-${i}`, content);
 }
 
 function setTickingDownTimeCPTooltip() {
@@ -198,5 +199,5 @@ function setTickingDownTimeCPTooltip() {
   let content = "Time taken on this turn:<br /><strong>";
   content += millisecondsToClockString(time);
   content += "</strong>";
-  $("#tooltip-time-taken").tooltipster("instance").content(content);
+  tooltips.setInstanceContent("#tooltip-time-taken", content);
 }

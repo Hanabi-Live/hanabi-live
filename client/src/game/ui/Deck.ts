@@ -4,16 +4,17 @@ import {
   millisecondsToClockString,
   timerFormatter,
 } from "../../misc";
+import * as tooltips from "../../tooltips";
 import { OptionIcons } from "../../types/Options";
 import { deckRules } from "../rules";
 import ActionType from "../types/ActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
-import { CARD_ANIMATION_LENGTH, TOOLTIP_DELAY } from "./constants";
+import { CARD_ANIMATION_LENGTH } from "./constants";
 import * as cursor from "./cursor";
 import globals from "./globals";
 import isOurTurn from "./isOurTurn";
-import * as tooltips from "./tooltips";
+import * as konvaTooltips from "./konvaTooltips";
 import * as turn from "./turn";
 
 export default class Deck extends Konva.Group {
@@ -63,7 +64,7 @@ export default class Deck extends Konva.Group {
       arrows.click(event, ReplayArrowOrder.Deck);
     });
 
-    this.initTooltip();
+    this.initDeckTooltip();
     this.initCursors();
   }
 
@@ -98,7 +99,7 @@ export default class Deck extends Konva.Group {
   }
 
   // The deck tooltip shows the custom options for this game, if any
-  initTooltip(): void {
+  initDeckTooltip(): void {
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" event)
@@ -108,22 +109,22 @@ export default class Deck extends Konva.Group {
         return;
       }
 
-      tooltips.resetActiveHover();
+      konvaTooltips.resetActiveHover();
       globals.activeHover = this;
       setTimeout(() => {
-        tooltips.show(this);
-      }, TOOLTIP_DELAY);
+        konvaTooltips.show(this);
+      }, tooltips.TOOLTIP_DELAY);
     });
     this.on("mouseout touchend", () => {
       globals.activeHover = null;
-      $("#tooltip-deck").tooltipster("close");
+      tooltips.close("#tooltip-deck");
     });
 
     // We store the content as a class variable so that it can be reused for the faded background
     // rectangle behind the card
     // (so that the tooltip will work when there are 0 cards left in the deck)
     this.tooltipContent = getTooltipContent();
-    $("#tooltip-deck").tooltipster("instance").content(this.tooltipContent);
+    tooltips.setInstanceContent("#tooltip-deck", this.tooltipContent);
   }
 
   // When dragging the deck, change the cursor to emulate the behavior when dragging a card

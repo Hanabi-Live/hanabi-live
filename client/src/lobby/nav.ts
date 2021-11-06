@@ -2,8 +2,8 @@
 
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
-import { closeAllTooltips } from "../misc";
 import * as modals from "../modals";
+import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as pregame from "./pregame";
@@ -13,27 +13,27 @@ export function init(): void {
   // Remove the recursive link to prevent confusion
   $("#logo-link").removeAttr("href");
 
-  // Initialize all of the navigation tooltips using Tooltipster
+  // Initialize all of the navigation tooltips
   initTooltips();
 
   // The "Create Game" and "Change Options" buttons
-  $("#nav-buttons-lobby-create-game").tooltipster(
-    "option",
+  tooltips.setOption(
+    "#nav-buttons-lobby-create-game",
     "functionBefore",
     createGame.before,
   );
-  $("#nav-buttons-lobby-create-game").tooltipster(
-    "option",
+  tooltips.setOption(
+    "#nav-buttons-lobby-create-game",
     "functionReady",
     createGame.ready,
   );
-  $("#nav-buttons-pregame-change-options").tooltipster(
-    "option",
+  tooltips.setOption(
+    "#nav-buttons-pregame-change-options",
     "functionBefore",
     createGame.before,
   );
-  $("#nav-buttons-pregame-change-options").tooltipster(
-    "option",
+  tooltips.setOption(
+    "#nav-buttons-pregame-change-options",
     "functionReady",
     createGame.ready,
   );
@@ -45,8 +45,8 @@ export function init(): void {
   });
 
   // The "Watch Specific Replay" button
-  $("#nav-buttons-lobby-replay").tooltipster(
-    "option",
+  tooltips.setOption(
+    "#nav-buttons-lobby-replay",
     "functionReady",
     watchReplay.ready,
   );
@@ -156,7 +156,7 @@ export function init(): void {
 
   $("#nav-buttons-pregame-change-options").on("click", () => {
     if (!$("#nav-buttons-pregame-change-options").hasClass("disabled")) {
-      $("#nav-buttons-pregame-change-options").tooltipster("open");
+      tooltips.open("#nav-buttons-pregame-change-options");
     }
   });
 
@@ -196,7 +196,7 @@ export function init(): void {
 }
 
 function initTooltips() {
-  const tooltips = [
+  const navTooltips = [
     "lobby-create-game",
     "lobby-replay",
     "lobby-resources",
@@ -204,24 +204,12 @@ function initTooltips() {
     "pregame-change-options",
   ];
 
-  const tooltipsterOptions = {
-    theme: "tooltipster-shadow",
-    trigger: "click",
-    interactive: true,
-    delay: 0,
-    // Some tooltips are too large for small resolutions and will wrap off the screen;
-    // we can use a Tooltipster plugin to automatically create a scroll bar for it
-    // https://github.com/louisameline/tooltipster-scrollableTip
-    plugins: [
-      "sideTip", // Make it have the ability to be positioned on a specific side
-      "scrollableTip", // Make it scrollable
-    ],
-    functionBefore: () => {
-      modals.setShadeOpacity(0.6);
-    },
+  const navTooltipOptions = tooltips.navOptions;
+  navTooltipOptions.functionBefore = () => {
+    modals.setShadeOpacity(0.6);
   };
 
-  const tooltipsterClose = () => {
+  const tooltipCloseFunction = () => {
     // We want to fade in the background as soon as we start the tooltip closing animation,
     // so we have to hook to the "close" event
     // Furthermore, we don't want to fade in the background if we click from one tooltip to the
@@ -229,8 +217,8 @@ function initTooltips() {
     // If one tooltip is open, then it is the one currently closing
     // If two tooltips are open, then we are clicking from one to the next
     let tooltipsOpen = 0;
-    for (const tooltip of tooltips) {
-      if ($(`#nav-buttons-${tooltip}`).tooltipster("status").open) {
+    for (const tooltip of navTooltips) {
+      if (tooltips.isOpen(`#nav-buttons-${tooltip}`)) {
         tooltipsOpen += 1;
       }
     }
@@ -241,18 +229,17 @@ function initTooltips() {
 
   // The "close" event will not fire if we initialize this on the tooltip class for some reason,
   // so we initialize all 3 individually
-  for (const tooltip of tooltips) {
-    $(`#nav-buttons-${tooltip}`)
-      .tooltipster(tooltipsterOptions)
-      .tooltipster("instance")
-      .on("close", tooltipsterClose);
+  for (const navTooltip of navTooltips) {
+    const tooltip = `#nav-buttons-${navTooltip}`;
+    tooltips.create(tooltip, navTooltipOptions);
+    tooltips.getInstance(tooltip).on("close", tooltipCloseFunction);
   }
 
   // Map the escape key to close all tooltips / modals
   $(document).keydown((event) => {
     if (event.which === KeyCode.KEY_ESCAPE) {
       event.preventDefault();
-      closeAllTooltips();
+      tooltips.closeAllTooltips();
       modals.closeAll();
     }
   });

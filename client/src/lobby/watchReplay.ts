@@ -2,7 +2,8 @@
 
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
-import { closeAllTooltips, parseIntSafe } from "../misc";
+import { parseIntSafe } from "../misc";
+import * as tooltips from "../tooltips";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected
@@ -39,7 +40,7 @@ function replaySourceChange() {
   }
 
   // Redraw the tooltip so that the new elements will fit better
-  $("#nav-buttons-lobby-replay").tooltipster("reposition");
+  tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 function submit() {
@@ -64,7 +65,7 @@ function submit() {
     $("#replay-error-row-text").text(text);
 
     // Redraw the tooltip so that the new elements will fit better
-    $("#nav-buttons-lobby-replay").tooltipster("reposition");
+    tooltips.reposition("#nav-buttons-lobby-replay");
   };
 
   // ID
@@ -135,7 +136,7 @@ function submit() {
     });
   }
 
-  closeAllTooltips();
+  tooltips.closeAllTooltips();
 }
 
 // This function is executed every time the "Watch Specific Replay" button is clicked
@@ -188,7 +189,7 @@ export function ready(): void {
   $(visibilityBox).change();
 
   // Redraw the tooltip so that the new elements will fit better
-  $("#nav-buttons-lobby-replay").tooltipster("reposition");
+  tooltips.reposition("#nav-buttons-lobby-replay");
 
   // Focus the "ID" or "JSON" box
   // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)

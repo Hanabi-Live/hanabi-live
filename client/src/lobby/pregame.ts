@@ -278,34 +278,34 @@ function drawOptions() {
   // Initialize the tooltips, if any
   // (this has to be done after adding the HTML to the page)
   if (globals.game.passwordProtected) {
-    $("#lobby-pregame-options-password").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-password", tooltips.options);
   }
   if (globals.game.options.timed) {
-    $("#lobby-pregame-options-timer").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-timer", tooltips.options);
   }
   if (globals.game.options.speedrun) {
-    $("#lobby-pregame-options-speedrun").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-speedrun", tooltips.options);
   }
   if (globals.game.options.cardCycle) {
-    $("#lobby-pregame-options-card-cycle").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-card-cycle", tooltips.options);
   }
   if (globals.game.options.deckPlays) {
-    $("#lobby-pregame-options-deck-plays").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-deck-plays", tooltips.options);
   }
   if (globals.game.options.emptyClues) {
-    $("#lobby-pregame-options-empty-clues").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-empty-clues", tooltips.options);
   }
   if (globals.game.options.oneExtraCard) {
-    $("#lobby-pregame-options-one-extra-card").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-one-extra-card", tooltips.options);
   }
   if (globals.game.options.oneLessCard) {
-    $("#lobby-pregame-options-one-less-card").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-one-less-card", tooltips.options);
   }
   if (globals.game.options.allOrNothing) {
-    $("#lobby-pregame-options-all-or-nothing").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-all-or-nothing", tooltips.options);
   }
   if (globals.game.options.detrimentalCharacters) {
-    $("#lobby-pregame-options-characters").tooltipster(tooltips.options);
+    tooltips.create("#lobby-pregame-options-characters", tooltips.options);
   }
 }
 
@@ -454,7 +454,10 @@ function drawPlayerBox(i: number) {
   div.html(html);
 
   // Initialize the tooltip
-  $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltips.options);
+  tooltips.create(
+    `#lobby-pregame-player-${i + 1}-scores-icon`,
+    tooltips.options,
+  );
 }
 
 export function toggleStartGameButton(forAll = false): void {
