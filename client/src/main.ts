@@ -23,7 +23,7 @@ import lobbyIdleInit from "./lobby/idleInit";
 import lobbyKeyboardInit from "./lobby/keyboardInit";
 import * as lobbyLogin from "./lobby/login";
 import * as lobbyNav from "./lobby/nav";
-import * as lobbySettingsTooltip from "./lobby/settingsTooltip";
+import * as playerSettings from "./lobby/playerSettings";
 import lobbyTutorialInit from "./lobby/tutorialInit";
 import Screen from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
@@ -64,7 +64,7 @@ $(document).ready(() => {
   lobbyKeyboardInit();
   lobbyLogin.init();
   lobbyNav.init();
-  lobbySettingsTooltip.init();
+  playerSettings.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
   modals.init();
