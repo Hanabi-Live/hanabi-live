@@ -264,12 +264,12 @@ function submit() {
   const isNew = $("#create-game-table-number").val() === "";
 
   // Get timer values
-  const isTimed = getCheckbox("createTableTimed");
+  const timed = getCheckbox("createTableTimed");
   let timeBaseSeconds = 0;
   let timePerTurn = 0;
 
   // Try getting the user's values - if they are invalid, leave the dialog open
-  if (isTimed) {
+  if (timed) {
     let timeValue: number;
     let foundErrors = false;
 
@@ -332,7 +332,7 @@ function submit() {
 
   const options = {
     variantName: getVariant("createTableVariant"), // This is a hidden span field
-    timed: isTimed,
+    timed,
     timeBase: timeBaseSeconds,
     timePerTurn,
     speedrun: getCheckbox("createTableSpeedrun"),
