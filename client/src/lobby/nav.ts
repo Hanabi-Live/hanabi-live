@@ -204,8 +204,7 @@ function initTooltips() {
     "pregame-change-options",
   ];
 
-  const navTooltipOptions = tooltips.navOptions;
-  navTooltipOptions.functionBefore = () => {
+  const functionBefore = () => {
     modals.setShadeOpacity(0.6);
   };
 
@@ -231,7 +230,7 @@ function initTooltips() {
   // so we initialize all 3 individually
   for (const navTooltip of navTooltips) {
     const tooltip = `#nav-buttons-${navTooltip}`;
-    tooltips.create(tooltip, navTooltipOptions);
+    tooltips.create(tooltip, "nav", functionBefore);
     tooltips.getInstance(tooltip).on("close", tooltipCloseFunction);
   }
 

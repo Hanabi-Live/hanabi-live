@@ -17,23 +17,20 @@ const maxPlayers = 6;
 const maxCardsInADeck = 60;
 const tooltipThemes = ["tooltipster-shadow", "tooltipster-shadow-big"];
 
-export const TOOLTIP_DELAY = 500; // In milliseconds
-
-export const options: JQueryTooltipster.ITooltipsterOptions = {
+// Tooltip options
+const options: JQueryTooltipster.ITooltipsterOptions = {
   animation: "grow",
   contentAsHTML: true,
   delay: 0,
   theme: tooltipThemes,
 };
-
-export const historyOptions: JQueryTooltipster.ITooltipsterOptions = {
+const historyOptions: JQueryTooltipster.ITooltipsterOptions = {
   animation: "grow",
   contentAsHTML: true,
   delay: 0,
   theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
 };
-
-export const navOptions = {
+const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   theme: "tooltipster-shadow",
   trigger: "click",
   interactive: true,
@@ -47,6 +44,8 @@ export const navOptions = {
   ],
   functionBefore: (): void => {},
 };
+
+export const TOOLTIP_DELAY = 500; // In milliseconds
 
 // Initialize in-game tooltips (for notes, etc.)
 export function initGame(): void {
@@ -117,9 +116,19 @@ export function initGame(): void {
 
 export function create(
   selector: string | JQuery<HTMLElement>,
-  tooltipOptions: JQueryTooltipster.ITooltipsterOptions,
+  type:
+    | JQueryTooltipster.ITooltipsterOptions
+    | "default"
+    | "history"
+    | "nav" = "history",
+  args?: unknown,
 ): void {
   const tooltip = typeof selector === "string" ? $(selector) : selector;
+  const customType = typeof type === "string" ? getOptionsFromType(type) : type;
+  const tooltipOptions = {
+    ...customType,
+    args,
+  };
   tooltip.tooltipster(tooltipOptions);
 }
 
@@ -128,8 +137,8 @@ export function open(selector: string | JQuery<HTMLElement>): void {
   tooltip.tooltipster("open");
 }
 
-export function close(selector: string): void {
-  const tooltip = $(selector);
+export function close(selector: string | JQuery<HTMLElement>): void {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("close");
 }
 
@@ -151,52 +160,74 @@ export function closeAllTooltips(): void {
   );
 }
 
-export function setInstanceContent(selector: string, content: string): void {
-  const tooltip = $(selector);
+export function setInstanceContent(
+  selector: string | JQuery<HTMLElement>,
+  content: string,
+): void {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("instance").content(content);
 }
 
-export function setPosition(selector: string, x: number, y: number): void {
-  const tooltip = $(selector);
+export function setPosition(
+  selector: string | JQuery<HTMLElement>,
+  x: number,
+  y: number,
+): void {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.css("left", x).css("top", y);
 }
 
 export function setOption(
-  selector: string,
+  selector: string | JQuery<HTMLElement>,
   option: string,
   value: unknown,
 ): void {
-  const tooltip = $(selector);
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("option", option, value);
 }
 
 export function setInstanceOption(
-  selector: string,
+  selector: string | JQuery<HTMLElement>,
   option: string,
   value: string,
 ): void {
-  const tooltip = $(selector);
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("instance").option(option, value);
 }
 
-export function getStatus(selector: string): JQueryTooltipster.ITooltipStatus {
-  const tooltip = $(selector);
+export function getStatus(
+  selector: string | JQuery<HTMLElement>,
+): JQueryTooltipster.ITooltipStatus {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   return tooltip.tooltipster("status");
 }
 
 export function getInstance(
-  selector: string,
+  selector: string | JQuery<HTMLElement>,
 ): JQueryTooltipster.ITooltipsterInstance {
-  const tooltip = $(selector);
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   return tooltip.tooltipster("instance");
 }
 
-export function reposition(selector: string): void {
-  const tooltip = $(selector);
+export function reposition(selector: string | JQuery<HTMLElement>): void {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("reposition");
 }
 
-export function isOpen(selector: string): boolean {
-  const tooltip = $(selector);
+export function isOpen(selector: string | JQuery<HTMLElement>): boolean {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
   return tooltip.tooltipster("status").open;
+}
+
+function getOptionsFromType(
+  type: "default" | "history" | "nav" = "history",
+): JQueryTooltipster.ITooltipsterOptions {
+  switch (type) {
+    case "history":
+      return historyOptions;
+    case "nav":
+      return navOptions;
+    default:
+      return options;
+  }
 }

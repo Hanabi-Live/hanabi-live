@@ -278,34 +278,34 @@ function drawOptions() {
   // Initialize the tooltips, if any
   // (this has to be done after adding the HTML to the page)
   if (globals.game.passwordProtected) {
-    tooltips.create("#lobby-pregame-options-password", tooltips.options);
+    tooltips.create("#lobby-pregame-options-password");
   }
   if (globals.game.options.timed) {
-    tooltips.create("#lobby-pregame-options-timer", tooltips.options);
+    tooltips.create("#lobby-pregame-options-timer");
   }
   if (globals.game.options.speedrun) {
-    tooltips.create("#lobby-pregame-options-speedrun", tooltips.options);
+    tooltips.create("#lobby-pregame-options-speedrun");
   }
   if (globals.game.options.cardCycle) {
-    tooltips.create("#lobby-pregame-options-card-cycle", tooltips.options);
+    tooltips.create("#lobby-pregame-options-card-cycle");
   }
   if (globals.game.options.deckPlays) {
-    tooltips.create("#lobby-pregame-options-deck-plays", tooltips.options);
+    tooltips.create("#lobby-pregame-options-deck-plays");
   }
   if (globals.game.options.emptyClues) {
-    tooltips.create("#lobby-pregame-options-empty-clues", tooltips.options);
+    tooltips.create("#lobby-pregame-options-empty-clues");
   }
   if (globals.game.options.oneExtraCard) {
-    tooltips.create("#lobby-pregame-options-one-extra-card", tooltips.options);
+    tooltips.create("#lobby-pregame-options-one-extra-card");
   }
   if (globals.game.options.oneLessCard) {
-    tooltips.create("#lobby-pregame-options-one-less-card", tooltips.options);
+    tooltips.create("#lobby-pregame-options-one-less-card");
   }
   if (globals.game.options.allOrNothing) {
-    tooltips.create("#lobby-pregame-options-all-or-nothing", tooltips.options);
+    tooltips.create("#lobby-pregame-options-all-or-nothing");
   }
   if (globals.game.options.detrimentalCharacters) {
-    tooltips.create("#lobby-pregame-options-characters", tooltips.options);
+    tooltips.create("#lobby-pregame-options-characters");
   }
 }
 
@@ -454,10 +454,7 @@ function drawPlayerBox(i: number) {
   div.html(html);
 
   // Initialize the tooltip
-  tooltips.create(
-    `#lobby-pregame-player-${i + 1}-scores-icon`,
-    tooltips.options,
-  );
+  tooltips.create(`#lobby-pregame-player-${i + 1}-scores-icon`);
 }
 
 export function toggleStartGameButton(forAll = false): void {
