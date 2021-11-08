@@ -1207,3 +1207,7 @@ span.cp {
 #lobby-chat-pregame-text > span.hidden {
   display: none;
 }
+  /* wrong input indicator */
+input[type="text"].wrongInput {
+  border: 2px solid red;
+}

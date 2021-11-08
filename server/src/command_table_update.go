@@ -37,6 +37,9 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		// Non game host sends new options
 		// They are sent to the table chat as a proposal
 
+		// Perform name fixes
+		d.Name = fixTableName(d.Name)
+
 		// Perform options fixes
 		d.Options = fixGameOptions(d.Options)
 
@@ -60,6 +63,9 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		// output in chat only what's changed
 		options := ""
 
+		if d.Name != t.Name {
+			options += span + "Table Name: <b>" + d.Name + endspan
+		}
 		if nOpt.VariantName != tOpt.VariantName {
 			options += span + "Variant: <b>" + nOpt.VariantName + endspan
 		}
@@ -104,6 +110,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		chatServerSend(ctx, message, room, d.NoTablesLock)
 
 		// New options
+		nOpt.TableName = d.Name
 		jsonOptions, err := json.Marshal(nOpt)
 		if err != nil {
 			return

@@ -527,6 +527,7 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 		OneLessCard:           oneLessCard,
 		AllOrNothing:          allOrNothing,
 		DetrimentalCharacters: detrimentalCharacters,
+		TableName:             "",
 	}
 	t.ExtraOptions = &ExtraOptions{
 		// Normally, "DatabaseID" is set to either -1 (in an ongoing game)

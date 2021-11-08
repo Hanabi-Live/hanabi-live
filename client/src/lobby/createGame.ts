@@ -263,9 +263,37 @@ function submit() {
   // if this is a new game or a change of options
   const isNew = $("#create-game-table-number").val() === "";
 
-  // We need to mutate some values before sending them to the server
-  const timeBaseMinutes = getTextboxForTimeBase("createTableTimeBaseMinutes");
-  const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
+  // Get timer values
+  const isTimed = getCheckbox("createTableTimed");
+  let timeBaseSeconds = 0;
+  let timePerTurn = 0;
+
+  // Try getting the user's values - if they are invalid, leave the dialog open
+  if (isTimed) {
+    let timeValue: number;
+    let foundErrors = false;
+
+    try {
+      timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
+      timeBaseSeconds = Math.round(timeValue * 60);
+    } catch (err) {
+      // invalid value, inform the UI and do not close the tooltip
+      $("#createTableTimeBaseMinutes").addClass("wrongInput");
+      foundErrors = true;
+    }
+
+    try {
+      timePerTurn = getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
+    } catch (err) {
+      // invalid value, inform the UI and do not close the tooltip
+      $("#createTableTimePerTurnSeconds").addClass("wrongInput");
+      foundErrors = true;
+    }
+
+    if (foundErrors) {
+      return;
+    }
+  }
 
   // Table names are not saved
   const name = $("#createTableName").val();
@@ -304,9 +332,9 @@ function submit() {
 
   const options = {
     variantName: getVariant("createTableVariant"), // This is a hidden span field
-    timed: getCheckbox("createTableTimed"),
+    timed: isTimed,
     timeBase: timeBaseSeconds,
-    timePerTurn: getTextboxForTimePerTurn("createTableTimePerTurnSeconds"),
+    timePerTurn,
     speedrun: getCheckbox("createTableSpeedrun"),
     cardCycle: getCheckbox("createTableCardCycle"),
     deckPlays: getCheckbox("createTableDeckPlays"),
@@ -333,17 +361,19 @@ function submit() {
     });
   }
 
+  // remove error indications
+  $("#createTableTimeBaseMinutes").removeClass("wrongInput");
+  $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
   closeAllTooltips();
 }
 
 function acceptOptionsFromGuest(data: Options) {
-  // Table names are not saved
-  const name = $("#createTableName").val();
+  const name = data.tableName;
 
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,
     name,
-    data,
+    options: data,
   });
 }
 
