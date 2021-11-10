@@ -361,7 +361,7 @@ function submit() {
     });
   }
 
-  // remove error indications
+  // Remove error indications
   $("#createTableTimeBaseMinutes").removeClass("wrongInput");
   $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
   closeAllTooltips();
