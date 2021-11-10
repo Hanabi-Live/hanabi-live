@@ -268,7 +268,8 @@ function submit() {
   let timeBaseSeconds = 0;
   let timePerTurn = 0;
 
-  // Try getting the user's values - if they are invalid, leave the dialog open
+  // Try getting the user's values
+  // If they are invalid, leave the dialog open
   if (timed) {
     let timeValue: number;
     let foundErrors = false;
