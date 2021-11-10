@@ -302,7 +302,7 @@ function copyURLToClipboard(path: string, row: JQuery<HTMLElement>) {
     trigger: "custom",
     theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
   });
-  tooltips.open(row);
+  tooltips.openInstance(row);
   setTimeout(() => {
     tooltips.closeInstance(row);
   }, 1000); // 1 second

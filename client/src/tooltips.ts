@@ -137,6 +137,11 @@ export function open(selector: string | JQuery<HTMLElement>): void {
   tooltip.tooltipster("open");
 }
 
+export function openInstance(selector: string | JQuery<HTMLElement>): void {
+  const tooltip = typeof selector === "string" ? $(selector) : selector;
+  tooltip.tooltipster("instance").close();
+}
+
 export function close(selector: string | JQuery<HTMLElement>): void {
   const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("close");
