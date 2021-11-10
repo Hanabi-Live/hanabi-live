@@ -1193,13 +1193,13 @@ a.toggle-active {
   background-color: rgb(68, 150, 68) !important;
 }
 
-/* chat padding for options proposal */
+/* Chat padding for options proposal */
 span.cp {
   padding-left: 52px;
   display: block;
 }
 
-/* make all chat text display as block */
+/* Make all chat text display as block */
 #lobby-chat-pregame-text > span {
   display: block;
 }
@@ -1207,7 +1207,8 @@ span.cp {
 #lobby-chat-pregame-text > span.hidden {
   display: none;
 }
-/* wrong input indicator */
+
+/* Wrong input indicator */
 input[type="text"].wrongInput {
   border: 2px solid red;
 }
