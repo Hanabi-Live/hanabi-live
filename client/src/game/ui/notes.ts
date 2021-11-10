@@ -95,7 +95,7 @@ export function show(card: HanabiCard): void {
   if (posY < 200) {
     // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
     posY = pos.y + (card.height() * card.layout.scale().y) / 2;
-    tooltips.setInstanceOption(tooltip, "side", "top");
+    tooltips.setInstanceOption(tooltip, "side", "bottom");
   }
 
   // Update the tooltip position
