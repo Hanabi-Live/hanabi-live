@@ -277,7 +277,7 @@ function submit() {
       timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
       timeBaseSeconds = Math.round(timeValue * 60);
     } catch (err) {
-      // invalid value, inform the UI and do not close the tooltip
+      // Invalid value, inform the UI and do not close the tooltip
       $("#createTableTimeBaseMinutes").addClass("wrongInput");
       foundErrors = true;
     }
@@ -285,7 +285,7 @@ function submit() {
     try {
       timePerTurn = getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
     } catch (err) {
-      // invalid value, inform the UI and do not close the tooltip
+      // Invalid value, inform the UI and do not close the tooltip
       $("#createTableTimePerTurnSeconds").addClass("wrongInput");
       foundErrors = true;
     }
@@ -367,13 +367,13 @@ function submit() {
   closeAllTooltips();
 }
 
-function acceptOptionsFromGuest(data: Options) {
-  const name = data.tableName;
+function acceptOptionsFromGuest(options: Options) {
+  const name = options.tableName;
 
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,
     name,
-    options: data,
+    options,
   });
 }
 

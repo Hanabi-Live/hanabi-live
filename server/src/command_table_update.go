@@ -52,8 +52,8 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 			return
 		}
 
-		nOpt := d.Options
-		tOpt := t.Options
+		newOptions := d.Options
+		tableOptions := t.Options
 
 		room := t.GetRoomName()
 		message = s.Username + " proposes the following options:"
@@ -66,38 +66,38 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		if d.Name != t.Name {
 			options += span + "Table Name: <b>" + d.Name + endspan
 		}
-		if nOpt.VariantName != tOpt.VariantName {
-			options += span + "Variant: <b>" + nOpt.VariantName + endspan
+		if newOptions.VariantName != tableOptions.VariantName {
+			options += span + "Variant: <b>" + newOptions.VariantName + endspan
 		}
-		if nOpt.Timed && !tOpt.Timed {
-			options += span + "Timed: <b>" + strconv.Itoa(nOpt.TimeBase) + " / " + strconv.Itoa(nOpt.TimePerTurn) + endspan
-		} else if tOpt.Timed {
+		if newOptions.Timed && !tableOptions.Timed {
+			options += span + "Timed: <b>" + strconv.Itoa(newOptions.TimeBase) + " / " + strconv.Itoa(newOptions.TimePerTurn) + endspan
+		} else if tableOptions.Timed {
 			options += span + "Timed: <b>No" + endspan
 		}
 
-		if nOpt.Speedrun != tOpt.Speedrun {
-			options += span + "Speedrun: <b>" + yesNoFromBoolean(nOpt.Speedrun) + endspan
+		if newOptions.Speedrun != tableOptions.Speedrun {
+			options += span + "Speedrun: <b>" + yesNoFromBoolean(newOptions.Speedrun) + endspan
 		}
-		if nOpt.CardCycle != tOpt.CardCycle {
-			options += span + "Card Cycling: <b>" + yesNoFromBoolean(nOpt.CardCycle) + endspan
+		if newOptions.CardCycle != tableOptions.CardCycle {
+			options += span + "Card Cycling: <b>" + yesNoFromBoolean(newOptions.CardCycle) + endspan
 		}
-		if nOpt.DeckPlays != tOpt.DeckPlays {
-			options += span + "Bottom-Deck: <b>" + yesNoFromBoolean(nOpt.DeckPlays) + endspan
+		if newOptions.DeckPlays != tableOptions.DeckPlays {
+			options += span + "Bottom-Deck: <b>" + yesNoFromBoolean(newOptions.DeckPlays) + endspan
 		}
-		if nOpt.EmptyClues != tOpt.EmptyClues {
-			options += span + "Empty Clues: <b>" + yesNoFromBoolean(nOpt.EmptyClues) + endspan
+		if newOptions.EmptyClues != tableOptions.EmptyClues {
+			options += span + "Empty Clues: <b>" + yesNoFromBoolean(newOptions.EmptyClues) + endspan
 		}
-		if nOpt.OneExtraCard != tOpt.OneExtraCard {
-			options += span + "One Extra Card: <b>" + yesNoFromBoolean(nOpt.OneExtraCard) + endspan
+		if newOptions.OneExtraCard != tableOptions.OneExtraCard {
+			options += span + "One Extra Card: <b>" + yesNoFromBoolean(newOptions.OneExtraCard) + endspan
 		}
-		if nOpt.OneLessCard != tOpt.OneLessCard {
-			options += span + "One Less Card: <b>" + yesNoFromBoolean(nOpt.OneLessCard) + endspan
+		if newOptions.OneLessCard != tableOptions.OneLessCard {
+			options += span + "One Less Card: <b>" + yesNoFromBoolean(newOptions.OneLessCard) + endspan
 		}
-		if nOpt.AllOrNothing != tOpt.AllOrNothing {
-			options += span + "All or Nothing: <b>" + yesNoFromBoolean(nOpt.AllOrNothing) + endspan
+		if newOptions.AllOrNothing != tableOptions.AllOrNothing {
+			options += span + "All or Nothing: <b>" + yesNoFromBoolean(newOptions.AllOrNothing) + endspan
 		}
-		if nOpt.DetrimentalCharacters != tOpt.DetrimentalCharacters {
-			options += span + "Detrimental Characters: <b>" + yesNoFromBoolean(nOpt.DetrimentalCharacters) + endspan
+		if newOptions.DetrimentalCharacters != tableOptions.DetrimentalCharacters {
+			options += span + "Detrimental Characters: <b>" + yesNoFromBoolean(newOptions.DetrimentalCharacters) + endspan
 		}
 
 		if options == "" {
@@ -110,8 +110,8 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		chatServerSend(ctx, message, room, d.NoTablesLock)
 
 		// New options
-		nOpt.TableName = d.Name
-		jsonOptions, err := json.Marshal(nOpt)
+		newOptions.TableName = d.Name
+		jsonOptions, err := json.Marshal(newOptions)
 		if err != nil {
 			return
 		}
