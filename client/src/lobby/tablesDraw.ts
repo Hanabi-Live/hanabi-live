@@ -294,14 +294,7 @@ function copyURLToClipboard(path: string, row: JQuery<HTMLElement>) {
   copyStringToClipboard(url);
 
   // Show a visual indication that the copy worked
-  tooltips.create(row, {
-    animation: "grow",
-    content: '<span style="font-size: 0.75em;">URL copied to clipboard!</span>',
-    contentAsHTML: true,
-    delay: 0,
-    trigger: "custom",
-    theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
-  });
+  tooltips.create(row, "clipboard");
   tooltips.openInstance(row);
   setTimeout(() => {
     tooltips.closeInstance(row);

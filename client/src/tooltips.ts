@@ -12,23 +12,27 @@ import "tooltipster";
 // We import it for the side-effects for the same reason
 import "../lib/tooltipster-scrollableTip.min";
 
+export const TOOLTIP_DELAY = 500; // In milliseconds
+
 // Constants
-const maxPlayers = 6;
-const maxCardsInADeck = 60;
-const tooltipThemes = ["tooltipster-shadow", "tooltipster-shadow-big"];
+const MAX_PLAYERS = 6;
+const MAX_CARDS_IN_A_DECK = 60;
+const TOOLTIP_THEME = ["tooltipster-shadow", "tooltipster-shadow-big"];
+const TOOLTIP_THEME_CENTERED = [
+  "tooltipster-shadow",
+  "tooltipster-shadow-big",
+  "align-center",
+];
 
 // Tooltip options
 const options: JQueryTooltipster.ITooltipsterOptions = {
   animation: "grow",
   contentAsHTML: true,
   delay: 0,
-  theme: tooltipThemes,
+  theme: TOOLTIP_THEME,
 };
 const historyOptions: JQueryTooltipster.ITooltipsterOptions = {
-  animation: "grow",
-  contentAsHTML: true,
-  delay: 0,
-  theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
+  ...options,
 };
 const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   theme: "tooltipster-shadow",
@@ -44,83 +48,36 @@ const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   ],
   functionBefore: (): void => {},
 };
-
-export const TOOLTIP_DELAY = 500; // In milliseconds
+const gameOptions: JQueryTooltipster.ITooltipsterOptions = {
+  ...options,
+  interactive: true, // So that users can update their notes
+  trigger: "custom",
+  updateAnimation: null,
+};
+const clipboardOptions: JQueryTooltipster.ITooltipsterOptions = {
+  animation: "grow",
+  content: '<span style="font-size: 0.75em;">URL copied to clipboard!</span>',
+  contentAsHTML: true,
+  delay: 0,
+  trigger: "custom",
+  theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
+};
 
 // Initialize in-game tooltips (for notes, etc.)
 export function initGame(): void {
-  const gameOptions: JQueryTooltipster.ITooltipsterOptions = {
-    ...options,
-    interactive: true, // So that users can update their notes
-    trigger: "custom",
-    updateAnimation: null,
-  };
-
-  // Initialize some basic tooltips
-  const tooltips = [
-    "chat",
-    "deck",
-    "discard",
-    "efficiency-text",
-    "efficiency-number",
-    "hypo-back",
-    "hypo-edit-cards",
-    "hypo-show-drawn",
-    "kill",
-    "leader",
-    "lobby",
-    "lobby-small",
-    "time-taken",
-    "pace",
-    "replay",
-    "restart",
-    "spectators",
-    "strikes",
-    "turn-number",
-  ];
-  for (const tooltip of tooltips) {
-    $("#game-tooltips").append(`<div id="tooltip-${tooltip}"></div>`);
-    $(`#tooltip-${tooltip}`).tooltipster(gameOptions);
-  }
-
-  // The "time-taken" tooltip should have centered text
-  const newThemes = tooltipThemes.slice();
-  newThemes.push("align-center");
-  $("#tooltip-time-taken").tooltipster("instance").option("theme", newThemes);
-
-  // Dynamically create the player tooltips
-  for (let i = 0; i < maxPlayers; i++) {
-    $("#game-tooltips").append(`<div id="tooltip-player-${i}"></div>`);
-    $(`#tooltip-player-${i}`).tooltipster(gameOptions);
-    $(`#tooltip-player-${i}`)
-      .tooltipster("instance")
-      .option("theme", newThemes);
-
-    $("#game-tooltips").append(
-      `<div id="tooltip-character-assignment-${i}"></div>`,
-    );
-    $(`#tooltip-character-assignment-${i}`).tooltipster(gameOptions);
-    $(`#tooltip-character-assignment-${i}`)
-      .tooltipster("instance")
-      .option("theme", newThemes);
-  }
-
-  // Dynamically create the card note tooltips
-  for (let i = 0; i < maxCardsInADeck + 6; i++) {
-    // The number in the id matches the order of the card in the deck
-    // We add 6 because we also need note tooltips for the stack bases
-    $("#game-tooltips").append(`<div id="tooltip-card-${i}"></div>`);
-    $(`#tooltip-card-${i}`).tooltipster(gameOptions);
-  }
+  createGameTooltips();
+  createPlayerTooltips();
+  createCardTooltips();
 }
 
 export function create(
   selector: string | JQuery<HTMLElement>,
   type:
     | JQueryTooltipster.ITooltipsterOptions
+    | "clipboard"
     | "default"
     | "history"
-    | "nav" = "history",
+    | "nav" = "default",
   args?: unknown,
 ): void {
   const tooltip = typeof selector === "string" ? $(selector) : selector;
@@ -129,7 +86,11 @@ export function create(
     ...customType,
     args,
   };
-  tooltip.tooltipster(tooltipOptions);
+  // Create the tooltip only once
+  // https://stackoverflow.com/a/40916543/180243
+  if ($.tooltipster.instances($(tooltip)).length === 0) {
+    tooltip.tooltipster(tooltipOptions);
+  }
 }
 
 export function open(selector: string | JQuery<HTMLElement>): void {
@@ -139,7 +100,7 @@ export function open(selector: string | JQuery<HTMLElement>): void {
 
 export function openInstance(selector: string | JQuery<HTMLElement>): void {
   const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("instance").close();
+  tooltip.tooltipster("instance").open();
 }
 
 export function close(selector: string | JQuery<HTMLElement>): void {
@@ -194,7 +155,7 @@ export function setOption(
 export function setInstanceOption(
   selector: string | JQuery<HTMLElement>,
   option: string,
-  value: string,
+  value: string | string[],
 ): void {
   const tooltip = typeof selector === "string" ? $(selector) : selector;
   tooltip.tooltipster("instance").option(option, value);
@@ -225,14 +186,81 @@ export function isOpen(selector: string | JQuery<HTMLElement>): boolean {
 }
 
 function getOptionsFromType(
-  type: "default" | "history" | "nav" = "history",
+  type: "clipboard" | "default" | "history" | "nav" = "history",
 ): JQueryTooltipster.ITooltipsterOptions {
   switch (type) {
+    case "clipboard":
+      return clipboardOptions;
     case "history":
       return historyOptions;
     case "nav":
       return navOptions;
     default:
       return options;
+  }
+}
+
+function appendDiv(selector: string, id: string): void {
+  const element = document.createElement("div");
+  element.setAttribute("id", id);
+  document.querySelector(selector)?.appendChild(element);
+}
+
+function createGameTooltips(): void {
+  // Initialize some basic tooltips
+  const tooltips = [
+    "chat",
+    "deck",
+    "discard",
+    "efficiency-text",
+    "efficiency-number",
+    "hypo-back",
+    "hypo-edit-cards",
+    "hypo-show-drawn",
+    "kill",
+    "leader",
+    "lobby",
+    "lobby-small",
+    "time-taken",
+    "pace",
+    "replay",
+    "restart",
+    "spectators",
+    "strikes",
+    "turn-number",
+  ];
+  for (const tooltip of tooltips) {
+    const id = `tooltip-${tooltip}`;
+    appendDiv("#game-tooltips", id);
+    create(`#${id}`, gameOptions);
+  }
+
+  // The "time-taken" tooltip should have centered text
+  setInstanceOption("#tooltip-time-taken", "theme", TOOLTIP_THEME_CENTERED);
+}
+
+function createPlayerTooltips(): void {
+  // Dynamically create the player tooltips
+  for (let i = 0; i < MAX_PLAYERS; i++) {
+    let id = `tooltip-player-${i}`;
+    appendDiv("#game-tooltips", id);
+    create(`#${id}`, gameOptions);
+    setInstanceOption(`#${id}`, "theme", TOOLTIP_THEME_CENTERED);
+
+    id = `tooltip-character-assignment-${i}`;
+    appendDiv("#game-tooltips", id);
+    create(`#${id}`, gameOptions);
+    setInstanceOption(`#${id}`, "theme", TOOLTIP_THEME_CENTERED);
+  }
+}
+
+function createCardTooltips(): void {
+  // Dynamically create the card note tooltips
+  for (let i = 0; i < MAX_CARDS_IN_A_DECK + 6; i++) {
+    // The number in the id matches the order of the card in the deck
+    // We add 6 because we also need note tooltips for the stack bases
+    const id = `tooltip-card-${i}`;
+    appendDiv("#game-tooltips", id);
+    create(`#${id}`, gameOptions);
   }
 }
