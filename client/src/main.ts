@@ -1,17 +1,6 @@
 // This is the main entry point for the client code
 // The client code is split up into multiple files and bundled together with webpack
 
-// Tooltipster is a jQuery library, so we import it purely for the side-effects
-// (e.g. so that it can add the ".tooltipster" property to the "$" object)
-// webpack will purge modules like this from the resulting bundled file (e.g. the "tree shaking"
-// feature) if we have "sideEffects" equal to true in the "package.json" file
-// So we have to make sure that "sideEffects" is is either removed or set to false
-// Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have
-// to worry about that for now
-import "tooltipster";
-// ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
-// We import it for the side-effects for the same reason
-import "../lib/tooltipster-scrollableTip.min";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
@@ -23,7 +12,7 @@ import lobbyIdleInit from "./lobby/idleInit";
 import lobbyKeyboardInit from "./lobby/keyboardInit";
 import * as lobbyLogin from "./lobby/login";
 import * as lobbyNav from "./lobby/nav";
-import * as lobbySettingsTooltip from "./lobby/settingsTooltip";
+import * as playerSettings from "./lobby/playerSettings";
 import lobbyTutorialInit from "./lobby/tutorialInit";
 import Screen from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
@@ -64,7 +53,7 @@ $(document).ready(() => {
   lobbyKeyboardInit();
   lobbyLogin.init();
   lobbyNav.init();
-  lobbySettingsTooltip.init();
+  playerSettings.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
   modals.init();

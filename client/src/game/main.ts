@@ -5,8 +5,8 @@ import globals from "../globals";
 import tablesDraw from "../lobby/tablesDraw";
 import Screen from "../lobby/types/Screen";
 import * as usersDraw from "../lobby/usersDraw";
-import { closeAllTooltips } from "../misc";
 import * as sounds from "../sounds";
+import * as tooltips from "../tooltips";
 import * as chat from "./chat";
 import HanabiUI from "./ui/HanabiUI";
 
@@ -63,7 +63,7 @@ function hide() {
   $("#game-chat-modal").hide();
 
   // Make sure that there are not any game-related tooltips showing
-  closeAllTooltips();
+  tooltips.closeAllTooltips();
 
   // Scroll to the bottom of the chat
   const chatElement = document.getElementById("lobby-chat-text");

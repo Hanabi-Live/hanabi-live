@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
+import * as tooltips from "../../../../tooltips";
 import Spectator from "../../../types/Spectator";
 import globals from "../../globals";
 
@@ -53,9 +54,9 @@ export function onSpectatorsChanged(data: {
       content += "Spectators";
     }
     content += `:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
-    $("#tooltip-spectators").tooltipster("instance").content(content);
+    tooltips.setInstanceContent("#tooltip-spectators", content);
   } else {
-    $("#tooltip-spectators").tooltipster("close");
+    tooltips.close("#tooltip-spectators");
   }
 
   globals.layers.UI.batchDraw();

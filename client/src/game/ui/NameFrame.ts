@@ -1,9 +1,10 @@
 import Konva from "konva";
 import * as modals from "../../modals";
+import * as tooltips from "../../tooltips";
 import backToLobby from "./backToLobby";
 import { LABEL_COLOR } from "./constants";
 import globals from "./globals";
-import * as tooltips from "./tooltips";
+import * as konvaTooltips from "./konvaTooltips";
 
 export default class NameFrame extends Konva.Group {
   playerIndex: number;
@@ -124,7 +125,7 @@ export default class NameFrame extends Konva.Group {
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" and "mouseout" event)
     this.on("mouseover touchstart", function mouseOver(this: NameFrame) {
-      tooltips.resetActiveHover();
+      konvaTooltips.resetActiveHover();
       globals.activeHover = this;
 
       // Don't do anything if we are in a solo/shared replay
@@ -132,7 +133,7 @@ export default class NameFrame extends Konva.Group {
         return;
       }
 
-      tooltips.show(this);
+      konvaTooltips.show(this);
     });
     this.on("mouseout touchend", () => {
       globals.activeHover = null;
@@ -141,9 +142,7 @@ export default class NameFrame extends Konva.Group {
       if (globals.state.finished) {
         return;
       }
-
-      const tooltip = $(`#tooltip-${this.tooltipName}`);
-      tooltip.tooltipster("close");
+      tooltips.close(`#tooltip-${this.tooltipName}`);
     });
   }
 

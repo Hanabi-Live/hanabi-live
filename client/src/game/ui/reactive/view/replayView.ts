@@ -1,12 +1,13 @@
 import Konva from "konva";
+import * as tooltips from "../../../../tooltips";
 import { variantRules } from "../../../rules";
 import ReplayActionType from "../../../types/ReplayActionType";
 import Spectator from "../../../types/Spectator";
 import globals from "../../globals";
+import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
-import * as tooltips from "../../tooltips";
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
@@ -216,7 +217,7 @@ export function onFinishedChanged(
   }
 
   // If any tooltips are open, close them
-  tooltips.resetActiveHover();
+  konvaTooltips.resetActiveHover();
 
   // If the timers are showing, hide them
   globals.elements.timer1?.hide();
@@ -238,7 +239,7 @@ export function onFinishedChanged(
 
   // Re-draw the deck tooltip
   // (it will show more information when you are in a replay)
-  globals.elements.deck?.initTooltip();
+  globals.elements.deck?.initDeckTooltip();
 
   // Turn off the "Throw It in a Hole" UI
   if (variantRules.isThrowItInAHole(globals.variant)) {
@@ -309,5 +310,5 @@ export function onLeaderOrSpectatorsChanged(data: {
   if (away) {
     content += " (away)";
   }
-  $("#tooltip-leader").tooltipster("instance").content(content);
+  tooltips.setInstanceContent("#tooltip-leader", content);
 }

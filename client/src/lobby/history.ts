@@ -4,20 +4,13 @@ import { getVariant, VARIANTS } from "../game/data/gameData";
 import Variant from "../game/types/Variant";
 import globals from "../globals";
 import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
+import * as tooltips from "../tooltips";
 import Options, { OptionIcons } from "../types/Options";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
 import GameHistory from "./types/GameHistory";
 import Screen from "./types/Screen";
 import * as usersDraw from "./usersDraw";
-
-// Constants
-const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
-  animation: "grow",
-  contentAsHTML: true,
-  delay: 0,
-  theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
-};
 
 export function init(): void {
   $("#lobby-history-show-more").on("click", () => {
@@ -184,7 +177,7 @@ export function draw(friends: boolean): void {
 
     // Initialize the tooltips, if any
     // (this has to be done after adding the HTML to the page)
-    $(`#lobby-history-table-${i}-options`).tooltipster(tooltipOptions);
+    tooltips.create(`#lobby-history-table-${i}-options`);
   }
 
   // Don't show the "Show More History" if we have 10 or less games played
@@ -360,9 +353,7 @@ export function drawOtherScores(games: GameHistory[], friends: boolean): void {
 
     // Initialize the tooltips, if any
     // (this has to be done after adding the HTML to the page)
-    $(`#lobby-history-table-${i}-options-other-scores`).tooltipster(
-      tooltipOptions,
-    );
+    tooltips.create(`#lobby-history-table-${i}-options-other-scores`);
   }
 }
 

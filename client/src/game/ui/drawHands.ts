@@ -6,8 +6,8 @@ import CardLayout from "./CardLayout";
 import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
 import TextWithTooltip from "./controls/TextWithTooltip";
 import globals from "./globals";
+import * as konvaTooltips from "./konvaTooltips";
 import NameFrame from "./NameFrame";
-import * as tooltips from "./tooltips";
 
 interface HandConfig {
   x: number;
@@ -513,7 +513,7 @@ function drawDetrimentalCharacters(
     );
   }
   charIcon.tooltipContent = tooltipContent;
-  tooltips.init(charIcon, false, true);
+  konvaTooltips.init(charIcon, false, true);
 }
 
 function isHandReversed(j: number) {

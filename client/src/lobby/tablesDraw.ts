@@ -3,6 +3,7 @@
 import globals from "../globals";
 import { copyStringToClipboard, getURLFromPath, timerFormatter } from "../misc";
 import * as modals from "../modals";
+import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
@@ -293,16 +294,9 @@ function copyURLToClipboard(path: string, row: JQuery<HTMLElement>) {
   copyStringToClipboard(url);
 
   // Show a visual indication that the copy worked
-  row.tooltipster({
-    animation: "grow",
-    content: '<span style="font-size: 0.75em;">URL copied to clipboard!</span>',
-    contentAsHTML: true,
-    delay: 0,
-    trigger: "custom",
-    theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
-  });
-  row.tooltipster("instance").open();
+  tooltips.create(row, "clipboard");
+  tooltips.openInstance(row);
   setTimeout(() => {
-    row.tooltipster("instance").close();
+    tooltips.closeInstance(row);
   }, 1000); // 1 second
 }

@@ -2,7 +2,7 @@ import { statsRules } from "../../../rules";
 import { PaceRisk } from "../../../types/GameState";
 import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
-import * as tooltips from "../../tooltips";
+import * as konvaTooltips from "../../konvaTooltips";
 
 // onEfficiencyChanged updates the labels on the right-hand side of the screen
 export function onEfficiencyChanged(data: {
@@ -150,7 +150,7 @@ export function onEfficiencyChanged(data: {
     Alt + right click this number to add a modifier.
   `;
   effLabel.tooltipContent = tooltipContent;
-  tooltips.init(effLabel, true, false);
+  konvaTooltips.init(effLabel, true, false);
 
   globals.layers.UI.batchDraw();
 }
@@ -254,5 +254,5 @@ export function onMaxTurnsChanged(data: {
   label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
 &nbsp; &nbsp; &nbsp; &nbsp;<span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />
 &nbsp; &nbsp; &nbsp; &nbsp;<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
-  tooltips.init(label, true, false);
+  konvaTooltips.init(label, true, false);
 }

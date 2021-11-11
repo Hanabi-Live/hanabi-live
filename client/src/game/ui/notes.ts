@@ -1,6 +1,7 @@
 // Users can right-click cards to record information on them
 
 import * as KeyCode from "keycode-js";
+import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
 import { STACK_BASE_RANK } from "../types/constants";
 import getCardOrStackBase from "./getCardOrStackBase";
@@ -64,11 +65,10 @@ export function set(order: number, text: string): void {
 
 export function update(card: HanabiCard, text: string): void {
   // Update the tooltip
-  const tooltip = $(`#tooltip-${card.tooltipName}`);
-  const tooltipInstance = tooltip.tooltipster("instance");
-  tooltipInstance.content(text);
+  const tooltip = `#tooltip-${card.tooltipName}`;
+  tooltips.setInstanceContent(tooltip, text);
   if (text.length === 0) {
-    tooltip.tooltipster("close");
+    tooltips.close(tooltip);
     globals.editingNote = null;
   }
 
@@ -83,25 +83,23 @@ export function update(card: HanabiCard, text: string): void {
 
 // Open the tooltip for this card
 export function show(card: HanabiCard): void {
-  const tooltip = $(`#tooltip-${card.tooltipName}`);
-  const tooltipInstance = tooltip.tooltipster("instance");
+  const tooltip = `#tooltip-${card.tooltipName}`;
 
   // We want the tooltip to appear above the card by default
   const pos = card.getAbsolutePosition();
   const posX = pos.x;
   let posY = pos.y - (card.height() * card.layout.scale().y) / 2;
-  tooltipInstance.option("side", "top");
+  tooltips.setInstanceOption(tooltip, "side", "top");
 
   // Flip the tooltip if it is too close to the top of the screen
   if (posY < 200) {
     // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
     posY = pos.y + (card.height() * card.layout.scale().y) / 2;
-    tooltipInstance.option("side", "bottom");
+    tooltips.setInstanceOption(tooltip, "side", "bottom");
   }
 
   // Update the tooltip position
-  tooltip.css("left", posX);
-  tooltip.css("top", posY);
+  tooltips.setPosition(tooltip, posX, posY);
 
   // Update the tooltip content
   const note = get(card.state.order, false);
@@ -112,9 +110,8 @@ export function show(card: HanabiCard): void {
     }
     shownNote += card.suitDescriptionNote();
   }
-  tooltipInstance.content(shownNote);
-
-  tooltip.tooltipster("open");
+  tooltips.setInstanceContent(tooltip, shownNote);
+  tooltips.open(tooltip);
 }
 
 export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
@@ -136,8 +133,8 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   // but then this code will run and immediately re-open the tooltip
   // Detect if this is happening and do nothing
   // The "focusout" event does not fire on mobile, therefore we only check for desktop clients.
-  const tooltip = $(`#tooltip-${card.tooltipName}`);
-  const status = tooltip.tooltipster("status");
+  const tooltip = `#tooltip-${card.tooltipName}`;
+  const status = tooltips.getStatus(tooltip);
   if (isDesktop && status.state === "disappearing") {
     return;
   }
@@ -146,8 +143,8 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
 
   globals.editingNote = card.state.order;
   const note = get(card.state.order, true);
-  const tooltipInstance = tooltip.tooltipster("instance");
-  tooltipInstance.content(
+  tooltips.setInstanceContent(
+    tooltip,
     `<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`,
   );
 
@@ -189,7 +186,7 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     // Check to see if an event happened while we were editing this note
     if (globals.actionOccurred) {
       globals.actionOccurred = false;
-      tooltip.tooltipster("close");
+      tooltips.close(tooltip);
     }
 
     const text = newNote ?? "";
@@ -199,7 +196,7 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   // Automatically close the tooltip if we click elsewhere on the screen
   $(`#tooltip-${card.tooltipName}-input`).on("focusout", () => {
     globals.editingNote = null;
-    tooltip.tooltipster("close");
+    tooltips.close(tooltip);
   });
 
   // Automatically highlight all of the existing text when a note input box is focused

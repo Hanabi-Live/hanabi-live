@@ -1,18 +1,5 @@
 // A collection of miscellaneous functions
 
-// From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
-export function closeAllTooltips(): void {
-  const instances = $.tooltipster.instances();
-  $.each(
-    instances,
-    (_: number, instance: JQueryTooltipster.ITooltipsterInstance) => {
-      if (instance.status().open) {
-        instance.close();
-      }
-    },
-  );
-}
-
 // From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
 export function copyStringToClipboard(str: string): void {
   const el = document.createElement("textarea"); // Create new element

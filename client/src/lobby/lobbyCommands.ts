@@ -7,8 +7,8 @@ import * as sentry from "../sentry";
 import * as sounds from "../sounds";
 import * as history from "./history";
 import * as lobbyLogin from "./login";
+import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame";
-import * as lobbySettingsTooltip from "./settingsTooltip";
 import tablesDraw from "./tablesDraw";
 import Game from "./types/Game";
 import GameHistory from "./types/GameHistory";
@@ -286,7 +286,7 @@ commands.set("welcome", (data: WelcomeData) => {
 
   // Update various elements of the UI to reflect our settings
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
-  lobbySettingsTooltip.setSettingsTooltip();
+  playerSettings.setPlayerSettings();
   lobbyLogin.hide(data.firstTimeUser);
 
   // If the server has informed us that we are currently playing in an ongoing game,

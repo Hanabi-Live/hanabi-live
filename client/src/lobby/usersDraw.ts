@@ -127,11 +127,7 @@ function drawUser(
 
   const content =
     '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphen-ated group.</span>';
-  const tooltipOptions = {
-    ...tooltips.options,
-    content,
-  };
-  $(`#hyphenated-tooltip-${userID}`).tooltipster(tooltipOptions);
+  tooltips.create(`#hyphenated-tooltip-${userID}`, "default", content);
 }
 
 function setLink(userID: number) {

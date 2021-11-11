@@ -6,13 +6,9 @@ import * as debug from "../debug";
 import { VARIANTS } from "../game/data/gameData";
 import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
 import globals from "../globals";
-import {
-  closeAllTooltips,
-  getRandomNumber,
-  isEmpty,
-  parseIntSafe,
-} from "../misc";
+import { getRandomNumber, isEmpty, parseIntSafe } from "../misc";
 import * as modals from "../modals";
+import * as tooltips from "../tooltips";
 import Options from "../types/Options";
 import Screen from "./types/Screen";
 import Settings from "./types/Settings";
@@ -64,8 +60,8 @@ export function init(): void {
     }
 
     // Redraw the tooltip so that the new elements will fit better
-    $("#nav-buttons-lobby-create-game").tooltipster("reposition");
-    $("#nav-buttons-pregame-change-options").tooltipster("reposition");
+    tooltips.reposition("#nav-buttons-lobby-create-game");
+    tooltips.reposition("#nav-buttons-pregame-change-options");
 
     // Remember the new setting
     getCheckbox("createTableTimed");
@@ -81,8 +77,8 @@ export function init(): void {
     }
 
     // Redraw the tooltip so that the new elements will fit better
-    $("#nav-buttons-lobby-create-game").tooltipster("reposition");
-    $("#nav-buttons-pregame-change-options").tooltipster("reposition");
+    tooltips.reposition("#nav-buttons-lobby-create-game");
+    tooltips.reposition("#nav-buttons-pregame-change-options");
 
     // Remember the new setting
     getCheckbox("createTableSpeedrun");
@@ -94,8 +90,8 @@ export function init(): void {
     $("#create-game-show-extra-options-row").hide();
 
     // Redraw the tooltip so that the new elements will fit better
-    $("#nav-buttons-lobby-create-game").tooltipster("reposition");
-    $("#nav-buttons-pregame-change-options").tooltipster("reposition");
+    tooltips.reposition("#nav-buttons-lobby-create-game");
+    tooltips.reposition("#nav-buttons-pregame-change-options");
   });
 
   // Disable some checkboxes if a checkbox is checked
@@ -365,7 +361,7 @@ function submit() {
   // Remove error indications
   $("#createTableTimeBaseMinutes").removeClass("wrongInput");
   $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
-  closeAllTooltips();
+  tooltips.closeAllTooltips();
 }
 
 function acceptOptionsFromGuest(options: Options) {
@@ -617,8 +613,8 @@ export function ready(): void {
   }
 
   // Redraw the tooltip so that the new elements will fit better
-  $("#nav-buttons-lobby-create-game").tooltipster("reposition");
-  $("#nav-buttons-pregame-change-options").tooltipster("reposition");
+  tooltips.reposition("#nav-buttons-lobby-create-game");
+  tooltips.reposition("#nav-buttons-pregame-change-options");
 }
 
 function readyVariant(value: string) {
