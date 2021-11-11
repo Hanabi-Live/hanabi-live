@@ -743,7 +743,7 @@ function drawScoreArea() {
       replay.promptTurn();
     } else if (event.evt.button === 2) {
       // Right-click
-      arrows.click(event, ReplayArrowOrder.Clues);
+      arrows.click(event, ReplayArrowOrder.Turn);
     }
   });
   turnTextLabel.on("dbltap", replay.promptTurn);
@@ -766,7 +766,7 @@ function drawScoreArea() {
         replay.promptTurn();
       } else if (event.evt.button === 2) {
         // Right-click
-        arrows.click(event, ReplayArrowOrder.Clues);
+        arrows.click(event, ReplayArrowOrder.Turn);
       }
     },
   );
