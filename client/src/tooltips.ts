@@ -31,9 +31,6 @@ const options: JQueryTooltipster.ITooltipsterOptions = {
   delay: 0,
   theme: TOOLTIP_THEME,
 };
-const historyOptions: JQueryTooltipster.ITooltipsterOptions = {
-  ...options,
-};
 const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   theme: "tooltipster-shadow",
   trigger: "click",
@@ -63,6 +60,8 @@ const clipboardOptions: JQueryTooltipster.ITooltipsterOptions = {
   theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
 };
 
+type TooltipOptionType = "clipboard" | "default" | "nav";
+
 // Initialize in-game tooltips (for notes, etc.)
 export function initGame(): void {
   createGameTooltips();
@@ -72,12 +71,7 @@ export function initGame(): void {
 
 export function create(
   selector: string | JQuery<HTMLElement>,
-  type:
-    | JQueryTooltipster.ITooltipsterOptions
-    | "clipboard"
-    | "default"
-    | "history"
-    | "nav" = "default",
+  type: JQueryTooltipster.ITooltipsterOptions | TooltipOptionType = "default",
   args?: unknown,
 ): void {
   const tooltip = typeof selector === "string" ? $(selector) : selector;
@@ -186,13 +180,11 @@ export function isOpen(selector: string | JQuery<HTMLElement>): boolean {
 }
 
 function getOptionsFromType(
-  type: "clipboard" | "default" | "history" | "nav" = "history",
+  type: TooltipOptionType = "default",
 ): JQueryTooltipster.ITooltipsterOptions {
   switch (type) {
     case "clipboard":
       return clipboardOptions;
-    case "history":
-      return historyOptions;
     case "nav":
       return navOptions;
     default:

@@ -177,7 +177,7 @@ export function draw(friends: boolean): void {
 
     // Initialize the tooltips, if any
     // (this has to be done after adding the HTML to the page)
-    tooltips.create(`#lobby-history-table-${i}-options`, "history");
+    tooltips.create(`#lobby-history-table-${i}-options`);
   }
 
   // Don't show the "Show More History" if we have 10 or less games played
@@ -353,10 +353,7 @@ export function drawOtherScores(games: GameHistory[], friends: boolean): void {
 
     // Initialize the tooltips, if any
     // (this has to be done after adding the HTML to the page)
-    tooltips.create(
-      `#lobby-history-table-${i}-options-other-scores`,
-      "history",
-    );
+    tooltips.create(`#lobby-history-table-${i}-options-other-scores`);
   }
 }
 
