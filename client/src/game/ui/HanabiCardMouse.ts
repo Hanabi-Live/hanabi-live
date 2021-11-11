@@ -81,8 +81,8 @@ function touchStart(
       this.wasRecentlyTapped = true;
     }
     if (globals.editingNote !== null) {
-      tooltips.close(`#tooltip-${this.tooltipName}`);
       globals.editingNote = null;
+      tooltips.close(`#tooltip-${this.tooltipName}`);
     }
   }, DOUBLE_TAP_DELAY);
 
