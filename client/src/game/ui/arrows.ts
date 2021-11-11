@@ -424,13 +424,13 @@ function getElementFromNegativeOrder(order: ReplayArrowOrder): NodeWithTooltip {
       return globals.elements.cluesNumberLabel!;
     }
     case ReplayArrowOrder.Strike1: {
-      return globals.elements.cluesNumberLabel!;
+      return globals.elements.strikeSquares[0]!;
     }
     case ReplayArrowOrder.Strike2: {
-      return globals.elements.cluesNumberLabel!;
+      return globals.elements.strikeSquares[1]!;
     }
     case ReplayArrowOrder.Strike3: {
-      return globals.elements.cluesNumberLabel!;
+      return globals.elements.strikeSquares[2]!;
     }
     case ReplayArrowOrder.Pace: {
       return globals.elements.paceNumberLabel!;
