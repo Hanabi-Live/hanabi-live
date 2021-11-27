@@ -2,7 +2,7 @@
 
 import Konva from "konva";
 import * as debug from "../../debug";
-import { parseIntSafe } from "../../misc";
+import { hideDialog, showPrompt } from "../../dialogs";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
@@ -1206,40 +1206,34 @@ function drawSharedReplay() {
       return;
     }
 
-    const spectatorMap = new Map<number, string>();
+    const placeholder = document.getElementById("leader-placeholder");
 
-    let msg =
-      "What is the number of the person that you want to pass the replay leader to?\n\n";
-    let i = 1;
+    if (placeholder === null) {
+      return;
+    }
+
+    placeholder.innerHTML = "";
+
     for (const spectator of globals.state.spectators) {
       if (spectator.name === globals.metadata.ourUsername) {
         continue;
       }
 
-      spectatorMap.set(i, spectator.name);
-      msg += `${i} - ${spectator.name}\n`;
-      i += 1;
-    }
-    const targetString = window.prompt(msg);
-    if (targetString === null) {
-      // Don't do anything if they pressed the cancel button
-      return;
-    }
-    const target = parseIntSafe(targetString);
-    if (Number.isNaN(target)) {
-      // Don't do anything if they entered something that is not a number
-      return;
-    }
-    const selectedSpectator = spectatorMap.get(target);
-    if (selectedSpectator === undefined) {
-      // Don't do anything if they entered an invalid spectator number
-      return;
+      const button = document.createElement("button");
+
+      button.innerHTML = spectator.name;
+      button.classList.add("button");
+      button.dataset.player = spectator.name;
+      // eslint-disable-next-line func-names
+      button.addEventListener("click", function (this: HTMLButtonElement) {
+        setNewLeader(this.dataset?.player);
+      });
+      button.type = "submit";
+
+      placeholder.appendChild(button);
     }
 
-    globals.lobby.conn!.send("tableSetLeader", {
-      tableID: globals.lobby.tableID,
-      name: selectedSpectator,
-    });
+    showPrompt("set-leader-dialog");
   });
 }
 
@@ -2374,4 +2368,17 @@ function lobbyButtonClick(this: Button) {
   this.off("click tap");
 
   backToLobby();
+}
+
+function setNewLeader(player: string | null | undefined) {
+  hideDialog();
+
+  if (player === null || player === undefined) {
+    return;
+  }
+
+  globals.lobby.conn!.send("tableSetLeader", {
+    tableID: globals.lobby.tableID,
+    name: player,
+  });
 }
