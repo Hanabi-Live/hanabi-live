@@ -1221,12 +1221,25 @@ function drawSharedReplay() {
 
       const button = document.createElement("button");
 
+      const newLeader = (player: string | null | undefined) => {
+        hideDialog();
+
+        if (player === null || player === undefined) {
+          return;
+        }
+
+        globals.lobby.conn!.send("tableSetLeader", {
+          tableID: globals.lobby.tableID,
+          name: player,
+        });
+      };
+
       button.innerHTML = spectator.name;
       button.classList.add("button");
       button.dataset.player = spectator.name;
       // eslint-disable-next-line func-names
       button.addEventListener("click", function (this: HTMLButtonElement) {
-        setNewLeader(this.dataset?.player);
+        newLeader(this.dataset?.player);
       });
       button.type = "submit";
 
@@ -2368,17 +2381,4 @@ function lobbyButtonClick(this: Button) {
   this.off("click tap");
 
   backToLobby();
-}
-
-function setNewLeader(player: string | null | undefined) {
-  hideDialog();
-
-  if (player === null || player === undefined) {
-    return;
-  }
-
-  globals.lobby.conn!.send("tableSetLeader", {
-    tableID: globals.lobby.tableID,
-    name: player,
-  });
 }
