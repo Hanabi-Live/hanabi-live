@@ -1,6 +1,7 @@
 // Functions for progressing forward and backward through time
 
 import Konva from "konva";
+import { hideDialog, showPrompt } from "../../dialogs";
 import { parseIntSafe } from "../../misc";
 import * as arrows from "./arrows";
 import Shuttle from "./controls/Shuttle";
@@ -320,20 +321,52 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const turnString = window.prompt("Which turn do you want to go to?");
-  if (turnString === null) {
-    return;
-  }
-  let targetTurn = parseIntSafe(turnString);
-  if (Number.isNaN(targetTurn)) {
+  const slider = document.getElementById("set-turn-range");
+  const sliderLabel = document.getElementById("set-turn-label");
+  const sliderButton = document.getElementById("set-turn-button");
+
+  if (slider === null || sliderLabel === null || sliderButton === null) {
     return;
   }
 
-  // We need to decrement the turn because
-  // the turn shown to the user is always one greater than the real turn
-  targetTurn -= 1;
+  const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
+  const currentSegment = getCurrentReplaySegment() + 1;
 
-  goToSegment(targetTurn, true);
+  slider.setAttribute("min", "1");
+  slider.setAttribute("max", Math.max(finalSegment, currentSegment).toString());
+  slider.setAttribute("value", currentSegment.toString());
+  slider.addEventListener("input", (evt) => {
+    document
+      .getElementById("set-turn-label")
+      ?.setAttribute("data-value", (<HTMLInputElement>evt.target).value);
+  });
+  sliderLabel.setAttribute("data-value", currentSegment.toString());
+
+  const goTo = (turnString: string) => {
+    console.log(`DIALOG: goTo ${turnString}`);
+    let targetTurn = parseIntSafe(turnString);
+    console.log(`DIALOG: target ${targetTurn}`);
+    if (Number.isNaN(targetTurn)) {
+      return;
+    }
+
+    // We need to decrement the turn because
+    // the turn shown to the user is always one greater than the real turn
+    targetTurn -= 1;
+
+    console.log(`DIALOG: new target ${targetTurn}`);
+    goToSegment(targetTurn, true);
+  };
+
+  sliderButton.onpointerdown = (evt) => {
+    evt.preventDefault();
+    hideDialog();
+
+    const element = <HTMLInputElement>document.getElementById("set-turn-range");
+    goTo(element?.value);
+  };
+
+  showPrompt("set-turn-dialog");
 }
 
 // --------------------------------
