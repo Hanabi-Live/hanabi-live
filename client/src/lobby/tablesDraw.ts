@@ -185,40 +185,43 @@ export default function tablesDraw(): void {
 
     // Setup click actions
     if (table.sharedReplay || (!table.joined && table.running)) {
+      const rowId = `spectate-${table.id}`;
       row
-        .attr("id", `spectate-${table.id}`)
+        .attr("id", rowId)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
             // Copy the URL that would occur from clicking on this table row
             const path = table.sharedReplay
               ? `/shared-replay/${table.id}`
               : `/game/${table.id}`;
-            copyURLToClipboard(path, row);
+            copyURLToClipboard(path, `#${rowId}`);
           } else {
             tableSpectate(table);
           }
         });
     } else if (!table.joined) {
-      row.attr("id", `join-${table.id}`);
+      const rowId = `join-${table.id}`;
+      row.attr("id", rowId);
       if (table.numPlayers >= 6) {
         row.addClass("full");
       } else {
         row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
             // Copy the URL that would occur from clicking on this table row
-            copyURLToClipboard(`/pre-game/${table.id}`, row);
+            copyURLToClipboard(`/pre-game/${table.id}`, `#${rowId}`);
           } else {
             tableJoin(table);
           }
         });
       }
     } else {
+      const rowId = `resume-${table.id}`;
       row
-        .attr("id", `resume-${table.id}`)
+        .attr("id", rowId)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
             // Copy the URL that would occur from clicking on this table row
-            copyURLToClipboard(`/game/${table.id}`, row);
+            copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
           } else {
             tableReattend(table);
           }
@@ -289,14 +292,14 @@ function tableHasFriends(table: Table) {
   return false;
 }
 
-function copyURLToClipboard(path: string, row: JQuery<HTMLElement>) {
+function copyURLToClipboard(path: string, selector: string) {
   const url = getURLFromPath(path);
   copyStringToClipboard(url);
 
   // Show a visual indication that the copy worked
-  tooltips.create(row, "clipboard");
-  tooltips.openInstance(row);
+  tooltips.create(selector, "clipboard");
+  tooltips.openInstance(selector);
   setTimeout(() => {
-    tooltips.closeInstance(row);
+    tooltips.closeInstance(selector);
   }, 1000); // 1 second
 }

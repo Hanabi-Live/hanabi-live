@@ -70,7 +70,7 @@ export function initGame(): void {
 }
 
 export function create(
-  selector: string | JQuery<HTMLElement>,
+  selector: string,
   type: JQueryTooltipster.ITooltipsterOptions | TooltipOptionType = "default",
   args?: unknown,
 ): void {
@@ -87,22 +87,22 @@ export function create(
   }
 }
 
-export function open(selector: string | JQuery<HTMLElement>): void {
+export function open(selector: string): void {
   const tooltip = getElementFromSelector(selector);
   tooltip.tooltipster("open");
 }
 
-export function openInstance(selector: string | JQuery<HTMLElement>): void {
+export function openInstance(selector: string): void {
   const tooltip = getElementFromSelector(selector);
   tooltip.tooltipster("instance").open();
 }
 
-export function close(selector: string | JQuery<HTMLElement>): void {
+export function close(selector: string): void {
   const tooltip = getElementFromSelector(selector);
   tooltip.tooltipster("close");
 }
 
-export function closeInstance(selector: string | JQuery<HTMLElement>): void {
+export function closeInstance(selector: string): void {
   const tooltip = getElementFromSelector(selector);
   tooltip.tooltipster("instance").close();
 }
@@ -248,8 +248,6 @@ function createCardTooltips(): void {
   }
 }
 
-function getElementFromSelector(
-  selector: string | JQuery<HTMLElement>,
-): JQuery<HTMLElement> {
+function getElementFromSelector(selector: string): JQuery<HTMLElement> {
   return typeof selector === "string" ? $(selector) : selector;
 }
