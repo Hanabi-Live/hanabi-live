@@ -329,6 +329,10 @@ export function promptTurn(): void {
     return;
   }
 
+  // Remove previous event listener
+  // https://techoverflow.net/2019/12/26/how-to-remove-all-event-listeners-from-a-dom-element-in-javascript/
+  slider.replaceWith(slider.cloneNode(true));
+
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
 
@@ -343,9 +347,7 @@ export function promptTurn(): void {
   sliderLabel.setAttribute("data-value", currentSegment.toString());
 
   const goTo = (turnString: string) => {
-    console.log(`DIALOG: goTo ${turnString}`);
     let targetTurn = parseIntSafe(turnString);
-    console.log(`DIALOG: target ${targetTurn}`);
     if (Number.isNaN(targetTurn)) {
       return;
     }
@@ -354,7 +356,6 @@ export function promptTurn(): void {
     // the turn shown to the user is always one greater than the real turn
     targetTurn -= 1;
 
-    console.log(`DIALOG: new target ${targetTurn}`);
     goToSegment(targetTurn, true);
   };
 
