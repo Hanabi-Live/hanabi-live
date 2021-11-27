@@ -770,7 +770,7 @@ function drawScoreArea() {
       }
     },
   );
-  globals.elements.turnNumberLabel.on("tap", replay.promptTurn);
+  globals.elements.turnNumberLabel.on("dbltap", replay.promptTurn);
 
   globals.elements.scoreTextLabel = basicTextLabel.clone({
     text: "Score",
@@ -1237,9 +1237,9 @@ function drawSharedReplay() {
       button.innerHTML = spectator.name;
       button.classList.add("button");
       button.dataset.player = spectator.name;
-      // eslint-disable-next-line func-names
-      button.addEventListener("click", function (this: HTMLButtonElement) {
-        newLeader(this.dataset?.player);
+      button.addEventListener("click", (evt) => {
+        const element = <HTMLElement>evt.target;
+        newLeader(element?.dataset?.player);
       });
       button.type = "submit";
 
