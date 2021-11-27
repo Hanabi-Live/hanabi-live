@@ -10,8 +10,7 @@
         <li>
           <a
             id="nav-buttons-lobby-create-game"
-            class="button tooltip"
-            data-tooltip-content="#create-game-tooltip"
+            class="button"
           >
             <i class="fas fa-plus nav-icon"></i>
             <span class="hidden-xs"><span class="nav-hotkey-indicator">N</span>ew<span class="hidden-xl"> Game</span></span> <!-- cspell:disable-line -->
@@ -26,8 +25,7 @@
         <li>
           <a
             id="nav-buttons-lobby-replay"
-            class="button tooltip"
-            data-tooltip-content="#replay-tooltip"
+            class="button"
           >
             <i class="fas fa-eye nav-icon"></i>
             <span class="hidden-xs"><span class="hidden-xl">Watch </span>Repl<span class="nav-hotkey-indicator">a</span>y</span>
@@ -48,8 +46,7 @@
         <li>
           <a
             id="nav-buttons-lobby-resources"
-            class="button tooltip hidden-xs"
-            data-tooltip-content="#resources-tooltip"
+            class="button hidden-xs"
           >
             <i class="fas fa-link nav-icon"></i>
             <span class="hidden-md">Resources</span>
@@ -58,8 +55,7 @@
         <li>
           <a
             id="nav-buttons-lobby-settings"
-            class="button tooltip"
-            data-tooltip-content="#settings-tooltip"
+            class="button"
           >
             <i class="fas fa-cog nav-icon"></i>
             <span class="hidden-md">Settings</span>
@@ -96,8 +92,7 @@
         <li>
           <a
             id="nav-buttons-pregame-change-options"
-            class="button tooltip"
-            data-tooltip-content="#create-game-tooltip"
+            class="button"
           >
             <i class="fas fa-rainbow nav-icon"></i>
             <span class="hidden-xs">
@@ -747,10 +742,10 @@
   </div>
 </div>
 
-<!-- Tooltips -->
-<div class="hidden">
-  <div id="create-game-tooltip">
-    <h2 id="create-game-tooltip-title">Create a New Game</h2>
+<!-- Dialogs -->
+<div id="dialogs-container" class="hidden">
+  <div id="create-game-dialog">
+    <h2 id="create-game-dialog-title">Create a New Game</h2>
 
     <div class="row">
       <div class="col-3 input-text">
@@ -1062,8 +1057,8 @@
     <input id="create-game-table-number" type="hidden" value="" />
   </div>
 
-  <div id="resources-tooltip">
-    <div id="resources-tooltip-container">
+  <div id="resources-dialog">
+    <div id="resources-dialog-container">
     <h2>Resources</h2>
     <ul>
       <li>
@@ -1076,24 +1071,18 @@
         </a><br />
         Get answers to the most common questions.
       </li>
-      <br />
-
       <li>
         <a href="https://www.youtube.com/watch?v=VrFCekQb4nY" target="_blank" rel="noopener noreferrer">
           The Rules / How to Play
         </a><br />
         This website does not have a tutorial on how to play, so watch this video instead.
       </li>
-      <br />
-
       <li>
         <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">
           The Discord Server
         </a><br />
         A place to find teammates and discuss strategy.
       </li>
-      <br />
-
       <li>
         <a
           href="https://hanabi.github.io/"
@@ -1105,16 +1094,12 @@
         This is a document that lists the strategies and conventions used by the Hyphen-ated group.<br />
         (You don't have to use them if you don't want to.)
       </li>
-      <br />
-
       <li>
         <a href="https://github.com/Zamiell/hanabi-live" target="_blank" rel="noopener noreferrer">
           The Code Repository
         </a><br />
         This client and server are open-source, hosted on GitHub.
       </li>
-      <br />
-
       <li>
         <a
           href="https://github.com/Zamiell/hanabi-live/issues"
@@ -1127,8 +1112,6 @@
         (You will need to create a free GitHub account.)<br />
         Make sure that someone else has not already opened the same issue.
       </li>
-      <br />
-
       <li>
         <a
           href="https://hanabi-competitions.com/static/about.html"
@@ -1139,16 +1122,12 @@
         </a><br />
         Compete with other players around the world to get the highest score on a new random deal.
       </li>
-      <br />
-
       <li>
         <a href="https://www.speedrun.com/hanabi" target="_blank" rel="noopener noreferrer">
           Speedrun.com Leaderboards
         </a><br />
         The fastest times in the world are tracked here.
       </li>
-      <br />
-
       <li>
         <a
           href="https://www.givewell.org/charities/top-charities"
@@ -1170,7 +1149,7 @@
     </div>
   </div>
 
-  <div id="settings-tooltip">
+  <div id="settings-dialog">
     <h2>Settings</h2>
 
     <p class="margin1"><strong>Notifications</strong></p>
@@ -1308,8 +1287,8 @@
     <br /><br /><br />
   </div>
 
-  <div id="replay-tooltip">
-    <h2 id="replay-tooltip-title">Watch a Specific Replay</h2>
+  <div id="replay-dialog">
+    <h2 id="replay-dialog-title">Watch a Specific Replay</h2>
 
     <div class="row">
       <div class="col-3 input-text">
@@ -1400,6 +1379,9 @@
 
 <!-- Game (the UI when playing a game) -->
 <div id="game" class="hidden"></div>
+
+<!-- ` (the UI for dialogs) -->
+<div id="backdrop"></div>
 
 <!-- Game tooltips (which are initialized in "tooltips.js") -->
 <span id="game-tooltips"></span><!-- This span cannot be hidden -->

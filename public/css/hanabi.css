@@ -511,20 +511,20 @@ table td {
 }
 
 /*
-  Create Game Tooltip
+  Create Game Dialog
 */
 
-#create-game-tooltip-title {
+#create-game-dialog-title {
   width: 11em;
 }
 
-#create-game-tooltip > div {
+#create-game-dialog > div {
   /* Alpha sets this to -2em, so we have to reset it */
   margin-left: 0em;
   text-align: left;
 }
 
-#create-game-tooltip > div > div {
+#create-game-dialog > div > div {
   padding-left: 0;
 }
 
@@ -611,10 +611,10 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /*
-  Watch Specific Replay Tooltip
+  Watch Specific Replay Dialog
 */
 
-#replay-tooltip-title {
+#replay-dialog-title {
   width: 13em;
 }
 
@@ -1211,4 +1211,50 @@ span.cp {
 /* Wrong input indicator */
 input[type="text"].wrongInput {
   border: 2px solid red;
+}
+
+/* Dialogs */
+#backdrop {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  animation: backdropHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
+}
+
+#backdrop.show {
+  animation: backdropShow 0.4s forwards 1;
+}
+
+@keyframes backdropHide {
+  0% { background-color: rgba(0, 0, 0, 0.7); z-index: 99999; }
+  100% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+}
+
+@keyframes backdropShow {
+  0% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+  100% { background-color: rgba(0, 0, 0, 0.7); z-index: 99999; }
+}
+
+.dialog {
+  background-color: white;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 0 10px 6px rgb(0 0 0 / 10%);
+  max-height: 90vh;
+  max-width: 80vw;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 6px 14px;
+}
+
+#leader-placeholder {
+  display: flex;
+  justify-content: center;
+  align-content: space-evenly;
+  column-gap: 10px;
 }

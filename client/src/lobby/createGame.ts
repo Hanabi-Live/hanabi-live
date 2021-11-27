@@ -3,6 +3,7 @@
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
+import { hideDialog } from "../dialogs";
 import { VARIANTS } from "../game/data/gameData";
 import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
 import globals from "../globals";
@@ -361,7 +362,8 @@ function submit() {
   // Remove error indications
   $("#createTableTimeBaseMinutes").removeClass("wrongInput");
   $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
-  tooltips.closeAllTooltips();
+
+  hideDialog();
 }
 
 function acceptOptionsFromGuest(options: Options) {

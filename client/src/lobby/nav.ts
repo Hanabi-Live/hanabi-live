@@ -1,8 +1,7 @@
 // The navigation bar at the top of the lobby
 
-import * as KeyCode from "keycode-js";
+import { setDialog } from "../dialogs";
 import globals from "../globals";
-import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -13,31 +12,16 @@ export function init(): void {
   // Remove the recursive link to prevent confusion
   $("#logo-link").removeAttr("href");
 
-  // Initialize all of the navigation tooltips
-  initTooltips();
-
   // The "Create Game" and "Change Options" buttons
-  tooltips.setOption(
-    "#nav-buttons-lobby-create-game",
-    "functionBefore",
-    createGame.before,
-  );
-  tooltips.setOption(
-    "#nav-buttons-lobby-create-game",
-    "functionReady",
-    createGame.ready,
-  );
-  tooltips.setOption(
-    "#nav-buttons-pregame-change-options",
-    "functionBefore",
-    createGame.before,
-  );
-  tooltips.setOption(
-    "#nav-buttons-pregame-change-options",
-    "functionReady",
-    createGame.ready,
-  );
-  // (the logic for this tooltip is handled in the "createGame.ts" file)
+  setDialog("nav-buttons-lobby-create-game", "create-game-dialog", {
+    before: createGame.before,
+    ready: createGame.ready,
+  });
+
+  setDialog("nav-buttons-pregame-change-options", "create-game-dialog", {
+    before: createGame.before,
+    ready: createGame.ready,
+  });
 
   // The "Show History" button
   $("#nav-buttons-lobby-history").on("click", () => {
@@ -45,21 +29,19 @@ export function init(): void {
   });
 
   // The "Watch Specific Replay" button
-  tooltips.setOption(
-    "#nav-buttons-lobby-replay",
-    "functionReady",
-    watchReplay.ready,
-  );
-  // (the logic for this tooltip is handled in the "watchReplay.ts" file)
+  setDialog("nav-buttons-lobby-replay", "replay-dialog", {
+    before: null,
+    ready: watchReplay.ready,
+  });
 
   // The "Help" button
   // (this is just a simple link)
 
   // The "Resources" button
-  // (initialized in the "initTooltips()" function)
+  setDialog("nav-buttons-lobby-resources", "resources-dialog");
 
   // The "Settings" button
-  // (initialized in the "initTooltips()" function)
+  setDialog("nav-buttons-lobby-settings", "settings-dialog");
 
   // The "Sign Out" button
   $(".signout").on("click", () => {
@@ -193,55 +175,6 @@ export function init(): void {
 
   // The "Return to History" button (from the "History Details" screen)
   // (initialized in the "history.drawOtherScores()" function)
-}
-
-function initTooltips() {
-  const navTooltips = [
-    "lobby-create-game",
-    "lobby-replay",
-    "lobby-resources",
-    "lobby-settings",
-    "pregame-change-options",
-  ];
-
-  const functionBefore = () => {
-    modals.setShadeOpacity(0.6);
-  };
-
-  const tooltipCloseFunction = () => {
-    // We want to fade in the background as soon as we start the tooltip closing animation,
-    // so we have to hook to the "close" event
-    // Furthermore, we don't want to fade in the background if we click from one tooltip to the
-    // other, so we have to check to see how many tooltips are open
-    // If one tooltip is open, then it is the one currently closing
-    // If two tooltips are open, then we are clicking from one to the next
-    let tooltipsOpen = 0;
-    for (const tooltip of navTooltips) {
-      if (tooltips.isOpen(`#nav-buttons-${tooltip}`)) {
-        tooltipsOpen += 1;
-      }
-    }
-    if (tooltipsOpen <= 1) {
-      modals.setShadeOpacity(0);
-    }
-  };
-
-  // The "close" event will not fire if we initialize this on the tooltip class for some reason,
-  // so we initialize all 3 individually
-  for (const navTooltip of navTooltips) {
-    const tooltip = `#nav-buttons-${navTooltip}`;
-    tooltips.create(tooltip, "nav", functionBefore);
-    tooltips.getInstance(tooltip).on("close", tooltipCloseFunction);
-  }
-
-  // Map the escape key to close all tooltips / modals
-  $(document).keydown((event) => {
-    if (event.which === KeyCode.KEY_ESCAPE) {
-      event.preventDefault();
-      tooltips.closeAllTooltips();
-      modals.closeAll();
-    }
-  });
 }
 
 export function show(target: string): void {
