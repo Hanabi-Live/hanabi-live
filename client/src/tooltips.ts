@@ -89,22 +89,30 @@ export function create(
 
 export function open(selector: string): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("open");
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("open");
+  }
 }
 
 export function openInstance(selector: string): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("instance").open();
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").open();
+  }
 }
 
 export function close(selector: string): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("close");
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("close");
+  }
 }
 
 export function closeInstance(selector: string): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("instance").close();
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").close();
+  }
 }
 
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
@@ -122,7 +130,9 @@ export function closeAllTooltips(): void {
 
 export function setInstanceContent(selector: string, content: string): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("instance").content(content);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").content(content);
+  }
 }
 
 export function setPosition(selector: string, x: number, y: number): void {
@@ -136,7 +146,9 @@ export function setOption(
   value: unknown,
 ): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("option", option, value);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("option", option, value);
+  }
 }
 
 export function setInstanceOption(
@@ -145,29 +157,50 @@ export function setInstanceOption(
   value: string | string[],
 ): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("instance").option(option, value);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").option(option, value);
+  }
 }
 
 export function getStatus(selector: string): JQueryTooltipster.ITooltipStatus {
   const tooltip = getElementFromSelector(selector);
-  return tooltip.tooltipster("status");
+  if (isTooltipster(tooltip)) {
+    return tooltip.tooltipster("status");
+  }
+  return {
+    destroyed: true,
+    destroying: false,
+    enabled: false,
+    /** if the tooltip is open (either appearing, stable or disappearing) */
+    open: false,
+    /** the state equals one of these four values: */
+    state: "closed",
+  };
 }
 
 export function getInstance(
   selector: string,
-): JQueryTooltipster.ITooltipsterInstance {
+): JQueryTooltipster.ITooltipsterInstance | null {
   const tooltip = getElementFromSelector(selector);
-  return tooltip.tooltipster("instance");
+  if (isTooltipster(tooltip)) {
+    return tooltip.tooltipster("instance");
+  }
+  return null;
 }
 
-export function reposition(selector: string | JQuery<HTMLElement>): void {
+export function reposition(selector: string): void {
   const tooltip = getElementFromSelector(selector);
-  tooltip.tooltipster("reposition");
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("reposition");
+  }
 }
 
 export function isOpen(selector: string): boolean {
   const tooltip = getElementFromSelector(selector);
-  return tooltip.tooltipster("status").open;
+  if (isTooltipster(tooltip)) {
+    return tooltip.tooltipster("status").open;
+  }
+  return false;
 }
 
 function getOptionsFromType(
@@ -250,4 +283,8 @@ function createCardTooltips(): void {
 
 function getElementFromSelector(selector: string): JQuery<HTMLElement> {
   return typeof selector === "string" ? $(selector) : selector;
+}
+
+function isTooltipster(element: JQuery<HTMLElement>): boolean {
+  return element.hasClass("tooltipstered");
 }
