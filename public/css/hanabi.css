@@ -1242,14 +1242,13 @@ input[type="text"].wrongInput {
 
 .dialog {
   background-color: white;
-  border: none;
+  border: 2px solid #308943;
   border-radius: 5px;
-  box-shadow: 0 0 10px 6px rgb(0 0 0 / 10%);
   max-height: 90vh;
   max-width: 80vw;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: 6px 14px;
+  padding: 20px 30px;
 }
 
 #leader-placeholder {
