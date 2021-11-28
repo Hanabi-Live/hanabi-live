@@ -1,79 +1,104 @@
 // Modals (boxes that hover on top of the UI)
 
-import { FADE_TIME } from "./constants";
-import { hideDialog } from "./dialogs";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import { parseIntSafe } from "./misc";
 import * as sounds from "./sounds";
 
-// The list of all of the modals
-const lobbyModals = [
-  "password",
-  // "warning" and "error" are intentionally omitted, as they are handled separately
-];
+let initialized = false;
+let allowCloseModal = true;
+let currentModal: HTMLElement | null = null;
+
+const pageCover = getElement("#page-cover");
+const modalsContainer = getElement("#modals-container");
 
 // Initialize various element behavior within the modals
-export function init(): void {
-  // There are not currently any game modals
-  for (const modal of lobbyModals) {
-    $(`#${modal}-modal-cancel`).click(closeAll);
+export function init(): boolean {
+  if (initialized) {
+    return true;
   }
 
-  // Password
-  $("#password-modal-password").on("keypress", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      $("#password-modal-submit").click();
+  // Close modal on escape press or by clicking outside
+  pageCover.onpointerdown = () => {
+    closeModals();
+  };
+  document.addEventListener("keydown", (evt) => {
+    if (evt.key === "Escape" && currentModal !== null) {
+      closeModals();
     }
   });
-  $("#password-modal-submit").click(passwordSubmit);
 
-  // Warning
-  $("#warning-modal-button").click(() => {
-    warningClose();
-  });
+  // Password modal setup
+  getElement("#password-modal-password").addEventListener(
+    "keypress",
+    (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        passwordSubmit();
+      }
+    },
+  );
+  getElement("#password-modal-submit").onpointerdown = () => {
+    passwordSubmit();
+  };
+  getElement("#password-modal-cancel").onpointerdown = () => {
+    closeModals();
+  };
 
-  // Error
-  $("#error-modal-button").click(() => {
+  // Warning modal setup
+  getElement("#warning-modal-button").onpointerdown = () => {
+    closeModals();
+  };
+
+  // Error modal setup
+  getElement("#error-modal-button").onpointerdown = () => {
     window.location.reload();
-  });
+  };
+
+  initialized = true;
+
+  return true;
 }
 
 export function passwordShow(tableID: number): void {
-  hideDialog();
-  setShadeOpacity(0.75);
-  globals.modalShowing = true;
+  if (!init()) {
+    return;
+  }
 
-  $("#password-modal-id").val(tableID);
-  $("#password-modal").fadeIn(FADE_TIME);
-  $("#password-modal-password").focus();
+  allowCloseModal = true;
+
+  getElement("#password-modal-id").setAttribute("value", tableID.toString());
+  getElement("#password-modal-password").focus();
 
   // We want to fill in the text field with the player's last typed-in password
   const password = localStorage.getItem("joinTablePassword");
+  const element = getInputElement("#password-modal-password");
   if (password !== null && password !== "") {
-    $("#password-modal-password").val(password);
-    $("#password-modal-password").select();
+    element.value = password;
+    element.select();
   }
+
+  showModal("#password-modal", null, () => {
+    element.select();
+  });
 }
 
 function passwordSubmit() {
-  $("#password-modal").fadeOut(FADE_TIME);
-  setShadeOpacity(0, false);
-  const tableIDString = $("#password-modal-id").val();
-  if (typeof tableIDString !== "string") {
-    throw new Error(
-      'The "password-modal-id" element does not have a string value.',
-    );
-  }
-  const tableID = parseIntSafe(tableIDString); // The server expects this as a number
-  let password = $("#password-modal-password").val();
-  if (typeof password === "number") {
-    password = password.toString();
-  }
-  if (typeof password !== "string") {
+  if (!init()) {
     return;
   }
+
+  console.log("DIALOG: password submit 1");
+
+  console.log("DIALOG: password submit 2");
+  const tableIDString = getInputElement("#password-modal-id").value;
+  console.log(`DIALOG: password submit tableIDString: ${tableIDString}`);
+  const tableID = parseIntSafe(tableIDString); // The server expects this as a number
+
+  console.log("DIALOG: password submit 3");
+  const password = getInputElement("#password-modal-password").value;
+
+  console.log(`DIALOG: password submit 4 : ${password}`);
   globals.conn!.send("tableJoin", {
     tableID,
     password,
@@ -81,40 +106,48 @@ function passwordSubmit() {
 
   // Record the password in local storage (cookie)
   localStorage.setItem("joinTablePassword", password);
+
+  console.log("DIALOG: password submit 5");
+
+  closeModals();
 }
 
-export function warningShow(msg: string): void {
-  hideDialog();
-  setShadeOpacity(0.75);
-  globals.modalShowing = true;
+export function showWarning(msg: string): void {
+  if (!init()) {
+    return;
+  }
 
-  $("#warning-modal-description").html(msg);
+  allowCloseModal = true;
+
+  getElement("#warning-modal-description").innerHTML = msg;
 
   // Store the screen's active element
   globals.lastActiveElement = document.activeElement as HTMLElement;
 
   // Show the modal and focus the close button
-  $("#warning-modal").fadeIn(FADE_TIME, () => {
-    $("#warning-modal-button").focus();
+  showModal("#warning-modal", () => {
+    getElement("#warning-modal-button").focus();
   });
 }
 
 export function errorShow(msg: string): void {
+  if (!init()) {
+    return;
+  }
+
+  allowCloseModal = false;
+
   // Do nothing if we are already showing the error modal
   if (globals.errorOccurred) {
     return;
   }
   globals.errorOccurred = true;
 
-  hideDialog();
-  setShadeOpacity(0.9);
-  globals.modalShowing = true;
-
   // Clear out the top navigation buttons
   lobbyNav.show("nothing");
 
-  $("#error-modal-description").html(msg);
-  $("#error-modal").fadeIn(FADE_TIME);
+  getElement("#error-modal-description").innerHTML = msg;
+  showModal("#error-modal", false);
 
   // Play a sound if the server has shut down
   if (
@@ -124,45 +157,112 @@ export function errorShow(msg: string): void {
   }
 }
 
-// Make the page cover a certain opacity
-// If it is 0, then the page cover will be hidden
-// The second parameter is necessary to set the variable after fading finishes
-export function setShadeOpacity(
-  opacity: number,
-  newModalShowing?: boolean,
+export function setModal(
+  buttonSelector: string,
+  selector: string,
+  show: (() => unknown) | null = null,
+  before: (() => unknown) | null = null,
 ): void {
-  const pageCover = $("#page-cover");
-  if (opacity > 0) {
-    pageCover.show();
+  if (!init()) {
+    return;
   }
-  // Make sure to stop any fading that was called earlier
-  pageCover.stop().fadeTo(FADE_TIME, opacity, () => {
-    if (opacity === 0) {
-      pageCover.hide();
+
+  const button = getElement(buttonSelector);
+
+  button.onpointerdown = () => {
+    const test = show?.call(null);
+    const test2 = show?.call(null) ?? false;
+    const test3 = show?.call(null) ?? true;
+    console.log(`DIALOG: test: ${test} - ${test2} - ${test3}`);
+    if (!show?.call(null) ?? true) {
+      return;
     }
-    if (newModalShowing !== undefined) {
-      globals.modalShowing = newModalShowing;
-    }
-  });
+    showModal(selector, before);
+  };
 }
 
-function warningClose() {
-  $("#warning-modal").fadeOut(FADE_TIME);
-  setShadeOpacity(0, false);
+export function closeModals(fast = false): void {
+  if (!allowCloseModal) {
+    return;
+  }
+
+  pageCover.classList.remove("show");
+  if (currentModal !== null) {
+    currentModal.classList.add("hidden");
+    pageCover.removeChild(currentModal);
+    modalsContainer.appendChild(currentModal);
+    currentModal = null;
+  }
+
+  if (fast) {
+    pageCover.style.display = "none";
+  } else {
+    setTimeout(() => {
+      pageCover.style.display = "none";
+    }, 100);
+  }
+
   if (globals.lastActiveElement !== null) {
     globals.lastActiveElement.focus();
   }
 }
 
-export function closeAll(): void {
-  // Error modals cannot be closed, since we want to force the user to refresh the page
-  if ($("#error-modal").is(":visible")) {
-    return;
+function getElement(element: string): HTMLElement {
+  console.log(`DIALOG: searching for ${element}`);
+  return document.querySelector(element) ?? new HTMLElement();
+}
+
+function getInputElement(element: string): HTMLInputElement {
+  return <HTMLInputElement>getElement(element);
+}
+
+function showModal(selector: string): void;
+function showModal(selector: string, allowClose: boolean): void;
+function showModal(selector: string, before: (() => unknown) | null): void;
+function showModal(
+  selector: string,
+  before: (() => unknown) | null,
+  ready: (() => unknown) | null,
+): void;
+
+function showModal(
+  selector: string,
+  param2?: (() => unknown) | boolean | null,
+  param3?: (() => unknown) | boolean | null,
+): void {
+  const element = getElement(selector);
+
+  closeModals(true);
+
+  currentModal = element;
+
+  allowCloseModal = true;
+  if (typeof param2 === "boolean") {
+    allowCloseModal = param2;
   }
 
-  for (const modal of lobbyModals) {
-    $(`#${modal}-modal`).fadeOut(FADE_TIME);
+  element.classList.add("modal");
+  element.onpointerdown = (event) => {
+    // Do not bubble clicks to pageCover
+    event.stopPropagation();
+  };
+
+  if (typeof param2 === "function") {
+    const result = param2?.call(null);
+    if (result ?? false) {
+      return;
+    }
   }
 
-  warningClose();
+  pageCover.appendChild(element);
+
+  pageCover.style.display = "flex";
+  pageCover.classList.add("show");
+  setTimeout(() => {
+    pageCover.appendChild(element);
+    element.classList.remove("hidden");
+    if (typeof param3 === "function") {
+      param3.call(null);
+    }
+  }, 100);
 }

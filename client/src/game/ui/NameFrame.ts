@@ -206,7 +206,7 @@ export default class NameFrame extends Konva.Group {
         }
       }
       if (shadowingPlayerIndex === oldShadowingPlayerIndex) {
-        modals.warningShow(
+        modals.showWarning(
           "You are already viewing the game from this player's perspective.",
         );
         return;
@@ -225,7 +225,7 @@ export default class NameFrame extends Konva.Group {
 
       // Validate that we are not shifting to the perspective that we are already at
       if (shadowingPlayerIndex === globals.metadata.ourPlayerIndex) {
-        modals.warningShow(
+        modals.showWarning(
           "You are already viewing the game from this player's perspective.",
         );
         return;
@@ -236,7 +236,7 @@ export default class NameFrame extends Konva.Group {
           setTimeout(() => {
             const msg =
               "Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.";
-            modals.warningShow(msg);
+            modals.showWarning(msg);
           }, 0);
           return;
         }

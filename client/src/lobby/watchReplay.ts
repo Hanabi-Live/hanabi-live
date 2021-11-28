@@ -1,9 +1,9 @@
 // The "Watch Specific Replay" nav button
 
 import * as KeyCode from "keycode-js";
-import { hideDialog } from "../dialogs";
 import globals from "../globals";
 import { parseIntSafe } from "../misc";
+import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
 
 export function init(): void {
@@ -137,7 +137,7 @@ function submit() {
     });
   }
 
-  hideDialog();
+  closeModals();
 }
 
 // This function is executed every time the "Watch Specific Replay" button is clicked

@@ -21,7 +21,7 @@ export function checkNoteImpossibility(
     cardState.rank === STACK_BASE_RANK &&
     possibilities.every((possibility) => possibility[0] !== cardState.suitIndex)
   ) {
-    modals.warningShow(
+    modals.showWarning(
       "You cannot morph a stack base to have a different suit.",
     );
     return;
@@ -45,9 +45,9 @@ export function checkNoteImpossibility(
     return `${impossibleSuit} ${impossibleRank}`;
   });
   if (impossibilities.length === 1) {
-    modals.warningShow(`That card cannot possibly be ${impossibilities[0]}`);
+    modals.showWarning(`That card cannot possibly be ${impossibilities[0]}`);
   } else {
-    modals.warningShow(
+    modals.showWarning(
       `That card cannot possibly be any of ${impossibilities.join(", ")}`,
     );
   }

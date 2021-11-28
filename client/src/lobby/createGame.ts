@@ -3,7 +3,6 @@
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
-import { hideDialog } from "../dialogs";
 import { VARIANTS } from "../game/data/gameData";
 import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
 import globals from "../globals";
@@ -363,7 +362,7 @@ function submit() {
   $("#createTableTimeBaseMinutes").removeClass("wrongInput");
   $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
 
-  hideDialog();
+  modals.closeModals();
 }
 
 function acceptOptionsFromGuest(options: Options) {
@@ -492,13 +491,13 @@ export function before(): boolean {
         msg += `in ${minutesLeft} minutes`;
       }
       msg += ". You cannot start any new games for the time being.";
-      modals.warningShow(msg);
+      modals.showWarning(msg);
       return false;
     }
   }
 
   if (globals.maintenanceMode) {
-    modals.warningShow(
+    modals.showWarning(
       "The server is currently in maintenance mode. You cannot start any new games for the time being.",
     );
     return false;

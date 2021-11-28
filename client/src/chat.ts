@@ -215,7 +215,7 @@ function send(room: string, element: JQuery<HTMLElement>) {
 
   // Validate that they are accidentally broadcasting a private message reply
   if (msg.startsWith("/r ")) {
-    modals.warningShow(
+    modals.showWarning(
       "No-one has sent you a private message yet, so you cannot reply.",
     );
     return;
@@ -234,7 +234,7 @@ export function sendText(room: string, msgRaw: string): void {
   }
 
   if (globals.muted) {
-    modals.warningShow("You have been muted by an administrator.");
+    modals.showWarning("You have been muted by an administrator.");
     return;
   }
 
@@ -287,7 +287,7 @@ export function sendText(room: string, msgRaw: string): void {
     if (!serverSideOnlyCommands.includes(command)) {
       const chatCommandFunction = chatCommands.get(command);
       if (chatCommandFunction === undefined) {
-        modals.warningShow(`The chat command of "${command}" is not valid.`);
+        modals.showWarning(`The chat command of "${command}" is not valid.`);
       } else {
         chatCommandFunction(roomID, args);
       }

@@ -48,7 +48,7 @@ export function efficiencyLabelClick(
   }
 
   if (globals.state.replay.active && !globals.state.finished) {
-    modals.warningShow(
+    modals.showWarning(
       "You can not modify the future efficiency during in-game replays.",
     );
     return;
@@ -59,7 +59,7 @@ export function efficiencyLabelClick(
     globals.state.replay.shared !== null &&
     !globals.state.replay.shared.amLeader
   ) {
-    modals.warningShow(
+    modals.showWarning(
       "Only the shared replay leader can modify the efficiency.",
     );
     return;

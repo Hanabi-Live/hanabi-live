@@ -2,7 +2,7 @@
 
 import Konva from "konva";
 import * as debug from "../../debug";
-import { hideDialog, showPrompt } from "../../dialogs";
+import { showPrompt } from "../../dialogs";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
@@ -1200,7 +1200,7 @@ function drawSharedReplay() {
     }
 
     if (globals.state.spectators.length === 1) {
-      modals.warningShow(
+      modals.showWarning(
         "You are the only person in the shared replay, so you cannot pass the leader to someone else.",
       );
       return;
@@ -1222,7 +1222,7 @@ function drawSharedReplay() {
       const button = document.createElement("button");
 
       const newLeader = (player: string | null | undefined) => {
-        hideDialog();
+        modals.closeModals();
 
         if (player === null || player === undefined) {
           return;
@@ -1246,7 +1246,7 @@ function drawSharedReplay() {
       placeholder.appendChild(button);
     }
 
-    showPrompt("set-leader-dialog");
+    showPrompt("set-leader-modal");
   });
 }
 

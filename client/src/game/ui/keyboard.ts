@@ -102,11 +102,6 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   if (event.which === KeyCode.KEY_ESCAPE) {
-    // Don't do anything if there is a warning or error visible
-    if (globals.lobby.modalShowing) {
-      return;
-    }
-
     // Escape = If the chat is open, close it
     if ($("#game-chat-modal").is(":visible")) {
       globals.game!.chat.hide();

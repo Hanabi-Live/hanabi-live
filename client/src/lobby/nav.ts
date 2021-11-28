@@ -1,7 +1,7 @@
 // The navigation bar at the top of the lobby
 
-import { setDialog } from "../dialogs";
 import globals from "../globals";
+import { setModal } from "../modals";
 import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -13,15 +13,19 @@ export function init(): void {
   $("#logo-link").removeAttr("href");
 
   // The "Create Game" and "Change Options" buttons
-  setDialog("nav-buttons-lobby-create-game", "create-game-dialog", {
-    before: createGame.before,
-    ready: createGame.ready,
-  });
+  setModal(
+    "#nav-buttons-lobby-create-game",
+    "#create-game-modal",
+    createGame.before,
+    createGame.ready,
+  );
 
-  setDialog("nav-buttons-pregame-change-options", "create-game-dialog", {
-    before: createGame.before,
-    ready: createGame.ready,
-  });
+  setModal(
+    "#nav-buttons-pregame-change-options",
+    "#create-game-modal",
+    createGame.before,
+    createGame.ready,
+  );
 
   // The "Show History" button
   $("#nav-buttons-lobby-history").on("click", () => {
@@ -29,19 +33,21 @@ export function init(): void {
   });
 
   // The "Watch Specific Replay" button
-  setDialog("nav-buttons-lobby-replay", "replay-dialog", {
-    before: null,
-    ready: watchReplay.ready,
-  });
+  setModal(
+    "#nav-buttons-lobby-replay",
+    "#replay-modal",
+    null,
+    watchReplay.ready,
+  );
 
   // The "Help" button
   // (this is just a simple link)
 
   // The "Resources" button
-  setDialog("nav-buttons-lobby-resources", "resources-dialog");
+  setModal("#nav-buttons-lobby-resources", "#resources-modal");
 
   // The "Settings" button
-  setDialog("nav-buttons-lobby-settings", "settings-dialog");
+  setModal("#nav-buttons-lobby-settings", "#settings-modal");
 
   // The "Sign Out" button
   $(".signout").on("click", () => {

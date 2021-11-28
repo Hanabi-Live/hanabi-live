@@ -511,20 +511,16 @@ table td {
 }
 
 /*
-  Create Game Dialog
+  Create Game modal
 */
 
-#create-game-dialog-title {
-  width: 11em;
-}
-
-#create-game-dialog > div {
+#create-game-modal > div {
   /* Alpha sets this to -2em, so we have to reset it */
   margin-left: 0em;
   text-align: left;
 }
 
-#create-game-dialog > div > div {
+#create-game-modal > div > div {
   padding-left: 0;
 }
 
@@ -613,11 +609,6 @@ input::-webkit-calendar-picker-indicator {
 /*
   Watch Specific Replay Dialog
 */
-
-#replay-dialog-title {
-  width: 13em;
-}
-
 #replay-json {
   resize: none;
 }
@@ -674,25 +665,54 @@ input::-webkit-calendar-picker-indicator {
   Modals
 */
 
-.modal {
-  position: absolute;
-  z-index: 1000;
-  top: 15%;
-  left: 5em;
-  right: 5em;
-  bottom: 5em;
-  overflow: auto;
-}
-
 #page-cover {
+  display: none;
   position: absolute;
+  left: 0;
   top: 0;
   right: 0;
   bottom: 0;
-  left: 0;
-  background-color: #001805;
-  z-index: 999;
-  opacity: 0;
+  animation: pageCoverHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
+}
+
+#page-cover.show {
+  animation: pageCoverShow 0.4s forwards 1;
+}
+
+@keyframes pageCoverHide {
+  0% { background-color: rgba(0, 24, 5, 0.7); z-index: 99999; }
+  100% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+}
+
+@keyframes pageCoverShow {
+  0% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+  100% { background-color: rgba(0, 24, 5, 0.7); z-index: 99999; }
+}
+
+.modal {
+  background-color: white;
+  border: 2px solid #308943;
+  border-radius: 5px;
+  top: 15vh;
+  max-height: 70vh;
+  max-width: 80vw;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 20px 30px;
+  position: absolute;
+  align-self: flex-start;
+}
+
+.modal-message {
+  left: 5em;
+  right: 5em;
+  max-width: 100%;
+  padding: 30px 30px 0 30px;
+  border: 0;
+  overflow: auto;
+  scrollbar-gutter: unset;
 }
 
 /*

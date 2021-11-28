@@ -742,10 +742,57 @@
   </div>
 </div>
 
-<!-- Dialogs -->
-<div id="dialogs-container" class="hidden">
-  <div id="create-game-dialog">
-    <h2 id="create-game-dialog-title">Create a New Game</h2>
+<!-- Modals -->
+<div id="modals-container" class="hidden">
+  <!-- Warning modal -->
+  <div id="warning-modal" class="modal modal-message">
+    <section>
+      <h3>Warning</h3>
+      <p id="warning-modal-description"></p>
+      <ul class="actions">
+        <li>
+          <button id="warning-modal-button" class="button small">Close</button>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Error modal -->
+  <div id="error-modal" class="modal modal-message">
+    <section>
+      <h3>Error</h3>
+      <p id="error-modal-description"></p>
+      <ul class="actions">
+        <li>
+          <button id="error-modal-button" class="button small">Reload</button>
+          <a><button id="error-modal-signout" class="button small signout">Sign Out</button></a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Password modal -->
+  <div id="password-modal" class="modal modal-message">
+    <section>
+      <h3>Enter Password</h3>
+      <p>Enter the password for this game:</p>
+      <input id="password-modal-id" type="hidden" />
+      <input id="password-modal-password" type="text" placeholder="Password" />
+      <br />
+      <ul class="actions">
+        <li>
+          <button id="password-modal-submit" class="button small">Submit</button>
+        </li>
+        <li>
+          <button id="password-modal-cancel" class="button small">Cancel</button>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Password modal -->
+  <div id="create-game-modal" class="modal">
+    <h2 id="create-game-modal-title">Create a New Game</h2>
 
     <div class="row">
       <div class="col-3 input-text">
@@ -1057,8 +1104,8 @@
     <input id="create-game-table-number" type="hidden" value="" />
   </div>
 
-  <div id="resources-dialog">
-    <div id="resources-dialog-container">
+  <!-- Resources modal -->
+  <div id="resources-modal">
     <h2>Resources</h2>
     <ul>
       <li>
@@ -1146,10 +1193,10 @@
         for assessing which charities are good.)
       </li>
     </ul>
-    </div>
   </div>
 
-  <div id="settings-dialog">
+  <!-- Settings modal -->
+  <div id="settings-modal">
     <h2>Settings</h2>
 
     <p class="margin1"><strong>Notifications</strong></p>
@@ -1287,8 +1334,9 @@
     <br /><br /><br />
   </div>
 
-  <div id="replay-dialog">
-    <h2 id="replay-dialog-title">Watch a Specific Replay</h2>
+  <!-- Replay modal -->
+  <div id="replay-modal">
+    <h2 id="replay-modal-title">Watch a Specific Replay</h2>
 
     <div class="row">
       <div class="col-3 input-text">
@@ -1376,7 +1424,8 @@
     </button>
   </div>
 
-  <div id="set-leader-dialog">
+  <!-- Set Leader modal -->
+  <div id="set-leader-modal">
     <h2>Set New Leader</h2>
 
     <p>Who is the person that you want to pass the replay leader to?</p>
@@ -1384,7 +1433,8 @@
     <div id="leader-placeholder"></div>
   </div>
 
-  <div id="set-turn-dialog">
+  <!-- Set Turn modal -->
+  <div id="set-turn-modal">
     <h2>Which turn do you want to go to?</h2>
 
     <div id="set-turn-label" data-value="0">Turn: </div>
@@ -1404,30 +1454,8 @@
 <!-- Game (the UI when playing a game) -->
 <div id="game" class="hidden"></div>
 
-<!-- ` (the UI for dialogs) -->
-<div id="backdrop"></div>
-
 <!-- Game tooltips (which are initialized in "tooltips.js") -->
 <span id="game-tooltips"></span><!-- This span cannot be hidden -->
-
-<!-- Password modal -->
-<div id="password-modal" class="modal hidden">
-  <section class="box">
-    <h3>Enter Password</h3>
-    <p>Enter the password for this game:</p>
-    <input id="password-modal-id" type="hidden" />
-    <input id="password-modal-password" type="text" placeholder="Password" />
-    <br />
-    <ul class="actions">
-      <li>
-        <button id="password-modal-submit" class="button small">Submit</button>
-      </li>
-      <li>
-        <button id="password-modal-cancel" class="button small">Cancel</button>
-      </li>
-    </ul>
-  </section>
-</div>
 
 <!-- Game chat modal -->
 <div id="game-chat-modal" class="hidden draggable">
@@ -1443,35 +1471,8 @@
   </section>
 </div>
 
-<!-- Warning modal -->
-<div id="warning-modal" class="modal hidden">
-  <section class="box">
-    <h3>Warning</h3>
-    <p id="warning-modal-description"></p>
-    <ul class="actions">
-      <li>
-        <button id="warning-modal-button" class="button small">Close</button>
-      </li>
-    </ul>
-  </section>
-</div>
-
-<!-- Error modal -->
-<div id="error-modal" class="modal hidden">
-  <section class="box">
-    <h3>Error</h3>
-    <p id="error-modal-description"></p>
-    <ul class="actions">
-      <li>
-        <button id="error-modal-button" class="button small">Reload</button>
-        <a><button id="error-modal-signout" class="button small signout">Sign Out</button></a>
-      </li>
-    </ul>
-  </section>
-</div>
-
 <!-- Page cover (which fades the background when a modal is showing) -->
-<div id="page-cover" class="hidden"></div>
+<div id="page-cover"></div>
 
 <!-- Used to validate that we are connecting to the correct URL -->
 <div id="domain" class="hidden">{{.Domain}}</div>

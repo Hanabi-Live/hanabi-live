@@ -1,8 +1,9 @@
 // Functions for progressing forward and backward through time
 
 import Konva from "konva";
-import { hideDialog, showPrompt } from "../../dialogs";
+import { showPrompt } from "../../dialogs";
 import { parseIntSafe } from "../../misc";
+import { closeModals } from "../../modals";
 import * as arrows from "./arrows";
 import Shuttle from "./controls/Shuttle";
 import getCardOrStackBase from "./getCardOrStackBase";
@@ -361,13 +362,13 @@ export function promptTurn(): void {
 
   sliderButton.onpointerdown = (evt) => {
     evt.preventDefault();
-    hideDialog();
+    closeModals();
 
     const element = <HTMLInputElement>document.getElementById("set-turn-range");
     goTo(element?.value);
   };
 
-  showPrompt("set-turn-dialog");
+  showPrompt("set-turn-modal");
 }
 
 // --------------------------------
