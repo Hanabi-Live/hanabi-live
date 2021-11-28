@@ -1,11 +1,11 @@
 // Modals (boxes that hover on top of the UI)
 
 import { FADE_TIME } from "./constants";
+import { hideDialog } from "./dialogs";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import { parseIntSafe } from "./misc";
 import * as sounds from "./sounds";
-import * as tooltips from "./tooltips";
 
 // The list of all of the modals
 const lobbyModals = [
@@ -41,8 +41,8 @@ export function init(): void {
 }
 
 export function passwordShow(tableID: number): void {
+  hideDialog();
   setShadeOpacity(0.75);
-  tooltips.closeAllTooltips();
   globals.modalShowing = true;
 
   $("#password-modal-id").val(tableID);
@@ -84,7 +84,7 @@ function passwordSubmit() {
 }
 
 export function warningShow(msg: string): void {
-  tooltips.closeAllTooltips();
+  hideDialog();
   setShadeOpacity(0.75);
   globals.modalShowing = true;
 
@@ -106,7 +106,7 @@ export function errorShow(msg: string): void {
   }
   globals.errorOccurred = true;
 
-  tooltips.closeAllTooltips();
+  hideDialog();
   setShadeOpacity(0.9);
   globals.modalShowing = true;
 

@@ -504,8 +504,6 @@ export function before(): boolean {
     return false;
   }
 
-  modals.setShadeOpacity(0.6);
-
   return true;
 }
 
