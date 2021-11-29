@@ -28,7 +28,7 @@
   >
   <!-- Load the Critical CSS first -->
   {{if ne .Title "Dev"}}
-    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css?{{.Version}}" />
   {{end}}
   <!-- Preload fonts -->
   <link
