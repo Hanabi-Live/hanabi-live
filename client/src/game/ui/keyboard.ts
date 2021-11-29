@@ -388,9 +388,9 @@ function promptCardOrder(playAction = true): void {
   const element = <HTMLInputElement>(
     document.getElementById("play-discard-card")
   );
-  element?.setAttribute("min", "1");
-  element?.setAttribute("max", maxSlotIndex.toString());
-  element?.setAttribute("value", "1");
+  element.min = "1";
+  element.max = maxSlotIndex.toString();
+  element.value = "1";
 
   const button = <HTMLButtonElement>(
     document.getElementById("play-discard-button")
