@@ -65,17 +65,17 @@ export function askForEfficiency(): void {
 
   const currentModifier = globals.state.notes.efficiencyModifier;
 
-  const element = document.getElementById("set-modifier-current");
-  if (element !== null) {
-    element.innerHTML = currentModifier.toString();
+  const current = document.getElementById("set-modifier-current");
+  if (current !== null) {
+    current.innerHTML = currentModifier.toString();
   }
-  document
-    .getElementById("set-modifier-new")
-    ?.setAttribute("value", currentModifier.toString());
+  const element = <HTMLInputElement>document.getElementById("set-modifier-new");
+  element.value = currentModifier.toString();
+
   const button = <HTMLButtonElement>(
     document.getElementById("set-modifier-button")
   );
-  button.onpointerdown = () => {
+  button.onclick = () => {
     modals.closeModals();
 
     const effModString =
@@ -89,5 +89,19 @@ export function askForEfficiency(): void {
     setEfficiencyMod(effMod);
   };
 
+  element.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      button.click();
+    }
+  };
+
   modals.showPrompt("#set-modifier-modal");
+  setTimeout(() => {
+    element.focus();
+    const length = element.value.length;
+    // Cannot put the cursor past the text unless it's a text input
+    element.type = "text";
+    element.setSelectionRange(length, length);
+    element.type = "number";
+  }, 100);
 }
