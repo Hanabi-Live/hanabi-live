@@ -13,7 +13,6 @@
     "webpack": "webpack"
   },
   "dependencies": {
-    "@popperjs/core": "^2.10.2",
     "@sentry/browser": "^6.6.0",
     "fast-deep-equal": "^3.1.3",
     "immer": "^8.0.1",
