@@ -16,7 +16,6 @@ import * as playerSettings from "./lobby/playerSettings";
 import lobbyTutorialInit from "./lobby/tutorialInit";
 import Screen from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
-import * as modals from "./modals";
 import * as sentry from "./sentry";
 import * as sounds from "./sounds";
 import * as tooltips from "./tooltips";
@@ -56,7 +55,6 @@ $(document).ready(() => {
   playerSettings.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
-  modals.init();
   sounds.init();
 
   // Start preloading some images that we will need for when a game starts

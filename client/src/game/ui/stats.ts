@@ -36,19 +36,17 @@ export function efficiencyLabelClick(
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
   // "event.evt.buttons" is always 0 here
-  if (event.evt.button !== 2) {
-    // We only care about right-clicks
-    return;
-  }
-
-  // A normal right click is a arrow to highlight the efficiency
-  if (!event.evt.altKey) {
+  if (event.evt.button === 2) {
     arrows.click(event, ReplayArrowOrder.Efficiency);
     return;
   }
 
+  askForEfficiency();
+}
+
+export function askForEfficiency(): void {
   if (globals.state.replay.active && !globals.state.finished) {
-    modals.warningShow(
+    modals.showWarning(
       "You can not modify the future efficiency during in-game replays.",
     );
     return;
@@ -59,24 +57,51 @@ export function efficiencyLabelClick(
     globals.state.replay.shared !== null &&
     !globals.state.replay.shared.amLeader
   ) {
-    modals.warningShow(
+    modals.showWarning(
       "Only the shared replay leader can modify the efficiency.",
     );
     return;
   }
 
-  const effModString = window.prompt(
-    `The current modifier is: ${globals.state.notes.efficiencyModifier}\nEnter a modifier for the "cards currently gotten".\n(e.g. "1", "-2", etc.)`,
-  );
-  if (effModString === null) {
-    // Don't do anything if they pressed the cancel button
-    return;
-  }
-  const effMod = parseIntSafe(effModString);
-  if (Number.isNaN(effMod)) {
-    // Don't do anything if they entered something that is not a number
-    return;
-  }
+  const currentModifier = globals.state.notes.efficiencyModifier;
 
-  setEfficiencyMod(effMod);
+  const current = document.getElementById("set-modifier-current");
+  if (current !== null) {
+    current.innerHTML = currentModifier.toString();
+  }
+  const element = <HTMLInputElement>document.getElementById("set-modifier-new");
+  element.value = currentModifier.toString();
+
+  const button = <HTMLButtonElement>(
+    document.getElementById("set-modifier-button")
+  );
+  button.onclick = () => {
+    modals.closeModals();
+
+    const effModString =
+      (<HTMLInputElement>document.getElementById("set-modifier-new"))?.value ??
+      "";
+    const effMod = parseIntSafe(effModString);
+    if (Number.isNaN(effMod)) {
+      // Don't do anything if they entered something that is not a number
+      return;
+    }
+    setEfficiencyMod(effMod);
+  };
+
+  element.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      button.click();
+    }
+  };
+
+  modals.showPrompt("#set-modifier-modal");
+  setTimeout(() => {
+    element.focus();
+    const length = element.value.length;
+    // Cannot put the cursor past the text unless it's a text input
+    element.type = "text";
+    element.setSelectionRange(length, length);
+    element.type = "number";
+  }, 100);
 }

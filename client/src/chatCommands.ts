@@ -14,7 +14,7 @@ export default chatCommands;
 function friend(_room: string, args: string[]) {
   // Validate that the format of the command is correct
   if (args.length < 1) {
-    modals.warningShow(
+    modals.showWarning(
       "The format of the /friend command is: <code>/friend Alice</code>",
     );
     return;
@@ -23,7 +23,7 @@ function friend(_room: string, args: string[]) {
   // Validate that we are not targeting ourselves
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
-    modals.warningShow("You cannot friend yourself.");
+    modals.showWarning("You cannot friend yourself.");
   }
 
   globals.conn!.send("chatFriend", {
@@ -52,7 +52,7 @@ chatCommands.set("friendslist", friends);
 function pm(room: string, args: string[]) {
   // Validate that the format of the command is correct
   if (args.length < 2) {
-    modals.warningShow(
+    modals.showWarning(
       "The format of a private message is: <code>/w Alice hello</code>",
     );
     return;
@@ -63,7 +63,7 @@ function pm(room: string, args: string[]) {
 
   // Validate that they are not sending a private message to themselves
   if (recipient.toLowerCase() === globals.username.toLowerCase()) {
-    modals.warningShow("You cannot send a private message to yourself.");
+    modals.showWarning("You cannot send a private message to yourself.");
     return;
   }
 
@@ -80,7 +80,7 @@ function pm(room: string, args: string[]) {
     }
   }
   if (!isOnline) {
-    modals.warningShow(`User "${recipient}" is not currently online.`);
+    modals.showWarning(`User "${recipient}" is not currently online.`);
     return;
   }
 
@@ -100,7 +100,7 @@ chatCommands.set("t", pm);
 // /setleader [username]
 function setLeader(_room: string, args: string[]) {
   if (globals.tableID === -1) {
-    modals.warningShow(
+    modals.showWarning(
       "You are not currently at a table, so you cannot use that command.",
     );
     return;
@@ -122,7 +122,7 @@ chatCommands.set("changeowner", setLeader);
 // /setvariant [variant]
 function setVariant(_room: string, args: string[]) {
   if (globals.tableID === -1) {
-    modals.warningShow(
+    modals.showWarning(
       "You are not currently at a table, so you cannot use that command.",
     );
     return;
@@ -131,7 +131,7 @@ function setVariant(_room: string, args: string[]) {
   // Validate the variant name
   const variantName = args.join(" ");
   if (VARIANTS.get(variantName) === undefined) {
-    modals.warningShow(`The variant of "${variantName}" is not valid.`);
+    modals.showWarning(`The variant of "${variantName}" is not valid.`);
     return;
   }
 
@@ -152,7 +152,7 @@ chatCommands.set("changevariant", setVariant);
 // /tag [tag]
 chatCommands.set("tag", (_room: string, args: string[]) => {
   if (globals.tableID === -1) {
-    modals.warningShow(
+    modals.showWarning(
       "You are not currently at a table, so you cannot use that command.",
     );
     return;
@@ -168,7 +168,7 @@ chatCommands.set("tag", (_room: string, args: string[]) => {
 // /tagdelete [tag]
 chatCommands.set("tagdelete", (_room: string, args: string[]) => {
   if (globals.tableID === -1) {
-    modals.warningShow(
+    modals.showWarning(
       "You are not currently at a table, so you cannot use that command.",
     );
     return;
@@ -223,7 +223,7 @@ chatCommands.set("stats", playerinfo);
 chatCommands.set("unfriend", (_room: string, args: string[]) => {
   // Validate that the format of the command is correct
   if (args.length < 1) {
-    modals.warningShow(
+    modals.showWarning(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
     );
     return;
@@ -232,7 +232,7 @@ chatCommands.set("unfriend", (_room: string, args: string[]) => {
   // Validate that we are not targeting ourselves
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
-    modals.warningShow("You cannot unfriend yourself.");
+    modals.showWarning("You cannot unfriend yourself.");
   }
 
   globals.conn!.send("chatUnfriend", {
@@ -252,5 +252,5 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
   if (warning === "") {
     warning = "This is a warning!";
   }
-  modals.warningShow(warning);
+  modals.showWarning(warning);
 });

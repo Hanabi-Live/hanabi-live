@@ -19,7 +19,7 @@ interface WarningData {
 }
 commands.set("warning", (data: WarningData) => {
   console.warn(data.warning);
-  modals.warningShow(data.warning);
+  modals.showWarning(data.warning);
 
   // Re-activate some lobby elements
   $("#nav-buttons-lobby-create-game").removeClass("disabled");
@@ -33,7 +33,7 @@ interface ErrorData {
 }
 commands.set("error", (data: ErrorData) => {
   console.error(data.error);
-  modals.errorShow(data.error);
+  modals.showError(data.error);
 
   // Disconnect from the server, if connected
   if (globals.conn !== null) {

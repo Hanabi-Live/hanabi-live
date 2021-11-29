@@ -3,6 +3,7 @@
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
 import { parseIntSafe } from "../misc";
+import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
 
 export function init(): void {
@@ -58,10 +59,8 @@ function submit() {
 
   // Error
   $("#replay-error-row").hide();
-  $("#replay-error-row-spacing").hide();
   const error = (text: string) => {
     $("#replay-error-row").show();
-    $("#replay-error-row-spacing").show();
     $("#replay-error-row-text").text(text);
 
     // Redraw the tooltip so that the new elements will fit better
@@ -136,7 +135,7 @@ function submit() {
     });
   }
 
-  tooltips.closeAllTooltips();
+  closeModals();
 }
 
 // This function is executed every time the "Watch Specific Replay" button is clicked
@@ -172,7 +171,6 @@ export function ready(): void {
 
   // Hide the error row
   $("#replay-error-row").hide();
-  $("#replay-error-row-spacing").hide();
 
   // Set the "Visibility" radio button
   const visibility = localStorage.getItem("watchReplayVisibility");

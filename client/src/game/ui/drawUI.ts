@@ -2,7 +2,6 @@
 
 import Konva from "konva";
 import * as debug from "../../debug";
-import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
@@ -770,7 +769,7 @@ function drawScoreArea() {
       }
     },
   );
-  globals.elements.turnNumberLabel.on("tap", replay.promptTurn);
+  globals.elements.turnNumberLabel.on("dbltap", replay.promptTurn);
 
   globals.elements.scoreTextLabel = basicTextLabel.clone({
     text: "Score",
@@ -1200,46 +1199,53 @@ function drawSharedReplay() {
     }
 
     if (globals.state.spectators.length === 1) {
-      modals.warningShow(
+      modals.showWarning(
         "You are the only person in the shared replay, so you cannot pass the leader to someone else.",
       );
       return;
     }
 
-    const spectatorMap = new Map<number, string>();
+    const placeholder = document.getElementById("leader-placeholder");
 
-    let msg =
-      "What is the number of the person that you want to pass the replay leader to?\n\n";
-    let i = 1;
+    if (placeholder === null) {
+      return;
+    }
+
+    placeholder.innerHTML = "";
+
     for (const spectator of globals.state.spectators) {
       if (spectator.name === globals.metadata.ourUsername) {
         continue;
       }
 
-      spectatorMap.set(i, spectator.name);
-      msg += `${i} - ${spectator.name}\n`;
-      i += 1;
-    }
-    const targetString = window.prompt(msg);
-    if (targetString === null) {
-      // Don't do anything if they pressed the cancel button
-      return;
-    }
-    const target = parseIntSafe(targetString);
-    if (Number.isNaN(target)) {
-      // Don't do anything if they entered something that is not a number
-      return;
-    }
-    const selectedSpectator = spectatorMap.get(target);
-    if (selectedSpectator === undefined) {
-      // Don't do anything if they entered an invalid spectator number
-      return;
+      const button = document.createElement("button");
+
+      const newLeader = (player: string | null | undefined) => {
+        modals.closeModals();
+
+        if (player === null || player === undefined) {
+          return;
+        }
+
+        globals.lobby.conn!.send("tableSetLeader", {
+          tableID: globals.lobby.tableID,
+          name: player,
+        });
+      };
+
+      button.innerHTML = spectator.name;
+      button.classList.add("button");
+      button.dataset.player = spectator.name;
+      button.addEventListener("click", (evt) => {
+        const element = <HTMLElement>evt.target;
+        newLeader(element?.dataset?.player);
+      });
+      button.type = "submit";
+
+      placeholder.appendChild(button);
     }
 
-    globals.lobby.conn!.send("tableSetLeader", {
-      tableID: globals.lobby.tableID,
-      name: selectedSpectator,
-    });
+    modals.showPrompt("#set-leader-modal");
   });
 }
 
@@ -1447,7 +1453,8 @@ function drawStatistics() {
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
-  efficiencyNumberLabel.on("click tap", stats.efficiencyLabelClick);
+  efficiencyNumberLabel.on("click", stats.efficiencyLabelClick);
+  efficiencyNumberLabel.on("dbltap", stats.askForEfficiency);
   efficiencyNumberLabel.tooltipName = "efficiency-number";
   // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
 

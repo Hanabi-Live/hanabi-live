@@ -44,7 +44,6 @@ export class Globals {
   game: Game | null = null; // Equal to the data from the "game" command
 
   currentScreen: Screen = Screen.Login;
-  modalShowing = false;
   tableID = -1; // Equal to the table we are joined to or -1 if no table
   errorOccurred = false;
 

@@ -147,7 +147,7 @@ export function onEfficiencyChanged(data: {
         : "-",
     )}
     <br />
-    Alt + right click this number to add a modifier.
+    Click / Double tap this number to add a modifier.
   `;
   effLabel.tooltipContent = tooltipContent;
   konvaTooltips.init(effLabel, true, false);

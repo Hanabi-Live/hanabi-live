@@ -511,23 +511,8 @@ table td {
 }
 
 /*
-  Create Game Tooltip
+  Create Game modal
 */
-
-#create-game-tooltip-title {
-  width: 11em;
-}
-
-#create-game-tooltip > div {
-  /* Alpha sets this to -2em, so we have to reset it */
-  margin-left: 0em;
-  text-align: left;
-}
-
-#create-game-tooltip > div > div {
-  padding-left: 0;
-}
-
 .create-game-icon {
   display: inline-block;
   width: 2em;
@@ -543,6 +528,14 @@ table td {
   /* Annoyingly, the text does not line up with the checkbox */
   position: relative;
   top: 0.25em;
+}
+
+#create-game-timed-row {
+  min-height: 3em;
+}
+
+#create-game-timed-option-1, #create-game-timed-option-3 {
+  line-height: 1.2em;
 }
 
 #create-game-timed-label {
@@ -611,13 +604,8 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /*
-  Watch Specific Replay Tooltip
+  Watch Specific Replay Dialog
 */
-
-#replay-tooltip-title {
-  width: 13em;
-}
-
 #replay-json {
   resize: none;
 }
@@ -674,25 +662,80 @@ input::-webkit-calendar-picker-indicator {
   Modals
 */
 
-.modal {
+#page-cover {
+  display: none;
   position: absolute;
-  z-index: 1000;
-  top: 15%;
-  left: 5em;
-  right: 5em;
-  bottom: 5em;
-  overflow: auto;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  animation: pageCoverHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
 }
 
-#page-cover {
+#page-cover.show {
+  animation: pageCoverShow 0.4s forwards 1;
+}
+
+@keyframes pageCoverHide {
+  0% { background-color: rgba(0, 24, 5, 0.7); z-index: 99999; }
+  100% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+}
+
+@keyframes pageCoverShow {
+  0% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+  100% { background-color: rgba(0, 24, 5, 0.7); z-index: 99999; }
+}
+
+.modal {
+  align-self: flex-start;
+  background-color: white;
+  border: 2px solid #308943;
+  border-radius: 5px;
+  max-height: calc(100% - 4em);
+  max-width: 80vw;
+  overflow-y: auto;
+  padding: 20px 30px;
   position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: #001805;
-  top: 0;
-  left: 0;
-  z-index: 999;
-  opacity: 0;
+  scrollbar-gutter: stable;
+  top: 3.5em;
+  min-width: 40vw;
+}
+
+.modal .row {
+  margin-bottom: 1em;
+}
+
+.modal-message {
+  border: 0;
+  left: 5em;
+  max-width: 100%;
+  right: 5em;
+  overflow: auto;
+  padding: 30px 30px 0 30px;
+  scrollbar-gutter: unset;
+  top: 15vh;
+}
+
+@media screen and (max-width: 510px) {
+  .modal, .modal-message {
+    left: 0;
+    right: 0;
+    max-width: unset;
+  }
+}
+
+#resources-modal ul {
+  margin: 0;
+}
+
+#set-modifier-current {
+  margin-left: 15px;
+}
+
+#play-discard-title {
+  text-transform: capitalize;
 }
 
 /*
@@ -1211,4 +1254,96 @@ span.cp {
 /* Wrong input indicator */
 input[type="text"].wrongInput {
   border: 2px solid red;
+}
+
+/* Dialogs */
+#backdrop {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  animation: backdropHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
+}
+
+#backdrop.show {
+  animation: backdropShow 0.4s forwards 1;
+}
+
+@keyframes backdropHide {
+  0% { background-color: rgba(0, 0, 0, 0.7); z-index: 99999; }
+  100% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+}
+
+@keyframes backdropShow {
+  0% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+  100% { background-color: rgba(0, 0, 0, 0.7); z-index: 99999; }
+}
+
+.dialog {
+  background-color: white;
+  border: 2px solid #308943;
+  border-radius: 5px;
+  max-height: 90vh;
+  max-width: 80vw;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 20px 30px;
+}
+
+#leader-placeholder {
+  display: flex;
+  justify-content: center;
+  align-content: space-evenly;
+  column-gap: 10px;
+}
+
+#set-turn-label {
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 1em;
+}
+
+#set-turn-range-container {
+  text-align: center;
+  background-color: rgba(102, 102, 102, 0.3);
+  border-radius: 5px;
+  margin-bottom: 1em;
+  padding-bottom: 10px;
+}
+
+#set-turn-range {
+  -webkit-appearance: none;
+  width: 90%;
+  height: 2px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.3);
+  outline: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+#set-turn-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+}
+
+#set-turn-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+}
+
+#set-turn-label::after {
+  content: attr(data-value);
 }

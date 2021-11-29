@@ -2,7 +2,6 @@
 
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
-import * as modals from "../modals";
 import Screen from "./types/Screen";
 
 export default function keyboardInit(): void {
@@ -78,11 +77,7 @@ export default function keyboardInit(): void {
     } else if (event.which === KeyCode.KEY_ESCAPE) {
       // If a modal is open, pressing escape should close it
       // Otherwise, pressing escape should go "back" one screen
-      if (globals.modalShowing) {
-        modals.closeAll();
-      } else {
-        clickReturnToLobby();
-      }
+      clickReturnToLobby();
     }
   });
 }

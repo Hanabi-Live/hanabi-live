@@ -228,7 +228,7 @@ export default class LayoutChild extends Konva.Group {
       newSuitIndex === null ||
       newRank === null
     ) {
-      modals.warningShow("You entered an invalid card.");
+      modals.showWarning("You entered an invalid card.");
       return true;
     }
 

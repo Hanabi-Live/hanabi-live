@@ -2,6 +2,7 @@
 
 import Konva from "konva";
 import { parseIntSafe } from "../../misc";
+import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";
 import Shuttle from "./controls/Shuttle";
 import getCardOrStackBase from "./getCardOrStackBase";
@@ -320,20 +321,55 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const turnString = window.prompt("Which turn do you want to go to?");
-  if (turnString === null) {
-    return;
-  }
-  let targetTurn = parseIntSafe(turnString);
-  if (Number.isNaN(targetTurn)) {
+  const element = <HTMLInputElement>document.getElementById("set-turn-input");
+  const button = document.getElementById("set-turn-button");
+
+  if (element === null || button === null) {
     return;
   }
 
-  // We need to decrement the turn because
-  // the turn shown to the user is always one greater than the real turn
-  targetTurn -= 1;
+  const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
+  const currentSegment = getCurrentReplaySegment() + 1;
 
-  goToSegment(targetTurn, true);
+  element.min = "1";
+  element.max = Math.max(finalSegment, currentSegment).toString();
+  element.value = currentSegment.toString();
+
+  const goTo = (turnString: string) => {
+    let targetTurn = parseIntSafe(turnString);
+    if (Number.isNaN(targetTurn)) {
+      return;
+    }
+
+    // We need to decrement the turn because
+    // the turn shown to the user is always one greater than the real turn
+    targetTurn -= 1;
+
+    goToSegment(targetTurn, true);
+  };
+
+  button.onclick = (evt) => {
+    evt.preventDefault();
+    closeModals();
+
+    goTo(element.value);
+  };
+
+  element.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      button.click();
+    }
+  };
+
+  showPrompt("#set-turn-modal");
+  setTimeout(() => {
+    element.focus();
+    const length = element.value.length;
+    // Cannot put the cursor past the text unless it's a text input
+    element.type = "text";
+    element.setSelectionRange(length, length);
+    element.type = "number";
+  }, 100);
 }
 
 // --------------------------------

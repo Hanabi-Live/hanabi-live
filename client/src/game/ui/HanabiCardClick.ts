@@ -245,7 +245,7 @@ function clickMorph(card: HanabiCard) {
 
   const cardIdentity = noteIdentity.parseIdentity(globals.variant, cardText);
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-    modals.warningShow("You entered an invalid card.");
+    modals.showWarning("You entered an invalid card.");
     return;
   }
 

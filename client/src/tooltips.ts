@@ -25,7 +25,7 @@ const TOOLTIP_THEME_CENTERED = [
 ];
 
 // Tooltip options
-const options: JQueryTooltipster.ITooltipsterOptions = {
+const defaultOptions: JQueryTooltipster.ITooltipsterOptions = {
   animation: "grow",
   contentAsHTML: true,
   delay: 0,
@@ -46,7 +46,7 @@ const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   functionBefore: (): void => {},
 };
 const gameOptions: JQueryTooltipster.ITooltipsterOptions = {
-  ...options,
+  ...defaultOptions,
   interactive: true, // So that users can update their notes
   trigger: "custom",
   updateAnimation: null,
@@ -70,11 +70,11 @@ export function initGame(): void {
 }
 
 export function create(
-  selector: string | JQuery<HTMLElement>,
+  selector: string,
   type: JQueryTooltipster.ITooltipsterOptions | TooltipOptionType = "default",
   args?: unknown,
 ): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
+  const tooltip = getElementFromSelector(selector);
   const customType = typeof type === "string" ? getOptionsFromType(type) : type;
   const tooltipOptions = {
     ...customType,
@@ -87,24 +87,32 @@ export function create(
   }
 }
 
-export function open(selector: string | JQuery<HTMLElement>): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("open");
+export function open(selector: string): void {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("open");
+  }
 }
 
-export function openInstance(selector: string | JQuery<HTMLElement>): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("instance").open();
+export function openInstance(selector: string): void {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").open();
+  }
 }
 
-export function close(selector: string | JQuery<HTMLElement>): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("close");
+export function close(selector: string): void {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("close");
+  }
 }
 
-export function closeInstance(selector: string | JQuery<HTMLElement>): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("instance").close();
+export function closeInstance(selector: string): void {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").close();
+  }
 }
 
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
@@ -120,63 +128,79 @@ export function closeAllTooltips(): void {
   );
 }
 
-export function setInstanceContent(
-  selector: string | JQuery<HTMLElement>,
-  content: string,
-): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("instance").content(content);
+export function setInstanceContent(selector: string, content: string): void {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").content(content);
+  }
 }
 
-export function setPosition(
-  selector: string | JQuery<HTMLElement>,
-  x: number,
-  y: number,
-): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
+export function setPosition(selector: string, x: number, y: number): void {
+  const tooltip = getElementFromSelector(selector);
   tooltip.css("left", x).css("top", y);
 }
 
 export function setOption(
-  selector: string | JQuery<HTMLElement>,
+  selector: string,
   option: string,
   value: unknown,
 ): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("option", option, value);
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("option", option, value);
+  }
 }
 
 export function setInstanceOption(
-  selector: string | JQuery<HTMLElement>,
+  selector: string,
   option: string,
   value: string | string[],
 ): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("instance").option(option, value);
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("instance").option(option, value);
+  }
 }
 
-export function getStatus(
-  selector: string | JQuery<HTMLElement>,
-): JQueryTooltipster.ITooltipStatus {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  return tooltip.tooltipster("status");
+export function getStatus(selector: string): JQueryTooltipster.ITooltipStatus {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    return tooltip.tooltipster("status");
+  }
+  return {
+    destroyed: true,
+    destroying: false,
+    enabled: false,
+    /** if the tooltip is open (either appearing, stable or disappearing) */
+    open: false,
+    /** the state equals one of these four values: */
+    state: "closed",
+  };
 }
 
 export function getInstance(
-  selector: string | JQuery<HTMLElement>,
-): JQueryTooltipster.ITooltipsterInstance {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  return tooltip.tooltipster("instance");
+  selector: string,
+): JQueryTooltipster.ITooltipsterInstance | null {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    return tooltip.tooltipster("instance");
+  }
+  return null;
 }
 
-export function reposition(selector: string | JQuery<HTMLElement>): void {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  tooltip.tooltipster("reposition");
+export function reposition(selector: string): void {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    tooltip.tooltipster("reposition");
+  }
 }
 
-export function isOpen(selector: string | JQuery<HTMLElement>): boolean {
-  const tooltip = typeof selector === "string" ? $(selector) : selector;
-  return tooltip.tooltipster("status").open;
+export function isOpen(selector: string): boolean {
+  const tooltip = getElementFromSelector(selector);
+  if (isTooltipster(tooltip)) {
+    return tooltip.tooltipster("status").open;
+  }
+  return false;
 }
 
 function getOptionsFromType(
@@ -188,7 +212,7 @@ function getOptionsFromType(
     case "nav":
       return navOptions;
     default:
-      return options;
+      return defaultOptions;
   }
 }
 
@@ -255,4 +279,12 @@ function createCardTooltips(): void {
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);
   }
+}
+
+function getElementFromSelector(selector: string): JQuery<HTMLElement> {
+  return typeof selector === "string" ? $(selector) : selector;
+}
+
+function isTooltipster(element: JQuery<HTMLElement>): boolean {
+  return element.hasClass("tooltipstered");
 }

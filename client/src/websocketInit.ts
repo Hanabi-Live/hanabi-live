@@ -17,7 +17,7 @@ export default function websocketInit(): void {
     !window.location.hostname.startsWith("192.168") &&
     !window.location.hostname.startsWith("10.")
   ) {
-    modals.errorShow(`You are supposed to connect using the URL of: ${domain}`);
+    modals.showError(`You are supposed to connect using the URL of: ${domain}`);
     return;
   }
 
@@ -44,7 +44,7 @@ export default function websocketInit(): void {
   });
   conn.on("close", () => {
     console.log("WebSocket connection disconnected / closed.");
-    modals.errorShow(
+    modals.showError(
       "Disconnected from the server. Either your Internet hiccuped or the server restarted.",
     );
   });
