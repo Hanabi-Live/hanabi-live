@@ -324,11 +324,9 @@ export function promptTurn(): void {
   const element = <HTMLInputElement>document.getElementById("set-turn-input");
   const button = document.getElementById("set-turn-button");
 
-  console.log("DIALOG: 1");
   if (element === null || button === null) {
     return;
   }
-  console.log("DIALOG: 2");
 
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
