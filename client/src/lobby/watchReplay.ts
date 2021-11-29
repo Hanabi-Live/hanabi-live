@@ -59,10 +59,8 @@ function submit() {
 
   // Error
   $("#replay-error-row").hide();
-  $("#replay-error-row-spacing").hide();
   const error = (text: string) => {
     $("#replay-error-row").show();
-    $("#replay-error-row-spacing").show();
     $("#replay-error-row-text").text(text);
 
     // Redraw the tooltip so that the new elements will fit better
@@ -173,7 +171,6 @@ export function ready(): void {
 
   // Hide the error row
   $("#replay-error-row").hide();
-  $("#replay-error-row-spacing").hide();
 
   // Set the "Visibility" radio button
   const visibility = localStorage.getItem("watchReplayVisibility");

@@ -1348,7 +1348,6 @@
         </label>
       </div>
     </div>
-    <br />
 
     <div id="replay-id-row" class="row">
       <div class="col-3 input-text">
@@ -1374,15 +1373,9 @@
       </div>
     </div>
 
-    <!-- Spacing for the ID row or the JSON row -->
-    <br />
-
     <div id="replay-error-row" class="row">
       <div class="col-3 input-text"></div>
       <div id="replay-error-row-text" class="col-8"></div>
-    </div>
-    <div id="replay-error-row-spacing">
-      <br /><br />
     </div>
 
     <div class="row">
@@ -1405,13 +1398,15 @@
         </label>
       </div>
     </div>
-    <br />
 
-    <br />
-    <button id="replay-submit" class="button fit" type="submit">
-      <i class="fas fa-eye"></i>&nbsp;
-      Watch
-    </button>
+    <div class="row">
+      <div class="col-12">
+        <button id="replay-submit" class="button fit" type="submit">
+          <i class="fas fa-eye"></i>&nbsp;
+          Watch
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Set Leader modal -->
@@ -1436,6 +1431,28 @@
     <div class="row">
       <div class="col-2 off-5">
         <button id="set-turn-button" type="submit" class="button">Go</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Play / Discard modal -->
+  <div id="play-discard-modal">
+    <h2 id="play-discard-title"></h2>
+
+    <p id="play-discard-message"></p>
+
+    <div class="row">
+      <div class="col-6">
+        Card:
+      </div>
+      <div class="col-6">
+        <input id="play-discard-card" name="play-discard-card" type="number" autofocus>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-2 off-5">
+        <button id="play-discard-button" type="submit" class="button">Go</button>
       </div>
     </div>
   </div>

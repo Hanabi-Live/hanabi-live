@@ -4,6 +4,7 @@ import * as KeyCode from "keycode-js";
 import Konva from "konva";
 import Screen from "../../lobby/types/Screen";
 import { copyStringToClipboard, parseIntSafe } from "../../misc";
+import { closeModals, isModalVisible, showPrompt } from "../../modals";
 import { clueTokensRules, deckRules } from "../rules";
 import ActionType from "../types/ActionType";
 import ReplayActionType from "../types/ReplayActionType";
@@ -98,6 +99,11 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Disable keyboard hotkeys if we are editing a note
   if (globals.editingNote !== null) {
+    return;
+  }
+
+  // Disable keyboard hotkeys if there's a visible modal
+  if (isModalVisible()) {
     return;
   }
 
@@ -348,40 +354,16 @@ function sharedReplaySendSound(sound: string) {
 }
 
 function play() {
-  performAction(true);
+  promptCardOrder(true);
 }
 
 function discard() {
-  performAction(false);
+  promptCardOrder(false);
 }
 
 // If playAction is true, it plays a card
 // If playAction is false, it discards a card
-function performAction(playAction = true) {
-  const verb = playAction ? "play" : "discard";
-  const target = promptCardOrder(verb);
-  if (target === null) {
-    return;
-  }
-
-  const type = playAction ? ActionType.Play : ActionType.Discard;
-
-  if (globals.state.replay.hypothetical === null) {
-    globals.lobby.conn!.send("action", {
-      tableID: globals.lobby.tableID,
-      type,
-      target,
-    });
-  } else {
-    hypothetical.send({
-      type,
-      target,
-    });
-  }
-  turn.hideArrowsAndDisableDragging();
-}
-
-function promptCardOrder(verb: string): number | null {
+function promptCardOrder(playAction = true): void {
   const playerIndex =
     globals.state.replay.hypothetical === null
       ? globals.metadata.ourPlayerIndex
@@ -391,25 +373,84 @@ function promptCardOrder(verb: string): number | null {
       ? globals.state.ongoingGame.hands[playerIndex]
       : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
   const maxSlotIndex = hand.length;
-  const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
-  const response = window.prompt(msg);
+  const verb = playAction ? "play" : "discard";
 
-  if (response === null || response === "") {
-    return null;
-  }
-  if (/^deck$/i.test(response)) {
-    // Card orders start at 0, so the final card order is the length of the deck - 1
-    return deckRules.totalCards(globals.variant) - 1;
-  }
-  const slot = parseIntSafe(response);
-  if (Number.isNaN(slot)) {
-    return null;
-  }
-  if (slot < 1 || slot > maxSlotIndex) {
-    return null;
+  const title = document.getElementById("play-discard-title");
+  if (title !== null) {
+    title.innerHTML = `${verb} Card`;
   }
 
-  return hand[maxSlotIndex - slot];
+  const paragraph = document.getElementById("play-discard-message");
+  if (paragraph !== null) {
+    paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
+  }
+
+  const element = <HTMLInputElement>(
+    document.getElementById("play-discard-card")
+  );
+  element?.setAttribute("min", "1");
+  element?.setAttribute("max", maxSlotIndex.toString());
+  element?.setAttribute("value", "1");
+
+  const button = <HTMLButtonElement>(
+    document.getElementById("play-discard-button")
+  );
+  button.onclick = () => {
+    closeModals();
+    const performAction = (action: boolean, target: number) => {
+      const type = action ? ActionType.Play : ActionType.Discard;
+
+      if (globals.state.replay.hypothetical === null) {
+        globals.lobby.conn!.send("action", {
+          tableID: globals.lobby.tableID,
+          type,
+          target,
+        });
+      } else {
+        hypothetical.send({
+          type,
+          target,
+        });
+      }
+      turn.hideArrowsAndDisableDragging();
+    };
+    const response = element.value ?? "";
+
+    if (response === null || response === "") {
+      return;
+    }
+    if (/^deck$/i.test(response)) {
+      // Card orders start at 0, so the final card order is the length of the deck - 1
+      performAction(playAction, deckRules.totalCards(globals.variant) - 1);
+      return;
+    }
+    const slot = parseIntSafe(response);
+    if (Number.isNaN(slot)) {
+      return;
+    }
+    if (slot < 1 || slot > maxSlotIndex) {
+      return;
+    }
+
+    performAction(playAction, hand[maxSlotIndex - slot]);
+  };
+
+  element.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      console.log("DIALOG: enter");
+      button.click();
+    }
+  };
+
+  showPrompt("#play-discard-modal");
+  setTimeout(() => {
+    element.focus();
+    const length = element.value.length;
+    // Cannot put the cursor past the text unless it's a text input
+    element.type = "text";
+    element.setSelectionRange(length, length);
+    element.type = "number";
+  }, 100);
 }
 
 const click = (element: Konva.Node) => () => {

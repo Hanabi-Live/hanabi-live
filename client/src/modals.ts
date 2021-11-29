@@ -225,6 +225,10 @@ export function closeModals(fast = false): void {
   }
 }
 
+export function isModalVisible(): boolean {
+  return currentModal !== null;
+}
+
 function getElement(element: string): HTMLElement {
   console.log(`DIALOG: searching for ${element}`);
   return document.querySelector(element) ?? new HTMLElement();

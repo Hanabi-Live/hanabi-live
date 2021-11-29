@@ -513,11 +513,6 @@ table td {
 /*
   Create Game modal
 */
-
-#create-game-modal div.row {
-  margin-bottom: 1em;
-}
-
 .create-game-icon {
   display: inline-block;
   width: 2em;
@@ -708,6 +703,10 @@ input::-webkit-calendar-picker-indicator {
   min-width: 40vw;
 }
 
+.modal .row {
+  margin-bottom: 1em;
+}
+
 .modal-message {
   border: 0;
   left: 5em;
@@ -731,12 +730,12 @@ input::-webkit-calendar-picker-indicator {
   margin: 0;
 }
 
-#set-modifier-modal .row {
-  margin-bottom: 1em;
-}
-
 #set-modifier-current {
   margin-left: 15px;
+}
+
+#play-discard-title {
+  text-transform: capitalize;
 }
 
 /*
