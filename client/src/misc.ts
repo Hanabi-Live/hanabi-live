@@ -72,9 +72,10 @@ function pad2(num: number) {
   return `${num}`;
 }
 
-// parseIntSafe is a more reliable version of parseInt
-// By default, "parseInt('1a')" will return "1", which is unexpected
-// This returns either an integer or NaN
+/**
+ * parseIntSafe is a more reliable version of parseInt. By default, "parseInt('1a')" will return
+ * "1", which is unexpected. This returns either an integer or NaN.
+ */
 export function parseIntSafe(input: string): number {
   if (typeof input !== "string") {
     return NaN;
