@@ -2,7 +2,6 @@
 
 import Konva from "konva";
 import * as debug from "../../debug";
-import { showPrompt } from "../../dialogs";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
@@ -1246,7 +1245,7 @@ function drawSharedReplay() {
       placeholder.appendChild(button);
     }
 
-    showPrompt("set-leader-modal");
+    modals.showPrompt("#set-leader-modal");
   });
 }
 
@@ -1454,7 +1453,8 @@ function drawStatistics() {
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
-  efficiencyNumberLabel.on("click tap", stats.efficiencyLabelClick);
+  efficiencyNumberLabel.on("click", stats.efficiencyLabelClick);
+  efficiencyNumberLabel.on("dbltap", stats.askForEfficiency);
   efficiencyNumberLabel.tooltipName = "efficiency-number";
   // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
 

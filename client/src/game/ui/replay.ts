@@ -1,9 +1,8 @@
 // Functions for progressing forward and backward through time
 
 import Konva from "konva";
-import { showPrompt } from "../../dialogs";
 import { parseIntSafe } from "../../misc";
-import { closeModals } from "../../modals";
+import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";
 import Shuttle from "./controls/Shuttle";
 import getCardOrStackBase from "./getCardOrStackBase";
@@ -330,21 +329,14 @@ export function promptTurn(): void {
     return;
   }
 
-  // Remove previous event listener
-  // https://techoverflow.net/2019/12/26/how-to-remove-all-event-listeners-from-a-dom-element-in-javascript/
-  slider.replaceWith(slider.cloneNode(true));
-
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
 
   slider.setAttribute("min", "1");
+  console.log(`DIALOG: slider max = ${(<HTMLInputElement>slider).max}`);
   slider.setAttribute("max", Math.max(finalSegment, currentSegment).toString());
+  console.log(`DIALOG: slider new max = ${(<HTMLInputElement>slider).max}`);
   slider.setAttribute("value", currentSegment.toString());
-  slider.addEventListener("input", (evt) => {
-    document
-      .getElementById("set-turn-label")
-      ?.setAttribute("data-value", (<HTMLInputElement>evt.target).value);
-  });
   sliderLabel.setAttribute("data-value", currentSegment.toString());
 
   const goTo = (turnString: string) => {
@@ -368,7 +360,7 @@ export function promptTurn(): void {
     goTo(element?.value);
   };
 
-  showPrompt("set-turn-modal");
+  showPrompt("#set-turn-modal");
 }
 
 // --------------------------------

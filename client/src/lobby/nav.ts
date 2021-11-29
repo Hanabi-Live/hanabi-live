@@ -16,15 +16,15 @@ export function init(): void {
   setModal(
     "#nav-buttons-lobby-create-game",
     "#create-game-modal",
-    createGame.before,
     createGame.ready,
+    createGame.before,
   );
 
   setModal(
     "#nav-buttons-pregame-change-options",
     "#create-game-modal",
-    createGame.before,
     createGame.ready,
+    createGame.before,
   );
 
   // The "Show History" button
@@ -33,12 +33,7 @@ export function init(): void {
   });
 
   // The "Watch Specific Replay" button
-  setModal(
-    "#nav-buttons-lobby-replay",
-    "#replay-modal",
-    null,
-    watchReplay.ready,
-  );
+  setModal("#nav-buttons-lobby-replay", "#replay-modal", watchReplay.ready);
 
   // The "Help" button
   // (this is just a simple link)

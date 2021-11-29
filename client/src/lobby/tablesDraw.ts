@@ -250,7 +250,7 @@ export function tableJoin(table: Table): void {
   }
 
   if (table.passwordProtected) {
-    modals.passwordShow(table.id);
+    modals.askForPassword(table.id);
   } else {
     globals.conn!.send("tableJoin", {
       tableID: table.id,

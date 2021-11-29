@@ -33,7 +33,7 @@ interface ErrorData {
 }
 commands.set("error", (data: ErrorData) => {
   console.error(data.error);
-  modals.errorShow(data.error);
+  modals.showError(data.error);
 
   // Disconnect from the server, if connected
   if (globals.conn !== null) {

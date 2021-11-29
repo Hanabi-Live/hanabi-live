@@ -36,17 +36,15 @@ export function efficiencyLabelClick(
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
   // "event.evt.buttons" is always 0 here
-  if (event.evt.button !== 2) {
-    // We only care about right-clicks
-    return;
-  }
-
-  // A normal right click is a arrow to highlight the efficiency
-  if (!event.evt.altKey) {
+  if (event.evt.button === 2) {
     arrows.click(event, ReplayArrowOrder.Efficiency);
     return;
   }
 
+  askForEfficiency();
+}
+
+export function askForEfficiency(): void {
   if (globals.state.replay.active && !globals.state.finished) {
     modals.showWarning(
       "You can not modify the future efficiency during in-game replays.",

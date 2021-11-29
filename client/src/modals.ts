@@ -55,12 +55,19 @@ export function init(): boolean {
     window.location.reload();
   };
 
+  // Set turn slider
+  getElement("#set-turn-range").addEventListener("input", (evt) => {
+    document
+      .getElementById("set-turn-label")
+      ?.setAttribute("data-value", (<HTMLInputElement>evt.target).value);
+  });
+
   initialized = true;
 
   return true;
 }
 
-export function passwordShow(tableID: number): void {
+export function askForPassword(tableID: number): void {
   if (!init()) {
     return;
   }
@@ -130,7 +137,7 @@ export function showWarning(msg: string): void {
   });
 }
 
-export function errorShow(msg: string): void {
+export function showError(msg: string): void {
   if (!init()) {
     return;
   }
@@ -160,8 +167,8 @@ export function errorShow(msg: string): void {
 export function setModal(
   buttonSelector: string,
   selector: string,
-  show: (() => unknown) | null = null,
-  before: (() => unknown) | null = null,
+  before?: () => unknown,
+  test?: () => unknown,
 ): void {
   if (!init()) {
     return;
@@ -170,15 +177,26 @@ export function setModal(
   const button = getElement(buttonSelector);
 
   button.onpointerdown = () => {
-    const test = show?.call(null);
-    const test2 = show?.call(null) ?? false;
-    const test3 = show?.call(null) ?? true;
-    console.log(`DIALOG: test: ${test} - ${test2} - ${test3}`);
-    if (!show?.call(null) ?? true) {
+    if (!(test?.call(null) ?? true)) {
       return;
     }
     showModal(selector, before);
   };
+}
+
+export function showPrompt(
+  selector: string,
+  test: (() => unknown) | null = null,
+): void {
+  if (!init()) {
+    return;
+  }
+
+  if (!(test?.call(null) ?? true)) {
+    return;
+  }
+
+  showModal(selector);
 }
 
 export function closeModals(fast = false): void {
@@ -218,7 +236,7 @@ function getInputElement(element: string): HTMLInputElement {
 
 function showModal(selector: string): void;
 function showModal(selector: string, allowClose: boolean): void;
-function showModal(selector: string, before: (() => unknown) | null): void;
+function showModal(selector: string, before?: () => unknown): void;
 function showModal(
   selector: string,
   before: (() => unknown) | null,

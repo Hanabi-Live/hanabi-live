@@ -44,24 +44,16 @@ export function init(): void {
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked
   $("#createTableTimed").change(() => {
     if ($("#createTableTimed").prop("checked")) {
-      $("#create-game-timed-label").removeClass("col-3");
-      $("#create-game-timed-label").addClass("col-2");
       $("#create-game-timed-option-1").show();
       $("#create-game-timed-option-2").show();
       $("#create-game-timed-option-3").show();
       $("#create-game-timed-option-4").show();
     } else {
-      $("#create-game-timed-label").addClass("col-3");
-      $("#create-game-timed-label").removeClass("col-2");
       $("#create-game-timed-option-1").hide();
       $("#create-game-timed-option-2").hide();
       $("#create-game-timed-option-3").hide();
       $("#create-game-timed-option-4").hide();
     }
-
-    // Redraw the tooltip so that the new elements will fit better
-    tooltips.reposition("#nav-buttons-lobby-create-game");
-    tooltips.reposition("#nav-buttons-pregame-change-options");
 
     // Remember the new setting
     getCheckbox("createTableTimed");
@@ -318,11 +310,11 @@ function submit() {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
     } catch (err) {
-      modals.errorShow("That is not a valid JSON object.");
+      modals.showError("That is not a valid JSON object.");
       return;
     }
     if (typeof gameJSON !== "object") {
-      modals.errorShow("That is not a valid JSON object.");
+      modals.showError("That is not a valid JSON object.");
       return;
     }
   }
@@ -553,7 +545,7 @@ export function ready(): void {
   }
 
   // Set UI Elements and values
-  $("#create-game-tooltip-title").text(dialogTitle);
+  $("#create-game-modal-title").text(dialogTitle);
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
 
@@ -610,10 +602,6 @@ export function ready(): void {
   if (window.location.hostname !== "localhost") {
     $("#create-game-json-row").hide();
   }
-
-  // Redraw the tooltip so that the new elements will fit better
-  tooltips.reposition("#nav-buttons-lobby-create-game");
-  tooltips.reposition("#nav-buttons-pregame-change-options");
 }
 
 function readyVariant(value: string) {
