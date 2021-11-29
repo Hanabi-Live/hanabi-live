@@ -731,6 +731,14 @@ input::-webkit-calendar-picker-indicator {
   margin: 0;
 }
 
+#set-modifier-modal .row {
+  margin-bottom: 1em;
+}
+
+#set-modifier-current {
+  margin-left: 15px;
+}
+
 /*
   Game
 */

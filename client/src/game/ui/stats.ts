@@ -63,18 +63,32 @@ export function askForEfficiency(): void {
     return;
   }
 
-  const effModString = window.prompt(
-    `The current modifier is: ${globals.state.notes.efficiencyModifier}\nEnter a modifier for the "cards currently gotten".\n(e.g. "1", "-2", etc.)`,
-  );
-  if (effModString === null) {
-    // Don't do anything if they pressed the cancel button
-    return;
-  }
-  const effMod = parseIntSafe(effModString);
-  if (Number.isNaN(effMod)) {
-    // Don't do anything if they entered something that is not a number
-    return;
-  }
+  const currentModifier = globals.state.notes.efficiencyModifier;
 
-  setEfficiencyMod(effMod);
+  const element = document.getElementById("set-modifier-current");
+  if (element !== null) {
+    element.innerHTML = currentModifier.toString();
+  }
+  document
+    .getElementById("set-modifier-new")
+    ?.setAttribute("value", currentModifier.toString());
+  const button = <HTMLButtonElement>(
+    document.getElementById("set-modifier-button")
+  );
+  console.log(`DIALOG: ${button}`);
+  button.onpointerdown = () => {
+    modals.closeModals();
+
+    const effModString =
+      (<HTMLInputElement>document.getElementById("set-modifier-new"))?.value ??
+      "";
+    const effMod = parseIntSafe(effModString);
+    if (Number.isNaN(effMod)) {
+      // Don't do anything if they entered something that is not a number
+      return;
+    }
+    setEfficiencyMod(effMod);
+  };
+
+  modals.showPrompt("#set-modifier-modal");
 }
