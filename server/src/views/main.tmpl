@@ -1422,10 +1422,11 @@
   <div id="set-turn-modal">
     <h2>Which turn do you want to go to?</h2>
 
-    <div id="set-turn-label" data-value="0">Turn: </div>
-
-    <div id="set-turn-range-container">
-      <input id="set-turn-range" name="set-turn-range" type="range" min="1" max="1" value="1">
+    <div class="row">
+      <div class="col-6">Turn:</div>
+      <div class="col-6">
+        <input id="set-turn-input" name="set-turn-input" type="number">
+      </div>
     </div>
 
     <div class="row">
@@ -1446,7 +1447,7 @@
         Card:
       </div>
       <div class="col-6">
-        <input id="play-discard-card" name="play-discard-card" type="number" autofocus>
+        <input id="play-discard-card" name="play-discard-card" type="number">
       </div>
     </div>
 

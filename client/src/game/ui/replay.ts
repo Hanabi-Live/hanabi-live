@@ -321,21 +321,21 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const slider = document.getElementById("set-turn-range");
-  const sliderLabel = document.getElementById("set-turn-label");
-  const sliderButton = document.getElementById("set-turn-button");
+  const element = <HTMLInputElement>document.getElementById("set-turn-input");
+  const button = document.getElementById("set-turn-button");
 
-  if (slider === null || sliderLabel === null || sliderButton === null) {
+  console.log("DIALOG: 1");
+  if (element === null || button === null) {
     return;
   }
+  console.log("DIALOG: 2");
 
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
 
-  slider.setAttribute("min", "1");
-  slider.setAttribute("max", Math.max(finalSegment, currentSegment).toString());
-  slider.setAttribute("value", currentSegment.toString());
-  sliderLabel.setAttribute("data-value", currentSegment.toString());
+  element.min = "1";
+  element.max = Math.max(finalSegment, currentSegment).toString();
+  element.value = currentSegment.toString();
 
   const goTo = (turnString: string) => {
     let targetTurn = parseIntSafe(turnString);
@@ -350,15 +350,28 @@ export function promptTurn(): void {
     goToSegment(targetTurn, true);
   };
 
-  sliderButton.onpointerdown = (evt) => {
+  button.onclick = (evt) => {
     evt.preventDefault();
     closeModals();
 
-    const element = <HTMLInputElement>document.getElementById("set-turn-range");
-    goTo(element?.value);
+    goTo(element.value);
+  };
+
+  element.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      button.click();
+    }
   };
 
   showPrompt("#set-turn-modal");
+  setTimeout(() => {
+    element.focus();
+    const length = element.value.length;
+    // Cannot put the cursor past the text unless it's a text input
+    element.type = "text";
+    element.setSelectionRange(length, length);
+    element.type = "number";
+  }, 100);
 }
 
 // --------------------------------

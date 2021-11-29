@@ -55,13 +55,6 @@ export function init(): boolean {
     window.location.reload();
   };
 
-  // Set turn slider
-  getElement("#set-turn-range").addEventListener("input", (evt) => {
-    document
-      .getElementById("set-turn-label")
-      ?.setAttribute("data-value", (<HTMLInputElement>evt.target).value);
-  });
-
   initialized = true;
 
   return true;
