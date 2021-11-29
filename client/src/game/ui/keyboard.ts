@@ -437,7 +437,6 @@ function promptCardOrder(playAction = true): void {
 
   element.onkeydown = (event) => {
     if (event.key === "Enter") {
-      console.log("DIALOG: enter");
       button.click();
     }
   };

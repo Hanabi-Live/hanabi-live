@@ -75,7 +75,6 @@ export function askForEfficiency(): void {
   const button = <HTMLButtonElement>(
     document.getElementById("set-modifier-button")
   );
-  console.log(`DIALOG: ${button}`);
   button.onpointerdown = () => {
     modals.closeModals();
 

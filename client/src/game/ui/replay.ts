@@ -333,9 +333,7 @@ export function promptTurn(): void {
   const currentSegment = getCurrentReplaySegment() + 1;
 
   slider.setAttribute("min", "1");
-  console.log(`DIALOG: slider max = ${(<HTMLInputElement>slider).max}`);
   slider.setAttribute("max", Math.max(finalSegment, currentSegment).toString());
-  console.log(`DIALOG: slider new max = ${(<HTMLInputElement>slider).max}`);
   slider.setAttribute("value", currentSegment.toString());
   sliderLabel.setAttribute("data-value", currentSegment.toString());
 

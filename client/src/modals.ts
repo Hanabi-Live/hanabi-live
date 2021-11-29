@@ -95,17 +95,11 @@ function passwordSubmit() {
     return;
   }
 
-  console.log("DIALOG: password submit 1");
-
-  console.log("DIALOG: password submit 2");
   const tableIDString = getInputElement("#password-modal-id").value;
-  console.log(`DIALOG: password submit tableIDString: ${tableIDString}`);
   const tableID = parseIntSafe(tableIDString); // The server expects this as a number
 
-  console.log("DIALOG: password submit 3");
   const password = getInputElement("#password-modal-password").value;
 
-  console.log(`DIALOG: password submit 4 : ${password}`);
   globals.conn!.send("tableJoin", {
     tableID,
     password,
@@ -113,8 +107,6 @@ function passwordSubmit() {
 
   // Record the password in local storage (cookie)
   localStorage.setItem("joinTablePassword", password);
-
-  console.log("DIALOG: password submit 5");
 
   closeModals();
 }
@@ -230,7 +222,6 @@ export function isModalVisible(): boolean {
 }
 
 function getElement(element: string): HTMLElement {
-  console.log(`DIALOG: searching for ${element}`);
   return document.querySelector(element) ?? new HTMLElement();
 }
 
