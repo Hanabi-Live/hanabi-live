@@ -59,7 +59,7 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 
 	var message string
 	// Check for valid name
-	isValid, message := isTableNameValid(d.Name, d.GameJSON == nil)
+	isValid, message := isTableNameValid(d.Name, false)
 	if !isValid {
 		s.Warning(message)
 		return
