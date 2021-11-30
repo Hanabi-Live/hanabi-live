@@ -1189,139 +1189,131 @@
   <div id="settings-modal">
     <h2>Settings</h2>
 
-    <p class="margin1"><strong>Notifications</strong></p>
-
-    <input id="desktopNotification" type="checkbox">
-    <label for="desktopNotification">
-      <span class="label-text">
-        Show a desktop notification when it reaches your turn
-      </span>
-    </label>
-
-    <br />
-
-    <input id="soundMove" type="checkbox">
-    <label for="soundMove">
-      <span class="label-text">
-        Play a sound when a move is made
-      </span>
-    </label>
-
-    <br />
-
-    <input id="soundTimer" type="checkbox">
-    <label for="soundTimer">
-      <span class="label-text">
-        Play a sound when a timer is below 10 seconds
-      </span>
-    </label>
-
-    <br /><br />
-
-    <p class="margin1"><strong>Appearance</strong></p>
-
-    <input id="keldonMode" type="checkbox">
-    <label for="keldonMode">
-      <span class="label-text">
-        Keldon mode (hands spread around the table)
-      </span>
-    </label>
-
-    <br />
-
-    <input id="colorblindMode" type="checkbox">
-    <label for="colorblindMode">
-      <span class="label-text">
-        Colorblind mode
-      </span>
-    </label>
-
-    <br />
-
-    <input id="realLifeMode" type="checkbox">
-    <label for="realLifeMode">
-      <span class="label-text">
-        Real-life mode (no extra UI elements)
-      </span>
-    </label>
-
-    <br />
-
-    <input id="reverseHands" type="checkbox">
-    <label for="reverseHands">
-      <span class="label-text">
-        Reverse hand direction (new cards go on the right)
-      </span>
-    </label>
-
-    <br />
-
-    <input id="styleNumbers" type="checkbox">
-    <label for="styleNumbers">
-      <span class="label-text">
-        Make numbers on cards match the art style
-      </span>
-    </label>
-
-    <br />
-
-    <input id="showTimerInUntimed" type="checkbox">
-    <label for="showTimerInUntimed">
-      <span class="label-text">
-        Show turn timers in untimed games
-      </span>
-    </label>
-
-    <br /><br />
-
-    <p class="margin1"><strong>Expert Features</strong></p>
-
-    <input id="speedrunPreplay" type="checkbox">
-    <label for="speedrunPreplay">
-      <span class="label-text">
-        Enable pre-playing cards
-      </span>
-    </label>
-
-    <br />
-
-    <input id="speedrunMode" type="checkbox">
-    <label for="speedrunMode">
-      <span class="label-text">
-        Enable speedrun features in non-speedrun games
-      </span>
-    </label>
-
-    <br />
-
-    <input id="hyphenatedConventions" type="checkbox">
-    <label for="hyphenatedConventions">
-      <span class="label-text">
-        Enable <a
-          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Hyphen-ated group</a> features
-      </span>
-    </label>
-
-    <br /><br />
-
-    <p class="margin1"><strong>Volume</strong></p>
-
-    <ul id="settings-volume" class="horizontal">
-      <li>
-        <input id="settings-volume-slider" type="range" min="0" max="100" step="5" value="50" />
-      </li>
-      <li id="settings-volume-slider-value"></li>
-      <li>
-        <button id="settings-volume-test" class="button alt small" type="button">
-          Test
-        </button>
-      </li>
-    </ul>
-
-    <br /><br />
+    <div class="settings-content">
+      <div>
+        <h5>Notifications</h5>
+        <p>
+          <input id="desktopNotification" type="checkbox">
+          <label for="desktopNotification">
+            <span class="label-text">
+              Show a desktop notification when it reaches your turn
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="soundMove" type="checkbox">
+          <label for="soundMove">
+            <span class="label-text">
+              Play a sound when a move is made
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="soundTimer" type="checkbox">
+          <label for="soundTimer">
+            <span class="label-text">
+              Play a sound when a timer is below 10 seconds
+            </span>
+          </label>
+        </p>
+      </div>
+      <div>
+        <h5>Appearance</h5>
+        <p>
+          <input id="keldonMode" type="checkbox">
+          <label for="keldonMode">
+            <span class="label-text">
+              Keldon mode (hands spread around the table)
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="colorblindMode" type="checkbox">
+          <label for="colorblindMode">
+            <span class="label-text">
+              Colorblind mode
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="realLifeMode" type="checkbox">
+          <label for="realLifeMode">
+            <span class="label-text">
+              Real-life mode (no extra UI elements)
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="reverseHands" type="checkbox">
+          <label for="reverseHands">
+            <span class="label-text">
+              Reverse hand direction (new cards go on the right)
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="styleNumbers" type="checkbox">
+          <label for="styleNumbers">
+            <span class="label-text">
+              Make numbers on cards match the art style
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="showTimerInUntimed" type="checkbox">
+          <label for="showTimerInUntimed">
+            <span class="label-text">
+              Show turn timers in untimed games
+            </span>
+          </label>
+        </p>
+      </div>
+      <div>
+        <h5>Expert Features</h5>
+        <p>
+          <input id="speedrunPreplay" type="checkbox">
+          <label for="speedrunPreplay">
+            <span class="label-text">
+              Enable pre-playing cards
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="speedrunMode" type="checkbox">
+          <label for="speedrunMode">
+            <span class="label-text">
+              Enable speedrun features in non-speedrun games
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="hyphenatedConventions" type="checkbox">
+          <label for="hyphenatedConventions">
+            <span class="label-text">
+              Enable <a
+                href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Hyphen-ated group</a> features
+            </span>
+          </label>
+        </p>
+      </div>
+      <div>
+        <h5>Volume</h5>
+        <ul id="settings-volume" class="horizontal">
+          <li>
+            <input id="settings-volume-slider" type="range" min="0" max="100" step="5" value="50" />
+          </li>
+          <li id="settings-volume-slider-value"></li>
+          <li>
+            <button id="settings-volume-test" class="button alt small" type="button">
+              Test
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <!-- Replay modal -->
