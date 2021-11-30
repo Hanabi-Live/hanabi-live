@@ -367,7 +367,7 @@ export function promptTurn(): void {
     const length = element.value.length;
     // Cannot put the cursor past the text unless it's a text input
     element.type = "text";
-    element.setSelectionRange(length, length);
+    element.setSelectionRange(0, length);
     element.type = "number";
   }, 100);
 }

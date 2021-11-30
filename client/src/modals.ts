@@ -55,6 +55,13 @@ export function init(): boolean {
     window.location.reload();
   };
 
+  // Create Game modal setup
+  getElement("#createTablePassword").onkeydown = (event) => {
+    if (event.key === "Enter") {
+      getElement("#create-game-submit").click();
+    }
+  };
+
   initialized = true;
 
   return true;
