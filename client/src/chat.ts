@@ -610,7 +610,7 @@ export function add(data: ChatMessage, fast: boolean): void {
     const chatInput = $("#lobby-chat-pregame-input");
     $(el).on("click", () => {
       chatInput.val(text);
-      chatInput.focus();
+      chatInput.trigger("focus");
     });
   });
   chatLineNum += 1;

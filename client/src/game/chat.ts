@@ -186,7 +186,7 @@ export function show(): void {
     throw new Error('Failed to get the "game-chat-text" element.');
   }
 
-  $("#game-chat-input").focus();
+  $("#game-chat-input").trigger("focus");
 }
 
 export function hide(): void {

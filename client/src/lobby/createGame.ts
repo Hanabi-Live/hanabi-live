@@ -205,7 +205,7 @@ function firstVariantDropdownInit() {
       dropdown1.hide();
       dropdown2.show();
       dropdown2.val("");
-      dropdown2.focus();
+      dropdown2.trigger("focus");
       $("#create-game-variant-dropdown2-icon").show();
       $("#dice").show();
     } else {
@@ -548,12 +548,6 @@ export function ready(): void {
   $("#create-game-modal-title").text(dialogTitle);
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
-
-  // Focus the Change Variant dropdown
-  // (this has to be in a callback in order to work)
-  setTimeout(() => {
-    $("#create-game-variant-dropdown1").trigger("focus");
-  }, 0);
 
   // Fill in the rest of form with the settings that we used last time
   // (which is stored on the server)

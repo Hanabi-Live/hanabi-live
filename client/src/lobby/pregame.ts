@@ -55,7 +55,7 @@ export function show(): void {
   }
 
   // Focus the pregame chat
-  $("#lobby-chat-pregame-input").focus();
+  $("#lobby-chat-pregame-input").trigger("focus");
 
   // The "Create Game" button in the nav was disabled after we clicked the "Create" button,
   // so re-enable it now that we have received a message back from the server

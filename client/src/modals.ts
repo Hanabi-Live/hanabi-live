@@ -161,6 +161,7 @@ export function setModal(
   selector: string,
   before?: () => unknown,
   test?: () => unknown,
+  focus: (() => unknown) | string | null = null,
 ): void {
   if (!init()) {
     return;
@@ -173,6 +174,16 @@ export function setModal(
       return;
     }
     showModal(selector, before);
+    if (focus === null) {
+      return;
+    }
+    setTimeout(() => {
+      if (typeof focus === "string") {
+        getElement(focus).focus();
+      } else {
+        focus.call(null);
+      }
+    }, 100);
   };
 }
 
