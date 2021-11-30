@@ -322,7 +322,7 @@ export function adjustShuttles(fast: boolean): void {
 
 export function promptTurn(): void {
   const element = <HTMLInputElement>document.getElementById("set-turn-input");
-  const button = document.getElementById("set-turn-button");
+  const button = <HTMLButtonElement>document.getElementById("set-turn-button");
 
   if (element === null || button === null) {
     return;
@@ -355,21 +355,7 @@ export function promptTurn(): void {
     goTo(element.value);
   };
 
-  element.onkeydown = (event) => {
-    if (event.key === "Enter") {
-      button.click();
-    }
-  };
-
-  showPrompt("#set-turn-modal");
-  setTimeout(() => {
-    element.focus();
-    const length = element.value.length;
-    // Cannot put the cursor past the text unless it's a text input
-    element.type = "text";
-    element.setSelectionRange(0, length);
-    element.type = "number";
-  }, 100);
+  showPrompt("#set-turn-modal", null, element, button);
 }
 
 // --------------------------------

@@ -89,19 +89,5 @@ export function askForEfficiency(): void {
     setEfficiencyMod(effMod);
   };
 
-  element.onkeydown = (event) => {
-    if (event.key === "Enter") {
-      button.click();
-    }
-  };
-
-  modals.showPrompt("#set-modifier-modal");
-  setTimeout(() => {
-    element.focus();
-    const length = element.value.length;
-    // Cannot put the cursor past the text unless it's a text input
-    element.type = "text";
-    element.setSelectionRange(0, length);
-    element.type = "number";
-  }, 100);
+  modals.showPrompt("#set-modifier-modal", null, element, button);
 }
