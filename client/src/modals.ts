@@ -168,7 +168,7 @@ export function setModal(
 
   const button = getElement(buttonSelector);
 
-  button.onpointerdown = () => {
+  button.onclick = () => {
     if (!(test?.call(null) ?? true)) {
       return;
     }
@@ -179,6 +179,8 @@ export function setModal(
 export function showPrompt(
   selector: string,
   test: (() => unknown) | null = null,
+  focusElement: HTMLInputElement | null = null,
+  clickButtonElement: HTMLButtonElement | null = null,
 ): void {
   if (!init()) {
     return;
@@ -188,7 +190,29 @@ export function showPrompt(
     return;
   }
 
+  if (focusElement !== null && clickButtonElement !== null) {
+    focusElement.onkeydown = (event) => {
+      if (event.key === "Enter") {
+        clickButtonElement.click();
+      }
+    };
+  }
+
   showModal(selector);
+
+  if (focusElement !== null) {
+    setTimeout(() => {
+      focusElement.focus();
+      const oldType = focusElement.type;
+      if (oldType === "number" || oldType === "text") {
+        const length = focusElement.value.length;
+        // Cannot put the cursor past the text unless it's a text input
+        focusElement.type = "text";
+        focusElement.setSelectionRange(0, length);
+        focusElement.type = oldType;
+      }
+    }, 100);
+  }
 }
 
 export function closeModals(fast = false): void {

@@ -718,6 +718,10 @@ input::-webkit-calendar-picker-indicator {
   top: 15vh;
 }
 
+.modal-prompt {
+  min-width: unset;
+}
+
 @media screen and (max-width: 510px) {
   .modal, .modal-message {
     left: 0;
