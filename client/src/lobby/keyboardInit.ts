@@ -9,7 +9,7 @@ export default function keyboardInit(): void {
     // On the "Create Game" tooltip, submit the form if enter is pressed
     if (
       event.which === KeyCode.KEY_RETURN &&
-      $("#create-game-tooltip-title").is(":visible") &&
+      $("#create-game-modal-title").is(":visible") &&
       !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
     ) {
       event.preventDefault();

@@ -55,13 +55,6 @@ export function init(): boolean {
     window.location.reload();
   };
 
-  // Create Game modal setup
-  getElement("#createTablePassword").onkeydown = (event) => {
-    if (event.key === "Enter") {
-      getElement("#create-game-submit").click();
-    }
-  };
-
   initialized = true;
 
   return true;
@@ -161,6 +154,7 @@ export function setModal(
   selector: string,
   before?: () => unknown,
   test?: () => unknown,
+  focus: (() => unknown) | string | null = null,
 ): void {
   if (!init()) {
     return;
@@ -168,11 +162,21 @@ export function setModal(
 
   const button = getElement(buttonSelector);
 
-  button.onpointerdown = () => {
+  button.onclick = () => {
     if (!(test?.call(null) ?? true)) {
       return;
     }
     showModal(selector, before);
+    if (focus === null) {
+      return;
+    }
+    setTimeout(() => {
+      if (typeof focus === "string") {
+        getElement(focus).focus();
+      } else {
+        focus.call(null);
+      }
+    }, 100);
   };
 }
 

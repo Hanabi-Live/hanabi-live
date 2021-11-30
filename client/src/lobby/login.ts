@@ -160,7 +160,7 @@ function show() {
   $("#loading").hide();
   $("#firefox-warning").hide();
   $("#sign-in").show();
-  $("#login-username").focus();
+  $("#login-username").trigger("focus");
 }
 
 export function hide(firstTimeUser: boolean): void {
@@ -194,7 +194,7 @@ export function hide(firstTimeUser: boolean): void {
   // We can't hide this element by default in "index.html" or else the "No game history" text
   // will not be centered
   nav.show("lobby");
-  $("#lobby-chat-input").focus();
+  $("#lobby-chat-input").trigger("focus");
 
   // Scroll to the bottom of the chat
   // (this is necessary if we are going to the lobby after the tutorial)

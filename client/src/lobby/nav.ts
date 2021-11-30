@@ -18,6 +18,7 @@ export function init(): void {
     "#create-game-modal",
     createGame.ready,
     createGame.before,
+    "#create-game-variant-dropdown1",
   );
 
   setModal(
@@ -25,6 +26,7 @@ export function init(): void {
     "#create-game-modal",
     createGame.ready,
     createGame.before,
+    "#create-game-variant-dropdown1",
   );
 
   // The "Show History" button
@@ -32,8 +34,22 @@ export function init(): void {
     history.show();
   });
 
+  const focus = () => {
+    if ($("#replay-id-row").is(":visible")) {
+      $("#replay-id").trigger("focus");
+    } else if ($("#replay-json-row").is(":visible")) {
+      $("#replay-json").trigger("focus");
+    }
+  };
+
   // The "Watch Specific Replay" button
-  setModal("#nav-buttons-lobby-replay", "#replay-modal", watchReplay.ready);
+  setModal(
+    "#nav-buttons-lobby-replay",
+    "#replay-modal",
+    watchReplay.ready,
+    undefined,
+    focus,
+  );
 
   // The "Help" button
   // (this is just a simple link)

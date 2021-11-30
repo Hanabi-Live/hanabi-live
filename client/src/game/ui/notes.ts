@@ -209,7 +209,7 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   // Automatically focus the new text input box
   // (this will not work properly unless we put it in a callback)
   setTimeout(() => {
-    $(`#tooltip-${card.tooltipName}-input`).focus();
+    $(`#tooltip-${card.tooltipName}-input`).trigger("focus");
   }, 1);
 }
 

@@ -188,14 +188,4 @@ export function ready(): void {
 
   // Redraw the tooltip so that the new elements will fit better
   tooltips.reposition("#nav-buttons-lobby-replay");
-
-  // Focus the "ID" or "JSON" box
-  // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)
-  setTimeout(() => {
-    if ($("#replay-id-row").is(":visible")) {
-      $("#replay-id").focus();
-    } else if ($("#replay-json-row").is(":visible")) {
-      $("#replay-json").focus();
-    }
-  }, 1);
 }
