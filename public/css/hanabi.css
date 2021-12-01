@@ -804,11 +804,22 @@ input::-webkit-calendar-picker-indicator {
   text-transform: capitalize;
 }
 
-#morph-modal-suits, #morph-modal-ranks {
-  display: flex;
+#morph-modal h2 {
+  margin: 0;
 }
 
+#morph-modal p {
+  margin: 0;
+}
 
+#morph-modal form {
+  margin-bottom: 0.5em;
+}
+
+#morph-modal-suits, #morph-modal-ranks {
+  display: flex;
+  justify-content: center;
+}
 
 #morph-modal input[type="checkbox"] {
   display: none;
@@ -819,8 +830,9 @@ input::-webkit-calendar-picker-indicator {
   padding: 10px;
   display: block;
   position: relative;
-  margin: 10px;
+  margin: 5px 10px;
   cursor: pointer;
+  line-height: 1em;
 }
 
 #morph-modal label:before {
@@ -842,8 +854,7 @@ input::-webkit-calendar-picker-indicator {
 }
 
 #morph-modal label canvas {
-  height: 101.5px;
-  width: 71.5px;
+  height: 10vh;
   transition-duration: 0.2s;
   transform-origin: 50% 50%;
 }
@@ -864,6 +875,10 @@ input::-webkit-calendar-picker-indicator {
 #morph-modal :checked + label canvas {
   transform: scale(0.9);
   z-index: -1;
+}
+
+#morph-modal .row {
+  margin-bottom: 0;
 }
 
 /*

@@ -129,7 +129,6 @@ export function askForMorph(morphCard: HanabiCard | null): void {
   fillModalWithRadios("#morph-modal-suits", suits, "suit", suits[0], ranks);
   fillModalWithRadios("#morph-modal-ranks", ranks, "rank", suits[0]);
 
-  console.log("ask for morph");
   showModal("#morph-modal", false);
 }
 
@@ -298,7 +297,6 @@ export function isModalVisible(): boolean {
 }
 
 function getElement(element: string): HTMLElement {
-  console.log(element);
   return document.querySelector(element) ?? new HTMLElement();
 }
 
@@ -382,17 +380,19 @@ function fillModalWithRadios(
   const placeHolder = getElement(element)!;
   placeHolder.innerHTML = "";
 
-  let i = 0;
+  let checked = false;
   items.forEach((item) => {
     const div = document.createElement("div");
     const radio = document.createElement("input");
-    const radioId = `morph-${groupName}-${i}`;
+    const radioId = `morph-${groupName}-${item}`;
+
     radio.setAttribute("type", "radio");
     radio.setAttribute("name", groupName);
     radio.setAttribute("id", radioId);
     radio.setAttribute("value", item.toString());
-    if (i === 0) {
+    if (!checked) {
       radio.setAttribute("checked", "checked");
+      checked = true;
     }
     div.append(radio);
 
@@ -408,29 +408,24 @@ function fillModalWithRadios(
           return;
         }
         const suit = label.getAttribute("data-suit");
-        let j = 0;
-        console.log(ranks);
+
         ranks?.forEach((rank) => {
-          console.log(`Getting morph-rank-${j}`);
-          const childCanvas = getElement(
-            `label[for=morph-rank-${j}]`,
-          ).firstChild;
-          console.log(childCanvas);
+          const childCanvas = getElement(`#morph-image-${rank}`);
           const newImage = window.globals.cardImages.get(
             `card-${suit}-${rank}`,
           )!;
-          console.log(newImage);
+          newImage.setAttribute("id", `morph-image-${rank}`);
           childCanvas?.replaceWith(newImage);
-          j += 1;
         });
       });
     } else {
       // rank
       image = window.globals.cardImages.get(`card-${firstSuit}-${item}`)!;
+      image.setAttribute("id", `morph-image-${item}`);
     }
+
     label.append(image);
     div.append(label);
     placeHolder.append(div);
-    i += 1;
   });
 }
