@@ -647,14 +647,14 @@ input::-webkit-calendar-picker-indicator {
 @media screen and (max-width: 1920px) {
   #settings-modal .settings-content {
     max-width: 900px;
-    max-height: 600px;
+    max-height: 650px;
   }
 }
 
 @media screen and (max-width: 1440px) {
   #settings-modal .settings-content {
     max-width: 700px;
-    max-height: 500px;
+    max-height: 550px;
   }
 }
 
@@ -681,12 +681,16 @@ input::-webkit-calendar-picker-indicator {
 }
 
 #settings-modal h5 {
-  font-weight: bold;
+  font-weight: normal;
   font-size: 1.2em;
 }
 
 #settings-modal p {
   margin-bottom: 0.5em;
+}
+
+#settings-modal div p:last-child {
+  margin-bottom: 2em;
 }
 
 .horizontal {
