@@ -804,6 +804,68 @@ input::-webkit-calendar-picker-indicator {
   text-transform: capitalize;
 }
 
+#morph-modal-suits, #morph-modal-ranks {
+  display: flex;
+}
+
+
+
+#morph-modal input[type="checkbox"] {
+  display: none;
+}
+
+#morph-modal label {
+  border: 1px solid gray;
+  padding: 10px;
+  display: block;
+  position: relative;
+  margin: 10px;
+  cursor: pointer;
+}
+
+#morph-modal label:before {
+  background-color: white;
+  color: white;
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  border: 1px solid grey;
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  line-height: 28px;
+  transition-duration: 0.4s;
+  transform: scale(0);
+}
+
+#morph-modal label canvas {
+  height: 101.5px;
+  width: 71.5px;
+  transition-duration: 0.2s;
+  transform-origin: 50% 50%;
+}
+
+#morph-modal :checked + label {
+  border-color: orange;
+}
+
+#morph-modal :checked + label:before {
+  background-color: grey;
+  content: "✓";
+  line-height: 1.2em;
+  transform: scale(1);
+  z-index: 1;
+  border: unset;
+}
+
+#morph-modal :checked + label canvas {
+  transform: scale(0.9);
+  z-index: -1;
+}
+
 /*
   Game
 */

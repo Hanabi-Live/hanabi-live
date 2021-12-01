@@ -26,6 +26,19 @@ export default function uiInit(): void {
     // game-related images have had time to fully download
     // This means we do not have to show the loading screen; skip directly to the next step
     finishedDownloadingImages();
+    globals.cardImages.forEach((value, key, map) => {
+      let v: HTMLCanvasElement | null = value;
+      let m: Map<string, HTMLCanvasElement> | null = map;
+      v = null;
+      m = null;
+      console.log(`TAK: ${key} ${v}${m}`);
+    });
+    globals.variant.suits.forEach((s) => {
+      console.log(`TAK: ${s.name}`);
+    });
+    globals.variant.ranks.forEach((r) => {
+      console.log(`TAK: ${r.toString()}`);
+    });
     return;
   }
 

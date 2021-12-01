@@ -2,8 +2,8 @@
 
 import Konva from "konva";
 import * as modals from "../../modals";
-import * as noteIdentity from "../reducers/noteIdentity";
 import * as cardRules from "../rules/card";
+import CardIdentity from "../types/CardIdentity";
 import { STACK_BASE_RANK } from "../types/constants";
 import * as arrows from "./arrows";
 import globals from "./globals";
@@ -225,35 +225,50 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 
 // Morphing cards allows for creation of hypothetical situations
 function clickMorph(card: HanabiCard) {
-  const cardText = prompt(
-    'What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink")',
-  );
-  if (cardText === null) {
-    return;
-  }
+  // const cardText = prompt(
+  //   'What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink")',
+  // );
+  // if (cardText === null) {
+  //   return;
+  // }
 
-  if (cardText === "blank") {
-    // Don't bother with all of the text parsing below
-    hypothetical.sendHypoAction({
-      type: "morph",
-      order: card.state.order,
-      suitIndex: -1,
-      rank: -1,
-    });
-    return;
-  }
+  // if (cardText === "blank") {
+  //   // Don't bother with all of the text parsing below
+  //   hypothetical.sendHypoAction({
+  //     type: "morph",
+  //     order: card.state.order,
+  //     suitIndex: -1,
+  //     rank: -1,
+  //   });
+  //   return;
+  // }
 
-  const cardIdentity = noteIdentity.parseIdentity(globals.variant, cardText);
-  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-    modals.showWarning("You entered an invalid card.");
-    return;
-  }
+  modals.askForMorph(card);
 
-  // Tell the server that we are morphing a card
+  // const cardIdentity = noteIdentity.parseIdentity(globals.variant, cardText);
+  // if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+  //   modals.showWarning("You entered an invalid card.");
+  //   return;
+  // }
+
+  // // Tell the server that we are morphing a card
+  // hypothetical.sendHypoAction({
+  //   type: "morph",
+  //   order: card.state.order,
+  //   suitIndex: cardIdentity.suitIndex,
+  //   rank: cardIdentity.rank,
+  // });
+}
+
+// Used by the Morph modal
+export function morphFromModal(
+  card: HanabiCard,
+  cardIdentity: CardIdentity,
+): void {
   hypothetical.sendHypoAction({
     type: "morph",
     order: card.state.order,
-    suitIndex: cardIdentity.suitIndex,
-    rank: cardIdentity.rank,
+    suitIndex: cardIdentity.suitIndex!,
+    rank: cardIdentity.rank!,
   });
 }

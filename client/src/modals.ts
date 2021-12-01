@@ -1,5 +1,8 @@
 // Modals (boxes that hover on top of the UI)
 
+import * as noteIdentity from "./game/reducers/noteIdentity";
+import HanabiCard from "./game/ui/HanabiCard";
+import { morphFromModal } from "./game/ui/HanabiCardClick";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import { parseIntSafe } from "./misc";
@@ -8,6 +11,8 @@ import * as sounds from "./sounds";
 let initialized = false;
 let allowCloseModal = true;
 let currentModal: HTMLElement | null = null;
+
+let card: HanabiCard | null = null;
 
 const pageCover = getElement("#page-cover");
 const modalsContainer = getElement("#modals-container");
@@ -62,6 +67,26 @@ export function init(): boolean {
     }
   };
 
+  // Morph modal buttons
+  getElement("#morph-modal-button-ok").onclick = () => {
+    allowCloseModal = true;
+    closeModals();
+
+    const cardIdentity = noteIdentity.parseIdentity(
+      window.globals.variant,
+      getMorphModalSelection(),
+    );
+    if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+      return;
+    }
+    morphFromModal(card!, cardIdentity);
+  };
+
+  getElement("#morph-modal-button-cancel").onclick = () => {
+    allowCloseModal = true;
+    closeModals();
+  };
+
   initialized = true;
 
   return true;
@@ -88,6 +113,24 @@ export function askForPassword(tableID: number): void {
   showModal("#password-modal", null, () => {
     element.select();
   });
+}
+
+export function askForMorph(morphCard: HanabiCard | null): void {
+  if (!init()) {
+    return;
+  }
+
+  allowCloseModal = false;
+  card = morphCard;
+
+  const suits = Array.from(window.globals.variant.suits, (suit) => suit.name);
+  const ranks = Array.from(window.globals.variant.ranks, (rank) => rank);
+
+  fillModalWithRadios("#morph-modal-suits", suits, "suit", suits[0], ranks);
+  fillModalWithRadios("#morph-modal-ranks", ranks, "rank", suits[0]);
+
+  console.log("ask for morph");
+  showModal("#morph-modal", false);
 }
 
 function passwordSubmit() {
@@ -133,8 +176,6 @@ export function showError(msg: string): void {
   if (!init()) {
     return;
   }
-
-  allowCloseModal = false;
 
   // Do nothing if we are already showing the error modal
   if (globals.errorOccurred) {
@@ -257,6 +298,7 @@ export function isModalVisible(): boolean {
 }
 
 function getElement(element: string): HTMLElement {
+  console.log(element);
   return document.querySelector(element) ?? new HTMLElement();
 }
 
@@ -313,4 +355,82 @@ function showModal(
       param3.call(null);
     }
   }, 100);
+}
+
+function getMorphModalSelection(): string {
+  const form = Array.from(document.forms).find(
+    (el) => el.name === "morph-modal-form",
+  )!;
+
+  const suit = (<RadioNodeList>form.elements.namedItem("suit")).value;
+  const rank = (<RadioNodeList>form.elements.namedItem("rank")).value;
+
+  if (suit.toLowerCase() === "blank") {
+    return suit;
+  }
+
+  return `${suit} ${rank}`;
+}
+
+function fillModalWithRadios(
+  element: string,
+  items: string[] | number[],
+  groupName: string,
+  firstSuit?: string,
+  ranks?: number[],
+): void {
+  const placeHolder = getElement(element)!;
+  placeHolder.innerHTML = "";
+
+  let i = 0;
+  items.forEach((item) => {
+    const div = document.createElement("div");
+    const radio = document.createElement("input");
+    const radioId = `morph-${groupName}-${i}`;
+    radio.setAttribute("type", "radio");
+    radio.setAttribute("name", groupName);
+    radio.setAttribute("id", radioId);
+    radio.setAttribute("value", item.toString());
+    if (i === 0) {
+      radio.setAttribute("checked", "checked");
+    }
+    div.append(radio);
+
+    const label = document.createElement("label");
+    label.setAttribute("for", radioId);
+    let image: HTMLCanvasElement;
+    if (typeof item === "string") {
+      // suit
+      image = window.globals.cardImages.get(`card-${item}-0`)!;
+      label.setAttribute("data-suit", item);
+      radio.addEventListener("change", (event) => {
+        if (!(<HTMLInputElement>event.target).checked) {
+          return;
+        }
+        const suit = label.getAttribute("data-suit");
+        let j = 0;
+        console.log(ranks);
+        ranks?.forEach((rank) => {
+          console.log(`Getting morph-rank-${j}`);
+          const childCanvas = getElement(
+            `label[for=morph-rank-${j}]`,
+          ).firstChild;
+          console.log(childCanvas);
+          const newImage = window.globals.cardImages.get(
+            `card-${suit}-${rank}`,
+          )!;
+          console.log(newImage);
+          childCanvas?.replaceWith(newImage);
+          j += 1;
+        });
+      });
+    } else {
+      // rank
+      image = window.globals.cardImages.get(`card-${firstSuit}-${item}`)!;
+    }
+    label.append(image);
+    div.append(label);
+    placeHolder.append(div);
+    i += 1;
+  });
 }
