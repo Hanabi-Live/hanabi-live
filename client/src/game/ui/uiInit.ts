@@ -26,6 +26,7 @@ export default function uiInit(): void {
     // game-related images have had time to fully download
     // This means we do not have to show the loading screen; skip directly to the next step
     finishedDownloadingImages();
+    return;
   }
 
   // We have joined a game very soon after reaching the lobby,
