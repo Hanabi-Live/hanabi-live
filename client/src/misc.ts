@@ -53,7 +53,9 @@ export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T =>
   p in target;
 
 export function millisecondsToClockString(milliseconds: number): string {
-  const seconds = Math.ceil(milliseconds / 1000);
+  // Non timed games measure time in negative values
+  const time = Math.abs(milliseconds);
+  const seconds = Math.ceil(time / 1000);
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 }
 
