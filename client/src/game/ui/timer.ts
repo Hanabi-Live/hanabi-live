@@ -41,9 +41,7 @@ export function update(data: ClockData): void {
   globals.timeTaken = data.timeTaken;
 
   // Keep track of what the active player's time was when they started their turn
-  if (globals.options.timed) {
-    globals.startingTurnTime = globals.playerTimes[data.activePlayerIndex];
-  }
+  globals.startingTurnTime = globals.playerTimes[data.activePlayerIndex];
 
   // Mark the time that we updated the local player times
   globals.lastTimerUpdateTimeMS = new Date().getTime();
@@ -186,15 +184,17 @@ function setTickingDownTimeCPTooltip() {
   }
 
   // Update the tooltip that appears when you hover over the current player's timer
+  // Use absolute values time is measured in negative values in non timed games
   let time =
-    globals.startingTurnTime - globals.playerTimes[globals.activePlayerIndex];
+    Math.abs(globals.startingTurnTime) -
+    Math.abs(globals.playerTimes[globals.activePlayerIndex]);
 
-  // We add the amount of time that passed since the beginning of the turn
+  // We subtract the amount of time that passed since the beginning of the turn
   // (as reported by the server in the "clock" message)
   // This is necessary since the client will not know how much time has elapsed in the situation
   // where they refresh the page in the middle of an ongoing turn
   // "globals.timeTaken" will be 0 if the client was connected when the turn began
-  time += globals.timeTaken;
+  time -= Math.abs(globals.timeTaken);
 
   let content = "Time taken on this turn:<br /><strong>";
   content += millisecondsToClockString(time);
