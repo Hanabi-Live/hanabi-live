@@ -284,10 +284,7 @@ export default class HanabiCard
     // Cards that are morphed to be blank should not be draggable
     const morphedBlank = this.isMorphedBlank();
     this.layout.blank = morphedBlank; // Also let the LayoutChild know about it
-    if (morphedBlank) {
-      this.layout.draggable(false);
-      this.layout.off("dragend");
-    }
+    this.layout.checkSetDraggable();
 
     // Set the visible state
     // (this must be after the morphed blank check)
