@@ -182,6 +182,10 @@ export function askForMorph(
   if (draggedTo === null) {
     // If action is null, the function was called from HanabiCardClick.ts during replay hypo
 
+    // Set the dialog text
+    getElement("#morph-modal p").innerHTML =
+      "Select the card you want to morph it into:";
+
     // Morph modal OK button
     getElement("#morph-modal-button-ok").onclick = () => {
       morphReplayOkButton();
@@ -197,6 +201,10 @@ export function askForMorph(
 
   // The function was called from LayoutChild.ts during in-game hypo
   dragArea = draggedTo;
+
+  // Set the dialog text
+  getElement("#morph-modal p").innerHTML =
+    "What the card will be for the purposes of this hypothetical?";
 
   // Morph modal OK button
   getElement("#morph-modal-button-ok").onclick = () => {
