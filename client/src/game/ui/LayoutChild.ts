@@ -142,7 +142,7 @@ export default class LayoutChild extends Konva.Group {
       const knownCard = this.checkHypoUnknown(draggedTo);
       if (!knownCard) {
         // Morph modal is shown. Do not complete the drag action
-        // It will be taken care off after the user input
+        // It will be taken care of after the user input
         return;
       }
     }
