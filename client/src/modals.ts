@@ -20,7 +20,7 @@ let dragArea: DragAreaType;
 const pageCover = getElement("#page-cover");
 const modalsContainer = getElement("#modals-container");
 
-// Morph Ok / Cancel actions
+// Morph dialog button actions
 const morphFinishLayout = (draggedTo: DragAreaType) => {
   // finish drag action
   if (card?.getLayoutParent() === null) {

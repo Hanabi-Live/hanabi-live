@@ -139,10 +139,10 @@ export default class LayoutChild extends Konva.Group {
       globals.state.replay.hypothetical !== null &&
       (draggedTo === "playArea" || draggedTo === "discardArea")
     ) {
-      // Unless this is a known card, show morph dialog and return
-      // The drag action will complete according to the dialog's result
-      const result = this.checkHypoUnknown(draggedTo);
-      if (!result) {
+      const knownCard = this.checkHypoUnknown(draggedTo);
+      if (!knownCard) {
+        // Morph modal is shown. Do not complete the drag action
+        // It will be taken care off after the user input
         return;
       }
     }
@@ -184,16 +184,13 @@ export default class LayoutChild extends Konva.Group {
   }
 
   checkHypoUnknown(draggedTo: "playArea" | "discardArea"): boolean {
-    console.log(this.card.getMorphedIdentity());
-    console.log(this.card);
     const { suitIndex, rank } = this.card.getMorphedIdentity();
     if (suitIndex !== null && rank !== null) {
-      // Known card
-      return true;
+      return true; // Known card
     }
 
     modals.askForMorph(this.card, draggedTo);
-    return false;
+    return false; // Unknown card
   }
 
   continueDragAction(draggedTo: "playArea" | "discardArea" | null): void {
