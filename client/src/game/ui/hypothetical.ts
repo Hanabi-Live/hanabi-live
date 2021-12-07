@@ -88,9 +88,11 @@ export function send(hypoAction: ClientAction): void {
     case "discard": {
       const card = getCardOrStackBase(hypoAction.target);
       const { suitIndex, rank } = card.getMorphedIdentity();
-      if (suitIndex === null || rank === null) {
-        // Play or discard action could have been initiated from the keyboard
-        return;
+      if (suitIndex === null) {
+        throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
+      }
+      if (rank === null) {
+        throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
       }
 
       // Find out if this card misplays

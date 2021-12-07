@@ -10,6 +10,7 @@ import ActionType from "../types/ActionType";
 import ReplayActionType from "../types/ReplayActionType";
 import backToLobby from "./backToLobby";
 import * as clues from "./clues";
+import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
@@ -354,16 +355,16 @@ function sharedReplaySendSound(sound: string) {
 }
 
 function play() {
-  promptCardOrder(true);
+  promptCardOrder("play");
 }
 
 function discard() {
-  promptCardOrder(false);
+  promptCardOrder("discard");
 }
 
 // If playAction is true, it plays a card
 // If playAction is false, it discards a card
-function promptCardOrder(playAction = true): void {
+function promptCardOrder(verb: "play" | "discard"): void {
   const playerIndex =
     globals.state.replay.hypothetical === null
       ? globals.metadata.ourPlayerIndex
@@ -373,17 +374,12 @@ function promptCardOrder(playAction = true): void {
       ? globals.state.ongoingGame.hands[playerIndex]
       : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
   const maxSlotIndex = hand.length;
-  const verb = playAction ? "play" : "discard";
 
   const title = document.getElementById("play-discard-title");
-  if (title !== null) {
-    title.innerHTML = `${verb} Card`;
-  }
+  title!.innerHTML = `${verb} Card`;
 
   const paragraph = document.getElementById("play-discard-message");
-  if (paragraph !== null) {
-    paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
-  }
+  paragraph!.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
 
   const element = <HTMLInputElement>(
     document.getElementById("play-discard-card")
@@ -397,8 +393,8 @@ function promptCardOrder(playAction = true): void {
   );
   button.onclick = () => {
     closeModals();
-    const performAction = (action: boolean, target: number) => {
-      const type = action ? ActionType.Play : ActionType.Discard;
+    const performAction = (action: "play" | "discard", target: number) => {
+      const type = action === "play" ? ActionType.Play : ActionType.Discard;
 
       if (globals.state.replay.hypothetical === null) {
         globals.lobby.conn!.send("action", {
@@ -407,10 +403,14 @@ function promptCardOrder(playAction = true): void {
           target,
         });
       } else {
-        hypothetical.send({
-          type,
-          target,
-        });
+        const card = getCardOrStackBase(target);
+        const { suitIndex, rank } = card.getMorphedIdentity();
+        if (suitIndex !== null && rank !== null) {
+          hypothetical.send({
+            type,
+            target,
+          });
+        }
       }
       turn.hideArrowsAndDisableDragging();
     };
@@ -421,7 +421,7 @@ function promptCardOrder(playAction = true): void {
     }
     if (/^deck$/i.test(response)) {
       // Card orders start at 0, so the final card order is the length of the deck - 1
-      performAction(playAction, deckRules.totalCards(globals.variant) - 1);
+      performAction(verb, deckRules.totalCards(globals.variant) - 1);
       return;
     }
     const slot = parseIntSafe(response);
@@ -432,7 +432,7 @@ function promptCardOrder(playAction = true): void {
       return;
     }
 
-    performAction(playAction, hand[maxSlotIndex - slot]);
+    performAction(verb, hand[maxSlotIndex - slot]);
   };
 
   showPrompt("#play-discard-modal", null, element, button);
