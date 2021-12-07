@@ -67,7 +67,7 @@ export function init(): boolean {
     }
   };
 
-  // Morph modal buttons
+  // Morph modal OK button
   getElement("#morph-modal-button-ok").onclick = () => {
     allowCloseModal = true;
     closeModals();
@@ -82,9 +82,29 @@ export function init(): boolean {
     morphFromModal(card!, cardIdentity);
   };
 
+  // Morph modal Cancel button
   getElement("#morph-modal-button-cancel").onclick = () => {
     allowCloseModal = true;
     closeModals();
+  };
+
+  // Morph modal textbox
+  const morphTextbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+  const morphTextboxObserver = new MutationObserver(() => {
+    console.log("mutation");
+    const suit = morphTextbox.getAttribute("data-suit");
+    const rank = morphTextbox.getAttribute("data-rank");
+    morphTextbox.value = `${suit} ${rank}`;
+  });
+  morphTextboxObserver.observe(morphTextbox, {
+    attributes: true,
+    attributeFilter: ["data-suit", "data-rank"],
+  });
+  morphTextbox.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      getElement("#morph-modal-button-ok").click();
+    }
   };
 
   initialized = true;
@@ -130,6 +150,11 @@ export function askForMorph(morphCard: HanabiCard | null): void {
   fillModalWithRadios("#morph-modal-ranks", ranks, "rank", suits[0]);
 
   showModal("#morph-modal", false);
+  setTimeout(() => {
+    const textbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+    textbox.focus();
+    textbox.select();
+  }, 100);
 }
 
 function passwordSubmit() {
@@ -356,18 +381,7 @@ function showModal(
 }
 
 function getMorphModalSelection(): string {
-  const form = Array.from(document.forms).find(
-    (el) => el.name === "morph-modal-form",
-  )!;
-
-  const suit = (<RadioNodeList>form.elements.namedItem("suit")).value;
-  const rank = (<RadioNodeList>form.elements.namedItem("rank")).value;
-
-  if (suit.toLowerCase() === "blank") {
-    return suit;
-  }
-
-  return `${suit} ${rank}`;
+  return (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
 }
 
 function fillModalWithRadios(
@@ -392,6 +406,14 @@ function fillModalWithRadios(
     radio.setAttribute("value", item.toString());
     if (!checked) {
       radio.setAttribute("checked", "checked");
+      const textbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+      if (typeof item === "string") {
+        textbox.setAttribute("data-suit", item);
+      } else {
+        // Special case for S
+        const value = item === 7 ? "S" : item.toString();
+        textbox.setAttribute("data-rank", value);
+      }
       checked = true;
     }
     div.append(radio);
@@ -409,6 +431,7 @@ function fillModalWithRadios(
         }
         const suit = label.getAttribute("data-suit");
 
+        // Set rank checkboxes
         ranks?.forEach((rank) => {
           const childCanvas = getElement(`#morph-image-${rank}`);
           const newImage = window.globals.cardImages.get(
@@ -417,11 +440,31 @@ function fillModalWithRadios(
           newImage.setAttribute("id", `morph-image-${rank}`);
           childCanvas?.replaceWith(newImage);
         });
+
+        // Set textbox data attribute
+        const textbox = getElement("#morph-modal-textbox");
+        textbox.setAttribute("data-suit", suit!);
       });
     } else {
       // rank
       image = window.globals.cardImages.get(`card-${firstSuit}-${item}`)!;
       image.setAttribute("id", `morph-image-${item}`);
+      label.setAttribute("data-rank", item.toString());
+
+      radio.addEventListener("change", (event) => {
+        if (!(<HTMLInputElement>event.target).checked) {
+          return;
+        }
+        let rank = label.getAttribute("data-rank");
+
+        // Set textbox data attribute
+        const textbox = getElement("#morph-modal-textbox");
+        // Special case for S
+        if (rank === "7") {
+          rank = "S";
+        }
+        textbox.setAttribute("data-rank", rank!);
+      });
     }
 
     label.append(image);

@@ -1485,11 +1485,19 @@
   <div id="morph-modal" class="modal-prompt">
     <h2>Morph</h2>
 
-    <p>What card do you want to morph it into?</p>
+    <p>Select the card you want to morph it into:</p>
 
     <form name="morph-modal-form">
       <div id="morph-modal-suits"></div>
       <div id="morph-modal-ranks"></div>
+      <div class="row">
+        <div class="col-6 input-text">
+          or type in the card (e.g. red 1, b3, ...)
+        </div>
+        <div class="row">
+          <input type="text" id="morph-modal-textbox" name="morph-modal-textbox" value="" data-suit="" data-rank="">
+        </div>
+      </div>
     </form>
 
     <div class="row">

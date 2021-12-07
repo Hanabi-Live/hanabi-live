@@ -821,6 +821,10 @@ input::-webkit-calendar-picker-indicator {
   justify-content: center;
 }
 
+#morph-modal-ranks {
+  margin-bottom: 1em;
+}
+
 #morph-modal input[type="checkbox"] {
   display: none;
 }
@@ -880,7 +884,17 @@ input::-webkit-calendar-picker-indicator {
 }
 
 #morph-modal .row {
+  margin-top: 1em;
   margin-bottom: 0;
+}
+
+#morph-modal form .row {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#morph-modal .input-text {
+  top: 1.5em;
 }
 
 /*
