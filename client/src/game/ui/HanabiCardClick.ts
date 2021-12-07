@@ -261,7 +261,7 @@ function clickMorph(card: HanabiCard) {
 }
 
 // Used by the Morph modal
-export function morphFromModal(
+export function morphReplayFromModal(
   card: HanabiCard,
   cardIdentity: CardIdentity,
 ): void {

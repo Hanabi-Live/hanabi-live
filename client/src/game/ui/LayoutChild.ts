@@ -4,7 +4,6 @@
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
-import * as noteIdentity from "../reducers/noteIdentity";
 import { cardRules, clueTokensRules } from "../rules";
 import * as variantRules from "../rules/variant";
 import ActionType from "../types/ActionType";
@@ -12,7 +11,6 @@ import CardLayout from "./CardLayout";
 import * as cursor from "./cursor";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
-import * as hypothetical from "./hypothetical";
 import isOurTurn from "./isOurTurn";
 import PlayStack from "./PlayStack";
 import * as turn from "./turn";
@@ -139,34 +137,16 @@ export default class LayoutChild extends Konva.Group {
     }
     if (
       globals.state.replay.hypothetical !== null &&
-      ((draggedTo === "playArea" && this.checkHypoUnknown("play")) ||
-        (draggedTo === "discardArea" && this.checkHypoUnknown("discard")))
+      (draggedTo === "playArea" || draggedTo === "discardArea")
     ) {
-      draggedTo = null;
+      // Unless this is a known card, show morph dialog and return
+      // The drag action will complete according to the dialog's result
+      const result = this.checkHypoUnknown(draggedTo);
+      if (!result) {
+        return;
+      }
     }
-    if (draggedTo === "playArea" && this.checkMisplay()) {
-      draggedTo = null;
-    }
-
-    if (draggedTo === null) {
-      // The card was dragged to an invalid location; tween it back to the hand
-      (this.parent as unknown as CardLayout | PlayStack).doLayout();
-      return;
-    }
-
-    let type;
-    if (draggedTo === "playArea") {
-      type = ActionType.Play;
-    } else if (draggedTo === "discardArea") {
-      type = ActionType.Discard;
-    } else {
-      throw new Error("Unknown drag location.");
-    }
-
-    turn.end({
-      type,
-      target: this.card.state.order,
-    });
+    this.continueDragAction(draggedTo);
   }
 
   // Before we play a card,
@@ -203,42 +183,42 @@ export default class LayoutChild extends Konva.Group {
     return false;
   }
 
-  checkHypoUnknown(action: string): boolean {
+  checkHypoUnknown(draggedTo: "playArea" | "discardArea"): boolean {
+    console.log(this.card.getMorphedIdentity());
+    console.log(this.card);
     const { suitIndex, rank } = this.card.getMorphedIdentity();
     if (suitIndex !== null && rank !== null) {
-      return false;
-    }
-
-    const newIdentityText = window.prompt(
-      `You just tried to ${action} an unknown card.\n` +
-        "What card do you want to assume it is for the purposes of the hypothetical? (e.g. red 1, b3)",
-    );
-    if (newIdentityText === null) {
-      return true;
-    }
-    const newIdentity = noteIdentity.parseIdentity(
-      globals.variant,
-      newIdentityText,
-    );
-
-    const newSuitIndex = suitIndex ?? newIdentity.suitIndex;
-    const newRank = rank ?? newIdentity.rank;
-    if (
-      (newIdentity.suitIndex === null && newIdentity.rank === null) ||
-      newSuitIndex === null ||
-      newRank === null
-    ) {
-      modals.showWarning("You entered an invalid card.");
+      // Known card
       return true;
     }
 
-    hypothetical.sendHypoAction({
-      type: "morph",
-      order: this.card.state.order,
-      suitIndex: newSuitIndex,
-      rank: newRank,
-    });
-
+    modals.askForMorph(this.card, draggedTo);
     return false;
+  }
+
+  continueDragAction(draggedTo: "playArea" | "discardArea" | null): void {
+    if (draggedTo === "playArea" && this.checkMisplay()) {
+      return;
+    }
+
+    if (draggedTo === null) {
+      // The card was dragged to an invalid location; tween it back to the hand
+      (this.parent as unknown as CardLayout | PlayStack).doLayout();
+      return;
+    }
+
+    let type;
+    if (draggedTo === "playArea") {
+      type = ActionType.Play;
+    } else if (draggedTo === "discardArea") {
+      type = ActionType.Discard;
+    } else {
+      throw new Error("Unknown drag location.");
+    }
+
+    turn.end({
+      type,
+      target: this.card.state.order,
+    });
   }
 }

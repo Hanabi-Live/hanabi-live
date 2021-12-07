@@ -2,7 +2,7 @@
 
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import HanabiCard from "./game/ui/HanabiCard";
-import { morphFromModal } from "./game/ui/HanabiCardClick";
+import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import { parseIntSafe } from "./misc";
@@ -12,10 +12,52 @@ let initialized = false;
 let allowCloseModal = true;
 let currentModal: HTMLElement | null = null;
 
+// Used by morph dialog
+type DragAreaType = "playArea" | "discardArea" | null;
 let card: HanabiCard | null = null;
+let dragArea: DragAreaType;
 
 const pageCover = getElement("#page-cover");
 const modalsContainer = getElement("#modals-container");
+
+// Morph Ok / Cancel actions
+const morphFinishLayout = (draggedTo: DragAreaType) => {
+  // finish drag action
+  if (card?.getLayoutParent() === null) {
+    return;
+  }
+  card?.getLayoutParent().continueDragAction(draggedTo);
+};
+
+const morphReplayOkButton = (): boolean => {
+  allowCloseModal = true;
+  closeModals();
+
+  const cardIdentity = noteIdentity.parseIdentity(
+    window.globals.variant,
+    getMorphModalSelection(),
+  );
+  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+    // Morph didn't succeed
+    return false;
+  }
+  morphReplayFromModal(card!, cardIdentity);
+  return true;
+};
+const morphInGameOkButton = () => {
+  const success = morphReplayOkButton();
+  const draggedTo = success ? dragArea : null;
+  morphFinishLayout(draggedTo);
+};
+
+const morphReplayCancelButton = () => {
+  allowCloseModal = true;
+  closeModals();
+};
+const morphInGameCancelButton = () => {
+  morphReplayCancelButton();
+  morphFinishLayout(null);
+};
 
 // Initialize various element behavior within the modals
 export function init(): boolean {
@@ -67,31 +109,9 @@ export function init(): boolean {
     }
   };
 
-  // Morph modal OK button
-  getElement("#morph-modal-button-ok").onclick = () => {
-    allowCloseModal = true;
-    closeModals();
-
-    const cardIdentity = noteIdentity.parseIdentity(
-      window.globals.variant,
-      getMorphModalSelection(),
-    );
-    if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-      return;
-    }
-    morphFromModal(card!, cardIdentity);
-  };
-
-  // Morph modal Cancel button
-  getElement("#morph-modal-button-cancel").onclick = () => {
-    allowCloseModal = true;
-    closeModals();
-  };
-
   // Morph modal textbox
   const morphTextbox = <HTMLInputElement>getElement("#morph-modal-textbox");
   const morphTextboxObserver = new MutationObserver(() => {
-    console.log("mutation");
     const suit = morphTextbox.getAttribute("data-suit");
     const rank = morphTextbox.getAttribute("data-rank");
     morphTextbox.value = `${suit} ${rank}`;
@@ -135,7 +155,10 @@ export function askForPassword(tableID: number): void {
   });
 }
 
-export function askForMorph(morphCard: HanabiCard | null): void {
+export function askForMorph(
+  morphCard: HanabiCard | null,
+  draggedTo: DragAreaType = null,
+): void {
   if (!init()) {
     return;
   }
@@ -155,6 +178,35 @@ export function askForMorph(morphCard: HanabiCard | null): void {
     textbox.focus();
     textbox.select();
   }, 100);
+
+  if (draggedTo === null) {
+    // If action is null, the function was called from HanabiCardClick.ts during replay hypo
+
+    // Morph modal OK button
+    getElement("#morph-modal-button-ok").onclick = () => {
+      morphReplayOkButton();
+    };
+
+    // Morph modal Cancel button
+    getElement("#morph-modal-button-cancel").onclick = () => {
+      morphReplayCancelButton();
+    };
+
+    return;
+  }
+
+  // The function was called from LayoutChild.ts during in-game hypo
+  dragArea = draggedTo;
+
+  // Morph modal OK button
+  getElement("#morph-modal-button-ok").onclick = () => {
+    morphInGameOkButton();
+  };
+
+  // Morph modal Cancel button
+  getElement("#morph-modal-button-cancel").onclick = () => {
+    morphInGameCancelButton();
+  };
 }
 
 function passwordSubmit() {
