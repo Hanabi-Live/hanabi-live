@@ -25,7 +25,9 @@ const (
 	ActionTypeDiscard
 	ActionTypeColorClue
 	ActionTypeRankClue
+	ActionTypeVote
 	ActionTypeEndGame // Players cannot send this (internal only)
+	ActionTypeEndGameByVote
 )
 
 const (
@@ -39,6 +41,7 @@ const (
 	EndConditionStrikeout
 	EndConditionTimeout
 	EndConditionTerminated
+	EndConditionTerminatedByVote
 	EndConditionSpeedrunFail
 	EndConditionIdleTimeout
 	EndConditionCharacterSoftlock

@@ -124,6 +124,20 @@ export default function drawUI(): void {
   }
 }
 
+export function setSkullEnabled(): void {
+  console.log("SET SKULL RED");
+  globals.elements.terminateButton?.setImage(
+    globals.imageLoader!.get("skull_vtk")!,
+  );
+}
+
+export function setSkullNormal(): void {
+  console.log("SET SKULL");
+  globals.elements.terminateButton?.setImage(
+    globals.imageLoader!.get("skull")!,
+  );
+}
+
 function drawBackground() {
   // Draw a green background behind everything
   const background = new Konva.Image({
@@ -1046,14 +1060,14 @@ function drawScoreArea() {
         globals.lobby.totalGames >= 1000 ||
         window.confirm("Are you sure you want to terminate the game?")
       ) {
-        globals.lobby.conn!.send("tableTerminate", {
+        globals.lobby.conn!.send("tableVoteForTermination", {
           tableID: globals.lobby.tableID,
         });
       }
     });
     terminateButton.tooltipName = "kill";
     terminateButton.tooltipContent =
-      "Terminate the game, ending it immediately.";
+      "Vote to terminate the game (click again to cancel the vote).";
     konvaTooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }

@@ -4,6 +4,7 @@ enum EndCondition {
   Strikeout,
   Timeout,
   Terminated,
+  VotedToKill,
   SpeedrunFail,
   IdleTimeout,
   CharacterSoftlock,

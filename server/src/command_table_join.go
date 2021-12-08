@@ -127,8 +127,9 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			NumGames: numGames,
 			Variant:  variantStats,
 		},
-		Typing:    false,
-		LastTyped: time.Time{},
+		Typing:     false,
+		LastTyped:  time.Time{},
+		VoteToKill: false,
 	}
 
 	t.Players = append(t.Players, p)

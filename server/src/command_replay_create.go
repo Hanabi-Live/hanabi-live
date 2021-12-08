@@ -287,6 +287,12 @@ func validateJSON(s *Session, d *CommandData) bool {
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}
+		} else if action.Type == ActionTypeEndGameByVote {
+			if action.Target != -1 {
+				s.Warning("Action at index " + strconv.Itoa(i) +
+					" is an end game by vote with an invalid target not equal to -1.")
+				return false
+			}
 		} else {
 			s.Warning("Action at index " + strconv.Itoa(i) + " has an invalid type of " +
 				strconv.Itoa(action.Type) + ".")

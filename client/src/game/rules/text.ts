@@ -86,7 +86,6 @@ export function gameOver(
   metadata: GameMetadata,
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
-
   switch (endCondition) {
     case EndCondition.InProgress:
     case EndCondition.Normal: {
@@ -103,6 +102,10 @@ export function gameOver(
 
     case EndCondition.Terminated: {
       return `${playerName} terminated the game!`;
+    }
+
+    case EndCondition.VotedToKill: {
+      return "The game was terminated by vote count!";
     }
 
     case EndCondition.SpeedrunFail: {
