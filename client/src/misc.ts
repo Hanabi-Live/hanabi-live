@@ -17,8 +17,6 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
-// Use this on a switch statement's default case to get
-// the linter to complain if a case was not predicted
 export const ensureAllCases = (obj: never): never => obj;
 
 export const getRandomNumber = (min: number, max: number): number =>
