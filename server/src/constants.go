@@ -40,12 +40,12 @@ const (
 	EndConditionStrikeout
 	EndConditionTimeout
 	EndConditionTerminated
-	EndConditionTerminatedByVote
 	EndConditionSpeedrunFail
 	EndConditionIdleTimeout
 	EndConditionCharacterSoftlock
 	EndConditionAllOrNothingFail
 	EndConditionAllOrNothingSoftlock
+	EndConditionTerminatedByVote
 )
 
 // When in a shared replay, spectators can send certain types of "actions" to the server to
