@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// commandTableTerminate is sent when the user double clicks the terminate button in the bottom-left-hand
+// commandTableTerminate is sent when the user right clicks the terminate button in the bottom-left-hand
 // corner
 //
 // Example data:
