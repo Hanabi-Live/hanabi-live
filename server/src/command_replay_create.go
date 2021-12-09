@@ -568,13 +568,13 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		id := (i + 1) * -1
 
 		player := &Player{
-			UserID:    id,
-			Name:      name,
-			Session:   NewFakeSession(id, name),
-			Present:   true,
-			Stats:     &PregameStats{},
-			Typing:    false,
-			LastTyped: time.Time{},
+			UserID:     id,
+			Name:       name,
+			Session:    NewFakeSession(id, name),
+			Present:    true,
+			Stats:      &PregameStats{},
+			Typing:     false,
+			LastTyped:  time.Time{},
 			VoteToKill: false,
 		}
 		t.Players = append(t.Players, player)
