@@ -56,7 +56,6 @@ export default class Connection {
         command,
         JSON.parse(data[1]),
       );
-      console.error(`message: ${command}`);
     }
   }
 

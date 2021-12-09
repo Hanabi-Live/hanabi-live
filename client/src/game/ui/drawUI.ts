@@ -125,14 +125,12 @@ export default function drawUI(): void {
 }
 
 export function setSkullEnabled(): void {
-  console.log("SET SKULL RED");
   globals.elements.terminateButton?.setImage(
     globals.imageLoader!.get("skull_vtk")!,
   );
 }
 
 export function setSkullNormal(): void {
-  console.log("SET SKULL");
   globals.elements.terminateButton?.setImage(
     globals.imageLoader!.get("skull")!,
   );

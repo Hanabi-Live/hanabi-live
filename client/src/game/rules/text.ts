@@ -86,6 +86,7 @@ export function gameOver(
   metadata: GameMetadata,
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
+
   switch (endCondition) {
     case EndCondition.InProgress:
     case EndCondition.Normal: {

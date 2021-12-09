@@ -22,8 +22,6 @@ type Table struct {
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
 	KickedPlayers map[int]struct{} `json:"-"`
-	// Who voted to terminate the game
-	VotesToKill []bool
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -83,7 +81,6 @@ func NewTable(name string, ownerID int) *Table {
 		Players:       make([]*Player, 0),
 		Spectators:    make([]*Spectator, 0),
 		KickedPlayers: make(map[int]struct{}),
-		VotesToKill:   make([]bool, 0),
 
 		OwnerID:        ownerID,
 		Visible:        true, // Tables are visible by default
