@@ -1077,7 +1077,7 @@ function drawScoreArea() {
     });
     terminateButton.tooltipName = "kill";
     terminateButton.tooltipContent =
-      'Vote to terminate the game (click again to cancel the vote).<br><span style="padding-left: 30px;">Double click to terminate immediately.</span>';
+      'Vote to terminate the game (click again to cancel the vote).<br /><span style="padding-left: 30px;">Double click to terminate immediately.</span>';
     konvaTooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
