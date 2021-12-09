@@ -1063,9 +1063,21 @@ function drawScoreArea() {
         });
       }
     });
+    terminateButton.on("dblclick dbltap", () => {
+      if (
+        globals.options.speedrun ||
+        debug.amTestUser(globals.metadata.ourUsername) ||
+        globals.lobby.totalGames >= 1000 ||
+        window.confirm("Are you sure you want to terminate the game?")
+      ) {
+        globals.lobby.conn!.send("tableTerminate", {
+          tableID: globals.lobby.tableID,
+        });
+      }
+    });
     terminateButton.tooltipName = "kill";
     terminateButton.tooltipContent =
-      "Vote to terminate the game (click again to cancel the vote).";
+      'Vote to terminate the game (click again to cancel the vote).<br><span style="padding-left: 30px;">Double click to terminate immediately.</span>';
     konvaTooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
