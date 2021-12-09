@@ -97,7 +97,7 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 			})
 
 			// Send them their vote status
-			s.NotifyVote(p.VoteToKill)
+			s.NotifyVote(t.Players[playerIndex].VoteToKill)
 		} else if spectatorIndex > -1 {
 			// They are a spectator in an ongoing game
 			sp := t.Spectators[spectatorIndex]
