@@ -153,6 +153,7 @@ function turnReducerFunction(
       if (
         action.endCondition === EndCondition.Timeout ||
         action.endCondition === EndCondition.Terminated ||
+        action.endCondition === EndCondition.VotedToKill ||
         action.endCondition === EndCondition.IdleTimeout
       ) {
         turn.segment += 1;

@@ -22,6 +22,7 @@ export function shouldStore(
     action.type === "gameOver" &&
     action.endCondition !== EndCondition.Timeout &&
     action.endCondition !== EndCondition.Terminated &&
+    action.endCondition !== EndCondition.VotedToKill &&
     action.endCondition !== EndCondition.IdleTimeout
   ) {
     return true;
