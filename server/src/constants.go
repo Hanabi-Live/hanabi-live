@@ -25,7 +25,6 @@ const (
 	ActionTypeDiscard
 	ActionTypeColorClue
 	ActionTypeRankClue
-	ActionTypeVote
 	ActionTypeEndGame // Players cannot send this (internal only)
 	ActionTypeEndGameByVote
 )
