@@ -1,5 +1,8 @@
 // Modals (boxes that hover on top of the UI)
 
+import * as noteIdentity from "./game/reducers/noteIdentity";
+import HanabiCard from "./game/ui/HanabiCard";
+import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import { parseIntSafe } from "./misc";
@@ -9,8 +12,52 @@ let initialized = false;
 let allowCloseModal = true;
 let currentModal: HTMLElement | null = null;
 
+// Used by morph dialog
+type DragAreaType = "playArea" | "discardArea" | null;
+let card: HanabiCard | null = null;
+let dragArea: DragAreaType;
+
 const pageCover = getElement("#page-cover");
 const modalsContainer = getElement("#modals-container");
+
+// Morph dialog button actions
+const morphFinishLayout = (draggedTo: DragAreaType) => {
+  // finish drag action
+  if (card?.getLayoutParent() === null) {
+    return;
+  }
+  card?.getLayoutParent().continueDragAction(draggedTo);
+};
+
+const morphReplayOkButton = (): boolean => {
+  allowCloseModal = true;
+  closeModals();
+
+  const cardIdentity = noteIdentity.parseIdentity(
+    window.globals.variant,
+    getMorphModalSelection(),
+  );
+  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+    // Morph didn't succeed
+    return false;
+  }
+  morphReplayFromModal(card!, cardIdentity);
+  return true;
+};
+const morphInGameOkButton = () => {
+  const success = morphReplayOkButton();
+  const draggedTo = success ? dragArea : null;
+  morphFinishLayout(draggedTo);
+};
+
+const morphReplayCancelButton = () => {
+  allowCloseModal = true;
+  closeModals();
+};
+const morphInGameCancelButton = () => {
+  morphReplayCancelButton();
+  morphFinishLayout(null);
+};
 
 // Initialize various element behavior within the modals
 export function init(): boolean {
@@ -62,6 +109,24 @@ export function init(): boolean {
     }
   };
 
+  // Morph modal textbox
+  const morphTextbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+  const morphTextboxObserver = new MutationObserver(() => {
+    const suit = morphTextbox.getAttribute("data-suit");
+    const rank = morphTextbox.getAttribute("data-rank");
+    morphTextbox.value = `${suit} ${rank}`;
+  });
+  morphTextboxObserver.observe(morphTextbox, {
+    attributes: true,
+    attributeFilter: ["data-suit", "data-rank"],
+  });
+  morphTextbox.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      getElement("#morph-modal-button-ok").click();
+    }
+  };
+
   initialized = true;
 
   return true;
@@ -88,6 +153,68 @@ export function askForPassword(tableID: number): void {
   showModal("#password-modal", null, () => {
     element.select();
   });
+}
+
+export function askForMorph(
+  morphCard: HanabiCard | null,
+  draggedTo: DragAreaType = null,
+): void {
+  if (!init()) {
+    return;
+  }
+
+  allowCloseModal = false;
+  card = morphCard;
+
+  const suits = Array.from(window.globals.variant.suits, (suit) => suit.name);
+  const ranks = Array.from(window.globals.variant.ranks, (rank) => rank);
+
+  fillModalWithRadios("#morph-modal-suits", suits, "suit", suits[0], ranks);
+  fillModalWithRadios("#morph-modal-ranks", ranks, "rank", suits[0]);
+
+  showModal("#morph-modal", false);
+  setTimeout(() => {
+    const textbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+    textbox.focus();
+    textbox.select();
+  }, 100);
+
+  if (draggedTo === null) {
+    // If action is null, the function was called from HanabiCardClick.ts during replay hypo
+
+    // Set the dialog text
+    getElement("#morph-modal p").innerHTML =
+      "Select the card you want to morph it into:";
+
+    // Morph modal OK button
+    getElement("#morph-modal-button-ok").onclick = () => {
+      morphReplayOkButton();
+    };
+
+    // Morph modal Cancel button
+    getElement("#morph-modal-button-cancel").onclick = () => {
+      morphReplayCancelButton();
+    };
+
+    return;
+  }
+
+  // The function was called from LayoutChild.ts during in-game hypo
+  dragArea = draggedTo;
+
+  // Set the dialog text
+  getElement("#morph-modal p").innerHTML =
+    "What the card will be for the purposes of this hypothetical?";
+
+  // Morph modal OK button
+  getElement("#morph-modal-button-ok").onclick = () => {
+    morphInGameOkButton();
+  };
+
+  // Morph modal Cancel button
+  getElement("#morph-modal-button-cancel").onclick = () => {
+    morphInGameCancelButton();
+  };
 }
 
 function passwordSubmit() {
@@ -133,8 +260,6 @@ export function showError(msg: string): void {
   if (!init()) {
     return;
   }
-
-  allowCloseModal = false;
 
   // Do nothing if we are already showing the error modal
   if (globals.errorOccurred) {
@@ -313,4 +438,97 @@ function showModal(
       param3.call(null);
     }
   }, 100);
+}
+
+function getMorphModalSelection(): string {
+  return (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
+}
+
+function fillModalWithRadios(
+  element: string,
+  items: string[] | number[],
+  groupName: string,
+  firstSuit?: string,
+  ranks?: number[],
+): void {
+  const placeHolder = getElement(element)!;
+  placeHolder.innerHTML = "";
+
+  let checked = false;
+  items.forEach((item) => {
+    const div = document.createElement("div");
+    const radio = document.createElement("input");
+    const radioId = `morph-${groupName}-${item}`;
+
+    radio.setAttribute("type", "radio");
+    radio.setAttribute("name", groupName);
+    radio.setAttribute("id", radioId);
+    radio.setAttribute("value", item.toString());
+    if (!checked) {
+      radio.setAttribute("checked", "checked");
+      const textbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+      if (typeof item === "string") {
+        textbox.setAttribute("data-suit", item);
+      } else {
+        // Special case for S
+        const value = item === 7 ? "S" : item.toString();
+        textbox.setAttribute("data-rank", value);
+      }
+      checked = true;
+    }
+    div.append(radio);
+
+    const label = document.createElement("label");
+    label.setAttribute("for", radioId);
+    let image: HTMLCanvasElement;
+    if (typeof item === "string") {
+      // suit
+      image = window.globals.cardImages.get(`card-${item}-0`)!;
+      label.setAttribute("data-suit", item);
+      radio.addEventListener("change", (event) => {
+        if (!(<HTMLInputElement>event.target).checked) {
+          return;
+        }
+        const suit = label.getAttribute("data-suit");
+
+        // Set rank checkboxes
+        ranks?.forEach((rank) => {
+          const childCanvas = getElement(`#morph-image-${rank}`);
+          const newImage = window.globals.cardImages.get(
+            `card-${suit}-${rank}`,
+          )!;
+          newImage.setAttribute("id", `morph-image-${rank}`);
+          childCanvas?.replaceWith(newImage);
+        });
+
+        // Set textbox data attribute
+        const textbox = getElement("#morph-modal-textbox");
+        textbox.setAttribute("data-suit", suit!);
+      });
+    } else {
+      // rank
+      image = window.globals.cardImages.get(`card-${firstSuit}-${item}`)!;
+      image.setAttribute("id", `morph-image-${item}`);
+      label.setAttribute("data-rank", item.toString());
+
+      radio.addEventListener("change", (event) => {
+        if (!(<HTMLInputElement>event.target).checked) {
+          return;
+        }
+        let rank = label.getAttribute("data-rank");
+
+        // Set textbox data attribute
+        const textbox = getElement("#morph-modal-textbox");
+        // Special case for S
+        if (rank === "7") {
+          rank = "S";
+        }
+        textbox.setAttribute("data-rank", rank!);
+      });
+    }
+
+    label.append(image);
+    div.append(label);
+    placeHolder.append(div);
+  });
 }

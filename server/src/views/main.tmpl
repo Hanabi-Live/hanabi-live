@@ -1480,6 +1480,35 @@
       </div>
     </div>
   </div>
+
+  <!-- Morph modal -->
+  <div id="morph-modal" class="modal-prompt">
+    <h2>Morph</h2>
+
+    <p>Select the card you want to morph it into:</p>
+
+    <form name="morph-modal-form">
+      <div id="morph-modal-suits"></div>
+      <div id="morph-modal-ranks"></div>
+      <div class="row">
+        <div class="col-6 input-text">
+          or type in the card (e.g. red 1, b3, ...)
+        </div>
+        <div class="row">
+          <input type="text" id="morph-modal-textbox" name="morph-modal-textbox" value="" data-suit="" data-rank="">
+        </div>
+      </div>
+    </form>
+
+    <div class="row">
+      <div class="col-2 off-3">
+        <button id="morph-modal-button-ok" type="submit" class="button">Ok</button>
+      </div>
+      <div class="col-2 off-1">
+        <button id="morph-modal-button-cancel" type="submit" class="button">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Game (the UI when playing a game) -->

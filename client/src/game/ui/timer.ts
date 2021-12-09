@@ -184,7 +184,7 @@ function setTickingDownTimeCPTooltip() {
   }
 
   // Update the tooltip that appears when you hover over the current player's timer
-  // Use absolute values time is measured in negative values in non timed games
+  // Use absolute values because time is measured in negative values in non-timed games
   let time =
     Math.abs(globals.startingTurnTime) -
     Math.abs(globals.playerTimes[globals.activePlayerIndex]);

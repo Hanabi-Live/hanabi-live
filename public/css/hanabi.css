@@ -804,6 +804,99 @@ input::-webkit-calendar-picker-indicator {
   text-transform: capitalize;
 }
 
+#morph-modal h2 {
+  margin: 0;
+}
+
+#morph-modal p {
+  margin: 0;
+}
+
+#morph-modal form {
+  margin-bottom: 0.5em;
+}
+
+#morph-modal-suits, #morph-modal-ranks {
+  display: flex;
+  justify-content: center;
+}
+
+#morph-modal-ranks {
+  margin-bottom: 1em;
+}
+
+#morph-modal input[type="checkbox"] {
+  display: none;
+}
+
+#morph-modal label {
+  border: 1px solid gray;
+  padding: 10px;
+  display: block;
+  position: relative;
+  margin: 5px 10px;
+  cursor: pointer;
+  line-height: 1em;
+  max-height: 73px;
+  overflow: hidden;
+}
+
+#morph-modal label:before {
+  background-color: white;
+  color: white;
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  border: 1px solid grey;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  line-height: 28px;
+  transition-duration: 0.4s;
+  transform: scale(0);
+}
+
+#morph-modal label canvas {
+  height: 10vh;
+  transition-duration: 0.2s;
+  transform-origin: 50% 50%;
+}
+
+#morph-modal :checked + label {
+  border-color: orange;
+}
+
+#morph-modal :checked + label:before {
+  background-color: grey;
+  content: "✓";
+  line-height: 1.2em;
+  transform: scale(1);
+  z-index: 1;
+  border: unset;
+}
+
+#morph-modal :checked + label canvas {
+  transform: scale(0.9);
+  z-index: -1;
+}
+
+#morph-modal .row {
+  margin-top: 1em;
+  margin-bottom: 0;
+}
+
+#morph-modal form .row {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#morph-modal .input-text {
+  top: 1.5em;
+}
+
 /*
   Game
 */

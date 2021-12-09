@@ -1281,4 +1281,8 @@ export default class HanabiCard
       suit.displayName
     } (${abbreviation})</div>${lines.join("<br>")}</div>`;
   }
+
+  getLayoutParent(): LayoutChild {
+    return this._layout;
+  }
 }
