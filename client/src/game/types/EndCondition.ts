@@ -9,5 +9,6 @@ enum EndCondition {
   CharacterSoftlock,
   AllOrNothingFail,
   AllOrNothingSoftlock,
+  VotedToKill,
 }
 export default EndCondition;
