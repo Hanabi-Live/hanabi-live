@@ -240,7 +240,6 @@ func (g *Game) CheckEnd() bool {
 	// Some ending conditions will already be set by the time we get here
 	if g.EndCondition == EndConditionTimeout ||
 		g.EndCondition == EndConditionTerminated ||
-		g.EndCondition == EndConditionTerminatedByVote ||
 		g.EndCondition == EndConditionIdleTimeout ||
 		g.EndCondition == EndConditionCharacterSoftlock {
 

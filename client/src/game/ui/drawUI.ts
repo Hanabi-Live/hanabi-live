@@ -124,18 +124,6 @@ export default function drawUI(): void {
   }
 }
 
-export function setSkullEnabled(): void {
-  globals.elements.terminateButton?.setImage(
-    globals.imageLoader!.get("skull_vtk")!,
-  );
-}
-
-export function setSkullNormal(): void {
-  globals.elements.terminateButton?.setImage(
-    globals.imageLoader!.get("skull")!,
-  );
-}
-
 function drawBackground() {
   // Draw a green background behind everything
   const background = new Konva.Image({
@@ -1058,18 +1046,6 @@ function drawScoreArea() {
         globals.lobby.totalGames >= 1000 ||
         window.confirm("Are you sure you want to terminate the game?")
       ) {
-        globals.lobby.conn!.send("tableVoteForTermination", {
-          tableID: globals.lobby.tableID,
-        });
-      }
-    });
-    terminateButton.on("dblclick dbltap", () => {
-      if (
-        globals.options.speedrun ||
-        debug.amTestUser(globals.metadata.ourUsername) ||
-        globals.lobby.totalGames >= 1000 ||
-        window.confirm("Are you sure you want to terminate the game?")
-      ) {
         globals.lobby.conn!.send("tableTerminate", {
           tableID: globals.lobby.tableID,
         });
@@ -1077,7 +1053,7 @@ function drawScoreArea() {
     });
     terminateButton.tooltipName = "kill";
     terminateButton.tooltipContent =
-      'Vote to terminate the game (click again to cancel the vote).<br /><span style="padding-left: 30px;">Double click to terminate immediately.</span>';
+      "Terminate the game, ending it immediately.";
     konvaTooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }

@@ -13,12 +13,11 @@ type Player struct {
 	// The user session corresponding to the player is copied here for convenience
 	// Even if the user disconnects, the orphaned session will remain,
 	// and it is safe to manually perform actions on their behalf with the orphaned session
-	Session    *Session `json:"-"` // Skip when serializing
-	Present    bool
-	Stats      *PregameStats
-	Typing     bool
-	LastTyped  time.Time
-	VoteToKill bool
+	Session   *Session `json:"-"` // Skip when serializing
+	Present   bool
+	Stats     *PregameStats
+	Typing    bool
+	LastTyped time.Time
 }
 type PregameStats struct {
 	NumGames int           `json:"numGames"`

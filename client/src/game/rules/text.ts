@@ -105,10 +105,6 @@ export function gameOver(
       return `${playerName} terminated the game!`;
     }
 
-    case EndCondition.VotedToKill: {
-      return "The players voted to terminate the game!";
-    }
-
     case EndCondition.SpeedrunFail: {
       break;
     }

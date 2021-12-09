@@ -299,15 +299,6 @@ func (s *Session) NotifyBoot(t *Table) {
 	})
 }
 
-func (s *Session) NotifyVote(v bool) {
-	type VoteMessage struct {
-		Vote bool `json:"vote"`
-	}
-	s.Emit("voteChange", &VoteMessage{
-		Vote: v,
-	})
-}
-
 /*
 	Replay notify functions
 */

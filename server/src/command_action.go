@@ -12,12 +12,11 @@ var (
 
 func actionsFunctionsInit() {
 	actionFunctions = map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool{
-		ActionTypePlay:          commandActionPlay,
-		ActionTypeDiscard:       commandActionDiscard,
-		ActionTypeColorClue:     commandActionClue,
-		ActionTypeRankClue:      commandActionClue,
-		ActionTypeEndGame:       commandActionEndGame,
-		ActionTypeEndGameByVote: commandActionEndGame,
+		ActionTypePlay:      commandActionPlay,
+		ActionTypeDiscard:   commandActionDiscard,
+		ActionTypeColorClue: commandActionClue,
+		ActionTypeRankClue:  commandActionClue,
+		ActionTypeEndGame:   commandActionEndGame,
 	}
 }
 
@@ -70,7 +69,7 @@ func commandAction(ctx context.Context, s *Session, d *CommandData) {
 	}
 	p := g.Players[playerIndex]
 
-	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
+	if d.Type != ActionTypeEndGame {
 		// Validate that it is this player's turn
 		if g.ActivePlayerIndex != playerIndex {
 			s.Warning("It is not your turn, so you cannot perform an action.")
@@ -105,7 +104,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
-	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
+	if d.Type != ActionTypeEndGame {
 		go t.CheckIdle(ctx)
 	}
 
@@ -129,7 +128,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	// Adjust the timer for the player that just took their turn
 	// (if the game is over now due to a player running out of time, we don't need to adjust the
 	// timer because we already set it to 0 in the "checkTimer" function)
-	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
+	if d.Type != ActionTypeEndGame {
 		p.Time -= time.Since(g.DatetimeTurnBegin)
 		// (in non-timed games,
 		// "Time" will decrement into negative numbers to show how much time they are taking)
@@ -385,9 +384,7 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	// Validate the value
 	if d.Value != EndConditionTimeout &&
 		d.Value != EndConditionTerminated &&
-		d.Value != EndConditionTerminatedByVote &&
-		d.Value != EndConditionIdleTimeout &&
-		d.Value != EndConditionAllOrNothingFail {
+		d.Value != EndConditionIdleTimeout {
 
 		s.Warning("That is not a valid value for the end game action.")
 		g.InvalidActionOccurred = true
@@ -411,12 +408,6 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 			Type:   ActionTypeEndGame,
 			Target: g.EndPlayer,
 			Value:  EndConditionTerminated,
-		}
-	} else if g.EndCondition == EndConditionTerminatedByVote {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGameByVote,
-			Target: -1,
-			Value:  EndConditionTerminatedByVote,
 		}
 	} else if g.EndCondition == EndConditionIdleTimeout {
 		endGameAction = &GameAction{

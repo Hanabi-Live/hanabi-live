@@ -287,12 +287,6 @@ func validateJSON(s *Session, d *CommandData) bool {
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}
-		} else if action.Type == ActionTypeEndGameByVote {
-			if action.Target != -1 {
-				s.Warning("Action at index " + strconv.Itoa(i) +
-					" is an end game by vote with an invalid target not equal to -1.")
-				return false
-			}
 		} else {
 			s.Warning("Action at index " + strconv.Itoa(i) + " has an invalid type of " +
 				strconv.Itoa(action.Type) + ".")
@@ -568,14 +562,13 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		id := (i + 1) * -1
 
 		player := &Player{
-			UserID:     id,
-			Name:       name,
-			Session:    NewFakeSession(id, name),
-			Present:    true,
-			Stats:      &PregameStats{},
-			Typing:     false,
-			LastTyped:  time.Time{},
-			VoteToKill: false,
+			UserID:    id,
+			Name:      name,
+			Session:   NewFakeSession(id, name),
+			Present:   true,
+			Stats:     &PregameStats{},
+			Typing:    false,
+			LastTyped: time.Time{},
 		}
 		t.Players = append(t.Players, player)
 	}

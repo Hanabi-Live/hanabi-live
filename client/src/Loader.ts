@@ -27,7 +27,6 @@ const fileIDs = [
   "replay-forward-full",
   "replay-forward-full-disabled",
   "skull",
-  "skull_vtk",
   "trashcan",
   "trashcan2",
   "x",
