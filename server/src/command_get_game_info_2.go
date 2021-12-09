@@ -120,6 +120,9 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 				s.NotifyChatTyping(t, sp.Name, sp.Typing)
 			}
 		}
+
+		// Send them their vote status
+		s.NotifyVote(t.Players[playerIndex].VoteToKill)
 	}
 
 	if g.Hypothetical {

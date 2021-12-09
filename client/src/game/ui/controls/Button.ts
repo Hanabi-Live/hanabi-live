@@ -146,4 +146,9 @@ export default class Button extends Konva.Group {
       throw new Error('The "fill()" method was called on a non-text Button.');
     }
   }
+
+  setImage(image: HTMLImageElement): void {
+    this.imageElement?.image(image);
+    this.draw();
+  }
 }
