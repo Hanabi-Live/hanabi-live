@@ -106,7 +106,7 @@ export function gameOver(
     }
 
     case EndCondition.VotedToKill: {
-      return "The game was terminated by vote count!";
+      return "The game was voted to be terminated!";
     }
 
     case EndCondition.SpeedrunFail: {
