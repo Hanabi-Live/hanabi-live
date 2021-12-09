@@ -95,10 +95,10 @@ func commandInit() {
 	commandMap["tableSetLeader"] = commandTableSetLeader
 	commandMap["tableStart"] = commandTableStart
 	commandMap["tableTerminate"] = commandTableTerminate
+	commandMap["tableVoteForTermination"] = commandTableVoteForTermination
 	commandMap["tableSpectate"] = commandTableSpectate
 	commandMap["tableRestart"] = commandTableRestart
 	commandMap["tableUpdate"] = commandTableUpdate
-	commandMap["tableVoteForTermination"] = commandTableVoteForTermination
 
 	// Other lobby commands
 	commandMap["setting"] = commandSetting
