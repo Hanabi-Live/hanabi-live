@@ -374,3 +374,19 @@ func (t *Table) GetSharedReplayLeaderName() string {
 		return v
 	}
 }
+
+func (t *Table) ChangeVote(playerIndex int) bool {
+	newVote := !t.Players[playerIndex].VoteToKill
+	t.Players[playerIndex].VoteToKill = newVote
+	return newVote
+}
+
+func (t *Table) ShouldTerminateByVotes() bool {
+	count := 0
+	for _, sp := range t.Players {
+		if sp.VoteToKill {
+			count++
+		}
+	}
+	return count*2 >= len(t.Players)
+}

@@ -26,6 +26,7 @@ const (
 	ActionTypeColorClue
 	ActionTypeRankClue
 	ActionTypeEndGame // Players cannot send this (internal only)
+	ActionTypeEndGameByVote
 )
 
 const (
@@ -44,6 +45,7 @@ const (
 	EndConditionCharacterSoftlock
 	EndConditionAllOrNothingFail
 	EndConditionAllOrNothingSoftlock
+	EndConditionTerminatedByVote
 )
 
 // When in a shared replay, spectators can send certain types of "actions" to the server to

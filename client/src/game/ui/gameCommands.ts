@@ -18,6 +18,7 @@ import Spectator from "../types/Spectator";
 import SpectatorNote from "../types/SpectatorNote";
 import State from "../types/State";
 import * as arrows from "./arrows";
+import { setSkullEnabled, setSkullNormal } from "./drawUI";
 import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import * as hypothetical from "./hypothetical";
@@ -307,6 +308,17 @@ commands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
   }
 
   stats.setEfficiencyMod(data.mod);
+});
+
+interface VoteData {
+  vote: boolean;
+}
+commands.set("voteChange", (data: VoteData) => {
+  if (data.vote) {
+    setSkullEnabled();
+  } else {
+    setSkullNormal();
+  }
 });
 
 // This is used in shared replays to highlight a specific card (or UI element)
