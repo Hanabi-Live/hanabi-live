@@ -79,6 +79,7 @@ func (t *Table) NotifyPlayerChange() {
 			Players           []*GamePlayerMessage `json:"players"`
 			Options           *Options             `json:"options"`
 			PasswordProtected bool                 `json:"passwordProtected"`
+			MaxPlayers        int                  `json:"maxPlayers"`
 		}
 		p.Session.Emit("game", &GameMessage{
 			TableID:           t.ID,
@@ -87,6 +88,7 @@ func (t *Table) NotifyPlayerChange() {
 			Players:           gamePlayers,
 			Options:           t.Options,
 			PasswordProtected: t.PasswordHash != "",
+			MaxPlayers:        t.MaxPlayers,
 		})
 	}
 }

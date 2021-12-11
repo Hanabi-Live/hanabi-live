@@ -190,6 +190,11 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
+	// Validate that the maximum player count is valid, default to 5
+	if d.MaxPlayers < 2 || d.MaxPlayers > 6 {
+		d.MaxPlayers = 5
+	}
+
 	tableCreate(ctx, s, d, data)
 }
 
@@ -229,6 +234,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 	defer t.Unlock(ctx)
 	t.Visible = !d.HidePregame
 	t.PasswordHash = passwordHash
+	t.MaxPlayers = d.MaxPlayers
 	t.Options = d.Options
 	t.ExtraOptions = &ExtraOptions{
 		DatabaseID:                 data.DatabaseID,

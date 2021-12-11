@@ -18,6 +18,7 @@ type Table struct {
 	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*Player
+	MaxPlayers int          // Player limit for this table
 	Spectators []*Spectator `json:"-"`
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
@@ -79,6 +80,7 @@ func NewTable(name string, ownerID int) *Table {
 		InitialName: "", // This must stay blank in shared replays
 
 		Players:       make([]*Player, 0),
+		MaxPlayers:    5,
 		Spectators:    make([]*Spectator, 0),
 		KickedPlayers: make(map[int]struct{}),
 

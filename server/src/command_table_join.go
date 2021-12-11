@@ -31,9 +31,9 @@ func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that this table does not already have 6 players
-	if len(t.Players) >= 6 {
-		s.Warning("That table is already full. (You can not play with more than 6 players.)")
+	// Validate that this table does not already have the maximum number of players
+	if len(t.Players) >= t.MaxPlayers {
+		s.Warning("That table is already full.")
 		return
 	}
 
