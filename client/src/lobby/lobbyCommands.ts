@@ -55,8 +55,20 @@ commands.set("friends", (data: FriendsData) => {
 });
 
 commands.set("game", (data: Game) => {
+  const previousPlayers = globals.game?.players;
   globals.game = data;
   pregame.draw();
+  if (previousPlayers?.length !== data.players.length) {
+    // Disable the start game button for a short time after the player count changes.
+    if (globals.enableStartGameButtonTimeout !== null) {
+      clearTimeout(globals.enableStartGameButtonTimeout);
+    }
+    $("#nav-buttons-pregame-start").addClass("disabled");
+    globals.enableStartGameButtonTimeout = setTimeout(() => {
+      globals.enableStartGameButtonTimeout = null;
+      pregame.toggleStartGameButton();
+    }, 500);
+  }
 });
 
 commands.set("gameHistory", (dataArray: GameHistory[]) => {

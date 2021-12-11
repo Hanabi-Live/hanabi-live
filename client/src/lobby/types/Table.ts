@@ -15,4 +15,5 @@ export default interface Table {
   progress: number;
   players: string[]; // e.g. ['Alice', 'Bob']
   spectators: string;
+  maxPlayers: number;
 }

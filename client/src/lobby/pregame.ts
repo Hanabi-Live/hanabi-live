@@ -118,6 +118,9 @@ export function draw(): void {
   // Update the information on the left-hand side of the screen
   $("#lobby-pregame-name").text(globals.game.name);
   $("#lobby-pregame-variant").text(globals.game.options.variantName);
+  $("#lobby-pregame-seats").text(
+    `${globals.game.players.length.toString()} / ${globals.game.maxPlayers.toString()}`,
+  );
 
   drawOptions();
 
@@ -126,11 +129,7 @@ export function draw(): void {
     drawPlayerBox(i);
   }
 
-  // Disable Start game for 2 seconds
-  toggleStartGameButton(true);
-  setTimeout(() => {
-    toggleStartGameButton();
-  }, 2000);
+  toggleStartGameButton();
 }
 
 function drawOptions() {
@@ -457,12 +456,10 @@ function drawPlayerBox(i: number) {
   tooltips.create(`#lobby-pregame-player-${i + 1}-scores-icon`);
 }
 
-export function toggleStartGameButton(forAll = false): void {
+export function toggleStartGameButton(): void {
   // Enable or disable the "Start Game" button.
   // "Start Game" enabled if game owner and enough players
   //
-  // If forAll is true, it is disabled for everyone.
-  // This is used to delay game start when players enter / leave
   $("#nav-buttons-pregame-start").addClass("disabled");
 
   if (globals.game === null) {
@@ -473,8 +470,16 @@ export function toggleStartGameButton(forAll = false): void {
     globals.game.owner === globals.userID &&
     globals.game.players.length >= 2 &&
     globals.game.players.length <= 6 &&
-    !forAll
+    // If this field is not equal to null it means that we're waiting a short time to re-enable
+    // the button after a player joined.
+    globals.enableStartGameButtonTimeout === null
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
+  }
+
+  if (globals.game.owner !== globals.userID) {
+    $("#nav-buttons-pregame-change-variant").addClass("disabled");
+  } else {
+    $("#nav-buttons-pregame-change-variant").removeClass("disabled");
   }
 }
