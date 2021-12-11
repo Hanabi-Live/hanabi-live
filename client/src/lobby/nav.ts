@@ -40,6 +40,12 @@ export function init(): void {
     } else if ($("#replay-json-row").is(":visible")) {
       $("#replay-json").trigger("focus");
     }
+    $("#replay-id").on("keypress", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        $("#replay-submit").trigger("click");
+      }
+    });
   };
 
   // The "Watch Specific Replay" button
