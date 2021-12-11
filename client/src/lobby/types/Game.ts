@@ -6,6 +6,7 @@ export default interface Game {
   players: Player[];
   options: Options;
   passwordProtected: boolean;
+  maxPlayers: number;
 }
 
 interface Player {

@@ -298,6 +298,12 @@ function submit() {
     localStorage.setItem("createTablePassword", password);
   }
 
+  // Max players must be a number between 2 and 6. Default to 5 if validation fails
+  let maxPlayers = Number($("#createTableMaxPlayers").val());
+  if (maxPlayers < 2 || maxPlayers > 6) {
+    maxPlayers = 5;
+  }
+
   // Game JSON is not saved
   const gameJSONString = $("#createTableJSON").val();
   if (typeof gameJSONString !== "string") {
@@ -340,6 +346,7 @@ function submit() {
       options,
       password,
       gameJSON,
+      maxPlayers,
     });
     $("#nav-buttons-lobby-create-game").addClass("disabled");
   } else {

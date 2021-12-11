@@ -602,6 +602,10 @@
                 <span id="lobby-pregame-variant"></span>
               </h4>
               <h4 class="padding0p5">
+                <strong><i class="fas fa-users"></i>&nbsp; Players:</strong><br />
+                <span id="lobby-pregame-seats"></span>
+              </h4>
+              <h4 class="padding0p5">
                 <span id="lobby-pregame-options-title"><strong>Options:</strong></span><br />
                 <ul id="lobby-pregame-options"></ul>
               </h4>
@@ -883,6 +887,18 @@
       </div>
       <div class="col-9">
         <input id="createTablePassword" type="text" placeholder="Password (optional)" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-users nav-icon" style="position: relative; left: 1px;"></i>
+        </div>
+        Max Players
+      </div>
+      <div class="col-9">
+        <input id="createTableMaxPlayers" type="number" placeholder="5" min="2" max="6" />
       </div>
     </div>
 
