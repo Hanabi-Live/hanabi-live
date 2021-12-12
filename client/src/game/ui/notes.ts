@@ -203,7 +203,10 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus(
     this: HTMLElement,
   ) {
-    $(this).select();
+    const oldNote = $(this).val();
+    if (oldNote !== "") {
+      $(this).val(`${oldNote} | `);
+    }
   });
 
   // Automatically focus the new text input box
