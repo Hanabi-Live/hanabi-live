@@ -1,6 +1,5 @@
 // Users can right-click cards to record information on them
 
-import * as KeyCode from "keycode-js";
 import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
 import { STACK_BASE_RANK } from "../types/constants";
@@ -148,34 +147,53 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     `<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`,
   );
 
-  $(`#tooltip-${card.tooltipName}-input`).on("keydown", (keyEvent) => {
-    keyEvent.stopPropagation();
-    if (
-      keyEvent.which !== KeyCode.KEY_RETURN &&
-      keyEvent.which !== KeyCode.KEY_ESCAPE
-    ) {
+  const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
+  let shouldRemovePipe = true;
+  const keysRemovingPipe = [
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown",
+    "Home",
+    "End",
+    "Backspace",
+    "Delete",
+    "Escape",
+  ];
+
+  noteTextbox.on("keydown", (event) => {
+    event.stopPropagation();
+    const key = event.key;
+    if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
+      event.preventDefault();
+      shouldRemovePipe = false;
+      // restore the old note, removing the pipe
+      noteTextbox.val(note);
+    }
+    shouldRemovePipe = false;
+
+    if (key !== "Enter" && key !== "Escape") {
       return;
     }
 
     globals.editingNote = null;
 
     let newNote;
-    if (keyEvent.which === KeyCode.KEY_ESCAPE) {
-      // Use the existing note, if any
+    if (key === "Escape") {
+      // If Escape is pressed, use the existing note, if any
       newNote = get(card.state.order, true);
-    } else if (keyEvent.which === KeyCode.KEY_RETURN) {
-      // Get the value of the input box
-      const element = $(`#tooltip-${card.tooltipName}-input`);
-      if (element === undefined) {
-        throw new Error("Failed to get the element for the keydown function.");
-      }
-      newNote = element.val();
+    } else {
+      // If Enter is pressed, get the value of the input box
+      newNote = noteTextbox.val();
       if (typeof newNote !== "string") {
         throw new Error(
           `The value of the "#tooltip-${card.tooltipName}-input" element was not a string.`,
         );
       }
-
+      // Remove the last pipe
+      if (newNote.endsWith(" | ")) {
+        newNote = newNote.substr(0, newNote.length - 3);
+      }
       // Convert symbols to HTML entities
       // (to be thorough, the server will also perform this validation)
       newNote = convertHTMLEntities(newNote);
@@ -194,25 +212,31 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   });
 
   // Automatically close the tooltip if we click elsewhere on the screen
-  $(`#tooltip-${card.tooltipName}-input`).on("focusout", () => {
+  noteTextbox.on("focusout", () => {
     globals.editingNote = null;
     tooltips.close(tooltip);
   });
 
-  // Automatically highlight all of the existing text when a note input box is focused
-  $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus(
-    this: HTMLElement,
-  ) {
+  // Automatically and a pipe to a non empty note input box when it is focused
+  noteTextbox.on("focus", function tooltipCardInputFocus(this: HTMLElement) {
     const oldNote = $(this).val();
     if (oldNote !== "") {
       $(this).val(`${oldNote} | `);
     }
   });
 
+  // Remove the pipe if the user clicks with the mouse buttons
+  noteTextbox.on("mousedown", () => {
+    if (shouldRemovePipe) {
+      noteTextbox.val(note);
+      shouldRemovePipe = false;
+    }
+  });
+
   // Automatically focus the new text input box
   // (this will not work properly unless we put it in a callback)
   setTimeout(() => {
-    $(`#tooltip-${card.tooltipName}-input`).trigger("focus");
+    noteTextbox.trigger("focus");
   }, 1);
 }
 
