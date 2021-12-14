@@ -127,6 +127,7 @@ func commandInit() {
 	commandMap["loaded"] = commandLoaded
 	commandMap["tag"] = commandTag
 	commandMap["tagDelete"] = commandTagDelete
+	commandMap["tagsDeleteAll"] = commandTagsDeleteAll
 
 	// Game commands
 	commandMap["action"] = commandAction
