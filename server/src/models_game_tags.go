@@ -47,6 +47,14 @@ func (*GameTags) Delete(gameID int, tag string) error {
 	return err
 }
 
+func (*GameTags) DeleteAll(gameID int) error {
+	_, err := db.Exec(context.Background(), `
+		DELETE FROM game_tags
+		WHERE game_id = $1
+	`, gameID)
+	return err
+}
+
 func (*GameTags) GetAll(gameID int) ([]string, error) {
 	tags := make([]string, 0)
 

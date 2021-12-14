@@ -191,6 +191,12 @@ chatCommands.set("tagsearch", (room: string, args: string[]) => {
   });
 });
 
+chatCommands.set("tagsdeleteall", () => {
+  globals.conn!.send("tagsDeleteAll", {
+    tableID: globals.tableID,
+  });
+});
+
 // /playerinfo (username)
 function playerinfo(_room: string, args: string[]) {
   let usernames: string[] = [];
