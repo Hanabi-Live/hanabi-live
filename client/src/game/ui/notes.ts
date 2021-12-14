@@ -160,18 +160,26 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     "Delete",
     "Escape",
   ];
+  const keysClosingNote = ["Enter", "Escape"];
+  const allKeys = keysRemovingPipe.concat(keysClosingNote);
 
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const key = event.key;
+
+    // Only deal with specific keys
+    if (!allKeys.includes(key)) {
+      return;
+    }
+
     if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
       event.preventDefault();
-      // restore the old note, removing the pipe
+      // Restore the old note, removing the pipe
       noteTextbox.val(note);
     }
     shouldRemovePipe = false;
 
-    if (key !== "Enter" && key !== "Escape") {
+    if (!keysClosingNote.includes(key)) {
       return;
     }
 
