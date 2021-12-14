@@ -31,7 +31,7 @@ describe("UI", () => {
             turnState.deck,
             turnState.playStackDirections,
             variant,
-          )
+          ),
         ).toBe(false);
       });
     });
@@ -46,7 +46,7 @@ describe("UI", () => {
             turnState.deck,
             turnState.playStackDirections,
             variant,
-          )
+          ),
         ).toBe(false);
       });
     });
@@ -61,7 +61,7 @@ describe("UI", () => {
             turnState.deck,
             turnState.playStackDirections,
             variant,
-          )
+          ),
         ).toBe(true);
       });
     });
