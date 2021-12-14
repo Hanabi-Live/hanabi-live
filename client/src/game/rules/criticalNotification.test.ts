@@ -51,9 +51,9 @@ describe("UI", () => {
       });
     });
 
-    describe("at turn 6", () => {
+    describe("at turn 22", () => {
       test("red 5 is critical", () => {
-        const turnState = getStateAtTurn(testState, 14);
+        const turnState = getStateAtTurn(testState, 21);
         expect(
           isCritical(
             redSuit,
