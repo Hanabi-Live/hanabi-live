@@ -28,33 +28,17 @@ export function set(cursorType: CursorType): void {
   }
 
   currentCursorType = cursorType;
-
-  let cursorValue = "auto";
-  switch (cursorType) {
-    case "look":
-    case "edit": {
-      const url = `/public/img/cursors/${cursorType}.png`;
-      cursorValue = `url('${url}'), auto`;
-      break;
-    }
-
-    case "hand": {
-      cursorValue = "grab";
-      break;
-    }
-
-    case "dragging": {
-      cursorValue = "grabbing";
-      break;
-    }
-
-    default: {
-      cursorValue = "auto";
-      break;
-    }
+  const cursorTypes = ["default", "hand", "dragging", "look", "edit"];
+  const element = document.getElementById("game");
+  if (element === null) {
+    return;
   }
 
-  globals.stage.container().style.cursor = cursorValue;
+  cursorTypes.forEach((type) => {
+    element.classList.remove(`game-cursor-${type}`);
+  });
+
+  element.classList.add(`game-cursor-${cursorType}`);
 
   // If the Chrome development tools are open, then the cursor may not update properly
   // https://stackoverflow.com/questions/37462132/update-mouse-cursor-without-moving-mouse-with-changed-css-cursor-property

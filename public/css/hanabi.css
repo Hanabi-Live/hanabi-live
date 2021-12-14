@@ -1506,3 +1506,20 @@ input[type="text"].wrongInput {
 #set-turn-label::after {
   content: attr(data-value);
 }
+
+/* Cursors styles for game container */
+.game-cursor-default {
+  cursor: auto;
+}
+.game-cursor-look {
+  cursor: url("/public/img/cursors/look.png"), auto;
+}
+.game-cursor-edit {
+  cursor: url("/public/img/cursors/edit.png"), auto;
+}
+.game-cursor-hand {
+  cursor: grab;
+}
+.game-cursor-dragging {
+  cursor: grabbing;
+}
