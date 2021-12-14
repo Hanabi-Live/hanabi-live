@@ -603,6 +603,7 @@ func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
+		      AND games.end_condition = 1
 	`
 	if !includeSpeedrun {
 		SQLString += "AND games.speedrun = FALSE"
