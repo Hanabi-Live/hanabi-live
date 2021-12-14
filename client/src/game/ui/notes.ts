@@ -166,7 +166,6 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     const key = event.key;
     if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
       event.preventDefault();
-      shouldRemovePipe = false;
       // restore the old note, removing the pipe
       noteTextbox.val(note);
     }
