@@ -102,7 +102,7 @@ func NewGame(t *Table) *Game {
 		Stacks:                make([]int, len(variant.Suits)),
 		PlayStackDirections:   make([]int, len(variant.Suits)),
 		Turn:                  0,
-		DatetimeTurnBegin:     time.Time{},
+		DatetimeTurnBegin:     time.Now(),
 		TurnsInverted:         false,
 		ActivePlayerIndex:     0,
 		ClueTokens:            variant.GetAdjustedClueTokens(MaxClueNum),
