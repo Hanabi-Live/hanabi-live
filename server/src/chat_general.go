@@ -74,7 +74,7 @@ func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	var arg1, arg2 int
 	if v, err := strconv.Atoi(d.Args[0]); err != nil {
 		if _, err := strconv.ParseFloat(d.Args[0], 64); err != nil {
-			msg := "\"" + d.Args[0] + "\" is not a number."
+			msg := "\"" + d.Args[0] + "\" is not an integer."
 			chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		} else {
 			msg := "The /random command only accepts integers."
@@ -87,7 +87,7 @@ func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if len(d.Args) == 2 {
 		if v, err := strconv.Atoi(d.Args[1]); err != nil {
 			if _, err := strconv.ParseFloat(d.Args[1], 64); err != nil {
-				msg := "\"" + d.Args[1] + "\" is not a number."
+				msg := "\"" + d.Args[1] + "\" is not an integer."
 				chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 			} else {
 				msg := "The /random command only accepts integers."
