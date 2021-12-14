@@ -164,6 +164,9 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const key = event.key;
+    if (key === "Shift") {
+      return;
+    }
     if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
       event.preventDefault();
       // restore the old note, removing the pipe
