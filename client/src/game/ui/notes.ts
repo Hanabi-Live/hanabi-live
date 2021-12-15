@@ -158,7 +158,6 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     "End",
     "Backspace",
     "Delete",
-    "Escape",
   ];
   const keysClosingNote = ["Enter", "Escape"];
   const allKeys = keysRemovingPipe.concat(keysClosingNote);
@@ -173,7 +172,6 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     }
 
     if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
-      event.preventDefault();
       // Restore the old note, removing the pipe
       noteTextbox.val(note);
     }
