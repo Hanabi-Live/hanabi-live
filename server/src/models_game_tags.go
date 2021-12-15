@@ -47,11 +47,12 @@ func (*GameTags) Delete(gameID int, tag string) error {
 	return err
 }
 
-func (*GameTags) DeleteAll(gameID int) error {
+func (*GameTags) DeleteAll(userID int, gameID int) error {
 	_, err := db.Exec(context.Background(), `
 		DELETE FROM game_tags
-		WHERE game_id = $1
-	`, gameID)
+		WHERE user_id = $1
+		    AND game_id = $2
+	`, userID, gameID)
 	return err
 }
 

@@ -42,13 +42,13 @@ func tagsDeleteAll(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	// Delete it from the database
-	if err := models.GameTags.DeleteAll(t.ExtraOptions.DatabaseID); err != nil {
+	if err := models.GameTags.DeleteAll(s.UserID, t.ExtraOptions.DatabaseID); err != nil {
 		logger.Error("Failed to delete all tags for game ID " +
 			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
 	}
 
-	msg := s.Username + " has deleted the game's tags."
+	msg := s.Username + " has deleted all their tags for this game."
 	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }
