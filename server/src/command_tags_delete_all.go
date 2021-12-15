@@ -49,6 +49,6 @@ func tagsDeleteAll(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	msg := s.Username + " has deleted all their tags in this game."
+	msg := s.Username + " has deleted all their tags for this game."
 	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }
