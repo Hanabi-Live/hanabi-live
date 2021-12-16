@@ -142,10 +142,13 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
 
   globals.editingNote = card.state.order;
   const note = get(card.state.order, true);
-  tooltips.setInstanceContent(
-    tooltip,
-    `<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`,
-  );
+
+  const input = document.createElement("input");
+  input.setAttribute("id", `tooltip-${card.tooltipName}-input`);
+  input.setAttribute("type", "text");
+  input.setAttribute("value", `${note}`);
+
+  tooltips.setInstanceContent(tooltip, input.outerHTML);
 
   const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;
@@ -194,10 +197,6 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
       if (newNote.endsWith(" | ")) {
         newNote = newNote.substring(0, newNote.length - 3);
       }
-      // Convert symbols to HTML entities
-      // (to be thorough, the server will also perform this validation)
-      newNote = convertHTMLEntities(newNote);
-
       set(card.state.order, newNote);
     }
 
@@ -250,10 +249,4 @@ export function setAllCardIndicators(): void {
   for (const stackBase of globals.stackBases) {
     stackBase.setNoteIndicator();
   }
-}
-
-function convertHTMLEntities(input: string) {
-  const p = document.createElement("p");
-  p.appendChild(document.createTextNode(input));
-  return p.innerHTML;
 }
