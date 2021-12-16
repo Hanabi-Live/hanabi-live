@@ -10,6 +10,7 @@ export const CHOP_MOVED_NOTES = [
   "sbpcm",
   "ocm",
   "tocm",
+  "mcm",
   "utfcm",
   "utdcm",
   "utbcm",
