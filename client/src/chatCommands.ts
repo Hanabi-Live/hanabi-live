@@ -128,10 +128,12 @@ function setVariant(_room: string, args: string[]) {
     return;
   }
 
-  // Validate the variant name
-  const variantName = args.join(" ");
-  if (VARIANTS.get(variantName) === undefined) {
-    modals.showWarning(`The variant of "${variantName}" is not valid.`);
+  // Sanitize the variant name
+  let variantName = getVariantFromArgs(args);
+  // Get the first match
+  variantName = getVariantFromPartial(variantName);
+  if (variantName === "") {
+    modals.showWarning(`The variant of "${args.join(" ")}" is not valid.`);
     return;
   }
 
@@ -260,3 +262,35 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
   }
   modals.showWarning(warning);
 });
+
+function getVariantFromArgs(args: string[]): string {
+  const patters = [
+    new RegExp(/([&()])/, "g"),
+    new RegExp(/ {2,}/, "g"),
+    new RegExp(/\( /, "g"),
+    new RegExp(/ \)/, "g"),
+  ];
+
+  const variant = args
+    // Remove empty elements
+    .filter((arg) => arg !== "")
+    // Capitalize
+    .map((arg) => arg.charAt(0).toUpperCase() + arg.slice(1).toLowerCase())
+    .join(" ")
+    // Add space between &, (, )
+    .replace(patters[0], " $1 ")
+    // Remove double spaces
+    .replace(patters[1], " ")
+    // Remove space after opening and before closing parenthesis
+    .replace(patters[2], "(")
+    .replace(patters[3], ")")
+    .trim();
+
+  return variant;
+}
+
+function getVariantFromPartial(search: string): string {
+  const keys = [...VARIANTS.keys()];
+  const possibleVariants = keys.filter((key) => key.startsWith(search));
+  return possibleVariants[0] ?? "";
+}
