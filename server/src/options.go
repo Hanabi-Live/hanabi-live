@@ -21,6 +21,7 @@ type Options struct {
 	AllOrNothing          bool   `json:"allOrNothing"`
 	DetrimentalCharacters bool   `json:"detrimentalCharacters"`
 	TableName             string `json:"tableName,omitempty"`
+	MaxPlayers            int    `json:"maxPlayers,omitempty"`
 }
 
 // ExtraOptions are extra specifications for the game; they are not recorded in the database

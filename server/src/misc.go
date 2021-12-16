@@ -151,6 +151,15 @@ func max(x, y int) int {
 	return y
 }
 
+// Ensures a number is between limits.
+// Returns that number or the default value
+func between(x, minimum, maximum, defaultValue int) int {
+	if x < minimum || x > maximum {
+		return defaultValue
+	}
+	return x
+}
+
 func normalizeString(str string) string {
 	// First, we transliterate the string to pure ASCII
 	// Second, we lowercase it

@@ -355,6 +355,7 @@ function submit() {
       tableID: globals.tableID,
       name,
       options,
+      maxPlayers,
     });
   }
 
@@ -367,11 +368,13 @@ function submit() {
 
 function acceptOptionsFromGuest(options: Options) {
   const name = options.tableName;
+  const maxPlayers = options.maxPlayers;
 
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,
     name,
     options,
+    maxPlayers,
   });
 }
 
