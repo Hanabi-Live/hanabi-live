@@ -303,6 +303,7 @@ function submit() {
   if (maxPlayers < 2 || maxPlayers > 6) {
     maxPlayers = 5;
   }
+  localStorage.setItem("createTableMaxPlayers", maxPlayers.toString());
 
   // Game JSON is not saved
   const gameJSONString = $("#createTableJSON").val();
