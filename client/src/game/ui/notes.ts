@@ -171,7 +171,9 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     // Only check the first time if the key is a special one
     if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
       // Restore the old note, removing the pipe
-      event.preventDefault();
+      if (key !== "Home") {
+        event.preventDefault();
+      }
       noteTextbox.val(note);
     }
     shouldRemovePipe = false;
