@@ -140,6 +140,12 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
 		// (since Discord can handle escaping HTML special characters itself)
 		discordSend(discordChannelSyncWithLobby, d.Username, rawMsg)
+
+		// Some messages are also sent to website-development
+		if sendMessageToWebDevChannel {
+			discordSend(discordChannelWebsiteDev, d.Username, rawMsg)
+			sendMessageToWebDevChannel = false
+		}
 	}
 
 	// Check for commands
