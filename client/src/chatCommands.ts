@@ -128,9 +128,11 @@ function setVariant(_room: string, args: string[]) {
     return;
   }
 
-  // Validate the variant name
-  const variantName = getVariantFromArgs(args);
-  if (VARIANTS.get(variantName) === undefined) {
+  // Sanitize the variant name
+  let variantName = getVariantFromArgs(args);
+  // Get the first match
+  variantName = getVariantFromPartial(variantName);
+  if (variantName === "") {
     modals.showWarning(`The variant of "${variantName}" is not valid.`);
     return;
   }
@@ -284,6 +286,11 @@ function getVariantFromArgs(args: string[]): string {
     .replace(patters[3], ")")
     .trim();
 
-  console.log(variant);
   return variant;
+}
+
+function getVariantFromPartial(search: string): string {
+  const keys = [...VARIANTS.keys()];
+  const possibleVariants = keys.filter((key) => key.indexOf(search) === 0);
+  return possibleVariants[0] ?? "";
 }
