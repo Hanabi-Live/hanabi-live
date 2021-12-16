@@ -133,7 +133,7 @@ function setVariant(_room: string, args: string[]) {
   // Get the first match
   variantName = getVariantFromPartial(variantName);
   if (variantName === "") {
-    modals.showWarning(`The variant of "${variantName}" is not valid.`);
+    modals.showWarning(`The variant of "${args.join(" ")}" is not valid.`);
     return;
   }
 
