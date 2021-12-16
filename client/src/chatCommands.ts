@@ -262,8 +262,12 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
 });
 
 function getVariantFromArgs(args: string[]): string {
-  const reg1 = new RegExp(/\( /, "g");
-  const reg2 = new RegExp(/ \)/, "g");
+  const patters = [
+    new RegExp(/([&()])/, "g"),
+    new RegExp(/ {2,}/, "g"),
+    new RegExp(/\( /, "g"),
+    new RegExp(/ \)/, "g"),
+  ];
 
   const variant = args
     // Remove empty elements
@@ -271,9 +275,15 @@ function getVariantFromArgs(args: string[]): string {
     // Capitalize
     .map((arg) => arg.charAt(0).toUpperCase() + arg.slice(1).toLowerCase())
     .join(" ")
-    // Remove space after parenthesis
-    .replace(reg1, "(")
-    .replace(reg2, ")");
+    // Add space between &, (, )
+    .replace(patters[0], " $1 ")
+    // Remove double spaces
+    .replace(patters[1], " ")
+    // Remove space after opening and before closing parenthesis
+    .replace(patters[2], "(")
+    .replace(patters[3], ")")
+    .trim();
 
+  console.log(variant);
   return variant;
 }
