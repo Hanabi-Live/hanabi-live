@@ -129,7 +129,7 @@ function setVariant(_room: string, args: string[]) {
   }
 
   // Validate the variant name
-  const variantName = args.join(" ");
+  const variantName = getVariantFromArgs(args);
   if (VARIANTS.get(variantName) === undefined) {
     modals.showWarning(`The variant of "${variantName}" is not valid.`);
     return;
@@ -260,3 +260,20 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
   }
   modals.showWarning(warning);
 });
+
+function getVariantFromArgs(args: string[]): string {
+  const reg1 = new RegExp(/\( /, "g");
+  const reg2 = new RegExp(/ \)/, "g");
+
+  const variant = args
+    // Remove empty elements
+    .filter((arg) => arg !== "")
+    // Capitalize
+    .map((arg) => arg.charAt(0).toUpperCase() + arg.slice(1).toLowerCase())
+    .join(" ")
+    // Remove space after parenthesis
+    .replace(reg1, "(")
+    .replace(reg2, ")");
+
+  return variant;
+}
