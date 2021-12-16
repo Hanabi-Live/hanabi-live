@@ -250,9 +250,3 @@ export function setAllCardIndicators(): void {
     stackBase.setNoteIndicator();
   }
 }
-
-function convertHTMLEntities(input: string) {
-  const p = document.createElement("p");
-  p.appendChild(document.createTextNode(input));
-  return p.innerHTML;
-}
