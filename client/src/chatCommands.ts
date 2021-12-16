@@ -291,6 +291,6 @@ function getVariantFromArgs(args: string[]): string {
 
 function getVariantFromPartial(search: string): string {
   const keys = [...VARIANTS.keys()];
-  const possibleVariants = keys.filter((key) => key.indexOf(search) === 0);
+  const possibleVariants = keys.filter((key) => key.startsWith(search));
   return possibleVariants[0] ?? "";
 }
