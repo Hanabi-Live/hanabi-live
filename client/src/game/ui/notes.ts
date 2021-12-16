@@ -160,17 +160,12 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     "Delete",
   ];
   const keysClosingNote = ["Enter", "Escape"];
-  const allKeys = keysRemovingPipe.concat(keysClosingNote);
 
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const key = event.key;
 
-    // Only deal with specific keys
-    if (!allKeys.includes(key)) {
-      return;
-    }
-
+    // Only check the first time if the key is a special one
     if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
       // Restore the old note, removing the pipe
       noteTextbox.val(note);
@@ -197,7 +192,7 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
       }
       // Remove the last pipe
       if (newNote.endsWith(" | ")) {
-        newNote = newNote.substr(0, newNote.length - 3);
+        newNote = newNote.substring(0, newNote.length - 3);
       }
       // Convert symbols to HTML entities
       // (to be thorough, the server will also perform this validation)
