@@ -80,7 +80,6 @@ export function checkLegal(): void {
 
 function showClueMatch(target: number, clue: Clue) {
   arrows.hideAll();
-
   let touchedAtLeastOneCard = false;
   const hand = globals.elements.playerHands[target].children;
   for (let i = 0; i < hand.length; i++) {
@@ -91,7 +90,9 @@ function showClueMatch(target: number, clue: Clue) {
         .getMorphedPossibilities()
         .every(([suitIndex, rank]) =>
           cluesRules.touchesCard(globals.variant, clue, suitIndex, rank),
-        )
+        ) &&
+      card.visibleRank !== null &&
+      card.visibleSuitIndex !== null
     ) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
