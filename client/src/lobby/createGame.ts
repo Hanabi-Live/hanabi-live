@@ -581,6 +581,16 @@ export function ready(): void {
     $("#createTablePassword").val(password);
   }
 
+  const maxPlayers = localStorage.getItem("createTableMaxPlayers");
+  let max = 5;
+  if (maxPlayers !== null) {
+    max = parseIntSafe(maxPlayers);
+    if (Number.isNaN(max) || max < 2 || max > 6) {
+      max = 5;
+    }
+  }
+  $("#createTableMaxPlayers").val(max);
+
   // Hide the extra options if we do not have any selected
   if (
     !globals.settings.createTableSpeedrun &&
