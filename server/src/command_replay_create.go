@@ -534,6 +534,7 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 		AllOrNothing:          allOrNothing,
 		DetrimentalCharacters: detrimentalCharacters,
 		TableName:             "",
+		MaxPlayers:            0,
 	}
 	t.ExtraOptions = &ExtraOptions{
 		// Normally, "DatabaseID" is set to either -1 (in an ongoing game)

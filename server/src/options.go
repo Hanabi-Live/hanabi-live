@@ -85,6 +85,7 @@ func NewOptions() *Options {
 		AllOrNothing:          false,
 		DetrimentalCharacters: false,
 		TableName:             "",
+		MaxPlayers:            0,
 	}
 }
 
