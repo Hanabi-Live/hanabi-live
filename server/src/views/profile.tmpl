@@ -85,6 +85,8 @@
 
 <script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
 <script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/widget-filter-2.30.0.min.js"></script>
 <script type="text/javascript" src="/public/js/lib/tooltipster.bundle.min.js"></script>
 <script type="text/javascript">
   $(document).ready(() => {
@@ -98,7 +100,22 @@
         'tooltipster-shadow-big',
       ],
     });
-
+    const pagerOptions = {
+      // target the pager markup - see the HTML block below
+      container: $(".pager"),
+      // output string - default is '{page}/{totalPages}';
+      // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
+      // also {page:input} & {startRow:input} will add a modifiable input in place of the value
+      output: '{startRow} - {endRow} / {filteredRows} ({totalRows})',
+      // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
+      // table row set to a height to compensate; default is false
+      fixedHeight: true,
+      // remove rows from the table to speed up the sort of large tables.
+      // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
+      removeRows: false,
+      // go to page selector - select dropdown that sets the current page
+      cssGoto: '.gotoPage'
+    };
     // Add parser for date and time column to enable sorting
     // https://mottie.github.io/tablesorter/docs/example-parsers.html
     $.tablesorter.addParser({
@@ -169,101 +186,67 @@
     });
 
     // Initialize the table sorting
-    $('table').tablesorter();
+    $('table:not(.plain)').tablesorter({
+      headers: {
+{{if eq .Title "Scores"}}
+        1: { filter: false },
+        2: { filter: false },
+        3: { filter: false },
+        4: { filter: false },
+        5: { filter: false },
+        6: { filter: false },
+        7: { filter: false },
+        8: { filter: false },
+{{else if eq .Title "Missing Scores"}}
+        0: { filter: false },
+        1: { filter: false },
+        2: { filter: false },
+{{else if eq .Title "Tagged Games"}}
+        0: { filter: false },
+        1: { filter: false },
+        2: { filter: false },
+        3: { filter: false },
+        4: { filter: false },
+        5: { filter: false },
+        6: { filter: false },
+        7: { filter: false },
+{{end}}
+      },
+      widgets: ['zebra', 'filter'],
+      // Filter options
+      // From https://mottie.github.io/tablesorter/docs/example-widget-filter.html
+      widgetOptions: {
+        filter_cssFilter   : '',
+        filter_childRows   : false,
+        filter_hideFilters : false,
+        filter_ignoreCase  : true,
+        filter_reset : '',
+        filter_saveFilters : true,
+        filter_searchDelay : 300,
+        filter_startsWith  : false,
+        filter_functions : {
+        }
+      }
+    })
 
-    initHistory();
+    // Bind to pager events
+    // *********************
+    .bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c) {
+      var msg = '"</span> event triggered, ' + (e.type === 'pagerChange' ? 'going to' : 'now on') +
+        ' page <span class="typ">' + (c.page + 1) + '/' + c.totalPages + '</span>';
+      $('#display')
+        .append('<li><span class="str">"' + e.type + msg + '</li>')
+        .find('li:first').remove();
+    })
+
+    .bind('filterEnd', () => { setRowColors() })
+
+    // Initialize the pager plugin
+    // ****************************
+    .tablesorterPager(pagerOptions);
+
     initMissingScores();
   });
-
-  const initHistory = () => {
-    if (
-      !window.location.pathname.startsWith('/history/')
-      && !window.location.pathname.startsWith('/seed/')
-    ) {
-      return;
-    }
-
-    // Initialize the "Filter by # of Players" dropdown
-    // (which is not relevant on a seed listing page)
-    if (window.location.pathname.startsWith('/seed/')) {
-      $('#filter-by-players-label1').hide();
-      $('#filter-by-players-label2').hide();
-    } else {
-      $('#filter-by-players').change(() => {
-        filterHistoryRows();
-      });
-    }
-
-    // Initialize the "Filter by Score" input field
-    $('#filter-by-score').on('input', () => {
-      filterHistoryRows();
-    });
-
-    // Initialize the "Filter by Variant" input field
-    // (which is not relevant on a seed listing page)
-    if (window.location.pathname.startsWith('/seed/')) {
-      $('#filter-by-variant-label1').hide();
-      $('#filter-by-variant-label2').hide();
-    } else {
-      $('#filter-by-variant').on('input', () => {
-        filterHistoryRows();
-      });
-    }
-  };
-
-  const filterHistoryRows = () => {
-    // Hide all rows
-    $('.history-row').hide();
-
-    // Get the filter values
-    const numPlayers = $('#filter-by-players').val();
-    const scoreString = $('#filter-by-score').val();
-    const score = parseIntSafe(scoreString);
-    const variant = $('#filter-by-variant').val();
-
-    const numPlayersFilterEnabled = numPlayers !== 'all';
-    const scoreFilterEnabled = score !== NaN && score >= 0 && score <= 30;
-    const variantFilterEnabled = typeof variant === 'string' && variant !== '';
-
-    let historySelector = '';
-    if (numPlayersFilterEnabled) {
-      historySelector += `.history-row-players-${numPlayers}`;
-    }
-    if (scoreFilterEnabled) {
-      historySelector += `.history-row-score-${score}`;
-    }
-    if (variantFilterEnabled) {
-      // Contains variant name, case insensitive
-      historySelector += `[data-variant*="${variant}" i]`;
-    }
-
-    // If nothing selected, show everything
-    if (historySelector === '') {
-      historySelector = '.history-row';
-    }
-    $(`${historySelector}`).show();
-
-    // Correct total games
-    const games = $('#history-table tr').filter(function () {
-      return $(this).css("display") !== "none"
-    }).length - 1;
-    const filtered = historySelector === '.history-row' ? '' : ' (filtered)';
-    $('#total-number-of-games').html(`${games}${filtered}`);
-
-    setRowColors();
-  };
-
-  // In the Alpha HTML5 template, table rows are supposed to alternate colors
-  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
-  const setRowColors = () => {
-    const numRows = $('#history-table tr').length;
-    const color1 = '#f8f8f8';
-    const color2 = 'white';
-    for (let i = 0; i < numRows; i++) {
-      const colorForThisRow = i % 2 == 0 ? color1 : color2;
-      $(`#history-row-${i}`).css('background-color', colorForThisRow);
-    }
-  }
 
   const initMissingScores = () => {
     if (!window.location.pathname.startsWith('/missing-scores/')) {
@@ -296,6 +279,19 @@
       const numPlayers = $('#filter-by-players').val();
       window.location = `/missing-scores/${playerName}/${numPlayers}`;
     });
+  }
+
+  // In the Alpha HTML5 template, table rows are supposed to alternate colors
+  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
+  const setRowColors = () => {
+    const selector = "table.history.tablesorter tbody tr:not(.filtered)";
+    const numRows = $(selector).length;
+    const color1 = '#f8f8f8';
+    const color2 = 'white';
+    for (let i = 0; i < numRows; i++) {
+      const colorForThisRow = i % 2 == 0 ? color1 : color2;
+      $(selector).eq(i).css('background-color', colorForThisRow);
+    }
   }
 
   // Subroutines

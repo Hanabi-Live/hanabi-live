@@ -60,5 +60,5 @@ func httpMissingScores(c *gin.Context) {
 
 		VariantStats: variantStatsList,
 	}
-	httpServeTemplate(w, data, "profile-new", "missing-scores")
+	httpServeTemplate(w, data, "profile", "missing-scores")
 }

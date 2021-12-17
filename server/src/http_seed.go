@@ -58,5 +58,5 @@ func httpSeed(c *gin.Context) {
 		NamesTitle:   "seed: " + seed,
 		SpecificSeed: true,
 	}
-	httpServeTemplate(w, data, "profile-new", "history")
+	httpServeTemplate(w, data, "profile", "history")
 }

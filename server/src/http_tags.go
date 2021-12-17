@@ -73,5 +73,5 @@ func httpTags(c *gin.Context) {
 		History: gameHistoryList,
 		Tags:    gamesMap,
 	}
-	httpServeTemplate(w, data, "profile-new", "history")
+	httpServeTemplate(w, data, "profile", "history")
 }

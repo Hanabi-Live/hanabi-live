@@ -130,5 +130,5 @@ func httpScores(c *gin.Context) {
 
 		VariantStats: variantStatsList,
 	}
-	httpServeTemplate(w, data, "profile-new", "scores")
+	httpServeTemplate(w, data, "profile", "scores")
 }
