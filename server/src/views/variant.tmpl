@@ -15,9 +15,9 @@
   </header>
 
   <!-- Main -->
-  <section id="main" class="container max">
+  <section id="main" class="container max history-page">
     <header>
-      <h2><img src="/public/img/logos/header.svg" height="200"></h2>
+      <h2><img src="/public/img/logos/header.svg" width="259"></h2>
     </header>
     <div class="row uniform 100%">
       <div class="col-12">
@@ -27,58 +27,77 @@
           {{if eq .NumGames 0}}
             <p>No-one has played a game on this variant yet.</p>
           {{else}}
-            <ul>
-              <li>
-                <span class="stat-description">Total games played (in non-speedruns):</span>
-                {{.NumGames}}
-              </li>
-              <li>
-                <span class="stat-description">Total time spent playing (in non-speedruns):</span>
-                {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
-              </li>
-              <li>
-                <span class="stat-description">Total games played (in speedruns):</span>
-                {{.NumGamesSpeedrun}}
-              </li>
-              <li>
-                <span class="stat-description">Total time spent playing (in speedruns):</span>
-                {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
-              </li>
-              <li>
-                <span class="stat-description">2-player best score:</span>
-                {{index .BestScores 0}} / {{.MaxScore}}
-              </li>
-              <li>
-                <span class="stat-description">3-player best score:</span>
-                {{index .BestScores 1}} / {{.MaxScore}}
-              </li>
-              <li>
-                <span class="stat-description">4-player best score:</span>
-                {{index .BestScores 2}} / {{.MaxScore}}
-              </li>
-              <li>
-                <span class="stat-description">5-player best score:</span>
-                {{index .BestScores 3}} / {{.MaxScore}}
-              </li>
-              <li>
-                <span class="stat-description">6-player best score:</span>
-                {{index .BestScores 4}} / {{.MaxScore}}
-              </li>
-              <li>
-                <span class="stat-description">Total perfect scores:</span>
-                {{.NumMaxScores}} / {{.NumGames}} &nbsp;({{.MaxScoreRate}}%)
-              </li>
-              <li>
-                <span class="stat-description">Total strikeouts:</span>
-                {{.NumStrikeouts}} / {{.NumGames}} &nbsp;({{.StrikeoutRate}}%)
-              </li>
-            </ul>
+            <div class="history-bullets">
+              <ul>
+                <li>
+                  <span class="stat-description">Total games played (in non-speedruns):</span>
+                  {{.NumGames}}
+                </li>
+                <li>
+                  <span class="stat-description">Total time spent playing (in non-speedruns):</span>
+                  {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
+                </li>
+                <li>
+                  <span class="stat-description">Total games played (in speedruns):</span>
+                  {{.NumGamesSpeedrun}}
+                </li>
+                <li>
+                  <span class="stat-description">Total time spent playing (in speedruns):</span>
+                  {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
+                </li>
+                <li>
+                  <span class="stat-description">Total perfect scores:</span>
+                  {{.NumMaxScores}} / {{.NumGames}} &nbsp;({{.MaxScoreRate}}%)
+                </li>
+                <li>
+                  <span class="stat-description">Total strikeouts:</span>
+                  {{.NumStrikeouts}} / {{.NumGames}} &nbsp;({{.StrikeoutRate}}%)
+                </li>
+              </ul>
+              <ul>
+                <li>
+                  <span class="stat-description">2-player best score:</span>
+                  {{index .BestScores 0}} / {{.MaxScore}}
+                </li>
+                <li>
+                  <span class="stat-description">3-player best score:</span>
+                  {{index .BestScores 1}} / {{.MaxScore}}
+                </li>
+                <li>
+                  <span class="stat-description">4-player best score:</span>
+                  {{index .BestScores 2}} / {{.MaxScore}}
+                </li>
+                <li>
+                  <span class="stat-description">5-player best score:</span>
+                  {{index .BestScores 3}} / {{.MaxScore}}
+                </li>
+                <li>
+                  <span class="stat-description">6-player best score:</span>
+                  {{index .BestScores 4}} / {{.MaxScore}}
+                </li>
+              </ul>
+            </div>
 
-            <br />
             <h2 class="align-center">Recent Games of <em>{{.Name}}</em></h2>
-            <br />
 
-            <table>
+            <!-- Pagination controls -->
+            <div class="pager">
+              Page: <select class="gotoPage"></select>
+              <i class="fas fa-fast-backward first"></i>
+              <i class="fas fa-backward prev"></i>
+              <span class="pagedisplay"></span>
+              <i class="fas fa-forward next"></i>
+              <i class="fas fa-fast-forward last"></i>
+              <select class="pagesize" title="Select page size">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="all">All Rows</option>
+              </select>
+            </div>
+            <!-- End of pagination controls -->
+
+            <table class="history">
               <thead>
                 <tr>
                   <th>Game ID</th>
@@ -105,10 +124,79 @@
                 {{- end -}}
               </tbody>
             </table>
+
+            <!-- Pagination controls -->
+            <div class="pager">
+              Page: <select class="gotoPage"></select>
+              <i class="fas fa-fast-backward first"></i>
+              <i class="fas fa-backward prev"></i>
+              <span class="pagedisplay"></span>
+              <i class="fas fa-forward next"></i>
+              <i class="fas fa-fast-forward last"></i>
+              <select class="pagesize" title="Select page size">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="all">All Rows</option>
+              </select>
+            </div>
+            <!-- End of pagination controls -->
           {{end}}
         </section>
       </div>
     </div>
   </section>
 </div>
+
+<script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/widget-filter-2.30.0.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(() => {
+    const pagerOptions = {
+      // target the pager markup - see the HTML block below
+      container: $(".pager"),
+      // output string - default is '{page}/{totalPages}';
+      // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
+      // also {page:input} & {startRow:input} will add a modifiable input in place of the value
+      output: '{startRow} - {endRow} / {filteredRows} ({totalRows})',
+      // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
+      // table row set to a height to compensate; default is false
+      fixedHeight: true,
+      // remove rows from the table to speed up the sort of large tables.
+      // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
+      removeRows: false,
+      // go to page selector - select dropdown that sets the current page
+      cssGoto: '.gotoPage'
+    };
+
+    // Initialize the table sorting
+    $('table:not(.plain)').tablesorter({
+      headers: {
+        0: { filter: false },
+        1: { filter: false },
+        2: { filter: false },
+        3: { filter: false },
+        4: { filter: false },
+      },
+      widgets: ['zebra'],
+    })
+
+    // Bind to pager events
+    // *********************
+    .bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c) {
+      var msg = '"</span> event triggered, ' + (e.type === 'pagerChange' ? 'going to' : 'now on') +
+        ' page <span class="typ">' + (c.page + 1) + '/' + c.totalPages + '</span>';
+      $('#display')
+        .append('<li><span class="str">"' + e.type + msg + '</li>')
+        .find('li:first').remove();
+    })
+
+    // Initialize the pager plugin
+    // ****************************
+    .tablesorterPager(pagerOptions);
+
+  });
+</script>
 {{end}}

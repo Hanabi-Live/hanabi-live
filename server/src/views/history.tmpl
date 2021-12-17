@@ -21,63 +21,34 @@
 {{end}}{{end}}
 
 {{if gt $length 0}}
-<br />
 
-<ul id="filter-players" class="horizontal">
-  <li id="filter-by-players-label1">
-    <div class="create-game-icon">
-        <i class="fas fa-users" style="position: relative; top: 1px;"></i>
-    </div>
-    Filter by # of Players
-  </li>
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<!-- the "pagedisplay" can be any element, including an input -->
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
 
-  <li id="filter-by-players-label2">
-    <select id="filter-by-players">
-      <option value="all">All</option>
-      <option value="2">2-Players</option>
-      <option value="3">3-Players</option>
-      <option value="4">4-Players</option>
-      <option value="5">5-Players</option>
-      <option value="6">6-Players</option>
-    </select>
-  </li>
-
-  <li>
-    <div class="create-game-icon">
-        <i class="fas fa-star-half-alt"></i>
-    </div>
-    Filter by Score
-  </li>
-
-  <li>
-    <input id="filter-by-score" type="number" min="0" max="30" style="width: 4em;">
-  </li>
-
-  <li id="filter-by-variant-label1">
-    <div class="create-game-icon">
-        <i class="fas fa-rainbow"></i>
-    </div>
-    Filter by Variant
-  </li>
-
-  <li id="filter-by-variant-label2">
-    <input id="filter-by-variant" type="text" style="width: 7em;">
-  </li>
-</ul>
-
-<br /><br /><br />
-
-<table id="history-table">
+<table id="history-table" class="history">
   <thead>
     <tr>
       <th>ID</th>
-      <th># of Players</th>
-      <th>Score</th>
-      <th>Variant</th>
+      <th class="center filter-select"># of Players</th>
+      <th class="center">Score</th>
+      <th class="filter-select">Variant</th>
       <th class="sorter-date-and-time">Date & Time</th>
       <th>Players</th>
-      {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
-      {{if eq .Title "Tagged Games" }}<th>Tags</th>{{end}}
+      {{if not .SpecificSeed}}<th class="center">Other Scores</th>{{end}}
+      {{if eq .Title "Tagged Games" }}<th class="center">Tags</th>{{end}}
     </tr>
   </thead>
   <tbody>
@@ -88,8 +59,8 @@
         data-variant="{{.Options.VariantName}}"
       >
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
-        <td>{{.Options.NumPlayers}}</td>
-        <td>{{.Score}}</td>
+        <td class="center">{{.Options.NumPlayers}}</td>
+        <td class="center">{{.Score}}</td>
         <td><a href="/variant/{{.Options.VariantID}}">{{.Options.VariantName}}</a></td>
         <td>{{.DatetimeFinished | formatDate}}</td>
         <td>
@@ -98,12 +69,29 @@
             {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
           </a>
         </td>
-        {{if not $.SpecificSeed}}<td><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
-        {{if eq $.Title "Tagged Games" }}<td>{{.Tags}}</td>{{end}}
+        {{if not $.SpecificSeed}}<td class="center"><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
+        {{if eq $.Title "Tagged Games" }}<td class="center">{{.Tags}}</td>{{end}}
       </tr>
     {{- end -}}
   </tbody>
 </table>
+
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<!-- the "pagedisplay" can be any element, including an input -->
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+
 {{end}}
 
 {{end}}
