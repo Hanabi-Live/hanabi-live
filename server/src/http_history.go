@@ -63,5 +63,5 @@ func httpHistory(c *gin.Context) {
 	if len(playerNames) > 1 {
 		data.NamesTitle = "Game History for [" + strings.Join(playerNames, ", ") + "]"
 	}
-	httpServeTemplate(w, data, "profile", "history")
+	httpServeTemplate(w, data, "profile-new", "history")
 }

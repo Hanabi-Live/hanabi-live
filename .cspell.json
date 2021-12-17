@@ -194,6 +194,7 @@
         "orta",
         "outdent",
         "outputfile",
+        "pagedisplay",
         "passwd",
         "pastebin",
         "peerdeps",
@@ -290,8 +291,8 @@
         "tmpl",
         "tocm",
         "tooltipster",
-        "tooltipstered",
         "tooltipster sidetip",
+        "tooltipstered",
         "truetype",
         "turnbull",
         "tweening",
@@ -333,8 +334,8 @@
         "wscat",
         "xargs",
         "zamiel",
-        "zamiell",
         "zamiel's",
+        "zamiell",
         "αlice"
     ]
 }

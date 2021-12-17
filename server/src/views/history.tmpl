@@ -21,59 +21,30 @@
 {{end}}{{end}}
 
 {{if gt $length 0}}
-<br />
 
-<ul id="filter-players" class="horizontal">
-  <li id="filter-by-players-label1">
-    <div class="create-game-icon">
-        <i class="fas fa-users" style="position: relative; top: 1px;"></i>
-    </div>
-    Filter by # of Players
-  </li>
-
-  <li id="filter-by-players-label2">
-    <select id="filter-by-players">
-      <option value="all">All</option>
-      <option value="2">2-Players</option>
-      <option value="3">3-Players</option>
-      <option value="4">4-Players</option>
-      <option value="5">5-Players</option>
-      <option value="6">6-Players</option>
-    </select>
-  </li>
-
-  <li>
-    <div class="create-game-icon">
-        <i class="fas fa-star-half-alt"></i>
-    </div>
-    Filter by Score
-  </li>
-
-  <li>
-    <input id="filter-by-score" type="number" min="0" max="30" style="width: 4em;">
-  </li>
-
-  <li id="filter-by-variant-label1">
-    <div class="create-game-icon">
-        <i class="fas fa-rainbow"></i>
-    </div>
-    Filter by Variant
-  </li>
-
-  <li id="filter-by-variant-label2">
-    <input id="filter-by-variant" type="text" style="width: 7em;">
-  </li>
-</ul>
-
-<br /><br /><br />
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<!-- the "pagedisplay" can be any element, including an input -->
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
 
 <table id="history-table" class="history">
   <thead>
     <tr>
       <th>ID</th>
-      <th class="center"># of Players</th>
+      <th class="center filter-select"># of Players</th>
       <th class="center">Score</th>
-      <th>Variant</th>
+      <th class="filter-select">Variant</th>
       <th class="sorter-date-and-time">Date & Time</th>
       <th>Players</th>
       {{if not .SpecificSeed}}<th class="center">Other Scores</th>{{end}}
@@ -104,6 +75,23 @@
     {{- end -}}
   </tbody>
 </table>
+
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<!-- the "pagedisplay" can be any element, including an input -->
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+
 {{end}}
 
 {{end}}

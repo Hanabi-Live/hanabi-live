@@ -1524,8 +1524,85 @@ input[type="text"].wrongInput {
   cursor: grabbing;
 }
 
-/* History table */
+/* History Pages */
+section.history-page {
+  padding: 0 !important;
+}
+
+.history-page > header {
+  margin: 0 !important;
+}
+
+table.history {
+  margin-top: 2em;
+}
+
 table.history th.center,
 table.history td.center {
   text-align: center;
+}
+
+.pager {
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pager select {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  margin: 0 0.5em;
+}
+
+.pager i {
+  margin: 0 0.5em;
+  cursor: pointer;
+}
+
+.pager .pagedisplay {
+  display: inline-block;
+  padding: 0 1em;
+  font-weight: 400;
+}
+
+.tablesorter .filtered {
+  display: none;
+}
+
+.tablesorter .tablesorter-errorRow td {
+  text-align: center;
+  cursor: pointer;
+  background-color: #e6bf99;
+}
+
+.tablesorter thead .disabled {
+  display: none;
+}
+
+.tablesorter thead select {
+  width: auto;
+  height: auto;
+  padding: 0 2.5em 0 0.5em;
+}
+
+.tablesorter thead input {
+  width: auto;
+  height: auto;
+  border: 1px solid lightgray;
+  border-radius: 6px;
+}
+
+.tablesorter thead input[aria-label="Filter \"ID\" column by..."],
+.tablesorter thead input[aria-label="Filter \"Score\" column by..."],
+.tablesorter thead input[aria-label="Filter \"Other Scores\" column by..."] {
+  max-width: 100px;
+}
+
+@media screen and (max-width: 1024px) {
+  .tablesorter thead input,
+  .tablesorter thead select {
+    display: none !important;
+  }
 }

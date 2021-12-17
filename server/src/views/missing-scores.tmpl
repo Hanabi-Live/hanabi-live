@@ -9,7 +9,7 @@
 {{if .NumMaxScores }}
   <h3>Current Max Scores:</h3>
 
-  <table class="history">
+  <table class="history plain">
     <thead>
       <tr>
         <th class="center">2-player</th>
@@ -55,12 +55,28 @@
 {{end}}
 
 {{if ne .RequestedNumPlayers 0}}
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<!-- the "pagedisplay" can be any element, including an input -->
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+
 <table class="history">
   <thead>
     <tr>
-      <th>Variant</th>
-      <th class="center"># of Players</th>
-      <th class="sorter-current-max-score center">{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
+      <th width="60%">Variant</th>
+      <th width="20%" class="center"># of Players</th>
+      <th width="20%" class="sorter-current-max-score center">{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
     </tr>
   </thead>
   <tbody>
@@ -97,5 +113,21 @@
     {{- end -}}
   </tbody>
 </table>
+
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<!-- the "pagedisplay" can be any element, including an input -->
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
 {{end}}
 {{end}}
