@@ -1537,8 +1537,10 @@ table.history {
   margin-top: 2em;
 }
 
-table.history th.center,
-table.history td.center {
+.history th.center,
+.history td.center,
+.history th.center .tablesorter-header-inner,
+.history td.center .tablesorter-header-inner {
   text-align: center;
 }
 
@@ -1605,4 +1607,10 @@ table.history td.center {
   .tablesorter thead select {
     display: none !important;
   }
+}
+
+.history-bullets {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
 }
