@@ -15,7 +15,7 @@ const (
 	gitHubPrivateKeyFilename = "GitHub_private_key.pem"
 
 	githubRepositoryOwner = "Zamiell"
-	ownerDiscordID        = "Zamiell#8743"
+	ownerDiscordID        = "Zamiel#8743"
 )
 
 var (
