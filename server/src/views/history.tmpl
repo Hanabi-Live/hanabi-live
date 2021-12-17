@@ -67,17 +67,17 @@
 
 <br /><br /><br />
 
-<table id="history-table">
+<table id="history-table" class="history">
   <thead>
     <tr>
       <th>ID</th>
-      <th># of Players</th>
-      <th>Score</th>
+      <th class="center"># of Players</th>
+      <th class="center">Score</th>
       <th>Variant</th>
       <th class="sorter-date-and-time">Date & Time</th>
       <th>Players</th>
-      {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
-      {{if eq .Title "Tagged Games" }}<th>Tags</th>{{end}}
+      {{if not .SpecificSeed}}<th class="center">Other Scores</th>{{end}}
+      {{if eq .Title "Tagged Games" }}<th class="center">Tags</th>{{end}}
     </tr>
   </thead>
   <tbody>
@@ -88,8 +88,8 @@
         data-variant="{{.Options.VariantName}}"
       >
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
-        <td>{{.Options.NumPlayers}}</td>
-        <td>{{.Score}}</td>
+        <td class="center">{{.Options.NumPlayers}}</td>
+        <td class="center">{{.Score}}</td>
         <td><a href="/variant/{{.Options.VariantID}}">{{.Options.VariantName}}</a></td>
         <td>{{.DatetimeFinished | formatDate}}</td>
         <td>
@@ -98,8 +98,8 @@
             {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
           </a>
         </td>
-        {{if not $.SpecificSeed}}<td><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
-        {{if eq $.Title "Tagged Games" }}<td>{{.Tags}}</td>{{end}}
+        {{if not $.SpecificSeed}}<td class="center"><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
+        {{if eq $.Title "Tagged Games" }}<td class="center">{{.Tags}}</td>{{end}}
       </tr>
     {{- end -}}
   </tbody>

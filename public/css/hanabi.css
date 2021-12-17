@@ -1523,3 +1523,9 @@ input[type="text"].wrongInput {
 .game-cursor-dragging {
   cursor: grabbing;
 }
+
+/* History table */
+table.history th.center,
+table.history td.center {
+  text-align: center;
+}
