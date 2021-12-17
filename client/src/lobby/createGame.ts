@@ -303,6 +303,7 @@ function submit() {
   if (maxPlayers < 2 || maxPlayers > 6) {
     maxPlayers = 5;
   }
+  checkChanged("createTableMaxPlayers", maxPlayers);
 
   // Game JSON is not saved
   const gameJSONString = $("#createTableJSON").val();
@@ -354,6 +355,7 @@ function submit() {
       tableID: globals.tableID,
       name,
       options,
+      maxPlayers,
     });
   }
 
@@ -366,11 +368,13 @@ function submit() {
 
 function acceptOptionsFromGuest(options: Options) {
   const name = options.tableName;
+  const maxPlayers = options.maxPlayers;
 
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,
     name,
     options,
+    maxPlayers,
   });
 }
 
@@ -580,6 +584,12 @@ export function ready(): void {
   if (password !== null && password !== "") {
     $("#createTablePassword").val(password);
   }
+
+  let maxPlayers = globals.settings.createTableMaxPlayers;
+  if (maxPlayers < 2 || maxPlayers > 6) {
+    maxPlayers = 5;
+  }
+  $("#createTableMaxPlayers").val(maxPlayers);
 
   // Hide the extra options if we do not have any selected
   if (

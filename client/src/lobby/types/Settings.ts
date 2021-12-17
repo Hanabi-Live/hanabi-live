@@ -26,4 +26,5 @@ export default class Settings {
   createTableOneLessCard = false;
   createTableAllOrNothing = false;
   createTableDetrimentalCharacters = false;
+  createTableMaxPlayers = 5;
 }

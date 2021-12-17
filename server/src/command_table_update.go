@@ -74,7 +74,18 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		} else if tableOptions.Timed {
 			options += span + "Timed: <b>No" + endspan
 		}
-
+		// Sanitize
+		d.MaxPlayers = between(d.MaxPlayers, 2, 6, 5)
+		if d.MaxPlayers != t.MaxPlayers {
+			// Warn if new maximum is less than the present players
+			colorStart := ""
+			colorEnd := ""
+			if d.MaxPlayers < len(t.Players) {
+				colorStart = "<span style=\"color: red\">"
+				colorEnd = "</span>"
+			}
+			options += span + "Max Players: <b>" + colorStart + strconv.Itoa(d.MaxPlayers) + colorEnd + endspan
+		}
 		if newOptions.Speedrun != tableOptions.Speedrun {
 			options += span + "Speedrun: <b>" + yesNoFromBoolean(newOptions.Speedrun) + endspan
 		}
@@ -111,6 +122,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 
 		// New options
 		newOptions.TableName = d.Name
+		newOptions.MaxPlayers = d.MaxPlayers
 		jsonOptions, err := json.Marshal(newOptions)
 		if err != nil {
 			return
@@ -169,6 +181,34 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	// Sanitize max players
+	d.MaxPlayers = between(d.MaxPlayers, 2, 6, 5)
+	// Kick extra players
+	if d.MaxPlayers < len(t.Players) {
+		extraPlayers := t.Players[d.MaxPlayers:]
+		for _, p := range extraPlayers {
+			// Get the session
+			s2 := p.Session
+			if s2 == nil {
+				// A player's session should never be nil
+				// They might be in the process of reconnecting,
+				// so make a fake session that will represent them
+				s2 = NewFakeSession(p.UserID, p.Name)
+				logger.Info("Created a new fake session in the \"chatKick()\" function.")
+			}
+
+			// Remove them from the table
+			commandTableLeave(ctx, s2, &CommandData{ // nolint: exhaustivestruct
+				TableID:     t.ID,
+				NoTableLock: true,
+			})
+
+			// Inform the player
+			msg := "You have been removed from the table due to new max players restriction."
+			chatServerSendPM(s2, msg, "lobby")
+		}
+	}
+
 	tableUpdate(ctx, s, d, data, t)
 }
 
@@ -179,6 +219,7 @@ func tableUpdate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 	// First, change the table options
 	t.Name = d.Name
 	t.Visible = !d.HidePregame
+	t.MaxPlayers = d.MaxPlayers
 	t.Options = d.Options
 	t.ExtraOptions = &ExtraOptions{
 		DatabaseID:                 data.DatabaseID,
