@@ -586,7 +586,6 @@ export function ready(): void {
   }
 
   let maxPlayers = globals.settings.createTableMaxPlayers;
-  console.log(maxPlayers);
   if (maxPlayers < 2 || maxPlayers > 6) {
     maxPlayers = 5;
   }
