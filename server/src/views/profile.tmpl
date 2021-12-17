@@ -124,6 +124,28 @@
       type: 'numeric'
     });
 
+    // Add parser for $currentScore / $maxScore column
+    $.tablesorter.addParser({
+      id: 'current-max-score', // matches all table header cells with class "sorter-current-max-score"
+      is: function (s, table, cell, $cell) {
+        // return false so this parser is not auto detected
+        return false;
+      },
+      format: function (s, table, cell, cellIndex) {
+        try {
+          // Expected s format: int / int &nbsp;[<i ...></i>]
+          const [currentScore, maxScore] = s.split(" / ");
+          if (maxScore == 0) {
+            return 0;
+          }
+          return currentScore / maxScore;
+        } catch {
+          return 0;
+        }
+      },
+      type: 'numeric'
+    });
+
     // Initialize the table sorting
     $('table').tablesorter();
 
