@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"name": "Hanab",
+			"path": "."
+		},
+		{
+			"name": "Client",
+			"path": "client"
+		},
+		{
+			"name": "Server",
+			"path": "server/src"
+		}
+	],
+	"settings": {
+		"jest.autoRun": {
+			"watch": true,
+			"onStartup": ["all-tests"]
+		},
+		"jest.disabledWorkspaceFolders": [
+			"Hanab",
+			"Server"
+		],
+		"files.associations": {
+			"*.tmpl": "html"
+		}
+	}
+}
