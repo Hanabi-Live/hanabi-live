@@ -303,7 +303,7 @@ function submit() {
   if (maxPlayers < 2 || maxPlayers > 6) {
     maxPlayers = 5;
   }
-  localStorage.setItem("createTableMaxPlayers", maxPlayers.toString());
+  checkChanged("createTableMaxPlayers", maxPlayers);
 
   // Game JSON is not saved
   const gameJSONString = $("#createTableJSON").val();
@@ -585,15 +585,12 @@ export function ready(): void {
     $("#createTablePassword").val(password);
   }
 
-  const maxPlayers = localStorage.getItem("createTableMaxPlayers");
-  let max = 5;
-  if (maxPlayers !== null) {
-    max = parseIntSafe(maxPlayers);
-    if (Number.isNaN(max) || max < 2 || max > 6) {
-      max = 5;
-    }
+  let maxPlayers = globals.settings.createTableMaxPlayers;
+  console.log(maxPlayers);
+  if (maxPlayers < 2 || maxPlayers > 6) {
+    maxPlayers = 5;
   }
-  $("#createTableMaxPlayers").val(max);
+  $("#createTableMaxPlayers").val(maxPlayers);
 
   // Hide the extra options if we do not have any selected
   if (
