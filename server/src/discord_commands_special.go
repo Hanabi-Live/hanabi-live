@@ -16,9 +16,15 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 		return
 	}
 
+	discordUsername := discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator
+	if discordUsername != ownerDiscordID {
+		msg := "Only the owner of the website can use the /issue command."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
 	title := strings.Join(args, " ")
-	body := "Issue opened by Discord user: " +
-		discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator
+	body := "Issue opened by Discord user: " + discordUsername
 
 	// Open a new issue on GitHub for this repository
 	if _, _, err := gitHubClient.Issues.Create(
