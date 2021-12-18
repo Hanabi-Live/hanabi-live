@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 var (

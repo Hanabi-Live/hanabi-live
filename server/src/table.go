@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/sasha-s/go-deadlock"
 )
 

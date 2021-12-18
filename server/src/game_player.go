@@ -7,6 +7,8 @@ import (
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // GamePlayer is the object that represents the game state related aspects of the player

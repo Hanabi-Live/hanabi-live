@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // Game is a sub-object of a table

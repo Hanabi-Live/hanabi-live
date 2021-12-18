@@ -4,6 +4,8 @@ import (
 	"context"
 	"sort"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // /suggest

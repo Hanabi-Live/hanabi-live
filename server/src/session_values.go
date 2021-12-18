@@ -5,6 +5,8 @@ package main
 
 import (
 	"time"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 func (s *Session) Status() int {

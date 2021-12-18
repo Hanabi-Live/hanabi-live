@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 var (

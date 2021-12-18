@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"path"
 	"strings"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 const (

@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandTableUpdate is sent when the user submits

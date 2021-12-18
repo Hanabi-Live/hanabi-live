@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 )

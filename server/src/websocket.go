@@ -3,6 +3,7 @@ package main
 import (
 	"sync"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/gabstv/melody"
 )
 

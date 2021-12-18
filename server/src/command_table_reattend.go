@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandTableReattend is sent when the user clicks on the "Resume" button in the lobby

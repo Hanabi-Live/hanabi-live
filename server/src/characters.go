@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"path"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 var (
