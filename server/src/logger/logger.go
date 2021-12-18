@@ -61,7 +61,6 @@ func getInstance() *logger {
 			instance = &logger{
 				logger: v,
 			}
-
 		}
 	})
 
