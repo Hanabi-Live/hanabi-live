@@ -272,8 +272,7 @@ function getVariantFromArgs(args: string[]): string {
     ampersand: new RegExp(/(?<=\w)&+| +&\w/, "g"),
   };
   const capitalize = (input: string) => {
-    const separators = "() ^-";
-    const pattern = new RegExp(`(^|[${separators}])(\\w)`, "g");
+    const pattern = new RegExp(/(^|[()&\- ])(\w)/, "g");
     return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
   };
 
@@ -292,7 +291,6 @@ function getVariantFromArgs(args: string[]): string {
     // Remove double spaces
     .replace(patterns.doubleSpaces, " ")
     .trim();
-
   return variant;
 }
 
