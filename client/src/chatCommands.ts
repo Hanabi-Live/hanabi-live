@@ -150,6 +150,7 @@ function setVariant(_room: string, args: string[]) {
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
 chatCommands.set("changevariant", setVariant);
+chatCommands.set("cv", setVariant);
 
 // /tag [tag]
 chatCommands.set("tag", (_room: string, args: string[]) => {
