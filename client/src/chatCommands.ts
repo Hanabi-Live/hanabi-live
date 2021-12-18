@@ -267,8 +267,8 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
 function getVariantFromArgs(args: string[]): string {
   const patterns = {
     doubleSpaces: new RegExp(/ {2,}/, "g"),
-    openingParenthesis: new RegExp(/\( {1,}/, "g"),
-    closingParenthesis: new RegExp(/ {1,}\)/, "g"),
+    openingParenthesis: new RegExp(/ *\( */, "g"),
+    closingParenthesis: new RegExp(/ *\) */, "g"),
     hyphen: new RegExp(/ *- */, "g"),
     ampersand: new RegExp(/ *& */, "g"),
   };
@@ -284,8 +284,8 @@ function getVariantFromArgs(args: string[]): string {
     .map((arg) => capitalize(arg))
     .join(" ")
     // Remove space after opening and before closing parenthesis
-    .replace(patterns.openingParenthesis, "(")
-    .replace(patterns.closingParenthesis, ")")
+    .replace(patterns.openingParenthesis, " (")
+    .replace(patterns.closingParenthesis, ") ")
     // Remove space before and after hyphen
     .replace(patterns.hyphen, "-")
     // Add space before and after ampersand
@@ -294,6 +294,7 @@ function getVariantFromArgs(args: string[]): string {
     .replace(patterns.doubleSpaces, " ")
     .trim();
 
+  console.error(variant);
   return variant;
 }
 
