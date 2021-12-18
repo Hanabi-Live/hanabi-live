@@ -8,12 +8,15 @@ import (
 )
 
 func httpLocalhostUptime(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
 	cameOnline := getCameOnline()
 	var uptime string
 	if v, err := getUptime(); err != nil {
 		logger.Error("Failed to get the uptime: " + err.Error())
 		http.Error(
-			c.Writer,
+			w,
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)

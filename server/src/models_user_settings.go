@@ -145,6 +145,7 @@ func (*UserSettings) Set(userID int, name string, value string) error {
 	// Validation has already occurred in the "commandSetting()" function,
 	// so this should be safe
 	// https://www.reddit.com/r/golang/comments/5l5k4e/
+	// nolint: gosec
 	_, err := db.Exec(context.Background(), `
 		UPDATE user_settings
 		SET `+name+` = $1

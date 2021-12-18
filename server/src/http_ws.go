@@ -28,6 +28,7 @@ import (
 func httpWS(c *gin.Context) {
 	// Local variables
 	r := c.Request
+	w := c.Writer
 
 	// Parse the IP address
 	var ip string
@@ -48,7 +49,7 @@ func httpWS(c *gin.Context) {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
 			"but they are banned.")
 		http.Error(
-			c.Writer,
+			w,
 			"Your IP address has been banned. "+
 				"Please contact an administrator if you think this is a mistake.",
 			http.StatusUnauthorized,
@@ -110,7 +111,7 @@ func httpWS(c *gin.Context) {
 	// further initialization is performed there
 	// "HandleRequestWithKeys()" is blocking
 	// (but that is not a problem because this function is called in a dedicated goroutine)
-	if err := melodyRouter.HandleRequestWithKeys(c.Writer, r, keys); err != nil {
+	if err := melodyRouter.HandleRequestWithKeys(w, r, keys); err != nil {
 		// We use
 		// "logger.Info()" instead of "logger.Error()"
 		// and "http.StatusBadRequest" instead of "http.StatusInternalServerError"
@@ -118,7 +119,7 @@ func httpWS(c *gin.Context) {
 		logger.Info("Failed to establish the WebSocket connection for user \"" + username + "\": " +
 			err.Error())
 		http.Error(
-			c.Writer,
+			w,
 			http.StatusText(http.StatusBadRequest),
 			http.StatusBadRequest,
 		)

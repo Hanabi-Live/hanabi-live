@@ -7,9 +7,12 @@ import (
 )
 
 func httpLocalhostCancel(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
 	if shuttingDown.IsNotSet() {
 		http.Error(
-			c.Writer,
+			w,
 			"The server is not shutting down, so you cannot cancel it.",
 			http.StatusBadRequest,
 		)

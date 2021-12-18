@@ -191,14 +191,15 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	// Update the progress
 	progressFloat := float64(g.Score) / float64(g.MaxScore) * 100 // In percent
 	progress := int(math.Round(progressFloat))
-
-	if progress != t.Progress {
+	oldProgress := t.Progress
+	if progress != oldProgress {
 		t.Progress = progress
 		t.NotifyProgress()
 	}
 
 	// In some variants, playing a card has the potential to reduce the maximum score
-	if newMaxScore := g.GetMaxScore(); newMaxScore < g.MaxScore {
+	newMaxScore := g.GetMaxScore()
+	if newMaxScore < g.MaxScore {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
 	}
@@ -234,7 +235,8 @@ func (p *GamePlayer) DiscardCard(c *Card) {
 	t.NotifyGameAction()
 
 	// This could have been a discard (or misplay) or a card needed to get the maximum score
-	if newMaxScore := g.GetMaxScore(); newMaxScore < g.MaxScore {
+	newMaxScore := g.GetMaxScore()
+	if newMaxScore < g.MaxScore {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
 	}

@@ -68,13 +68,14 @@ func sentryHTTPAttachMetadata(c *gin.Context) {
 
 	// Local variables
 	r := c.Request
+	w := c.Writer
 
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
 		logger.Error("Failed to parse the IP address from \"" + r.RemoteAddr + "\": " + err.Error())
 		http.Error(
-			c.Writer,
+			w,
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
