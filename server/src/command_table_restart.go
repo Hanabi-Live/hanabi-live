@@ -180,7 +180,7 @@ func tableRestart(
 		})
 	}
 
-	newTableName := ""
+	var newTableName string
 
 	if t.InitialName == "" {
 		// If players spawn a shared replay and then restart,

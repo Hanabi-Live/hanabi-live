@@ -210,8 +210,7 @@ func (t *Table) EndIdle(ctx context.Context) {
 		return
 	}
 
-	s := t.GetOwnerSession()
-	if t.Running {
+	if s := t.GetOwnerSession(); t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
 		commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
@@ -235,9 +234,8 @@ func (t *Table) EndIdle(ctx context.Context) {
 }
 
 func (t *Table) GetName() string {
-	g := t.Game
 	name := "Table #" + strconv.FormatUint(t.ID, 10) + " (" + t.Name + ") - "
-	if g == nil {
+	if g := t.Game; g == nil {
 		name += "Not started"
 	} else {
 		name += "Turn " + strconv.Itoa(g.Turn)

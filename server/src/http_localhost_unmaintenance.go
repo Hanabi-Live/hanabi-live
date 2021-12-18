@@ -7,12 +7,9 @@ import (
 )
 
 func httpLocalhostUnmaintenance(c *gin.Context) {
-	// Local variables
-	w := c.Writer
-
 	if maintenanceMode.IsNotSet() {
 		http.Error(
-			w,
+			c.Writer,
 			"The server is not in maintenance mode, so you cannot unmaintenance it.",
 			http.StatusBadRequest,
 		)

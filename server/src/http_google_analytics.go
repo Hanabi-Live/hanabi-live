@@ -18,7 +18,6 @@ import (
 func httpGoogleAnalytics(c *gin.Context) {
 	// Local variables
 	r := c.Request
-	w := c.Writer
 
 	// We only want to track page views for "/", "/scores/Alice", etc.
 	// (this goroutine will be entered for requests to "/public/css/main.min.css", for example)
@@ -41,7 +40,7 @@ func httpGoogleAnalytics(c *gin.Context) {
 	if cookie, err := r.Cookie("_ga"); err != nil {
 		// They don't have a cookie set, so set a new one
 		clientID = uuid.NewV4().String()
-		http.SetCookie(w, &http.Cookie{ // nolint: exhaustivestruct
+		http.SetCookie(c.Writer, &http.Cookie{ // nolint: exhaustivestruct
 			// This is the standard cookie name used by the Google Analytics JavaScript library
 			Name:  "_ga",
 			Value: clientID,

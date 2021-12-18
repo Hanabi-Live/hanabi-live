@@ -115,8 +115,8 @@ func replayActionSegment(s *Session, d *CommandData, t *Table) {
 		// This can happen if the end turn is 0
 		progress = 0
 	}
-	oldProgress := t.Progress
-	if progress != oldProgress {
+
+	if progress != t.Progress {
 		t.Progress = progress
 		t.NotifyProgress()
 	}

@@ -8,14 +8,11 @@ import (
 )
 
 func httpLocalhostTimeLeft(c *gin.Context) {
-	// Local variables
-	w := c.Writer
-
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
 		logger.Error("Failed to get the time left: " + err.Error())
 		http.Error(
-			w,
+			c.Writer,
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)

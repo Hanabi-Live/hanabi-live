@@ -41,7 +41,7 @@ type Settings struct {
 var (
 	// The database schema must also be configured with any default settings
 	// This cannot be a pointer because we need to copy it
-	defaultSettings = Settings{ // nolint: exhaustivestruct
+	defaultSettings = Settings{
 		SoundMove:                     true,
 		SoundTimer:                    true,
 		Volume:                        50,
@@ -145,7 +145,6 @@ func (*UserSettings) Set(userID int, name string, value string) error {
 	// Validation has already occurred in the "commandSetting()" function,
 	// so this should be safe
 	// https://www.reddit.com/r/golang/comments/5l5k4e/
-	// nolint: gosec
 	_, err := db.Exec(context.Background(), `
 		UPDATE user_settings
 		SET `+name+` = $1
