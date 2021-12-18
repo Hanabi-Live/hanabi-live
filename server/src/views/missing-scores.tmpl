@@ -9,25 +9,25 @@
 {{if .NumMaxScores }}
   <h3>Current Max Scores:</h3>
 
-  <table>
+  <table class="history plain">
     <thead>
       <tr>
-        <th>2-player</th>
-        <th>3-player</th>
-        <th>4-player</th>
-        <th>5-player</th>
-        <th>6-player</th>
-        <th>Total</th>
+        <th class="center">2-player</th>
+        <th class="center">3-player</th>
+        <th class="center">4-player</th>
+        <th class="center">5-player</th>
+        <th class="center">6-player</th>
+        <th class="center">Total</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
-        <td>{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
-        <td>{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
-        <td>{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
-        <td>{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
-        <td>{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
+        <td class="center">{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
       </tr>
     </tbody>
   </table>
@@ -55,12 +55,29 @@
 {{end}}
 
 {{if ne .RequestedNumPlayers 0}}
-<table>
+<!-- Pagination controls -->
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+    <option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+<!-- End of pagination controls -->
+
+<table class="history">
   <thead>
     <tr>
-      <th>Variant</th>
-      <th># of Players</th>
-      <th>{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
+      <th width="60%">Variant</th>
+      <th width="20%" class="center"># of Players</th>
+      <th width="20%" class="sorter-current-max-score center">{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
     </tr>
   </thead>
   <tbody>
@@ -70,8 +87,8 @@
           {{if or (not $.RequestedNumPlayers) (eq $.RequestedNumPlayers .NumPlayers)}}
             <tr class="missing-scores-row missing-scores-row-players-{{.NumPlayers}}">
               <td>{{$results.Name}}</td>
-              <td>{{.NumPlayers}}</td>
-              <td>
+              <td class="center">{{.NumPlayers}}</td>
+              <td class="center">
                 {{.Score}} / {{$results.MaxScore}} &nbsp;
                 {{if eq .Modifier 1}}
                     <i
@@ -97,5 +114,22 @@
     {{- end -}}
   </tbody>
 </table>
+
+<!-- Pagination controls -->
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+<!-- End of pagination controls -->
 {{end}}
 {{end}}
