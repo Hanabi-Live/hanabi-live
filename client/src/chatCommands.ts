@@ -267,9 +267,10 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
 function getVariantFromArgs(args: string[]): string {
   const patterns = {
     doubleSpaces: new RegExp(/ {2,}/, "g"),
-    parenthesis: new RegExp(/(?<=[([]) +| +(?=[)]])/, "g"),
+    openingParenthesis: new RegExp(/\( {1,}/, "g"),
+    closingParenthesis: new RegExp(/ {1,}\)/, "g"),
     hyphen: new RegExp(/ *- */, "g"),
-    ampersand: new RegExp(/(?<=\w)&+| +&\w/, "g"),
+    ampersand: new RegExp(/ *& */, "g"),
   };
   const capitalize = (input: string) => {
     const pattern = new RegExp(/(^|[()&\- ])(\w)/, "g");
@@ -283,7 +284,8 @@ function getVariantFromArgs(args: string[]): string {
     .map((arg) => capitalize(arg))
     .join(" ")
     // Remove space after opening and before closing parenthesis
-    .replace(patterns.parenthesis, "")
+    .replace(patterns.openingParenthesis, "(")
+    .replace(patterns.closingParenthesis, ")")
     // Remove space before and after hyphen
     .replace(patterns.hyphen, "-")
     // Add space before and after ampersand
