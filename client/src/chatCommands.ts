@@ -150,6 +150,7 @@ function setVariant(_room: string, args: string[]) {
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
 chatCommands.set("changevariant", setVariant);
+chatCommands.set("cv", setVariant);
 
 // /tag [tag]
 chatCommands.set("tag", (_room: string, args: string[]) => {
@@ -264,26 +265,32 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
 });
 
 function getVariantFromArgs(args: string[]): string {
-  const patters = [
-    new RegExp(/([&()])/, "g"),
-    new RegExp(/ {2,}/, "g"),
-    new RegExp(/\( /, "g"),
-    new RegExp(/ \)/, "g"),
-  ];
+  const patterns = {
+    doubleSpaces: new RegExp(/ {2,}/, "g"),
+    parenthesis: new RegExp(/(?<=[([]) +| +(?=[)]])/, "g"),
+    hyphen: new RegExp(/ *- */, "g"),
+    ampersand: new RegExp(/(?<=\w)&+| +&\w/, "g"),
+  };
+  const capitalize = (input: string) => {
+    const separators = "() ^-";
+    const pattern = new RegExp(`(^|[${separators}])(\\w)`, "g");
+    return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
+  };
 
   const variant = args
     // Remove empty elements
     .filter((arg) => arg !== "")
     // Capitalize
-    .map((arg) => arg.charAt(0).toUpperCase() + arg.slice(1).toLowerCase())
+    .map((arg) => capitalize(arg))
     .join(" ")
-    // Add space between &, (, )
-    .replace(patters[0], " $1 ")
-    // Remove double spaces
-    .replace(patters[1], " ")
     // Remove space after opening and before closing parenthesis
-    .replace(patters[2], "(")
-    .replace(patters[3], ")")
+    .replace(patterns.parenthesis, "")
+    // Remove space before and after hyphen
+    .replace(patterns.hyphen, "-")
+    // Add space before and after ampersand
+    .replace(patterns.ampersand, " & ")
+    // Remove double spaces
+    .replace(patterns.doubleSpaces, " ")
     .trim();
 
   return variant;
