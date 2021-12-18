@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"runtime"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // We want to record all of the ongoing games to a flat file on the disk

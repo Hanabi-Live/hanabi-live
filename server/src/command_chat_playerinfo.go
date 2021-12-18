@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandChatPlayerInfo is sent when a user types the "/playerinfo" command

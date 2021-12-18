@@ -8,6 +8,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"

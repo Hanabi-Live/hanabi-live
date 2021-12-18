@@ -1,5 +1,7 @@
 package main
 
+import "github.com/Zamiell/hanabi-live/logger"
+
 /*
 	Notifications for both before and during a game
 */

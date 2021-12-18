@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
 	"github.com/google/go-github/github"
 )

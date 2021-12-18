@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 )

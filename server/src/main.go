@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -24,7 +25,6 @@ var (
 	tablesPath        string
 	specificDealsPath string
 
-	logger           *Logger
 	gitCommitOnStart string
 	isDev            bool
 	usingSentry      bool
@@ -34,8 +34,25 @@ var (
 )
 
 func main() {
-	// Initialize logging (in "logger.go")
-	logger = NewLogger()
+	// Initialize Sentry (in "sentry.go")
+	usingSentry = sentryInit()
+	if usingSentry {
+		// Flush buffered events before the program terminates
+		// https://github.com/getsentry/sentry-go
+		defer sentry.Flush(2 * time.Second)
+	}
+
+	// Initialize dev environment
+	if os.Getenv("DOMAIN") == "" ||
+		os.Getenv("DOMAIN") == "localhost" ||
+		strings.HasPrefix(os.Getenv("DOMAIN"), "192.168.") ||
+		strings.HasPrefix(os.Getenv("DOMAIN"), "10.") {
+
+		isDev = true
+	}
+
+	// Initialize logging
+	logger.Init(isDev, usingSentry)
 	defer logger.Sync()
 
 	// Configure the deadlock detector
@@ -136,22 +153,6 @@ func main() {
 	if err := godotenv.Load(envPath); err != nil {
 		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
 		return
-	}
-
-	if os.Getenv("DOMAIN") == "" ||
-		os.Getenv("DOMAIN") == "localhost" ||
-		strings.HasPrefix(os.Getenv("DOMAIN"), "192.168.") ||
-		strings.HasPrefix(os.Getenv("DOMAIN"), "10.") {
-
-		isDev = true
-	}
-
-	// Initialize Sentry (in "sentry.go")
-	usingSentry = sentryInit()
-	if usingSentry {
-		// Flush buffered events before the program terminates
-		// https://github.com/getsentry/sentry-go
-		defer sentry.Flush(2 * time.Second)
 	}
 
 	// Initialize the database model (in "models.go")

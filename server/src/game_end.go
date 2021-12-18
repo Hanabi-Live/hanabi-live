@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strconv"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 func (g *Game) End(ctx context.Context, d *CommandData) {

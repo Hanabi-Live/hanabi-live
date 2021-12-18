@@ -6,6 +6,8 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 var (

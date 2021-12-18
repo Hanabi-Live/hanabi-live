@@ -4,6 +4,8 @@ import (
 	"context"
 	"reflect"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandSetting is sent when the user modifies a setting

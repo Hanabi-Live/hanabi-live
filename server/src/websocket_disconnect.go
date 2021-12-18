@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/gabstv/melody"
 )
 

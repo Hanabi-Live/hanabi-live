@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 	"time"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandTableLeave is sent when the user clicks on the "Leave Game" button in the lobby

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandHistoryGetSeed is sent when the user clicks on the "Compare Scores" button

@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"strconv"
+
+	"github.com/Zamiell/hanabi-live/logger"
 )
 
 // commandTagsDeleteAll is sent when a user types the "/tagsdeleteall" command

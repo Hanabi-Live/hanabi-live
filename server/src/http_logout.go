@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/Zamiell/hanabi-live/logger"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
