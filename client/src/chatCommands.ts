@@ -264,7 +264,7 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
   modals.showWarning(warning);
 });
 
-function getVariantFromArgs(args: string[]): string {
+export function getVariantFromArgs(args: string[]): string {
   const patterns = {
     doubleSpaces: new RegExp(/ {2,}/, "g"),
     openingParenthesis: new RegExp(/ *\( */, "g"),
@@ -298,7 +298,7 @@ function getVariantFromArgs(args: string[]): string {
   return variant;
 }
 
-function getVariantFromPartial(search: string): string {
+export function getVariantFromPartial(search: string): string {
   const keys = [...VARIANTS.keys()];
   const possibleVariants = keys.filter((key) => key.startsWith(search));
   return possibleVariants[0] ?? "";
