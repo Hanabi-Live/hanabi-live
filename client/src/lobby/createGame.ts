@@ -68,10 +68,6 @@ export function init(): void {
       $("#create-game-timed-row-spacing").show();
     }
 
-    // Redraw the tooltip so that the new elements will fit better
-    tooltips.reposition("#nav-buttons-lobby-create-game");
-    tooltips.reposition("#nav-buttons-pregame-change-options");
-
     // Remember the new setting
     getCheckbox("createTableSpeedrun");
   });
