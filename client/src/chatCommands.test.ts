@@ -13,7 +13,8 @@ jest.mock("./modals", () => {
   return {};
 });
 
-const target = "Brown-Fives & Prism (6 Suits)";
+const brownFives = "Brown-Fives (6 Suits)";
+const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";
 
 describe("functions", () => {
   describe("parsing variant from input", () => {
@@ -22,48 +23,45 @@ describe("functions", () => {
         const partial = getVariantFromArgs(
           "Brown-Fives & Prism (6 Suits)".split(" "),
         );
-        expect(getVariantFromPartial(partial)).toBe(target);
+        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("partial input", () => {
       test("is valid", () => {
-        const partial = getVariantFromArgs("Brown-Fives & Prism".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(target);
+        const partial = getVariantFromArgs("Brown-Fives & Pri".split(" "));
+        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+      });
+      test("is valid", () => {
+        const partial = getVariantFromArgs("Brown-Fives".split(" "));
+        expect(getVariantFromPartial(partial)).toBe(brownFives);
       });
     });
-    describe("many starting or middle spaces", () => {
+    describe("double spaces", () => {
       test("is valid", () => {
         // eslint-disable-next-line prettier/prettier
-        const partial = getVariantFromArgs("   Brown-Fives   & Prism   (6   Suits)".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(target);
+        const partial = getVariantFromArgs("   Brown-Fives   &  Prism   (6   Suits)    ".split(" "));
+        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("spaces before or after -, &, (, )", () => {
       test("is valid", () => {
         // eslint-disable-next-line prettier/prettier
         const partial = getVariantFromArgs("   Brown -Fives& Prism(  6 Suits   )  ".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(target);
+        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("capitalize", () => {
       test("is valid", () => {
         // eslint-disable-next-line prettier/prettier
         const partial = getVariantFromArgs("bROWN-FivES & prism (6 SUITS)".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(target);
-      });
-    });
-    describe("capitalize", () => {
-      test("is valid", () => {
-        // eslint-disable-next-line prettier/prettier
-        const partial = getVariantFromArgs("bROWN-FivES & prism (6 SUITS)".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(target);
+        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("all possible cases", () => {
       test("is valid", () => {
         // eslint-disable-next-line prettier/prettier
         const partial = getVariantFromArgs("  bROWN -FivES   &prism(6 suits )".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(target);
+        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
   });
