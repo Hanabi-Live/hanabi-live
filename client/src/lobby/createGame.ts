@@ -33,6 +33,15 @@ export function init(): void {
   firstVariantDropdownInit();
   secondVariantDropdownInit();
 
+  // Max players is restored to default value on blur
+  $("#createTableMaxPlayers").on("blur", () => {
+    const element = $("#createTableMaxPlayers");
+    const value = Number(element.val());
+    if (value < 2 || value > 6) {
+      element.val(5);
+    }
+  });
+
   // The "dice" button will select a random variant from the list
   $("#dice").on("click", () => {
     const randomVariantIndex = getRandomNumber(0, variantNames.length - 1);
