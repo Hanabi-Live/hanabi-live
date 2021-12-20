@@ -38,8 +38,10 @@ export function init(): void {
     const element = $("#createTableMaxPlayers");
     const value = Number(element.val());
     if (value < 2 || value > 6) {
-      element.val(5);
+      element.val(<string>element.attr("data-value"));
     }
+    // Store the new value
+    element.attr("data-value", <string>element.val());
   });
 
   // The "dice" button will select a random variant from the list
@@ -595,6 +597,8 @@ export function ready(): void {
     maxPlayers = 5;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
+  // Store the original max players attribute, used on blur
+  $("#createTableMaxPlayers").attr("data-value", maxPlayers);
 
   // Hide the extra options if we do not have any selected
   if (
