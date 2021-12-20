@@ -33,6 +33,17 @@ export function init(): void {
   firstVariantDropdownInit();
   secondVariantDropdownInit();
 
+  // Max players is restored to default value on blur
+  $("#createTableMaxPlayers").on("blur", () => {
+    const element = $("#createTableMaxPlayers");
+    const value = Number(element.val());
+    if (value < 2 || value > 6) {
+      element.val(<string>element.attr("data-value"));
+    }
+    // Store the new value
+    element.attr("data-value", <string>element.val());
+  });
+
   // The "dice" button will select a random variant from the list
   $("#dice").on("click", () => {
     const randomVariantIndex = getRandomNumber(0, variantNames.length - 1);
@@ -42,7 +53,7 @@ export function init(): void {
   });
 
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked
-  $("#createTableTimed").change(() => {
+  $("#createTableTimed").on("change", () => {
     if ($("#createTableTimed").prop("checked")) {
       $("#create-game-timed-option-1").show();
       $("#create-game-timed-option-2").show();
@@ -59,7 +70,7 @@ export function init(): void {
     getCheckbox("createTableTimed");
   });
 
-  $("#createTableSpeedrun").change(() => {
+  $("#createTableSpeedrun").on("change", () => {
     if ($("#createTableSpeedrun").prop("checked")) {
       $("#create-game-timed-row").hide();
       $("#create-game-timed-row-spacing").hide();
@@ -68,16 +79,12 @@ export function init(): void {
       $("#create-game-timed-row-spacing").show();
     }
 
-    // Redraw the tooltip so that the new elements will fit better
-    tooltips.reposition("#nav-buttons-lobby-create-game");
-    tooltips.reposition("#nav-buttons-pregame-change-options");
-
     // Remember the new setting
     getCheckbox("createTableSpeedrun");
   });
 
   // The "Show Extra Options" button
-  $("#create-game-show-extra-options").click(() => {
+  $("#create-game-show-extra-options").on("click", () => {
     $("#create-game-extra-options").show();
     $("#create-game-show-extra-options-row").hide();
 
@@ -87,7 +94,7 @@ export function init(): void {
   });
 
   // Disable some checkboxes if a checkbox is checked
-  $("#createTableOneExtraCard").change(() => {
+  $("#createTableOneExtraCard").on("change", () => {
     if ($("#createTableOneExtraCard").is(":checked")) {
       $("#createTableOneLessCardRow").fadeTo(0, 0.3);
       $("#createTableOneLessCard").prop("disabled", true);
@@ -102,7 +109,7 @@ export function init(): void {
     getCheckbox("createTableOneLessCard");
   });
 
-  $("#createTableOneLessCard").change(() => {
+  $("#createTableOneLessCard").on("change", () => {
     if ($("#createTableOneLessCard").is(":checked")) {
       $("#createTableOneExtraCardRow").fadeTo(0, 0.3);
       $("#createTableOneExtraCard").prop("disabled", true);
@@ -118,31 +125,31 @@ export function init(): void {
   });
 
   // Check for changes in the various input fields so that we can remember their respective settings
-  $("#create-game-variant-dropdown1").change(() => {
+  $("#create-game-variant-dropdown1").on("change", () => {
     getVariant("createTableVariant");
   });
-  $("#create-game-variant-dropdown2").change(() => {
+  $("#create-game-variant-dropdown2").on("change", () => {
     getVariant("createTableVariant");
   });
-  $("#createTableTimeBaseMinutes").change(() => {
+  $("#createTableTimeBaseMinutes").on("change", () => {
     getTextboxForTimeBase("createTableTimeBaseMinutes");
   });
-  $("#createTableTimePerTurnSeconds").change(() => {
+  $("#createTableTimePerTurnSeconds").on("change", () => {
     getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
   });
-  $("#createTableCardCycle").change(() => {
+  $("#createTableCardCycle").on("change", () => {
     getCheckbox("createTableCardCycle");
   });
-  $("#createTableDeckPlays").change(() => {
+  $("#createTableDeckPlays").on("change", () => {
     getCheckbox("createTableDeckPlays");
   });
-  $("#createTableEmptyClues").change(() => {
+  $("#createTableEmptyClues").on("change", () => {
     getCheckbox("createTableEmptyClues");
   });
-  $("#createTableAllOrNothing").change(() => {
+  $("#createTableAllOrNothing").on("change", () => {
     getCheckbox("createTableAllOrNothing");
   });
-  $("#createTableDetrimentalCharacters").change(() => {
+  $("#createTableDetrimentalCharacters").on("change", () => {
     getCheckbox("createTableDetrimentalCharacters");
   });
 
@@ -150,7 +157,7 @@ export function init(): void {
   $("#create-game-tooltip").on("keypress", (event) => {
     if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
-      $("#create-game-submit").click();
+      $("#create-game-submit").trigger("click");
     }
   });
 
@@ -590,6 +597,8 @@ export function ready(): void {
     maxPlayers = 5;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
+  // Store the original max players attribute, used on blur
+  $("#createTableMaxPlayers").attr("data-value", maxPlayers);
 
   // Hide the extra options if we do not have any selected
   if (
