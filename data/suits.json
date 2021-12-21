@@ -297,7 +297,7 @@
       "Red"
     ],
     "displayName": "Tomato",
-    "fill": "#ff6347",
+    "fill": "#e60000",
     "pip": "hanabiGreen"
   },
   {
@@ -306,7 +306,7 @@
       "Red"
     ],
     "displayName": "Ruby",
-    "fill": "#9b111e",
+    "fill": "#f96401",
     "pip": "hanabiRed"
   },
   {
@@ -315,7 +315,7 @@
       "Red"
     ],
     "displayName": "Mahogany",
-    "fill": "#c04000",
+    "fill": "#660000",
     "pip": "hanabiWhite"
   },
   {
