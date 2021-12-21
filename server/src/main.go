@@ -42,6 +42,24 @@ func main() {
 		defer sentry.Flush(2 * time.Second)
 	}
 
+	// Check to see if the ".env" file exists
+	envPath := path.Join(projectPath, ".env")
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		logger.Fatal("The \"" + envPath + "\" file does not exist. " +
+			"Did you run the \"install_dependencies.sh\" script before running the server? " +
+			"This file should automatically be created when running this script.")
+		return
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \"" + envPath + "\" file exists: " + err.Error())
+		return
+	}
+
+	// Load the ".env" file which contains environment variables with secret values
+	if err := godotenv.Load(envPath); err != nil {
+		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
+		return
+	}
+
 	// Initialize dev environment
 	if os.Getenv("DOMAIN") == "" ||
 		os.Getenv("DOMAIN") == "localhost" ||
@@ -134,24 +152,6 @@ func main() {
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \"" + specificDealsPath + "\" file exists: " +
 			err.Error())
-		return
-	}
-
-	// Check to see if the ".env" file exists
-	envPath := path.Join(projectPath, ".env")
-	if _, err := os.Stat(envPath); os.IsNotExist(err) {
-		logger.Fatal("The \"" + envPath + "\" file does not exist. " +
-			"Did you run the \"install_dependencies.sh\" script before running the server? " +
-			"This file should automatically be created when running this script.")
-		return
-	} else if err != nil {
-		logger.Fatal("Failed to check if the \"" + envPath + "\" file exists: " + err.Error())
-		return
-	}
-
-	// Load the ".env" file which contains environment variables with secret values
-	if err := godotenv.Load(envPath); err != nil {
-		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
 		return
 	}
 
