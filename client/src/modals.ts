@@ -441,7 +441,10 @@ function showModal(
 }
 
 function getMorphModalSelection(): string {
-  return (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
+  let val = (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
+  // Special case for very ambiguous
+  val = val.replace(" VA ", "");
+  return val;
 }
 
 function fillModalWithRadios(
