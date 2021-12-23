@@ -213,6 +213,7 @@ func tableRestart(
 		// We want to prevent the pre-game from showing up in the lobby for a brief second
 		HidePregame:  true,
 		NoTablesLock: true,
+		MaxPlayers:   t.MaxPlayers,
 	})
 
 	// Find the table ID for the new game
