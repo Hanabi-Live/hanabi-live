@@ -224,6 +224,7 @@ function replayReducerFunction(
             };
           },
         );
+
         // Hide starting player's cards
         const hand =
           state.states[state.segment].hands[
