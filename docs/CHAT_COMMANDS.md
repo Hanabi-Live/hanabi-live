@@ -14,6 +14,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner)
 | `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://hanabi.github.io/docs/reference)
 | `/levels`                             | Get the link for the [Hyphen-ated group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)
+| `/features`                           | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md)
 | `/bga`                                | Get the link for the [Board Game Arena guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)
 | `/playerinfo`                         | Get the number of games played for all the players in the current game

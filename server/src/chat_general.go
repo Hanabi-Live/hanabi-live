@@ -50,6 +50,13 @@ func chatLevels(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
+// /features
+func chatFeatures(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	msg := "The Hanab Live Manual & List of Features: https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+}
+
 // /bga
 func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md"

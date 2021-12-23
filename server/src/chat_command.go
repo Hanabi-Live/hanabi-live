@@ -29,6 +29,8 @@ func chatCommandInit() {
 	chatCommandMap["path"] = chatLevels
 	chatCommandMap["learning"] = chatLevels
 	chatCommandMap["level"] = chatLevels
+	chatCommandMap["features"] = chatFeatures
+	chatCommandMap["manual"] = chatFeatures
 	chatCommandMap["document"] = chatDoc
 	chatCommandMap["reference"] = chatDoc
 	chatCommandMap["bga"] = chatBGA
