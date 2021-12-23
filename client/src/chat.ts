@@ -36,6 +36,7 @@ const serverSideOnlyCommands = [
   "level",
   "features",
   "manual",
+  "ptt",
   "document",
   "reference",
   "efficiency",
