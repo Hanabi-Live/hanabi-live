@@ -21,6 +21,7 @@ const serverSideOnlyCommands = [
   "?",
   "discord",
   "rules",
+  "community",
   "guidelines",
   "new",
   "beginner",
