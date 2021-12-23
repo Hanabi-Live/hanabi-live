@@ -17,6 +17,7 @@ func chatCommandInit() {
 	chatCommandMap["?"] = chatHelp
 	chatCommandMap["discord"] = chatDiscord
 	chatCommandMap["rules"] = chatRules
+	chatCommandMap["community"] = chatRules
 	chatCommandMap["guidelines"] = chatRules
 	chatCommandMap["new"] = chatNew
 	chatCommandMap["beginner"] = chatNew
@@ -26,6 +27,14 @@ func chatCommandInit() {
 	chatCommandMap["levels"] = chatLevels
 	chatCommandMap["learningpath"] = chatLevels
 	chatCommandMap["path"] = chatLevels
+	chatCommandMap["learning"] = chatLevels
+	chatCommandMap["level"] = chatLevels
+	chatCommandMap["features"] = chatFeatures
+	chatCommandMap["manual"] = chatFeatures
+	chatCommandMap["ptt"] = chatPTT
+	chatCommandMap["sin"] = chatSin
+	chatCommandMap["cardinal"] = chatSin
+	chatCommandMap["cardinalsin"] = chatSin
 	chatCommandMap["document"] = chatDoc
 	chatCommandMap["reference"] = chatDoc
 	chatCommandMap["bga"] = chatBGA
