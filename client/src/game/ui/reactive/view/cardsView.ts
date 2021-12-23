@@ -49,6 +49,11 @@ export function onMorphedIdentitiesChanged(
 ): void {
   if (previousData === undefined || !previousData.hypotheticalActive) {
     // Initializing or entering a hypothetical
+    if (data.morphedIdentities !== undefined) {
+      for (let i = 0; i < data.morphedIdentities.length; i++) {
+        updateCardVisuals(i);
+      }
+    }
     return;
   }
 
