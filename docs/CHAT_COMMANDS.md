@@ -13,7 +13,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
 | `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner)
 | `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://hanabi.github.io/docs/reference)
-| `/levels`                             | Get the link for the [Hyphen-ated group level summary](https://hanabi.github.io/docs/learning-path/#level-summary) (alias /path, /learningpath)
+| `/levels`                             | Get the link for the [Hyphen-ated group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)
 | `/bga`                                | Get the link for the [Board Game Arena guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)
 | `/playerinfo`                         | Get the number of games played for all the players in the current game
@@ -45,7 +45,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command                    | Description
 | -------------------------- |------------
-| `/setvariant [variant]`    | Change the variant of the current game (alias /sv, /changevariant, /cv)
+| `/setvariant [variant]`    | Change the variant of the current game
 | `/s`                       | Automatically start the game when the next person joins
 | `/s2`                      | Automatically start the game when it has 2 players
 | `/s3`                      | Automatically start the game when it has 3 players
