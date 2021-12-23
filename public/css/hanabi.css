@@ -1367,10 +1367,6 @@ table th {
 }
 
 @media screen and (max-width: 620px) {
-  #lobby-users-table th:nth-child(2),
-  #lobby-users-table td:nth-child(2) {
-    display: none;
-  }
   #small-screen-toggle-users-h3 {
     display: none;
   }
