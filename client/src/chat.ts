@@ -28,6 +28,7 @@ const serverSideOnlyCommands = [
   "guide",
   "bga",
   "doc",
+  "levels",
   "document",
   "reference",
   "efficiency",
