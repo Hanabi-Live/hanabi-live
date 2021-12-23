@@ -139,6 +139,7 @@ function replayReducerFunction(
 
       const ongoing = state.states[state.segment];
       const startingPlayerIndex = ongoing.turn.currentPlayerIndex;
+
       // Hide the starting player's hand
       const hand = ongoing.hands[startingPlayerIndex!];
       const morphedIdentities: CardIdentity[] = [];
