@@ -11,4 +11,5 @@ export default interface HypotheticalState {
   // If a card is here, it is being shown with an alternate identity
   // If the alternate identity is null/null, it is shown as blank
   readonly morphedIdentities: readonly CardIdentity[];
+  readonly startingPlayerIndex: number | null;
 }
