@@ -31,6 +31,8 @@ const serverSideOnlyCommands = [
   "levels",
   "path",
   "learningpath",
+  "learning",
+  "level",
   "document",
   "reference",
   "efficiency",
