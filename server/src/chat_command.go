@@ -32,6 +32,9 @@ func chatCommandInit() {
 	chatCommandMap["features"] = chatFeatures
 	chatCommandMap["manual"] = chatFeatures
 	chatCommandMap["ptt"] = chatPTT
+	chatCommandMap["sin"] = chatSin
+	chatCommandMap["cardinal"] = chatSin
+	chatCommandMap["cardinalsin"] = chatSin
 	chatCommandMap["document"] = chatDoc
 	chatCommandMap["reference"] = chatDoc
 	chatCommandMap["bga"] = chatBGA

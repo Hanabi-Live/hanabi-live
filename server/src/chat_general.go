@@ -64,6 +64,13 @@ func chatPTT(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
+// /sin
+func chatSin(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	msg := "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context."
+	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+}
+
 // /bga
 func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md"
