@@ -4,6 +4,7 @@ import State from "../../../types/State";
 import getCardOrStackBase from "../../getCardOrStackBase";
 import globals from "../../globals";
 import HanabiCard from "../../HanabiCard";
+import { changeStartingHandVisibility } from "../../hypothetical";
 import observeStore, {
   Listener,
   Selector,
@@ -47,13 +48,10 @@ export function onMorphedIdentitiesChanged(
       }
     | undefined,
 ): void {
+  changeStartingHandVisibility();
   if (previousData === undefined || !previousData.hypotheticalActive) {
     // Initializing or entering a hypothetical
-    if (data.morphedIdentities !== undefined) {
-      for (let i = 0; i < data.morphedIdentities.length; i++) {
-        updateCardVisuals(i);
-      }
-    }
+    // Hide the starting player's hand
     return;
   }
 

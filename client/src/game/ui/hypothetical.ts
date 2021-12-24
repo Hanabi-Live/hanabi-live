@@ -12,6 +12,8 @@ import ReplayActionType from "../types/ReplayActionType";
 import { getTouchedCardsFromClue } from "./clues";
 import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
+import HanabiCard from "./HanabiCard";
+import { setEmpathyOnHand } from "./HanabiCardMouse";
 
 export function start(): void {
   if (globals.state.replay.hypothetical !== null) {
@@ -292,5 +294,27 @@ export function checkToggleRevealedButton(
     default: {
       break;
     }
+  }
+}
+
+export function changeStartingHandVisibility(): void {
+  const startingPlayerIndex =
+    globals.state.replay.hypothetical?.startingPlayerIndex;
+  if (
+    startingPlayerIndex === null ||
+    globals.elements.playerHands[startingPlayerIndex!] === undefined ||
+    globals.elements.playerHands[startingPlayerIndex!].children === null
+  ) {
+    return;
+  }
+  for (
+    let i = 0;
+    i < globals.elements.playerHands[startingPlayerIndex!].children?.length;
+    i++
+  ) {
+    const child =
+      globals.elements.playerHands[startingPlayerIndex!].children[i];
+    const card: HanabiCard = child.children[0] as HanabiCard;
+    setEmpathyOnHand(card, !globals.state.replay.hypothetical!.showDrawnCards);
   }
 }

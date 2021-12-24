@@ -62,6 +62,24 @@ function mouseLeave(this: HanabiCard) {
   // When we stop hovering over a card, the cursor should change back to normal
   cursor.set("default");
 
+  // During replay hypo, skip the starting player
+  if (globals.state.replay.hypothetical !== null) {
+    const startingPlayerIndex =
+      globals.state.replay.hypothetical?.startingPlayerIndex;
+    for (
+      let i = 0;
+      i < globals.elements.playerHands[startingPlayerIndex!].children?.length;
+      i++
+    ) {
+      const child =
+        globals.elements.playerHands[startingPlayerIndex!].children[i];
+      const card: HanabiCard = child.children[0] as HanabiCard;
+      if (card.id === this.id) {
+        return;
+      }
+    }
+  }
+
   // When we stop hovering over a card, disable Empathy (if it is enabled)
   if (!globals.globalEmpathyEnabled) {
     setEmpathyOnHand(this, false);
@@ -266,7 +284,7 @@ const shouldShowEmpathy = (
 // appear to that teammate
 // (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)
-function setEmpathyOnHand(card: HanabiCard, enabled: boolean) {
+export function setEmpathyOnHand(card: HanabiCard, enabled: boolean): void {
   // Disable Empathy for cards that are not in a player's hand
   if (typeof card.state.location !== "number") {
     return;

@@ -2,6 +2,7 @@ import State from "../../../types/State";
 import * as clues from "../../clues";
 import PlayerButton from "../../controls/PlayerButton";
 import globals from "../../globals";
+import { changeStartingHandVisibility } from "../../hypothetical";
 import * as turn from "../../turn";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations
@@ -143,6 +144,9 @@ export function onDrawnCardsInHypotheticalChanged(
 
   // Check if the ability to give a clue changed
   clues.checkLegal();
+
+  // Change starting player's hand visibility
+  changeStartingHandVisibility();
 
   globals.layers.UI.batchDraw();
 }

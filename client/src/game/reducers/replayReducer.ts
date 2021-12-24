@@ -3,7 +3,6 @@
 import produce, { Draft, original } from "immer";
 import { ensureAllCases, nullIfNegative } from "../../misc";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
-import CardIdentity from "../types/CardIdentity";
 import GameMetadata from "../types/GameMetadata";
 import ReplayState from "../types/ReplayState";
 import gameStateReducer from "./gameStateReducer";
@@ -140,22 +139,12 @@ function replayReducerFunction(
       const ongoing = state.states[state.segment];
       const startingPlayerIndex = ongoing.turn.currentPlayerIndex;
 
-      // Hide the starting player's hand
-      const hand = ongoing.hands[startingPlayerIndex!];
-      const morphedIdentities: CardIdentity[] = [];
-      hand.forEach((order) => {
-        morphedIdentities[order] = {
-          rank: null,
-          suitIndex: null,
-        };
-      });
-
       state.hypothetical = {
         ongoing,
         states: [ongoing],
         showDrawnCards: action.showDrawnCards,
         drawnCardsInHypothetical: [],
-        morphedIdentities,
+        morphedIdentities: [],
         startingPlayerIndex,
       };
 
@@ -224,18 +213,6 @@ function replayReducerFunction(
             };
           },
         );
-
-        // Hide starting player's cards
-        const hand =
-          state.states[state.segment].hands[
-            state.hypothetical.startingPlayerIndex!
-          ];
-        original(hand)!.forEach((order) => {
-          state.hypothetical!.morphedIdentities[order] = {
-            rank: null,
-            suitIndex: null,
-          };
-        });
       }
 
       break;
