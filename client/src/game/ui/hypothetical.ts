@@ -305,16 +305,27 @@ export function changeStartingHandVisibility(): void {
     globals.elements.playerHands[startingPlayerIndex!] === undefined ||
     globals.elements.playerHands[startingPlayerIndex!].children === null
   ) {
+    // Remove all empathy visibility, no longer in hypo
+    for (let i = 0; i < globals.elements.playerHands.length; i++) {
+      forceHandEmpathy(i, false);
+    }
     return;
   }
+
+  forceHandEmpathy(
+    startingPlayerIndex!,
+    !globals.state.replay.hypothetical!.showDrawnCards,
+  );
+}
+
+function forceHandEmpathy(playerIndex: number, force: boolean) {
   for (
     let i = 0;
-    i < globals.elements.playerHands[startingPlayerIndex!].children?.length;
+    i < globals.elements.playerHands[playerIndex].children?.length;
     i++
   ) {
-    const child =
-      globals.elements.playerHands[startingPlayerIndex!].children[i];
+    const child = globals.elements.playerHands[playerIndex].children[i];
     const card: HanabiCard = child.children[0] as HanabiCard;
-    setEmpathyOnHand(card, !globals.state.replay.hypothetical!.showDrawnCards);
+    setEmpathyOnHand(card, force);
   }
 }
