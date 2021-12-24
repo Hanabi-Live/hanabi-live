@@ -381,7 +381,7 @@ function checkForHypoEmpathy(card: HanabiCard): boolean {
       const child =
         globals.elements.playerHands[startingPlayerIndex!].children[i];
       const currentCard: HanabiCard = child.children[0] as HanabiCard;
-      if (currentCard.id === card.id) {
+      if (currentCard._id === card._id) {
         return true;
       }
     }
