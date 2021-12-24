@@ -142,6 +142,7 @@ function mouseUp(this: HanabiCard) {
     return;
   }
 
+  // During replay hypo, skip the starting player
   if (checkForHypoEmpathy(this)) {
     return;
   }
