@@ -63,21 +63,8 @@ function mouseLeave(this: HanabiCard) {
   cursor.set("default");
 
   // During replay hypo, skip the starting player
-  if (globals.state.replay.hypothetical !== null) {
-    const startingPlayerIndex =
-      globals.state.replay.hypothetical?.startingPlayerIndex;
-    for (
-      let i = 0;
-      i < globals.elements.playerHands[startingPlayerIndex!].children?.length;
-      i++
-    ) {
-      const child =
-        globals.elements.playerHands[startingPlayerIndex!].children[i];
-      const card: HanabiCard = child.children[0] as HanabiCard;
-      if (card.id === this.id) {
-        return;
-      }
-    }
+  if (checkForHypoEmpathy(this)) {
+    return;
   }
 
   // When we stop hovering over a card, disable Empathy (if it is enabled)
@@ -107,6 +94,11 @@ function touchStart(
   // Do all of the same things that would occur if we hovered over the card
   mouseEnter.call(this);
 
+  // During replay hypo, skip the starting player
+  if (checkForHypoEmpathy(this)) {
+    return;
+  }
+
   // Empathy
   if (shouldShowEmpathy(this, event)) {
     setEmpathyOnHand(this, true);
@@ -131,7 +123,8 @@ function mouseDown(
   if (
     event.evt.buttons === 1 && // Only enable Empathy for left-clicks
     shouldShowEmpathy(this, event) &&
-    !editMode
+    !editMode &&
+    !checkForHypoEmpathy(this)
   ) {
     setEmpathyOnHand(this, true);
   }
@@ -146,6 +139,11 @@ function mouseDown(
 function mouseUp(this: HanabiCard) {
   // Speedrunning overrides the normal card clicking behavior
   if (useSpeedrunClickHandlers()) {
+    return;
+  }
+
+  // During replay hypo, skip the starting player
+  if (checkForHypoEmpathy(this)) {
     return;
   }
 
@@ -369,4 +367,24 @@ function dragEnd(card: HanabiCard) {
 
   // We need to change the cursor from the grabbing icon back to the default
   card.setCursor();
+}
+
+function checkForHypoEmpathy(card: HanabiCard): boolean {
+  if (globals.state.replay.hypothetical !== null) {
+    const startingPlayerIndex =
+      globals.state.replay.hypothetical?.startingPlayerIndex;
+    for (
+      let i = 0;
+      i < globals.elements.playerHands[startingPlayerIndex!].children?.length;
+      i++
+    ) {
+      const child =
+        globals.elements.playerHands[startingPlayerIndex!].children[i];
+      const currentCard: HanabiCard = child.children[0] as HanabiCard;
+      if (currentCard.id === card.id) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
