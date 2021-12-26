@@ -1581,6 +1581,7 @@ table.history {
 
 .tablesorter thead select {
   width: auto;
+  max-width: 150px;
   height: auto;
   padding: 0 2.5em 0 0.5em;
 }
@@ -1595,7 +1596,7 @@ table.history {
 .tablesorter thead input[aria-label="Filter \"ID\" column by..."],
 .tablesorter thead input[aria-label="Filter \"Score\" column by..."],
 .tablesorter thead input[aria-label="Filter \"Other Scores\" column by..."] {
-  max-width: 100px;
+  max-width: 50px;
 }
 
 @media screen and (max-width: 1024px) {
