@@ -19,6 +19,7 @@ type ApiVariantRow struct {
 
 type ApiVariantAnswer struct {
 	TotalRows int64           `json:"total_rows"`
+	Info      string          `json:info`
 	Rows      []ApiVariantRow `json:"rows"`
 }
 
@@ -48,7 +49,6 @@ func apiVariants(c *gin.Context) {
 //   0: games.id
 //   1: num_players
 //   2: score
-//   3: variant_id
 func apiVariantsSingle(c *gin.Context) {
 	// Validate the id
 	id, err := apiGetVariantIdFromParam(c)
@@ -60,7 +60,7 @@ func apiVariantsSingle(c *gin.Context) {
 	defaultSort := ApiSortColumn{Column: "games.id", Order: 1}
 	initialFilter := ApiColumnDescription{Column: "variant_id", Value: strconv.Itoa(id)}
 	orderCols := []string{"games.id"}
-	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
+	filterCols := []string{"games.id", "num_players", "score"}
 
 	var rows pgx.Rows
 
@@ -134,8 +134,11 @@ func apiVariantsSingle(c *gin.Context) {
 		return
 	}
 
+	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
+
 	out := ApiVariantAnswer{
 		TotalRows: rowCount,
+		Info:      info,
 		Rows:      dbRows,
 	}
 

@@ -188,10 +188,10 @@
     $('table:not(.plain)').tablesorter({
       headers: {
         0: { filter: false },
-        1: { filter: true },
-        2: { filter: true },
-        3: { filter: false },
-        4: { filter: false },
+        1: { filter: true, sorter: false },
+        2: { filter: true, sorter: false },
+        3: { filter: false, sorter: false },
+        4: { filter: false, sorter: false },
       },
       sortList: [ [0, 1]],
       widgets: ['zebra', 'filter', 'pager'],
