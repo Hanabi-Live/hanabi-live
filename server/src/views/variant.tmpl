@@ -78,7 +78,7 @@
               </ul>
             </div>
 
-            <h2 class="align-center">Recent Games of <em>{{.Name}}</em></h2>
+            <h2 class="align-center">Games of <em>{{.Name}}</em></h2>
 
             <!-- Pagination controls -->
             <div class="pager">
@@ -91,37 +91,23 @@
               <select class="pagesize" title="Select page size">
                 <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="all">All Rows</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
               </select>
             </div>
             <!-- End of pagination controls -->
 
-            <table class="history">
+            <table class="history variant">
               <thead>
                 <tr>
-                  <th>Game ID</th>
-                  <th># of Players</th>
-                  <th>Score</th>
-                  <th>Players</th>
-                  <th>Date & Time</th>
+                  <th class="tablesorter-header tablesorter-headerDesc" width="10%">Game ID</th>
+                  <th class="filter-select filter-match" width="10%"># of Players</th>
+                  <th width="10%">Score</th>
+                  <th width="40%">Players</th>
+                  <th width="30%">Date & Time</th>
                 </tr>
               </thead>
               <tbody>
-                {{range $index, $results := .RecentGames}}
-                  <tr>
-                    <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
-                    <td>{{.Options.NumPlayers}}</td>
-                    <td>{{.Score}}</td>
-                    <td>
-                      <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
-                      <a href="/history/{{range $index2, $results2 := .PlayerNames}}{{if $index2}}/{{end}}{{$results2}}{{end}}">
-                        {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
-                      </a>
-                    </td>
-                    <td>{{.DatetimeFinished | formatDate}}</td>
-                  </tr>
-                {{- end -}}
               </tbody>
             </table>
 
@@ -161,26 +147,66 @@
       // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
       // also {page:input} & {startRow:input} will add a modifiable input in place of the value
       output: '{startRow} - {endRow} / {filteredRows} ({totalRows})',
-      // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
+      // if false, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
       // table row set to a height to compensate; default is false
       fixedHeight: true,
       // remove rows from the table to speed up the sort of large tables.
       // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
       removeRows: false,
       // go to page selector - select dropdown that sets the current page
-      cssGoto: '.gotoPage'
+      cssGoto: '.gotoPage',
+      ajaxUrl : '/api/v1/variants/{{.VariantID}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
+      updateArrows: true,
+      ajaxProcessing: function(data) {
+        let total = 0;
+        const rows = [];
+        if (data && data.hasOwnProperty('rows')) {
+          const d = data.rows;
+          // total number of rows (required)
+          total = data.total_rows;
+          // array of header names (optional)
+          // all rows: array of arrays; each internal array has the table cell data for that row
+          // len should match pager set size (c.size)
+          const len = d.length;
+          for (let r = 0; r < len; r++ ) {
+            const users = d[r]["users"].split(", ").join("/");
+            const row = [
+              `<a href="/replay/${d[r]["id"]}">${d[r]["id"]}</a>`,
+              d[r]["num_players"],
+              d[r]["score"],
+              `<a href="/history/${users}">${d[r]["users"]}</a>`,
+              d[r]["datetime"],
+            ]; // new row array
+            rows.push(row); // add new row array to rows array
+          }
+        }
+        return [ total, rows ];
+      }
     };
 
     // Initialize the table sorting
     $('table:not(.plain)').tablesorter({
       headers: {
         0: { filter: false },
-        1: { filter: false },
-        2: { filter: false },
+        1: { filter: true },
+        2: { filter: true },
         3: { filter: false },
         4: { filter: false },
       },
-      widgets: ['zebra'],
+      sortList: [ [0, 1]],
+      widgets: ['zebra', 'filter', 'pager'],
+      widgetOptions : {
+        // add 'selectmenu' class name to first filter
+        filter_selectSource  : {
+          1 : [
+            { text: "2", value: "2" },
+            { text: "3", value: "3" },
+            { text: "4", value: "4" },
+            { text: "5", value: "5" },
+            { text: "6", value: "6" },
+          ],
+        },
+      },
     })
 
     // Bind to pager events

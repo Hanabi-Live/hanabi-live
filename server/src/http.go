@@ -61,6 +61,7 @@ type TemplateData struct {
 	NumStrikeouts int
 	StrikeoutRate string
 	RecentGames   []*GameHistory
+	VariantID     int
 }
 
 const (
@@ -252,6 +253,9 @@ func httpInit() {
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
+
+	// API V1 routes
+	apiSetRoutes(httpRouter)
 
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)
