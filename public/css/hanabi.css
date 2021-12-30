@@ -1599,15 +1599,21 @@ table.history {
   max-width: 50px;
 }
 
-@media screen and (max-width: 1024px) {
-  .tablesorter thead input,
-  .tablesorter thead select {
-    display: none !important;
-  }
-}
-
 .history-bullets {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
   align-items: flex-start;
   justify-content: space-around;
+}
+.history-bullets ul {
+  flex-direction: column;
+}
+
+@media screen and (max-width: 1024px) {
+  .history.variant.tablesorter th:nth-child(5),
+  .history.variant.tablesorter td:nth-child(5) {
+    display: none !important;
+  }
 }
