@@ -39,6 +39,12 @@ func httpVariant(c *gin.Context) {
 		variantName = v
 	}
 
+	// Redirect if old api is used
+	if _, ok := c.Request.URL.Query()["api"]; ok {
+		c.Redirect(http.StatusPermanentRedirect, "/api/v1/variants/"+strconv.Itoa(variantID))
+		return
+	}
+
 	// Get the stats for this variant
 	var variantStats VariantStatsRow
 	if v, err := models.VariantStats.Get(variantID); err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,12 @@ func httpHistory(c *gin.Context) {
 		return
 	} else {
 		playerNames = v2
+	}
+
+	// Redirect if old api is used
+	if _, ok := c.Request.URL.Query()["api"]; ok {
+		c.Redirect(http.StatusPermanentRedirect, "/api/v1/history/"+strings.Join(playerNames, "/"))
+		return
 	}
 
 	data := &TemplateData{ // nolint: exhaustivestruct
