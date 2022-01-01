@@ -122,8 +122,8 @@
               <select class="pagesize" title="Select page size">
                 <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="all">All Rows</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
               </select>
             </div>
             <!-- End of pagination controls -->
@@ -181,7 +181,7 @@
           }
         }
         return [ total, rows ];
-      }
+      },
     };
 
     // Initialize the table sorting
@@ -193,7 +193,7 @@
         3: { filter: false, sorter: false },
         4: { filter: false, sorter: false },
       },
-      sortList: [ [0, 1]],
+      sortList: [[0, 1]],
       widgets: ['zebra', 'filter', 'pager'],
       widgetOptions : {
         // add 'selectmenu' class name to first filter
@@ -222,7 +222,6 @@
     // Initialize the pager plugin
     // ****************************
     .tablesorterPager(pagerOptions);
-
   });
 </script>
 {{end}}

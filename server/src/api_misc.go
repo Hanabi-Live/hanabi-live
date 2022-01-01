@@ -14,7 +14,7 @@ type ApiSortColumn struct {
 type ApiColumnDescription struct {
 	Column string
 	Value  string
-	Values []string
+	Values []int
 }
 
 type ApiQueryVars struct {
@@ -142,6 +142,14 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 
 	// List of games by variant
 	httpRouter.GET(api+"/variants/:id", apiVariantsSingle)
+
+	// List of games played by player[s]
+	httpRouter.GET(api+"/history/:player1", apiHistory)
+	httpRouter.GET(api+"/history/:player1/:player2", apiHistory)
+	httpRouter.GET(api+"/history/:player1/:player2/:player3", apiHistory)
+	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4", apiHistory)
+	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4/:player5", apiHistory)
+	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4/:player5/:player6", apiHistory)
 }
 
 // Checks if a string contains a numeric value

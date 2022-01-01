@@ -29,6 +29,9 @@ type TemplateData struct {
 	Name       string
 	NamesTitle string
 
+	// Player Names
+	Names string
+
 	// History
 	History      []*GameHistory
 	SpecificSeed bool
@@ -54,6 +57,8 @@ type TemplateData struct {
 	Variants    []*VariantStatsData
 
 	// Variants
+	VariantID     int
+	VariantsNames map[int]string
 	BestScores    []int
 	MaxScoreRate  string
 	MaxScore      int
@@ -61,7 +66,6 @@ type TemplateData struct {
 	NumStrikeouts int
 	StrikeoutRate string
 	RecentGames   []*GameHistory
-	VariantID     int
 }
 
 const (

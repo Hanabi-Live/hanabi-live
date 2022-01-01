@@ -416,7 +416,7 @@ func (*Games) GetGameIDsFriends(
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
+func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery string) ([]int, error) {
 	gameIDs := make([]int, 0)
 
 	// First, validate that all of the user IDs are unique
