@@ -19,7 +19,7 @@ type ApiVariantRow struct {
 
 type ApiVariantAnswer struct {
 	TotalRows int64           `json:"total_rows"`
-	Info      string          `json:info`
+	Info      string          `json:"info"`
 	Rows      []ApiVariantRow `json:"rows"`
 }
 
@@ -92,7 +92,7 @@ func apiVariantsSingle(c *gin.Context) {
 	}
 
 	// Get results
-	args = append(args, gameIDs)
+	args = []interface{}{gameIDs}
 	dbQuery = `
 		SELECT
 			games.id, num_players, score,
@@ -102,7 +102,7 @@ func apiVariantsSingle(c *gin.Context) {
 			games
 			JOIN game_participants on games.id = game_id
 			JOIN users on user_id = users.id
-	` + wQuery + ` AND games.id = ANY($` + strconv.Itoa(len(args)) + ") " + `
+	    WHERE games.id = ANY($1)
 	    GROUP BY games.id
 	` + orderBy
 
