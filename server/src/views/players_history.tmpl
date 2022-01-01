@@ -73,21 +73,16 @@
             </select>
           </div>
 
-          <table id="history-table" class="history">
+          <table class="history personal-history">
             <thead>
               <tr>
                 <th class="tablesorter-header tablesorter-headerDesc" width="8%">Game ID</th>
                 <th class="filter-select filter-match" width="7%"># of Players</th>
                 <th width="7%">Score</th>
                 <th class="filter-select" width="23%">Variant</th>
-                {{if .SpecificSeed}}
-                <th width="30%">Players</th>
-                <th width="25%">Date & Time</th>
-                {{else}}
                 <th width="30%">Players</th>
                 <th width="22%">Date & Time</th>
                 <th width="8%">Other</th>
-                {{end}}
               </tr>
             </thead>
             <tbody>

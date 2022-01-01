@@ -1616,4 +1616,8 @@ table.history {
   .history.variant.tablesorter td:nth-child(5) {
     display: none !important;
   }
+  .history.personal-history.tablesorter th:nth-child(6),
+  .history.personal-history.tablesorter td:nth-child(6) {
+    display: none !important;
+  }
 }
