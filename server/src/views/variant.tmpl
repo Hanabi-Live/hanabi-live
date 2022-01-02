@@ -128,6 +128,8 @@
             </div>
             <!-- End of pagination controls -->
           {{end}}
+
+          <div class="tableSpinner"><span class="tableSpinner"></span></div>
         </section>
       </div>
     </div>
@@ -156,6 +158,10 @@
       // go to page selector - select dropdown that sets the current page
       cssGoto: '.gotoPage',
       ajaxUrl : '/api/v1/variants/{{.VariantID}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
+      customAjaxUrl: function(table, url) {
+        setEnable(false);
+        return url;
+      },
       updateArrows: true,
       ajaxProcessing: function(data) {
         let total = 0;
@@ -180,9 +186,17 @@
             rows.push(row); // add new row array to rows array
           }
         }
+        setEnable(true);
         return [ total, rows ];
       },
     };
+    const setEnable = function(enabled) {
+      if (enabled) {
+        $("div.tableSpinner").css("display", "none");
+      } else {
+        $("div.tableSpinner").css("display", "flex");
+      }
+    }
 
     // Initialize the table sorting
     $('table:not(.plain)').tablesorter({
