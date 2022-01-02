@@ -7,8 +7,8 @@ import (
 )
 
 type APISortColumn struct {
-	Column string
-	Order  int // 0 ASC, 1 DESC
+	Column    string
+	Ascending bool
 }
 
 type APIColumnDescription struct {
@@ -63,7 +63,7 @@ func apiGetSize(c *gin.Context) int {
 func apiGetOrder(c *gin.Context, columns []string, defaultSort APISortColumn) APIColumnDescription {
 	vars := c.QueryMap("col")
 	defOrder := "ASC"
-	if defaultSort.Order != 0 {
+	if !defaultSort.Ascending {
 		defOrder = "DESC"
 	}
 

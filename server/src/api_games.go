@@ -44,7 +44,7 @@ func apiHistory(c *gin.Context) {
 		playerIDs = v1
 	}
 
-	defaultSort := APISortColumn{Column: "games.id", Order: 1}
+	defaultSort := APISortColumn{Column: "games.id", Ascending: false}
 	orderCols := []string{"games.id"}
 	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
 
@@ -103,7 +103,7 @@ func apiSeed(c *gin.Context) {
 		return
 	}
 
-	defaultSort := APISortColumn{Column: "games.id", Order: 1}
+	defaultSort := APISortColumn{Column: "games.id", Ascending: false}
 	initialFilter := APIColumnDescription{Column: "seed", Value: seed}
 	orderCols := []string{"games.id"}
 	filterCols := []string{"games.id", "", "score"}
