@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -484,10 +483,6 @@ func (*Games) GetGameIDsForSeed(wQuery, orderBy, limit string, args []interface{
 		SELECT DISTINCT games.id
 		FROM games
 	` + wQuery + orderBy + limit
-
-	fmt.Println("")
-	fmt.Println("")
-	fmt.Println(SQLString)
 
 	var rows pgx.Rows
 

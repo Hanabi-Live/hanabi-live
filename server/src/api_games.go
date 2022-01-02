@@ -102,7 +102,6 @@ func apiHistory(c *gin.Context) {
 //
 //   Filters
 //   0: games.id
-//   1: num_players
 //   2: score
 func apiSeed(c *gin.Context) {
 	// Parse the seed from the URL
@@ -115,7 +114,7 @@ func apiSeed(c *gin.Context) {
 	defaultSort := ApiSortColumn{Column: "games.id", Order: 1}
 	initialFilter := ApiColumnDescription{Column: "seed", Value: seed}
 	orderCols := []string{"games.id"}
-	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
+	filterCols := []string{"games.id", "", "score"}
 
 	// Filter & sanitize
 	params := apiParseQueryVars(c, orderCols, filterCols, defaultSort, initialFilter)
@@ -144,7 +143,7 @@ func apiGames(c *gin.Context, rowCount int, gameIDs []int, orderBy string) {
 		return
 	}
 
-	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score, 3: variant_id)"
+	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"
 
 	out := ApiGamesAnswer{
 		TotalRows: rowCount,
