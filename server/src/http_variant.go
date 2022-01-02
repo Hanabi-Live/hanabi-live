@@ -39,6 +39,12 @@ func httpVariant(c *gin.Context) {
 		variantName = v
 	}
 
+	// Redirect if old api is used
+	if _, ok := c.Request.URL.Query()["api"]; ok {
+		c.Redirect(http.StatusPermanentRedirect, "/api/v1/variants/"+variantIDstring)
+		return
+	}
+
 	// Get the stats for this variant
 	var variantStats VariantStatsRow
 	if v, err := models.VariantStats.Get(variantID); err != nil {
@@ -123,35 +129,6 @@ func httpVariant(c *gin.Context) {
 		}
 	}
 
-	// Get recent games played on this variant
-	var gameIDs []int
-	if v, err := models.Games.GetGameIDsVariant(variantID, 50); err != nil {
-		logger.Error("Failed to get the game IDs for variant " + strconv.Itoa(variantID) + ": " +
-			err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		gameIDs = v
-	}
-
-	// Get the games corresponding to these IDs
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistory(gameIDs); err != nil {
-		logger.Error("Failed to get the games from the database: " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		gameHistoryList = v
-	}
-
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Variant Stats",
 
@@ -167,8 +144,7 @@ func httpVariant(c *gin.Context) {
 		MaxScore:           variants[variantName].MaxScore,
 		NumStrikeouts:      variantStats.NumStrikeouts,
 		StrikeoutRate:      strikeoutRate,
-
-		RecentGames: gameHistoryList,
+		VariantID:          variantID,
 	}
 
 	httpServeTemplate(w, data, "variant")

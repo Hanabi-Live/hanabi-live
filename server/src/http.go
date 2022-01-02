@@ -29,9 +29,13 @@ type TemplateData struct {
 	Name       string
 	NamesTitle string
 
+	// Player Names
+	Names string
+
 	// History
 	History      []*GameHistory
 	SpecificSeed bool
+	Seed         string
 	Tags         map[int][]string
 
 	// Scores
@@ -54,6 +58,8 @@ type TemplateData struct {
 	Variants    []*VariantStatsData
 
 	// Variants
+	VariantID     int
+	VariantsNames map[int]string
 	BestScores    []int
 	MaxScoreRate  string
 	MaxScore      int
@@ -252,6 +258,9 @@ func httpInit() {
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
+
+	// API V1 routes
+	apiSetRoutes(httpRouter)
 
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)

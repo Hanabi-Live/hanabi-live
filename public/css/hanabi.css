@@ -1599,15 +1599,49 @@ table.history {
   max-width: 50px;
 }
 
+.history-bullets {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-around;
+}
+.history-bullets ul {
+  flex-direction: column;
+}
+
 @media screen and (max-width: 1024px) {
-  .tablesorter thead input,
-  .tablesorter thead select {
+  .history.variant.tablesorter th:nth-child(5),
+  .history.variant.tablesorter td:nth-child(5) {
+    display: none !important;
+  }
+  .history.personal-history.tablesorter th:nth-child(6),
+  .history.personal-history.tablesorter td:nth-child(6) {
     display: none !important;
   }
 }
 
-.history-bullets {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-around;
+.tablesorter-header {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+  background-position: center right;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  white-space: normal;
+}
+.tablesorter-header:hover {
+  background-color: unset;
+}
+.tablesorter-headerAsc {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+  background-color: lightblue!important;
+}
+.tablesorter-headerDesc {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+  background-color: lightblue!important;
+}
+.tablesorter .sorter-false {
+  background-image: none;
+  cursor: default;
+  padding: 4px;
 }

@@ -3,61 +3,22 @@ package main
 import (
 	"net/http"
 
-	"github.com/Zamiell/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
 func httpSeed(c *gin.Context) {
-	// Local variables
-	w := c.Writer
-
 	// Parse the seed from the URL
 	seed := c.Param("seed")
 	if seed == "" {
-		http.Error(w, "Error: You must specify a seed.", http.StatusNotFound)
-		return
-	}
-
-	// Get the list of game IDs played on this seed
-	var gameIDs []int
-	if v, err := models.Games.GetGameIDsSeed(seed); err != nil {
-		logger.Error("Failed to get the game IDs from the database for seed \"" + seed + "\": " +
-			err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		gameIDs = v
-	}
-
-	// Get the history for these game IDs
-	// (with a custom sort by score)
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
-		logger.Error("Failed to get the history: " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		gameHistoryList = v
-	}
-
-	if _, ok := c.Request.URL.Query()["api"]; ok {
-		c.JSON(http.StatusOK, gameHistoryList)
+		http.Error(c.Writer, "Error: You must specify a seed.", http.StatusNotFound)
 		return
 	}
 
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:        "History",
-		History:      gameHistoryList,
 		NamesTitle:   "seed: " + seed,
+		Seed:         seed,
 		SpecificSeed: true,
 	}
-	httpServeTemplate(w, data, "profile", "history")
+	httpServeTemplate(c.Writer, data, "players_history", "history")
 }
