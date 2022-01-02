@@ -86,6 +86,55 @@ func apiHistory(c *gin.Context) {
 	apiGames(c, rowCount, gameIDs, orderBy)
 }
 
+// Returns list of games for given seed
+//   URL: /api/v1/seed/:seed
+//
+//   Columns:
+//   game_id       int
+//   no_of_players int
+//   score         int
+//   variant       string (link: /variant/id)
+//   date & time   datetime
+//   players       []string (link: /history/[]p)
+//
+//   Order
+//   0: games.id
+//
+//   Filters
+//   0: games.id
+//   1: num_players
+//   2: score
+func apiSeed(c *gin.Context) {
+	// Parse the seed from the URL
+	seed := c.Param("seed")
+	if seed == "" {
+		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
+		return
+	}
+
+	defaultSort := ApiSortColumn{Column: "games.id", Order: 1}
+	initialFilter := ApiColumnDescription{Column: "seed", Value: seed}
+	orderCols := []string{"games.id"}
+	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
+
+	// Filter & sanitize
+	params := apiParseQueryVars(c, orderCols, filterCols, defaultSort, initialFilter)
+	wQuery, orderBy, limit, args := apiBuildSubquery(params)
+
+	// Get row count
+	var rowCount int
+	dbQuery := "SELECT COUNT(DISTINCT games.id) FROM games " + wQuery
+	db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount)
+
+	// Get game IDs
+	gameIDs, err := models.Games.GetGameIDsForSeed(wQuery, orderBy, limit, args)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
+		return
+	}
+	apiGames(c, rowCount, gameIDs, orderBy)
+}
+
 func apiGames(c *gin.Context, rowCount int, gameIDs []int, orderBy string) {
 	// Get results
 	dbRows, err := models.Games.GetGamesForHistoryFromGameIDs(gameIDs, orderBy)

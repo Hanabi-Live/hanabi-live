@@ -113,8 +113,8 @@ func apiBuildSubquery(params ApiQueryVars) (string, string, string, []interface{
 			args = append(args, filter.Value)
 			where += filter.Column + " = $" + strconv.Itoa(len(args))
 		} else if filter.Value != "" {
-			args = append(args, "%"+filter.Value+"%")
-			where += filter.Column + " ILIKE $" + strconv.Itoa(len(args))
+			args = append(args, filter.Value)
+			where += filter.Column + " = $" + strconv.Itoa(len(args))
 		}
 		where += " AND "
 	}
@@ -149,6 +149,9 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4", apiHistory)
 	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4/:player5", apiHistory)
 	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4/:player5/:player6", apiHistory)
+
+	// List of games played by player[s]
+	httpRouter.GET(api+"/seed/:seed", apiSeed)
 }
 
 // Checks if a string contains a numeric value

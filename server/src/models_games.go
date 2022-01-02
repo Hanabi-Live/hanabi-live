@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -451,6 +452,42 @@ func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery, orderBy, limit string, 
 	}
 
 	SQLString += " " + wQuery + orderBy + limit
+
+	var rows pgx.Rows
+
+	if v, err := db.Query(context.Background(), SQLString, args...); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var gameID int
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsForSeed(wQuery, orderBy, limit string, args []interface{}) ([]int, error) {
+	gameIDs := make([]int, 0)
+
+	SQLString := `
+		SELECT DISTINCT games.id
+		FROM games
+	` + wQuery + orderBy + limit
+
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println(SQLString)
 
 	var rows pgx.Rows
 

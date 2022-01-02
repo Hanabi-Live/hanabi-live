@@ -82,7 +82,7 @@
                 <th class="filter-select" width="23%">Variant</th>
                 <th width="30%">Players</th>
                 <th width="22%">Date & Time</th>
-                <th width="8%">Other</th>
+                {{if not .SpecificSeed}}<th width="8%">Other</th>{{end}}
               </tr>
             </thead>
             <tbody>
@@ -143,7 +143,11 @@
         removeRows: false,
         // go to page selector - select dropdown that sets the current page
         cssGoto: '.gotoPage',
+        {{if not .SpecificSeed}}
         ajaxUrl : '/api/v1/history/{{.Names}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
+        {{else}}
+        ajaxUrl : '/api/v1/seed/{{.Seed}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
+        {{end}}
         updateArrows: true,
         ajaxProcessing: function(data) {
           let total = 0;
@@ -168,7 +172,7 @@
                 `<a href="/variant/${d[r]["variant"]}">${getVariant(d[r]["variant"])}</a>`,
                 `<a href="/history/${users}">${d[r]["users"]}</a>`,
                 d[r]["datetime"],
-                `<a href="/seed/${d[r]["seed"]}">${d[r]["other_scores"]}</a>`,
+                {{if not .SpecificSeed}}`<a href="/seed/${d[r]["seed"]}">${d[r]["other_scores"]}</a>`,{{end}}
               ]; // new row array
               rows.push(row); // add new row array to rows array
             }

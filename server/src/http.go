@@ -35,6 +35,7 @@ type TemplateData struct {
 	// History
 	History      []*GameHistory
 	SpecificSeed bool
+	Seed         string
 	Tags         map[int][]string
 
 	// Scores
