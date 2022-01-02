@@ -105,6 +105,7 @@
             </select>
           </div>
 
+          <div class="tableSpinner"><span class="tableSpinner"></span></div>
         </section>
       </div>
     </div>
@@ -119,6 +120,14 @@
   $(document).ready(() => {
     const variants = [];
     const variants_filter = [];
+    const setEnable = function(enabled) {
+      if (enabled) {
+        $("div.tableSpinner").css("display", "none");
+      } else {
+        $("div.tableSpinner").css("display", "flex");
+      }
+    }
+
     $.getJSON('/api/v1/variants', function (data) {
       for (let i in data) {
         variants[i] = data[i];
@@ -148,6 +157,10 @@
         {{else}}
         ajaxUrl : '/api/v1/seed/{{.Seed}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
         {{end}}
+        customAjaxUrl: function(table, url) {
+          setEnable(false);
+          return url;
+        },
         updateArrows: true,
         ajaxProcessing: function(data) {
           let total = 0;
@@ -177,12 +190,14 @@
               rows.push(row); // add new row array to rows array
             }
           }
+          setEnable(true);
           return [ total, rows ];
         },
       };
 
       // Initialize the table sorting
       $('table:not(.plain)').tablesorter({
+        showProcessing: true,
         {{if not .SpecificSeed}}
         headers: {
           0: { filter: false },
