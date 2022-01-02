@@ -515,7 +515,7 @@ func (*Games) GetGamesForHistoryFromGameIDs(gameIDs []int, orderBy string) ([]Ga
 	dbQuery := `
 		SELECT
 			games.id, num_players, score, variant_id,
-			STRING_AGG(username, ', ' ORDER BY username) AS usernames,
+			STRING_AGG(username, ', ' ORDER BY LOWER(username)) AS usernames,
 			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished,
 			games.seed as seed,
 			MAX(seeds.num_games) as total_games
@@ -564,7 +564,7 @@ func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]AP
 	dbQuery := `
 		SELECT
 			games.id, num_players, score,
-			STRING_AGG(username, ', ' ORDER BY username) AS usernames,
+			STRING_AGG(username, ', ' ORDER BY LOWER(username)) AS usernames,
 			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished
 		FROM
 			games
