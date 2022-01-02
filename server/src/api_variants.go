@@ -52,14 +52,16 @@ func apiVariants(c *gin.Context) {
 //   2: score
 func apiVariantsSingle(c *gin.Context) {
 	// Validate the id
-	id, err := apiGetVariantIDFromParam(c)
-	if err != nil {
+	var id int
+	if v, err := apiGetVariantIDFromParam(c); err != nil {
 		c.JSON(http.StatusBadRequest, APIVariantAnswer{
 			TotalRows: 0,
 			Info:      "Missing valid variant ID",
 			Rows:      nil,
 		})
 		return
+	} else {
+		id = v
 	}
 
 	defaultSort := APISortColumn{Column: "games.id", Order: 1}
@@ -100,11 +102,12 @@ func apiVariantsSingle(c *gin.Context) {
 	}
 
 	// Get results - we only need WHERE for games.id
-	dbRows, err := models.Games.GetGamesForVariantFromGameIDs(gameIDs, orderBy)
-
-	if err != nil {
+	var dbRows []APIVariantRow
+	if v, err := models.Games.GetGamesForVariantFromGameIDs(gameIDs, orderBy); err != nil {
 		c.JSON(http.StatusBadRequest, APIVariantAnswer{})
 		return
+	} else {
+		dbRows = v
 	}
 
 	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
