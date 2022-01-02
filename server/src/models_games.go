@@ -26,6 +26,17 @@ type GameRow struct {
 	DatetimeFinished time.Time
 }
 
+type GamesRow struct {
+	ID          int    `json:"id"`
+	NumPlayers  int    `json:"num_players"`
+	Score       int    `json:"score"`
+	Variant     int    `json:"variant"`
+	Users       string `json:"users"`
+	DateTime    string `json:"datetime"`
+	Seed        string `json:"seed"`
+	OtherScores int    `json:"other_scores"`
+}
+
 func (*Games) Insert(gameRow GameRow) (int, error) {
 	// Local variables
 	variant := variants[gameRow.Options.VariantName]
@@ -416,7 +427,7 @@ func (*Games) GetGameIDsFriends(
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery string) ([]int, error) {
+func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery, orderBy, limit string, args []interface{}) ([]int, error) {
 	gameIDs := make([]int, 0)
 
 	// First, validate that all of the user IDs are unique
@@ -439,8 +450,11 @@ func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery string) ([]int, error) {
 		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
 	}
 
+	SQLString += " " + wQuery + orderBy + limit
+
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString); err != nil {
+
+	if v, err := db.Query(context.Background(), SQLString, args...); err != nil {
 		return gameIDs, err
 	} else {
 		rows = v
@@ -462,140 +476,98 @@ func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery string) ([]int, error) {
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsVariant(variantID int, amount int) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		WHERE variant_id = $1
-		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY id DESC
-		LIMIT $2
-	`
-
+func (*Games) GetGamesForHistoryFromGameIDs(gameIDs []int, orderBy string) ([]GamesRow, error) {
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, variantID, amount); err != nil {
-		return gameIDs, err
+	args := []interface{}{gameIDs}
+
+	dbQuery := `
+		SELECT
+			games.id, num_players, score, variant_id,
+			STRING_AGG(username, ', ' ORDER BY username) AS usernames,
+			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished,
+			games.seed as seed,
+			MAX(seeds.num_games) as total_games
+		FROM
+			games
+			JOIN game_participants on games.id = game_id
+			JOIN users on user_id = users.id
+			JOIN seeds ON seeds.seed = games.seed
+		WHERE games.id = ANY($1)
+		GROUP BY games.id
+	` + orderBy
+
+	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
+		return nil, err
 	} else {
 		rows = v
 	}
 
+	var dbRows []GamesRow
+
 	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
+		row := GamesRow{}
+		if err := rows.Scan(
+			&row.ID,
+			&row.NumPlayers,
+			&row.Score,
+			&row.Variant,
+			&row.Users,
+			&row.DateTime,
+			&row.Seed,
+			&row.OtherScores,
+		); err != nil {
+			return nil, err
 		}
-		gameIDs = append(gameIDs, gameID)
+		dbRows = append(dbRows, row)
 	}
-
 	if err := rows.Err(); err != nil {
-		return gameIDs, err
+		return nil, err
 	}
-	rows.Close()
-
-	return gameIDs, nil
+	return dbRows, nil
 }
 
-func (*Games) GetGameIDsPastX(amount int) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY id DESC
-		LIMIT $1
-	`
-
+func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]ApiVariantRow, error) {
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, amount); err != nil {
-		return gameIDs, err
+	args := []interface{}{gameIDs}
+	dbQuery := `
+		SELECT
+			games.id, num_players, score,
+			STRING_AGG(username, ', ' ORDER BY username) AS usernames,
+			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished
+		FROM
+			games
+			JOIN game_participants on games.id = game_id
+			JOIN users on user_id = users.id
+	    WHERE games.id = ANY($1)
+	    GROUP BY games.id
+	` + orderBy
+
+	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
+		return nil, err
 	} else {
 		rows = v
 	}
 
-	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
-		}
-		gameIDs = append(gameIDs, gameID)
-	}
-
-	if err := rows.Err(); err != nil {
-		return gameIDs, err
-	}
-	rows.Close()
-
-	return gameIDs, nil
-}
-
-func (*Games) GetGameIDsSinceDatetime(datetime string) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY id DESC
-		WHERE datetime_started > $1
-	`
-
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, datetime); err != nil {
-		return gameIDs, err
-	} else {
-		rows = v
-	}
+	var dbRows []ApiVariantRow
 
 	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
+		row := ApiVariantRow{}
+		if err := rows.Scan(
+			&row.ID,
+			&row.NumPlayers,
+			&row.Score,
+			&row.Users,
+			&row.DateTime,
+		); err != nil {
+			return nil, err
 		}
-		gameIDs = append(gameIDs, gameID)
+		dbRows = append(dbRows, row)
 	}
-
 	if err := rows.Err(); err != nil {
-		return gameIDs, err
+		return nil, err
 	}
 	rows.Close()
-
-	return gameIDs, nil
-}
-
-func (*Games) GetGameIDsSinceInterval(interval string) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		WHERE datetime_started > NOW() - INTERVAL
-	`
-	SQLString += "'" + interval + "'" // We can't use $1 for intervals for some reason
-
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString); err != nil {
-		return gameIDs, err
-	} else {
-		rows = v
-	}
-
-	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
-		}
-		gameIDs = append(gameIDs, gameID)
-	}
-
-	if err := rows.Err(); err != nil {
-		return gameIDs, err
-	}
-	rows.Close()
-
-	return gameIDs, nil
+	return dbRows, nil
 }
 
 func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
@@ -665,17 +637,6 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 	}
 
 	return &options, nil
-}
-
-func (*Games) GetNumPlayers(databaseID int) (int, error) {
-	var numPlayers int
-	err := db.QueryRow(context.Background(), `
-		SELECT COUNT(game_participants.game_id)
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE games.id = $1
-	`, databaseID).Scan(&numPlayers)
-	return numPlayers, err
 }
 
 func (*Games) GetNumTurns(databaseID int) (int, error) {
@@ -1032,34 +993,4 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 	}
 
 	return stats, nil
-}
-
-func (*Games) GetAllIDs() ([]int, error) {
-	ids := make([]int, 0)
-
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), `
-		SELECT id
-		FROM games
-		ORDER BY id
-	`); err != nil {
-		return ids, err
-	} else {
-		rows = v
-	}
-
-	for rows.Next() {
-		var id int
-		if err := rows.Scan(&id); err != nil {
-			return ids, err
-		}
-		ids = append(ids, id)
-	}
-
-	if err := rows.Err(); err != nil {
-		return ids, err
-	}
-	rows.Close()
-
-	return ids, nil
 }

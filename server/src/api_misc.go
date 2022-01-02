@@ -14,7 +14,6 @@ type ApiSortColumn struct {
 type ApiColumnDescription struct {
 	Column string
 	Value  string
-	Values []int
 }
 
 type ApiQueryVars struct {
@@ -40,6 +39,7 @@ func apiParseQueryVars(c *gin.Context, orderCols []string, filterCols []string, 
 
 // Searches query vars for param "page"
 // Returns 0 or positive int
+// Default 0
 func apiGetPage(c *gin.Context) int {
 	if page, err := strconv.Atoi(c.Query("page")); err == nil {
 		return max(0, page)
@@ -48,7 +48,8 @@ func apiGetPage(c *gin.Context) int {
 }
 
 // Searches query vars for param "size"
-// Returns 0 or positive int up to 100, default 10
+// Returns 0 or positive int up to 100
+// Default 10
 func apiGetSize(c *gin.Context) int {
 	if size, err := strconv.Atoi(c.Query("size")); err == nil {
 		return between(size, 0, 100, 10)
@@ -58,6 +59,7 @@ func apiGetSize(c *gin.Context) int {
 
 // Searches query vars for param "col[int]=0|1"
 // Returns valid sort column and order
+// Default the given default sort
 func apiGetOrder(c *gin.Context, columns []string, defaultSort ApiSortColumn) ApiColumnDescription {
 	vars := c.QueryMap("col")
 	defOrder := "ASC"
@@ -81,7 +83,10 @@ func apiGetOrder(c *gin.Context, columns []string, defaultSort ApiSortColumn) Ap
 	return ApiColumnDescription{Column: defaultSort.Column, Value: defOrder}
 }
 
-// Searches query vars for param "fcol[int]=string" array. Skips empty cols. Returns valid (existing) filters
+// Searches query vars for param "fcol[int]=string" array
+// Skips empty columns
+// Returns valid (existing) filters
+// Default empty filter
 func apiGetFilters(c *gin.Context, columns []string, initialFilter ApiColumnDescription) []ApiColumnDescription {
 	filters := make([]ApiColumnDescription, 0)
 	if initialFilter.Column != "" {
@@ -97,7 +102,8 @@ func apiGetFilters(c *gin.Context, columns []string, initialFilter ApiColumnDesc
 	return filters
 }
 
-// Builds an SQL subquery. Returns the WHERE part, the ORDER BY part and the args
+// Builds an SQL subquery
+// Returns the WHERE part, the ORDER BY part and the args
 func apiBuildSubquery(params ApiQueryVars) (string, string, string, []interface{}) {
 	where := ""
 	args := []interface{}{}
@@ -106,14 +112,7 @@ func apiBuildSubquery(params ApiQueryVars) (string, string, string, []interface{
 		if apiIsNumeric(filter.Value) {
 			args = append(args, filter.Value)
 			where += filter.Column + " = $" + strconv.Itoa(len(args))
-		} else if filter.Values != nil {
-			where += filter.Column + " IN ("
-			for i := 0; i < len(filter.Values); i++ {
-				args = append(args, filter.Values[i])
-				where += "$" + strconv.Itoa(len(args)) + ", "
-			}
-			where = where[:len(where)-len(", ")] + ")"
-		} else {
+		} else if filter.Value != "" {
 			args = append(args, "%"+filter.Value+"%")
 			where += filter.Column + " ILIKE $" + strconv.Itoa(len(args))
 		}

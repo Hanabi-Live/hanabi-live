@@ -41,7 +41,7 @@ func httpVariant(c *gin.Context) {
 
 	// Redirect if old api is used
 	if _, ok := c.Request.URL.Query()["api"]; ok {
-		c.Redirect(http.StatusPermanentRedirect, "/api/v1/variants/"+strconv.Itoa(variantID))
+		c.Redirect(http.StatusPermanentRedirect, "/api/v1/variants/"+variantIDstring)
 		return
 	}
 

@@ -18,7 +18,7 @@ type ApiVariantRow struct {
 }
 
 type ApiVariantAnswer struct {
-	TotalRows int64           `json:"total_rows"`
+	TotalRows int             `json:"total_rows"`
 	Info      string          `json:"info"`
 	Rows      []ApiVariantRow `json:"rows"`
 }
@@ -26,6 +26,7 @@ type ApiVariantAnswer struct {
 // List of variants
 //   /api/v1/variants
 //
+//   Columns
 //   id   int
 //   name string
 func apiVariants(c *gin.Context) {
@@ -36,24 +37,24 @@ func apiVariants(c *gin.Context) {
 //   URL: /api/v1/variants/:id
 //
 //   Columns
-//   games.id                int
-//   games.num_players       int
-//   games.score             int
-//   users.username          string
-//   games.datetime_finished string
+//   id                int
+//   num_players       int
+//   score             int
+//   users             string
+//   datetime          string
 //
 //   Order
-//   0: games.id
+//   0: id
 //
 //   Filters
-//   0: games.id
+//   0: id
 //   1: num_players
 //   2: score
 func apiVariantsSingle(c *gin.Context) {
 	// Validate the id
 	id, err := apiGetVariantIdFromParam(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+		c.JSON(http.StatusBadRequest, ApiVariantAnswer{Info: "Missing valid variant ID"})
 		return
 	}
 
@@ -69,12 +70,12 @@ func apiVariantsSingle(c *gin.Context) {
 	wQuery, orderBy, limit, args := apiBuildSubquery(params)
 
 	// Get row count
-	var rowCount int64
+	var rowCount int
 	dbQuery := "SELECT COUNT(*) FROM games " + wQuery
 	db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount)
 
 	// Get game IDs
-	var gameIDs []int64
+	var gameIDs []int
 	dbQuery = "SELECT games.id FROM games " + wQuery + orderBy + limit
 	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
 		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
@@ -83,7 +84,7 @@ func apiVariantsSingle(c *gin.Context) {
 		rows = v
 	}
 	for rows.Next() {
-		var id int64
+		var id int
 		if err := rows.Scan(&id); err != nil {
 			c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
 			return
@@ -91,45 +92,10 @@ func apiVariantsSingle(c *gin.Context) {
 		gameIDs = append(gameIDs, id)
 	}
 
-	// Get results
-	args = []interface{}{gameIDs}
-	dbQuery = `
-		SELECT
-			games.id, num_players, score,
-			STRING_AGG(username, ', ' ORDER BY username) AS usernames,
-			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished
-		FROM
-			games
-			JOIN game_participants on games.id = game_id
-			JOIN users on user_id = users.id
-	    WHERE games.id = ANY($1)
-	    GROUP BY games.id
-	` + orderBy
+	// Get results - we only need WHERE for games.id
+	dbRows, err := models.Games.GetGamesForVariantFromGameIDs(gameIDs, orderBy)
 
-	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
-		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
-		return
-	} else {
-		rows = v
-	}
-
-	var dbRows []ApiVariantRow
-
-	for rows.Next() {
-		row := ApiVariantRow{}
-		if err := rows.Scan(
-			&row.ID,
-			&row.NumPlayers,
-			&row.Score,
-			&row.Users,
-			&row.DateTime,
-		); err != nil {
-			c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
-			return
-		}
-		dbRows = append(dbRows, row)
-	}
-	if err := rows.Err(); err != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
 		return
 	}

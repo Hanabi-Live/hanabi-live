@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
 )
 
 type ApiGamesRow struct {
@@ -21,9 +20,9 @@ type ApiGamesRow struct {
 }
 
 type ApiGamesAnswer struct {
-	TotalRows int64         `json:"total_rows"`
-	Info      string        `json:"info"`
-	Rows      []ApiGamesRow `json:"rows"`
+	TotalRows int        `json:"total_rows"`
+	Info      string     `json:"info"`
+	Rows      []GamesRow `json:"rows"`
 }
 
 // Returns list of games for given player[s]
@@ -60,8 +59,6 @@ func apiHistory(c *gin.Context) {
 	orderCols := []string{"games.id"}
 	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
 
-	var rows pgx.Rows
-
 	// Filter & sanitize
 	params := apiParseQueryVars(c, orderCols, filterCols, defaultSort, ApiColumnDescription{})
 	wQuery, orderBy, limit, args := apiBuildSubquery(params)
@@ -76,93 +73,25 @@ func apiHistory(c *gin.Context) {
 	}
 
 	// Get row count
-	var rowCount int64
+	var rowCount int
 	dbQuery := "SELECT COUNT(DISTINCT games.id) FROM games " + SQLString + wQuery
 	db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount)
 
 	// Get game IDs
-	var gameIDs []int64
-	dbQuery = "SELECT games.id FROM games " + SQLString + wQuery + orderBy + limit
-	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
-		c.JSON(http.StatusBadRequest, "0 "+err.Error())
-		// c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+	gameIDs, err := models.Games.GetGameIDsMultiUser(playerIDs, wQuery, orderBy, limit, args)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
 		return
-	} else {
-		rows = v
 	}
-	for rows.Next() {
-		var id int64
-		if err := rows.Scan(&id); err != nil {
-			c.JSON(http.StatusBadRequest, err.Error())
-			// c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
-			return
-		}
-		gameIDs = append(gameIDs, id)
-	}
-
 	apiGames(c, rowCount, gameIDs, orderBy)
 }
 
-func apiGames(c *gin.Context, rowCount int64, gameIDs []int64, orderBy string) {
+func apiGames(c *gin.Context, rowCount int, gameIDs []int, orderBy string) {
 	// Get results
-	var rows pgx.Rows
-	args := []interface{}{gameIDs}
+	dbRows, err := models.Games.GetGamesForHistoryFromGameIDs(gameIDs, orderBy)
 
-	dbQuery := `
-		SELECT
-			games.id, num_players, score, variant_id,
-			STRING_AGG(username, ', ' ORDER BY username) AS usernames,
-			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished,
-			games.seed as seed,
-			MAX(seeds.num_games) as total_games
-		FROM
-			games
-			JOIN game_participants on games.id = game_id
-			JOIN users on user_id = users.id
-			JOIN seeds ON seeds.seed = games.seed
-		WHERE games.id = ANY($1)
-		GROUP BY games.id
-	` + orderBy
-
-	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
-		c.JSON(http.StatusBadRequest, []interface{}{
-			err.Error(),
-			rowCount,
-			dbQuery,
-		})
-		// c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
-		return
-	} else {
-		rows = v
-	}
-
-	var dbRows []ApiGamesRow
-
-	for rows.Next() {
-		row := ApiGamesRow{}
-		if err := rows.Scan(
-			&row.ID,
-			&row.NumPlayers,
-			&row.Score,
-			&row.Variant,
-			&row.Users,
-			&row.DateTime,
-			&row.Seed,
-			&row.OtherScores,
-		); err != nil {
-			c.JSON(http.StatusBadRequest, err.Error())
-			// c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
-			return
-		}
-		dbRows = append(dbRows, row)
-	}
-	if err := rows.Err(); err != nil {
-		c.JSON(http.StatusBadRequest, []interface{}{
-			err.Error(),
-			rowCount,
-			dbQuery,
-		})
-		// c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
 		return
 	}
 
