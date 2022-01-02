@@ -276,7 +276,7 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	return false
 }
 
-func variantsIsValidId(id int) bool {
+func variantsIsValidID(id int) bool {
 	if _, ok := variantIDMap[id]; !ok {
 		return false
 	}

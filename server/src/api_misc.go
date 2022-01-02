@@ -6,21 +6,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ApiSortColumn struct {
+type APISortColumn struct {
 	Column string
 	Order  int // 0 ASC, 1 DESC
 }
 
-type ApiColumnDescription struct {
+type APIColumnDescription struct {
 	Column string
 	Value  string
 }
 
-type ApiQueryVars struct {
+type APIQueryVars struct {
 	Page    int
 	Size    int
-	Order   ApiColumnDescription
-	Filters []ApiColumnDescription
+	Order   APIColumnDescription
+	Filters []APIColumnDescription
 }
 
 // Filters the query vars and returns only the valid ones
@@ -28,8 +28,8 @@ type ApiQueryVars struct {
 //     Size    int (min 0, max 100, default 10)
 //     Order   {Name: string, Order: ASC|DESC}
 //     Filters {column_name: filter, ...}
-func apiParseQueryVars(c *gin.Context, orderCols []string, filterCols []string, defaultSort ApiSortColumn, initialFilter ApiColumnDescription) ApiQueryVars {
-	return ApiQueryVars{
+func apiParseQueryVars(c *gin.Context, orderCols []string, filterCols []string, defaultSort APISortColumn, initialFilter APIColumnDescription) APIQueryVars {
+	return APIQueryVars{
 		Page:    apiGetPage(c),
 		Size:    apiGetSize(c),
 		Order:   apiGetOrder(c, orderCols, defaultSort),
@@ -60,7 +60,7 @@ func apiGetSize(c *gin.Context) int {
 // Searches query vars for param "col[int]=0|1"
 // Returns valid sort column and order
 // Default the given default sort
-func apiGetOrder(c *gin.Context, columns []string, defaultSort ApiSortColumn) ApiColumnDescription {
+func apiGetOrder(c *gin.Context, columns []string, defaultSort APISortColumn) APIColumnDescription {
 	vars := c.QueryMap("col")
 	defOrder := "ASC"
 	if defaultSort.Order != 0 {
@@ -74,21 +74,21 @@ func apiGetOrder(c *gin.Context, columns []string, defaultSort ApiSortColumn) Ap
 			} else {
 				order = "DESC"
 			}
-			return ApiColumnDescription{
+			return APIColumnDescription{
 				Column: columns[col],
 				Value:  order,
 			}
 		}
 	}
-	return ApiColumnDescription{Column: defaultSort.Column, Value: defOrder}
+	return APIColumnDescription{Column: defaultSort.Column, Value: defOrder}
 }
 
 // Searches query vars for param "fcol[int]=string" array
 // Skips empty columns
 // Returns valid (existing) filters
 // Default empty filter
-func apiGetFilters(c *gin.Context, columns []string, initialFilter ApiColumnDescription) []ApiColumnDescription {
-	filters := make([]ApiColumnDescription, 0)
+func apiGetFilters(c *gin.Context, columns []string, initialFilter APIColumnDescription) []APIColumnDescription {
+	filters := make([]APIColumnDescription, 0)
 	if initialFilter.Column != "" {
 		filters = append(filters, initialFilter)
 	}
@@ -96,7 +96,7 @@ func apiGetFilters(c *gin.Context, columns []string, initialFilter ApiColumnDesc
 	values := c.QueryMap("fcol")
 	for key, value := range values {
 		if col, err := strconv.Atoi(key); err == nil && col < len(columns) && columns[col] != "" {
-			filters = append(filters, ApiColumnDescription{Column: columns[col], Value: value})
+			filters = append(filters, APIColumnDescription{Column: columns[col], Value: value})
 		}
 	}
 	return filters
@@ -104,7 +104,7 @@ func apiGetFilters(c *gin.Context, columns []string, initialFilter ApiColumnDesc
 
 // Builds an SQL subquery
 // Returns the WHERE part, the ORDER BY part and the args
-func apiBuildSubquery(params ApiQueryVars) (string, string, string, []interface{}) {
+func apiBuildSubquery(params APIQueryVars) (string, string, string, []interface{}) {
 	where := ""
 	args := []interface{}{}
 

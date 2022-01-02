@@ -8,18 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ApiGamesRow struct {
-	ID          int    `json:"id"`
-	NumPlayers  int    `json:"num_players"`
-	Score       int    `json:"score"`
-	Variant     int    `json:"variant"`
-	Users       string `json:"users"`
-	DateTime    string `json:"datetime"`
-	Seed        string `json:"seed"`
-	OtherScores int    `json:"other_scores"`
-}
-
-type ApiGamesAnswer struct {
+type APIGamesAnswer struct {
 	TotalRows int        `json:"total_rows"`
 	Info      string     `json:"info"`
 	Rows      []GamesRow `json:"rows"`
@@ -49,18 +38,18 @@ func apiHistory(c *gin.Context) {
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	if v1, _, ok := httpParsePlayerNames(c); !ok {
-		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
 	} else {
 		playerIDs = v1
 	}
 
-	defaultSort := ApiSortColumn{Column: "games.id", Order: 1}
+	defaultSort := APISortColumn{Column: "games.id", Order: 1}
 	orderCols := []string{"games.id"}
 	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
 
 	// Filter & sanitize
-	params := apiParseQueryVars(c, orderCols, filterCols, defaultSort, ApiColumnDescription{})
+	params := apiParseQueryVars(c, orderCols, filterCols, defaultSort, APIColumnDescription{})
 	wQuery, orderBy, limit, args := apiBuildSubquery(params)
 
 	SQLString := ""
@@ -80,7 +69,7 @@ func apiHistory(c *gin.Context) {
 	// Get game IDs
 	gameIDs, err := models.Games.GetGameIDsMultiUser(playerIDs, wQuery, orderBy, limit, args)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
 	}
 	apiGames(c, rowCount, gameIDs, orderBy)
@@ -107,12 +96,12 @@ func apiSeed(c *gin.Context) {
 	// Parse the seed from the URL
 	seed := c.Param("seed")
 	if seed == "" {
-		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
 	}
 
-	defaultSort := ApiSortColumn{Column: "games.id", Order: 1}
-	initialFilter := ApiColumnDescription{Column: "seed", Value: seed}
+	defaultSort := APISortColumn{Column: "games.id", Order: 1}
+	initialFilter := APIColumnDescription{Column: "seed", Value: seed}
 	orderCols := []string{"games.id"}
 	filterCols := []string{"games.id", "", "score"}
 
@@ -128,7 +117,7 @@ func apiSeed(c *gin.Context) {
 	// Get game IDs
 	gameIDs, err := models.Games.GetGameIDsForSeed(wQuery, orderBy, limit, args)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ApiGamesAnswer{})
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
 	}
 	apiGames(c, rowCount, gameIDs, orderBy)
@@ -139,13 +128,13 @@ func apiGames(c *gin.Context, rowCount int, gameIDs []int, orderBy string) {
 	dbRows, err := models.Games.GetGamesForHistoryFromGameIDs(gameIDs, orderBy)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+		c.JSON(http.StatusBadRequest, APIVariantAnswer{})
 		return
 	}
 
 	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"
 
-	out := ApiGamesAnswer{
+	out := APIGamesAnswer{
 		TotalRows: rowCount,
 		Info:      info,
 		Rows:      dbRows,

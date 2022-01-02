@@ -558,7 +558,7 @@ func (*Games) GetGamesForHistoryFromGameIDs(gameIDs []int, orderBy string) ([]Ga
 	return dbRows, nil
 }
 
-func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]ApiVariantRow, error) {
+func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]APIVariantRow, error) {
 	var rows pgx.Rows
 	args := []interface{}{gameIDs}
 	dbQuery := `
@@ -580,10 +580,10 @@ func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]Ap
 		rows = v
 	}
 
-	var dbRows []ApiVariantRow
+	var dbRows []APIVariantRow
 
 	for rows.Next() {
-		row := ApiVariantRow{}
+		row := APIVariantRow{}
 		if err := rows.Scan(
 			&row.ID,
 			&row.NumPlayers,

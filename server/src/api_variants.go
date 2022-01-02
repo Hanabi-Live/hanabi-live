@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type ApiVariantRow struct {
+type APIVariantRow struct {
 	ID         int    `json:"id"`
 	NumPlayers int    `json:"num_players"`
 	Score      int    `json:"score"`
@@ -17,10 +17,10 @@ type ApiVariantRow struct {
 	DateTime   string `json:"datetime"`
 }
 
-type ApiVariantAnswer struct {
+type APIVariantAnswer struct {
 	TotalRows int             `json:"total_rows"`
 	Info      string          `json:"info"`
-	Rows      []ApiVariantRow `json:"rows"`
+	Rows      []APIVariantRow `json:"rows"`
 }
 
 // List of variants
@@ -52,14 +52,14 @@ func apiVariants(c *gin.Context) {
 //   2: score
 func apiVariantsSingle(c *gin.Context) {
 	// Validate the id
-	id, err := apiGetVariantIdFromParam(c)
+	id, err := apiGetVariantIDFromParam(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ApiVariantAnswer{Info: "Missing valid variant ID"})
+		c.JSON(http.StatusBadRequest, APIVariantAnswer{Info: "Missing valid variant ID"})
 		return
 	}
 
-	defaultSort := ApiSortColumn{Column: "games.id", Order: 1}
-	initialFilter := ApiColumnDescription{Column: "variant_id", Value: strconv.Itoa(id)}
+	defaultSort := APISortColumn{Column: "games.id", Order: 1}
+	initialFilter := APIColumnDescription{Column: "variant_id", Value: strconv.Itoa(id)}
 	orderCols := []string{"games.id"}
 	filterCols := []string{"games.id", "num_players", "score"}
 
@@ -78,7 +78,7 @@ func apiVariantsSingle(c *gin.Context) {
 	var gameIDs []int
 	dbQuery = "SELECT games.id FROM games " + wQuery + orderBy + limit
 	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
-		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+		c.JSON(http.StatusBadRequest, APIVariantAnswer{})
 		return
 	} else {
 		rows = v
@@ -86,7 +86,7 @@ func apiVariantsSingle(c *gin.Context) {
 	for rows.Next() {
 		var id int
 		if err := rows.Scan(&id); err != nil {
-			c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+			c.JSON(http.StatusBadRequest, APIVariantAnswer{})
 			return
 		}
 		gameIDs = append(gameIDs, id)
@@ -96,13 +96,13 @@ func apiVariantsSingle(c *gin.Context) {
 	dbRows, err := models.Games.GetGamesForVariantFromGameIDs(gameIDs, orderBy)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ApiVariantAnswer{})
+		c.JSON(http.StatusBadRequest, APIVariantAnswer{})
 		return
 	}
 
 	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
 
-	out := ApiVariantAnswer{
+	out := APIVariantAnswer{
 		TotalRows: rowCount,
 		Info:      info,
 		Rows:      dbRows,
@@ -112,10 +112,10 @@ func apiVariantsSingle(c *gin.Context) {
 }
 
 // Returns valid variant ID
-func apiGetVariantIdFromParam(c *gin.Context) (int, error) {
+func apiGetVariantIDFromParam(c *gin.Context) (int, error) {
 	if v, err := httpGetIntVariable(c, "id"); err != nil {
 		return 0, err
-	} else if !variantsIsValidId(v) {
+	} else if !variantsIsValidID(v) {
 		return 0, err
 	} else {
 		return v, nil
