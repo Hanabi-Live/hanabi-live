@@ -2242,7 +2242,7 @@ function drawHypotheticalArea() {
     y: toggleDrawnCardsButtonValues.y * winH,
     width: hypoButtonWidth * winW,
     height: hypoButtonHeight * winH,
-    text: "Show Drawn",
+    text: "Show Hidden",
     fontSize: 0.016 * winH,
   });
   globals.elements.toggleDrawnCardsButton.tooltipName = "hypo-show-drawn";
