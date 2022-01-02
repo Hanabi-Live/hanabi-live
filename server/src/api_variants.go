@@ -54,7 +54,11 @@ func apiVariantsSingle(c *gin.Context) {
 	// Validate the id
 	id, err := apiGetVariantIDFromParam(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, APIVariantAnswer{Info: "Missing valid variant ID"})
+		c.JSON(http.StatusBadRequest, APIVariantAnswer{
+			TotalRows: 0,
+			Info:      "Missing valid variant ID",
+			Rows:      nil,
+		})
 		return
 	}
 
@@ -72,7 +76,10 @@ func apiVariantsSingle(c *gin.Context) {
 	// Get row count
 	var rowCount int
 	dbQuery := "SELECT COUNT(*) FROM games " + wQuery
-	db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount)
+	if err := db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount); err != nil {
+		c.JSON(http.StatusBadRequest, APIVariantAnswer{})
+		return
+	}
 
 	// Get game IDs
 	var gameIDs []int

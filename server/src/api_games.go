@@ -64,7 +64,10 @@ func apiHistory(c *gin.Context) {
 	// Get row count
 	var rowCount int
 	dbQuery := "SELECT COUNT(DISTINCT games.id) FROM games " + SQLString + wQuery
-	db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount)
+	if err := db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount); err != nil {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	}
 
 	// Get game IDs
 	gameIDs, err := models.Games.GetGameIDsMultiUser(playerIDs, wQuery, orderBy, limit, args)
@@ -112,7 +115,10 @@ func apiSeed(c *gin.Context) {
 	// Get row count
 	var rowCount int
 	dbQuery := "SELECT COUNT(DISTINCT games.id) FROM games " + wQuery
-	db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount)
+	if err := db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount); err != nil {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	}
 
 	// Get game IDs
 	gameIDs, err := models.Games.GetGameIDsForSeed(wQuery, orderBy, limit, args)
