@@ -165,7 +165,7 @@
                 `<a href="/replay/${d[r]["id"]}">${d[r]["id"]}</a>`,
                 d[r]["num_players"],
                 d[r]["score"],
-                getVariant(d[r]["variant"]),
+                `<a href="/variant/${d[r]["variant"]}">${getVariant(d[r]["variant"])}</a>`,
                 `<a href="/history/${users}">${d[r]["users"]}</a>`,
                 d[r]["datetime"],
                 `<a href="/seed/${d[r]["seed"]}">${d[r]["other_scores"]}</a>`,
