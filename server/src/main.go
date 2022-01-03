@@ -42,6 +42,16 @@ func main() {
 		defer sentry.Flush(2 * time.Second)
 	}
 
+	// Get the project path
+	// https://stackoverflow.com/questions/18537257/
+	if v, err := os.Executable(); err != nil {
+		logger.Fatal("Failed to get the path of the currently running executable: " + err.Error())
+	} else {
+		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
+		projectName = filepath.Base(v)
+		projectPath = filepath.Dir(v)
+	}
+
 	// Check to see if the ".env" file exists
 	envPath := path.Join(projectPath, ".env")
 	if _, err := os.Stat(envPath); os.IsNotExist(err) {
@@ -75,16 +85,6 @@ func main() {
 
 	// Configure the deadlock detector
 	deadlock.Opts.DisableLockOrderDetection = true
-
-	// Get the project path
-	// https://stackoverflow.com/questions/18537257/
-	if v, err := os.Executable(); err != nil {
-		logger.Fatal("Failed to get the path of the currently running executable: " + err.Error())
-	} else {
-		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
-		projectName = filepath.Base(v)
-		projectPath = filepath.Dir(v)
-	}
 
 	// Welcome message
 	startText := "| Starting " + projectName + " |"
