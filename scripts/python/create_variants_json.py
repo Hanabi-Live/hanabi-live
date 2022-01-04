@@ -436,7 +436,7 @@ def main():
     # Add "Very Ambiguous" variants (where 3 suits share a color)
     red_very_ambiguous_suits = [
         "Tomato VA",
-        "Ruby VA",
+        "Orange VA",
         "Mahogany VA",
     ]
     blue_very_ambiguous_suits = [

@@ -301,11 +301,11 @@
     "pip": "hanabiGreen"
   },
   {
-    "name": "Ruby VA",
+    "name": "Orange VA",
     "clueColors": [
       "Red"
     ],
-    "displayName": "Ruby",
+    "displayName": "Orange",
     "fill": "#f96401",
     "pip": "hanabiRed"
   },
