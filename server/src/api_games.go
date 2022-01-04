@@ -78,6 +78,37 @@ func apiHistory(c *gin.Context) {
 	apiGames(c, rowCount, gameIDs, orderBy)
 }
 
+// Returns full list of games with options
+func apiFullDataHistory(c *gin.Context) {
+	// Parse the player name(s) from the URL
+	var playerIDs []int
+	if v1, _, ok := httpParsePlayerNames(c); !ok {
+		return
+	} else {
+		playerIDs = v1
+	}
+
+	// Get the game IDs for this player (or set of players)
+	var gameIDs []int
+	if v, err := models.Games.GetFullGameIDsMultiUser(playerIDs); err != nil {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	} else {
+		gameIDs = v
+	}
+
+	// Get the games corresponding to these IDs
+	var gameHistoryList []*GameHistory
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	} else {
+		gameHistoryList = v
+	}
+
+	c.JSON(http.StatusOK, gameHistoryList)
+}
+
 // Returns list of games for given seed
 //   URL: /api/v1/seed/:seed
 //
@@ -127,6 +158,36 @@ func apiSeed(c *gin.Context) {
 		return
 	}
 	apiGames(c, rowCount, gameIDs, orderBy)
+}
+
+func apiFullDataSeed(c *gin.Context) {
+	// Parse the seed from the URL
+	seed := c.Param("seed")
+	if seed == "" {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	}
+
+	// Get the list of game IDs played on this seed
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsSeed(seed); err != nil {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	} else {
+		gameIDs = v
+	}
+
+	// Get the history for these game IDs
+	// (with a custom sort by score)
+	var gameHistoryList []*GameHistory
+	if v, err := models.Games.GetHistoryCustomSort(gameIDs, "seed"); err != nil {
+		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
+		return
+	} else {
+		gameHistoryList = v
+	}
+
+	c.JSON(http.StatusOK, gameHistoryList)
 }
 
 func apiGames(c *gin.Context, rowCount int, gameIDs []int, orderBy string) {

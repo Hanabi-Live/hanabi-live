@@ -476,6 +476,52 @@ func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery, orderBy, limit string, 
 	return gameIDs, nil
 }
 
+func (*Games) GetFullGameIDsMultiUser(userIDs []int) ([]int, error) {
+	gameIDs := make([]int, 0)
+
+	// First, validate that all of the user IDs are unique
+	userIDMap := make(map[int]struct{})
+	for _, userID := range userIDs {
+		if _, ok := userIDMap[userID]; ok {
+			err := errors.New("the list of user IDs contained a duplicate entry of " + strconv.Itoa(userID))
+			return gameIDs, err
+		}
+		userIDMap[userID] = struct{}{}
+	}
+
+	SQLString := `
+		SELECT DISTINCT games.id
+		FROM games
+	`
+	for _, id := range userIDs {
+		SQLString += "JOIN game_participants AS player" + strconv.Itoa(id) + "_games "
+		SQLString += "ON games.id = player" + strconv.Itoa(id) + "_games.game_id "
+		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
+	}
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), SQLString); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var gameID int
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
 func (*Games) GetGameIDsForSeed(wQuery, orderBy, limit string, args []interface{}) ([]int, error) {
 	gameIDs := make([]int, 0)
 

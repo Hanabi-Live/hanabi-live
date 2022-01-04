@@ -150,8 +150,19 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4/:player5", apiHistory)
 	httpRouter.GET(api+"/history/:player1/:player2/:player3/:player4/:player5/:player6", apiHistory)
 
-	// List of games played by player[s]
+	// List of games played by player[s] (full game data)
+	httpRouter.GET(api+"/history-full/:player1", apiFullDataHistory)
+	httpRouter.GET(api+"/history-full/:player1/:player2", apiFullDataHistory)
+	httpRouter.GET(api+"/history-full/:player1/:player2/:player3", apiFullDataHistory)
+	httpRouter.GET(api+"/history-full/:player1/:player2/:player3/:player4", apiFullDataHistory)
+	httpRouter.GET(api+"/history-full/:player1/:player2/:player3/:player4/:player5", apiFullDataHistory)
+	httpRouter.GET(api+"/history-full/:player1/:player2/:player3/:player4/:player5/:player6", apiFullDataHistory)
+
+	// List of games played by seed
 	httpRouter.GET(api+"/seed/:seed", apiSeed)
+
+	// List of games played by seed (full data)
+	httpRouter.GET(api+"/seed-full/:seed", apiFullDataSeed)
 }
 
 // Checks if a string contains a numeric value
