@@ -436,7 +436,7 @@ def main():
     # Add "Very Ambiguous" variants (where 3 suits share a color)
     red_very_ambiguous_suits = [
         "Tomato VA",
-        "Ruby VA",
+        "Carrot VA",
         "Mahogany VA",
     ]
     blue_very_ambiguous_suits = [
@@ -944,16 +944,16 @@ def main():
 
     # Add "Synesthesia" variants
     suits_that_cause_duplicated_variants_with_synesthesia = [
-        "Prism", # Same as White
-        "Muddy Rainbow", # Same as Rainbow
-        "Light Pink", # Same as Rainbow
-        "Pink", # Same as Rainbow
-        "Omni", # Same as Rainbow
-        "Dark Prism", # Same as White
-        "Cocoa Rainbow", # Same as Dark Rainbow
-        "Gray Pink", # Same as Dark Rainbow
-        "Dark Pink", # Same as Dark Rainbow
-        "Dark Omni", # Same as Dark Rainbow
+        "Prism",  # Same as White
+        "Muddy Rainbow",  # Same as Rainbow
+        "Light Pink",  # Same as Rainbow
+        "Pink",  # Same as Rainbow
+        "Omni",  # Same as Rainbow
+        "Dark Prism",  # Same as White
+        "Cocoa Rainbow",  # Same as Dark Rainbow
+        "Gray Pink",  # Same as Dark Rainbow
+        "Dark Pink",  # Same as Dark Rainbow
+        "Dark Omni",  # Same as Dark Rainbow
     ]
     for suit_num in [6, 5, 4, 3]:
         variant_name = "Synesthesia (" + str(suit_num) + " Suits)"
