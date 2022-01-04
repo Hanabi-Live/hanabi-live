@@ -164,7 +164,7 @@ export function init(): void {
   $("#create-game-submit").on("click", submit);
 
   // Add delegate handler for new options buttons
-  $("#lobby-chat-pregame-text").on("click", "button.new-options", (e) => {
+  $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
     const reg = new RegExp("'", "g");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
