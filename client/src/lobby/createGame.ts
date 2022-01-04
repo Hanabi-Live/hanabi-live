@@ -348,6 +348,9 @@ function submit() {
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
   };
 
+  // Fast close modals first - the server might reply with a modal warning
+  modals.closeModals(true);
+
   if (isNew) {
     globals.conn!.send("tableCreate", {
       name,
@@ -369,8 +372,6 @@ function submit() {
   // Remove error indications
   $("#createTableTimeBaseMinutes").removeClass("wrongInput");
   $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
-
-  modals.closeModals();
 }
 
 function acceptOptionsFromGuest(options: Options) {
