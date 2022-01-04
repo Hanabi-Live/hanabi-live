@@ -196,10 +196,10 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 			games1.datetime_finished,
 			(
 				/*
-				 * We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
-				 * does not exist
-				 * This row should always exist, but check it just to be safe
-				 */
+				* We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
+				* does not exist
+				* This row should always exist, but check it just to be safe
+				*/
 				SELECT COALESCE((
 					SELECT seeds.num_games
 					FROM seeds
@@ -211,12 +211,17 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games1.id
-			) AS player_names
+			) AS player_names,
+			(
+				SELECT COALESCE(STRING_AGG(game_tags.tag, ', ' ORDER BY LOWER(game_tags.tag)), '')
+				FROM game_tags
+				WHERE game_tags.game_id = games1.id
+			) AS tags
 		FROM games AS games1
 		/*
-		 * We must use the ANY operator for matching an array of IDs:
-		 * https://github.com/jackc/pgx/issues/334
-		 */
+		* We must use the ANY operator for matching an array of IDs:
+		* https://github.com/jackc/pgx/issues/334
+		*/
 		WHERE games1.id = ANY($1)
 	`
 	SQLString += "ORDER BY " + sortSQL
@@ -257,6 +262,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 			&gameHistory.DatetimeFinished,
 			&gameHistory.NumGamesOnThisSeed,
 			&playerNamesString,
+			&gameHistory.Tags,
 		); err != nil {
 			return games, err
 		}
