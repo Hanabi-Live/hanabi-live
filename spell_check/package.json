@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cspell": "^4.0.63"
+    "cspell": "^5.14.0"
   }
 }
