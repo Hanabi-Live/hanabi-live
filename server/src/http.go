@@ -40,7 +40,9 @@ type TemplateData struct {
 
 	// Scores
 	DateJoined                 string
-	NumGames                   int
+	NumGamesTotal              int
+	NumGamesNormal             int
+	NumGamesOther              int
 	TimePlayed                 string
 	NumGamesSpeedrun           int
 	TimePlayedSpeedrun         string

@@ -898,7 +898,8 @@ func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string
 
 type Stats struct {
 	DateJoined         time.Time
-	NumGames           int
+	NumGamesNormal     int
+	NumGamesOther      int
 	TimePlayed         int // In seconds
 	NumGamesSpeedrun   int
 	TimePlayedSpeedrun int // In seconds
@@ -920,7 +921,16 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
 					AND games.speedrun = FALSE
-			) AS num_games,
+					AND games.end_condition = 1
+			) AS num_games_normal,
+			(
+				SELECT COUNT(games.id)
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE game_participants.user_id = $1
+					AND games.speedrun = FALSE
+					AND games.end_condition != 1
+			) AS num_games_other,
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
@@ -958,7 +968,8 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 			) AS time_played_speedrun
 	`, userID).Scan(
 		&stats.DateJoined,
-		&stats.NumGames,
+		&stats.NumGamesNormal,
+		&stats.NumGamesOther,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
 		&stats.TimePlayedSpeedrun,
@@ -978,7 +989,14 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				SELECT COUNT(id)
 				FROM games
 				WHERE games.speedrun = FALSE
-			) AS num_games,
+					AND games.end_condition = 1
+			) AS num_games_normal,
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE games.speedrun = FALSE
+				AND games.end_condition != 1
+			) AS num_games_other,
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
@@ -1011,7 +1029,8 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = TRUE
 			) AS time_played_speedrun
 	`).Scan(
-		&stats.NumGames,
+		&stats.NumGamesNormal,
+		&stats.NumGamesOther,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
 		&stats.TimePlayedSpeedrun,
@@ -1032,7 +1051,15 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 				FROM games
 				WHERE variant_id = $1
 					AND speedrun = FALSE
-			) AS num_games,
+					AND games.end_condition = 1
+			) AS num_games_normal,
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE variant_id = $1
+					AND speedrun = FALSE
+					AND games.end_condition != 1
+			) AS num_games_other,
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
@@ -1068,7 +1095,8 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 					AND games.speedrun = TRUE
 			) AS time_played_speedrun
 	`, variantID).Scan(
-		&stats.NumGames,
+		&stats.NumGamesNormal,
+		&stats.NumGamesOther,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
 		&stats.TimePlayedSpeedrun,

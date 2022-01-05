@@ -6,7 +6,7 @@
   </li>
   <li>
     <span class="stat-description">Games played (in non-speedruns):</span>
-    {{.NumGames}}
+    {{.NumGamesTotal}} ({{.NumGamesNormal}} normally terminated)
   </li>
   <li>
     <span class="stat-description">Time spent playing (in non-speedruns):</span>
@@ -26,7 +26,7 @@
   </li>
 </ul>
 
-{{if gt .NumGames 0}}
+{{if gt .NumGamesTotal 0}}
 <!-- Pagination controls -->
 <div class="pager">
   Page: <select class="gotoPage"></select>
