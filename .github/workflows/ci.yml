@@ -136,7 +136,7 @@ jobs:
         uses: actions/setup-go@v2
 
       - name: Lint the Golang code
-      - uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v2
         with:
           version: v1.33
           working-directory: ${{ env.working-directory }}/src
