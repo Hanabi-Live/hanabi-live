@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandTagDelete is sent when a user types the "/tagdelete [tag]" command

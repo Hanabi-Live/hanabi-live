@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandTableUpdate is sent when the user submits

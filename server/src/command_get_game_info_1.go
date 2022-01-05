@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandGetGameInfo1 provides some high-level information about the game

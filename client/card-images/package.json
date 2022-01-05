@@ -4,7 +4,7 @@
   "description": "The card generator for the Hanabi Live JavaScript client",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Zamiell/hanabi-live.git"
+    "url": "https://github.com/Hanabi-Live/hanabi-live.git"
   },
   "license": "GPL-3.0",
   "scripts": {

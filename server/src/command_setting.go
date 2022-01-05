@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandSetting is sent when the user modifies a setting

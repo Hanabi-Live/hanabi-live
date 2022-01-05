@@ -4,7 +4,7 @@ package main // nolint: dupl
 import (
 	"net/http"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 

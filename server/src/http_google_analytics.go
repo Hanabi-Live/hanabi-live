@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 )

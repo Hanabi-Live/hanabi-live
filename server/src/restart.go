@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // We want to record all of the ongoing games to a flat file on the disk

@@ -63,9 +63,9 @@ Building the client code can be memory intensive. Make sure that your system has
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
-    - `git clone git@github.com:Zamiell/hanabi-live.git`
+    - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
-    - `git clone https://github.com/Zamiell/hanabi-live.git`
+    - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
     - `git clone https://github.com/[Your_Username]/hanabi-live.git`
 - Enter the cloned repository:
@@ -128,9 +128,9 @@ Building the client code can be memory intensive. Make sure that your system has
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
-    - `git clone git@github.com:Zamiell/hanabi-live.git`
+    - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
-    - `git clone https://github.com/Zamiell/hanabi-live.git`
+    - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
     - `git clone https://github.com/[Your_Username]/hanabi-live.git`
 - Enter the cloned repository:
@@ -197,9 +197,9 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 - Clone the server:
   - `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
-    - `git clone git@github.com:Zamiell/hanabi-live.git`
+    - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
-    - `git clone https://github.com/Zamiell/hanabi-live.git`
+    - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - `cd hanabi-live`
 - Install the project dependencies:
   - `./install/install_dependencies.sh`

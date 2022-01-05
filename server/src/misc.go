@@ -18,7 +18,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	sentry "github.com/getsentry/sentry-go"
 	"github.com/mozillazg/go-unidecode"
 	"go.uber.org/zap"

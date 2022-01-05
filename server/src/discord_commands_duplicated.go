@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
 )
 

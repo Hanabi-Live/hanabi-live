@@ -10,8 +10,8 @@ If you need general help with the website, then read the [features page](FEATURE
 | ------------------------------------- | -----------
 | `/help`                               | Get the link to this page
 | `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)
-| `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md)
-| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
+| `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/master/docs/FEATURES.md)
+| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
 | `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner)
 | `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://hanabi.github.io/docs/reference)
 | `/levels`                             | Get the link for the [Hyphen-ated group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)

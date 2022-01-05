@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 const (

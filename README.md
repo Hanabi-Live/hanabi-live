@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/Zamiell/hanabi-live/raw/master/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
+  <img src="https://github.com/Hanabi-Live/hanabi-live/raw/master/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
 </p>
 <br />
 
@@ -22,19 +22,19 @@ Find teammates to play games with at [the Discord server](https://discord.gg/FAD
 
 ## List of Variants
 
-Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
+Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Hanabi-Live/hanabi-live/tree/master/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
 
 <br />
 
 ## List of Features
 
-See the [features documentation](https://github.com/Zamiell/hanabi-live/tree/master/docs/FEATURES.md).
+See the [features documentation](https://github.com/Hanabi-Live/hanabi-live/tree/master/docs/FEATURES.md).
 
 <br />
 
 ## Installation
 
-See the [installation documentation](https://github.com/Zamiell/hanabi-live/tree/master/docs/INSTALL.md).
+See the [installation documentation](https://github.com/Hanabi-Live/hanabi-live/tree/master/docs/INSTALL.md).
 
 <br />
 

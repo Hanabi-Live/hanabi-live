@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandReplayCreate is sent when the user clicks on the "Watch Replay", "Share Replay",

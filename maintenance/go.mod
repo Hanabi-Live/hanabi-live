@@ -1,4 +1,4 @@
-module github.com/Zamiell/hanabi-live/maintenance
+module github.com/Hanabi-Live/hanabi-live/maintenance
 
 go 1.13
 

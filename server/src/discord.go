@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
 	"github.com/tevino/abool"
 )

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/tevino/abool"
 )
 

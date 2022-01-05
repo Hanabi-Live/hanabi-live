@@ -12,7 +12,7 @@ The site is owned by me (Zamiel), an enthusiast from America. It is paid for out
 
 ### Code
 
-The site is [open-source](https://en.wikipedia.org/wiki/Open_source), meaning that [all of the code](https://github.com/Zamiell/hanabi-live) is publicly available to review on [GitHub](https://github.com/). Note that open-source software is [not necessarily more secure](https://rubygarage.org/blog/open-source-software-security) than closed-source software.
+The site is [open-source](https://en.wikipedia.org/wiki/Open_source), meaning that [all of the code](https://github.com/Hanabi-Live/hanabi-live) is publicly available to review on [GitHub](https://github.com/). Note that open-source software is [not necessarily more secure](https://rubygarage.org/blog/open-source-software-security) than closed-source software.
 
 <br />
 
@@ -38,7 +38,7 @@ On the server, passwords are salted and hashed using the [Argon2 algorithm](http
 
 ### Data
 
-The database stores usernames, salted password hashes, the last IP that you logged on with, chat messages, and game history. The full schema for the database can be found [here](https://github.com/Zamiell/hanabi-live/blob/master/install/database_schema.sql). Furthermore, similar to other web servers on the internet, the web logs contain the IP address of every connection.
+The database stores usernames, salted password hashes, the last IP that you logged on with, chat messages, and game history. The full schema for the database can be found [here](https://github.com/Hanabi-Live/hanabi-live/blob/master/install/database_schema.sql). Furthermore, similar to other web servers on the internet, the web logs contain the IP address of every connection.
 
 Notably, there is no [personally identifiable information](https://en.wikipedia.org/wiki/Personal_data) in the database (e.g. email addresses), which makes the website a pretty low-priority target for an attacker looking to harvest all of the data.
 

@@ -7,4 +7,4 @@
 
 ## List of Characters
 
-- See the [characters.json file](https://github.com/Zamiell/hanabi-live/blob/master/data/characters.json).
+- See the [characters.json file](https://github.com/Hanabi-Live/hanabi-live/blob/master/data/characters.json).

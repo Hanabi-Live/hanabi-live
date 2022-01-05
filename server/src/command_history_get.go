@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/Zamiell/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandHistoryGet is sent when the user clicks the "Show More History" button
