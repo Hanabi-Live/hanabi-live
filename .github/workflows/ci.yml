@@ -147,17 +147,30 @@ jobs:
     env:
       working-directory: ./spell_check
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-      - uses: actions/cache@v2
-        id: cache
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          # The default version is 14
+          # The ESLint config requires Node 16 to work properly
+          node-version: '16'
+
+      - name: Retrieve the cached "node_modules" directory (if present)
+        uses: actions/cache@v2
+        id: spell-check-cache
         with:
           path: ${{ env.working-directory }}/node_modules
           key: spell-check-node-modules-${{ hashFiles('spell_check/package-lock.json') }}
-      - if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install
+
+      - name: Install dependencies (if the cached directory was not found)
+        if: steps.spell-check-cache.outputs.cache-hit != 'true'
+        run: npm ci
         working-directory: ${{ env.working-directory }}
-      - run: ./spell_check.sh
+
+      - name: Spell check both client and server code
+        run: ./spell_check.sh
         working-directory: ${{ env.working-directory }}
 
   discord:
