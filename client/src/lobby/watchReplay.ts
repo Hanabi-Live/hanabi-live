@@ -22,14 +22,14 @@ export function init(): void {
 }
 
 function replaySourceChange() {
-  if ($("#replay-source-id").prop("checked")) {
+  if ($("#replay-source-id").prop("checked") === true) {
     $("#replay-json-row").hide();
     $("#replay-id-row").show();
     setTimeout(() => {
       $("#replay-id").select(); // Automatically highlight the ID field
       // (this has to be in a timeout in order to work properly)
     }, 0);
-  } else if ($("#replay-source-json").prop("checked")) {
+  } else if ($("#replay-source-json").prop("checked") === true) {
     $("#replay-id-row").hide();
     $("#replay-json-row").show();
     setTimeout(() => {

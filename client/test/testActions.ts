@@ -120,6 +120,7 @@ export const strike = (
   turn,
 });
 
+// ts-prune-ignore-next
 export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   type: "turn",
   num,
@@ -145,6 +146,7 @@ export const init = (): ActionInit => ({
   pausePlayerIndex: 0,
 });
 
+// ts-prune-ignore-next
 export const endReplay = (): ActionReplayExit => ({
   type: "replayExit",
 });

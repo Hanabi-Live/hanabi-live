@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import ActionType from "../../../types/ActionType";
 import ClientAction from "../../../types/ClientAction";
 import State from "../../../types/State";

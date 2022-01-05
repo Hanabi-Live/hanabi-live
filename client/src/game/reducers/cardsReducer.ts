@@ -40,7 +40,7 @@ export default function cardsReducer(
         ),
       };
       newDeck[order] = card;
-      if (characterRules.shouldSeeSlot2CardIdentity(metadata) === false) {
+      if (!characterRules.shouldSeeSlot2CardIdentity(metadata)) {
         break;
       }
 
@@ -187,7 +187,6 @@ export default function cardsReducer(
           `The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn.turnNum}`,
         );
         console.warn(
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           `Client = ${game.turn.currentPlayerIndex}, Server = ${action.playerIndex}`,
         );
       }

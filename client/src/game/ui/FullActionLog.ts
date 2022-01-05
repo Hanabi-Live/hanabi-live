@@ -96,7 +96,7 @@ export default class FullActionLog extends Konva.Group {
     this.needsRefresh = true;
 
     // If the log is already open, apply the change immediately
-    if (this.isVisible()) {
+    if (this.isVisible() === true) {
       this.refreshText();
     }
   }

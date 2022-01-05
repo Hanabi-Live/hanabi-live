@@ -266,14 +266,14 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
 
 export function getVariantFromArgs(args: string[]): string {
   const patterns = {
-    doubleSpaces: new RegExp(/ {2,}/, "g"),
-    openingParenthesis: new RegExp(/ *\( */, "g"),
-    closingParenthesis: new RegExp(/ *\) */, "g"),
-    hyphen: new RegExp(/ *- */, "g"),
-    ampersand: new RegExp(/ *& */, "g"),
+    doubleSpaces: / {2,}/g,
+    openingParenthesis: / *\( */g,
+    closingParenthesis: / *\) */g,
+    hyphen: / *- */g,
+    ampersand: / *& */g,
   };
   const capitalize = (input: string) => {
-    const pattern = new RegExp(/(^|[()&\- ])(\w)/, "g");
+    const pattern = /(^|[()&\- ])(\w)/g;
     return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
   };
 

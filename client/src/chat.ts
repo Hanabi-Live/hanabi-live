@@ -239,7 +239,7 @@ function send(room: string, element: JQuery<HTMLElement>) {
   sendText(room, msg);
 }
 
-export function sendText(room: string, msgRaw: string): void {
+function sendText(room: string, msgRaw: string) {
   // Validate that they did not send an empty message
   if (msgRaw === "") {
     return;
@@ -576,10 +576,7 @@ export function add(data: ChatMessage, fast: boolean): void {
       line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
     }
   }
-  if (
-    data.server === true ||
-    (data.recipient !== undefined && data.recipient !== "")
-  ) {
+  if (data.server || (data.recipient !== undefined && data.recipient !== "")) {
     line += data.msg;
   } else if (data.who !== "") {
     line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
@@ -587,7 +584,7 @@ export function add(data: ChatMessage, fast: boolean): void {
   } else {
     line += data.msg;
   }
-  if (data.server === true && line.includes("[Server Notice]")) {
+  if (data.server && line.includes("[Server Notice]")) {
     line = line.replace(
       "[Server Notice]",
       '<span class="red">[Server Notice]</span>',
@@ -682,6 +679,7 @@ export function addSelf(msg: string, room: string): void {
 // <:PogChamp:254683883033853954>
 function fillDiscordEmotes(message: string) {
   let filledMessed = message;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const match = /&lt;:(.+?):(\d+?)&gt;/.exec(filledMessed);
     if (match === null) {
@@ -730,7 +728,7 @@ function fillTwitchEmotes(message: string) {
     // The Twitch heart emote
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
-    const re = new RegExp("&lt;3", "g"); // "\b" won't work with a semicolon
+    const re = /&lt;3/g; // "\b" won't work with a semicolon
     filledMessage = filledMessage.replace(re, emoteTag);
   }
   if (filledMessage.indexOf("D:") !== -1) {
@@ -738,7 +736,7 @@ function fillTwitchEmotes(message: string) {
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
-    const re = new RegExp(/(^|\s)D:(\s|$)/, "g"); // "\b" won't work with a colon
+    const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
     filledMessage = filledMessage.replace(re, ` ${emoteTag} `); // We have to re-add the spaces
   }
 

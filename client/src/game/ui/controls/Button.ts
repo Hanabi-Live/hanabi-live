@@ -23,7 +23,7 @@ export default class Button extends Konva.Group {
     const w = this.width();
     const h = this.height();
     const textSize = (config.fontSize as number) ?? 0.5 * h;
-    if (config.fontSize) {
+    if (config.fontSize !== undefined) {
       this.assignedTextSize = true;
     }
 
@@ -41,7 +41,7 @@ export default class Button extends Konva.Group {
 
     this.textElement = null;
     this.imageElement = null;
-    if (config.text) {
+    if (config.text !== undefined) {
       this.textElement = new FitText({
         x: 0,
         y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered

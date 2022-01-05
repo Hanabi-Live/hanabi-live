@@ -61,21 +61,21 @@ export default function websocketInit(): void {
 // We specify a callback for each command/message that we expect to receive from the server
 function initCommands(conn: Connection) {
   // Activate the command handlers for commands relating to both the lobby and the game
-  for (const [commandName, commandFunction] of commands) {
+  for (const [commandName, commandFunction] of commands.entries()) {
     conn.on(commandName, (data: unknown) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for lobby-related commands
-  for (const [commandName, commandFunction] of lobbyCommands) {
+  for (const [commandName, commandFunction] of lobbyCommands.entries()) {
     conn.on(commandName, (data: unknown) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for game-related commands
-  for (const [commandName, commandFunction] of gameCommands) {
+  for (const [commandName, commandFunction] of gameCommands.entries()) {
     conn.on(commandName, (data: unknown) => {
       // As a safety precaution, ignore any game-related commands if we are not inside of a game
       if (globals.currentScreen !== Screen.Game || globals.ui === null) {

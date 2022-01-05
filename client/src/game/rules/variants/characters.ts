@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
 import GameMetadata from "../../types/GameMetadata";
 

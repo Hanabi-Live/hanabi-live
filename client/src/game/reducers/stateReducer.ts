@@ -170,6 +170,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.UI = UIReducer(state.UI, action);
       break;
     }
+
     case "dragReset": {
       state.UI = UIReducer(state.UI, action);
       break;

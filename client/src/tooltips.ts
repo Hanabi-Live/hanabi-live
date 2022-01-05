@@ -140,17 +140,6 @@ export function setPosition(selector: string, x: number, y: number): void {
   tooltip.css("left", x).css("top", y);
 }
 
-export function setOption(
-  selector: string,
-  option: string,
-  value: unknown,
-): void {
-  const tooltip = getElementFromSelector(selector);
-  if (isTooltipster(tooltip)) {
-    tooltip.tooltipster("option", option, value);
-  }
-}
-
 export function setInstanceOption(
   selector: string,
   option: string,
@@ -178,29 +167,11 @@ export function getStatus(selector: string): JQueryTooltipster.ITooltipStatus {
   };
 }
 
-export function getInstance(
-  selector: string,
-): JQueryTooltipster.ITooltipsterInstance | null {
-  const tooltip = getElementFromSelector(selector);
-  if (isTooltipster(tooltip)) {
-    return tooltip.tooltipster("instance");
-  }
-  return null;
-}
-
 export function reposition(selector: string): void {
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {
     tooltip.tooltipster("reposition");
   }
-}
-
-export function isOpen(selector: string): boolean {
-  const tooltip = getElementFromSelector(selector);
-  if (isTooltipster(tooltip)) {
-    return tooltip.tooltipster("status").open;
-  }
-  return false;
 }
 
 function getOptionsFromType(
@@ -216,13 +187,13 @@ function getOptionsFromType(
   }
 }
 
-function appendDiv(selector: string, id: string): void {
+function appendDiv(selector: string, id: string) {
   const element = document.createElement("div");
   element.setAttribute("id", id);
   document.querySelector(selector)?.appendChild(element);
 }
 
-function createGameTooltips(): void {
+function createGameTooltips() {
   // Initialize some basic tooltips
   const tooltips = [
     "chat",
@@ -255,7 +226,7 @@ function createGameTooltips(): void {
   setInstanceOption("#tooltip-time-taken", "theme", TOOLTIP_THEME_CENTERED);
 }
 
-function createPlayerTooltips(): void {
+function createPlayerTooltips() {
   // Dynamically create the player tooltips
   for (let i = 0; i < MAX_PLAYERS; i++) {
     let id = `tooltip-player-${i}`;
@@ -270,7 +241,7 @@ function createPlayerTooltips(): void {
   }
 }
 
-function createCardTooltips(): void {
+function createCardTooltips() {
   // Dynamically create the card note tooltips
   for (let i = 0; i < MAX_CARDS_IN_A_DECK + 6; i++) {
     // The number in the id matches the order of the card in the deck

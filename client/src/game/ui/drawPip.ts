@@ -3405,8 +3405,9 @@ export default function drawPip(
     const konvaCanvas = ctx as unknown as KonvaCanvas;
 
     const canvasFillRule = "evenodd";
-    if (konvaCanvas._context !== undefined) {
-      konvaCanvas._context.fill(canvasFillRule);
+    const context = konvaCanvas._context;
+    if (context !== undefined) {
+      context.fill(canvasFillRule);
     } else {
       ctx.fill(canvasFillRule);
     }

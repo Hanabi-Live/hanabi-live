@@ -1,12 +1,5 @@
 {
-    "version": "0.1",
-    "language": "en",
-    "dictionaries": [
-        "en_US",
-        "companies",
-        "softwareTerms",
-        "html"
-    ],
+    "version": "0.2",
     "words": [
         "abacusspiele",
         "abool",
@@ -136,6 +129,7 @@
         "interactjs",
         "iptables",
         "iraci's",
+        "isaacscript",
         "isalpha",
         "istyping",
         "jackc",
@@ -288,6 +282,7 @@
         "tccm",
         "technote",
         "tevino",
+        "textbox",
         "thead",
         "timeleft",
         "timestamptz",

@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { ensureAllCases } from "../../../../misc";
 import { clueTokensRules, variantRules } from "../../../rules";
 import ClueType from "../../../types/ClueType";

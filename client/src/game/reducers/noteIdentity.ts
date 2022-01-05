@@ -111,7 +111,8 @@ function identityMapToArray(cardMap: number[][]) {
   const possibilities: Array<[number, number]> = [];
   for (let rank = 1; rank <= cardMap.length; rank++) {
     for (let suitIndex = 0; suitIndex < cardMap[0].length; suitIndex++) {
-      if (cardMap[rank - 1][suitIndex]) { // eslint-disable-line
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (cardMap[rank - 1][suitIndex]) {
         possibilities.push([suitIndex, rank]);
       }
     }
@@ -147,10 +148,11 @@ function getPossibilitiesFromKeyword(
     }
   }
   // Start with all 1's if no positive info, else all 0's
-  const identityMap = [];
+  const identityMap: number[][] = [];
   const positiveRanks = new Set(positiveIdent.length > 0 ? [] : variant.ranks);
   for (let rank = 1; rank <= MAX_RANK; rank++) {
     identityMap.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
     );
   }

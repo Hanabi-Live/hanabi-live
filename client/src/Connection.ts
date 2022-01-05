@@ -41,7 +41,7 @@ export default class Connection {
   }
 
   onMessage(evt: MessageEvent): void {
-    const data = unpack(evt.data);
+    const data = unpack(evt.data as string);
     const command = data[0];
     if (this.callbacks[command] !== undefined) {
       const obj = unmarshal(data[1]);
@@ -76,7 +76,7 @@ export default class Connection {
     }
     console.log(`%cSent ${command}:`, "color: green;");
     console.log(data);
-    this.ws.send(marshalAndPack(command, data || {}));
+    this.ws.send(marshalAndPack(command, data ?? {}));
   }
 
   close(): void {

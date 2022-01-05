@@ -313,13 +313,13 @@ export default function drawReplayArea(winW: number, winH: number): void {
   // This button will be moved to the left during in-game replay, centered during private replay,
   // and right during shared replay
 
-  function enterHypoSetLeft(this: EnterHypoButton): void {
+  function enterHypoSetLeft(this: EnterHypoButton) {
     this.x(bottomLeftReplayButtonX * winW);
   }
-  function enterHypoSetCenter(this: EnterHypoButton): void {
+  function enterHypoSetCenter(this: EnterHypoButton) {
     this.x(bottomCenterReplayButtonX * winW);
   }
-  function enterHypoSetRight(this: EnterHypoButton): void {
+  function enterHypoSetRight(this: EnterHypoButton) {
     this.x(bottomRightReplayButtonX * winW);
   }
 

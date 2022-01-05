@@ -54,7 +54,7 @@ export function init(): void {
 
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked
   $("#createTableTimed").on("change", () => {
-    if ($("#createTableTimed").prop("checked")) {
+    if ($("#createTableTimed").prop("checked") === true) {
       $("#create-game-timed-option-1").show();
       $("#create-game-timed-option-2").show();
       $("#create-game-timed-option-3").show();
@@ -71,7 +71,7 @@ export function init(): void {
   });
 
   $("#createTableSpeedrun").on("change", () => {
-    if ($("#createTableSpeedrun").prop("checked")) {
+    if ($("#createTableSpeedrun").prop("checked") === true) {
       $("#create-game-timed-row").hide();
       $("#create-game-timed-row-spacing").hide();
     } else {
@@ -166,9 +166,9 @@ export function init(): void {
   // Add delegate handler for new options buttons
   $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
-    const reg = new RegExp("'", "g");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const options: Options = JSON.parse(data.replace(reg, '"'));
+    const regExp = /'/g;
+    const textWithDoubleQuotes = data.replace(regExp, '"');
+    const options = JSON.parse(textWithDoubleQuotes) as Options;
     acceptOptionsFromGuest(options);
     $(e.target).text("sent").prop("disabled", true);
   });
@@ -575,14 +575,14 @@ export function ready(): void {
     if (key === "createTableVariant") {
       // Setting the variant dropdown is a special case;
       // it is more complicated than simply filling in the value with what we used last time
-      readyVariant(value);
+      readyVariant(value as string);
     } else if (typeof value === "boolean") {
       // Checkboxes
       element.prop("checked", value);
       element.change();
     } else {
       // Input fields and text fields
-      element.val(value);
+      element.val(value as string);
     }
   }
 

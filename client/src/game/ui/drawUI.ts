@@ -2147,7 +2147,6 @@ function drawHypotheticalArea() {
 
   // The "Back 1 Turn" button (to the right of the give clue button)
   const hypoBackButtonValues = {
-    // eslint-disable-next-line prettier/prettier
     x:
       clueAreaValues.x +
       lowerClueAreaValues.x +

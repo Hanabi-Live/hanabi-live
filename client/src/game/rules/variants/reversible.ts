@@ -76,7 +76,7 @@ function isDead(
   const { isAllDiscarded } = discardedHelpers(variant, deck);
 
   // Make a map that shows if all of some particular rank in this suit has been discarded
-  const allDiscarded = new Map();
+  const allDiscarded = new Map<number, boolean>();
   for (const variantRank of variant.ranks.slice()) {
     allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
   }
@@ -85,7 +85,7 @@ function isDead(
   if (playStackDirections[suitIndex] === StackDirection.Up) {
     let nextRank = variantRules.isUpOrDown(variant) ? 2 : 1;
     for (nextRank; nextRank < rank; nextRank++) {
-      if (allDiscarded.get(nextRank)) {
+      if (allDiscarded.get(nextRank) === true) {
         return true;
       }
     }
@@ -94,7 +94,7 @@ function isDead(
   if (playStackDirections[suitIndex] === StackDirection.Down) {
     let nextRank = variantRules.isUpOrDown(variant) ? 4 : 5;
     for (nextRank; nextRank > rank; nextRank--) {
-      if (allDiscarded.get(nextRank)) {
+      if (allDiscarded.get(nextRank) === true) {
         return true;
       }
     }
@@ -112,9 +112,9 @@ function isDead(
   // Check to see if the entire suit is dead in the case where
   // all 3 of the start cards are discarded
   if (
-    allDiscarded.get(1) &&
-    allDiscarded.get(5) &&
-    allDiscarded.get(START_CARD_RANK)
+    allDiscarded.get(1) === true &&
+    allDiscarded.get(5) === true &&
+    allDiscarded.get(START_CARD_RANK) === true
   ) {
     return true;
   }
@@ -125,7 +125,7 @@ function isDead(
   const playStack = playStacks[suitIndex];
   const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
   if (lastPlayedRank === START_CARD_RANK || rank === 3) {
-    if (allDiscarded.get(2) && allDiscarded.get(4)) {
+    if (allDiscarded.get(2) === true && allDiscarded.get(4) === true) {
       return true;
     }
   }

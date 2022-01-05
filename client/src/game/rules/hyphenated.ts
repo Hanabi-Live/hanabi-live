@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { variantRules } from "../rules";
 import Variant from "../types/Variant";
 

@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import * as tooltips from "../../../../tooltips";
 import Spectator from "../../../types/Spectator";
 import globals from "../../globals";

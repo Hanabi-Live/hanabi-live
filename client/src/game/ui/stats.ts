@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import Konva from "konva";
 import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";

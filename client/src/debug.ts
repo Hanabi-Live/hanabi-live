@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 export const amTestUser = (username: string): boolean =>
   username === "test" ||
   username === "test1" ||

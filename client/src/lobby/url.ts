@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
 import globals from "../globals";
 import { parseIntSafe, setBrowserAddressBarPath } from "../misc";

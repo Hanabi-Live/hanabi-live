@@ -60,7 +60,7 @@ const morphInGameCancelButton = () => {
 };
 
 // Initialize various element behavior within the modals
-export function init(): boolean {
+function init() {
   if (initialized) {
     return true;
   }
@@ -295,6 +295,8 @@ export function setModal(
   const button = getElement(buttonSelector);
 
   button.onclick = () => {
+    // TODO fix this
+    // eslint-disable-next-line
     if (!(test?.call(null) ?? true)) {
       return;
     }
@@ -322,6 +324,8 @@ export function showPrompt(
     return;
   }
 
+  // TODO fix this
+  // eslint-disable-next-line
   if (!(test?.call(null) ?? true)) {
     return;
   }
@@ -402,7 +406,7 @@ function showModal(
   selector: string,
   param2?: (() => unknown) | boolean | null,
   param3?: (() => unknown) | boolean | null,
-): void {
+) {
   const element = getElement(selector);
 
   closeModals(true);
@@ -422,6 +426,8 @@ function showModal(
 
   if (typeof param2 === "function") {
     const result = param2?.call(null);
+    // TODO fix this
+    // eslint-disable-next-line
     if (result ?? false) {
       return;
     }
@@ -453,7 +459,7 @@ function fillModalWithRadios(
   groupName: string,
   firstSuit?: string,
   ranks?: number[],
-): void {
+) {
   const placeHolder = getElement(element)!;
   placeHolder.innerHTML = "";
 

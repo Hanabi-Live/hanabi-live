@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import PauseState from "../../../types/PauseState";
 import globals from "../../globals";
 import isOurTurn from "../../isOurTurn";

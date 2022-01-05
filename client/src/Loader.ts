@@ -54,7 +54,7 @@ export default class Loader {
   }
 
   start(): void {
-    for (const [fileID, filePath] of this.filePathMap) {
+    for (const [fileID, filePath] of this.filePathMap.entries()) {
       const img = new Image();
       img.onload = () => {
         this.numLoaded += 1;

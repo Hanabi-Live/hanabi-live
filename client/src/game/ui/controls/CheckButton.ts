@@ -89,7 +89,7 @@ export default class CheckButton extends Konva.Group {
     this.updateImageVisibility();
 
     this.textElement = null;
-    if (config.text) {
+    if (config.text !== undefined) {
       this.textElement = new Konva.Text({
         x: checkW + checkX * 1.5,
         y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered

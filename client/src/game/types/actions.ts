@@ -49,7 +49,7 @@ export type ReplayAction =
   | ActionReplayLeader
   | HypotheticalAction;
 
-export type HypotheticalAction =
+type HypotheticalAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
   | ActionHypotheticalAction
@@ -74,7 +74,7 @@ export interface ActionInit {
   pausePlayerIndex: number;
 }
 
-export interface ActionListReceived {
+interface ActionListReceived {
   type: "gameActionList";
   readonly actions: GameAction[];
 }
@@ -83,33 +83,33 @@ export interface ActionListReceived {
 // Miscellaneous actions
 // ---------------------
 
-export interface ActionCardIdentities {
+interface ActionCardIdentities {
   type: "cardIdentities";
   readonly cardIdentities: CardIdentity[];
 }
 
-export interface ActionPremove {
+interface ActionPremove {
   type: "premove";
   readonly premove: ClientAction | null;
 }
 
-export interface ActionPause {
+interface ActionPause {
   type: "pause";
   active: boolean;
   playerIndex: number;
 }
 
-export interface ActionPauseQueue {
+interface ActionPauseQueue {
   type: "pauseQueue";
   queued: boolean;
 }
 
-export interface ActionSpectators {
+interface ActionSpectators {
   type: "spectators";
   spectators: Spectator[];
 }
 
-export interface ActionFinishOngoingGame {
+interface ActionFinishOngoingGame {
   type: "finishOngoingGame";
   databaseID: number;
   sharedReplayLeader: string;
@@ -155,7 +155,7 @@ export interface ActionDraw {
   readonly rank: number;
 }
 
-export interface ActionGameOver {
+interface ActionGameOver {
   type: "gameOver";
   readonly endCondition: EndCondition;
   readonly playerIndex: number;
@@ -170,18 +170,10 @@ export interface ActionPlay {
   readonly rank: number;
 }
 
-export interface ActionPlayerTimes {
+interface ActionPlayerTimes {
   type: "playerTimes";
   readonly playerTimes: number[];
   readonly duration: number;
-}
-
-export interface ActionStatus {
-  type: "status";
-  readonly clues: number;
-  readonly score: number;
-  readonly maxScore: number;
-  readonly doubleDiscard: number | null;
 }
 
 export interface ActionStrike {
@@ -201,30 +193,30 @@ export interface ActionTurn {
 // Note actions
 // ------------
 
-export interface ActionEditNote {
+interface ActionEditNote {
   type: "editNote";
   readonly order: number;
   readonly text: string;
 }
 
-export interface ActionReceiveNote {
+interface ActionReceiveNote {
   type: "receiveNote";
   readonly order: number;
   readonly notes: SpectatorNote[];
 }
 
-export interface ActionNoteListPlayer {
+interface ActionNoteListPlayer {
   type: "noteListPlayer";
   readonly texts: string[];
 }
 
-export interface ActionNoteList {
+interface ActionNoteList {
   type: "noteList";
   readonly names: string[];
   readonly noteTextLists: string[][];
 }
 
-export interface ActionSetEffMod {
+interface ActionSetEffMod {
   type: "setEffMod";
   readonly mod: number;
 }
@@ -242,22 +234,22 @@ export interface ActionReplayExit {
   type: "replayExit";
 }
 
-export interface ActionReplaySegment {
+interface ActionReplaySegment {
   type: "replaySegment";
   readonly segment: number;
 }
 
-export interface ActionReplaySharedSegment {
+interface ActionReplaySharedSegment {
   type: "replaySharedSegment";
   readonly segment: number;
 }
 
-export interface ActionReplayUseSharedSegments {
+interface ActionReplayUseSharedSegments {
   type: "replayUseSharedSegments";
   readonly useSharedSegments: boolean;
 }
 
-export interface ActionReplayLeader {
+interface ActionReplayLeader {
   type: "replayLeader";
   readonly name: string;
 }
@@ -285,14 +277,14 @@ export interface ActionHypotheticalBack {
   type: "hypoBack";
 }
 
-export interface ActionHypotheticalMorph {
+interface ActionHypotheticalMorph {
   type: "morph"; // This is not "hypoMorph" because it is a game action
   readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
 }
 
-export interface ActionHypotheticalShowDrawnCards {
+interface ActionHypotheticalShowDrawnCards {
   type: "hypoShowDrawnCards";
   readonly showDrawnCards: boolean;
 }

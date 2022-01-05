@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import globals from "../../globals";
 
 export function onInitializationChanged(initialized: boolean): void {

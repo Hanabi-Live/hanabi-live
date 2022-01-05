@@ -105,7 +105,7 @@ export default class Deck extends Konva.Group {
     // "mouseover" event)
     this.on("mouseover touchstart", function mouseOver(this: Deck) {
       // Don't do anything if we might be dragging the deck
-      if (globals.elements.deckPlayAvailableLabel!.isVisible()) {
+      if (globals.elements.deckPlayAvailableLabel!.isVisible() === true) {
         return;
       }
 
@@ -178,7 +178,7 @@ export default class Deck extends Konva.Group {
 
     // If the game ID is showing,
     // we want to center the deck count between it and the other labels
-    if (count === 0 && globals.elements.gameIDLabel!.isVisible()) {
+    if (count === 0 && globals.elements.gameIDLabel!.isVisible() === true) {
       this.nudgeCountDownwards();
     }
   }

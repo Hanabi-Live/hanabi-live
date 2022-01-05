@@ -235,7 +235,7 @@ export default class HanabiCard
   startedTweening(): void {
     this._tweening = true;
 
-    if (!this.isListening()) {
+    if (this.isListening() === false) {
       // HACK: since Konva doesn't propagate listening hierarchically until v7,
       // stop the image from listening
       this.bare.listening(false);
@@ -245,7 +245,7 @@ export default class HanabiCard
   finishedTweening(): void {
     this._tweening = false;
 
-    if (this.isListening()) {
+    if (this.isListening() === true) {
       // HACK: since Konva doesn't propagate listening hierarchically until v7,
       // stop the image from listening
       this.bare.listening(true);
@@ -755,7 +755,7 @@ export default class HanabiCard
       // Instead, just use the the first gradient color
       this.arrowBase!.stroke(suit.fillColors[0]);
     }
-    if (this.rankPips.isVisible()) {
+    if (this.rankPips.isVisible() === true) {
       this.setArrowMiddleRight();
     } else {
       this.setArrowBottomRight();
@@ -808,7 +808,7 @@ export default class HanabiCard
     return (
       dda &&
       !this.shouldShowClueBorder() &&
-      !this.trashcan.isVisible() &&
+      this.trashcan.isVisible() === false &&
       globals.lobby.settings.hyphenatedConventions &&
       !globals.lobby.settings.realLifeMode &&
       !globals.metadata.hardVariant
@@ -822,7 +822,10 @@ export default class HanabiCard
 
   private shouldSetFade(isTrash: boolean) {
     // Override any logic and always fade the card if it is explicitly marked as known trash
-    if (this.trashcan.isVisible() && this.state.numPositiveClues === 0) {
+    if (
+      this.trashcan.isVisible() === true &&
+      this.state.numPositiveClues === 0
+    ) {
       return true;
     }
 
@@ -1097,12 +1100,8 @@ export default class HanabiCard
     // then the discard stacks will not be arranged in the correct order
     // Thus, move all of the discord piles to the top in order so that they will be properly
     // overlapping (the bottom-most stack should have priority over the top)
-    for (const stack of globals.elements.discardStacks) {
-      // Since "discardStacks" is a Map(),
-      // "stack" is an array containing a Suit and CardLayout
-      if (stack[1] !== undefined) {
-        stack[1].moveToTop();
-      }
+    for (const stack of globals.elements.discardStacks.values()) {
+      stack.moveToTop();
     }
 
     // In case listening was disabled, which happens in some variants

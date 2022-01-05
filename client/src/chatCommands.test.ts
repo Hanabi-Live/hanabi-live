@@ -1,17 +1,9 @@
 import { getVariantFromArgs, getVariantFromPartial } from "./chatCommands";
 
-jest.mock("./chat", () => {
-  return {};
-});
-jest.mock("./globals", () => {
-  return {};
-});
-jest.mock("./lobby/createGame", () => {
-  return {};
-});
-jest.mock("./modals", () => {
-  return {};
-});
+jest.mock("./chat", () => ({}));
+jest.mock("./globals", () => ({}));
+jest.mock("./lobby/createGame", () => ({}));
+jest.mock("./modals", () => ({}));
 
 const brownFives = "Brown-Fives (6 Suits)";
 const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";
@@ -38,29 +30,33 @@ describe("functions", () => {
     });
     describe("double spaces", () => {
       test("is valid", () => {
-        // eslint-disable-next-line prettier/prettier
-        const partial = getVariantFromArgs("   Brown-Fives   &  Prism   (6   Suits)    ".split(" "));
+        const partial = getVariantFromArgs(
+          "   Brown-Fives   &  Prism   (6   Suits)    ".split(" "),
+        );
         expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("spaces before or after -, &, (, )", () => {
       test("is valid", () => {
-        // eslint-disable-next-line prettier/prettier
-        const partial = getVariantFromArgs("   Brown -Fives& Prism(  6 Suits   )  ".split(" "));
+        const partial = getVariantFromArgs(
+          "   Brown -Fives& Prism(  6 Suits   )  ".split(" "),
+        );
         expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("capitalize", () => {
       test("is valid", () => {
-        // eslint-disable-next-line prettier/prettier
-        const partial = getVariantFromArgs("bROWN-FivES & prism (6 SUITS)".split(" "));
+        const partial = getVariantFromArgs(
+          "bROWN-FivES & prism (6 SUITS)".split(" "),
+        );
         expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("all possible cases", () => {
       test("is valid", () => {
-        // eslint-disable-next-line prettier/prettier
-        const partial = getVariantFromArgs("  bROWN -FivES   &prism(6 suits )".split(" "));
+        const partial = getVariantFromArgs(
+          "  bROWN -FivES   &prism(6 suits )".split(" "),
+        );
         expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });

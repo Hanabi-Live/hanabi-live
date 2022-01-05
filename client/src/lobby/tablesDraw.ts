@@ -35,7 +35,7 @@ export default function tablesDraw(): void {
   for (const friends of [true, false]) {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
-      for (const [id, table] of globals.tableMap) {
+      for (const [id, table] of globals.tableMap.entries()) {
         //  Tables that we are currently in
         if (friends && i === 1 && table.joined && !table.sharedReplay) {
           tableIDsOfThisType.push(id);

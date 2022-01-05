@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import equal from "fast-deep-equal";
 import Clue, { colorClue, rankClue } from "../../../types/Clue";
 import ClueType from "../../../types/ClueType";

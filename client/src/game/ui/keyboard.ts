@@ -363,7 +363,7 @@ function discard() {
 
 // If playAction is true, it plays a card
 // If playAction is false, it discards a card
-function promptCardOrder(playAction = true): void {
+function promptCardOrder(playAction = true) {
   const playerIndex =
     globals.state.replay.hypothetical === null
       ? globals.metadata.ourPlayerIndex

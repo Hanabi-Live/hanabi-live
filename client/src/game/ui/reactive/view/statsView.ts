@@ -84,7 +84,11 @@ export function onEfficiencyChanged(data: {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
     effLabel.text("-");
   }
-  effLabel.width(effLabel.measureSize(effLabel.text()).width);
+
+  const text = effLabel.text();
+  const size = effLabel.measureSize(text);
+  const width = size.width as number;
+  effLabel.width(width);
 
   // Reposition the two labels to the right of the efficiency label so that they are aligned
   // properly
@@ -186,26 +190,30 @@ export function onPaceOrPaceRiskChanged(data: {
         label.fill("#df1c2d"); // Red
         break;
       }
+
       case "HighRisk": {
         // It would probably be risky to discard
         label.fill("#ef8c1d"); // Orange
         break;
       }
+
       case "MediumRisk": {
         // It might be risky to discard
         label.fill("#efef1d"); // Yellow
         break;
       }
+
       case "LowRisk":
-      default: {
-        // We are not even close to the "End-Game", so give it the default color
-        label.fill(LABEL_COLOR);
-        break;
-      }
       case "Null": {
         console.error(
           `An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`,
         );
+        break;
+      }
+
+      default: {
+        // We are not even close to the "End-Game", so give it the default color
+        label.fill(LABEL_COLOR);
         break;
       }
     }

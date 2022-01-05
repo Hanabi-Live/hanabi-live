@@ -18,7 +18,9 @@ export default class CardLayout extends Konva.Group {
     super(config);
 
     // Class variables
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     this.align = (config.align || "left") as string;
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     this.reverse = (config.reverse || false) as boolean;
     this.origRotation = config.rotation ?? 0;
     this.empathy = false;

@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { GameAction } from "../types/actions";
 import EndCondition from "../types/EndCondition";
 
