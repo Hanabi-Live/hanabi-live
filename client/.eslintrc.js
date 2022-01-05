@@ -3,8 +3,8 @@
 module.exports = {
   extends: [
     // The linter base is the shared IsaacScript config
-    // https://github.com/IsaacScript/eslint-config-isaacscript/blob/main/mod.js
-    "eslint-config-isaacscript/mod",
+    // https://github.com/IsaacScript/eslint-config-isaacscript/blob/main/base.js
+    "eslint-config-isaacscript/base",
   ],
 
   env: {
@@ -48,6 +48,13 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js
     // The client makes use of some tasteful alerts
     "no-alert": ["off"],
+
+    // Documentation:
+    // https://eslint.org/docs/rules/no-param-reassign
+    // Defined at:
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js
+    // We allow reassigning properties of parameters, but not the parameters themselves
+    "no-param-reassign": ["error", { props: false }],
 
     // Documentation:
     // https://eslint.org/docs/rules/no-underscore-dangle
