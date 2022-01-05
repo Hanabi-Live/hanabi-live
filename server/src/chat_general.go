@@ -10,7 +10,7 @@ import (
 
 // /help
 func chatHelp(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "You can see the list of chat commands here: https://github.com/Hanabi-Live/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
+	msg := "You can see the list of chat commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHAT_COMMANDS.md"
 	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
@@ -24,7 +24,7 @@ func chatDiscord(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 // /rules
 func chatRules(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
+	msg := "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md"
 	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
@@ -52,7 +52,7 @@ func chatLevels(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 // /features
 func chatFeatures(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/master/docs/FEATURES.md"
+	msg := "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md"
 	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }

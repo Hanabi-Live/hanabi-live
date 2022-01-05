@@ -1,6 +1,6 @@
 # Variants
 
-[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
 
 <br />
 
