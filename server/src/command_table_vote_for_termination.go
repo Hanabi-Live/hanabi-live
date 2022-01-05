@@ -50,11 +50,18 @@ func voteForTermination(ctx context.Context, s *Session, d *CommandData, t *Tabl
 	// Notify the player about his vote
 	s.NotifyVote(newVote)
 	if t.ShouldTerminateByVotes() {
+		endCondition := EndConditionTerminatedByVote
+		index := -1
+		// In 2p, there's no vote
+		if t.Options.NumPlayers == 2 {
+			endCondition = EndConditionTerminated
+			index = playerIndex
+		}
 		commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID:     t.ID,
 			Type:        ActionTypeEndGameByVote,
-			Target:      -1,
-			Value:       EndConditionTerminatedByVote,
+			Target:      index,
+			Value:       endCondition,
 			NoTableLock: true,
 		})
 	}
