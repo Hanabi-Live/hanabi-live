@@ -44,6 +44,7 @@ type ActionGameOver struct {
 	Type         string `json:"type"`
 	EndCondition int    `json:"endCondition"`
 	PlayerIndex  int    `json:"playerIndex"`
+	Votes        []int  `json:"votes"`
 }
 
 type ActionPlay struct {

@@ -22,3 +22,15 @@ export const getPlayerName = (
   playerIndex: number,
   metadata: GameMetadata,
 ): string => metadata.playerNames[playerIndex] ?? "Hanabi Live";
+
+export const getPlayerNames = (
+  playerIndices: number[],
+  metadata: GameMetadata,
+): string => {
+  const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
+  playerNames.sort();
+  const length = playerNames.length;
+  return `${playerNames
+    .slice(0, length - 1)
+    .join(", ")} and ${playerNames.slice(-1)}`;
+};

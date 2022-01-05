@@ -393,3 +393,13 @@ func (t *Table) ShouldTerminateByVotes() bool {
 	}
 	return count*2 >= len(t.Players)
 }
+
+func (t *Table) GetVotes() []int {
+	votes := make([]int, 0)
+	for i, sp := range t.Players {
+		if sp.VoteToKill {
+			votes = append(votes, i)
+		}
+	}
+	return votes
+}

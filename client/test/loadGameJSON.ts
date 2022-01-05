@@ -55,7 +55,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
   gameJSON.actions.forEach((a) => {
     const action = parseJSONAction(currentPlayerIndex, turn, gameJSON.deck, a);
-    if (action) {
+    if (action !== null) {
       actions.push(action);
       if (
         topOfDeck < gameJSON.deck.length &&
@@ -83,6 +83,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       // a termination, etc.
       endCondition: 1,
       playerIndex: currentPlayerIndex,
+      votes: [],
     });
   }
 
@@ -293,6 +294,7 @@ function parseJSONAction(
         type: "gameOver",
         endCondition: a.value,
         playerIndex: a.target,
+        votes: [],
       };
     }
     default: {
