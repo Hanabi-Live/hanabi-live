@@ -31,6 +31,9 @@ type CommandData struct {
 	Target int `json:"target"`
 	Value  int `json:"value"`
 
+	// votes to kill
+	Votes []int `json:"votes"`
+
 	// note
 	Note  string `json:"note"`
 	Order int    `json:"order"`

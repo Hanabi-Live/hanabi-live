@@ -152,6 +152,7 @@ function gameStateReducerFunction(
         action.playerIndex,
         state.score,
         metadata,
+        action.votes,
       );
       state.log.push({
         turn: state.turn.turnNum + 1,

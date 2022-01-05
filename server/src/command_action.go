@@ -189,6 +189,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 			Type:         "gameOver",
 			EndCondition: g.EndCondition,
 			PlayerIndex:  g.EndPlayer,
+			Votes:        d.Votes,
 		})
 		t.NotifyGameAction()
 	}

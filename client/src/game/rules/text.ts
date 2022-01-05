@@ -5,7 +5,10 @@ import { cardRules, cluesRules, handRules, variantRules } from "../rules";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import ClueType from "../types/ClueType";
 import EndCondition from "../types/EndCondition";
-import GameMetadata, { getPlayerName } from "../types/GameMetadata";
+import GameMetadata, {
+  getPlayerName,
+  getPlayerNames,
+} from "../types/GameMetadata";
 
 export function clue(
   action: ActionClue,
@@ -84,6 +87,7 @@ export function gameOver(
   playerIndex: number,
   score: number,
   metadata: GameMetadata,
+  votes: number[],
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
 
@@ -106,7 +110,8 @@ export function gameOver(
     }
 
     case EndCondition.VotedToKill: {
-      return "The players voted to terminate the game!";
+      const playerNames = getPlayerNames(votes, metadata);
+      return `${playerNames} voted to terminate the game!`;
     }
 
     case EndCondition.SpeedrunFail: {
