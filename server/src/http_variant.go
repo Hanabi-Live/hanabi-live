@@ -133,7 +133,9 @@ func httpVariant(c *gin.Context) {
 		Title: "Variant Stats",
 
 		Name:               variantIDMap[variantID],
-		NumGames:           stats.NumGames,
+		NumGamesTotal:      stats.NumGamesNormal + stats.NumGamesOther,
+		NumGamesNormal:     stats.NumGamesNormal,
+		NumGamesOther:      stats.NumGamesOther,
 		TimePlayed:         timePlayed,
 		NumGamesSpeedrun:   stats.NumGamesSpeedrun,
 		TimePlayedSpeedrun: timePlayedSpeedrun,
