@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	mentionRegExp = regexp.MustCompile(`&lt;@&!*(\d+?)&gt;`)
+	mentionRegExp = regexp.MustCompile(`&lt;@&*!*(\d+?)&gt;`)
 	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
 )
 
@@ -79,9 +79,9 @@ func chatServerSendPM(s *Session, msg string, room string) {
 }
 
 func chatFillMentions(msg string) string {
-	if discord == nil {
-		return msg
-	}
+	// if discord == nil {
+	// 	return msg
+	// }
 
 	// Discord mentions are in the form of "<@12345678901234567>"
 	// By the time the message gets here, it will be sanitized to "&lt;@12345678901234567&gt;"
