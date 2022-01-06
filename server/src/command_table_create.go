@@ -78,7 +78,7 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Handle special game option creation
-	if !hasTableNameValidCommand(s, d, data) {
+	if existsInvalidCommandInTableName(s, d, data) {
 		return
 	}
 

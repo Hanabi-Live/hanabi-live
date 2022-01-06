@@ -424,101 +424,104 @@ func yesNoFromBoolean(option bool) string {
 	return "No"
 }
 
-func hasTableNameValidCommand(s *Session, d *CommandData, data *SpecialGameData) bool {
-	if strings.HasPrefix(d.Name, "!") {
-		if d.GameJSON != nil {
-			s.Warning("You cannot create a table with a special prefix if JSON data is also provided.")
-			return false
-		}
-
-		args := strings.Split(d.Name, " ")
-		command := args[0]
-		args = args[1:] // This will be an empty slice if there is nothing after the command
-		command = strings.TrimPrefix(command, "!")
-		command = strings.ToLower(command) // Commands are case-insensitive
-
-		if command == "seed" {
-			// !seed - Play a specific seed
-			if len(args) != 1 {
-				s.Warning("Games on specific seeds must be created in the form: " +
-					"!seed [seed number]")
-				return false
-			}
-
-			// For normal games, the server creates seed suffixes sequentially from 0, 1, 2,
-			// and so on
-			// However, the seed does not actually have to be a number,
-			// so allow the user to use any arbitrary string as a seed suffix
-			data.SetSeedSuffix = args[0]
-		} else if command == "replay" {
-			// !replay - Replay a specific game up to a specific turn
-			if len(args) != 1 && len(args) != 2 {
-				s.Warning("Replays of specific games must be created in the form: " +
-					"!replay [game ID] [turn number]")
-				return false
-			}
-
-			if v, err := strconv.Atoi(args[0]); err != nil {
-				s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
-				return false
-			} else {
-				data.DatabaseID = v
-			}
-
-			// Check to see if the game ID exists on the server
-			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
-				logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
-					" exists: " + err.Error())
-				s.Error(CreateGameFail)
-				return false
-			} else if !exists {
-				s.Warning("That game ID does not exist in the database.")
-				return false
-			}
-
-			if len(args) == 1 {
-				data.SetReplayTurn = 1
-			} else {
-				if v, err := strconv.Atoi(args[1]); err != nil {
-					s.Warning("The turn of \"" + args[1] + "\" is not a number.")
-					return false
-				} else {
-					data.SetReplayTurn = v
-				}
-
-				if data.SetReplayTurn < 1 {
-					s.Warning("The replay turn must be greater than 0.")
-					return false
-				}
-			}
-
-			// We have to minus the turn by one since turns are stored on the server starting at 0
-			// and turns are shown to the user starting at 1
-			data.SetReplayTurn--
-
-			// Check to see if this turn is valid
-			// (it has to be a turn before the game ends)
-			var numTurns int
-			if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
-				logger.Error("Failed to get the number of turns from the database for game " +
-					strconv.Itoa(data.DatabaseID) + ": " + err.Error())
-				s.Error(InitGameFail)
-				return false
-			} else {
-				numTurns = v
-			}
-			if data.SetReplayTurn >= numTurns {
-				s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
-					strconv.Itoa(numTurns) + " turns.")
-				return false
-			}
-
-			data.SetReplay = true
-		} else {
-			warn := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
-			s.Warning(warn)
-			return false
-		}
+func existsInvalidCommandInTableName(s *Session, d *CommandData, data *SpecialGameData) bool {
+	if !strings.HasPrefix(d.Name, "!") {
+		return false
 	}
-	return true
+
+	if d.GameJSON != nil {
+		s.Warning("You cannot create a table with a special prefix if JSON data is also provided.")
+		return true
+	}
+
+	args := strings.Split(d.Name, " ")
+	command := args[0]
+	args = args[1:] // This will be an empty slice if there is nothing after the command
+	command = strings.TrimPrefix(command, "!")
+	command = strings.ToLower(command) // Commands are case-insensitive
+
+	if command == "seed" {
+		// !seed - Play a specific seed
+		if len(args) != 1 {
+			s.Warning("Games on specific seeds must be created in the form: " +
+				"!seed [seed number]")
+			return true
+		}
+
+		// For normal games, the server creates seed suffixes sequentially from 0, 1, 2,
+		// and so on
+		// However, the seed does not actually have to be a number,
+		// so allow the user to use any arbitrary string as a seed suffix
+		data.SetSeedSuffix = args[0]
+	} else if command == "replay" {
+		// !replay - Replay a specific game up to a specific turn
+		if len(args) != 1 && len(args) != 2 {
+			s.Warning("Replays of specific games must be created in the form: " +
+				"!replay [game ID] [turn number]")
+			return true
+		}
+
+		if v, err := strconv.Atoi(args[0]); err != nil {
+			s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
+			return true
+		} else {
+			data.DatabaseID = v
+		}
+
+		// Check to see if the game ID exists on the server
+		if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
+			logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
+				" exists: " + err.Error())
+			s.Error(CreateGameFail)
+			return true
+		} else if !exists {
+			s.Warning("That game ID does not exist in the database.")
+			return true
+		}
+
+		if len(args) == 1 {
+			data.SetReplayTurn = 1
+		} else {
+			if v, err := strconv.Atoi(args[1]); err != nil {
+				s.Warning("The turn of \"" + args[1] + "\" is not a number.")
+				return true
+			} else {
+				data.SetReplayTurn = v
+			}
+
+			if data.SetReplayTurn < 1 {
+				s.Warning("The replay turn must be greater than 0.")
+				return true
+			}
+		}
+
+		// We have to minus the turn by one since turns are stored on the server starting at 0
+		// and turns are shown to the user starting at 1
+		data.SetReplayTurn--
+
+		// Check to see if this turn is valid
+		// (it has to be a turn before the game ends)
+		var numTurns int
+		if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
+			logger.Error("Failed to get the number of turns from the database for game " +
+				strconv.Itoa(data.DatabaseID) + ": " + err.Error())
+			s.Error(InitGameFail)
+			return true
+		} else {
+			numTurns = v
+		}
+		if data.SetReplayTurn >= numTurns {
+			s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
+				strconv.Itoa(numTurns) + " turns.")
+			return true
+		}
+
+		data.SetReplay = true
+	} else {
+		warn := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
+		s.Warning(warn)
+		return true
+	}
+
+	return false
 }
