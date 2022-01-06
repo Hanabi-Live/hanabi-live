@@ -973,6 +973,9 @@ def main():
             continue
 
         for suit_num in [6, 5, 4, 3]:
+            if suit_num == 3 and suit["oneOfEach"]:
+                continue
+
             variant_name = (
                 "Synesthesia & " + suit_name + " (" + str(suit_num) + " Suits)"
             )
