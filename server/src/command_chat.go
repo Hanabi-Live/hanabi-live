@@ -144,9 +144,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		discordSend(discordChannelSyncWithLobby, d.Username, rawMsg)
 
 		// Some messages are also sent to website-development
-		if sendMessageToWebDevChannel {
+		if strings.Contains(rawMsg, discordServerShutDown) || strings.Contains(rawMsg, discordServerRestart) {
 			discordSend(discordChannelWebsiteDev, d.Username, rawMsg)
-			sendMessageToWebDevChannel = false
 		}
 	}
 

@@ -16,9 +16,10 @@ var (
 	discordGuildID              string
 	discordChannelSyncWithLobby string
 	discordChannelWebsiteDev    string
-	sendMessageToWebDevChannel  bool
 	discordBotID                string
 	discordIsReady              = abool.New()
+	discordServerShutDown       string
+	discordServerRestart        string
 )
 
 /*
@@ -52,8 +53,10 @@ func discordInit() {
 			"aborting Discord initialization.")
 		return
 	}
-	// Messages are only sent to website-development channel when the server restarts
-	sendMessageToWebDevChannel = false
+
+	// Messages to look for when server shuts down or restarts
+	discordServerShutDown = "The server went down for a restart at: "
+	discordServerRestart = "The server has successfully started at: "
 
 	// Initialize the command map
 	discordCommandInit()
@@ -85,10 +88,8 @@ func discordConnect() {
 
 	// Announce that the server has started
 	// (we wait for Discord to connect before displaying this message)
-	msg := "The server has successfully started at: " + getCurrentTimestamp() + " " +
-		"(" + gitCommitOnStart + ")"
+	msg := discordServerRestart + getCurrentTimestamp() + " " + "(" + gitCommitOnStart + ")"
 	// Send once this message to website-development as well
-	sendMessageToWebDevChannel = true
 	chatServerSend(ctx, msg, "lobby", false)
 }
 
