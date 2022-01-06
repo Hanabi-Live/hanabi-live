@@ -156,7 +156,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 	d.Name = fixTableName(d.Name)
 
 	// Check for valid name
-	isValid, msg := isTableNameValid(d.Name, true)
+	isValid, msg := isTableNameValid(d.Name, false)
 	if !isValid {
 		s.Warning(msg)
 		return
@@ -171,6 +171,11 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		SetSeedSuffix: "",
 		SetReplay:     false,
 		SetReplayTurn: 0,
+	}
+
+	// Handle special game option creation
+	if existsInvalidCommandInTableName(s, d, data) {
+		return
 	}
 
 	// Perform options fixes
