@@ -27365,16 +27365,6 @@
     "clueRanks": []
   },
   {
-    "name": "Synesthesia & Black (3 Suits)",
-    "id": 1646,
-    "suits": [
-      "Red",
-      "Blue",
-      "Black"
-    ],
-    "clueRanks": []
-  },
-  {
     "name": "Synesthesia & Rainbow (6 Suits)",
     "id": 1647,
     "suits": [
@@ -27595,16 +27585,6 @@
     "clueRanks": []
   },
   {
-    "name": "Synesthesia & Dark Rainbow (3 Suits)",
-    "id": 1808,
-    "suits": [
-      "Red",
-      "Blue",
-      "Dark Rainbow"
-    ],
-    "clueRanks": []
-  },
-  {
     "name": "Synesthesia & Gray (6 Suits)",
     "id": 1809,
     "suits": [
@@ -27635,16 +27615,6 @@
     "suits": [
       "Red",
       "Green",
-      "Blue",
-      "Gray"
-    ],
-    "clueRanks": []
-  },
-  {
-    "name": "Synesthesia & Gray (3 Suits)",
-    "id": 1812,
-    "suits": [
-      "Red",
       "Blue",
       "Gray"
     ],
@@ -27687,16 +27657,6 @@
     "clueRanks": []
   },
   {
-    "name": "Synesthesia & Dark Brown (3 Suits)",
-    "id": 1816,
-    "suits": [
-      "Red",
-      "Blue",
-      "Dark Brown"
-    ],
-    "clueRanks": []
-  },
-  {
     "name": "Synesthesia & Dark Null (6 Suits)",
     "id": 1817,
     "suits": [
@@ -27727,16 +27687,6 @@
     "suits": [
       "Red",
       "Green",
-      "Blue",
-      "Dark Null"
-    ],
-    "clueRanks": []
-  },
-  {
-    "name": "Synesthesia & Dark Null (3 Suits)",
-    "id": 1820,
-    "suits": [
-      "Red",
       "Blue",
       "Dark Null"
     ],

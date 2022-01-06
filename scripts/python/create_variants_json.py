@@ -1037,7 +1037,7 @@ def main():
         json.dump(variants, new_variants_file, indent=2, separators=(",", ": "))
         new_variants_file.write("\n")
 
-    print('Wrote a new variants.json" file.')
+    print('Wrote a new variants.json file.')
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
     variants_txt_path = os.path.join(data_path, "variants.txt")
