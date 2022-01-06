@@ -370,7 +370,9 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		// Make an exception for variants where rank clues are always allowed
 		(!variant.RankCluesTouchNothing || clue.Type != ClueTypeRank) {
 
-		s.Warning("You cannot give a clue that touches 0 cards in the hand.")
+		if !g.Options.Speedrun {
+			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
+		}
 		g.InvalidActionOccurred = true
 		return false
 	}
