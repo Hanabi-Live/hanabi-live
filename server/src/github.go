@@ -15,7 +15,7 @@ const (
 	// If this is changed, the entry in the ".gitignore" file should also be changed
 	gitHubPrivateKeyFilename = "GitHub_private_key.pem"
 
-	githubRepositoryOwner = "Zamiell"
+	githubRepositoryOwner = "Hanabi-Live"
 	ownerDiscordID        = "Zamiel#8743"
 )
 
