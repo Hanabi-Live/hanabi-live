@@ -973,6 +973,9 @@ def main():
             continue
 
         for suit_num in [6, 5, 4, 3]:
+            if suit_num == 3 and suit["oneOfEach"]:
+                continue
+
             variant_name = (
                 "Synesthesia & " + suit_name + " (" + str(suit_num) + " Suits)"
             )
@@ -1034,7 +1037,7 @@ def main():
         json.dump(variants, new_variants_file, indent=2, separators=(",", ": "))
         new_variants_file.write("\n")
 
-    print('Wrote a new variants.json" file.')
+    print('Wrote a new "variants.json" file.')
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
     variants_txt_path = os.path.join(data_path, "variants.txt")
@@ -1043,6 +1046,8 @@ def main():
         contents += variant["name"] + " (#" + str(variant["id"]) + ")\n"
     with open(variants_txt_path, "w", newline="\n") as variants_txt_file:
         variants_txt_file.write(contents + "\n")
+
+    print('Wrote a new "variants.txt" file.')
 
 
 def get_variant_id(variant_name):
