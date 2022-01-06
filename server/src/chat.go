@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	mentionRegExp = regexp.MustCompile(`&lt;@!*(\d+?)&gt;`)
+	mentionRegExp = regexp.MustCompile(`&lt;@&*!*(\d+?)&gt;`)
 	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
 )
 
