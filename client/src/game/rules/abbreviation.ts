@@ -9,6 +9,8 @@ import Variant from "../types/Variant";
 // there are too many overlapping possibilities)
 export function makeAll(variantName: string, suits: Suit[]): string[] {
   const abbreviations: string[] = [];
+  const skipLetters: string[] = ["d", "a", "r", "k"];
+
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
     if (!abbreviations.includes(suit.abbreviation)) {
@@ -25,7 +27,8 @@ export function makeAll(variantName: string, suits: Suit[]): string[] {
         const suitLetter = suit.displayName[i].toUpperCase();
         if (
           !abbreviations.includes(suitLetter) &&
-          ALL_RESERVED_NOTES.indexOf(suitLetter) === -1
+          ALL_RESERVED_NOTES.indexOf(suitLetter) === -1 &&
+          !skipLetters.includes(suitLetter)
         ) {
           abbreviationToUse = suitLetter;
           break;
