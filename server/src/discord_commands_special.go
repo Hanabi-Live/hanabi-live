@@ -63,7 +63,6 @@ func discordOpenIssue(ctx context.Context, m *discordgo.MessageCreate, title str
 
 	msg := "Successfully created a GitHub issue: `" + title + "`"
 	discordSend(m.ChannelID, "", msg)
-
 }
 
 func discordShowIssue(ctx context.Context, m *discordgo.MessageCreate, title string, discordUsername string) {
