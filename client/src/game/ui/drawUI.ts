@@ -1055,7 +1055,7 @@ function drawScoreArea() {
       // In 2p game, single click instantly terminates the game
       // For users < 1000, only show the warning if this is a 2p game
       // Otherwise the dbl click never fires (prevented by windows.alert of single click)
-      const numPlayers = globals.lobby.game?.players.length
+      const numPlayers = globals.lobby.game?.players.length;
       if (
         globals.options.speedrun ||
         debug.amTestUser(globals.metadata.ourUsername) ||
