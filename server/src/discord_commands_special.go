@@ -28,9 +28,9 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 	issue, found := discordShouldShowIssue(args)
 
 	if found {
-		discordShowIssue(ctx, m, issue, discordUsername)
+		discordShowIssue(ctx, m.ChannelID, issue, discordUsername)
 	} else {
-		discordOpenIssue(ctx, m, issue, discordUsername)
+		discordOpenIssue(ctx, m.ChannelID, issue, discordUsername)
 	}
 }
 
@@ -43,7 +43,7 @@ func discordShouldShowIssue(args []string) (string, bool) {
 	return title, (err == nil)
 }
 
-func discordOpenIssue(ctx context.Context, m *discordgo.MessageCreate, title string, discordUsername string) {
+func discordOpenIssue(ctx context.Context, channelID string, title string, discordUsername string) {
 	body := "Issue opened by Discord user: " + discordUsername
 
 	// Open a new issue on GitHub for this repository
@@ -57,19 +57,19 @@ func discordOpenIssue(ctx context.Context, m *discordgo.MessageCreate, title str
 		},
 	); err != nil {
 		logger.Error("Failed to submit a GitHub issue: " + err.Error())
-		discordSend(m.ChannelID, "", DefaultErrorMsg)
+		discordSend(channelID, "", DefaultErrorMsg)
 		return
 	}
 
 	msg := "Successfully created a GitHub issue: `" + title + "`"
-	discordSend(m.ChannelID, "", msg)
+	discordSend(channelID, "", msg)
 }
 
-func discordShowIssue(ctx context.Context, m *discordgo.MessageCreate, title string, discordUsername string) {
+func discordShowIssue(ctx context.Context, channelID string, title string, discordUsername string) {
 	id, _ := strconv.Atoi(title)
 	var issue *github.Issue
 	if v, _, err := gitHubClient.Issues.Get(ctx, githubRepositoryOwner, projectName, id); err != nil {
-		discordSend(m.ChannelID, "", "Issue `"+strconv.Itoa(id)+"` cannot be found on Github")
+		discordSend(channelID, "", "Issue `"+strconv.Itoa(id)+"` cannot be found on Github")
 		return
 	} else {
 		issue = v
@@ -77,5 +77,5 @@ func discordShowIssue(ctx context.Context, m *discordgo.MessageCreate, title str
 	msg := "Issue `" + strconv.Itoa(id) + "`: " +
 		"[" + *issue.Title + "](" + *issue.URL + ")" +
 		" (by " + *issue.User.Name + ")"
-	discordSend(m.ChannelID, "", msg)
+	discordSend(channelID, "", msg)
 }
