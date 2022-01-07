@@ -22,15 +22,13 @@ jobs:
 
           echo "========== check paths of changed files =========="
           git diff --name-only HEAD^ HEAD > files.txt
+          echo "::set-output name=client_files::false"
           while IFS= read -r file
           do
             echo $file
-            if [[ $file != "client/"* ]]; then
-              echo "This file is not under the directory 'client'."
-              echo "::set-output name=client_files::false"
-              break
-            else
+            if [[ $file == "client/"* ]]; then
               echo "::set-output name=client_files::true"
+              break
             fi
           done < files.txt
 
@@ -53,14 +51,11 @@ jobs:
 
           echo "========== check paths of changed files =========="
           git diff --name-only HEAD^ HEAD > files.txt
+          echo "::set-output name=server_files::false"
           while IFS= read -r file
           do
             echo $file
-            if [[ $file != "server/"* ]]; then
-              echo "This file is not under the directory 'server'."
-              echo "::set-output name=server_files::false"
-              break
-            else
+            if [[ $file == "server/"* ]]; then
               echo "::set-output name=server_files::true"
             fi
           done < files.txt
@@ -81,7 +76,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -115,7 +110,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -153,7 +148,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -227,7 +222,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -247,7 +242,15 @@ jobs:
 
   discord:
     name: Discord Failure Notification
-    needs: [client_build, client_lint, client_test, server_build, server_lint, spell_check]
+    needs:
+      [
+        client_build,
+        client_lint,
+        client_test,
+        server_build,
+        server_lint,
+        spell_check,
+      ]
     if: always() # This is needed to always run this job, even if the other jobs fail
     runs-on: ubuntu-latest
     steps:
