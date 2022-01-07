@@ -19,13 +19,13 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 	}
 
 	discordUsername := discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator
-	if discordUsername != ownerDiscordID {
+	issue, found := discordShouldShowIssue(args)
+
+	if discordUsername != ownerDiscordID && !found {
 		msg := "Only the owner of the website can use the /issue command."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
-
-	issue, found := discordShouldShowIssue(args)
 
 	if found {
 		discordShowIssue(ctx, m.ChannelID, issue, discordUsername)
