@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  check:
+  check_client:
     name: Check changed Client files
     outputs:
       client_files: ${{ steps.check_files.outputs.client_files }}
@@ -34,7 +34,7 @@ jobs:
             fi
           done < files.txt
 
-  check:
+  check_server:
     name: Check changed Server files
     outputs:
       server_files: ${{ steps.check_files.outputs.server_files }}
@@ -67,7 +67,7 @@ jobs:
 
   client_build:
     name: Client / Build (Compile TypeScript)
-    needs: check
+    needs: check_client
     if: needs.check.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
@@ -81,7 +81,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -101,7 +101,7 @@ jobs:
 
   client_lint:
     name: Client / Lint (ESLint)
-    needs: check
+    needs: check_client
     if: needs.check.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
@@ -115,7 +115,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -139,7 +139,7 @@ jobs:
 
   client_test:
     name: Client / Test (Jest)
-    needs: check
+    needs: check_client
     if: needs.check.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
@@ -153,7 +153,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -177,7 +177,7 @@ jobs:
 
   server_build:
     name: Server / Build (Compile Go)
-    needs: check
+    needs: check_server
     if: needs.check.outputs.server_files == 'true'
     runs-on: ubuntu-latest
     env:
@@ -195,7 +195,7 @@ jobs:
 
   server_lint:
     name: Server / Lint (golangci-lint)
-    needs: check
+    needs: check_server
     if: needs.check.outputs.server_files == 'true'
     runs-on: ubuntu-latest
     env:
@@ -227,7 +227,7 @@ jobs:
         with:
           # The default version is 14
           # The ESLint config requires Node 16 to work properly
-          node-version: '16'
+          node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
         uses: actions/cache@v2
@@ -247,7 +247,15 @@ jobs:
 
   discord:
     name: Discord Failure Notification
-    needs: [client_build, client_lint, client_test, server_build, server_lint, spell_check]
+    needs:
+      [
+        client_build,
+        client_lint,
+        client_test,
+        server_build,
+        server_lint,
+        spell_check,
+      ]
     if: always() # This is needed to always run this job, even if the other jobs fail
     runs-on: ubuntu-latest
     steps:
