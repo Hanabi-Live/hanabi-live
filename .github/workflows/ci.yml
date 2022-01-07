@@ -3,8 +3,72 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  check:
+    name: Check changed Client files
+    outputs:
+      client_files: ${{ steps.check_files.outputs.client_files }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: check files
+        id: check_files
+        run: |
+          echo "=============== list changed files ==============="
+          git diff --name-only HEAD^ HEAD
+
+          echo "========== check paths of changed files =========="
+          git diff --name-only HEAD^ HEAD > files.txt
+          while IFS= read -r file
+          do
+            echo $file
+            if [[ $file != "client/"* ]]; then
+              echo "This file is not under the directory 'client'."
+              echo "::set-output name=client_files::false"
+              break
+            else
+              echo "::set-output name=client_files::true"
+            fi
+          done < files.txt
+
+  check:
+    name: Check changed Server files
+    outputs:
+      server_files: ${{ steps.check_files.outputs.server_files }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: check files
+        id: check_files
+        run: |
+          echo "=============== list changed files ==============="
+          git diff --name-only HEAD^ HEAD
+
+          echo "========== check paths of changed files =========="
+          git diff --name-only HEAD^ HEAD > files.txt
+          while IFS= read -r file
+          do
+            echo $file
+            if [[ $file != "server/"* ]]; then
+              echo "This file is not under the directory 'server'."
+              echo "::set-output name=server_files::false"
+              break
+            else
+              echo "::set-output name=server_files::true"
+            fi
+          done < files.txt
+
   client_build:
     name: Client / Build (Compile TypeScript)
+    needs: check
+    if: needs.check.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -37,6 +101,8 @@ jobs:
 
   client_lint:
     name: Client / Lint (ESLint)
+    needs: check
+    if: needs.check.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -73,6 +139,8 @@ jobs:
 
   client_test:
     name: Client / Test (Jest)
+    needs: check
+    if: needs.check.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
       working-directory: ./client
@@ -109,6 +177,8 @@ jobs:
 
   server_build:
     name: Server / Build (Compile Go)
+    needs: check
+    if: needs.check.outputs.server_files == 'true'
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -125,6 +195,8 @@ jobs:
 
   server_lint:
     name: Server / Lint (golangci-lint)
+    needs: check
+    if: needs.check.outputs.server_files == 'true'
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
