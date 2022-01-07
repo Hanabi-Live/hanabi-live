@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
+	"github.com/google/go-github/github"
 )
 
 // /issue
@@ -34,8 +38,6 @@ func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args [
 		}
 	*/
 }
-
-/*
 
 func discordShouldShowIssue(args []string) (string, bool) {
 	title := strings.Join(args, " ")
@@ -83,5 +85,3 @@ func discordShowIssue(ctx context.Context, channelID string, title string, disco
 		" (by " + *issue.User.Name + ")"
 	discordSend(channelID, "", msg)
 }
-
-*/
