@@ -12,6 +12,7 @@ require (
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/gin v1.7.2
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github/v29 v29.0.2
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/joho/godotenv v1.3.0
 	github.com/mitchellh/mapstructure v1.4.1

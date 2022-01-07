@@ -12,26 +12,31 @@ import (
 
 // /issue
 func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	if len(args) == 0 {
-		msg := "The format of the /issue command is: /issue [title] or /issue [id]"
-		discordSend(m.ChannelID, "", msg)
-		return
-	}
+	msg := "The /issue command has been disabled."
+	discordSend(m.ChannelID, "", msg)
 
-	discordUsername := discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator
-	issue, found := discordShouldShowIssue(args)
+	/*
+		if len(args) == 0 {
+			msg := "The format of the /issue command is: /issue [title] or /issue [id]"
+			discordSend(m.ChannelID, "", msg)
+			return
+		}
 
-	if discordUsername != ownerDiscordID && !found {
-		msg := "Only the owner of the website can use the /issue command."
-		discordSend(m.ChannelID, "", msg)
-		return
-	}
+		discordUsername := discordGetNickname(m.Author.ID) + "#" + m.Author.Discriminator
+		issue, found := discordShouldShowIssue(args)
 
-	if found {
-		discordShowIssue(ctx, m.ChannelID, issue, discordUsername)
-	} else {
-		discordOpenIssue(ctx, m.ChannelID, issue, discordUsername)
-	}
+		if discordUsername != ownerDiscordID && !found {
+			msg := "Only the owner of the website can use the /issue command."
+			discordSend(m.ChannelID, "", msg)
+			return
+		}
+
+		if found {
+			discordShowIssue(ctx, m.ChannelID, issue, discordUsername)
+		} else {
+			discordOpenIssue(ctx, m.ChannelID, issue, discordUsername)
+		}
+	*/
 }
 
 func discordShouldShowIssue(args []string) (string, bool) {
@@ -45,16 +50,17 @@ func discordShouldShowIssue(args []string) (string, bool) {
 
 func discordOpenIssue(ctx context.Context, channelID string, title string, discordUsername string) {
 	body := "Issue opened by Discord user: " + discordUsername
+	issue := &github.IssueRequest{ // nolint: exhaustivestruct
+		Title: &title,
+		Body:  &body,
+	}
 
 	// Open a new issue on GitHub for this repository
 	if _, _, err := gitHubClient.Issues.Create(
 		ctx,
 		githubRepositoryOwner,
 		projectName,
-		&github.IssueRequest{ // nolint: exhaustivestruct
-			Title: &title,
-			Body:  &body,
-		},
+		issue,
 	); err != nil {
 		logger.Error("Failed to submit a GitHub issue: " + err.Error())
 		discordSend(channelID, "", DefaultErrorMsg)
