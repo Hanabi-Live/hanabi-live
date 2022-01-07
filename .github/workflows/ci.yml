@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  check:
+  check_client:
     name: Check changed Client files
     outputs:
       client_files: ${{ steps.check_files.outputs.client_files }}
@@ -34,7 +34,7 @@ jobs:
             fi
           done < files.txt
 
-  check:
+  check_server:
     name: Check changed Server files
     outputs:
       server_files: ${{ steps.check_files.outputs.server_files }}
