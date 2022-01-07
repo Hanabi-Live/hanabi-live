@@ -215,8 +215,6 @@ jobs:
 
   spell_check:
     name: Spell Check
-    needs: check
-    if: needs.check.outputs.client_files == 'true' || needs.check.outputs.server_files == 'true'
     runs-on: ubuntu-latest
     env:
       working-directory: ./spell_check
