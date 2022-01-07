@@ -203,7 +203,6 @@ export function onPaceOrPaceRiskChanged(data: {
         break;
       }
 
-      case "LowRisk":
       case "Null": {
         console.error(
           `An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`,
@@ -211,6 +210,7 @@ export function onPaceOrPaceRiskChanged(data: {
         break;
       }
 
+      case "LowRisk":
       default: {
         // We are not even close to the "End-Game", so give it the default color
         label.fill(LABEL_COLOR);
