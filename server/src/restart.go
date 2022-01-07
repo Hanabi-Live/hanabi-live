@@ -46,7 +46,7 @@ func gracefulRestart(ctx context.Context) {
 	}
 
 	msg := "The server went down for a restart at: " + getCurrentTimestamp() + " " +
-		"(" + gitCommitOnStart + ")\n"
+		"(" + gitCommitOnStart + ") - "
 	uptime, _ := getUptime()
 	msg += uptime
 	sendMessageToWebDevChannel = true
