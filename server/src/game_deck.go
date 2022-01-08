@@ -45,7 +45,7 @@ func (g *Game) InitDeck() {
 }
 
 func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
-	// This implementation mirrors numCopiesOfCard in client/src/game/rules/deck.ts
+	// This implementation mirrors numCopiesOfCard in the "deck.ts" file
 	if suit.OneOfEach {
 		return 1
 	}

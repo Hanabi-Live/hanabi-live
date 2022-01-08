@@ -10,11 +10,11 @@
       "type": "node",
       "name": "vscode-jest-tests",
       "request": "launch",
-      "program": "${workspaceFolder}/client/node_modules/jest/bin/jest",
+      "program": "${workspaceFolder}/packages/hanabi-client/node_modules/jest/bin/jest",
       "args": [
         "--runInBand",
         "--config",
-        "${workspaceFolder}/client/jest.config.js"
+        "${workspaceFolder}/packages/hanabi-client/jest.config.js"
       ],
       "cwd": "${workspaceFolder}/client",
       "console": "integratedTerminal",
