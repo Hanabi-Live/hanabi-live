@@ -61,7 +61,7 @@ jobs:
           done < files.txt
 
   client_build:
-    name: Client / Build (Compile TypeScript)
+    name: Client - Build (Compile TypeScript)
     needs: check_client
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
@@ -93,7 +93,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   client_lint:
-    name: Client / Lint (ESLint)
+    name: Client - Lint (ESLint)
     needs: check_client
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
@@ -129,7 +129,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   client_test:
-    name: Client / Test (Jest)
+    name: Client - Test (Jest)
     needs: check_client
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
@@ -165,7 +165,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   server_build:
-    name: Server / Build (Compile Go)
+    name: Server - Build (Compile Go)
     needs: check_server
     if: needs.check_server.outputs.server_files == 'true'
     runs-on: ubuntu-latest
@@ -183,7 +183,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   server_lint:
-    name: Server / Lint (golangci-lint)
+    name: Server - Lint (golangci-lint)
     needs: check_server
     if: needs.check_server.outputs.server_files == 'true'
     runs-on: ubuntu-latest
