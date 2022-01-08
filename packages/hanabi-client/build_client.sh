@@ -26,11 +26,10 @@ if [[ -z $CI ]]; then
 fi
 
 # Set the version number in the "version.json" file
-# (which is equal to the number of commits in the git repository)
-# This is "baked" into the JavaScript bundle and self-reported when connecting to the server so that
-# the server can deny clients on old versions of the code
-VERSION=$(git rev-list --count HEAD)
-echo "$VERSION" > "$REPO_ROOT/data/version.json"
+# (see the comments in the subsequent script)
+echo "GETTING HERE 1"
+bash "$DIR/set_version.sh"
+echo "GETTING HERE 2"
 
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script during a graceful restart and it will not have it in
