@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
@@ -136,19 +137,25 @@ func (*Games) Exists(databaseID int) (bool, error) {
 	return true, nil
 }
 
+type GameHistoryTags struct {
+	Username string `json:"username"`
+	Tag      string `json:"tag"`
+}
+
 type GameHistory struct {
-	ID                 int       `json:"id"`
-	Options            *Options  `json:"options"`
-	Seed               string    `json:"seed"`
-	Score              int       `json:"score"`
-	NumTurns           int       `json:"numTurns"`
-	EndCondition       int       `json:"endCondition"`
-	DatetimeStarted    time.Time `json:"datetimeStarted"`
-	DatetimeFinished   time.Time `json:"datetimeFinished"`
-	NumGamesOnThisSeed int       `json:"numGamesOnThisSeed"`
-	PlayerNames        []string  `json:"playerNames"`
-	IncrementNumGames  bool      `json:"incrementNumGames"`
-	Tags               string    `json:"tags"`
+	ID                 int             `json:"id"`
+	Options            *Options        `json:"options"`
+	Seed               string          `json:"seed"`
+	Score              int             `json:"score"`
+	NumTurns           int             `json:"numTurns"`
+	EndCondition       int             `json:"endCondition"`
+	DatetimeStarted    time.Time       `json:"datetimeStarted"`
+	DatetimeFinished   time.Time       `json:"datetimeFinished"`
+	NumGamesOnThisSeed int             `json:"numGamesOnThisSeed"`
+	PlayerNames        []string        `json:"playerNames"`
+	IncrementNumGames  bool            `json:"incrementNumGames"`
+	Tags               string          `json:"tags"`
+	UsersTags          json.RawMessage `json:"users_tags"`
 }
 
 func (g *Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
@@ -216,7 +223,12 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 				SELECT COALESCE(STRING_AGG(game_tags.tag, ', ' ORDER BY LOWER(game_tags.tag)), '')
 				FROM game_tags
 				WHERE game_tags.game_id = games1.id
-			) AS tags
+			) AS tags,
+			(
+				SELECT COALESCE(json_agg(json_build_object(users.username, game_tags.tag)), '[]'::json)
+				FROM game_tags, users
+				WHERE game_tags.user_id = users.id AND game_tags.game_id = games1.id
+			) AS tags_by_user
 		FROM games AS games1
 		/*
 		* We must use the ANY operator for matching an array of IDs:
@@ -263,6 +275,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 			&gameHistory.NumGamesOnThisSeed,
 			&playerNamesString,
 			&gameHistory.Tags,
+			&gameHistory.UsersTags,
 		); err != nil {
 			return games, err
 		}
