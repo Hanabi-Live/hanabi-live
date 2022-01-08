@@ -27,6 +27,9 @@ export const getPlayerNames = (
   playerIndices: number[],
   metadata: GameMetadata,
 ): string => {
+  if (playerIndices === null) {
+    return "The players";
+  }
   const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
   playerNames.sort();
   const length = playerNames.length;
