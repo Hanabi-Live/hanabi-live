@@ -1,6 +1,6 @@
 // These are exported global variables to be shared between all of the TypeScript code
 
-import version from "../../data/version.json";
+import { version } from "@hanabi/data";
 import Connection from "./Connection";
 import HanabiUI from "./game/ui/HanabiUI";
 import Loader from "./Loader";

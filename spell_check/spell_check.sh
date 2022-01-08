@@ -12,12 +12,12 @@ DIR="$(dirname "$DIR")"
 FILES=$(find "$DIR" -type f \
   -not -path "$DIR/.git/*" \
   -not -path "$DIR/backups/*" \
-  -not -path "$DIR/packages/hanabi-client/card-images/*" \
-  -not -path "$DIR/packages/hanabi-client/lib/*" \
-  -not -path "$DIR/packages/hanabi-client/node_modules/*" \
-  -not -path "$DIR/packages/hanabi-client/test_data/*" \
-  -not -path "$DIR/packages/hanabi-client/webpack_output/*" \
-  -not -path "$DIR/packages/hanabi-client/package-lock.json" \
+  -not -path "$DIR/packages/client/card-images/*" \
+  -not -path "$DIR/packages/client/lib/*" \
+  -not -path "$DIR/packages/client/node_modules/*" \
+  -not -path "$DIR/packages/client/test_data/*" \
+  -not -path "$DIR/packages/client/webpack_output/*" \
+  -not -path "$DIR/packages/client/package-lock.json" \
   -not -path "$DIR/data/ongoing_tables/*" \
   -not -path "$DIR/data/specific_deals/*" \
   -not -path "$DIR/data/emojis.json" \

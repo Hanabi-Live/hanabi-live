@@ -1,4 +1,4 @@
-import { colorsJSON } from "hanabi-data";
+import { colorsJSON } from "@hanabi/data";
 import Color from "../types/Color";
 
 // "ColorJSON" is almost exactly the same as "Color"

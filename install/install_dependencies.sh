@@ -17,12 +17,12 @@ if [[ ! -f "$DIR/.env" ]]; then
 fi
 
 # Install the JavaScript/TypeScript dependencies and build the client
-cd "$DIR/packages/hanabi-client"
+cd "$DIR/packages/client"
 npm ci
+bash "./build_client.sh"
 cd "$DIR"
-"$DIR/packages/hanabi-client/build_client.sh"
 
 # Build the server, which will automatically install the Golang dependencies
-"$DIR/server/build_server.sh"
+bash "$DIR/server/build_server.sh"
 
 echo "Successfully installed dependencies."

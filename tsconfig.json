@@ -10,8 +10,8 @@
     // From: https://medium.com/@NiGhTTraX/how-to-set-up-a-typescript-monorepo-with-lerna-c6acda7d4559
     "baseUrl": "./packages",
     "paths": {
-      "@hanabi-live/hanabi-client": ["hanabi-client/src"],
-      "@hanabi-live/hanabi-data": ["hanabi-data/src"],
+      "@hanabi/client": ["client/src"],
+      "@hanabi/data": ["data/src"],
     },
 
     // "resolveJsonModule" includes modules imported with ".json" extensions

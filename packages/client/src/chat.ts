@@ -1,7 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
-import { emojisJSON, emotesJSON } from "hanabi-data";
+import { emojisJSON, emotesJSON } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkifyjs/html";
 import chatCommands from "./chatCommands";

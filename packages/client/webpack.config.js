@@ -20,7 +20,7 @@ const repoRoot = path.join(__dirname, "..", "..");
 const versionPath = path.join(
   repoRoot,
   "packages",
-  "hanabi-data",
+  "data",
   "src",
   "version.json",
 );

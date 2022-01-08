@@ -1,11 +1,7 @@
 {
-  "name": "hanab-live-client",
-  "version": "0.0.1",
+  "name": "@hanabi/client",
+  "version": "0.0.0",
   "description": "",
-  "repository": {
-    "type": "git",
-    "url": "Hanabi-Live/hanabi-live"
-  },
   "license": "AGPL-3.0-only",
   "scripts": {
     "grunt": "grunt",
@@ -13,6 +9,7 @@
     "webpack": "webpack"
   },
   "dependencies": {
+    "@hanabi/data": "^0.0.0",
     "@sentry/browser": "^6.16.1",
     "fast-deep-equal": "^3.1.3",
     "immer": "8.0.4",

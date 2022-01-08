@@ -1,7 +1,7 @@
 // In production, we send all errors to the cloud using the Sentry.io service
 
+import { version } from "@hanabi/data";
 import * as Sentry from "@sentry/browser";
-import { version } from "hanabi-data";
 import InitData from "./game/types/InitData";
 
 export function init(): void {

@@ -26,7 +26,7 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [[ $file == "packages/hanabi-client/"* ]]; then
+            if [[ $file == "packages/client/"* ]]; then
               echo "::set-output name=client_files::true"
               break
             fi
@@ -66,7 +66,7 @@ jobs:
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
-      working-directory: ./packages/hanabi-client
+      working-directory: ./packages/client
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -81,7 +81,7 @@ jobs:
         id: client-build-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: client-build-node-modules-${{ hashFiles('packages/hanabi-client/package-lock.json') }}
+          key: client-build-node-modules-${{ hashFiles('packages/client/package-lock.json') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-build-cache.outputs.cache-hit != 'true'
@@ -98,7 +98,7 @@ jobs:
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
-      working-directory: ./packages/hanabi-client
+      working-directory: ./packages/client
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -113,7 +113,7 @@ jobs:
         id: client-lint-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: client-lint-node-modules-${{ hashFiles('packages/hanabi-client/package-lock.json') }}
+          key: client-lint-node-modules-${{ hashFiles('packages/client/package-lock.json') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-lint-cache.outputs.cache-hit != 'true'
@@ -134,7 +134,7 @@ jobs:
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
-      working-directory: ./packages/hanabi-client
+      working-directory: ./packages/client
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -149,7 +149,7 @@ jobs:
         id: client-test-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: client-test-node-modules-${{ hashFiles('packages/hanabi-client/package-lock.json') }}
+          key: client-test-node-modules-${{ hashFiles('packages/client/package-lock.json') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-test-cache.outputs.cache-hit != 'true'

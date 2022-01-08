@@ -14,7 +14,7 @@
       "args": [
         "--runInBand",
         "--config",
-        "${workspaceFolder}/packages/hanabi-client/jest.config.js"
+        "${workspaceFolder}/jest.config.js"
       ],
       "cwd": "${workspaceFolder}/client",
       "console": "integratedTerminal",
