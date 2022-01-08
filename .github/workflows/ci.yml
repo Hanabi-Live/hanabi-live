@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   check_client:
-    name: Check changed Client files
+    name: Check changed client files
     outputs:
       client_files: ${{ steps.check_files_client.outputs.client_files }}
     runs-on: ubuntu-latest
@@ -14,7 +14,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: check files
+      - name: Check files
         id: check_files_client
         run: |
           echo "=============== list changed files ==============="
@@ -26,14 +26,14 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [[ $file == "client/"* ]]; then
+            if [[ $file == "packages/hanabi-client/"* ]]; then
               echo "::set-output name=client_files::true"
               break
             fi
           done < files.txt
 
   check_server:
-    name: Check changed Server files
+    name: Check changed server files
     outputs:
       server_files: ${{ steps.check_files_server.outputs.server_files }}
     runs-on: ubuntu-latest
@@ -66,7 +66,7 @@ jobs:
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
-      working-directory: ./client
+      working-directory: ./packages/hanabi-client
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -74,8 +74,6 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          # The default version is 14
-          # The ESLint config requires Node 16 to work properly
           node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
@@ -83,7 +81,7 @@ jobs:
         id: client-build-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: client-build-node-modules-${{ hashFiles('client/package-lock.json') }}
+          key: client-build-node-modules-${{ hashFiles('packages/hanabi-client/package-lock.json') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-build-cache.outputs.cache-hit != 'true'
@@ -100,7 +98,7 @@ jobs:
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
-      working-directory: ./client
+      working-directory: ./packages/hanabi-client
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -108,8 +106,6 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          # The default version is 14
-          # The ESLint config requires Node 16 to work properly
           node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
@@ -117,7 +113,7 @@ jobs:
         id: client-lint-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: client-lint-node-modules-${{ hashFiles('client/package-lock.json') }}
+          key: client-lint-node-modules-${{ hashFiles('packages/hanabi-client/package-lock.json') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-lint-cache.outputs.cache-hit != 'true'
@@ -138,7 +134,7 @@ jobs:
     if: needs.check_client.outputs.client_files == 'true'
     runs-on: ubuntu-latest
     env:
-      working-directory: ./client
+      working-directory: ./packages/hanabi-client
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -146,8 +142,6 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          # The default version is 14
-          # The ESLint config requires Node 16 to work properly
           node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
@@ -155,7 +149,7 @@ jobs:
         id: client-test-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: client-test-node-modules-${{ hashFiles('client/package-lock.json') }}
+          key: client-test-node-modules-${{ hashFiles('packages/hanabi-client/package-lock.json') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-test-cache.outputs.cache-hit != 'true'
@@ -220,8 +214,6 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          # The default version is 14
-          # The ESLint config requires Node 16 to work properly
           node-version: "16"
 
       - name: Retrieve the cached "node_modules" directory (if present)
