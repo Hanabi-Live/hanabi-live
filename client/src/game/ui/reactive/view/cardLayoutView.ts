@@ -1,7 +1,7 @@
 import equal from "fast-deep-equal";
 import Konva from "konva";
-import { variantRules } from "../../../rules";
 import * as deck from "../../../rules/deck";
+import * as variantRules from "../../../rules/variant";
 import { STACK_BASE_RANK } from "../../../types/constants";
 import StackDirection from "../../../types/StackDirection";
 import globals from "../../globals";

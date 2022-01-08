@@ -1,5 +1,5 @@
 import * as notifications from "../../notifications";
-import { clueTokensRules } from "../rules";
+import * as clueTokensRules from "../rules/clueTokens";
 import ActionType from "../types/ActionType";
 import ClientAction from "../types/ClientAction";
 import * as arrows from "./arrows";

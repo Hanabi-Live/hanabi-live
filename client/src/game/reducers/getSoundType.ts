@@ -1,6 +1,8 @@
 import { Draft } from "immer";
 import { getVariant } from "../data/gameData";
-import { cardRules, handRules, variantRules } from "../rules";
+import * as cardRules from "../rules/card";
+import * as handRules from "../rules/hand";
+import * as variantRules from "../rules/variant";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
 import ClueType from "../types/ClueType";

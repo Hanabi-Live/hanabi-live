@@ -1,8 +1,9 @@
 import { getVariant } from "../src/game/data/gameData";
 import gameStateReducer from "../src/game/reducers/gameStateReducer";
 import initialState from "../src/game/reducers/initialStates/initialState";
-import { cluesRules, playStacksRules } from "../src/game/rules";
+import * as cluesRules from "../src/game/rules/clues";
 import * as handRules from "../src/game/rules/hand";
+import * as playStacksRules from "../src/game/rules/playStacks";
 import * as segmentRules from "../src/game/rules/segment";
 import {
   ActionClue,

@@ -2,7 +2,9 @@
 
 import { ensureAllCases, nullIfNegative } from "../../misc";
 import { getVariant } from "../data/gameData";
-import { cluesRules, deckRules, handRules } from "../rules";
+import * as cluesRules from "../rules/clues";
+import * as deckRules from "../rules/deck";
+import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
 import { GameAction } from "../types/actions";
 import CardState from "../types/CardState";

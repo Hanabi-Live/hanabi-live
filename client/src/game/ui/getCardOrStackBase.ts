@@ -1,4 +1,4 @@
-import { deckRules } from "../rules";
+import * as deckRules from "../rules/deck";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 

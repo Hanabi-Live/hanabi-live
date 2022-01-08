@@ -1,4 +1,4 @@
-import { cardRules } from "../rules";
+import * as cardRules from "../rules/card";
 import CardState from "../types/CardState";
 
 export default function ddaReducer(

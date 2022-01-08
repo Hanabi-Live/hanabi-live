@@ -1,6 +1,6 @@
 import { initArray } from "../../../misc";
 import { getVariant } from "../../data/gameData";
-import { deckRules } from "../../rules";
+import * as deckRules from "../../rules/deck";
 import GameMetadata from "../../types/GameMetadata";
 import State from "../../types/State";
 import initialGameState from "./initialGameState";

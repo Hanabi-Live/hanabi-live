@@ -1,8 +1,8 @@
 import Options from "../../types/Options";
 import { getCharacter } from "../data/gameData";
-import { clueTokensRules } from "../rules";
 import GameMetadata from "../types/GameMetadata";
 import Variant from "../types/Variant";
+import * as clueTokensRules from "./clueTokens";
 
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,

@@ -3,15 +3,13 @@
 import produce, { castDraft, Draft, original } from "immer";
 import { ensureAllCases, millisecondsToClockString } from "../../misc";
 import { getVariant } from "../data/gameData";
-import {
-  cardRules,
-  clueTokensRules,
-  deckRules,
-  handRules,
-  playStacksRules,
-  textRules,
-  variantRules,
-} from "../rules";
+import * as cardRules from "../rules/card";
+import * as clueTokensRules from "../rules/clueTokens";
+import * as deckRules from "../rules/deck";
+import * as handRules from "../rules/hand";
+import * as playStacksRules from "../rules/playStacks";
+import * as textRules from "../rules/text";
+import * as variantRules from "../rules/variant";
 import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";

@@ -1,5 +1,4 @@
 import { ensureAllCases } from "../../misc";
-import { variantRules } from "../rules";
 import CardState from "../types/CardState";
 import {
   STACK_BASE_RANK,
@@ -8,6 +7,7 @@ import {
 } from "../types/constants";
 import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
+import * as variantRules from "./variant";
 
 export function lastPlayedRank(
   playStack: readonly number[],

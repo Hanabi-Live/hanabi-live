@@ -4,7 +4,8 @@
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
-import { cardRules, clueTokensRules } from "../rules";
+import * as cardRules from "../rules/card";
+import * as clueTokensRules from "../rules/clueTokens";
 import * as variantRules from "../rules/variant";
 import ActionType from "../types/ActionType";
 import CardLayout from "./CardLayout";

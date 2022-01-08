@@ -1,5 +1,6 @@
 import { setBrowserAddressBarPath } from "../../../../misc";
-import { clueTokensRules, variantRules } from "../../../rules";
+import * as clueTokensRules from "../../../rules/clueTokens";
+import * as variantRules from "../../../rules/variant";
 import { MAX_STRIKES } from "../../../types/constants";
 import { StateStrike } from "../../../types/GameState";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";

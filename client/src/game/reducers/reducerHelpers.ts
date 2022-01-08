@@ -1,7 +1,7 @@
 // Miscellaneous helpers used by several reducers
 
 import { getCharacter } from "../data/gameData";
-import { statsRules } from "../rules";
+import * as statsRules from "../rules/stats";
 import GameState from "../types/GameState";
 
 export function getEfficiency(state: GameState): number {

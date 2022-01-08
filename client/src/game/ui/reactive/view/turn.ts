@@ -1,5 +1,6 @@
 import { ensureAllCases } from "../../../../misc";
-import { clueTokensRules, variantRules } from "../../../rules";
+import * as clueTokensRules from "../../../rules/clueTokens";
+import * as variantRules from "../../../rules/variant";
 import ClueType from "../../../types/ClueType";
 import State from "../../../types/State";
 import globals from "../../globals";

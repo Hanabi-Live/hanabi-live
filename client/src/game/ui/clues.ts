@@ -1,5 +1,6 @@
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import { cluesRules, clueTokensRules } from "../rules";
+import * as cluesRules from "../rules/clues";
+import * as clueTokensRules from "../rules/clueTokens";
 import ActionType from "../types/ActionType";
 import Clue from "../types/Clue";
 import ClueType from "../types/ClueType";

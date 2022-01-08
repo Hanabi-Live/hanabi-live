@@ -1,6 +1,5 @@
 // Functions related to clues: gaining clues, giving clues, applying clues
 
-import { clueTokensRules } from "../rules";
 import { ActionDiscard, ActionPlay } from "../types/actions";
 import { MAX_CLUE_NUM } from "../types/constants";
 import Variant from "../types/Variant";
@@ -25,7 +24,7 @@ function shouldGenerateClue(
   variant: Variant,
   playStackComplete: boolean,
 ) {
-  if (clueTokensRules.atMax(clueTokens, variant)) {
+  if (atMax(clueTokens, variant)) {
     return false;
   }
 

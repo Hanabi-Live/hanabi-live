@@ -3,8 +3,10 @@
 
 import produce, { Draft } from "immer";
 import { getVariant } from "../data/gameData";
-import { clueTokensRules, turnRules, variantRules } from "../rules";
+import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
+import * as turnRules from "../rules/turn";
+import * as variantRules from "../rules/variant";
 import { GameAction } from "../types/actions";
 import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";

@@ -1,6 +1,6 @@
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
-import { cardRules } from "../rules";
+import * as cardRules from "../rules/card";
 import { STACK_BASE_RANK } from "../types/constants";
 import * as arrows from "./arrows";
 import CardLayout from "./CardLayout";

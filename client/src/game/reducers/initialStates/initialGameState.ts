@@ -1,14 +1,12 @@
 import { initArray } from "../../../misc";
 import { getVariant } from "../../data/gameData";
-import {
-  cardRules,
-  clueTokensRules,
-  deckRules,
-  handRules,
-  playStacksRules,
-  statsRules,
-  turnRules,
-} from "../../rules";
+import * as cardRules from "../../rules/card";
+import * as clueTokensRules from "../../rules/clueTokens";
+import * as deckRules from "../../rules/deck";
+import * as handRules from "../../rules/hand";
+import * as playStacksRules from "../../rules/playStacks";
+import * as statsRules from "../../rules/stats";
+import * as turnRules from "../../rules/turn";
 import CardStatus from "../../types/CardStatus";
 import { MAX_CLUE_NUM } from "../../types/constants";
 import GameMetadata from "../../types/GameMetadata";

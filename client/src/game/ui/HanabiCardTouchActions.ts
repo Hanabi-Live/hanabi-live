@@ -1,7 +1,7 @@
 // Touch actions for the HanabiCard object
 // These are a subset of the actions in HanabiCardClick.ts
 
-import { cardRules } from "../rules";
+import * as cardRules from "../rules/card";
 import { DOUBLE_TAP_DELAY } from "./constants";
 import HanabiCard from "./HanabiCard";
 import * as notes from "./notes";

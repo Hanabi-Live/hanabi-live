@@ -6,7 +6,7 @@ import {
 } from "../../misc";
 import * as tooltips from "../../tooltips";
 import { OptionIcons } from "../../types/Options";
-import { deckRules } from "../rules";
+import * as deckRules from "../rules/deck";
 import ActionType from "../types/ActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";

@@ -1,5 +1,5 @@
 import { ensureAllCases } from "../../../../misc";
-import { variantRules } from "../../../rules";
+import * as variantRules from "../../../rules/variant";
 import { GameAction } from "../../../types/actions";
 import SoundType from "../../../types/SoundType";
 import globals from "../../globals";

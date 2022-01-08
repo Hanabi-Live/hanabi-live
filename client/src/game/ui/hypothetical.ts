@@ -2,7 +2,7 @@
 // to see what will happen
 
 import { negativeOneIfNull } from "../../misc";
-import { playStacksRules } from "../rules";
+import * as playStacksRules from "../rules/playStacks";
 import { ActionIncludingHypothetical } from "../types/actions";
 import ActionType from "../types/ActionType";
 import ClientAction from "../types/ClientAction";

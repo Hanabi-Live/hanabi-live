@@ -1,6 +1,6 @@
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
-import { variantRules } from "../../../rules";
+import * as variantRules from "../../../rules/variant";
 import ReplayActionType from "../../../types/ReplayActionType";
 import Spectator from "../../../types/Spectator";
 import globals from "../../globals";

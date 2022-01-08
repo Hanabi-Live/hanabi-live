@@ -1,7 +1,7 @@
 // The card graphics are various HTML5 canvas drawings
 
 import { getSuit } from "../data/gameData";
-import { abbreviationRules } from "../rules";
+import * as abbreviationRules from "../rules/abbreviation";
 import * as variantRules from "../rules/variant";
 import Color from "../types/Color";
 import {

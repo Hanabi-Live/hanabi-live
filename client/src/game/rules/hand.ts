@@ -1,8 +1,8 @@
 // Functions related to hand management
 
 import Options from "../../types/Options";
-import { cardRules } from "../rules";
 import CardState from "../types/CardState";
+import * as cardRules from "./card";
 
 export const cardsPerHand = (options: Options): number =>
   cardsPerHandNatural(options.numPlayers) +
@@ -15,13 +15,16 @@ export function cardsPerHandNatural(numPlayers: number): number {
     case 3: {
       return 5;
     }
+
     case 4:
     case 5: {
       return 4;
     }
+
     case 6: {
       return 3;
     }
+
     default: {
       // Default to 3 cards for non-standard player numbers
       return 3;

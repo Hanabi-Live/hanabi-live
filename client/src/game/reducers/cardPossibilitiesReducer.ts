@@ -1,7 +1,7 @@
 // Calculates the state of a card after a clue
 
 import { getVariant } from "../data/gameData";
-import { cluesRules } from "../rules";
+import * as cluesRules from "../rules/clues";
 import CardState from "../types/CardState";
 import Clue from "../types/Clue";
 import ClueType from "../types/ClueType";

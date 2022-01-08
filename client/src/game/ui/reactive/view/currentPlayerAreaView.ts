@@ -1,5 +1,6 @@
 import Konva from "konva";
-import { clueTokensRules, handRules } from "../../../rules";
+import * as clueTokensRules from "../../../rules/clueTokens";
+import * as handRules from "../../../rules/hand";
 import State from "../../../types/State";
 import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";

@@ -1,6 +1,6 @@
 import produce, { Draft } from "immer";
 import { getVariant } from "../data/gameData";
-import { deckRules } from "../rules";
+import * as deckRules from "../rules/deck";
 import * as turnRules from "../rules/turn";
 import { GameAction } from "../types/actions";
 import EndCondition from "../types/EndCondition";

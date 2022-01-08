@@ -1,7 +1,6 @@
 import { ensureAllCases } from "../../misc";
 import { getVariant } from "../data/gameData";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import { cardRules, cluesRules, handRules, variantRules } from "../rules";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import ClueType from "../types/ClueType";
 import EndCondition from "../types/EndCondition";
@@ -9,6 +8,10 @@ import GameMetadata, {
   getPlayerName,
   getPlayerNames,
 } from "../types/GameMetadata";
+import * as cardRules from "./card";
+import * as cluesRules from "./clues";
+import * as handRules from "./hand";
+import * as variantRules from "./variant";
 
 export function clue(
   action: ActionClue,
