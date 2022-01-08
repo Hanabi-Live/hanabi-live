@@ -12,12 +12,7 @@ export function getEfficiency(state: GameState): number {
 }
 
 export function getFutureEfficiency(state: GameState): number | null {
-  if (state.stats.cluesStillUsable === null) {
-    return null;
-  }
-
-  const cardsNotGotten = state.stats.maxScore - state.stats.cardsGotten;
-  return statsRules.efficiency(cardsNotGotten, state.stats.cluesStillUsable);
+  return statsRules.futureEfficiency(state);
 }
 
 export function getCharacterNameForPlayer(

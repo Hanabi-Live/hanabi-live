@@ -9,7 +9,7 @@ export const cardsPerHand = (options: Options): number =>
   (options.oneExtraCard ? 1 : 0) -
   (options.oneLessCard ? 1 : 0);
 
-export function cardsPerHandNatural(numPlayers: number): number {
+function cardsPerHandNatural(numPlayers: number): number {
   switch (numPlayers) {
     case 2:
     case 3: {

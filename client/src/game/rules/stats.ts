@@ -26,7 +26,7 @@ export function getMaxScorePerStack(
   );
 }
 
-export function discardsBeforeFinalRound(
+function discardsBeforeFinalRound(
   cardsToPlay: number,
   deckSize: number,
   endGameLength: number,
@@ -40,7 +40,7 @@ export function discardsBeforeFinalRound(
   return 0;
 }
 
-export function maxPlaysDuringFinalRound(
+function maxPlaysDuringFinalRound(
   cardsToPlay: number,
   endGameLength: number,
 ): number {
@@ -50,7 +50,7 @@ export function maxPlaysDuringFinalRound(
   return endGameLength + 1;
 }
 
-export function maxPlays(
+function maxPlays(
   cardsToPlay: number,
   deckSize: number,
   endGameLength: number,
@@ -353,6 +353,7 @@ export function futureEfficiency(state: GameState): number | null {
   if (state.stats.cluesStillUsable === null) {
     return null;
   }
+
   const cardsNotGotten = state.stats.maxScore - state.stats.cardsGotten;
   return cardsNotGotten / state.stats.cluesStillUsable;
 }

@@ -107,7 +107,7 @@ export function status(
 }
 
 // This does not mirror any function on the server
-export function isCritical(
+function isCritical(
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],

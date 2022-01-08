@@ -36,16 +36,10 @@ export const isNameUpOrDown = (variantName: string): boolean =>
   variantName.startsWith("Up or Down");
 
 export const isSynesthesia = (variant: Variant): boolean =>
-  isNameSynesthesia(variant.name);
-
-export const isNameSynesthesia = (variantName: string): boolean =>
-  variantName.startsWith("Synesthesia");
+  variant.name.startsWith("Synesthesia");
 
 export const isCriticalFours = (variant: Variant): boolean =>
-  isNameCriticalFours(variant.name);
-
-export const isNameCriticalFours = (variantName: string): boolean =>
-  variantName.startsWith("Critical Fours");
+  variant.name.startsWith("Critical Fours");
 
 export const hasReversedSuits = (variant: Variant): boolean =>
   isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0;

@@ -285,7 +285,7 @@ export default function variantsInit(
     // Prepare the abbreviations for each suit
     const abbreviations = abbreviationsRules.makeAll(name, suits);
 
-    // Create the RegEx pattern for identity notes in this variant.
+    // Create the regular expression pattern for identity notes in this variant
     const identityNotePattern = createIdentityNotePattern(
       suits,
       ranks,
