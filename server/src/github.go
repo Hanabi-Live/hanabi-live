@@ -16,7 +16,7 @@ const (
 	gitHubPrivateKeyFilename = "GitHub_private_key.pem"
 
 	githubRepositoryOwner = "Hanabi-Live"
-	ownerDiscordID        = "Zamiel#8743"
+	ownerDiscordID        = "Zamiel#8743" // nolint: varcheck
 )
 
 var (
