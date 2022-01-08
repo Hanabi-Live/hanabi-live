@@ -12,4 +12,4 @@ REPO_ROOT="$DIR/../.."
 # the server can deny clients on old versions of the code
 cd "$REPO_ROOT"
 VERSION=$(git rev-list --count HEAD)
-echo "$VERSION" > "$REPO_ROOT/data/version.json"
+echo "$VERSION" > "$REPO_ROOT/packages/hanabi-data/src/version.json"

@@ -1,4 +1,4 @@
-import charactersJSON from "../../../../data/characters.json";
+import { charactersJSON } from "hanabi-data";
 import Character from "../types/Character";
 
 export default function charactersInit(): Map<number, Character> {

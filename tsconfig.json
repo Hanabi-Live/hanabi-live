@@ -4,8 +4,24 @@
   // https://github.com/IsaacScript/isaacscript-tsconfig/blob/main/tsconfig.base.json
   "extends": "isaacscript-tsconfig/tsconfig.base.json",
 
+  // https://www.typescriptlang.org/docs/handbook/compiler-options.html
+  "compilerOptions": {
+    // This configuration allows "Go to references" to work properly in VSCode
+    // From: https://medium.com/@NiGhTTraX/how-to-set-up-a-typescript-monorepo-with-lerna-c6acda7d4559
+    "baseUrl": "./packages",
+    "paths": {
+      "@hanabi-live/hanabi-client": ["hanabi-client/src"],
+      "@hanabi-live/hanabi-data": ["hanabi-data/src"],
+    },
+
+    // "resolveJsonModule" includes modules imported with ".json" extensions
+    // By default, it is false
+    // We import JSON files in the code base, so this is needed
+    "resolveJsonModule": true,
+  },
+
   // A list of the TypeScript files to compile
-  "include": [
-    "./packages/**/src/**/*.ts",
-  ],
+  //"include": [
+    //"./packages/**/src/**/*.ts",
+  //],
 }

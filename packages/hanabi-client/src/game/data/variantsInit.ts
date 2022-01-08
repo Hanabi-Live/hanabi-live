@@ -1,4 +1,4 @@
-import variantsJSON from "../../../../../data/variants.json";
+import { variantsJSON } from "hanabi-data";
 import { createIdentityNotePattern } from "../reducers/noteIdentity";
 import * as abbreviationsRules from "../rules/abbreviation";
 import { isNameUpOrDown } from "../rules/variant";

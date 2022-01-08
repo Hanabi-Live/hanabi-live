@@ -13,8 +13,9 @@
   "license": "AGPL-3.0-only",
   "author": "Zamiell",
   "workspaces": [
-    "hanabi-client",
-    "hanabi-server"
+    "./packages/hanabi-client",
+    "./packages/hanabi-server",
+    "./packages/hanabi-data"
   ],
   "devDependencies": {
     "isaacscript-lint": "^1.0.77"

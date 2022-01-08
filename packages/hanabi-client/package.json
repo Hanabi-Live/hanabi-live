@@ -35,7 +35,6 @@
     "grunt-contrib-concat": "^2.0.0",
     "grunt-contrib-cssmin": "^4.0.0",
     "grunt-criticalcss": "^2.1.0",
-    "isaacscript-lint": "^1.0.77",
     "jest": "^27.4.7",
     "source-map-loader": "^3.0.1",
     "ts-jest": "^27.1.2",

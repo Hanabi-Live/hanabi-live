@@ -35,9 +35,6 @@
     "./client",
   ],
 
-  // This is needed because the "jest.config.js" is not located in the root of the repository
-  "jest.rootPath": "client",
-
   // By default, VSCode will not automatically fill-in function arguments
   "javascript.suggest.completeFunctionCalls": true,
   "typescript.suggest.completeFunctionCalls": true,

@@ -1,4 +1,4 @@
-import suitsJSON from "../../../../data/suits.json";
+import { suitsJSON } from "hanabi-data";
 import Color from "../types/Color";
 import Suit from "../types/Suit";
 

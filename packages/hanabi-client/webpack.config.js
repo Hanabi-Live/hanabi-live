@@ -17,7 +17,13 @@ const webpack = require("webpack");
 
 // Read the version
 const repoRoot = path.join(__dirname, "..", "..");
-const versionPath = path.join(repoRoot, "data", "version.json");
+const versionPath = path.join(
+  repoRoot,
+  "packages",
+  "hanabi-data",
+  "src",
+  "version.json",
+);
 if (!fs.existsSync(versionPath)) {
   throw new Error(`The version.json file does not exist at "${versionPath}".`);
 }
