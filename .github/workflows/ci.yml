@@ -89,7 +89,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
       - name: Build the TypeScript code
-        run: ./build_client.sh
+        run: bash build_client.sh
         working-directory: ${{ env.working-directory }}
 
   client_lint:
@@ -121,11 +121,11 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
       - name: Create the "version.json" file
-        run: ./set_version.sh
+        run: bash set_version.sh
         working-directory: ${{ env.working-directory }}
 
       - name: Lint the TypeScript code
-        run: ./lint_client.sh
+        run: bash lint_client.sh
         working-directory: ${{ env.working-directory }}
 
   client_test:
@@ -157,7 +157,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
       - name: Create the "version.json" file
-        run: ./set_version.sh
+        run: bash set_version.sh
         working-directory: ${{ env.working-directory }}
 
       - name: Test the TypeScript code
@@ -179,7 +179,7 @@ jobs:
         uses: actions/setup-go@v2
 
       - name: Compile the Golang code
-        run: ./build_server.sh
+        run: bash build_server.sh
         working-directory: ${{ env.working-directory }}
 
   server_lint:
@@ -229,7 +229,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
       - name: Spell check both client and server code
-        run: ./spell_check.sh
+        run: bash spell_check.sh
         working-directory: ${{ env.working-directory }}
 
   discord:
