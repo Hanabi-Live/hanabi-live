@@ -8,9 +8,12 @@
     "url": "git+https://github.com/Hanabi-Live/hanabi-live.git"
   },
   "author": "Zamiell",
-  "license": "",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/Hanabi-Live/hanabi-live/issues"
   },
-  "homepage": "https://github.com/Hanabi-Live/hanabi-live#readme"
+  "homepage": "https://github.com/Hanabi-Live/hanabi-live#readme",
+  "devDependencies": {
+    "isaacscript-lint": "^1.0.77"
+  }
 }

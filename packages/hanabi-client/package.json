@@ -6,7 +6,7 @@
     "type": "git",
     "url": "Hanabi-Live/hanabi-live"
   },
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "grunt": "grunt",
     "test": "jest",
