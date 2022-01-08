@@ -16,7 +16,8 @@ export function hardVariant(variant: Variant, minEfficiency: number): boolean {
     variantRules.isNumberMute(variant) ||
     variantRules.isThrowItInAHole(variant) ||
     variantRules.isCowAndPig(variant) ||
-    variantRules.isDuck(variant)
+    variantRules.isDuck(variant) ||
+    variantRules.isUpOrDown(variant)
   ) {
     return true;
   }
