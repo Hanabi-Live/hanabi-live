@@ -1,0 +1,11 @@
+// The configuration file for TypeScript
+{
+  // We extend the standard IsaacScript config
+  // https://github.com/IsaacScript/isaacscript-tsconfig/blob/main/tsconfig.base.json
+  "extends": "isaacscript-tsconfig/tsconfig.base.json",
+
+  // A list of the TypeScript files to compile
+  "include": [
+    "./packages/**/src/**/*.ts",
+  ],
+}

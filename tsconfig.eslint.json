@@ -1,0 +1,11 @@
+// A special TypeScript project file, used by ESLint only
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    // These must match the base the "include" setting in the base "tsconfig.json" file
+    "./packages/**/src/**/*.ts",
+
+    // These are ESLint-only inclusions
+    "./.eslintrc.js",
+  ],
+}

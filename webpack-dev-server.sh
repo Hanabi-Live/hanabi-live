@@ -18,5 +18,5 @@ if [[ -z $WEBPACK_DEV_SERVER_PORT ]]; then
   WEBPACK_DEV_SERVER_PORT=8080
 fi
 
-cd "$DIR/client"
+cd "$DIR/packages/hanabi-client"
 npx webpack serve --host "$DOMAIN" --port "$WEBPACK_DEV_SERVER_PORT"
