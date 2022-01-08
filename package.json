@@ -1,0 +1,16 @@
+{
+  "name": "hanabi-live",
+  "version": "0.0.0",
+  "description": "A web server that allows people to play Hanab, a cooperative card game of logic and reasoning.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hanabi-Live/hanabi-live.git"
+  },
+  "author": "Zamiell",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/Hanabi-Live/hanabi-live/issues"
+  },
+  "homepage": "https://github.com/Hanabi-Live/hanabi-live#readme"
+}
