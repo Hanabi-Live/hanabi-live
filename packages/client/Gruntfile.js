@@ -8,11 +8,18 @@ const fs = require("fs");
 const path = require("path");
 
 // Read the version
-const versionPath = path.join(__dirname, "..", "data", "version.json");
+const repoRoot = path.join(__dirname, "..", "..");
+const versionPath = path.join(
+  repoRoot,
+  "packages",
+  "data",
+  "src",
+  "version.js",
+);
 if (!fs.existsSync(versionPath)) {
-  throw new Error(`The version.json file does not exist at "${versionPath}".`);
+  throw new Error(`The "${versionPath}" file does not exist.`);
 }
-const version = fs.readFileSync(versionPath).toString().trim();
+const { VERSION } = require(versionPath);
 
 // Define the name of the final CSS file
 // We want to include the version inside of the filename
@@ -21,7 +28,7 @@ const version = fs.readFileSync(versionPath).toString().trim();
 // 1) allow proxies to cache the file properly
 // 2) properly force a download of a new version in a reliable way
 // https://www.alainschlesser.com/bust-cache-content-hash/
-const bundleFilename = `main.${version}.min.css`;
+const bundleFilename = `main.${VERSION}.min.css`;
 
 // Constants
 const cssDir = path.join("..", "public", "css");

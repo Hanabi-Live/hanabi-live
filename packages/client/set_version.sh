@@ -10,6 +10,8 @@ REPO_ROOT="$DIR/../.."
 # (which is equal to the number of commits in the git repository)
 # This is "baked" into the JavaScript bundle and self-reported when connecting to the server so that
 # the server can deny clients on old versions of the code
+# This must be in the form of CommonJS JavaScript code because it is imported from the webpack
+# config, which is written in JavaScript (instead of TypeScript)
 cd "$REPO_ROOT"
 VERSION=$(git rev-list --count HEAD)
-echo "$VERSION" > "$REPO_ROOT/packages/data/src/version.json"
+echo "module.exports = { VERSION: \"$VERSION\" };" > "$REPO_ROOT/packages/data/src/version.js"

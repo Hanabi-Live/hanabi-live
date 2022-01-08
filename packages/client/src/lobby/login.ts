@@ -1,6 +1,6 @@
 // The initial login page
 
-import { version } from "@hanabi/data";
+import { VERSION } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
@@ -67,7 +67,7 @@ function send(username: string, password: string) {
   const postData = {
     username,
     password,
-    version,
+    version: VERSION,
   };
   const request = $.ajax({
     url,

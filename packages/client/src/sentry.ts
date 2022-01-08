@@ -1,6 +1,6 @@
 // In production, we send all errors to the cloud using the Sentry.io service
 
-import { version } from "@hanabi/data";
+import { VERSION } from "@hanabi/data";
 import * as Sentry from "@sentry/browser";
 import InitData from "./game/types/InitData";
 
@@ -9,15 +9,9 @@ export function init(): void {
     return;
   }
 
-  if (typeof version !== "number") {
-    throw new Error(
-      'The version from the "version.json" file was not a number.',
-    );
-  }
-
   Sentry.init({
     dsn: "https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482",
-    release: version.toString(),
+    release: VERSION,
     whitelistUrls: ["hanab.live"], // Otherwise, we get errors for LastPass, etc.
     ignoreErrors,
   });

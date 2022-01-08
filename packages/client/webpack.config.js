@@ -22,12 +22,12 @@ const versionPath = path.join(
   "packages",
   "data",
   "src",
-  "version.json",
+  "version.js",
 );
 if (!fs.existsSync(versionPath)) {
-  throw new Error(`The version.json file does not exist at "${versionPath}".`);
+  throw new Error(`The "${versionPath}" file does not exist.`);
 }
-const version = fs.readFileSync(versionPath).toString().trim();
+const { VERSION } = require(versionPath);
 
 // Define the name of the compiled JS file
 // We want to include the version inside of the filename
@@ -36,7 +36,7 @@ const version = fs.readFileSync(versionPath).toString().trim();
 // 1) allow proxies to cache the file properly
 // 2) properly force a download of a new version in a reliable way
 // https://www.alainschlesser.com/bust-cache-content-hash/
-const bundleFilename = `main.${version}.min.js`;
+const bundleFilename = `main.${VERSION}.min.js`;
 
 // Other constants
 const outputPath = path.join(__dirname, "webpack_output");
@@ -158,7 +158,7 @@ if (!inTravis && sentryTokenIsSet) {
     new SentryWebpackPlugin({
       // This must be the directory containing the source file and the source map
       include: outputPath,
-      release: version,
+      release: VERSION,
     }),
   );
 }

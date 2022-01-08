@@ -1,6 +1,3 @@
-# NPM modules are not typically included in a repository
-/node_modules
-
 # We don't need to include the converted TypeScript --> Javascript files
 /webpack_output
 

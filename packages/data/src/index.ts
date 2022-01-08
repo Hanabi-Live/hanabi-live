@@ -4,8 +4,8 @@ import * as emojisJSON from "./emojis.json";
 import * as emotesJSON from "./emotes.json";
 import * as suitsJSON from "./suits.json";
 import * as variantsJSON from "./variants.json";
-import * as version from "./version.json";
 
+export * from "./version";
 export {
   charactersJSON,
   colorsJSON,
@@ -13,5 +13,4 @@ export {
   emotesJSON,
   suitsJSON,
   variantsJSON,
-  version,
 };

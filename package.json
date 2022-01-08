@@ -16,6 +16,7 @@
     "./packages/*"
   ],
   "devDependencies": {
+    "client": "^0.0.1",
     "isaacscript-lint": "^1.0.77"
   }
 }

@@ -25,11 +25,9 @@ if [[ -z $CI ]]; then
   fi
 fi
 
-# Set the version number in the "version.json" file
+# Set the version number
 # (see the comments in the subsequent script)
-echo "GETTING HERE 1"
 bash "$DIR/set_version.sh"
-echo "GETTING HERE 2"
 
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script during a graceful restart and it will not have it in
