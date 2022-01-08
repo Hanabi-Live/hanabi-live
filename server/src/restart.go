@@ -16,7 +16,7 @@ func gracefulRestart(ctx context.Context) {
 	// total amount of downtime (but executing Bash scripts will not work on Windows)
 	if runtime.GOOS != "windows" {
 		logger.Info("Building the client...")
-		if err := executeScript("client/build_client.sh"); err != nil {
+		if err := executeScript("packages/hanabi-client/build_client.sh"); err != nil {
 			logger.Error("Failed to execute the \"build_client.sh\" script: " + err.Error())
 			return
 		}
