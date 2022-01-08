@@ -10,9 +10,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # https://stackoverflow.com/questions/16908084/bash-script-to-calculate-time-elapsed
 SECONDS=0
 
+REPO_ROOT="$DIR/../.."
+
 # Import the port
 if [[ -z $CI ]]; then
-  ENV_PATH="$DIR/../.env"
+  ENV_PATH="$REPO_ROOT/.env"
   if [[ ! -f $ENV_PATH ]]; then
     echo "Failed to find the \".env\" file at: $ENV_PATH"
     exit 1
@@ -28,7 +30,7 @@ fi
 # This is "baked" into the JavaScript bundle and self-reported when connecting to the server so that
 # the server can deny clients on old versions of the code
 VERSION=$(git rev-list --count HEAD)
-echo "$VERSION" > "$DIR/../data/version.json"
+echo "$VERSION" > "$REPO_ROOT/data/version.json"
 
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script during a graceful restart and it will not have it in
@@ -66,14 +68,14 @@ echo
 
 # Create a file that informs the server that the bundled JavaScript & CSS will not be available for
 # the next few milliseconds or so
-COMPILING_FILE="$DIR/../compiling_client"
+COMPILING_FILE="$REPO_ROOT/compiling_client"
 touch "$COMPILING_FILE"
 
 # JavaScript and CSS files are served out of a "bundles" directory
 # We do not want to serve files directly out of the "webpack_output" or the "grunt_output" directory
 # because that would cause website downtime during client compilation
 WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
-JS_BUNDLES_DIR="$DIR/../public/js/bundles"
+JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$JS_BUNDLES_DIR/"
 cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$JS_BUNDLES_DIR/"
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
@@ -97,7 +99,7 @@ else
   echo
 fi
 GRUNT_OUTPUT_DIR="$DIR/grunt_output"
-CSS_DIR="$DIR/../public/css"
+CSS_DIR="$REPO_ROOT/public/css"
 cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_DIR/"
 
 # The JavaScript & CSS files are now ready to be requested from users
@@ -120,6 +122,7 @@ cd "$CSS_DIR"
 if [[ $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
   ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
 fi
+
 cd "$DIR"
 
 echo "Client v$VERSION successfully built in $SECONDS seconds."
