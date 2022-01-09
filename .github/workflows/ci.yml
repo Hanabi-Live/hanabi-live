@@ -5,7 +5,6 @@ on: [push, pull_request]
 jobs:
   client_build:
     name: Client - Build (Compile TypeScript)
-    needs: check_client
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -32,7 +31,6 @@ jobs:
 
   client_lint:
     name: Client - Lint (ESLint)
-    needs: check_client
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -62,7 +60,6 @@ jobs:
 
   client_test:
     name: Client - Test (Jest)
-    needs: check_client
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -93,7 +90,6 @@ jobs:
 
   server_build:
     name: Server - Build (Compile Go)
-    needs: check_server
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -110,7 +106,6 @@ jobs:
 
   server_lint:
     name: Server - Lint (golangci-lint)
-    needs: check_server
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
