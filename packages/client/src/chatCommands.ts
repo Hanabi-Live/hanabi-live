@@ -294,7 +294,6 @@ export function getVariantFromArgs(args: string[]): string {
     .replace(patterns.doubleSpaces, " ")
     .trim();
 
-  console.error(variant);
   return variant;
 }
 
