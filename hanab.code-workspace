@@ -24,7 +24,7 @@
 		},
 		"jest.disabledWorkspaceFolders": [
 			"Hanab",
-			"Server",
+			"Server (Go)",
 			"Data"
 		],
 		"files.associations": {
