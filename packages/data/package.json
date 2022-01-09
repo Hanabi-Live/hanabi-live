@@ -3,5 +3,11 @@
   "version": "0.0.0",
   "license": "AGPL-3.0-only",
   "author": "Zamiell",
-  "main": "./src/index.ts"
+  "main": "dist/index",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "typescript": "^4.5.4"
+  }
 }

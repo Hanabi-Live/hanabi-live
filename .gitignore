@@ -35,3 +35,6 @@ GitHub_private_key.pem
 
 # NPM modules are not typically included in a repository
 node_modules
+
+# Ignore output directories for packages
+packages/**/dist

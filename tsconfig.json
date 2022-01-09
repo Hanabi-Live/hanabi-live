@@ -10,13 +10,16 @@
     // From: https://medium.com/@NiGhTTraX/how-to-set-up-a-typescript-monorepo-with-lerna-c6acda7d4559
     "baseUrl": "./packages",
     "paths": {
-      "@hanabi/client": ["client/src"],
-      "@hanabi/data": ["data/src"],
+      "@hanabi/client": ["./client/src"],
+      "@hanabi/data": ["./data/src"]
     },
 
     // "resolveJsonModule" includes modules imported with ".json" extensions
     // By default, it is false
     // We import JSON files in the code base, so this is needed
     "resolveJsonModule": true,
-  },
+
+    // Some libraries are not well-behaved, skip checking them for type errors
+    "skipLibCheck": true
+  }
 }

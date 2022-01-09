@@ -11,6 +11,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const webpack = require("webpack");
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const { VERSION } = require("../data/src/version");
 
 // Define the name of the compiled JS file
@@ -62,6 +63,7 @@ module.exports = {
   resolve: {
     extensions: [".js", ".ts", ".json"],
     symlinks: false, // Performance optimization
+    plugins: [new TsconfigPathsPlugin()],
   },
 
   // webpack will display a warning unless we specify the mode
