@@ -6,7 +6,7 @@
 		},
 		{
 			"name": "Client",
-			"path": "client"
+			"path": "packages/client"
 		},
 		{
 			"name": "Server",
