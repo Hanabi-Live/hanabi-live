@@ -19,9 +19,4 @@
     // We import JSON files in the code base, so this is needed
     "resolveJsonModule": true,
   },
-
-  // A list of the TypeScript files to compile
-  //"include": [
-    //"./packages/**/src/**/*.ts",
-  //],
 }
