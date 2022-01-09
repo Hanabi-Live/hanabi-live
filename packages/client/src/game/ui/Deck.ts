@@ -5,7 +5,7 @@ import {
   timerFormatter,
 } from "../../misc";
 import * as tooltips from "../../tooltips";
-import { OptionIcons } from "../../types/Options";
+import { OptionIcons } from "../../types/OptionIcons";
 import * as deckRules from "../rules/deck";
 import ActionType from "../types/ActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";

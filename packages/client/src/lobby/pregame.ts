@@ -5,7 +5,7 @@ import { getVariant } from "../game/data/gameData";
 import globals from "../globals";
 import { setBrowserAddressBarPath, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
-import { OptionIcons } from "../types/Options";
+import { OptionIcons } from "../types/OptionIcons";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";
