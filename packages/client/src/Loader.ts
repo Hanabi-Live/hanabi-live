@@ -34,16 +34,6 @@ const fileIDs = [
   "wrench",
 ];
 
-// BEGIN TEST DEBUG CODE
-const foo = new Map<string, string>();
-let bar: string | null = null;
-for (const [key, value] of foo.entries()) {
-  console.log(key);
-  bar = value;
-}
-console.log(bar);
-// END TEST DEBUG CODE
-
 export default class Loader {
   filePathMap = new Map<string, string>();
   numLoaded = 0;
