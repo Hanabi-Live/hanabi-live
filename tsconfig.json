@@ -18,5 +18,6 @@
     // By default, it is false
     // We import JSON files in the code base, so this is needed
     "resolveJsonModule": true,
+    "esModuleInterop": true,
   },
 }

@@ -19,6 +19,9 @@ module.exports = {
     // linted but not included in the actual project output
     project: "./tsconfig.eslint.json",
     tsconfigRootDir: __dirname,
+    parserOptions: {
+      extraFileExtensions: [".ts"],
+    },
   },
 
   ignorePatterns: ["**/webpack_output/**", "**/lib/**"],
