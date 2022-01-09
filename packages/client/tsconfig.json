@@ -39,8 +39,10 @@
     // We must specify both of these options in order to fix the problem
     // By default, these flags are false
     "sourceMap": true,
-    "inlineSources": true
+    "inlineSources": true,
   },
 
-  "include": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts",
+  ],
 }
