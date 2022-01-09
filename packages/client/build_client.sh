@@ -25,8 +25,10 @@ if [[ -z $CI ]]; then
   fi
 fi
 
-# Set the version number
-# (see the comments in the subsequent script)
+# Set the "VERSION" environment variable
+source "$DIR/get_version.sh"
+
+# Prepare the "version.js" file
 bash "$DIR/set_version.sh"
 
 # If we need to, add the NPM directory to the path
