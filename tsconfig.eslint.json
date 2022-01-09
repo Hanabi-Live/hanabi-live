@@ -4,6 +4,7 @@
   "include": [
     // These are ESLint-only inclusions
     "./.eslintrc.js",
-    "./packages/client/webpack.config.js"
+    "./jest.config.js",
+    "./packages/client/webpack.config.js",
   ],
 }
