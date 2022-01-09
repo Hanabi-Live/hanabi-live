@@ -9,8 +9,12 @@
 			"path": "packages/client"
 		},
 		{
-			"name": "Server",
+			"name": "Server (Go)",
 			"path": "server/src"
+		},
+		{
+			"name": "Data",
+			"path": "packages/data"
 		}
 	],
 	"settings": {
@@ -20,7 +24,8 @@
 		},
 		"jest.disabledWorkspaceFolders": [
 			"Hanab",
-			"Server"
+			"Server",
+			"Data"
 		],
 		"files.associations": {
 			"*.tmpl": "html"
