@@ -106,7 +106,7 @@ func main() {
 	logger.Info("Current git commit: " + gitCommitOnStart)
 
 	// Check to see if the data path exists
-	dataPath = path.Join(projectPath, "data")
+	dataPath = path.Join(projectPath, "packages", "data", "src")
 	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
 		logger.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
 			"This directory should always exist; please try re-cloning the repository.")
