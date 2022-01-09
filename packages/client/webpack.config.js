@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 // It is possible for the webpack configuration to be written in TypeScript,
@@ -14,20 +11,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const webpack = require("webpack");
-
-// Read the version
-const repoRoot = path.join(__dirname, "..", "..");
-const versionPath = path.join(
-  repoRoot,
-  "packages",
-  "data",
-  "src",
-  "version.js",
-);
-if (!fs.existsSync(versionPath)) {
-  throw new Error(`The "${versionPath}" file does not exist.`);
-}
-const { VERSION } = require(versionPath);
+const { VERSION } = require("../data/src/version");
 
 // Define the name of the compiled JS file
 // We want to include the version inside of the filename
