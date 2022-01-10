@@ -16,7 +16,6 @@ const tsconfig = jsoncParser.parse(tsconfigString);
 const { compilerOptions } = tsconfig;
 
 module.exports = {
-  projects: ["<rootDir>/packages/client"],
   preset: "ts-jest",
   testEnvironment: "node",
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
