@@ -7,22 +7,19 @@ set -x # Enable debugging
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# Change to the parent directory (the repository root)
-DIR="$DIR/.."
-cd "$DIR"
+REPO_ROOT="$DIR/.."
 
 # Ensure that the ".env" file exists
-if [[ ! -f "$DIR/.env" ]]; then
-  cp "$DIR/.env_template" "$DIR/.env"
+if [[ ! -f "$REPO_ROOT/.env" ]]; then
+  cp "$REPO_ROOT/.env_template" "$REPO_ROOT/.env"
 fi
 
 # Install the JavaScript/TypeScript dependencies and build the client
-cd "$DIR/packages/client"
+cd "$REPO_ROOT"
 npm ci
-bash "./build_client.sh"
-cd "$DIR"
+bash "$REPO_ROOT/packages/client/build_client.sh"
 
 # Build the server, which will automatically install the Golang dependencies
-bash "$DIR/server/build_server.sh"
+bash "$REPO_ROOT/server/build_server.sh"
 
 echo "Successfully installed dependencies."
