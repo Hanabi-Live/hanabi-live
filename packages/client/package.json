@@ -28,6 +28,7 @@
   "devDependencies": {
     "@sentry/webpack-plugin": "^1.18.3",
     "@types/jquery": "^3.5.11",
+    "@types/linkifyjs": "^2.1.4",
     "@types/tooltipster": "^0.0.31",
     "dotenv": "^10.0.0",
     "grunt": "^1.4.1",
@@ -36,6 +37,7 @@
     "grunt-criticalcss": "^2.1.0",
     "isaacscript-tsconfig": "^1.1.8",
     "jsonc-parser": "^3.0.0",
+    "linkifyjs": "^3.0.5",
     "source-map-loader": "^3.0.1",
     "ts-jest": "^27.1.2",
     "ts-loader": "^9.2.6",
