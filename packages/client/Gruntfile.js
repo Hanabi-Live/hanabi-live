@@ -4,22 +4,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 // Imports
-const fs = require("fs");
 const path = require("path");
-
-// Read the version
-const repoRoot = path.join(__dirname, "..", "..");
-const versionPath = path.join(
-  repoRoot,
-  "packages",
-  "data",
-  "src",
-  "version.js",
-);
-if (!fs.existsSync(versionPath)) {
-  throw new Error(`The "${versionPath}" file does not exist.`);
-}
-const { VERSION } = require(versionPath);
+const { VERSION } = require("../data/src/version");
 
 // Define the name of the final CSS file
 // We want to include the version inside of the filename
@@ -31,7 +17,8 @@ const { VERSION } = require(versionPath);
 const bundleFilename = `main.${VERSION}.min.css`;
 
 // Constants
-const cssDir = path.join("..", "public", "css");
+const repoRoot = path.join(__dirname, "..", "..");
+const cssDir = path.join(repoRoot, "public", "css");
 const cssLibDir = path.join(cssDir, "lib");
 const gruntOutputDir = path.join(__dirname, "grunt_output");
 
