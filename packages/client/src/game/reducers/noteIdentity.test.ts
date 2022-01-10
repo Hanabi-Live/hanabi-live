@@ -1,4 +1,4 @@
-import { getVariant } from "../data/gameData";
+import { getVariant } from "@hanabi/data";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 const testVariant = getVariant("Up or Down (5 Suits)");

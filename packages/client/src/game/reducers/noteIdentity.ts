@@ -1,9 +1,11 @@
+import {
+  ALL_RESERVED_NOTES,
+  MAX_RANK,
+  START_CARD_RANK,
+  Variant,
+} from "@hanabi/data";
 import { parseIntSafe } from "../../misc";
 import CardIdentity from "../types/CardIdentity";
-import { MAX_RANK, START_CARD_RANK } from "../types/constants";
-import Suit from "../types/Suit";
-import Variant from "../types/Variant";
-import { ALL_RESERVED_NOTES } from "./constants";
 
 interface CardIdentities {
   readonly suitIndices: number[];
@@ -11,7 +13,7 @@ interface CardIdentities {
 }
 
 function parseSuit(variant: Variant, suitText: string): number | null {
-  const suitAbbreviationIndex = variant.abbreviations.findIndex(
+  const suitAbbreviationIndex = variant.suitAbbreviations.findIndex(
     (abbreviation) => abbreviation.toLowerCase() === suitText,
   );
   if (suitAbbreviationIndex !== -1) {
@@ -24,6 +26,7 @@ function parseSuit(variant: Variant, suitText: string): number | null {
   if (suitNameIndex !== -1) {
     return suitNameIndex;
   }
+
   return null;
 }
 
@@ -32,6 +35,7 @@ function parseRank(rankText: string): number {
   if (rank === 0 || Number.isNaN(rank)) {
     return START_CARD_RANK;
   }
+
   return rank;
 }
 
@@ -39,6 +43,7 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
   const identityMatch = new RegExp(
     variant.identityNotePattern.toLowerCase(),
   ).exec(keyword.toLowerCase());
+
   let suitIndex = null;
   let rank = null;
   if (identityMatch !== null) {
@@ -100,11 +105,13 @@ function range(
 ): number[] {
   const start: number = _stop === null ? 0 : _start;
   const stop: number = _stop === null ? _start : _stop;
-  const ret: number[] = [];
+
+  const numbersInRange: number[] = [];
   for (let i = start; i < stop; i += step) {
-    ret.push(i);
+    numbersInRange.push(i);
   }
-  return ret;
+
+  return numbersInRange;
 }
 
 function identityMapToArray(cardMap: number[][]) {
@@ -117,23 +124,27 @@ function identityMapToArray(cardMap: number[][]) {
       }
     }
   }
+
   return possibilities;
 }
 
-// Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
-// card possibilities that it declares
-//
-// e.g. the note keyword `red` would return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
-// and the note keyword `red 3, blue 3` would return `[[0,3], [3,3]]`
-// and the note keyword `rb23` would return `[[0,2], [3,2], [0,3], [3,3]]`
-// and the note keyword `r,b,2,3` would return all reds, blues, 2's, and 3's
-// and the note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
+/**
+ * Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
+ * card possibilities that it declares.
+ *
+ * Examples:
+ * - `red` --> `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
+ * - `red 3, blue 3` --> `[[0,3], [3,3]]`
+ * - `rb23` --> `[[0,2], [3,2], [0,3], [3,3]]`
+ * - `r,b,2,3` --> all reds, blues, 2's, and 3's
+ * - `r,!2,!3` --> `[[0,1], [0,4], [0,5]`
+ */
 function getPossibilitiesFromKeyword(
   variant: Variant,
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
-  const positiveIdent = []; // Any combination of suits and ranks
-  const negativeIdent = []; // Any negative cluing `!r1` `!3`
+  const positiveIdentities = []; // Any combination of suits and ranks
+  const negativeIdentities = []; // Any negative cluing `!r1` `!3`
   for (const substring of keywordPreTrim.split(",")) {
     const trimmed = substring.trim();
     const negative = trimmed.startsWith("!");
@@ -142,23 +153,27 @@ function getPossibilitiesFromKeyword(
       (negative ? trimmed.substring(1) : trimmed).trim(),
     );
     if (negative) {
-      negativeIdent.push(identity);
+      negativeIdentities.push(identity);
     } else {
-      positiveIdent.push(identity);
+      positiveIdentities.push(identity);
     }
   }
+
   // Start with all 1's if no positive info, else all 0's
   const identityMap: number[][] = [];
-  const positiveRanks = new Set(positiveIdent.length > 0 ? [] : variant.ranks);
+  const positiveRanks = new Set(
+    positiveIdentities.length > 0 ? [] : variant.ranks,
+  );
   for (let rank = 1; rank <= MAX_RANK; rank++) {
     identityMap.push(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
     );
   }
+
   // Then add positive items and remove all negatives
-  for (const identities of [positiveIdent, negativeIdent]) {
-    const negative = identities === negativeIdent;
+  for (const identities of [positiveIdentities, negativeIdentities]) {
+    const negative = identities === negativeIdentities;
     for (const identity of identities) {
       const ranks = identity.ranks.length > 0 ? identity.ranks : variant.ranks;
       for (const rank of ranks) {
@@ -172,6 +187,7 @@ function getPossibilitiesFromKeyword(
       }
     }
   }
+
   return identityMapToArray(identityMap);
 }
 
@@ -188,6 +204,7 @@ export function getPossibilitiesFromKeywords(
     if (newPossibilities === null) {
       continue;
     }
+
     const oldPossibilities = possibilities;
     const intersection = newPossibilities.filter(([newSuitIndex, newRank]) =>
       oldPossibilities.some(
@@ -195,61 +212,13 @@ export function getPossibilitiesFromKeywords(
           newSuitIndex === oldSuitIndex && newRank === oldRank,
       ),
     );
+
     // If this new term completely conflicts with the previous terms, then reset our state to
     // just the new term
     possibilities = intersection.length === 0 ? newPossibilities : intersection;
   }
 
   return possibilities;
-}
-
-function createSuitPattern(suits: Suit[], abbreviations: string[]): string {
-  let alternation = "";
-  suits.forEach((suit, i) => {
-    if (i !== 0) {
-      alternation += "|";
-    }
-
-    alternation += abbreviations[i].toLowerCase();
-    alternation += "|";
-    alternation += suit.displayName.toLowerCase();
-  });
-
-  return `(${alternation})`;
-}
-
-function createRankPattern(ranks: number[], isUpOrDown: boolean): string {
-  let rankStrings = ranks.map((r) => r.toString());
-  if (isUpOrDown) {
-    rankStrings = rankStrings.concat("0", "s", "start");
-  }
-
-  return `(${rankStrings.join("|")})`;
-}
-
-function createSquishPattern(
-  abbreviations: string[],
-  ranks: number[],
-  isUpOrDown: boolean,
-): string {
-  let rankStrings = ranks.map((r) => r.toString());
-  if (isUpOrDown) {
-    rankStrings = rankStrings.concat("0", "s");
-  }
-  const allNoteLetters = rankStrings.concat(abbreviations);
-  return `([${allNoteLetters.join("").toLowerCase()}]+)`;
-}
-
-export function createIdentityNotePattern(
-  suits: Suit[],
-  ranks: number[],
-  abbreviations: string[],
-  isUpOrDown: boolean,
-): string {
-  const suitPattern = createSuitPattern(suits, abbreviations);
-  const rankPattern = createRankPattern(ranks, isUpOrDown);
-  const squishPattern = createSquishPattern(abbreviations, ranks, isUpOrDown);
-  return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern}|${squishPattern})$`;
 }
 
 const extractSuitText = (match: RegExpMatchArray) =>
@@ -260,8 +229,10 @@ const extractRankText = (match: RegExpMatchArray) =>
 
 const extractSquishText = (match: RegExpMatchArray) => {
   const text = match[7]?.trim();
+
   if (ALL_RESERVED_NOTES.indexOf(text) === -1) {
     return text ?? null;
   }
+
   return null;
 };

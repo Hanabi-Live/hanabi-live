@@ -169,7 +169,7 @@ func httpExport(c *gin.Context) {
 		optionsJSON.StartingPlayer = &options.StartingPlayer
 		allDefaultOptions = false
 	}
-	if options.VariantName != "No Variant" {
+	if options.VariantName != DefaultVariantName {
 		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false
 	}

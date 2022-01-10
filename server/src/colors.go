@@ -14,7 +14,7 @@ var (
 
 func colorsInit() {
 	// Import the JSON file
-	filePath := path.Join(dataPath, "colors.json")
+	filePath := path.Join(jsonPath, "colors.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())

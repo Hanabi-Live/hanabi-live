@@ -95,6 +95,8 @@ const (
 	// but this may not always be the case
 	PointsPerSuit = 5
 
+	DefaultVariantName = "No Variant"
+
 	// A "reversed" version of every suit exists
 	SuitReversedSuffix = " Reversed"
 

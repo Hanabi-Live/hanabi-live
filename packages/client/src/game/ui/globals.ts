@@ -1,18 +1,16 @@
 // This object contains global variables for the game UI
 // Every class variable must also be reset in the "reset()" function
 
+import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
 import * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../globals";
 import Loader from "../../Loader";
 import Options from "../../types/Options";
-import { VARIANTS } from "../data/gameData";
 import { GameExports } from "../main";
 import { Action, GameAction } from "../types/actions";
-import { DEFAULT_VARIANT_NAME } from "../types/constants";
 import GameMetadata from "../types/GameMetadata";
 import State from "../types/State";
-import Variant from "../types/Variant";
 import * as cursor from "./cursor";
 import Elements from "./Elements";
 import HanabiCard from "./HanabiCard";
@@ -93,7 +91,7 @@ export class Globals {
   // The variant of the current game is stored in the state metadata as a string
   // Provide a helper for the variant object that corresponds to this
   // (initialized in the "initStateStore()" function)
-  variant: Variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
+  variant = getDefaultVariant();
 
   get options(): Options {
     return this.state.metadata.options;
@@ -107,7 +105,7 @@ export class Globals {
     this.lobby = new LobbyGlobals();
     this.game = null;
     this.loading = true;
-    this.variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
+    this.variant = getDefaultVariant();
     this.deck = [];
     this.stackBases = [];
     this.imageLoader = null;

@@ -1,20 +1,15 @@
-import { colorsJSON } from "@hanabi/data";
-import Color from "../types/Color";
+import * as colorsJSON from "./json/colors.json";
+import { Color } from "./types/Color";
 
-// "ColorJSON" is almost exactly the same as "Color"
-// However, in "ColorJSON", some fields are optional, but in "Color",
-// we want all fields to be initialized
-interface ColorJSON {
-  name: string;
-  fill: string;
-  fillColorblind?: string;
-  abbreviation?: string;
-}
-
-export default function colorsInit(): Map<string, Color> {
+export function colorsInit(): ReadonlyMap<string, Color> {
   const COLORS = new Map<string, Color>();
 
-  for (const colorJSON of colorsJSON as ColorJSON[]) {
+  const colorsJSONArray = Array.from(colorsJSON);
+  if (colorsJSONArray.length === 0) {
+    throw new Error('The "colors.json" file did not have any elements in it.');
+  }
+
+  for (const colorJSON of colorsJSONArray) {
     // Validate the name
     const { name } = colorJSON;
     if (name === "") {
@@ -25,7 +20,7 @@ export default function colorsInit(): Map<string, Color> {
 
     // Validate the abbreviation
     // If it is not specified, assume that it is the first letter of the color
-    const abbreviation: string = colorJSON.abbreviation ?? name.charAt(0);
+    const abbreviation = colorJSON.abbreviation ?? name.charAt(0);
     if (abbreviation.length !== 1) {
       throw new Error(
         `The "${colorJSON.name}" color has an abbreviation that is not one letter long.`,
@@ -34,13 +29,13 @@ export default function colorsInit(): Map<string, Color> {
 
     // Validate the fill
     const { fill } = colorJSON;
-    if (colorJSON.fill === "") {
+    if (fill.length === 0) {
       throw new Error(`The "${colorJSON.name}" color has an empty fill.`);
     }
 
     // Validate the colorblind fill (which is an alternate fill when "Colorblind Mode" is enabled)
     // If it is not specified, assume that it is the same as the default fill
-    const fillColorblind: string = colorJSON.fillColorblind ?? fill;
+    const fillColorblind = colorJSON.fillColorblind ?? fill;
 
     // Add it to the map
     const color: Color = {

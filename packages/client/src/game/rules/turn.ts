@@ -1,7 +1,6 @@
+import { getCharacter, Variant } from "@hanabi/data";
 import Options from "../../types/Options";
-import { getCharacter } from "../data/gameData";
 import GameMetadata from "../types/GameMetadata";
-import Variant from "../types/Variant";
 import * as clueTokensRules from "./clueTokens";
 
 export function shouldEndTurnAfterDraw(

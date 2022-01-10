@@ -1,6 +1,6 @@
 // Rules related to properties of variants
 
-import Variant from "../types/Variant";
+import { isNameUpOrDown, Variant } from "@hanabi/data";
 
 export const isDualColor = (variant: Variant): boolean =>
   variant.name.startsWith("Dual-Color");
@@ -31,9 +31,6 @@ export const isThrowItInAHole = (variant: Variant): boolean =>
 
 export const isUpOrDown = (variant: Variant): boolean =>
   isNameUpOrDown(variant.name);
-
-export const isNameUpOrDown = (variantName: string): boolean =>
-  variantName.startsWith("Up or Down");
 
 export const isSynesthesia = (variant: Variant): boolean =>
   variant.name.startsWith("Synesthesia");

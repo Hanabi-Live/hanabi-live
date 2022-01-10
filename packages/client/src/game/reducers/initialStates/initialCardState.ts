@@ -1,6 +1,6 @@
+import { Variant } from "@hanabi/data";
 import * as deck from "../../rules/deck";
 import CardState from "../../types/CardState";
-import Variant from "../../types/Variant";
 
 export default function initialCardState(
   order: number,

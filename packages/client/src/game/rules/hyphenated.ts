@@ -1,4 +1,4 @@
-import Variant from "../types/Variant";
+import { Variant } from "@hanabi/data";
 import * as variantRules from "./variant";
 
 // The Hyphen-ated group makes a distinction between a "Hard Variant" and an "Easy Variant"

@@ -1,5 +1,4 @@
-import { getVariant } from "../data/gameData";
-import { DEFAULT_VARIANT_NAME } from "../types/constants";
+import { getDefaultVariant, getVariant } from "@hanabi/data";
 import {
   cluesStillUsable,
   minEfficiency,
@@ -10,7 +9,7 @@ import {
   startingPace,
 } from "./stats";
 
-const defaultVariant = getVariant(DEFAULT_VARIANT_NAME);
+const defaultVariant = getDefaultVariant();
 const blackVariant = getVariant("Black (6 Suits)");
 const clueStarvedVariant = getVariant("Clue Starved (6 Suits)");
 const cardsPerHand2Player = 5;

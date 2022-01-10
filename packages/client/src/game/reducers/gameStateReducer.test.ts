@@ -1,3 +1,4 @@
+import { MAX_CLUE_NUM } from "@hanabi/data";
 import {
   colorClue,
   discard,
@@ -7,7 +8,6 @@ import {
   strike,
 } from "../../../test/testActions";
 import testMetadata from "../../../test/testMetadata";
-import { MAX_CLUE_NUM } from "../types/constants";
 import gameStateReducer from "./gameStateReducer";
 import initialGameState from "./initialStates/initialGameState";
 import initialGameStateTest from "./initialStates/initialGameStateTest";

@@ -12,21 +12,20 @@ DIR="$(dirname "$DIR")"
 FILES=$(find "$DIR" -type f \
   -not -path "$DIR/.git/*" \
   -not -path "$DIR/backups/*" \
+  -not -path "$DIR/logs/*" \
+  -not -path "$DIR/maintenance/go.mod" \
+  -not -path "$DIR/maintenance/go.sum" \
+  -not -path "$DIR/misc/keldon/*" \
+  -not -path "$DIR/misc/word_list.txt" \
+  -not -path "$DIR/ongoing_tables/*" \
   -not -path "$DIR/packages/client/card-images/*" \
   -not -path "$DIR/packages/client/lib/*" \
   -not -path "$DIR/packages/client/node_modules/*" \
   -not -path "$DIR/packages/client/test_data/*" \
   -not -path "$DIR/packages/client/webpack_output/*" \
   -not -path "$DIR/packages/client/package-lock.json" \
-  -not -path "$DIR/data/ongoing_tables/*" \
-  -not -path "$DIR/data/specific_deals/*" \
-  -not -path "$DIR/data/emojis.json" \
-  -not -path "$DIR/data/emotes.json" \
-  -not -path "$DIR/data/word_list.txt" \
-  -not -path "$DIR/logs/*" \
-  -not -path "$DIR/maintenance/go.mod" \
-  -not -path "$DIR/maintenance/go.sum" \
-  -not -path "$DIR/misc/keldon/*" \
+  -not -path "$DIR/packages/data/src/json/emojis.json" \
+  -not -path "$DIR/packages/data/src/json/emotes.json" \
   -not -path "$DIR/public/css/*" \
   -not -path "$DIR/public/img/*" \
   -not -path "$DIR/public/js/lib/*" \

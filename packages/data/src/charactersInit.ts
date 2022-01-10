@@ -1,10 +1,17 @@
-import { charactersJSON } from "@hanabi/data";
-import Character from "../types/Character";
+import * as charactersJSON from "./json/characters.json";
+import { Character } from "./types/Character";
 
-export default function charactersInit(): Map<number, Character> {
+export function charactersInit(): ReadonlyMap<number, Character> {
   const CHARACTERS = new Map<number, Character>();
 
-  for (const character of charactersJSON as Character[]) {
+  const charactersJSONArray = Array.from(charactersJSON);
+  if (charactersJSONArray.length === 0) {
+    throw new Error(
+      'The "characters.json" file did not have any elements in it.',
+    );
+  }
+
+  for (const character of charactersJSONArray) {
     // Validate the name
     if (character.name === "") {
       throw new Error(
@@ -13,8 +20,8 @@ export default function charactersInit(): Map<number, Character> {
     }
 
     // Validate the ID
+    // (the first character has an ID of 0)
     if (character.id < 0) {
-      // The first character has an ID of 0
       throw new Error(`The "${character.name}" character has an invalid ID.`);
     }
 

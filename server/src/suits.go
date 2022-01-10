@@ -14,7 +14,7 @@ var (
 
 func suitsInit() {
 	// Import the JSON file
-	filePath := path.Join(dataPath, "suits.json")
+	filePath := path.Join(jsonPath, "suits.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())

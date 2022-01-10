@@ -1,16 +1,16 @@
 // The card graphics are various HTML5 canvas drawings
 
-import { getSuit } from "../data/gameData";
-import * as abbreviationRules from "../rules/abbreviation";
-import * as variantRules from "../rules/variant";
-import Color from "../types/Color";
 import {
+  Color,
+  getSuit,
   STACK_BASE_RANK,
   START_CARD_RANK,
+  Suit,
   UNKNOWN_CARD_RANK,
-} from "../types/constants";
-import Suit from "../types/Suit";
-import Variant from "../types/Variant";
+  Variant,
+} from "@hanabi/data";
+import * as abbreviationRules from "../rules/abbreviation";
+import * as variantRules from "../rules/variant";
 import { CARD_H, CARD_W } from "./constants";
 import drawPip from "./drawPip";
 import drawStylizedRank from "./drawStylizedRank";
@@ -457,7 +457,7 @@ function drawText(
 
 function drawMixedCardHelper(
   ctx: CanvasRenderingContext2D,
-  clueColors: Color[],
+  clueColors: readonly Color[],
   enableShadows: boolean,
 ) {
   const [clueColor1, clueColor2] = clueColors;
@@ -607,13 +607,14 @@ function getSuitStyle(
 // Generates a vertical gradient that is evenly distributed between its component colors
 function evenLinearGradient(
   ctx: CanvasRenderingContext2D,
-  colors: string[],
-  args: number[],
+  colors: readonly string[],
+  args: readonly number[],
 ) {
   const grad = ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
   for (let i = 0; i < colors.length; ++i) {
     grad.addColorStop(i / (colors.length - 1), colors[i]);
   }
+
   return grad;
 }
 

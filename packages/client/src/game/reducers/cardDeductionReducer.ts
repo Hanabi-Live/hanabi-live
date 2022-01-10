@@ -1,9 +1,8 @@
-import { getVariant } from "../data/gameData";
+import { getVariant, Variant } from "@hanabi/data";
 import * as deckRules from "../rules/deck";
 import { GameAction } from "../types/actions";
 import CardState from "../types/CardState";
 import GameMetadata from "../types/GameMetadata";
-import Variant from "../types/Variant";
 
 export default function cardDeductionReducer(
   deck: readonly CardState[],

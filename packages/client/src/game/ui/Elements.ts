@@ -1,5 +1,5 @@
+import { Suit } from "@hanabi/data";
 import Konva from "konva";
-import Suit from "../types/Suit";
 import ButtonGroup from "./ButtonGroup";
 import CardLayout from "./CardLayout";
 import ClueLog from "./ClueLog";

@@ -1,21 +1,21 @@
-import equal from "fast-deep-equal";
-import produce, { Draft } from "immer";
-import { ensureAllCases } from "../../misc";
-import { getVariant } from "../data/gameData";
-import { NoteAction } from "../types/actions";
-import CardNote from "../types/CardNote";
-import GameMetadata from "../types/GameMetadata";
-import NotesState from "../types/NotesState";
-import Variant from "../types/Variant";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
   FINESSED_NOTES,
+  getVariant,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
   UNCLUED_NOTES,
-} from "./constants";
+  Variant,
+} from "@hanabi/data";
+import equal from "fast-deep-equal";
+import produce, { Draft } from "immer";
+import { ensureAllCases } from "../../misc";
+import { NoteAction } from "../types/actions";
+import CardNote from "../types/CardNote";
+import GameMetadata from "../types/GameMetadata";
+import NotesState from "../types/NotesState";
 import * as noteIdentity from "./noteIdentity";
 
 const notesReducer = produce(notesReducerFunction, {} as NotesState);

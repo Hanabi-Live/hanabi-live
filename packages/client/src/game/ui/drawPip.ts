@@ -1,6 +1,9 @@
-import Suit from "../types/Suit";
+import { Suit } from "@hanabi/data";
 
-type DrawFunction = (ctx: CanvasRenderingContext2D, colors?: string[]) => void;
+type DrawFunction = (
+  ctx: CanvasRenderingContext2D,
+  colors?: readonly string[],
+) => void;
 const shapeFunctions = new Map<string, DrawFunction>();
 const scaleFactor = 3;
 
@@ -2243,7 +2246,7 @@ shapeFunctions.set("emptySet", (ctx: CanvasRenderingContext2D) => {
 
 shapeFunctions.set(
   "infinity",
-  (ctx: CanvasRenderingContext2D, colors?: string[]) => {
+  (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
     ctx.scale(1.2, 1.2);
     ctx.beginPath();
     ctx.scale(scaleFactor, scaleFactor);
@@ -2374,7 +2377,7 @@ shapeFunctions.set(
 
 shapeFunctions.set(
   "rainbow",
-  (ctx: CanvasRenderingContext2D, colors?: string[]) => {
+  (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
     ctx.scale(scaleFactor, scaleFactor);
     ctx.translate(-122.26724, -111.17504);
 

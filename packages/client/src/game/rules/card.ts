@@ -1,8 +1,7 @@
+import { START_CARD_RANK, Variant } from "@hanabi/data";
 import CardState from "../types/CardState";
 import CardStatus from "../types/CardStatus";
-import { START_CARD_RANK } from "../types/constants";
 import StackDirection from "../types/StackDirection";
-import Variant from "../types/Variant";
 import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";

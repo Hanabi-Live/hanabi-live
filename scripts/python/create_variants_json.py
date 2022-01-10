@@ -22,11 +22,12 @@ def main():
     global old_variants_name_to_id_map
     global current_variant_id
 
-    # Read the old "variants.json" file and the "suits.json" file
+    # Read the old json files
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    data_path = os.path.join(dir_path, "..", "..", "data")
-    suits_path = os.path.join(data_path, "suits.json")
-    variants_path = os.path.join(data_path, "variants.json")
+    repo_root_path = os.path.join(dir_path, "..", "..")
+    json_path = os.path.join(repo_root_path, "packages", "data", "src", "json")
+    suits_path = os.path.join(json_path, "suits.json")
+    variants_path = os.path.join(json_path, "variants.json")
 
     with open(variants_path, "r") as variants_file:
         variants_string = variants_file.read()
@@ -41,28 +42,23 @@ def main():
     old_variants_id_to_name_map = {}
     for variant in old_variants_array:
         if "name" not in variant:
-            print(
+            error(
                 'One of the variants in the "variants.json" file does not have a name.'
             )
-            sys.exit(1)
 
         if "id" not in variant:
-            print(
-                'The variant of "' + variant["name"] + '" does not have an "id" field.'
-            )
-            sys.exit(1)
+            error(f'The variant of "{variant["name"]}" does not have an "id" field.')
 
         if variant["name"] in old_variants_name_to_id_map:
-            print(
-                'The old "variants.json" file has a duplicate variant name of:',
-                variant["name"],
+            error(
+                f'The old "variants.json" file has a duplicate variant name of: {variant["name"]}'
             )
-            sys.exit(1)
         old_variants_name_to_id_map[variant["name"]] = variant["id"]
 
         if variant["id"] in old_variants_id_to_name_map:
-            print('The old "variants.json" file has a duplicate ID of:', variant["id"])
-            sys.exit(1)
+            error(
+                f'The old "variants.json" file has a duplicate ID of: {variant["id"]}'
+            )
         old_variants_id_to_name_map[variant["id"]] = variant["name"]
 
     # Convert the suits array to a map and add default values
@@ -1028,26 +1024,28 @@ def main():
     for variant in old_variants_array:
         if variant["name"] not in new_variants_map:
             missing = True
-            print("Missing variant: " + variant["name"])
+            printf(f'Missing variant: {variant["name"]}')
     if missing:
-        sys.exit(1)
+        error(
+            'Skipping the creation of a new "variant.json" file since there were missing variants.'
+        )
 
     # Write out the new "variant.json" file
     with open(variants_path, "w", newline="\n") as new_variants_file:
         json.dump(variants, new_variants_file, indent=2, separators=(",", ": "))
         new_variants_file.write("\n")
 
-    print('Wrote a new "variants.json" file.')
+    printf(f"Created: {variants_path}")
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
-    variants_txt_path = os.path.join(data_path, "variants.txt")
+    variants_txt_path = os.path.join(repo_root_path, "misc", "variants.txt")
     contents = ""
     for variant in variants:
         contents += variant["name"] + " (#" + str(variant["id"]) + ")\n"
     with open(variants_txt_path, "w", newline="\n") as variants_txt_file:
         variants_txt_file.write(contents + "\n")
 
-    print('Wrote a new "variants.txt" file.')
+    printf(f"Created: {variants_txt_path}")
 
 
 def get_variant_id(variant_name):
@@ -1084,6 +1082,15 @@ def sliceindex(x):
             i = i + 1
             return i
         i = i + 1
+
+
+def printf(*args):
+    print(*args, flush=True)
+
+
+def error(msg):
+    printf(msg)
+    sys.exit(1)
 
 
 if __name__ == "__main__":

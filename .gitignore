@@ -28,7 +28,7 @@ motd.txt*
 /backups
 /letsencrypt
 /logs
-/data/ongoing_tables
+/ongoing_tables
 
 # Private keys
 GitHub_private_key.pem

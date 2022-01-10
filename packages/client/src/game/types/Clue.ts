@@ -1,5 +1,5 @@
+import { Color } from "@hanabi/data";
 import ClueType from "./ClueType";
-import Color from "./Color";
 
 interface RankClue {
   readonly type: ClueType.Rank;

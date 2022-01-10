@@ -1,5 +1,5 @@
+import { getVariantNames } from "@hanabi/data";
 import * as chat from "./chat";
-import { VARIANTS } from "./game/data/gameData";
 import globals from "./globals";
 import * as createGame from "./lobby/createGame";
 import * as modals from "./modals";
@@ -298,7 +298,10 @@ export function getVariantFromArgs(args: string[]): string {
 }
 
 export function getVariantFromPartial(search: string): string {
-  const keys = [...VARIANTS.keys()];
-  const possibleVariants = keys.filter((key) => key.startsWith(search));
+  const variantNames = getVariantNames();
+  const possibleVariants = variantNames.filter((variantName) =>
+    variantName.startsWith(search),
+  );
+
   return possibleVariants[0] ?? "";
 }

@@ -1,7 +1,6 @@
+import { Character, getCharacter } from "@hanabi/data";
 import Konva from "konva";
-import { getCharacter } from "../data/gameData";
 import * as hand from "../rules/hand";
-import Character from "../types/Character";
 import CardLayout from "./CardLayout";
 import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
 import TextWithTooltip from "./controls/TextWithTooltip";

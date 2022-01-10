@@ -1,11 +1,8 @@
 // Functions related to deck information: total cards, drawing cards
 
-import { getVariant } from "../data/gameData";
+import { getVariant, START_CARD_RANK, Suit, Variant } from "@hanabi/data";
 import CardState from "../types/CardState";
-import { START_CARD_RANK } from "../types/constants";
 import GameMetadata from "../types/GameMetadata";
-import Suit from "../types/Suit";
-import Variant from "../types/Variant";
 import * as cardRules from "./card";
 import * as handRules from "./hand";
 import * as variantRules from "./variant";

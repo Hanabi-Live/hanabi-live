@@ -1,4 +1,4 @@
-export default interface Color {
+export interface Color {
   readonly name: string;
   readonly abbreviation: string;
   readonly fill: string;

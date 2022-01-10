@@ -1,10 +1,9 @@
+import { getDefaultVariant, getVariant, MAX_CLUE_NUM } from "@hanabi/data";
 import { discard, play } from "../../../test/testActions";
-import { getVariant } from "../data/gameData";
-import { DEFAULT_VARIANT_NAME, MAX_CLUE_NUM } from "../types/constants";
 import { gain } from "./clueTokens";
 
 const discardAction = discard(0, 0, 0, 1, false);
-const defaultVariant = getVariant(DEFAULT_VARIANT_NAME);
+const defaultVariant = getDefaultVariant();
 const throwItInAHoleVariant = getVariant("Throw It in a Hole (6 Suits)");
 
 describe("gain", () => {

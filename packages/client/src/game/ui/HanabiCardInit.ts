@@ -1,14 +1,13 @@
 // Initialization functions for the HanabiCard object
 
+import { START_CARD_RANK, Variant } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { Arrow } from "konva/types/shapes/Arrow";
 import { RectConfig } from "konva/types/shapes/Rect";
 import * as KonvaUtil from "konva/types/Util";
 import * as variantRules from "../rules/variant";
-import { START_CARD_RANK } from "../types/constants";
 import Pips from "../types/Pips";
-import Variant from "../types/Variant";
 import {
   CARD_H,
   CARD_W,

@@ -1,4 +1,4 @@
-import { getVariant } from "../src/game/data/gameData";
+import { getVariant } from "@hanabi/data";
 import gameStateReducer from "../src/game/reducers/gameStateReducer";
 import initialState from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";

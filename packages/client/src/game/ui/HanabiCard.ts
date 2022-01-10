@@ -1,8 +1,15 @@
 // The HanabiCard object represents a single card
 // It has a LayoutChild parent
 
+import {
+  Color,
+  getSuit,
+  STACK_BASE_RANK,
+  Suit,
+  UNKNOWN_CARD_RANK,
+  Variant,
+} from "@hanabi/data";
 import Konva from "konva";
-import { getSuit } from "../data/gameData";
 import initialCardState from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
@@ -12,12 +19,8 @@ import CardIdentity from "../types/CardIdentity";
 import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import CardStatus from "../types/CardStatus";
-import Color from "../types/Color";
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "../types/constants";
 import StackDirection from "../types/StackDirection";
-import Suit from "../types/Suit";
 import UICard from "../types/UICard";
-import Variant from "../types/Variant";
 import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
 import NodeWithTooltip from "./controls/NodeWithTooltip";
 import NoteIndicator from "./controls/NoteIndicator";

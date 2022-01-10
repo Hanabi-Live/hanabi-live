@@ -11,6 +11,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const webpack = require("webpack");
+const TsconfigPathsWebpackPlugin = require("tsconfig-paths-webpack-plugin");
 const { VERSION } = require("../data/src/version");
 
 // Define the name of the compiled JS file
@@ -61,6 +62,7 @@ module.exports = {
 
   resolve: {
     extensions: [".js", ".ts", ".json"],
+    plugins: [new TsconfigPathsWebpackPlugin()],
   },
 
   // webpack will display a warning unless we specify the mode
@@ -76,7 +78,10 @@ module.exports = {
       // All files with a ".ts" extension (TypeScript files) will be handled by "ts-loader"
       {
         test: /\.ts$/,
-        include: path.join(__dirname, "src"),
+        include: [
+          path.join(__dirname, "src"),
+          path.join(__dirname, "..", "data", "src"),
+        ],
         loader: "ts-loader",
       },
       // All files with a ".js" extension (JavaScript libraries) need to import other source maps

@@ -1,16 +1,16 @@
-import * as charactersJSON from "./characters.json";
-import * as colorsJSON from "./colors.json";
-import * as emojisJSON from "./emojis.json";
-import * as emotesJSON from "./emotes.json";
-import * as suitsJSON from "./suits.json";
-import * as variantsJSON from "./variants.json";
+import * as emojisJSON from "./json/emojis.json";
+import * as emotesJSON from "./json/emotes.json";
 
+const emojis = emojisJSON;
+const emotes = emotesJSON;
+
+export * from "./abbreviations";
+export * from "./constants";
+export * from "./gameData";
+export * from "./types/Character";
+export * from "./types/Color";
+export * from "./types/Suit";
+export * from "./types/Variant";
+export * from "./variants";
 export * from "./version";
-export {
-  charactersJSON,
-  colorsJSON,
-  emojisJSON,
-  emotesJSON,
-  suitsJSON,
-  variantsJSON,
-};
+export { emojis, emotes };

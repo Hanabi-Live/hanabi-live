@@ -1,8 +1,8 @@
 // Functions for calculating running statistics such as efficiency and pace
 // as a result of each action
 
+import { getVariant } from "@hanabi/data";
 import produce, { Draft } from "immer";
-import { getVariant } from "../data/gameData";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";

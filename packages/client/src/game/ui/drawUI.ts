@@ -1,12 +1,12 @@
 // This function draws the UI when going into a game for the first time
 
+import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
 import { colorClue, rankClue } from "../types/Clue";
-import { STACK_BASE_RANK } from "../types/constants";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
 import backToLobby from "./backToLobby";

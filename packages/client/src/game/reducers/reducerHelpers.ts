@@ -1,6 +1,6 @@
 // Miscellaneous helpers used by several reducers
 
-import { getCharacter } from "../data/gameData";
+import { getCharacter } from "@hanabi/data";
 import * as statsRules from "../rules/stats";
 import GameState from "../types/GameState";
 

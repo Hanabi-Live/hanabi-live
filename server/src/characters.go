@@ -44,7 +44,7 @@ var (
 
 func charactersInit() {
 	// Import the JSON file
-	filePath := path.Join(dataPath, "characters.json")
+	filePath := path.Join(jsonPath, "characters.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())

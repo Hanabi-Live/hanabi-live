@@ -1,7 +1,7 @@
 // The lobby area that shows all of the players in the current unstarted game
 
+import { getVariant } from "@hanabi/data";
 import * as chat from "../chat";
-import { getVariant } from "../game/data/gameData";
 import globals from "../globals";
 import { setBrowserAddressBarPath, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";

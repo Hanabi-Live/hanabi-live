@@ -1,8 +1,8 @@
 // Users can right-click cards to record information on them
 
+import { STACK_BASE_RANK } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
-import { STACK_BASE_RANK } from "../types/constants";
 import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";

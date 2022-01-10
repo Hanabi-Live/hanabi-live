@@ -1,36 +1,20 @@
-import { suitsJSON } from "@hanabi/data";
-import Color from "../types/Color";
-import Suit from "../types/Suit";
+import * as suitsJSON from "./json/suits.json";
+import { Color } from "./types/Color";
+import { Suit } from "./types/Suit";
 
 const SUIT_REVERSED_SUFFIX = " Reversed";
 
-// "SuitJSON" is almost exactly the same as "Suit"
-// However, in "SuitJSON", some fields are optional, but in "Suit",
-// we want all fields to be initialized
-interface SuitJSON {
-  name: string;
-  abbreviation?: string;
-  clueColors?: string[];
-  displayName?: string;
-  fill?: string;
-  fillColors?: string[];
-  oneOfEach?: boolean;
-  pip: string;
-  prism?: boolean;
-  reversed?: boolean;
-
-  allClueColors?: boolean;
-  allClueRanks?: boolean;
-  noClueColors?: boolean;
-  noClueRanks?: boolean;
-}
-
-export default function suitsInit(
-  COLORS: Map<string, Color>,
-): Map<string, Suit> {
+export function suitsInit(
+  COLORS: ReadonlyMap<string, Color>,
+): ReadonlyMap<string, Suit> {
   const SUITS = new Map<string, Suit>();
 
-  for (const suitJSON of suitsJSON as SuitJSON[]) {
+  const suitsJSONArray = Array.from(suitsJSON);
+  if (suitsJSONArray.length === 0) {
+    throw new Error('The "suits.json" file did not have any elements in it.');
+  }
+
+  for (const suitJSON of suitsJSONArray) {
     // Validate the name
     const { name } = suitJSON;
     if (name === "") {
@@ -42,8 +26,8 @@ export default function suitsInit(
     // Validate the abbreviation
     // If it is not specified, use the abbreviation of the color with the same name
     // Otherwise, assume that it is the first letter of the suit
-    let abbreviation: string = suitJSON.abbreviation ?? "";
-    if (abbreviation === "") {
+    let abbreviation = suitJSON.abbreviation ?? "";
+    if (abbreviation.length === 0) {
       const color = COLORS.get(name);
       if (color !== undefined) {
         abbreviation = color.abbreviation;
@@ -57,7 +41,7 @@ export default function suitsInit(
       );
     }
 
-    // Validate the four clue properties
+    // Validate the clue properties
     // If these are not specified, the suit functions normally
     // (this has to be done before validating the clue colors)
     if (
@@ -68,7 +52,7 @@ export default function suitsInit(
         `The "allClueColors" property for the suit "${suitJSON.name}" must be set to true.`,
       );
     }
-    const allClueColors: boolean = suitJSON.allClueColors ?? false;
+    const allClueColors = suitJSON.allClueColors ?? false;
     if (
       Object.hasOwnProperty.call(suitJSON, "allClueRanks") &&
       suitJSON.allClueRanks !== true
@@ -77,7 +61,7 @@ export default function suitsInit(
         `The "allClueRanks" property for the suit "${suitJSON.name}" must be set to true.`,
       );
     }
-    const allClueRanks: boolean = suitJSON.allClueRanks ?? false;
+    const allClueRanks = suitJSON.allClueRanks ?? false;
     if (
       Object.hasOwnProperty.call(suitJSON, "noClueColors") &&
       suitJSON.noClueColors !== true
@@ -86,7 +70,7 @@ export default function suitsInit(
         `The "noClueColors" property for the suit "${suitJSON.name}" must be set to true.`,
       );
     }
-    const noClueColors: boolean = suitJSON.noClueColors ?? false;
+    const noClueColors = suitJSON.noClueColors ?? false;
     if (
       Object.hasOwnProperty.call(suitJSON, "noClueRanks") &&
       suitJSON.noClueRanks !== true
@@ -95,7 +79,7 @@ export default function suitsInit(
         `The "noClueRanks" property for the suit "${suitJSON.name}" must be set to true.`,
       );
     }
-    const noClueRanks: boolean = suitJSON.noClueRanks ?? false;
+    const noClueRanks = suitJSON.noClueRanks ?? false;
     if (
       Object.hasOwnProperty.call(suitJSON, "prism") &&
       suitJSON.prism !== true
@@ -104,7 +88,7 @@ export default function suitsInit(
         `The "prism" property for the suit "${suitJSON.name}" must be set to true.`,
       );
     }
-    const prism: boolean = suitJSON.prism ?? false;
+    const prism = suitJSON.prism ?? false;
 
     // Validate the clue colors (the colors that touch this suit)
     // If it is not specified, use the color of the same name
@@ -118,19 +102,19 @@ export default function suitsInit(
 
       // The clue colors are specified as an array of strings
       // Convert the strings to objects
-      for (const colorString of suitJSON.clueColors) {
-        if (typeof colorString !== "string") {
+      for (const colorName of suitJSON.clueColors) {
+        if (typeof colorName !== "string") {
           throw new Error(
             `One of the clue colors for the suit "${suitJSON.name}" was not specified as a string.`,
           );
         }
 
-        const colorObject = COLORS.get(colorString);
-        if (colorObject !== undefined) {
-          clueColors.push(colorObject);
+        const color = COLORS.get(colorName);
+        if (color !== undefined) {
+          clueColors.push(color);
         } else {
           throw new Error(
-            `The color "${colorString}" in the suit "${suitJSON.name}" does not exist.`,
+            `The color "${colorName}" in the suit "${suitJSON.name}" does not exist.`,
           );
         }
       }
@@ -141,19 +125,19 @@ export default function suitsInit(
         clueColors.push(color);
       } else if (name !== "Unknown") {
         // The "Unknown" suit is not supposed to have clue colors
-        let msg = `Failed to find the clue colors for the "${suitJSON.name}" suit. `;
-        msg += `(There is no corresponding color named "${suitJSON.name}".)`;
-        throw new Error(msg);
+        throw new Error(
+          `Failed to find the clue colors for the "${suitJSON.name}" suit. (There is no corresponding color named "${suitJSON.name}".)`,
+        );
       }
     }
 
     // The display name is optional; if not specified, then use the normal suit name
-    const displayName: string = suitJSON.displayName ?? suitJSON.name;
+    const displayName = suitJSON.displayName ?? suitJSON.name;
 
-    // Validate the fill and colorblind fill
+    // Validate the fill and the colorblind fill
     // If it is not specified, use the fill of the color with the same name
     // Otherwise, assume the fill of the first clue color
-    let fill: string = suitJSON.fill ?? "";
+    let fill = suitJSON.fill ?? "";
     let fillColorblind = "";
     if (fill === "") {
       const color = COLORS.get(displayName);
@@ -161,28 +145,38 @@ export default function suitsInit(
         fill = color.fill;
         fillColorblind = color.fillColorblind;
       } else if (clueColors.length > 0) {
-        fill = clueColors[0].fill;
+        const firstColor = clueColors[0];
+        fill = firstColor.fill;
       } else {
-        let msg = `Failed to find the fill for the "${suitJSON.name}" suit. `;
-        msg += `(There is no corresponding color named "${suitJSON.name}" and this suit has no clue colors specified.)`;
-        throw new Error(msg);
+        throw new Error(
+          `Failed to find the fill for the "${suitJSON.name}" suit. (There is no corresponding color named "${suitJSON.name}" and this suit has no clue colors specified.)`,
+        );
       }
+    }
+    if (fill === "") {
+      throw new Error(`The fill was empty for the "${suitJSON.name}" suit.`);
     }
     if (fillColorblind === "") {
       fillColorblind = fill;
     }
 
     // Validate the fill colors
-    if (
-      Object.hasOwnProperty.call(suitJSON, "fillColors") &&
-      Array.isArray(suitJSON.fillColors) &&
-      suitJSON.fillColors.length === 0
-    ) {
-      throw new Error(
-        `The "fillColor" array for the suit "${suitJSON.name}" is empty.`,
-      );
+    let fillColors: string[] = [];
+    if (Object.hasOwnProperty.call(suitJSON, "fillColors")) {
+      if (!Array.isArray(suitJSON.fillColors)) {
+        throw new Error(
+          `The "fillColors" property for the suit ${suitJSON.name} is not an array.`,
+        );
+      }
+
+      if (suitJSON.fillColors.length === 0) {
+        throw new Error(
+          `The "fillColors" array for the suit "${suitJSON.name}" is empty.`,
+        );
+      }
+
+      fillColors = suitJSON.fillColors;
     }
-    const fillColors: string[] = suitJSON.fillColors || []; // eslint-disable-line
 
     // Validate the "oneOfEach" property
     // If it is not specified, the suit is not one of each (e.g. every card is not critical)
@@ -194,14 +188,24 @@ export default function suitsInit(
         `The "oneOfEach" property for the suit "${suitJSON.name}" must be set to true.`,
       );
     }
-    const oneOfEach: boolean = suitJSON.oneOfEach ?? false;
+    const oneOfEach = suitJSON.oneOfEach ?? false;
 
     // Validate the "pip" property
-    const pip: string = suitJSON.pip || ""; // eslint-disable-line
-    if (pip === "" && suitJSON.name !== "Unknown") {
-      throw new Error(
-        `Failed to find the pip for the "${suitJSON.name}" suit.`,
-      );
+    let pip = "";
+    if (Object.hasOwnProperty.call(suitJSON, "pip")) {
+      if (typeof suitJSON.pip !== "string") {
+        throw new Error(
+          `The "pip" property for the suit "${suitJSON.name}" must be a string.`,
+        );
+      }
+
+      if (suitJSON.pip.length === 0 && suitJSON.name !== "Unknown") {
+        throw new Error(
+          `Failed to find the pip for the "${suitJSON.name}" suit.`,
+        );
+      }
+
+      pip = suitJSON.pip;
     }
 
     // Add it to the map
@@ -215,13 +219,13 @@ export default function suitsInit(
       fillColors,
       oneOfEach,
       pip,
-      prism,
       reversed: false,
 
       allClueColors,
       allClueRanks,
       noClueColors,
       noClueRanks,
+      prism,
     };
     SUITS.set(suitJSON.name, suit);
 

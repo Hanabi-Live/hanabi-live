@@ -1,4 +1,4 @@
-import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
+import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
 import globals from "../globals";
 import { parseIntSafe, setBrowserAddressBarPath } from "../misc";
 import WelcomeData from "./types/WelcomeData";

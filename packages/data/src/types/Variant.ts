@@ -1,13 +1,13 @@
-import Color from "./Color";
-import Suit from "./Suit";
+import { Color } from "./Color";
+import { Suit } from "./Suit";
 
-export default interface Variant {
+export interface Variant {
   readonly name: string;
   readonly id: number;
-  readonly suits: Suit[];
-  readonly ranks: number[];
-  readonly clueColors: Color[];
-  readonly clueRanks: number[];
+  readonly suits: readonly Suit[];
+  readonly ranks: readonly number[];
+  readonly clueColors: readonly Color[];
+  readonly clueRanks: readonly number[];
 
   readonly colorCluesTouchNothing: boolean;
   readonly rankCluesTouchNothing: boolean;
@@ -19,10 +19,9 @@ export default interface Variant {
   readonly specialDeceptive: boolean;
 
   readonly showSuitNames: boolean;
-  readonly spacing: boolean;
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
-  readonly abbreviations: string[];
+  readonly suitAbbreviations: readonly string[];
 
   readonly identityNotePattern: string;
 }

@@ -1,5 +1,5 @@
+import { getVariant, MAX_CLUE_NUM } from "@hanabi/data";
 import { initArray } from "../../../misc";
-import { getVariant } from "../../data/gameData";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -8,7 +8,6 @@ import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
 import CardStatus from "../../types/CardStatus";
-import { MAX_CLUE_NUM } from "../../types/constants";
 import GameMetadata from "../../types/GameMetadata";
 import GameState from "../../types/GameState";
 import SoundType from "../../types/SoundType";

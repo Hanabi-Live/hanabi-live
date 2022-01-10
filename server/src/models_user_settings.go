@@ -45,7 +45,7 @@ var (
 		SoundMove:                     true,
 		SoundTimer:                    true,
 		Volume:                        50,
-		CreateTableVariant:            "No Variant",
+		CreateTableVariant:            DefaultVariantName,
 		CreateTableTimeBaseMinutes:    2,
 		CreateTableTimePerTurnSeconds: 20,
 	}

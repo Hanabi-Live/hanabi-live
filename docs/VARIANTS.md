@@ -297,4 +297,4 @@ One of each card per suit (e.g. 5 in total):
 
 ## Full Variant Listing
 
-- See [this page](/data/variants.txt).
+- See [this page](/misc/variants.txt).

@@ -226,7 +226,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 		d.GameJSON.Options = &OptionsJSON{}
 	}
 	if d.GameJSON.Options.Variant == nil {
-		variantText := "No Variant"
+		variantText := DefaultVariantName
 		d.GameJSON.Options.Variant = &variantText
 	}
 
@@ -468,7 +468,7 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 	if d.GameJSON.Options.StartingPlayer != nil {
 		startingPlayer = *d.GameJSON.Options.StartingPlayer
 	}
-	variantName := "No Variant"
+	variantName := DefaultVariantName
 	if d.GameJSON.Options.Variant != nil {
 		variantName = *d.GameJSON.Options.Variant
 	}

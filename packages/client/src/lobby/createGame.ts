@@ -1,10 +1,13 @@
 // The "Create Game" nav button
 
+import {
+  DEFAULT_VARIANT_NAME,
+  doesVariantExist,
+  getVariantNames,
+} from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
-import { VARIANTS } from "../game/data/gameData";
-import { DEFAULT_VARIANT_NAME } from "../game/types/constants";
 import globals from "../globals";
 import { getRandomNumber, isEmpty, parseIntSafe } from "../misc";
 import * as modals from "../modals";
@@ -20,7 +23,7 @@ const basicVariants = [
   "Black (6 Suits)",
   "Rainbow (6 Suits)",
 ];
-const variantNames = Array.from(VARIANTS.keys());
+const variantNames = getVariantNames();
 
 // Local variables
 let dropdown1: JQuery<Element>;
@@ -185,7 +188,7 @@ function firstVariantDropdownInit() {
   // Initialize the 1st variant dropdown with the basic variants
   for (const variantName of basicVariants) {
     // As a sanity check, ensure that this variant actually exists in the variants JSON
-    if (VARIANTS.get(variantName) === undefined) {
+    if (!doesVariantExist(variantName)) {
       throw new Error(
         `The "basic" variant of "${variantName}" does not exist in the "variants.json" file.`,
       );
@@ -224,7 +227,7 @@ function firstVariantDropdownInit() {
 
 function secondVariantDropdownInit() {
   // Populate the full datalist/dropdown in the "Create Game" tooltip
-  for (const variantName of VARIANTS.keys()) {
+  for (const variantName of variantNames) {
     const option = new Option(variantName, variantName);
     $("#create-game-variant-dropdown2-list").append($(option));
   }
@@ -627,21 +630,21 @@ export function ready(): void {
 
 function readyVariant(value: string) {
   // Validate the variant name that we got from the server
-  let variant: string;
-  if (VARIANTS.get(value) === undefined) {
-    variant = DEFAULT_VARIANT_NAME;
-    globals.settings.createTableVariant = variant;
+  let variantName: string;
+  if (doesVariantExist(value)) {
+    variantName = value;
   } else {
-    variant = value;
+    variantName = DEFAULT_VARIANT_NAME;
+    globals.settings.createTableVariant = variantName;
   }
 
   // Update the hidden field
-  $("#createTableVariant").text(variant);
+  $("#createTableVariant").text(variantName);
 
-  if (basicVariants.includes(variant)) {
+  if (basicVariants.includes(variantName)) {
     // If this is one of the basic variants, set it in the first dropdown
     dropdown1.show();
-    dropdown1.val(variant);
+    dropdown1.val(variantName);
     dropdown2.hide();
     $("#create-game-variant-dropdown2-icon").hide();
     $("#dice").hide();
@@ -649,7 +652,7 @@ function readyVariant(value: string) {
     // If this is not one of the basic variants, set it in the second dropdown
     dropdown1.hide();
     dropdown2.show();
-    dropdown2.val(variant);
+    dropdown2.val(variantName);
     $("#create-game-variant-dropdown2-icon").show();
     $("#dice").show();
   }

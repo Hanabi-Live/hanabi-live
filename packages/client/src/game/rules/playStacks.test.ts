@@ -1,10 +1,9 @@
-import { getVariant } from "../data/gameData";
+import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
 import initialCardState from "../reducers/initialStates/initialCardState";
-import { DEFAULT_VARIANT_NAME, START_CARD_RANK } from "../types/constants";
 import StackDirection from "../types/StackDirection";
 import { direction, nextRanks } from "./playStacks";
 
-const noVariant = getVariant(DEFAULT_VARIANT_NAME);
+const noVariant = getDefaultVariant();
 const upOrDown = getVariant("Up or Down (6 Suits)");
 const reversed = getVariant("Reversed (6 Suits)");
 

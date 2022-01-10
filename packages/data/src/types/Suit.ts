@@ -1,20 +1,20 @@
-import Color from "./Color";
+import { Color } from "./Color";
 
-export default interface Suit {
+export interface Suit {
   readonly name: string;
   readonly abbreviation: string;
-  readonly clueColors: Color[];
+  readonly clueColors: readonly Color[];
   readonly displayName: string;
   readonly fill: string;
   readonly fillColorblind: string;
-  readonly fillColors: string[];
+  readonly fillColors: readonly string[];
   readonly oneOfEach: boolean;
   readonly pip: string;
   readonly reversed: boolean;
-  readonly prism: boolean;
 
   readonly allClueColors: boolean;
   readonly noClueColors: boolean;
   readonly allClueRanks: boolean;
   readonly noClueRanks: boolean;
+  readonly prism: boolean;
 }

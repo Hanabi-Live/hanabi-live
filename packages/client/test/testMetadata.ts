@@ -1,8 +1,7 @@
-import { getVariant } from "../src/game/data/gameData";
+import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
 import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
-import { DEFAULT_VARIANT_NAME } from "../src/game/types/constants";
 import GameMetadata from "../src/game/types/GameMetadata";
 import { initArray } from "../src/misc";
 import Options from "../src/types/Options";

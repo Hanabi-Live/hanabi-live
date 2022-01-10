@@ -1,8 +1,8 @@
 // Functions for building a state table for every turn
 
+import { getVariant, Variant } from "@hanabi/data";
 import produce, { castDraft, Draft, original } from "immer";
 import { ensureAllCases, millisecondsToClockString } from "../../misc";
-import { getVariant } from "../data/gameData";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
@@ -16,7 +16,6 @@ import CardState from "../types/CardState";
 import EndCondition from "../types/EndCondition";
 import GameMetadata, { getPlayerName } from "../types/GameMetadata";
 import GameState from "../types/GameState";
-import Variant from "../types/Variant";
 import cardsReducer from "./cardsReducer";
 import ddaReducer from "./ddaReducer";
 import statsReducer from "./statsReducer";

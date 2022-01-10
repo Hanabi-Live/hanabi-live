@@ -72,7 +72,7 @@ func NewOptions() *Options {
 		NumPlayers:            0, // This will be written when the game starts
 		StartingPlayer:        0,
 		VariantID:             0,
-		VariantName:           "No Variant",
+		VariantName:           DefaultVariantName,
 		Timed:                 false,
 		TimeBase:              0,
 		TimePerTurn:           0,

@@ -1,5 +1,5 @@
+import { getVariant } from "@hanabi/data";
 import { Draft } from "immer";
-import { getVariant } from "../data/gameData";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
 import * as variantRules from "../rules/variant";

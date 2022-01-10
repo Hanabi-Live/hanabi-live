@@ -1,6 +1,7 @@
 // Arrows are used to show which cards are touched by a clue
 // (and to highlight things in shared replays)
 
+import { STACK_BASE_RANK, Suit } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { KonvaEventObject } from "konva/types/Node";
@@ -11,10 +12,8 @@ import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
 import Clue from "../types/Clue";
 import ClueType from "../types/ClueType";
-import { STACK_BASE_RANK } from "../types/constants";
 import ReplayActionType from "../types/ReplayActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
-import Suit from "../types/Suit";
 import CardLayout from "./CardLayout";
 import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from "./constants";
 import Arrow from "./controls/Arrow";

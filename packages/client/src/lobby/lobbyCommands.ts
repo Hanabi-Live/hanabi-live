@@ -112,10 +112,11 @@ commands.set("gameHistoryFriends", (dataArray: GameHistory[]) => {
 
 interface GameHistoryOtherScoresData {
   games: GameHistory[];
+  variantName: string;
   friends: boolean;
 }
 commands.set("gameHistoryOtherScores", (data: GameHistoryOtherScoresData) => {
-  history.drawOtherScores(data.games, data.friends);
+  history.drawOtherScores(data.games, data.variantName, data.friends);
 });
 
 interface JoinedData {

@@ -18,12 +18,11 @@ import (
 )
 
 var (
-	projectName       string
-	projectPath       string
-	dataPath          string
-	versionPath       string
-	tablesPath        string
-	specificDealsPath string
+	projectName string
+	projectPath string
+	jsonPath    string
+	versionPath string
+	tablesPath  string
 
 	gitCommitOnStart string
 	isDev            bool
@@ -106,13 +105,13 @@ func main() {
 	logger.Info("Current git commit: " + gitCommitOnStart)
 
 	// Check to see if the data path exists
-	dataPath = path.Join(projectPath, "packages", "data", "src")
-	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
-		logger.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
+	jsonPath = path.Join(projectPath, "packages", "data", "src", "json")
+	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+		logger.Fatal("The path of \"" + jsonPath + "\" does not exist. " +
 			"This directory should always exist; please try re-cloning the repository.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \"" + dataPath + "\" file exists: " + err.Error())
+		logger.Fatal("Failed to check if the \"" + jsonPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -130,7 +129,7 @@ func main() {
 	}
 
 	// Check to see if the "ongoing_tables" directory exists
-	tablesPath = path.Join(dataPath, "ongoing_tables")
+	tablesPath = path.Join(projectPath, "ongoing_tables")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
 			logger.Fatal("Failed to create the \"" + tablesPath + "\" directory: " + err2.Error())
@@ -138,20 +137,6 @@ func main() {
 		}
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \"" + tablesPath + "\" file exists: " + err.Error())
-		return
-	}
-
-	// Check to see if the "specific_deals" directory exists
-	specificDealsPath = path.Join(dataPath, "specific_deals")
-	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
-		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
-			logger.Fatal("Failed to create the \"" + specificDealsPath + "\" directory: " +
-				err2.Error())
-			return
-		}
-	} else if err != nil {
-		logger.Fatal("Failed to check if the \"" + specificDealsPath + "\" file exists: " +
-			err.Error())
 		return
 	}
 

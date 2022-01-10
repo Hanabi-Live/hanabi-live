@@ -1,3 +1,4 @@
+import { getVariant } from "@hanabi/data";
 import {
   cardIdentity,
   colorClue,
@@ -7,7 +8,6 @@ import {
   rankClue,
 } from "../../../test/testActions";
 import testMetadata from "../../../test/testMetadata";
-import { getVariant } from "../data/gameData";
 import * as deckRules from "../rules/deck";
 import CardState from "../types/CardState";
 import cardsReducer from "./cardsReducer";

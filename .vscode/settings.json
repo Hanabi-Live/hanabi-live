@@ -84,7 +84,7 @@
   // https://github.com/psf/black
   "python.formatting.provider": "black",
   "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
+  "python.linting.enabled": false,
 
   // Automatically run the formatter when a Python file is saved
   "[python]": {

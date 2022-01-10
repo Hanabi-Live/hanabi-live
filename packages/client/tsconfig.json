@@ -30,6 +30,11 @@
     // Specifying this is needed for various JavaScript libraries to work with TypeScript
     "esModuleInterop": true,
 
+    // "resolveJsonModule" includes modules imported with ".json" extensions
+    // By default, it is false
+    // We import JSON files in the code base, so this is needed
+    "resolveJsonModule": true,
+
     // TypeScript will not remove comments by default;
     // we want to remove them to make the source file smaller
     "removeComments": true,

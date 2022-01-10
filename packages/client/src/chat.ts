@@ -1,9 +1,9 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
-import { emojisJSON, emotesJSON } from "@hanabi/data";
+import { emojis, emotes } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
-import linkifyHtml from "linkifyjs/html";
+import linkifyHtml from "linkify-html";
 import chatCommands from "./chatCommands";
 import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import globals from "./globals";
@@ -105,7 +105,7 @@ export function init(): void {
   $("#game-chat-input").on("keydown", keydown);
 
   // Make an emoji list/map and ensure that there are no overlapping emoji
-  for (const [emojiName, emoji] of Object.entries(emojisJSON)) {
+  for (const [emojiName, emoji] of Object.entries(emojis)) {
     if (emojiMap.has(emojiName)) {
       throw new Error(`Duplicate emoji found: ${emojiName}`);
     }
@@ -116,8 +116,9 @@ export function init(): void {
 
   // Make an emote list/map and ensure that there are no overlapping emotes
   const emoteMap = new Map(); // The map can be ephemeral
-  for (const category of Object.values(emotesJSON)) {
-    for (const emoteName of category) {
+  for (const emotesInCategory of Object.values(emotes)) {
+    const emotesArray = Array.from(emotesInCategory);
+    for (const emoteName of emotesArray) {
       if (emoteMap.has(emoteName)) {
         throw new Error(`Duplicate emote found: ${emoteName}`);
       }
@@ -694,7 +695,7 @@ function fillEmojis(message: string) {
   let filledMessage = message;
 
   // Search through the text for each emoji
-  for (const [emojiName, emoji] of Object.entries(emojisJSON)) {
+  for (const [emojiName, emoji] of Object.entries(emojis)) {
     const emojiTag = `:${emojiName}:`;
     const index = message.indexOf(emojiTag);
     if (index !== -1) {
@@ -709,14 +710,15 @@ function fillTwitchEmotes(message: string) {
   let filledMessage = message;
 
   // Search through the text for each emote
-  for (const [category, emotes] of Object.entries(emotesJSON)) {
-    for (const emote of emotes) {
+  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
+    const emoteArray = Array.from(emotesInCategory);
+    for (const emote of emoteArray) {
       // We don't want to replace the emote if it is followed by a quote,
       // because we don't want to replace Discord emotes
       const index = message.indexOf(emote);
       if (index !== -1 && message[index + emote.length] !== '"') {
         const re = new RegExp(`\\b${emote}\\b`, "g"); // "\b" is a word boundary in regex
-        const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${category}/${emote}.png" title="${emote}" />`;
+        const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${categoryName}/${emote}.png" title="${emote}" />`;
         filledMessage = filledMessage.replace(re, emoteTag);
       }
     }

@@ -1,41 +1,30 @@
-import { variantsJSON } from "@hanabi/data";
-import { createIdentityNotePattern } from "../reducers/noteIdentity";
-import * as abbreviationsRules from "../rules/abbreviation";
-import { isNameUpOrDown } from "../rules/variant";
-import Color from "../types/Color";
-import Suit from "../types/Suit";
-import Variant from "../types/Variant";
+import {
+  DEFAULT_CARD_RANKS,
+  DEFAULT_CLUE_RANKS,
+  getSuitAbbreviationsForVariant,
+} from ".";
+import * as variantsJSON from "./json/variants.json";
+import { getIdentityNotePatternForVariant } from "./notes";
+import { Color } from "./types/Color";
+import { Suit } from "./types/Suit";
+import { Variant } from "./types/Variant";
+import { isNameUpOrDown } from "./variants";
 
-// "VariantJSON" is very similar to "Variant",
-// but the latter is comprised of some more complicated objects
-interface VariantJSON {
-  name: string;
-  id: number;
-  suits: string[];
-
-  clueColors?: string[];
-  clueRanks?: number[];
-  colorCluesTouchNothing?: boolean;
-  rankCluesTouchNothing?: boolean;
-  specialRank?: number;
-  specialAllClueColors?: boolean;
-  specialAllClueRanks?: boolean;
-  specialNoClueColors?: boolean;
-  specialNoClueRanks?: boolean;
-  specialDeceptive?: boolean;
-
-  showSuitNames?: boolean;
-  spacing?: boolean;
-}
-
-export default function variantsInit(
-  COLORS: Map<string, Color>,
-  SUITS: Map<string, Suit>,
+export function variantsInit(
+  COLORS: ReadonlyMap<string, Color>,
+  SUITS: ReadonlyMap<string, Suit>,
   START_CARD_RANK: number,
-): Map<string, Variant> {
+): ReadonlyMap<string, Variant> {
   const VARIANTS = new Map<string, Variant>();
 
-  for (const variantJSON of variantsJSON as VariantJSON[]) {
+  const variantsJSONArray = Array.from(variantsJSON);
+  if (variantsJSONArray.length === 0) {
+    throw new Error(
+      'The "variants.json" file did not have any elements in it.',
+    );
+  }
+
+  for (const variantJSON of variantsJSONArray) {
     // Validate the name
     const { name } = variantJSON;
     if (name === "") {
@@ -45,9 +34,9 @@ export default function variantsInit(
     }
 
     // Validate the ID
+    // (the first variant has an ID of 0)
     const { id } = variantJSON;
     if (id < 0) {
-      // The first variant has an ID of 0
       throw new Error(`The "${name}" variant has an invalid ID.`);
     }
 
@@ -67,26 +56,25 @@ export default function variantsInit(
     // The suits are specified as an array of strings
     // Convert the strings to objects
     const suits: Suit[] = [];
-    for (const suitString of variantJSON.suits) {
-      if (typeof suitString !== "string") {
+    for (const suitName of variantJSON.suits) {
+      if (typeof suitName !== "string") {
         throw new Error(
           `One of the suits for the variant "${name}" was not specified as a string.`,
         );
       }
 
-      const suitObject = SUITS.get(suitString);
-      if (suitObject !== undefined) {
-        suits.push(suitObject);
+      const suit = SUITS.get(suitName);
+      if (suit !== undefined) {
+        suits.push(suit);
       } else {
         throw new Error(
-          `The suit "${suitString}" in the variant "${name}" does not exist.`,
+          `The suit "${suitName}" in the variant "${name}" does not exist.`,
         );
       }
     }
 
-    // Derive the ranks (the ranks that the cards of each suit will be)
-    // By default, assume ranks 1 through 5
-    const ranks = [1, 2, 3, 4, 5];
+    // Derive the ranks that the cards of each suit will be
+    const ranks = [...DEFAULT_CARD_RANKS];
     if (name.startsWith("Up or Down")) {
       // The "Up or Down" variants have START cards
       ranks.push(START_CARD_RANK);
@@ -137,7 +125,22 @@ export default function variantsInit(
 
     // Validate the clue ranks (the ranks available to clue in this variant)
     // If it is not specified, assume that players can clue ranks 1 through 5
-    const clueRanks: number[] = variantJSON.clueRanks || [1, 2, 3, 4, 5]; // eslint-disable-line
+    if (Object.hasOwnProperty.call(variantJSON, "clueRanks")) {
+      if (!Array.isArray(variantJSON.clueRanks)) {
+        throw new Error(
+          `The clue ranks for the variant "${name}" were not specified as an array.`,
+        );
+      }
+
+      for (const rank of variantJSON.clueRanks) {
+        if (typeof rank !== "number") {
+          throw new Error(
+            `One of the clue ranks for the variant "${name}" was not a number.`,
+          );
+        }
+      }
+    }
+    const clueRanks = variantJSON.clueRanks ?? [...DEFAULT_CLUE_RANKS];
 
     // Validate the "colorCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing colors in this variant works normally)
@@ -149,8 +152,7 @@ export default function variantsInit(
         `The "colorCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const colorCluesTouchNothing: boolean =
-      variantJSON.colorCluesTouchNothing ?? false;
+    const colorCluesTouchNothing = variantJSON.colorCluesTouchNothing ?? false;
 
     // Validate the "rankCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -162,20 +164,24 @@ export default function variantsInit(
         `The "rankCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const rankCluesTouchNothing: boolean =
-      variantJSON.rankCluesTouchNothing ?? false;
+    const rankCluesTouchNothing = variantJSON.rankCluesTouchNothing ?? false;
 
     // Validate the "specialRank" property (e.g. for "Rainbow-Ones")
     // If it is not specified, assume -1 (e.g. there are no special ranks)
-    if (
-      Object.hasOwnProperty.call(variantJSON, "specialRank") &&
-      (variantJSON.specialRank! < 1 || variantJSON.specialRank! > 5)
-    ) {
-      throw new Error(
-        `The "specialRank" property for the variant "${variantJSON.name}" must be set to true.`,
-      );
+    if (Object.hasOwnProperty.call(variantJSON, "specialRank")) {
+      if (typeof variantJSON.specialRank !== "number") {
+        throw new Error(
+          `The "specialRank" property for the variant "${variantJSON.name}" must be a number.`,
+        );
+      }
+
+      if (variantJSON.specialRank < 1 || variantJSON.specialRank > 5) {
+        throw new Error(
+          `The "specialRank" property for the variant "${variantJSON.name}" must be between 1 and 5.`,
+        );
+      }
     }
-    const specialRank: number = variantJSON.specialRank ?? -1;
+    const specialRank = variantJSON.specialRank ?? -1;
 
     // Validate the "specialAllClueColors" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -187,8 +193,7 @@ export default function variantsInit(
         `The "specialAllClueColors" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const specialAllClueColors: boolean =
-      variantJSON.specialAllClueColors ?? false;
+    const specialAllClueColors = variantJSON.specialAllClueColors ?? false;
 
     // Validate the "specialAllClueRanks" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -200,8 +205,7 @@ export default function variantsInit(
         `The "specialAllClueRanks" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const specialAllClueRanks: boolean =
-      variantJSON.specialAllClueRanks ?? false;
+    const specialAllClueRanks = variantJSON.specialAllClueRanks ?? false;
 
     // Validate the "specialNoClueColors" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -213,8 +217,7 @@ export default function variantsInit(
         `The "specialNoClueColors" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const specialNoClueColors: boolean =
-      variantJSON.specialNoClueColors ?? false;
+    const specialNoClueColors = variantJSON.specialNoClueColors ?? false;
 
     // Validate the "specialNoClueRanks" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -226,7 +229,7 @@ export default function variantsInit(
         `The "specialNoClueRanks" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const specialNoClueRanks: boolean = variantJSON.specialNoClueRanks ?? false;
+    const specialNoClueRanks = variantJSON.specialNoClueRanks ?? false;
 
     // Validate the "specialDeceptive" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -238,7 +241,7 @@ export default function variantsInit(
         `The "specialDeceptive" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    const specialDeceptive: boolean = variantJSON.specialDeceptive ?? false;
+    const specialDeceptive = variantJSON.specialDeceptive ?? false;
 
     // Validate the "showSuitNames" property
     // If it is not specified, assume that we are not showing the suit names
@@ -250,27 +253,12 @@ export default function variantsInit(
         `The "showSuitNames" property for the variant "${variantJSON.name}" must be set to true.`,
       );
     }
-    let showSuitNames: boolean = variantJSON.showSuitNames ?? false;
+    let showSuitNames = variantJSON.showSuitNames ?? false;
 
     // Always set "showSuitNames" to true if it has one or more reversed suits
-    for (const suit of suits) {
-      if (suit.reversed) {
-        showSuitNames = true;
-        break;
-      }
+    if (suits.some((suit: Suit) => suit.reversed)) {
+      showSuitNames = true;
     }
-
-    // Validate the "spacing" property
-    // If it is not specified, assume that there is no spacing
-    if (
-      Object.hasOwnProperty.call(variantJSON, "spacing") &&
-      variantJSON.spacing !== true
-    ) {
-      throw new Error(
-        `The "spacing" property for the variant "${variantJSON.name}" must be set to true.`,
-      );
-    }
-    const spacing: boolean = variantJSON.spacing ?? false;
 
     // Assume 5 cards per stack
     const maxScore = suits.length * 5;
@@ -283,13 +271,13 @@ export default function variantsInit(
     );
 
     // Prepare the abbreviations for each suit
-    const abbreviations = abbreviationsRules.makeAll(name, suits);
+    const suitAbbreviations = getSuitAbbreviationsForVariant(name, suits);
 
     // Create the regular expression pattern for identity notes in this variant
-    const identityNotePattern = createIdentityNotePattern(
+    const identityNotePattern = getIdentityNotePatternForVariant(
       suits,
       ranks,
-      abbreviations,
+      suitAbbreviations,
       isNameUpOrDown(name),
     );
 
@@ -310,10 +298,9 @@ export default function variantsInit(
       specialNoClueRanks,
       specialDeceptive,
       showSuitNames,
-      spacing,
       maxScore,
       offsetCornerElements,
-      abbreviations,
+      suitAbbreviations,
       identityNotePattern,
     };
     VARIANTS.set(variantJSON.name, variant);

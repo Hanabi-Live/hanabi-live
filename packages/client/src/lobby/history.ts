@@ -1,7 +1,6 @@
 // The screens that show past games and other scores
 
-import { getVariant, VARIANTS } from "../game/data/gameData";
-import Variant from "../game/types/Variant";
+import { getVariant } from "@hanabi/data";
 import globals from "../globals";
 import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
@@ -249,7 +248,15 @@ function hideOtherScoresToFriends() {
   nav.show("history-friends");
 }
 
-export function drawOtherScores(games: GameHistory[], friends: boolean): void {
+export function drawOtherScores(
+  games: GameHistory[],
+  variantName: string,
+  friends: boolean,
+): void {
+  if (globals.currentScreen !== Screen.HistoryOtherScores) {
+    return;
+  }
+
   // Define the functionality of the "Return to History" button
   if (!friends) {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
@@ -267,23 +274,7 @@ export function drawOtherScores(games: GameHistory[], friends: boolean): void {
   tbody.html("");
 
   // The game played by the user will also include its variant
-  let variant: Variant | undefined;
-  if (!friends) {
-    variant = games
-      .filter((g) => g.id in globals.history)
-      .map((g) => globals.history[g.id].options.variantName)
-      .map((v) => VARIANTS.get(v))[0];
-  } else if (friends) {
-    variant = games
-      .filter((g) => g.id in globals.historyFriends)
-      .map((g) => globals.historyFriends[g.id].options.variantName)
-      .map((v) => VARIANTS.get(v))[0];
-  } else {
-    return;
-  }
-  if (variant === undefined) {
-    return;
-  }
+  const variant = getVariant(variantName);
 
   // Add all of the games for this particular seed
   for (let i = 0; i < games.length; i++) {

@@ -1,5 +1,5 @@
+import { getVariant } from "@hanabi/data";
 import { ensureAllCases } from "../../misc";
-import { getVariant } from "../data/gameData";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import ClueType from "../types/ClueType";
