@@ -84,9 +84,8 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
 
-      # Commented out because it doesn't work in a monorepo
-      #- name: Test the TypeScript code
-      #  run: npm test
+      - name: Test the TypeScript code
+        run: npm test
 
   server_build:
     name: Server - Build (Compile Go)

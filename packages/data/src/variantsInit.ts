@@ -3,7 +3,7 @@ import {
   DEFAULT_CLUE_RANKS,
   getSuitAbbreviationsForVariant,
 } from ".";
-import * as variantsJSON from "./json/variants.json";
+import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
 import { Color } from "./types/Color";
 import { Suit } from "./types/Suit";

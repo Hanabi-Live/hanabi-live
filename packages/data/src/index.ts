@@ -1,5 +1,5 @@
-import * as emojisJSON from "./json/emojis.json";
-import * as emotesJSON from "./json/emotes.json";
+import emojisJSON from "./json/emojis.json";
+import emotesJSON from "./json/emotes.json";
 
 const emojis = emojisJSON;
 const emotes = emotesJSON;

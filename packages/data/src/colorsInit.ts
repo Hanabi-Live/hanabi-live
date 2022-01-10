@@ -1,4 +1,4 @@
-import * as colorsJSON from "./json/colors.json";
+import colorsJSON from "./json/colors.json";
 import { Color } from "./types/Color";
 
 export function colorsInit(): ReadonlyMap<string, Color> {

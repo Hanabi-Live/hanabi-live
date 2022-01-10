@@ -1,4 +1,4 @@
-import * as suitsJSON from "./json/suits.json";
+import suitsJSON from "./json/suits.json";
 import { Color } from "./types/Color";
 import { Suit } from "./types/Suit";
 

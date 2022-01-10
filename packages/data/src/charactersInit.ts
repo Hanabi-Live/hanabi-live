@@ -1,4 +1,4 @@
-import * as charactersJSON from "./json/characters.json";
+import charactersJSON from "./json/characters.json";
 import { Character } from "./types/Character";
 
 export function charactersInit(): ReadonlyMap<number, Character> {
