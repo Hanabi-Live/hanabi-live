@@ -36,13 +36,13 @@ func httpLocalhostSendWarningAll(c *gin.Context) {
 	}
 
 	// Get all user ID currently present
-	users := make([]int, 0);
+	users := make([]int, 0)
 	fmt.Println("")
-	sessions.mutex.RLock();
+	sessions.mutex.RLock()
 	for _, s := range sessions.sessions {
 		users = append(users, s.UserID)
 	}
-	sessions.mutex.RUnlock();
+	sessions.mutex.RUnlock()
 
 	if len(users) == 0 {
 		c.String(http.StatusOK, "No users found online\n")
@@ -60,7 +60,7 @@ func httpLocalhostSendWarningAll(c *gin.Context) {
 			success++
 		}
 	}
-	
-	c.String(http.StatusOK, "Message sent to " + strconv.Itoa(success) +
-		" out of " + strconv.Itoa(len(users)) + " found online.")
+
+	c.String(http.StatusOK, "Message sent to "+strconv.Itoa(success)+
+		" out of "+strconv.Itoa(len(users))+" found online.")
 }
