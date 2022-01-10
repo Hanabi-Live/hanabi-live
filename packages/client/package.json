@@ -1,7 +1,6 @@
 {
   "name": "@hanabi/client",
   "version": "0.0.0",
-  "description": "",
   "license": "AGPL-3.0-only",
   "scripts": {
     "grunt": "grunt",
