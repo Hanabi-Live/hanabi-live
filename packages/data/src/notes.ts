@@ -1,5 +1,9 @@
 import { Suit } from "./types/Suit";
 
+/**
+ * This function generates a regular expression that is used to detect "identity notes" (notes about
+ * the possible identities of a card, such as `this is a [red 1]`).
+ */
 export function getIdentityNotePatternForVariant(
   suits: readonly Suit[],
   ranks: readonly number[],
