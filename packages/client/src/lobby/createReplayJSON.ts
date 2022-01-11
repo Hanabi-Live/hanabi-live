@@ -23,16 +23,9 @@ export default function createJSONFromReplay(room: string) {
     return;
   }
 
-  let playerNames: string[] = [];
-  if (HYPO_PLAYER_NAMES.length >= globals.metadata.playerNames.length) {
-    playerNames = HYPO_PLAYER_NAMES.slice(
-      0,
-      globals.metadata.playerNames.length,
-    );
-  }
   // Anonymize the players
   const game: JSONGame = {
-    players: playerNames,
+    players: HYPO_PLAYER_NAMES.slice(0, globals.metadata.playerNames.length),
     deck: [],
     actions: [],
     options: {
