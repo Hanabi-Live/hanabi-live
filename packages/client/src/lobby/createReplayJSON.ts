@@ -111,19 +111,19 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
 
 function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   const actions: ClientAction[] = [];
-  const rePlay = /^(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
-  const reDiscard = /^(.*) discards .* slot #(\d).*$/;
-  const reClue = /^(?:.+) tells (.*) about \w+ ([a-zA-Z]+|\d).*$/;
+  const regexPlay = /^(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
+  const regexDiscard = /^(.*) discards .* slot #(\d).*$/;
+  const regexClue = /^(?:.+) tells (.*) about \w+ ([a-zA-Z]+|\d).*$/;
 
   log.forEach((line, index) => {
-    const foundPlay = line.text.match(rePlay);
-    const foundDiscard = line.text.match(reDiscard);
-    const foundClue = line.text.match(reClue);
+    const foundPlay = line.text.match(regexPlay);
+    const foundDiscard = line.text.match(regexDiscard);
+    const foundClue = line.text.match(regexClue);
 
     let action: ClientAction | null = null;
     if (foundPlay !== null && foundPlay.length > 2) {
       const target = parseInt(foundPlay[2], 10);
-      action = getTargetCardFromPlayOrDiscard(
+      action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Play,
         foundPlay[1],
@@ -131,19 +131,14 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
       );
     } else if (foundDiscard !== null && foundDiscard.length > 2) {
       const target = parseInt(foundDiscard[2], 10);
-      action = getTargetCardFromPlayOrDiscard(
+      action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Discard,
         foundDiscard[1],
         target,
       );
     } else if (foundClue !== null && foundClue.length > 2) {
-      action = getTargetCardFromClue(
-        index,
-        ActionType.ColorClue,
-        foundClue[1],
-        foundClue[2],
-      );
+      action = getActionFromHypoClue(foundClue[1], foundClue[2]);
     }
 
     if (action !== null) {
@@ -153,34 +148,74 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   return actions;
 }
 
-function getTargetCardFromPlayOrDiscard(
+function getActionFromHypoPlayOrDiscard(
   entry_number: number,
   action_type: number,
   player: string,
-  card_target: number,
+  slot: number,
 ): ClientAction | null {
   const playerIndex = getPlayerIndexFromName(player);
+  // Go to previous hypo state to find the card
+  // Cards are stored in reverse order than the one perceived
+  const cardsPerPlayer = getCardsPerPlayer();
+  const slotIndex = cardsPerPlayer - slot;
+  const cardID = getCardFromHypoState(entry_number - 1, playerIndex, slotIndex);
   return {
     type: action_type,
-    target: playerIndex,
-    value: card_target,
+    target: cardID,
   };
 }
 
-function getTargetCardFromClue(
-  entry_number: number,
-  action_type: number,
+function getActionFromHypoClue(
   player: string,
-  slot: string,
+  clue: string,
 ): ClientAction | null {
   const playerIndex = getPlayerIndexFromName(player);
+  const parsedClue = parseInt(clue, 10);
+
+  if (Number.isNaN(parsedClue)) {
+    // It's a color clue
+    return {
+      type: ActionType.ColorClue,
+      target: playerIndex,
+      value: getColorIdFromString(clue),
+    };
+  }
+  // It's a rank clue
   return {
-    type: action_type,
+    type: ActionType.RankClue,
     target: playerIndex,
-    value: parseInt(slot, 10),
+    value: parsedClue,
   };
 }
 
 function getPlayerIndexFromName(name: string): number {
   return globals.metadata.playerNames.indexOf(name);
+}
+
+function getCardFromHypoState(
+  stateIndex: number,
+  playerIndex: number,
+  slotIndex: number,
+): number {
+  if (globals.state.replay.hypothetical === null) {
+    return 0;
+  }
+  return globals.state.replay.hypothetical.states[stateIndex].hands[
+    playerIndex
+  ][slotIndex];
+}
+
+function getColorIdFromString(clue: string): number {
+  let suitIndex = 0;
+  globals.variant.suits.forEach((el, index) => {
+    if (el.name === clue) {
+      suitIndex = index;
+    }
+  });
+  return suitIndex;
+}
+
+function getCardsPerPlayer(): number {
+  return globals.state.replay.states[0].hands[0].length;
 }
