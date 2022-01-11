@@ -8,13 +8,21 @@ import ReplayState from "../game/types/ReplayState";
 import globals from "../game/ui/globals";
 
 export default function createJSONFromReplay(room: string) {
-  if (globals === null || globals.state.replay.hypothetical === null) {
+  if (
+    globals === null ||
+    globals.store === null ||
+    !globals.state.finished ||
+    globals.state.replay === null ||
+    globals.state.replay.hypothetical === null
+  ) {
     chat.addSelf(
       '<span class="red">Error!</span>: You can only use that command during the review of a hypo.',
       room,
     );
     return;
   }
+  console.log("---------GLOBALS-----------");
+  console.log(globals);
 
   // Anonymize the players
   const fakePlayers = ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"];
