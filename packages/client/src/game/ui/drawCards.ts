@@ -41,7 +41,7 @@ export default function drawCards(
 
   let suitIndex = -1;
   for (const suit of suits) {
-    suitIndex++;
+    suitIndex += 1;
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
