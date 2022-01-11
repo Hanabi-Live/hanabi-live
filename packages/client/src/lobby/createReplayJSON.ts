@@ -1,3 +1,4 @@
+import { HYPO_PLAYER_NAMES } from "@hanabi/data";
 import * as chat from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
@@ -22,10 +23,16 @@ export default function createJSONFromReplay(room: string) {
     return;
   }
 
+  let playerNames: string[] = [];
+  if (HYPO_PLAYER_NAMES.length >= globals.metadata.playerNames.length) {
+    playerNames = HYPO_PLAYER_NAMES.slice(
+      0,
+      globals.metadata.playerNames.length,
+    );
+  }
   // Anonymize the players
-  const fakePlayers = ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"];
   const game: JSONGame = {
-    players: fakePlayers.slice(0, globals.metadata.playerNames.length),
+    players: playerNames,
     deck: [],
     actions: [],
     options: {
