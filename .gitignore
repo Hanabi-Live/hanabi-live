@@ -38,3 +38,6 @@ node_modules
 
 # Ignore output directories for packages
 packages/**/dist
+
+# vim temporary
+.*.swp
