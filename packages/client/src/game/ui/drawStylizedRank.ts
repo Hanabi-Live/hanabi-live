@@ -4,6 +4,7 @@ const sf = 2.2; // Scale factor
 
 shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
+  ctx.closePath();
 });
 
 shapeFunctions.set(1, (ctx: CanvasRenderingContext2D) => {
@@ -925,6 +926,7 @@ shapeFunctions.set(5, (ctx: CanvasRenderingContext2D) => {
 
 shapeFunctions.set(6, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
+  ctx.closePath();
 });
 
 shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
