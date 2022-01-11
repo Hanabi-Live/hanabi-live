@@ -589,24 +589,23 @@ function getSuitStyle(
         if (variant.specialNoClueRanks) {
           const rainbow = getSuit("Muddy Rainbow");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
-        } else {
-          // Omni, Rainbow
-          const rainbow = getSuit("Rainbow");
-          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
-      } else if (variant.specialNoClueColors) {
+        // Omni, Rainbow
+        const rainbow = getSuit("Rainbow");
+        return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+      }
+      if (variant.specialNoClueColors) {
         if (variant.specialAllClueRanks) {
           return getSuit("Light Pink").fill;
-        } else {
-          // White, Null
-          return getSuit("White").fill;
         }
-      } else {
-        if (variant.specialAllClueRanks) {
-          return getSuit("Pink").fill;
-        } else if (variant.specialNoClueRanks) {
-          return getSuit("Brown").fill;
-        }
+        // White, Null
+        return getSuit("White").fill;
+      }
+      if (variant.specialAllClueRanks) {
+        return getSuit("Pink").fill;
+      }
+      if (variant.specialNoClueRanks) {
+        return getSuit("Brown").fill;
       }
     }
   }
