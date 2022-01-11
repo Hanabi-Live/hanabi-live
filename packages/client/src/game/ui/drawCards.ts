@@ -617,7 +617,9 @@ function getSuitStyle(
         if (variant.specialAllClueRanks) {
           return getSuit("Light Pink").fill;
         }
-        // White, Null
+        if (variant.specialNoClueRanks) {
+          return getSuit("Null").fill;
+        }
         return getSuit("White").fill;
       }
       if (variant.specialAllClueRanks) {
