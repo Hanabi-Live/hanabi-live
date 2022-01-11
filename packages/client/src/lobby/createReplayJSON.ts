@@ -21,6 +21,7 @@ export default function createJSONFromReplay(room: string) {
     );
     return;
   }
+
   // Anonymize the players
   const fakePlayers = ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"];
   const game: JSONGame = {
