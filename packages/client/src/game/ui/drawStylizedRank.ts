@@ -1308,9 +1308,11 @@ export default function drawStylizedRank(
     throw new Error(`Failed to find the shape function for rank "${rank}".`);
   }
 
+  ctx.save();
   // Move the cursor to the top-left hand corner
   ctx.translate(60, 135);
 
   // Draw the respective shape on the canvas
   shapeFunction(ctx);
+  ctx.restore();
 }
