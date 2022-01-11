@@ -4,17 +4,17 @@ FROM node:16-buster
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
 COPY .env_template .env
-COPY client/package.json client/package.json
-COPY client/package-lock.json client/package-lock.json
-RUN cd client && npm install
-COPY data data
+COPY tsconfig.json tsconfig.json
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+COPY packages packages
 COPY public public
-COPY client client
+RUN npm install
 
 # needed only for git rev parse
 COPY .git .git
 
-RUN client/build_client.sh
+RUN packages/client/build_client.sh
 
 ## then build the server
 FROM golang:1.17-buster
@@ -41,7 +41,8 @@ WORKDIR /root/hanabi-live
 
 # will need to be mounted on startup
 RUN touch .env
-COPY data data
+COPY packages/data packages/data
+COPY misc misc
 RUN mkdir -p logs
 COPY --from=0 /root/hanabi-live/public public
 COPY --from=1 /root/hanabi-live/hanabi-live hanabi-live
@@ -53,4 +54,4 @@ COPY server/src/views/ server/src/views/
 # only needed so server knows its git hash
 COPY .git .git
 
-CMD ["/root/hanabi-live/hanabi-live"]
+CMD ["-c", "/root/hanabi-live/hanabi-live"]
