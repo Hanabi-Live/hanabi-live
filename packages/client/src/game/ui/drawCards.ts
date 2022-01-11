@@ -145,12 +145,8 @@ export default function drawCards(
           ctx.rotate(Math.PI);
           if (styleNumbers && !colorblindMode) {
             drawStylizedRank(ctx, rank);
-            ctx.translate(CARD_W, CARD_H);
-            ctx.rotate(Math.PI);
             ctx.fill();
             ctx.stroke();
-            ctx.translate(CARD_W, CARD_H);
-            ctx.rotate(Math.PI);
           } else {
             drawText(ctx, textYPos, rankLabel, enableShadows);
           }
@@ -606,11 +602,14 @@ function getSuitStyle(
 
     if (rank === variant.specialRank) {
       if (variant.specialAllClueColors) {
+        if (variant.specialAllClueRanks) {
+          const rainbow = getSuit("Omni");
+          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+        }
         if (variant.specialNoClueRanks) {
           const rainbow = getSuit("Muddy Rainbow");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
-        // Omni, Rainbow
         const rainbow = getSuit("Rainbow");
         return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
       }
