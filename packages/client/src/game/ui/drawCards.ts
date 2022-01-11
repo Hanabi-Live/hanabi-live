@@ -39,7 +39,9 @@ export default function drawCards(
   const suits = variant.suits.concat(unknownSuit);
   const pipTypes = new Set<string>();
 
+  let suitIndex = -1;
   for (const suit of suits) {
+    suitIndex += 1;
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
@@ -110,6 +112,24 @@ export default function drawCards(
           ctx.stroke();
         } else {
           drawText(ctx, textYPos, rankLabel, enableShadows);
+        }
+        if (variant.specialDeceptive && rank === variant.specialRank) {
+          const deceptiveRank =
+            variant.clueRanks[suitIndex % variant.clueRanks.length];
+          if (colorblindMode) {
+            ctx.translate(CARD_W / 20, CARD_H / 5);
+            ctx.scale(0.65, 0.65);
+          } else {
+            ctx.translate(CARD_W / 4 + CARD_W / 50, CARD_H / 40);
+            ctx.scale(0.5, 0.5);
+          }
+          if (styleNumbers && !colorblindMode) {
+            drawStylizedRank(ctx, deceptiveRank);
+            ctx.fill();
+            ctx.stroke();
+          } else {
+            drawText(ctx, textYPos, `${deceptiveRank}`, enableShadows);
+          }
         }
         ctx.restore();
 
