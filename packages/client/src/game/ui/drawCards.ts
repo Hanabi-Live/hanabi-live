@@ -568,19 +568,47 @@ function getSuitStyle(
     return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix it with white by 50%
   }
 
-  // In Synesthesia variants, color the number itself with the color that it contributes to the card.
-  if (variantRules.isSynesthesia(variant) && cardArea === "number") {
-    if (rank === 0) {
-      return suit.fill;
+  if (cardArea === "number") {
+    // In Synesthesia variants, color the number itself with the color that it contributes to the card.
+    if (variantRules.isSynesthesia(variant)) {
+      if (rank === 0) {
+        return suit.fill;
+      }
+
+      // If the suit does not get clued by its rank, then coloring the rank is misleading, so use the suit color.
+      if (suit.noClueRanks) {
+        return suit.fill;
+      }
+      const prismColorIndex = (rank - 1) % variant.clueColors.length;
+
+      return variant.clueColors[prismColorIndex].fill;
     }
 
-    // If the suit does not get clued by its rank, then coloring the rank is misleading, so use the suit color.
-    if (suit.noClueRanks) {
-      return suit.fill;
+    if (rank === variant.specialRank) {
+      if (variant.specialAllClueColors) {
+        if (variant.specialNoClueRanks) {
+          const rainbow = getSuit("Muddy Rainbow");
+          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+        } else {
+          // Omni, Rainbow
+          const rainbow = getSuit("Rainbow");
+          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+        }
+      } else if (variant.specialNoClueColors) {
+        if (variant.specialAllClueRanks) {
+          return getSuit("Light Pink").fill;
+        } else {
+          // White, Null
+          return getSuit("White").fill;
+        }
+      } else {
+        if (variant.specialAllClueRanks) {
+          return getSuit("Pink").fill;
+        } else if (variant.specialNoClueRanks) {
+          return getSuit("Brown").fill;
+        }
+      }
     }
-    const prismColorIndex = (rank - 1) % variant.clueColors.length;
-
-    return variant.clueColors[prismColorIndex].fill;
   }
 
   // Nearly all other suits have a solid fill
