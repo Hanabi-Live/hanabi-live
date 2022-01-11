@@ -2,6 +2,7 @@ import { getVariantNames } from "@hanabi/data";
 import * as chat from "./chat";
 import globals from "./globals";
 import * as createGame from "./lobby/createGame";
+import createJSONFromReplay from "./lobby/createReplayJSON";
 import * as modals from "./modals";
 
 // Define a command handler map
@@ -262,6 +263,11 @@ chatCommands.set("warning", (_room: string, args: string[]) => {
     warning = "This is a warning!";
   }
   modals.showWarning(warning);
+});
+
+// /copy
+chatCommands.set("copy", (room: string) => {
+  createJSONFromReplay(room);
 });
 
 export function getVariantFromArgs(args: string[]): string {
