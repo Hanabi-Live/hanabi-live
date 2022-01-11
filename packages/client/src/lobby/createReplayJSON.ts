@@ -16,14 +16,11 @@ export default function createJSONFromReplay(room: string) {
     globals.state.replay.hypothetical === null
   ) {
     chat.addSelf(
-      '<span class="red">Error!</span>: You can only use that command during the review of a hypo.',
+      '<span class="red">Error:</span> You can only use that command during the review of a hypothetical.',
       room,
     );
     return;
   }
-  console.log("---------GLOBALS-----------");
-  console.log(globals);
-
   // Anonymize the players
   const fakePlayers = ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"];
   const game: JSONGame = {
