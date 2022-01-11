@@ -44,12 +44,7 @@ export function onSegmentChanged(
       }
     | undefined,
 ): void {
-  if (
-    previousData === undefined ||
-    !data.active ||
-    data.replaySegment === null ||
-    data.ongoingGameSegment === null
-  ) {
+  if (data.replaySegment === null) {
     return;
   }
 
@@ -62,6 +57,14 @@ export function onSegmentChanged(
   const onFinalSegment = data.replaySegment !== data.ongoingGameSegment;
   globals.elements.replayForwardButton?.setEnabled(onFinalSegment);
   globals.elements.replayForwardFullButton?.setEnabled(onFinalSegment);
+
+  if (
+    previousData === undefined ||
+    !data.active ||
+    data.ongoingGameSegment === null
+  ) {
+    return;
+  }
 
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
