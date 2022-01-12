@@ -30,6 +30,10 @@ type APIVariantAnswer struct {
 //   id   int
 //   name string
 func apiVariants(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
 	c.JSON(http.StatusOK, variantIDMap)
 }
 
@@ -51,6 +55,10 @@ func apiVariants(c *gin.Context) {
 //   1: num_players
 //   2: score
 func apiVariantsSingle(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
 	// Validate the id
 	var id int
 	if v, err := apiGetVariantIDFromParam(c); err != nil {

@@ -35,6 +35,10 @@ type APIGamesAnswer struct {
 //   2: score
 //   3: variant_id
 func apiHistory(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	if v1, _, ok := httpParsePlayerNames(c); !ok {
@@ -80,6 +84,10 @@ func apiHistory(c *gin.Context) {
 
 // Returns full list of games with options
 func apiFullDataHistory(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	if v1, _, ok := httpParsePlayerNames(c); !ok {
@@ -127,6 +135,10 @@ func apiFullDataHistory(c *gin.Context) {
 //   0: games.id
 //   2: score
 func apiSeed(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
 	// Parse the seed from the URL
 	seed := c.Param("seed")
 	if seed == "" {
@@ -161,6 +173,10 @@ func apiSeed(c *gin.Context) {
 }
 
 func apiFullDataSeed(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
 	// Parse the seed from the URL
 	seed := c.Param("seed")
 	if seed == "" {
