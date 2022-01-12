@@ -200,16 +200,17 @@ function getPlayerIndexFromName(name: string): number {
 }
 
 function getCardFromHypoState(
-  stateIndex: number,
+  previousStateIndex: number,
   playerIndex: number,
   slotIndex: number,
 ): number {
   if (globals.state.replay.hypothetical === null) {
     return 0;
   }
-  const minStateIndex = Math.max(stateIndex, 0);
-  const state = globals.state.replay.hypothetical.states[minStateIndex];
-  return state.hands[playerIndex][slotIndex];
+  const stateIndex = Math.max(previousStateIndex, 0);
+  const stateOnHypoTurn = globals.state.replay.hypothetical.states[stateIndex];
+  const playerHand = stateOnHypoTurn.hands[playerIndex];
+  return playerHand[slotIndex];
 }
 
 function getColorIdFromString(clue: string): number {
