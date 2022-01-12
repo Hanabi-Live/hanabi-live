@@ -1,8 +1,11 @@
 package main
 
 import (
+	"net"
+	"net/http"
 	"strconv"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -171,4 +174,37 @@ func apiIsNumeric(s string) bool {
 		return true
 	}
 	return false
+}
+
+func apiCheckIpBanned(c *gin.Context) bool {
+	if banned, err := IsIPBanned(c.Request.RemoteAddr); err != nil {
+		c.JSON(http.StatusInternalServerError, "")
+		return true
+	} else if banned {
+		c.JSON(http.StatusBadRequest, "Your IP address has been banned. "+
+			"Please contact an administrator if you think this is a mistake.")
+		return true
+	}
+	return false
+}
+
+func IsIPBanned(remoteAddr string) (bool, error) {
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(remoteAddr); err != nil {
+		logger.Error("Failed to parse the IP address from \"" + remoteAddr + "\": " + err.Error())
+		return false, err
+	} else {
+		ip = v
+	}
+
+	// Check to see if their IP is banned
+	if banned, err := models.BannedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \"" + ip + "\" is banned: " + err.Error())
+		return false, err
+	} else if banned {
+		logger.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
+		return true, nil
+	}
+	return false, nil
 }
