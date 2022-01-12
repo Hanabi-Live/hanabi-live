@@ -35,7 +35,7 @@ type APIGamesAnswer struct {
 //   2: score
 //   3: variant_id
 func apiHistory(c *gin.Context) {
-	if apiCheckIpBanned(c) {
+	if apiCheckIPBanned(c) {
 		return
 	}
 
@@ -84,7 +84,7 @@ func apiHistory(c *gin.Context) {
 
 // Returns full list of games with options
 func apiFullDataHistory(c *gin.Context) {
-	if apiCheckIpBanned(c) {
+	if apiCheckIPBanned(c) {
 		return
 	}
 
@@ -135,7 +135,7 @@ func apiFullDataHistory(c *gin.Context) {
 //   0: games.id
 //   2: score
 func apiSeed(c *gin.Context) {
-	if apiCheckIpBanned(c) {
+	if apiCheckIPBanned(c) {
 		return
 	}
 
@@ -173,7 +173,7 @@ func apiSeed(c *gin.Context) {
 }
 
 func apiFullDataSeed(c *gin.Context) {
-	if apiCheckIpBanned(c) {
+	if apiCheckIPBanned(c) {
 		return
 	}
 

@@ -30,7 +30,7 @@ type APIVariantAnswer struct {
 //   id   int
 //   name string
 func apiVariants(c *gin.Context) {
-	if apiCheckIpBanned(c) {
+	if apiCheckIPBanned(c) {
 		return
 	}
 
@@ -55,7 +55,7 @@ func apiVariants(c *gin.Context) {
 //   1: num_players
 //   2: score
 func apiVariantsSingle(c *gin.Context) {
-	if apiCheckIpBanned(c) {
+	if apiCheckIPBanned(c) {
 		return
 	}
 

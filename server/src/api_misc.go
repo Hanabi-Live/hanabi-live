@@ -176,7 +176,7 @@ func apiIsNumeric(s string) bool {
 	return false
 }
 
-func apiCheckIpBanned(c *gin.Context) bool {
+func apiCheckIPBanned(c *gin.Context) bool {
 	if banned, err := IsIPBanned(c.Request.RemoteAddr); err != nil {
 		c.JSON(http.StatusInternalServerError, "")
 		return true
