@@ -207,9 +207,8 @@ function getCardFromHypoState(
   if (globals.state.replay.hypothetical === null) {
     return 0;
   }
-  return globals.state.replay.hypothetical.states[stateIndex].hands[
-    playerIndex
-  ][slotIndex];
+  return globals.state.replay.hypothetical.states[Math.max(stateIndex, 0)]
+    .hands[playerIndex][slotIndex];
 }
 
 function getColorIdFromString(clue: string): number {
