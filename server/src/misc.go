@@ -306,15 +306,12 @@ func toSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-func fixTableName(name string) string {
+func truncateTrimCheckEmpty(name string) string {
 	// Truncate long table names
 	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
 	if len(name) > MaxGameNameLength {
 		name = name[0 : MaxGameNameLength-1]
 	}
-
-	// Remove any non-printable characters, if any
-	name = removeNonPrintableCharacters(name)
 
 	// Trim whitespace from both sides
 	name = strings.TrimSpace(name)
@@ -327,15 +324,9 @@ func fixTableName(name string) string {
 	return name
 }
 
-func isTableNameValid(name string, checkForExclamation bool) (bool, string) {
-	// Check for non-ASCII characters
-	if !containsAllPrintableASCII(name) {
-		return false, "Game names can only contain ASCII characters."
-	}
-
-	// Validate that the game name does not contain any special characters
-	// (this mitigates XSS attacks)
-	if !isValidTableName(name) {
+// Table name may only contain alphanum, some symbols or space
+func isTableNameValid(name string) (bool, string) {
+	if !tableNameHasValidCharacters(name) {
 		msg := "Game names can only contain English letters, numbers, spaces, " +
 			"<code>!</code>, " +
 			"<code>@</code>, " +
@@ -355,14 +346,10 @@ func isTableNameValid(name string, checkForExclamation bool) (bool, string) {
 		return false, msg
 	}
 
-	// Handle special game option creation
-	if checkForExclamation && strings.HasPrefix(name, "!") {
-		return false, "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
-	}
-
 	return true, ""
 }
 
+// Creates *Options if needed and checks each option for validity
 func fixGameOptions(options *Options) *Options {
 	// Validate that they sent the options object
 	if options == nil {
@@ -392,25 +379,35 @@ func fixGameOptions(options *Options) *Options {
 	return options
 }
 
+// Checks game options sanity
 func areGameOptionsValid(options *Options) (bool, string) {
 	// Validate that the variant name is valid
 	if _, ok := variants[options.VariantName]; !ok {
-		return false, "\"" + options.VariantName + "\" is not a valid variant."
+		msg := "\"" + options.VariantName + "\" is not a valid variant."
+		return false, msg
 	}
 
 	// Validate that the time controls are sane
 	if options.Timed {
 		if options.TimeBase <= 0 {
-			return false, "\"" + strconv.Itoa(options.TimeBase) + "\" is too small of a value for \"Base Time\"."
+			msg := "\"" + strconv.Itoa(options.TimeBase) + "\" " +
+				"is too small of a value for \"Base Time\"."
+			return false, msg
 		}
 		if options.TimeBase > 604800 { // 1 week in seconds
-			return false, "\"" + strconv.Itoa(options.TimeBase) + "\" is too large of a value for \"Base Time\"."
+			msg := "\"" + strconv.Itoa(options.TimeBase) + "\" " +
+				"is too large of a value for \"Base Time\"."
+			return false, msg
 		}
 		if options.TimePerTurn <= 0 {
-			return false, "\"" + strconv.Itoa(options.TimePerTurn) + "\" is too small of a value for \"Time per Turn\"."
+			msg := "\"" + strconv.Itoa(options.TimePerTurn) + "\" " +
+				"is too small of a value for \"Time per Turn\"."
+			return false, msg
 		}
 		if options.TimePerTurn > 86400 { // 1 day in seconds
-			return false, "\"" + strconv.Itoa(options.TimePerTurn) + "\" is too large of a value for \"Time per Turn\"."
+			msg := "\"" + strconv.Itoa(options.TimePerTurn) + "\" " +
+				"is too large of a value for \"Time per Turn\"."
+			return false, msg
 		}
 	}
 
@@ -424,14 +421,17 @@ func yesNoFromBoolean(option bool) string {
 	return "No"
 }
 
-func existsInvalidCommandInTableName(s *Session, d *CommandData, data *SpecialGameData) bool {
+// Valid Commands are:
+//   !replay [int] [int]
+//   !seed [alphanum and hyphen]
+func isTableCommandValid(s *Session, d *CommandData, data *SpecialGameData) (bool, string) {
 	if !strings.HasPrefix(d.Name, "!") {
-		return false
+		return true, ""
 	}
 
 	if d.GameJSON != nil {
-		s.Warning("You cannot create a table with a special prefix if JSON data is also provided.")
-		return true
+		msg := "You cannot create a table with a special prefix if JSON data is also provided."
+		return false, msg
 	}
 
 	args := strings.Split(d.Name, " ")
@@ -443,9 +443,15 @@ func existsInvalidCommandInTableName(s *Session, d *CommandData, data *SpecialGa
 	if command == "seed" {
 		// !seed - Play a specific seed
 		if len(args) != 1 {
-			s.Warning("Games on specific seeds must be created in the form: " +
-				"!seed [seed number]")
-			return true
+			msg := "Games on specific seeds must be created in the form: " +
+				"!seed [seed name]"
+			return false, msg
+		}
+
+		if !seedHasValidCharacters(args[0]) {
+			msg := "Seed names can only contain English letters, numbers " +
+				"and <code>-</code>"
+			return false, msg
 		}
 
 		// For normal games, the server creates seed suffixes sequentially from 0, 1, 2,
@@ -456,43 +462,43 @@ func existsInvalidCommandInTableName(s *Session, d *CommandData, data *SpecialGa
 	} else if command == "replay" {
 		// !replay - Replay a specific game up to a specific turn
 		if len(args) != 1 && len(args) != 2 {
-			s.Warning("Replays of specific games must be created in the form: " +
-				"!replay [game ID] [turn number]")
-			return true
+			msg := "Replays of specific games must be created in the form: " +
+				"!replay [game ID] [turn number]"
+			return false, msg
 		}
 
+		// Check for numeric arguments
 		if v, err := strconv.Atoi(args[0]); err != nil {
-			s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
-			return true
+			msg := "The game ID of \"" + args[0] + "\" is not a number."
+			return false, msg
 		} else {
 			data.DatabaseID = v
-		}
-
-		// Check to see if the game ID exists on the server
-		if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
-			logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
-				" exists: " + err.Error())
-			s.Error(CreateGameFail)
-			return true
-		} else if !exists {
-			s.Warning("That game ID does not exist in the database.")
-			return true
 		}
 
 		if len(args) == 1 {
 			data.SetReplayTurn = 1
 		} else {
 			if v, err := strconv.Atoi(args[1]); err != nil {
-				s.Warning("The turn of \"" + args[1] + "\" is not a number.")
-				return true
+				msg := "The turn of \"" + args[1] + "\" is not a number."
+				return false, msg
 			} else {
 				data.SetReplayTurn = v
 			}
 
 			if data.SetReplayTurn < 1 {
-				s.Warning("The replay turn must be greater than 0.")
-				return true
+				msg := "The replay turn must be greater than 0."
+				return false, msg
 			}
+		}
+
+		// Check to see if the game ID exists on the server
+		if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
+			logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
+				" exists: " + err.Error())
+			return false, CreateGameFail
+		} else if !exists {
+			msg := "That game ID does not exist in the database."
+			return false, msg
 		}
 
 		// We have to minus the turn by one since turns are stored on the server starting at 0
@@ -505,23 +511,21 @@ func existsInvalidCommandInTableName(s *Session, d *CommandData, data *SpecialGa
 		if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
 			logger.Error("Failed to get the number of turns from the database for game " +
 				strconv.Itoa(data.DatabaseID) + ": " + err.Error())
-			s.Error(InitGameFail)
-			return true
+			return false, InitGameFail
 		} else {
 			numTurns = v
 		}
 		if data.SetReplayTurn >= numTurns {
-			s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
-				strconv.Itoa(numTurns) + " turns.")
-			return true
+			msg := "Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
+				strconv.Itoa(numTurns) + " turns."
+			return false, msg
 		}
 
 		data.SetReplay = true
 	} else {
-		warn := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
-		s.Warning(warn)
-		return true
+		msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
+		return false, msg
 	}
 
-	return false
+	return true, ""
 }
