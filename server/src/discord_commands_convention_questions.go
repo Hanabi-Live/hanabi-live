@@ -18,6 +18,12 @@ func discordCommandBadQuestion(ctx context.Context, m *discordgo.MessageCreate, 
 	discordSend(m.ChannelID, "", msg)
 }
 
+// /github
+func discordCommandGithub(ctx context.Context, m *discordgo.MessageCreate, args []string) {
+	msg := "Post website bugs and feature requests on the GitHub repository, but make sure that you search for existing [issues](<https://github.com/Zamiell/hanabi-live/issues>) first."
+	discordSend(m.ChannelID, "", msg)
+}
+
 // /level
 func discordCommandLevel(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	msg := "When asking questions in the #convention-questions channel, please remember to include the convention level that the current players of the game are playing with."
