@@ -18,6 +18,8 @@ func discordCommandInit() {
 	discordCommandMap["2player"] = discordCommand2P
 	discordCommandMap["2pquestion"] = discordCommand2P
 	discordCommandMap["badquestion"] = discordCommandBadQuestion
+	discordCommandMap["github"] = discordCommandGithub
+	discordCommandMap["issues"] = discordCommandGithub
 	discordCommandMap["level"] = discordCommandLevel
 	discordCommandMap["loweffort"] = discordCommandLowEffort
 	discordCommandMap["noreplay"] = discordCommandScreenshot
