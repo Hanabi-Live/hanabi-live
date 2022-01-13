@@ -444,12 +444,12 @@ func isTableCommandValid(s *Session, d *CommandData, data *SpecialGameData) (boo
 		// !seed - Play a specific seed
 		if len(args) != 1 {
 			msg := "Games on specific seeds must be created in the form: " +
-				"!seed [seed number]"
+				"!seed [seed name]"
 			return false, msg
 		}
 
 		if !seedHasValidCharacters(args[0]) {
-			msg := "Game names can only contain English letters, numbers, spaces, " +
+			msg := "Seed names can only contain English letters, numbers " +
 				"and <code>-</code>"
 			return false, msg
 		}
