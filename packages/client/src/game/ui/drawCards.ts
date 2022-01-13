@@ -113,7 +113,7 @@ export default function drawCards(
         } else {
           drawText(ctx, textYPos, rankLabel, enableShadows);
         }
-        if (variant.specialDeceptive && rank === variant.specialRank) {
+        if (variant.specialDeceptive && rank === variant.specialRank && suit.name !== "Unknown") {
           const deceptiveRank =
             variant.clueRanks[suitIndex % variant.clueRanks.length];
           if (colorblindMode) {
