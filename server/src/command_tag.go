@@ -63,9 +63,9 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	// Get the existing tags from the database
+	// Get the existing tags of that user from the database
 	var tags []string
-	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
+	if v, err := models.GameTags.GetAllByUserID(t.ExtraOptions.DatabaseID, s.UserID); err != nil {
 		logger.Error("Failed to get the tags for game ID " +
 			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
 		s.Error(DefaultErrorMsg)
@@ -77,7 +77,7 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Ensure that this tag does not already exist
 	for _, tag := range tags {
 		if tag == d.Msg {
-			s.Warning("This game has already been tagged with \"" + d.Msg + "\".")
+			s.Warning("You have already tagged this game with \"" + d.Msg + "\".")
 			return
 		}
 	}

@@ -208,8 +208,7 @@ CREATE TABLE game_tags (
     user_id  INTEGER  NOT NULL,
     tag      TEXT     NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT game_tags_unique UNIQUE (game_id, tag)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS seeds CASCADE;

@@ -220,7 +220,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 				WHERE game_participants.game_id = games1.id
 			) AS player_names,
 			(
-				SELECT COALESCE(STRING_AGG(game_tags.tag, ', ' ORDER BY LOWER(game_tags.tag)), '')
+				SELECT COALESCE(STRING_AGG(DISTINCT game_tags.tag, ', ' ORDER BY game_tags.tag), '')
 				FROM game_tags
 				WHERE game_tags.game_id = games1.id
 			) AS tags,
