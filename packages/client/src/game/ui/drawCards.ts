@@ -113,7 +113,11 @@ export default function drawCards(
         } else {
           drawText(ctx, textYPos, rankLabel, enableShadows);
         }
-        if (variant.specialDeceptive && rank === variant.specialRank) {
+        if (
+          variant.specialDeceptive &&
+          rank === variant.specialRank &&
+          suit.name !== "Unknown"
+        ) {
           const deceptiveRank =
             variant.clueRanks[suitIndex % variant.clueRanks.length];
           if (colorblindMode) {
@@ -559,6 +563,53 @@ function getSuitStyle(
   variant: Variant,
   colorblindMode: boolean,
 ) {
+  if (cardArea === "number") {
+    // In Synesthesia variants, color the number itself with the color that it contributes to the card.
+    if (variantRules.isSynesthesia(variant)) {
+      if (rank === 0) {
+        return suit.fill;
+      }
+
+      // If the suit does not get clued by its rank, then coloring the rank is misleading, so use the suit color.
+      if (suit.noClueRanks) {
+        return suit.fill;
+      }
+      const prismColorIndex = (rank - 1) % variant.clueColors.length;
+
+      return variant.clueColors[prismColorIndex].fill;
+    }
+
+    if (rank === variant.specialRank) {
+      if (variant.specialAllClueColors && !suit.noClueColors) {
+        if (variant.specialAllClueRanks && !suit.noClueRanks) {
+          const rainbow = getSuit("Omni");
+          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+        }
+        if (variant.specialNoClueRanks && !suit.allClueRanks) {
+          const rainbow = getSuit("Muddy Rainbow");
+          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+        }
+        const rainbow = getSuit("Rainbow");
+        return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+      }
+      if (variant.specialNoClueColors && !suit.allClueColors) {
+        if (variant.specialAllClueRanks && !suit.noClueRanks) {
+          return getSuit("Light Pink").fill;
+        }
+        if (variant.specialNoClueRanks && !suit.allClueRanks) {
+          return getSuit("Null").fill;
+        }
+        return getSuit("White").fill;
+      }
+      if (variant.specialAllClueRanks && !suit.noClueRanks) {
+        return getSuit("Pink").fill;
+      }
+      if (variant.specialNoClueRanks && !suit.allClueRanks) {
+        return getSuit("Brown").fill;
+      }
+    }
+  }
+
   if (suit.prism) {
     // Prism cards have a custom color depending on their rank
     if (rank === 0) {
@@ -582,53 +633,6 @@ function getSuitStyle(
     }
 
     return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix it with white by 50%
-  }
-
-  if (cardArea === "number") {
-    // In Synesthesia variants, color the number itself with the color that it contributes to the card.
-    if (variantRules.isSynesthesia(variant)) {
-      if (rank === 0) {
-        return suit.fill;
-      }
-
-      // If the suit does not get clued by its rank, then coloring the rank is misleading, so use the suit color.
-      if (suit.noClueRanks) {
-        return suit.fill;
-      }
-      const prismColorIndex = (rank - 1) % variant.clueColors.length;
-
-      return variant.clueColors[prismColorIndex].fill;
-    }
-
-    if (rank === variant.specialRank) {
-      if (variant.specialAllClueColors) {
-        if (variant.specialAllClueRanks) {
-          const rainbow = getSuit("Omni");
-          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
-        }
-        if (variant.specialNoClueRanks) {
-          const rainbow = getSuit("Muddy Rainbow");
-          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
-        }
-        const rainbow = getSuit("Rainbow");
-        return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
-      }
-      if (variant.specialNoClueColors) {
-        if (variant.specialAllClueRanks) {
-          return getSuit("Light Pink").fill;
-        }
-        if (variant.specialNoClueRanks) {
-          return getSuit("Null").fill;
-        }
-        return getSuit("White").fill;
-      }
-      if (variant.specialAllClueRanks) {
-        return getSuit("Pink").fill;
-      }
-      if (variant.specialNoClueRanks) {
-        return getSuit("Brown").fill;
-      }
-    }
   }
 
   // Nearly all other suits have a solid fill
