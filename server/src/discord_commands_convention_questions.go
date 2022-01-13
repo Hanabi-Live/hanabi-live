@@ -20,7 +20,7 @@ func discordCommandBadQuestion(ctx context.Context, m *discordgo.MessageCreate, 
 
 // /github
 func discordCommandGithub(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	msg := "Post website bugs and feature requests on the GitHub repository, but make sure that you search for existing [issues](<https://github.com/Zamiell/hanabi-live/issues>) first."
+	msg := "Post website bugs and feature requests on the GitHub repository, but make sure that you search for existing issues: <https://github.com/Zamiell/hanabi-live/issues>"
 	discordSend(m.ChannelID, "", msg)
 }
 
