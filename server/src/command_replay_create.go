@@ -49,7 +49,7 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 		if d.GameJSON == nil {
 			s.Warning("You must send the game specification in the \"gameJSON\" field.")
 			return
-		} else if valid, message := isJSONValid(s, d); !valid {
+		} else if valid, message := isJSONValid(d); !valid {
 			s.Warning(message)
 			return
 		}
@@ -220,7 +220,7 @@ func validateDatabase(s *Session, d *CommandData) bool {
 	return true
 }
 
-func isJSONValid(s *Session, d *CommandData) (bool, string) {
+func isJSONValid(d *CommandData) (bool, string) {
 	if d.GameJSON == nil {
 		return true, ""
 	}

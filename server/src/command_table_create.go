@@ -89,7 +89,7 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	if d.GameJSON != nil {
-		if valid, message := isJSONValid(s, d); !valid {
+		if valid, message := isJSONValid(d); !valid {
 			s.Warning(message)
 			return
 		}
