@@ -356,6 +356,7 @@ func isJSONValid(s *Session, d *CommandData) (bool, string) {
 	// Validate the characters
 	if d.GameJSON.Options.DetrimentalCharacters != nil &&
 		len(d.GameJSON.Characters) != len(d.GameJSON.Players) {
+
 		msg := "The amount of characters specified must match the number of players in the game."
 		return false, msg
 	}
