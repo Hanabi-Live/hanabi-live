@@ -17,7 +17,10 @@ const (
 )
 
 var (
-	isValidTableName = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
+	// Only allow [:alphanum], [!@$()-_;:,?], [space]
+	tableNameHasValidCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
+	// Only allow [:alphanum], [-]
+	seedHasValidCharacters = regexp.MustCompile(`^[\-a-zA-Z0-9]+$`).MatchString
 )
 
 // Data relating to games created with a special custom prefix (e.g. "!seed")
@@ -55,16 +58,7 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Perform name fixes
-	d.Name = fixTableName(d.Name)
-
-	var message string
-	// Check for valid name
-	isValid, message := isTableNameValid(d.Name, false)
-	if !isValid {
-		s.Warning(message)
-		return
-	}
+	d.Name = truncateTrimCheckEmpty(d.Name)
 
 	// Set default values for data relating to tables created with a special prefix or custom data
 	data := &SpecialGameData{
@@ -77,24 +71,26 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		SetReplayTurn: 0,
 	}
 
-	// Handle special game option creation
-	if existsInvalidCommandInTableName(s, d, data) {
-		return
-	}
-
-	// Perform options fixes
-	d.Options = fixGameOptions(d.Options)
-
-	// Check for valid options
-	isValid, message = areGameOptionsValid(d.Options)
-	if !isValid {
+	if valid, message := isTableNameValid(d.Name); !valid {
 		s.Warning(message)
 		return
 	}
 
-	// Validate games with custom JSON
+	if valid, message := isTableCommandValid(s, d, data); !valid {
+		s.Warning(message)
+		return
+	}
+
+	d.Options = fixGameOptions(d.Options)
+
+	if valid, message := areGameOptionsValid(d.Options); !valid {
+		s.Warning(message)
+		return
+	}
+
 	if d.GameJSON != nil {
-		if !validateJSON(s, d) {
+		if valid, message := isJSONValid(s, d); !valid {
+			s.Warning(message)
 			return
 		}
 	}

@@ -40,7 +40,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		// They are sent to the table chat as a proposal
 
 		// Perform name fixes
-		d.Name = fixTableName(d.Name)
+		d.Name = truncateTrimCheckEmpty(d.Name)
 
 		// Perform options fixes
 		d.Options = fixGameOptions(d.Options)
@@ -152,15 +152,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Perform name fixes
-	d.Name = fixTableName(d.Name)
-
-	// Check for valid name
-	isValid, msg := isTableNameValid(d.Name, false)
-	if !isValid {
-		s.Warning(msg)
-		return
-	}
+	d.Name = truncateTrimCheckEmpty(d.Name)
 
 	// Set default values for data relating to tables created with a special prefix or custom data
 	data := &SpecialGameData{
@@ -173,18 +165,20 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		SetReplayTurn: 0,
 	}
 
-	// Handle special game option creation
-	if existsInvalidCommandInTableName(s, d, data) {
+	if valid, message := isTableNameValid(d.Name); !valid {
+		s.Warning(message)
 		return
 	}
 
-	// Perform options fixes
+	if valid, message := isTableCommandValid(s, d, data); !valid {
+		s.Warning(message)
+		return
+	}
+
 	d.Options = fixGameOptions(d.Options)
 
-	// Check for valid options
-	isValid, msg = areGameOptionsValid(d.Options)
-	if !isValid {
-		s.Warning(msg)
+	if valid, message := areGameOptionsValid(d.Options); !valid {
+		s.Warning(message)
 		return
 	}
 
