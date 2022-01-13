@@ -45,7 +45,12 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 	} else if d.Source == "json" {
 		// Before creating a new game and emulating the actions,
 		// ensure that the submitted JSON does not have any obvious errors
-		if valid, _ := isJSONValid(s, d); !valid {
+
+		if d.GameJSON == nil {
+			s.Warning("You must send the game specification in the \"gameJSON\" field.")
+			return
+		} else if valid, message := isJSONValid(s, d); !valid {
+			s.Warning(message)
 			return
 		}
 	}
