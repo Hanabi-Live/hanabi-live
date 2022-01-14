@@ -113,6 +113,9 @@ func apiFullDataHistory(c *gin.Context) {
 	} else {
 		gameHistoryList = v
 	}
+	if gameHistoryList == nil {
+		gameHistoryList = make([]*GameHistory, 0)
+	}
 
 	c.JSON(http.StatusOK, gameHistoryList)
 }
