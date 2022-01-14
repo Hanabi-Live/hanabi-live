@@ -450,6 +450,9 @@ function getMorphModalSelection(): string {
   let val = (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
   // Special case for very ambiguous
   val = val.replace(" VA ", "");
+  // Special case for dual colors
+  val = val.replace(" D", "");
+  val = val.replace(" D2", "");
   return val;
 }
 
