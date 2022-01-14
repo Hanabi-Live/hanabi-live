@@ -1,4 +1,4 @@
-package variants_data
+package variantslogic
 
 import (
 	"encoding/json"
@@ -20,8 +20,8 @@ func initSuits() {
 	source := path.Join(jsonPath, "suits.json")
 	contents, _ := ioutil.ReadFile(source)
 
-	if err := json.Unmarshal([]byte(contents), &suits); err != nil {
-		logger.Error("variants_data: Error during suits init.")
+	if err := json.Unmarshal(contents, &suits); err != nil {
+		logger.Error("variantslogic: Error during suits init.")
 	}
 }
 

@@ -1,4 +1,4 @@
-package variants_data
+package variantslogic
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ var (
 
 type Variant struct {
 	Name        string   `json:"name"`
-	Id          int      `json:"id"`
+	ID          int      `json:"id"`
 	StringSuits []string `json:"suits"`
 	Suits       []Suit
 	Efficiency  []float64
@@ -46,8 +46,8 @@ func initVariants() {
 	source := path.Join(jsonPath, "variants.json")
 	contents, _ := ioutil.ReadFile(source)
 
-	if err := json.Unmarshal([]byte(contents), &VARIANTS); err != nil {
-		logger.Error("variants_data: Error during variants init.")
+	if err := json.Unmarshal(contents, &VARIANTS); err != nil {
+		logger.Error("variantsLogic: Error during variants init.")
 	}
 
 	// Create Suits, calculate and store efficiency
@@ -104,7 +104,7 @@ func (v Variant) totalCards() int {
 		if s.OneOfEach {
 			totalCardsInTheDeck -= 5
 		} else if v.isUpOrDown() || v.isCriticalFours() {
-			totalCardsInTheDeck -= 1
+			totalCardsInTheDeck--
 		}
 	}
 	return totalCardsInTheDeck
@@ -123,7 +123,7 @@ func startingCluesUsable(numPlayers int, deckSize int, numberOfSuits int) int {
 			break
 		}
 		cardsPlayed += 5
-		suitsCompletedBeforeFinalRound += 1
+		suitsCompletedBeforeFinalRound++
 	}
 	cluesFromSuits := suitsCompletedBeforeFinalRound
 
