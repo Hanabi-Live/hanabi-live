@@ -89,21 +89,37 @@ func (v Variant) isCriticalFours() bool {
 	return strings.HasPrefix(v.Name, "Critical Fours")
 }
 
-func (v Variant) CalculateEfficiency(numPlayers int) float64 {
-	deckSize := v.startingDeckSize(numPlayers)
-	numberOfSuits := v.numberOfSuits()
-	maxScore := v.maxScore()
-	totalClues := startingCluesUsable(numPlayers, deckSize, numberOfSuits)
-
-	eff := float64(maxScore) / float64(totalClues)
-	round2eff := math.Floor(eff*100) / 100
-	return round2eff
+func (v Variant) isClueStarved() bool {
+	return strings.HasPrefix(v.Name, "Clue Starved")
 }
 
-func (v Variant) startingDeckSize(numPlayers int) int {
-	totalCards := v.totalCards()
-	initialCardsDrawn := cardsPerHand(numPlayers) * numPlayers
-	return totalCards - initialCardsDrawn
+func (v Variant) isThrowItInAHole() bool {
+	return strings.HasPrefix(v.Name, "Throw It in a Hole")
+}
+
+func (v Variant) CalculateEfficiency(numPlayers int) float64 {
+	cardsInDeck := v.totalCards()                             // 60
+	cardsDealt := (cardsPerHand(numPlayers) - 1) * numPlayers // 15
+	maxScore := v.maxScore()                                  // 30
+
+	staringPace := cardsInDeck - cardsDealt - maxScore // 15
+	unusableClues := 1
+	if numPlayers > 4 {
+		unusableClues = 2
+	}
+	if v.isThrowItInAHole() {
+		unusableClues = v.numberOfSuits()
+	} // unusableClues = 6
+
+	discardsPerClue := 1
+	if v.isClueStarved() {
+		discardsPerClue = 2
+	} // discardsPerClue = 1
+
+	minEff := float64(maxScore) / float64(8+math.Floor(
+		float64(staringPace+v.numberOfSuits()-unusableClues)/float64(discardsPerClue)))
+
+	return minEff
 }
 
 func (v Variant) totalCards() int {
@@ -117,26 +133,6 @@ func (v Variant) totalCards() int {
 		}
 	}
 	return totalCardsInTheDeck
-}
-
-func startingCluesUsable(numPlayers int, deckSize int, numberOfSuits int) int {
-	maxScore := numberOfSuits * 5
-
-	maxDiscardsBeforeFinalRound := numPlayers + deckSize - maxScore
-
-	minPlaysBeforeFinalRound := numberOfSuits*5 - numPlayers - 1
-	cardsPlayed := 0
-	suitsCompletedBeforeFinalRound := 0
-	for i := 0; i < numberOfSuits; i++ {
-		if cardsPlayed+5 > minPlaysBeforeFinalRound {
-			break
-		}
-		cardsPlayed += 5
-		suitsCompletedBeforeFinalRound++
-	}
-	cluesFromSuits := suitsCompletedBeforeFinalRound
-
-	return maxDiscardsBeforeFinalRound + cluesFromSuits + 8
 }
 
 func cardsPerHand(numPlayers int) int {

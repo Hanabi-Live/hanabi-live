@@ -72,9 +72,10 @@ func httpSharedMissingScores(c *gin.Context) {
 
 	// Efficiencies
 	variantsEfficiencies := make([]float64, 0)
+	effIndex := len(playerIDs) - 2
 	for _, v := range combinedVariantStatsList {
 		variant := variantslogic.GetVariantFromID(v.ID)
-		variantsEfficiencies = append(variantsEfficiencies, variant.CalculateEfficiency(len(playerIDs)))
+		variantsEfficiencies = append(variantsEfficiencies, variant.Efficiency[effIndex])
 	}
 
 	lastIndex := len(playerNames) - 1
