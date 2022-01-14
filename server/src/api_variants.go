@@ -119,6 +119,9 @@ func apiVariantsSingle(c *gin.Context) {
 	}
 
 	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
+	if dbRows == nil {
+		dbRows = make([]APIVariantRow, 0)
+	}
 
 	out := APIVariantAnswer{
 		TotalRows: rowCount,
