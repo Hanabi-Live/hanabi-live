@@ -13,9 +13,6 @@ func httpMissingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Efficiencies
-	variantslogic.Init(jsonPath)
-
 	var user User
 	if v, ok := httpParsePlayerName(c); !ok {
 		return

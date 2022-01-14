@@ -13,9 +13,6 @@ func httpSharedMissingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Efficiencies
-	variantslogic.Init(jsonPath)
-
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	var playerNames []string

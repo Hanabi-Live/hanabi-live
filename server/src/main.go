@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/variantslogic"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -189,6 +190,9 @@ func main() {
 
 	// Initialize chat commands (in "chatCommand.go")
 	chatCommandInit()
+
+	// Calculate variant efficiencies
+	variantslogic.Init(jsonPath)
 
 	// Record the time that the server started
 	datetimeStarted = time.Now()
