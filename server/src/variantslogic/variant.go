@@ -64,6 +64,15 @@ func initVariants() {
 	}
 }
 
+func GetVariantFromID(id int) Variant {
+	for _, v := range VARIANTS {
+		if v.ID == id {
+			return v
+		}
+	}
+	return Variant{}
+}
+
 func (v Variant) numberOfSuits() int {
 	return len(v.Suits)
 }

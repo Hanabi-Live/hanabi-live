@@ -69,6 +69,7 @@ type TemplateData struct {
 	NumStrikeouts int
 	StrikeoutRate string
 	RecentGames   []*GameHistory
+	Efficiencies  []float64
 }
 
 const (
