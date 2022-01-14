@@ -116,7 +116,7 @@ func (v Variant) CalculateEfficiency(numPlayers int) float64 {
 		discardsPerClue = 2
 	} // discardsPerClue = 1
 
-	minEff := float64(maxScore) / float64(8+math.Floor(
+	minEff := float64(maxScore) / (8 + math.Floor(
 		float64(staringPace+v.numberOfSuits()-unusableClues)/float64(discardsPerClue)))
 
 	return minEff
