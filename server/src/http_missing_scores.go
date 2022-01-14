@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/variantslogic"
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,6 +50,14 @@ func httpMissingScores(c *gin.Context) {
 		numMaxScoresPerType,
 	)
 
+	// Efficiencies
+	variantsEfficiencies := make([]float64, 0)
+	effIndex := numPlayers - 2
+	for _, v := range variantStatsList {
+		variant := variantslogic.GetVariantFromID(v.ID)
+		variantsEfficiencies = append(variantsEfficiencies, variant.Efficiency[effIndex])
+	}
+
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title:                      "Missing Scores",
 		Name:                       user.Username,
@@ -60,6 +69,7 @@ func httpMissingScores(c *gin.Context) {
 		SharedMissingScores:        false,
 
 		VariantStats: variantStatsList,
+		Efficiencies: variantsEfficiencies,
 	}
 	httpServeTemplate(w, data, "profile", "missing-scores")
 }

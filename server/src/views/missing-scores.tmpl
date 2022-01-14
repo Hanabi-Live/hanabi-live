@@ -75,9 +75,10 @@
 <table class="history">
   <thead>
     <tr>
-      <th width="60%">Variant</th>
-      <th width="20%" class="center"># of Players</th>
-      <th width="20%" class="sorter-current-max-score center">{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
+      <th width="55%">Variant</th>
+      <th width="15%" class="center"># of Players</th>
+      <th width="15%" class="sorter-current-max-score center">{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
+      <th width="15%" class="sorter-efficiency center">Efficiency</th>
     </tr>
   </thead>
   <tbody>
@@ -85,6 +86,13 @@
       {{range $index2, $results2 := .BestScores}}
         {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
           {{if or (not $.RequestedNumPlayers) (eq $.RequestedNumPlayers .NumPlayers)}}
+            {{$eff := index $.Efficiencies $index}}
+            {{$effclass := "very-hard"}}
+            {{if lt $eff 1.25}}
+              {{$effclass = "normal"}}
+            {{else if lt $eff 1.5}}
+              {{$effclass = "hard"}}
+            {{end}}
             <tr class="missing-scores-row missing-scores-row-players-{{.NumPlayers}}">
               <td>{{$results.Name}}</td>
               <td class="center">{{.NumPlayers}}</td>
@@ -107,6 +115,7 @@
                     ></i>
                 {{end}}
               </td>
+              <td class="center {{$effclass}}">{{printf "%.2f" $eff}}</td>
             </tr>
           {{end}}
         {{end}}

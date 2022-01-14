@@ -5,39 +5,51 @@
 
 /* source-sans-pro-300 - latin_greek_cyrillic */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 300;
-  src: local(''),
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 /* source-sans-pro-300italic - latin_greek_cyrillic */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 300;
-  src: local(''),
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 /* source-sans-pro-italic - latin_greek_cyrillic */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 400;
-  src: local(''),
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 /* source-sans-pro-regular - latin_greek_cyrillic */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 400;
-  src: local(''),
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /*
@@ -359,28 +371,28 @@ table td {
 
 .lobby-games-table-joined:hover {
   background-color: #e0e0ff !important;
-  cursor: url('/public/img/hover-cursors/play.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/play.png") 28 12.5, pointer;
 }
 .lobby-games-table-unstarted:hover {
   background-color: #ffffe1 !important;
-  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/join.png") 28 12.5, pointer;
 }
 .lobby-games-table-unstarted-password:hover {
   background-color: #ffd5d5 !important;
-  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/join.png") 28 12.5, pointer;
 }
 .lobby-games-table-started:hover {
   background-color: #cdffdd !important;
-  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/view.png") 28 12.5, pointer;
 }
 .lobby-games-table-replay:hover {
   background-color: #ffe1ff !important;
-  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/view.png") 28 12.5, pointer;
 }
-.lobby-games-table-unstarted.full:hover, .lobby-games-table-unstarted-password.full:hover {
-  cursor: url('/public/img/hover-cursors/forbid.png') 28 12.5, pointer;
+.lobby-games-table-unstarted.full:hover,
+.lobby-games-table-unstarted-password.full:hover {
+  cursor: url("/public/img/hover-cursors/forbid.png") 28 12.5, pointer;
 }
-
 
 /*
   Lobby chat
@@ -530,7 +542,8 @@ table td {
   min-height: 3em;
 }
 
-#create-game-timed-option-1, #create-game-timed-option-3 {
+#create-game-timed-option-1,
+#create-game-timed-option-3 {
   line-height: 1.2em;
 }
 
@@ -741,13 +754,25 @@ input::-webkit-calendar-picker-indicator {
 }
 
 @keyframes pageCoverHide {
-  0% { background-color: rgba(0, 24, 5, 0.7); z-index: 99999; }
-  100% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+  0% {
+    background-color: rgba(0, 24, 5, 0.7);
+    z-index: 99999;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
 }
 
 @keyframes pageCoverShow {
-  0% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
-  100% { background-color: rgba(0, 24, 5, 0.7); z-index: 99999; }
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+  100% {
+    background-color: rgba(0, 24, 5, 0.7);
+    z-index: 99999;
+  }
 }
 
 .modal {
@@ -785,7 +810,8 @@ input::-webkit-calendar-picker-indicator {
 }
 
 @media screen and (max-width: 510px) {
-  .modal, .modal-message {
+  .modal,
+  .modal-message {
     left: 0;
     right: 0;
     max-width: unset;
@@ -816,7 +842,8 @@ input::-webkit-calendar-picker-indicator {
   margin-bottom: 0.5em;
 }
 
-#morph-modal-suits, #morph-modal-ranks {
+#morph-modal-suits,
+#morph-modal-ranks {
   display: flex;
   justify-content: center;
 }
@@ -1044,11 +1071,11 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /* Make pregame name, variant, and number of players appear on next line always */
-#lobby-pregame-name, #lobby-pregame-variant, #lobby-pregame-seats {
+#lobby-pregame-name,
+#lobby-pregame-variant,
+#lobby-pregame-seats {
   display: block;
 }
-
-
 
 /*
   Media Responsive Utilities
@@ -1065,32 +1092,32 @@ input::-webkit-calendar-picker-indicator {
 */
 @media screen and (max-width: 1680px) {
   .hidden-xxl {
-    display: none!important;
+    display: none !important;
   }
 }
 @media screen and (max-width: 1280px) {
   .hidden-xl {
-    display: none!important;
+    display: none !important;
   }
 }
 @media screen and (max-width: 980px) {
   .hidden-lg {
-    display: none!important;
+    display: none !important;
   }
 }
 @media screen and (max-width: 840px) {
   .hidden-md {
-    display: none!important;
+    display: none !important;
   }
 }
 @media screen and (max-width: 736px) {
   .hidden-sm {
-    display: none!important;
+    display: none !important;
   }
 }
 @media screen and (max-width: 480px) {
   .hidden-xs {
-    display: none!important;
+    display: none !important;
   }
 }
 
@@ -1315,10 +1342,10 @@ table th {
     height: calc((100% - 1em) / 2);
   }
   #lobby-chat-pregame-container {
-    margin-left: 0.5em!important;
+    margin-left: 0.5em !important;
   }
   .narrow-screen-hidden {
-    display: none!important;
+    display: none !important;
   }
 }
 
@@ -1374,10 +1401,10 @@ table th {
     display: inline;
   }
   .lobby-users-box-container {
-    padding-left: 2em!important;
+    padding-left: 2em !important;
   }
   .narrow-screen-hidden {
-    display: none!important;
+    display: none !important;
   }
   .row > #lobby-chat-container {
     width: 100%;
@@ -1429,13 +1456,25 @@ input[type="text"].wrongInput {
 }
 
 @keyframes backdropHide {
-  0% { background-color: rgba(0, 0, 0, 0.7); z-index: 99999; }
-  100% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
+  0% {
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
 }
 
 @keyframes backdropShow {
-  0% { background-color: rgba(0, 0, 0, 0); z-index: -1; }
-  100% { background-color: rgba(0, 0, 0, 0.7); z-index: 99999; }
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+  }
 }
 
 .dialog {
@@ -1540,6 +1579,19 @@ table.history {
   text-align: center;
 }
 
+.history td.normal {
+}
+
+.history td.hard {
+  color: white;
+  background-color: darkgoldenrod;
+}
+
+.history td.very-hard {
+  color: white;
+  background-color: darkred;
+}
+
 .pager {
   font-size: 1em;
   display: flex;
@@ -1593,9 +1645,9 @@ table.history {
   border-radius: 6px;
 }
 
-.tablesorter thead input[aria-label="Filter \"ID\" column by..."],
-.tablesorter thead input[aria-label="Filter \"Score\" column by..."],
-.tablesorter thead input[aria-label="Filter \"Other Scores\" column by..."] {
+.tablesorter thead input[aria-label='Filter "ID" column by...'],
+.tablesorter thead input[aria-label='Filter "Score" column by...'],
+.tablesorter thead input[aria-label='Filter "Other Scores" column by...'] {
   max-width: 50px;
 }
 
@@ -1634,11 +1686,11 @@ table.history {
 }
 .tablesorter-headerAsc {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-  background-color: lightblue!important;
+  background-color: lightblue !important;
 }
 .tablesorter-headerDesc {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-  background-color: lightblue!important;
+  background-color: lightblue !important;
 }
 .tablesorter .sorter-false {
   background-image: none;
@@ -1666,27 +1718,27 @@ span.tableSpinner {
   position: relative;
   border-width: 3px 2px 3px 2px;
   border-style: solid dotted solid dotted;
-  border-color: #de3500 rgba(255, 255, 255,0.3) #fff rgba(151, 107, 93, 0.3);
+  border-color: #de3500 rgba(255, 255, 255, 0.3) #fff rgba(151, 107, 93, 0.3);
   border-radius: 50%;
   box-sizing: border-box;
   animation: 1s rotate linear infinite;
 }
 span.tableSpinner:before,
 span.tableSpinner:after {
-  content: '';
+  content: "";
   top: 0;
   left: 0;
   position: absolute;
   border: 10px solid transparent;
-  border-bottom-color:#fff;
+  border-bottom-color: #fff;
   transform: translate(-10px, 19px) rotate(-35deg);
 }
 span.tableSpinner:after {
-  border-color: #de3500 #0000 #0000 #0000 ;
+  border-color: #de3500 #0000 #0000 #0000;
   transform: translate(32px, 3px) rotate(-35deg);
 }
- @keyframes rotate {
+@keyframes rotate {
   100% {
-    transform: rotate(360deg)
+    transform: rotate(360deg);
   }
 }
