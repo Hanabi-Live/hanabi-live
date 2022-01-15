@@ -25,10 +25,6 @@ type Variant struct {
 }
 
 func Init(path string) {
-	loadData(path)
-}
-
-func loadData(path string) {
 	if initialized {
 		return
 	}
