@@ -19,8 +19,10 @@ const (
 )
 
 var (
-	mentionRegExp = regexp.MustCompile(`&lt;@&*!*(\d+?)&gt;`)
-	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
+	// From https://github.com/discordjs/discord.js/blob/stable/src/structures/MessageMentions.js#L221
+	mentionRegExp = regexp.MustCompile(`&lt;@!?(\d{17,19})&gt;`)
+	roleRegExp    = regexp.MustCompile(`&lt;@&(\d{17,19})&gt;`)
+	channelRegExp = regexp.MustCompile(`&lt;#(\d{17,19})&gt;`)
 )
 
 type ChatMessage struct {
@@ -78,6 +80,19 @@ func chatServerSendPM(s *Session, msg string, room string) {
 	})
 }
 
+func chatFillAll(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	// Convert Discord mentions to users, channels and roles
+	msg = chatFillMentions(msg)
+	msg = chatFillRoles(msg)
+	msg = chatFillChannels(msg)
+
+	return msg
+}
+
 func chatFillMentions(msg string) string {
 	if discord == nil {
 		return msg
@@ -98,6 +113,25 @@ func chatFillMentions(msg string) string {
 		username := discordGetNickname(discordID)
 		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+username)
 		msg = strings.ReplaceAll(msg, "&lt;@!"+discordID+"&gt;", "@"+username)
+	}
+	return msg
+}
+
+func chatFillRoles(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	// Discord mentions are in the form of "<@#12345678901234567>"
+	// By the time the message gets here, it will be sanitized to "&lt;@#12345678901234567&gt;"
+	for {
+		match := roleRegExp.FindStringSubmatch(msg)
+		if match == nil || len(match) <= 1 {
+			break
+		}
+		discordID := match[1]
+		role := discordGetRole(discordID)
+		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+role)
 	}
 	return msg
 }
@@ -152,7 +186,7 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 			discord = true
 			rawMsg.Name = rawMsg.DiscordName.String
 		}
-		rawMsg.Message = chatFillMentions(rawMsg.Message)
+		rawMsg.Message = chatFillAll(rawMsg.Message)
 		msg := &ChatMessage{
 			Msg:       rawMsg.Message,
 			Who:       rawMsg.Name,
