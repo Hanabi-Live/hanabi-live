@@ -580,32 +580,43 @@ function getSuitStyle(
     }
 
     if (rank === variant.specialRank) {
-      if (variant.specialAllClueColors && !suit.noClueColors) {
-        if (variant.specialAllClueRanks && !suit.noClueRanks) {
-          const rainbow = getSuit("Omni");
+      const allClueColors =
+        suit.allClueColors ||
+        (variant.specialAllClueColors && !suit.noClueColors);
+      const noClueColors =
+        suit.noClueColors ||
+        (variant.specialNoClueColors && !suit.allClueColors);
+      const allClueRanks =
+        suit.allClueRanks || (variant.specialAllClueRanks && !suit.noClueRanks);
+      const noClueRanks =
+        suit.noClueRanks || (variant.specialNoClueRanks && !suit.allClueRanks);
+      const dark = suit.oneOfEach;
+      if (allClueColors) {
+        if (allClueRanks) {
+          const rainbow = getSuit(dark ? "Dark Omni" : "Omni");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
-        if (variant.specialNoClueRanks && !suit.allClueRanks) {
-          const rainbow = getSuit("Muddy Rainbow");
+        if (noClueRanks) {
+          const rainbow = getSuit(dark ? "Cocoa Rainbor" : "Muddy Rainbow");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
-        const rainbow = getSuit("Rainbow");
+        const rainbow = getSuit(dark ? "Dark Rainbow" : "Rainbow");
         return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
       }
-      if (variant.specialNoClueColors && !suit.allClueColors) {
-        if (variant.specialAllClueRanks && !suit.noClueRanks) {
-          return getSuit("Light Pink").fill;
+      if (noClueColors) {
+        if (allClueRanks) {
+          return getSuit(dark ? "Gray Pink" : "Light Pink").fill;
         }
-        if (variant.specialNoClueRanks && !suit.allClueRanks) {
-          return getSuit("Null").fill;
+        if (noClueRanks) {
+          return getSuit(dark ? "Dark Null" : "Null").fill;
         }
-        return getSuit("White").fill;
+        return getSuit(dark ? "Gray" : "White").fill;
       }
-      if (variant.specialAllClueRanks && !suit.noClueRanks) {
-        return getSuit("Pink").fill;
+      if (allClueRanks) {
+        return getSuit(dark ? "Dark Pink" : "Pink").fill;
       }
-      if (variant.specialNoClueRanks && !suit.allClueRanks) {
-        return getSuit("Brown").fill;
+      if (noClueRanks) {
+        return getSuit(dark ? "Dark Brown" : "Brown").fill;
       }
     }
   }
