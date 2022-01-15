@@ -25,10 +25,6 @@ type Variant struct {
 }
 
 func Init(path string) {
-	loadData(path)
-}
-
-func loadData(path string) {
 	if initialized {
 		return
 	}
@@ -98,23 +94,23 @@ func (v Variant) isThrowItInAHole() bool {
 }
 
 func (v Variant) CalculateEfficiency(numPlayers int) float64 {
-	cardsInDeck := v.totalCards()                             // 60
-	cardsDealt := (cardsPerHand(numPlayers) - 1) * numPlayers // 15
-	maxScore := v.maxScore()                                  // 30
+	cardsInDeck := v.totalCards()
+	cardsDealt := (cardsPerHand(numPlayers) - 1) * numPlayers
+	maxScore := v.maxScore()
 
-	staringPace := cardsInDeck - cardsDealt - maxScore // 15
+	staringPace := cardsInDeck - cardsDealt - maxScore
 	unusableClues := 1
 	if numPlayers > 4 {
 		unusableClues = 2
 	}
 	if v.isThrowItInAHole() {
 		unusableClues = v.numberOfSuits()
-	} // unusableClues = 6
+	}
 
 	discardsPerClue := 1
 	if v.isClueStarved() {
 		discardsPerClue = 2
-	} // discardsPerClue = 1
+	}
 
 	minEff := float64(maxScore) / (8 + math.Floor(
 		float64(staringPace+v.numberOfSuits()-unusableClues)/float64(discardsPerClue)))
