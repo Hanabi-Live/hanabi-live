@@ -238,3 +238,24 @@ func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 		discordCommand(ctx, m, command, args)
 	}
 }
+
+func discordGetRoles() []*discordgo.Role {
+	roles := make([]*discordgo.Role, 0)
+	if v, err := discord.GuildRoles(discordGuildID); err != nil {
+		logger.Info("Failed to get the Discord channel: " + err.Error())
+	} else {
+		roles = v
+	}
+
+	return roles
+}
+
+func discordGetRole(discordID string) string {
+	roles := discordGetRoles()
+	for _, role := range roles {
+		if role.ID == discordID {
+			return role.Name
+		}
+	}
+	return "[unknown role]"
+}

@@ -101,8 +101,7 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		return
 	}
 
-	d.Msg = chatFillMentions(d.Msg) // Convert Discord mentions from number to username
-	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel links from number to name
+	d.Msg = chatFillAll(d.Msg) // Convert Discord mentions from number to username, role or channel
 
 	// Add the message to the database
 	if d.Discord {
