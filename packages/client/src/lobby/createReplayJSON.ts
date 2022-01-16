@@ -53,7 +53,9 @@ export default function createJSONFromReplay(room: string) {
   const states = replay.hypothetical!.states;
   const log = states[states.length - 1].log;
   if (replay.segment < log.length) {
-    game.actions.push(...getGameActionsFromLog(log.slice(replay.segment + 1)));
+    const slice = log.slice(replay.segment + 1);
+    const actions = getGameActionsFromLog(slice);
+    game.actions.push(...actions);
   }
 
   const json = JSON.stringify(game);
@@ -119,7 +121,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   const actions: ClientAction[] = [];
   const regexPlay = /^(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
   const regexDiscard = /^(.*) discards .* slot #(\d).*$/;
-  const regexClue = /^(?:.+) tells (.*) about \w+ ([a-zA-Z]+|\d).*$/;
+  const regexClue = /^(?:.+) tells (.*) about \w+ ([a-zA-Z]+|\d)s?$/;
 
   log.forEach((line, index) => {
     const foundPlay = line.text.match(regexPlay);
@@ -215,8 +217,8 @@ function getCardFromHypoState(
 
 function getColorIdFromString(clue: string): number {
   let suitIndex = 0;
-  globals.variant.suits.forEach((el, index) => {
-    if (el.name === clue) {
+  globals.variant.clueColors.forEach((color, index) => {
+    if (clue.startsWith(color.name)) {
       suitIndex = index;
     }
   });
