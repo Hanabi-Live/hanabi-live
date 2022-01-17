@@ -376,13 +376,20 @@ function checkForHypoEmpathy(card: HanabiCard): boolean {
   if (globals.state.replay.hypothetical !== null) {
     const startingPlayerIndex =
       globals.state.replay.hypothetical?.startingPlayerIndex;
+    if (
+      startingPlayerIndex === null ||
+      startingPlayerIndex >= globals.elements.playerHands.length ||
+      globals.elements.playerHands[startingPlayerIndex] === undefined
+    ) {
+      return false;
+    }
     for (
       let i = 0;
-      i < globals.elements.playerHands[startingPlayerIndex!].children?.length;
+      i < globals.elements.playerHands[startingPlayerIndex].children?.length;
       i++
     ) {
       const child =
-        globals.elements.playerHands[startingPlayerIndex!].children[i];
+        globals.elements.playerHands[startingPlayerIndex].children[i];
       const currentCard: HanabiCard = child.children[0] as HanabiCard;
       if (currentCard._id === card._id) {
         return true;
