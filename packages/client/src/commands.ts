@@ -19,13 +19,15 @@ interface WarningData {
 }
 commands.set("warning", (data: WarningData) => {
   console.warn(data.warning);
-  modals.showWarning(data.warning);
-
-  // Re-activate some lobby elements
-  $("#nav-buttons-lobby-create-game").removeClass("disabled");
-  if (globals.currentScreen === Screen.PreGame) {
-    pregame.toggleStartGameButton();
-  }
+  modals.closeModals(true);
+  setTimeout(() => {
+    modals.showWarning(data.warning);
+    // Re-activate some lobby elements
+    $("#nav-buttons-lobby-create-game").removeClass("disabled");
+    if (globals.currentScreen === Screen.PreGame) {
+      pregame.toggleStartGameButton();
+    }
+  }, 100);
 });
 
 interface ErrorData {
