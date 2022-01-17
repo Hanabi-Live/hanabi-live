@@ -52,10 +52,12 @@ func httpMissingScores(c *gin.Context) {
 
 	// Efficiencies
 	variantsEfficiencies := make([]float64, 0)
-	effIndex := numPlayers - 2
-	for _, v := range variantStatsList {
-		variant := variantslogic.GetVariantFromID(v.ID)
-		variantsEfficiencies = append(variantsEfficiencies, variant.Efficiency[effIndex])
+	if numPlayers >= 2 && numPlayers <= 6 {
+		effIndex := numPlayers - 2
+		for _, v := range variantStatsList {
+			variant := variantslogic.GetVariantFromID(v.ID)
+			variantsEfficiencies = append(variantsEfficiencies, variant.Efficiency[effIndex])
+		}
 	}
 
 	data := &TemplateData{ // nolint: exhaustivestruct
