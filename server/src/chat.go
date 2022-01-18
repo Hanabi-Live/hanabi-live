@@ -131,7 +131,7 @@ func chatFillRoles(msg string) string {
 		}
 		discordID := match[1]
 		role := discordGetRole(discordID)
-		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+role)
+		msg = strings.ReplaceAll(msg, "&lt;@&"+discordID+"&gt;", "@"+role)
 	}
 	return msg
 }
