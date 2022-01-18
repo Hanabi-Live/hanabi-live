@@ -21,6 +21,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 1. [Friends](#friends)
 1. [Tags](#tags)
 1. [Website Endpoints](#website-endpoints)
+1. [Hypo replay](#create-a-hypo-replay)
 1. [Research & Bots](#research--bots)
 1. [Password Reset](#password-reset)
 1. [Project History](#project-history)
@@ -522,6 +523,17 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 | `/stats`                                         | Lists stats for the entire website.
 | `/variant/[id]`                                  | Lists stats for a specific variant.
 | `/tag/[tag]`                                     | Lists all the games that match the specified tag.
+
+<br />
+
+## Create a hypo replay
+
+- Enter a replay (solo or shared).
+- Go to the point where you want to start your hypo (previous normal actions will be included).
+- Start hypothesizing (mind that morphed cards are not supported).
+- When you are satisfied, open chat window (`alt`+`C`) and type `/copy`.
+
+The game will be saved in your clipboard in JSON format. To view it, click on the `Watch Replay` button, check the `JSON Data` and paste the clipboard contents to the textbox.
 
 <br />
 
