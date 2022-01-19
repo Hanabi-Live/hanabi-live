@@ -597,7 +597,7 @@ function getSuitStyle(
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
         if (noClueRanks) {
-          const rainbow = getSuit(dark ? "Cocoa Rainbor" : "Muddy Rainbow");
+          const rainbow = getSuit(dark ? "Cocoa Rainbow" : "Muddy Rainbow");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
         const rainbow = getSuit(dark ? "Dark Rainbow" : "Rainbow");

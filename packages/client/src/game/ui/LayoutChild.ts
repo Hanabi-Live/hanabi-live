@@ -190,7 +190,7 @@ export default class LayoutChild extends Konva.Group {
       return true; // Known card
     }
 
-    modals.askForMorph(this.card, draggedTo);
+    modals.askForMorph(this.card, globals.variant, draggedTo);
     return false; // Unknown card
   }
 
