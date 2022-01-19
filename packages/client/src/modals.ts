@@ -1,6 +1,6 @@
 // Modals (boxes that hover on top of the UI)
 
-import { Suit } from "@hanabi/data";
+import { Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import HanabiCard from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
@@ -15,50 +15,9 @@ let currentModal: HTMLElement | null = null;
 
 // Used by morph dialog
 type DragAreaType = "playArea" | "discardArea" | null;
-let card: HanabiCard | null = null;
-let dragArea: DragAreaType;
 
 const pageCover = getElement("#page-cover");
 const modalsContainer = getElement("#modals-container");
-
-// Morph dialog button actions
-const morphFinishLayout = (draggedTo: DragAreaType) => {
-  // finish drag action
-  if (card?.getLayoutParent() === null) {
-    return;
-  }
-  card?.getLayoutParent().continueDragAction(draggedTo);
-};
-
-const morphReplayOkButton = (): boolean => {
-  allowCloseModal = true;
-  closeModals();
-
-  const cardIdentity = noteIdentity.parseIdentity(
-    window.globals.variant,
-    getMorphModalSelection(),
-  );
-  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-    // Morph didn't succeed
-    return false;
-  }
-  morphReplayFromModal(card!, cardIdentity);
-  return true;
-};
-const morphInGameOkButton = () => {
-  const success = morphReplayOkButton();
-  const draggedTo = success ? dragArea : null;
-  morphFinishLayout(draggedTo);
-};
-
-const morphReplayCancelButton = () => {
-  allowCloseModal = true;
-  closeModals();
-};
-const morphInGameCancelButton = () => {
-  morphReplayCancelButton();
-  morphFinishLayout(null);
-};
 
 // Initialize various element behavior within the modals
 function init() {
@@ -157,22 +116,60 @@ export function askForPassword(tableID: number): void {
 }
 
 export function askForMorph(
-  morphCard: HanabiCard | null,
+  card: HanabiCard | null,
+  variant: Variant,
   draggedTo: DragAreaType = null,
 ): void {
   if (!init()) {
     return;
   }
+  let dragArea = draggedTo;
+  // Morph dialog button actions
+  const morphFinishLayout = () => {
+    // finish drag action
+    if (card?.getLayoutParent() === null) {
+      return;
+    }
+    card?.getLayoutParent().continueDragAction(dragArea);
+  };
+
+  const morphReplayOkButton = (): boolean => {
+    allowCloseModal = true;
+    closeModals();
+
+    const cardIdentity = noteIdentity.parseIdentity(
+      variant,
+      getMorphModalSelection(),
+    );
+    if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+      // Morph didn't succeed
+      return false;
+    }
+    morphReplayFromModal(card!, cardIdentity);
+    return true;
+  };
+  const morphInGameOkButton = () => {
+    const success = morphReplayOkButton();
+    if (!success) dragArea = null;
+    morphFinishLayout();
+  };
+
+  const morphReplayCancelButton = () => {
+    allowCloseModal = true;
+    closeModals();
+  };
+  const morphInGameCancelButton = () => {
+    morphReplayCancelButton();
+    dragArea = null;
+    morphFinishLayout();
+  };
 
   allowCloseModal = false;
-  card = morphCard;
 
-  const suits = window.globals.variant.suits;
-  const ranks = window.globals.variant.ranks;
+  const suits = variant.suits;
+  const ranks = variant.ranks;
   const start =
-    morphCard !== null
-      ? morphCard.getMorphedIdentity()
-      : { suitIndex: null, rank: null };
+    card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
   const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
   const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
 
@@ -199,34 +196,23 @@ export function askForMorph(
       "Select the card you want to morph it into:";
 
     // Morph modal OK button
-    getElement("#morph-modal-button-ok").onclick = () => {
-      morphReplayOkButton();
-    };
+    getElement("#morph-modal-button-ok").onclick = morphReplayOkButton;
 
     // Morph modal Cancel button
-    getElement("#morph-modal-button-cancel").onclick = () => {
-      morphReplayCancelButton();
-    };
+    getElement("#morph-modal-button-cancel").onclick = morphReplayCancelButton;
+  } else {
+    // The function was called from LayoutChild.ts during in-game hypo
 
-    return;
+    // Set the dialog text
+    getElement("#morph-modal p").innerHTML =
+      "What the card will be for the purposes of this hypothetical?";
+
+    // Morph modal OK button
+    getElement("#morph-modal-button-ok").onclick = morphInGameOkButton;
+
+    // Morph modal Cancel button
+    getElement("#morph-modal-button-cancel").onclick = morphInGameCancelButton;
   }
-
-  // The function was called from LayoutChild.ts during in-game hypo
-  dragArea = draggedTo;
-
-  // Set the dialog text
-  getElement("#morph-modal p").innerHTML =
-    "What the card will be for the purposes of this hypothetical?";
-
-  // Morph modal OK button
-  getElement("#morph-modal-button-ok").onclick = () => {
-    morphInGameOkButton();
-  };
-
-  // Morph modal Cancel button
-  getElement("#morph-modal-button-cancel").onclick = () => {
-    morphInGameCancelButton();
-  };
 }
 
 function passwordSubmit() {
