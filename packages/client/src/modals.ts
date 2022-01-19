@@ -1,5 +1,6 @@
 // Modals (boxes that hover on top of the UI)
 
+import { Suit } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import HanabiCard from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
@@ -166,11 +167,22 @@ export function askForMorph(
   allowCloseModal = false;
   card = morphCard;
 
-  const suits = Array.from(window.globals.variant.suits, (suit) => suit.name);
-  const ranks = Array.from(window.globals.variant.ranks, (rank) => rank);
+  const suits = window.globals.variant.suits;
+  const ranks = window.globals.variant.ranks;
+  const start =
+    morphCard !== null
+      ? morphCard.getMorphedIdentity()
+      : { suitIndex: null, rank: null };
+  const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
+  const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
 
-  fillModalWithRadios("#morph-modal-suits", suits, "suit", suits[0], ranks);
-  fillModalWithRadios("#morph-modal-ranks", ranks, "rank", suits[0]);
+  fillMorphModalWithRadios(
+    "#morph-modal-cards",
+    suits,
+    ranks,
+    suits[startSuit],
+    startRank,
+  );
 
   showModal("#morph-modal", false);
   setTimeout(() => {
@@ -447,98 +459,62 @@ function showModal(
 }
 
 function getMorphModalSelection(): string {
-  let val = (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
-  // Keep only the first word
-  // Special case for very ambiguous and dual colors
-  val = val.split(" ")[0];
+  const val = (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
   return val;
 }
 
-function fillModalWithRadios(
+function fillMorphModalWithRadios(
   element: string,
-  items: string[] | number[],
-  groupName: string,
-  firstSuit?: string,
-  ranks?: number[],
+  suits: readonly Suit[],
+  ranks: readonly number[],
+  startSuit: Suit,
+  startRank: number,
 ) {
   const placeHolder = getElement(element)!;
   placeHolder.innerHTML = "";
+  const table = document.createElement("table");
+  table.classList.add("slim-table");
+  const textbox = getElement("#morph-modal-textbox");
 
-  let checked = false;
-  items.forEach((item) => {
-    const div = document.createElement("div");
-    const radio = document.createElement("input");
-    const radioId = `morph-${groupName}-${item}`;
+  ranks.forEach((rank) => {
+    const row = document.createElement("tr");
+    suits.forEach((suit) => {
+      const cell = document.createElement("td");
+      const radio = document.createElement("input");
+      const radioId = `morph-radio-${suit.abbreviation}-${rank}`;
 
-    radio.setAttribute("type", "radio");
-    radio.setAttribute("name", groupName);
-    radio.setAttribute("id", radioId);
-    radio.setAttribute("value", item.toString());
-    if (!checked) {
-      radio.setAttribute("checked", "checked");
-      const textbox = <HTMLInputElement>getElement("#morph-modal-textbox");
-      if (typeof item === "string") {
-        textbox.setAttribute("data-suit", item);
-      } else {
-        // Special case for S
-        const value = item === 7 ? "S" : item.toString();
-        textbox.setAttribute("data-rank", value);
+      radio.setAttribute("type", "radio");
+      radio.setAttribute("name", "morph-cards");
+      radio.setAttribute("id", radioId);
+      radio.setAttribute("value", `${suit.displayName} ${rank}`);
+      cell.append(radio);
+
+      const label = document.createElement("label");
+      label.setAttribute("for", radioId);
+      const image: HTMLCanvasElement = window.globals.cardImages.get(
+        `card-${suit.name}-${rank}`,
+      )!;
+      label.append(image);
+      cell.append(label);
+
+      if (suit === startSuit && rank === startRank) {
+        radio.setAttribute("checked", "checked");
+        textbox.setAttribute("data-suit", suit.displayName);
+        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
       }
-      checked = true;
-    }
-    div.append(radio);
-
-    const label = document.createElement("label");
-    label.setAttribute("for", radioId);
-    let image: HTMLCanvasElement;
-    if (typeof item === "string") {
-      // suit
-      image = window.globals.cardImages.get(`card-${item}-0`)!;
-      label.setAttribute("data-suit", item);
-      radio.addEventListener("change", (event) => {
-        if (!(<HTMLInputElement>event.target).checked) {
+      radio.addEventListener("change", () => {
+        if (!radio.checked) {
           return;
         }
-        const suit = label.getAttribute("data-suit");
-
-        // Set rank checkboxes
-        ranks?.forEach((rank) => {
-          const childCanvas = getElement(`#morph-image-${rank}`);
-          const newImage = window.globals.cardImages.get(
-            `card-${suit}-${rank}`,
-          )!;
-          newImage.setAttribute("id", `morph-image-${rank}`);
-          childCanvas?.replaceWith(newImage);
-        });
 
         // Set textbox data attribute
-        const textbox = getElement("#morph-modal-textbox");
-        textbox.setAttribute("data-suit", suit!);
+        textbox.setAttribute("data-suit", suit.displayName);
+        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
       });
-    } else {
-      // rank
-      image = window.globals.cardImages.get(`card-${firstSuit}-${item}`)!;
-      image.setAttribute("id", `morph-image-${item}`);
-      label.setAttribute("data-rank", item.toString());
 
-      radio.addEventListener("change", (event) => {
-        if (!(<HTMLInputElement>event.target).checked) {
-          return;
-        }
-        let rank = label.getAttribute("data-rank");
-
-        // Set textbox data attribute
-        const textbox = getElement("#morph-modal-textbox");
-        // Special case for S
-        if (rank === "7") {
-          rank = "S";
-        }
-        textbox.setAttribute("data-rank", rank!);
-      });
-    }
-
-    label.append(image);
-    div.append(label);
-    placeHolder.append(div);
+      row.append(cell);
+    });
+    table.append(row);
   });
+  placeHolder.append(table);
 }
