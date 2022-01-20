@@ -101,3 +101,4 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/tagdelete [tag]` | Delete an existing tag from the game
 | `/tagsdeleteall`   | Delete all user's tags from the game
 | `/tags`            | Show all of the tags for this game
+| `/copy`            | Copy the current game (and hypothetical, if any) in your clipboard in the [JSON format](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/misc/example_game_with_comments.jsonc).
