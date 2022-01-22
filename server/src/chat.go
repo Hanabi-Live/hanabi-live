@@ -21,7 +21,7 @@ const (
 var (
 	// From https://github.com/discordjs/discord.js/blob/stable/src/structures/MessageMentions.js#L221
 	mentionRegExp = regexp.MustCompile(`&lt;@!?(\d{17,19})&gt;`)
-	roleRegExp    = regexp.MustCompile(`&lt;@&(\d{17,19})&gt;`)
+	roleRegExp    = regexp.MustCompile(`&lt;@&amp;(\d{17,19})&gt;`)
 	channelRegExp = regexp.MustCompile(`&lt;#(\d{17,19})&gt;`)
 )
 
@@ -122,8 +122,8 @@ func chatFillRoles(msg string) string {
 		return msg
 	}
 
-	// Discord mentions are in the form of "<@#12345678901234567>"
-	// By the time the message gets here, it will be sanitized to "&lt;@#12345678901234567&gt;"
+	// Discord roles are in the form of "<@&12345678901234567>"
+	// By the time the message gets here, it will be sanitized to "&lt;@&amp;12345678901234567&gt;"
 	for {
 		match := roleRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {
@@ -131,7 +131,7 @@ func chatFillRoles(msg string) string {
 		}
 		discordID := match[1]
 		role := discordGetRole(discordID)
-		msg = strings.ReplaceAll(msg, "&lt;@&"+discordID+"&gt;", "@"+role)
+		msg = strings.ReplaceAll(msg, "&lt;@&amp;"+discordID+"&gt;", "@"+role)
 	}
 	return msg
 }
