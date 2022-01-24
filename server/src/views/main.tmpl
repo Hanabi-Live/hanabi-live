@@ -203,23 +203,32 @@
                   <input id="login-password" type="password" placeholder="Password" />
                 </div>
               </div>
+              <div class="change-password hidden">
+                <div class="padding0p75"></div>
+                <div class="row">
+                  <div class="col-1 off-2">
+                    <i class="fas fa-sync fa-2x login-icon"></i>
+                  </div>
+                  <div class="col-7">
+                    <input id="change-password" type="password" placeholder="New Password" />
+                  </div>
+                </div>
+              </div>
               <br />
               <div class="row">
                 <div class="col-7 off-3">
                   <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
-                  <ul class="actions">
-                    <li>
-                    </li>
-                  </ul>
                 </div>
                 <div class="col-1">
                   <img id="login-ajax" class="hidden" src="/public/img/ajax.gif">
                 </div>
               </div>
               <div class="row">
-                <div class="col-12">
+                <div class="col-7 off-3">
                   <p id="login-alert" class="hidden"></p>
-                  <p style="margin-bottom: 0;"><a href="/password-reset">Forgot password?</a></p>
+                  <p style="margin: 1em 0 0; text-align: center;"><a id="change-password-link" href="#">Change
+                      password</a> | <a href="/password-reset">Forgot
+                      password?</a></p>
                 </div>
               </div>
             </form>

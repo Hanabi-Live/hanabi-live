@@ -12,21 +12,38 @@ import Screen from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
 export function init(): void {
-  $("#login-button").click(() => {
-    $("#login-form").submit();
+  $("#login-button").on("click", () => {
+    $("#login-form").trigger("submit");
   });
+
   $("#login-form").on("keypress", (event) => {
     if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
-      $("#login-form").submit();
+      $("#login-form").trigger("submit");
     }
   });
-  $("#login-form").submit(submit);
 
-  $("#firefox-warning-button").click(() => {
+  $("#login-form").on("submit", submit);
+
+  $("#firefox-warning-button").on("click", () => {
     localStorage.setItem("acceptedFirefoxWarning", "true");
     show();
   });
+
+  $("#change-password-link").on("click", (e) => {
+    e.preventDefault();
+    const div = $(".change-password");
+    if (div.hasClass("hidden")) {
+      $("#login-password").attr("placeholder", "Old Password");
+      $(".change-password").slideDown().delay(500).removeClass("hidden");
+      $("#login-button").html("Sign In & Change Password")
+    } else {
+      $("#login-password").attr("placeholder", "Password");
+      $(".change-password").slideUp().delay(500).addClass("hidden");
+      $("#login-button").html("Sign In")
+    }
+    $("#login-username").trigger("focus");
+  })
 }
 
 function submit(event: JQuery.Event) {
@@ -54,10 +71,23 @@ function submit(event: JQuery.Event) {
     throw new Error("The password is not a string.");
   }
 
-  send(username, password);
+  let newPassword: string | null = null;
+  if (!$(".change-password").hasClass("hidden")) {
+    // change password was requested
+    newPassword = <string>$("#change-password").val();
+    if (isEmpty(newPassword)) {
+      formError("You must provide a new password.");
+      return;
+    }
+    if (typeof newPassword !== "string") {
+      throw new Error("The new password is not a string.");
+    }
+  }
+
+  send(username, password, newPassword);
 }
 
-function send(username: string, password: string) {
+function send(username: string, password: string, newPassword: string | null) {
   $("#login-button").addClass("disabled");
   $("#login-explanation").hide();
   $("#login-ajax").show();
@@ -67,8 +97,10 @@ function send(username: string, password: string) {
   const postData = {
     username,
     password,
+    newPassword,
     version: VERSION,
   };
+
   const request = $.ajax({
     url,
     type: "POST",
