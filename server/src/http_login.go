@@ -150,6 +150,25 @@ func httpLogin(c *gin.Context) {
 			}
 		}
 	} else {
+		// Check for empty password and non-empty newPassword
+		if data.Password == "" {
+			http.Error(
+				w,
+				"You requested an account creation without providing a password.",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
+		if data.NewPassword != "" {
+			http.Error(
+				w,
+				"You requested an account creation. You cannot ask for a password change at the same time.",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
 		// Check to see if any other users have a normalized version of this username
 		// This prevents username-spoofing attacks and homoglyph usage
 		// e.g. "alice" trying to impersonate "Alice"
