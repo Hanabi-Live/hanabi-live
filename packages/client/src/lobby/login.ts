@@ -36,14 +36,14 @@ export function init(): void {
     if (div.hasClass("hidden")) {
       $("#login-password").attr("placeholder", "Old Password");
       $(".change-password").slideDown().delay(500).removeClass("hidden");
-      $("#login-button").html("Sign In & Change Password")
+      $("#login-button").html("Sign In & Change Password");
     } else {
       $("#login-password").attr("placeholder", "Password");
       $(".change-password").slideUp().delay(500).addClass("hidden");
-      $("#login-button").html("Sign In")
+      $("#login-button").html("Sign In");
     }
     $("#login-username").trigger("focus");
-  })
+  });
 }
 
 function submit(event: JQuery.Event) {
