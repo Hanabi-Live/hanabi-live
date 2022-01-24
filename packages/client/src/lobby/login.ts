@@ -4,7 +4,7 @@ import { VERSION } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
-import { getURLFromPath,isDevWebpack,isEmpty } from "../misc";
+import { getURLFromPath, isDevWebpack, isEmpty } from "../misc";
 import websocketInit from "../websocketInit";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
@@ -36,14 +36,14 @@ export function init(): void {
     if (div.hasClass("hidden")) {
       $("#login-password").attr("placeholder", "Old Password");
       $(".change-password").slideDown().delay(500).removeClass("hidden");
-      $("#login-button").html("Sign In & Change Password")
+      $("#login-button").html("Sign In & Change Password");
     } else {
       $("#login-password").attr("placeholder", "Password");
       $(".change-password").slideUp().delay(500).addClass("hidden");
-      $("#login-button").html("Sign In")
+      $("#login-button").html("Sign In");
     }
     $("#login-username").trigger("focus");
-  })
+  });
 }
 
 function submit(event: JQuery.Event) {
