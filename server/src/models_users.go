@@ -146,6 +146,16 @@ func (*Users) Update(userID int, lastIP string) error {
 	return err
 }
 
+func (*Users) ChangePassword(userID int, passwordHash string) error {
+	_, err := db.Exec(context.Background(), `
+		UPDATE users
+		SET
+			password_hash = $1
+		WHERE id = $2
+	`, passwordHash, userID)
+	return err
+}
+
 // Legacy function; delete this when all users have logged in or in 2022, whichever comes first
 func (*Users) UpdatePassword(userID int, passwordHash string) error {
 	_, err := db.Exec(context.Background(), `

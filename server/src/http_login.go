@@ -24,6 +24,7 @@ type HTTPLoginData struct {
 	IP                 string
 	Username           string
 	Password           string
+	NewPassword        string
 	NormalizedUsername string
 }
 
@@ -130,6 +131,35 @@ func httpLogin(c *gin.Context) {
 			} else if !match {
 				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
 				return
+			}
+
+			// If they have provided a new password, replace the old one
+			if data.NewPassword != "" {
+				var passwordHash string
+				if v, err := argon2id.CreateHash(data.NewPassword, argon2id.DefaultParams); err != nil {
+					logger.Error("Failed to create a hash from the submitted password for " +
+						"\"" + data.Username + "\": " + err.Error())
+					http.Error(
+						w,
+						http.StatusText(http.StatusInternalServerError),
+						http.StatusInternalServerError,
+					)
+					return
+				} else {
+					passwordHash = v
+				}
+				// Update the user
+				if err := models.Users.ChangePassword(user.ID, passwordHash); err != nil {
+					logger.Error("Failed to update user \"" + data.Username + "\" password: " + err.Error())
+					http.Error(
+						w,
+						http.StatusText(http.StatusInternalServerError),
+						http.StatusInternalServerError,
+					)
+					return
+				} else {
+					logger.Info("Password update for user \"" + data.Username + "\"")
+				}
 			}
 		}
 	} else {
@@ -286,6 +316,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		)
 		return nil, false
 	}
+	newPassword := c.PostForm("newPassword")
 	version := c.PostForm("version")
 	if version == "" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
@@ -445,6 +476,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		IP:                 ip,
 		Username:           username,
 		Password:           password,
+		NewPassword:        newPassword,
 		NormalizedUsername: normalizedUsername,
 	}
 	return data, true

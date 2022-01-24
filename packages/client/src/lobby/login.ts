@@ -139,7 +139,7 @@ export function automaticLogin(): void {
   const username = urlParams.get("login");
   if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);
-    send(username, username); // For test accounts, we use the username as the password
+    send(username, username, null); // For test accounts, we use the username as the password
     return;
   }
 
