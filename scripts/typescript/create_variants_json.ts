@@ -123,14 +123,19 @@ function get_variant_id(variant_name: string): number {
   }
 
   // Otherwise, find the lowest unused variant ID
-  current_variant_id += 1;
-  for (let i = 0; i < old_variants_array.length; i++) {
-    if (old_variants_array[i].name === variant_name) {
-      return old_variants_array[i].id;
+  while (true) {
+    current_variant_id += 1;
+    let found = false;
+    old_variants_array.forEach((variant) => {
+      if (variant.id === current_variant_id) {
+        found = true;
+        return;
+      }
+    });
+    if (!found) {
+      return current_variant_id;
     }
   }
-
-  return current_variant_id;
 }
 
 function showErrorAndExit(message: string) {
