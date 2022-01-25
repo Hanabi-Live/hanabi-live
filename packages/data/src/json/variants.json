@@ -27921,5 +27921,67 @@
       "Blue",
       "Prism"
     ]
+  },
+  {
+    "name": "Odds And Evens (6 Suits)",
+    "id": 1646,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Teal"
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
+  },
+  {
+    "name": "Odds And Evens (5 Suits)",
+    "id": 1808,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
+  },
+  {
+    "name": "Odds And Evens (4 Suits)",
+    "id": 1812,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
+  },
+  {
+    "name": "Odds And Evens (3 Suits)",
+    "id": 1816,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue"
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   }
 ]

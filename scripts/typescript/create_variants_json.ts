@@ -16,6 +16,7 @@ type Variant = {
   colorCluesTouchNothing?: boolean;
   rankCluesTouchNothing?: boolean;
   showSuitNames?: boolean;
+  oddsAndEvens?: boolean;
   clueColors?: string[];
   clueRanks?: number[];
 };
@@ -104,6 +105,7 @@ variants.push(
   ...getUpOrDownVariants(),
   ...getSynesthesiaVariants(),
   ...getCriticalFoursVariants(),
+  ...getOddsAndEvensVariants(),
 );
 
 if (checkForMissingVariants()) {
@@ -1205,6 +1207,21 @@ function getCriticalFoursVariants(): Variant[] {
     });
   });
 
+  return variants;
+}
+
+function getOddsAndEvensVariants(): Variant[] {
+  const variants: Variant[] = [];
+  [6, 5, 4, 3].forEach((suit_num) => {
+    const variant_name = `Odds And Evens (${suit_num} Suits)`;
+    variants.push({
+      name: variant_name,
+      id: get_variant_id(variant_name),
+      suits: variant_suits[suit_num],
+      clueRanks: [1, 2],
+      oddsAndEvens: true,
+    });
+  });
   return variants;
 }
 

@@ -14,6 +14,8 @@ var (
 	variants     map[string]*Variant
 	variantIDMap map[int]string
 	variantNames []string
+	oddClues     []int
+	evenClues    []int
 )
 
 // VariantJSON is very similar to Variant,
@@ -34,6 +36,7 @@ type VariantJSON struct {
 	SpecialNoClueColors    bool      `json:"specialNoClueColors"`
 	SpecialNoClueRanks     bool      `json:"specialNoClueRanks"`
 	SpecialDeceptive       bool      `json:"specialDeceptive"`
+	OddsAndEvens           bool      `json:"oddsAndEvens"`
 }
 
 func variantsInit() {
@@ -159,6 +162,7 @@ func variantsInit() {
 			SpecialNoClueColors:    variant.SpecialNoClueColors,
 			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
 			SpecialDeceptive:       variant.SpecialDeceptive,
+			OddsAndEvens:           variant.OddsAndEvens,
 			MaxScore:               len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
@@ -175,6 +179,9 @@ func variantsInit() {
 
 		// Create an array with every variant name
 		variantNames = append(variantNames, variant.Name)
+
+		oddClues = []int{1, 3, 5}
+		evenClues = []int{2, 4}
 	}
 
 	// Validate that there are no skipped ID numbers
@@ -247,6 +254,13 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	if clue.Type == ClueTypeRank {
 		if variant.RankCluesTouchNothing {
 			return false
+		}
+
+		if variant.OddsAndEvens {
+			if clue.Value == 1 {
+				return intInSlice(card.Rank, oddClues)
+			}
+			return intInSlice(card.Rank, evenClues)
 		}
 
 		if variant.Suits[card.SuitIndex].AllClueRanks {

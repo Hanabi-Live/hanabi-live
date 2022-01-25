@@ -1834,4 +1834,8 @@ Critical Fours & Light Pink (6 Suits) (#1837)
 Critical Fours & Light Pink (5 Suits) (#1838)
 Critical Fours & Prism (6 Suits) (#1839)
 Critical Fours & Prism (5 Suits) (#1840)
+Odds And Evens (6 Suits) (#1646)
+Odds And Evens (5 Suits) (#1808)
+Odds And Evens (4 Suits) (#1812)
+Odds And Evens (3 Suits) (#1816)
 

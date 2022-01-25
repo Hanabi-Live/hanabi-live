@@ -17,6 +17,7 @@ export interface Variant {
   readonly specialNoClueColors: boolean;
   readonly specialNoClueRanks: boolean;
   readonly specialDeceptive: boolean;
+  readonly oddsAndEvens: boolean;
 
   readonly showSuitNames: boolean;
   readonly maxScore: number;
