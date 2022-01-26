@@ -14,9 +14,11 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md)
 | `/new`                                | Get the link for the [Hyphen-ated group beginner's guide](https://hanabi.github.io/docs/beginner)
 | `/doc`                                | Get the link for the [Hyphen-ated group reference document](https://hanabi.github.io/docs/reference)
-| `/levels`                             | Get the link for the [Hyphen-ated group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)
+| `/path`                             | Get the link for the [Hyphen-ated group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)
 | `/bga`                                | Get the link for the [Board Game Arena transition guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)
+| `/features`                         | Get the link for the [features document](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md)
+| `/community`                         | Get the link for the [community guidelines document](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md)
 | `/playerinfo`                         | Get the number of games played for all the players in the current game
 | `/playerinfo [username]`              | Get the number of games played for a specific player
 | `/playerinfo [username1] [username2]` | Get the number of games played for a list of players
@@ -80,7 +82,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command    | Description
 | ---------- | -----------
-| `/pause`   | Pause the game (can be done on any turn)
+| `/pause`   | Pause the game (can be done on any turn it will pause in your turn)
 | `/unpause` | Unpause the game
 
 <br />
