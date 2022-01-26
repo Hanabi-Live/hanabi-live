@@ -1791,3 +1791,13 @@ span.tableSpinner:after {
     transform: rotate(360deg);
   }
 }
+
+/* Discord replacements */
+.spoiler {
+  background: black;
+  color: black;
+}
+.spoiler:hover {
+  background: unset;
+  color: unset;
+}

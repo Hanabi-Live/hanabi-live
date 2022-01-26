@@ -23,6 +23,7 @@ var (
 	mentionRegExp = regexp.MustCompile(`&lt;@!?(\d{17,19})&gt;`)
 	roleRegExp    = regexp.MustCompile(`&lt;@&amp;(\d{17,19})&gt;`)
 	channelRegExp = regexp.MustCompile(`&lt;#(\d{17,19})&gt;`)
+	spoilerRegExp = regexp.MustCompile(`(?:^| )\|\|(.+?)\|\|(?: |$)`)
 )
 
 type ChatMessage struct {
@@ -90,6 +91,9 @@ func chatFillAll(msg string) string {
 	msg = chatFillRoles(msg)
 	msg = chatFillChannels(msg)
 
+	// Convert other Discord tags
+	msg = chatReplaceSpoilers(msg)
+
 	return msg
 }
 
@@ -151,6 +155,25 @@ func chatFillChannels(msg string) string {
 		discordID := match[1]
 		channel := discordGetChannel(discordID)
 		msg = strings.ReplaceAll(msg, "&lt;#"+discordID+"&gt;", "#"+channel)
+	}
+	return msg
+}
+
+func chatReplaceSpoilers(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	for {
+		match := spoilerRegExp.FindAllStringSubmatch(msg, -1)
+		if len(match) == 0 {
+			break
+		}
+
+		for _, m := range match {
+			text := m[1]
+			msg = strings.ReplaceAll(msg, "||"+m[1]+"||", "<span class=\"spoiler\">"+text+"</span>")
+		}
 	}
 	return msg
 }
