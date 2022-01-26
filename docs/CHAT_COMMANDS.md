@@ -82,7 +82,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command    | Description
 | ---------- | -----------
-| `/pause`   | Pause the game (can be done on any turn it will pause in your turn)
+| `/pause`   | Pause the game (can be done on any turn)
 | `/unpause` | Unpause the game
 
 <br />
