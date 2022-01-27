@@ -109,6 +109,7 @@ export function touchesCard(
     }
 
     if (variant.oddsAndEvens) {
+      // Clue ranks in Odds And Evens can only be 1 or 2
       if (clue.value === 1) {
         return [1, 3, 5].includes(rank);
       }

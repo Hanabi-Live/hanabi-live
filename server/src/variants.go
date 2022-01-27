@@ -257,6 +257,7 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		}
 
 		if variant.OddsAndEvens {
+			// Clue ranks in Odds And Evens can only be 1 or 2
 			if clue.Value == 1 {
 				return intInSlice(card.Rank, oddClues)
 			}
