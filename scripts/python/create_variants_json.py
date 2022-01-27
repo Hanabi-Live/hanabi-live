@@ -1014,6 +1014,19 @@ def main():
                 }
             )
 
+    # Add "Odds And Evens" variants
+    for suit_num in [6, 5, 4, 3]:
+        variant_name = "Odds And Evens (" + str(suit_num) + " Suits)"
+        variants.append(
+            {
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": variant_suits[suit_num],
+                "clueRanks": [1, 2],
+                "oddsAndEvens": True,
+            }
+        )
+
     # Create a map for the new variants
     new_variants_map = {}
     for variant in variants:

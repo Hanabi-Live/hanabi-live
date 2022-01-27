@@ -108,9 +108,18 @@ export function touchesCard(
       return false;
     }
 
+    if (variant.oddsAndEvens) {
+      // Clue ranks in Odds And Evens can only be 1 or 2
+      if (clue.value === 1) {
+        return [1, 3, 5].includes(rank);
+      }
+      return [2, 4].includes(rank);
+    }
+
     if (suit.allClueRanks) {
       return true;
     }
+
     if (suit.noClueRanks) {
       return false;
     }
