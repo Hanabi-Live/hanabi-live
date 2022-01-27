@@ -293,6 +293,11 @@ One of each card per suit (e.g. 5 in total):
 
 - One 4 is removed from each suit.
 
+### Odds And Evens
+
+- Rank clues are limited to 1 and 2.
+- "1" rank clue touches all odd cards, "2" touches all even cards.
+
 <br />
 
 ## Full Variant Listing
