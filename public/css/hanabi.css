@@ -75,10 +75,6 @@ input[type="radio"] + label:before,
   cursor: not-allowed;
 }
 
-#main > header p {
-  border-top: 0;
-  margin-top: 0;
-}
 
 .button {
   /* Disable the ugly black border that appears when we click on a button */
@@ -256,6 +252,59 @@ table td {
   color: #f2f2f2;
   text-align: center;
 }
+
+.login-header {
+  margin-top: 4em;
+}
+
+#main-login, #main-tutorial {
+  padding: 4em 0;
+}
+
+#main-login > header, #main-tutorial > header  {
+  text-align: center;
+  margin: 0 0 3em 0;
+}
+
+#main-login > header h2, #main-tutorial > header h2 {
+  font-size: 2.75em;
+  margin: 0;
+}
+
+#main-login > header p, #main-tutorial > header p {
+  border-top: solid 2px #e5e5e5;
+  color: #777;
+  display: inline-block;
+  font-style: normal;
+  margin: 0;
+  padding: 1em 0 1.25em 0;
+}
+
+@media screen and (max-width: 980px) {
+  #main-login, #main-tutorial {
+    padding: 0.5em 0;
+  }
+  #main-login > header, #main-tutorial > header  {
+    text-align: center;
+    margin: 0 0 1em 0;
+  }
+  .login-header {
+    margin-top: 1em;
+  }
+}
+@media screen and (max-width: 640px) {
+  .row > .login-box {
+    width: 90% !important;
+    margin-left: 5% !important;
+  }
+}
+
+.login-logo {
+  min-width: 180px;
+  max-width: 306px;
+  width: 30%;
+}
+
 
 #title-discord {
   width: 5em;

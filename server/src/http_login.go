@@ -24,6 +24,7 @@ type HTTPLoginData struct {
 	IP                 string
 	Username           string
 	Password           string
+	NewPassword        string
 	NormalizedUsername string
 }
 
@@ -79,14 +80,7 @@ func httpLogin(c *gin.Context) {
 
 			// Create an Argon2id hash of the plain-text password
 			var passwordHash string
-			if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-				logger.Error("Failed to create a hash from the submitted password for " +
-					"\"" + data.Username + "\": " + err.Error())
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
+			if v, ok := httpPasswordHash(w, data.Password, data.Username); !ok {
 				return
 			} else {
 				passwordHash = v
@@ -132,7 +126,49 @@ func httpLogin(c *gin.Context) {
 				return
 			}
 		}
+
+		// If they have provided a new password, replace the old one
+		if data.NewPassword != "" {
+			var passwordHash string
+			if v, ok := httpPasswordHash(w, data.NewPassword, data.Username); !ok {
+				return
+			} else {
+				passwordHash = v
+			}
+
+			// Update the user
+			if err := models.Users.ChangePassword(user.ID, passwordHash); err != nil {
+				logger.Error("Failed to update user \"" + data.Username + "\" password: " + err.Error())
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			} else {
+				logger.Info("Password update for user \"" + data.Username + "\"")
+			}
+		}
 	} else {
+		// Check for empty password and non-empty newPassword
+		if data.Password == "" {
+			http.Error(
+				w,
+				"You requested an account creation without providing a password.",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
+		if data.NewPassword != "" {
+			http.Error(
+				w,
+				"You requested an account creation. You cannot ask for a password change at the same time.",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+
 		// Check to see if any other users have a normalized version of this username
 		// This prevents username-spoofing attacks and homoglyph usage
 		// e.g. "alice" trying to impersonate "Alice"
@@ -161,7 +197,10 @@ func httpLogin(c *gin.Context) {
 		} else if normalizedExists {
 			http.Error(
 				w,
-				"That username is too similar to the existing user of "+"\""+similarUsername+"\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
+				"That username is too similar to the existing user of "+"\""+similarUsername+
+					"\". If you are sure that this is your username, then please check to make sure "+
+					"that you are capitalized your username correctly. If you are logging on for the first time, "+
+					"then please choose a different username.",
 				http.StatusUnauthorized,
 			)
 			return
@@ -286,6 +325,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		)
 		return nil, false
 	}
+	newPassword := c.PostForm("newPassword")
 	version := c.PostForm("version")
 	if version == "" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
@@ -445,7 +485,23 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		IP:                 ip,
 		Username:           username,
 		Password:           password,
+		NewPassword:        newPassword,
 		NormalizedUsername: normalizedUsername,
 	}
 	return data, true
+}
+
+func httpPasswordHash(w http.ResponseWriter, password string, username string) (string, bool) {
+	if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
+		logger.Error("Failed to create a hash from the submitted password for " +
+			"\"" + username + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return "", false
+	} else {
+		return v, true
+	}
 }

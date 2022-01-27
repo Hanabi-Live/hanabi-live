@@ -163,10 +163,10 @@
 
   <!-- Login -->
   <div id="login">
-    <section id="main" class="container">
-      <header>
+    <section id="main-login" class="container">
+      <header class="login-header">
         <h2 class="align-center-v">
-          <img src="/public/img/logos/header.svg" height=200 />
+          <img src="/public/img/logos/header.svg" class="login-logo" />
         </h2>
         <p id="title-sub">
           A place to play <strong>Hanab</strong> online,<br />
@@ -175,7 +175,7 @@
       </header>
 
       <div class="row">
-        <div class="col-8 off-2">
+        <div class="col-8 off-2 login-box">
           <section id="loading" class="box align-center">
             <h3>Loading...</h3>
             <p>{{.WebsiteName}} is loading. Please wait!</p>
@@ -221,23 +221,34 @@
                   <input id="login-password" type="password" placeholder="Password" />
                 </div>
               </div>
+              <div class="padding0p75"></div>
+              <div class="change-password hidden">
+                <div class="row">
+                  <div class="col-1 off-2">
+                    <i class="fas fa-sync fa-2x login-icon"></i>
+                  </div>
+                  <div class="col-7">
+                    <input id="change-password" type="password" placeholder="New Password" />
+                  </div>
+                </div>
+              </div>
               <br />
               <div class="row">
-                <div class="col-3 off-3">
-                  <ul class="actions">
-                    <li>
-                      <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
-                    </li>
-                  </ul>
+                <div class="col-7 off-3">
+                  <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
                 </div>
                 <div class="col-1">
                   <img id="login-ajax" class="hidden" src="/public/img/ajax.gif">
                 </div>
               </div>
               <div class="row">
-                <div class="col-12">
+                <div class="col-7 off-3">
                   <p id="login-alert" class="hidden"></p>
-                  <p style="margin-bottom: 0;"><a href="/password-reset">Forgot password?</a></p>
+                  <p style="margin-bottom: 0;">
+                    <a id="change-password-link" href="#">Change password</a>
+                    |
+                    <a href="/password-reset">Forgot password?</a>
+                  </p>
                 </div>
               </div>
             </form>
@@ -297,7 +308,7 @@
 
   <!-- Tutorial -->
   <div id="tutorial" class="hidden">
-    <section id="main" class="container">
+    <section id="main-tutorial" class="container">
       <div class="row">
         <div class="col-10 off-1">
           <section id="tutorial-1" class="box align-center">
