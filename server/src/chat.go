@@ -172,7 +172,7 @@ func chatReplaceSpoilers(msg string) string {
 
 		for _, m := range match {
 			text := m[1]
-			msg = strings.ReplaceAll(msg, "||"+m[1]+"||", "<span class=\"spoiler\">"+text+"</span>")
+			msg = strings.ReplaceAll(msg, "||"+text+"||", "<span class=\"spoiler\">"+text+"</span>")
 		}
 	}
 	return msg
