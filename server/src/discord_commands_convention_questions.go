@@ -38,7 +38,7 @@ func discordCommandLowEffort(ctx context.Context, m *discordgo.MessageCreate, ar
 
 // /notation
 func discordCommandNotation(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	msg := "It looks like you are using non-standard card notation in your question. Please use notation that the Hyphen-ated group will be familiar with. For example:\n- Use \"red 3\" instead of \"3 red\".\n- Use \"r3\" instead of \"3r\".\n- Use \"r[3]\" to indicate that a card is a red 3 but has a number 3 clue on it.\n- Always use the characters of Alice, Bob, Cathy, Donald, Emily, and Frank instead of real player names. Alice should always be the player who performs the first action, and so forth."
+	msg := "It looks like you are using non-standard card notation in your question. Please use notation that the Hyphenated group will be familiar with. For example:\n- Use \"red 3\" instead of \"3 red\".\n- Use \"r3\" instead of \"3r\".\n- Use \"r[3]\" to indicate that a card is a red 3 but has a number 3 clue on it.\n- Always use the characters of Alice, Bob, Cathy, Donald, Emily, and Frank instead of real player names. Alice should always be the player who performs the first action, and so forth."
 	discordSend(m.ChannelID, "", msg)
 }
 
