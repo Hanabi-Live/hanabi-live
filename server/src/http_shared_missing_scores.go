@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-	"strings"
 	"strconv"
+    "strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/Hanabi-Live/hanabi-live/variantslogic"
