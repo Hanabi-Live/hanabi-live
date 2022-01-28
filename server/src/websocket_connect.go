@@ -152,9 +152,9 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 		data.ReverseFriends = v
 	}
 
-	// Get whether or not they are a member of the Hyphen-ated group
+	// Get whether or not they are a member of the Hyphenated group
 	if v, err := models.UserSettings.IsHyphenated(userID); err != nil {
-		logger.Error("Failed to get the Hyphen-ated setting for user \"" + username + "\": " +
+		logger.Error("Failed to get the Hyphenated setting for user \"" + username + "\": " +
 			err.Error())
 		return data
 	} else {

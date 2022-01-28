@@ -126,7 +126,7 @@ function drawUser(
   setInactive(userID, user.inactive);
 
   const content =
-    '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphen-ated group.</span>';
+    '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphenated group.</span>';
   tooltips.create(`#hyphenated-tooltip-${userID}`, "default", content);
 }
 
