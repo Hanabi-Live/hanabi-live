@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
-    "strings"
+	"strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/Hanabi-Live/hanabi-live/variantslogic"
