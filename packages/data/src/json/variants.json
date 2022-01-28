@@ -27983,5 +27983,51 @@
       2
     ],
     "oddsAndEvens": true
+  },
+  {
+    "name": "Funnels (6 Suits)",
+    "id": 1820,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Teal"
+    ],
+    "funnels": true
+  },
+  {
+    "name": "Funnels (5 Suits)",
+    "id": 1841,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "funnels": true
+  },
+  {
+    "name": "Funnels (4 Suits)",
+    "id": 1842,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "funnels": true
+  },
+  {
+    "name": "Funnels (3 Suits)",
+    "id": 1843,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue"
+    ],
+    "funnels": true
   }
 ]

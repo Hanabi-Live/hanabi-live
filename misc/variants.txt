@@ -1838,4 +1838,8 @@ Odds And Evens (6 Suits) (#1646)
 Odds And Evens (5 Suits) (#1808)
 Odds And Evens (4 Suits) (#1812)
 Odds And Evens (3 Suits) (#1816)
+Funnels (6 Suits) (#1820)
+Funnels (5 Suits) (#1841)
+Funnels (4 Suits) (#1842)
+Funnels (3 Suits) (#1843)
 

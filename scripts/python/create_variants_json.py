@@ -1027,6 +1027,18 @@ def main():
             }
         )
 
+    # Add "Funnels" variants
+    for suit_num in [6, 5, 4, 3]:
+        variant_name = "Funnels (" + str(suit_num) + " Suits)"
+        variants.append(
+            {
+                "name": variant_name,
+                "id": get_variant_id(variant_name),
+                "suits": variant_suits[suit_num],
+                "funnels": True,
+            }
+        )
+
     # Create a map for the new variants
     new_variants_map = {}
     for variant in variants:

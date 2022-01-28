@@ -116,6 +116,11 @@ export function touchesCard(
       return [2, 4].includes(rank);
     }
 
+    if (variant.funnels) {
+      // Rank clues in Funnels touch also all lower ranked cards
+      return rank <= clue.value;
+    }
+
     if (suit.allClueRanks) {
       return true;
     }
