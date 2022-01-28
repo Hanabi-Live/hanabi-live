@@ -28,7 +28,7 @@ func httpSharedMissingScores(c *gin.Context) {
 			http.Error(w, "Error: You must first specify the number of players.", http.StatusBadRequest)
 			return
 		}
-		if (numPlayers < 2 || numPlayers > 6) {
+		if numPlayers < 2 || numPlayers > 6 {
 			http.Error(w, "Error: Number of players must be between 2 and 6.", http.StatusBadRequest)
 			return
 		}
