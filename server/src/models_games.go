@@ -495,7 +495,7 @@ func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery, orderBy, limit string, 
 	return gameIDs, nil
 }
 
-func (*Games) GetFullGameIDsMultiUser(userIDs []int) ([]int, error) {
+func (*Games) GetFullGameIDsMultiUser(userIDs []int, idStart *int, idEnd *int) ([]int, error) {
 	gameIDs := make([]int, 0)
 
 	// First, validate that all of the user IDs are unique
@@ -516,6 +516,14 @@ func (*Games) GetFullGameIDsMultiUser(userIDs []int) ([]int, error) {
 		SQLString += "JOIN game_participants AS player" + strconv.Itoa(id) + "_games "
 		SQLString += "ON games.id = player" + strconv.Itoa(id) + "_games.game_id "
 		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
+	}
+
+	if idStart != nil {
+		SQLString += "AND games.id >= " + strconv.Itoa(*idStart) + " "
+	}
+
+	if idEnd != nil {
+		SQLString += "AND games.id <= " + strconv.Itoa(*idEnd) + " "
 	}
 
 	var rows pgx.Rows

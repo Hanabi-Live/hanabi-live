@@ -105,6 +105,23 @@ func apiGetFilters(c *gin.Context, columns []string, initialFilter APIColumnDesc
 	return filters
 }
 
+// Searches query vars for optional params start, end
+func apiGetLimits(c *gin.Context) (idStart, idEnd *int) {
+	var start, end *int
+	if v, err := strconv.Atoi(c.Query("start")); err == nil {
+		start = &v
+	} else {
+		start = nil
+	}
+
+	if v, err := strconv.Atoi(c.Query("end")); err == nil {
+		end = &v
+	} else {
+		end = nil
+	}
+	return start, end
+}
+
 // Builds an SQL subquery
 // Returns the WHERE part, the ORDER BY part and the args
 func apiBuildSubquery(params APIQueryVars) (string, string, string, []interface{}) {
