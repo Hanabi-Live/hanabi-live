@@ -96,9 +96,12 @@ func apiFullDataHistory(c *gin.Context) {
 		playerIDs = v1
 	}
 
+	// look for limiting parameters
+	idStart, idEnd := apiGetLimits(c)
+
 	// Get the game IDs for this player (or set of players)
 	var gameIDs []int
-	if v, err := models.Games.GetFullGameIDsMultiUser(playerIDs); err != nil {
+	if v, err := models.Games.GetFullGameIDsMultiUser(playerIDs, idStart, idEnd); err != nil {
 		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
 	} else {
