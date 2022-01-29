@@ -100,7 +100,7 @@ export function paceRisk(
     return "HighRisk";
   }
 
-  // Formula derived by Hyphenated;
+  // Formula derived by Hyphen-ated;
   // a more conservative estimate of "End-Game" that does not account for the number of players
   if (currentPace - numPlayers < 0) {
     return "MediumRisk";
