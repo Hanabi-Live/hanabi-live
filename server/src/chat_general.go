@@ -17,7 +17,7 @@ func chatHelp(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 // /discord
 func chatDiscord(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Join the Discord server: https://discord.gg/FADvkJp"
+	msg := "Join the Discord server for the Hyphenated group: https://discord.gg/FADvkJp"
 	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
