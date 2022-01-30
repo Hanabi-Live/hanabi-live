@@ -23,15 +23,17 @@ export class Globals {
   totalGames = 0;
   muted = false;
   randomTableName = "";
+  /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
   settings: Settings = new Settings();
-  // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
   friends: string[] = [];
   shuttingDown = false;
   datetimeShutdownInit = new Date();
   maintenanceMode = false;
 
-  userMap = new Map<number, User>(); // Keys are IDs
-  tableMap = new Map<number, Table>(); // Keys are IDs
+  /** Keys are IDs. */
+  userMap = new Map<number, User>();
+  /** Keys are IDs. */
+  tableMap = new Map<number, Table>();
   history: GameHistory[] = [];
   historyFriends: GameHistory[] = [];
   totalGamesFriends = 0;

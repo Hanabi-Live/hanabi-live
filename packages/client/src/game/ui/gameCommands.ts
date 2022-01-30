@@ -9,7 +9,7 @@ import * as sentry from "../../sentry";
 import initialState from "../reducers/initialStates/initialState";
 import stateReducer from "../reducers/stateReducer";
 import * as handRules from "../rules/hand";
-import * as hyphenatedRules from "../rules/hyphenated";
+import * as hGroupRules from "../rules/hGroup";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import { ActionIncludingHypothetical, GameAction } from "../types/actions";
@@ -461,7 +461,7 @@ function initStateStore(data: InitData) {
     characterMetadata: data.characterMetadata,
 
     minEfficiency,
-    hardVariant: hyphenatedRules.hardVariant(globals.variant, minEfficiency),
+    hardVariant: hGroupRules.hardVariant(globals.variant, minEfficiency),
 
     hasCustomSeed: data.hasCustomSeed,
     seed: data.seed,

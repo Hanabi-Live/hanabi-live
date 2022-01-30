@@ -198,7 +198,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 - By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 - Each game has the option to allow empty clues.
-- More information on the history of empty clues can be found in the [Hyphenated conventions repository](https://github.com/hanabi/hanabi.github.io/blob/main/misc/empty-clues.md#history).
+- More information on the history of empty clues can be found in the [H-Group conventions repository](https://github.com/hanabi/hanabi.github.io/blob/main/misc/empty-clues.md#history).
 
 #### One Extra Card
 
@@ -259,9 +259,9 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - Each player has the option to enable the ability to pre-play cards, which is similar to "pre-moves" in Chess.
 - Players can pre-play or pre-discard by clicking and dragging a card to the respective location and releasing the mouse button. Once done, the card will hover over the location until their turn has arrived, and then the action will be automatically performed.
 
-#### Hyphenated Conventions
+#### H-Group Conventions
 
-If you are playing with the [Hyphenated group](https://hanabi.github.io/), some additional UI elements are enabled:
+If you are playing with the [H-Group](https://hanabi.github.io/), some additional UI elements are enabled:
 
 - an "H" indicator next to the username in the "Online Users" section.
 - double discard situation notification (as a border around the discard pile and in the "Current Player" area)

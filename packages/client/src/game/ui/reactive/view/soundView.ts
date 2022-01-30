@@ -33,7 +33,7 @@ export function onNewSoundEffect(
     return;
   }
 
-  // Only play certain sound effects for people in the Hyphenated Group
+  // Only play certain sound effects for people in the H-Group
   if (
     (data.soundType === SoundType.OneOutOfOrder ||
       data.soundType === SoundType.DiscardClued ||

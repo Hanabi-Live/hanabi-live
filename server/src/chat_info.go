@@ -11,7 +11,7 @@ func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	msg := "The /here command has been removed. If you look at the Discord voice channels to your left, there are almost certainly people from the Hyphenated group already playing or reviewing a game. Please politely ask to join them instead of pinging the entire server."
+	msg := "The /here command has been removed. If you look at the Discord voice channels to your left, there are almost certainly people from the H-Group already playing or reviewing a game. Please politely ask to join them instead of pinging the entire server."
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
@@ -23,6 +23,6 @@ func chatWrongChannel(ctx context.Context, s *Session, d *CommandData, t *Table)
 	}
 
 	// This includes a discord link to the #convention-questions channel
-	msg := "It looks like you are asking a question about the Hyphenated conventions or the Hyphenated group. Please ask all such questions in the <#456214043351580674> channel."
+	msg := "It looks like you are asking a question about the H-Group. Please ask all such questions in the <#456214043351580674> channel."
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
