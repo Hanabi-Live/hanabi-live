@@ -64,11 +64,11 @@ If you want to learn the basics of the game with a helpful video, then [watch th
 - For example, if a player's hand is as follows, from left-to-right:
   - red 1, red 3, blue 3, green 4
 - Then, the possible clues that a player could give to that hand would be as follows:
-  - "The first two cards are red."
+  - "The first and second cards are red."
   - "The third card is blue."
   - "The fourth card is green."
   - "The first card is a 1."
-  - "The middle two cards are 3s."
+  - "The second and third card are 3's."
   - "The fourth card is a 4."
 
 <br />
