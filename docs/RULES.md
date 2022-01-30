@@ -36,9 +36,9 @@ If you want to learn the basics of the game with a helpful video, then [watch th
 
 ### 1) Play a Card
 
-- A player can pick any card from their hand and attempt to play it. (They do not need to know exactly what the card is.)
-- If it is the next card for any of the five colors, it gets played onto that pile.
-- If the card is not playable, then it goes to the discard pile. (See "Misplays" below.)
+- A player can pick any card from their hand and attempt to play it. (They do not need to know exactly what the card is or which play stack it will go to.)
+- If it is the next card for the respective color's play stack, then it gets played onto that pile.
+- Otherwise, the card goes to the discard pile. (See "Misplays" below.)
 
 <br />
 
@@ -75,7 +75,7 @@ If you want to learn the basics of the game with a helpful video, then [watch th
 
 ## Misplays
 
-- If a player attempts to play a card that is not playable, that is referred to as a misplay.
+- If a player attempts to play a card that is not the next card for the stack, that is referred to as a misplay.
 - Misplayed cards go to the discard pile instead of the play stacks.
 - Unlike a normal discard, the team is not awarded a clue when a misplay happens.
 - When a misplay happens, the team gets one strike.
