@@ -16,9 +16,10 @@ If you want to learn the basics of the game with a helpful video, then [watch th
 
 ## The Setup
 
-- In a 2-player or 3-player game, each player is dealt 5 cards.
-- In a 3-player or 4-player game, each player is dealt 4 cards.
-- In a 6-player game, each player is dealt 3 cards.
+- Each player is dealt cards:
+  - 2/3 players --> 5 cards each
+  - 4/5 players --> 4 cards each
+  - 6 players --> 3 cards each
 - The team always starts off with 8 clue tokens.
 - The play stacks for each color are located in the center of the table. All players play their cards on to the shared play stacks. To start off with, nothing is played on the play stacks.
 - The discard pile is located off to the side. All players discard their cards to the shared discard pile. To start off with, no cards are discarded.
