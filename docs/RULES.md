@@ -45,7 +45,7 @@ If you want to learn the basics of the game with a helpful video, then [watch th
 ### 2) Discard a Card
 
 - A player can pick any card from their hand and discard it. (They do not need to know exactly what the card is.)
-- The card goes to the discard pile and the team gets an additional clue.
+- The card goes to the discard pile and the team gets an additional clue token.
 - Players are not allowed to discard if the team has 8 clue tokens available.
 
 <br />
