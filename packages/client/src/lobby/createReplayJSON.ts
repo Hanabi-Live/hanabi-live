@@ -179,7 +179,14 @@ function getActionFromHypoClue(
   clue: string,
 ): ClientAction | null {
   const playerIndex = getPlayerIndexFromName(player);
-  const parsedClue = parseInt(clue, 10);
+  let parsedClue = parseInt(clue, 10);
+
+  // "Odds And Evens" give "Odd"/"Even" as rank clues
+  if (clue.startsWith("Odd")) {
+    parsedClue = 1;
+  } else if (clue.startsWith("Even")) {
+    parsedClue = 2;
+  }
 
   if (Number.isNaN(parsedClue)) {
     // It's a color clue
