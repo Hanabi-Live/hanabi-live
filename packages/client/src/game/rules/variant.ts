@@ -38,5 +38,8 @@ export const isSynesthesia = (variant: Variant): boolean =>
 export const isCriticalFours = (variant: Variant): boolean =>
   variant.name.startsWith("Critical Fours");
 
+export const isOddsAndEvens = (variant: Variant): boolean =>
+  variant.name.startsWith("Odds And Evens");
+
 export const hasReversedSuits = (variant: Variant): boolean =>
   isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0;

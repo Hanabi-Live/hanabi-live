@@ -39,7 +39,7 @@ export default class RankButton extends Konva.Group {
       fontFamily: "Verdana",
       fill: "white",
       align: "center",
-      text: (config.number as number).toString(),
+      text: config.label as string,
       listening: false,
     });
     this.add(text);

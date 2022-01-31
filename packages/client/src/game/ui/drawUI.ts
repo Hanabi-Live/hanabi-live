@@ -1917,6 +1917,16 @@ function drawClueArea() {
   }
 
   // Rank buttons / number buttons
+  const rankTextFromVariant = (rank: number, variant: string): string => {
+    if (!variantRules.isOddsAndEvens(globals.variant)) {
+      return rank.toString();
+    }
+    if (rank === 1) {
+      return "O";
+    }
+    return "E";
+  };
+
   globals.elements.rankClueButtons = [];
   const numRanks = globals.variant.clueRanks.length;
   let totalRankWidth = buttonW * numRanks;
@@ -1930,7 +1940,7 @@ function drawClueArea() {
       y: rankY * winH,
       width: buttonW * winW,
       height: buttonH * winH,
-      number: rank,
+      label: rankTextFromVariant(rank, globals.variant.name),
       clue: rankClue(rank),
     });
 
