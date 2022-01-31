@@ -27983,5 +27983,613 @@
       2
     ],
     "oddsAndEvens": true
+  },
+  {
+    "name": "Odds And Evens & Black (6 Suits)",
+    "id": 1820,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Black"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Black (5 Suits)",
+    "id": 1841,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Black"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Rainbow (6 Suits)",
+    "id": 1842,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Rainbow (5 Suits)",
+    "id": 1843,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Rainbow (4 Suits)",
+    "id": 1844,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Rainbow (3 Suits)",
+    "id": 1845,
+    "suits": [
+      "Red",
+      "Blue",
+      "Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Pink (6 Suits)",
+    "id": 1846,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Pink (5 Suits)",
+    "id": 1847,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Pink (4 Suits)",
+    "id": 1848,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Pink (3 Suits)",
+    "id": 1849,
+    "suits": [
+      "Red",
+      "Blue",
+      "Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & White (6 Suits)",
+    "id": 1850,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "White"
+    ]
+  },
+  {
+    "name": "Odds And Evens & White (5 Suits)",
+    "id": 1851,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "White"
+    ]
+  },
+  {
+    "name": "Odds And Evens & White (4 Suits)",
+    "id": 1852,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "White"
+    ]
+  },
+  {
+    "name": "Odds And Evens & White (3 Suits)",
+    "id": 1853,
+    "suits": [
+      "Red",
+      "Blue",
+      "White"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Brown (6 Suits)",
+    "id": 1854,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Brown"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Brown (5 Suits)",
+    "id": 1855,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Brown"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Brown (4 Suits)",
+    "id": 1856,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Brown"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Brown (3 Suits)",
+    "id": 1857,
+    "suits": [
+      "Red",
+      "Blue",
+      "Brown"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Omni (6 Suits)",
+    "id": 1858,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Omni"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Omni (5 Suits)",
+    "id": 1859,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Omni"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Omni (4 Suits)",
+    "id": 1860,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Omni"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Omni (3 Suits)",
+    "id": 1861,
+    "suits": [
+      "Red",
+      "Blue",
+      "Omni"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Null (6 Suits)",
+    "id": 1862,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Null"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Null (5 Suits)",
+    "id": 1863,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Null"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Null (4 Suits)",
+    "id": 1864,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Null"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Null (3 Suits)",
+    "id": 1865,
+    "suits": [
+      "Red",
+      "Blue",
+      "Null"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Muddy Rainbow (6 Suits)",
+    "id": 1866,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Muddy Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Muddy Rainbow (5 Suits)",
+    "id": 1867,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Muddy Rainbow (4 Suits)",
+    "id": 1868,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Muddy Rainbow (3 Suits)",
+    "id": 1869,
+    "suits": [
+      "Red",
+      "Blue",
+      "Muddy Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Light Pink (6 Suits)",
+    "id": 1870,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Light Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Light Pink (5 Suits)",
+    "id": 1871,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Light Pink (4 Suits)",
+    "id": 1872,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Light Pink (3 Suits)",
+    "id": 1873,
+    "suits": [
+      "Red",
+      "Blue",
+      "Light Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Prism (6 Suits)",
+    "id": 1874,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Prism (5 Suits)",
+    "id": 1875,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Prism (4 Suits)",
+    "id": 1876,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Prism (3 Suits)",
+    "id": 1877,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Rainbow (6 Suits)",
+    "id": 1878,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Rainbow (5 Suits)",
+    "id": 1879,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Pink (6 Suits)",
+    "id": 1880,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Pink (5 Suits)",
+    "id": 1881,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Gray (6 Suits)",
+    "id": 1882,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Gray (5 Suits)",
+    "id": 1883,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Brown (6 Suits)",
+    "id": 1884,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Brown"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Brown (5 Suits)",
+    "id": 1885,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Brown"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Omni (6 Suits)",
+    "id": 1886,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Omni"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Omni (5 Suits)",
+    "id": 1887,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Omni"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Null (6 Suits)",
+    "id": 1888,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Null"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Null (5 Suits)",
+    "id": 1889,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Null"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Cocoa Rainbow (6 Suits)",
+    "id": 1890,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Cocoa Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Cocoa Rainbow (5 Suits)",
+    "id": 1891,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Cocoa Rainbow"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Gray Pink (6 Suits)",
+    "id": 1892,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Gray Pink (5 Suits)",
+    "id": 1893,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray Pink"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Prism (6 Suits)",
+    "id": 1894,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Prism"
+    ]
+  },
+  {
+    "name": "Odds And Evens & Dark Prism (5 Suits)",
+    "id": 1895,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Prism"
+    ]
   }
 ]
