@@ -1940,7 +1940,7 @@ function drawClueArea() {
       y: rankY * winH,
       width: buttonW * winW,
       height: buttonH * winH,
-      label: rankTextFromVariant(rank, globals.variant.name),
+      label: rankTextFromVariant(rank),
       clue: rankClue(rank),
     });
 
