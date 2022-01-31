@@ -1917,7 +1917,7 @@ function drawClueArea() {
   }
 
   // Rank buttons / number buttons
-  const rankTextFromVariant = (rank: number, variant: string): string => {
+  const rankTextFromVariant = (rank: number): string => {
     if (!variantRules.isOddsAndEvens(globals.variant)) {
       return rank.toString();
     }
