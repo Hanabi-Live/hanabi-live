@@ -85,3 +85,17 @@ func discordShowIssue(ctx context.Context, channelID string, title string, disco
 		" (by " + *issue.User.Name + ")"
 	discordSend(channelID, "", msg)
 }
+
+// /mem, /memory
+// Responds with a private message containing information about memory usage
+// Private use only
+func discordCommandMemory(ctx context.Context, m *discordgo.MessageCreate, args []string) {
+	if m.Author.ID != ownerDiscordID {
+		discordSend(m.Author.ID, "", "Only the owner of the website can use the /mem command.")
+		return
+	}
+
+	msg := getMemoryReport()
+
+	discordSend(m.Author.ID, "", msg)
+}
