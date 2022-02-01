@@ -17,6 +17,7 @@ type Variant = {
   rankCluesTouchNothing?: boolean;
   showSuitNames?: boolean;
   oddsAndEvens?: boolean;
+  funnels?: boolean;
   clueColors?: string[];
   clueRanks?: number[];
 };
@@ -106,6 +107,7 @@ variants.push(
   ...getSynesthesiaVariants(),
   ...getCriticalFoursVariants(),
   ...getOddsAndEvensVariants(),
+  ...getFunnelsVariants(),
 );
 
 if (checkForMissingVariants()) {
@@ -1242,6 +1244,20 @@ function getOddsAndEvensVariants(): Variant[] {
         id: get_variant_id(variant_name),
         suits: [...variant_suits[suit_num - 1], suit_name],
       });
+    });
+  });
+  return variants;
+}
+
+function getFunnelsVariants(): Variant[] {
+  const variants: Variant[] = [];
+  [6, 5, 4, 3].forEach((suit_num) => {
+    const variant_name = `Funnels (${suit_num} Suits)`;
+    variants.push({
+      name: variant_name,
+      id: get_variant_id(variant_name),
+      suits: variant_suits[suit_num],
+      funnels: true,
     });
   });
   return variants;
