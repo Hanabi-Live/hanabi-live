@@ -61,7 +61,11 @@ export class Globals {
   // Used to keep track of the active element before model warning box
   lastActiveElement: HTMLElement | null = null;
 
-  browserIsFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+  browserIsFirefox =
+    // Check to keep Jest happy
+    global.navigator === undefined
+      ? false
+      : navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
 }
 
 const globals = new Globals();
@@ -74,6 +78,7 @@ declare global {
     globals2: Globals;
   }
 }
-if (window !== undefined) {
+// Check to keep Jest happy
+if (global.window !== undefined) {
   window.globals2 = globals;
 }
