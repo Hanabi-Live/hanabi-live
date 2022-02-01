@@ -75,7 +75,6 @@ input[type="radio"] + label:before,
   cursor: not-allowed;
 }
 
-
 .button {
   /* Disable the ugly black border that appears when we click on a button */
   outline: none;
@@ -257,21 +256,25 @@ table td {
   margin-top: 4em;
 }
 
-#main-login, #main-tutorial {
+#main-login,
+#main-tutorial {
   padding: 4em 0;
 }
 
-#main-login > header, #main-tutorial > header  {
+#main-login > header,
+#main-tutorial > header {
   text-align: center;
   margin: 0 0 3em 0;
 }
 
-#main-login > header h2, #main-tutorial > header h2 {
+#main-login > header h2,
+#main-tutorial > header h2 {
   font-size: 2.75em;
   margin: 0;
 }
 
-#main-login > header p, #main-tutorial > header p {
+#main-login > header p,
+#main-tutorial > header p {
   border-top: solid 2px #e5e5e5;
   color: #777;
   display: inline-block;
@@ -281,10 +284,12 @@ table td {
 }
 
 @media screen and (max-width: 980px) {
-  #main-login, #main-tutorial {
+  #main-login,
+  #main-tutorial {
     padding: 0.5em 0;
   }
-  #main-login > header, #main-tutorial > header  {
+  #main-login > header,
+  #main-tutorial > header {
     text-align: center;
     margin: 0 0 1em 0;
   }
@@ -304,7 +309,6 @@ table td {
   max-width: 306px;
   width: 30%;
 }
-
 
 #title-discord {
   width: 5em;
@@ -1800,4 +1804,10 @@ span.tableSpinner:after {
 .spoiler:hover {
   background: unset;
   color: unset;
+}
+
+/* Hyphenated empty placeholder */
+.lobby-hyphen-empty {
+  width: 0.75em;
+  display: inline-block;
 }
