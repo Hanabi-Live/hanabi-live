@@ -208,15 +208,6 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	if clue.Type == ClueTypeColor {
 		clueColorName := variant.ClueColors[clue.Value]
 
-		if variant.IsSynesthesia() && !suit.NoClueRanks {
-			// In addition to any other matching, match color based on rank.
-			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
-			prismColorName := variant.ClueColors[prismColorIndex]
-			if clueColorName == prismColorName {
-				return true
-			}
-		}
-
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
@@ -226,6 +217,15 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		}
 		if suit.NoClueColors {
 			return false
+		}
+
+		if variant.IsSynesthesia() && !suit.NoClueRanks {
+			// In addition to any other matching, match color based on rank.
+			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
+			prismColorName := variant.ClueColors[prismColorIndex]
+			if clueColorName == prismColorName {
+				return true
+			}
 		}
 
 		if variant.SpecialRank == card.Rank {
@@ -263,6 +263,14 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
+		if variant.OddsAndEvens {
+			// Clue ranks in Odds And Evens can only be 1 or 2
+			if clue.Value == 1 {
+				return intInSlice(card.Rank, oddClues)
+			}
+			return intInSlice(card.Rank, evenClues)
+		}
+
 		if variant.SpecialRank == card.Rank {
 			if variant.SpecialAllClueRanks {
 				return true
@@ -295,5 +303,6 @@ func variantsIsValidID(id int) bool {
 	if _, ok := variantIDMap[id]; !ok {
 		return false
 	}
+
 	return true
 }
