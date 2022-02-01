@@ -30,6 +30,11 @@ export function getClueName(
     }
   } else if (variantRules.isDuck(variant) || characterName === "Quacker") {
     clueName = "Quack";
+  } else if (variantRules.isOddsAndEvens(variant)) {
+    clueName = "Odd";
+    if (clueValue === 2) {
+      clueName = "Even";
+    }
   }
   return clueName;
 }

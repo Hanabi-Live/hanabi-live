@@ -166,6 +166,12 @@ export function set(
         if (variantRules.isCowAndPig(globals.variant)) {
           text = "#";
         }
+        if (variantRules.isOddsAndEvens(globals.variant)) {
+          text = "O";
+          if (clue.value === 2) {
+            text = "E";
+          }
+        }
         arrow.text.text(text);
         arrow.text.show();
 

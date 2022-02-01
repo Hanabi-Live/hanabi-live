@@ -1223,6 +1223,27 @@ function getOddsAndEvensVariants(): Variant[] {
       oddsAndEvens: true,
     });
   });
+
+  suits.forEach((suit, suit_name) => {
+    if (!suit.createVariants) {
+      return;
+    }
+
+    [6, 5, 4, 3].forEach((suit_num) => {
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
+      // one-of-each suit
+      if ((suit_num === 4 || suit_num === 3) && suit.oneOfEach) {
+        return;
+      }
+
+      const variant_name = `Odds And Evens & ${suit_name} (${suit_num} Suits)`;
+      variants.push({
+        name: variant_name,
+        id: get_variant_id(variant_name),
+        suits: [...variant_suits[suit_num - 1], suit_name],
+      });
+    });
+  });
   return variants;
 }
 
