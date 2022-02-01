@@ -53,15 +53,16 @@ export function getClueName(
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
-  let clueValue;
   if (msgClue.type === ClueType.Color) {
-    clueValue = variant.clueColors[msgClue.value]; // This is a Color object
+    const clueValue = variant.clueColors[msgClue.value]; // This is a Color object
     return colorClue(clueValue);
   }
+
   if (msgClue.type === ClueType.Rank) {
-    clueValue = msgClue.value;
+    const clueValue = msgClue.value;
     return rankClue(clueValue);
   }
+
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 }
 
