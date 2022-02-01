@@ -26,6 +26,9 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/random [min] [max]`                 | Get a random integer
 | `/uptime`                             | Get how long the server has been online
 | `/timeleft`                           | Get how much time is left before the server shuts down
+| `/here`                               | Inform the `@Ping Crew` you are looking to play a game
+| `/subscribe`                          | Add the `@Ping Crew` role to your Discord profile
+| `/unsubscribe`                        | Remove the `@Ping Crew` role from your Discord profile
 | `/shrug`                              | ¯\\\_(ツ)\_/¯
 
 <br />

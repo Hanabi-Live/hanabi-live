@@ -2,17 +2,38 @@ package main
 
 import (
 	"context"
+
+	"github.com/bwmarrin/discordgo"
 )
 
-// /here
+// /here, /ping
 func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t != nil {
 		chatServerSend(ctx, NotInLobbyFail, d.Room, d.NoTablesLock)
 		return
 	}
 
-	msg := "The /here command has been removed. If you look at the Discord voice channels to your left, there are almost certainly people from the H-Group already playing or reviewing a game. Please politely ask to join them instead of pinging the entire server."
+	if discord == nil {
+		chatServerSendPM(s, "Discord is not available at this time.", d.Room)
+		return
+	}
+
+	var pingCrew *discordgo.Role
+	if v, ok := discordGetRoleByName("Ping Crew"); !ok {
+		chatServerSendPM(s, "The @Ping Crew role could not be found.", d.Room)
+		return
+	} else {
+		pingCrew = v
+	}
+
+	msg := d.Username + " is looking for a game. <@&" + pingCrew.ID + ">"
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+	discordSend(discordChannelSyncWithLobby, "", msg)
+}
+
+// /subscribe, /unsubscribe
+func chatSubscribe(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	chatServerSendPM(s, "You can only use that command on Discord.", d.Room)
 }
 
 // /wrongchannel
