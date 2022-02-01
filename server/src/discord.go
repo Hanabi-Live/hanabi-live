@@ -259,3 +259,13 @@ func discordGetRole(discordID string) string {
 	}
 	return "[unknown role]"
 }
+
+func discordGetRoleByName(name string) (*discordgo.Role, bool) {
+	roles := discordGetRoles()
+	for _, role := range roles {
+		if role.Name == name {
+			return role, true
+		}
+	}
+	return nil, false
+}

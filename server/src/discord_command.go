@@ -37,6 +37,10 @@ func discordCommandInit() {
 	discordCommandMap["link"] = discordCommandReplay
 	discordCommandMap["game"] = discordCommandReplay
 	discordCommandMap["uptime"] = discordUptime
+	discordCommandMap["ping"] = discordPing
+	discordCommandMap["here"] = discordPing
+	discordCommandMap["subscribe"] = discordSubscribe
+	discordCommandMap["unsubscribe"] = discordUnsubscribe
 }
 
 func discordCommand(ctx context.Context, m *discordgo.MessageCreate, command string, args []string) {
