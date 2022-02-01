@@ -14,29 +14,39 @@ export function getClueName(
   variant: Variant,
   characterName: string,
 ): string {
-  let clueName: string;
-  if (clueType === ClueType.Color) {
-    clueName = variant.clueColors[clueValue].name;
-  } else if (clueType === ClueType.Rank) {
-    clueName = clueValue.toString();
-  } else {
-    throw new Error("Invalid clue type.");
-  }
   if (variantRules.isCowAndPig(variant)) {
     if (clueType === ClueType.Color) {
-      clueName = "Moo";
-    } else if (clueType === ClueType.Rank) {
-      clueName = "Oink";
+      return "Moo";
     }
-  } else if (variantRules.isDuck(variant) || characterName === "Quacker") {
-    clueName = "Quack";
-  } else if (variantRules.isOddsAndEvens(variant)) {
-    clueName = "Odd";
-    if (clueValue === 2) {
-      clueName = "Even";
+
+    if (clueType === ClueType.Rank) {
+      return "Oink";
     }
   }
-  return clueName;
+
+  if (variantRules.isDuck(variant) || characterName === "Quacker") {
+    return "Quack";
+  }
+
+  if (variantRules.isOddsAndEvens(variant) && clueType === ClueType.Rank) {
+    if (clueValue === 1) {
+      return "Odd";
+    }
+
+    if (clueValue === 2) {
+      return "Even";
+    }
+  }
+
+  if (clueType === ClueType.Color) {
+    return variant.clueColors[clueValue].name;
+  }
+
+  if (clueType === ClueType.Rank) {
+    return clueValue.toString();
+  }
+
+  throw new Error("Invalid clue type.");
 }
 
 // Convert a clue from the format used by the server to the format used by the client
