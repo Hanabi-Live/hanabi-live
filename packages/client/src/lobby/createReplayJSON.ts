@@ -181,7 +181,7 @@ function getActionFromHypoClue(
   const playerIndex = getPlayerIndexFromName(player);
   let parsedClue = parseInt(clue, 10);
 
-  // "Odds And Evens" give "Odd"/"Even" as rank clues
+  // "Odds and Evens" give "Odd"/"Even" as rank clues
   if (clue.startsWith("Odd")) {
     parsedClue = 1;
   } else if (clue.startsWith("Even")) {

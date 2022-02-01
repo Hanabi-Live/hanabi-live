@@ -1216,7 +1216,7 @@ function getCriticalFoursVariants(): Variant[] {
 function getOddsAndEvensVariants(): Variant[] {
   const variants: Variant[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
-    const variant_name = `Odds And Evens (${suit_num} Suits)`;
+    const variant_name = `Odds and Evens (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
@@ -1238,7 +1238,7 @@ function getOddsAndEvensVariants(): Variant[] {
         return;
       }
 
-      const variant_name = `Odds And Evens & ${suit_name} (${suit_num} Suits)`;
+      const variant_name = `Odds and Evens & ${suit_name} (${suit_num} Suits)`;
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
