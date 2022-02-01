@@ -198,7 +198,7 @@ func chatMissingScores(ctx context.Context, s *Session, d *CommandData, t *Table
 		return
 	}
 
-	path := "/shared-missing-scores/" + strings.Join(usernames, "/")
+	path := "/shared-missing-scores/" + strconv.Itoa(len(usernames)) + "/" + strings.Join(usernames, "/")
 	msg := getURLFromPath(path)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
