@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -528,4 +529,22 @@ func isTableCommandValid(s *Session, d *CommandData, data *SpecialGameData) (boo
 	}
 
 	return true, ""
+}
+
+func getMemoryReport() string {
+	// Based on https://golangcode.com/print-the-current-memory-usage/
+	var memStats runtime.MemStats
+	runtime.ReadMemStats(&memStats)
+
+	msg := "Memory Report:"
+	msg += fmt.Sprintf("\nAlloc = %v MiB", byteToMegaByte(memStats.Alloc))
+	msg += fmt.Sprintf("\nTotalAlloc = %v MiB", byteToMegaByte(memStats.TotalAlloc))
+	msg += fmt.Sprintf("\nSys = %v MiB", byteToMegaByte(memStats.TotalAlloc))
+	msg += fmt.Sprintf("\nNumGC = %v\n", memStats.NumGC)
+
+	return msg
+}
+
+func byteToMegaByte(b uint64) uint64 {
+	return b / 1024 / 1024
 }
