@@ -172,7 +172,11 @@ export function onPaceOrPaceRiskChanged(data: {
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless
-  if (data.pace === null || data.finalRoundEffectivelyStarted) {
+  if (
+    data.pace === null ||
+    data.finalRoundEffectivelyStarted ||
+    globals.options.allOrNothing
+  ) {
     label.text("-");
     label.fill(LABEL_COLOR);
   } else {
