@@ -244,7 +244,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.allOrNothing) {
-    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.ALL_OR_NOTHING}" `;
+    html += `<li><i id="lobby-pregame-options-all-or-nothing" class="${OptionIcons.ALL_OR_NOTHING}" `;
     html += 'data-tooltip-content="#pregame-tooltip-all-or-nothing"></i></li>';
     html += `
       <div class="hidden">
