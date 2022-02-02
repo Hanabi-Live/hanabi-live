@@ -26,7 +26,7 @@ export default function testMetadata(
   return {
     ourUsername: "Alice",
     options,
-    playerNames: ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"].slice(
+    playerNames: ["Alice", "Bob", "Cathy", "Donald", "Emily", "Fred"].slice(
       0,
       numPlayers,
     ),
