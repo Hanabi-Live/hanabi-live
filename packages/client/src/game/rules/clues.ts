@@ -123,14 +123,6 @@ export function touchesCard(
       return false;
     }
 
-    if (variant.oddsAndEvens) {
-      // Clue ranks in Odds and Evens can only be 1 or 2
-      if (clue.value === 1) {
-        return [1, 3, 5].includes(rank);
-      }
-      return [2, 4].includes(rank);
-    }
-
     if (suit.allClueRanks) {
       return true;
     }
@@ -152,6 +144,14 @@ export function touchesCard(
           variant.clueRanks[suitIndex % variant.clueRanks.length];
         return clue.value === deceptiveRank;
       }
+    }
+
+    if (variant.oddsAndEvens) {
+      // Clue ranks in Odds and Evens can only be 1 or 2
+      if (clue.value === 1) {
+        return [1, 3, 5].includes(rank);
+      }
+      return [2, 4].includes(rank);
     }
 
     return clue.value === rank;
