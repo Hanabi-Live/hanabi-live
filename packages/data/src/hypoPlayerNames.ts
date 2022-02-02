@@ -4,5 +4,5 @@ export const HYPO_PLAYER_NAMES = [
   "Cathy",
   "Donald",
   "Emily",
-  "Fred",
+  "Frank",
 ];
