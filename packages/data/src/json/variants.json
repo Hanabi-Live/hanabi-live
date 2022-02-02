@@ -27994,7 +27994,12 @@
       "Blue",
       "Purple",
       "Black"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Black (5 Suits)",
@@ -28005,7 +28010,12 @@
       "Green",
       "Blue",
       "Black"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Rainbow (6 Suits)",
@@ -28017,7 +28027,12 @@
       "Blue",
       "Purple",
       "Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Rainbow (5 Suits)",
@@ -28028,7 +28043,12 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Rainbow (4 Suits)",
@@ -28038,7 +28058,12 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Rainbow (3 Suits)",
@@ -28047,7 +28072,12 @@
       "Red",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Pink (6 Suits)",
@@ -28059,7 +28089,12 @@
       "Blue",
       "Purple",
       "Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Pink (5 Suits)",
@@ -28070,7 +28105,12 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Pink (4 Suits)",
@@ -28080,7 +28120,12 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Pink (3 Suits)",
@@ -28089,7 +28134,12 @@
       "Red",
       "Blue",
       "Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & White (6 Suits)",
@@ -28101,7 +28151,12 @@
       "Blue",
       "Purple",
       "White"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & White (5 Suits)",
@@ -28112,7 +28167,12 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & White (4 Suits)",
@@ -28122,7 +28182,12 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & White (3 Suits)",
@@ -28131,7 +28196,12 @@
       "Red",
       "Blue",
       "White"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Brown (6 Suits)",
@@ -28143,7 +28213,12 @@
       "Blue",
       "Purple",
       "Brown"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Brown (5 Suits)",
@@ -28154,7 +28229,12 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Brown (4 Suits)",
@@ -28164,7 +28244,12 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Brown (3 Suits)",
@@ -28173,7 +28258,12 @@
       "Red",
       "Blue",
       "Brown"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Omni (6 Suits)",
@@ -28185,7 +28275,12 @@
       "Blue",
       "Purple",
       "Omni"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Omni (5 Suits)",
@@ -28196,7 +28291,12 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Omni (4 Suits)",
@@ -28206,7 +28306,12 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Omni (3 Suits)",
@@ -28215,7 +28320,12 @@
       "Red",
       "Blue",
       "Omni"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Null (6 Suits)",
@@ -28227,7 +28337,12 @@
       "Blue",
       "Purple",
       "Null"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Null (5 Suits)",
@@ -28238,7 +28353,12 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Null (4 Suits)",
@@ -28248,7 +28368,12 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Null (3 Suits)",
@@ -28257,7 +28382,12 @@
       "Red",
       "Blue",
       "Null"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Muddy Rainbow (6 Suits)",
@@ -28269,7 +28399,12 @@
       "Blue",
       "Purple",
       "Muddy Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Muddy Rainbow (5 Suits)",
@@ -28280,7 +28415,12 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Muddy Rainbow (4 Suits)",
@@ -28290,7 +28430,12 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Muddy Rainbow (3 Suits)",
@@ -28299,7 +28444,12 @@
       "Red",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Light Pink (6 Suits)",
@@ -28311,7 +28461,12 @@
       "Blue",
       "Purple",
       "Light Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Light Pink (5 Suits)",
@@ -28322,7 +28477,12 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Light Pink (4 Suits)",
@@ -28332,7 +28492,12 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Light Pink (3 Suits)",
@@ -28341,7 +28506,12 @@
       "Red",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Prism (6 Suits)",
@@ -28353,7 +28523,12 @@
       "Blue",
       "Purple",
       "Prism"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Prism (5 Suits)",
@@ -28364,7 +28539,12 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Prism (4 Suits)",
@@ -28374,7 +28554,12 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Prism (3 Suits)",
@@ -28383,7 +28568,12 @@
       "Red",
       "Blue",
       "Prism"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Rainbow (6 Suits)",
@@ -28395,7 +28585,12 @@
       "Blue",
       "Purple",
       "Dark Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Rainbow (5 Suits)",
@@ -28406,7 +28601,12 @@
       "Green",
       "Blue",
       "Dark Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Pink (6 Suits)",
@@ -28418,7 +28618,12 @@
       "Blue",
       "Purple",
       "Dark Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Pink (5 Suits)",
@@ -28429,7 +28634,12 @@
       "Green",
       "Blue",
       "Dark Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Gray (6 Suits)",
@@ -28441,7 +28651,12 @@
       "Blue",
       "Purple",
       "Gray"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Gray (5 Suits)",
@@ -28452,7 +28667,12 @@
       "Green",
       "Blue",
       "Gray"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Brown (6 Suits)",
@@ -28464,7 +28684,12 @@
       "Blue",
       "Purple",
       "Dark Brown"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Brown (5 Suits)",
@@ -28475,7 +28700,12 @@
       "Green",
       "Blue",
       "Dark Brown"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Omni (6 Suits)",
@@ -28487,7 +28717,12 @@
       "Blue",
       "Purple",
       "Dark Omni"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Omni (5 Suits)",
@@ -28498,7 +28733,12 @@
       "Green",
       "Blue",
       "Dark Omni"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Null (6 Suits)",
@@ -28510,7 +28750,12 @@
       "Blue",
       "Purple",
       "Dark Null"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Null (5 Suits)",
@@ -28521,7 +28766,12 @@
       "Green",
       "Blue",
       "Dark Null"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Cocoa Rainbow (6 Suits)",
@@ -28533,7 +28783,12 @@
       "Blue",
       "Purple",
       "Cocoa Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Cocoa Rainbow (5 Suits)",
@@ -28544,7 +28799,12 @@
       "Green",
       "Blue",
       "Cocoa Rainbow"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Gray Pink (6 Suits)",
@@ -28556,7 +28816,12 @@
       "Blue",
       "Purple",
       "Gray Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Gray Pink (5 Suits)",
@@ -28567,7 +28832,12 @@
       "Green",
       "Blue",
       "Gray Pink"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Prism (6 Suits)",
@@ -28579,7 +28849,12 @@
       "Blue",
       "Purple",
       "Dark Prism"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   },
   {
     "name": "Odds and Evens & Dark Prism (5 Suits)",
@@ -28590,6 +28865,11 @@
       "Green",
       "Blue",
       "Dark Prism"
-    ]
+    ],
+    "clueRanks": [
+      1,
+      2
+    ],
+    "oddsAndEvens": true
   }
 ]
