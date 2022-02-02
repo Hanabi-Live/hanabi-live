@@ -279,9 +279,9 @@ func secondsToDurationString(seconds int) (string, error) {
 // We use the CRC64 hash function to do this
 // Also note that seeding with negative numbers will not work
 func setSeed(seed string) {
-	// remove legacy-x- part in front of seed, if exists
-	// to support old seeds
-	if strings.HasPrefix(seed, "legacy-") && len(seed) > 9 {
+	// Remove the "legacy-x-" prefix from the seed, if it exists
+	// (e.g. "legacy-1-", "legacy-2-", and so on)
+	if strings.HasPrefix(seed, "legacy-") {
 		seed = seed[len("legacy-x-"):]
 	}
 	crc64Table := crc64.MakeTable(crc64.ECMA)
