@@ -281,7 +281,7 @@ func secondsToDurationString(seconds int) (string, error) {
 func setSeed(seed string) {
 	// remove legacy-x- part in front of seed, if exists
 	// to support old seeds
-	if strings.HasPrefix(seed, "legacy-") {
+	if strings.HasPrefix(seed, "legacy-") && len(seed) > 9 {
 		seed = seed[len("legacy-x-"):]
 	}
 	crc64Table := crc64.MakeTable(crc64.ECMA)
