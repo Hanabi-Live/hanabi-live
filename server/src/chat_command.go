@@ -45,10 +45,10 @@ func chatCommandInit() {
 	chatCommandMap["timeleft"] = chatTimeLeft
 
 	// Undocumented info commands (that work only in the lobby)
-	chatCommandMap["here"] = chatHere
-	chatCommandMap["ping"] = chatHere
-	chatCommandMap["subscribe"] = chatSubscribe
-	chatCommandMap["unsubscribe"] = chatSubscribe
+	// chatCommandMap["here"] = chatHere
+	// chatCommandMap["ping"] = chatHere
+	// chatCommandMap["subscribe"] = chatSubscribe
+	// chatCommandMap["unsubscribe"] = chatSubscribe
 	chatCommandMap["wrongchannel"] = chatWrongChannel
 
 	// Table-only commands (pregame only, table owner only)
