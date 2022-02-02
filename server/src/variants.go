@@ -256,14 +256,6 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		if variant.OddsAndEvens {
-			// Clue ranks in Odds and Evens can only be 1 or 2
-			if clue.Value == 1 {
-				return intInSlice(card.Rank, oddClues)
-			}
-			return intInSlice(card.Rank, evenClues)
-		}
-
 		if variant.Suits[card.SuitIndex].AllClueRanks {
 			return true
 		}
@@ -283,6 +275,14 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 				deceptiveRank := variant.ClueRanks[card.SuitIndex%len(variant.ClueRanks)]
 				return clue.Value == deceptiveRank
 			}
+		}
+
+		if variant.OddsAndEvens {
+			// Clue ranks in Odds and Evens can only be 1 or 2
+			if clue.Value == 1 {
+				return intInSlice(card.Rank, oddClues)
+			}
+			return intInSlice(card.Rank, evenClues)
 		}
 
 		return clue.Value == card.Rank
