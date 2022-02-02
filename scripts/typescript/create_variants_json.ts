@@ -1241,6 +1241,8 @@ function getOddsAndEvensVariants(): Variant[] {
         name: variant_name,
         id: get_variant_id(variant_name),
         suits: [...variant_suits[suit_num - 1], suit_name],
+        clueRanks: [1, 2],
+        oddsAndEvens: true,
       });
     });
   });
