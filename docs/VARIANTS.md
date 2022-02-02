@@ -16,11 +16,11 @@ Normal amount of cards per suit (e.g. 10 in total):
 
 One of each card per suit (e.g. 5 in total):
 
-|                    |  No color clues  | Own color clue | All color clues |
-| ------------------ | ---------------- | -------------- | --------------- |
-| **No rank clues**  | Dark Null        | Dark Brown     | Cocoa Rainbow   |
-| **Own rank clue**  | Gray             | Black          | Dark Rainbow    |
-| **All rank clues** | Gray Pink        | Dark Pink      | Dark Omni       |
+|                    | No color clues | Own color clue | All color clues |
+| ------------------ | -------------- | -------------- | --------------- |
+| **No rank clues**  | Dark Null      | Dark Brown     | Cocoa Rainbow   |
+| **Own rank clue**  | Gray           | Black          | Dark Rainbow    |
+| **All rank clues** | Gray Pink      | Dark Pink      | Dark Omni       |
 
 <br />
 
@@ -297,6 +297,10 @@ One of each card per suit (e.g. 5 in total):
 
 - Rank clues are limited to 1 and 2.
 - "1" rank clue touches all odd cards, "2" touches all even cards.
+
+### Funnels
+
+- Rank clues also touch all lower ranked cards.
 
 <br />
 
