@@ -13,7 +13,7 @@ import (
 // /issue
 func discordCommandIssue(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	// Delete the message
-	discord.ChannelMessageDelete(m.ChannelID, m.ID)
+	discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
 
 	if !discordIsUserTheDiscordOwner(m.Author) {
 		msg := "Only the owner of the website can use the /memory command."
@@ -53,7 +53,7 @@ func discordOpenIssue(ctx context.Context, messageAuthorID string, title string,
 	}
 
 	body := "Issue opened by Discord user: " + discordUsername
-	issue := &github.IssueRequest{
+	issue := &github.IssueRequest{ // nolint: exhaustivestruct
 		Title: &title,
 		Body:  &body,
 	}
@@ -70,7 +70,7 @@ func discordOpenIssue(ctx context.Context, messageAuthorID string, title string,
 		discordSend(messageAuthorID, "", DefaultErrorMsg)
 		return
 	} else {
-		id = " (#" + strconv.Itoa(int(*issue.Number)) + ")"
+		id = " (#" + strconv.Itoa(*issue.Number) + ")"
 	}
 
 	msg := "Successfully created a GitHub issue: `" + title + "`" + id
@@ -104,7 +104,7 @@ func discordShowIssue(ctx context.Context, messageAuthorID string, channelID str
 // /mem, /memory
 func discordCommandMemory(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	// Delete the message
-	discord.ChannelMessageDelete(m.ChannelID, m.ID)
+	discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
 
 	msg := "Only the owner of the website can use the /memory command."
 	if discordIsUserTheDiscordOwner(m.Author) {

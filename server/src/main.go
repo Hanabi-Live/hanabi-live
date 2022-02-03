@@ -91,13 +91,13 @@ func main() {
 	deadlock.Opts.DisableLockOrderDetection = true
 
 	// Welcome message (project name, admin)
-	projectName := "| Starting " + projectName + " |"
-	messageSize := len(projectName) - 2
+	startingMsg := "| Starting " + projectName + " |"
+	messageSize := len(startingMsg) - 2
 	adminFormat := "| %-" + strconv.Itoa(messageSize-2) + "s |"
 	serverAdmin := fmt.Sprintf(adminFormat, "Admin: "+webserverAdmin)
 	borderText := "+" + strings.Repeat("-", messageSize) + "+"
 	logger.Info(borderText)
-	logger.Info(projectName)
+	logger.Info(startingMsg)
 	logger.Info(serverAdmin)
 	logger.Info(borderText)
 

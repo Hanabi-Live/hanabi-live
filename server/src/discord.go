@@ -201,7 +201,7 @@ func discordSend(to string, username string, msg string) {
 	messageSendData := &discordgo.MessageSend{ // nolint: exhaustivestruct
 		Content: fullMsg,
 		// This prevents people from abusing the bot to spam @everyone
-		AllowedMentions: &discordgo.MessageAllowedMentions{
+		AllowedMentions: &discordgo.MessageAllowedMentions{ // nolint: exhaustivestruct
 			Roles: roles,
 		},
 	}

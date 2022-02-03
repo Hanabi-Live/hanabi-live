@@ -35,7 +35,7 @@ func discordUptime(ctx context.Context, m *discordgo.MessageCreate, args []strin
 func discordPing(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	if m.ChannelID != discordChannelSyncWithLobby {
 		// Delete the message
-		discord.ChannelMessageDelete(m.ChannelID, m.ID)
+		discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
 		discordSendPM(m.Author.ID, "You can only use \"/here\" in the lobby area.")
 		return
 	}
@@ -57,7 +57,7 @@ func discordPing(ctx context.Context, m *discordgo.MessageCreate, args []string)
 // Subscribes to @Ping Crew
 func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	// Delete the message
-	discord.ChannelMessageDelete(m.ChannelID, m.ID)
+	discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
 
 	// Find Ping Crew
 	var pingCrew *discordgo.Role
@@ -80,7 +80,7 @@ func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []st
 // Unsubscribes from @Ping Crew
 func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	// Delete the message
-	discord.ChannelMessageDelete(m.ChannelID, m.ID)
+	discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
 
 	// Find Ping Crew
 	var pingCrew *discordgo.Role
