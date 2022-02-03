@@ -30,7 +30,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### General commands (that work on lobby and Discord lobby)
+### General commands (that work in the lobby and the Discord lobby)
 | Command    | Description
 | ---------- | -----------
 | `/here`    | Asks for more players on lobby and on Discord (pings the users with the `@Ping Crew` role)
