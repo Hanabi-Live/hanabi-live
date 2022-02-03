@@ -23,6 +23,7 @@ type Variant = {
 
 type Suit = {
   name: string;
+  id?: string;
   abbreviation?: string;
   fill?: string;
   pip?: string;
@@ -67,6 +68,7 @@ const suits_that_cause_duplicated_variants_with_ambiguous = [
 const [suits_path, variants_path, text_path] = getPaths();
 const old_variants_array = readVariantsFromJson(variants_path);
 const suits_array = readSuitsFromJson(suits_path);
+verifySuits();
 
 // Create some maps for the old variants
 const old_variants_name_to_id_map = new Map<string, number>();
@@ -180,6 +182,22 @@ function readVariantsFromJson(path: string): Variant[] {
 function readSuitsFromJson(path: string): Suit[] {
   const data = fs.readFileSync(path, "utf-8");
   return JSON.parse(data);
+}
+
+function verifySuits() {
+  const ids = new Set();
+  for (const suit of suits_array) {
+    if (suit.id) {
+      ids.add(suit.id);
+    } else {
+      showErrorAndExit(`Suit ${suit.name} without id`);
+    }
+  }
+  if (suits_array.length !== ids.size) {
+    showErrorAndExit(
+      `Suit ids conflict? ${suits_array.length} != ${ids.size}`,
+    );
+  }
 }
 
 function setOldVariantsIDToNameMap() {
