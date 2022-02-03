@@ -8,6 +8,8 @@ import (
 var (
 	// Used to store all of the functions that handle each command
 	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table))
+	// Stores commands that receive a personal message
+	chatPrivateCommands []string
 )
 
 func chatCommandInit() {
@@ -44,11 +46,15 @@ func chatCommandInit() {
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
 
+	chatCommandMap["mem"] = chatMemory
+	chatPrivateCommands = append(chatPrivateCommands, "mem")
+	chatCommandMap["memory"] = chatMemory
+	chatPrivateCommands = append(chatPrivateCommands, "memory")
+
 	// Undocumented info commands (that work only in the lobby)
-	// chatCommandMap["here"] = chatHere
-	// chatCommandMap["ping"] = chatHere
-	// chatCommandMap["subscribe"] = chatSubscribe
-	// chatCommandMap["unsubscribe"] = chatSubscribe
+	chatCommandMap["here"] = chatHere
+	chatCommandMap["ping"] = chatHere
+	chatCommandMap["teachme"] = chatTeachMe
 	chatCommandMap["wrongchannel"] = chatWrongChannel
 
 	// Table-only commands (pregame only, table owner only)
@@ -98,27 +104,74 @@ func chatCommandInit() {
 }
 
 func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	// Parse the command
-	args := strings.Split(d.Msg, " ")
-	command := args[0]
-	d.Args = args[1:] // This will be an empty slice if there is nothing after the command
-	// (we need to pass the arguments through to the command handler)
-
-	// Commands will start with a "/", so we can ignore everything else
-	if !strings.HasPrefix(command, "/") {
+	// Parse the message
+	var command string
+	if ok, cmd, args := chatParseCommand(d.Msg); !ok {
+		// it's a plain text
 		return
+	} else {
+		command = cmd
+		d.Args = args
 	}
-	command = strings.TrimPrefix(command, "/")
-	command = strings.ToLower(command) // Commands are case-insensitive
 
 	// Check to see if there is a command handler for this command
 	chatCommandFunction, ok := chatCommandMap[command]
 	if ok {
 		chatCommandFunction(ctx, s, d, t)
-	} else {
-		msg := "The chat command of \"/" + command + "\" is not valid."
-		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
+}
+
+// Returns true if the command should be shown on the chat.
+// Handles immediately commands that reply via PM.
+// Handles immediately invalid commands by informing the user.
+func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t *Table) bool {
+	// Parse the message
+	var command string
+	var arguments []string
+	if ok, cmd, args := chatParseCommand(d.Msg); !ok {
+		// it's a plain text
+		return true
+	} else {
+		command = cmd
+		arguments = args
+	}
+
+	msg := "The chat command of \"/" + command + "\" is not valid. Use \"/help\" to get a list of available commands."
+
+	// Search for existing handler
+	chatCommandFunction, ok := chatCommandMap[command]
+	if !ok {
+		// There's no handler, inform via PM
+		chatServerSendPM(s, msg, d.Room)
+		return false
+	}
+
+	// Search for commands that reply via PM
+	if stringInSlice(command, chatPrivateCommands) {
+		d.Args = arguments
+		chatCommandFunction(ctx, s, d, t)
+		return false
+	}
+
+	return true
+}
+
+// Parses a message, searching for /<string>.
+func chatParseCommand(msg string) (bool, string, []string) {
+	args := strings.Split(msg, " ")
+	command := args[0]
+	args = args[1:] // This will be an empty slice if there is nothing after the command
+	// (we need to pass the arguments through to the command handler)
+
+	// Commands will start with a "/", so we can ignore everything else
+	if !strings.HasPrefix(command, "/") {
+		return false, "", []string{}
+	}
+
+	command = strings.TrimPrefix(command, "/")
+	command = strings.ToLower(command) // Commands are case-insensitive
+
+	return true, command, args
 }
 
 func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {

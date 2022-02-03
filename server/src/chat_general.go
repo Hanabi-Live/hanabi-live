@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -179,6 +180,16 @@ func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	chatServerSend(ctx, timeLeft, d.Room, d.NoTablesLock)
+}
+
+// /mem, /memory
+func chatMemory(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	msg := "Only the owner of the website can use the /memory command."
+	if s.Username == webserverAdmin {
+		msg = getMemoryReport()
+		msg = strings.ReplaceAll(msg, "\n", " ")
+	}
+	chatServerSendPM(s, msg, d.Room)
 }
 
 func getTimeLeft() (string, error) {

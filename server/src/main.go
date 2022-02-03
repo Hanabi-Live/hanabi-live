@@ -3,10 +3,12 @@ package main // In Go, executable commands must always use package main
 // This file contains the entry point for the server software
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,6 +33,8 @@ var (
 	models           *Models
 	datetimeStarted  time.Time
 	tables           = NewTables() // An object that tracks ongoing tables
+
+	webserverAdmin = "Zamiel" // Used to check admin-only chat commands, set to empty to disable
 )
 
 func main() {
@@ -86,11 +90,15 @@ func main() {
 	// Configure the deadlock detector
 	deadlock.Opts.DisableLockOrderDetection = true
 
-	// Welcome message
-	startText := "| Starting " + projectName + " |"
-	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
+	// Welcome message (project name, admin)
+	projectName := "| Starting " + projectName + " |"
+	messageSize := len(projectName) - 2
+	adminFormat := "| %-" + strconv.Itoa(messageSize-2) + "s |"
+	serverAdmin := fmt.Sprintf(adminFormat, "Admin: "+webserverAdmin)
+	borderText := "+" + strings.Repeat("-", messageSize) + "+"
 	logger.Info(borderText)
-	logger.Info(startText)
+	logger.Info(projectName)
+	logger.Info(serverAdmin)
 	logger.Info(borderText)
 
 	// Record the commit that corresponds with when the Golang code was compiled

@@ -16,7 +16,6 @@ const (
 	gitHubPrivateKeyFilename = "GitHub_private_key.pem"
 
 	githubRepositoryOwner = "Hanabi-Live"
-	ownerDiscordID        = "Zamiel#8743"
 )
 
 var (
@@ -77,4 +76,16 @@ func githubInit() {
 	gitHubClient = github.NewClient(&http.Client{ // nolint: exhaustivestruct
 		Transport: transport,
 	})
+}
+
+func githubGetUserName(user github.User) string {
+	if user.Name != nil {
+		return *user.Name
+	}
+
+	if user.Login != nil {
+		return *user.Login
+	}
+
+	return ""
 }
