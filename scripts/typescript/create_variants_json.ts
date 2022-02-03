@@ -1,5 +1,6 @@
 import path = require("path");
 import fs = require("fs");
+import isEqual = require("lodash.isequal");
 
 const SUIT_REVERSED_SUFFIX = " Reversed";
 
@@ -20,6 +21,15 @@ type Variant = {
   oddsAndEvens?: boolean;
   clueColors?: string[];
   clueRanks?: number[];
+  alternatingClues?: boolean;
+  clueStarved?: boolean;
+  duck?: boolean;
+  cowPig?: boolean;
+  throwItInHole?: boolean;
+  synesthesia?: boolean;
+  // This really belongs to a suit, but for now it's here
+  upOrDown?: boolean;
+  criticalFours?: boolean;
 };
 
 type Suit = {
@@ -38,6 +48,7 @@ type Suit = {
   noClueRanks?: boolean;
   prism?: boolean;
   displayName?: string;
+  showSuitName?: boolean;
 };
 
 type Property =
@@ -79,6 +90,7 @@ setOldVariantsIDToNameMap();
 
 // Convert the suits array to a map and add default values
 const suits = convertSuitsArrayToMap();
+const suits_by_id = suitsById();
 
 // Start to build all of the variants
 const variants: Variant[] = [];
@@ -260,6 +272,9 @@ function convertSuitsArrayToMap(): Map<string, Suit> {
     }
     if (suit.prism === undefined) {
       suit.prism = false;
+    }
+    if (suit.showSuitName === undefined) {
+      suit.showSuitName = false;
     }
     suits.set(suit.name, suit);
   });
@@ -889,6 +904,7 @@ function getSpecialCraftedMixedVariants(): Variant[] {
     name: "Dual-Color Mix",
     id: get_variant_id("Dual-Color Mix"),
     suits: ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White"],
+    showSuitNames: true,
   });
   variants[variants.length - 1].strId = convertSuitsToStrId(
     variants[variants.length - 1].suits,
@@ -990,6 +1006,7 @@ function getAlternatingCluesVariants(): Variant[] {
       id: get_variant_id(variant_name),
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":AC",
       suits: variant_suits[suit_num],
+      alternatingClues: true,
     });
   });
 
@@ -1013,6 +1030,7 @@ function getAlternatingCluesVariants(): Variant[] {
           convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
           ":AC",
         suits: [...variant_suits[suit_num - 1], suit_name],
+        alternatingClues: true,
       });
     });
   });
@@ -1029,6 +1047,7 @@ function getClueStarvedVariants(): Variant[] {
       id: get_variant_id(variant_name),
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CS",
       suits: variant_suits[suit_num],
+      clueStarved: true,
     });
   });
 
@@ -1051,6 +1070,7 @@ function getClueStarvedVariants(): Variant[] {
           convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
           ":CS",
         suits: [...variant_suits[suit_num - 1], suit_name],
+        clueStarved: true,
       });
     });
   });
@@ -1067,6 +1087,7 @@ function getCowAndPigVariants(): Variant[] {
       id: get_variant_id(variant_name),
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CP",
       suits: variant_suits[suit_num],
+      cowPig: true,
     });
   });
   return variants;
@@ -1081,6 +1102,7 @@ function getDuckVariants(): Variant[] {
       id: get_variant_id(variant_name),
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":Du",
       suits: variant_suits[suit_num],
+      duck: true,
     });
   });
 
@@ -1097,6 +1119,7 @@ function getThrowItInAHoleVariants(): Variant[] {
       id: get_variant_id(variant_name),
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":TH",
       suits: variant_suits[suit_num],
+      throwItInHole: true,
     });
   });
   suits.forEach((suit, suit_name) => {
@@ -1119,6 +1142,7 @@ function getThrowItInAHoleVariants(): Variant[] {
           convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
           ":TH",
         suits: [...variant_suits[suit_num - 1], suit_name],
+        throwItInHole: true,
       });
     });
   });
@@ -1189,6 +1213,7 @@ function getUpOrDownVariants(): Variant[] {
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":UD",
       suits: variant_suits[suit_num],
       showSuitNames: true,
+      upOrDown: true,
     });
   });
   suits.forEach((suit, suit_name) => {
@@ -1211,6 +1236,7 @@ function getUpOrDownVariants(): Variant[] {
           ":UD",
         suits: [...variant_suits[suit_num - 1], suit_name],
         showSuitNames: true,
+        upOrDown: true,
       });
     });
   });
@@ -1241,6 +1267,7 @@ function getSynesthesiaVariants(): Variant[] {
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":Sy",
       suits: variant_suits[suit_num],
       clueRanks: [],
+      synesthesia: true,
     });
   });
   suits.forEach((suit, suit_name) => {
@@ -1268,6 +1295,7 @@ function getSynesthesiaVariants(): Variant[] {
           ":Sy",
         suits: [...variant_suits[suit_num - 1], suit_name],
         clueRanks: [],
+        synesthesia: true,
       });
     });
   });
@@ -1285,6 +1313,7 @@ function getCriticalFoursVariants(): Variant[] {
       id: get_variant_id(variant_name),
       strId: convertSuitsToStrId(variant_suits[suit_num]) + ":C4",
       suits: variant_suits[suit_num],
+      criticalFours: true,
     });
   });
   suits.forEach((suit, suit_name) => {
@@ -1307,6 +1336,7 @@ function getCriticalFoursVariants(): Variant[] {
           convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
           ":C4",
         suits: [...variant_suits[suit_num - 1], suit_name],
+        criticalFours: true,
       });
     });
   });
@@ -1360,6 +1390,14 @@ function convertSuitsToStrId(suit_names: string[]): string {
   return suit_names.map((name) => suits.get(name)!.id).join("+");
 }
 
+function suitsById(): Map<string, Suit> {
+  const result = new Map();
+  for (const suit of suits_array) {
+    result.set(suit.id, suit);
+  }
+  return result;
+}
+
 function checkStrId(): boolean {
   const vars = new Map();
   for (const v of variants) {
@@ -1374,8 +1412,167 @@ function checkStrId(): boolean {
       return true;
     }
     vars.set(v.strId, v.name);
+    // Check that the id is correct
+    const reconstructed = parseStrId(v.strId);
+    reconstructed.name = v.name;
+    reconstructed.id = v.id;
+    if (!isEqual(reconstructed, v)) {
+      console.log(`Variant ${v.strId} is misparsed:`, v, reconstructed);
+      return true;
+    }
   }
   return false;
+}
+
+function parseStrId(strId: string): Variant {
+  const [full_suits_str, ...var_modifiers] = strId.split(":");
+  const suit_names = full_suits_str.split("+").map((suit_id_with_modifiers) => {
+    const [suit_id, ...suit_modifiers] = suit_id_with_modifiers.split("/");
+    let suit_name = suits_by_id.get(suit_id)!.name;
+    for (const sm of suit_modifiers) {
+      if (sm == "R") {
+        suit_name += SUIT_REVERSED_SUFFIX;
+      } else {
+        throw new Error(`Unknown suit modifier "/${sm}" in ${strId}`);
+      }
+    }
+    return suit_name;
+  });
+  const variant: Variant = {
+    name: "",
+    id: 0,
+    suits: suit_names,
+    strId,
+  };
+  for (const suit_id_with_modifiers of full_suits_str.split("+")) {
+    const [suit_id, ...suit_modifiers] = suit_id_with_modifiers.split("/");
+    if (suits_by_id.get(suit_id)!.showSuitName) {
+      variant.showSuitNames = true;
+    }
+  }
+  for (const vm of var_modifiers) {
+    switch (vm) {
+      case "R1":
+      case "R5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialAllClueColors = true;
+        break;
+      case "P1":
+      case "P5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialAllClueRanks = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "W1":
+      case "W5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialNoClueColors = true;
+        break;
+      case "B1":
+      case "B5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialNoClueRanks = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "O1":
+      case "O5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialAllClueColors = true;
+        variant.specialAllClueRanks = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "N1":
+      case "N5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialNoClueColors = true;
+        variant.specialNoClueRanks = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "M1":
+      case "M5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialAllClueColors = true;
+        variant.specialNoClueRanks = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "L1":
+      case "L5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialNoClueColors = true;
+        variant.specialAllClueRanks = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "D1":
+      case "D5":
+        variant.specialRank = parseInt(vm[1]);
+        variant.specialDeceptive = true;
+        variant.clueRanks = [1, 2, 3, 4, 5].filter(
+          (item) => item !== variant.specialRank,
+        );
+        break;
+      case "CB":
+        variant.colorCluesTouchNothing = true;
+        break;
+      case "NB":
+        variant.rankCluesTouchNothing = true;
+        break;
+      case "TB":
+        variant.colorCluesTouchNothing = true;
+        variant.rankCluesTouchNothing = true;
+        break;
+      case "CM":
+        variant.clueColors = [];
+        break;
+      case "NM":
+        variant.clueRanks = [];
+        break;
+      case "AC":
+        variant.alternatingClues = true;
+        break;
+      case "CS":
+        variant.clueStarved = true;
+        break;
+      case "CP":
+        variant.cowPig = true;
+        break;
+      case "Du":
+        variant.duck = true;
+        break;
+      case "TH":
+        variant.throwItInHole = true;
+        break;
+      case "UD":
+        variant.upOrDown = true;
+        variant.showSuitNames = true;
+        break;
+      case "Sy":
+        variant.synesthesia = true;
+        variant.clueRanks = [];
+        break;
+      case "C4":
+        variant.criticalFours = true;
+        break;
+      case "OE":
+        variant.oddsAndEvens = true;
+        variant.clueRanks = [1, 2];
+        break;
+      default:
+        throw new Error(`Unknown variant modifier ":${vm}" in ${strId}`);
+    }
+  }
+  return variant;
 }
 
 function checkForMissingVariants(): boolean {

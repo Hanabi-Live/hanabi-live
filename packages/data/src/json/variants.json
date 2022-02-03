@@ -26827,6 +26827,7 @@
       "Rainbow",
       "White"
     ],
+    "showSuitNames": true,
     "strId": "Or+P2+G2+Bk+Ra+Wh"
   },
   {
@@ -27108,7 +27109,8 @@
       "Blue",
       "Purple",
       "Teal"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues (5 Suits)",
@@ -27120,7 +27122,8 @@
       "Green",
       "Blue",
       "Purple"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues (4 Suits)",
@@ -27131,7 +27134,8 @@
       "Yellow",
       "Green",
       "Blue"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues (3 Suits)",
@@ -27141,7 +27145,8 @@
       "Red",
       "Green",
       "Blue"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Black (6 Suits)",
@@ -27154,7 +27159,8 @@
       "Blue",
       "Purple",
       "Black"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Black (5 Suits)",
@@ -27166,7 +27172,8 @@
       "Green",
       "Blue",
       "Black"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Rainbow (6 Suits)",
@@ -27179,7 +27186,8 @@
       "Blue",
       "Purple",
       "Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Rainbow (5 Suits)",
@@ -27191,7 +27199,8 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Rainbow (4 Suits)",
@@ -27202,7 +27211,8 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Rainbow (3 Suits)",
@@ -27212,7 +27222,8 @@
       "Red",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Pink (6 Suits)",
@@ -27225,7 +27236,8 @@
       "Blue",
       "Purple",
       "Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Pink (5 Suits)",
@@ -27237,7 +27249,8 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Pink (4 Suits)",
@@ -27248,7 +27261,8 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Pink (3 Suits)",
@@ -27258,7 +27272,8 @@
       "Red",
       "Blue",
       "Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & White (6 Suits)",
@@ -27271,7 +27286,8 @@
       "Blue",
       "Purple",
       "White"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & White (5 Suits)",
@@ -27283,7 +27299,8 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & White (4 Suits)",
@@ -27294,7 +27311,8 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & White (3 Suits)",
@@ -27304,7 +27322,8 @@
       "Red",
       "Blue",
       "White"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Brown (6 Suits)",
@@ -27317,7 +27336,8 @@
       "Blue",
       "Purple",
       "Brown"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Brown (5 Suits)",
@@ -27329,7 +27349,8 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Brown (4 Suits)",
@@ -27340,7 +27361,8 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Brown (3 Suits)",
@@ -27350,7 +27372,8 @@
       "Red",
       "Blue",
       "Brown"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Omni (6 Suits)",
@@ -27363,7 +27386,8 @@
       "Blue",
       "Purple",
       "Omni"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Omni (5 Suits)",
@@ -27375,7 +27399,8 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Omni (4 Suits)",
@@ -27386,7 +27411,8 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Omni (3 Suits)",
@@ -27396,7 +27422,8 @@
       "Red",
       "Blue",
       "Omni"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Null (6 Suits)",
@@ -27409,7 +27436,8 @@
       "Blue",
       "Purple",
       "Null"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Null (5 Suits)",
@@ -27421,7 +27449,8 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Null (4 Suits)",
@@ -27432,7 +27461,8 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Null (3 Suits)",
@@ -27442,7 +27472,8 @@
       "Red",
       "Blue",
       "Null"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Muddy Rainbow (6 Suits)",
@@ -27455,7 +27486,8 @@
       "Blue",
       "Purple",
       "Muddy Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Muddy Rainbow (5 Suits)",
@@ -27467,7 +27499,8 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Muddy Rainbow (4 Suits)",
@@ -27478,7 +27511,8 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Muddy Rainbow (3 Suits)",
@@ -27488,7 +27522,8 @@
       "Red",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Light Pink (6 Suits)",
@@ -27501,7 +27536,8 @@
       "Blue",
       "Purple",
       "Light Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Light Pink (5 Suits)",
@@ -27513,7 +27549,8 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Light Pink (4 Suits)",
@@ -27524,7 +27561,8 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Light Pink (3 Suits)",
@@ -27534,7 +27572,8 @@
       "Red",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Prism (6 Suits)",
@@ -27547,7 +27586,8 @@
       "Blue",
       "Purple",
       "Prism"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Prism (5 Suits)",
@@ -27559,7 +27599,8 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Prism (4 Suits)",
@@ -27570,7 +27611,8 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Prism (3 Suits)",
@@ -27580,7 +27622,8 @@
       "Red",
       "Blue",
       "Prism"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Rainbow (6 Suits)",
@@ -27593,7 +27636,8 @@
       "Blue",
       "Purple",
       "Dark Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Rainbow (5 Suits)",
@@ -27605,7 +27649,8 @@
       "Green",
       "Blue",
       "Dark Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Pink (6 Suits)",
@@ -27618,7 +27663,8 @@
       "Blue",
       "Purple",
       "Dark Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Pink (5 Suits)",
@@ -27630,7 +27676,8 @@
       "Green",
       "Blue",
       "Dark Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Gray (6 Suits)",
@@ -27643,7 +27690,8 @@
       "Blue",
       "Purple",
       "Gray"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Gray (5 Suits)",
@@ -27655,7 +27703,8 @@
       "Green",
       "Blue",
       "Gray"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Brown (6 Suits)",
@@ -27668,7 +27717,8 @@
       "Blue",
       "Purple",
       "Dark Brown"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Brown (5 Suits)",
@@ -27680,7 +27730,8 @@
       "Green",
       "Blue",
       "Dark Brown"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Omni (6 Suits)",
@@ -27693,7 +27744,8 @@
       "Blue",
       "Purple",
       "Dark Omni"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Omni (5 Suits)",
@@ -27705,7 +27757,8 @@
       "Green",
       "Blue",
       "Dark Omni"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Null (6 Suits)",
@@ -27718,7 +27771,8 @@
       "Blue",
       "Purple",
       "Dark Null"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Null (5 Suits)",
@@ -27730,7 +27784,8 @@
       "Green",
       "Blue",
       "Dark Null"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Cocoa Rainbow (6 Suits)",
@@ -27743,7 +27798,8 @@
       "Blue",
       "Purple",
       "Cocoa Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Cocoa Rainbow (5 Suits)",
@@ -27755,7 +27811,8 @@
       "Green",
       "Blue",
       "Cocoa Rainbow"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Gray Pink (6 Suits)",
@@ -27768,7 +27825,8 @@
       "Blue",
       "Purple",
       "Gray Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Gray Pink (5 Suits)",
@@ -27780,7 +27838,8 @@
       "Green",
       "Blue",
       "Gray Pink"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Prism (6 Suits)",
@@ -27793,7 +27852,8 @@
       "Blue",
       "Purple",
       "Dark Prism"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Alternating Clues & Dark Prism (5 Suits)",
@@ -27805,7 +27865,8 @@
       "Green",
       "Blue",
       "Dark Prism"
-    ]
+    ],
+    "alternatingClues": true
   },
   {
     "name": "Clue Starved (6 Suits)",
@@ -27818,7 +27879,8 @@
       "Blue",
       "Purple",
       "Teal"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved (5 Suits)",
@@ -27830,7 +27892,8 @@
       "Green",
       "Blue",
       "Purple"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Rainbow (6 Suits)",
@@ -27843,7 +27906,8 @@
       "Blue",
       "Purple",
       "Rainbow"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Rainbow (5 Suits)",
@@ -27855,7 +27919,8 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Pink (6 Suits)",
@@ -27868,7 +27933,8 @@
       "Blue",
       "Purple",
       "Pink"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Pink (5 Suits)",
@@ -27880,7 +27946,8 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & White (6 Suits)",
@@ -27893,7 +27960,8 @@
       "Blue",
       "Purple",
       "White"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & White (5 Suits)",
@@ -27905,7 +27973,8 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Brown (6 Suits)",
@@ -27918,7 +27987,8 @@
       "Blue",
       "Purple",
       "Brown"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Brown (5 Suits)",
@@ -27930,7 +28000,8 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Omni (6 Suits)",
@@ -27943,7 +28014,8 @@
       "Blue",
       "Purple",
       "Omni"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Omni (5 Suits)",
@@ -27955,7 +28027,8 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Null (6 Suits)",
@@ -27968,7 +28041,8 @@
       "Blue",
       "Purple",
       "Null"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Null (5 Suits)",
@@ -27980,7 +28054,8 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Muddy Rainbow (6 Suits)",
@@ -27993,7 +28068,8 @@
       "Blue",
       "Purple",
       "Muddy Rainbow"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Muddy Rainbow (5 Suits)",
@@ -28005,7 +28081,8 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Light Pink (6 Suits)",
@@ -28018,7 +28095,8 @@
       "Blue",
       "Purple",
       "Light Pink"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Light Pink (5 Suits)",
@@ -28030,7 +28108,8 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Prism (6 Suits)",
@@ -28043,7 +28122,8 @@
       "Blue",
       "Purple",
       "Prism"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Clue Starved & Prism (5 Suits)",
@@ -28055,7 +28135,8 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "clueStarved": true
   },
   {
     "name": "Cow & Pig (6 Suits)",
@@ -28068,7 +28149,8 @@
       "Blue",
       "Purple",
       "Teal"
-    ]
+    ],
+    "cowPig": true
   },
   {
     "name": "Cow & Pig (5 Suits)",
@@ -28080,7 +28162,8 @@
       "Green",
       "Blue",
       "Purple"
-    ]
+    ],
+    "cowPig": true
   },
   {
     "name": "Cow & Pig (4 Suits)",
@@ -28091,7 +28174,8 @@
       "Yellow",
       "Green",
       "Blue"
-    ]
+    ],
+    "cowPig": true
   },
   {
     "name": "Cow & Pig (3 Suits)",
@@ -28101,7 +28185,8 @@
       "Red",
       "Green",
       "Blue"
-    ]
+    ],
+    "cowPig": true
   },
   {
     "name": "Duck (6 Suits)",
@@ -28114,7 +28199,8 @@
       "Blue",
       "Purple",
       "Teal"
-    ]
+    ],
+    "duck": true
   },
   {
     "name": "Duck (5 Suits)",
@@ -28126,7 +28212,8 @@
       "Green",
       "Blue",
       "Purple"
-    ]
+    ],
+    "duck": true
   },
   {
     "name": "Duck (4 Suits)",
@@ -28137,7 +28224,8 @@
       "Yellow",
       "Green",
       "Blue"
-    ]
+    ],
+    "duck": true
   },
   {
     "name": "Duck (3 Suits)",
@@ -28147,7 +28235,8 @@
       "Red",
       "Green",
       "Blue"
-    ]
+    ],
+    "duck": true
   },
   {
     "name": "Throw It in a Hole (6 Suits)",
@@ -28160,7 +28249,8 @@
       "Blue",
       "Purple",
       "Teal"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole (5 Suits)",
@@ -28172,7 +28262,8 @@
       "Green",
       "Blue",
       "Purple"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole (4 Suits)",
@@ -28183,7 +28274,8 @@
       "Yellow",
       "Green",
       "Blue"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Rainbow (6 Suits)",
@@ -28196,7 +28288,8 @@
       "Blue",
       "Purple",
       "Rainbow"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Rainbow (5 Suits)",
@@ -28208,7 +28301,8 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Rainbow (4 Suits)",
@@ -28219,7 +28313,8 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Pink (6 Suits)",
@@ -28232,7 +28327,8 @@
       "Blue",
       "Purple",
       "Pink"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Pink (5 Suits)",
@@ -28244,7 +28340,8 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Pink (4 Suits)",
@@ -28255,7 +28352,8 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & White (6 Suits)",
@@ -28268,7 +28366,8 @@
       "Blue",
       "Purple",
       "White"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & White (5 Suits)",
@@ -28280,7 +28379,8 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & White (4 Suits)",
@@ -28291,7 +28391,8 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Brown (6 Suits)",
@@ -28304,7 +28405,8 @@
       "Blue",
       "Purple",
       "Brown"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Brown (5 Suits)",
@@ -28316,7 +28418,8 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Brown (4 Suits)",
@@ -28327,7 +28430,8 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Omni (6 Suits)",
@@ -28340,7 +28444,8 @@
       "Blue",
       "Purple",
       "Omni"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Omni (5 Suits)",
@@ -28352,7 +28457,8 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Omni (4 Suits)",
@@ -28363,7 +28469,8 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Null (6 Suits)",
@@ -28376,7 +28483,8 @@
       "Blue",
       "Purple",
       "Null"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Null (5 Suits)",
@@ -28388,7 +28496,8 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Null (4 Suits)",
@@ -28399,7 +28508,8 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Muddy Rainbow (6 Suits)",
@@ -28412,7 +28522,8 @@
       "Blue",
       "Purple",
       "Muddy Rainbow"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Muddy Rainbow (5 Suits)",
@@ -28424,7 +28535,8 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Muddy Rainbow (4 Suits)",
@@ -28435,7 +28547,8 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Light Pink (6 Suits)",
@@ -28448,7 +28561,8 @@
       "Blue",
       "Purple",
       "Light Pink"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Light Pink (5 Suits)",
@@ -28460,7 +28574,8 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Light Pink (4 Suits)",
@@ -28471,7 +28586,8 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Prism (6 Suits)",
@@ -28484,7 +28600,8 @@
       "Blue",
       "Purple",
       "Prism"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Prism (5 Suits)",
@@ -28496,7 +28613,8 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Throw It in a Hole & Prism (4 Suits)",
@@ -28507,7 +28625,8 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "throwItInHole": true
   },
   {
     "name": "Reversed (6 Suits)",
@@ -28805,7 +28924,8 @@
       "Purple",
       "Teal"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down (5 Suits)",
@@ -28818,7 +28938,8 @@
       "Blue",
       "Purple"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Rainbow (6 Suits)",
@@ -28832,7 +28953,8 @@
       "Purple",
       "Rainbow"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Rainbow (5 Suits)",
@@ -28845,7 +28967,8 @@
       "Blue",
       "Rainbow"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Pink (6 Suits)",
@@ -28859,7 +28982,8 @@
       "Purple",
       "Pink"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Pink (5 Suits)",
@@ -28872,7 +28996,8 @@
       "Blue",
       "Pink"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & White (6 Suits)",
@@ -28886,7 +29011,8 @@
       "Purple",
       "White"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & White (5 Suits)",
@@ -28899,7 +29025,8 @@
       "Blue",
       "White"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Brown (6 Suits)",
@@ -28913,7 +29040,8 @@
       "Purple",
       "Brown"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Brown (5 Suits)",
@@ -28926,7 +29054,8 @@
       "Blue",
       "Brown"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Omni (6 Suits)",
@@ -28940,7 +29069,8 @@
       "Purple",
       "Omni"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Omni (5 Suits)",
@@ -28953,7 +29083,8 @@
       "Blue",
       "Omni"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Null (6 Suits)",
@@ -28967,7 +29098,8 @@
       "Purple",
       "Null"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Null (5 Suits)",
@@ -28980,7 +29112,8 @@
       "Blue",
       "Null"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Muddy Rainbow (6 Suits)",
@@ -28994,7 +29127,8 @@
       "Purple",
       "Muddy Rainbow"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Muddy Rainbow (5 Suits)",
@@ -29007,7 +29141,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Light Pink (6 Suits)",
@@ -29021,7 +29156,8 @@
       "Purple",
       "Light Pink"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Light Pink (5 Suits)",
@@ -29034,7 +29170,8 @@
       "Blue",
       "Light Pink"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Prism (6 Suits)",
@@ -29048,7 +29185,8 @@
       "Purple",
       "Prism"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Up or Down & Prism (5 Suits)",
@@ -29061,7 +29199,8 @@
       "Blue",
       "Prism"
     ],
-    "showSuitNames": true
+    "showSuitNames": true,
+    "upOrDown": true
   },
   {
     "name": "Synesthesia (6 Suits)",
@@ -29075,7 +29214,8 @@
       "Purple",
       "Teal"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia (5 Suits)",
@@ -29088,7 +29228,8 @@
       "Blue",
       "Purple"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia (4 Suits)",
@@ -29100,7 +29241,8 @@
       "Green",
       "Blue"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia (3 Suits)",
@@ -29111,7 +29253,8 @@
       "Green",
       "Blue"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Black (6 Suits)",
@@ -29125,7 +29268,8 @@
       "Purple",
       "Black"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Black (5 Suits)",
@@ -29138,7 +29282,8 @@
       "Blue",
       "Black"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Black (4 Suits)",
@@ -29150,7 +29295,8 @@
       "Blue",
       "Black"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Rainbow (6 Suits)",
@@ -29164,7 +29310,8 @@
       "Purple",
       "Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Rainbow (5 Suits)",
@@ -29177,7 +29324,8 @@
       "Blue",
       "Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Rainbow (4 Suits)",
@@ -29189,7 +29337,8 @@
       "Blue",
       "Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Rainbow (3 Suits)",
@@ -29200,7 +29349,8 @@
       "Blue",
       "Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & White (6 Suits)",
@@ -29214,7 +29364,8 @@
       "Purple",
       "White"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & White (5 Suits)",
@@ -29227,7 +29378,8 @@
       "Blue",
       "White"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & White (4 Suits)",
@@ -29239,7 +29391,8 @@
       "Blue",
       "White"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & White (3 Suits)",
@@ -29250,7 +29403,8 @@
       "Blue",
       "White"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Brown (6 Suits)",
@@ -29264,7 +29418,8 @@
       "Purple",
       "Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Brown (5 Suits)",
@@ -29277,7 +29432,8 @@
       "Blue",
       "Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Brown (4 Suits)",
@@ -29289,7 +29445,8 @@
       "Blue",
       "Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Brown (3 Suits)",
@@ -29300,7 +29457,8 @@
       "Blue",
       "Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Null (6 Suits)",
@@ -29314,7 +29472,8 @@
       "Purple",
       "Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Null (5 Suits)",
@@ -29327,7 +29486,8 @@
       "Blue",
       "Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Null (4 Suits)",
@@ -29339,7 +29499,8 @@
       "Blue",
       "Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Null (3 Suits)",
@@ -29350,7 +29511,8 @@
       "Blue",
       "Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Rainbow (6 Suits)",
@@ -29364,7 +29526,8 @@
       "Purple",
       "Dark Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Rainbow (5 Suits)",
@@ -29377,7 +29540,8 @@
       "Blue",
       "Dark Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Rainbow (4 Suits)",
@@ -29389,7 +29553,8 @@
       "Blue",
       "Dark Rainbow"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Gray (6 Suits)",
@@ -29403,7 +29568,8 @@
       "Purple",
       "Gray"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Gray (5 Suits)",
@@ -29416,7 +29582,8 @@
       "Blue",
       "Gray"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Gray (4 Suits)",
@@ -29428,7 +29595,8 @@
       "Blue",
       "Gray"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Brown (6 Suits)",
@@ -29442,7 +29610,8 @@
       "Purple",
       "Dark Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Brown (5 Suits)",
@@ -29455,7 +29624,8 @@
       "Blue",
       "Dark Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Brown (4 Suits)",
@@ -29467,7 +29637,8 @@
       "Blue",
       "Dark Brown"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Null (6 Suits)",
@@ -29481,7 +29652,8 @@
       "Purple",
       "Dark Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Null (5 Suits)",
@@ -29494,7 +29666,8 @@
       "Blue",
       "Dark Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Synesthesia & Dark Null (4 Suits)",
@@ -29506,7 +29679,8 @@
       "Blue",
       "Dark Null"
     ],
-    "clueRanks": []
+    "clueRanks": [],
+    "synesthesia": true
   },
   {
     "name": "Critical Fours (6 Suits)",
@@ -29519,7 +29693,8 @@
       "Blue",
       "Purple",
       "Teal"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours (5 Suits)",
@@ -29531,7 +29706,8 @@
       "Green",
       "Blue",
       "Purple"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Rainbow (6 Suits)",
@@ -29544,7 +29720,8 @@
       "Blue",
       "Purple",
       "Rainbow"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Rainbow (5 Suits)",
@@ -29556,7 +29733,8 @@
       "Green",
       "Blue",
       "Rainbow"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Pink (6 Suits)",
@@ -29569,7 +29747,8 @@
       "Blue",
       "Purple",
       "Pink"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Pink (5 Suits)",
@@ -29581,7 +29760,8 @@
       "Green",
       "Blue",
       "Pink"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & White (6 Suits)",
@@ -29594,7 +29774,8 @@
       "Blue",
       "Purple",
       "White"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & White (5 Suits)",
@@ -29606,7 +29787,8 @@
       "Green",
       "Blue",
       "White"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Brown (6 Suits)",
@@ -29619,7 +29801,8 @@
       "Blue",
       "Purple",
       "Brown"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Brown (5 Suits)",
@@ -29631,7 +29814,8 @@
       "Green",
       "Blue",
       "Brown"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Omni (6 Suits)",
@@ -29644,7 +29828,8 @@
       "Blue",
       "Purple",
       "Omni"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Omni (5 Suits)",
@@ -29656,7 +29841,8 @@
       "Green",
       "Blue",
       "Omni"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Null (6 Suits)",
@@ -29669,7 +29855,8 @@
       "Blue",
       "Purple",
       "Null"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Null (5 Suits)",
@@ -29681,7 +29868,8 @@
       "Green",
       "Blue",
       "Null"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Muddy Rainbow (6 Suits)",
@@ -29694,7 +29882,8 @@
       "Blue",
       "Purple",
       "Muddy Rainbow"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Muddy Rainbow (5 Suits)",
@@ -29706,7 +29895,8 @@
       "Green",
       "Blue",
       "Muddy Rainbow"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Light Pink (6 Suits)",
@@ -29719,7 +29909,8 @@
       "Blue",
       "Purple",
       "Light Pink"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Light Pink (5 Suits)",
@@ -29731,7 +29922,8 @@
       "Green",
       "Blue",
       "Light Pink"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Prism (6 Suits)",
@@ -29744,7 +29936,8 @@
       "Blue",
       "Purple",
       "Prism"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Critical Fours & Prism (5 Suits)",
@@ -29756,7 +29949,8 @@
       "Green",
       "Blue",
       "Prism"
-    ]
+    ],
+    "criticalFours": true
   },
   {
     "name": "Odds and Evens (6 Suits)",
