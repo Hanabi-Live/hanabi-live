@@ -6,6 +6,7 @@ const SUIT_REVERSED_SUFFIX = " Reversed";
 type Variant = {
   name: string;
   id: number;
+  strId?: string;
   suits: string[];
   specialRank?: number;
   specialAllClueColors?: boolean;
@@ -23,7 +24,7 @@ type Variant = {
 
 type Suit = {
   name: string;
-  id?: string;
+  id: string;
   abbreviation?: string;
   fill?: string;
   pip?: string;
@@ -110,6 +111,12 @@ variants.push(
   ...getOddsAndEvensVariants(),
 );
 
+if (checkStrId()) {
+  showErrorAndExit(
+    'Skipping the creation of a new "variant.json" file since strId were invalid',
+  );
+}
+
 if (checkForMissingVariants()) {
   showErrorAndExit(
     'Skipping the creation of a new "variant.json" file since there were missing variants.',
@@ -194,9 +201,7 @@ function verifySuits() {
     }
   }
   if (suits_array.length !== ids.size) {
-    showErrorAndExit(
-      `Suit ids conflict? ${suits_array.length} != ${ids.size}`,
-    );
+    showErrorAndExit(`Suit ids conflict? ${suits_array.length} != ${ids.size}`);
   }
 }
 
@@ -281,24 +286,28 @@ function createBasicVariants(): Variant[] {
   variants.push({
     name: "No Variant",
     id: get_variant_id("No Variant"),
+    strId: convertSuitsToStrId(variant_suits[5]),
     suits: variant_suits[5],
   });
 
   variants.push({
     name: "6 Suits",
     id: get_variant_id("6 Suits"),
+    strId: convertSuitsToStrId(variant_suits[6]),
     suits: variant_suits[6],
   });
 
   variants.push({
     name: "4 Suits",
     id: get_variant_id("4 Suits"),
+    strId: convertSuitsToStrId(variant_suits[4]),
     suits: variant_suits[4],
   });
 
   variants.push({
     name: "3 Suits",
     id: get_variant_id("3 Suits"),
+    strId: convertSuitsToStrId(variant_suits[3]),
     suits: variant_suits[3],
   });
 
@@ -326,6 +335,7 @@ function getVariantsForEachSuit(): Variant[] {
         variants.push({
           name: variant_name,
           id: get_variant_id(variant_name),
+          strId: convertSuitsToStrId(computed_variant_suits),
           suits: computed_variant_suits,
         });
       });
@@ -392,6 +402,7 @@ function getVariantsForEachSpecialSuitCombination(): Variant[] {
         variants.push({
           name: variant_name,
           id: get_variant_id(variant_name),
+          strId: convertSuitsToStrId(computed_variant_suits),
           suits: computed_variant_suits,
         });
       });
@@ -425,6 +436,8 @@ function getVariantsForSpecialRanks(): Variant[] {
         return;
       }
 
+      const suffix = `:${suit.id[0]}${special_rank}`;
+
       // First, create "Rainbow-Ones (6 Suits)", etc.
       [6, 5, 4, 3].forEach((suit_num) => {
         const hyphenated_suit_name = suit_name.replace(" ", "-");
@@ -439,6 +452,7 @@ function getVariantsForSpecialRanks(): Variant[] {
         const variant: Variant = {
           name: variant_name,
           id: get_variant_id(variant_name),
+          strId: convertSuitsToStrId(computed_variant_suits) + suffix,
           suits: computed_variant_suits,
           specialRank: special_rank,
         };
@@ -482,6 +496,7 @@ function getVariantsForSpecialRanks(): Variant[] {
           const variant: Variant = {
             name: variant_name,
             id: get_variant_id(variant_name),
+            strId: convertSuitsToStrId(computed_variant_suits) + suffix,
             suits: computed_variant_suits,
             specialRank: special_rank,
           };
@@ -508,6 +523,7 @@ function getVariantsForSpecialRanks(): Variant[] {
 
     // Add variants for Deceptive-Ones and Deceptive-Fives
     const special_name = `Deceptive-${word}`;
+    const suffix = `:D${special_rank}`;
 
     // First, create "Deceptive-Ones (6 Suits)", etc.
     [6, 5, 4, 3].forEach((suit_num) => {
@@ -516,6 +532,7 @@ function getVariantsForSpecialRanks(): Variant[] {
       const variant: Variant = {
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId: convertSuitsToStrId(computed_variant_suits) + suffix,
         suits: computed_variant_suits,
         specialRank: special_rank,
         specialDeceptive: true,
@@ -550,6 +567,7 @@ function getVariantsForSpecialRanks(): Variant[] {
         const variant: Variant = {
           name: variant_name,
           id: get_variant_id(variant_name),
+          strId: convertSuitsToStrId(computed_variant_suits) + suffix,
           suits: computed_variant_suits,
           specialRank: special_rank,
           specialDeceptive: true,
@@ -586,12 +604,14 @@ function getAmbiguousVariants(): Variant[] {
   variants.push({
     name: "Ambiguous (6 Suits)",
     id: get_variant_id("Ambiguous (6 Suits)"),
+    strId: convertSuitsToStrId(ambiguous_suits[6]),
     suits: ambiguous_suits[6],
     showSuitNames: true,
   });
   variants.push({
     name: "Ambiguous (4 Suits)",
     id: get_variant_id("Ambiguous (4 Suits)"),
+    strId: convertSuitsToStrId(ambiguous_suits[4]),
     suits: ambiguous_suits[4],
     showSuitNames: true,
   });
@@ -621,6 +641,7 @@ function getAmbiguousVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId: convertSuitsToStrId([...ambiguous_suits[suit_num], suit_name]),
         suits: [...ambiguous_suits[suit_num], suit_name],
         showSuitNames: true,
       });
@@ -647,12 +668,14 @@ function getVeryAmbiguousVariants(): Variant[] {
   variants.push({
     name: "Very Ambiguous (6 Suits)",
     id: get_variant_id("Very Ambiguous (6 Suits)"),
+    strId: convertSuitsToStrId(very_ambiguous_suits[6]),
     suits: very_ambiguous_suits[6],
     showSuitNames: true,
   });
   variants.push({
     name: "Very Ambiguous (3 Suits)",
     id: get_variant_id("Very Ambiguous (3 Suits)"),
+    strId: convertSuitsToStrId(very_ambiguous_suits[3]),
     suits: very_ambiguous_suits[3],
     showSuitNames: true,
   });
@@ -679,6 +702,7 @@ function getVeryAmbiguousVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId([...very_ambiguous_suits[3], suit_name]),
       suits: [...very_ambiguous_suits[3], suit_name],
       showSuitNames: true,
     });
@@ -701,18 +725,21 @@ function getExtremelyAmbiguousVariants(): Variant[] {
   variants.push({
     name: "Extremely Ambiguous (6 Suits)",
     id: get_variant_id("Extremely Ambiguous (6 Suits)"),
+    strId: convertSuitsToStrId(extremely_ambiguous_suits[6]),
     suits: extremely_ambiguous_suits[6],
     showSuitNames: true,
   });
   variants.push({
     name: "Extremely Ambiguous (5 Suits)",
     id: get_variant_id("Extremely Ambiguous (5 Suits)"),
+    strId: convertSuitsToStrId(extremely_ambiguous_suits[5]),
     suits: extremely_ambiguous_suits[5],
     showSuitNames: true,
   });
   variants.push({
     name: "Extremely Ambiguous (4 Suits)",
     id: get_variant_id("Extremely Ambiguous (4 Suits)"),
+    strId: convertSuitsToStrId(extremely_ambiguous_suits[4]),
     suits: extremely_ambiguous_suits[4],
     showSuitNames: true,
   });
@@ -742,6 +769,10 @@ function getExtremelyAmbiguousVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId: convertSuitsToStrId([
+          ...extremely_ambiguous_suits[suit_num],
+          suit_name,
+        ]),
         suits: [...extremely_ambiguous_suits[suit_num], suit_name],
         showSuitNames: true,
       });
@@ -773,18 +804,21 @@ function getDualColorsVariants(): Variant[] {
   variants.push({
     name: "Dual-Color (6 Suits)",
     id: get_variant_id("Dual-Color (6 Suits)"),
+    strId: convertSuitsToStrId(dual_color_suits[6]),
     suits: dual_color_suits[6],
     showSuitNames: true,
   });
   variants.push({
     name: "Dual-Color (5 Suits)",
     id: get_variant_id("Dual-Color (5 Suits)"),
+    strId: convertSuitsToStrId(dual_color_suits[5]),
     suits: dual_color_suits[5],
     showSuitNames: true,
   });
   variants.push({
     name: "Dual-Color (3 Suits)",
     id: get_variant_id("Dual-Color (3 Suits)"),
+    strId: convertSuitsToStrId(dual_color_suits[3]),
     suits: dual_color_suits[3],
     showSuitNames: true,
   });
@@ -806,6 +840,7 @@ function getDualColorsVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId: convertSuitsToStrId([...dual_color_suits[suit_num], suit_name]),
         suits: [...dual_color_suits[suit_num], suit_name],
         showSuitNames: true,
       });
@@ -824,6 +859,9 @@ function getSpecialCraftedMixedVariants(): Variant[] {
     id: get_variant_id("Special Mix (5 Suits)"),
     suits: ["Black", "Rainbow", "Pink", "White", "Brown"],
   });
+  variants[variants.length - 1].strId = convertSuitsToStrId(
+    variants[variants.length - 1].suits,
+  );
 
   // Add "Special Mix (6 Suits)"
   variants.push({
@@ -831,6 +869,9 @@ function getSpecialCraftedMixedVariants(): Variant[] {
     id: get_variant_id("Special Mix (6 Suits)"),
     suits: ["Black", "Rainbow", "Pink", "White", "Brown", "Null"],
   });
+  variants[variants.length - 1].strId = convertSuitsToStrId(
+    variants[variants.length - 1].suits,
+  );
 
   // Add "Ambiguous Mix"
   variants.push({
@@ -839,6 +880,9 @@ function getSpecialCraftedMixedVariants(): Variant[] {
     suits: ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"],
     showSuitNames: true,
   });
+  variants[variants.length - 1].strId = convertSuitsToStrId(
+    variants[variants.length - 1].suits,
+  );
 
   // Add "Dual-Color Mix"
   variants.push({
@@ -846,6 +890,9 @@ function getSpecialCraftedMixedVariants(): Variant[] {
     id: get_variant_id("Dual-Color Mix"),
     suits: ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White"],
   });
+  variants[variants.length - 1].strId = convertSuitsToStrId(
+    variants[variants.length - 1].suits,
+  );
 
   // Add "Ambiguous & Dual-Color"
   variants.push({
@@ -861,6 +908,9 @@ function getSpecialCraftedMixedVariants(): Variant[] {
     ],
     showSuitNames: true,
   });
+  variants[variants.length - 1].strId = convertSuitsToStrId(
+    variants[variants.length - 1].suits,
+  );
 
   return variants;
 }
@@ -872,6 +922,7 @@ function getBlindVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CB",
       suits: variant_suits[suit_num],
       colorCluesTouchNothing: true,
     });
@@ -882,6 +933,7 @@ function getBlindVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":NB",
       suits: variant_suits[suit_num],
       rankCluesTouchNothing: true,
     });
@@ -892,6 +944,7 @@ function getBlindVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":TB",
       suits: variant_suits[suit_num],
       colorCluesTouchNothing: true,
       rankCluesTouchNothing: true,
@@ -908,6 +961,7 @@ function getMuteVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CM",
       suits: variant_suits[suit_num],
       clueColors: [],
     });
@@ -918,6 +972,7 @@ function getMuteVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":NM",
       suits: variant_suits[suit_num],
       clueRanks: [],
     });
@@ -933,6 +988,7 @@ function getAlternatingCluesVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":AC",
       suits: variant_suits[suit_num],
     });
   });
@@ -953,6 +1009,9 @@ function getAlternatingCluesVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":AC",
         suits: [...variant_suits[suit_num - 1], suit_name],
       });
     });
@@ -968,6 +1027,7 @@ function getClueStarvedVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CS",
       suits: variant_suits[suit_num],
     });
   });
@@ -987,6 +1047,9 @@ function getClueStarvedVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":CS",
         suits: [...variant_suits[suit_num - 1], suit_name],
       });
     });
@@ -1002,6 +1065,7 @@ function getCowAndPigVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CP",
       suits: variant_suits[suit_num],
     });
   });
@@ -1015,6 +1079,7 @@ function getDuckVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":Du",
       suits: variant_suits[suit_num],
     });
   });
@@ -1030,6 +1095,7 @@ function getThrowItInAHoleVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":TH",
       suits: variant_suits[suit_num],
     });
   });
@@ -1049,6 +1115,9 @@ function getThrowItInAHoleVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":TH",
         suits: [...variant_suits[suit_num - 1], suit_name],
       });
     });
@@ -1066,6 +1135,7 @@ function getReversedVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + "/R",
       suits: reversed_variant_suits,
     });
   });
@@ -1097,6 +1167,9 @@ function getReversedVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          "/R",
         suits: computed_variant_suits,
       });
     });
@@ -1113,6 +1186,7 @@ function getUpOrDownVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":UD",
       suits: variant_suits[suit_num],
       showSuitNames: true,
     });
@@ -1132,6 +1206,9 @@ function getUpOrDownVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":UD",
         suits: [...variant_suits[suit_num - 1], suit_name],
         showSuitNames: true,
       });
@@ -1161,6 +1238,7 @@ function getSynesthesiaVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":Sy",
       suits: variant_suits[suit_num],
       clueRanks: [],
     });
@@ -1185,6 +1263,9 @@ function getSynesthesiaVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":Sy",
         suits: [...variant_suits[suit_num - 1], suit_name],
         clueRanks: [],
       });
@@ -1202,6 +1283,7 @@ function getCriticalFoursVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":C4",
       suits: variant_suits[suit_num],
     });
   });
@@ -1221,6 +1303,9 @@ function getCriticalFoursVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":C4",
         suits: [...variant_suits[suit_num - 1], suit_name],
       });
     });
@@ -1236,6 +1321,7 @@ function getOddsAndEvensVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
+      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":OE",
       suits: variant_suits[suit_num],
       clueRanks: [1, 2],
       oddsAndEvens: true,
@@ -1258,6 +1344,9 @@ function getOddsAndEvensVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
+        strId:
+          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
+          ":OE",
         suits: [...variant_suits[suit_num - 1], suit_name],
         clueRanks: [1, 2],
         oddsAndEvens: true,
@@ -1265,6 +1354,28 @@ function getOddsAndEvensVariants(): Variant[] {
     });
   });
   return variants;
+}
+
+function convertSuitsToStrId(suit_names: string[]): string {
+  return suit_names.map((name) => suits.get(name)!.id).join("+");
+}
+
+function checkStrId(): boolean {
+  const vars = new Map();
+  for (const v of variants) {
+    if (!v.strId) {
+      console.log(`Variant "${v.name}" misses strId`);
+      return true;
+    }
+    if (vars.has(v.strId)) {
+      console.log(
+        `Variants "${v.name}" and "${vars.get(v.strId)}" share id ${v.strId}`,
+      );
+      return true;
+    }
+    vars.set(v.strId, v.name);
+  }
+  return false;
 }
 
 function checkForMissingVariants(): boolean {
