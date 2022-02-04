@@ -47,10 +47,10 @@ function main() {
 
   // Start to build all of the variants
   const variants: VariantJSON[] = [];
-  const current_variant_id = -1;
+  const currentVariantID = -1;
 
   // Create variant suits
-  const variant_suits = createVariantSuits();
+  const variantSuits = createVariantSuits();
 
   variants.push(
     ...createBasicVariants(),
@@ -219,6 +219,29 @@ function setOldVariantMaps(variants: VariantJSON[]) {
   }
 }
 
+/**
+ * Create an array containing the suits for the "3 Suits" variant, the "4 Suits" variant, and so on.
+ */
+function createVariantSuits(): string[][] {
+  const variantSuits: string[][] = [];
+
+  variantSuits[1] = ["Red"];
+  variantSuits[2] = [...variantSuits[1], "Blue"];
+
+  // Green is inserted before Blue to keep the colors in "rainbow" order
+  variantSuits[3] = [...variantSuits[2]];
+  variantSuits[3].splice(1, 0, "Green");
+
+  // Yellow is inserted before Green to keep the colors in "rainbow" order
+  variantSuits[4] = [...variantSuits[3]];
+  variantSuits[4].splice(1, 0, "Yellow");
+
+  variantSuits[5] = [...variantSuits[4], "Purple"];
+  variantSuits[6] = [...variantSuits[5], "Teal"];
+
+  return variantSuits;
+}
+
 // ???
 
 function get_variant_id(variant_name: string): number {
@@ -254,21 +277,6 @@ function getSpecialProperty(property: Property): SpecialProperty {
 }
 
 // Helper functions
-
-function createVariantSuits(): string[][] {
-  const variant_suits: string[][] = [];
-  variant_suits[1] = ["Red"];
-  variant_suits[2] = [...variant_suits[1], "Blue"];
-  variant_suits[3] = [...variant_suits[2]];
-  // Green is inserted before Blue to keep the colors in "rainbow" order
-  variant_suits[3].splice(1, 0, "Green");
-  variant_suits[4] = [...variant_suits[3]];
-  // Yellow is inserted before Green to keep the colors in "rainbow" order
-  variant_suits[4].splice(1, 0, "Yellow");
-  variant_suits[5] = [...variant_suits[4], "Purple"];
-  variant_suits[6] = [...variant_suits[5], "Teal"];
-  return variant_suits;
-}
 
 function createBasicVariants(): VariantJSON[] {
   const variants: VariantJSON[] = [];
