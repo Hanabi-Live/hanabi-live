@@ -81,7 +81,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	if add {
 		// Validate that this user is not already their friend
 		if _, ok := friendMap[friend.ID]; ok {
-			msg := "\"" + d.Name + "\" is already your friend."
+			msg = "\"" + d.Name + "\" is already your friend."
 			chatServerSendPM(s, msg, d.Room)
 			return
 		}
@@ -110,7 +110,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	} else {
 		// Validate that this user is their friend
 		if _, ok := friendMap[friend.ID]; !ok {
-			msg := "\"" + d.Name + "\" is not your friend, so you cannot unfriend them."
+			msg = "\"" + d.Name + "\" is not your friend, so you cannot unfriend them."
 			chatServerSendPM(s, msg, d.Room)
 			return
 		}
