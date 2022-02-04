@@ -2,7 +2,7 @@
 export interface VariantJSON {
   name: string;
   id: number;
-  strID: string;
+  newID: string;
   suits: string[];
   clueColors?: string[];
   clueRanks?: number[];
