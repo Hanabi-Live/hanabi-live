@@ -8,8 +8,6 @@ import (
 var (
 	// Used to store all of the functions that handle each command
 	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table))
-	// Stores commands that receive a personal message
-	chatPrivateCommands []string
 )
 
 func chatCommandInit() {
@@ -45,11 +43,6 @@ func chatCommandInit() {
 	chatCommandMap["random"] = chatRandom
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
-
-	chatCommandMap["mem"] = chatMemory
-	chatPrivateCommands = append(chatPrivateCommands, "mem")
-	chatCommandMap["memory"] = chatMemory
-	chatPrivateCommands = append(chatPrivateCommands, "memory")
 
 	// Undocumented info commands (that work only in the lobby)
 	chatCommandMap["here"] = chatHere
@@ -127,29 +120,20 @@ func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
 func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t *Table) bool {
 	// Parse the message
 	var command string
-	var arguments []string
-	if ok, cmd, args := chatParseCommand(d.Msg); !ok {
+	if ok, cmd, _ := chatParseCommand(d.Msg); !ok {
 		// it's a plain text
 		return true
 	} else {
 		command = cmd
-		arguments = args
 	}
 
 	msg := "The chat command of \"/" + command + "\" is not valid. Use \"/help\" to get a list of available commands."
 
 	// Search for existing handler
-	chatCommandFunction, ok := chatCommandMap[command]
+	_, ok := chatCommandMap[command]
 	if !ok {
 		// There's no handler, inform via PM
 		chatServerSendPM(s, msg, d.Room)
-		return false
-	}
-
-	// Search for commands that reply via PM
-	if stringInSlice(command, chatPrivateCommands) {
-		d.Args = arguments
-		chatCommandFunction(ctx, s, d, t)
 		return false
 	}
 
