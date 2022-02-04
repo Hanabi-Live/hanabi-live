@@ -1,7 +1,9 @@
 import fs from "fs";
 import { isEqual } from "lodash";
 import path from "path";
+import { SuitJSON } from "./types/SuitJSON";
 import { VariantJSON } from "./types/VariantJSON";
+import { error } from "./util";
 
 // TODO ???
 type SpecialProperty =
@@ -25,24 +27,25 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = [
   "Dark Prism", // This is the same as Dark Rainbow,
 ];
 
+const oldVariantsNameToIDMap = new Map<string, number>();
+const oldVariantsIDToNameMap = new Map<number, string>();
+
 main();
 
 function main() {
-  // Read the old json files
+  // Read the old JSON files
   const [suitsPath, variantsPath, textPath] = getPaths();
-  const oldVariantsArray = readVariantsFromJson(variantsPath);
-  const suitsArray = readSuitsFromJson(suitsPath);
-  verifySuits();
 
-  // Create some maps for the old variants
-  const oldVariantsNameToIDMap = new Map<string, number>();
-  const oldVariantsIDToNameMap = new Map<number, string>();
+  const oldSuits = getJSONAndParse(suitsPath) as SuitJSON[];
+  validateSuits(oldSuits);
 
-  setOldVariantsIDToNameMap();
+  const oldVariants = getJSONAndParse(variantsPath) as VariantJSON[];
+  validateVariants(oldVariants);
+  setOldVariantMaps(oldVariants);
 
   // Convert the suits array to a map and add default values
   const suits = convertSuitsArrayToMap();
-  const suits_by_id = suitsById();
+  const suitsByID = suitsById();
 
   // Start to build all of the variants
   const variants: VariantJSON[] = [];
@@ -76,13 +79,13 @@ function main() {
   );
 
   if (checkStrId()) {
-    showErrorAndExit(
+    error(
       'Skipping the creation of a new "variant.json" file since strId were invalid',
     );
   }
 
   if (checkForMissingVariants()) {
-    showErrorAndExit(
+    error(
       'Skipping the creation of a new "variant.json" file since there were missing variants.',
     );
   }
@@ -107,6 +110,80 @@ function getPaths(): string[] {
   return [suitsPath, variantsPath, textPath];
 }
 
+function getJSONAndParse(jsonPath: string) {
+  const data = fs.readFileSync(jsonPath, "utf-8");
+  return JSON.parse(data) as unknown;
+}
+
+function validateSuits(suits: SuitJSON[]) {
+  const suitNames = new Set<string>();
+  const suitIDs = new Set<string>();
+
+  for (const suit of suits) {
+    if (suit.name === undefined || suit.name === "") {
+      error('One of the suits in the "suits.json" file does not have a name.');
+    }
+
+    if (suitNames.has(suit.name)) {
+      error(`Suit "${suit.name}" has a duplicate name.`);
+    }
+
+    suitNames.add(suit.name);
+
+    if (suit.id === undefined || suit.id === "") {
+      error(`Suit "${suit.name}" does not have an ID.`);
+    }
+
+    if (suitIDs.has(suit.id)) {
+      error(`Suit "${suit.name}" has a duplicate ID.`);
+    }
+
+    suitIDs.add(suit.id);
+  }
+}
+
+function validateVariants(variants: VariantJSON[]) {
+  const variantNames = new Set<string>();
+  const variantIDs = new Set<number>();
+
+  for (const variant of variants) {
+    if (variant.name === undefined || variant.name === "") {
+      error(
+        'One of the variants in the "variants.json" file does not have a name.',
+      );
+    }
+
+    if (variantNames.has(variant.name)) {
+      error(`Variant "${variant.name}" has a duplicate name.`);
+    }
+
+    variantNames.add(variant.name);
+
+    if (variant.id === undefined) {
+      error(`Variant "${variant.name}" does not have an ID.`);
+    }
+
+    if (variant.id < 0) {
+      error(`Variant "${variant.name}" has a negative ID.`);
+    }
+
+    if (variantIDs.has(variant.id)) {
+      error(`Variant "${variant.name}" has a duplicate ID.`);
+    }
+
+    variantIDs.add(variant.id);
+  }
+}
+
+function setOldVariantMaps(variants: VariantJSON[]) {
+  for (const variant of variants) {
+    oldVariantsNameToIDMap.set(variant.name, variant.id);
+    oldVariantsIDToNameMap.set(variant.id, variant.name);
+  }
+}
+
+// ???
+
 function get_variant_id(variant_name: string): number {
   // First, prefer the old (existing) variant ID, if present
   const id = oldVariantsNameToIDMap.get(variant_name);
@@ -126,11 +203,6 @@ function get_variant_id(variant_name: string): number {
   return current_variant_id;
 }
 
-function showErrorAndExit(message: string) {
-  console.error(message);
-  process.exit(1);
-}
-
 function getSpecialProperty(property: Property): SpecialProperty {
   switch (property) {
     case "allClueColors":
@@ -145,62 +217,6 @@ function getSpecialProperty(property: Property): SpecialProperty {
 }
 
 // Helper functions
-
-function readVariantsFromJson(path: string): VariantJSON[] {
-  const data = fs.readFileSync(path, "utf-8");
-  return JSON.parse(data);
-}
-
-function readSuitsFromJson(path: string): Suit[] {
-  const data = fs.readFileSync(path, "utf-8");
-  return JSON.parse(data);
-}
-
-function verifySuits() {
-  const ids = new Set();
-  for (const suit of suitsArray) {
-    if (suit.id) {
-      ids.add(suit.id);
-    } else {
-      showErrorAndExit(`Suit ${suit.name} without id`);
-    }
-  }
-  if (suitsArray.length !== ids.size) {
-    showErrorAndExit(`Suit ids conflict? ${suitsArray.length} != ${ids.size}`);
-  }
-}
-
-function setOldVariantsIDToNameMap() {
-  oldVariantsArray.forEach((variant) => {
-    if (variant.name === undefined) {
-      showErrorAndExit(
-        'One of the variants in the "variants.json" file does not have a name.',
-      );
-    }
-
-    if (variant.id === undefined) {
-      showErrorAndExit(
-        `The variant of "${variant.name}" does not have an "id" field.`,
-      );
-    }
-
-    if (oldVariantsNameToIDMap.get(variant.name) !== undefined) {
-      showErrorAndExit(
-        `The old "variants.json" file has a duplicate variant name of: ${variant.name}`,
-      );
-    }
-
-    oldVariantsNameToIDMap.set(variant.name, variant.id);
-
-    if (oldVariantsIDToNameMap.get(variant.id) !== undefined) {
-      showErrorAndExit(
-        `The old "variants.json" file has a duplicate ID of: ${variant.id}`,
-      );
-    }
-
-    oldVariantsIDToNameMap.set(variant.id, variant.name);
-  });
-}
 
 function convertSuitsArrayToMap(): Map<string, Suit> {
   const suits = new Map<string, Suit>();
@@ -231,6 +247,7 @@ function convertSuitsArrayToMap(): Map<string, Suit> {
     }
     suits.set(suit.name, suit);
   });
+
   return suits;
 }
 
