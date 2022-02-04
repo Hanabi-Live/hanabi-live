@@ -1,3 +1,5 @@
+/* eslint-disable import/no-relative-packages */
+
 // This script will populate the card images directory with the SVG conversions
 // This is meant to be run from NodeJS
 // e.g. "node createAllCards.js"
@@ -5,20 +7,13 @@
 // Imports
 import fs from "fs";
 import path from "path";
-import { VARIANTS } from "../src/game/data/gameData";
-import { START_CARD_RANK, UNKNOWN_CARD_RANK } from "../src/game/types/constants";
+import { START_CARD_RANK, UNKNOWN_CARD_RANK } from "../../data/src/constants";
+import { getVariant } from "../../data/src/gameData";
 import drawCards from "../src/game/ui/drawCards";
 import * as drawCardsNode from "./drawCardsNode";
 
 // Get the specified variant
-const variantName = "Brown (6 Suits)";
-const variant = VARIANTS.get(variantName);
-if (variant === undefined) {
-  console.error(
-    `Failed to get the ${variantName} variant from the variants map.`,
-  );
-  process.exit(1);
-}
+const variant = getVariant("Brown (6 Suits)");
 
 const cardImages = drawCards(
   variant,
@@ -47,7 +42,7 @@ for (const [key, value] of allCardImages.entries()) {
   // e.g. "card-Blue-1.svg" --> "b1.svg"
   const match = /^(\w+)-(\w+)-(\d)$/.exec(key);
   let fileName: string |undefined;
-  if (match) {
+  if (match !== null) {
     const type = match[1];
     const suit = match[2];
     const rankString = match[3];
@@ -63,7 +58,7 @@ for (const [key, value] of allCardImages.entries()) {
           fileName = rank.toString();
         }
       } else {
-        let suitAbbrev = variant.suits.find(s => s.name === suit)?.abbreviation.toLowerCase();
+        const suitAbbrev = variant.suits.find(s => s.name === suit)?.abbreviation.toLowerCase();
         fileName = rank === UNKNOWN_CARD_RANK ? suitAbbrev : `${suitAbbrev}${rank}`;
       }
     }
@@ -78,7 +73,7 @@ for (const [key, value] of allCardImages.entries()) {
   try {
     fs.writeFileSync(filePath, (value as unknown) as string, "utf8");
   } catch (err) {
-    throw new Error(`Failed to write the SVG file "${filePath}": ${err}`); // eslint-disable-line
+    throw new Error(`Failed to write the SVG file "${filePath}": ${err}`);
   }
   console.log("Wrote file:", filePath);
 }
