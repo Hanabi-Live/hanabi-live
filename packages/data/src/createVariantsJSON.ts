@@ -29,23 +29,21 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = [
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
+const suitsNameMap = new Map<string, SuitJSON>();
+const suitsIDMap = new Map<string, SuitJSON>();
 
 main();
 
 function main() {
-  // Read the old JSON files
   const [suitsPath, variantsPath, textPath] = getPaths();
 
-  const oldSuits = getJSONAndParse(suitsPath) as SuitJSON[];
-  validateSuits(oldSuits);
+  const suits = getJSONAndParse(suitsPath) as SuitJSON[];
+  validateSuits(suits);
+  setSuitMaps(suits);
 
   const oldVariants = getJSONAndParse(variantsPath) as VariantJSON[];
   validateVariants(oldVariants);
   setOldVariantMaps(oldVariants);
-
-  // Convert the suits array to a map and add default values
-  const suits = convertSuitsArrayToMap();
-  const suitsByID = suitsById();
 
   // Start to build all of the variants
   const variants: VariantJSON[] = [];
@@ -142,6 +140,45 @@ function validateSuits(suits: SuitJSON[]) {
   }
 }
 
+function setSuitMaps(suits: SuitJSON[]) {
+  for (const suit of suits) {
+    if (suit.oneOfEach === undefined) {
+      suit.oneOfEach = false;
+    }
+
+    if (suit.allClueColors === undefined) {
+      suit.allClueColors = false;
+    }
+
+    if (suit.allClueRanks === undefined) {
+      suit.allClueRanks = false;
+    }
+
+    if (suit.noClueColors === undefined) {
+      suit.noClueColors = false;
+    }
+
+    if (suit.noClueRanks === undefined) {
+      suit.noClueRanks = false;
+    }
+
+    if (suit.prism === undefined) {
+      suit.prism = false;
+    }
+
+    if (suit.showSuitName === undefined) {
+      suit.showSuitName = false;
+    }
+
+    if (suit.createVariants === undefined) {
+      suit.createVariants = false;
+    }
+
+    suitsNameMap.set(suit.name, suit);
+    suitsIDMap.set(suit.id, suit);
+  }
+}
+
 function validateVariants(variants: VariantJSON[]) {
   const variantNames = new Set<string>();
   const variantIDs = new Set<number>();
@@ -217,39 +254,6 @@ function getSpecialProperty(property: Property): SpecialProperty {
 }
 
 // Helper functions
-
-function convertSuitsArrayToMap(): Map<string, Suit> {
-  const suits = new Map<string, Suit>();
-  suitsArray.forEach((suit) => {
-    if (suit.createVariants === undefined) {
-      suit.createVariants = false;
-    }
-    if (suit.oneOfEach === undefined) {
-      suit.oneOfEach = false;
-    }
-    if (suit.allClueColors === undefined) {
-      suit.allClueColors = false;
-    }
-    if (suit.allClueRanks === undefined) {
-      suit.allClueRanks = false;
-    }
-    if (suit.noClueColors === undefined) {
-      suit.noClueColors = false;
-    }
-    if (suit.noClueRanks === undefined) {
-      suit.noClueRanks = false;
-    }
-    if (suit.prism === undefined) {
-      suit.prism = false;
-    }
-    if (suit.showSuitName === undefined) {
-      suit.showSuitName = false;
-    }
-    suits.set(suit.name, suit);
-  });
-
-  return suits;
-}
 
 function createVariantSuits(): string[][] {
   const variant_suits: string[][] = [];
@@ -1360,14 +1364,6 @@ function getOddsAndEvensVariants(): VariantJSON[] {
 
 function convertSuitsToStrId(suit_names: string[]): string {
   return suit_names.map((name) => suits.get(name)!.id).join("+");
-}
-
-function suitsById(): Map<string, Suit> {
-  const result = new Map();
-  for (const suit of suitsArray) {
-    result.set(suit.id, suit);
-  }
-  return result;
 }
 
 function checkStrId(): boolean {

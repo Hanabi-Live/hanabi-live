@@ -7,8 +7,9 @@ export interface SuitJSON {
   displayName?: string;
   fill?: string;
   fillColors?: string[];
-  oneOfEach?: boolean;
   pip?: string;
+
+  oneOfEach?: boolean;
 
   allClueColors?: boolean;
   noClueColors?: boolean;
