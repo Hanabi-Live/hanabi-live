@@ -263,14 +263,6 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		if variant.OddsAndEvens {
-			// Clue ranks in Odds And Evens can only be 1 or 2
-			if clue.Value == 1 {
-				return intInSlice(card.Rank, oddClues)
-			}
-			return intInSlice(card.Rank, evenClues)
-		}
-
 		if variant.SpecialRank == card.Rank {
 			if variant.SpecialAllClueRanks {
 				return true
