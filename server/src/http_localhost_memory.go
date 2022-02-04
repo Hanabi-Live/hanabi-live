@@ -14,7 +14,7 @@ func httpLocalhostMemory(c *gin.Context) {
 }
 
 func getMemoryReport() string {
-	// Based on https://golangcode.com/print-the-current-memory-usage/
+	// Based on: https://golangcode.com/print-the-current-memory-usage/
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
