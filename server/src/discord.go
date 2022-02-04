@@ -115,7 +115,8 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	ctx := NewMiscContext("discordMessageCreate")
 
 	// Ignore private commands
-	_, command, _ := chatParseCommand(m.Content)
+	var command string
+	command, _ = chatParseCommand(m.Content)
 	if stringInSlice(command, discordPrivateCommands) {
 		discordCheckCommand(ctx, m)
 		return
@@ -144,6 +145,14 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// (to replicate some lobby functionality to the Discord server more generally)
 	if m.ChannelID != discordChannelSyncWithLobby {
 		discordCheckCommand(ctx, m)
+		return
+	}
+
+	// We are in Discord lobby. Only allow one-line public responses
+	if response, ok := OneLiners[command]; !ok || response.Private {
+		// Delete the message
+		discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
+		discordSendPM(m.Author.ID, "You cannot use that command here.")
 		return
 	}
 
@@ -255,10 +264,10 @@ func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 		var command string
 		var args []string
 
-		if ok, c, a := chatParseCommand(line); !ok {
+		if cmd, a := chatParseCommand(line); cmd == "" {
 			continue
 		} else {
-			command = c
+			command = cmd
 			args = a
 		}
 

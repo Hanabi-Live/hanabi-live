@@ -2,97 +2,93 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
+	"path"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
-// /help
-func chatHelp(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "You can see the list of chat commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHAT_COMMANDS.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+type SimpleResponse struct {
+	Command  string
+	Response string
+	Alias    []string
+	Private  bool
+	IsHelp   bool
 }
 
-// /discord
-func chatDiscord(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Join the Discord server for the H-Group: https://discord.gg/FADvkJp"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+var OneLiners = make(map[string]SimpleResponse)
+var Helpers = make([]string, 0)
+
+func chatAddOneLineResponses() {
+	// Make a list of commands so far
+	commands := make([]string, 0)
+
+	for c := range chatCommandMap {
+		commands = append(commands, "/"+c)
+	}
+
+	// Load external one-line responses
+	source := path.Join(jsonPath, "chatCommands.json")
+	contents, _ := ioutil.ReadFile(source)
+
+	var responses []SimpleResponse
+	if err := json.Unmarshal(contents, &responses); err != nil {
+		logger.Error("chatInitializeOneLiners: Error during responses init.")
+	}
+
+	// General commands (that work both in the lobby and at a table)
+	for _, r := range responses {
+		OneLiners[r.Command] = r
+		chatCommandMap[r.Command] = chatOneLiner
+		commands = append(commands, "/"+r.Command)
+		if r.IsHelp {
+			Helpers = append(Helpers, r.Command)
+		}
+		for _, alias := range r.Alias {
+			OneLiners[alias] = r
+			chatCommandMap[alias] = chatOneLiner
+			if r.IsHelp {
+				Helpers = append(Helpers, r.Command)
+			}
+		}
+	}
+
+	// Add list of commands to helpers
+	sort.Strings(commands)
+	help := strings.Join(commands, ", ")
+	// replace hyphen with non breaking one
+	help = strings.Replace(help, "-", "&#8209;", -1)
+	for c, r := range OneLiners {
+		if r.IsHelp {
+			r.Response = "<br>List of commands:<br>" + help + "<br>" + r.Response
+			OneLiners[c] = r
+		}
+	}
 }
 
-// /rules
-func chatRules(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /new
-func chatNew(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the H-Group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: https://hanabi.github.io/docs/beginner/"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /doc
-func chatDoc(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "The strategy reference for the H-Group: https://hanabi.github.io/docs/reference/"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /learn
-func chatLevels(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "The level summary for the H-Group: https://hanabi.github.io/docs/learning-path/#level-summary"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /features
-func chatFeatures(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /ptt
-func chatPTT(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Please read the Push-to-Talk History: https://github.com/hanabi/hanabi.github.io/blob/main/misc/push-to-talk.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /sin
-func chatSin(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context."
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /bga
-func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the H-Group, then read this: https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /efficiency
-func chatEfficiency(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Info on efficiency calculation: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+// Function for all one-line responses
+func chatOneLiner(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
+	r := OneLiners[cmd]
+	if r.Private {
+		chatServerSendPM(s, r.Response, d.Room)
+	} else {
+		chatServerSend(ctx, r.Response, d.Room, d.NoTablesLock)
+	}
 }
 
 // /replay [databaseID] [turn]
-func chatReplay(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatReplay(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	msg := getReplayURL(d.Args)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /random [min] [max]
-func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	// We expect something like "/random 2" or "/random 1 2"
 	if len(d.Args) != 1 && len(d.Args) != 2 {
 		msg := "The format of the /random command is: /random [min] [max]"
@@ -154,7 +150,7 @@ func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /uptime
-func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	chatServerSend(ctx, getCameOnline(), d.Room, d.NoTablesLock)
 	var uptime string
 	if v, err := getUptime(); err != nil {
@@ -168,7 +164,7 @@ func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /timeleft
-func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
 		logger.Error("Failed to get the time left: " + err.Error())
