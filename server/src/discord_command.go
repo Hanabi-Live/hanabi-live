@@ -30,14 +30,6 @@ func discordCommandInit() {
 	discordCommandMap["undefined"] = discordCommandUndefined
 	discordCommandMap["rtfm"] = discordCommandRTFM
 
-	// Special commands for use in other channels
-	discordCommandMap["issue"] = discordCommandIssue
-	discordPrivateCommands = append(discordPrivateCommands, "issue")
-	discordCommandMap["mem"] = discordCommandMemory
-	discordPrivateCommands = append(discordPrivateCommands, "mem")
-	discordCommandMap["memory"] = discordCommandMemory
-	discordPrivateCommands = append(discordPrivateCommands, "memory")
-
 	// Duplicated commands (e.g. commands that also work in the lobby)
 	discordCommandMap["replay"] = discordCommandReplay
 	discordCommandMap["link"] = discordCommandReplay

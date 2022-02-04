@@ -20,9 +20,8 @@ var (
 	discordBotID                string
 	discordIsReady              = abool.New()
 
-	discordOwnerFullUsername = "Zamiel#8743"
-	discordPingCrew          = "Ping Crew"       // Set to empty to prevent from working
-	discordTrustedTeacher    = "Trusted Teacher" // Set to empty to prevent from working
+	discordPingCrew       = "Ping Crew"       // Set to empty to prevent from working
+	discordTrustedTeacher = "Trusted Teacher" // Set to empty to prevent from working
 )
 
 /*
@@ -222,11 +221,6 @@ func discordSendPM(recipient string, msg string) {
 		logger.Info("Failed to send \"" + msg + "\" to Discord as a PM: " + err.Error())
 		return
 	}
-}
-
-// Checks if the user is the Discord owner
-func discordIsUserTheDiscordOwner(user *discordgo.User) bool {
-	return user.Username+"#"+user.Discriminator == discordOwnerFullUsername
 }
 
 func discordGetNickname(discordID string) string {
