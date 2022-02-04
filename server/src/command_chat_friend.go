@@ -35,7 +35,7 @@ func friend(s *Session, d *CommandData, add bool) {
 		} else {
 			msg = "The format of the /unfriend command is: /unfriend [username]"
 		}
-		s.Warning(msg)
+		chatServerSendPM(s, msg, d.Room)
 		return
 	}
 
@@ -49,7 +49,8 @@ func friend(s *Session, d *CommandData, add bool) {
 		} else {
 			verb = "unfriend"
 		}
-		s.Warning("You cannot " + verb + " yourself.")
+		msg := "You cannot " + verb + " yourself."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	}
 
@@ -63,7 +64,8 @@ func friend(s *Session, d *CommandData, add bool) {
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
-		s.Warning("The username of \"" + d.Name + "\" does not exist in the database.")
+		msg := "The username of \"" + d.Name + "\" does not exist in the database."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	} else {
 		friend = v
@@ -79,7 +81,8 @@ func friend(s *Session, d *CommandData, add bool) {
 	if add {
 		// Validate that this user is not already their friend
 		if _, ok := friendMap[friend.ID]; ok {
-			s.Warning("\"" + d.Name + "\" is already your friend.")
+			msg := "\"" + d.Name + "\" is already your friend."
+			chatServerSendPM(s, msg, d.Room)
 			return
 		}
 
@@ -107,7 +110,8 @@ func friend(s *Session, d *CommandData, add bool) {
 	} else {
 		// Validate that this user is their friend
 		if _, ok := friendMap[friend.ID]; !ok {
-			s.Warning("\"" + d.Name + "\" is not your friend, so you cannot unfriend them.")
+			msg := "\"" + d.Name + "\" is not your friend, so you cannot unfriend them."
+			chatServerSendPM(s, msg, d.Room)
 			return
 		}
 

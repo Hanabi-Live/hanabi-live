@@ -71,7 +71,8 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	// Ensure that the tag exists
 	if !stringInSlice(d.Msg, tags) {
-		s.Warning("The tag of \"" + d.Msg + "\" does not exist on this game yet.")
+		msg := "The tag of \"" + d.Msg + "\" does not exist on this game yet."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	}
 

@@ -26,7 +26,8 @@ func commandChatPlayerInfo(ctx context.Context, s *Session, d *CommandData) {
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
-		s.Warning("The username of \"" + d.Name + "\" does not exist in the database.")
+		msg := "The username of \"" + d.Name + "\" does not exist in the database."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	} else {
 		user = v

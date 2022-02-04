@@ -39,7 +39,8 @@ func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are not sending a private message to themselves
 	normalizedUsername := normalizeString(d.Recipient)
 	if normalizedUsername == normalizeString(s.Username) {
-		s.Warning("You cannot send a private message to yourself.")
+		msg := "You cannot send a private message to yourself."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	}
 
@@ -53,7 +54,8 @@ func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 	if recipientSession == nil {
-		s.Warning("User \"" + d.Recipient + "\" is not currently online.")
+		msg := "User \"" + d.Recipient + "\" is not currently online."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	}
 

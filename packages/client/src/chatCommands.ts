@@ -12,11 +12,12 @@ const chatCommands = new Map<string, Callback>();
 export default chatCommands;
 
 // /friend [username]
-function friend(_room: string, args: string[]) {
+function friend(room: string, args: string[]) {
   // Validate that the format of the command is correct
   if (args.length < 1) {
-    modals.showWarning(
+    chat.addSelf(
       "The format of the /friend command is: <code>/friend Alice</code>",
+      room,
     );
     return;
   }
@@ -24,7 +25,7 @@ function friend(_room: string, args: string[]) {
   // Validate that we are not targeting ourselves
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
-    modals.showWarning("You cannot friend yourself.");
+    chat.addSelf("You cannot friend yourself.", room);
   }
 
   globals.conn!.send("chatFriend", {
@@ -53,8 +54,9 @@ chatCommands.set("friendslist", friends);
 function pm(room: string, args: string[]) {
   // Validate that the format of the command is correct
   if (args.length < 2) {
-    modals.showWarning(
+    chat.addSelf(
       "The format of a private message is: <code>/w Alice hello</code>",
+      room,
     );
     return;
   }
@@ -99,10 +101,11 @@ chatCommands.set("tell", pm);
 chatCommands.set("t", pm);
 
 // /setleader [username]
-function setLeader(_room: string, args: string[]) {
+function setLeader(room: string, args: string[]) {
   if (globals.tableID === -1) {
-    modals.showWarning(
+    chat.addSelf(
       "You are not currently at a table, so you cannot use that command.",
+      room,
     );
     return;
   }
@@ -121,10 +124,11 @@ chatCommands.set("changelead", setLeader);
 chatCommands.set("changeowner", setLeader);
 
 // /setvariant [variant]
-function setVariant(_room: string, args: string[]) {
+function setVariant(room: string, args: string[]) {
   if (globals.tableID === -1) {
-    modals.showWarning(
+    chat.addSelf(
       "You are not currently at a table, so you cannot use that command.",
+      room,
     );
     return;
   }
@@ -134,7 +138,7 @@ function setVariant(_room: string, args: string[]) {
   // Get the first match
   variantName = getVariantFromPartial(variantName);
   if (variantName === "") {
-    modals.showWarning(`The variant of "${args.join(" ")}" is not valid.`);
+    chat.addSelf(`The variant of "${args.join(" ")}" is not valid.`, room);
     return;
   }
 
@@ -154,10 +158,11 @@ chatCommands.set("changevariant", setVariant);
 chatCommands.set("cv", setVariant);
 
 // /tag [tag]
-chatCommands.set("tag", (_room: string, args: string[]) => {
+chatCommands.set("tag", (room: string, args: string[]) => {
   if (globals.tableID === -1) {
-    modals.showWarning(
+    chat.addSelf(
       "You are not currently at a table, so you cannot use that command.",
+      room,
     );
     return;
   }
@@ -170,10 +175,11 @@ chatCommands.set("tag", (_room: string, args: string[]) => {
 });
 
 // /tagdelete [tag]
-chatCommands.set("tagdelete", (_room: string, args: string[]) => {
+chatCommands.set("tagdelete", (room: string, args: string[]) => {
   if (globals.tableID === -1) {
-    modals.showWarning(
+    chat.addSelf(
       "You are not currently at a table, so you cannot use that command.",
+      room,
     );
     return;
   }
@@ -185,7 +191,7 @@ chatCommands.set("tagdelete", (_room: string, args: string[]) => {
   });
 });
 
-// /tagsearch
+// /tagSearch
 chatCommands.set("tagsearch", (room: string, args: string[]) => {
   const tag = args.join(" ");
 
@@ -195,7 +201,16 @@ chatCommands.set("tagsearch", (room: string, args: string[]) => {
   });
 });
 
-chatCommands.set("tagsdeleteall", () => {
+// /tagsDeleteAll
+chatCommands.set("tagsdeleteall", (room: string) => {
+  if (globals.tableID === -1) {
+    chat.addSelf(
+      "You are not currently at a table, so you cannot use that command.",
+      room,
+    );
+    return;
+  }
+
   globals.conn!.send("tagsDeleteAll", {
     tableID: globals.tableID,
   });
@@ -230,11 +245,12 @@ chatCommands.set("games", playerinfo);
 chatCommands.set("stats", playerinfo);
 
 // /unfriend [username]
-chatCommands.set("unfriend", (_room: string, args: string[]) => {
+chatCommands.set("unfriend", (room: string, args: string[]) => {
   // Validate that the format of the command is correct
   if (args.length < 1) {
-    modals.showWarning(
+    chat.addSelf(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
+      room,
     );
     return;
   }
@@ -242,7 +258,7 @@ chatCommands.set("unfriend", (_room: string, args: string[]) => {
   // Validate that we are not targeting ourselves
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
-    modals.showWarning("You cannot unfriend yourself.");
+    chat.addSelf("You cannot unfriend yourself.", room);
   }
 
   globals.conn!.send("chatUnfriend", {
@@ -254,15 +270,6 @@ chatCommands.set("unfriend", (_room: string, args: string[]) => {
 chatCommands.set("version", (room: string) => {
   const msg = `You are running version <strong>${globals.version}</strong> of the client.`;
   chat.addSelf(msg, room);
-});
-
-// /warning
-chatCommands.set("warning", (_room: string, args: string[]) => {
-  let warning = args.join(" ");
-  if (warning === "") {
-    warning = "This is a warning!";
-  }
-  modals.showWarning(warning);
 });
 
 // /copy
