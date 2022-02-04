@@ -8,6 +8,10 @@
     "dist"
   ],
   "devDependencies": {
+    "@types/lodash": "^4.14.178",
     "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }

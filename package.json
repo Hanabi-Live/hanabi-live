@@ -22,11 +22,9 @@
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
-    "@types/lodash.isequal": "^4.5.5",
     "isaacscript-lint": "^1.0.77",
     "isaacscript-tsconfig": "^1.1.8",
     "jest": "^27.4.7",
-    "lodash.isequal": "^4.5.0",
     "ts-jest": "^27.1.2",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",

@@ -1,155 +1,124 @@
-import path = require("path");
-import fs = require("fs");
-import isEqual = require("lodash.isequal");
+import fs from "fs";
+import { isEqual } from "lodash";
+import path from "path";
+import { VariantJSON } from "./types/VariantJSON";
 
-const SUIT_REVERSED_SUFFIX = " Reversed";
-
-type Variant = {
-  name: string;
-  id: number;
-  strId?: string;
-  suits: string[];
-  specialRank?: number;
-  specialAllClueColors?: boolean;
-  specialAllClueRanks?: boolean;
-  specialNoClueColors?: boolean;
-  specialNoClueRanks?: boolean;
-  specialDeceptive?: boolean;
-  colorCluesTouchNothing?: boolean;
-  rankCluesTouchNothing?: boolean;
-  showSuitNames?: boolean;
-  oddsAndEvens?: boolean;
-  clueColors?: string[];
-  clueRanks?: number[];
-  alternatingClues?: boolean;
-  clueStarved?: boolean;
-  duck?: boolean;
-  cowPig?: boolean;
-  throwItInHole?: boolean;
-  synesthesia?: boolean;
-  // This really belongs to a suit, but for now it's here
-  upOrDown?: boolean;
-  criticalFours?: boolean;
-};
-
-type Suit = {
-  name: string;
-  id: string;
-  abbreviation?: string;
-  fill?: string;
-  pip?: string;
-  clueColors?: string[];
-  fillColors?: string[];
-  createVariants?: boolean;
-  oneOfEach?: boolean;
-  allClueColors?: boolean;
-  allClueRanks?: boolean;
-  noClueColors?: boolean;
-  noClueRanks?: boolean;
-  prism?: boolean;
-  displayName?: string;
-  showSuitName?: boolean;
-};
-
-type Property =
-  | "allClueColors"
-  | "allClueRanks"
-  | "noClueColors"
-  | "noClueRanks";
-
+// TODO ???
 type SpecialProperty =
   | "specialAllClueColors"
   | "specialAllClueRanks"
   | "specialNoClueColors"
   | "specialNoClueRanks";
 
-const specialProperties: Property[] = [
+const SUIT_REVERSED_SUFFIX = " Reversed";
+
+const SUIT_SPECIAL_PROPERTIES = [
   "allClueColors",
-  "allClueRanks",
   "noClueColors",
+  "allClueRanks",
   "noClueRanks",
 ];
 
-const suits_that_cause_duplicated_variants_with_ambiguous = [
+const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = [
   "Rainbow",
   "Prism",
   "Dark Prism", // This is the same as Dark Rainbow,
 ];
 
-// Read the old json files
-const [suits_path, variants_path, text_path] = getPaths();
-const old_variants_array = readVariantsFromJson(variants_path);
-const suits_array = readSuitsFromJson(suits_path);
-verifySuits();
+main();
 
-// Create some maps for the old variants
-const old_variants_name_to_id_map = new Map<string, number>();
-const old_variants_id_to_name_map = new Map<number, string>();
+function main() {
+  // Read the old json files
+  const [suitsPath, variantsPath, textPath] = getPaths();
+  const oldVariantsArray = readVariantsFromJson(variantsPath);
+  const suitsArray = readSuitsFromJson(suitsPath);
+  verifySuits();
 
-setOldVariantsIDToNameMap();
+  // Create some maps for the old variants
+  const oldVariantsNameToIDMap = new Map<string, number>();
+  const oldVariantsIDToNameMap = new Map<number, string>();
 
-// Convert the suits array to a map and add default values
-const suits = convertSuitsArrayToMap();
-const suits_by_id = suitsById();
+  setOldVariantsIDToNameMap();
 
-// Start to build all of the variants
-const variants: Variant[] = [];
-let current_variant_id = -1;
+  // Convert the suits array to a map and add default values
+  const suits = convertSuitsArrayToMap();
+  const suits_by_id = suitsById();
 
-// Create variant suits
-const variant_suits = createVariantSuits();
+  // Start to build all of the variants
+  const variants: VariantJSON[] = [];
+  const current_variant_id = -1;
 
-variants.push(
-  ...createBasicVariants(),
-  ...getVariantsForEachSuit(),
-  ...getVariantsForEachSpecialSuitCombination(),
-  ...getVariantsForSpecialRanks(),
-  ...getAmbiguousVariants(),
-  ...getVeryAmbiguousVariants(),
-  ...getExtremelyAmbiguousVariants(),
-  ...getDualColorsVariants(),
-  ...getSpecialCraftedMixedVariants(),
-  ...getBlindVariants(),
-  ...getMuteVariants(),
-  ...getAlternatingCluesVariants(),
-  ...getClueStarvedVariants(),
-  ...getCowAndPigVariants(),
-  ...getDuckVariants(),
-  ...getThrowItInAHoleVariants(),
-  ...getReversedVariants(),
-  ...getUpOrDownVariants(),
-  ...getSynesthesiaVariants(),
-  ...getCriticalFoursVariants(),
-  ...getOddsAndEvensVariants(),
-);
+  // Create variant suits
+  const variant_suits = createVariantSuits();
 
-if (checkStrId()) {
-  showErrorAndExit(
-    'Skipping the creation of a new "variant.json" file since strId were invalid',
+  variants.push(
+    ...createBasicVariants(),
+    ...getVariantsForEachSuit(),
+    ...getVariantsForEachSpecialSuitCombination(),
+    ...getVariantsForSpecialRanks(),
+    ...getAmbiguousVariants(),
+    ...getVeryAmbiguousVariants(),
+    ...getExtremelyAmbiguousVariants(),
+    ...getDualColorsVariants(),
+    ...getSpecialCraftedMixedVariants(),
+    ...getBlindVariants(),
+    ...getMuteVariants(),
+    ...getAlternatingCluesVariants(),
+    ...getClueStarvedVariants(),
+    ...getCowAndPigVariants(),
+    ...getDuckVariants(),
+    ...getThrowItInAHoleVariants(),
+    ...getReversedVariants(),
+    ...getUpOrDownVariants(),
+    ...getSynesthesiaVariants(),
+    ...getCriticalFoursVariants(),
+    ...getOddsAndEvensVariants(),
   );
+
+  if (checkStrId()) {
+    showErrorAndExit(
+      'Skipping the creation of a new "variant.json" file since strId were invalid',
+    );
+  }
+
+  if (checkForMissingVariants()) {
+    showErrorAndExit(
+      'Skipping the creation of a new "variant.json" file since there were missing variants.',
+    );
+  }
+
+  createVariantJSONFile(variantsPath);
+  createVariantsTextFile(textPath);
 }
 
-if (checkForMissingVariants()) {
-  showErrorAndExit(
-    'Skipping the creation of a new "variant.json" file since there were missing variants.',
+function getPaths(): string[] {
+  const repoRootPath = path.join(__dirname, "..", "..");
+  const jsonDirectoryPath = path.join(
+    repoRootPath,
+    "packages",
+    "data",
+    "src",
+    "json",
   );
-}
+  const suitsPath = path.join(jsonDirectoryPath, "suits.json");
+  const variantsPath = path.join(jsonDirectoryPath, "variants.json");
+  const textPath = path.join(repoRootPath, "misc", "variants.txt");
 
-createVariantJSONFile(variants_path);
-createVariantsTextFile(text_path);
+  return [suitsPath, variantsPath, textPath];
+}
 
 function get_variant_id(variant_name: string): number {
   // First, prefer the old (existing) variant ID, if present
-  const id = old_variants_name_to_id_map.get(variant_name);
+  const id = oldVariantsNameToIDMap.get(variant_name);
   if (id !== undefined) {
     return id;
   }
 
   // Otherwise, find the lowest unused variant ID
-  let found = false;
+  const found = false;
   while (!found) {
     current_variant_id += 1;
-    const variant = old_variants_array.find((v) => v.id === current_variant_id);
+    const variant = oldVariantsArray.find((v) => v.id === current_variant_id);
     if (variant === undefined) {
       break;
     }
@@ -176,24 +145,8 @@ function getSpecialProperty(property: Property): SpecialProperty {
 }
 
 // Helper functions
-function getPaths(): string[] {
-  const dir_path = __dirname;
-  const repo_root_path = path.join(dir_path, "..", "..");
-  const json_path = path.join(
-    repo_root_path,
-    "packages",
-    "data",
-    "src",
-    "json",
-  );
-  const suits_path = path.join(json_path, "suits.json");
-  const variants_path = path.join(json_path, "variants.json");
-  const text_path = path.join(repo_root_path, "misc", "variants.txt");
 
-  return [suits_path, variants_path, text_path];
-}
-
-function readVariantsFromJson(path: string): Variant[] {
+function readVariantsFromJson(path: string): VariantJSON[] {
   const data = fs.readFileSync(path, "utf-8");
   return JSON.parse(data);
 }
@@ -205,20 +158,20 @@ function readSuitsFromJson(path: string): Suit[] {
 
 function verifySuits() {
   const ids = new Set();
-  for (const suit of suits_array) {
+  for (const suit of suitsArray) {
     if (suit.id) {
       ids.add(suit.id);
     } else {
       showErrorAndExit(`Suit ${suit.name} without id`);
     }
   }
-  if (suits_array.length !== ids.size) {
-    showErrorAndExit(`Suit ids conflict? ${suits_array.length} != ${ids.size}`);
+  if (suitsArray.length !== ids.size) {
+    showErrorAndExit(`Suit ids conflict? ${suitsArray.length} != ${ids.size}`);
   }
 }
 
 function setOldVariantsIDToNameMap() {
-  old_variants_array.forEach((variant) => {
+  oldVariantsArray.forEach((variant) => {
     if (variant.name === undefined) {
       showErrorAndExit(
         'One of the variants in the "variants.json" file does not have a name.',
@@ -227,31 +180,31 @@ function setOldVariantsIDToNameMap() {
 
     if (variant.id === undefined) {
       showErrorAndExit(
-        `The variant of "${variant["name"]}" does not have an "id" field.`,
+        `The variant of "${variant.name}" does not have an "id" field.`,
       );
     }
 
-    if (old_variants_name_to_id_map.get(variant.name) !== undefined) {
+    if (oldVariantsNameToIDMap.get(variant.name) !== undefined) {
       showErrorAndExit(
-        `The old "variants.json" file has a duplicate variant name of: ${variant["name"]}`,
+        `The old "variants.json" file has a duplicate variant name of: ${variant.name}`,
       );
     }
 
-    old_variants_name_to_id_map.set(variant.name, variant.id);
+    oldVariantsNameToIDMap.set(variant.name, variant.id);
 
-    if (old_variants_id_to_name_map.get(variant.id) !== undefined) {
+    if (oldVariantsIDToNameMap.get(variant.id) !== undefined) {
       showErrorAndExit(
-        `The old "variants.json" file has a duplicate ID of: ${variant["id"]}`,
+        `The old "variants.json" file has a duplicate ID of: ${variant.id}`,
       );
     }
 
-    old_variants_id_to_name_map.set(variant.id, variant.name);
+    oldVariantsIDToNameMap.set(variant.id, variant.name);
   });
 }
 
 function convertSuitsArrayToMap(): Map<string, Suit> {
   const suits = new Map<string, Suit>();
-  suits_array.forEach((suit) => {
+  suitsArray.forEach((suit) => {
     if (suit.createVariants === undefined) {
       suit.createVariants = false;
     }
@@ -296,8 +249,8 @@ function createVariantSuits(): string[][] {
   return variant_suits;
 }
 
-function createBasicVariants(): Variant[] {
-  const variants: Variant[] = [];
+function createBasicVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   variants.push({
     name: "No Variant",
     id: get_variant_id("No Variant"),
@@ -329,8 +282,8 @@ function createBasicVariants(): Variant[] {
   return variants;
 }
 
-function getVariantsForEachSuit(): Variant[] {
-  const variants: Variant[] = [];
+function getVariantsForEachSuit(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   suits.forEach((suit, suit_name) => {
     // We only want to create variants for certain suits
     // (e.g. "Red" does not get its own variants because it is a basic suit)
@@ -342,7 +295,7 @@ function getVariantsForEachSuit(): Variant[] {
           return;
         }
 
-        const variant_name = suit_name + " (" + suit_num.toString() + " Suits)";
+        const variant_name = `${suit_name} (${suit_num.toString()} Suits)`;
         const computed_variant_suits = [
           ...variant_suits[suit_num - 1],
           suit_name,
@@ -359,8 +312,8 @@ function getVariantsForEachSuit(): Variant[] {
   return variants;
 }
 
-function getVariantsForEachSpecialSuitCombination(): Variant[] {
-  const variants: Variant[] = [];
+function getVariantsForEachSpecialSuitCombination(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   const combination_map = new Map<string, boolean>();
   suits.forEach((suit, suit_name) => {
     if (!suit.createVariants) {
@@ -399,7 +352,7 @@ function getVariantsForEachSpecialSuitCombination(): Variant[] {
         // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
         // one-of-each suit
         if (
-          (suit_num == 4 || suit_num == 3) &&
+          (suit_num === 4 || suit_num === 3) &&
           (suit.oneOfEach || suit2.oneOfEach)
         ) {
           return;
@@ -426,8 +379,8 @@ function getVariantsForEachSpecialSuitCombination(): Variant[] {
   return variants;
 }
 
-function getVariantsForSpecialRanks(): Variant[] {
-  const variants: Variant[] = [];
+function getVariantsForSpecialRanks(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [1, 5].forEach((special_rank) => {
     let word = "";
     if (special_rank === 1) {
@@ -456,15 +409,9 @@ function getVariantsForSpecialRanks(): Variant[] {
       // First, create "Rainbow-Ones (6 Suits)", etc.
       [6, 5, 4, 3].forEach((suit_num) => {
         const hyphenated_suit_name = suit_name.replace(" ", "-");
-        const variant_name =
-          hyphenated_suit_name +
-          "-" +
-          word +
-          " (" +
-          suit_num.toString() +
-          " Suits)";
+        const variant_name = `${hyphenated_suit_name}-${word} (${suit_num.toString()} Suits)`;
         const computed_variant_suits = [...variant_suits[suit_num]];
-        const variant: Variant = {
+        const variant: VariantJSON = {
           name: variant_name,
           id: get_variant_id(variant_name),
           strId: convertSuitsToStrId(computed_variant_suits) + suffix,
@@ -472,7 +419,7 @@ function getVariantsForSpecialRanks(): Variant[] {
           specialRank: special_rank,
         };
 
-        specialProperties.forEach((special_property) => {
+        SUIT_SPECIAL_PROPERTIES.forEach((special_property) => {
           if (suit[special_property]) {
             const special_property_name = getSpecialProperty(special_property);
             variant[special_property_name] = true;
@@ -489,7 +436,7 @@ function getVariantsForSpecialRanks(): Variant[] {
         variants.push(variant);
       });
 
-      //Second, create the special suit combinations, e.g. "Rainbow-Ones & Rainbow (6 Suits)"
+      // Second, create the special suit combinations, e.g. "Rainbow-Ones & Rainbow (6 Suits)"
       suits.forEach((suit2, suit_name2) => {
         if (!suit2.createVariants) {
           return;
@@ -508,7 +455,7 @@ function getVariantsForSpecialRanks(): Variant[] {
             ...variant_suits[suit_num - 1],
             suit_name2,
           ];
-          const variant: Variant = {
+          const variant: VariantJSON = {
             name: variant_name,
             id: get_variant_id(variant_name),
             strId: convertSuitsToStrId(computed_variant_suits) + suffix,
@@ -516,7 +463,7 @@ function getVariantsForSpecialRanks(): Variant[] {
             specialRank: special_rank,
           };
 
-          specialProperties.forEach((special_property) => {
+          SUIT_SPECIAL_PROPERTIES.forEach((special_property) => {
             if (suit[special_property]) {
               const special_property_name =
                 getSpecialProperty(special_property);
@@ -544,7 +491,7 @@ function getVariantsForSpecialRanks(): Variant[] {
     [6, 5, 4, 3].forEach((suit_num) => {
       const variant_name = `${special_name} (${suit_num} Suits)`;
       const computed_variant_suits = [...variant_suits[suit_num]];
-      const variant: Variant = {
+      const variant: VariantJSON = {
         name: variant_name,
         id: get_variant_id(variant_name),
         strId: convertSuitsToStrId(computed_variant_suits) + suffix,
@@ -579,7 +526,7 @@ function getVariantsForSpecialRanks(): Variant[] {
           ...variant_suits[suit_num - 1],
           suit_name,
         ];
-        const variant: Variant = {
+        const variant: VariantJSON = {
           name: variant_name,
           id: get_variant_id(variant_name),
           strId: convertSuitsToStrId(computed_variant_suits) + suffix,
@@ -601,8 +548,8 @@ function getVariantsForSpecialRanks(): Variant[] {
   return variants;
 }
 
-function getAmbiguousVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getAmbiguousVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
 
   const red_ambiguous_suits = ["Tomato", "Mahogany"];
   const green_ambiguous_suits = ["Lime", "Forest"];
@@ -647,7 +594,7 @@ function getAmbiguousVariants(): Variant[] {
       // "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)"
       if (
         incremented_suit_num === 3 &&
-        suits_that_cause_duplicated_variants_with_ambiguous.includes(suit_name)
+        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.includes(suit_name)
       ) {
         return;
       }
@@ -666,8 +613,8 @@ function getAmbiguousVariants(): Variant[] {
   return variants;
 }
 
-function getVeryAmbiguousVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getVeryAmbiguousVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   const red_very_ambiguous_suits = ["Tomato VA", "Carrot VA", "Mahogany VA"];
   const blue_very_ambiguous_suits = ["Sky VA", "Berry VA", "Navy VA"];
   const very_ambiguous_suits: string[][] = [];
@@ -708,7 +655,7 @@ function getVeryAmbiguousVariants(): Variant[] {
     // For some suits:
     // "Very Ambiguous + X (4 Suit)" is the same as "Extremely Ambiguous (4 Suit)"
     if (
-      suits_that_cause_duplicated_variants_with_ambiguous.includes(suit_name)
+      SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.includes(suit_name)
     ) {
       return;
     }
@@ -726,8 +673,8 @@ function getVeryAmbiguousVariants(): Variant[] {
   return variants;
 }
 
-function getExtremelyAmbiguousVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getExtremelyAmbiguousVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   const extremely_ambiguous_suits: string[][] = [];
   extremely_ambiguous_suits[4] = [
     "Ice EA",
@@ -775,7 +722,7 @@ function getExtremelyAmbiguousVariants(): Variant[] {
       // 1) "Extremely Ambiguous + X (6 Suit)" is the same as "Extremely Ambiguous (6 Suit)"
       // 2) "Extremely Ambiguous + X (5 Suit)" is the same as "Extremely Ambiguous (5 Suit)"
       if (
-        suits_that_cause_duplicated_variants_with_ambiguous.includes(suit_name)
+        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.includes(suit_name)
       ) {
         return;
       }
@@ -797,8 +744,8 @@ function getExtremelyAmbiguousVariants(): Variant[] {
   return variants;
 }
 
-function getDualColorsVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getDualColorsVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   const dual_color_suits: string[][] = [];
   dual_color_suits[3] = ["Orange D2", "Purple D", "Green D"];
   dual_color_suits[5] = [
@@ -865,8 +812,8 @@ function getDualColorsVariants(): Variant[] {
   return variants;
 }
 
-function getSpecialCraftedMixedVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getSpecialCraftedMixedVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
 
   // Add "Special Mix (5 Suits)"
   variants.push({
@@ -931,14 +878,14 @@ function getSpecialCraftedMixedVariants(): Variant[] {
   return variants;
 }
 
-function getBlindVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getBlindVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Color Blind (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CB",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:CB`,
       suits: variant_suits[suit_num],
       colorCluesTouchNothing: true,
     });
@@ -949,7 +896,7 @@ function getBlindVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":NB",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:NB`,
       suits: variant_suits[suit_num],
       rankCluesTouchNothing: true,
     });
@@ -960,7 +907,7 @@ function getBlindVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":TB",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:TB`,
       suits: variant_suits[suit_num],
       colorCluesTouchNothing: true,
       rankCluesTouchNothing: true,
@@ -970,14 +917,14 @@ function getBlindVariants(): Variant[] {
   return variants;
 }
 
-function getMuteVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getMuteVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Color Mute (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CM",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:CM`,
       suits: variant_suits[suit_num],
       clueColors: [],
     });
@@ -988,7 +935,7 @@ function getMuteVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":NM",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:NM`,
       suits: variant_suits[suit_num],
       clueRanks: [],
     });
@@ -997,14 +944,14 @@ function getMuteVariants(): Variant[] {
   return variants;
 }
 
-function getAlternatingCluesVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getAlternatingCluesVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Alternating Clues (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":AC",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:AC`,
       suits: variant_suits[suit_num],
       alternatingClues: true,
     });
@@ -1026,9 +973,10 @@ function getAlternatingCluesVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":AC",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:AC`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         alternatingClues: true,
       });
@@ -1037,15 +985,15 @@ function getAlternatingCluesVariants(): Variant[] {
   return variants;
 }
 
-function getClueStarvedVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getClueStarvedVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
 
   [6, 5].forEach((suit_num) => {
     const variant_name = `Clue Starved (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CS",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:CS`,
       suits: variant_suits[suit_num],
       clueStarved: true,
     });
@@ -1066,9 +1014,10 @@ function getClueStarvedVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":CS",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:CS`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         clueStarved: true,
       });
@@ -1078,14 +1027,14 @@ function getClueStarvedVariants(): Variant[] {
   return variants;
 }
 
-function getCowAndPigVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getCowAndPigVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Cow & Pig (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":CP",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:CP`,
       suits: variant_suits[suit_num],
       cowPig: true,
     });
@@ -1093,14 +1042,14 @@ function getCowAndPigVariants(): Variant[] {
   return variants;
 }
 
-function getDuckVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getDuckVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Duck (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":Du",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:Du`,
       suits: variant_suits[suit_num],
       duck: true,
     });
@@ -1109,15 +1058,15 @@ function getDuckVariants(): Variant[] {
   return variants;
 }
 
-function getThrowItInAHoleVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getThrowItInAHoleVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4].forEach((suit_num) => {
     // 3 suits would be too difficult
     const variant_name = `Throw It in a Hole (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":TH",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:TH`,
       suits: variant_suits[suit_num],
       throwItInHole: true,
     });
@@ -1138,9 +1087,10 @@ function getThrowItInAHoleVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":TH",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:TH`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         throwItInHole: true,
       });
@@ -1150,8 +1100,8 @@ function getThrowItInAHoleVariants(): Variant[] {
   return variants;
 }
 
-function getReversedVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getReversedVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Reversed (${suit_num} Suits)`;
     const reversed_variant_suits = [...variant_suits[suit_num]];
@@ -1159,7 +1109,7 @@ function getReversedVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + "/R",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}/R`,
       suits: reversed_variant_suits,
     });
   });
@@ -1191,9 +1141,10 @@ function getReversedVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          "/R",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}/R`,
         suits: computed_variant_suits,
       });
     });
@@ -1202,15 +1153,15 @@ function getReversedVariants(): Variant[] {
   return variants;
 }
 
-function getUpOrDownVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getUpOrDownVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5].forEach((suit_num) => {
     // 4 suits and 3 suits would be too difficult
     const variant_name = `Up or Down (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":UD",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:UD`,
       suits: variant_suits[suit_num],
       showSuitNames: true,
       upOrDown: true,
@@ -1231,9 +1182,10 @@ function getUpOrDownVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":UD",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:UD`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         showSuitNames: true,
         upOrDown: true,
@@ -1244,8 +1196,8 @@ function getUpOrDownVariants(): Variant[] {
   return variants;
 }
 
-function getSynesthesiaVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getSynesthesiaVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   const suits_that_cause_duplicated_variants_with_synesthesia = [
     "Prism", // Same as White
     "Muddy Rainbow", // Same as Rainbow
@@ -1264,7 +1216,7 @@ function getSynesthesiaVariants(): Variant[] {
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":Sy",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:Sy`,
       suits: variant_suits[suit_num],
       clueRanks: [],
       synesthesia: true,
@@ -1290,9 +1242,10 @@ function getSynesthesiaVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":Sy",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:Sy`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         clueRanks: [],
         synesthesia: true,
@@ -1303,15 +1256,15 @@ function getSynesthesiaVariants(): Variant[] {
   return variants;
 }
 
-function getCriticalFoursVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getCriticalFoursVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5].forEach((suit_num) => {
     // 4 suits and 3 suits would be too difficult
     const variant_name = `Critical Fours (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":C4",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:C4`,
       suits: variant_suits[suit_num],
       criticalFours: true,
     });
@@ -1332,9 +1285,10 @@ function getCriticalFoursVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":C4",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:C4`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         criticalFours: true,
       });
@@ -1344,14 +1298,14 @@ function getCriticalFoursVariants(): Variant[] {
   return variants;
 }
 
-function getOddsAndEvensVariants(): Variant[] {
-  const variants: Variant[] = [];
+function getOddsAndEvensVariants(): VariantJSON[] {
+  const variants: VariantJSON[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variant_name = `Odds and Evens (${suit_num} Suits)`;
     variants.push({
       name: variant_name,
       id: get_variant_id(variant_name),
-      strId: convertSuitsToStrId(variant_suits[suit_num]) + ":OE",
+      strId: `${convertSuitsToStrId(variant_suits[suit_num])}:OE`,
       suits: variant_suits[suit_num],
       clueRanks: [1, 2],
       oddsAndEvens: true,
@@ -1374,9 +1328,10 @@ function getOddsAndEvensVariants(): Variant[] {
       variants.push({
         name: variant_name,
         id: get_variant_id(variant_name),
-        strId:
-          convertSuitsToStrId([...variant_suits[suit_num - 1], suit_name]) +
-          ":OE",
+        strId: `${convertSuitsToStrId([
+          ...variant_suits[suit_num - 1],
+          suit_name,
+        ])}:OE`,
         suits: [...variant_suits[suit_num - 1], suit_name],
         clueRanks: [1, 2],
         oddsAndEvens: true,
@@ -1392,7 +1347,7 @@ function convertSuitsToStrId(suit_names: string[]): string {
 
 function suitsById(): Map<string, Suit> {
   const result = new Map();
-  for (const suit of suits_array) {
+  for (const suit of suitsArray) {
     result.set(suit.id, suit);
   }
   return result;
@@ -1417,20 +1372,25 @@ function checkStrId(): boolean {
     reconstructed.name = v.name;
     reconstructed.id = v.id;
     if (!isEqual(reconstructed, v)) {
-      console.log(`Variant ${v.strId} is misparsed:`, v, reconstructed);
+      console.log(
+        `Variant ${v.strId} is parsed incorrectly:`,
+        v,
+        reconstructed,
+      );
       return true;
     }
   }
+
   return false;
 }
 
-function parseStrId(strId: string): Variant {
+function parseStrId(strId: string): VariantJSON {
   const [full_suits_str, ...var_modifiers] = strId.split(":");
   const suit_names = full_suits_str.split("+").map((suit_id_with_modifiers) => {
     const [suit_id, ...suit_modifiers] = suit_id_with_modifiers.split("/");
     let suit_name = suits_by_id.get(suit_id)!.name;
     for (const sm of suit_modifiers) {
-      if (sm == "R") {
+      if (sm === "R") {
         suit_name += SUIT_REVERSED_SUFFIX;
       } else {
         throw new Error(`Unknown suit modifier "/${sm}" in ${strId}`);
@@ -1438,7 +1398,7 @@ function parseStrId(strId: string): Variant {
     }
     return suit_name;
   });
-  const variant: Variant = {
+  const variant: VariantJSON = {
     name: "",
     id: 0,
     suits: suit_names,
@@ -1584,7 +1544,7 @@ function checkForMissingVariants(): boolean {
 
   // Check for missing variants
   let missing = false;
-  old_variants_array.forEach((variant) => {
+  oldVariantsArray.forEach((variant) => {
     if (!new_variants_map.has(variant.name)) {
       missing = true;
       console.log(`Missing variant: ${variant.name}`);
@@ -1594,7 +1554,7 @@ function checkForMissingVariants(): boolean {
 }
 
 function createVariantJSONFile(path: string) {
-  const data = JSON.stringify(variants, null, 2) + "\n";
+  const data = `${JSON.stringify(variants, null, 2)}\n`;
   fs.writeFileSync(path, data);
   console.log(`Created: ${path}`);
 }
@@ -1605,6 +1565,6 @@ function createVariantsTextFile(path: string) {
     contents.push(`${variant.name} (#${variant.id})`);
   });
 
-  fs.writeFileSync(path, contents.join("\n") + "\n\n");
+  fs.writeFileSync(path, `${contents.join("\n")}\n\n`);
   console.log(`Created: ${path}`);
 }

@@ -8,6 +8,7 @@ import { getIdentityNotePatternForVariant } from "./notes";
 import { Color } from "./types/Color";
 import { Suit } from "./types/Suit";
 import { Variant } from "./types/Variant";
+import { VariantJSON } from "./types/VariantJSON";
 import { isNameUpOrDown } from "./variants";
 
 export function variantsInit(
@@ -17,7 +18,7 @@ export function variantsInit(
 ): ReadonlyMap<string, Variant> {
   const VARIANTS = new Map<string, Variant>();
 
-  const variantsJSONArray = Array.from(variantsJSON);
+  const variantsJSONArray = Array.from(variantsJSON) as VariantJSON[];
   if (variantsJSONArray.length === 0) {
     throw new Error(
       'The "variants.json" file did not have any elements in it.',
