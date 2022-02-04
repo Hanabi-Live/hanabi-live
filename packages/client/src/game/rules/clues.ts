@@ -53,15 +53,16 @@ export function getClueName(
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
-  let clueValue;
   if (msgClue.type === ClueType.Color) {
-    clueValue = variant.clueColors[msgClue.value]; // This is a Color object
+    const clueValue = variant.clueColors[msgClue.value]; // This is a Color object
     return colorClue(clueValue);
   }
+
   if (msgClue.type === ClueType.Rank) {
-    clueValue = msgClue.value;
+    const clueValue = msgClue.value;
     return rankClue(clueValue);
   }
+
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 }
 
@@ -79,8 +80,16 @@ export function touchesCard(
       return false;
     }
 
+    if (suit.allClueColors) {
+      return true;
+    }
+
+    if (suit.noClueColors) {
+      return false;
+    }
+
     if (variantRules.isSynesthesia(variant) && !suit.noClueRanks) {
-      // A card matches if it would match a prism card, in addition to normal color matches.
+      // A card matches if it would match a prism card, in addition to normal color matches
       const prismColorIndex = (rank - 1) % variant.clueColors.length;
       const prismColorName = variant.clueColors[prismColorIndex].name;
       if (clue.value.name === prismColorName) {
@@ -88,17 +97,11 @@ export function touchesCard(
       }
     }
 
-    if (suit.allClueColors) {
-      return true;
-    }
-    if (suit.noClueColors) {
-      return false;
-    }
-
     if (rank === variant.specialRank) {
       if (variant.specialAllClueColors) {
         return true;
       }
+
       if (variant.specialNoClueColors) {
         return false;
       }
@@ -107,12 +110,14 @@ export function touchesCard(
     if (suit.prism) {
       // The color that touches a prism card is contingent upon the card's rank
       let prismColorIndex = (rank - 1) % variant.clueColors.length;
+
+      // "START" cards count as rank 0, so they are touched by the final color
       if (rank === START_CARD_RANK) {
-        // "START" cards count as rank 0, so they are touched by the final color
         prismColorIndex = variant.clueColors.length - 1;
       }
-      const prismColorName = variant.clueColors[prismColorIndex].name;
-      return clue.value.name === prismColorName;
+
+      const prismColor = variant.clueColors[prismColorIndex];
+      return clue.value.name === prismColor.name;
     }
 
     return suit.clueColors.map((c) => c.name).includes(clue.value.name);
@@ -131,15 +136,26 @@ export function touchesCard(
       return false;
     }
 
+    // Clue ranks in Odds And Evens can only be 1 or 2
+    if (variant.oddsAndEvens) {
+      if (clue.value === 1) {
+        return [1, 3, 5].includes(rank);
+      }
+
+      return [2, 4].includes(rank);
+    }
+
     if (rank === variant.specialRank) {
       if (variant.specialAllClueRanks) {
         return true;
       }
+
       if (variant.specialNoClueRanks) {
         return false;
       }
+
+      // The rank that touches a deceptive card is contingent upon the card's suit
       if (variant.specialDeceptive) {
-        // The rank that touches a deceptive card is contingent upon the card's suit
         const deceptiveRank =
           variant.clueRanks[suitIndex % variant.clueRanks.length];
         return clue.value === deceptiveRank;
