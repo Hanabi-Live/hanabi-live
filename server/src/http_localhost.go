@@ -45,7 +45,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/getLongTables", httpLocalhostGetLongTables)
 	httpRouter.GET("/gracefulRestart", httpLocalhostGracefulRestart)
 	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
-	httpRouter.GET("/mem", httpLocalhostMemory)
+	httpRouter.GET("/memory", httpLocalhostMemory)
 	httpRouter.GET("/print", httpLocalhostPrint)
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
