@@ -182,9 +182,6 @@ func main() {
 	// Start the Discord bot (in "discord.go")
 	discordInit()
 
-	// Start the GitHub bot (in "github.go")
-	githubInit()
-
 	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
 
