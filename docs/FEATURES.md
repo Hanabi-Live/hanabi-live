@@ -125,7 +125,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The leader controls what turn is being shown. By default, the leader will be the person who created the game or created the shared replay.
 - Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resynchronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
 - The leader can right-click on a card to highlight it with an arrow (to point out things to the other players).
-  - Other players can create "local" arrows by Ctrl + Right-clicking. These arrows won't be shown to anyone else.
+  - Other players can create "local" arrows by Ctrl + right-clicking. These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
 - The leader role can be transferred by clicking or double-tapping the crown.
 
@@ -176,7 +176,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   - Right-clicking on a card in your hand hand will discard it.
   - Left-clicking on a card in your teammate's hand will give it a color clue.
   - Right-clicking on a card in your teammate's hand will give it a rank clue.
-  - Ctrl + Right-clicking on a card in your hand opens a note on the card.
+  - Ctrl + right-clicking on a card in your hand opens a note on the card.
   - Empathy can still be used by holding down the space bar.
 - Speedrunning games will not count towards your statistics.
 - If this mode is enabled, then the "Timed" option will be disabled.
