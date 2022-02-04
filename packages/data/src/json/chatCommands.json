@@ -1,7 +1,7 @@
 [
   {
     "command": "help",
-    "response": "You can see the list of chat commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHAT_COMMANDS.md",
+    "response": "You can find detailed explanation of commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHAT_COMMANDS.md",
     "alias": ["commands", "?"],
     "private": true,
     "isHelp": true
