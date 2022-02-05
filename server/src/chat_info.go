@@ -54,6 +54,11 @@ func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
+// /subscribe, /unsubscribe
+func chatSubscribe(ctx context.Context, s *Session, d *CommandData, t *Table) {
+	chatServerSendPM(s, "You can only use that command on Discord.", d.Room)
+}
+
 // /wrongchannel
 func chatWrongChannel(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if t != nil {

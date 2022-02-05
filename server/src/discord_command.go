@@ -8,8 +8,7 @@ import (
 
 var (
 	// Used to store all of the functions that handle each command
-	discordCommandMap      = make(map[string]func(context.Context, *discordgo.MessageCreate, []string))
-	discordPrivateCommands []string // Array of commands that should not be shown in lobby
+	discordCommandMap = make(map[string]func(context.Context, *discordgo.MessageCreate, []string))
 )
 
 // Note that Discord commands only work in channels outside of the lobby-replication channel
@@ -40,9 +39,7 @@ func discordCommandInit() {
 	discordCommandMap["here"] = discordPing
 	discordCommandMap["teachme"] = discordTeachMe
 	discordCommandMap["subscribe"] = discordSubscribe
-	discordPrivateCommands = append(discordPrivateCommands, "subscribe")
 	discordCommandMap["unsubscribe"] = discordUnsubscribe
-	discordPrivateCommands = append(discordPrivateCommands, "unsubscribe")
 }
 
 func discordCommand(ctx context.Context, m *discordgo.MessageCreate, command string, args []string) {

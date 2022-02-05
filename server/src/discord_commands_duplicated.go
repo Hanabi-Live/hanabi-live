@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
@@ -32,58 +33,29 @@ func discordUptime(ctx context.Context, m *discordgo.MessageCreate, args []strin
 }
 
 // Pings @Ping Crew
+// Implemented in the chat lobby
 func discordPing(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	if m.ChannelID != discordChannelSyncWithLobby {
-		discord.ChannelMessageSend(m.ChannelID, "You can only use \"/here\" in the lobby area.") // nolint: errcheck
-		return
-	}
-
-	var pingCrew *discordgo.Role
-	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
-		// Not found
-		discord.ChannelMessageSend(m.ChannelID, "Error: the `@"+discordPingCrew+"` role could not be found.") // nolint: errcheck
-		return
-	} else {
-		pingCrew = r
-	}
-
-	nick := discordGetNickname(m.Author.ID)
-	msg := nick + " is looking for a game. <@&" + pingCrew.ID + ">"
-	discordSend(m.ChannelID, "", msg)
+	discordSend(m.ChannelID, "", "You can only use \"/here\" in the lobby area.")
 }
 
 // Pings @Trusted Teacher
+// Implemented in the chat lobby
 func discordTeachMe(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	if m.ChannelID != discordChannelSyncWithLobby {
-		discord.ChannelMessageSend(m.ChannelID, "You can only use \"/teachme\" in the lobby area.") // nolint: errcheck
-		return
-	}
-
-	var pingCrew *discordgo.Role
-	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
-		// Not found
-		discord.ChannelMessageSend(m.ChannelID, "Error: the `@Trusted Teacher` role could not be found.") // nolint: errcheck
-		return
-	} else {
-		pingCrew = r
-	}
-
-	nick := discordGetNickname(m.Author.ID)
-	msg := nick + " is looking for a game. <@&" + pingCrew.ID + ">"
-	discordSend(m.ChannelID, "", msg)
+	discordSend(m.ChannelID, "", "You can only use \"/teachme\" in the lobby area.")
 }
 
 // Subscribes to @Ping Crew
+// Args[0] contains the username
 func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	if m.ChannelID != discordChannelSyncWithLobby {
-		discord.ChannelMessageSend(m.ChannelID, "You can only use \"/subscribe\" in the lobby area.") // nolint: errcheck
+		discordSend(m.ChannelID, "", "You can only use \"/subscribe\" in the lobby area.")
 		return
 	}
 
 	// Find Ping Crew
 	var pingCrew *discordgo.Role
 	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
-		discord.ChannelMessageSend(m.ChannelID, "Error: The `@Ping Crew` role could not be found.") // nolint: errcheck
+		discordSend(m.ChannelID, "", "Error: The `@Ping Crew` role could not be found.")
 		return
 	} else {
 		pingCrew = r
@@ -91,25 +63,28 @@ func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []st
 
 	// Add user to Ping Crew
 	if err := discord.GuildMemberRoleAdd(discordGuildID, m.Author.ID, pingCrew.ID); err != nil {
-		discord.ChannelMessageSend(m.ChannelID, "Error: the `@Ping Crew` role could not be added to your profile.") // nolint: errcheck
+		discordSend(m.ChannelID, "", "Error: the `@Ping Crew` role could not be added to your profile.")
 		return
 	}
 
-	username := discordGetNickname(m.Author.ID)
-	discord.ChannelMessageSend(m.ChannelID, "`@"+username+"` is now a member of the `@Ping Crew`.") // nolint: errcheck
+	username := args[0]
+	// This won't get repeated because the sender is the bot; send it to two different channels
+	discordSendToChat(ctx, "@"+username+" is now a member of the @Ping Crew.", "")
+	discordSend(m.ChannelID, "", "`@"+username+"` is now a member of the `@Ping Crew`.")
 }
 
 // Unsubscribes from @Ping Crew
+// Args[0] contains the username
 func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	if m.ChannelID != discordChannelSyncWithLobby {
-		discord.ChannelMessageSend(m.ChannelID, "You can only use \"/unsubscribe\" in the lobby area.") // nolint: errcheck
+		discordSend(m.ChannelID, "", "You can only use \"/unsubscribe\" in the lobby area.")
 		return
 	}
 
 	// Find Ping Crew
 	var pingCrew *discordgo.Role
 	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
-		discord.ChannelMessageSend(m.ChannelID, "Error: the `@Ping Crew` role could not be found.") // nolint: errcheck
+		discordSend(m.ChannelID, "", "Error: the `@Ping Crew` role could not be found.")
 		return
 	} else {
 		pingCrew = r
@@ -117,10 +92,18 @@ func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []
 
 	// Remove user from Ping Crew
 	if err := discord.GuildMemberRoleRemove(discordGuildID, m.Author.ID, pingCrew.ID); err != nil {
-		discord.ChannelMessageSend(m.ChannelID, "Error: the `@Ping Crew` role could not be removed from your profile.") // nolint: errcheck
+		discordSend(m.ChannelID, "", "Error: the `@Ping Crew` role could not be removed from your profile.")
 		return
 	}
 
-	username := discordGetNickname(m.Author.ID)
-	discord.ChannelMessageSend(m.ChannelID, "`@"+username+"` has left the `@Ping Crew`.") // nolint: errcheck
+	username := args[0]
+	// This won't get repeated because the sender is the bot; send it to two different channels
+	discordSendToChat(ctx, "`@"+username+"` has left the `@Ping Crew`.", "")
+	discordSend(m.ChannelID, "", "`@"+username+"` has left the `@Ping Crew`.")
+}
+
+func debug(msg string) {
+	fmt.Println("------------------------------------------")
+	fmt.Println(msg)
+	fmt.Println("------------------------------------------")
 }
