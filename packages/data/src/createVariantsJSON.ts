@@ -146,6 +146,17 @@ function validateSuits(suits: SuitJSON[]) {
 
 function setSuitDefaultValues(suits: SuitJSON[]) {
   for (const suit of suits) {
+    // Main attributes
+    if (suit.createVariants === undefined) {
+      suit.createVariants = false;
+    }
+
+    // Visual appearance
+    if (suit.showSuitName === undefined) {
+      suit.showSuitName = false;
+    }
+
+    // Gameplay modifications
     if (suit.oneOfEach === undefined) {
       suit.oneOfEach = false;
     }
@@ -154,12 +165,12 @@ function setSuitDefaultValues(suits: SuitJSON[]) {
       suit.allClueColors = false;
     }
 
-    if (suit.allClueRanks === undefined) {
-      suit.allClueRanks = false;
-    }
-
     if (suit.noClueColors === undefined) {
       suit.noClueColors = false;
+    }
+
+    if (suit.allClueRanks === undefined) {
+      suit.allClueRanks = false;
     }
 
     if (suit.noClueRanks === undefined) {
@@ -168,14 +179,6 @@ function setSuitDefaultValues(suits: SuitJSON[]) {
 
     if (suit.prism === undefined) {
       suit.prism = false;
-    }
-
-    if (suit.showSuitName === undefined) {
-      suit.showSuitName = false;
-    }
-
-    if (suit.createVariants === undefined) {
-      suit.createVariants = false;
     }
   }
 }

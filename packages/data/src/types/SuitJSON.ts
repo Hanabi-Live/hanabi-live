@@ -1,5 +1,6 @@
 /** This is similar to `Suit`, but it only has primitive types. */
 export interface SuitJSON {
+  // Main attributes
   name: string;
   /**
    * The suit ID is a two character string:
