@@ -9,14 +9,16 @@ export interface Variant {
   readonly clueColors: readonly Color[];
   readonly clueRanks: readonly number[];
 
-  readonly colorCluesTouchNothing: boolean;
-  readonly rankCluesTouchNothing: boolean;
   readonly specialRank: number;
   readonly specialAllClueColors: boolean;
   readonly specialAllClueRanks: boolean;
   readonly specialNoClueColors: boolean;
   readonly specialNoClueRanks: boolean;
   readonly specialDeceptive: boolean;
+
+  readonly colorCluesTouchNothing: boolean;
+  readonly rankCluesTouchNothing: boolean;
+
   readonly oddsAndEvens: boolean;
 
   readonly showSuitNames: boolean;

@@ -8,8 +8,9 @@ export interface Suit {
   readonly fill: string;
   readonly fillColorblind: string;
   readonly fillColors: readonly string[];
-  readonly oneOfEach: boolean;
   readonly pip: string;
+
+  readonly oneOfEach: boolean;
   readonly reversed: boolean;
 
   readonly allClueColors: boolean;
