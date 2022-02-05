@@ -12,73 +12,6 @@ import { parseIntSafe } from "./misc";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
-// Constants
-const serverSideOnlyCommands = [
-  // General commands
-  "help",
-  "commands",
-  "?",
-  "discord",
-  "rules",
-  "community",
-  "guidelines",
-  "new",
-  "beginner",
-  "beginners",
-  "guide",
-  "bga",
-  "doc",
-  "levels",
-  "path",
-  "learningpath",
-  "learning",
-  "level",
-  "features",
-  "manual",
-  "ptt",
-  "sin",
-  "cardinal",
-  "cardinalsin",
-  "document",
-  "reference",
-  "efficiency",
-  "replay",
-  "random",
-  "uptime",
-  "timeleft",
-
-  // Pre-game commands
-  "s",
-  "s2",
-  "s3",
-  "s4",
-  "s5",
-  "s6",
-  "startin",
-  "kick",
-  "impostor",
-
-  // Pre-game or game commands
-  "missing",
-  "missingscores",
-  "missing-scores",
-  "sharedmissingscores",
-  "shared-missing-scores",
-  "findvariant",
-  "find-variant",
-  "randomvariant",
-  "random-variant",
-
-  // Game commands
-  "pause",
-  "unpause",
-
-  // Replay commands
-  "suggest",
-  "tags",
-  "taglist",
-];
-
 // Variables
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -296,13 +229,9 @@ function sendText(room: string, msgRaw: string) {
     command = command.substring(1); // Remove the forward slash
     command = command.toLowerCase();
 
-    if (!serverSideOnlyCommands.includes(command)) {
-      const chatCommandFunction = chatCommands.get(command);
-      if (chatCommandFunction === undefined) {
-        modals.showWarning(`The chat command of "${command}" is not valid.`);
-      } else {
-        chatCommandFunction(roomID, args);
-      }
+    const chatCommandFunction = chatCommands.get(command);
+    if (chatCommandFunction !== undefined) {
+      chatCommandFunction(roomID, args);
       return;
     }
   }

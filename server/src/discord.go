@@ -19,6 +19,9 @@ var (
 	sendMessageToWebDevChannel  bool
 	discordBotID                string
 	discordIsReady              = abool.New()
+
+	discordPingCrew       string
+	discordTrustedTeacher string
 )
 
 /*
@@ -52,6 +55,9 @@ func discordInit() {
 			"aborting Discord initialization.")
 		return
 	}
+	discordPingCrew = os.Getenv("DISCORD_PING_CREW_ROLE_NAME")
+	discordTrustedTeacher = os.Getenv("DISCORD_TRUSTED_TEACHER_ROLE_NAME")
+
 	// Messages are only sent to website-development channel when the server restarts
 	sendMessageToWebDevChannel = false
 
@@ -110,6 +116,14 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	ctx := NewMiscContext("discordMessageCreate")
+
+	// Ignore private commands
+	var command string
+	command, _ = chatParseCommand(m.Content)
+	if stringInSlice(command, discordPrivateCommands) {
+		discordCheckCommand(ctx, m)
+		return
+	}
 
 	// Get the channel
 	var channel *discordgo.Channel
@@ -176,19 +190,39 @@ func discordSend(to string, username string, msg string) {
 	}
 	fullMsg += msg
 
+	// Allow pinging specific roles
+	var roles []string
+	pingable := []string{discordPingCrew, discordTrustedTeacher}
+	for _, role := range pingable {
+		if role, ok := discordGetRoleByName(role); ok {
+			roles = append(roles, role.ID)
+		}
+	}
+
 	// We use "ChannelMessageSendComplex" instead of "ChannelMessageSend" because we need to specify
 	// the "AllowedMentions" property
 	messageSendData := &discordgo.MessageSend{ // nolint: exhaustivestruct
 		Content: fullMsg,
-		// Specifying an empty "MessageAllowedMentions" struct means that the bot is not allowed to
-		// mention anybody
-		// This prevents people from abusing the bot to spam @everyone, for example
-		AllowedMentions: &discordgo.MessageAllowedMentions{},
+		// This prevents people from abusing the bot to spam @everyone
+		AllowedMentions: &discordgo.MessageAllowedMentions{ // nolint: exhaustivestruct
+			Roles: roles,
+		},
 	}
 	if _, err := discord.ChannelMessageSendComplex(to, messageSendData); err != nil {
 		// Occasionally, sending messages to Discord can time out; if this occurs,
 		// do not bother retrying, since losing a single message is fairly meaningless
 		logger.Info("Failed to send \"" + fullMsg + "\" to Discord: " + err.Error())
+		return
+	}
+}
+
+// Sends a direct message to a user on Discord
+func discordSendPM(recipient string, msg string) {
+	replyChannel, _ := discord.UserChannelCreate(recipient)
+	if _, err := discord.ChannelMessageSend(replyChannel.ID, msg); err != nil {
+		// Occasionally, sending messages to Discord can time out; if this occurs,
+		// do not bother retrying, since losing a single message is fairly meaningless
+		logger.Info("Failed to send \"" + msg + "\" to Discord as a PM: " + err.Error())
 		return
 	}
 }
@@ -222,18 +256,15 @@ func discordGetChannel(discordID string) string {
 func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 	// There could be a command on any line
 	for _, line := range strings.Split(m.Content, "\n") {
-		// This code is duplicated from the "chatCommand()" function
-		args := strings.Split(line, " ")
-		command := args[0]
-		args = args[1:] // This will be an empty slice if there is nothing after the command
-		// (we need to pass the arguments through to the command handler)
+		var command string
+		var args []string
 
-		// Commands will start with a "/", so we can ignore everything else
-		if !strings.HasPrefix(command, "/") {
+		if cmd, a := chatParseCommand(line); cmd == "" {
 			continue
+		} else {
+			command = cmd
+			args = a
 		}
-		command = strings.TrimPrefix(command, "/")
-		command = strings.ToLower(command) // Commands are case-insensitive
 
 		discordCommand(ctx, m, command, args)
 	}
@@ -260,6 +291,7 @@ func discordGetRole(discordID string) string {
 	return "[unknown role]"
 }
 
+// Search for a Discord role by name
 func discordGetRoleByName(name string) (*discordgo.Role, bool) {
 	roles := discordGetRoles()
 	for _, role := range roles {

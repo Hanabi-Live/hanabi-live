@@ -44,11 +44,10 @@ func chatCommandInit() {
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
 
-	// Undocumented info commands (that work only in the lobby)
-	// chatCommandMap["here"] = chatHere
-	// chatCommandMap["ping"] = chatHere
-	// chatCommandMap["subscribe"] = chatSubscribe
-	// chatCommandMap["unsubscribe"] = chatSubscribe
+	// Commands (that work only in the lobby)
+	chatCommandMap["here"] = chatHere
+	chatCommandMap["ping"] = chatHere
+	chatCommandMap["teachme"] = chatTeachMe
 	chatCommandMap["wrongchannel"] = chatWrongChannel
 
 	// Table-only commands (pregame only, table owner only)
@@ -98,30 +97,67 @@ func chatCommandInit() {
 }
 
 func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	// Parse the command
-	args := strings.Split(d.Msg, " ")
-	command := args[0]
-	d.Args = args[1:] // This will be an empty slice if there is nothing after the command
-	// (we need to pass the arguments through to the command handler)
-
-	// Commands will start with a "/", so we can ignore everything else
-	if !strings.HasPrefix(command, "/") {
+	// Parse the message
+	var command string
+	if cmd, args := chatParseCommand(d.Msg); cmd == "" {
+		// it's a plain text
 		return
+	} else {
+		command = cmd
+		d.Args = args
 	}
-	command = strings.TrimPrefix(command, "/")
-	command = strings.ToLower(command) // Commands are case-insensitive
-
 	// Check to see if there is a command handler for this command
 	chatCommandFunction, ok := chatCommandMap[command]
 	if ok {
 		chatCommandFunction(ctx, s, d, t)
-	} else {
-		msg := "The chat command of \"/" + command + "\" is not valid."
-		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
+}
+
+// Returns true if the command should be shown on the chat.
+// Handles immediately commands that reply via PM.
+// Handles immediately invalid commands by informing the user.
+func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t *Table) bool {
+	// Parse the message
+	var command string
+	if cmd, _ := chatParseCommand(d.Msg); cmd == "" {
+		// it's a plain text
+		return true
+	} else {
+		command = cmd
+	}
+
+	msg := "The chat command of \"/" + command + "\" is not valid. Use \"/help\" to get a list of available commands."
+
+	// Search for existing handler
+	if _, ok := chatCommandMap[command]; !ok {
+		// There's no handler, inform via PM
+		chatServerSendPM(s, msg, d.Room)
+		return false
+	}
+
+	return true
 }
 
 func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+}
+
+// Parses a message, searching for /<string>.
+// Returns empty command if it's a normal string.
+func chatParseCommand(msg string) (string, []string) {
+	args := strings.Split(msg, " ")
+	command := args[0]
+	args = args[1:] // This will be an empty slice if there is nothing after the command
+	// (we need to pass the arguments through to the command handler)
+
+	// Commands will start with a "/", so we can ignore everything else
+	if !strings.HasPrefix(command, "/") {
+		return "", []string{}
+	}
+
+	command = strings.TrimPrefix(command, "/")
+	command = strings.ToLower(command) // Commands are case-insensitive
+
+	return command, args
 }
