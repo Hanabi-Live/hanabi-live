@@ -7,6 +7,9 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "variants": "ts-node ./src/createVariantsJSON.ts"
+  },
   "dependencies": {
     "lodash": "^4.17.21"
   },

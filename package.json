@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "variants": "ts-node -r tsconfig-paths/register scripts/typescript/create_variants_json.ts"
+    "variants": "npm run variants --workspace @hanabi/data"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
