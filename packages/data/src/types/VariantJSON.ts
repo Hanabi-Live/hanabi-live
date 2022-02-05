@@ -13,12 +13,8 @@ export interface VariantJSON {
   specialNoClueColors?: boolean;
   specialNoClueRanks?: boolean;
   specialDeceptive?: boolean;
+
   oddsAndEvens?: boolean;
-  colorCluesTouchNothing?: boolean;
-  rankCluesTouchNothing?: boolean;
-
-  showSuitNames?: boolean;
-
   alternatingClues?: boolean;
   clueStarved?: boolean;
   duck?: boolean;
@@ -27,4 +23,8 @@ export interface VariantJSON {
   synesthesia?: boolean;
   upOrDown?: boolean;
   criticalFours?: boolean;
+  colorCluesTouchNothing?: boolean;
+  rankCluesTouchNothing?: boolean;
+
+  showSuitNames?: boolean;
 }

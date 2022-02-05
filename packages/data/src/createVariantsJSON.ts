@@ -2,10 +2,23 @@ import fs from "fs";
 import { isEqual } from "lodash";
 import path from "path";
 import {
+  getAlternatingCluesVariants,
   getAmbiguousVariants,
   getBasicVariants,
+  getBlindVariants,
+  getClueStarvedVariants,
+  getCowAndPigVariants,
+  getCriticalFoursVariants,
   getDualColorsVariants,
+  getDuckVariants,
   getExtremelyAmbiguousVariants,
+  getMixVariants,
+  getMuteVariants,
+  getOddsAndEvensVariants,
+  getReversedVariants,
+  getSynesthesiaVariants,
+  getThrowItInAHoleVariants,
+  getUpOrDownVariants,
   getVariantsForEachSpecialSuitCombination,
   getVariantsForEachSuit,
   getVariantsForSpecialRanks,
@@ -15,8 +28,6 @@ import { SuitJSON } from "./types/SuitJSON";
 import { VariantDescription } from "./types/VariantDescription";
 import { VariantJSON } from "./types/VariantJSON";
 import { error, parseIntSafe } from "./util";
-
-const SUIT_REVERSED_SUFFIX = " Reversed";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
@@ -56,9 +67,9 @@ function main() {
     ...getExtremelyAmbiguousVariants(suitsToCreateVariantsFor),
     ...getDualColorsVariants(suitsToCreateVariantsFor),
     ...getMixVariants(),
-    ...getBlindVariants(),
-    ...getMuteVariants(),
-    ...getAlternatingCluesVariants(),
+    ...getBlindVariants(basicVariantSuits),
+    ...getMuteVariants(basicVariantSuits),
+    ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getClueStarvedVariants(),
     ...getCowAndPigVariants(),
     ...getDuckVariants(),

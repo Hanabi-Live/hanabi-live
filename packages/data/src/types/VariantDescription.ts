@@ -15,5 +15,17 @@ export interface VariantDescription {
   specialNoClueRanks?: boolean;
   specialDeceptive?: boolean;
 
+  oddsAndEvens?: boolean;
+  clueStarved?: boolean;
+  alternatingClues?: boolean;
+  cowPig?: boolean;
+  duck?: boolean;
+  throwItInHole?: boolean;
+  upOrDown?: boolean;
+  synesthesia?: boolean;
+  criticalFours?: boolean;
+  colorCluesTouchNothing?: boolean;
+  rankCluesTouchNothing?: boolean;
+
   showSuitNames?: boolean;
 }
