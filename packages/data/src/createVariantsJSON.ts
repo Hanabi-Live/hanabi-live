@@ -315,7 +315,7 @@ function validateNewVariantIDs(variants: VariantJSON[]) {
 
     newVariantIDs.add(variant.newID);
 
-    const reconstructedVariant = getVariantFromNewID(variant.newID);
+    const reconstructedVariant = getVariantFromNewID(variant.newID, suitsIDMap);
     reconstructedVariant.name = variant.name;
     reconstructedVariant.id = variant.id;
     if (!isEqual(reconstructedVariant, variant)) {

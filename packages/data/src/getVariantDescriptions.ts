@@ -161,9 +161,7 @@ export function getVariantsForSpecialRanks(
 
   for (const specialRank of SPECIAL_RANKS) {
     const specialRankName = getSpecialRankName(specialRank);
-    const specialClueRanks = DEFAULT_CLUE_RANKS.filter(
-      (clueRank) => clueRank !== specialRank,
-    );
+    const specialClueRanks = getSpecialClueRanks(specialRank);
 
     for (const suit of suitsToCreateVariantsFor) {
       // There are no one-of-each special ranks (e.g. Black-Ones)
@@ -274,6 +272,10 @@ function getSpecialRankName(specialRank: number) {
   throw new Error(
     `Failed to get the name for the special rank of: ${specialRank}`,
   );
+}
+
+export function getSpecialClueRanks(specialRank: number): number[] {
+  return DEFAULT_CLUE_RANKS.filter((clueRank) => clueRank !== specialRank);
 }
 
 function getVariantDescriptionForSpecialRankVariant(
