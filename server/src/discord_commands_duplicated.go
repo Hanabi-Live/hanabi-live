@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
@@ -100,10 +99,4 @@ func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []
 	// This won't get repeated because the sender is the bot; send it to two different channels
 	discordSendToChat(ctx, "`@"+username+"` has left the `@Ping Crew`.", "")
 	discordSend(m.ChannelID, "", "`@"+username+"` has left the `@Ping Crew`.")
-}
-
-func debug(msg string) {
-	fmt.Println("------------------------------------------")
-	fmt.Println(msg)
-	fmt.Println("------------------------------------------")
 }

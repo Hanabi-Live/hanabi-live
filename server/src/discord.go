@@ -311,7 +311,6 @@ func discordGetRoleByName(name string) (*discordgo.Role, bool) {
 }
 
 func discordSendToChat(ctx context.Context, msg string, username string) {
-	debug("username: " + username)
 	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
 		Username: username,
 		Msg:      msg,
