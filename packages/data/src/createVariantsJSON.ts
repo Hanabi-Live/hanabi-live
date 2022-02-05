@@ -259,7 +259,7 @@ function getVariantsFromVariantDescriptions(
   return variantDescriptions.map((variantDescription) => ({
     name: variantDescription.name,
     id: getNextUnusedVariantID(variantDescription.name),
-    newID: getNewVariantID(variantDescription.suits),
+    newID: getNewVariantID(variantDescription),
     suits: variantDescription.suits,
   }));
 }
@@ -285,8 +285,8 @@ function getNextUnusedVariantID(variantName: string) {
   return variantID;
 }
 
-function getNewVariantID(suitNames: string[]) {
-  const suitIDs = getSuitIDsFromSuitNames(suitNames);
+function getNewVariantID(variantDescription: VariantDescription) {
+  const suitIDs = getSuitIDsFromSuitNames(variantDescription.suits);
   return suitIDs.join("+");
 }
 
