@@ -44,11 +44,15 @@ func chatCommandInit() {
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
 
-	// Commands (that work only in the lobby)
+	// Commands that work only in the lobby
 	chatCommandMap["here"] = chatHere
 	chatCommandMap["ping"] = chatHere
 	chatCommandMap["teachme"] = chatTeachMe
 	chatCommandMap["wrongchannel"] = chatWrongChannel
+
+	// Command that work only in the Discord lobby
+	chatCommandMap["subscribe"] = chatSubscribe
+	chatCommandMap["unsubscribe"] = chatSubscribe
 
 	// Table-only commands (pregame only, table owner only)
 	chatCommandMap["s"] = chatS

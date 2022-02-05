@@ -70,15 +70,18 @@ func chatServerSendAll(ctx context.Context, msg string) {
 
 // chatServerSendPM is for sending non-public messages to specific users
 func chatServerSendPM(s *Session, msg string, room string) {
-	s.Emit("chat", &ChatMessage{
-		Msg:       msg,
-		Who:       WebsiteName,
-		Discord:   false,
-		Server:    true,
-		Datetime:  time.Now(),
-		Room:      room,
-		Recipient: s.Username,
-	})
+	// Some messages are sent from Discord
+	if s != nil {
+		s.Emit("chat", &ChatMessage{
+			Msg:       msg,
+			Who:       WebsiteName,
+			Discord:   false,
+			Server:    true,
+			Datetime:  time.Now(),
+			Room:      room,
+			Recipient: s.Username,
+		})
+	}
 }
 
 func chatFillAll(msg string) string {
