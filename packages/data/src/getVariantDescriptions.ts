@@ -384,7 +384,8 @@ export function getAmbiguousVariants(
       }
 
       const variantName = `Ambiguous & ${suit.name} (${incrementedNumSuits} Suits)`;
-      const variantSuits = [...ambiguousSuits[numSuits], suit.name];
+      const baseSuits = ambiguousSuits[numSuits];
+      const variantSuits = [...baseSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
@@ -437,7 +438,8 @@ export function getVeryAmbiguousVariants(
     }
 
     const variantName = `Very Ambiguous & ${suit.name} (4 Suits)`;
-    const variantSuits = [...veryAmbiguousSuits[3], suit.name];
+    const baseSuits = veryAmbiguousSuits[3];
+    const variantSuits = [...baseSuits, suit.name];
     variantDescriptions.push({
       name: variantName,
       suits: variantSuits,
@@ -448,69 +450,67 @@ export function getVeryAmbiguousVariants(
   return variantDescriptions;
 }
 
-export function getExtremelyAmbiguousVariants(): VariantDescription[] {
+export function getExtremelyAmbiguousVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   const extremelyAmbiguousSuits: string[][] = [];
   extremelyAmbiguousSuits[4] = ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"];
   extremelyAmbiguousSuits[5] = [...extremelyAmbiguousSuits[4], "Navy EA"];
   extremelyAmbiguousSuits[6] = [...extremelyAmbiguousSuits[5], "Ocean EA"];
-  variants.push({
+
+  // Create the basic Extremely Ambiguous variants
+  variantDescriptions.push({
     name: "Extremely Ambiguous (6 Suits)",
-    id: getNextUnusedVariantID("Extremely Ambiguous (6 Suits)"),
-    strId: convertSuitsToStrId(extremelyAmbiguousSuits[6]),
     suits: extremelyAmbiguousSuits[6],
     showSuitNames: true,
   });
-  variants.push({
+  variantDescriptions.push({
     name: "Extremely Ambiguous (5 Suits)",
-    id: getNextUnusedVariantID("Extremely Ambiguous (5 Suits)"),
-    strId: convertSuitsToStrId(extremelyAmbiguousSuits[5]),
     suits: extremelyAmbiguousSuits[5],
     showSuitNames: true,
   });
-  variants.push({
+  variantDescriptions.push({
     name: "Extremely Ambiguous (4 Suits)",
-    id: getNextUnusedVariantID("Extremely Ambiguous (4 Suits)"),
-    strId: convertSuitsToStrId(extremelyAmbiguousSuits[4]),
     suits: extremelyAmbiguousSuits[4],
     showSuitNames: true,
   });
-  suits.forEach((suit, suit_name) => {
-    if (!suit.createVariants) {
-      return;
-    }
 
-    [5, 4].forEach((suit_num) => {
-      const incremented_suit_num = suit_num + 1;
+  // Create Extremely Ambiguous combinations with special suits
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of [5, 4]) {
+      const incrementedNumSuits = numSuits + 1;
 
       // It would be too difficult to have a 4 suit variant with a one-of-each suit
-      if (incremented_suit_num === 4 && suit.oneOfEach) {
-        return;
+      if (incrementedNumSuits === 4 && suit.oneOfEach === true) {
+        continue;
       }
 
       // For some suits:
       // 1) "Extremely Ambiguous + X (6 Suit)" is the same as "Extremely Ambiguous (6 Suit)"
       // 2) "Extremely Ambiguous + X (5 Suit)" is the same as "Extremely Ambiguous (5 Suit)"
-      if (
-        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.includes(suit_name)
-      ) {
-        return;
+      if (SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)) {
+        continue;
       }
 
-      const variantName = `Extremely Ambiguous & ${suit_name} (${incremented_suit_num} Suits)`;
+      const variantName = `Extremely Ambiguous & ${suit.name} (${incrementedNumSuits} Suits)`;
+      const baseSuits = extremelyAmbiguousSuits[numSuits];
+      const variantSuits = [...baseSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
-        suits: [...extremelyAmbiguousSuits[suit_num], suit_name],
+        suits: variantSuits,
         showSuitNames: true,
       });
-    });
-  });
+    }
+  }
 
   return variantDescriptions;
 }
 
-export function getDualColorsVariants(): VariantDescription[] {
+export function getDualColorsVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   const dualColorSuits: string[][] = [];
@@ -530,6 +530,8 @@ export function getDualColorsVariants(): VariantDescription[] {
     "Tan D",
     "Navy D",
   ];
+
+  // Create the basic Dual-Color variants
   variantDescriptions.push({
     name: "Dual-Color (6 Suits)",
     suits: dualColorSuits[6],
@@ -546,99 +548,67 @@ export function getDualColorsVariants(): VariantDescription[] {
     showSuitNames: true,
   });
 
-  suits.forEach((suit, suit_name) => {
-    if (!suit.createVariants) {
-      return;
-    }
-
-    [5, 3].forEach((suit_num) => {
-      const incremented_suit_num = suit_num + 1;
+  // Create Dual-Color combinations with special suits
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of [5, 3]) {
+      const incrementedNumSuits = numSuits + 1;
 
       // It would be too difficult to have a 4 suit variant with a one-of-each suit
-      if (incremented_suit_num === 4 && suit.oneOfEach) {
-        return;
+      if (incrementedNumSuits === 4 && suit.oneOfEach === true) {
+        continue;
       }
 
-      const variantName = `Dual-Color & ${suit_name} (${incremented_suit_num} Suits)`;
+      const variantName = `Dual-Color & ${suit.name} (${incrementedNumSuits} Suits)`;
+      const baseSuits = dualColorSuits[numSuits];
+      const variantSuits = [...baseSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
-        suits: [...dualColorSuits[suit_num], suit_name],
+        suits: variantSuits,
         showSuitNames: true,
       });
-    });
-  });
+    }
+  }
 
   return variantDescriptions;
 }
 
-function getSpecialCraftedMixedVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
-
-  // Add "Special Mix (5 Suits)"
-  variants.push({
-    name: "Special Mix (5 Suits)",
-    id: getNextUnusedVariantID("Special Mix (5 Suits)"),
-    suits: ["Black", "Rainbow", "Pink", "White", "Brown"],
-  });
-  variants[variants.length - 1].strId = convertSuitsToStrId(
-    variants[variants.length - 1].suits,
-  );
-
-  // Add "Special Mix (6 Suits)"
-  variants.push({
-    name: "Special Mix (6 Suits)",
-    id: getNextUnusedVariantID("Special Mix (6 Suits)"),
-    suits: ["Black", "Rainbow", "Pink", "White", "Brown", "Null"],
-  });
-  variants[variants.length - 1].strId = convertSuitsToStrId(
-    variants[variants.length - 1].suits,
-  );
-
-  // Add "Ambiguous Mix"
-  variants.push({
-    name: "Ambiguous Mix",
-    id: getNextUnusedVariantID("Ambiguous Mix"),
-    suits: ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"],
-    showSuitNames: true,
-  });
-  variants[variants.length - 1].strId = convertSuitsToStrId(
-    variants[variants.length - 1].suits,
-  );
-
-  // Add "Dual-Color Mix"
-  variants.push({
-    name: "Dual-Color Mix",
-    id: getNextUnusedVariantID("Dual-Color Mix"),
-    suits: ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White"],
-    showSuitNames: true,
-  });
-  variants[variants.length - 1].strId = convertSuitsToStrId(
-    variants[variants.length - 1].suits,
-  );
-
-  // Add "Ambiguous & Dual-Color"
-  variants.push({
-    name: "Ambiguous & Dual-Color",
-    id: getNextUnusedVariantID("Ambiguous & Dual-Color"),
-    suits: [
-      "Tangelo AD",
-      "Peach AD",
-      "Orchid AD",
-      "Violet AD",
-      "Lime AD",
-      "Forest AD",
-    ],
-    showSuitNames: true,
-  });
-  variants[variants.length - 1].strId = convertSuitsToStrId(
-    variants[variants.length - 1].suits,
-  );
-
-  return variants;
+export function getMixVariants(): VariantDescription[] {
+  return [
+    {
+      name: "Special Mix (5 Suits)",
+      suits: ["Black", "Rainbow", "Pink", "White", "Brown"],
+    },
+    {
+      name: "Special Mix (6 Suits)",
+      suits: ["Black", "Rainbow", "Pink", "White", "Brown", "Null"],
+    },
+    {
+      name: "Ambiguous Mix",
+      suits: ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"],
+      showSuitNames: true,
+    },
+    {
+      name: "Dual-Color Mix",
+      suits: ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White"],
+      showSuitNames: true,
+    },
+    {
+      name: "Ambiguous & Dual-Color",
+      suits: [
+        "Tangelo AD",
+        "Peach AD",
+        "Orchid AD",
+        "Violet AD",
+        "Lime AD",
+        "Forest AD",
+      ],
+      showSuitNames: true,
+    },
+  ];
 }
 
 export function getBlindVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variantName = `Color Blind (${suit_num} Suits)`;
     variants.push({
@@ -673,11 +643,11 @@ export function getBlindVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getMuteVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variantName = `Color Mute (${suit_num} Suits)`;
     variants.push({
@@ -700,11 +670,11 @@ function getMuteVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getAlternatingCluesVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variantName = `Alternating Clues (${suit_num} Suits)`;
     variants.push({
@@ -724,7 +694,7 @@ function getAlternatingCluesVariants(): VariantDescription[] {
     [6, 5, 4, 3].forEach((suit_num) => {
       // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
       // one-of-each suit
-      if ((suit_num === 4 || suit_num === 3) && suit.oneOfEach) {
+      if ((suit_num === 4 || suit_num === 3) && suit.oneOfEach === true) {
         return;
       }
 
@@ -741,11 +711,11 @@ function getAlternatingCluesVariants(): VariantDescription[] {
       });
     });
   });
-  return variants;
+  return variantDescriptions;
 }
 
 function getClueStarvedVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
 
   [6, 5].forEach((suit_num) => {
     const variantName = `Clue Starved (${suit_num} Suits)`;
@@ -763,7 +733,7 @@ function getClueStarvedVariants(): VariantDescription[] {
       return;
     }
 
-    if (suit.oneOfEach) {
+    if (suit.oneOfEach === true) {
       return;
     }
 
@@ -783,11 +753,11 @@ function getClueStarvedVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getCowAndPigVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variantName = `Cow & Pig (${suit_num} Suits)`;
     variants.push({
@@ -798,11 +768,11 @@ function getCowAndPigVariants(): VariantDescription[] {
       cowPig: true,
     });
   });
-  return variants;
+  return variantDescriptions;
 }
 
 function getDuckVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variantName = `Duck (${suit_num} Suits)`;
     variants.push({
@@ -814,11 +784,11 @@ function getDuckVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getThrowItInAHoleVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4].forEach((suit_num) => {
     // 3 suits would be too difficult
     const variantName = `Throw It in a Hole (${suit_num} Suits)`;
@@ -835,7 +805,7 @@ function getThrowItInAHoleVariants(): VariantDescription[] {
       return;
     }
 
-    if (suit.oneOfEach) {
+    if (suit.oneOfEach === true) {
       // Throw It in a Hole & Black (6 Suits)" is 1.88 required efficiency in 5-player
       return;
     }
@@ -856,11 +826,11 @@ function getThrowItInAHoleVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getReversedVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5, 4, 3].forEach((suit_num) => {
     const variantName = `Reversed (${suit_num} Suits)`;
     const reversed_variant_suits = [...variant_suits[suit_num]];
@@ -888,7 +858,7 @@ function getReversedVariants(): VariantDescription[] {
     [6, 5, 4, 3].forEach((suit_num) => {
       // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
       // one-of-each suit
-      if ((suit_num === 4 || suit_num === 3) && suit.oneOfEach) {
+      if ((suit_num === 4 || suit_num === 3) && suit.oneOfEach === true) {
         return;
       }
 
@@ -909,11 +879,11 @@ function getReversedVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getUpOrDownVariants(): VariantDescription[] {
-  const variants: VariantJSON[] = [];
+  const variantDescriptions: VariantDescription[] = [];
   [6, 5].forEach((suit_num) => {
     // 4 suits and 3 suits would be too difficult
     const variantName = `Up or Down (${suit_num} Suits)`;
@@ -931,7 +901,7 @@ function getUpOrDownVariants(): VariantDescription[] {
       return;
     }
 
-    if (suit.oneOfEach) {
+    if (suit.oneOfEach === true) {
       // A one of each suit in combination with Up or Down would be too difficult
       return;
     }
@@ -952,7 +922,7 @@ function getUpOrDownVariants(): VariantDescription[] {
     });
   });
 
-  return variants;
+  return variantDescriptions;
 }
 
 function getSynesthesiaVariants(): VariantDescription[] {
@@ -982,7 +952,7 @@ function getSynesthesiaVariants(): VariantDescription[] {
     }
 
     [6, 5, 4, 3].forEach((suit_num) => {
-      if (suit_num === 3 && suit.oneOfEach) {
+      if (suit_num === 3 && suit.oneOfEach === true) {
         return;
       }
 
@@ -1019,7 +989,7 @@ function getCriticalFoursVariants(): VariantDescription[] {
       return;
     }
 
-    if (suit.oneOfEach) {
+    if (suit.oneOfEach === true) {
       // A one of each suit in combination with Critical Fours would be too difficult
       return;
     }

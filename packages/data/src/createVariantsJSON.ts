@@ -4,6 +4,8 @@ import path from "path";
 import {
   getAmbiguousVariants,
   getBasicVariants,
+  getDualColorsVariants,
+  getExtremelyAmbiguousVariants,
   getVariantsForEachSpecialSuitCombination,
   getVariantsForEachSuit,
   getVariantsForSpecialRanks,
@@ -12,7 +14,7 @@ import {
 import { SuitJSON } from "./types/SuitJSON";
 import { VariantDescription } from "./types/VariantDescription";
 import { VariantJSON } from "./types/VariantJSON";
-import { error } from "./util";
+import { error, parseIntSafe } from "./util";
 
 const SUIT_REVERSED_SUFFIX = " Reversed";
 
@@ -52,12 +54,8 @@ function main() {
     ...getAmbiguousVariants(suitsToCreateVariantsFor),
     ...getVeryAmbiguousVariants(suitsToCreateVariantsFor),
     ...getExtremelyAmbiguousVariants(suitsToCreateVariantsFor),
-  ];
-  const variants = getVariantsFromVariantDescriptions(variantDescriptions);
-
-  variants.push(
-    ...getDualColorsVariants(),
-    ...getSpecialCraftedMixedVariants(),
+    ...getDualColorsVariants(suitsToCreateVariantsFor),
+    ...getMixVariants(),
     ...getBlindVariants(),
     ...getMuteVariants(),
     ...getAlternatingCluesVariants(),
@@ -70,13 +68,10 @@ function main() {
     ...getSynesthesiaVariants(),
     ...getCriticalFoursVariants(),
     ...getOddsAndEvensVariants(),
-  );
+  ];
+  const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
-  if (checkStrId()) {
-    error(
-      'Skipping the creation of a new "variant.json" file since strId were invalid',
-    );
-  }
+  validateNewVariantIDs(variants);
 
   if (checkForMissingVariants()) {
     error(
@@ -289,32 +284,31 @@ function getSuitIDsFromSuitNames(suitNames: string[]): string[] {
   });
 }
 
-// Helper functions
+function validateNewVariantIDs(variants: VariantJSON[]): boolean {
+  const newVariantIDs = new Set();
 
-function checkStrId(): boolean {
-  const vars = new Map();
-  for (const v of variants) {
-    if (!v.strId) {
-      console.log(`Variant "${v.name}" misses strId`);
-      return true;
+  for (const variant of variants) {
+    if (variant.newID === undefined || variant.newID === "") {
+      error(`Variant "${variant.name}" is missing a newID.`);
     }
-    if (vars.has(v.strId)) {
-      console.log(
-        `Variants "${v.name}" and "${vars.get(v.strId)}" share id ${v.strId}`,
-      );
-      return true;
+
+    if (newVariantIDs.has(variant.newID)) {
+      error(`Variant "${variant.name}" has a duplicate newID.`);
     }
-    vars.set(v.strId, v.name);
+
+    newVariantIDs.add(variant.newID);
+
     // Check that the id is correct
-    const reconstructed = parseStrId(v.strId);
-    reconstructed.name = v.name;
-    reconstructed.id = v.id;
-    if (!isEqual(reconstructed, v)) {
+    const reconstructed = parseStrId(variant.strId);
+    reconstructed.name = variant.name;
+    reconstructed.id = variant.id;
+    if (!isEqual(reconstructed, variant)) {
       console.log(
-        `Variant ${v.strId} is parsed incorrectly:`,
-        v,
+        `Variant ${variant.strId} is parsed incorrectly:`,
+        variant,
         reconstructed,
       );
+
       return true;
     }
   }
@@ -351,34 +345,42 @@ function parseStrId(strId: string): VariantJSON {
   for (const vm of var_modifiers) {
     switch (vm) {
       case "R1":
-      case "R5":
-        variant.specialRank = parseInt(vm[1]);
+      case "R5": {
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialAllClueColors = true;
         break;
+      }
+
       case "P1":
-      case "P5":
-        variant.specialRank = parseInt(vm[1]);
+      case "P5": {
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialAllClueRanks = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
           (item) => item !== variant.specialRank,
         );
         break;
+      }
+
       case "W1":
-      case "W5":
-        variant.specialRank = parseInt(vm[1]);
+      case "W5": {
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialNoClueColors = true;
         break;
+      }
+
       case "B1":
-      case "B5":
-        variant.specialRank = parseInt(vm[1]);
+      case "B5": {
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialNoClueRanks = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
           (item) => item !== variant.specialRank,
         );
         break;
+      }
+
       case "O1":
       case "O5":
-        variant.specialRank = parseInt(vm[1]);
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialAllClueColors = true;
         variant.specialAllClueRanks = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
@@ -387,7 +389,7 @@ function parseStrId(strId: string): VariantJSON {
         break;
       case "N1":
       case "N5":
-        variant.specialRank = parseInt(vm[1]);
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialNoClueColors = true;
         variant.specialNoClueRanks = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
@@ -396,7 +398,7 @@ function parseStrId(strId: string): VariantJSON {
         break;
       case "M1":
       case "M5":
-        variant.specialRank = parseInt(vm[1]);
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialAllClueColors = true;
         variant.specialNoClueRanks = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
@@ -405,7 +407,7 @@ function parseStrId(strId: string): VariantJSON {
         break;
       case "L1":
       case "L5":
-        variant.specialRank = parseInt(vm[1]);
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialNoClueColors = true;
         variant.specialAllClueRanks = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
@@ -414,7 +416,7 @@ function parseStrId(strId: string): VariantJSON {
         break;
       case "D1":
       case "D5":
-        variant.specialRank = parseInt(vm[1]);
+        variant.specialRank = parseIntSafe(vm[1]);
         variant.specialDeceptive = true;
         variant.clueRanks = [1, 2, 3, 4, 5].filter(
           (item) => item !== variant.specialRank,
@@ -470,8 +472,11 @@ function parseStrId(strId: string): VariantJSON {
         throw new Error(`Unknown variant modifier ":${vm}" in ${strId}`);
     }
   }
+
   return variant;
 }
+
+// Helper functions
 
 function checkForMissingVariants(): boolean {
   // Create a map for the new variants
@@ -491,18 +496,18 @@ function checkForMissingVariants(): boolean {
   return missing;
 }
 
-function createVariantJSONFile(path: string) {
+function createVariantJSONFile(jsonPath: string) {
   const data = `${JSON.stringify(variants, null, 2)}\n`;
-  fs.writeFileSync(path, data);
-  console.log(`Created: ${path}`);
+  fs.writeFileSync(jsonPath, data);
+  console.log(`Created: ${jsonPath}`);
 }
 
-function createVariantsTextFile(path: string) {
+function createVariantsTextFile(textPath: string) {
   const contents: string[] = [];
   variants.forEach((variant) => {
     contents.push(`${variant.name} (#${variant.id})`);
   });
 
-  fs.writeFileSync(path, `${contents.join("\n")}\n\n`);
-  console.log(`Created: ${path}`);
+  fs.writeFileSync(textPath, `${contents.join("\n")}\n\n`);
+  console.log(`Created: ${textPath}`);
 }
