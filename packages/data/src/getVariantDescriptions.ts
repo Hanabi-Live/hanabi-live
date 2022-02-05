@@ -1,6 +1,8 @@
 import { SuitJSON } from "./types/SuitJSON";
 import { VariantDescription } from "./types/VariantDescription";
 
+const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3];
+
 export function getBasicVariants(
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -24,6 +26,7 @@ export function getBasicVariants(
   ];
 }
 
+/** Create variants for e.g. "Rainbow (6 Suits)", "Rainbow (5 Suits)", and so on. */
 export function getVariantsForEachSuit(
   suits: SuitJSON[],
   basicVariantSuits: string[][],
@@ -35,7 +38,7 @@ export function getVariantsForEachSuit(
   const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
 
   for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of [6, 5, 4, 3]) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
       // suit
       if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
@@ -55,24 +58,28 @@ export function getVariantsForEachSuit(
   return variantDescriptions;
 }
 
-export function getVariantsForEachSpecialSuitCombination(): VariantDescription[] {
+/** Create variants for e.g. "Rainbow & White (6 Suits)", "Rainbow & White (5 Suits)", and so on. */
+export function getVariantsForEachSpecialSuitCombination(
+  suits: SuitJSON[],
+  basicVariantSuits: string[][],
+): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  const combination_map = new Map<string, boolean>();
-  suits.forEach((suit, suit_name) => {
-    if (!suit.createVariants) {
-      return;
-    }
+  // We only want to create variants for certain suits
+  // (e.g. "Red" does not get its own variants because it is a basic suit)
+  const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
 
-    suits.forEach((suit2, suit_name2) => {
-      if (!suit2.createVariants) {
-        return;
+  /** Indexed by variant name. */
+  const combinationVariantNames = new Set<string>();
+
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const suit2 of suitsToCreateVariantsFor) {
+      if (suit.name === suit2.name) {
+        continue;
       }
 
-      if (suit_name === suit_name2) {
-        return;
-      }
-
+      // Disallow combining suits that are too similar to each other
+      // (e.g. Rainbow and Dark Rainbow)
       if (
         suit.allClueColors === suit2.allClueColors &&
         suit.allClueRanks === suit2.allClueRanks &&
@@ -80,46 +87,47 @@ export function getVariantsForEachSpecialSuitCombination(): VariantDescription[]
         suit.noClueRanks === suit2.noClueRanks &&
         suit.prism === suit2.prism
       ) {
-        return;
+        continue;
       }
 
       if (
-        combination_map.has(suit_name + suit_name2) ||
-        combination_map.has(suit_name2 + suit_name)
+        combinationVariantNames.has(suit.name + suit2.name) ||
+        combinationVariantNames.has(suit2.name + suit.name)
       ) {
-        return;
+        continue;
       }
 
-      combination_map.set(suit_name + suit_name2, true);
+      combinationVariantNames.add(suit.name + suit2.name);
 
-      [6, 5, 4, 3].forEach((suit_num) => {
+      for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
         // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
         // one-of-each suit
         if (
-          (suit_num === 4 || suit_num === 3) &&
-          (suit.oneOfEach || suit2.oneOfEach)
+          (numSuits === 4 || numSuits === 3) &&
+          (suit.oneOfEach === true || suit2.oneOfEach === true)
         ) {
-          return;
+          continue;
         }
 
         // It would be too difficult to have a 5 suit variant with two one-of-each suits
-        if (suit_num === 5 && suit.oneOfEach && suit2.oneOfEach) {
-          return;
+        if (
+          numSuits === 5 &&
+          suit.oneOfEach === true &&
+          suit2.oneOfEach === true
+        ) {
+          continue;
         }
 
-        const variant_name = `${suit_name} & ${suit_name2} (${suit_num} Suits)`;
-        const computed_variant_suits = [...variant_suits[suit_num - 2]];
-        computed_variant_suits.push(suit_name);
-        computed_variant_suits.push(suit_name2);
-        variants.push({
-          name: variant_name,
-          id: getNextUnusedVariantID(variant_name),
-          strId: convertSuitsToStrId(computed_variant_suits),
-          suits: computed_variant_suits,
+        const variantName = `${suit.name} & ${suit2.name} (${numSuits} Suits)`;
+        const basicSuits = basicVariantSuits[numSuits - 2];
+        const variantSuits = [...basicSuits, suit.name, suit2.name];
+        variantDescriptions.push({
+          name: variantName,
+          suits: variantSuits,
         });
-      });
-    });
-  });
+      }
+    }
+  }
 
   return variantDescriptions;
 }
