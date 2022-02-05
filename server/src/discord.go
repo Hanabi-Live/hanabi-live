@@ -216,17 +216,6 @@ func discordSend(to string, username string, msg string) {
 	}
 }
 
-// Sends a direct message to a user on Discord
-func discordSendPM(recipient string, msg string) {
-	replyChannel, _ := discord.UserChannelCreate(recipient)
-	if _, err := discord.ChannelMessageSend(replyChannel.ID, msg); err != nil {
-		// Occasionally, sending messages to Discord can time out; if this occurs,
-		// do not bother retrying, since losing a single message is fairly meaningless
-		logger.Info("Failed to send \"" + msg + "\" to Discord as a PM: " + err.Error())
-		return
-	}
-}
-
 func discordGetNickname(discordID string) string {
 	if member, err := discord.GuildMember(discordGuildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
