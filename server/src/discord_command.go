@@ -38,6 +38,7 @@ func discordCommandInit() {
 
 	discordCommandMap["ping"] = discordPing
 	discordCommandMap["here"] = discordPing
+	discordCommandMap["teachme"] = discordTeachMe
 	discordCommandMap["subscribe"] = discordSubscribe
 	discordPrivateCommands = append(discordPrivateCommands, "subscribe")
 	discordCommandMap["unsubscribe"] = discordUnsubscribe

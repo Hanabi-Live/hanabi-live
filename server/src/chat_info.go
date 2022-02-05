@@ -20,7 +20,7 @@ func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table, cmd str
 
 	var pingCrew *discordgo.Role
 	if v, ok := discordGetRoleByName(discordPingCrew); !ok {
-		chatServerSendPM(s, "The @"+discordPingCrew+" role could not be found.", d.Room)
+		chatServerSendPM(s, "The @Ping Crew role could not be found.", d.Room)
 		return
 	} else {
 		pingCrew = v
@@ -44,7 +44,7 @@ func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table, cmd 
 
 	var trustedTeacher *discordgo.Role
 	if v, ok := discordGetRoleByName(discordTrustedTeacher); !ok {
-		chatServerSendPM(s, "The @"+discordTrustedTeacher+" role could not be found.", d.Room)
+		chatServerSendPM(s, "The @Trusted Teacher role could not be found.", d.Room)
 		return
 	} else {
 		trustedTeacher = v

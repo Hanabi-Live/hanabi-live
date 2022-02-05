@@ -62,7 +62,7 @@ func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []st
 	// Find Ping Crew
 	var pingCrew *discordgo.Role
 	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
-		discordSendPM(m.Author.ID, "The `@"+discordPingCrew+"` role could not be found.")
+		discordSendPM(m.Author.ID, "The `@Ping Crew` role could not be found.")
 		return
 	} else {
 		pingCrew = r
@@ -70,7 +70,7 @@ func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []st
 
 	// Add user to Ping Crew
 	if err := discord.GuildMemberRoleAdd(discordGuildID, m.Author.ID, pingCrew.ID); err != nil {
-		discordSendPM(m.Author.ID, "The `@"+discordPingCrew+"` role could not be added to your profile.")
+		discordSendPM(m.Author.ID, "The `@Ping Crew` role could not be added to your profile.")
 		return
 	}
 
@@ -85,7 +85,7 @@ func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []
 	// Find Ping Crew
 	var pingCrew *discordgo.Role
 	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
-		discordSendPM(m.Author.ID, "The `@"+discordPingCrew+"` role could not be found.")
+		discordSendPM(m.Author.ID, "The `@Ping Crew` role could not be found.")
 		return
 	} else {
 		pingCrew = r
@@ -93,9 +93,9 @@ func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []
 
 	// Remove user from Ping Crew
 	if err := discord.GuildMemberRoleRemove(discordGuildID, m.Author.ID, pingCrew.ID); err != nil {
-		discordSendPM(m.Author.ID, "The `@"+discordPingCrew+"` role could not be removed from your profile.")
+		discordSendPM(m.Author.ID, "The `@Ping Crew` role could not be removed from your profile.")
 		return
 	}
 
-	discordSendPM(m.Author.ID, "The `@"+discordPingCrew+"` role has been successfully removed from your profile. Add it with `/subscribe`.")
+	discordSendPM(m.Author.ID, "The `@Ping Crew` role has been successfully removed from your profile. Add it with `/subscribe`.")
 }

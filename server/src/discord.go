@@ -20,8 +20,8 @@ var (
 	discordBotID                string
 	discordIsReady              = abool.New()
 
-	discordPingCrew       = "Ping Crew"       // Set to empty to prevent from working
-	discordTrustedTeacher = "Trusted Teacher" // Set to empty to prevent from working
+	discordPingCrew       string
+	discordTrustedTeacher string
 )
 
 /*
@@ -55,6 +55,9 @@ func discordInit() {
 			"aborting Discord initialization.")
 		return
 	}
+	discordPingCrew = os.Getenv("DISCORD_PING_CREW_ROLE_NAME")
+	discordTrustedTeacher = os.Getenv("DISCORD_TRUSTED_TEACHER_ROLE_NAME")
+
 	// Messages are only sent to website-development channel when the server restarts
 	sendMessageToWebDevChannel = false
 
