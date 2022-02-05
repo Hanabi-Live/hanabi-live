@@ -13,6 +13,12 @@ const SUIT_SPECIAL_PROPERTIES = [
   "noClueRanks",
 ] as const;
 
+const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = new Set<string>([
+  "Rainbow",
+  "Prism",
+  "Dark Prism", // This is the same as Dark Rainbow,
+]);
+
 export function getBasicVariants(
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -313,4 +319,118 @@ function convertSuitSpecialPropertyToVariantProperty(
       );
     }
   }
+}
+
+export function getAmbiguousVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  const redAmbiguousSuits = ["Tomato", "Mahogany"];
+  const greenAmbiguousSuits = ["Lime", "Forest"];
+  const blueAmbiguousSuits = ["Sky", "Navy"];
+
+  const ambiguousSuits: string[][] = [];
+  ambiguousSuits[2] = [...redAmbiguousSuits];
+  ambiguousSuits[4] = [...redAmbiguousSuits, ...blueAmbiguousSuits];
+  ambiguousSuits[6] = [
+    ...redAmbiguousSuits,
+    ...greenAmbiguousSuits,
+    ...blueAmbiguousSuits,
+  ];
+
+  // Create the basic Ambiguous variants
+  variantDescriptions.push({
+    name: "Ambiguous (6 Suits)",
+    suits: ambiguousSuits[6],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Ambiguous (4 Suits)",
+    suits: ambiguousSuits[4],
+    showSuitNames: true,
+  });
+
+  // Create Ambiguous combinations with special suits
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of [4, 2]) {
+      const incrementedNumSuits = numSuits + 1;
+
+      // It would be too difficult to have a 3 suits variant with a one-of-each suit
+      if (incrementedNumSuits === 3 && suit.oneOfEach === true) {
+        continue;
+      }
+
+      // For some suits:
+      // "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)"
+      if (
+        incrementedNumSuits === 3 &&
+        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)
+      ) {
+        continue;
+      }
+
+      const variantName = `Ambiguous & ${suit.name} (${incrementedNumSuits} Suits)`;
+      const variantSuits = [...ambiguousSuits[numSuits], suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        showSuitNames: true,
+      });
+    }
+  }
+
+  return variantDescriptions;
+}
+
+export function getVeryAmbiguousVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  const redVeryAmbiguousSuits = ["Tomato VA", "Carrot VA", "Mahogany VA"];
+  const blueVeryAmbiguousSuits = ["Sky VA", "Berry VA", "Navy VA"];
+
+  const veryAmbiguousSuits: string[][] = [];
+  // For "Very Ambiguous (3 Suits)", we use blue suits instead of red suits so that this will align
+  // better with the Extremely Ambiguous variants (Extremely Ambiguous uses blue suits because it
+  // is easier to come up with suit names for blue cards than it is for red cards)
+  veryAmbiguousSuits[3] = [...blueVeryAmbiguousSuits];
+  veryAmbiguousSuits[6] = [...redVeryAmbiguousSuits, ...blueVeryAmbiguousSuits];
+
+  // Create the basic Very Ambiguous variants
+  variantDescriptions.push({
+    name: "Very Ambiguous (6 Suits)",
+    suits: veryAmbiguousSuits[6],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Very Ambiguous (3 Suits)",
+    suits: veryAmbiguousSuits[3],
+    showSuitNames: true,
+  });
+
+  // Create Very Ambiguous combinations with special suits
+  for (const suit of suitsToCreateVariantsFor) {
+    // It would be too difficult to have a 4 suit variant with a one-of-each suit
+    if (suit.oneOfEach === true) {
+      continue;
+    }
+
+    // For some suits:
+    // "Very Ambiguous + X (4 Suit)" is the same as "Extremely Ambiguous (4 Suit)"
+    if (SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)) {
+      continue;
+    }
+
+    const variantName = `Very Ambiguous & ${suit.name} (4 Suits)`;
+    const variantSuits = [...veryAmbiguousSuits[3], suit.name];
+    variantDescriptions.push({
+      name: variantName,
+      suits: variantSuits,
+      showSuitNames: true,
+    });
+  }
+
+  return variantDescriptions;
 }

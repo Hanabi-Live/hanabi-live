@@ -2,6 +2,7 @@ import fs from "fs";
 import { isEqual } from "lodash";
 import path from "path";
 import {
+  getAmbiguousVariants,
   getBasicVariants,
   getVariantsForEachSpecialSuitCombination,
   getVariantsForEachSuit,
@@ -13,12 +14,6 @@ import { VariantJSON } from "./types/VariantJSON";
 import { error } from "./util";
 
 const SUIT_REVERSED_SUFFIX = " Reversed";
-
-const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = [
-  "Rainbow",
-  "Prism",
-  "Dark Prism", // This is the same as Dark Rainbow,
-];
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
@@ -53,12 +48,12 @@ function main() {
       basicVariantSuits,
     ),
     ...getVariantsForSpecialRanks(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getAmbiguousVariants(suitsToCreateVariantsFor),
+    ...getVeryAmbiguousVariants(suitsToCreateVariantsFor),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
   variants.push(
-    ...getAmbiguousVariants(),
-    ...getVeryAmbiguousVariants(),
     ...getExtremelyAmbiguousVariants(),
     ...getDualColorsVariants(),
     ...getSpecialCraftedMixedVariants(),
@@ -294,131 +289,6 @@ function getSuitIDsFromSuitNames(suitNames: string[]): string[] {
 }
 
 // Helper functions
-
-function getAmbiguousVariants(): VariantJSON[] {
-  const variants: VariantJSON[] = [];
-
-  const red_ambiguous_suits = ["Tomato", "Mahogany"];
-  const green_ambiguous_suits = ["Lime", "Forest"];
-  const blue_ambiguous_suits = ["Sky", "Navy"];
-  const ambiguous_suits: string[][] = [];
-  ambiguous_suits[2] = [...red_ambiguous_suits];
-  ambiguous_suits[4] = [...red_ambiguous_suits, ...blue_ambiguous_suits];
-  ambiguous_suits[6] = [
-    ...red_ambiguous_suits,
-    ...green_ambiguous_suits,
-    ...blue_ambiguous_suits,
-  ];
-
-  variants.push({
-    name: "Ambiguous (6 Suits)",
-    id: getNextUnusedVariantID("Ambiguous (6 Suits)"),
-    strId: convertSuitsToStrId(ambiguous_suits[6]),
-    suits: ambiguous_suits[6],
-    showSuitNames: true,
-  });
-  variants.push({
-    name: "Ambiguous (4 Suits)",
-    id: getNextUnusedVariantID("Ambiguous (4 Suits)"),
-    strId: convertSuitsToStrId(ambiguous_suits[4]),
-    suits: ambiguous_suits[4],
-    showSuitNames: true,
-  });
-  suits.forEach((suit, suit_name) => {
-    if (!suit.createVariants) {
-      return;
-    }
-
-    [4, 2].forEach((suit_num) => {
-      const incremented_suit_num = suit_num + 1;
-
-      // It would be too difficult to have a 3 suits variant with a one-of-each suit
-      if (incremented_suit_num === 3 && suit.oneOfEach) {
-        return;
-      }
-
-      // For some suits:
-      // "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)"
-      if (
-        incremented_suit_num === 3 &&
-        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.includes(suit_name)
-      ) {
-        return;
-      }
-
-      const variant_name = `Ambiguous & ${suit_name} (${incremented_suit_num} Suits)`;
-      variants.push({
-        name: variant_name,
-        id: getNextUnusedVariantID(variant_name),
-        strId: convertSuitsToStrId([...ambiguous_suits[suit_num], suit_name]),
-        suits: [...ambiguous_suits[suit_num], suit_name],
-        showSuitNames: true,
-      });
-    });
-  });
-
-  return variants;
-}
-
-function getVeryAmbiguousVariants(): VariantJSON[] {
-  const variants: VariantJSON[] = [];
-  const red_very_ambiguous_suits = ["Tomato VA", "Carrot VA", "Mahogany VA"];
-  const blue_very_ambiguous_suits = ["Sky VA", "Berry VA", "Navy VA"];
-  const very_ambiguous_suits: string[][] = [];
-  // For "Very Ambiguous (3 Suits)", we use blue suits instead of red suits so that this will align
-  // better with the Extremely Ambiguous variants (Extremely Ambiguous uses blue suits because it
-  // is easier to come up with suit names for blue cards than it is for red cards)
-  very_ambiguous_suits[3] = [...blue_very_ambiguous_suits];
-  very_ambiguous_suits[6] = [
-    ...red_very_ambiguous_suits,
-    ...blue_very_ambiguous_suits,
-  ];
-
-  variants.push({
-    name: "Very Ambiguous (6 Suits)",
-    id: getNextUnusedVariantID("Very Ambiguous (6 Suits)"),
-    strId: convertSuitsToStrId(very_ambiguous_suits[6]),
-    suits: very_ambiguous_suits[6],
-    showSuitNames: true,
-  });
-  variants.push({
-    name: "Very Ambiguous (3 Suits)",
-    id: getNextUnusedVariantID("Very Ambiguous (3 Suits)"),
-    strId: convertSuitsToStrId(very_ambiguous_suits[3]),
-    suits: very_ambiguous_suits[3],
-    showSuitNames: true,
-  });
-
-  suits.forEach((suit, suit_name) => {
-    if (!suit.createVariants) {
-      return;
-    }
-
-    // It would be too difficult to have a 4 suit variant with a one-of-each suit
-    if (suit.oneOfEach) {
-      return;
-    }
-
-    // For some suits:
-    // "Very Ambiguous + X (4 Suit)" is the same as "Extremely Ambiguous (4 Suit)"
-    if (
-      SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.includes(suit_name)
-    ) {
-      return;
-    }
-
-    const variant_name = `Very Ambiguous & ${suit_name} (4 Suits)`;
-    variants.push({
-      name: variant_name,
-      id: getNextUnusedVariantID(variant_name),
-      strId: convertSuitsToStrId([...very_ambiguous_suits[3], suit_name]),
-      suits: [...very_ambiguous_suits[3], suit_name],
-      showSuitNames: true,
-    });
-  });
-
-  return variants;
-}
 
 function getExtremelyAmbiguousVariants(): VariantJSON[] {
   const variants: VariantJSON[] = [];

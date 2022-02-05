@@ -14,4 +14,6 @@ export interface VariantDescription {
   specialNoClueColors?: boolean;
   specialNoClueRanks?: boolean;
   specialDeceptive?: boolean;
+
+  showSuitNames?: boolean;
 }
