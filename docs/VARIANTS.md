@@ -305,7 +305,7 @@ One of each card per suit (e.g. 5 in total):
 
 - See [this page](/misc/variants.txt).
 
-## Variant Summary
+## Variant Order Summary
 
 - Normal Variants
 - Black
