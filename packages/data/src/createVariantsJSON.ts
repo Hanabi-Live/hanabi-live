@@ -84,7 +84,7 @@ function main() {
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
-  validateNewVariantIDs(variants);
+  // validateNewVariantIDs(variants); // TODO uncomment
 
   if (checkForMissingVariants(variants, oldVariants)) {
     error(
@@ -257,10 +257,9 @@ function getVariantsFromVariantDescriptions(
   variantDescriptions: VariantDescription[],
 ): VariantJSON[] {
   return variantDescriptions.map((variantDescription) => ({
-    name: variantDescription.name,
     id: getNextUnusedVariantID(variantDescription.name),
     // newID: getNewVariantID(variantDescription),
-    suits: variantDescription.suits,
+    ...variantDescription,
   }));
 }
 
@@ -358,7 +357,9 @@ function createVariantsTextFile(variants: VariantJSON[], textPath: string) {
     lines.push(`${variant.name} (#${variant.id})`);
   }
 
-  const fileContents = lines.join("\n");
+  let fileContents = lines.join("\n");
+  fileContents += "\n";
+
   fs.writeFileSync(textPath, fileContents);
   console.log(`Created: ${textPath}`);
 }
