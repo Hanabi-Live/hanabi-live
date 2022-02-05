@@ -257,11 +257,10 @@ func discordCheckLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) 
 		var command string
 		var args []string
 
-		if cmd, a := chatParseCommand(line); cmd == "" {
+		if cmd, _ := chatParseCommand(line); cmd == "" {
 			continue
 		} else {
 			command = cmd
-			args = a
 		}
 
 		if stringInSlice(command, discordLobbyCommands) {
