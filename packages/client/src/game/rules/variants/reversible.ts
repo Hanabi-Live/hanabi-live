@@ -1,7 +1,7 @@
 // Helper methods for variants where suits may have a different direction than up
 // Currently used for "Up Or Down" and "Reversed" variants
 
-import { START_CARD_RANK, Variant } from "@hanabi/data";
+import { DEFAULT_CARD_RANKS, START_CARD_RANK, Variant } from "@hanabi/data";
 import CardState from "../../types/CardState";
 import StackDirection from "../../types/StackDirection";
 import * as deckRules from "../deck";
@@ -132,11 +132,13 @@ function isDead(
   return false;
 }
 
-// variantReversibleGetMaxScore calculates what the maximum score is,
-// accounting for stacks that cannot be completed due to discarded cards
-//
-// This function mirrors the server function "variantReversibleGetMaxScore()", except that
-// it creates a per stack array, instead,
+/**
+ * Calculates what the maximum score is, accounting for stacks that cannot be completed due to
+ * discarded cards.
+ *
+ * This function mirrors the server function "variantReversibleGetMaxScore()", except that it
+ * creates a per stack array, instead.
+ */
 export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
@@ -150,7 +152,7 @@ export function getMaxScorePerStack(
     const suit = variant.suits[suitIndex];
 
     // Make a map that shows if all of some particular rank in this suit has been discarded
-    const ranks = [1, 2, 3, 4, 5];
+    const ranks = [...DEFAULT_CARD_RANKS];
     if (variantRules.isUpOrDown(variant)) {
       ranks.push(START_CARD_RANK);
     }

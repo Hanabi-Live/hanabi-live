@@ -7,8 +7,6 @@ export interface VariantJSON {
   clueColors?: string[];
   clueRanks?: number[];
 
-  colorCluesTouchNothing?: boolean;
-  rankCluesTouchNothing?: boolean;
   specialRank?: number;
   specialAllClueColors?: boolean;
   specialAllClueRanks?: boolean;
@@ -16,6 +14,8 @@ export interface VariantJSON {
   specialNoClueRanks?: boolean;
   specialDeceptive?: boolean;
   oddsAndEvens?: boolean;
+  colorCluesTouchNothing?: boolean;
+  rankCluesTouchNothing?: boolean;
 
   showSuitNames?: boolean;
 

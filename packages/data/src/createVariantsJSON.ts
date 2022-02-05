@@ -3,28 +3,16 @@ import { isEqual } from "lodash";
 import path from "path";
 import {
   getBasicVariants,
+  getVariantsForEachSpecialSuitCombination,
   getVariantsForEachSuit,
+  getVariantsForSpecialRanks,
 } from "./getVariantDescriptions";
 import { SuitJSON } from "./types/SuitJSON";
 import { VariantDescription } from "./types/VariantDescription";
 import { VariantJSON } from "./types/VariantJSON";
 import { error } from "./util";
 
-// TODO ???
-type SpecialProperty =
-  | "specialAllClueColors"
-  | "specialAllClueRanks"
-  | "specialNoClueColors"
-  | "specialNoClueRanks";
-
 const SUIT_REVERSED_SUFFIX = " Reversed";
-
-const SUIT_SPECIAL_PROPERTIES = [
-  "allClueColors",
-  "noClueColors",
-  "allClueRanks",
-  "noClueRanks",
-];
 
 const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = [
   "Rainbow",
@@ -51,17 +39,24 @@ function main() {
   validateVariants(oldVariants);
   setOldVariantMaps(oldVariants);
 
+  // We only want to create variants for certain suits
+  // (e.g. "Red" does not get its own variants because it is a basic suit)
+  const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
+
   // Start to build all of the variants
   const basicVariantSuits = getBasicVariantSuits();
   const variantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
-    ...getVariantsForEachSuit(suits, basicVariantSuits),
-    ...getVariantsForEachSpecialSuitCombination(),
+    ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getVariantsForEachSpecialSuitCombination(
+      suitsToCreateVariantsFor,
+      basicVariantSuits,
+    ),
+    ...getVariantsForSpecialRanks(suitsToCreateVariantsFor, basicVariantSuits),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
   variants.push(
-    ...getVariantsForSpecialRanks(),
     ...getAmbiguousVariants(),
     ...getVeryAmbiguousVariants(),
     ...getExtremelyAmbiguousVariants(),
@@ -298,191 +293,7 @@ function getSuitIDsFromSuitNames(suitNames: string[]): string[] {
   });
 }
 
-// ???
-
-function getSpecialProperty(property: Property): SpecialProperty {
-  switch (property) {
-    case "allClueColors":
-      return "specialAllClueColors";
-    case "allClueRanks":
-      return "specialAllClueRanks";
-    case "noClueColors":
-      return "specialNoClueColors";
-    case "noClueRanks":
-      return "specialNoClueRanks";
-  }
-}
-
 // Helper functions
-
-function getVariantsForSpecialRanks(): VariantJSON[] {
-  const variants: VariantJSON[] = [];
-  [1, 5].forEach((special_rank) => {
-    let word = "";
-    if (special_rank === 1) {
-      word = "Ones";
-    } else if (special_rank === 5) {
-      word = "Fives";
-    }
-
-    suits.forEach((suit, suit_name) => {
-      if (!suit.createVariants) {
-        return;
-      }
-
-      // There are no one-of-each special ranks (e.g. Black-Ones)
-      if (suit.oneOfEach) {
-        return;
-      }
-
-      // There are no prism special ranks (e.g. Prism-Ones)
-      if (suit.prism) {
-        return;
-      }
-
-      const suffix = `:${suit.id[0]}${special_rank}`;
-
-      // First, create "Rainbow-Ones (6 Suits)", etc.
-      [6, 5, 4, 3].forEach((suit_num) => {
-        const hyphenated_suit_name = suit_name.replace(" ", "-");
-        const variant_name = `${hyphenated_suit_name}-${word} (${suit_num.toString()} Suits)`;
-        const computed_variant_suits = [...variant_suits[suit_num]];
-        const variant: VariantJSON = {
-          name: variant_name,
-          id: getNextUnusedVariantID(variant_name),
-          strId: convertSuitsToStrId(computed_variant_suits) + suffix,
-          suits: computed_variant_suits,
-          specialRank: special_rank,
-        };
-
-        SUIT_SPECIAL_PROPERTIES.forEach((special_property) => {
-          if (suit[special_property]) {
-            const special_property_name = getSpecialProperty(special_property);
-            variant[special_property_name] = true;
-          }
-        });
-
-        if (suit.allClueRanks || suit.noClueRanks) {
-          const clue_ranks = [1, 2, 3, 4, 5].filter(
-            (item) => item !== special_rank,
-          );
-          variant.clueRanks = clue_ranks;
-        }
-
-        variants.push(variant);
-      });
-
-      // Second, create the special suit combinations, e.g. "Rainbow-Ones & Rainbow (6 Suits)"
-      suits.forEach((suit2, suit_name2) => {
-        if (!suit2.createVariants) {
-          return;
-        }
-
-        [6, 5, 4, 3].forEach((suit_num) => {
-          // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
-          // one-of-each suit
-          if ((suit_num === 4 || suit_num === 3) && suit2.oneOfEach) {
-            return;
-          }
-
-          const hyphenated_suit_name = suit_name.replace(" ", "-");
-          const variant_name = `${hyphenated_suit_name}-${word} & ${suit_name2} (${suit_num} Suits)`;
-          const computed_variant_suits = [
-            ...variant_suits[suit_num - 1],
-            suit_name2,
-          ];
-          const variant: VariantJSON = {
-            name: variant_name,
-            id: getNextUnusedVariantID(variant_name),
-            strId: convertSuitsToStrId(computed_variant_suits) + suffix,
-            suits: computed_variant_suits,
-            specialRank: special_rank,
-          };
-
-          SUIT_SPECIAL_PROPERTIES.forEach((special_property) => {
-            if (suit[special_property]) {
-              const special_property_name =
-                getSpecialProperty(special_property);
-              variant[special_property_name] = true;
-            }
-          });
-
-          if (suit.allClueRanks || suit.noClueRanks) {
-            const clue_ranks = [1, 2, 3, 4, 5].filter(
-              (item) => item !== special_rank,
-            );
-            variant.clueRanks = clue_ranks;
-          }
-
-          variants.push(variant);
-        });
-      });
-    });
-
-    // Add variants for Deceptive-Ones and Deceptive-Fives
-    const special_name = `Deceptive-${word}`;
-    const suffix = `:D${special_rank}`;
-
-    // First, create "Deceptive-Ones (6 Suits)", etc.
-    [6, 5, 4, 3].forEach((suit_num) => {
-      const variant_name = `${special_name} (${suit_num} Suits)`;
-      const computed_variant_suits = [...variant_suits[suit_num]];
-      const variant: VariantJSON = {
-        name: variant_name,
-        id: getNextUnusedVariantID(variant_name),
-        strId: convertSuitsToStrId(computed_variant_suits) + suffix,
-        suits: computed_variant_suits,
-        specialRank: special_rank,
-        specialDeceptive: true,
-      };
-
-      const clue_ranks = [1, 2, 3, 4, 5].filter(
-        (clue) => clue !== special_rank,
-      );
-      variant.clueRanks = clue_ranks;
-
-      variants.push(variant);
-    });
-
-    // Second, create the special suit combinations, e.g. "Deceptive-Ones & Rainbow (6 Suits)"
-    suits.forEach((suit, suit_name) => {
-      if (!suit.createVariants) {
-        return;
-      }
-
-      [6, 5, 4, 3].forEach((suit_num) => {
-        // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
-        // one-of-each suit
-        if ((suit_num === 4 || suit_num === 3) && suit.oneOfEach) {
-          return;
-        }
-
-        const variant_name = `${special_name} & ${suit_name} (${suit_num} Suits)`;
-        const computed_variant_suits = [
-          ...variant_suits[suit_num - 1],
-          suit_name,
-        ];
-        const variant: VariantJSON = {
-          name: variant_name,
-          id: getNextUnusedVariantID(variant_name),
-          strId: convertSuitsToStrId(computed_variant_suits) + suffix,
-          suits: computed_variant_suits,
-          specialRank: special_rank,
-          specialDeceptive: true,
-        };
-
-        const clue_ranks = [1, 2, 3, 4, 5].filter(
-          (clue) => clue !== special_rank,
-        );
-        variant.clueRanks = clue_ranks;
-
-        variants.push(variant);
-      });
-    });
-  });
-
-  return variants;
-}
 
 function getAmbiguousVariants(): VariantJSON[] {
   const variants: VariantJSON[] = [];

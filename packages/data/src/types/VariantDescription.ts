@@ -5,4 +5,13 @@
 export interface VariantDescription {
   name: string;
   suits: string[];
+  clueColors?: string[];
+  clueRanks?: number[];
+
+  specialRank?: number;
+  specialAllClueColors?: boolean;
+  specialAllClueRanks?: boolean;
+  specialNoClueColors?: boolean;
+  specialNoClueRanks?: boolean;
+  specialDeceptive?: boolean;
 }
