@@ -41,7 +41,7 @@ func discordPing(ctx context.Context, m *discordgo.MessageCreate, args []string)
 	var pingCrew *discordgo.Role
 	if r, ok := discordGetRoleByName(discordPingCrew); !ok {
 		// Not found
-		discord.ChannelMessageSend(m.ChannelID, "The `@"+discordPingCrew+"` role could not be found.")
+		discord.ChannelMessageSend(m.ChannelID, "Error: the `@"+discordPingCrew+"` role could not be found.")
 		return
 	} else {
 		pingCrew = r
