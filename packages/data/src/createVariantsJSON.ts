@@ -259,7 +259,7 @@ function getVariantsFromVariantDescriptions(
   return variantDescriptions.map((variantDescription) => ({
     name: variantDescription.name,
     id: getNextUnusedVariantID(variantDescription.name),
-    newID: getNewVariantID(variantDescription),
+    // newID: getNewVariantID(variantDescription),
     suits: variantDescription.suits,
   }));
 }
