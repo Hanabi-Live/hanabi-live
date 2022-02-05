@@ -75,7 +75,6 @@ type CommandData struct {
 	HidePregame bool `json:"-"`
 	// True if this is a chat message that should only go to Discord
 	OnlyDiscord          bool   `json:"-"`
-	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`

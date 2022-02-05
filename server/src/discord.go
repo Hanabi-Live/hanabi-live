@@ -22,6 +22,7 @@ var (
 
 	discordPingCrew       string
 	discordTrustedTeacher string
+	discordLobbyCommands  = []string{"subscribe", "unsubscribe"}
 )
 
 /*
@@ -117,14 +118,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	ctx := NewMiscContext("discordMessageCreate")
 
-	// Ignore private commands
-	var command string
-	command, _ = chatParseCommand(m.Content)
-	if stringInSlice(command, discordPrivateCommands) {
-		discordCheckCommand(ctx, m)
-		return
-	}
-
 	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
@@ -147,7 +140,12 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Handle specific Discord commands in channels other than the lobby
 	// (to replicate some lobby functionality to the Discord server more generally)
 	if m.ChannelID != discordChannelSyncWithLobby {
-		discordCheckCommand(ctx, m)
+		discordCheckNonLobbyCommands(ctx, m)
+		return
+	}
+
+	// Handle command specific for lobby
+	if discordCheckLobbyCommands(ctx, m) {
 		return
 	}
 
@@ -160,16 +158,8 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send everyone the notification
-	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-		Username: discordGetNickname(m.Author.ID),
-		Msg:      m.Content,
-		Discord:  true,
-		Room:     "lobby",
-		// Pass through the ID in case we need it for a custom command
-		DiscordID: m.Author.ID,
-		// Pass through the discriminator so we can append it to the username
-		DiscordDiscriminator: m.Author.Discriminator,
-	})
+	username := discordGetNickname(m.Author.ID)
+	discordSendToChat(ctx, m.Content, username)
 }
 
 /*
@@ -224,17 +214,6 @@ func discordSend(to string, username string, msg string) {
 	}
 }
 
-// Sends a direct message to a user on Discord
-func discordSendPM(recipient string, msg string) {
-	replyChannel, _ := discord.UserChannelCreate(recipient)
-	if _, err := discord.ChannelMessageSend(replyChannel.ID, msg); err != nil {
-		// Occasionally, sending messages to Discord can time out; if this occurs,
-		// do not bother retrying, since losing a single message is fairly meaningless
-		logger.Info("Failed to send \"" + msg + "\" to Discord as a PM: " + err.Error())
-		return
-	}
-}
-
 func discordGetNickname(discordID string) string {
 	if member, err := discord.GuildMember(discordGuildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
@@ -261,7 +240,7 @@ func discordGetChannel(discordID string) string {
 
 // We need to check for special commands that occur in Discord channels other than #general
 // (because the messages will not flow to the normal "chatCommandMap")
-func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
+func discordCheckNonLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) {
 	// There could be a command on any line
 	for _, line := range strings.Split(m.Content, "\n") {
 		var command string
@@ -276,6 +255,35 @@ func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
 
 		discordCommand(ctx, m, command, args)
 	}
+}
+
+// Check for commands in lobby.
+// Handles the command and returns true if it can be issued in Discord lobby
+func discordCheckLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) bool {
+	// There could be a command on any line
+	for _, line := range strings.Split(m.Content, "\n") {
+		var command string
+		var args []string
+
+		if cmd, _ := chatParseCommand(line); cmd == "" {
+			continue
+		} else {
+			command = cmd
+		}
+
+		if stringInSlice(command, discordLobbyCommands) {
+			// Send everyone the notification
+			// Get the username once, and put it in args
+			// Because repeated calls to getUsername produce Discord errors
+			username := discordGetNickname(m.Author.ID)
+			discordSendToChat(ctx, "/"+command, username)
+
+			args = []string{username}
+			discordCommand(ctx, m, command, args)
+			return true
+		}
+	}
+	return false
 }
 
 func discordGetRoles() []*discordgo.Role {
@@ -308,4 +316,13 @@ func discordGetRoleByName(name string) (*discordgo.Role, bool) {
 		}
 	}
 	return nil, false
+}
+
+func discordSendToChat(ctx context.Context, msg string, username string) {
+	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
+		Username: username,
+		Msg:      msg,
+		Discord:  true,
+		Room:     "lobby",
+	})
 }

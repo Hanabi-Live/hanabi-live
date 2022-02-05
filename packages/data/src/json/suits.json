@@ -1,78 +1,83 @@
 [
   {
     "name": "Unknown",
+    "id": "Uk",
     "abbreviation": "?",
-    "clueColors": [],
-    "fill": "#cccccc"
+    "fill": "#cccccc",
+    "clueColors": []
   },
   {
     "name": "Red",
+    "id": "R",
     "pip": "hanabiRed"
   },
   {
     "name": "Yellow",
+    "id": "Y",
     "pip": "hanabiYellow"
   },
   {
     "name": "Green",
+    "id": "G",
     "pip": "hanabiGreen"
   },
   {
     "name": "Blue",
+    "id": "B",
     "pip": "hanabiBlue"
   },
   {
     "name": "Purple",
+    "id": "P",
     "pip": "hanabiWhite"
   },
   {
     "name": "Teal",
+    "id": "T",
     "pip": "hanabiAltWhite"
   },
   {
     "name": "Black",
+    "id": "Bk",
     "createVariants": true,
-    "oneOfEach": true,
-    "pip": "hanabiAltBlue"
+    "pip": "hanabiAltBlue",
+    "oneOfEach": true
   },
   {
     "name": "Rainbow",
+    "id": "Ra",
     "abbreviation": "M",
-    "allClueColors": true,
     "createVariants": true,
     "fill": "multi",
-    "fillColors": [
-      "#ff0000",
-      "#ffff00",
-      "#02ec00",
-      "#0037ff",
-      "#8000ff"
-    ],
-    "pip": "rainbow"
+    "fillColors": ["#ff0000", "#ffff00", "#02ec00", "#0037ff", "#8000ff"],
+    "pip": "rainbow",
+    "allClueColors": true
   },
   {
     "name": "Pink",
-    "allClueRanks": true,
+    "id": "Pi",
     "createVariants": true,
-    "pip": "hashtag"
+    "pip": "hashtag",
+    "allClueRanks": true
   },
   {
     "name": "White",
+    "id": "Wh",
     "createVariants": true,
     "fill": "#d9d9d9",
-    "noClueColors": true,
-    "pip": "moon"
+    "pip": "moon",
+    "noClueColors": true
   },
   {
     "name": "Brown",
+    "id": "Br",
     "createVariants": true,
-    "noClueRanks": true,
-    "pip": "kanji"
+    "pip": "kanji",
+    "noClueRanks": true
   },
   {
     "name": "Omni",
-    "allClueColors": true,
-    "allClueRanks": true,
+    "id": "Om",
     "createVariants": true,
     "fill": "multi",
     "fillColors": [
@@ -84,44 +89,44 @@
       "#ff0000",
       "#ffffff"
     ],
-    "pip": "infinity"
+    "pip": "infinity",
+    "allClueColors": true,
+    "allClueRanks": true
   },
   {
     "name": "Null",
+    "id": "Nu",
     "abbreviation": "U",
     "createVariants": true,
-    "noClueColors": true,
-    "noClueRanks": true,
     "fill": "#ffffff",
-    "pip": "emptySet"
+    "pip": "emptySet",
+    "noClueColors": true,
+    "noClueRanks": true
   },
   {
     "name": "Muddy Rainbow",
+    "id": "BrRa",
     "abbreviation": "M",
-    "allClueColors": true,
     "createVariants": true,
-    "noClueRanks": true,
     "fill": "multi",
-    "fillColors": [
-      "#bb4321",
-      "#bb8021",
-      "#808000",
-      "#8080ff",
-      "#500030"
-    ],
-    "pip": "rainbow"
+    "fillColors": ["#bb4321", "#bb8021", "#808000", "#8080ff", "#500030"],
+    "pip": "rainbow",
+    "allClueColors": true,
+    "noClueRanks": true
   },
   {
     "name": "Light Pink",
+    "id": "WhPi",
     "abbreviation": "I",
-    "allClueRanks": true,
     "createVariants": true,
     "fill": "#ffbbdd",
+    "pip": "hashtag",
     "noClueColors": true,
-    "pip": "hashtag"
+    "allClueRanks": true
   },
   {
     "name": "Prism",
+    "id": "Pr",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#d9d9d9",
@@ -130,58 +135,51 @@
   },
   {
     "name": "Dark Rainbow",
+    "id": "DRa",
     "abbreviation": "M",
-    "allClueColors": true,
     "createVariants": true,
     "fill": "multi",
-    "fillColors": [
-      "#a00000",
-      "#a0a000",
-      "#00a000",
-      "#0000a0",
-      "#5000a0"
-    ],
+    "fillColors": ["#a00000", "#a0a000", "#00a000", "#0000a0", "#5000a0"],
+    "pip": "rainbow",
     "oneOfEach": true,
-    "pip": "rainbow"
+    "allClueColors": true
   },
   {
     "name": "Dark Pink",
+    "id": "DPi",
     "abbreviation": "I",
-    "clueColors": [
-      "Pink"
-    ],
     "createVariants": true,
-    "allClueRanks": true,
     "fill": "#800040",
+    "pip": "hashtag",
     "oneOfEach": true,
-    "pip": "hashtag"
+    "clueColors": ["Pink"],
+    "allClueRanks": true
   },
   {
     "name": "Gray",
+    "id": "DWh",
     "abbreviation": "A",
     "createVariants": true,
-    "noClueColors": true,
     "fill": "#555555",
+    "pip": "moon",
     "oneOfEach": true,
-    "pip": "moon"
+    "noClueColors": true
   },
   {
     "name": "Dark Brown",
+    "id": "DBr",
     "abbreviation": "N",
-    "clueColors": [
-      "Brown"
-    ],
     "createVariants": true,
-    "noClueRanks": true,
     "fill": "#271a0c",
+    "pip": "kanji",
     "oneOfEach": true,
-    "pip": "kanji"
+    "clueColors": ["Brown"],
+    "noClueRanks": true
   },
   {
     "name": "Dark Omni",
+    "id": "DOm",
     "abbreviation": "O",
-    "allClueColors": true,
-    "allClueRanks": true,
     "createVariants": true,
     "fill": "multi",
     "fillColors": [
@@ -193,377 +191,359 @@
       "#a00000",
       "#000000"
     ],
+    "pip": "infinity",
     "oneOfEach": true,
-    "pip": "infinity"
+    "allClueColors": true,
+    "allClueRanks": true
   },
   {
     "name": "Dark Null",
+    "id": "DNu",
     "abbreviation": "U",
     "createVariants": true,
-    "noClueColors": true,
-    "noClueRanks": true,
     "fill": "#a6a6a6",
+    "pip": "emptySet",
     "oneOfEach": true,
-    "pip": "emptySet"
+    "noClueColors": true,
+    "noClueRanks": true
   },
   {
     "name": "Cocoa Rainbow",
+    "id": "DBrRa",
     "abbreviation": "M",
-    "allClueColors": true,
     "createVariants": true,
     "fill": "multi",
-    "fillColors": [
-      "#662211",
-      "#664011",
-      "#404000",
-      "#404080",
-      "#280018"
-    ],
-    "noClueRanks": true,
+    "fillColors": ["#662211", "#664011", "#404000", "#404080", "#280018"],
+    "pip": "rainbow",
     "oneOfEach": true,
-    "pip": "rainbow"
+    "allClueColors": true,
+    "noClueRanks": true
   },
   {
     "name": "Gray Pink",
+    "id": "DWhPi",
     "abbreviation": "I",
-    "allClueRanks": true,
     "createVariants": true,
     "fill": "#b05080",
-    "noClueColors": true,
+    "pip": "hashtag",
     "oneOfEach": true,
-    "pip": "hashtag"
+    "noClueColors": true,
+    "allClueRanks": true
   },
   {
     "name": "Dark Prism",
+    "id": "DPr",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#d9d9d9",
-    "oneOfEach": true,
     "pip": "triangle",
+    "oneOfEach": true,
     "prism": true
   },
   {
     "name": "Tomato",
-    "clueColors": [
-      "Red"
-    ],
+    "id": "AR1",
+    "showSuitName": true,
     "fill": "#e60000",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed",
+    "clueColors": ["Red"]
   },
   {
     "name": "Mahogany",
-    "clueColors": [
-      "Red"
-    ],
+    "id": "AR2",
+    "showSuitName": true,
     "fill": "#660000",
-    "pip": "hanabiWhite"
+    "pip": "hanabiWhite",
+    "clueColors": ["Red"]
   },
   {
     "name": "Lime",
-    "clueColors": [
-      "Green"
-    ],
+    "id": "AG1",
+    "showSuitName": true,
     "fill": "#1aff1a",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow",
+    "clueColors": ["Green"]
   },
   {
     "name": "Forest",
-    "abbreviation": "R",
-    "clueColors": [
-      "Green"
-    ],
+    "id": "AG2",
+    "showSuitName": true,
     "fill": "#008000",
-    "pip": "hanabiGreen"
+    "pip": "hanabiGreen",
+    "clueColors": ["Green"]
   },
   {
     "name": "Sky",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "AB1",
+    "showSuitName": true,
     "fill": "#1a66ff",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Navy",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "AB2",
+    "showSuitName": true,
     "fill": "#002b80",
-    "pip": "hanabiAltWhite"
+    "pip": "hanabiAltWhite",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Tomato VA",
-    "clueColors": [
-      "Red"
-    ],
+    "id": "VR1",
     "displayName": "Tomato",
+    "showSuitName": true,
     "fill": "#e60000",
-    "pip": "hanabiGreen"
+    "pip": "hanabiGreen",
+    "clueColors": ["Red"]
   },
   {
     "name": "Carrot VA",
-    "clueColors": [
-      "Red"
-    ],
+    "id": "VR2",
     "displayName": "Carrot",
+    "showSuitName": true,
     "fill": "#f96401",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed",
+    "clueColors": ["Red"]
   },
   {
     "name": "Mahogany VA",
-    "clueColors": [
-      "Red"
-    ],
+    "id": "VR3",
     "displayName": "Mahogany",
+    "showSuitName": true,
     "fill": "#660000",
-    "pip": "hanabiWhite"
+    "pip": "hanabiWhite",
+    "clueColors": ["Red"]
   },
   {
     "name": "Sky VA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "VB1",
     "displayName": "Sky",
+    "showSuitName": true,
     "fill": "#4d88ff",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Berry VA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "VB2",
     "displayName": "Berry",
-    "pip": "hanabiAltWhite"
+    "showSuitName": true,
+    "pip": "hanabiAltWhite",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Navy VA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "VB3",
     "displayName": "Navy",
+    "showSuitName": true,
     "fill": "#001a4d",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Ice EA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "EB1",
     "displayName": "Ice",
+    "showSuitName": true,
     "fill": "#e6eeff",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Sapphire EA",
+    "id": "EB2",
     "abbreviation": "A",
-    "clueColors": [
-      "Blue"
-    ],
     "displayName": "Sapphire",
+    "showSuitName": true,
     "fill": "#99bbff",
-    "pip": "hanabiAltWhite"
+    "pip": "hanabiAltWhite",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Sky EA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "EB3",
     "displayName": "Sky",
+    "showSuitName": true,
     "fill": "#3377ff",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Berry EA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "EB4",
     "displayName": "Berry",
-    "pip": "hanabiGreen"
+    "showSuitName": true,
+    "pip": "hanabiGreen",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Navy EA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "EB5",
     "displayName": "Navy",
+    "showSuitName": true,
     "fill": "#002266",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Ocean EA",
-    "clueColors": [
-      "Blue"
-    ],
+    "id": "EB6",
     "displayName": "Ocean",
+    "showSuitName": true,
     "fill": "#00091a",
-    "pip": "hanabiWhite"
+    "pip": "hanabiWhite",
+    "clueColors": ["Blue"]
   },
   {
     "name": "Orange D",
-    "clueColors": [
-      "Red",
-      "Yellow"
-    ],
+    "id": "DRY",
     "displayName": "Orange",
+    "showSuitName": true,
     "fill": "#ff8800",
-    "pip": "hanabiAltWhite"
+    "pip": "hanabiAltWhite",
+    "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Purple D",
-    "clueColors": [
-      "Red",
-      "Blue"
-    ],
+    "id": "DRB",
     "displayName": "Purple",
-    "pip": "hanabiWhite"
+    "showSuitName": true,
+    "pip": "hanabiWhite",
+    "clueColors": ["Red", "Blue"]
   },
   {
     "name": "Mahogany D",
-    "clueColors": [
-      "Red",
-      "Black"
-    ],
+    "id": "DRK",
     "displayName": "Mahogany",
+    "showSuitName": true,
     "fill": "#660016",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed",
+    "clueColors": ["Red", "Black"]
   },
   {
     "name": "Green D",
-    "clueColors": [
-      "Yellow",
-      "Blue"
-    ],
+    "id": "DYB",
     "displayName": "Green",
-    "pip": "hanabiGreen"
+    "showSuitName": true,
+    "pip": "hanabiGreen",
+    "clueColors": ["Yellow", "Blue"]
   },
   {
     "name": "Tan D",
-    "clueColors": [
-      "Yellow",
-      "Black"
-    ],
+    "id": "DYB2",
     "displayName": "Tan",
+    "showSuitName": true,
     "fill": "#999900",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow",
+    "clueColors": ["Yellow", "Black"]
   },
   {
     "name": "Navy D",
-    "clueColors": [
-      "Blue",
-      "Black"
-    ],
+    "id": "DBK",
     "displayName": "Navy",
+    "showSuitName": true,
     "fill": "#000066",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue",
+    "clueColors": ["Blue", "Black"]
   },
   {
     "name": "Orange D2",
-    "clueColors": [
-      "Red",
-      "Yellow"
-    ],
+    "id": "DRY2",
     "displayName": "Orange",
+    "showSuitName": true,
     "fill": "#ff8800",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed",
+    "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Lime D",
-    "clueColors": [
-      "Yellow",
-      "Green"
-    ],
+    "id": "DYG",
     "displayName": "Lime",
+    "showSuitName": true,
     "fill": "#80c000",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow",
+    "clueColors": ["Yellow", "Green"]
   },
   {
     "name": "Teal D",
-    "clueColors": [
-      "Green",
-      "Blue"
-    ],
+    "id": "DGB",
     "displayName": "Teal",
-    "pip": "hanabiGreen"
+    "showSuitName": true,
+    "pip": "hanabiGreen",
+    "clueColors": ["Green", "Blue"]
   },
   {
     "name": "Indigo D",
-    "clueColors": [
-      "Blue",
-      "Purple"
-    ],
+    "id": "DBP",
     "displayName": "Indigo",
+    "showSuitName": true,
     "fill": "#1a0082",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue",
+    "clueColors": ["Blue", "Purple"]
   },
   {
     "name": "Cardinal D",
-    "clueColors": [
-      "Purple",
-      "Red"
-    ],
+    "id": "DPR",
     "displayName": "Cardinal",
+    "showSuitName": true,
     "fill": "#810735",
-    "pip": "hanabiWhite"
+    "pip": "hanabiWhite",
+    "clueColors": ["Purple", "Red"]
   },
   {
     "name": "Tangelo AD",
-    "clueColors": [
-      "Red",
-      "Yellow"
-    ],
+    "id": "DRY3",
     "displayName": "Tangelo",
+    "showSuitName": true,
     "fill": "#ffac4d",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed",
+    "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Peach AD",
-    "clueColors": [
-      "Red",
-      "Yellow"
-    ],
+    "id": "DRY4",
     "displayName": "Peach",
+    "showSuitName": true,
     "fill": "#b35f00",
-    "pip": "hanabiAltWhite"
+    "pip": "hanabiAltWhite",
+    "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Orchid AD",
-    "clueColors": [
-      "Red",
-      "Blue"
-    ],
+    "id": "DRB2",
     "displayName": "Orchid",
+    "showSuitName": true,
     "fill": "#8c1aff",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue",
+    "clueColors": ["Red", "Blue"]
   },
   {
     "name": "Violet AD",
-    "clueColors": [
-      "Red",
-      "Blue"
-    ],
+    "id": "DRB3",
     "displayName": "Violet",
+    "showSuitName": true,
     "fill": "#400080",
-    "pip": "hanabiWhite"
+    "pip": "hanabiWhite",
+    "clueColors": ["Red", "Blue"]
   },
   {
     "name": "Lime AD",
-    "clueColors": [
-      "Yellow",
-      "Blue"
-    ],
+    "id": "DYB3",
     "displayName": "Lime",
+    "showSuitName": true,
     "fill": "#1aff1a",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow",
+    "clueColors": ["Yellow", "Blue"]
   },
   {
     "name": "Forest AD",
+    "id": "DYB4",
     "abbreviation": "R",
-    "clueColors": [
-      "Yellow",
-      "Blue"
-    ],
     "displayName": "Forest",
+    "showSuitName": true,
     "fill": "#008000",
-    "pip": "hanabiGreen"
+    "pip": "hanabiGreen",
+    "clueColors": ["Yellow", "Blue"]
   }
 ]
