@@ -4,7 +4,7 @@ import { VariantDescription } from "./types/VariantDescription";
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3];
 const SPECIAL_RANKS = [1, 5];
-const SUIT_REVERSED_SUFFIX = " Reversed";
+export const SUIT_REVERSED_SUFFIX = " Reversed";
 
 /** These are suit properties that are transferred to special ranks. */
 const SUIT_SPECIAL_PROPERTIES = [
