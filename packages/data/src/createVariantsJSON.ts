@@ -33,6 +33,7 @@ import { error } from "./util";
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
 const suitsNameMap = new Map<string, SuitJSON>();
+const suitsIDMap = new Map<string, SuitJSON>();
 const lastUsedVariantID = -1;
 
 main();
@@ -43,7 +44,7 @@ function main() {
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
   validateSuits(suits);
   setSuitDefaultValues(suits);
-  setSuitNameMap(suits);
+  setSuitMaps(suits);
 
   const oldVariants = getJSONAndParse(variantsPath) as VariantJSON[];
   validateVariants(oldVariants);
@@ -179,9 +180,10 @@ function setSuitDefaultValues(suits: SuitJSON[]) {
   }
 }
 
-function setSuitNameMap(suits: SuitJSON[]) {
+function setSuitMaps(suits: SuitJSON[]) {
   for (const suit of suits) {
     suitsNameMap.set(suit.name, suit);
+    suitsIDMap.set(suit.id, suit);
   }
 }
 
