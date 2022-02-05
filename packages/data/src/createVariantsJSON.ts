@@ -97,7 +97,7 @@ function main() {
 }
 
 function getPaths(): string[] {
-  const repoRootPath = path.join(__dirname, "..", "..");
+  const repoRootPath = path.join(__dirname, "..", "..", "..");
   const jsonDirectoryPath = path.join(
     repoRootPath,
     "packages",
