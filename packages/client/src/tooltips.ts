@@ -7,7 +7,7 @@
 // So we have to make sure that "sideEffects" is is either removed or set to false
 // Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have
 // to worry about that for now
-import { MAX_NUMBER_OF_PLAYERS } from "@hanabi/data";
+import { MAX_PLAYERS } from "@hanabi/data";
 import "tooltipster";
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
 // We import it for the side-effects for the same reason
@@ -227,7 +227,7 @@ function createGameTooltips() {
 
 function createPlayerTooltips() {
   // Dynamically create the player tooltips
-  for (let i = 0; i < MAX_NUMBER_OF_PLAYERS; i++) {
+  for (let i = 0; i < MAX_PLAYERS; i++) {
     let id = `tooltip-player-${i}`;
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);
