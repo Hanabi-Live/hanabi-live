@@ -12,6 +12,7 @@ import "tooltipster";
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
 // We import it for the side-effects for the same reason
 import "../lib/tooltipster-scrollableTip.min";
+
 export const TOOLTIP_DELAY = 500; // In milliseconds
 
 // Constants
