@@ -13,11 +13,10 @@ export default function createJSONFromReplay(room: string) {
     globals === null ||
     globals.store === null ||
     !globals.state.finished ||
-    globals.state.replay === null ||
-    globals.state.replay.hypothetical === null
+    globals.state.replay === null
   ) {
     chat.addSelf(
-      '<span class="red">Error:</span> You can only use that command during the review of a hypothetical.',
+      '<span class="red">Error:</span> You can only use that command during the review of a game.',
       room,
     );
     return;
@@ -50,17 +49,28 @@ export default function createJSONFromReplay(room: string) {
   game.actions = getGameActionsFromState(replay);
 
   // Add the hypothesis from log, after current segment
-  const states = replay.hypothetical!.states;
-  const log = states[states.length - 1].log;
-  if (replay.segment < log.length) {
-    const slice = log.slice(replay.segment + 1);
-    const actions = getGameActionsFromLog(slice);
-    game.actions.push(...actions);
+  if (replay.hypothetical !== null) {
+    const states = replay.hypothetical.states;
+    const log = states[states.length - 1].log;
+    if (replay.segment < log.length) {
+      const slice = log.slice(replay.segment + 1);
+      const actions = getGameActionsFromLog(slice);
+      game.actions.push(...actions);
+    }
+  }
+
+  // Enforce at least one action
+  if (game.actions.length === 0) {
+    chat.addSelf(
+      '<span class="red">Error</span>: There are no actions in your hypo.',
+      room,
+    );
+    return;
   }
 
   const json = JSON.stringify(game);
   const URLData = shrink(json);
-  if (URLData === "") {
+  if (URLData === "" || URLData === null) {
     chat.addSelf(
       '<span class="red">Error</span>: Your JSON data cannot be compressed.',
       room,
@@ -75,15 +85,15 @@ export default function createJSONFromReplay(room: string) {
       '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
       room,
     );
+    const here = `<button href="#" onclick="navigator.clipboard.writeText('${json.replace(
+      /"/g,
+      "\\'",
+    )}'.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"> <strong>here < /strong></button >`;
+    chat.addSelf(
+      `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
+      room,
+    );
   }
-  const here = `<button href="#" onclick="navigator.clipboard.writeText('${json.replace(
-    /"/g,
-    "\\'",
-  )}'.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"> <strong>here < /strong></button >`;
-  chat.addSelf(
-    `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
-    room,
-  );
 }
 
 function getGameActionsFromState(source: ReplayState): ClientAction[] {

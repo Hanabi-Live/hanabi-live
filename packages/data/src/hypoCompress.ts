@@ -51,16 +51,19 @@ const variantsJSONArray = Array.from(variantsJSON) as VariantJSON[];
  *
  * @param JSONString A string representing a hypo JSON
  */
-export function shrink(JSONString: string): string {
+export function shrink(JSONString: string): string | null {
   const gameDataJSON = JSON.parse(JSONString) as GameJSON;
   const compressed = gameJSONCompress(gameDataJSON);
 
   // Check if compression succeeded
   const decompressed = gameJSONDecompress(compressed);
-  const decompressedJSON = JSON.parse(decompressed) as GameJSON;
-
-  if (!isEqual(gameDataJSON, decompressedJSON)) {
-    return "";
+  try {
+    const decompressedJSON = JSON.parse(decompressed) as GameJSON;
+    if (!isEqual(gameDataJSON, decompressedJSON)) {
+      return null;
+    }
+  } catch {
+    return null;
   }
 
   return compressed;
@@ -100,10 +103,7 @@ function gameJSONCompress(data: GameJSON): string {
   out += `${deck},`;
 
   // actions
-  const [actions, okActions] = compressActions(data.actions);
-  if (!okActions) {
-    return "";
-  }
+  const actions = compressActions(data.actions);
   out += `${actions},`;
 
   // variant id
@@ -145,10 +145,7 @@ function gameJSONDecompress(data: string): string {
     return "";
   }
 
-  const [actions, okActions] = decompressActions(actionsString);
-  if (!okActions) {
-    return "";
-  }
+  const actions = decompressActions(actionsString);
 
   const variant = variantsJSONArray.find(
     (v) => v.id.toString() === variantString,
@@ -258,11 +255,12 @@ function stringToDeckCard(src: string, range: MinMax): DeckCard {
  *
  * @param actions The array of Action
  */
-function compressActions(actions: Action[]): [string, boolean] {
+function compressActions(actions: Action[]): string {
   // Find min/max values of Action.type
   const range = getTypeMinMax(actions);
   if (isMinMaxInvalid(range)) {
-    return ["", false];
+    // Empty actions still require min/max values
+    return "00";
   }
 
   let out = `${range.min}${range.max}`;
@@ -270,7 +268,7 @@ function compressActions(actions: Action[]): [string, boolean] {
     out += actionToString(action, range);
   });
 
-  return [out, true];
+  return out;
 }
 
 /**
@@ -280,14 +278,14 @@ function compressActions(actions: Action[]): [string, boolean] {
  *
  * @param src The compressed string
  */
-function decompressActions(src: string): [Action[], boolean] {
+function decompressActions(src: string): Action[] {
   const actions: Action[] = [];
   const range: MinMax = {
     min: parseInt(src.charAt(0), 10),
     max: parseInt(src.charAt(1), 10),
   };
   if (isMinMaxInvalid(range)) {
-    return [[], false];
+    return [];
   }
 
   let s = 2;
@@ -298,7 +296,7 @@ function decompressActions(src: string): [Action[], boolean] {
     s += 2;
   }
 
-  return [actions, true];
+  return actions;
 }
 
 /**
@@ -313,7 +311,7 @@ function decompressActions(src: string): [Action[], boolean] {
 function actionToString(action: Action, range: MinMax): string {
   const r = range.max - range.min + 1;
   const val = action.value === undefined ? 0 : action.value + 1;
-  const index = val * r + (action.type - range.min);
+  const index = val * r + action.type - range.min;
   const char = BASE62.charAt(index);
   return char + BASE62.charAt(action.target);
 }
@@ -330,8 +328,9 @@ function actionToString(action: Action, range: MinMax): string {
 function stringToAction(src: string, range: MinMax): Action {
   const r = range.max - range.min + 1;
   const index = BASE62.indexOf(src.charAt(0));
-  const type = index % r;
-  const val = Math.floor((index - type + 1) / r);
+  let type = index % r;
+  const val = Math.floor((index - type) / r);
+  type += range.min;
   const target = BASE62.indexOf(src.charAt(1));
 
   return {
