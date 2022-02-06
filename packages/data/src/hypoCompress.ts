@@ -40,7 +40,7 @@ const variantsJSONArray = Array.from(variantsJSON) as VariantJSON[];
 
 /**
  * Compresses a string representing a GameJSON object.
- * Returns empty string if the compression fails.
+ * Returns null string if the compression fails.
  *
  * The resulting string is composed of three substrings separated by comma.
  * The first substring represents the number of players and the deck.
