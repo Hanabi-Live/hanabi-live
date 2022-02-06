@@ -7,11 +7,13 @@ type DeckCard = {
   suitIndex: number;
   rank: number;
 };
+
 type Action = {
   type: number;
   target: number;
   value?: number;
 };
+
 type Options = {
   variant: string | undefined;
 };
@@ -26,6 +28,7 @@ export type GameJSON = {
   notes: [];
   seed: string;
 };
+
 type MinMax = {
   min: number;
   max: number;
