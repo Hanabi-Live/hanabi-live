@@ -59,27 +59,29 @@ export default function createJSONFromReplay(room: string) {
   }
 
   const json = JSON.stringify(game);
-  navigator.clipboard.writeText(json).then(
-    () => {},
-    () => {},
-  );
-  chat.addSelf(
-    '<span class="green">Info</span>: Your hypo is copied on your clipboard.',
-    room,
-  );
   const URLData = shrink(json);
   if (URLData === "") {
     chat.addSelf(
       '<span class="red">Error</span>: Your JSON data cannot be compressed.',
       room,
     );
-    return;
+  } else {
+    const URL = `https://hanab.live/shared-replay-json/${URLData}`;
+    navigator.clipboard.writeText(URL).then(
+      () => {},
+      () => {},
+    );
+    chat.addSelf(
+      '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
+      room,
+    );
   }
-  const URL = `https://hanab.live/shared-replay-json/${URLData}`;
-  chat.addSelf(`<span class="green">Info</span>: Your URL is: ${URL}`, room);
-  const here = `<button href="#" onclick="navigator.clipboard.writeText('${URL}').then(()=>{},()=>{});return false;"><strong>here</strong></button>`;
+  const here = `<button href="#" onclick="navigator.clipboard.writeText('${json.replace(
+    /"/g,
+    "\\'",
+  )}'.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"> <strong>here < /strong></button >`;
   chat.addSelf(
-    `<span class="green">Info</span>: Click ${here} to copy the URL to your clipboard.`,
+    `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
     room,
   );
 }
