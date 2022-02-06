@@ -364,10 +364,10 @@ function getRankMinMax(deck: DeckCard[]): MinMax {
     min: -1,
     max: -1,
   };
-  deck.forEach((card) => {
+  for (const card of deck) {
     range.min = range.min === -1 ? card.rank : Math.min(range.min, card.rank);
     range.max = range.max === -1 ? card.rank : Math.max(range.max, card.rank);
-  });
+  }
 
   return range;
 }
@@ -383,12 +383,12 @@ function getTypeMinMax(actions: Action[]): MinMax {
     min: -1,
     max: -1,
   };
-  actions.forEach((action) => {
+  for (const action of actions) {
     range.min =
       range.min === -1 ? action.type : Math.min(range.min, action.type);
     range.max =
       range.max === -1 ? action.type : Math.max(range.max, action.type);
-  });
+  }
 
   return range;
 }
