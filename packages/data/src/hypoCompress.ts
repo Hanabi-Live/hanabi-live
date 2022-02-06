@@ -248,7 +248,7 @@ function stringToDeckCard(src: string, range: MinMax): DeckCard {
   const index = BASE62.indexOf(src);
   const rank = (index % r) + 1;
   const suitIndex = Math.floor((index - rank + 1) / r);
-  return <DeckCard>{ suitIndex, rank };
+  return { suitIndex, rank };
 }
 
 /**
@@ -334,7 +334,7 @@ function stringToAction(src: string, range: MinMax): Action {
   const val = Math.floor((index - type + 1) / r);
   const target = BASE62.indexOf(src.charAt(1));
 
-  return <Action>{
+  return {
     type,
     target,
     value: val === 0 ? undefined : val - 1,
