@@ -1,4 +1,4 @@
-import { HYPO_PLAYER_NAMES } from "@hanabi/data";
+import { HYPO_PLAYER_NAMES, shrink } from "@hanabi/data";
 import * as chat from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
@@ -65,6 +65,24 @@ export default function createJSONFromReplay(room: string) {
   );
   chat.addSelf(
     '<span class="green">Info</span>: Your hypo is copied on your clipboard.',
+    room,
+  );
+  const URLData = shrink(json);
+  if (URLData === "") {
+    chat.addSelf(
+      '<span class="red">Error</span>: Your JSON data cannot be compressed.',
+      room,
+    );
+    return;
+  }
+  const URL = `https://hanab.live/shared-replay-json/${URLData}`;
+  chat.addSelf(
+    `<span class="green">Info</span>: Your URL is: <a href="${URL}" target="_blank">${URL}</a>.`,
+    room,
+  );
+  const here = `<a href="#" onclick="navigator.clipboard.writeText('${URL}').then(()=>{},()=>{});return false;">here</a>`;
+  chat.addSelf(
+    `<span class="green">Info</span>: Click ${here} to copy the URL to your clipboard..`,
     room,
   );
 }
