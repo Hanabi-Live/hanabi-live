@@ -77,9 +77,9 @@ export default function createJSONFromReplay(room: string) {
   }
   const URL = `https://hanab.live/shared-replay-json/${URLData}`;
   chat.addSelf(`<span class="green">Info</span>: Your URL is: ${URL}`, room);
-  const here = `<button href="#" onclick="navigator.clipboard.writeText('${URL}').then(()=>{},()=>{});return false;">here</button>`;
+  const here = `<button href="#" onclick="navigator.clipboard.writeText('${URL}').then(()=>{},()=>{});return false;"><strong>here</strong></button>`;
   chat.addSelf(
-    `<span class="green">Info</span>: Click <strong>${here}</strong> to copy the URL to your clipboard..`,
+    `<span class="green">Info</span>: Click ${here} to copy the URL to your clipboard.`,
     room,
   );
 }
