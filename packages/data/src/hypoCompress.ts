@@ -1,4 +1,5 @@
 import { isEqual } from "lodash";
+import { MAX_PLAYERS, MIN_PLAYERS } from ".";
 import { HYPO_PLAYER_NAMES } from "./hypoPlayerNames";
 import variantsJSON from "./json/variants.json";
 import { VariantJSON } from "./types/VariantJSON";
@@ -346,7 +347,7 @@ function stringToAction(src: string, range: MinMax): Action {
  * @param size The number of players
  */
 function getPlayers(size: number): string[] {
-  if (size < 2 || size > HYPO_PLAYER_NAMES.length) {
+  if (size < MIN_PLAYERS || size > MAX_PLAYERS) {
     return [];
   }
   return HYPO_PLAYER_NAMES.slice(0, size);
