@@ -593,12 +593,12 @@ export function addSelf(msg: string, room: string): void {
   add(
     {
       msg,
-      who: "",
+      who: "Hanab Live",
       discord: false,
       server: true,
       datetime: new Date().toString(),
       room,
-      recipient: "",
+      recipient: globals.username,
     },
     false,
   );
