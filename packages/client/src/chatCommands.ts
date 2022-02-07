@@ -110,7 +110,7 @@ chatCommands.set("t", pm);
 function setLeader(room: string, args: string[]) {
   if (globals.tableID === -1) {
     chat.addSelf(
-      "You are not currently at a table, so you cannot use that command.",
+      "You are not currently at a table, so you cannot use the <code>/setleader</code> command.",
       room,
       "error",
     );
@@ -134,7 +134,7 @@ chatCommands.set("changeowner", setLeader);
 function setVariant(room: string, args: string[]) {
   if (globals.tableID === -1) {
     chat.addSelf(
-      "You are not currently at a table, so you cannot use that command.",
+      "You are not currently at a table, so you cannot use the <code>/setvariant</code> command.",
       room,
       "error",
     );
@@ -173,7 +173,7 @@ chatCommands.set("cv", setVariant);
 chatCommands.set("tag", (room: string, args: string[]) => {
   if (globals.tableID === -1) {
     chat.addSelf(
-      "You are not currently at a table, so you cannot use that command.",
+      "You are not currently at a table, so you cannot use the <code>/tag</code> command.",
       room,
       "error",
     );
@@ -191,7 +191,7 @@ chatCommands.set("tag", (room: string, args: string[]) => {
 chatCommands.set("tagdelete", (room: string, args: string[]) => {
   if (globals.tableID === -1) {
     chat.addSelf(
-      "You are not currently at a table, so you cannot use that command.",
+      "You are not currently at a table, so you cannot use the <code>/tagdelete</code> command.",
       room,
       "error",
     );
@@ -218,7 +218,7 @@ chatCommands.set("tagsearch", (room: string, args: string[]) => {
 chatCommands.set("tagsdeleteall", (room: string) => {
   if (globals.tableID === -1) {
     chat.addSelf(
-      "You are not currently at a table, so you cannot use that command.",
+      "You are not currently at a table, so you cannot use the <code>/tagsdeleteall</code> command.",
       room,
       "error",
     );

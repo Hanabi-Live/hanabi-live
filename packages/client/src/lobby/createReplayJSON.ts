@@ -17,7 +17,7 @@ export default function createJSONFromReplay(room: string) {
     globals.state.replay.hypothetical === null
   ) {
     chat.addSelf(
-      "You can only use that command during the review of a hypothetical.",
+      "You can only use the <code>/copy</code> command during the review of a hypothetical.",
       room,
       "error",
     );
