@@ -7,7 +7,7 @@ import (
 )
 
 // /here, /ping
-func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	if t != nil {
 		chatServerSend(ctx, NotInLobbyFail, d.Room, d.NoTablesLock)
 		return
@@ -31,7 +31,7 @@ func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /teachme
-func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	if t != nil {
 		chatServerSend(ctx, NotInLobbyFail, d.Room, d.NoTablesLock)
 		return
@@ -55,12 +55,12 @@ func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /subscribe, /unsubscribe
-func chatSubscribe(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatSubscribe(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	chatServerSendPM(s, "You can only use that command on Discord.", d.Room)
 }
 
 // /wrongchannel
-func chatWrongChannel(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatWrongChannel(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	if t != nil {
 		chatServerSend(ctx, NotInLobbyFail, d.Room, d.NoTablesLock)
 		return

@@ -7,38 +7,11 @@ import (
 
 var (
 	// Used to store all of the functions that handle each command
-	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table))
+	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table, string))
 )
 
 func chatCommandInit() {
 	// General commands (that work both in the lobby and at a table)
-	chatCommandMap["help"] = chatHelp
-	chatCommandMap["commands"] = chatHelp
-	chatCommandMap["?"] = chatHelp
-	chatCommandMap["discord"] = chatDiscord
-	chatCommandMap["rules"] = chatRules
-	chatCommandMap["community"] = chatRules
-	chatCommandMap["guidelines"] = chatRules
-	chatCommandMap["new"] = chatNew
-	chatCommandMap["beginner"] = chatNew
-	chatCommandMap["beginners"] = chatNew
-	chatCommandMap["guide"] = chatNew
-	chatCommandMap["doc"] = chatDoc
-	chatCommandMap["levels"] = chatLevels
-	chatCommandMap["learningpath"] = chatLevels
-	chatCommandMap["path"] = chatLevels
-	chatCommandMap["learning"] = chatLevels
-	chatCommandMap["level"] = chatLevels
-	chatCommandMap["features"] = chatFeatures
-	chatCommandMap["manual"] = chatFeatures
-	chatCommandMap["ptt"] = chatPTT
-	chatCommandMap["sin"] = chatSin
-	chatCommandMap["cardinal"] = chatSin
-	chatCommandMap["cardinalsin"] = chatSin
-	chatCommandMap["document"] = chatDoc
-	chatCommandMap["reference"] = chatDoc
-	chatCommandMap["bga"] = chatBGA
-	chatCommandMap["efficiency"] = chatEfficiency
 	chatCommandMap["replay"] = chatReplay
 	chatCommandMap["random"] = chatRandom
 	chatCommandMap["uptime"] = chatUptime
@@ -98,6 +71,8 @@ func chatCommandInit() {
 	chatCommandMap["friends"] = chatCommandWebsiteOnly
 	chatCommandMap["unfriend"] = chatCommandWebsiteOnly
 	chatCommandMap["version"] = chatCommandWebsiteOnly
+
+	chatMapAddSimpleResponses()
 }
 
 func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
@@ -113,7 +88,7 @@ func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Check to see if there is a command handler for this command
 	chatCommandFunction, ok := chatCommandMap[command]
 	if ok {
-		chatCommandFunction(ctx, s, d, t)
+		chatCommandFunction(ctx, s, d, t, command)
 	}
 }
 
@@ -142,7 +117,7 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 	return true
 }
 
-func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	msg := "You cannot perform that command from Discord; please use the website instead."
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
