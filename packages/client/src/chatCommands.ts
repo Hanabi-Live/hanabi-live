@@ -206,7 +206,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
     chat.addSelf(
       "You are not currently at a table, so you cannot use that command.",
       room,
-    )
+    );
   }
   globals.conn!.send("tagsDeleteAll", {
     tableID: globals.tableID,
