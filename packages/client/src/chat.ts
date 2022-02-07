@@ -589,10 +589,24 @@ export function add(data: ChatMessage, fast: boolean): void {
 }
 
 // addSelf is used when the client needs to send a chat message to itself
-export function addSelf(msg: string, room: string): void {
+export function addSelf(
+  msg: string,
+  room: string,
+  type: "normal" | "info" | "error" = "normal",
+): void {
+  let message = msg;
+  switch (type) {
+    case "info":
+      message = `<span class="green">${message}</span>`;
+      break;
+    case "error":
+      message = `<span class="red">${message}</span>`;
+      break;
+    default:
+  }
   add(
     {
-      msg,
+      msg: message,
       who: "Hanab Live",
       discord: false,
       server: true,

@@ -17,8 +17,9 @@ export default function createJSONFromReplay(room: string) {
     globals.state.replay.hypothetical === null
   ) {
     chat.addSelf(
-      '<span class="red">Error:</span> You can only use that command during the review of a hypothetical.',
+      "You can only use that command during the review of a hypothetical.",
       room,
+      "error",
     );
     return;
   }
@@ -63,10 +64,7 @@ export default function createJSONFromReplay(room: string) {
     () => {},
     () => {},
   );
-  chat.addSelf(
-    '<span class="green">Info</span>: Your hypo is copied on your clipboard.',
-    room,
-  );
+  chat.addSelf("Your hypo is copied on your clipboard.", room, "info");
 }
 
 function getGameActionsFromState(source: ReplayState): ClientAction[] {
