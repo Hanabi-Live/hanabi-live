@@ -21,7 +21,7 @@ func chatPause(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /unpause
-func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatUnpause(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	if t == nil || d.Room == "lobby" {
 		chatServerSend(ctx, NotInGameFail, "lobby", d.NoTablesLock)
 		return
