@@ -1,7 +1,7 @@
 // Calculates the state of the deck after an action
 
 import { ensureAllCases, getVariant } from "@hanabi/data";
-import { nullIfNegative } from "../../misc";
+import { nullIfNegative } from "../../utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";

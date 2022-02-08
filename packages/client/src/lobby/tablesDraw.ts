@@ -1,9 +1,13 @@
 // The lobby area that shows all of the current tables
 
 import globals from "../globals";
-import { copyStringToClipboard, getURLFromPath, timerFormatter } from "../misc";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
+import {
+  copyStringToClipboard,
+  getURLFromPath,
+  timerFormatter,
+} from "../utils";
 import * as createGame from "./createGame";
 import Screen from "./types/Screen";
 import Table from "./types/Table";

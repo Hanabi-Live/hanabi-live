@@ -2,7 +2,7 @@
 
 import { ensureAllCases } from "@hanabi/data";
 import produce, { Draft, original } from "immer";
-import { nullIfNegative } from "../../misc";
+import { nullIfNegative } from "../../utils";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import GameMetadata from "../types/GameMetadata";
 import ReplayState from "../types/ReplayState";
