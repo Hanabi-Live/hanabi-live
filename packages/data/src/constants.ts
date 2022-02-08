@@ -10,5 +10,6 @@ export const DEFAULT_CLUE_RANKS: readonly number[] = [1, 2, 3, 4, 5];
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
-
 export const MAX_CARDS_IN_A_DECK = 60;
+
+export const MAIN_URL = "https://hanab.live";

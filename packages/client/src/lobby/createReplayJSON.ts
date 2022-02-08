@@ -1,4 +1,4 @@
-import { HYPO_PLAYER_NAMES, shrink } from "@hanabi/data";
+import { HYPO_PLAYER_NAMES, MAIN_URL, shrink } from "@hanabi/data";
 import * as chat from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
@@ -76,7 +76,7 @@ export default function createJSONFromReplay(room: string) {
       room,
     );
   } else {
-    const URL = `https://hanab.live/shared-replay-json/${URLData}`;
+    const URL = `${MAIN_URL}/shared-replay-json/${URLData}`;
     navigator.clipboard
       .writeText(URL)
       .then(() => {
