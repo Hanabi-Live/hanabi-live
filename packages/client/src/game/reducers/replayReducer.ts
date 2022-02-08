@@ -1,7 +1,7 @@
 // The reducer for replays and hypotheticals
 
 import produce, { Draft, original } from "immer";
-import { ensureAllCases, nullIfNegative } from "../../misc";
+import { ensureAllCases, nullIfNegative } from "../../utils";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import GameMetadata from "../types/GameMetadata";
 import ReplayState from "../types/ReplayState";

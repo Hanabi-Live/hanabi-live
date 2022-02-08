@@ -6,8 +6,8 @@ import HanabiCard from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
-import { parseIntSafe } from "./misc";
 import * as sounds from "./sounds";
+import { parseIntSafe } from "./utils";
 
 let initialized = false;
 let allowCloseModal = true;

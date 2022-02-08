@@ -1,4 +1,4 @@
-import { ensureAllCases } from "../../../../misc";
+import { ensureAllCases } from "../../../../utils";
 import * as variantRules from "../../../rules/variant";
 import { GameAction } from "../../../types/actions";
 import SoundType from "../../../types/SoundType";

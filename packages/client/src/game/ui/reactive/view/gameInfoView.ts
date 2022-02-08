@@ -1,5 +1,5 @@
 import { MAX_STRIKES } from "@hanabi/data";
-import { setBrowserAddressBarPath } from "../../../../misc";
+import { setBrowserAddressBarPath } from "../../../../utils";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as variantRules from "../../../rules/variant";
 import { StateStrike } from "../../../types/GameState";

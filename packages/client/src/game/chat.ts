@@ -3,7 +3,7 @@
 import interact from "interactjs";
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
-import { parseIntSafe } from "../misc";
+import { parseIntSafe } from "../utils";
 
 export function init(): void {
   // Make the chat modal draggable (using the InteractJS library)

@@ -2,10 +2,10 @@
 
 import { getVariant } from "@hanabi/data";
 import globals from "../globals";
-import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
 import Options from "../types/Options";
+import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../utils";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
 import GameHistory from "./types/GameHistory";

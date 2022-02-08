@@ -4,7 +4,7 @@ import {
   UNKNOWN_CARD_RANK,
   Variant,
 } from "@hanabi/data";
-import { ensureAllCases } from "../../misc";
+import { ensureAllCases } from "../../utils";
 import CardState from "../types/CardState";
 import StackDirection from "../types/StackDirection";
 import * as variantRules from "./variant";

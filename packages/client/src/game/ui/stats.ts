@@ -1,6 +1,6 @@
 import Konva from "konva";
-import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
+import { parseIntSafe } from "../../utils";
 import ReplayActionType from "../types/ReplayActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";

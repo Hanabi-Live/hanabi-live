@@ -3,8 +3,8 @@
 import * as KeyCode from "keycode-js";
 import Konva from "konva";
 import Screen from "../../lobby/types/Screen";
-import { copyStringToClipboard, parseIntSafe } from "../../misc";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
+import { copyStringToClipboard, parseIntSafe } from "../../utils";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
 import ActionType from "../types/ActionType";

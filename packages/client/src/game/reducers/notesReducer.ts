@@ -11,7 +11,7 @@ import {
 } from "@hanabi/data";
 import equal from "fast-deep-equal";
 import produce, { Draft } from "immer";
-import { ensureAllCases } from "../../misc";
+import { ensureAllCases } from "../../utils";
 import { NoteAction } from "../types/actions";
 import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";

@@ -1,4 +1,4 @@
-import { ensureAllCases } from "../../../../misc";
+import { ensureAllCases } from "../../../../utils";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as variantRules from "../../../rules/variant";
 import ClueType from "../../../types/ClueType";

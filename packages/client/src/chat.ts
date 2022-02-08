@@ -8,9 +8,9 @@ import chatCommands from "./chatCommands";
 import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import globals from "./globals";
 import Screen from "./lobby/types/Screen";
-import { parseIntSafe } from "./misc";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
+import { parseIntSafe } from "./utils";
 
 // Variables
 const emojiMap = new Map<string, string>();

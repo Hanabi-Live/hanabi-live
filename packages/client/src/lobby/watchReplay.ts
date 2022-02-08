@@ -2,9 +2,9 @@
 
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
-import { parseIntSafe } from "../misc";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
+import { parseIntSafe } from "../utils";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected

@@ -1,8 +1,8 @@
 // Functions for progressing forward and backward through time
 
 import Konva from "konva";
-import { parseIntSafe } from "../../misc";
 import { closeModals, showPrompt } from "../../modals";
+import { parseIntSafe } from "../../utils";
 import * as arrows from "./arrows";
 import Shuttle from "./controls/Shuttle";
 import getCardOrStackBase from "./getCardOrStackBase";

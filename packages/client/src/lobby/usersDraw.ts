@@ -1,8 +1,8 @@
 // The lobby area that shows all of the current logged-in users
 
 import globals from "../globals";
-import { ensureAllCases } from "../misc";
 import * as tooltips from "../tooltips";
+import { ensureAllCases } from "../utils";
 import * as tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";
 import Status, { StatusText } from "./types/Status";

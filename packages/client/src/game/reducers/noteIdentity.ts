@@ -4,7 +4,7 @@ import {
   START_CARD_RANK,
   Variant,
 } from "@hanabi/data";
-import { parseIntSafe } from "../../misc";
+import { parseIntSafe } from "../../utils";
 import CardIdentity from "../types/CardIdentity";
 
 interface CardIdentities {
