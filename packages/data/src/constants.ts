@@ -10,8 +10,9 @@ export const DEFAULT_CLUE_RANKS: readonly number[] = [1, 2, 3, 4, 5];
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
-export const MAX_CARDS_IN_A_SUIT = 10;
-export const MAX_SUITS_IN_A_VARIANT = 6;
+
+const MAX_CARDS_IN_A_SUIT = 10;
+const MAX_SUITS_IN_A_VARIANT = 6;
 export const MAX_CARDS_IN_A_DECK = MAX_CARDS_IN_A_SUIT * MAX_SUITS_IN_A_VARIANT;
 
 export const HYPO_PLAYER_NAMES = [

@@ -8,7 +8,6 @@ export * from "./abbreviations";
 export * from "./constants";
 export * from "./gameData";
 export * from "./hypoCompress";
-export * from "./hypoPlayerNames";
 export * from "./types/Character";
 export * from "./types/Color";
 export * from "./types/Suit";
