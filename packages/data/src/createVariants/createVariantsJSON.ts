@@ -284,6 +284,7 @@ function getNextUnusedVariantID(variantName: string) {
   return variantID;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getNewVariantID(variantDescription: VariantDescription) {
   const suitIDs = getSuitIDsFromSuitNames(variantDescription.suits);
   return suitIDs.join("+");
@@ -300,6 +301,7 @@ function getSuitIDsFromSuitNames(suitNames: string[]): string[] {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function validateNewVariantIDs(variants: VariantJSON[]) {
   const newVariantIDs = new Set();
 
