@@ -28,6 +28,7 @@ import { SuitJSON } from "../types/SuitJSON";
 import { VariantDescription } from "../types/VariantDescription";
 import { VariantJSON } from "../types/VariantJSON";
 import { getVariantFromNewID } from "./newID";
+import { error } from "./utils";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
@@ -361,9 +362,4 @@ function createVariantsTextFile(variants: VariantJSON[], textPath: string) {
 
   fs.writeFileSync(textPath, fileContents);
   console.log(`Created: ${textPath}`);
-}
-
-export function error(message: string): never {
-  console.error(message);
-  process.exit(1);
 }

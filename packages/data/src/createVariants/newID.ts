@@ -5,7 +5,7 @@ import {
 import { SuitJSON } from "../types/SuitJSON";
 import { VariantJSON } from "../types/VariantJSON";
 import { parseIntSafe } from "../utils";
-import { error } from "./createVariantsJSON";
+import { error } from "./utils";
 
 const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";
