@@ -2,6 +2,7 @@ import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
+  ensureAllCases,
   FINESSED_NOTES,
   getVariant,
   KNOWN_TRASH_NOTES,
@@ -11,7 +12,6 @@ import {
 } from "@hanabi/data";
 import equal from "fast-deep-equal";
 import produce, { Draft } from "immer";
-import { ensureAllCases } from "../../misc";
 import { NoteAction } from "../types/actions";
 import CardNote from "../types/CardNote";
 import GameMetadata from "../types/GameMetadata";

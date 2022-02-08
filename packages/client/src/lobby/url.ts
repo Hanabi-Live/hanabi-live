@@ -1,6 +1,11 @@
-import { DEFAULT_VARIANT_NAME, expand, GameJSON } from "@hanabi/data";
+import {
+  DEFAULT_VARIANT_NAME,
+  expand,
+  GameJSON,
+  parseIntSafe,
+} from "@hanabi/data";
 import globals from "../globals";
-import { parseIntSafe, setBrowserAddressBarPath } from "../misc";
+import { setBrowserAddressBarPath } from "../utils";
 import WelcomeData from "./types/WelcomeData";
 
 export function parseAndGoto(data: WelcomeData): void {
