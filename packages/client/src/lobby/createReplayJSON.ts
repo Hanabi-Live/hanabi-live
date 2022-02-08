@@ -77,22 +77,27 @@ export default function createJSONFromReplay(room: string) {
     );
   } else {
     const URL = `https://hanab.live/shared-replay-json/${URLData}`;
-    navigator.clipboard.writeText(URL).then(
-      () => {},
-      () => {},
-    );
-    chat.addSelf(
-      '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
-      room,
-    );
-    const here = `<button href="#" onclick="navigator.clipboard.writeText('${json.replace(
-      /"/g,
-      "\\'",
-    )}'.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"> <strong>here < /strong></button >`;
-    chat.addSelf(
-      `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
-      room,
-    );
+    navigator.clipboard
+      .writeText(URL)
+      .then(() => {
+        chat.addSelf(
+          '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
+          room,
+        );
+        const urlFix = json.replace(/"/g, "\\'");
+        const here = `<button href="#" onclick="navigator.clipboard.writeText(${urlFix}.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"><strong>here</strong></button>`;
+        chat.addSelf(
+          `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
+          room,
+        );
+      })
+      .catch(() => {
+        chat.addSelf(
+          '<span class="red">Error</span>: The URL could not be copied to your clipboard.',
+          room,
+        );
+        chat.addSelf(URL, room);
+      });
   }
 }
 

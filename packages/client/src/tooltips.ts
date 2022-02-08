@@ -7,7 +7,7 @@
 // So we have to make sure that "sideEffects" is is either removed or set to false
 // Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have
 // to worry about that for now
-import { MAX_PLAYERS } from "@hanabi/data";
+import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
 import "tooltipster";
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
 // We import it for the side-effects for the same reason
@@ -16,7 +16,6 @@ import "../lib/tooltipster-scrollableTip.min";
 export const TOOLTIP_DELAY = 500; // In milliseconds
 
 // Constants
-const MAX_CARDS_IN_A_DECK = 60;
 const TOOLTIP_THEME = ["tooltipster-shadow", "tooltipster-shadow-big"];
 const TOOLTIP_THEME_CENTERED = [
   "tooltipster-shadow",

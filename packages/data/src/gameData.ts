@@ -5,6 +5,7 @@ import { START_CARD_RANK } from "./constants";
 import { suitsInit } from "./suitsInit";
 import { Character } from "./types/Character";
 import { Suit } from "./types/Suit";
+import { parseIntSafe } from "./utils";
 import { variantsInit } from "./variantsInit";
 
 const CHARACTERS = charactersInit();
@@ -32,6 +33,21 @@ export function getVariant(variantName: string): Variant {
   }
 
   return variant;
+}
+
+export function getVariantByID(id: number | string): Variant {
+  let variantID: number;
+  if (typeof id === "number") {
+    variantID = id;
+  } else {
+    variantID = parseIntSafe(id);
+  }
+  for (const v of Array.from(VARIANTS.values())) {
+    if (v.id === variantID) {
+      return v;
+    }
+  }
+  throw new Error(`Failed to find the #"${id}" variant in the "VARIANTS" map.`);
 }
 
 export function getDefaultVariant(): Variant {
