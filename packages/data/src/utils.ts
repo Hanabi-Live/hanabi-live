@@ -1,10 +1,5 @@
 export const ensureAllCases = (obj: never): never => obj;
 
-export function error(message: string): never {
-  console.error(message);
-  process.exit(1);
-}
-
 /**
  * parseIntSafe is a more reliable version of parseInt. By default, "parseInt('1a')" will return
  * "1", which is unexpected. This returns either an integer or NaN.

@@ -4,15 +4,16 @@ import {
   DEFAULT_VARIANT_NAME,
   doesVariantExist,
   getVariantNames,
+  parseIntSafe,
 } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
 import globals from "../globals";
-import { getRandomNumber, isEmpty, parseIntSafe } from "../misc";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import Options from "../types/Options";
+import { getRandomNumber, isEmpty } from "../utils";
 import Screen from "./types/Screen";
 import Settings from "./types/Settings";
 
