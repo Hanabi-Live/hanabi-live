@@ -28,7 +28,7 @@ import { getVariantFromNewID } from "./newID";
 import { SuitJSON } from "./types/SuitJSON";
 import { VariantDescription } from "./types/VariantDescription";
 import { VariantJSON } from "./types/VariantJSON";
-import { error } from "./util";
+import { error } from "./utils";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
