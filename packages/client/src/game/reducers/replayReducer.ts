@@ -1,7 +1,8 @@
 // The reducer for replays and hypotheticals
 
+import { ensureAllCases } from "@hanabi/data";
 import produce, { Draft, original } from "immer";
-import { ensureAllCases, nullIfNegative } from "../../misc";
+import { nullIfNegative } from "../../misc";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import GameMetadata from "../types/GameMetadata";
 import ReplayState from "../types/ReplayState";
