@@ -4,8 +4,8 @@
 
 import { getVariant, parseIntSafe } from "@hanabi/data";
 import { createStore } from "redux";
-import { initArray, setBrowserAddressBarPath } from "../../misc";
 import * as sentry from "../../sentry";
+import { initArray, setBrowserAddressBarPath } from "../../utils";
 import initialState from "../reducers/initialStates/initialState";
 import stateReducer from "../reducers/stateReducer";
 import * as handRules from "../rules/hand";

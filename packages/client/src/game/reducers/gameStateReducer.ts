@@ -2,7 +2,7 @@
 
 import { ensureAllCases, getVariant, Variant } from "@hanabi/data";
 import produce, { castDraft, Draft, original } from "immer";
-import { millisecondsToClockString } from "../../misc";
+import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";

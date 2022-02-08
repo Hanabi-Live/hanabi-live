@@ -1,7 +1,7 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
-import { negativeOneIfNull } from "../../misc";
+import { negativeOneIfNull } from "../../utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionIncludingHypothetical } from "../types/actions";
 import ActionType from "../types/ActionType";
