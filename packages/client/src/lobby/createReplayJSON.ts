@@ -19,7 +19,7 @@ export default function createJSONFromReplay(room: string) {
     addSelf(
       "You can only use the <code>/copy</code> command during the review of a hypothetical.",
       room,
-      SelfChatMessageType.error,
+      SelfChatMessageType.Error,
     );
     return;
   }
@@ -67,7 +67,7 @@ export default function createJSONFromReplay(room: string) {
   addSelf(
     "Your hypothetical is copied on your clipboard.",
     room,
-    SelfChatMessageType.info,
+    SelfChatMessageType.Info,
   );
 }
 

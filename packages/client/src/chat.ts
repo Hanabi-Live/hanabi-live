@@ -1,7 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
-import { emojis, emotes, parseIntSafe } from "@hanabi/data";
+import { emojis, emotes, parseIntSafe, PROJECT_NAME } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import chatCommands from "./chatCommands";
@@ -12,9 +12,9 @@ import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
 export enum SelfChatMessageType {
-  normal,
-  info,
-  error,
+  Normal,
+  Info,
+  Error,
 }
 
 // Variables
@@ -597,13 +597,13 @@ export function add(data: ChatMessage, fast: boolean): void {
 export function addSelf(
   msg: string,
   room: string,
-  type: SelfChatMessageType = SelfChatMessageType.normal,
+  type = SelfChatMessageType.Normal,
 ): void {
   const message = getChatMessage(msg, type);
   add(
     {
       msg: message,
-      who: "Hanab Live",
+      who: PROJECT_NAME,
       discord: false,
       server: true,
       datetime: new Date().toString(),
@@ -713,13 +713,17 @@ export function updatePeopleTyping(): void {
 function getChatMessage(msg: string, type: SelfChatMessageType): string {
   let message = msg;
   switch (type) {
-    case SelfChatMessageType.info:
+    case SelfChatMessageType.Info: {
       message = `<span class="green">${message}</span>`;
       break;
-    case SelfChatMessageType.error:
+    }
+    case SelfChatMessageType.Error: {
       message = `<span class="red">${message}</span>`;
       break;
-    default:
+    }
+    default: {
+      break;
+    }
   }
   return message;
 }

@@ -7,3 +7,5 @@ export const MAX_STRIKES = 3;
 export const DEFAULT_VARIANT_NAME = "No Variant";
 export const DEFAULT_CARD_RANKS: readonly number[] = [1, 2, 3, 4, 5];
 export const DEFAULT_CLUE_RANKS: readonly number[] = [1, 2, 3, 4, 5];
+
+export const PROJECT_NAME = "Hanab Live";
