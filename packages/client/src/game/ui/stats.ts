@@ -1,5 +1,5 @@
+import { parseIntSafe } from "@hanabi/data";
 import Konva from "konva";
-import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
 import ReplayActionType from "../types/ReplayActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";

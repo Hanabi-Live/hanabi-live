@@ -1,6 +1,6 @@
-import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
+import { DEFAULT_VARIANT_NAME, parseIntSafe } from "@hanabi/data";
 import globals from "../globals";
-import { parseIntSafe, setBrowserAddressBarPath } from "../misc";
+import { setBrowserAddressBarPath } from "../misc";
 import WelcomeData from "./types/WelcomeData";
 
 export function parseAndGoto(data: WelcomeData): void {

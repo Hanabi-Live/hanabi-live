@@ -1,10 +1,10 @@
 import {
+  ensureAllCases,
   STACK_BASE_RANK,
   START_CARD_RANK,
   UNKNOWN_CARD_RANK,
   Variant,
 } from "@hanabi/data";
-import { ensureAllCases } from "../../misc";
 import CardState from "../types/CardState";
 import StackDirection from "../types/StackDirection";
 import * as variantRules from "./variant";
