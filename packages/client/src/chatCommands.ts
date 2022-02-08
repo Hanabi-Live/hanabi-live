@@ -18,7 +18,7 @@ function friend(room: string, args: string[]) {
     chat.addSelf(
       "The format of the /friend command is: <code>/friend Alice</code>",
       room,
-      "info",
+      chat.SelfChatMessageType.info,
     );
     return;
   }
@@ -58,7 +58,7 @@ function pm(room: string, args: string[]) {
     chat.addSelf(
       "The format of a private message is: <code>/w Alice hello</code>",
       room,
-      "info",
+      chat.SelfChatMessageType.info,
     );
     return;
   }
@@ -71,7 +71,7 @@ function pm(room: string, args: string[]) {
     chat.addSelf(
       "You cannot send a private message to yourself.",
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
     return;
   }
@@ -112,7 +112,7 @@ function setLeader(room: string, args: string[]) {
     chat.addSelf(
       "You are not currently at a table, so you cannot use the <code>/setleader</code> command.",
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
     return;
   }
@@ -136,7 +136,7 @@ function setVariant(room: string, args: string[]) {
     chat.addSelf(
       "You are not currently at a table, so you cannot use the <code>/setvariant</code> command.",
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
     return;
   }
@@ -149,7 +149,7 @@ function setVariant(room: string, args: string[]) {
     chat.addSelf(
       `The variant of "${args.join(" ")}" is not valid.`,
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
     return;
   }
@@ -175,7 +175,7 @@ chatCommands.set("tag", (room: string, args: string[]) => {
     chat.addSelf(
       "You are not currently at a table, so you cannot use the <code>/tag</code> command.",
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
     return;
   }
@@ -193,7 +193,7 @@ chatCommands.set("tagdelete", (room: string, args: string[]) => {
     chat.addSelf(
       "You are not currently at a table, so you cannot use the <code>/tagdelete</code> command.",
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
     return;
   }
@@ -220,7 +220,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
     chat.addSelf(
       "You are not currently at a table, so you cannot use the <code>/tagsdeleteall</code> command.",
       room,
-      "error",
+      chat.SelfChatMessageType.error,
     );
   }
   globals.conn!.send("tagsDeleteAll", {
@@ -263,7 +263,7 @@ chatCommands.set("unfriend", (room: string, args: string[]) => {
     chat.addSelf(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
       room,
-      "info",
+      chat.SelfChatMessageType.info,
     );
     return;
   }
@@ -271,7 +271,11 @@ chatCommands.set("unfriend", (room: string, args: string[]) => {
   // Validate that we are not targeting ourselves
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
-    chat.addSelf("You cannot unfriend yourself.", room, "error");
+    chat.addSelf(
+      "You cannot unfriend yourself.",
+      room,
+      chat.SelfChatMessageType.error,
+    );
   }
 
   globals.conn!.send("chatUnfriend", {
@@ -282,7 +286,7 @@ chatCommands.set("unfriend", (room: string, args: string[]) => {
 // /version
 chatCommands.set("version", (room: string) => {
   const msg = `You are running version <strong>${globals.version}</strong> of the client.`;
-  chat.addSelf(msg, room, "info");
+  chat.addSelf(msg, room, chat.SelfChatMessageType.info);
 });
 
 // /copy

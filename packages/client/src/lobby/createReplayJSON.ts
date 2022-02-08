@@ -1,5 +1,5 @@
 import { HYPO_PLAYER_NAMES } from "@hanabi/data";
-import * as chat from "../chat";
+import { addSelf, SelfChatMessageType } from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
 import ClueType from "../game/types/ClueType";
@@ -16,10 +16,10 @@ export default function createJSONFromReplay(room: string) {
     globals.state.replay === null ||
     globals.state.replay.hypothetical === null
   ) {
-    chat.addSelf(
+    addSelf(
       "You can only use the <code>/copy</code> command during the review of a hypothetical.",
       room,
-      "error",
+      SelfChatMessageType.error,
     );
     return;
   }
@@ -64,7 +64,11 @@ export default function createJSONFromReplay(room: string) {
     () => {},
     () => {},
   );
-  chat.addSelf("Your hypo is copied on your clipboard.", room, "info");
+  addSelf(
+    "Your hypo is copied on your clipboard.",
+    room,
+    SelfChatMessageType.info,
+  );
 }
 
 function getGameActionsFromState(source: ReplayState): ClientAction[] {

@@ -12,6 +12,12 @@ import { parseIntSafe } from "./misc";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
+export enum SelfChatMessageType {
+  normal,
+  info,
+  error,
+}
+
 // Variables
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -592,14 +598,14 @@ export function add(data: ChatMessage, fast: boolean): void {
 export function addSelf(
   msg: string,
   room: string,
-  type: "normal" | "info" | "error" = "normal",
+  type: SelfChatMessageType = SelfChatMessageType.normal,
 ): void {
   let message = msg;
   switch (type) {
-    case "info":
+    case SelfChatMessageType.info:
       message = `<span class="green">${message}</span>`;
       break;
-    case "error":
+    case SelfChatMessageType.error:
       message = `<span class="red">${message}</span>`;
       break;
     default:
