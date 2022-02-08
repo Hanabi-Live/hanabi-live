@@ -6,9 +6,6 @@ set -e # Exit on any errors
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-DIR_CLIENT="$DIR/client"
-DIR_DATA="$DIR/data"
-
 SECONDS=0
 
 lint() {
@@ -30,7 +27,7 @@ lint() {
   fi
 }
 
-lint "$DIR_CLIENT"
-lint "$DIR_DATA" "no-ts-prune"
+lint "$DIR/client"
+lint "$DIR/data" "no-ts-prune"
 
 echo "Successfully linted in $SECONDS seconds."
