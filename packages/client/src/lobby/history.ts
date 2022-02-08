@@ -1,8 +1,8 @@
 // The screens that show past games and other scores
 
-import { getVariant } from "@hanabi/data";
+import { getVariant, parseIntSafe } from "@hanabi/data";
 import globals from "../globals";
-import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
+import { dateTimeFormatter, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
 import Options from "../types/Options";
