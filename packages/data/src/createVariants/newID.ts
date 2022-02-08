@@ -1,11 +1,11 @@
-import { error } from "./console";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,
-} from "./getVariantDescriptions";
-import { SuitJSON } from "./types/SuitJSON";
-import { VariantJSON } from "./types/VariantJSON";
-import { parseIntSafe } from "./utils";
+} from "../getVariantDescriptions";
+import { SuitJSON } from "../types/SuitJSON";
+import { VariantJSON } from "../types/VariantJSON";
+import { parseIntSafe } from "../utils";
+import { error } from "./createVariantsJSON";
 
 const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";
