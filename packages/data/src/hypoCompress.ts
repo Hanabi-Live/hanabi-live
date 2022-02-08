@@ -1,12 +1,7 @@
 import { isEqual } from "lodash";
-import {
-  getVariant,
-  getVariantByID,
-  HYPO_PLAYER_NAMES,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-  parseIntSafe,
-} from ".";
+import { HYPO_PLAYER_NAMES, MAX_PLAYERS, MIN_PLAYERS } from "./constants";
+import { getVariant, getVariantByID } from "./gameData";
+import { parseIntSafe } from "./utils";
 
 interface DeckCard {
   suitIndex: number;
@@ -95,16 +90,17 @@ export function expand(data: string): string | null {
   const normal = data.replace(/-/g, "");
 
   // The compressed string is composed of 3 substrings, separated by comma
-  const [deckString, actionsString, variantID] = [...normal.split(",", 3)];
-  const numberPlayersString = deckString.charAt(0);
+  const [playersAndDeck, actionsString, variantID] = [...normal.split(",", 3)];
+  const numberPlayersString = playersAndDeck.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
 
-  const playersArray = getPlayers(numPlayers);
-  if (playersArray.length === 0) {
+  const players = getPlayers(numPlayers);
+  if (players.length === 0) {
     return null;
   }
 
-  const deck = decompressDeck(deckString.substring(1));
+  const deckString = playersAndDeck.substring(1);
+  const deck = decompressDeck(deckString);
   if (deck === null) {
     return null;
   }
@@ -114,7 +110,7 @@ export function expand(data: string): string | null {
   const variant = getVariantByID(variantID);
 
   const original: GameJSON = {
-    players: playersArray,
+    players,
     deck,
     actions,
     options: {
