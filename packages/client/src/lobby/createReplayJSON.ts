@@ -65,7 +65,7 @@ export default function createJSONFromReplay(room: string) {
     () => {},
   );
   addSelf(
-    "Your hypo is copied on your clipboard.",
+    "Your hypothetical is copied on your clipboard.",
     room,
     SelfChatMessageType.info,
   );
