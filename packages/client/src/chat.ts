@@ -600,16 +600,7 @@ export function addSelf(
   room: string,
   type: SelfChatMessageType = SelfChatMessageType.normal,
 ): void {
-  let message = msg;
-  switch (type) {
-    case SelfChatMessageType.info:
-      message = `<span class="green">${message}</span>`;
-      break;
-    case SelfChatMessageType.error:
-      message = `<span class="red">${message}</span>`;
-      break;
-    default:
-  }
+  const message = getChatMessage(msg, type);
   add(
     {
       msg: message,
@@ -718,4 +709,18 @@ export function updatePeopleTyping(): void {
   }
   chat1.html(msg);
   chat2.html(msg);
+}
+
+function getChatMessage(msg: string, type: SelfChatMessageType): string {
+  let message = msg;
+  switch (type) {
+    case SelfChatMessageType.info:
+      message = `<span class="green">${message}</span>`;
+      break;
+    case SelfChatMessageType.error:
+      message = `<span class="red">${message}</span>`;
+      break;
+    default:
+  }
+  return message;
 }
