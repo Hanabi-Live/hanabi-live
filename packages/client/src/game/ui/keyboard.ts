@@ -1,9 +1,10 @@
 // Functions for handling all of the keyboard shortcuts
 
+import { parseIntSafe } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import Konva from "konva";
 import Screen from "../../lobby/types/Screen";
-import { copyStringToClipboard, parseIntSafe } from "../../misc";
+import { copyStringToClipboard } from "../../misc";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";

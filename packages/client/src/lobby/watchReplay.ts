@@ -1,8 +1,8 @@
 // The "Watch Specific Replay" nav button
 
+import { parseIntSafe } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
-import { parseIntSafe } from "../misc";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
 

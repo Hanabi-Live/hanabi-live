@@ -1,7 +1,7 @@
 // Functions for progressing forward and backward through time
 
+import { parseIntSafe } from "@hanabi/data";
 import Konva from "konva";
-import { parseIntSafe } from "../../misc";
 import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";
 import Shuttle from "./controls/Shuttle";
