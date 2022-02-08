@@ -72,7 +72,7 @@ export default function createJSONFromReplay(room: string) {
   const URLData = shrink(json);
   if (URLData === "" || URLData === null) {
     chat.addSelf(
-      '<span class="red">Error</span>: Your JSON data cannot be compressed.',
+      '<span class="red">Error</span>: Failed to compress the JSON data.',
       room,
     );
   } else {
