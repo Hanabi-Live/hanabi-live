@@ -600,7 +600,7 @@ export function add(data: ChatMessage, fast: boolean): void {
 }
 
 // addSelf is used when the client needs to send a chat message to itself
-export function addMessageToChat(
+export function sendSelfPMFromServer(
   msg: string,
   room: string,
   type = SelfChatMessageType.Normal,
