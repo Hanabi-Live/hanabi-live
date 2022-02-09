@@ -1,7 +1,13 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
-import { emojis, emotes, parseIntSafe } from "@hanabi/data";
+import {
+  emojis,
+  emotes,
+  ensureAllCases,
+  parseIntSafe,
+  PROJECT_NAME,
+} from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import chatCommands from "./chatCommands";
@@ -10,6 +16,12 @@ import globals from "./globals";
 import Screen from "./lobby/types/Screen";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
+
+export enum SelfChatMessageType {
+  Normal,
+  Info,
+  Error,
+}
 
 // Variables
 const emojiMap = new Map<string, string>();
@@ -588,16 +600,21 @@ export function add(data: ChatMessage, fast: boolean): void {
 }
 
 // addSelf is used when the client needs to send a chat message to itself
-export function addSelf(msg: string, room: string): void {
+export function sendSelfPMFromServer(
+  msg: string,
+  room: string,
+  type = SelfChatMessageType.Normal,
+): void {
+  const message = formatChatMessage(msg, type);
   add(
     {
-      msg,
-      who: "",
+      msg: message,
+      who: PROJECT_NAME,
       discord: false,
       server: true,
       datetime: new Date().toString(),
       room,
-      recipient: "",
+      recipient: globals.username,
     },
     false,
   );
@@ -697,4 +714,22 @@ export function updatePeopleTyping(): void {
   }
   chat1.html(msg);
   chat2.html(msg);
+}
+
+function formatChatMessage(msg: string, type: SelfChatMessageType): string {
+  switch (type) {
+    case SelfChatMessageType.Normal: {
+      return msg;
+    }
+    case SelfChatMessageType.Info: {
+      return `<span class="green">${msg}</span>`;
+    }
+    case SelfChatMessageType.Error: {
+      return `<span class="red">${msg}</span>`;
+    }
+    default: {
+      ensureAllCases(type);
+      return "";
+    }
+  }
 }
