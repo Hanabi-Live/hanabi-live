@@ -50,11 +50,11 @@ export default function createJSONFromReplay(room: string) {
 
   // Add the hypothesis from log, after current segment
   if (replay.hypothetical !== null) {
-    const states = replay.hypothetical.states;
+    const { states } = replay.hypothetical;
     const log = states[states.length - 1].log;
     if (replay.segment < log.length) {
-      const slice = log.slice(replay.segment + 1);
-      const actions = getGameActionsFromLog(slice);
+      const logLines = log.slice(replay.segment + 1);
+      const actions = getGameActionsFromLog(logLines);
       game.actions.push(...actions);
     }
   }
@@ -87,7 +87,7 @@ export default function createJSONFromReplay(room: string) {
         room,
       );
       const urlFix = json.replace(/"/g, "\\'");
-      const here = `<button href="#" onclick="navigator.clipboard.writeText(${urlFix}.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"><strong>here</strong></button>`;
+      const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
       chat.addSelf(
         `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
         room,

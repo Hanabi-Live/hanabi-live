@@ -42,7 +42,7 @@ export function getVariant(variantName: string): Variant {
   return variant;
 }
 
-export function getVariantByID(id: number | string): Variant {
+export function getVariantByID(id: number): Variant {
   let variantID: number;
   if (typeof id === "number") {
     variantID = id;

@@ -40,7 +40,7 @@ const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  * Compresses a string representing a GameJSON object.
  * Returns null if the compression fails.
  *
- * The resulting string is composed of three substrings separated by comma.
+ * The resulting string is composed of three substrings separated by commas.
  * The first substring represents the number of players and the deck.
  * The second substring represents the actions.
  * The third substring is the ID of the variant.
@@ -89,8 +89,10 @@ export function expand(data: string): string | null {
   // Remove all hyphens from URL
   const normal = data.replace(/-/g, "");
 
-  // The compressed string is composed of 3 substrings, separated by comma
-  const [playersAndDeck, actionsString, variantID] = [...normal.split(",", 3)];
+  // The compressed string is composed of 3 substrings, separated by commas.
+  const [playersAndDeck, actionsString, variantIDString] = [
+    ...normal.split(",", 3),
+  ];
   const numberPlayersString = playersAndDeck.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
 
@@ -107,6 +109,10 @@ export function expand(data: string): string | null {
 
   const actions = decompressActions(actionsString);
 
+  const variantID = parseIntSafe(variantIDString);
+  if (Number.isNaN(variantID)) {
+    return null;
+  }
   const variant = getVariantByID(variantID);
 
   const original: GameJSON = {
@@ -266,9 +272,9 @@ function compressActions(actions: Action[]): string {
   }
 
   let out = `${typeRange.min}${typeRange.max}`;
-  actions.forEach((action) => {
+  for (const action of actions) {
     out += actionToString(action, typeRange);
-  });
+  }
 
   return out;
 }
