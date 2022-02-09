@@ -113,21 +113,25 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
   ) {
     const action = source.actions[i];
     switch (action.type) {
-      case "play":
+      case "play": {
         actions.push({
           type: ActionType.Play,
           target: action.order,
         });
         currentSegment += 1;
         continue;
-      case "discard":
+      }
+
+      case "discard": {
         actions.push({
           type: ActionType.Discard,
           target: action.order,
         });
         currentSegment += 1;
         continue;
-      case "clue":
+      }
+
+      case "clue": {
         if (action.clue.type === ClueType.Color) {
           actions.push({
             type: ActionType.ColorClue,
@@ -143,8 +147,11 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
         }
         currentSegment += 1;
         continue;
-      default:
+      }
+
+      default: {
         continue;
+      }
     }
   }
 
