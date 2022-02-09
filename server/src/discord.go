@@ -149,14 +149,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// We are in Discord lobby. Only allow one-line public responses
-	if response, ok := OneLiners[command]; !ok || response.Private {
-		// Delete the message
-		discord.ChannelMessageDelete(m.ChannelID, m.ID) // nolint: errcheck
-		discordSendPM(m.Author.ID, "You cannot use that command here.")
-		return
-	}
-
 	// Send everyone the notification
 	username := discordGetNickname(m.Author.ID)
 	discordSendToChat(ctx, m.Content, username)
