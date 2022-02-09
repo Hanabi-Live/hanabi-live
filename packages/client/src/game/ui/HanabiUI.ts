@@ -2,7 +2,7 @@
 // It is re-created every time when going into a new game
 // (and destroyed when going to the lobby)
 
-import { addSelf } from "../../chat";
+import { addMessageToChat } from "../../chat";
 import { Globals as LobbyGlobals } from "../../globals";
 import { GameExports } from "../main";
 import * as cursor from "./cursor";
@@ -75,7 +75,7 @@ export default class HanabiUI {
         replay.goToSegment(internalSegment);
       }
       if (leaderSuggested) {
-        addSelf(
+        addMessageToChat(
           "You are the shared replay leader, so you can simply click on the turn number instead of using the <code>/suggest</code> command.",
           room,
         );

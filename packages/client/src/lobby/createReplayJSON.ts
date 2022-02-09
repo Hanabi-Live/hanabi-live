@@ -1,5 +1,5 @@
 import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
-import { addSelf, SelfChatMessageType } from "../chat";
+import { addMessageToChat, SelfChatMessageType } from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
 import ClueType from "../game/types/ClueType";
@@ -16,7 +16,7 @@ export default function createJSONFromReplay(room: string) {
     !globals.state.finished ||
     globals.state.replay === null
   ) {
-    addSelf(
+    addMessageToChat(
       "You can only use the <code>/copy</code> command during the review of a game.",
       room,
       SelfChatMessageType.Error,
@@ -63,7 +63,7 @@ export default function createJSONFromReplay(room: string) {
 
   // Enforce at least one action
   if (game.actions.length === 0) {
-    addSelf(
+    addMessageToChat(
       "There are no actions in your hypo.",
       room,
       SelfChatMessageType.Error,
@@ -74,7 +74,7 @@ export default function createJSONFromReplay(room: string) {
   const json = JSON.stringify(game);
   const URLData = shrink(json);
   if (URLData === null || URLData === "") {
-    addSelf(
+    addMessageToChat(
       "Failed to compress the JSON data.",
       room,
       SelfChatMessageType.Error,
@@ -86,26 +86,26 @@ export default function createJSONFromReplay(room: string) {
   navigator.clipboard
     .writeText(URL)
     .then(() => {
-      addSelf(
+      addMessageToChat(
         "The URL for this hypothetical is copied to your clipboard.",
         room,
         SelfChatMessageType.Info,
       );
       const urlFix = json.replace(/"/g, "\\'");
       const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
-      addSelf(
+      addMessageToChat(
         `Click ${here} to copy the raw JSON data to your clipboard.`,
         room,
         SelfChatMessageType.Info,
       );
     })
     .catch((err) => {
-      addSelf(
+      addMessageToChat(
         `Failed to copy the URL to your clipboard: ${err}`,
         room,
         SelfChatMessageType.Error,
       );
-      addSelf(URL, room);
+      addMessageToChat(URL, room);
     });
 }
 
