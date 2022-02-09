@@ -1,4 +1,4 @@
-import { HYPO_PLAYER_NAMES } from "@hanabi/data";
+import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import * as chat from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
@@ -7,17 +7,17 @@ import { LogEntry } from "../game/types/GameState";
 import { JSONGame } from "../game/types/JSONGame";
 import ReplayState from "../game/types/ReplayState";
 import globals from "../game/ui/globals";
+import { shrink } from "./hypoCompress";
 
 export default function createJSONFromReplay(room: string) {
   if (
     globals === null ||
     globals.store === null ||
     !globals.state.finished ||
-    globals.state.replay === null ||
-    globals.state.replay.hypothetical === null
+    globals.state.replay === null
   ) {
     chat.addSelf(
-      "You can only use that command during the review of a hypothetical.",
+      '<span class="red">Error:</span> You can only use that command during the review of a game.',
       room,
     );
     return;
@@ -50,20 +50,57 @@ export default function createJSONFromReplay(room: string) {
   game.actions = getGameActionsFromState(replay);
 
   // Add the hypothesis from log, after current segment
-  const states = replay.hypothetical!.states;
-  const log = states[states.length - 1].log;
-  if (replay.segment < log.length) {
-    const slice = log.slice(replay.segment + 1);
-    const actions = getGameActionsFromLog(slice);
-    game.actions.push(...actions);
+  if (replay.hypothetical !== null) {
+    const { states } = replay.hypothetical;
+    const log = states[states.length - 1].log;
+    if (replay.segment < log.length) {
+      const logLines = log.slice(replay.segment + 1);
+      const actions = getGameActionsFromLog(logLines);
+      game.actions.push(...actions);
+    }
+  }
+
+  // Enforce at least one action
+  if (game.actions.length === 0) {
+    chat.addSelf(
+      '<span class="red">Error</span>: There are no actions in your hypo.',
+      room,
+    );
+    return;
   }
 
   const json = JSON.stringify(game);
-  navigator.clipboard.writeText(json).then(
-    () => {},
-    () => {},
-  );
-  chat.addSelf("Your hypo is copied on your clipboard.", room);
+  const URLData = shrink(json);
+  if (URLData === null || URLData === "") {
+    chat.addSelf(
+      '<span class="red">Error</span>: Failed to compress the JSON data.',
+      room,
+    );
+    return;
+  }
+
+  const URL = `${SITE_URL}/shared-replay-json/${URLData}`;
+  navigator.clipboard
+    .writeText(URL)
+    .then(() => {
+      chat.addSelf(
+        '<span class="green">Info</span>: The URL for this hypothetical is copied to your clipboard.',
+        room,
+      );
+      const urlFix = json.replace(/"/g, "\\'");
+      const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
+      chat.addSelf(
+        `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
+        room,
+      );
+    })
+    .catch((err) => {
+      chat.addSelf(
+        `<span class="red">Error</span>: Failed to copy the URL to your clipboard: ${err}`,
+        room,
+      );
+      chat.addSelf(URL, room);
+    });
 }
 
 function getGameActionsFromState(source: ReplayState): ClientAction[] {
@@ -77,21 +114,25 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
   ) {
     const action = source.actions[i];
     switch (action.type) {
-      case "play":
+      case "play": {
         actions.push({
           type: ActionType.Play,
           target: action.order,
         });
         currentSegment += 1;
         continue;
-      case "discard":
+      }
+
+      case "discard": {
         actions.push({
           type: ActionType.Discard,
           target: action.order,
         });
         currentSegment += 1;
         continue;
-      case "clue":
+      }
+
+      case "clue": {
         if (action.clue.type === ClueType.Color) {
           actions.push({
             type: ActionType.ColorClue,
@@ -107,10 +148,14 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
         }
         currentSegment += 1;
         continue;
-      default:
+      }
+
+      default: {
         continue;
+      }
     }
   }
+
   return actions;
 }
 

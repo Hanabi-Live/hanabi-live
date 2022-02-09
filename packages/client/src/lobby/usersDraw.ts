@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current logged-in users
 
+import { ensureAllCases } from "@hanabi/data";
 import globals from "../globals";
-import { ensureAllCases } from "../misc";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";

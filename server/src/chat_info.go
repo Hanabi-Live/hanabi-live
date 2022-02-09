@@ -55,7 +55,7 @@ func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table, cmd 
 }
 
 // /subscribe, /unsubscribe
-func chatSubscribe(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatSubscribe(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	chatServerSendPM(s, "You can only use that command on Discord.", d.Room)
 }
 

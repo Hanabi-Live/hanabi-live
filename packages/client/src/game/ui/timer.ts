@@ -1,7 +1,7 @@
 // Functions for timed games (and the timer that ticks up in untimed games)
 
-import { millisecondsToClockString } from "../../misc";
 import * as tooltips from "../../tooltips";
+import { millisecondsToClockString } from "../../utils";
 import TimerDisplay from "./controls/TimerDisplay";
 import globals from "./globals";
 import { drawLayer } from "./konvaHelpers";

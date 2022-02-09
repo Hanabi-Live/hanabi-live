@@ -1,11 +1,10 @@
 // Arrows are used to show which cards are touched by a clue
 // (and to highlight things in shared replays)
 
-import { STACK_BASE_RANK, Suit } from "@hanabi/data";
+import { ensureAllCases, STACK_BASE_RANK, Suit } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { KonvaEventObject } from "konva/types/Node";
-import { ensureAllCases } from "../../misc";
 import * as tooltips from "../../tooltips";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cardRules from "../rules/card";

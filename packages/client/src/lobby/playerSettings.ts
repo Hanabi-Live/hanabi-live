@@ -1,8 +1,9 @@
 // The "Settings" nav button
 
+import { parseIntSafe } from "@hanabi/data";
 import globals from "../globals";
-import { isKeyOf, parseIntSafe } from "../misc";
 import * as notifications from "../notifications";
+import { isKeyOf } from "../utils";
 
 export function init(): void {
   $("#settings-volume-slider").change(function settingsVolumeSliderChange(

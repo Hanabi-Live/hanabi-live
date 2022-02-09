@@ -61,7 +61,7 @@ func chatCommandInit() {
 	chatCommandMap["tags"] = chatTags
 	chatCommandMap["taglist"] = chatTags
 
-	chatAddOneLineResponses()
+	chatMapAddSimpleResponses()
 }
 
 func chatCommand(ctx context.Context, s *Session, d *CommandData, t *Table) {
@@ -105,7 +105,7 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 	}
 
 	// Search for private one-line responses and handle them
-	if _, ok := OneLiners[command]; ok && OneLiners[command].Private {
+	if _, ok := simpleResponses[command]; ok && simpleResponses[command].Private {
 		chatCommandMap[command](ctx, s, d, t, command)
 		return false
 	}
@@ -113,23 +113,9 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 	return true
 }
 
-// Parses a message, searching for /<string>.
-// Returns empty command if it's a normal string.
-func chatParseCommand(msg string) (string, []string) {
-	args := strings.Split(msg, " ")
-	command := args[0]
-	args = args[1:] // This will be an empty slice if there is nothing after the command
-	// (we need to pass the arguments through to the command handler)
-
-	// Commands will start with a "/", so we can ignore everything else
-	if !strings.HasPrefix(command, "/") {
-		return "", []string{}
-	}
-
-	command = strings.TrimPrefix(command, "/")
-	command = strings.ToLower(command) // Commands are case-insensitive
-
-	return command, args
+func chatCommandWebsiteOnly(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
+	msg := "You cannot perform that command from Discord; please use the website instead."
+	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // Parses a message, searching for /<string>.

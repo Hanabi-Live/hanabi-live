@@ -21,39 +21,49 @@ type SimpleResponse struct {
 	IsHelp   bool
 }
 
-var OneLiners = make(map[string]SimpleResponse)
-var Helpers = make([]string, 0)
+const ChatReplyCommands = "chatReplyCommands.json"
 
-func chatAddOneLineResponses() {
+var (
+	simpleResponses = make(map[string]SimpleResponse)
+	helpCommands    = make([]string, 0)
+)
+
+func chatMapAddSimpleResponses() {
 	// Make a list of commands so far
 	commands := make([]string, 0)
-
 	for c := range chatCommandMap {
 		commands = append(commands, "/"+c)
 	}
 
 	// Load external one-line responses
-	source := path.Join(jsonPath, "chatCommands.json")
-	contents, _ := ioutil.ReadFile(source)
+	source := path.Join(jsonPath, ChatReplyCommands)
+	var contents []byte
+	if c, err := ioutil.ReadFile(source); err != nil {
+		logger.Error("Error reading file " + ChatReplyCommands)
+		return
+	} else {
+		contents = c
+	}
 
 	var responses []SimpleResponse
 	if err := json.Unmarshal(contents, &responses); err != nil {
-		logger.Error("chatInitializeOneLiners: Error during responses init.")
+		logger.Error("chatMapAddSimpleResponses: Error during responses init.")
+		return
 	}
 
 	// General commands (that work both in the lobby and at a table)
 	for _, r := range responses {
-		OneLiners[r.Command] = r
-		chatCommandMap[r.Command] = chatOneLiner
+		simpleResponses[r.Command] = r
+		chatCommandMap[r.Command] = chatSimpleResponse
 		commands = append(commands, "/"+r.Command)
 		if r.IsHelp {
-			Helpers = append(Helpers, r.Command)
+			helpCommands = append(helpCommands, r.Command)
 		}
 		for _, alias := range r.Alias {
-			OneLiners[alias] = r
-			chatCommandMap[alias] = chatOneLiner
+			simpleResponses[alias] = r
+			chatCommandMap[alias] = chatSimpleResponse
 			if r.IsHelp {
-				Helpers = append(Helpers, r.Command)
+				helpCommands = append(helpCommands, r.Command)
 			}
 		}
 	}
@@ -63,17 +73,17 @@ func chatAddOneLineResponses() {
 	help := strings.Join(commands, ", ")
 	// replace hyphen with non breaking one
 	help = strings.Replace(help, "-", "&#8209;", -1)
-	for c, r := range OneLiners {
+	for c, r := range simpleResponses {
 		if r.IsHelp {
 			r.Response = "<br>List of commands:<br>" + help + "<br>" + r.Response
-			OneLiners[c] = r
+			simpleResponses[c] = r
 		}
 	}
 }
 
-// Function for all one-line responses
-func chatOneLiner(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	r := OneLiners[cmd]
+// All single response commands
+func chatSimpleResponse(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
+	r := simpleResponses[cmd]
 	if r.Private {
 		chatServerSendPM(s, r.Response, d.Room)
 	} else {

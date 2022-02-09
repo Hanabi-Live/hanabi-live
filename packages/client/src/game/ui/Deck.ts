@@ -1,11 +1,11 @@
 import Konva from "konva";
+import * as tooltips from "../../tooltips";
+import { OptionIcons } from "../../types/OptionIcons";
 import {
   dateTimeFormatter,
   millisecondsToClockString,
   timerFormatter,
-} from "../../misc";
-import * as tooltips from "../../tooltips";
-import { OptionIcons } from "../../types/OptionIcons";
+} from "../../utils";
 import * as deckRules from "../rules/deck";
 import ActionType from "../types/ActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";

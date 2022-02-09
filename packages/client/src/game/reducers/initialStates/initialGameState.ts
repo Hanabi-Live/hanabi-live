@@ -1,5 +1,5 @@
 import { getVariant, MAX_CLUE_NUM } from "@hanabi/data";
-import { initArray } from "../../../misc";
+import { initArray } from "../../../utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";

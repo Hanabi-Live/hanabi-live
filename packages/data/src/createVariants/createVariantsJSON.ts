@@ -23,12 +23,12 @@ import {
   getVariantsForEachSuit,
   getVariantsForSpecialRanks,
   getVeryAmbiguousVariants,
-} from "./getVariantDescriptions";
+} from "../getVariantDescriptions";
+import { SuitJSON } from "../types/SuitJSON";
+import { VariantDescription } from "../types/VariantDescription";
+import { VariantJSON } from "../types/VariantJSON";
 import { getVariantFromNewID } from "./newID";
-import { SuitJSON } from "./types/SuitJSON";
-import { VariantDescription } from "./types/VariantDescription";
-import { VariantJSON } from "./types/VariantJSON";
-import { error } from "./util";
+import { error } from "./utils";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
@@ -284,6 +284,7 @@ function getNextUnusedVariantID(variantName: string) {
   return variantID;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getNewVariantID(variantDescription: VariantDescription) {
   const suitIDs = getSuitIDsFromSuitNames(variantDescription.suits);
   return suitIDs.join("+");
@@ -300,6 +301,7 @@ function getSuitIDsFromSuitNames(suitNames: string[]): string[] {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function validateNewVariantIDs(variants: VariantJSON[]) {
   const newVariantIDs = new Set();
 
