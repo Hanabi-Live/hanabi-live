@@ -1,4 +1,4 @@
-import { HYPO_PLAYER_NAMES, shrink, SITE_URL } from "@hanabi/data";
+import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import * as chat from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
@@ -7,6 +7,7 @@ import { LogEntry } from "../game/types/GameState";
 import { JSONGame } from "../game/types/JSONGame";
 import ReplayState from "../game/types/ReplayState";
 import globals from "../game/ui/globals";
+import { shrink } from "./hypoCompress";
 
 export default function createJSONFromReplay(room: string) {
   if (
