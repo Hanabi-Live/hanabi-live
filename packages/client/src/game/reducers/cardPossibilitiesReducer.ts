@@ -2,6 +2,7 @@
 
 import { getVariant, Variant } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
+import { isOddsAndEvens } from "../rules/variant";
 import CardState from "../types/CardState";
 import Clue from "../types/Clue";
 import ClueType from "../types/ClueType";
@@ -49,7 +50,15 @@ export default function cardPossibilitiesReducer(
     clue.type === ClueType.Rank &&
     !positiveRankClues.includes(clue.value)
   ) {
-    positiveRankClues = [...positiveRankClues, clue.value];
+    if (isOddsAndEvens(variant)) {
+      if (clue.value === 1) {
+        positiveRankClues = [...positiveRankClues, ...[1, 3, 5]];
+      } else {
+        positiveRankClues = [...positiveRankClues, ...[2, 4]];
+      }
+    } else {
+      positiveRankClues = [...positiveRankClues, clue.value];
+    }
   }
 
   const { suitIndex, rank, suitDetermined, rankDetermined, revealedToPlayer } =
