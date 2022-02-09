@@ -599,7 +599,7 @@ export function addMessageToChat(
   room: string,
   type = SelfChatMessageType.Normal,
 ): void {
-  const message = getChatMessage(msg, type);
+  const message = formatChatMessage(msg, type);
   add(
     {
       msg: message,
@@ -710,7 +710,7 @@ export function updatePeopleTyping(): void {
   chat2.html(msg);
 }
 
-function getChatMessage(msg: string, type: SelfChatMessageType): string {
+function formatChatMessage(msg: string, type: SelfChatMessageType): string {
   let message = msg;
   switch (type) {
     case SelfChatMessageType.Info: {
