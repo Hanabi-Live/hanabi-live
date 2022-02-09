@@ -93,9 +93,9 @@ export default function createJSONFromReplay(room: string) {
         room,
       );
     })
-    .catch(() => {
+    .catch((err) => {
       chat.addSelf(
-        '<span class="red">Error</span>: The URL could not be copied to your clipboard.',
+        `<span class="red">Error</span>: Failed to copy the URL to your clipboard: ${err}`,
         room,
       );
       chat.addSelf(URL, room);
