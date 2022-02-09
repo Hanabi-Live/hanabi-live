@@ -47,7 +47,7 @@ const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  *
  * Finally hyphens are added to the string to make URL text wrap when posting.
  *
- * @param JSONString A string representing a hypo JSON
+ * @param JSONString A string representing a hypothetical JSON.
  */
 export function shrink(JSONString: string): string | null {
   let gameDataJSON: GameJSON;
@@ -83,13 +83,13 @@ export function shrink(JSONString: string): string | null {
  * Decompresses a string into a GameJSON object.
  * Returns null if decompression fails.
  *
- * @param data The compressed string
+ * @param data The compressed string.
  */
 export function expand(data: string): string | null {
   // Remove all hyphens from URL
   const normal = data.replace(/-/g, "");
 
-  // The compressed string is composed of 3 substrings, separated by commas.
+  // The compressed string is composed of 3 substrings, separated by commas
   const [playersAndDeck, actionsString, variantIDString] = [
     ...normal.split(",", 3),
   ];
@@ -135,7 +135,7 @@ export function expand(data: string): string | null {
  * Compresses a GameJSON object into a string.
  * Returns null if decompression fails.
  *
- * @param data The GameJSON object
+ * @param data The GameJSON object.
  */
 function gameJSONCompress(data: GameJSON): string | null {
   let out = "";
@@ -181,7 +181,7 @@ function gameJSONCompress(data: GameJSON): string | null {
  * The first two characters of the string are numbers containing the min and max values of DeckCard.rank.
  * The rest of the string contains series of strings one characters long, each representing a DeckCard.
  *
- * @param deck The array of DeckCard
+ * @param deck The array of DeckCard.
  */
 function compressDeck(deck: DeckCard[]): string | null {
   const rankRange = getRankMinMax(deck);
@@ -202,7 +202,7 @@ function compressDeck(deck: DeckCard[]): string | null {
  * The first two characters of the string must be numbers containing the min and max values of DeckCard.rank.
  * The rest of the string must be composed of series of strings one character long, each representing a DeckCard.
  *
- * @param src The compressed string
+ * @param src The compressed string.
  */
 function decompressDeck(src: string): DeckCard[] | null {
   const deck: DeckCard[] = [];
@@ -231,8 +231,8 @@ function decompressDeck(src: string): DeckCard[] | null {
  * The returned string is one characters long,
  * representing DeckCard.suitIndex and DeckCard.rank.
  *
- * @param card The DeckCard object
- * @param rankRange The validated min and max values of DeckCard.rank
+ * @param card The DeckCard object.
+ * @param rankRange The validated min and max values of DeckCard.rank.
  */
 function deckCardToString(card: DeckCard, rankRange: MinMax): string {
   const r = rankRange.max - rankRange.min + 1;
@@ -245,8 +245,8 @@ function deckCardToString(card: DeckCard, rankRange: MinMax): string {
  * The string must be one character long,
  * representing DeckCard.suitIndex and DeckCard.rank.
  *
- * @param src A compressed single character string representing a DeckCard
- * @param rankRange The validated min and max values of DeckCard.rank
+ * @param src A compressed single character string representing a DeckCard.
+ * @param rankRange The validated min and max values of DeckCard.rank.
  */
 function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
   const r = rankRange.max - rankRange.min + 1;
@@ -261,7 +261,7 @@ function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
  * The first two characters of the string are numbers containing the min and max values of Action.type.
  * The rest of the string contains series of strings two characters long, each representing an Action.
  *
- * @param actions The array of Action
+ * @param actions The array of Action.
  */
 function compressActions(actions: Action[]): string {
   // Find min/max values of Action.type
@@ -284,7 +284,7 @@ function compressActions(actions: Action[]): string {
  * The first two characters of the string must be numbers containing the min and max values of Action.type.
  * The rest of the string must be composed of series of strings two characters long, each representing an Action.
  *
- * @param src The compressed string
+ * @param src The compressed string.
  */
 function decompressActions(src: string): Action[] {
   const actions: Action[] = [];
@@ -315,8 +315,8 @@ function decompressActions(src: string): Action[] {
  * the first one representing Action.type and Action.value
  * and the second representing the Action.target.
  *
- * @param action The Action object
- * @param typeRange The validated min and max values of Action.type
+ * @param action The Action object.
+ * @param typeRange The validated min and max values of Action.type.
  */
 function actionToString(action: Action, typeRange: MinMax): string {
   const r = typeRange.max - typeRange.min + 1;
@@ -332,8 +332,8 @@ function actionToString(action: Action, typeRange: MinMax): string {
  * the first one representing Action.type and Action.value
  * and the second representing the Action.target.
  *
- * @param src A compressed two-characters string representing an Action
- * @param typeRange The validated min and max values of Action.type
+ * @param src A compressed two-characters string representing an Action.
+ * @param typeRange The validated min and max values of Action.type.
  */
 function stringToAction(src: string, typeRange: MinMax): Action {
   const r = typeRange.max - typeRange.min + 1;
@@ -351,9 +351,9 @@ function stringToAction(src: string, typeRange: MinMax): Action {
 }
 
 /**
- * Returns a string array of hypo players (Alice, Bob, etc).
+ * Returns a string array of hypothetical players (Alice, Bob, etc).
  *
- * @param size The number of players
+ * @param size The number of players.
  */
 function getPlayers(size: number): string[] {
   if (size < MIN_PLAYERS || size > MAX_PLAYERS) {
@@ -364,9 +364,9 @@ function getPlayers(size: number): string[] {
 
 /**
  * Creates a MinMax object, containing the min and max values
- * of DeckCard.rank found in an array of DeckCard
+ * of DeckCard.rank found in an array of DeckCard.
  *
- * @param deck The array of DeckCard[] to search
+ * @param deck The array of DeckCard[] to search.
  */
 function getRankMinMax(deck: DeckCard[]): MinMax {
   const range: MinMax = {
@@ -383,9 +383,9 @@ function getRankMinMax(deck: DeckCard[]): MinMax {
 
 /**
  * Creates a MinMax object, containing the min and max values
- * of Action.type found in an array of Action
+ * of Action.type found in an array of Action.
  *
- * @param actions The array of Action[] to search
+ * @param actions The array of Action[] to search.
  */
 function getTypeMinMax(actions: Action[]): MinMax {
   const range: MinMax = {
@@ -405,7 +405,7 @@ function getTypeMinMax(actions: Action[]): MinMax {
 /**
  * Ensures that Minmax.min is non negative and smaller or equal to Minmax.max.
  *
- * @param range The MinMax object
+ * @param range The MinMax object.
  */
 function isMinMaxInvalid(range: MinMax): boolean {
   return range.min < 0 || range.min > range.max;
