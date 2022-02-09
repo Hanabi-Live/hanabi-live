@@ -163,7 +163,7 @@ function gameJSONCompress(data: GameJSON): string | null {
   const actions = compressActions(data.actions);
   out += `${actions},`;
 
-  // Variant id
+  // Variant ID
   if (data.options.variant === undefined) {
     return null;
   }
