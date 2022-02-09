@@ -20,6 +20,7 @@
     "keycode-js": "^3.1.0",
     "konva": "3.4.1",
     "linkify-html": "^3.0.5",
+    "lodash": "^4.17.21",
     "redux": "^4.1.2",
     "tooltipster": "^4.2.8",
     "ts-node": "^10.4.0"
@@ -28,6 +29,7 @@
     "@sentry/webpack-plugin": "^1.18.3",
     "@types/jquery": "^3.5.11",
     "@types/linkifyjs": "^2.1.4",
+    "@types/lodash": "^4.14.178",
     "@types/tooltipster": "^0.0.31",
     "dotenv": "^10.0.0",
     "grunt": "^1.4.1",

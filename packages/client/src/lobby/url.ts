@@ -1,6 +1,7 @@
 import { DEFAULT_VARIANT_NAME, parseIntSafe } from "@hanabi/data";
 import globals from "../globals";
 import { setBrowserAddressBarPath } from "../utils";
+import { expand, GameJSON } from "./hypoCompress";
 import WelcomeData from "./types/WelcomeData";
 
 export function parseAndGoto(data: WelcomeData): void {
@@ -75,33 +76,57 @@ export function parseAndGoto(data: WelcomeData): void {
     return;
   }
 
-  // Automatically go into a replay if we are using a "/replay/123" URL
-  const replayMatch = /\/replay\/(\d+)/.exec(window.location.pathname);
+  // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL
+  const replayMatch = /\/(?:shared-)?replay\/(\d+)/.exec(
+    window.location.pathname,
+  );
   if (replayMatch !== null) {
+    const visibility = window.location.pathname.includes("shared-")
+      ? "solo"
+      : "shared";
     // The server expects the game ID as an integer
     const databaseID = parseIntSafe(replayMatch[1]);
     globals.conn!.send("replayCreate", {
       databaseID,
       source: "id",
-      visibility: "solo",
+      visibility,
       shadowingPlayerIndex: -1,
     });
     return;
   }
 
-  // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
-  // (if there is an existing shared replay for this database ID,
-  // then the server will automatically make us join the existing one instead of creating a new one)
-  const sharedReplayMatch = /\/shared-replay\/(\d+)/.exec(
+  // Automatically go into a replay if we are using a "/replay-json/string" or "/shared-replay-json/string" URL
+  const replayJSONMatch = /\/(?:shared-)?replay-json\/([a-zA-Z0-9,-]+)$/.exec(
     window.location.pathname,
   );
-  if (sharedReplayMatch !== null) {
-    // The server expects the game ID as an integer
-    const databaseID = parseIntSafe(sharedReplayMatch[1]);
+  if (replayJSONMatch !== null) {
+    const visibility = window.location.pathname.includes("shared-")
+      ? "solo"
+      : "shared";
+    // The server expects the uncompressed JSON
+    const gameJSONString = expand(replayJSONMatch[1]);
+    if (gameJSONString === null) {
+      setBrowserAddressBarPath("/lobby");
+      return;
+    }
+    let gameJSON: GameJSON;
+    try {
+      gameJSON = JSON.parse(gameJSONString) as GameJSON;
+    } catch (err) {
+      setBrowserAddressBarPath("/lobby");
+      return;
+    }
+    if (typeof gameJSON !== "object") {
+      setBrowserAddressBarPath("/lobby");
+      return;
+    }
+    const source = "json";
+    localStorage.setItem("watchReplayJSON", gameJSONString);
+    localStorage.setItem("watchReplayVisibility", visibility);
     globals.conn!.send("replayCreate", {
-      databaseID,
-      source: "id",
-      visibility: "shared",
+      source,
+      gameJSON,
+      visibility,
       shadowingPlayerIndex: -1,
     });
     return;

@@ -22,7 +22,7 @@ export default function websocketInit(): void {
   }
 
   // Prepare the URL of the WebSocket server
-  // e.g. "ws://localhost/ws" or "wss://hanab.live/ws"
+  // e.g. "ws://localhost/ws"
   const websocketProtocol =
     window.location.protocol === "https:" ? "wss" : "ws";
   let websocketHost = window.location.hostname;
