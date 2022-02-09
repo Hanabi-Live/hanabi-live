@@ -94,7 +94,7 @@ export function expand(data: string): string | null {
   // Remove all hyphens from URL
   const normal = data.replace(/-/g, "");
 
-  // The compressed string is composed of 3 substrings, separated by commas
+  // The compressed string is composed of 3 substrings separated by commas
   const [playersAndDeck, actionsString, variantIDString] = [
     ...normal.split(",", 3),
   ];
