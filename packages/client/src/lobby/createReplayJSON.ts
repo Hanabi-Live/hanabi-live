@@ -83,7 +83,7 @@ export default function createJSONFromReplay(room: string) {
     .writeText(URL)
     .then(() => {
       chat.addSelf(
-        '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
+        '<span class="green">Info</span>: The URL for this hypothetical is copied to your clipboard.',
         room,
       );
       const urlFix = json.replace(/"/g, "\\'");
