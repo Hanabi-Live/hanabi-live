@@ -24,4 +24,7 @@ export const HYPO_PLAYER_NAMES = [
   "Frank",
 ];
 
-export const MAIN_URL = "https://hanab.live";
+export const DOMAIN = "hanab.live";
+export const OLD_DOMAIN = "hanabi.live";
+const protocol = "https";
+export const SITE_URL = `${protocol}://${DOMAIN}`;

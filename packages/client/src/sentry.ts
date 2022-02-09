@@ -1,6 +1,6 @@
 // In production, we send all errors to the cloud using the Sentry.io service
 
-import { VERSION } from "@hanabi/data";
+import { DOMAIN, VERSION } from "@hanabi/data";
 import * as Sentry from "@sentry/browser";
 import InitData from "./game/types/InitData";
 
@@ -12,7 +12,7 @@ export function init(): void {
   Sentry.init({
     dsn: "https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482",
     release: VERSION,
-    whitelistUrls: ["hanab.live"], // Otherwise, we get errors for LastPass, etc.
+    whitelistUrls: [DOMAIN], // Otherwise, we get errors for LastPass, etc.
     ignoreErrors,
   });
 }

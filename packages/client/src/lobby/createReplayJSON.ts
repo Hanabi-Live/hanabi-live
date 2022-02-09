@@ -1,4 +1,4 @@
-import { HYPO_PLAYER_NAMES, MAIN_URL, shrink } from "@hanabi/data";
+import { HYPO_PLAYER_NAMES, shrink, SITE_URL } from "@hanabi/data";
 import * as chat from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
@@ -75,30 +75,31 @@ export default function createJSONFromReplay(room: string) {
       '<span class="red">Error</span>: Failed to compress the JSON data.',
       room,
     );
-  } else {
-    const URL = `${MAIN_URL}/shared-replay-json/${URLData}`;
-    navigator.clipboard
-      .writeText(URL)
-      .then(() => {
-        chat.addSelf(
-          '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
-          room,
-        );
-        const urlFix = json.replace(/"/g, "\\'");
-        const here = `<button href="#" onclick="navigator.clipboard.writeText(${urlFix}.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"><strong>here</strong></button>`;
-        chat.addSelf(
-          `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
-          room,
-        );
-      })
-      .catch(() => {
-        chat.addSelf(
-          '<span class="red">Error</span>: The URL could not be copied to your clipboard.',
-          room,
-        );
-        chat.addSelf(URL, room);
-      });
+    return;
   }
+
+  const URL = `${SITE_URL}/shared-replay-json/${URLData}`;
+  navigator.clipboard
+    .writeText(URL)
+    .then(() => {
+      chat.addSelf(
+        '<span class="green">Info</span>: Your hypo URL is copied on your clipboard.',
+        room,
+      );
+      const urlFix = json.replace(/"/g, "\\'");
+      const here = `<button href="#" onclick="navigator.clipboard.writeText(${urlFix}.replace(/\\'/g, String.fromCharCode(34))).then(()=>{},()=>{});return false;"><strong>here</strong></button>`;
+      chat.addSelf(
+        `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
+        room,
+      );
+    })
+    .catch(() => {
+      chat.addSelf(
+        '<span class="red">Error</span>: The URL could not be copied to your clipboard.',
+        room,
+      );
+      chat.addSelf(URL, room);
+    });
 }
 
 function getGameActionsFromState(source: ReplayState): ClientAction[] {
