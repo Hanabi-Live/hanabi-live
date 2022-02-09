@@ -1,6 +1,7 @@
 // This is the main entry point for the client code
 // The client code is split up into multiple files and bundled together with webpack
 
+import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
@@ -23,14 +24,13 @@ import * as tooltips from "./tooltips";
 // Initialize logging to Sentry.io
 sentry.init();
 
+// Manually redirect users that are going to wrong URLs
 if (
-  // Manually redirect users that go to the old domain
-  window.location.hostname === "hanabi.live" ||
-  window.location.hostname === "www.hanabi.live" ||
-  // Manually redirect users that go to "www.hanab.live" instead of "hanab.live"
-  window.location.hostname === "www.hanab.live"
+  window.location.hostname === OLD_DOMAIN ||
+  window.location.hostname === `www.${OLD_DOMAIN}` ||
+  window.location.hostname === `www.${DOMAIN}`
 ) {
-  window.location.replace(`https://hanab.live${window.location.pathname}`);
+  window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
 }
 
 $(document).ready(() => {

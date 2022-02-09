@@ -7,7 +7,6 @@ const emotes = emotesJSON;
 export * from "./abbreviations";
 export * from "./constants";
 export * from "./gameData";
-export * from "./hypoPlayerNames";
 export * from "./types/Character";
 export * from "./types/Color";
 export * from "./types/Suit";

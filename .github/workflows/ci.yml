@@ -56,7 +56,7 @@ jobs:
         run: bash ./packages/client/set_version.sh
 
       - name: Lint the TypeScript code
-        run: bash ./packages/lint_scripts.sh
+        run: bash ./packages/lint_client.sh
 
   client_test:
     name: Client - Test (Jest)
