@@ -17,6 +17,10 @@ import (
 
 // /s - Automatically start the game as soon as someone joins
 func chatS(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
+	if chatNotInTable(d, t) {
+		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
+		return
+	}
 	automaticStart(ctx, s, d, t, len(t.Players)+1)
 }
 
@@ -47,7 +51,7 @@ func chatS6(ctx context.Context, s *Session, d *CommandData, t *Table, cmd strin
 
 // /startin [minutes]
 func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	if t == nil || d.Room == "lobby" {
+	if chatNotInTable(d, t) {
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
@@ -107,7 +111,7 @@ func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table, cmd 
 }
 
 func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	if t == nil || d.Room == "lobby" {
+	if chatNotInTable(d, t) {
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
@@ -174,7 +178,7 @@ func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table, cmd str
 
 // /missingscores
 func chatMissingScores(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	if t == nil || d.Room == "lobby" {
+	if chatNotInTable(d, t) {
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
@@ -206,7 +210,7 @@ func chatMissingScores(ctx context.Context, s *Session, d *CommandData, t *Table
 // /findvariant
 // This function does not consider modifiers (e.g. "Empty Clues")
 func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	if t == nil || d.Room == "lobby" {
+	if chatNotInTable(d, t) {
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
@@ -278,7 +282,7 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 */
 
 func automaticStart(ctx context.Context, s *Session, d *CommandData, t *Table, numPlayers int) {
-	if t == nil || d.Room == "lobby" {
+	if chatNotInTable(d, t) {
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
@@ -372,7 +376,7 @@ func startIn(
 }
 
 func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	if t == nil || d.Room == "lobby" {
+	if chatNotInTable(d, t) {
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
@@ -413,4 +417,8 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table, cmd
 		}
 		p.Session.Emit("chat", chatMessage)
 	}
+}
+
+func chatNotInTable(d *CommandData, t *Table) bool {
+	return d == nil || t == nil || d.Room == "lobby"
 }
