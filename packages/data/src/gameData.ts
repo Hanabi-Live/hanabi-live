@@ -20,7 +20,16 @@ const SUITS = suitsInit(COLORS);
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 
 /** Indexed by variant ID */
-const VARIANTS_BY_ID = getVariantsMapByID(VARIANTS);
+const VARIANTS_BY_ID = getVariantsMapByID();
+
+function getVariantsMapByID(): ReadonlyMap<number, Variant> {
+  const variantsMapByID = new Map<number, Variant>();
+  for (const variant of Array.from(VARIANTS.values())) {
+    variantsMapByID.set(variant.id, variant);
+  }
+
+  return variantsMapByID;
+}
 
 export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);
@@ -46,12 +55,13 @@ export function getVariant(variantName: string): Variant {
 
 export function getVariantByID(variantID: number): Variant {
   const variant = VARIANTS_BY_ID.get(variantID);
-  if (variant !== undefined) {
-    return variant;
+  if (variant === undefined) {
+    throw new Error(
+      `Failed to find the #"${variantID}" variant in the "VARIANTS" map.`,
+    );
   }
-  throw new Error(
-    `Failed to find the #"${variantID}" variant in the "VARIANTS" map.`,
-  );
+
+  return variant;
 }
 
 export function getDefaultVariant(): Variant {
@@ -75,13 +85,4 @@ export function getCharacter(characterID: number): Character {
   }
 
   return character;
-}
-
-function getVariantsMapByID(): ReadonlyMap<number, Variant> {
-  const variantsMapByID = new Map<number, Variant>();
-  for (const variant of VARIANTS.values()) {
-    variantsMapByID.set(variant.id, variant);
-  }
-
-  return variantsMapByID;
 }
