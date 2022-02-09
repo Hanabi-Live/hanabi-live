@@ -729,8 +729,7 @@ function formatChatMessage(msg: string, type: SelfChatMessageType): string {
     }
     default: {
       ensureAllCases(type);
-      break;
+      return "";
     }
   }
-  return "";
 }
