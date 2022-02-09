@@ -9,7 +9,7 @@ import (
 // /here, /ping
 func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	if t != nil {
-		chatServerSend(ctx, NotInLobbyFail, d.Room, d.NoTablesLock)
+		chatServerSendPM(s, NotInLobbyFail, d.Room)
 		return
 	}
 
@@ -33,7 +33,7 @@ func chatHere(ctx context.Context, s *Session, d *CommandData, t *Table, cmd str
 // /teachme
 func chatTeachMe(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	if t != nil {
-		chatServerSend(ctx, NotInLobbyFail, d.Room, d.NoTablesLock)
+		chatServerSendPM(s, NotInLobbyFail, d.Room)
 		return
 	}
 
@@ -66,7 +66,10 @@ func chatWrongChannel(ctx context.Context, s *Session, d *CommandData, t *Table,
 		return
 	}
 
-	// This includes a discord link to the #convention-questions channel
-	msg := "It looks like you are asking a question about the H-Group. Please ask all such questions in the <#456214043351580674> channel."
+	if discord == nil {
+		chatServerSendPM(s, "Discord is not available at this time.", d.Room)
+		return
+	}
+	msg := "It looks like you are asking a question about the H-Group. Please ask all such questions in the <#" + discordChannelQuestions + "> Discord channel."
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }

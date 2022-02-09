@@ -24,6 +24,7 @@ export const HYPO_PLAYER_NAMES = [
   "Frank",
 ];
 
+export const PROJECT_NAME = "Hanab Live";
 export const DOMAIN = "hanab.live";
 export const OLD_DOMAIN = "hanabi.live";
 const PROTOCOL = "https";

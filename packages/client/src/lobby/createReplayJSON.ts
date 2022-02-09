@@ -1,5 +1,5 @@
 import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
-import * as chat from "../chat";
+import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import ActionType from "../game/types/ActionType";
 import ClientAction from "../game/types/ClientAction";
 import ClueType from "../game/types/ClueType";
@@ -10,10 +10,16 @@ import globals from "../game/ui/globals";
 import { shrink } from "./hypoCompress";
 
 export default function createJSONFromReplay(room: string) {
-  if (globals === null || globals.store === null || !globals.state.finished) {
-    chat.addSelf(
-      '<span class="red">Error:</span> You can only use that command during the review of a game.',
+  if (
+    globals === null ||
+    globals.store === null ||
+    !globals.state.finished ||
+    globals.state.replay === null
+  ) {
+    sendSelfPMFromServer(
+      "You can only use the <code>/copy</code> command during the review of a game.",
       room,
+      SelfChatMessageType.Error,
     );
     return;
   }
@@ -57,9 +63,10 @@ export default function createJSONFromReplay(room: string) {
 
   // Enforce at least one action
   if (game.actions.length === 0) {
-    chat.addSelf(
-      '<span class="red">Error</span>: There are no actions in your hypo.',
+    sendSelfPMFromServer(
+      "There are no actions in your hypothetical.",
       room,
+      SelfChatMessageType.Error,
     );
     return;
   }
@@ -67,9 +74,10 @@ export default function createJSONFromReplay(room: string) {
   const json = JSON.stringify(game);
   const URLData = shrink(json);
   if (URLData === null || URLData === "") {
-    chat.addSelf(
-      '<span class="red">Error</span>: Failed to compress the JSON data.',
+    sendSelfPMFromServer(
+      "Failed to compress the JSON data.",
       room,
+      SelfChatMessageType.Error,
     );
     return;
   }
@@ -78,23 +86,26 @@ export default function createJSONFromReplay(room: string) {
   navigator.clipboard
     .writeText(URL)
     .then(() => {
-      chat.addSelf(
-        '<span class="green">Info</span>: The URL for this hypothetical is copied to your clipboard.',
+      sendSelfPMFromServer(
+        "The URL for this hypothetical is copied to your clipboard.",
         room,
+        SelfChatMessageType.Info,
       );
       const urlFix = json.replace(/"/g, "\\'");
       const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
-      chat.addSelf(
-        `<span class="green">Info</span>: Click ${here} to copy the raw JSON data to your clipboard.`,
+      sendSelfPMFromServer(
+        `Click ${here} to copy the raw JSON data to your clipboard.`,
         room,
+        SelfChatMessageType.Info,
       );
     })
     .catch((err) => {
-      chat.addSelf(
-        `<span class="red">Error</span>: Failed to copy the URL to your clipboard: ${err}`,
+      sendSelfPMFromServer(
+        `Failed to copy the URL to your clipboard: ${err}`,
         room,
+        SelfChatMessageType.Error,
       );
-      chat.addSelf(URL, room);
+      sendSelfPMFromServer(URL, room);
     });
 }
 
