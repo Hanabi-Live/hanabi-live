@@ -70,7 +70,7 @@ export default function createJSONFromReplay(room: string) {
 
   const json = JSON.stringify(game);
   const URLData = shrink(json);
-  if (URLData === "" || URLData === null) {
+  if (URLData === null || URLData === "") {
     chat.addSelf(
       '<span class="red">Error</span>: Failed to compress the JSON data.',
       room,
