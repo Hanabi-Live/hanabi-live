@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
@@ -16,6 +17,7 @@ var (
 	discordGuildID              string
 	discordChannelSyncWithLobby string
 	discordChannelWebsiteDev    string
+	discordChannelQuestions     string
 	sendMessageToWebDevChannel  bool
 	discordBotID                string
 	discordIsReady              = abool.New()
@@ -30,37 +32,33 @@ var (
 */
 
 func discordInit() {
-	// Read some configuration values from environment variables
-	// (they were loaded from the .env file in main.go)
-	discordToken = os.Getenv("DISCORD_TOKEN")
-	if len(discordToken) == 0 {
-		logger.Info("The \"DISCORD_TOKEN\" environment variable is blank; " +
-			"aborting Discord initialization.")
-		return
-	}
-	discordGuildID = os.Getenv("DISCORD_GUILD_ID")
-	if len(discordGuildID) == 0 {
-		logger.Info("The \"DISCORD_GUILD_ID\" environment variable is blank; " +
-			"aborting Discord initialization.")
-		return
-	}
-	discordChannelSyncWithLobby = os.Getenv("DISCORD_CHANNEL_SYNC_WITH_LOBBY")
-	if len(discordChannelSyncWithLobby) == 0 {
-		logger.Info("The \"DISCORD_CHANNEL_SYNC_WITH_LOBBY\" environment variable is blank; " +
-			"aborting Discord initialization.")
-		return
-	}
-	discordChannelWebsiteDev = os.Getenv("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT")
-	if len(discordChannelWebsiteDev) == 0 {
-		logger.Info("The \"DISCORD_CHANNEL_WEBSITE_DEVELOPMENT\" environment variable is blank; " +
-			"aborting Discord initialization.")
-		return
-	}
-	discordPingCrew = os.Getenv("DISCORD_PING_CREW_ROLE_NAME")
-	discordTrustedTeacher = os.Getenv("DISCORD_TRUSTED_TEACHER_ROLE_NAME")
-
 	// Messages are only sent to website-development channel when the server restarts
 	sendMessageToWebDevChannel = false
+
+	// Read some configuration values from environment variables
+	// (they were loaded from the .env file in main.go)
+	var ok bool
+	if discordToken, ok = discordReadEnvVar("DISCORD_TOKEN"); !ok {
+		return
+	}
+	if discordGuildID, ok = discordReadEnvVar("DISCORD_GUILD_ID"); !ok {
+		return
+	}
+	if discordChannelSyncWithLobby, ok = discordReadEnvVar("DISCORD_CHANNEL_SYNC_WITH_LOBBY"); !ok {
+		return
+	}
+	if discordChannelWebsiteDev, ok = discordReadEnvVar("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT"); !ok {
+		return
+	}
+	if discordChannelQuestions, ok = discordReadEnvVar("DISCORD_CHANNEL_CONVENTION_QUESTIONS"); !ok {
+		return
+	}
+	if discordPingCrew, ok = discordReadEnvVar("DISCORD_PING_CREW_ROLE_NAME"); !ok {
+		return
+	}
+	if discordTrustedTeacher, ok = discordReadEnvVar("DISCORD_TRUSTED_TEACHER_ROLE_NAME"); !ok {
+		return
+	}
 
 	// Initialize the command map
 	discordCommandInit()
@@ -289,10 +287,11 @@ func discordGetRoles() []*discordgo.Role {
 	return roles
 }
 
-func discordGetRole(discordID string) string {
+// Search for a Discord role by ID
+func discordGetRole(id string) string {
 	roles := discordGetRoles()
 	for _, role := range roles {
-		if role.ID == discordID {
+		if role.ID == id {
 			return role.Name
 		}
 	}
@@ -317,4 +316,13 @@ func discordSendToChat(ctx context.Context, msg string, username string) {
 		Discord:  true,
 		Room:     "lobby",
 	})
+}
+
+func discordReadEnvVar(envVar string) (string, bool) {
+	val := os.Getenv(envVar)
+	if len(val) == 0 {
+		logger.Info(fmt.Sprintf("The \"%s\" environment variable is blank; aborting Discord initialization.", envVar))
+		return "", false
+	}
+	return val, true
 }
