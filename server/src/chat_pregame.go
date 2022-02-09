@@ -420,5 +420,5 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table, cmd
 }
 
 func chatNotInTable(d *CommandData, t *Table) bool {
-	return d == nil || t == nil || d.Room == "lobby"
+	return t == nil || d == nil || d.Room == "lobby"
 }
