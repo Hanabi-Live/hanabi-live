@@ -1,12 +1,7 @@
 import { isEqual } from "lodash";
-import {
-  getVariant,
-  getVariantByID,
-  HYPO_PLAYER_NAMES,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-  parseIntSafe,
-} from "./index";
+import { HYPO_PLAYER_NAMES, MAX_PLAYERS, MIN_PLAYERS } from "./constants";
+import { getVariant, getVariantByID } from "./gameData";
+import { parseIntSafe } from "./utils";
 
 interface DeckCard {
   suitIndex: number;

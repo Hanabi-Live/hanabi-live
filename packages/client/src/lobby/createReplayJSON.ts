@@ -147,6 +147,7 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
         continue;
     }
   }
+
   return actions;
 }
 
