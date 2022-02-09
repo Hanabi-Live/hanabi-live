@@ -3,7 +3,6 @@ import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
 import globals from "./globals";
 import * as createGame from "./lobby/createGame";
 import createJSONFromReplay from "./lobby/createReplayJSON";
-import { showWarning } from "./modals";
 
 // Define a command handler map
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +25,7 @@ function friend(room: string, args: string[]) {
   // Validate that we are not targeting ourselves
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
-    showWarning("You cannot friend yourself.");
+    sendSelfPMFromServer("You cannot friend yourself.", room);
   }
 
   globals.conn!.send("chatFriend", {
