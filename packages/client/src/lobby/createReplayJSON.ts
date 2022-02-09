@@ -10,12 +10,7 @@ import globals from "../game/ui/globals";
 import { shrink } from "./hypoCompress";
 
 export default function createJSONFromReplay(room: string) {
-  if (
-    globals === null ||
-    globals.store === null ||
-    !globals.state.finished ||
-    globals.state.replay === null
-  ) {
+  if (globals === null || globals.store === null || !globals.state.finished) {
     chat.addSelf(
       '<span class="red">Error:</span> You can only use that command during the review of a game.',
       room,
