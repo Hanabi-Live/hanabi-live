@@ -64,7 +64,7 @@ export default function createJSONFromReplay(room: string) {
   // Enforce at least one action
   if (game.actions.length === 0) {
     addMessageToChat(
-      "There are no actions in your hypo.",
+      "There are no actions in your hypothetical.",
       room,
       SelfChatMessageType.Error,
     );

@@ -1,7 +1,13 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
-import { emojis, emotes, parseIntSafe, PROJECT_NAME } from "@hanabi/data";
+import {
+  emojis,
+  emotes,
+  ensureAllCases,
+  parseIntSafe,
+  PROJECT_NAME,
+} from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import chatCommands from "./chatCommands";
@@ -711,19 +717,20 @@ export function updatePeopleTyping(): void {
 }
 
 function formatChatMessage(msg: string, type: SelfChatMessageType): string {
-  let message = msg;
   switch (type) {
+    case SelfChatMessageType.Normal: {
+      return msg;
+    }
     case SelfChatMessageType.Info: {
-      message = `<span class="green">${message}</span>`;
-      break;
+      return `<span class="green">${msg}</span>`;
     }
     case SelfChatMessageType.Error: {
-      message = `<span class="red">${message}</span>`;
-      break;
+      return `<span class="red">${msg}</span>`;
     }
     default: {
+      ensureAllCases(type);
       break;
     }
   }
-  return message;
+  return "";
 }
