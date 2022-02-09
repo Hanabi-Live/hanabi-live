@@ -276,12 +276,10 @@ function compressActions(actions: Action[]): string {
     return "00";
   }
 
-  let out = `${typeRange.min}${typeRange.max}`;
-  for (const action of actions) {
-    out += actionToString(action, typeRange);
-  }
-
-  return out;
+  const actionStrings = actions.map((action) =>
+    actionToString(action, typeRange),
+  );
+  return `${typeRange.min}${typeRange.max}${actionStrings}`;
 }
 
 /**
