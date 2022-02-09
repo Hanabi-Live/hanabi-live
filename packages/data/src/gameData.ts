@@ -20,7 +20,7 @@ const SUITS = suitsInit(COLORS);
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 
 /** Indexed by variant ID */
-const VARIANTS_BY_ID = getVariantsMapById();
+const VARIANTS_BY_ID = getVariantsMapByID(VARIANTS);
 
 export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);
@@ -77,11 +77,11 @@ export function getCharacter(characterID: number): Character {
   return character;
 }
 
-function getVariantsMapById(): ReadonlyMap<number, Variant> {
-  const mapByID = new Map<number, Variant>();
-  for (const v of Array.from(VARIANTS.values())) {
-    mapByID.set(v.id, v);
+function getVariantsMapByID(): ReadonlyMap<number, Variant> {
+  const variantsMapByID = new Map<number, Variant>();
+  for (const variant of VARIANTS.values()) {
+    variantsMapByID.set(variant.id, variant);
   }
 
-  return mapByID;
+  return variantsMapByID;
 }
