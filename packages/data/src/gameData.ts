@@ -8,9 +8,16 @@ import { Suit } from "./types/Suit";
 import { parseIntSafe } from "./utils";
 import { variantsInit } from "./variantsInit";
 
+/** Indexed by character ID. */
 const CHARACTERS = charactersInit();
+
+/** Indexed by color name. */
 const COLORS = colorsInit();
+
+/** Indexed by suit name. */
 const SUITS = suitsInit(COLORS);
+
+/** Indexed by variant name. */
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 
 export function getSuit(suitName: string): Suit {
