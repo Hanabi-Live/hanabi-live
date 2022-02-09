@@ -12,13 +12,13 @@ lint() {
   cd "$1"
 
   # Step 1 - Use Prettier to check formatting
-  echo "Running prettier on  : $1"
+  echo "Running prettier on: $1"
   npx prettier --check "src/**/*.ts"
 
   # Step 2 - Use ESLint to lint the TypeScript
   # Since all ESLint errors are set to warnings,
   # we set max warnings to 0 so that warnings will fail in CI
-  echo "Running eslint on    : $1"
+  echo "Running eslint on: $1"
   npx eslint --max-warnings 0 src
 
   # Step 3 - Use ts-prune to check for unused imports
