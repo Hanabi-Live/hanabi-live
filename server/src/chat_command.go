@@ -105,7 +105,7 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 		command = cmd
 	}
 
-	msg := "The chat command of \"/" + command + "\" is not valid. Use <code>\"/help\"</code> to get a list of available commands."
+	msg := "The chat command of \"/" + command + "\" is not valid. Use <code>/help</code> to get a list of available commands."
 
 	// Search for existing handler
 	if _, ok := chatCommandMap[command]; !ok {
