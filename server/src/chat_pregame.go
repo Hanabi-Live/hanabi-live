@@ -24,18 +24,18 @@ func chatS(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string
 
 	var numPlayers int
 	if cmd == "s" {
-		numPlayers = len(t.Players)+1
+		numPlayers = len(t.Players) + 1
 	} else {
 		// Commands s2 to s6
 		if v, err := strconv.Atoi(cmd[1:]); err != nil {
-			msg := "The chat command of \"/" + cmd + "\" is not valid. Use <code>\"/help\"</code> to get a list of available commands."
+			msg := chatGetInvalidCommandMsg(cmd)
 			chatServerSendPM(s, msg, d.Room)
 			return
 		} else {
-			numPlayers = v	
+			numPlayers = v
 		}
 	}
-	
+
 	automaticStart(ctx, s, d, t, numPlayers)
 }
 

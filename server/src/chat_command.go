@@ -105,7 +105,7 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 		command = cmd
 	}
 
-	msg := "The chat command of \"/" + command + "\" is not valid. Use <code>/help</code> to get a list of available commands."
+	msg := chatGetInvalidCommandMsg(command)
 
 	// Search for existing handler
 	if _, ok := chatCommandMap[command]; !ok {
@@ -139,4 +139,8 @@ func chatParseCommand(msg string) (string, []string) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	return command, args
+}
+
+func chatGetInvalidCommandMsg(invalidCommand string) string {
+	return "The chat command of /" + invalidCommand + " is not valid. Use <code>/help</code> to get a list of available commands."
 }
