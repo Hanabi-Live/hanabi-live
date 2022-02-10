@@ -29,11 +29,11 @@ func chatCommandInit() {
 
 	// Table-only commands (pregame only, table owner only)
 	chatCommandMap["s"] = chatS
-	chatCommandMap["s2"] = chatS2
-	chatCommandMap["s3"] = chatS3
-	chatCommandMap["s4"] = chatS4
-	chatCommandMap["s5"] = chatS5
-	chatCommandMap["s6"] = chatS6
+	chatCommandMap["s2"] = chatS
+	chatCommandMap["s3"] = chatS
+	chatCommandMap["s4"] = chatS
+	chatCommandMap["s5"] = chatS
+	chatCommandMap["s6"] = chatS
 	chatCommandMap["si"] = chatStartIn
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["kick"] = chatKick

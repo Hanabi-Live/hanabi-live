@@ -21,32 +21,15 @@ func chatS(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
-	automaticStart(ctx, s, d, t, len(t.Players)+1)
-}
-
-// /s2 - Automatically start the game as soon as there are 2 players
-func chatS2(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	automaticStart(ctx, s, d, t, 2)
-}
-
-// /s3 - Automatically start the game as soon as there are 3 players
-func chatS3(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	automaticStart(ctx, s, d, t, 3)
-}
-
-// /s4 - Automatically start the game as soon as there are 4 players
-func chatS4(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	automaticStart(ctx, s, d, t, 4)
-}
-
-// /s5 - Automatically start the game as soon as there are 5 players
-func chatS5(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	automaticStart(ctx, s, d, t, 5)
-}
-
-// /s6 - Automatically start the game as soon as there are 6 players
-func chatS6(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
-	automaticStart(ctx, s, d, t, 6)
+	switch cmd {
+	case "s":
+		automaticStart(ctx, s, d, t, len(t.Players)+1)
+	default:
+		// Commands s2 to s6
+		if time, err := strconv.Atoi(cmd[1:]); err == nil {
+			automaticStart(ctx, s, d, t, time)
+		}
+	}
 }
 
 // /startin [minutes]
