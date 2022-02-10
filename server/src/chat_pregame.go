@@ -28,8 +28,7 @@ func chatS(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string
 	} else {
 		// Commands s2 to s6
 		if v, err := strconv.Atoi(cmd[1:]); err != nil {
-			msg := chatGetInvalidCommandMsg(cmd)
-			chatServerSendPM(s, msg, d.Room)
+			sendInvalidCommand(s, cmd, d.Room)
 			return
 		} else {
 			numPlayers = v

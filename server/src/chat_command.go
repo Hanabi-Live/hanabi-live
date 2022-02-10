@@ -105,12 +105,10 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 		command = cmd
 	}
 
-	msg := chatGetInvalidCommandMsg(command)
-
 	// Search for existing handler
 	if _, ok := chatCommandMap[command]; !ok {
-		// There's no handler, inform via PM
-		chatServerSendPM(s, msg, d.Room)
+		// There is no handler, inform via PM
+		sendInvalidCommand(s, command, d.Room)
 		return false
 	}
 
@@ -141,6 +139,7 @@ func chatParseCommand(msg string) (string, []string) {
 	return command, args
 }
 
-func chatGetInvalidCommandMsg(invalidCommand string) string {
-	return "The chat command of /" + invalidCommand + " is not valid. Use <code>/help</code> to get a list of available commands."
+func sendInvalidCommand(s *Session, invalidCommand string, room string) {
+	msg := "The chat command of <code>/" + invalidCommand + "</code> is not valid. Use <code>/help</code> to get a list of available commands."
+	chatServerSendPM(s, msg, room)
 }
