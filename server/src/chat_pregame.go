@@ -21,19 +21,22 @@ func chatS(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string
 		chatServerSend(ctx, NotInGameFail, d.Room, d.NoTablesLock)
 		return
 	}
+
+	var numPlayers int
 	if cmd == "s" {
-		automaticStart(ctx, s, d, t, len(t.Players)+1)
-		return
+		numPlayers = len(t.Players)+1
+	} else {
+		// Commands s2 to s6
+		if v, err := strconv.Atoi(cmd[1:]); err != nil {
+			msg := "The chat command of \"/" + cmd + "\" is not valid. Use <code>\"/help\"</code> to get a list of available commands."
+			chatServerSendPM(s, msg, d.Room)
+			return
+		} else {
+			numPlayers = v	
+		}
 	}
-	// Commands s2 to s6
-	if time, err := strconv.Atoi(cmd[1:]); err == nil {
-		automaticStart(ctx, s, d, t, time)
-		return
-	}
-	// If the code reaches this point, something went wrong
-	logger.Info("Invalid command " + cmd + ".")
-	msg := "The chat command of \"/" + cmd + "\" is not valid. Use <code>\"/help\"</code> to get a list of available commands."
-	chatServerSendPM(s, msg, d.Room)
+	
+	automaticStart(ctx, s, d, t, numPlayers)
 }
 
 // /startin [minutes]
