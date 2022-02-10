@@ -29,11 +29,11 @@ func chatCommandInit() {
 
 	// Table-only commands (pregame only, table owner only)
 	chatCommandMap["s"] = chatS
-	chatCommandMap["s2"] = chatS2
-	chatCommandMap["s3"] = chatS3
-	chatCommandMap["s4"] = chatS4
-	chatCommandMap["s5"] = chatS5
-	chatCommandMap["s6"] = chatS6
+	chatCommandMap["s2"] = chatS
+	chatCommandMap["s3"] = chatS
+	chatCommandMap["s4"] = chatS
+	chatCommandMap["s5"] = chatS
+	chatCommandMap["s6"] = chatS
 	chatCommandMap["si"] = chatStartIn
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["kick"] = chatKick
@@ -105,12 +105,10 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 		command = cmd
 	}
 
-	msg := "The chat command of \"/" + command + "\" is not valid. Use \"/help\" to get a list of available commands."
-
 	// Search for existing handler
 	if _, ok := chatCommandMap[command]; !ok {
-		// There's no handler, inform via PM
-		chatServerSendPM(s, msg, d.Room)
+		// There is no handler, inform via PM
+		sendInvalidCommand(s, command, d.Room)
 		return false
 	}
 
@@ -139,4 +137,9 @@ func chatParseCommand(msg string) (string, []string) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	return command, args
+}
+
+func sendInvalidCommand(s *Session, invalidCommand string, room string) {
+	msg := "The chat command of <code>/" + invalidCommand + "</code> is not valid. Use <code>/help</code> to get a list of available commands."
+	chatServerSendPM(s, msg, room)
 }
