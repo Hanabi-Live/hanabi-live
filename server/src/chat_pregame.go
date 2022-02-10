@@ -24,12 +24,18 @@ func chatS(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string
 	switch cmd {
 	case "s":
 		automaticStart(ctx, s, d, t, len(t.Players)+1)
+		return
 	default:
 		// Commands s2 to s6
 		if time, err := strconv.Atoi(cmd[1:]); err == nil {
 			automaticStart(ctx, s, d, t, time)
+			return
 		}
 	}
+	// If the code reaches this point, something went wrong
+	logger.Info("Invalid command " + cmd + ".")
+	msg := "The chat command of \"/" + cmd + "\" is not valid. Use <code>\"/help\"</code> to get a list of available commands."
+	chatServerSendPM(s, msg, d.Room)
 }
 
 // /startin [minutes]
