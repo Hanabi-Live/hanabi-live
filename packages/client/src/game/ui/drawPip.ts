@@ -3367,16 +3367,7 @@ export default function drawPip(
   lineWidth?: number,
   highLight?: boolean,
 ): void {
-  // Positive indication for Color pips
-  if (highLight === true) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(3, 5, 100, 0, 360);
-    ctx.fillStyle = "rgba(238, 188, 29, 0.3)";
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-  }
+  const hasCustomFill = customFill !== undefined && customFill !== "";
 
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
@@ -3389,7 +3380,6 @@ export default function drawPip(
     ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   }
 
-  const hasCustomFill = customFill !== undefined && customFill !== "";
   if (secondary === true) {
     ctx.scale(0.8, 0.8);
 
@@ -3449,6 +3439,16 @@ export default function drawPip(
     ctx.fill();
   }
 
+  if (highLight === true) {
+    ctx.lineWidth = 50;
+    ctx.stroke();
+    ctx.strokeStyle = "orange";
+    ctx.lineWidth = 47;
+    ctx.stroke();
+    ctx.fill();
+    ctx.strokeStyle = "black";
+  }
+  
   // Draw a black border around the shape
   if (shadow === true) {
     ctx.lineWidth = lineWidth ?? (hasCustomFill ? 8 : 5);
