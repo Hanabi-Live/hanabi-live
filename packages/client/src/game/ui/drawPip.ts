@@ -7,7 +7,7 @@ type DrawFunction = (
 ) => void;
 const shapeFunctions = new Map<string, DrawFunction>();
 const scaleFactor = 3;
-const highLightWidth = 50;
+const highLightWidth = 40;
 
 shapeFunctions.set(
   "hanabiRed",
@@ -764,9 +764,9 @@ shapeFunctions.set(
     );
     ctx.closePath();
     if (highLight === true) {
-      ctx.lineWidth = highLightWidth * 4;
+      ctx.lineWidth = (highLightWidth * 4) / scaleFactor;
       ctx.stroke();
-      ctx.lineWidth = ((highLightWidth - 3) * 4) / 3;
+      ctx.lineWidth = ((highLightWidth - 3) * 4) / scaleFactor;
       ctx.fillStyle = "orange";
       ctx.strokeStyle = "orange";
       ctx.stroke();
