@@ -98,8 +98,8 @@ export default function drawCards(
           fontSize = 68;
           textYPos = 83;
         } else {
-          fontSize = 96;
-          textYPos = 110;
+          fontSize = 91;
+          textYPos = 104;
         }
 
         ctx.font = `bold ${fontSize}pt Arial`;

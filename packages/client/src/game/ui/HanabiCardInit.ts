@@ -175,7 +175,7 @@ function makeCachedPips(variant: Variant) {
       y: 0.4,
     };
     // Transform polar to Cartesian coordinates
-    const offsetBase = CARD_W * 0.7;
+    const offsetBase = CARD_W * 0.65;
     const offsetTrig = (-i / variant.suits.length + 0.25) * Math.PI * 2;
     const offset = {
       x: Math.floor(offsetBase * Math.cos(offsetTrig)),
