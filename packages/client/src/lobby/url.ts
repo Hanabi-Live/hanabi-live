@@ -82,8 +82,8 @@ export function parseAndGoto(data: WelcomeData): void {
   );
   if (replayMatch !== null) {
     const visibility = window.location.pathname.includes("shared-")
-      ? "solo"
-      : "shared";
+      ? "shared"
+      : "solo";
     // The server expects the game ID as an integer
     const databaseID = parseIntSafe(replayMatch[1]);
     globals.conn!.send("replayCreate", {
