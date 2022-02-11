@@ -3372,7 +3372,6 @@ export default function drawPip(
     ctx.save();
     ctx.beginPath();
     ctx.arc(3, 5, 100, 0, 360);
-    ctx.fillStyle = "rgba(255, 268, 0, 0.4)";
     ctx.fillStyle = "rgba(238, 188, 29, 0.3)";
     ctx.fill();
     ctx.stroke();
