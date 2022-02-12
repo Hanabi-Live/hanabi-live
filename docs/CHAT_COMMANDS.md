@@ -8,23 +8,23 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command                               | Description                                                                                                                        |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `/help`                               | Get the link to this page                                                                                                          |
-| `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
-| `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md) |
-| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md)     |
-| `/new`                                | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/docs/beginner)                                            |
-| `/doc`                                | Get the link for the [H-Group reference document](https://hanabi.github.io/docs/reference)                                         |
-| `/path`                               | Get the link for the [H-Group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)                           |
+| `/help`                               | Displays a list of the available commands and the link to this page                                                                |
 | `/bga`                                | Get the link for the [Board Game Arena transition guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)         |
+| `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
+| `/doc`                                | Get the link for the [H-Group reference document](https://hanabi.github.io/docs/reference)                                         |
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)                |
-| `/playerinfo`                         | Get the number of games played for all the players in the current game                                                             |
+| `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md) |
+| `/new`                                | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/docs/beginner)                                            |
+| `/path`                               | Get the link for the [H-Group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)                           |
 | `/playerinfo [username]`              | Get the number of games played for a specific player                                                                               |
 | `/playerinfo [username1] [username2]` | Get the number of games played for a list of players                                                                               |
-| `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others                                                                   |
+| `/playerinfo`                         | Get the number of games played for all the players in the current game                                                             |
 | `/random [min] [max]`                 | Get a random integer                                                                                                               |
-| `/uptime`                             | Get how long the server has been online                                                                                            |
+| `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others                                                                   |
+| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md)     |
+| `/shrug`                              | Displays a single line ASCII art                                                                                                   |
 | `/timeleft`                           | Get how much time is left before the server shuts down                                                                             |
-| `/shrug`                              | ¯\\\_(ツ)\_/¯                                                                                                                      |
+| `/uptime`                             | Get how long the server has been online                                                                                            |
 
 <br />
 
@@ -44,19 +44,19 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/pm [username] [msg]` | Send a private message                      |
 | `/r [msg]`             | Reply to a private message                  |
 | `/friend [username]`   | Add someone to your friends list            |
-| `/unfriend [username]` | Remove someone from your friends list       |
 | `/friends`             | Show a list of all your friends             |
 | `/tagsearch [tag]`     | Search through all games for a specific tag |
+| `/unfriend [username]` | Remove someone from your friends list       |
 | `/version`             | Show the version number of the client code  |
 
 <br />
 
 ### General commands (that work only on Discord)
 
-| Command        | Description                                           |
-| -------------- | ----------------------------------------------------- |
-| `/subscribe`   | Adds the `@Ping Crew` role to the user's profile      |
-| `/unsubscribe` | Removes the `@Ping Crew` role from the user's profile |
+| Command        | Description                                    |
+| -------------- | ---------------------------------------------- |
+| `/subscribe`   | Add the `@Ping Crew` role to your profile      |
+| `/unsubscribe` | Remove the `@Ping Crew` role from your profile |
 
 <br />
 
@@ -113,10 +113,10 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Replay commands
 
-| Command            | Description                                                                                                                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/suggest [turn]`  | Suggest a specific turn for the shared replay leader to go to                                                                                                                                  |
-| `/tagdelete [tag]` | Delete an existing tag from the game                                                                                                                                                           |
-| `/tagsdeleteall`   | Delete all user's tags from the game                                                                                                                                                           |
-| `/tags`            | Show all of the tags for this game                                                                                                                                                             |
-| `/copy`            | Copy the current game (and hypothetical, if any) in your clipboard in the [JSON format](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/misc/example_game_with_comments.jsonc). |
+| Command            | Description                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `/copy`            | Copy the current game (and hypothetical, if any) in your clipboard as a URL for sharing. |
+| `/suggest [turn]`  | Suggest a specific turn for the shared replay leader to go to                            |
+| `/tagdelete [tag]` | Delete an existing tag from the game                                                     |
+| `/tags`            | Show all of the tags for this game                                                       |
+| `/tagsdeleteall`   | Delete all user's tags from the game                                                     |

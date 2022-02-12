@@ -85,7 +85,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 #### Termination
 
 - Games will be automatically terminated by the server if no move is performed in 30 minutes. (This helps to clean the lobby of games that will never be finished.)
-- Players can manually terminate a game by clicking on the X button where the strike indicators are (near the bottom of the screen).
+- Players can vote to terminate a game by clicking on the X button where the strike indicators are (near the bottom of the screen).
 
 #### Spectators
 
@@ -502,7 +502,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - You can have an unlimited amount of tags per game. Anyone can add a tag to a game, regardless of whether they played in it or not. Everyone's tags are shared.
 - You can add tags during an ongoing game. The server will not reveal what the tag is to the other players (in order to avoid leaking information about the game).
 - Tags added during a replay will echo the everyone in the replay.
-- You can use the `/tagdelete [tag]` command to delete an existing tag.
+- You can use the `/tagdelete [tag]` command to delete an existing tag, or `/tagsdeleteall` to delete all your tags in that game.
 - You can use the `/tagsearch [tag]` command to search through all games for a specific tag.
 
 <br />
@@ -511,18 +511,18 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 - As mentioned previously, the website offers pages to show statistics on specific players, variants, and so forth.
 
-| URL                                              | Description                                                                                     |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `/scores/[username]`                             | Lists the player's profile and best scores.                                                     |
-| `/history/[username]`                            | Lists the player's past games.                                                                  |
-| `/history/[username1]/[username2]`               | Lists the past games that 2 players were in together. (You can specify up to 6 players.)        |
-| `/missing-scores/[username]`                     | Lists the player's remaining non-max scores.                                                    |
-| `/shared-missing-scores/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.) |
-| `/tags/[username]`                               | Lists the player's tagged games.                                                                |
-| `/seed/[seed]`                                   | Lists the games played on a specific seed.                                                      |
-| `/stats`                                         | Lists stats for the entire website.                                                             |
-| `/variant/[id]`                                  | Lists stats for a specific variant.                                                             |
-| `/tag/[tag]`                                     | Lists all the games that match the specified tag.                                               |
+| URL                                                | Description                                                                                     |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `/scores/[username]`                               | Lists the player's profile and best scores.                                                     |
+| `/history/[username]`                              | Lists the player's past games.                                                                  |
+| `/history/[username1]/[username2]`                 | Lists the past games that 2 players were in together. (You can specify up to 6 players.)        |
+| `/missing-scores/[username]`                       | Lists the player's remaining non-max scores.                                                    |
+| `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.) |
+| `/tags/[username]`                                 | Lists the player's tagged games.                                                                |
+| `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                      |
+| `/stats`                                           | Lists stats for the entire website.                                                             |
+| `/variant/[id]`                                    | Lists stats for a specific variant.                                                             |
+| `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                               |
 
 <br />
 
@@ -535,12 +535,29 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 ### JSON Endpoints
 
-| URL                                    | Description                                                                           |
-| -------------------------------------- | ------------------------------------------------------------------------------------- |
-| `/history/[username]?api`              | Provides all of the games played by a user.                                           |
-| `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.) |
-| `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.                               |
-| `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.                            |
+| URL                                               | Description                                                                                                 |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/export/[game ID]`                               | Provides the data for an arbitrary game from the database.                                                  |
+| `/api/v1/variants`                                | Displays a paginated list of variants and their IDs.                                                        |
+| `/api/v1/variants/[variant ID]` \*1               | Displays a paginated list of games played in that specific variant.                                         |
+| `/api/v1/history/[username]` \*1                  | Lists a paginated list of the player's past games.                                                          |
+| `/api/v1/history/[username]/[username2]` \*1      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
+| `/api/v1/history-full/[username]` \*2             | Lists all the player's past games.                                                                          |
+| `/api/v1/history-full/[username]/[username2]` \*2 | Lists all the past games that 2 players were in together. (You can specify up to 6 players.)                |
+| `/api/v1/seed/[seed]` \*1                         | Lists a paginated games played on a specific seed.                                                          |
+| `/api/v1/seed-full/[seed]` \*2                    | Lists all the games played on a specific seed.                                                              |
+
+Notes:
+The following query parameters can be used by adding a `?` at the end of the URL (e.g. `/api/v1/variants/1?size=50&page=2`):
+
+| Group | Parameter | Type    | Explanation                             | Values                    |
+| ----- | --------- | ------- | --------------------------------------- | ------------------------- |
+| 1     | size      | integer | controls the number of results          | 0 to 100                  |
+| 1     | page      | integer | displays a specific page of the results | 0 to ...                  |
+| 1     | col[x]    | integer | sorts by column x (0, 1, ...)           | 0 ascending, 1 descending |
+| 1     | fcol[x]   | string  | filters by column x (0, 1, ...)         | filter value              |
+| 2     | start     | integer | sets the starting ID of the data        | ...                       |
+| 2     | end       | integer | sets the ending ID of the data          | ...                       |
 
 <br />
 

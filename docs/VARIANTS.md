@@ -264,7 +264,7 @@ One of each card per suit (e.g. 5 in total):
 ### Odds and Evens
 
 - Rank clues are limited to 1 and 2.
-- "1" rank clue touches all odd cards, "2" touches all even cards.
+- "O" (Odd) rank clue touches all odd cards, "E" (Even) touches all even cards.
 
 ### Synesthesia
 
