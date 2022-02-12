@@ -268,7 +268,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - double discard situation notification (as a border around the discard pile and in the "Current Player" area)
 - a blue question mark drawn on cards potentially in a double discard situation based on the empathy of the card
 - locked hand notification (in the "Current Player" area)
-- *Low Score Phase* notification (via the score being cyan)
+- _Low Score Phase_ notification (via the score being cyan)
 - a [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)
 - a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_turn_double_discard_cause.mp3)
 - a [special sound effect when discarding in a double discard situation](../public/sounds/turn_turn_double_discard.mp3)
@@ -293,20 +293,20 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
   - The new card face will automatically be deactivated if a clue is received that falsifies the note.
 - If this behavior is undesired, append a question mark to the end of your note. (e.g. "r1?")
 
-| Suit Name       | Abbreviation
-| --------------- | ------------
-| Black           | K
-| Rainbow         | M
-| Muddy Rainbow   | M
-| Pink            | I
-| Light Pink      | I
-| Brown           | N
-| Omni            | O
-| Null            | U
-| Prism           | I
-| [any dark suit] | [the same as the "normal" version of the suit]
-| Gray            | A
-| Forest          | R
+| Suit Name       | Abbreviation                                   |
+| --------------- | ---------------------------------------------- |
+| Black           | K                                              |
+| Rainbow         | M                                              |
+| Muddy Rainbow   | M                                              |
+| Pink            | I                                              |
+| Light Pink      | I                                              |
+| Brown           | N                                              |
+| Omni            | O                                              |
+| Null            | U                                              |
+| Prism           | I                                              |
+| [any dark suit] | [the same as the "normal" version of the suit] |
+| Gray            | A                                              |
+| Forest          | R                                              |
 
 - If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
   - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
@@ -321,8 +321,8 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 
 #### Special Note Borders
 
-- A note of "f" can be written to indicate that the card is *Finessed*. This will draw a special border around the card.
-- A note of "cm" can be written to indicate that the card is *Chop Moved*. This will draw a special border around the card.
+- A note of "f" can be written to indicate that the card is _Finessed_. This will draw a special border around the card.
+- A note of "cm" can be written to indicate that the card is _Chop Moved_. This will draw a special border around the card.
 
 #### Other Special Notes
 
@@ -334,7 +334,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 #### Adding Context to Special Notes
 
 - If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. (e.g. "[r2] known from turn 3")
-- This feature can also be used to stack multiple effects on top of each other. (e.g. "[r1] [f]" will mark a card as both a red 1 and having the *Finesse* border)
+- This feature can also be used to stack multiple effects on top of each other. (e.g. "[r1] [f]" will mark a card as both a red 1 and having the _Finesse_ border)
 
 #### Note Shortcuts
 
@@ -366,7 +366,7 @@ There are different sounds for:
 
 ## Pace & Efficiency
 
-In-game, the right side of the screen shows the *Pace* and the *Efficiency* for the current game. Good players will often use these numbers to make the best move for the current situation.
+In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for the current game. Good players will often use these numbers to make the best move for the current situation.
 
 ### Pace
 
@@ -386,7 +386,7 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 - A clue is considered to be lost when:
   - a card misplays (because it could have been discarded instead)
   - a stack is completed when the team already has 8 clues in the bank
-- Note that this efficiency calculation assumes that players are playing with *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then this efficiency calculation won't be very useful.
+- Note that this efficiency calculation assumes that players are playing with _Good Touch Principle_ - that all clued cards will eventually be played. If your team does not play with _Good Touch Principle_, then this efficiency calculation won't be very useful.
 - Note that the calculation will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the `cards gotten` term.
 - In-game, Hanabi Live shows you two different efficiency numbers.
 
@@ -395,26 +395,26 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 - The left number shows the efficiency needed to get the maximum score based on how well things are going so far. This is calculated with the following formula:
   - `cards not gotten yet / maximum clues that it is possible to give before the game ends`
   - `cards not gotten yet` is simply `maximum possible score - cards gotten`.
-- Players can mouse over the *Future Required Efficiency* number in order to see how it is being calculated.
+- Players can mouse over the _Future Required Efficiency_ number in order to see how it is being calculated.
 
 #### 2) Minimum Required Efficiency
 
 - The right number shows the minimum possible efficiency needed to get a maximum score from the very beginning of the game.
-- This is simply the *Future Required Efficiency* before anyone on the team has taken any actions.
-- Note that *Minimum Required Efficiency* is calculated at the beginning of the game and will not change in the middle of the game if the maximum achievable score lowers.
+- This is simply the _Future Required Efficiency_ before anyone on the team has taken any actions.
+- Note that _Minimum Required Efficiency_ is calculated at the beginning of the game and will not change in the middle of the game if the maximum achievable score lowers.
 
 #### Manually Modifying Efficiency
 
-- Players can manually modify the "cards gotten" term by doing an `alt + right-click` on the *Future Required Efficiency*.
-- This is useful to account for cards that are *Finessed*, cards that are known to be trash, and so forth.
+- Players can manually modify the "cards gotten" term by doing an `alt + right-click` on the _Future Required Efficiency_.
+- This is useful to account for cards that are _Finessed_, cards that are known to be trash, and so forth.
 
 #### A Guide to Using Efficiency in General
 
-- If the *Future Required Efficiency* is below the *Minimum Required Efficiency*, then:
+- If the _Future Required Efficiency_ is below the _Minimum Required Efficiency_, then:
   - The team is on track to get a perfect score.
   - Future clues to not necessarily have to be as efficient as the ones previously given.
   - The team can probably afford to give mediocre clues and play conservatively.
-- If the *Future Required Efficiency* is above the *Minimum Required Efficiency*, then:
+- If the _Future Required Efficiency_ is above the _Minimum Required Efficiency_, then:
   - The team is not on track to get a perfect score.
   - If a perfect score is desired, the team must start giving more efficient clues than the ones that have already been given.
   - If a perfect score is desired, the team should start to discard more aggressively, take more risks, etc.
@@ -422,10 +422,10 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 #### A Guide to Using Efficiency as a Threshold
 
 - Commonly, a player will have to choose between doing a 1-for-1 clue and discarding. (A "1-for-1" clue is defined as a clue that "gets" 1 card.)
-- If *Future Required Efficiency* is below 1.00:
+- If _Future Required Efficiency_ is below 1.00:
   - That means everyone on the team can simply give "1-for-1" clues for the rest of the game and the team will still get the max score.
   - Thus, a player in this situation should probably give a 1-for-1 clue and let someone else discard (if the other person has a known-safe discard).
-- If *Future Required Efficiency* is above 1.00:
+- If _Future Required Efficiency_ is above 1.00:
   - That means that if everyone on the team gave 1-for-1 clues for the rest of the game, the clues would run out before all of the cards could be played and a max score would not be achieved.
   - Thus, a player in this situation should probably discard and in that hopes that a teammate can perform a 2-for-1 clue.
 
@@ -498,7 +498,7 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 
 - Attaching notes to cards is useful for keeping track of things in the middle of a game. But what if you want to put a note on an entire game? That's where tags come in.
 - By using the `/tag [tag]` command, you can attach arbitrary notes to a specific game so that you can more-easily find it later.
-- For example, if you performed a massive *Quadruple Finesse*, then you could do a `/tag Quadruple Finesse`.
+- For example, if you performed a massive _Quadruple Finesse_, then you could do a `/tag Quadruple Finesse`.
 - You can have an unlimited amount of tags per game. Anyone can add a tag to a game, regardless of whether they played in it or not. Everyone's tags are shared.
 - You can add tags during an ongoing game. The server will not reveal what the tag is to the other players (in order to avoid leaking information about the game).
 - Tags added during a replay will echo the everyone in the replay.
@@ -511,18 +511,18 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 
 - As mentioned previously, the website offers pages to show statistics on specific players, variants, and so forth.
 
-| URL                                              | Description
-| ------------------------------------------------ | -----------
-| `/scores/[username]`                             | Lists the player's profile and best scores.
-| `/history/[username]`                            | Lists the player's past games.
-| `/history/[username1]/[username2]`               | Lists the past games that 2 players were in together. (You can specify up to 6 players.)
-| `/missing-scores/[username]`                     | Lists the player's remaining non-max scores.
-| `/shared-missing-scores/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)
-| `/tags/[username]`                               | Lists the player's tagged games.
-| `/seed/[seed]`                                   | Lists the games played on a specific seed.
-| `/stats`                                         | Lists stats for the entire website.
-| `/variant/[id]`                                  | Lists stats for a specific variant.
-| `/tag/[tag]`                                     | Lists all the games that match the specified tag.
+| URL                                              | Description                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `/scores/[username]`                             | Lists the player's profile and best scores.                                                     |
+| `/history/[username]`                            | Lists the player's past games.                                                                  |
+| `/history/[username1]/[username2]`               | Lists the past games that 2 players were in together. (You can specify up to 6 players.)        |
+| `/missing-scores/[username]`                     | Lists the player's remaining non-max scores.                                                    |
+| `/shared-missing-scores/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.) |
+| `/tags/[username]`                               | Lists the player's tagged games.                                                                |
+| `/seed/[seed]`                                   | Lists the games played on a specific seed.                                                      |
+| `/stats`                                         | Lists stats for the entire website.                                                             |
+| `/variant/[id]`                                  | Lists stats for a specific variant.                                                             |
+| `/tag/[tag]`                                     | Lists all the games that match the specified tag.                                               |
 
 <br />
 
@@ -535,12 +535,12 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 
 ### JSON Endpoints
 
-| URL                                    | Description
-| -------------------------------------- | -----------
-| `/history/[username]?api`              | Provides all of the games played by a user.
-| `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.)
-| `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.
-| `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.
+| URL                                    | Description                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------- |
+| `/history/[username]?api`              | Provides all of the games played by a user.                                           |
+| `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.) |
+| `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.                               |
+| `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.                            |
 
 <br />
 
