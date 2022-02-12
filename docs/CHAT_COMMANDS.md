@@ -45,8 +45,8 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/r [msg]`             | Reply to a private message                  |
 | `/friend [username]`   | Add someone to your friends list            |
 | `/friends`             | Show a list of all your friends             |
-| `/tagsearch [tag]`     | Search through all games for a specific tag |
 | `/unfriend [username]` | Remove someone from your friends list       |
+| `/tagsearch [tag]`     | Search through all games for a specific tag |
 | `/version`             | Show the version number of the client code  |
 
 <br />
@@ -64,16 +64,16 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command                 | Description                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------ |
-| `/setvariant [variant]` | Change the variant of the current game                                                     |
+| `/impostor`             | Randomly tells one of the players they are an impostor and the others they are crew-mates. |
+| `/kick [username]`      | Remove a player from the table                                                             |
 | `/s`                    | Automatically start the game when the next person joins                                    |
 | `/s2`                   | Automatically start the game when it has 2 players                                         |
 | `/s3`                   | Automatically start the game when it has 3 players                                         |
 | `/s4`                   | Automatically start the game when it has 4 players                                         |
 | `/s5`                   | Automatically start the game when it has 5 players                                         |
 | `/s6`                   | Automatically start the game when it has 6 players                                         |
+| `/setvariant [variant]` | Change the variant of the current game                                                     |
 | `/startin [minutes]`    | Automatically start the game in the provided amount of minutes                             |
-| `/kick [username]`      | Remove a player from the table                                                             |
-| `/impostor`             | Randomly tells one of the players they are an impostor and the others they are crew-mates. |
 
 <br />
 
@@ -81,8 +81,8 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command        | Description                                                |
 | -------------- | ---------------------------------------------------------- |
-| `/missing`     | Get the list of every max score that the team is missing   |
 | `/findvariant` | Find a random variant that everyone needs the max score in |
+| `/missing`     | Get the list of every max score that the team is missing   |
 
 <br />
 
