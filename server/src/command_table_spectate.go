@@ -29,12 +29,6 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 		defer t.Unlock(ctx)
 	}
 
-	// Validate that the game has started
-	if !t.Running {
-		s.Warning(NotStartedFail)
-		return
-	}
-
 	// Validate that they are not playing at this table
 	if !t.Replay {
 		for _, p := range t.Players {
@@ -95,6 +89,10 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	tables.DeleteDisconSpectating(s.UserID)
 
 	// Add them to the spectators object
+	notes := []string{}
+	if g != nil {
+		notes = make([]string, g.GetNotesSize())
+	}
 	sp := &Spectator{
 		UserID:               s.UserID,
 		Name:                 s.Username,
@@ -102,7 +100,7 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		Typing:               false,
 		LastTyped:            time.Time{},
 		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
-		Notes:                make([]string, g.GetNotesSize()),
+		Notes:                notes,
 	}
 
 	t.Spectators = append(t.Spectators, sp)
@@ -129,5 +127,9 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Send them a "tableStart" message
 	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command
 	// to begin the process of loading the UI and putting them in the game
-	s.NotifyTableStart(t)
+	if g == nil {
+		s.NotifyTableJoinedAsSpectator(t)
+	} else {
+		s.NotifyTableStart(t)
+	}
 }
