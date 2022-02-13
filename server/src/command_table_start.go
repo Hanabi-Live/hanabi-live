@@ -271,6 +271,9 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			p.Session.NotifyTableStart(t)
 		}
 	}
+	for _, s := range t.Spectators {
+		s.Session.NotifyTableStart(t)
+	}
 
 	// If we are emulating actions on a replay, we do not have to tell anyone about the table yet
 	if !t.ExtraOptions.NoWriteToDatabase {

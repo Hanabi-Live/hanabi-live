@@ -177,9 +177,22 @@ export function init(): void {
 
   // The "Leave Game" button
   $("#nav-buttons-pregame-leave").on("click", () => {
-    globals.conn!.send("tableLeave", {
-      tableID: globals.tableID,
-    });
+    // "Leave Game" and "Return to Lobby" are the same for spectators
+    const table = globals.tableMap.get(globals.tableID);
+    if (table === undefined) {
+      return;
+    }
+    if (table.spectators.includes(globals.username)) {
+      pregame.hide();
+      globals.conn!.send("tableUnattend", {
+        tableID: globals.tableID,
+      });
+      globals.tableID = -1;
+    } else {
+      globals.conn!.send("tableLeave", {
+        tableID: globals.tableID,
+      });
+    }
   });
 
   // The "Show History of Friends" button (from the "History" screen)

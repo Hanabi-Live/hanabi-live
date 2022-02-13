@@ -167,17 +167,6 @@ func (s *Session) NotifyTableStart(t *Table) {
 	})
 }
 
-func (s *Session) NotifyTableJoinedAsSpectator(t *Table) {
-	type TableJoinAsSpectator struct {
-		TableID uint64 `json:"tableID"`
-		Replay  bool   `json:"replay"`
-	}
-	s.Emit("tableJoinedAsSpectator", &TableJoinAsSpectator{
-		TableID: t.ID,
-		Replay:  t.Replay,
-	})
-}
-
 func (s *Session) NotifyShutdown() {
 	type ShutdownMessage struct {
 		ShuttingDown         bool      `json:"shuttingDown"`
@@ -297,7 +286,13 @@ func (s *Session) NotifySpectators(t *Table) {
 		TableID    uint64       `json:"tableID"`
 		Spectators []*Spectator `json:"spectators"`
 	}
-	s.Emit("spectators", &SpectatorsMessage{
+
+	command := "spectators"
+	if t.Game == nil {
+		command = "pregameSpectators"
+	}
+
+	s.Emit(command, &SpectatorsMessage{
 		TableID:    t.ID,
 		Spectators: t.Spectators,
 	})

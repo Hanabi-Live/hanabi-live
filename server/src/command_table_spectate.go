@@ -106,7 +106,11 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	t.Spectators = append(t.Spectators, sp)
 	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships
 
-	notifyAllTable(t)    // Update the spectator list for the row in the lobby
+	notifyAllTable(t) // Update the spectator list for the row in the lobby
+	if g == nil {
+		// Send them the pregame data
+		t.NotifyPlayerChange()
+	}
 	t.NotifySpectators() // Update the in-game spectator list
 
 	// Set their status
@@ -124,12 +128,30 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	s.SetTableID(tableID)
 	notifyAllUser(s)
 
-	// Send them a "tableStart" message
-	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command
-	// to begin the process of loading the UI and putting them in the game
 	if g == nil {
-		s.NotifyTableJoinedAsSpectator(t)
+		// They have joined a pregame
+		s.NotifyTableJoined(t)
+
+		// Send them the chat history for this game
+		chatSendPastFromTable(s, t)
+
+		// Announce the spectator
+		msg := s.Username + " joined the table."
+		chatServerSend(ctx, msg, t.GetRoomName(), true)
+
+		// Send them the list of spectators
+		t.NotifySpectators()
+
+		// Send them messages for people typing, if any
+		for _, p := range t.Players {
+			if p.Typing {
+				s.NotifyChatTyping(t, p.Name, p.Typing)
+			}
+		}
 	} else {
+		// Send them a "tableStart" message
+		// After the client receives the "tableStart" message, they will send a "getGameInfo1" command
+		// to begin the process of loading the UI and putting them in the game
 		s.NotifyTableStart(t)
 	}
 }

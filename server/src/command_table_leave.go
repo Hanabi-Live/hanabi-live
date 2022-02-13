@@ -61,6 +61,9 @@ func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playe
 	tables.DeletePlaying(s.UserID, t.ID) // Keep track of user to table relationships
 
 	notifyAllTable(t)
+	// Announce the departure of the player
+	msg := s.Username + " left the game."
+	chatServerSend(ctx, msg, t.GetRoomName(), true)
 	t.NotifyPlayerChange()
 
 	// Set their status
