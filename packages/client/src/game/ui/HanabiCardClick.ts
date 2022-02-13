@@ -142,9 +142,10 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
     globals.state.finished &&
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
-    globals.state.replay.shared.useSharedSegments
+    (globals.state.replay.shared === null ||
+      (globals.state.replay.shared !== null &&
+        globals.state.replay.shared.amLeader &&
+        globals.state.replay.shared.useSharedSegments))
   ) {
     arrows.toggle(card.state.order);
     return;
