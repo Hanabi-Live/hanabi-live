@@ -177,14 +177,20 @@ export default function tablesDraw(): void {
       }
     }
     spectatorsString = spectatorsArray.join(", ");
-    $("<td>")
-      .html(spectatorsString)
-      .addClass("lobbySpectators")
-      .on("click", (evt) => {
-        evt.stopPropagation();
-        tableSpectate(table);
-      })
-      .appendTo(row);
+    // Change click behavior on the spectators cell
+    if (table.joined) {
+      $("<td>").html(spectatorsString).appendTo(row);
+    } else {
+      // Can also join as a spectator
+      $("<td>")
+        .html(spectatorsString)
+        .addClass("lobbySpectators")
+        .on("click", (evt) => {
+          evt.stopPropagation();
+          tableSpectate(table);
+        })
+        .appendTo(row);
+    }
 
     // There is a keyboard shortcut to join the first table available
     // Add a class to the first relevant row to facilitate this
