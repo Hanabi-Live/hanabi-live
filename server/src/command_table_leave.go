@@ -89,25 +89,17 @@ func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playe
 		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
 
-	// Force everyone else to leave if it was the owner that left
+	// Pass the ownership to the next player
 	if s.UserID == t.OwnerID && len(t.Players) > 0 {
-		for len(t.Players) > 0 {
-			p := t.Players[0]
-			s2 := p.Session
-			if s2 == nil {
-				// A player's session should never be nil
-				// They might be in the process of reconnecting,
-				// so make a fake session that will represent them
-				s2 = NewFakeSession(p.UserID, p.Name)
-				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
+		for _, p := range t.Players {
+			if p.UserID != s.UserID {
+				t.OwnerID = p.UserID
+				t.NotifyPlayerChange()
+				msg := p.Session.Username + " is the new table owner."
+				chatServerSend(ctx, msg, t.GetRoomName(), !d.NoTablesLock)
+				break
 			}
-			commandTableLeave(ctx, s2, &CommandData{ // nolint: exhaustivestruct
-				TableID:      t.ID,
-				NoTableLock:  true,
-				NoTablesLock: true,
-			})
 		}
-		return
 	}
 
 	// If this is the last person to leave, delete the game
