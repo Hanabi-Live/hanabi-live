@@ -167,21 +167,24 @@ export default function tablesDraw(): void {
     $("<td>").html(playersString).appendTo(row);
 
     // Column 7 - Spectators
-    let spectatorsString: string;
-    if (table.spectators.length === 0) {
-      spectatorsString = "-";
-    } else {
-      const spectatorsArray: string[] = [];
-      for (const spectator of table.spectators) {
-        if (globals.friends.includes(spectator)) {
-          spectatorsArray.push(`<span class="friend">${spectator}</span>`);
-        } else {
-          spectatorsArray.push(spectator);
-        }
+    let spectatorsString = "";
+    const spectatorsArray: string[] = [];
+    for (const spectator of table.spectators) {
+      if (globals.friends.includes(spectator)) {
+        spectatorsArray.push(`<span class="friend">${spectator}</span>`);
+      } else {
+        spectatorsArray.push(spectator);
       }
-      spectatorsString = spectatorsArray.join(", ");
     }
-    $("<td>").html(spectatorsString).appendTo(row);
+    spectatorsString = spectatorsArray.join(", ");
+    $("<td>")
+      .html(spectatorsString)
+      .addClass("lobbySpectators")
+      .on("click", (evt) => {
+        evt.stopPropagation();
+        tableSpectate(table);
+      })
+      .appendTo(row);
 
     // There is a keyboard shortcut to join the first table available
     // Add a class to the first relevant row to facilitate this
