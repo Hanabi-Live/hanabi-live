@@ -1716,7 +1716,7 @@ table.history {
   flex-direction: column;
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 640px) {
   .history.variant.tablesorter th:nth-child(5),
   .history.variant.tablesorter td:nth-child(5) {
     display: none !important;
