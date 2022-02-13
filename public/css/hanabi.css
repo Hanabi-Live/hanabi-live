@@ -547,10 +547,16 @@ table td {
   margin-bottom: 0;
 }
 
-#lobby-pregame-options {
+#lobby-pregame-options,
+#lobby-pregame-spectators {
   padding-left: 1em;
   list-style-type: none;
   padding: 0;
+  margin: 0;
+}
+
+#lobby-pregame-options-title {
+  font-weight: 400;
 }
 
 #lobby-pregame-options li {
