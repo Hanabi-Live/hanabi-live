@@ -16,11 +16,11 @@ Normal amount of cards per suit (e.g. 10 in total):
 
 One of each card per suit (e.g. 5 in total):
 
-|                    |  No color clues  | Own color clue | All color clues |
-| ------------------ | ---------------- | -------------- | --------------- |
-| **No rank clues**  | Dark Null        | Dark Brown     | Cocoa Rainbow   |
-| **Own rank clue**  | Gray             | Black          | Dark Rainbow    |
-| **All rank clues** | Gray Pink        | Dark Pink      | Dark Omni       |
+|                    | No color clues | Own color clue | All color clues |
+| ------------------ | -------------- | -------------- | --------------- |
+| **No rank clues**  | Dark Null      | Dark Brown     | Cocoa Rainbow   |
+| **Own rank clue**  | Gray           | Black          | Dark Rainbow    |
+| **All rank clues** | Gray Pink      | Dark Pink      | Dark Omni       |
 
 <br />
 
@@ -264,7 +264,7 @@ One of each card per suit (e.g. 5 in total):
 ### Odds and Evens
 
 - Rank clues are limited to 1 and 2.
-- "1" rank clue touches all odd cards, "2" touches all even cards.
+- "O" (Odd) rank clue touches all odd cards, "E" (Even) touches all even cards.
 
 ### Synesthesia
 
@@ -297,7 +297,6 @@ One of each card per suit (e.g. 5 in total):
 - Players do not get a clue back for successfully playing a 5.
 - The game will automatically end if 3 strikes are accumulated.
 - This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
-
 
 <br />
 
