@@ -1752,7 +1752,7 @@ function drawClueArea() {
 
   // Player buttons
   const { numPlayers } = globals.options;
-  const playerButtonH = 0.025;
+  const playerButtonH = globals.lobby.settings.keldonMode ? 0.025 : 0.035;
   const playerButtonSpacing = 0.0075;
 
   // If this is a two player game, we can slide the clue UI down by a bit
