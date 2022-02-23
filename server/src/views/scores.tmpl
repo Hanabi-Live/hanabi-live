@@ -69,7 +69,7 @@
               {{if eq .Score $results.MaxScore}}<strong>{{end}}
               {{.Score}} / {{$results.MaxScore}}
               {{if eq .Score $results.MaxScore}}
-                </strong> &nbsp;
+                </strong>&nbsp;
                 <!--
                   Since only one modifier tooltip will show,
                   we order modifiers in order of severity
@@ -103,6 +103,8 @@
                     data-tooltip-content="#modifier-deckplays"
                   ></i>
                 {{end}}
+              {{else}}
+                <i class="fas fa-check score-modifier" style="visibility: collapse"></i>
               {{end}}
             </td>
           {{end}}
