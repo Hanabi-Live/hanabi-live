@@ -1,7 +1,7 @@
 {
   "name": "@hanabi/data",
   "version": "0.0.0",
-  "license": "AGPL-3.0-only",
+  "license": "GPL-3.0",
   "author": "Zamiell",
   "main": "dist/index",
   "files": [
