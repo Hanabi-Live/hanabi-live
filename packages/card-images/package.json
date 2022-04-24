@@ -2,7 +2,7 @@
   "name": "card-images",
   "version": "0.0.0",
   "description": "The card generator for the Hanabi Live JavaScript client",
-  "license": "AGPL-3.0-only",
+  "license": "GPL-3.0",
   "dependencies": {
     "jsdom": "^16.4.0",
     "xmlserializer": "^0.6.1"

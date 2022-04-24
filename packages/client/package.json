@@ -1,7 +1,7 @@
 {
   "name": "@hanabi/client",
   "version": "0.0.0",
-  "license": "AGPL-3.0-only",
+  "license": "GPL-3.0",
   "scripts": {
     "grunt": "grunt",
     "webpack": "webpack"
