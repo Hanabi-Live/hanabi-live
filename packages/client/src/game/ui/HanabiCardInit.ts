@@ -1,6 +1,6 @@
 // Initialization functions for the HanabiCard object
 
-import { START_CARD_RANK, Suit, Variant } from "@hanabi/data";
+import { START_CARD_RANK, Variant } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { Arrow } from "konva/types/shapes/Arrow";
@@ -146,7 +146,6 @@ export function directionArrow(
 let cachedVariant: Variant | null = null;
 let cachedPips: {
   suitPipsMap: Map<number, Konva.Shape>;
-  suitPipsPositiveMap: Map<number, Konva.Shape>;
   suitPipsXMap: Map<number, Konva.Shape>;
   rankPipsMap: Map<number, RankPip>;
   rankPipsXMap: Map<number, Konva.Shape>;
@@ -155,10 +154,8 @@ let cachedPips: {
 function makeCachedPips(variant: Variant) {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
-  // For each pip also create the one with positive information
 
   const suitPipsMap = new Map<number, Konva.Shape>();
-  const suitPipsPositiveMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
   const pipTypes = new Set<string>();
   for (let i = 0; i < variant.suits.length; i++) {
@@ -186,28 +183,57 @@ function makeCachedPips(variant: Variant) {
       fill = "";
     }
 
-    const suitPip = getNewColorPip(
+    const suitPip = new Konva.Shape({
       x,
       y,
       scale,
       offset,
       fill,
-      suit,
-      secondaryPip,
-      false,
-    );
-    const suitPipPositive = getNewColorPip(
-      x,
-      y,
-      scale,
-      offset,
-      fill,
-      suit,
-      secondaryPip,
-      true,
-    );
+      stroke: "black",
+      strokeWidth: 5,
+      shadowEnabled: !globals.options.speedrun,
+      shadowColor: "black",
+      shadowOffsetX: 15,
+      shadowOffsetY: 15,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
+      sceneFunc: (ctx: KonvaContext.Context) => {
+        drawPip(
+          ctx as unknown as CanvasRenderingContext2D,
+          suit,
+          secondaryPip,
+          false,
+        );
+      },
+      listening: false,
+    });
+
+    // Gradient numbers are magic
+    if (suit.fill === "multi") {
+      suitPip.fillRadialGradientColorStops([
+        0.3,
+        suit.fillColors[0],
+        0.425,
+        suit.fillColors[1],
+        0.65,
+        suit.fillColors[2],
+        0.875,
+        suit.fillColors[3],
+        1,
+        suit.fillColors[4],
+      ]);
+      suitPip.fillRadialGradientStartPoint({
+        x: 75,
+        y: 140,
+      });
+      suitPip.fillRadialGradientEndPoint({
+        x: 75,
+        y: 140,
+      });
+      suitPip.fillRadialGradientStartRadius(0);
+      suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
+    }
     suitPipsMap.set(i, suitPip);
-    suitPipsPositiveMap.set(i, suitPipPositive);
 
     // Also create the X that will show when a certain suit can be ruled out
     const suitPipX = new Konva.Shape({
@@ -289,7 +315,6 @@ function makeCachedPips(variant: Variant) {
   // Cache the results
   cachedPips = {
     suitPipsMap,
-    suitPipsPositiveMap,
     suitPipsXMap,
     rankPipsMap,
     rankPipsXMap,
@@ -311,17 +336,8 @@ export function pips(variant: Variant): Pips {
     visible: false,
     listening: false,
   });
-  const suitPipsPositive = new Konva.Group({
-    x: 0,
-    y: 0,
-    width: Math.floor(CARD_W),
-    height: Math.floor(CARD_H),
-    visible: false,
-    listening: false,
-  });
 
   const suitPipsMap = new Map<number, Konva.Shape>();
-  const suitPipsPositiveMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
 
   const rankPips = new Konva.Group({
@@ -338,14 +354,10 @@ export function pips(variant: Variant): Pips {
 
   for (let i = 0; i < variant.suits.length; i++) {
     const suitPip = cachedPips.suitPipsMap.get(i)!.clone() as Konva.Shape;
-    const suitPipPositive = cachedPips.suitPipsPositiveMap
-      .get(i)!
-      .clone() as Konva.Shape;
     const suitPipX = cachedPips.suitPipsXMap.get(i)!.clone() as Konva.Shape;
     suitPips.add(suitPip);
-    suitPipsPositive.add(suitPipPositive);
+    suitPips.add(suitPipX);
     suitPipsMap.set(i, suitPip);
-    suitPipsPositiveMap.set(i, suitPipPositive);
     suitPipsXMap.set(i, suitPipX);
   }
 
@@ -361,9 +373,7 @@ export function pips(variant: Variant): Pips {
 
   return {
     suitPips,
-    suitPipsPositive,
     suitPipsMap,
-    suitPipsPositiveMap,
     suitPipsXMap,
     rankPips,
     rankPipsMap,
@@ -608,71 +618,4 @@ function drawX(
   ctx.stroke();
   ctx.closePath();
   ctx.fillStrokeShape(shape);
-}
-
-function getNewColorPip(
-  x: number,
-  y: number,
-  scale: { x: number; y: number },
-  offset: { x: number; y: number },
-  fill: string,
-  suit: Suit,
-  secondaryPip: boolean,
-  isPositive: boolean,
-): Konva.Shape {
-  const suitPip = new Konva.Shape({
-    x,
-    y,
-    scale,
-    offset,
-    fill,
-    stroke: "black",
-    strokeWidth: 5,
-    shadowEnabled: !globals.options.speedrun,
-    shadowColor: "black",
-    shadowOffsetX: 15,
-    shadowOffsetY: 15,
-    shadowOpacity: 0.4,
-    shadowForStrokeEnabled: true,
-    sceneFunc: (ctx: KonvaContext.Context) => {
-      drawPip(
-        ctx as unknown as CanvasRenderingContext2D,
-        suit,
-        secondaryPip,
-        false,
-        undefined,
-        undefined,
-        isPositive,
-      );
-    },
-    listening: false,
-  });
-
-  // Gradient numbers are magic
-  if (suit.fill === "multi") {
-    suitPip.fillRadialGradientColorStops([
-      0.3,
-      suit.fillColors[0],
-      0.425,
-      suit.fillColors[1],
-      0.65,
-      suit.fillColors[2],
-      0.875,
-      suit.fillColors[3],
-      1,
-      suit.fillColors[4],
-    ]);
-    suitPip.fillRadialGradientStartPoint({
-      x: 75,
-      y: 140,
-    });
-    suitPip.fillRadialGradientEndPoint({
-      x: 75,
-      y: 140,
-    });
-    suitPip.fillRadialGradientStartRadius(0);
-    suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
-  }
-
-  return suitPip;
 }

@@ -155,7 +155,6 @@ function subscribeToCardChanges(order: number) {
       numPossibleCardsFromClues: c.possibleCardsFromClues.length,
       possibleCards: c.possibleCards.length,
       possibleCardsForEmpathy: c.possibleCardsForEmpathy.length,
-      numPositiveColorClues: c.positiveColorClues.length,
       numPositiveRankClues: c.positiveRankClues.length,
     }),
     () => updatePips(order),

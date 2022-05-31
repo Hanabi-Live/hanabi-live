@@ -68,10 +68,8 @@ export default class HanabiCard
   private finesseBorder: Konva.Group;
 
   private suitPips: Konva.Group;
-  private suitPipsPositive: Konva.Group;
   private rankPips: Konva.Group;
   private suitPipsMap: Map<number, Konva.Shape>;
-  private suitPipsPositiveMap: Map<number, Konva.Shape>;
   private suitPipsXMap: Map<number, Konva.Shape>;
   private rankPipsMap: Map<number, RankPip>;
   private rankPipsXMap: Map<number, Konva.Shape>;
@@ -181,15 +179,12 @@ export default class HanabiCard
 
     const pips = HanabiCardInit.pips(this.variant);
     this.suitPipsMap = pips.suitPipsMap;
-    this.suitPipsPositiveMap = pips.suitPipsPositiveMap;
     this.suitPipsXMap = pips.suitPipsXMap;
     this.rankPipsMap = pips.rankPipsMap;
     this.rankPipsXMap = pips.rankPipsXMap;
     this.suitPips = pips.suitPips;
-    this.suitPipsPositive = pips.suitPipsPositive;
     this.rankPips = pips.rankPips;
     this.add(this.suitPips);
-    this.add(this.suitPipsPositive);
     this.add(this.rankPips);
 
     this.criticalIndicator = HanabiCardInit.criticalIndicator(
@@ -580,30 +575,21 @@ export default class HanabiCard
       hasPositiveClues: boolean,
       pip: Konva.Shape | RankPip,
       x: Konva.Shape,
-      pipPositive?: Konva.Shape | undefined,
     ) => {
       switch (pipState) {
         case PipState.Visible: {
           pip.show();
           x.hide();
-          if (hasPositiveClues && pipPositive !== undefined) {
-            pip.hide();
-            pipPositive.show();
-          } else {
-            pipPositive?.hide();
-          }
           break;
         }
         case PipState.Hidden: {
           pip.hide();
           x.hide();
-          pipPositive?.hide();
           break;
         }
         case PipState.Eliminated: {
           pip.show();
           x.show();
-          pipPositive?.hide();
           break;
         }
         default:
@@ -656,15 +642,10 @@ export default class HanabiCard
 
     for (const [suit, pipState] of suitPipStates.entries()) {
       const pip = this.suitPipsMap.get(suit);
-      const pipPositive = this.suitPipsPositiveMap.get(suit);
       const x = this.suitPipsXMap.get(suit);
-      const color = this.variant.suits[suit];
-      const possiblePositiveClues = this.state.positiveColorClues.filter(
-        (c) => c.name === color.name,
-      );
-      const hasPositiveColorClue = possiblePositiveClues.length > 0;
       if (pip !== undefined && x !== undefined) {
-        updatePip(pipState, hasPositiveColorClue, pip, x, pipPositive);
+        // TODO: Positive clues on suits
+        updatePip(pipState, false, pip, x);
       }
     }
 
@@ -696,13 +677,11 @@ export default class HanabiCard
       morphedBlank
     ) {
       this.suitPips.hide();
-      this.suitPipsPositive.hide();
       this.rankPips.hide();
     } else {
       const suitUnknown = suitToShow === unknownSuit;
       const rankUnknown = rankToShow === UNKNOWN_CARD_RANK;
       this.suitPips.visible(suitUnknown);
-      this.suitPipsPositive.visible(suitUnknown);
       this.rankPips.visible(rankUnknown);
     }
 
