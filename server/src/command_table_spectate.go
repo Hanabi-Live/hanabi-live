@@ -136,7 +136,7 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		chatSendPastFromTable(s, t)
 
 		// Announce the spectator
-		msg := s.Username + " joined the table."
+		msg := s.Username + " joined the table (as a spectator)."
 		chatServerSend(ctx, msg, t.GetRoomName(), true)
 
 		// Send them the list of spectators

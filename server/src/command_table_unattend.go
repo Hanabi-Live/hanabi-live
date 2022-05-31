@@ -105,7 +105,7 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 	notifyAllTable(t) // Update the spectator list for the row in the lobby
 	if t.Game == nil {
 		// This is a pregame, announce the departure of the spectator
-		msg := s.Username + " left the table."
+		msg := s.Username + " left the table (as a spectator)."
 		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
 	t.NotifySpectators() // Update the in-game spectator list
