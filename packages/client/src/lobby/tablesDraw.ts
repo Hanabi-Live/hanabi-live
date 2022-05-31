@@ -116,13 +116,15 @@ export default function tablesDraw(): void {
     $("<td>").html(name).appendTo(row);
 
     // Column 2 - # of Players
-    $("<td>")
-      .html(
-        table.running || table.sharedReplay
-          ? table.numPlayers.toString()
-          : `${table.numPlayers.toString()} / ${table.maxPlayers.toString()}`,
-      )
-      .appendTo(row);
+    const tdCell = $("<td>").html(
+      table.running || table.sharedReplay
+        ? table.numPlayers.toString()
+        : `${table.numPlayers.toString()} / ${table.maxPlayers.toString()}`,
+    );
+    if (table.numPlayers === table.maxPlayers) {
+      row.addClass("full");
+    }
+    tdCell.appendTo(row);
 
     // Column 3 - Variant
     $("<td>").html(table.variant).appendTo(row);
@@ -165,21 +167,30 @@ export default function tablesDraw(): void {
     $("<td>").html(playersString).appendTo(row);
 
     // Column 7 - Spectators
-    let spectatorsString: string;
-    if (table.spectators.length === 0) {
-      spectatorsString = "-";
-    } else {
-      const spectatorsArray: string[] = [];
-      for (const spectator of table.spectators) {
-        if (globals.friends.includes(spectator)) {
-          spectatorsArray.push(`<span class="friend">${spectator}</span>`);
-        } else {
-          spectatorsArray.push(spectator);
-        }
+    let spectatorsString = "";
+    const spectatorsArray: string[] = [];
+    for (const spectator of table.spectators) {
+      if (globals.friends.includes(spectator)) {
+        spectatorsArray.push(`<span class="friend">${spectator}</span>`);
+      } else {
+        spectatorsArray.push(spectator);
       }
-      spectatorsString = spectatorsArray.join(", ");
     }
-    $("<td>").html(spectatorsString).appendTo(row);
+    spectatorsString = spectatorsArray.join(", ");
+    // Change click behavior on the spectators cell
+    if (table.joined) {
+      $("<td>").html(spectatorsString).appendTo(row);
+    } else {
+      // Can also join as a spectator
+      $("<td>")
+        .html(spectatorsString)
+        .addClass("lobbySpectators")
+        .on("click", (evt) => {
+          evt.stopPropagation();
+          tableSpectate(table);
+        })
+        .appendTo(row);
+    }
 
     // There is a keyboard shortcut to join the first table available
     // Add a class to the first relevant row to facilitate this

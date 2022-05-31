@@ -456,6 +456,24 @@ function drawPlayerBox(i: number) {
   tooltips.create(`#lobby-pregame-player-${i + 1}-scores-icon`);
 }
 
+export function drawSpectators(tableID: number): void {
+  if (globals.game === null) {
+    return;
+  }
+
+  const list = $("#lobby-pregame-spectators");
+  list.empty();
+  const table = globals.tableMap.get(tableID);
+  if (table === undefined) {
+    return;
+  }
+
+  for (const spectator of table.spectators) {
+    const item = `<li>&bull; ${spectator}</li>`;
+    list.append(item);
+  }
+}
+
 export function toggleStartGameButton(): void {
   // Enable or disable the "Start Game" button.
   // "Start Game" enabled if game owner and enough players

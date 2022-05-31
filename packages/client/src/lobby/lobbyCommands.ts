@@ -1,6 +1,7 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 import * as gameMain from "../game/main";
+import Spectator from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
 import globals from "../globals";
 import * as sentry from "../sentry";
@@ -222,6 +223,16 @@ commands.set("tableStart", (data: TableStartData) => {
     pregame.hide();
   }
   gameMain.show();
+});
+
+interface SpectatorsData {
+  tableID: number;
+  spectators: Spectator[];
+}
+commands.set("pregameSpectators", (data: SpectatorsData) => {
+  globals.tableID = data.tableID;
+
+  pregame.drawSpectators(globals.tableID);
 });
 
 // Received by the client when a user connects or has a new status

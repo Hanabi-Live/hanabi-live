@@ -286,7 +286,13 @@ func (s *Session) NotifySpectators(t *Table) {
 		TableID    uint64       `json:"tableID"`
 		Spectators []*Spectator `json:"spectators"`
 	}
-	s.Emit("spectators", &SpectatorsMessage{
+
+	command := "spectators"
+	if t.Game == nil {
+		command = "pregameSpectators"
+	}
+
+	s.Emit(command, &SpectatorsMessage{
 		TableID:    t.ID,
 		Spectators: t.Spectators,
 	})
