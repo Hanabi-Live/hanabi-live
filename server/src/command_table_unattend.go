@@ -85,7 +85,7 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 	cardOrderList := make([]int, 0)
 	if !t.Replay {
 		sp := t.Spectators[j]
-		for i, note := range sp.Notes {
+		for i, note := range sp.Notes(t.Game) {
 			if note != "" {
 				cardOrderList = append(cardOrderList, i)
 			}

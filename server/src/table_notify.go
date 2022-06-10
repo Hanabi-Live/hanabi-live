@@ -301,7 +301,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 			for _, sp2 := range t.Spectators {
 				notes = append(notes, Note{
 					Name: sp2.Name,
-					Text: sp2.Notes[order],
+					Text: sp2.Notes(g)[order],
 				})
 			}
 		}

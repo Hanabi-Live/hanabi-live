@@ -368,7 +368,7 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
 				Name:  sp.Name,
-				Notes: sp.Notes,
+				Notes: sp.Notes(g),
 			})
 		}
 	}
