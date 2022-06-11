@@ -311,14 +311,6 @@ export function pips(variant: Variant): Pips {
     visible: false,
     listening: false,
   });
-  const suitPipsPositive = new Konva.Group({
-    x: 0,
-    y: 0,
-    width: Math.floor(CARD_W),
-    height: Math.floor(CARD_H),
-    visible: false,
-    listening: false,
-  });
 
   const suitPipsMap = new Map<number, Konva.Shape>();
   const suitPipsPositiveMap = new Map<number, Konva.Shape>();
@@ -343,7 +335,8 @@ export function pips(variant: Variant): Pips {
       .clone() as Konva.Shape;
     const suitPipX = cachedPips.suitPipsXMap.get(i)!.clone() as Konva.Shape;
     suitPips.add(suitPip);
-    suitPipsPositive.add(suitPipPositive);
+    suitPips.add(suitPipPositive);
+    suitPips.add(suitPipX);
     suitPipsMap.set(i, suitPip);
     suitPipsPositiveMap.set(i, suitPipPositive);
     suitPipsXMap.set(i, suitPipX);
@@ -361,7 +354,6 @@ export function pips(variant: Variant): Pips {
 
   return {
     suitPips,
-    suitPipsPositive,
     suitPipsMap,
     suitPipsPositiveMap,
     suitPipsXMap,

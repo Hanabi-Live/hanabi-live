@@ -68,7 +68,6 @@ export default class HanabiCard
   private finesseBorder: Konva.Group;
 
   private suitPips: Konva.Group;
-  private suitPipsPositive: Konva.Group;
   private rankPips: Konva.Group;
   private suitPipsMap: Map<number, Konva.Shape>;
   private suitPipsPositiveMap: Map<number, Konva.Shape>;
@@ -186,10 +185,8 @@ export default class HanabiCard
     this.rankPipsMap = pips.rankPipsMap;
     this.rankPipsXMap = pips.rankPipsXMap;
     this.suitPips = pips.suitPips;
-    this.suitPipsPositive = pips.suitPipsPositive;
     this.rankPips = pips.rankPips;
     this.add(this.suitPips);
-    this.add(this.suitPipsPositive);
     this.add(this.rankPips);
 
     this.criticalIndicator = HanabiCardInit.criticalIndicator(
@@ -582,35 +579,26 @@ export default class HanabiCard
       x: Konva.Shape,
       pipPositive?: Konva.Shape | undefined,
     ) => {
-      switch (pipState) {
-        case PipState.Visible: {
-          pip.show();
-          x.hide();
-          if (hasPositiveClues && pipPositive !== undefined) {
-            pip.hide();
-            pipPositive.show();
-          } else {
-            pipPositive?.hide();
-          }
-          break;
-        }
-        case PipState.Hidden: {
+      if (pipState === PipState.Hidden) {
+        pip.hide();
+        x.hide();
+        pipPositive?.hide();
+      } else {
+        pip.show();
+        if (hasPositiveClues && pipPositive !== undefined) {
           pip.hide();
-          x.hide();
+          pipPositive.show();
+        } else {
           pipPositive?.hide();
-          break;
         }
-        case PipState.Eliminated: {
-          pip.show();
+        if (pipState === PipState.Eliminated) {
           x.show();
-          pipPositive?.hide();
-          break;
+        } else {
+          x.hide();
         }
-        default:
-          break;
       }
 
-      // TODO: Positive clues on suits
+      // TODO: Positive clues on suits should use the same API as rank pips
       if (pip instanceof RankPip) {
         if (hasPositiveClues && pipState !== PipState.Hidden) {
           pip.showPositiveClue();
@@ -696,13 +684,11 @@ export default class HanabiCard
       morphedBlank
     ) {
       this.suitPips.hide();
-      this.suitPipsPositive.hide();
       this.rankPips.hide();
     } else {
       const suitUnknown = suitToShow === unknownSuit;
       const rankUnknown = rankToShow === UNKNOWN_CARD_RANK;
       this.suitPips.visible(suitUnknown);
-      this.suitPipsPositive.visible(suitUnknown);
       this.rankPips.visible(rankUnknown);
     }
 
