@@ -70,6 +70,7 @@ export default class HanabiCard
   private suitPips: Konva.Group;
   private rankPips: Konva.Group;
   private suitPipsMap: Map<number, Konva.Shape>;
+  private suitPipsPositiveMap: Map<number, Konva.Shape>;
   private suitPipsXMap: Map<number, Konva.Shape>;
   private rankPipsMap: Map<number, RankPip>;
   private rankPipsXMap: Map<number, Konva.Shape>;
@@ -179,6 +180,7 @@ export default class HanabiCard
 
     const pips = HanabiCardInit.pips(this.variant);
     this.suitPipsMap = pips.suitPipsMap;
+    this.suitPipsPositiveMap = pips.suitPipsPositiveMap;
     this.suitPipsXMap = pips.suitPipsXMap;
     this.rankPipsMap = pips.rankPipsMap;
     this.rankPipsXMap = pips.rankPipsXMap;
@@ -575,28 +577,28 @@ export default class HanabiCard
       hasPositiveClues: boolean,
       pip: Konva.Shape | RankPip,
       x: Konva.Shape,
+      pipPositive?: Konva.Shape | undefined,
     ) => {
-      switch (pipState) {
-        case PipState.Visible: {
-          pip.show();
-          x.hide();
-          break;
-        }
-        case PipState.Hidden: {
+      if (pipState === PipState.Hidden) {
+        pip.hide();
+        x.hide();
+        pipPositive?.hide();
+      } else {
+        pip.show();
+        if (hasPositiveClues && pipPositive !== undefined) {
           pip.hide();
-          x.hide();
-          break;
+          pipPositive.show();
+        } else {
+          pipPositive?.hide();
         }
-        case PipState.Eliminated: {
-          pip.show();
+        if (pipState === PipState.Eliminated) {
           x.show();
-          break;
+        } else {
+          x.hide();
         }
-        default:
-          break;
       }
 
-      // TODO: Positive clues on suits
+      // TODO: Positive clues on suits should use the same API as rank pips
       if (pip instanceof RankPip) {
         if (hasPositiveClues && pipState !== PipState.Hidden) {
           pip.showPositiveClue();
@@ -642,10 +644,15 @@ export default class HanabiCard
 
     for (const [suit, pipState] of suitPipStates.entries()) {
       const pip = this.suitPipsMap.get(suit);
+      const pipPositive = this.suitPipsPositiveMap.get(suit);
       const x = this.suitPipsXMap.get(suit);
+      const color = this.variant.suits[suit];
+      const possiblePositiveClues = this.state.positiveColorClues.filter(
+        (c) => c.name === color.name,
+      );
+      const hasPositiveColorClue = possiblePositiveClues.length > 0;
       if (pip !== undefined && x !== undefined) {
-        // TODO: Positive clues on suits
-        updatePip(pipState, false, pip, x);
+        updatePip(pipState, hasPositiveColorClue, pip, x, pipPositive);
       }
     }
 
