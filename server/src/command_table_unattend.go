@@ -81,13 +81,13 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 		defer tables.Unlock(ctx)
 	}
 
-	// If this is an ongoing game, create a list of any notes that they wrote
-	cardOrderList := make([]int, 0)
-	if !t.Replay {
+	// If this is an ongoing game, create a list of card orders which they wrote a note on
+	notedCards := make([]int, 0)
+	if t.Running {
 		sp := t.Spectators[j]
-		for i, note := range sp.Notes(t.Game) {
+		for order, note := range sp.Notes(t.Game) {
 			if note != "" {
-				cardOrderList = append(cardOrderList, i)
+				notedCards = append(notedCards, order)
 			}
 		}
 	}
@@ -110,10 +110,10 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 	}
 	t.NotifySpectators() // Update the in-game spectator list
 
-	if !t.Replay && len(cardOrderList) > 0 {
+	if len(notedCards) > 0 {
 		// Since this is a spectator leaving an ongoing game, all of their notes will be deleted
 		// Send the other spectators a message about the new list of notes, if any
-		for _, order := range cardOrderList {
+		for _, order := range notedCards {
 			t.NotifySpectatorsNote(order)
 		}
 	}
