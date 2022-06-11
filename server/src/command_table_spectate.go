@@ -89,10 +89,6 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	tables.DeleteDisconSpectating(s.UserID)
 
 	// Add them to the spectators object
-	notes := []string{}
-	if g != nil {
-		notes = make([]string, g.GetNotesSize())
-	}
 	sp := &Spectator{
 		UserID:               s.UserID,
 		Name:                 s.Username,
@@ -100,7 +96,6 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		Typing:               false,
 		LastTyped:            time.Time{},
 		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
-		Notes:                notes,
 	}
 
 	t.Spectators = append(t.Spectators, sp)

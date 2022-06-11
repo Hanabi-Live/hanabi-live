@@ -100,7 +100,7 @@ func note(d *CommandData, t *Table, playerIndex int, spectatorIndex int) {
 		sp := t.Spectators[spectatorIndex]
 
 		// Update the array that contains all of their notes
-		sp.Notes[d.Order] = d.Note
+		sp.Notes(g)[d.Order] = d.Note
 	}
 
 	// Let all of the spectators know that there is a new note

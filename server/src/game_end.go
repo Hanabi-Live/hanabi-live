@@ -382,7 +382,6 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 			Typing:               false,
 			LastTyped:            time.Time{},
 			ShadowingPlayerIndex: -1, // To indicate that they are not shadowing anyone
-			Notes:                make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 
