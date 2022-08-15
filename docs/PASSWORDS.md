@@ -4,7 +4,7 @@ On the login screen, Hanab Live recommends that you "Do NOT reuse any of your pr
 
 Some slightly-smarter people have a few different passwords that they use for different kinds of websites (e.g. an "important" password for banks, a "medium" password for social media, etc.). While these kinds of people probably think that they are being smart, this is **also** a really bad idea because it doesn't solve the underlying problem of an attacker being able to pivot between websites.
 
-The real solution is to use a [password manager](https://www.pcmag.com/picks/the-best-password-managers) such as [LastPass](https://www.lastpass.com/). Every single website that you use should have a unique, randomly generated, super-long password. And the password manager will remember all of them for you and automatically enter them in whenever you go to a website. Easy.
+The real solution is to use a [password manager](https://www.pcmag.com/picks/the-best-password-managers) such as [BitWarden](https://bitwarden.com/). Every single website that you use should have a unique, randomly generated, super-long password. And the password manager will remember all of them for you and automatically enter them in whenever you go to a website. Easy.
 
 If you use the same password for every website, it is analogous to not brushing your teeth. When you have bad hygiene, you might not notice any adverse effects right away. But eventually, not brushing your teeth is going to come back to bite you, causing a cavity, or worse. Not to mention that it comes off as pretty disgusting!
 
