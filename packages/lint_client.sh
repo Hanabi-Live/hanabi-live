@@ -30,8 +30,12 @@ lint() {
 lint "$DIR/client"
 lint "$DIR/data" "no-ts-prune"
 
+cd "$DIR/client"
+npx eslint --max-warnings 0 test
+
 # Use Prettier to check formatting on the entire repository.
 echo "Running prettier on the repository."
+cd "$DIR"
 npx prettier --check ..
 
 echo "Successfully linted in $SECONDS seconds."

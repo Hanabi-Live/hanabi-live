@@ -11,8 +11,8 @@ cspell.json
 go.mod
 
 # Images
-*.svg
+**/*.svg
 
 # Minified files
-*.min.js
-*.min.css
+**/*.min.js
+**/*.min.css
