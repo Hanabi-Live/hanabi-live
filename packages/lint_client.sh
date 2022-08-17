@@ -35,7 +35,7 @@ npx eslint --max-warnings 0 test
 
 # Use Prettier to check formatting on the entire repository.
 echo "Running prettier on the repository."
-cd "$DIR"
-npx prettier --check ..
+cd "$DIR/.."
+npx prettier --check .
 
 echo "Successfully linted in $SECONDS seconds."
