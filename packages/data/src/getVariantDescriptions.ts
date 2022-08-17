@@ -20,7 +20,7 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = new Set<string>([
   "Dark Prism", // This is the same as Dark Rainbow
 ]);
 
-const SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS = new Set<String>([
+const SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS = new Set<string>([
   "Rainbow",
   "Prism",
 ]);
@@ -147,8 +147,8 @@ export function getVariantsForEachSpecialSuitCombination(
         if (
           numSuits === 3 &&
           ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name) &&
-            (suit2.noClueColors || suit2.allClueColors)) ||
-            ((suit.noClueColors || suit.allClueColors) &&
+            (suit2.noClueColors === true || suit2.allClueColors === true)) ||
+            ((suit.noClueColors === true || suit.allClueColors === true) &&
               SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
         ) {
           continue;
