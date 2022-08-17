@@ -14,11 +14,10 @@
   "license": "GPL-3.0",
   "author": "Zamiell",
   "scripts": {
-    "test": "jest",
-    "variants": "npm run variants --workspace @hanabi/data"
+    "test": "jest"
   },
   "dependencies": {
-    "@sentry/browser": "^7.11.0",
+    "@sentry/browser": "^7.11.1",
     "fast-deep-equal": "^3.1.3",
     "immer": "8.0.4",
     "interactjs": "^1.10.17",
