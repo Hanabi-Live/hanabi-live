@@ -144,14 +144,16 @@ export function getVariantsForEachSpecialSuitCombination(
         }
 
         // Prism and Rainbow require 2 clueable suits, else they are just ambiguous red
-        if(
+        if (
           numSuits === 3 &&
-          ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name) && (suit2.noClueColors || suit2.allClueColors)) ||
-          ((suit.noClueColors || suit.allClueColors) && SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
-        ){
+          ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name) &&
+            (suit2.noClueColors || suit2.allClueColors)) ||
+            ((suit.noClueColors || suit.allClueColors) &&
+              SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
+        ) {
           continue;
         }
-        
+
         const variantName = `${suit.name} & ${suit2.name} (${numSuits} Suits)`;
         const basicSuits = basicVariantSuits[numSuits - 2];
         const variantSuits = [...basicSuits, suit.name, suit2.name];
