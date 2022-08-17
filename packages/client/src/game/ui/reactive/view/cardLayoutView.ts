@@ -31,7 +31,7 @@ export function onPlayStackDirectionsChanged(
     return;
   }
 
-  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
+  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
   directions.forEach((direction, i) => {
     if (
       previousDirections !== undefined &&
@@ -40,7 +40,7 @@ export function onPlayStackDirectionsChanged(
       return;
     }
 
-    const suit = globals.variant.suits[i];
+    const suit = globals.variant.suits[i]!;
     let text = "";
     const isUpOrDown = variantRules.isUpOrDown(globals.variant);
     if (isUpOrDown || suit.reversed) {
@@ -56,7 +56,7 @@ export function onPlayStackDirectionsChanged(
       text = stackText;
     }
 
-    globals.elements.suitLabelTexts[i].fitText(text);
+    globals.elements.suitLabelTexts[i]!.fitText(text);
 
     globals.deck
       .filter((c) => c.visibleSuitIndex === i)
@@ -82,7 +82,7 @@ export function onDiscardStacksChanged(
   syncChildren(
     discardStacks,
     (i) => {
-      const suit = globals.variant.suits[i];
+      const suit = globals.variant.suits[i]!;
       return globals.elements.discardStacks.get(
         suit,
       )! as unknown as Konva.Container;
@@ -105,7 +105,7 @@ export function onPlayStacksChanged(
   syncChildren(
     playStacks,
     (i) => {
-      const suit = globals.variant.suits[i];
+      const suit = globals.variant.suits[i]!;
       return globals.elements.playStacks.get(
         suit,
       )! as unknown as Konva.Container;
@@ -118,7 +118,7 @@ export function onPlayStacksChanged(
       previousPlayStacks === undefined ||
       !equal(stack, previousPlayStacks[i])
     ) {
-      const suit = globals.variant.suits[i];
+      const suit = globals.variant.suits[i]!;
       const playStack = globals.elements.playStacks.get(suit)!;
       playStack.hideCardsUnderneathTheTopCard();
     }
@@ -166,46 +166,46 @@ function syncChildren(
 
     let current = getCurrentSorting();
 
-    // Remove the elements that were removed
+    // Remove the elements that were removed.
     current
       .filter((n) => !collection.includes(n))
       .map(getCard)
       .forEach((card) => {
         const realState =
-          globals.store?.getState().visibleState?.deck[card.state.order];
+          globals.store?.getState().visibleState?.deck[card!.state.order];
         if (realState === undefined || realState.location === "deck") {
-          card.animateToDeck();
+          card!.animateToDeck();
         } else {
-          card.removeLayoutChildFromParent();
+          card!.removeLayoutChildFromParent();
         }
       });
 
-    // Add the elements that were added
+    // Add the elements that were added.
     collection
       .filter((n) => !current.includes(n))
       .map(getCard)
-      .forEach((card) => addToCollectionUI(card, i));
+      .forEach((card) => addToCollectionUI(card!, i));
 
-    // Reorder the elements to match the collection
+    // Reorder the elements to match the collection.
     collection.forEach((order, pos) => {
       current = getCurrentSorting();
       if (current.length !== collection.length) {
         throw new Error("The UI collection is out of sync with the state.");
       }
 
-      const layoutChild = getCard(order).parent as unknown as LayoutChild;
+      const layoutChild = getCard(order)!.parent as unknown as LayoutChild;
       let sourcePosition = current.indexOf(order);
       while (sourcePosition < pos) {
         layoutChild.moveUp();
-        sourcePosition += 1;
+        sourcePosition++;
       }
       while (sourcePosition > pos) {
         layoutChild.moveDown();
-        sourcePosition -= 1;
+        sourcePosition--;
       }
     });
 
-    // Verify the final result
+    // Verify the final result.
     current = getCurrentSorting();
     if (!equal(current, collection)) {
       throw new Error("The UI collection is out of sync with the state.");

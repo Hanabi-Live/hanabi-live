@@ -7,7 +7,7 @@ import Screen from "./types/Screen";
 
 export default function keyboardInit(): void {
   $(document).keydown((event) => {
-    // On the "Create Game" tooltip, submit the form if enter is pressed
+    // On the "Create Game" tooltip, submit the form if enter is pressed.
     if (
       event.which === KeyCode.KEY_RETURN &&
       $("#create-game-modal-title").is(":visible") &&
@@ -18,53 +18,47 @@ export default function keyboardInit(): void {
       return;
     }
 
-    // The rest of the lobby hotkeys only use alt;
-    // do not do anything if other modifiers are pressed
+    // The rest of the lobby hotkeys only use alt; do not do anything if other modifiers are
+    // pressed.
     if (event.ctrlKey || event.shiftKey || event.metaKey) {
       return;
     }
 
-    // Ignore hotkeys if a modal is open
+    // Ignore hotkeys if a modal is open.
     if (isModalVisible()) {
       return;
     }
 
-    // We also account for MacOS special characters that are inserted when
-    // you hold down the option key
+    // We also account for MacOS special characters that are inserted when you hold down the option
+    // key.
     if (event.altKey && event.which === KeyCode.KEY_J) {
-      // Alt + j
-      // Click on the first "Join" button in the table list
+      // Alt + j. Click on the first "Join" button in the table list.
       if (globals.currentScreen === Screen.Lobby) {
         $(".lobby-games-join-first-table-button").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
-      // Alt + n
-      // Click the "Create Game" button
+      // Alt + n. Click the "Create Game" button.
       if (globals.currentScreen === Screen.Lobby) {
         $("#nav-buttons-lobby-create-game").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_H) {
-      // Alt + h
-      // Click the "Show History" button
+      // Alt + h. Click the "Show History" button.
       if (globals.currentScreen === Screen.Lobby) {
         $("#nav-buttons-lobby-history").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_A) {
-      // Alt + a
-      // Click on the "Watch Specific Replay" button
-      // (we can't use "Alt + w" because that conflicts with LastPass)
+      // Alt + a. Click on the "Watch Specific Replay" button. (We can't use "Alt + w" because that
+      // conflicts with LastPass.)
       if (globals.currentScreen === Screen.Lobby) {
         $("#nav-buttons-lobby-replay").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_O) {
-      // Alt + o
-      // Click the "Sign Out" button
+      // Alt + o. Click the "Sign Out" button.
       if (globals.currentScreen === Screen.Lobby) {
         $("#nav-buttons-lobby-sign-out").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_S) {
-      // Alt + s
-      // Click on the "Start Game" button
+      // Alt + s. Click on the "Start Game" button.
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-start").trigger("click");
       }
@@ -73,8 +67,7 @@ export default function keyboardInit(): void {
         $("#nav-buttons-pregame-change-options").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_L) {
-      // Alt + l
-      // Click on the "Leave Game" button
+      // Alt + l. Click on the "Leave Game" button.
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-leave").trigger("click");
       }
@@ -82,16 +75,16 @@ export default function keyboardInit(): void {
       // Alt + r
       clickReturnToLobby();
     } else if (event.which === KeyCode.KEY_ESCAPE) {
-      // If a modal is open, pressing escape should close it
-      // Otherwise, pressing escape should go "back" one screen
+      // If a modal is open, pressing escape should close it. Otherwise, pressing escape should go
+      // "back" one screen.
       clickReturnToLobby();
     }
   });
 }
 
 function clickReturnToLobby() {
-  // Click on the "Return to Lobby" button
-  // (either at the "game" screen or the "history" screen or the "scores" screen)
+  // Click on the "Return to Lobby" button. (Either at the "game" screen or the "history" screen or
+  // the "scores" screen.)
   if (globals.currentScreen === Screen.PreGame) {
     $("#nav-buttons-pregame-unattend").trigger("click");
   } else if (globals.currentScreen === Screen.History) {

@@ -36,7 +36,7 @@ function makeDeductions(
   const cardCountMap = getCardCountMap(variant);
 
   // We need to calculate our own unknown cards first because those possibilities will be needed for
-  // pretending like we know what the other players see
+  // pretending like we know what the other players see.
   calculatePlayerPossibilities(
     metadata.ourPlayerIndex,
     metadata.ourPlayerIndex,
@@ -70,7 +70,7 @@ function calculatePlayerPossibilities(
 ) {
   hands.forEach((hand) => {
     hand.forEach((order) => {
-      const card = deck[order];
+      const card = deck[order]!;
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
       ) {
@@ -124,11 +124,11 @@ function shouldCalculateCard(
 ) {
   if (playerIndex !== ourPlayerIndex && playerIndex !== card.location) {
     // Both possibleCards and possibleCardsFromEmpathy are not calculated by the player at
-    // playerIndex
+    // playerIndex.
     return false;
   }
-  if (card.revealedToPlayer[playerIndex]) {
-    // The player already knows what this card is
+  if (card.revealedToPlayer[playerIndex]!) {
+    // The player already knows what this card is.
     return false;
   }
 
@@ -139,14 +139,14 @@ function shouldCalculateCard(
   );
 
   if (cardPossibilitiesForPlayer.length === 1) {
-    // The player already knows what this card is
+    // The player already knows what this card is.
     return false;
   }
 
   const oldCard = oldDeck[card.order];
 
   if (typeof oldCard === "undefined" || oldCard.location === "deck") {
-    // This is a newly drawn card and hasn't had any calculations yet
+    // This is a newly drawn card and hasn't had any calculations yet.
     return true;
   }
 
@@ -168,18 +168,18 @@ function getCardPossibilitiesForPlayer(
   ourPlayerIndex: number,
 ): ReadonlyArray<readonly [number, number]> {
   if (card.location === playerIndex) {
-    // If this card is in the players hand, then use our best (empathy) guess
+    // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
   }
-  if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]) {
-    // This is revealed to the player or we are the requested player => just use our best knowledge
+  if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]!) {
+    // This is revealed to the player or we are the requested player => just use our best knowledge.
     return card.possibleCards;
   }
-  // This is an unrevealed card outside of the players hand but not revealed to them.
-  // That can happen with something like a detrimental character (such as 'Slow-Witted')
-  // or 'Throw It in a Hole'. We can't use our best (empathy) guess, because it might be in our own
-  // hand and we might know more about the card then the other player does. We know the other
-  // player at least knows about the clues for it, so we'll use that set of possibilities.
+  // This is an unrevealed card outside of the players hand but not revealed to them. That can
+  // happen with something like a detrimental character (such as 'Slow-Witted') or 'Throw It in a
+  // Hole'. We can't use our best (empathy) guess, because it might be in our own hand and we might
+  // know more about the card then the other player does. We know the other player at least knows
+  // about the clues for it, so we'll use that set of possibilities.
   return card.possibleCardsFromClues;
 }
 
@@ -197,26 +197,43 @@ function generateDeckPossibilities(
       );
     }
   }
-  // Start with the more stable possibilities. This is for performance. It seemed to have a
-  // measurable difference.
-  // The possibilityValid method will short-circuit if it finds a branch that's impossible or if it
-  // finds a possibility that's valid. Here's an attempt at an example:
-  //
-  // deckPossibilities=[[red 5 or yellow 5],[green or blue],[green or blue],[green or blue],[red 5]]
-  //
-  // possibilityValid would initially start with the first card being red 5. It would then check
-  // about 1000 combinations of the next three cards before finding each one is impossible at the
-  // very end of each combination.  If we reorder that to:
-  //
-  // deckPossibilities=[[red 5],[red 5 or yellow 5],[green or blue],[green or blue],[green or blue]]
-  //
-  // Then when it attempts to resolve [red 5 or yellow 5] to red 5, it will realize that's
-  // impossible and short-circuit that branch (not checking the next 1000 combinations of the next
-  // 3 cards). It would switch to checking if the combination would work when [red 5 or yellow 5]
-  // resolves to yellow 5 (by finding a combination of the next 3 cards that fit).
-  // So it should get to a fitting combination quicker or find that there is no fitting combination
-  // quicker.  This applies to more than just cards that have one possibility (such as red 5 in
-  // the example).
+
+  /**
+   * Start with the more stable possibilities. This is for performance. It seemed to have a
+   * measurable difference. The possibilityValid method will short-circuit if it finds a branch
+   * that's impossible or if it finds a possibility that's valid. Here's an example:
+   *
+   * ```ts
+   * deckPossibilities = [
+   *   [red 5 or yellow 5],
+   *   [green or blue],
+   *   [green or blue],
+   *   [green or blue],
+   *   [red 5],
+   * ]
+   * ```
+   *
+   * possibilityValid would initially start with the first card being red 5. It would then check
+   * about 1000 combinations of the next three cards before finding each one is impossible at the
+   * very end of each combination. If we reorder that to:
+   *
+   * ```ts
+   * deckPossibilities=[
+   *   [red 5],
+   *   [red 5 or yellow 5],
+   *   [green or blue],
+   *   [green or blue],
+   *   [green or blue],
+   * ]
+   * ```
+   *
+   * Then when it attempts to resolve [red 5 or yellow 5] to red 5, it will realize that's
+   * impossible and short-circuit that branch (not checking the next 1000 combinations of the next 3
+   * cards). It would switch to checking if the combination would work when [red 5 or yellow 5]
+   * resolves to yellow 5 (by finding a combination of the next 3 cards that fit). So it should get
+   * to a fitting combination quicker or find that there is no fitting combination quicker. This
+   * applies to more than just cards that have one possibility (such as red 5 in the example).
+   */
   deckPossibilities.sort((a, b) => a.length - b.length);
   return deckPossibilities;
 }
@@ -230,8 +247,8 @@ function canBeUsedToDisprovePossibility(
     typeof card !== "undefined" &&
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
-    // disproving a possibility in the players hand
-    (card.revealedToPlayer[playerIndex] || card.hasClueApplied)
+    // disproving a possibility in the players hand.
+    (card.revealedToPlayer[playerIndex]! || card.hasClueApplied)
   );
 }
 
@@ -243,8 +260,8 @@ function deckPossibilitiesDifferent(
   ourPlayerIndex: number,
 ) {
   for (let order = 0; order < deck.length; order++) {
-    const oldCard = oldDeck[order];
-    const card = deck[order];
+    const oldCard = oldDeck[order]!;
+    const card = deck[order]!;
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
@@ -274,14 +291,14 @@ function deckPossibilitiesDifferent(
       }
     }
   }
-  // We are dealing with the same number of unknown cards, and each unknown card has the same
-  // number of possibilities it had previously. Once a card joins the set of "unknown" cards
-  // then it will always remain in that set, even if it has only one possibility. So if we have
-  // the same number of unknown cards, then they will be the same set of unknown cards.
-  // Similar logic can be applied to the possibilities for each unknown card. The new possible
-  // values for an unknown card can only be a subset of the possible values. In other words, if
-  // an unknown card could not previously be a red 5, then it won't suddenly regain the ability to
-  // be a red 5 in a later turn.
+
+  // We are dealing with the same number of unknown cards, and each unknown card has the same number
+  // of possibilities it had previously. Once a card joins the set of "unknown" cards then it will
+  // always remain in that set, even if it has only one possibility. So if we have the same number
+  // of unknown cards, then they will be the same set of unknown cards. Similar logic can be applied
+  // to the possibilities for each unknown card. The new possible values for an unknown card can
+  // only be a subset of the possible values. In other words, if an unknown card could not
+  // previously be a red 5, then it won't suddenly regain the ability to be a red 5 in a later turn.
   // Therefore, if the count of possible suit/rank combinations remains the same, then the
   // underlying suit/rank combinations should also be the same.
   return false;
@@ -292,17 +309,17 @@ function filterCardPossibilities(
   deckPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
   cardCountMap: readonly number[][],
 ) {
-  // possibilitiesToValidate tracks what possibilities have yet to be validated for a specific card
-  // from a specific perspective. When a specific possibility/identity for that card is validated in
-  // the possibilityValid method (by finding a working combination of card identities), it will
-  // check if it's possible to swap the identity for our specific card and still have a working
-  // combination. If so, then the new identity for our specific card is also valid and doesn't need
-  // to be validated again (so it's removed from possibilitiesToValidate).
+  // `possibilitiesToValidate` tracks what possibilities have yet to be validated for a specific
+  // card from a specific perspective. When a specific possibility/identity for that card is
+  // validated in the possibilityValid method (by finding a working combination of card identities),
+  // it will check if it's possible to swap the identity for our specific card and still have a
+  // working combination. If so, then the new identity for our specific card is also valid and
+  // doesn't need to be validated again (so it's removed from possibilitiesToValidate).
   let possibilitiesToValidate: Array<readonly [number, number]> = [];
   possibilitiesToValidate = Array.from(cardPossibilities);
   return cardPossibilities.filter((possibility) => {
-    // if the possibility is not in the list that still needs validation then it must mean the
-    // possibility is already validated and we can exit early
+    // If the possibility is not in the list that still needs validation then it must mean the
+    // possibility is already validated and we can exit early.
     if (!hasPossibility(possibilitiesToValidate, possibility)) {
       return true;
     }
@@ -334,20 +351,20 @@ function possibilityValid(
   possibilitiesToValidate: Array<readonly [number, number]>,
 ) {
   if (deckPossibilities.length === index) {
-    if (cardCountMap[suit][rank] > 0) {
-      cardCountMap[suit][rank] -= 1;
+    if (cardCountMap[suit]![rank]! > 0) {
+      cardCountMap[suit]![rank]!--;
       updatePossibilitiesToValidate(cardCountMap, possibilitiesToValidate);
-      cardCountMap[suit][rank] += 1;
+      cardCountMap[suit]![rank]!++;
       return true;
     }
     return false;
   }
-  // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit
-  cardCountMap[suit][rank] -= 1;
-  if (cardCountMap[suit][rank] >= 0) {
-    const { length } = deckPossibilities[index];
+  // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit.
+  cardCountMap[suit]![rank]!--;
+  if (cardCountMap[suit]![rank]! >= 0) {
+    const { length } = deckPossibilities[index]!;
     for (let i = 0; i < length; i++) {
-      const possibility = deckPossibilities[index][(i + index) % length];
+      const possibility = deckPossibilities[index]![(i + index) % length]!;
       if (
         possibilityValid(
           possibility,
@@ -357,12 +374,12 @@ function possibilityValid(
           possibilitiesToValidate,
         )
       ) {
-        cardCountMap[suit][rank] += 1;
+        cardCountMap[suit]![rank]!++;
         return true;
       }
     }
   }
-  cardCountMap[suit][rank] += 1;
+  cardCountMap[suit]![rank]!++;
   return false;
 }
 
@@ -371,11 +388,13 @@ function updatePossibilitiesToValidate(
   possibilitiesToValidate: Array<readonly [number, number]>,
 ) {
   let j = 0;
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < possibilitiesToValidate.length; i++) {
-    const [suit, rank] = possibilitiesToValidate[i];
-    if (cardCountMap[suit][rank] === 0) {
+    const [suit, rank] = possibilitiesToValidate[i]!;
+    // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
+    if (cardCountMap[suit]![rank]! === 0) {
       possibilitiesToValidate[j] = [suit, rank];
-      j += 1;
+      j++;
     }
   }
   possibilitiesToValidate.length = j;
@@ -394,9 +413,9 @@ function getCardCountMap(variant: Variant) {
   const possibleCardMap: number[][] = [];
   possibleSuits.forEach((suitIndex) => {
     possibleCardMap[suitIndex] = [];
-    const suit = variant.suits[suitIndex];
+    const suit = variant.suits[suitIndex]!;
     possibleRanks.forEach((rank) => {
-      possibleCardMap[suitIndex][rank] = deckRules.numCopiesOfCard(
+      possibleCardMap[suitIndex]![rank] = deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,

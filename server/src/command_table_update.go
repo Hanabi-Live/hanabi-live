@@ -60,21 +60,21 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		room := t.GetRoomName()
 		message = s.Username + " proposes the following options:"
 		span := "<span class=\"cp\">"
-		endspan := "</b></span>"
+		endSpan := "</b></span>"
 
 		// output in chat only what's changed
 		options := ""
 
 		if d.Name != t.Name {
-			options += span + "Table Name: <b>" + d.Name + endspan
+			options += span + "Table Name: <b>" + d.Name + endSpan
 		}
 		if newOptions.VariantName != tableOptions.VariantName {
-			options += span + "Variant: <b>" + newOptions.VariantName + endspan
+			options += span + "Variant: <b>" + newOptions.VariantName + endSpan
 		}
 		if newOptions.Timed && !tableOptions.Timed {
-			options += span + "Timed: <b>" + strconv.Itoa(newOptions.TimeBase) + " / " + strconv.Itoa(newOptions.TimePerTurn) + endspan
+			options += span + "Timed: <b>" + strconv.Itoa(newOptions.TimeBase) + " / " + strconv.Itoa(newOptions.TimePerTurn) + endSpan
 		} else if tableOptions.Timed {
-			options += span + "Timed: <b>No" + endspan
+			options += span + "Timed: <b>No" + endSpan
 		}
 		// Sanitize
 		d.MaxPlayers = between(d.MaxPlayers, 2, 6, 5)
@@ -86,31 +86,31 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 				colorStart = "<span style=\"color: red\">"
 				colorEnd = "</span>"
 			}
-			options += span + "Max Players: <b>" + colorStart + strconv.Itoa(d.MaxPlayers) + colorEnd + endspan
+			options += span + "Max Players: <b>" + colorStart + strconv.Itoa(d.MaxPlayers) + colorEnd + endSpan
 		}
 		if newOptions.Speedrun != tableOptions.Speedrun {
-			options += span + "Speedrun: <b>" + yesNoFromBoolean(newOptions.Speedrun) + endspan
+			options += span + "Speedrun: <b>" + yesNoFromBoolean(newOptions.Speedrun) + endSpan
 		}
 		if newOptions.CardCycle != tableOptions.CardCycle {
-			options += span + "Card Cycling: <b>" + yesNoFromBoolean(newOptions.CardCycle) + endspan
+			options += span + "Card Cycling: <b>" + yesNoFromBoolean(newOptions.CardCycle) + endSpan
 		}
 		if newOptions.DeckPlays != tableOptions.DeckPlays {
-			options += span + "Bottom-Deck: <b>" + yesNoFromBoolean(newOptions.DeckPlays) + endspan
+			options += span + "Bottom-Deck: <b>" + yesNoFromBoolean(newOptions.DeckPlays) + endSpan
 		}
 		if newOptions.EmptyClues != tableOptions.EmptyClues {
-			options += span + "Empty Clues: <b>" + yesNoFromBoolean(newOptions.EmptyClues) + endspan
+			options += span + "Empty Clues: <b>" + yesNoFromBoolean(newOptions.EmptyClues) + endSpan
 		}
 		if newOptions.OneExtraCard != tableOptions.OneExtraCard {
-			options += span + "One Extra Card: <b>" + yesNoFromBoolean(newOptions.OneExtraCard) + endspan
+			options += span + "One Extra Card: <b>" + yesNoFromBoolean(newOptions.OneExtraCard) + endSpan
 		}
 		if newOptions.OneLessCard != tableOptions.OneLessCard {
-			options += span + "One Less Card: <b>" + yesNoFromBoolean(newOptions.OneLessCard) + endspan
+			options += span + "One Less Card: <b>" + yesNoFromBoolean(newOptions.OneLessCard) + endSpan
 		}
 		if newOptions.AllOrNothing != tableOptions.AllOrNothing {
-			options += span + "All or Nothing: <b>" + yesNoFromBoolean(newOptions.AllOrNothing) + endspan
+			options += span + "All or Nothing: <b>" + yesNoFromBoolean(newOptions.AllOrNothing) + endSpan
 		}
 		if newOptions.DetrimentalCharacters != tableOptions.DetrimentalCharacters {
-			options += span + "Detrimental Characters: <b>" + yesNoFromBoolean(newOptions.DetrimentalCharacters) + endspan
+			options += span + "Detrimental Characters: <b>" + yesNoFromBoolean(newOptions.DetrimentalCharacters) + endSpan
 		}
 
 		if options == "" {

@@ -43,7 +43,7 @@ export default class FullActionLog extends Konva.Group {
     });
     Konva.Group.prototype.add.call(this, rect);
 
-    // The text for each action
+    // The text for each action.
     this.textOptions = {
       fontSize: 0.025 * winH,
       fontFamily: "Verdana",
@@ -55,7 +55,7 @@ export default class FullActionLog extends Konva.Group {
       listening: false,
     };
 
-    // The turn numbers for each action
+    // The turn numbers for each action.
     this.numbersOptions = {
       fontSize: 0.025 * winH,
       fontFamily: "Verdana",
@@ -67,7 +67,7 @@ export default class FullActionLog extends Konva.Group {
       listening: false,
     };
 
-    // The text displayed when the selected player hasn't taken any actions
+    // The text displayed when the selected player hasn't taken any actions.
     const emptyMessageOptions = {
       fontSize: 0.025 * winH,
       fontFamily: "Verdana",
@@ -95,15 +95,15 @@ export default class FullActionLog extends Konva.Group {
     this.buffer.push({ turnNum: turn, text: msg });
     this.needsRefresh = true;
 
-    // If the log is already open, apply the change immediately
+    // If the log is already open, apply the change immediately.
     if (this.isVisible() === true) {
       this.refreshText();
     }
   }
 
-  // Overrides the Konva show() method to refresh the text as well
-  show(): this {
-    // We only need to refresh the text when it is shown
+  // Overrides the Konva show() method to refresh the text as well.
+  override show(): this {
+    // We only need to refresh the text when it is shown.
     if (this.needsRefresh) {
       this.refreshText();
     }
@@ -209,7 +209,7 @@ export default class FullActionLog extends Konva.Group {
         logEntry.text,
       );
       for (let i = 0; i < globals.options.numPlayers; i++) {
-        if (logEntry.text.startsWith(globals.metadata.playerNames[i])) {
+        if (logEntry.text.startsWith(globals.metadata.playerNames[i]!)) {
           if (this.playerLogs[i] === null) {
             this.makePlayerLog(i);
           }

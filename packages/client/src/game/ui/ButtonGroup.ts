@@ -25,9 +25,10 @@ export default class ButtonGroup extends Konva.Group {
       function buttonClick(this: Konva.Node) {
         (this as ClueButton).setPressed(true);
 
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < self.list.length; i++) {
-          if (self.list[i] !== this && self.list[i].pressed) {
-            self.list[i].setPressed(false);
+          if (self.list[i] !== this && self.list[i]!.pressed) {
+            self.list[i]!.setPressed(false);
           }
         }
 
@@ -47,34 +48,35 @@ export default class ButtonGroup extends Konva.Group {
   }
 
   clearPressed(): void {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this.list.length; i++) {
-      if (this.list[i].pressed) {
-        this.list[i].setPressed(false);
+      if (this.list[i]!.pressed) {
+        this.list[i]!.setPressed(false);
       }
     }
   }
 
-  // selectNextTarget is only used for groups of "PlayerButton"
+  /** This is only used for groups of "PlayerButton". */
   selectNextTarget(): void {
-    let buttonIndex;
+    let buttonIndex: number | undefined;
     for (let i = 0; i < this.list.length; i++) {
-      if (this.list[i].pressed) {
+      if (this.list[i]!.pressed) {
         buttonIndex = i;
         break;
       }
     }
 
-    // It is possible that no buttons are currently pressed
+    // It is possible that no buttons are currently pressed.
     if (buttonIndex === undefined) {
       buttonIndex = -1;
     }
 
-    // Find the next button in the group
-    // As a guard against an infinite loop,
-    // only loop as many times as needed to go through every button
+    // Find the next button in the group. As a guard against an infinite loop, only loop as many
+    // times as needed to go through every button.
     let button: PlayerButton | undefined;
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this.list.length; i++) {
-      buttonIndex += 1;
+      buttonIndex++;
       if (buttonIndex > this.list.length - 1) {
         buttonIndex = 0;
       }

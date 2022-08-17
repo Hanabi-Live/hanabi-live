@@ -31,7 +31,7 @@ function createSuitPattern(
       alternation += "|";
     }
 
-    alternation += suitAbbreviations[i].toLowerCase();
+    alternation += suitAbbreviations[i]!.toLowerCase();
     alternation += "|";
     alternation += suit.displayName.toLowerCase();
   });

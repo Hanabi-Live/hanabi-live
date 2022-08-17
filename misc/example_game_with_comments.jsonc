@@ -5,13 +5,7 @@
 {
   // "players" is an array that contains the names of the players
   // The 0th player will always go first
-  "players": [
-    "Alice",
-    "Bob",
-    "Cathy",
-    "Donald",
-    "Emily"
-  ],
+  "players": ["Alice", "Bob", "Cathy", "Donald", "Emily"],
 
   // "deck" is an array that contains all of the cards in the deck
   // It lists the cards from top to bottom

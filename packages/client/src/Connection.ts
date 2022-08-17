@@ -1,6 +1,4 @@
-interface WebSocketCallbackCommands {
-  [command: string]: (data: unknown) => void;
-}
+type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
 type WebSocketCallbacks = WebSocketCallbackCommands & {
   open?: (evt: Event) => void;
@@ -8,10 +6,9 @@ type WebSocketCallbacks = WebSocketCallbackCommands & {
   socketError?: (evt: Event) => void;
 };
 
-// Connection is a class that manages a WebSocket connection to the server
-// On top of the WebSocket protocol, the client and the server communicate using a specific format
-// based on the protocol that the Golem WebSocket framework uses
-// For more information, see "websocketMessage.go"
+// Connection is a class that manages a WebSocket connection to the server. On top of the WebSocket
+// protocol, the client and the server communicate using a specific format based on the protocol
+// that the Golem WebSocket framework uses. For more information, see "websocketMessage.go".
 // Based on: https://github.com/trevex/golem_client/blob/master/golem.js
 export default class Connection {
   ws: WebSocket;
@@ -42,19 +39,19 @@ export default class Connection {
 
   onMessage(evt: MessageEvent): void {
     const data = unpack(evt.data as string);
-    const command = data[0];
+    const command = data[0]!;
     if (this.callbacks[command] !== undefined) {
-      const obj = unmarshal(data[1]);
+      const obj = unmarshal(data[1]!);
       if (this.debug) {
         console.log(`%cReceived ${command}:`, "color: blue;");
         console.log(obj);
       }
-      this.callbacks[command](obj);
+      this.callbacks[command]!(obj);
     } else {
       console.error(
         "Received WebSocket message with no callback:",
         command,
-        JSON.parse(data[1]),
+        JSON.parse(data[1]!),
       );
     }
   }
@@ -86,7 +83,7 @@ export default class Connection {
 
 const separator = " ";
 const unpack = (data: string) => {
-  const name = data.split(separator)[0];
+  const name = data.split(separator)[0]!;
   return [name, data.substring(name.length + 1, data.length)];
 };
 const unmarshal = (data: string) => JSON.parse(data) as unknown;

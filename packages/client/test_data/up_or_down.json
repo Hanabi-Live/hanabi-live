@@ -1,11 +1,6 @@
 {
   "id": 12345,
-  "players": [
-    "Alice",
-    "Bob",
-    "Cathy",
-    "Donald"
-  ],
+  "players": ["Alice", "Bob", "Cathy", "Donald"],
   "deck": [
     {
       "suitIndex": 0,

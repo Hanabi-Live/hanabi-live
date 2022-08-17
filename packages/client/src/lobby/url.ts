@@ -5,12 +5,12 @@ import { expand, GameJSON } from "./hypoCompress";
 import WelcomeData from "./types/WelcomeData";
 
 export function parseAndGoto(data: WelcomeData): void {
-  // Disable custom path functionality for first time users
+  // Disable custom path functionality for first time users.
   if (data.firstTimeUser) {
     return;
   }
 
-  // Automatically create a table if we are using a "/create-table" URL
+  // Automatically create a table if we are using a "/create-table" URL.
   if (window.location.pathname === "/create-table") {
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get("name") ?? globals.randomTableName;
@@ -52,23 +52,23 @@ export function parseAndGoto(data: WelcomeData): void {
     return;
   }
 
-  // Automatically join a pre-game if we are using a "/pre-game/123" URL
+  // Automatically join a pre-game if we are using a "/pre-game/123" URL.
   const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
   if (preGameMatch !== null) {
-    // The server expects the game ID as an integer
-    const tableID = parseIntSafe(preGameMatch[1]);
+    // The server expects the game ID as an integer.
+    const tableID = parseIntSafe(preGameMatch[1]!);
     globals.conn!.send("tableJoin", {
       tableID,
     });
     return;
   }
 
-  // Automatically spectate a game if we are using a "/game/123" URL
-  // (we want to spectate it instead of reattend it because if we are at this point,
-  // it is assumed that if we were in the respective game, we would have already tried to join it)
+  // Automatically spectate a game if we are using a "/game/123" URL. (We want to spectate it
+  // instead of reattend it because if we are at this point, it is assumed that if we were in the
+  // respective game, we would have already tried to join it.)
   const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
   if (gameMatch !== null) {
-    const tableID = parseIntSafe(gameMatch[1]); // The server expects the game ID as an integer
+    const tableID = parseIntSafe(gameMatch[1]!); // The server expects the game ID as an integer.
     globals.conn!.send("tableSpectate", {
       tableID,
       shadowingPlayerIndex: -1,
@@ -76,7 +76,7 @@ export function parseAndGoto(data: WelcomeData): void {
     return;
   }
 
-  // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL
+  // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
   const replayMatch = /\/(?:shared-)?replay\/(\d+)/.exec(
     window.location.pathname,
   );
@@ -84,8 +84,8 @@ export function parseAndGoto(data: WelcomeData): void {
     const visibility = window.location.pathname.includes("shared-")
       ? "shared"
       : "solo";
-    // The server expects the game ID as an integer
-    const databaseID = parseIntSafe(replayMatch[1]);
+    // The server expects the game ID as an integer.
+    const databaseID = parseIntSafe(replayMatch[1]!);
     globals.conn!.send("replayCreate", {
       databaseID,
       source: "id",
@@ -95,7 +95,8 @@ export function parseAndGoto(data: WelcomeData): void {
     return;
   }
 
-  // Automatically go into a replay if we are using a "/replay-json/string" or "/shared-replay-json/string" URL
+  // Automatically go into a replay if we are using a "/replay-json/string" or
+  // "/shared-replay-json/string" URL.
   const replayJSONMatch = /\/(?:shared-)?replay-json\/([a-zA-Z0-9,-]+)$/.exec(
     window.location.pathname,
   );
@@ -103,8 +104,8 @@ export function parseAndGoto(data: WelcomeData): void {
     const visibility = window.location.pathname.includes("shared-")
       ? "solo"
       : "shared";
-    // The server expects the uncompressed JSON
-    const gameJSONString = expand(replayJSONMatch[1]);
+    // The server expects the uncompressed JSON.
+    const gameJSONString = expand(replayJSONMatch[1]!);
     if (gameJSONString === null) {
       setBrowserAddressBarPath("/lobby");
       return;
@@ -132,6 +133,6 @@ export function parseAndGoto(data: WelcomeData): void {
     return;
   }
 
-  // Otherwise, we will stay in the lobby
+  // Otherwise, we will stay in the lobby.
   setBrowserAddressBarPath("/lobby");
 }

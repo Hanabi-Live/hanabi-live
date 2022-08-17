@@ -1,6 +1,6 @@
-// We will receive WebSocket messages / commands from the server that tell us to do things
-// The client also sends these messages to itself in order to emulate actions coming from the server
-// for e.g. in-game replays
+// We will receive WebSocket messages / commands from the server that tell us to do things. The
+// client also sends these messages to itself in order to emulate actions coming from the server for
+// e.g. in-game replays.
 
 import { getVariant, parseIntSafe } from "@hanabi/data";
 import { createStore } from "redux";
@@ -32,7 +32,7 @@ import * as stats from "./stats";
 import * as timer from "./timer";
 import uiInit from "./uiInit";
 
-// Define a command handler map
+// Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
@@ -48,8 +48,7 @@ commands.set("boot", () => {
   globals.game!.hide();
 });
 
-// Updates the clocks to show how much time people are taking
-// or how much time people have left
+// Updates the clocks to show how much time people are taking or how much time people have left.
 commands.set("clock", (data: timer.ClockData) => {
   timer.update(data);
 });
@@ -61,7 +60,7 @@ commands.set("connected", (data: ConnectedData) => {
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
-      nameFrame.setConnected(data.list[i]);
+      nameFrame.setConnected(data.list[i]!);
     }
   }
   globals.layers.UI.batchDraw();
@@ -83,17 +82,17 @@ interface FinishOngoingGameData {
   sharedReplayLeader: string;
 }
 commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
-  // Zero out the user-created efficiency modifier, if any
-  // In a shared replay, this must be synced with the shared replay leader
+  // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
+  // with the shared replay leader.
   globals.store!.dispatch({
     type: "setEffMod",
     mod: 0,
   });
 
-  // Set the browser address bar
+  // Set the browser address bar.
   setBrowserAddressBarPath(`/shared-replay/${data.databaseID}`);
 
-  // Begin the process of converting an ongoing game to a shared replay
+  // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
     type: "finishOngoingGame",
     databaseID: data.databaseID,
@@ -107,15 +106,17 @@ interface HypotheticalData {
   actions: string[];
 }
 commands.set("hypothetical", (data: HypotheticalData) => {
-  // We are joining an ongoing shared replay that is currently playing through a hypothetical line
+  // We are joining an ongoing shared replay that is currently playing through a hypothetical line.
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
-  // have taken place
+  // have taken place.
 
-  // First, parse all of the actions
+  // First, parse all of the actions.
   const actions: ActionIncludingHypothetical[] = [];
-  for (let i = 0; i < data.actions.length; i++) {
-    const action = JSON.parse(data.actions[i]) as ActionIncludingHypothetical;
-    actions.push(action);
+  for (const action of data.actions) {
+    const actionIncludingHypothetical = JSON.parse(
+      action,
+    ) as ActionIncludingHypothetical;
+    actions.push(actionIncludingHypothetical);
   }
 
   globals.store!.dispatch({
@@ -159,24 +160,24 @@ commands.set("hypoStart", () => {
 });
 
 commands.set("init", (metadata: InitData) => {
-  // Data contains the game settings for the game we are entering;
-  // attach this to the Sentry context to make debugging easier
+  // Data contains the game settings for the game we are entering; attach this to the Sentry context
+  // to make debugging easier.
   sentry.setGameContext(metadata);
 
   setURL(metadata);
   initStateStore(metadata);
 
-  // Now that we know the number of players and the variant, we can start to load & draw the UI
+  // Now that we know the number of players and the variant, we can start to load & draw the UI.
   uiInit();
 });
 
-// Received when spectating a game
+// Received when spectating a game.
 interface NoteData {
   order: number;
   notes: SpectatorNote[];
 }
 commands.set("note", (data: NoteData) => {
-  // If we are an active player and we got this message, something has gone wrong
+  // If we are an active player and we got this message, something has gone wrong.
   if (globals.state.playing) {
     return;
   }
@@ -187,16 +188,19 @@ commands.set("note", (data: NoteData) => {
     notes: data.notes,
   });
 
-  // Set the note indicator
+  // Set the note indicator.
   const card = getCardOrStackBase(data.order);
   card.setNoteIndicator();
 });
 
-// Received when:
-// - joining a replay
-// - joining a shared replay
-// - joining an existing game as a spectator
-// (it gives the notes of all the players & spectators)
+/**
+ * Received when:
+ * - joining a replay
+ * - joining a shared replay
+ * - joining an existing game as a spectator
+ *
+ * (It gives the notes of all the players & spectators.)
+ */
 interface NoteListData {
   notes: NoteList[];
 }
@@ -216,12 +220,12 @@ commands.set("noteList", (data: NoteListData) => {
     names,
     noteTextLists,
   });
-  // Show the note indicator for currently-visible cards
+  // Show the note indicator for currently-visible cards.
   notes.setAllCardIndicators();
 });
 
-// Received when reconnecting to an existing game as a player
-// (it only gets the notes of one specific player)
+// Received when reconnecting to an existing game as a player. (It only gets the notes of one
+// specific player).
 interface NoteListPlayerData {
   notes: string[];
 }
@@ -232,29 +236,29 @@ commands.set("noteListPlayer", (data: NoteListPlayerData) => {
     texts: data.notes,
   });
 
-  // Show the note indicator for currently-visible cards
+  // Show the note indicator for currently-visible cards.
   notes.setAllCardIndicators();
 
-  // Check for special notes
+  // Check for special notes.
   const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
   for (let i = 0; i <= indexOfLastDrawnCard; i++) {
     const card = getCardOrStackBase(i);
     card.checkSpecialNote();
   }
 
-  // Check for special notes on the stack bases
+  // Check for special notes on the stack bases.
   for (const stackBase of globals.stackBases) {
     stackBase.checkSpecialNote();
   }
 });
 
-// Used when the game state changes
+// Used when the game state changes.
 interface GameActionData {
   tableID: number;
   action: GameAction;
 }
 commands.set("gameAction", (data: GameActionData) => {
-  // Update the game state
+  // Update the game state.
   globals.store!.dispatch(data.action);
 });
 
@@ -264,17 +268,15 @@ interface GameActionListData {
 }
 commands.set("gameActionList", (data: GameActionListData) => {
   // Users can load a specific turn in a replay by using a URL hash
-  // e.g. "/replay/123#5"
-  // Record the hash before we load the UI (which will overwrite the hash with "#1",
-  // corresponding to the first turn)
-  let specificTurnString = null;
+  // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
+  // with "#1", corresponding to the first turn).
+  let specificTurnString: string | null = null;
   if (window.location.hash !== "") {
-    specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#"
+    specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#".
   }
 
-  // The server has sent us the list of the game actions that have occurred in the game thus far
-  // (in response to the "getGameInfo2" command)
-  // Send this list to the reducers
+  // The server has sent us the list of the game actions that have occurred in the game thus far (in
+  // response to the "getGameInfo2" command). Send this list to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
     actions: data.list,
@@ -304,7 +306,7 @@ interface ReplayEfficiencyModData {
 commands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
   if (
     globals.state.replay.shared === null ||
-    // Shared replay leaders already set the efficiency after sending the "replayAction" message
+    // Shared replay leaders already set the efficiency after sending the "replayAction" message.
     globals.state.replay.shared.amLeader
   ) {
     return;
@@ -324,17 +326,17 @@ commands.set("voteChange", (data: VoteData) => {
   }
 });
 
-// This is used in shared replays to highlight a specific card (or UI element)
+// This is used in shared replays to highlight a specific card (or UI element).
 interface ReplayIndicatorData {
   order: ReplayArrowOrder;
 }
 commands.set("replayIndicator", (data: ReplayIndicatorData) => {
   if (
     globals.state.replay.shared === null ||
-    // Shared replay leaders already drew the arrow after sending the "replayAction" message
+    // Shared replay leaders already drew the arrow after sending the "replayAction" message.
     globals.state.replay.shared.amLeader ||
-    // If we are not currently using the shared segments,
-    // the arrow that the shared replay leader is highlighting will not be applicable
+    // If we are not currently using the shared segments, the arrow that the shared replay leader is
+    // highlighting will not be applicable.
     !globals.state.replay.shared.useSharedSegments
   ) {
     return;
@@ -346,7 +348,7 @@ commands.set("replayIndicator", (data: ReplayIndicatorData) => {
   }
 });
 
-// This is used in shared replays to specify who the leader is
+// This is used in shared replays to specify who the leader is.
 interface ReplayLeaderData {
   name: string;
 }
@@ -366,8 +368,8 @@ interface ReplaySegmentData {
   segment: number;
 }
 commands.set("replaySegment", (data: ReplaySegmentData) => {
-  // If we are the replay leader,
-  // we will already have the shared segment set to be equal to what the server is broadcasting
+  // If we are the replay leader, we will already have the shared segment set to be equal to what
+  // the server is broadcasting.
   if (
     globals.state.replay.shared === null ||
     globals.state.replay.shared.amLeader
@@ -386,7 +388,7 @@ commands.set("replaySegment", (data: ReplaySegmentData) => {
   });
 });
 
-// This is used in shared replays to make fun sounds
+// This is used in shared replays to make fun sounds.
 interface ReplaySoundData {
   sound: string;
 }
@@ -394,17 +396,16 @@ commands.set("replaySound", (data: ReplaySoundData) => {
   globals.game!.sounds.play(data.sound);
 });
 
-// This is used to update the names of the people currently spectating the game
+// This is used to update the names of the people currently spectating the game.
 interface SpectatorsData {
   tableID: number;
   spectators: Spectator[];
 }
 commands.set("spectators", (data: SpectatorsData) => {
-  // The shadowing index will be -1 if they are not shadowing a player
-  // Convert this to null
-  for (let i = 0; i < data.spectators.length; i++) {
-    if (data.spectators[i].shadowingPlayerIndex === -1) {
-      data.spectators[i].shadowingPlayerIndex = null;
+  // The shadowing index will be -1 if they are not shadowing a player. Convert this to null.
+  for (const spectator of data.spectators) {
+    if (spectator.shadowingPlayerIndex === -1) {
+      spectator.shadowingPlayerIndex = null;
     }
   }
 
@@ -419,7 +420,7 @@ commands.set("spectators", (data: SpectatorsData) => {
 // -----------
 
 function setURL(data: InitData) {
-  let path;
+  let path: string;
   if (data.sharedReplay) {
     path = `/shared-replay/${data.databaseID}`;
   } else if (data.replay) {
@@ -435,7 +436,7 @@ function initStateStore(data: InitData) {
   globals.variant = getVariant(data.options.variantName);
 
   // Handle the special case of when players can be given assignments of "-1" during debugging
-  // (which corresponds to a null character)
+  // (which corresponds to a null character).
   for (let i = 0; i < data.characterAssignments.length; i++) {
     if (data.characterAssignments[i] === -1) {
       data.characterAssignments[i] = null;
@@ -445,7 +446,7 @@ function initStateStore(data: InitData) {
     data.characterAssignments = initArray(data.options.numPlayers, null);
   }
 
-  // Create the state store (using the Redux library)
+  // Create the state store (using the Redux library).
   const minEfficiency = statsRules.minEfficiency(
     data.options.numPlayers,
     turnRules.endGameLength(data.options, data.characterAssignments),
@@ -468,10 +469,10 @@ function initStateStore(data: InitData) {
   };
   globals.store = createStore(stateReducer, initialState(metadata));
 
-  // The various UI views subscribe to the state store
+  // The various UI views subscribe to the state store.
   globals.stateObserver = new StateObserver(globals.store);
 
-  // Make the current state available from the JavaScript console (for debugging purposes)
+  // Make the current state available from the JavaScript console (for debugging purposes).
   globals.store.subscribe(() => {
     window.state = globals.state;
   });
@@ -491,9 +492,9 @@ function initStateStore(data: InitData) {
     efficiencyModifier: data.sharedReplayEffMod,
   });
 
-  // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
-  // We must wait until the game is initialized first,
-  // because the "hypoEnter" handler requires there to be a valid state
+  // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We
+  // must wait until the game is initialized first, because the "hypoEnter" handler requires there
+  // to be a valid state.
 }
 
 // We might need to go to a specific turn
@@ -501,18 +502,18 @@ function initStateStore(data: InitData) {
 function loadSpecificReplayTurn(turnString: string) {
   let turn = parseIntSafe(turnString);
   if (Number.isNaN(turn)) {
-    // The turn is not a number, so ignore it
+    // The turn is not a number, so ignore it.
     return;
   }
 
-  // We minus one from the turn since turns are represented to the user as starting from 1
-  // (instead of from 0)
-  turn -= 1;
+  // We minus one from the turn since turns are represented to the user as starting from 1 (instead
+  // of from 0).
+  turn--;
 
-  replay.goToSegment(turn, true); // A turn is an approximation for a segment
+  replay.goToSegment(turn, true); // A turn is an approximation for a segment.
 }
 
-// Allow TypeScript to modify the browser's "window" object
+// Allow TypeScript to modify the browser's "window" object.
 declare global {
   interface Window {
     state: State;

@@ -6,15 +6,15 @@ import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
 
 export const isVisible = (state: State): boolean =>
-  // Don't show it we happen to have the in-game replay open
+  // Don't show it we happen to have the in-game replay open.
   !state.replay.active &&
-  // The clue UI should take precedence over the "Current Player" area
+  // The clue UI should take precedence over the "Current Player" area.
   (state.ongoingGame.turn.currentPlayerIndex !==
     state.metadata.ourPlayerIndex ||
     !state.playing) &&
-  // The premove cancel button should take precedence over the "Current Player" area
+  // The premove cancel button should take precedence over the "Current Player" area.
   state.premove === null &&
-  // Don't show it if the game is over
+  // Don't show it if the game is over.
   state.ongoingGame.turn.currentPlayerIndex !== null;
 
 export function onChanged(
@@ -51,15 +51,16 @@ export function onChanged(
   if (currentPlayerIndex === null) {
     return;
   }
-  const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
+  const currentPlayerHand =
+    globals.state.ongoingGame.hands[currentPlayerIndex]!;
   const { numPlayers } = globals.options;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
   let specialText = "";
   if (!globals.lobby.settings.realLifeMode) {
-    // In "Clue Starved" variants,
-    // clues are tracked internally at twice the value shown to the user
+    // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the
+    // user.
     const cluesTokensText = clueTokensRules
       .getUnadjusted(clueTokens, globals.variant)
       .toString();
@@ -88,7 +89,7 @@ export function onChanged(
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]);
+    text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]!);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {
@@ -97,9 +98,9 @@ export function onChanged(
     text2.width(textValues.w * winW);
     text2.resize();
 
-    // We need to adjust the font size of the player name, depending on how long the name is
-    // Continue to shrink the text until it reaches the maximum size
-    // Run at most 100 times; in most cases, it will take around 15
+    // We need to adjust the font size of the player name, depending on how long the name is.
+    // Continue to shrink the text until it reaches the maximum size. Run at most 100 times; in most
+    // cases, it will take around 15.
     for (let i = 0; i < 100; i++) {
       if (text2.measureSize(text2.text()).height <= maxSize) {
         break;
@@ -132,7 +133,7 @@ export function onChanged(
     text3.show();
   }
 
-  // Get the rotation that corresponds to the current player
+  // Get the rotation that corresponds to the current player.
   let rotation = getArrowRotationCorrespondingToPlayer(
     data.currentPlayerIndex!,
   );
@@ -146,24 +147,24 @@ export function onChanged(
     // 1) we performed an action on our turn and now the "Current Player" area is now visible again
     //    after being hidden
     // 2) we are exiting an in-game replay
-    currentPlayerArea.arrow?.rotation(rotation);
+    currentPlayerArea.arrow.rotation(rotation);
   } else {
     if (currentPlayerArea.tween !== null) {
       currentPlayerArea.tween.destroy();
       currentPlayerArea.tween = null;
     }
 
-    // Since the "Current Player" area might have been hidden and/or not updated for a while,
-    // update the current arrow rotation to be equal to that of the previous player
+    // Since the "Current Player" area might have been hidden and/or not updated for a while, update
+    // the current arrow rotation to be equal to that of the previous player.
     let previousPlayerIndex = data.currentPlayerIndex! - 1;
     if (previousPlayerIndex === -1) {
       previousPlayerIndex = numPlayers - 1;
     }
     const previousRotation =
       getArrowRotationCorrespondingToPlayer(previousPlayerIndex);
-    currentPlayerArea.arrow?.rotation(previousRotation);
+    currentPlayerArea.arrow.rotation(previousRotation);
 
-    // We want the arrow to always be moving clockwise
+    // We want the arrow to always be moving clockwise.
     const unmodifiedRotation = rotation;
     if (previousRotation > rotation) {
       rotation += 360;
@@ -177,7 +178,9 @@ export function onChanged(
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
         if (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           currentPlayerArea.arrow !== undefined &&
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           currentPlayerArea.arrow !== null
         ) {
           currentPlayerArea.arrow.rotation(unmodifiedRotation);
@@ -199,7 +202,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
   const centerPos = hand.getAbsoluteCenterPos();
 
   if (globals.lobby.settings.keldonMode) {
-    // Make sure that the arrow points to an imaginary person behind the hand of cards
+    // Make sure that the arrow points to an imaginary person behind the hand of cards.
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = (600 / 1080) * winH;
     const handRotation =

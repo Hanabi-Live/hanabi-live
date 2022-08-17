@@ -18,7 +18,7 @@ export default class TimerDisplay extends Konva.Group {
       width: config.width,
       height: config.height,
       fill: "black",
-      cornerRadius: config.cornerRadius as number | number[] | undefined,
+      cornerRadius: config["cornerRadius"] as number | number[] | undefined,
       opacity: 0.2,
       listening: true,
     });
@@ -26,10 +26,10 @@ export default class TimerDisplay extends Konva.Group {
 
     this.timerText = new FitText({
       x: 0,
-      y: config.spaceH as number | undefined,
+      y: config["spaceH"] as number | undefined,
       width: config.width,
       height: config.height,
-      fontSize: config.fontSize as number | undefined,
+      fontSize: config["fontSize"] as number | undefined,
       fontFamily: "Verdana",
       align: "center",
       text: "??:??",
@@ -47,14 +47,16 @@ export default class TimerDisplay extends Konva.Group {
 
     this.labelText = new FitText({
       x: 0,
-      y: 6 * config.spaceH,
+      y: 6 * config["spaceH"],
       width: config.width,
       height: config.height,
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      fontSize: (config.labelFontSize || config.fontSize) as number | undefined,
+      fontSize: (config["labelFontSize"] || config["fontSize"]) as
+        | number
+        | undefined,
       fontFamily: "Verdana",
       align: "center",
-      text: config.label as string | undefined,
+      text: config["label"] as string | undefined,
       fill: LABEL_COLOR,
       shadowColor: "black",
       shadowBlur: 10,

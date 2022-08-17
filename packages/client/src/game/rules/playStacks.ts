@@ -17,8 +17,8 @@ export function lastPlayedRank(
     return STACK_BASE_RANK;
   }
 
-  const orderOfTopCard = playStack[playStack.length - 1];
-  return deck[orderOfTopCard].rank ?? UNKNOWN_CARD_RANK;
+  const orderOfTopCard = playStack[playStack.length - 1]!;
+  return deck[orderOfTopCard]!.rank ?? UNKNOWN_CARD_RANK;
 }
 
 export function nextRanks(
@@ -80,7 +80,7 @@ export function direction(
   }
 
   if (!variantRules.isUpOrDown(variant)) {
-    return variant.suits[suitIndex].reversed
+    return variant.suits[suitIndex]!.reversed
       ? StackDirection.Down
       : StackDirection.Up;
   }
@@ -95,7 +95,7 @@ export function direction(
     return StackDirection.Undecided;
   }
 
-  // E.g. if top is 4 and there are 2 cards on the stack, it's going down
+  // e.g. if top is 4 and there are 2 cards on the stack, it's going down.
   if (top !== playStack.length) {
     return StackDirection.Down;
   }
@@ -104,7 +104,7 @@ export function direction(
     return StackDirection.Up;
   }
 
-  // The only remaining case is if the top is 3, in which case there will always be 3 cards
-  const secondCard = deck[playStack[playStack.length - 2]].rank;
+  // The only remaining case is if the top is 3, in which case there will always be 3 cards.
+  const secondCard = deck[playStack[playStack.length - 2]!]!.rank;
   return secondCard === 4 ? StackDirection.Down : StackDirection.Up;
 }

@@ -1,4 +1,4 @@
-// The lobby area that shows all of the current logged-in users
+// The lobby area that shows all of the current logged-in users.
 
 import { ensureAllCases } from "@hanabi/data";
 import globals from "../globals";
@@ -12,16 +12,16 @@ export function draw(): void {
 
   const tbody = $("#lobby-users-table-tbody");
 
-  // Clear all of the existing rows
+  // Clear all of the existing rows.
   tbody.html("");
 
-  // Don't do anything if there are no users
-  // (this will be the case when first logging in and not doing the tutorial)
+  // Don't do anything if there are no users. (This will be the case when first logging in and not
+  // doing the tutorial.)
   if (globals.userMap.size === 0) {
     return;
   }
 
-  // Make a mapping of user names to IDs (and keep track of our friends)
+  // Make a mapping of user names to IDs (and keep track of our friends).
   const usernameMapping = new Map<string, number>();
   const onlineFriends: string[] = [];
   for (const [id, user] of globals.userMap.entries()) {
@@ -31,31 +31,31 @@ export function draw(): void {
     }
   }
 
-  // Make an alphabetical list of all of the usernames
+  // Make an alphabetical list of all of the usernames.
   const alphabeticalUsernames = Array.from(usernameMapping.keys());
   alphabeticalUsernames.sort(
-    // We want to do a case-insensitive sort, which will not occur by default
+    // We want to do a case-insensitive sort, which will not occur by default.
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
   );
 
-  // Additionally, alphabetize all of our friends
+  // Additionally, alphabetize all of our friends.
   onlineFriends.sort(
-    // We want to do a case-insensitive sort, which will not occur by default
+    // We want to do a case-insensitive sort, which will not occur by default.
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
   );
 
-  // First, draw our username at the top
+  // First, draw our username at the top.
   const alreadyDrawnUsers: string[] = [];
   drawUser(globals.username, usernameMapping, tbody, false);
   alreadyDrawnUsers.push(globals.username);
 
-  // Second, draw our currently online friends, if any
+  // Second, draw our currently online friends, if any.
   for (const friend of onlineFriends) {
     drawUser(friend, usernameMapping, tbody, true);
     alreadyDrawnUsers.push(friend);
   }
 
-  // Then, draw all of the other users in alphabetical order
+  // Then, draw all of the other users in alphabetical order.
   for (const username of alphabeticalUsernames) {
     if (!alreadyDrawnUsers.includes(username)) {
       drawUser(username, usernameMapping, tbody, false);
@@ -66,10 +66,10 @@ export function draw(): void {
 function drawUser(
   username: string,
   usernameMapping: Map<string, number>,
-  tbody: JQuery<HTMLElement>,
+  tbody: JQuery,
   friend: boolean,
 ) {
-  // Find the status of this user from the "userList" map
+  // Find the status of this user from the "userList" map.
   const userID = usernameMapping.get(username);
   if (userID === undefined) {
     throw new Error(`Failed to get the ID for the username of "${username}".`);
@@ -107,8 +107,8 @@ function drawUser(
   nameColumn += `<span id="online-users-${userID}-zzz" class="hidden"> &nbsp;💤</span>`;
   nameColumn += "</span>";
 
-  let statusColumn;
-  const statusText = StatusText[user.status];
+  let statusColumn: string;
+  const statusText = StatusText[user.status]!;
   if (
     globals.currentScreen === Screen.PreGame ||
     user.status === Status.Lobby ||
@@ -136,14 +136,14 @@ function drawUser(
 function setLink(userID: number) {
   $(`#online-users-${userID}-link`).off("click");
   $(`#online-users-${userID}-link`).on("click", () => {
-    // Get the user corresponding to this element
+    // Get the user corresponding to this element.
     const user = globals.userMap.get(userID);
     if (user === undefined) {
       return;
     }
 
-    // Get the table corresponding to the user
-    // If the user is in the lobby or in a solo replay, this will be undefined
+    // Get the table corresponding to the user. If the user is in the lobby or in a solo replay,
+    // this will be undefined.
     const table = globals.tableMap.get(user.tableID);
     if (table === undefined) {
       return;
@@ -151,7 +151,7 @@ function setLink(userID: number) {
 
     switch (user.status) {
       case Status.Lobby: {
-        // The "Lobby" status is not a link
+        // The "Lobby" status is not a link.
         break;
       }
 
@@ -171,7 +171,7 @@ function setLink(userID: number) {
       }
 
       case Status.Replay: {
-        // The "Replay" status is not a link
+        // The "Replay" status is not a link.
         break;
       }
 

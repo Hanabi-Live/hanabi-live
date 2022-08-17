@@ -29,14 +29,14 @@ function identityArrayToMap(
     cardMap.push(zeros.slice(0, suitLength));
   }
   for (const ident of possibles) {
-    cardMap[ident[1] - 1][ident[0]] = 1;
+    cardMap[ident[1] - 1]![ident[0]] = 1;
   }
   return cardMap;
 }
 
 describe("noteIdentity", () => {
   describe("getPossibilitiesFromKeyword", () => {
-    // The note keyword `red` returns `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
+    // The note keyword `red` returns `[[0,1], [0,2], [0,3], [0,4], [0,5]]`.
     test("positive suit", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["red"]);
       expect(possibles).toEqual([
@@ -49,7 +49,7 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    // The note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`
+    // The note keyword `red 3, blue 3` would return `[[0,3], [1,3]]`.
     test("positive", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["r3,bs"]);
       expect(possibles).toEqual([
@@ -64,7 +64,7 @@ describe("noteIdentity", () => {
       expect(identityArrayToMap(possibles)).toEqual(identMap);
     });
 
-    // The note keyword `r,b,2,3` would return all red, blue, 2's OR 3's
+    // The note keyword `r,b,2,3` would return all red, blue, 2's OR 3's.
     test("positive suit and rank", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["r,3,b,2"]);
       expect(possibles).toEqual([
@@ -89,7 +89,7 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    // The note keyword `rb23` would return all red, blue, 2's OR 3's
+    // The note keyword `rb23` would return all red, blue, 2's OR 3's.
     test("positive squish", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, ["r3b2"]);
       expect(possibles).toEqual([
@@ -100,7 +100,7 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    // The note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`
+    // The note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`.
     test("positive and negative", () => {
       const possibles = getPossibilitiesFromKeywords(testVariant, [
         "r, ! 2, !3",

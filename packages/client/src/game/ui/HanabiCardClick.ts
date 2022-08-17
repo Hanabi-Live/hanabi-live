@@ -1,4 +1,4 @@
-// Click functions for the HanabiCard object
+// Click functions for the HanabiCard object.
 
 import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
@@ -16,8 +16,8 @@ export default function HanabiCardClick(
   this: HanabiCard,
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
-  // Speedrunning overrides the normal card clicking behavior
-  // (but only use the speedrunning behavior if we are an active player)
+  // Speedrunning overrides the normal card clicking behavior. (But only use the speedrunning
+  // behavior if we are an active player.)
   if (
     (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
     globals.state.playing
@@ -25,7 +25,7 @@ export default function HanabiCardClick(
     return;
   }
 
-  // Disable all click events if the card is tweening
+  // Disable all click events if the card is tweening.
   if (this.tweening) {
     return;
   }
@@ -44,9 +44,9 @@ export default function HanabiCardClick(
 }
 
 function clickLeft(card: HanabiCard, event: MouseEvent) {
-  // The "Empathy" feature is handled elsewhere, so we don't have to worry about it here
+  // The "Empathy" feature is handled elsewhere, so we don't have to worry about it here.
 
-  // If we're in "edit cards" mode, left clicking a card morphs it
+  // If we're in "edit cards" mode, left clicking a card morphs it.
   if (
     globals.elements.editCardsButton !== null &&
     globals.elements.editCardsButton.pressed &&
@@ -61,24 +61,22 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     event.shiftKey ||
     event.metaKey ||
     card.state.rank === STACK_BASE_RANK || // Disable clicking on the stack base
-    // No replay actions should happen in a hypothetical
+    // No replay actions should happen in a hypothetical.
     globals.state.replay.hypothetical !== null
   ) {
     return;
   }
 
   if (event.altKey) {
-    // Alt + clicking a card goes to the turn it was drawn
-    // (we want to go to the turn before it is drawn, tween the card being drawn,
-    // and then indicate the card)
+    // Alt + clicking a card goes to the turn it was drawn. (We want to go to the turn before it is
+    // drawn, tween the card being drawn, and then indicate the card.)
     if (card.state.segmentDrawn === null) {
-      // The card was drawn during the initial deal before the first turn
+      // The card was drawn during the initial deal before the first turn.
       replay.goToSegmentAndIndicateCard(0, card.state.order);
     } else {
-      // The card was drawn after the initial deal
-      // Go to the segment that it was drawn and then fast-forward one segment in order to show the
-      // card tweening into the hand
-      // (we have to record the segment because it will be cleared after the first "goToTurn()")
+      // The card was drawn after the initial deal. Go to the segment that it was drawn and then
+      // fast-forward one segment in order to show the card tweening into the hand. (We have to
+      // record the segment because it will be cleared after the first "goToTurn()".)
       const { segmentDrawn } = card.state;
       replay.goToSegment(segmentDrawn, true);
       replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.state.order);
@@ -87,7 +85,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     cardRules.isPlayed(card.state) &&
     card.state.segmentPlayed !== null
   ) {
-    // Clicking on played cards goes to the turn immediately before they were played
+    // Clicking on played cards goes to the turn immediately before they were played.
     replay.goToSegmentAndIndicateCard(
       card.state.segmentPlayed,
       card.state.order,
@@ -96,7 +94,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     cardRules.isDiscarded(card.state) &&
     card.state.segmentDiscarded !== null
   ) {
-    // Clicking on discarded cards goes to the turn immediately before they were discarded
+    // Clicking on discarded cards goes to the turn immediately before they were discarded.
     replay.goToSegmentAndIndicateCard(
       card.state.segmentDiscarded,
       card.state.order,
@@ -105,24 +103,24 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 }
 
 function clickMiddle(card: HanabiCard, event: MouseEvent) {
-  // No actions in this function use modifiers
+  // No actions in this function use modifiers.
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
     return;
   }
 
-  // Middle clicking on a card goes to the turn it was first clued
+  // Middle clicking on a card goes to the turn it was first clued.
   if (
     card.state.segmentFirstClued !== null &&
     card.state.rank !== STACK_BASE_RANK // Disable this functionality for the stack base
   ) {
-    // We add one to the segment so that the clue is visible
-    // (if we go to the turn that the card was clued, then the actual clue has not happened yet)
+    // We add one to the segment so that the clue is visible. (If we go to the turn that the card
+    // was clued, then the actual clue has not happened yet.)
     replay.goToSegment(card.state.segmentFirstClued + 1, true);
   }
 }
 
 function clickRight(card: HanabiCard, event: MouseEvent) {
-  // Alt + right-click is a card morph (in a hypothetical)
+  // Alt + right-click is a card morph (in a hypothetical).
   if (
     globals.state.replay.hypothetical !== null &&
     (globals.state.replay.shared === null ||
@@ -136,29 +134,28 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Right-click for a leader in a shared replay is to draw an arrow next to the card
-  // The arrow is shown to all the members of the reply in order to draw attention to the card
-  // (we want it to work no matter what modifiers are being pressed,
-  // in case someone is pushing their push-to-talk hotkey while highlighting cards)
+  // Right-click for a leader in a shared replay is to draw an arrow next to the card. The arrow is
+  // shown to all the members of the reply in order to draw attention to the card. (We want it to
+  // work no matter what modifiers are being pressed, in case someone is pushing their push-to-talk
+  // hotkey while highlighting cards.)
   if (
     globals.state.finished &&
     (globals.state.replay.shared === null ||
-      (globals.state.replay.shared !== null &&
-        globals.state.replay.shared.amLeader &&
+      (globals.state.replay.shared.amLeader &&
         globals.state.replay.shared.useSharedSegments))
   ) {
     arrows.toggle(card.state.order);
     return;
   }
 
-  // Right-click in a solo replay just prints out the order of the card
+  // Right-click in a solo replay just prints out the order of the card.
   if (globals.state.finished && globals.state.replay.shared === null) {
     console.log(`This card's order is: ${card.state.order}`);
     return;
   }
 
-  // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
-  // (this must be above the other note code because of the modifiers)
+  // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered.
+  // (This must be above the other note code because of the modifiers.)
   if (
     event.ctrlKey &&
     event.shiftKey &&
@@ -170,8 +167,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Shift + right-click is a "f" note
-  // (this is a common abbreviation for "this card is Finessed")
+  // Shift + right-click is a "f" note. (This is a common abbreviation for "this card is Finessed".)
   if (
     !event.ctrlKey &&
     event.shiftKey &&
@@ -183,8 +179,8 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Alt + right-click is a "cm" note
-  // (this is a common abbreviation for "this card is chop moved")
+  // Alt + right-click is a "cm" note. (This is a common abbreviation for "this card is chop
+  // moved".)
   if (
     !event.ctrlKey &&
     !event.shiftKey &&
@@ -196,11 +192,10 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Ctrl + right-click is a local arrow
-  // Even if they are not a leader in a shared replay,
-  // a user might still want to draw an arrow on a card for demonstration purposes
-  // However, we don't want to enable this functionality in shared replays because it could be
-  // misleading as to who the real replay leader is
+  // Ctrl + right-click is a local arrow. Even if they are not a leader in a shared replay, a user
+  // might still want to draw an arrow on a card for demonstration purposes. However, we don't want
+  // to enable this functionality in shared replays because it could be misleading as to who the
+  // real replay leader is.
   if (
     event.ctrlKey &&
     !event.shiftKey &&
@@ -212,7 +207,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // A normal right-click is edit a note
+  // A normal right-click is edit a note.
   if (
     !event.ctrlKey &&
     !event.shiftKey &&
@@ -224,12 +219,12 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   }
 }
 
-// Morphing cards allows for creation of hypothetical situations
+// Morphing cards allows for creation of hypothetical situations.
 function clickMorph(card: HanabiCard) {
   modals.askForMorph(card, globals.variant);
 }
 
-// Used by the Morph modal
+// Used by the Morph modal.
 export function morphReplayFromModal(
   card: HanabiCard,
   cardIdentity: CardIdentity,

@@ -1,5 +1,5 @@
-// CardLayout is an object that represents a player's hand (or a discard pile)
-// It is composed of LayoutChild objects
+// CardLayout is an object that represents a player's hand (or a discard pile). It is composed of
+// LayoutChild objects.
 
 import Konva from "konva";
 import { CARD_ANIMATION_LENGTH } from "./constants";
@@ -17,11 +17,11 @@ export default class CardLayout extends Konva.Group {
   constructor(config: Konva.ContainerConfig) {
     super(config);
 
-    // Class variables
+    // Class variables.
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    this.align = (config.align || "left") as string;
+    this.align = (config["align"] || "left") as string;
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    this.reverse = (config.reverse || false) as boolean;
+    this.reverse = (config["reverse"] || false) as boolean;
     this.origRotation = config.rotation ?? 0;
     this.empathy = false;
 
@@ -32,7 +32,7 @@ export default class CardLayout extends Konva.Group {
       throw new Error("A height was not defined for a CardLayout.");
     }
 
-    // Debug rectangle (uncomment to show the size of the hand)
+    // Debug rectangle (uncomment to show the size of the hand).
     /*
     const debugRect = new Konva.Rect({
       x: config.x,
@@ -48,9 +48,8 @@ export default class CardLayout extends Konva.Group {
   }
 
   // The card has a relative position relating to its location
-  // (e.g. a player's hand, the play stacks)
-  // Use the absolute position so that we can tween it from one location to another without having
-  // to worry about the relative position
+  // (e.g. a player's hand, the play stacks). Use the absolute position so that we can tween it from
+  // one location to another without having to worry about the relative position.
   addChild(child: LayoutChild): void {
     const pos = child.getAbsolutePosition();
     this.add(child as unknown as Konva.Group);
@@ -61,7 +60,7 @@ export default class CardLayout extends Konva.Group {
     this.doLayout();
   }
 
-  _setChildrenIndices(): void {
+  override _setChildrenIndices(): void {
     Konva.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
   }
@@ -108,7 +107,7 @@ export default class CardLayout extends Konva.Group {
     for (let i = 0; i < numCards; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
-      // Ensure this card is not hidden at the bottom of a play stack
+      // Ensure this card is not hidden at the bottom of a play stack.
       layoutChild.show();
 
       if (layoutChild.height() <= 0) {
@@ -124,7 +123,7 @@ export default class CardLayout extends Konva.Group {
 
       const newX = x - (this.reverse ? scale * layoutChild.width() : 0);
       if (globals.animateFast) {
-        // Immediately set the card in place at the new location
+        // Immediately set the card in place at the new location.
         layoutChild.x(newX);
         layoutChild.y(0);
         layoutChild.scaleX(scale);
@@ -138,7 +137,8 @@ export default class CardLayout extends Konva.Group {
         // Animate the card going:
         // - from the deck to a player's hand (or vice versa)
         // - or leaving the hand to the discard pile (or vice versa)
-        // and animate the rest of the cards sliding over
+
+        // Also, animate the rest of the cards sliding over.
         layoutChild.card.startedTweening();
         layoutChild.card.setRaiseAndShadowOffset();
         const animateToLayout = () => {
@@ -163,10 +163,11 @@ export default class CardLayout extends Konva.Group {
         };
 
         if (layoutChild.doMisplayAnimation) {
-          // If this card just misplayed, do a special animation
+          // If this card just misplayed, do a special animation.
           layoutChild.doMisplayAnimation = false;
 
-          const suit = globals.variant.suits[layoutChild.card.state.suitIndex!];
+          const suit =
+            globals.variant.suits[layoutChild.card.state.suitIndex!]!;
           const playStack = globals.elements.playStacks.get(suit)!;
           const pos = this.getAbsolutePosition();
           const playStackPos = playStack.getAbsolutePosition();
@@ -213,7 +214,7 @@ export default class CardLayout extends Konva.Group {
     const h = this.height();
 
     // The rotation comes from Konva in clockwise degrees but we need to convert it to
-    // counter-clockwise radians
+    // counter-clockwise radians.
     const rot = (-this.origRotation / 180) * Math.PI;
 
     pos.x += (w / 2) * Math.cos(rot);
@@ -234,8 +235,9 @@ export default class CardLayout extends Konva.Group {
     this.children.each((layoutChild) => {
       const card = layoutChild.children[0] as HanabiCard;
 
-      // As a sanity check, make sure that the card exists
-      // (it can be undefined sometimes when rewinding)
+      // As a sanity check, make sure that the card exists. (It can be undefined sometimes when
+      // rewinding.)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (card === undefined) {
         return;
       }

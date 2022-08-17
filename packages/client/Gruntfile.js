@@ -7,10 +7,8 @@
 const path = require("path");
 const { VERSION } = require("../data/src/version");
 
-// Define the name of the final CSS file
-// We want to include the version inside of the filename
-// (as opposed to other solutions like using a version query string)
-// This will:
+// Define the name of the final CSS file. We want to include the version inside of the filename (as
+// opposed to other solutions like using a version query string). This will:
 // 1) allow proxies to cache the file properly
 // 2) properly force a download of a new version in a reliable way
 // https://www.alainschlesser.com/bust-cache-content-hash/
@@ -26,7 +24,7 @@ module.exports = (grunt) => {
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
 
-    // Concatenate all of the CSS files together into the "main.css" file
+    // Concatenate all of the CSS files together into the "main.css" file.
     concat: {
       css: {
         src: [
@@ -41,10 +39,10 @@ module.exports = (grunt) => {
       },
     },
 
-    // Minify the CSS
+    // Minify the CSS.
     cssmin: {
       options: {
-        // clean-css only does level 1 optimizations by default
+        // "clean-css" only does level 1 optimizations by default:
         // https://github.com/jakubpawlowicz/clean-css#optimization-levels
         level: 2,
       },
@@ -56,12 +54,12 @@ module.exports = (grunt) => {
         src: path.join(cssDir, "critical.css"),
         // We don't bother baking the version into the critical CSS filename like we do for the
         // normal CSS bundle because we do not typically re-create the critical CSS after every
-        // single client change
+        // single client change.
         dest: path.join(cssDir, "critical.min.css"),
       },
     },
 
-    // Generate critical CSS
+    // Generate critical CSS.
     criticalcss: {
       custom: {
         options: {
@@ -83,9 +81,9 @@ module.exports = (grunt) => {
 
   grunt.registerTask("default", ["concat", "cssmin:main"]);
 
-  // Generating critical CSS is slow and infrequent
+  // Generating critical CSS is slow and infrequent.
   // Run manually when the CSS changes with "npx grunt critical --url=http://localhost"
-  // and commit the resulting file (critical.min.css)
+  // and commit the resulting file (critical.min.css).
   grunt.registerTask("critical", [
     "concat",
     "cssmin:main",

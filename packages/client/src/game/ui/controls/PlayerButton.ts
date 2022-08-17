@@ -32,7 +32,7 @@ export default class PlayerButton extends Button {
     this.add(this.radioDot);
   }
 
-  setPressed(pressed: boolean): void {
+  override setPressed(pressed: boolean): void {
     this.radioDot.visible(pressed);
     super.setPressed(pressed);
   }

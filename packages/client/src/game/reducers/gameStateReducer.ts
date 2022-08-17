@@ -1,4 +1,4 @@
-// Functions for building a state table for every turn
+// Functions for building a state table for every turn.
 
 import { ensureAllCases, getVariant, Variant } from "@hanabi/data";
 import produce, { castDraft, Draft, original } from "immer";
@@ -34,8 +34,8 @@ function gameStateReducerFunction(
   const variant = getVariant(metadata.options.variantName);
 
   switch (action.type) {
-    // A player just gave a clue
-    // { type: 'clue', clue: { type: 0, value: 1 }, giver: 1, list: [11], target: 2, turn: 0 }
+    // A player just gave a clue { type: 'clue', clue: { type: 0, value: 1 }, giver: 1, list: [11],
+    // target: 2, turn: 0 }
     case "clue": {
       state.clueTokens -= clueTokensRules.getAdjusted(1, variant);
 
@@ -52,34 +52,37 @@ function gameStateReducerFunction(
         target: action.target,
         segment: state.turn.segment,
         list: action.list,
-        negativeList: state.hands[action.target].filter(
+        negativeList: state.hands[action.target]!.filter(
           (i) => !action.list.includes(i),
         ),
       });
 
-      const targetHand = state.hands[action.target];
+      const targetHand = state.hands[action.target]!;
       const text = textRules.clue(action, targetHand, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
       });
 
-      // Handle the "Card Cycling" game option
-      const giverHand = state.hands[action.giver];
+      // Handle the "Card Cycling" game option.
+      const giverHand = state.hands[action.giver]!;
       cardCycle(giverHand, castDraft(state.deck), metadata);
 
       break;
     }
 
-    // A player just discarded a card
-    // { type: 'discard', playerIndex: 0, order: 4, suitIndex: 2, rank: 1, failed: false }
+    /**
+     * A player just discarded a card.
+     *
+     * { type: 'discard', playerIndex: 0, order: 4, suitIndex: 2, rank: 1, failed: false }
+     */
     case "discard": {
-      // Remove it from the hand
-      const hand = state.hands[action.playerIndex];
+      // Remove it from the hand.
+      const hand = state.hands[action.playerIndex]!;
       const handIndex = hand.indexOf(action.order);
-      let slot = null;
+      let slot: number | null = null;
       if (handIndex !== -1) {
-        // It is possible for players to misplay the deck
+        // It is possible for players to misplay the deck.
         slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
       }
@@ -91,10 +94,10 @@ function gameStateReducerFunction(
           );
         }
 
-        // Add it to the discard stacks
-        state.discardStacks[action.suitIndex].push(action.order);
+        // Add it to the discard stacks.
+        state.discardStacks[action.suitIndex]!.push(action.order);
 
-        // Discarding cards grants clue tokens under certain circumstances
+        // Discarding cards grants clue tokens under certain circumstances.
         state.clueTokens = clueTokensRules.gain(
           action,
           state.clueTokens,
@@ -102,7 +105,7 @@ function gameStateReducerFunction(
         );
       }
 
-      const touched = cardRules.isClued(state.deck[action.order]);
+      const touched = cardRules.isClued(state.deck[action.order]!);
       const text = textRules.discard(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
@@ -112,10 +115,13 @@ function gameStateReducerFunction(
       break;
     }
 
-    // A player just drew a card from the deck
-    // { type: 'draw', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
+    /**
+     * A player just drew a card from the deck.
+     *
+     * { type: 'draw', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
+     */
     case "draw": {
-      state.cardsRemainingInTheDeck -= 1;
+      state.cardsRemainingInTheDeck--;
       const hand = state.hands[action.playerIndex];
       if (hand !== undefined) {
         hand.push(action.order);
@@ -136,9 +142,12 @@ function gameStateReducerFunction(
       break;
     }
 
-    // The game has ended, either by normal means (e.g. max score),
-    // or someone ran out of time in a timed game, someone terminated, etc.
-    // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
+    /**
+     * The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
+     * timed game, someone terminated, etc.
+     *
+     * { type: 'gameOver', endCondition: 1, playerIndex: 0 }
+     */
     case "gameOver": {
       if (action.endCondition !== EndCondition.Normal) {
         state.score = 0;
@@ -159,19 +168,22 @@ function gameStateReducerFunction(
       break;
     }
 
-    // A player just played a card
-    // { type: 'play', playerIndex: 0, order: 4, suitIndex: 2, rank: 1 }
+    /**
+     * A player just played a card.
+     *
+     * { type: 'play', playerIndex: 0, order: 4, suitIndex: 2, rank: 1 }
+     */
     case "play": {
-      // Remove it from the hand
-      const hand = state.hands[action.playerIndex];
+      // Remove it from the hand.
+      const hand = state.hands[action.playerIndex]!;
       const handIndex = hand.indexOf(action.order);
-      let slot = null;
+      let slot: number | null = null;
       if (handIndex !== -1) {
         slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
       }
 
-      // Add it to the play stacks
+      // Add it to the play stacks.
       if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
@@ -179,10 +191,10 @@ function gameStateReducerFunction(
           );
         }
 
-        const playStack = state.playStacks[action.suitIndex];
+        const playStack = state.playStacks[action.suitIndex]!;
         playStack.push(action.order);
 
-        // Playing cards grants clue tokens under certain circumstances
+        // Playing cards grants clue tokens under certain circumstances.
         state.clueTokens = clueTokensRules.gain(
           action,
           state.clueTokens,
@@ -191,10 +203,10 @@ function gameStateReducerFunction(
         );
       }
 
-      // Gain a point
-      state.score += 1;
+      // Gain a point.
+      state.score++;
 
-      const touched = cardRules.isClued(state.deck[action.order]);
+      const touched = cardRules.isClued(state.deck[action.order]!);
       const text = textRules.play(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
@@ -206,13 +218,13 @@ function gameStateReducerFunction(
 
     case "playerTimes": {
       for (let i = 0; i < action.playerTimes.length; i++) {
-        // Player times are negative in untimed games
+        // Player times are negative in untimed games.
         const modifier = metadata.options.timed ? 1 : -1;
-        const milliseconds = action.playerTimes[i] * modifier;
+        const milliseconds = action.playerTimes[i]! * modifier;
         const durationString = millisecondsToClockString(milliseconds);
         const playerName = getPlayerName(i, metadata);
 
-        let text;
+        let text: string;
         if (metadata.options.timed) {
           text = `${playerName} had ${durationString} left`;
         } else {
@@ -233,8 +245,11 @@ function gameStateReducerFunction(
       break;
     }
 
-    // A player failed to play a card
-    // { type: 'strike', num: 1, turn: 32, order: 24 }
+    /**
+     * A player failed to play a card.
+     *
+     * { type: 'strike', num: 1, turn: 32, order: 24 }
+     */
     // TODO: This message is unnecessary and will be removed in a future version of the code
     case "strike": {
       state.strikes.push({
@@ -244,7 +259,7 @@ function gameStateReducerFunction(
       break;
     }
 
-    // Some actions do not affect the main state or are handled by another reducer
+    // Some actions do not affect the main state or are handled by another reducer.
     case "setEffMod":
     case "editNote":
     case "noteList":
@@ -262,20 +277,20 @@ function gameStateReducerFunction(
   }
 
   if (action.type === "noteList" || action.type === "receiveNote") {
-    // This has no effect, so don't bother computing anything
+    // This has no effect, so don't bother computing anything.
     return;
   }
 
-  // Use a sub-reducer to calculate changes on cards
+  // Use a sub-reducer to calculate changes on cards.
   state.deck = castDraft(
     cardsReducer(original(state.deck)!, action, state, metadata),
   );
 
-  // Resolve the stack direction
+  // Resolve the stack direction.
   if (action.type === "play" && variantRules.hasReversedSuits(variant)) {
     // We have to wait until the deck is updated with the information of the card that we played
-    // before the "direction()" function will work
-    const playStack = state.playStacks[action.suitIndex];
+    // before the "direction()" function will work.
+    const playStack = state.playStacks[action.suitIndex]!;
     const direction = playStacksRules.direction(
       action.suitIndex,
       playStack,
@@ -285,15 +300,15 @@ function gameStateReducerFunction(
     state.playStackDirections[action.suitIndex] = direction;
   }
 
-  // Discarding or playing cards can make other card cards in that suit
-  // not playable anymore and can make other cards critical
+  // Discarding or playing cards can make other card cards in that suit not playable anymore and can
+  // make other cards critical.
   if (
     (action.type === "play" || action.type === "discard") &&
     action.suitIndex >= 0 &&
     action.rank >= 0
   ) {
     variant.ranks.forEach((rank) => {
-      state.cardStatus[action.suitIndex][rank] = cardRules.status(
+      state.cardStatus[action.suitIndex]![rank] = cardRules.status(
         action.suitIndex,
         rank,
         state.deck,
@@ -304,10 +319,10 @@ function gameStateReducerFunction(
     });
   }
 
-  // Use a sub-reducer to calculate the turn
+  // Use a sub-reducer to calculate the turn.
   state.turn = turnReducer(original(state.turn), action, state, metadata);
 
-  // Use a sub-reducer to calculate some game statistics
+  // Use a sub-reducer to calculate some game statistics.
   state.stats = statsReducer(
     original(state.stats),
     action,
@@ -318,7 +333,7 @@ function gameStateReducerFunction(
     ourNotes ?? null,
   );
 
-  // After stats calculated, compute DDA property on all card states
+  // After stats calculated, compute DDA property on all card states.
   state.deck = castDraft(
     ddaReducer(
       state.deck,
@@ -337,16 +352,16 @@ function cardCycle(
     return;
   }
 
-  // We don't need to reorder anything if the chop is slot 1 (the left-most card)
+  // We don't need to reorder anything if the chop is slot 1 (the left-most card).
   const chopIndex = handRules.chopIndex(hand, deck);
   if (chopIndex === hand.length - 1) {
     return;
   }
 
-  // Remove the chop card from their hand
-  const removedCardOrder = hand.splice(chopIndex, 1)[0];
+  // Remove the chop card from their hand.
+  const removedCardOrder = hand.splice(chopIndex, 1)[0]!;
 
-  // Add it to the end (the left-most position)
+  // Add it to the end (the left-most position).
   hand.push(removedCardOrder);
 }
 
@@ -361,12 +376,12 @@ function throwItInAHolePlayedOrMisplayed(
   }
 
   if ((action.type === "discard" && action.failed) || action.type === "play") {
-    // In "Throw It in a Hole" variants, plays and unknown misplayed cards
-    // go the hole instead of the play stack / discard pile
+    // In "Throw It in a Hole" variants, plays and unknown misplayed cards go the hole instead of
+    // the play stack / discard pile.
     state.hole.push(action.order);
 
-    // Keep track of attempted plays
-    state.numAttemptedCardsPlayed += 1;
+    // Keep track of attempted plays.
+    state.numAttemptedCardsPlayed++;
 
     return true;
   }

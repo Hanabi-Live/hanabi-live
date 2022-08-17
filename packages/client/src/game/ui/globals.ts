@@ -1,5 +1,5 @@
-// This object contains global variables for the game UI
-// Every class variable must also be reset in the "reset()" function
+// This object contains global variables for the game UI. Every class variable must also be reset in
+// the "reset()" function.
 
 import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
@@ -18,15 +18,15 @@ import Layers from "./Layers";
 import StateObserver from "./reactive/StateObserver";
 
 export class Globals {
-  // Objects sent upon UI initialization
+  // Objects sent upon UI initialization.
   lobby: LobbyGlobals = new LobbyGlobals();
   game: GameExports | null = null;
 
-  // The UI is instantiated before all the images are necessarily downloaded
-  // and before we know enough information to draw all the UI elements
+  // The UI is instantiated before all the images are necessarily downloaded and before we know
+  // enough information to draw all the UI elements.
   loading = true;
 
-  // Game constants (set upon first initialization)
+  // Game constants (set upon first initialization).
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];
 
@@ -49,21 +49,19 @@ export class Globals {
   finalReplayPos = 0;
   finalReplayTurn = 0;
 
-  // Notes feature
-  // Used to keep track of which card the user is editing;
-  // users can only update one note at a time to prevent bugs
-  // Equal to the card order number or null
+  // Notes feature. Used to keep track of which card the user is editing; users can only update one
+  // note at a time to prevent bugs. Equal to the card order number or null.
   editingNote: number | null = null;
-  // Equal to true if something happened when the note box happens to be open
+  // Equal to true if something happened when the note box happens to be open.
   actionOccurred = false;
   lastNote = ""; // Equal to the last note entered
 
   // Timer feature
   timerID: number | null = null;
   playerTimes: number[] = [];
-  // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
-  // the current player may change in an in-game replay
-  // Legacy variable, kill this and use state.currentPlayerIndex instead
+  // "activeIndex" must be tracked separately from the "currentPlayerIndex" because the current
+  // player may change in an in-game replay. Legacy variable, kill this and use
+  // state.currentPlayerIndex instead.
   activePlayerIndex = -1;
   timeTaken = 0;
   startingTurnTime = 0;
@@ -88,19 +86,18 @@ export class Globals {
     return this.state.metadata;
   }
 
-  // The variant of the current game is stored in the state metadata as a string
-  // Provide a helper for the variant object that corresponds to this
-  // (initialized in the "initStateStore()" function)
+  // The variant of the current game is stored in the state metadata as a string. Provide a helper
+  // for the variant object that corresponds to this (initialized in the "initStateStore()"
+  // function).
   variant = getDefaultVariant();
 
   get options(): Options {
     return this.state.metadata.options;
   }
 
-  // We provide a method to reset every class variable to its initial value
-  // This is called when the user goes into a new game
-  // We cannot just create a new instantiation of the class,
-  // because then the references in the other files would point to the outdated version
+  // We provide a method to reset every class variable to its initial value. This is called when the
+  // user goes into a new game. We cannot just create a new instantiation of the class, because then
+  // the references in the other files would point to the outdated version.
   reset(): void {
     this.lobby = new LobbyGlobals();
     this.game = null;
@@ -148,14 +145,16 @@ export class Globals {
 const globals = new Globals();
 export default globals;
 
-// Allow TypeScript to modify the browser's "window" object
+// Allow TypeScript to modify the browser's "window" object.
 declare global {
   interface Window {
     globals: Globals;
   }
 }
 
-// Make the globals available from the JavaScript console (for debugging purposes)
+// Make the globals available from the JavaScript console (for debugging purposes). The window is
+// undefined in Jest tests.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (window !== undefined) {
   window.globals = globals;
 }

@@ -32,8 +32,8 @@ export default function initialState(metadata: GameMetadata): State {
     datetimeStarted: null,
     datetimeFinished: null,
 
-    // The array needs to be longer than just the total cards in the deck
-    // because we also need to account for notes on a stack base
+    // The array needs to be longer than just the total cards in the deck because we also need to
+    // account for notes on a stack base.
     notes: {
       ourNotes: initArray(totalCards + variant.suits.length + 1, {
         possibilities: [],

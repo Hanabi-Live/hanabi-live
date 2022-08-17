@@ -1,4 +1,4 @@
-// Functions related to hand management
+// Functions related to hand management.
 
 import Options from "../../types/Options";
 import CardState from "../types/CardState";
@@ -26,13 +26,13 @@ function cardsPerHandNatural(numPlayers: number): number {
     }
 
     default: {
-      // Default to 3 cards for non-standard player numbers
+      // Default to 3 cards for non-standard player numbers.
       return 3;
     }
   }
 }
 
-// For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game)
+// For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game).
 export function cardSlot(targetOrder: number, hand: number[]): number | null {
   const index = hand.indexOf(targetOrder);
   return index >= 0 ? hand.length - index : null;
@@ -43,7 +43,7 @@ export function isLocked(
   deck: readonly CardState[],
 ): boolean {
   for (const cardOrder of hand) {
-    const card = deck[cardOrder];
+    const card = deck[cardOrder]!;
     if (!cardRules.isClued(card)) {
       return false;
     }
@@ -56,17 +56,17 @@ export function chopIndex(
   hand: readonly number[],
   deck: readonly CardState[],
 ): number {
-  // The chop is defined as the oldest (right-most) unclued card
+  // The chop is defined as the oldest (right-most) unclued card.
   for (let i = 0; i < hand.length; i++) {
-    const cardOrder = hand[i];
-    const card = deck[cardOrder];
+    const cardOrder = hand[i]!;
+    const card = deck[cardOrder]!;
     if (!cardRules.isClued(card)) {
       return i;
     }
   }
 
-  // Their hand is filled with clued cards,
-  // so the chop is considered to be their newest (left-most) card
+  // Their hand is filled with clued cards, so the chop is considered to be their newest (left-most)
+  // card.
   return hand.length - 1;
 }
 

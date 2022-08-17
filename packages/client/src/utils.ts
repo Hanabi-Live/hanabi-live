@@ -1,4 +1,4 @@
-// A collection of miscellaneous functions
+// A collection of miscellaneous functions.
 
 // From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
 export function copyStringToClipboard(str: string): void {
@@ -39,7 +39,7 @@ export function isDevWebpack(): boolean {
   return urlParams.has("dev");
 }
 
-// This is a helper to check for empty/invalid HTML elements without worrying about the linter
+// This is a helper to check for empty/invalid HTML elements without worrying about the linter.
 export const isEmpty = (
   value: string | string[] | number | undefined,
 ): boolean => !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
@@ -49,7 +49,7 @@ export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T =>
   p in target;
 
 export function millisecondsToClockString(milliseconds: number): string {
-  // Non timed games measure time in negative values
+  // Non timed games measure time in negative values.
   const time = Math.abs(milliseconds);
   const seconds = Math.ceil(time / 1000);
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
@@ -59,8 +59,8 @@ export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-export function negativeOneIfNull(x: number | null): number {
-  return x === null ? -1 : x;
+export function negativeOneIfNull(x: number | null | undefined): number {
+  return x === null || x === undefined ? -1 : x;
 }
 
 function pad2(num: number) {
@@ -75,7 +75,7 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   const queryParameters = new URLSearchParams(window.location.search);
   const modifiedQueryParameters = queryParameters
     .toString()
-    // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable
+    // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable.
     .replace(/=&/g, "&")
     .replace(/=$/, "");
 

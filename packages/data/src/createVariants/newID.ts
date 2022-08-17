@@ -18,7 +18,7 @@ export function getVariantFromNewID(
   suitsIDMap: Map<string, SuitJSON>,
 ): VariantJSON {
   const [suitsString, ...variantModifiers] = newID.split(VARIANT_DELIMITER);
-  const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
+  const suitIDsWithModifiers = suitsString!.split(SUIT_DELIMITER);
   const suitNames = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
 
   const variant: VariantJSON = {
@@ -31,7 +31,7 @@ export function getVariantFromNewID(
   for (const suitIDWithModifiers of suitIDsWithModifiers) {
     const [suitID] = splitSuitID(suitIDWithModifiers);
 
-    const suit = suitsIDMap.get(suitID);
+    const suit = suitsIDMap.get(suitID!);
     if (suit === undefined) {
       error(`Failed to find a suit with an ID of: ${suitID}`);
     }
@@ -42,7 +42,7 @@ export function getVariantFromNewID(
   }
 
   for (const variantModifier of variantModifiers) {
-    const secondCharacter = variantModifier[1];
+    const secondCharacter = variantModifier[1]!;
     const secondCharacterNumber = parseIntSafe(secondCharacter);
     const specialRank = Number.isNaN(secondCharacterNumber)
       ? 0
@@ -187,7 +187,7 @@ export function getVariantFromNewID(
         break;
       }
 
-      // Throw It in a Hole
+      // Throw It in a Hole.
       case "TH": {
         variant.throwItInHole = true;
         break;
@@ -242,7 +242,7 @@ function getSuitNamesFromSuitID(
   return suitIDsWithModifiers.map((suitIDWithModifiers) => {
     const [suitID, ...modifiers] = splitSuitID(suitIDWithModifiers);
 
-    const suit = suitsIDMap.get(suitID);
+    const suit = suitsIDMap.get(suitID!);
     if (suit === undefined) {
       error(`Failed to find a suit with an ID of: ${suitID}`);
     }

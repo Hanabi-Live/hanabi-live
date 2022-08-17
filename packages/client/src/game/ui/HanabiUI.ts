@@ -1,6 +1,5 @@
-// The object that comprises the entire game UI
-// It is re-created every time when going into a new game
-// (and destroyed when going to the lobby)
+// The object that comprises the entire game UI. It is re-created every time when going into a new
+// game (and destroyed when going to the lobby).
 
 import { sendSelfPMFromServer } from "../../chat";
 import { Globals as LobbyGlobals } from "../../globals";
@@ -16,31 +15,29 @@ export default class HanabiUI {
   globals: Globals;
 
   constructor(lobby: LobbyGlobals, game: GameExports) {
-    // Since the "HanabiUI" object is being reinstantiated,
-    // we need to explicitly reinitialize all globals variables
-    // (or else they will retain their old values)
+    // Since the "HanabiUI" object is being reinstantiated, we need to explicitly reinitialize all
+    // globals variables (or else they will retain their old values).
     globals.reset();
 
-    // Expose the globals to functions in the "game" directory
+    // Expose the globals to functions in the "game" directory.
     this.globals = globals;
 
-    // Store references to the parent objects for later use
+    // Store references to the parent objects for later use.
     globals.lobby = lobby; // This is the "Globals" object in the root of the "src" directory
-    // We name it "lobby" here to distinguish it from the UI globals;
-    // after more refactoring, we will eventually merge these objects to make it less confusing
+    // We name it "lobby" here to distinguish it from the UI globals; after more refactoring, we
+    // will eventually merge these objects to make it less confusing.
     globals.game = game; // This is the "gameExports" from the "/src/game/main.ts" file
-    // We should also combine this with the UI object in the future
+    // We should also combine this with the UI object in the future.
 
     initStageSize();
     cursor.set("default");
 
-    // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet
-    // We must wait for the "init" message from the server in order to know how many players are in
-    // the game and what the variant is
-    // Only then can we start drawing the UI
+    // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet. We
+    // must wait for the "init" message from the server in order to know how many players are in the
+    // game and what the variant is. Only then can we start drawing the UI.
   }
 
-  // The following methods are called from various parent functions
+  // The following methods are called from various parent functions.
 
   // eslint-disable-next-line class-methods-use-this
   updateChatLabel(): void {
@@ -58,7 +55,7 @@ export default class HanabiUI {
 
   // eslint-disable-next-line class-methods-use-this
   suggestTurn(who: string, room: string, segment: number): void {
-    // We minus one to account for the fact that turns are presented to the user starting from 1
+    // We minus one to account for the fact that turns are presented to the user starting from 1.
     const internalSegment = segment - 1;
     if (
       globals.state.finished &&
@@ -97,7 +94,7 @@ export default class HanabiUI {
   }
 }
 
-// Initialize and size the stage depending on the window size
+// Initialize and size the stage depending on the window size.
 function initStageSize() {
   const ratio = 16 / 9;
 
@@ -105,15 +102,15 @@ function initStageSize() {
   let wh = window.innerHeight;
 
   if (ww < 240) {
-    // The stage seems to break for widths of around 235 px or less
+    // The stage seems to break for widths of around 235 px or less.
     ww = 240;
   }
   if (wh < 135) {
     wh = 135;
   }
 
-  let cw;
-  let ch;
+  let cw: number;
+  let ch: number;
   if (ww < wh * ratio) {
     cw = ww;
     ch = ww / ratio;

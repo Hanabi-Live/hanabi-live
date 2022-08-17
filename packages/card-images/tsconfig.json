@@ -34,8 +34,5 @@
     "noUnusedParameters": true,
   },
 
-  "include": [
-    "./canvas2svg_node.js",
-    "./*.ts",
-  ],
+  "include": ["./canvas2svg_node.js", "./*.ts"],
 }

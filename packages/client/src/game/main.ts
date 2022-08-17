@@ -1,4 +1,4 @@
-// The Hanabi game UI
+// The Hanabi game UI.
 
 import { FADE_TIME } from "../constants";
 import globals from "../globals";
@@ -25,7 +25,7 @@ export function show(): void {
   $("body").on("contextmenu", () => false); // Disable the right-click context menu
   $("#game").fadeIn(FADE_TIME);
 
-  // Every time a new game is opened, the UI is rebuilt from scratch
+  // Every time a new game is opened, the UI is rebuilt from scratch.
   globals.ui = new HanabiUI(globals, gameExports);
   globals.chatUnread = 0;
 
@@ -50,8 +50,8 @@ function hide() {
   $("#game").hide(); // We can't fade this out as it will overlap
   $("body").off("contextmenu"); // Enable the right-click context menu
   $("#page-wrapper").fadeIn(FADE_TIME, () => {
-    // Also account that we could be going back to one of the history screens
-    // (we could have entered a solo replay from one of the history screens)
+    // Also account that we could be going back to one of the history screens. (We could have
+    // entered a solo replay from one of the history screens.)
     if ($("#lobby-history").is(":visible")) {
       globals.currentScreen = Screen.History;
     } else if ($("#lobby-history-other-scores").is(":visible")) {
@@ -59,13 +59,13 @@ function hide() {
     }
   });
 
-  // Make sure that there are not any game-related modals showing
+  // Make sure that there are not any game-related modals showing.
   $("#game-chat-modal").hide();
 
-  // Make sure that there are not any game-related tooltips showing
+  // Make sure that there are not any game-related tooltips showing.
   tooltips.closeAllTooltips();
 
-  // Scroll to the bottom of the chat
+  // Scroll to the bottom of the chat.
   const chatElement = document.getElementById("lobby-chat-text");
   if (chatElement === null) {
     throw new Error('Failed to get the "lobby-chat-text" element.');
@@ -74,7 +74,7 @@ function hide() {
 }
 
 // These are references to some functions and submodules that need to be interacted with in the UI
-// code (e.g. hiding the UI, playing a sound)
+// code (e.g. hiding the UI, playing a sound).
 export interface GameExports {
   hide: () => void;
   chat: typeof chat;

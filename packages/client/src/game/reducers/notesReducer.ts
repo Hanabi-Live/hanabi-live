@@ -41,7 +41,7 @@ function notesReducerFunction(
       notes.ourNotes[action.order] = parseNote(variant, action.text);
 
       if (!playing) {
-        for (const specNote of notes.allNotes[action.order]) {
+        for (const specNote of notes.allNotes[action.order]!) {
           if (specNote.name === metadata.ourUsername) {
             specNote.text = action.text;
           }
@@ -59,20 +59,20 @@ function notesReducerFunction(
     }
 
     case "receiveNote": {
-      // Add in the notes received from server
+      // Add in the notes received from server.
       notes.allNotes[action.order] = action.notes;
       break;
     }
 
     case "noteList": {
-      // Reset any existing notes
+      // Reset any existing notes.
       for (let i = 0; i < notes.allNotes.length; i++) {
         notes.allNotes[i] = [];
       }
 
-      // Set the new notes
+      // Set the new notes.
       action.noteTextLists.forEach((noteTextList, i) => {
-        // If we are a spectator, copy our notes from combined list
+        // If we are a spectator, copy our notes from combined list.
         if (action.names[i] === metadata.ourUsername && !playing && !finished) {
           noteTextList.forEach((text, order) => {
             notes.ourNotes[order] = parseNote(variant, text);
@@ -80,8 +80,8 @@ function notesReducerFunction(
         }
 
         noteTextList.forEach((text, order) => {
-          notes.allNotes[order].push({
-            name: action.names[i],
+          notes.allNotes[order]!.push({
+            name: action.names[i]!,
             text,
           });
         });
@@ -105,7 +105,7 @@ function getNoteKeywords(note: string) {
   // - one or more non-pipe non-bracket characters between the start and end of the note
   //   - (^[^[|]+$)
   const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
-  const keywords = [];
+  const keywords: string[] = [];
 
   let match = regexp.exec(note);
   while (match !== null) {
@@ -114,7 +114,7 @@ function getNoteKeywords(note: string) {
     } else if (match[2] !== undefined) {
       keywords.push(match[2].trim());
     } else {
-      keywords.push(match[3].trim());
+      keywords.push(match[3]!.trim());
     }
     match = regexp.exec(note);
   }
@@ -157,8 +157,8 @@ export function noteHasMeaning(variant: Variant, note: CardNote): boolean {
 }
 
 export function parseNote(variant: Variant, text: string): CardNote {
-  // Make all letters lowercase to simply the matching logic below
-  // and remove all leading and trailing whitespace
+  // Make all letters lowercase to simply the matching logic below and remove all leading and
+  // trailing whitespace.
   const pipeIdx = text.lastIndexOf("|");
   const lastPipe = text.slice(pipeIdx >= 0 ? pipeIdx + 1 : 0);
   const fullNote = lastPipe.toLowerCase().trim();

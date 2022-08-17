@@ -1,5 +1,4 @@
 import loadGameJSON from "../../../test/loadGameJSON";
-// Direct import instead of namespace import for compactness
 import {
   hypoAction,
   hypoBack,
@@ -22,9 +21,9 @@ let testState: State;
 let metadata: GameMetadata;
 
 describe("replayReducer", () => {
-  // Initialize the state before each test
+  // Initialize the state before each test.
   beforeAll(() => {
-    // Load the game and start a replay
+    // Load the game and start a replay.
     testState = loadGameJSON(testGame);
     testState = stateReducer(testState, init());
     metadata = testState.metadata;
@@ -44,13 +43,12 @@ describe("replayReducer", () => {
     test("can give a clue", () => {
       let state = replayReducer(testState.replay, hypoStart(), metadata);
 
-      // Give a number 3 clue in the new hypothetical
+      // Give a number 3 clue in the new hypothetical.
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, testState.metadata);
 
-      // Using "?" is better than "!" since it will fail with a a slightly better error message
       const expectedClues =
-        testState.replay.states[testState.replay.segment].clueTokens - 1;
+        testState.replay.states[testState.replay.segment]!.clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);
     });
 

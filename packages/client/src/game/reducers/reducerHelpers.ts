@@ -1,4 +1,4 @@
-// Miscellaneous helpers used by several reducers
+// Miscellaneous helpers used by several reducers.
 
 import { getCharacter } from "@hanabi/data";
 import * as statsRules from "../rules/stats";

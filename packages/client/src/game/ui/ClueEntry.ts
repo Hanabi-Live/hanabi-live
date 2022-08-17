@@ -1,4 +1,4 @@
-// This is one of the entries in the clue log (in the top-right-hand corner of the UI)
+// This is one of the entries in the clue log (in the top-right-hand corner of the UI).
 
 import Konva from "konva";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
@@ -83,6 +83,7 @@ export default class ClueEntry extends Konva.Group {
       fontFamily: "Verdana",
       fill: "white",
       text: cluesRules.getClueName(
+        // eslint-disable-next-line isaacscript/strict-enums
         clue.type,
         clue.value,
         globals.variant,
@@ -108,7 +109,7 @@ export default class ClueEntry extends Konva.Group {
     });
     this.add(this.negativeMarker);
 
-    // Add a mouseover highlighting effect
+    // Add a mouseover highlighting effect.
     this.background.on("mouseover", () => {
       this.background.opacity(0.4);
       drawLayer(this);
@@ -118,13 +119,14 @@ export default class ClueEntry extends Konva.Group {
       drawLayer(this);
     });
 
-    // Click an entry in the clue log to go to that segment (turn) in the replay
+    // Click an entry in the clue log to go to that segment (turn) in the replay.
     this.background.on("click tap", () => {
       replay.goToSegment(this.clue.segment + 1, true);
     });
   }
 
-  // If this clue entry is related to the card that we are currently mousing over, then highlight it
+  // If this clue entry is related to the card that we are currently mousing over, then highlight
+  // it.
   showMatch(targetCardOrder: number | null): void {
     this.background.opacity(0.1);
     this.background.fill("white");
@@ -137,7 +139,7 @@ export default class ClueEntry extends Konva.Group {
     for (const cardOrder of this.clue.list) {
       if (cardOrder === targetCardOrder) {
         this.background.opacity(0.4);
-        // (the background is already set to white)
+        // (The background is already set to white.)
         return;
       }
     }

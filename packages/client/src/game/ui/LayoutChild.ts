@@ -1,5 +1,4 @@
-// This is the parent of a HanabiCard
-// It has a CardLayout or PlayStack parent
+// This is the parent of a HanabiCard. It has a CardLayout or PlayStack parent.
 
 import Konva from "konva";
 import * as modals from "../../modals";
@@ -53,8 +52,8 @@ export default class LayoutChild extends Konva.Group {
     child.on("heightChange", change);
   }
 
-  // Note that this method cannot be named "setDraggable()",
-  // since that would overlap with the Konva function
+  // Note that this method cannot be named "setDraggable()", since that would overlap with the Konva
+  // function.
   checkSetDraggable(): void {
     if (globals.state.visibleState === null) {
       return;
@@ -77,13 +76,14 @@ export default class LayoutChild extends Konva.Group {
   }
 
   shouldBeDraggable(currentPlayerIndex: number | null): boolean {
-    // Rarely, if the game is restarted when a tween is happening,
-    // we can get here without the card being defined
+    // Rarely, if the game is restarted when a tween is happening, we can get here without the card
+    // being defined.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.card === null || this.card === undefined) {
       return false;
     }
 
-    // First, handle the special case of a hypothetical
+    // First, handle the special case of a hypothetical.
     if (globals.state.replay.hypothetical !== null) {
       return (
         (globals.state.replay.shared === null ||
@@ -94,32 +94,32 @@ export default class LayoutChild extends Konva.Group {
     }
 
     return (
-      // If it is not our turn, then the card should not need to be draggable yet
-      // (unless we have the "Enable pre-playing cards" feature enabled)
+      // If it is not our turn, then the card should not need to be draggable yet (unless we have
+      // the "Enable pre-playing cards" feature enabled).
       (isOurTurn() || globals.lobby.settings.speedrunPreplay) &&
-      // Cards should not be draggable if there is a queued move
+      // Cards should not be draggable if there is a queued move.
       globals.state.premove === null &&
       !globals.options.speedrun && // Cards should never be draggable while speedrunning
       !globals.lobby.settings.speedrunMode && // Cards should never be draggable while speedrunning
-      // Only our cards should be draggable
+      // Only our cards should be draggable.
       this.card.state.location === globals.metadata.ourPlayerIndex &&
       // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
-      // replay, or in a shared replay
+      // replay, or in a shared replay.
       globals.state.playing &&
-      // Cards should not be draggable if they are currently playing an animation
-      // (this function will be called again upon the completion of the animation)
+      // Cards should not be draggable if they are currently playing an animation. (This function
+      // will be called again upon the completion of the animation.)
       !this.card.tweening
     );
   }
 
   dragEnd(): void {
-    // Mouse events will not normally fire when the card is released from being dragged
+    // Mouse events will not normally fire when the card is released from being dragged.
     this.card.dispatchEvent(new MouseEvent("mouseup"));
     this.card.dispatchEvent(new MouseEvent("mouseleave"));
 
     this.draggable(false);
 
-    // We have to unregister the handler or else it will send multiple actions for one drag
+    // We have to unregister the handler or else it will send multiple actions for one drag.
     this.off("dragend");
 
     const ongoingGameState =
@@ -142,17 +142,16 @@ export default class LayoutChild extends Konva.Group {
     ) {
       const knownCard = this.checkHypoUnknown(draggedTo);
       if (!knownCard) {
-        // Morph modal is shown. Do not complete the drag action
-        // It will be taken care of after the user input
+        // Morph modal is shown. Do not complete the drag action. It will be taken care of after the
+        // user input.
         return;
       }
     }
     this.continueDragAction(draggedTo);
   }
 
-  // Before we play a card,
-  // do a check to ensure that it is actually playable to prevent silly mistakes from players
-  // (but disable this in speedruns and certain variants)
+  // Before we play a card, do a check to ensure that it is actually playable to prevent silly
+  // mistakes from players. (But disable this in speedruns and certain variants.)
   checkMisplay(): boolean {
     const { currentPlayerIndex } = globals.state.ongoingGame.turn;
     const { ourPlayerIndex } = globals.metadata;
@@ -164,7 +163,7 @@ export default class LayoutChild extends Konva.Group {
     if (
       !globals.options.speedrun &&
       !variantRules.isThrowItInAHole(globals.variant) &&
-      // Don't use warnings for preplays unless we are at 2 strikes
+      // Don't use warnings for preplays unless we are at 2 strikes.
       (currentPlayerIndex === ourPlayerIndex ||
         ongoingGame.strikes.length === 2) &&
       !cardRules.isPotentiallyPlayable(
@@ -200,18 +199,22 @@ export default class LayoutChild extends Konva.Group {
     }
 
     if (draggedTo === null) {
-      // The card was dragged to an invalid location; tween it back to the hand
+      // The card was dragged to an invalid location; tween it back to the hand.
       (this.parent as unknown as CardLayout | PlayStack).doLayout();
       return;
     }
 
-    let type;
-    if (draggedTo === "playArea") {
-      type = ActionType.Play;
-    } else if (draggedTo === "discardArea") {
-      type = ActionType.Discard;
-    } else {
-      throw new Error("Unknown drag location.");
+    let type: ActionType;
+    switch (draggedTo) {
+      case "playArea": {
+        type = ActionType.Play;
+        break;
+      }
+
+      case "discardArea": {
+        type = ActionType.Discard;
+        break;
+      }
     }
 
     turn.end({

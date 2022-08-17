@@ -6,12 +6,12 @@ export type Listener<U> = (
   currentValue: U,
   previousValue: U | undefined,
 ) => void;
-export type Subscription<T, U> = {
+export interface Subscription<T, U> {
   select: Selector<T, U>;
   onChange: Listener<U>;
-};
+}
 
-// Observes a property of type T on a Store<S, A> and calls a listener function when it changes
+// Observes a property of type T on a Store<S, A> and calls a listener function when it changes.
 export default function observeStore<S, A extends Action<unknown>, T>(
   store: Store<S, A>,
   subscriptions: Array<Subscription<S, T>>,
@@ -25,23 +25,23 @@ export default function observeStore<S, A extends Action<unknown>, T>(
       return;
     }
 
-    // If the path changed, call the function
+    // If the path changed, call the function.
     subscriptions
       .filter((s) => {
         const nextValue = s.select(nextState);
         if (nextValue === undefined) {
-          // The selector wants to skip this one
+          // The selector wants to skip this one.
           return false;
         }
         if (currentState === undefined) {
-          // Initializing, always fire all
+          // Initializing, always fire all.
           return true;
         }
-        // Fire if any part of it changed
+        // Fire if any part of it changed.
         return !equal(nextValue, s.select(currentState));
       })
       .forEach((s) => {
-        // currentState is undefined during initialization
+        // `currentState` is undefined during initialization.
         const currentValue =
           currentState !== undefined ? s.select(currentState) : undefined;
         s.onChange(s.select(nextState)!, currentValue);

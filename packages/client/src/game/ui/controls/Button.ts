@@ -22,8 +22,8 @@ export default class Button extends Konva.Group {
     // Local variables
     const w = this.width();
     const h = this.height();
-    const textSize = (config.fontSize as number) ?? 0.5 * h;
-    if (config.fontSize !== undefined) {
+    const textSize = (config["fontSize"] as number | undefined) ?? 0.5 * h;
+    if (config["fontSize"] !== undefined) {
       this.assignedTextSize = true;
     }
 
@@ -41,7 +41,7 @@ export default class Button extends Konva.Group {
 
     this.textElement = null;
     this.imageElement = null;
-    if (config.text !== undefined) {
+    if (config["text"] !== undefined) {
       this.textElement = new FitText({
         x: 0,
         y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered
@@ -51,7 +51,7 @@ export default class Button extends Konva.Group {
         fontFamily: "Verdana",
         fill: "white",
         align: "center",
-        text: config.text as string,
+        text: config["text"] as string,
         listening: false,
       });
       this.add(this.textElement);
@@ -61,7 +61,7 @@ export default class Button extends Konva.Group {
         y: 0.2 * h,
         width: 0.6 * w,
         height: 0.6 * h,
-        image: images[0],
+        image: images[0]!,
         listening: false,
       });
       this.add(this.imageElement);
@@ -72,7 +72,7 @@ export default class Button extends Konva.Group {
           y: 0.2 * h,
           width: 0.6 * w,
           height: 0.6 * h,
-          image: images[1],
+          image: images[1]!,
           visible: false,
           listening: false,
         });
@@ -131,7 +131,7 @@ export default class Button extends Konva.Group {
       if (this.assignedTextSize) {
         this.textElement.text(newText);
       } else {
-        // Resize to fit the new text if we haven't been specifically given a size
+        // Resize to fit the new text if we haven't been specifically given a size.
         this.textElement.fitText(newText);
       }
     } else {

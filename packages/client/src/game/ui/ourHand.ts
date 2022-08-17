@@ -1,4 +1,4 @@
-// Helper functions for doing actions to our own hand
+// Helper functions for doing actions to our own hand.
 
 import CardLayout from "./CardLayout";
 import globals from "./globals";
