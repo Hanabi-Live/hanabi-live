@@ -501,7 +501,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - For example, if you performed a massive _Quadruple Finesse_, then you could do a `/tag Quadruple Finesse`.
 - You can have an unlimited amount of tags per game. Anyone can add a tag to a game, regardless of whether they played in it or not. Everyone's tags are shared.
 - You can add tags during an ongoing game. The server will not reveal what the tag is to the other players (in order to avoid leaking information about the game).
-- Tags added during a replay will echo the everyone in the replay.
+- Tags added during a replay will echo to everyone in the replay.
 - You can use the `/tagdelete [tag]` command to delete an existing tag, or `/tagsdeleteall` to delete all your tags in that game.
 - You can use the `/tagsearch [tag]` command to search through all games for a specific tag.
 
