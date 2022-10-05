@@ -124,6 +124,10 @@ export default class Elements {
   pauseText: Konva.Text | null = null;
   pauseButton: Button | null = null;
 
+  // The restart screen
+  restartArea: Konva.Group | null = null;
+  restartText: Konva.Text | null = null;
+
   // Other screens
   fullActionLog: FullActionLog | null = null;
 
