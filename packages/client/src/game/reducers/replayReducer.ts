@@ -1,4 +1,4 @@
-// The reducer for replays and hypotheticals
+// The reducer for replays and hypotheticals.
 
 import { ensureAllCases } from "@hanabi/data";
 import produce, { Draft, original } from "immer";
@@ -101,8 +101,8 @@ function replayReducerFunction(
       }
       state.shared.useSharedSegments = action.useSharedSegments;
 
-      // If we are the replay leader and we are re-enabling shared segments,
-      // we also want to update the shared segment to our current segment
+      // If we are the replay leader and we are re-enabling shared segments, we also want to update
+      // the shared segment to our current segment.
       if (state.shared.amLeader && state.shared.useSharedSegments) {
         state.shared.segment = state.segment;
       }
@@ -137,7 +137,7 @@ function replayReducerFunction(
         state.shared.useSharedSegments = true;
       }
 
-      const ongoing = state.states[state.segment];
+      const ongoing = state.states[state.segment]!;
       const startingPlayerIndex = ongoing.turn.currentPlayerIndex;
 
       state.hypothetical = {
@@ -176,7 +176,7 @@ function replayReducerFunction(
 
       const hypoStates = state.hypothetical.states;
       hypoStates.pop();
-      const lastState = hypoStates[hypoStates.length - 1];
+      const lastState = hypoStates[hypoStates.length - 1]!;
       state.hypothetical.ongoing = lastState;
       break;
     }
@@ -190,22 +190,23 @@ function replayReducerFunction(
 
       state.hypothetical.showDrawnCards = action.showDrawnCards;
       if (action.showDrawnCards) {
-        // Filter out all identities morphed to blank
+        // Filter out all identities morphed to blank.
         const morphed = original(state.hypothetical.morphedIdentities)!;
         state.hypothetical.morphedIdentities = [];
         for (let i = 0; i < morphed.length; i++) {
-          // Note: the for loop is necessary because the array is not contiguous
-          // Array.filter would change the indexes
+          // The for loop is necessary because the array is not contiguous. `Array.filter` would
+          // change the indexes.
+          const cardIdentity = morphed[i];
           if (
-            morphed[i] !== undefined &&
-            morphed[i].rank !== null &&
-            morphed[i].suitIndex !== null
+            cardIdentity !== undefined &&
+            cardIdentity.rank !== null &&
+            cardIdentity.suitIndex !== null
           ) {
-            state.hypothetical.morphedIdentities[i] = morphed[i];
+            state.hypothetical.morphedIdentities[i] = cardIdentity;
           }
         }
       } else {
-        // Hide all cards drawn since the beginning of the hypothetical
+        // Hide all cards drawn since the beginning of the hypothetical.
         original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
           (order) => {
             state.hypothetical!.morphedIdentities[order] = {
@@ -248,30 +249,30 @@ function hypoAction(
     );
   }
 
-  // The morph action is handled here
-  // Also take note of any draws that conflict with the known card identities
+  // The morph action is handled here. Also take note of any draws that conflict with the known card
+  // identities.
   if (action.type === "morph" || action.type === "draw") {
     let suitIndex = nullIfNegative(action.suitIndex);
     let rank = nullIfNegative(action.rank);
 
     if (action.type === "draw") {
-      // Store drawn cards to be able to show/hide in the future
+      // Store drawn cards to be able to show/hide in the future.
       state.hypothetical.drawnCardsInHypothetical.push(action.order);
       if (!state.hypothetical.showDrawnCards) {
-        // Mark this one as blank
+        // Mark this one as blank.
         suitIndex = null;
         rank = null;
       }
     }
 
-    // This card has been morphed or blanked
+    // This card has been morphed or blanked.
     state.hypothetical.morphedIdentities[action.order] = {
       suitIndex,
       rank,
     };
   }
 
-  // The game state doesn't care about morphed cards
+  // The game state doesn't care about morphed cards.
   if (action.type === "morph") {
     return;
   }
@@ -286,7 +287,7 @@ function hypoAction(
   state.hypothetical.ongoing = newState;
 
   if (oldSegment !== newState.turn.segment) {
-    // Save the new segment in case we want to go backwards
+    // Save the new segment in case we want to go backwards.
     state.hypothetical.states.push(newState);
   }
 }

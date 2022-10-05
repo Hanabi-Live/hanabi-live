@@ -33,8 +33,8 @@ export function animate(
   interactive = false,
   fast: boolean = globals.animateFast,
 ): void {
-  // Before animating, ensure that the node is visible
-  // (since some elements might be previously hidden)
+  // Before animating, ensure that the node is visible (since some elements might be previously
+  // hidden).
   node.show();
 
   if (node.tween !== null) {
@@ -69,25 +69,24 @@ export function animate(
       params.onFinish();
     }
 
-    // If interactive is true, the node should be listening in its default state
-    // Ensure that the node is listening
-    // (it might have had the listening disabled when it started to play an animation but never
-    // ended up finishing the animation)
+    // If interactive is true, the node should be listening in its default state. Ensure that the
+    // node is listening. (It might have had the listening disabled when it started to play an
+    // animation but never ended up finishing the animation.)
     if (interactive) {
       node.listening(true);
     }
   } else {
-    // The Konva TypeScript definitions specify a Tween config as "any"
+    // The Konva TypeScript definitions specify a Tween config as "any".
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const config: any = {
       node,
       onFinish: () => {
-        // If the game is restarted in the middle of an animation,
-        // it is possible to get here with something important being undefined
+        // If the game is restarted in the middle of an animation, it is possible to get here with
+        // something important being undefined.
         if (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           node === undefined ||
-          globals.store === null ||
-          globals.state === undefined
+          globals.store === null
         ) {
           return;
         }
@@ -97,7 +96,7 @@ export function animate(
           node.tween = null;
         }
 
-        // Now that the animation is finished, we can re-enable listening (see below explanation)
+        // Now that the animation is finished, we can re-enable listening (see below explanation).
         if (interactive) {
           node.listening(true);
         }
@@ -108,9 +107,8 @@ export function animate(
       },
     };
 
-    // The Konva object is weakly typed, and expects the keys to
-    // be there or not if there is a desire to change the value
-    // Therefore, disable the linter rule for this block
+    // The Konva object is weakly typed, and expects the keys to be there or not if there is a
+    // desire to change the value. Therefore, disable the linter rule for this block.
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     if (params.duration !== undefined) {
       config.duration = params.duration;
@@ -142,8 +140,8 @@ export function animate(
     }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
-    // Temporarily disable listening on this element while it is animating
-    // (for performance reasons and to prevent players from accidentally clicking on it)
+    // Temporarily disable listening on this element while it is animating (for performance reasons
+    // and to prevent players from accidentally clicking on it).
     if (interactive) {
       node.listening(false);
     }

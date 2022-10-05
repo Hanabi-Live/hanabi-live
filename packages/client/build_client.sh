@@ -62,7 +62,7 @@ cd "$DIR"
 # We need to pack it into one JavaScript file before sending it to end-users
 echo "Packing the TypeScript using WebPack..."
 echo
-npm run webpack
+npx webpack
 echo
 
 # Create a file that informs the server that the bundled JavaScript & CSS will not be available for
@@ -87,14 +87,18 @@ echo $(git rev-parse HEAD) > "$JS_BUNDLES_DIR/git_revision.txt"
 if [[ $1 == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
+  npm init --yes # Grunt needs a package.json to exist for some reason.
   npx grunt critical --url="http://localhost:$PORT"
+  rm -f "$DIR/package.json"
   echo
   echo "Remember to commit critical.min.css if it had any changes."
   echo
 else
   echo "Packing the CSS using Grunt..."
   echo
-  npm run grunt
+  npm init --yes # Grunt needs a package.json to exist for some reason.
+  npx grunt
+  rm -f "$DIR/package.json"
   echo
 fi
 GRUNT_OUTPUT_DIR="$DIR/grunt_output"

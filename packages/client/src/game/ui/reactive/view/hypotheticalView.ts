@@ -5,13 +5,13 @@ import globals from "../../globals";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import * as turn from "../../turn";
 
-// For replay leaders, we want to disable entering a hypothetical during certain situations
+// For replay leaders, we want to disable entering a hypothetical during certain situations.
 export const shouldEnableEnterHypoButton = (state: State): boolean =>
   (state.replay.shared === null && state.replay.active) ||
   (state.replay.shared !== null &&
     state.replay.shared.useSharedSegments &&
     state.replay.shared.amLeader &&
-    // We can't start a hypothetical on a segment where the game has already ended
+    // We can't start a hypothetical on a segment where the game has already ended.
     state.visibleState !== null &&
     state.visibleState.turn.currentPlayerIndex !== null);
 
@@ -40,7 +40,7 @@ export function onActiveChanged(data: {
   checkSetDraggableAllHands();
 
   // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
-  // changes in the middle of a hypothetical
+  // changes in the middle of a hypothetical.
   globals.elements.clueTargetButtonGroup?.visible(
     globals.options.numPlayers !== 2 && !data.hypotheticalActive,
   );
@@ -58,14 +58,15 @@ export const shouldShowHypoControls = (state: State): boolean =>
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
   globals.elements.hypoButtonsArea?.visible(shouldShow);
   if (shouldShow) {
-    // the lower part of the clue area and the "no clues" indicators slide left during hypo
+    // The lower part of the clue area and the "no clues" indicators slide left during
+    // hypotheticals.
     globals.elements.lowerClueArea?.setLeft();
     globals.elements.clueAreaDisabled?.setLeft();
   } else {
     globals.elements.lowerClueArea?.setCenter();
     globals.elements.clueAreaDisabled?.setCenter();
   }
-  // We might need to change the draggable property of a hand
+  // We might need to change the draggable property of a hand.
   checkSetDraggableAllHands();
   globals.layers.UI.batchDraw();
 }
@@ -99,13 +100,12 @@ export function onActiveOrAmLeaderChanged(data: {
   globals.layers.UI.batchDraw();
 }
 
-// Either we have entered a hypothetical, gone forward one action in a hypothetical,
-// or gone back one action in a hypothetical
-// Prepare the UI elements for the new turn
+// Either we have entered a hypothetical, gone forward one action in a hypothetical, or gone back
+// one action in a hypothetical. Prepare the UI elements for the new turn.
 export function onStatesLengthChanged(): void {
   turn.resetSelectedClue();
 
-  // Enable or disable the individual clue target buttons, depending on whose turn it is
+  // Enable or disable the individual clue target buttons, depending on whose turn it is.
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
@@ -114,14 +114,13 @@ export function onStatesLengthChanged(): void {
     const enabled = button.targetIndex !== currentPlayerIndex;
     button.setEnabled(enabled);
 
-    // In 2-player games,
-    // default the clue recipient button to the only other player available
+    // In 2-player games, default the clue recipient button to the only other player available.
     if (globals.options.numPlayers === 2 && enabled) {
       button.setPressed(true);
     }
   }
 
-  // Set the current player's hand to be draggable
+  // Set the current player's hand to be draggable.
   checkSetDraggableAllHands();
 
   globals.layers.UI.batchDraw();
@@ -142,10 +141,10 @@ export function onDrawnCardsInHypotheticalChanged(
 ): void {
   globals.elements.toggleDrawnCardsButton?.setPressed(drawnCardsInHypothetical);
 
-  // Check if the ability to give a clue changed
+  // Check if the ability to give a clue changed.
   clues.checkLegal();
 
-  // Change starting player's hand visibility
+  // Change starting player's hand visibility.
   changeStartingHandVisibility();
 
   globals.layers.UI.batchDraw();

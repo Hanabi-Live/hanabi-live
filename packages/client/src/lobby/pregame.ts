@@ -1,4 +1,4 @@
-// The lobby area that shows all of the players in the current unstarted game
+// The lobby area that shows all of the players in the current unstarted game.
 
 import { getVariant } from "@hanabi/data";
 import * as chat from "../chat";
@@ -15,32 +15,31 @@ export function show(): void {
   globals.currentScreen = Screen.PreGame;
   usersDraw.draw();
 
-  // Replace the list of current games with a list of the current players
+  // Replace the list of current games with a list of the current players.
   $("#lobby-pregame").show();
   $("#lobby-games").hide();
-  // Fix online and chat boxes layout for small screens
+  // Fix online and chat boxes layout for small screens.
   $("#lobby-chat-container").addClass("pregame-chat-layout");
   $("#lobby-chat-pregame-container").addClass("pregame-chat-layout");
 
-  // Fix bottom nav buttons for small screens
+  // Fix bottom nav buttons for small screens.
   $("#lobby-toggle-show-tables").text("Game");
   $("#lobby-toggle-show-chat").addClass("hidden");
   $("#lobby-toggle-show-game-chat").removeClass("hidden");
 
-  // Click the games button
+  // Click the games button.
   $("#lobby-toggle-show-tables").trigger("click");
 
-  // Add an extra chat box
+  // Add an extra chat box.
   $("#lobby-chat-container").removeClass("col-8");
   $("#lobby-chat-container").addClass("col-4");
   $("#lobby-chat-pregame-container").show();
 
-  // Clear the pregame chat box of any previous content
+  // Clear the pregame chat box of any previous content.
   $("#lobby-chat-pregame-text").html("");
 
-  // Scroll to the bottom of both the lobby chat and the pregame chat
-  // (even if the lobby chat is already at the bottom, it will change size and cause it to not
-  // be scrolled all the way down)
+  // Scroll to the bottom of both the lobby chat and the pregame chat. (Even if the lobby chat is
+  // already at the bottom, it will change size and cause it to not be scrolled all the way down.)
   const chat1 = document.getElementById("lobby-chat-text");
   if (chat1 !== null) {
     chat1.scrollTop = chat1.scrollHeight;
@@ -54,18 +53,18 @@ export function show(): void {
     throw new Error('Failed to get the "lobby-chat-pregame-text" element.');
   }
 
-  // Focus the pregame chat
+  // Focus the pregame chat.
   $("#lobby-chat-pregame-input").trigger("focus");
 
-  // The "Create Game" button in the nav was disabled after we clicked the "Create" button,
-  // so re-enable it now that we have received a message back from the server
+  // The "Create Game" button in the nav was disabled after we clicked the "Create" button, so
+  // re-enable it now that we have received a message back from the server.
   $("#nav-buttons-lobby-create-game").removeClass("disabled");
 
-  // Adjust the top navigation bar
+  // Adjust the top navigation bar.
   nav.show("pregame");
   toggleStartGameButton();
 
-  // Set the browser address bar
+  // Set the browser address bar.
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
 }
 
@@ -74,37 +73,37 @@ export function hide(): void {
   tablesDraw();
   usersDraw.draw();
 
-  // Replace the list of current players with a list of the current games
+  // Replace the list of current players with a list of the current games.
   $("#lobby-pregame").hide();
   $("#lobby-games").show();
-  // Fix online and chat boxes layout for small screens
+  // Fix online and chat boxes layout for small screens.
   $("#lobby-chat-container").removeClass("pregame-chat-layout");
   $("#lobby-chat-pregame-container").removeClass("pregame-chat-layout");
 
-  // Fix bottom nav buttons for small screens
+  // Fix bottom nav buttons for small screens.
   $("#lobby-toggle-show-tables").text("Tables");
   $("#lobby-toggle-show-chat").removeClass("hidden");
   $("#lobby-toggle-show-game-chat").addClass("hidden");
 
-  // Click the games button
+  // Click the games button.
   $("#lobby-toggle-show-tables").trigger("click");
 
-  // Remove the extra chat box
+  // Remove the extra chat box.
   $("#lobby-chat-container").addClass("col-8");
   $("#lobby-chat-container").removeClass("col-4");
   $("#lobby-chat-pregame-container").hide();
 
-  // Clear the typing list
+  // Clear the typing list.
   globals.peopleTyping = [];
   chat.updatePeopleTyping();
 
-  // Adjust the navigation bar
+  // Adjust the navigation bar.
   nav.show("lobby");
 
   // Remove delegate handlers
   $("#lobby-chat-pregame-text").off();
 
-  // Set the browser address bar
+  // Set the browser address bar.
   setBrowserAddressBarPath("/lobby");
 }
 
@@ -115,7 +114,7 @@ export function draw(): void {
     );
   }
 
-  // Update the information on the left-hand side of the screen
+  // Update the information on the left-hand side of the screen.
   $("#lobby-pregame-name").text(globals.game.name);
   $("#lobby-pregame-variant").text(globals.game.options.variantName);
   $("#lobby-pregame-seats").text(
@@ -124,7 +123,7 @@ export function draw(): void {
 
   drawOptions();
 
-  // Draw the player boxes
+  // Draw the player boxes.
   for (let i = 0; i <= 5; i++) {
     drawPlayerBox(i);
   }
@@ -137,9 +136,9 @@ function drawOptions() {
     return;
   }
 
-  // Start to create the HTML that will appear under the "Options:" text
-  // Note that the tooltips must be created inline; if they are created statically in "main.tmpl",
-  // then they will fail to initialize properly on the second viewing
+  // Start to create the HTML that will appear under the "Options:" text. Note that the tooltips
+  // must be created inline; if they are created statically in "main.tmpl", then they will fail to
+  // initialize properly on the second viewing.
   let html = "";
 
   if (globals.game.passwordProtected) {
@@ -274,8 +273,7 @@ function drawOptions() {
   const optionsDiv = $("#lobby-pregame-options");
   optionsDiv.html(html);
 
-  // Initialize the tooltips, if any
-  // (this has to be done after adding the HTML to the page)
+  // Initialize the tooltips, if any. (This has to be done after adding the HTML to the page.)
   if (globals.game.passwordProtected) {
     tooltips.create("#lobby-pregame-options-password");
   }
@@ -338,14 +336,14 @@ function drawPlayerBox(i: number) {
   // Calculate some stats
   const variantStats = player.stats.variant;
   const averageScore = Math.round(variantStats.averageScore * 10) / 10;
-  // (round it to 1 decimal place)
-  let averageScoreString;
+  // (Round it to 1 decimal place.)
+  let averageScoreString: string;
   if (averageScore === 0) {
     averageScoreString = "-";
   } else {
     averageScoreString = averageScore.toString();
   }
-  let strikeoutRateString;
+  let strikeoutRateString: string;
   if (variantStats.numGames > 0) {
     let strikeoutRate =
       (variantStats.numStrikeouts / variantStats.numGames) * 100;
@@ -396,7 +394,7 @@ function drawPlayerBox(i: number) {
           ${numPlayers}-player best score:
         </div>
         <div class="col-2 align-right padding0">
-          ${variantStats.bestScores[numPlayers - 2].score}
+          ${variantStats.bestScores[numPlayers - 2]!.score}
         </div>
       </div>
     `;
@@ -424,7 +422,7 @@ function drawPlayerBox(i: number) {
   for (let j = 2; j <= 6; j++) {
     html += '<div class="row">';
     html += `<div class="col-6">${j}-player:</div>`;
-    const bestScoreObject = variantStats.bestScores[j - 2];
+    const bestScoreObject = variantStats.bestScores[j - 2]!;
     const bestScore = bestScoreObject.score;
     const bestScoreMod = bestScoreObject.modifier;
     html += '<div class="col-6">';
@@ -456,10 +454,27 @@ function drawPlayerBox(i: number) {
   tooltips.create(`#lobby-pregame-player-${i + 1}-scores-icon`);
 }
 
+export function drawSpectators(tableID: number): void {
+  if (globals.game === null) {
+    return;
+  }
+
+  const list = $("#lobby-pregame-spectators");
+  list.empty();
+  const table = globals.tableMap.get(tableID);
+  if (table === undefined) {
+    return;
+  }
+
+  for (const spectator of table.spectators) {
+    const item = `<li>&bull; ${spectator}</li>`;
+    list.append(item);
+  }
+}
+
 export function toggleStartGameButton(): void {
-  // Enable or disable the "Start Game" button.
-  // "Start Game" enabled if game owner and enough players
-  //
+  // Enable or disable the "Start Game" button. "Start Game" enabled if game owner and enough
+  // players.
   $("#nav-buttons-pregame-start").addClass("disabled");
 
   if (globals.game === null) {
@@ -470,8 +485,8 @@ export function toggleStartGameButton(): void {
     globals.game.owner === globals.userID &&
     globals.game.players.length >= 2 &&
     globals.game.players.length <= 6 &&
-    // If this field is not equal to null it means that we're waiting a short time to re-enable
-    // the button after a player joined.
+    // If this field is not equal to null it means that we're waiting a short time to re-enable the
+    // button after a player joined.
     globals.enableStartGameButtonTimeout === null
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");

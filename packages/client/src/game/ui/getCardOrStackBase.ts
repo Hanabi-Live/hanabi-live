@@ -8,7 +8,7 @@ export default function getCardOrStackBase(order: number): HanabiCard {
     return card;
   }
 
-  // Stack bases use the orders after the final card in the deck
+  // Stack bases use the orders after the final card in the deck.
   const stackBaseIndex = order - deckRules.totalCards(globals.variant);
   const stackBase = globals.stackBases[stackBaseIndex];
   if (stackBase !== undefined) {

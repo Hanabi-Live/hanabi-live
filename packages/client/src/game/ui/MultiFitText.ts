@@ -36,9 +36,9 @@ export default class MultiFitText extends Konva.Group {
     }
     this.smallHistory.push(text);
 
-    // Performance optimization: setText on the children is slow,
-    // so do not actually do it until its time to display things
-    // We also have to call refreshText after any time we manipulate replay position
+    // Performance optimization: setText on the children is slow, so do not actually do it until its
+    // time to display things. We also have to call refreshText after any time we manipulate replay
+    // position.
     if (!globals.state.replay.active || !globals.animateFast) {
       this.refreshText();
     }
@@ -56,8 +56,10 @@ export default class MultiFitText extends Konva.Group {
 
   reset(): void {
     this.smallHistory = [];
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this.children.length; i++) {
-      (this.children[i] as FitText).fitText("");
+      const child = this.children[i];
+      (child as FitText).fitText("");
     }
   }
 

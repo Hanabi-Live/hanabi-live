@@ -1,4 +1,4 @@
-// Functions for progressing forward and backward through time
+// Functions for progressing forward and backward through time.
 
 import { parseIntSafe } from "@hanabi/data";
 import Konva from "konva";
@@ -32,7 +32,8 @@ export function exit(): void {
     return;
   }
 
-  // Always animate fast if we are exiting a replay, even if we are only jumping to an adjacent turn
+  // Always animate fast if we are exiting a replay, even if we are only jumping to an adjacent
+  // turn.
   globals.store!.dispatch({
     type: "replayExit",
   });
@@ -53,8 +54,7 @@ export function goToSegment(
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const currentSegment = getCurrentReplaySegment();
 
-  // Validate the target segment
-  // The target must be between 0 and the final replay segment
+  // Validate the target segment. The target must be between 0 and the final replay segment.
   const clamp = (n: number, min: number, max: number) =>
     Math.max(min, Math.min(n, max));
   const newSegment = clamp(segment, 0, finalSegment);
@@ -69,19 +69,18 @@ export function goToSegment(
     return;
   }
 
-  // Disable replay navigation while we are in a hypothetical
-  // (hypothetical navigation functions will set "force" equal to true)
+  // Disable replay navigation while we are in a hypothetical. (Hypothetical navigation functions
+  // will set "force" equal to true.)
   if (globals.state.replay.hypothetical !== null && !force) {
     return;
   }
 
-  // Enter the replay, if we are not already
+  // Enter the replay, if we are not already.
   enter(newSegment);
 
   // By default, most replay navigation actions should "break free" from the shared segments to
-  // allow users to go off on their own side adventure through the game
-  // However, if we are navigating to a new segment as the shared replay leader,
-  // do not disable shared segments
+  // allow users to go off on their own side adventure through the game. However, if we are
+  // navigating to a new segment as the shared replay leader, do not disable shared segments.
   if (
     breakFree &&
     globals.state.replay.shared !== null &&
@@ -117,7 +116,7 @@ export function goToSegmentAndIndicateCard(
 ): void {
   goToSegment(segment, true);
 
-  // We indicate the card to make it easier to see
+  // We indicate the card to make it easier to see.
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
   const card = getCardOrStackBase(order);
   arrows.toggle(card.state.order);
@@ -157,8 +156,8 @@ export function forwardFull(): void {
 // ------------------------
 
 export function exitButton(): void {
-  // Mark the time that the user clicked the "Exit Replay" button
-  // (so that we can avoid an accidental "Give Clue" double-click)
+  // Mark the time that the user clicked the "Exit Replay" button (so that we can avoid an
+  // accidental "Give Clue" double-click).
   globals.UIClickTime = Date.now();
 
   exit();
@@ -175,7 +174,7 @@ function segmentFromBarPosition(x: number, w: number) {
   return Math.floor((x + step / 2) / step);
 }
 
-// Called when a position in the bar is clicked
+// Called when a position in the bar is clicked.
 export function barClick(this: Konva.Rect): void {
   const rectX =
     globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
@@ -183,7 +182,7 @@ export function barClick(this: Konva.Rect): void {
   goToSegment(segmentFromBarPosition(rectX, w), true);
 }
 
-// Called when a position in the bar is clicked
+// Called when a position in the bar is clicked.
 export function barScroll(
   this: Konva.Rect,
   e: Konva.KonvaEventObject<WheelEvent>,
@@ -200,8 +199,8 @@ export function barScroll(
   goToSegment(getCurrentReplaySegment() + delta, true);
 }
 
-// Restricts the positions of the replay shuttle
-// Given a desired position, returns the allowed position closest to it
+// Restricts the positions of the replay shuttle. Given a desired position, returns the allowed
+// position closest to it.
 export function shuttleDragBound(
   this: Konva.Rect,
   pos: Konva.Vector2d,
@@ -225,7 +224,7 @@ export function shuttleDragBound(
   };
 }
 
-// Called when the shuttle moves. The position is guaranteed to be valid by shuttleDragBound
+// Called when the shuttle moves. The position is guaranteed to be valid by shuttleDragBound.
 export function shuttleDragMove(this: Konva.Rect): void {
   const min =
     globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
@@ -248,8 +247,8 @@ function positionReplayShuttle(
     finalSegment === null || // The final segment is null during initialization
     finalSegment === 0 // The final segment is 0 before a move is made
   ) {
-    // For the purposes of the replay shuttle calculation,
-    // we need to assume that there are at least two possible locations
+    // For the purposes of the replay shuttle calculation, we need to assume that there are at least
+    // two possible locations.
     finalSegment = 1;
   }
   const winH = globals.stage.height();
@@ -279,7 +278,7 @@ function positionReplayShuttle(
 }
 
 export function adjustShuttles(fast: boolean): void {
-  // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
+  // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller.
   let smaller = false;
   if (
     globals.state.replay.shared !== null &&
@@ -291,8 +290,8 @@ export function adjustShuttles(fast: boolean): void {
 
   const draggingShuttle = globals.elements.replayShuttle!.isDragging();
 
-  // Adjust the replay shuttle along the bar based on the current segment
-  // If it is smaller, we need to nudge it to the right a bit in order to center it
+  // Adjust the replay shuttle along the bar based on the current segment. If it is smaller, we need
+  // to nudge it to the right a bit in order to center it.
   positionReplayShuttle(
     globals.elements.replayShuttle!,
     globals.state.replay.segment,
@@ -300,7 +299,7 @@ export function adjustShuttles(fast: boolean): void {
     fast || draggingShuttle,
   );
 
-  // Adjust the shared replay shuttle along the bar based on the shared segment
+  // Adjust the shared replay shuttle along the bar based on the shared segment.
   globals.elements.replayShuttleShared!.visible(
     globals.state.replay.shared !== null,
   );
@@ -321,8 +320,12 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const element = <HTMLInputElement>document.getElementById("set-turn-input");
-  const button = <HTMLButtonElement>document.getElementById("set-turn-button");
+  const element = document.getElementById(
+    "set-turn-input",
+  ) as HTMLInputElement | null;
+  const button = document.getElementById(
+    "set-turn-button",
+  ) as HTMLButtonElement | null;
 
   if (element === null || button === null) {
     return;
@@ -341,9 +344,9 @@ export function promptTurn(): void {
       return;
     }
 
-    // We need to decrement the turn because
-    // the turn shown to the user is always one greater than the real turn
-    targetTurn -= 1;
+    // We need to decrement the turn because the turn shown to the user is always one greater than
+    // the real turn.
+    targetTurn--;
 
     goToSegment(targetTurn, true);
   };

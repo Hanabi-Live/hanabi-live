@@ -15,7 +15,7 @@ export function onSpectatorsChanged(data: {
       data.spectators.length.toString(),
     );
 
-    // Build the string that shows all the names
+    // Build the string that shows all the names.
     let nameEntries = "";
     for (const spectator of data.spectators) {
       let nameEntry = "<li>";
@@ -27,9 +27,8 @@ export function onSpectatorsChanged(data: {
         nameEntry += spectator.name;
       }
 
-      // Spectators can also be shadowing a specific player
-      // However, only show this in ongoing games
-      // (perspective shifts in replays are inconsequential)
+      // Spectators can also be shadowing a specific player. However, only show this in ongoing
+      // games. (Perspective shifts in replays are inconsequential.)
       if (spectator.shadowingPlayerIndex !== null && !data.finished) {
         const playerName =
           globals.metadata.playerNames[spectator.shadowingPlayerIndex];

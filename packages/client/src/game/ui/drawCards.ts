@@ -1,4 +1,4 @@
-// The card graphics are various HTML5 canvas drawings
+// The card graphics are various HTML5 canvas drawings.
 
 import {
   Color,
@@ -15,7 +15,8 @@ import { CARD_H, CARD_W } from "./constants";
 import drawPip from "./drawPip";
 import drawStylizedRank from "./drawStylizedRank";
 
-// This function returns an object containing all of the drawn cards images (on individual canvases)
+// This function returns an object containing all of the drawn cards images (on individual
+// canvases).
 export default function drawCards(
   variant: Variant,
   colorblindMode: boolean,
@@ -33,24 +34,24 @@ export default function drawCards(
 ): Map<string, HTMLCanvasElement> {
   const cardImages = new Map<string, HTMLCanvasElement>();
 
-  // Add the "Unknown" suit to the list of suits for this variant
-  // The unknown suit has blank white cards, representing cards of known rank but unknown suit
+  // Add the "Unknown" suit to the list of suits for this variant. The unknown suit has blank white
+  // cards, representing cards of known rank but unknown suit.
   const unknownSuit = getSuit("Unknown");
   const suits = variant.suits.concat(unknownSuit);
   const pipTypes = new Set<string>();
 
   let suitIndex = -1;
   for (const suit of suits) {
-    suitIndex += 1;
+    suitIndex++;
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
-    // Rank 0 is the stack base
-    // Rank 1-5 are the normal cards
-    // Rank 6 is a card of unknown rank
-    // Rank 7 is a "START" card (in the "Up or Down" variants)
+    // - Rank 0 is the stack base.
+    // - Rank 1-5 are the normal cards.
+    // - Rank 6 is a card of unknown rank.
+    // - Rank 7 is a "START" card (in the "Up or Down" variants).
     for (let rank = 0; rank <= 7; rank++) {
-      // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card
+      // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card.
       if (
         suit.name === "Unknown" &&
         (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)
@@ -60,17 +61,17 @@ export default function drawCards(
 
       const [cvs, ctx] = initCanvas();
 
-      // We don't need the background on the stack base
+      // We don't need the background on the stack base.
       if (rank !== STACK_BASE_RANK) {
         drawCardBackground(ctx, enableShadows);
       }
 
-      // Make the special corners on the cards for dual-color suits
+      // Make the special corners on the cards for dual-color suits.
       if (suit.clueColors.length === 2) {
         drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
       }
 
-      // Draw the background and the borders around the card
+      // Draw the background and the borders around the card.
       drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
 
       ctx.shadowBlur = 10;
@@ -87,12 +88,12 @@ export default function drawCards(
       ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
-        let textYPos;
+        let textYPos: number;
         let rankLabel = rank.toString();
         if (rank === START_CARD_RANK) {
           rankLabel = "S";
         }
-        let fontSize;
+        let fontSize: number;
         if (colorblindMode) {
           rankLabel += abbreviationRules.get(suit.name, variant);
           fontSize = 68;
@@ -104,7 +105,7 @@ export default function drawCards(
 
         ctx.font = `bold ${fontSize}pt Arial`;
 
-        // Draw the rank on the top left
+        // Draw the rank on the top left.
         ctx.save();
         if (styleNumbers && !colorblindMode) {
           drawStylizedRank(ctx, rank);
@@ -119,7 +120,7 @@ export default function drawCards(
           suit.name !== "Unknown"
         ) {
           const deceptiveRank =
-            variant.clueRanks[suitIndex % variant.clueRanks.length];
+            variant.clueRanks[suitIndex % variant.clueRanks.length]!;
           if (colorblindMode) {
             ctx.translate(CARD_W / 20, CARD_H / 5);
             ctx.scale(0.65, 0.65);
@@ -142,7 +143,7 @@ export default function drawCards(
         const cardImagesIndex = `Index-${suit.name}-${rank}`;
         cardImages.set(cardImagesIndex, cloneCanvas(cvs, ctx));
 
-        // Draw the rank on the bottom right
+        // Draw the rank on the bottom right.
         if (!variantRules.isUpOrDown(variant) && !suit.reversed) {
           ctx.save();
           ctx.translate(CARD_W, CARD_H);
@@ -158,8 +159,8 @@ export default function drawCards(
         }
       }
 
-      // The "Unknown" suit does not have pips
-      // (it is a white suit that is used for cards that are clued with rank)
+      // The "Unknown" suit does not have pips. (It is a white suit that is used for cards that are
+      // clued with rank.)
       if (suit.name !== "Unknown") {
         drawSuitPips(
           ctx,
@@ -177,17 +178,16 @@ export default function drawCards(
     }
   }
 
-  // Unknown 6 is a card that is completely unknown
-  // This is a special case; we want to render completely unknown cards as a blank gray card
-  // (instead of a blank white card)
+  // Unknown 6 is a card that is completely unknown. This is a special case; we want to render
+  // completely unknown cards as a blank gray card (instead of a blank white card).
   {
     const [cvs, ctx] = makeUnknownCard(initCanvas, enableShadows);
     const cardUnknown = saveCanvas(cvs, ctx);
     cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, cardUnknown);
   }
 
-  // Additionally, create an image for the deck back
-  // This is similar to the Unknown 6 card, except it has pips for each suit
+  // Additionally, create an image for the deck back. This is similar to the Unknown 6 card, except
+  // it has pips for each suit.
   {
     const [cvs, ctx] = makeDeckBack(variant, initCanvas, enableShadows);
     const deckBack = saveCanvas(cvs, ctx);
@@ -207,7 +207,7 @@ function drawSuitPips(
 ) {
   const scale = 0.4;
 
-  // The middle for card 1
+  // The middle for card 1.
   if (rank === 1) {
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -216,7 +216,7 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Top and bottom for card 2
+  // Top and bottom for card 2.
   if (rank === 2) {
     const symbolYPos = colorblindMode ? 60 : 90;
     ctx.save();
@@ -235,7 +235,7 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Top and bottom for cards 3, 4, 5
+  // Top and bottom for cards 3, 4, 5.
   if (rank >= 3 && rank <= 5) {
     const symbolYPos = colorblindMode ? 80 : 120;
     ctx.save();
@@ -254,7 +254,7 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Left and right for cards 4 and 5
+  // Left and right for cards 4 and 5.
   if (rank === 4 || rank === 5) {
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -272,7 +272,7 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Size, position, and alpha adjustment for the central icon on 3 and 5
+  // Size, position, and alpha adjustment for the central icon on 3 and 5.
   if (rank === 3 || rank === 5) {
     ctx.globalAlpha = 1;
     ctx.save();
@@ -282,7 +282,7 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Size, position, and alpha adjustment for the central icon on stack base
+  // Size, position, and alpha adjustment for the central icon on stack base.
   if (rank === STACK_BASE_RANK) {
     ctx.globalAlpha = 1;
     ctx.save();
@@ -292,14 +292,14 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Draw large suit pip
+  // Draw large suit pip.
   if (rank === UNKNOWN_CARD_RANK || rank === START_CARD_RANK) {
     ctx.save();
-    let lineWidth;
+    let lineWidth: number | undefined;
     if (rank === START_CARD_RANK) {
       lineWidth = 2;
     } else {
-      // Make the pip faint
+      // Make the pip faint.
       ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
     }
     ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -352,11 +352,11 @@ function makeDeckBack(
   const nSuits = variant.suits.length;
   ctx.scale(sf, sf);
   for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i];
+    const suit = variant.suits[i]!;
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
-    // Transform polar to cartesian coordinates
+    // Transform polar to cartesian coordinates.
     const x =
       -1.05 *
       Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2));
@@ -386,7 +386,7 @@ function drawCardBase(
   colorblindMode: boolean,
   enableShadows: boolean,
 ) {
-  // Draw the background
+  // Draw the background.
   ctx.save();
   ctx.fillStyle = getSuitStyle(
     suit,
@@ -406,12 +406,12 @@ function drawCardBase(
   );
   cardBorderPath(ctx, 4, enableShadows);
 
-  // Draw the borders (on visible cards) and the color fill
+  // Draw the borders (on visible cards) and the color fill.
   ctx.globalAlpha = 0.3;
   ctx.fill();
   ctx.globalAlpha = 0.7;
   ctx.lineWidth = 8;
-  // The borders should be more opaque for the stack base
+  // The borders should be more opaque for the stack base.
   if (rank === 0) {
     ctx.globalAlpha = 1;
   }
@@ -427,7 +427,7 @@ function cardBorderPath(
   const roundedCornerSeverity = enableShadows ? 0.08 : 0.12;
   const xRadians = CARD_W * roundedCornerSeverity;
   const yRadians = CARD_W * roundedCornerSeverity;
-  // (we want them to both have the same value so that the curve has a 45 degree angle)
+  // (We want them to both have the same value so that the curve has a 45 degree angle.)
   ctx.beginPath();
   ctx.moveTo(padding, yRadians + padding); // Top-left corner
   ctx.lineTo(padding, CARD_H - yRadians - padding); // Bottom-left corner
@@ -487,56 +487,56 @@ function drawMixedCardHelper(
   const triangleSize = 50;
   const borderSize = 8;
 
-  // Draw the first half of the top-right triangle
+  // Draw the first half of the top-right triangle.
   ctx.beginPath();
   ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
   ctx.lineTo(CARD_W - borderSize - triangleSize, borderSize); // Move left
-  // Move down and right diagonally
+  // Move down and right diagonally.
   ctx.lineTo(
     CARD_W - borderSize - triangleSize / 2,
     borderSize + triangleSize / 2,
   );
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1.fill;
+  ctx.fillStyle = clueColor1!.fill;
   drawShape(ctx, enableShadows);
 
-  // Draw the second half of the top-right triangle
+  // Draw the second half of the top-right triangle.
   ctx.beginPath();
   ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
   ctx.lineTo(CARD_W - borderSize, borderSize + triangleSize); // Move down
-  // Move up and left diagonally
+  // Move up and left diagonally.
   ctx.lineTo(
     CARD_W - borderSize - triangleSize / 2,
     borderSize + triangleSize / 2,
   );
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2.fill;
+  ctx.fillStyle = clueColor2!.fill;
   drawShape(ctx, enableShadows);
 
-  // Draw the first half of the bottom-left triangle
+  // Draw the first half of the bottom-left triangle.
   ctx.beginPath();
   ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
   ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
-  // Move right and down diagonally
+  // Move right and down diagonally.
   ctx.lineTo(
     borderSize + triangleSize / 2,
     CARD_H - borderSize - triangleSize / 2,
   );
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1.fill;
+  ctx.fillStyle = clueColor1!.fill;
   drawShape(ctx, enableShadows);
 
-  // Draw the second half of the bottom-left triangle
+  // Draw the second half of the bottom-left triangle.
   ctx.beginPath();
   ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
   ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
-  // Move left and up diagonally
+  // Move left and up diagonally.
   ctx.lineTo(
     borderSize + triangleSize / 2,
     CARD_H - borderSize - triangleSize / 2,
   );
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2.fill;
+  ctx.fillStyle = clueColor2!.fill;
   drawShape(ctx, enableShadows);
 
   ctx.restore();
@@ -564,19 +564,21 @@ function getSuitStyle(
   colorblindMode: boolean,
 ) {
   if (cardArea === "number") {
-    // In Synesthesia variants, color the number itself with the color that it contributes to the card.
+    // In Synesthesia variants, color the number itself with the color that it contributes to the
+    // card.
     if (variantRules.isSynesthesia(variant)) {
       if (rank === 0) {
         return suit.fill;
       }
 
-      // If the suit does not get clued by its rank, then coloring the rank is misleading, so use the suit color.
+      // If the suit does not get clued by its rank, then coloring the rank is misleading, so use
+      // the suit color.
       if (suit.noClueRanks) {
         return suit.fill;
       }
       const prismColorIndex = (rank - 1) % variant.clueColors.length;
 
-      return variant.clueColors[prismColorIndex].fill;
+      return variant.clueColors[prismColorIndex]!.fill;
     }
 
     if (rank === variant.specialRank) {
@@ -622,17 +624,17 @@ function getSuitStyle(
   }
 
   if (suit.prism) {
-    // Prism cards have a custom color depending on their rank
+    // Prism cards have a custom color depending on their rank.
     if (rank === 0) {
       return suit.fill;
     }
 
     let prismColorIndex = (rank - 1) % variant.clueColors.length;
     if (rank === START_CARD_RANK) {
-      // "START" cards count as rank 0, so they are touched by the final color
+      // "START" cards count as rank 0, so they are touched by the final color.
       prismColorIndex = variant.clueColors.length - 1;
     }
-    const fillToMixHex = variant.clueColors[prismColorIndex].fill;
+    const fillToMixHex = variant.clueColors[prismColorIndex]!.fill;
     const fillToMixRGB = hexToRgb(fillToMixHex);
     if (fillToMixRGB === null) {
       return suit.fill;
@@ -646,13 +648,13 @@ function getSuitStyle(
     return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix it with white by 50%
   }
 
-  // Nearly all other suits have a solid fill
+  // Nearly all other suits have a solid fill.
   if (suit.fill !== "multi") {
     return colorblindMode ? suit.fillColorblind : suit.fill;
   }
 
   // Rainbow suits use a gradient fill, but the specific type of gradient will depend on the
-  // specific element of the card that we are filling in
+  // specific element of the card that we are filling in.
   if (cardArea === "number") {
     return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
   }
@@ -667,23 +669,23 @@ function getSuitStyle(
   );
 }
 
-// Generates a vertical gradient that is evenly distributed between its component colors
+// Generates a vertical gradient that is evenly distributed between its component colors.
 function evenLinearGradient(
   ctx: CanvasRenderingContext2D,
   colors: readonly string[],
   args: readonly number[],
 ) {
-  const grad = ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
-  for (let i = 0; i < colors.length; ++i) {
-    grad.addColorStop(i / (colors.length - 1), colors[i]);
+  const grad = ctx.createLinearGradient(args[0]!, args[1]!, args[2]!, args[3]!);
+  for (let i = 0; i < colors.length; i++) {
+    grad.addColorStop(i / (colors.length - 1), colors[i]!);
   }
 
   return grad;
 }
 
 // From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
-// colorChannelA and colorChannelB are integers ranging from 0 to 255
-// amountToMix ranges from 0.0 to 1.0
+// - `colorChannelA` and `colorChannelB` are integers ranging from 0 to 255
+// - `amountToMix` ranges from 0.0 to 1.0
 function colorChannelMixer(
   colorChannelA: number,
   colorChannelB: number,
@@ -694,13 +696,17 @@ function colorChannelMixer(
   return channelA + channelB;
 }
 
-// From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
-// rgbA and rgbB are arrays, amountToMix ranges from 0.0 to 1.0
-// example (red): rgbA = [255,0,0]
+/**
+ * From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
+ *
+ * - `rgbA` and `rgbB` are arrays.
+ * - `amountToMix` ranges from 0.0 to 1.0.
+ * - For example: `(red): rgbA = [255,0,0]`
+ */
 function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
-  const r = colorChannelMixer(rgbA[0], rgbB[0], amountToMix);
-  const g = colorChannelMixer(rgbA[1], rgbB[1], amountToMix);
-  const b = colorChannelMixer(rgbA[2], rgbB[2], amountToMix);
+  const r = colorChannelMixer(rgbA[0]!, rgbB[0]!, amountToMix);
+  const g = colorChannelMixer(rgbA[1]!, rgbB[1]!, amountToMix);
+  const b = colorChannelMixer(rgbA[2]!, rgbB[2]!, amountToMix);
   return `rgb(${r},${g},${b})`;
 }
 
@@ -709,9 +715,9 @@ function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result !== null
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
+        r: parseInt(result[1]!, 16),
+        g: parseInt(result[2]!, 16),
+        b: parseInt(result[3]!, 16),
       }
     : null;
 }

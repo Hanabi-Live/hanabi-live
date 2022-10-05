@@ -1,6 +1,6 @@
 // Note that there is no corresponding server-side enum because the server does not care about which
 // orders map to which UI elements; it just blindly transfers the order to the rest of the
-// spectators
+// spectators.
 enum ReplayArrowOrder {
   Nothing = -1,
   Deck = -2,

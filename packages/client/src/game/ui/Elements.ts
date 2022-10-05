@@ -52,7 +52,7 @@ export default class Elements {
   variantLabel: FitText | null = null;
   variantUnderline: Konva.Line | null = null;
 
-  // Extra elements on the right-hand side + the bottom
+  // Extra elements on the right-hand side + the bottom.
   clueLog: ClueLog | null = null;
   paceNumberLabel: Konva.Text | null = null;
   efficiencyNumberLabel: TextWithTooltip | null = null;
@@ -77,7 +77,7 @@ export default class Elements {
   questionMarkLabels: Konva.Text[] = [];
   terminateButton: Button | null = null;
 
-  // Next to the score area
+  // Next to the score area.
   spectatorsLabel: Konva.Image | null = null;
   spectatorsNumLabel: Konva.Text | null = null;
   sharedReplayLeaderLabel: Konva.Image | null = null;
@@ -96,7 +96,7 @@ export default class Elements {
   giveClueButton: Button | null = null;
   clueAreaDisabled: SlidableGroup | null = null;
 
-  // The current turn UI
+  // The current turn UI.
   currentPlayerArea: CurrentPlayerArea | null = null;
 
   // The replay screen

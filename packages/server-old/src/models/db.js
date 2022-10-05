@@ -1,17 +1,17 @@
 // Imports
-const mysql = require('mysql');
-const logger = require('../logger');
+const mysql = require("mysql");
+const logger = require("../logger");
 
 // Import the environment variables defined in the ".env" file
-// (this has to be in every file that accesses any environment varaibles)
-require('dotenv').config();
+// (this has to be in every file that accesses any environment variables)
+require("dotenv").config();
 
 // Configuration
 const databaseConfig = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
 };
 
 // Create the MySQL connection pool and export it
@@ -20,6 +20,6 @@ const databaseConfig = {
 const pool = mysql.createPool(databaseConfig); // Default is 10 connections
 module.exports = pool;
 
-pool.on('connection', (connection) => {
-    logger.info('A new MySQL connection has been created.');
+pool.on("connection", (connection) => {
+  logger.info("A new MySQL connection has been created.");
 });

@@ -28,7 +28,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
     listening: false,
   });
 
-  // The thin black rectangle that the replay slider slides on
+  // The thin black rectangle that the replay slider slides on.
   const replayBarValues = {
     x: globals.lobby.settings.keldonMode ? 0.01 : 0,
     y: 0.0425,
@@ -46,8 +46,8 @@ export default function drawReplayArea(winW: number, winH: number): void {
   });
   globals.elements.replayArea.add(globals.elements.replayBar);
 
-  // An invisible rectangle over the visible black rectangle above
-  // (which is slightly bigger so that it is easier to click on)
+  // An invisible rectangle over the visible black rectangle above (which is slightly bigger so that
+  // it is easier to click on).
   const replayBarClickRect = new Konva.Rect({
     x: replayBarValues.x * winW,
     y: 0,
@@ -68,8 +68,8 @@ export default function drawReplayArea(winW: number, winH: number): void {
     scale: 0.75,
   };
 
-  // The shared (white) replay shuttle
-  // (we want it to be behind the normal replay shuttle, so we define it first)
+  // The shared (white) replay shuttle. (We want it to be behind the normal replay shuttle, so we
+  // define it first.)
   globals.elements.replayShuttleShared = new Shuttle({
     width: shuttleValues.w * winW,
     height: shuttleValues.h * winH,
@@ -91,7 +91,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   });
   globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 
-  // This is the normal (blue) replay shuttle
+  // This is the normal (blue) replay shuttle.
   globals.elements.replayShuttle = new Shuttle({
     width: shuttleValues.w * winW,
     height: shuttleValues.h * winH,
@@ -125,7 +125,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   {
     let { x } = replayButtonValues;
 
-    // Go back to the beginning (the left-most button)
+    // Go back to the beginning (the left-most button).
     globals.elements.replayBackFullButton = new Button(
       {
         x: x * winW,
@@ -144,7 +144,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       globals.elements.replayBackFullButton as unknown as Konva.Group,
     );
 
-    // Go back one turn (the second left-most button)
+    // Go back one turn (the second left-most button).
     x += replayButtonValues.w + replayButtonValues.spacing;
     globals.elements.replayBackButton = new Button(
       {
@@ -159,7 +159,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       ],
     );
     globals.elements.replayBackButton.on("click tap", () => {
-      // Prevent accidental double clicks
+      // Prevent accidental double clicks.
       if (Date.now() - globals.UIClickTime < 50) {
         return;
       }
@@ -171,7 +171,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       globals.elements.replayBackButton as unknown as Konva.Group,
     );
 
-    // Go forward one turn (the second right-most button)
+    // Go forward one turn (the second right-most button).
     x += replayButtonValues.w + replayButtonValues.spacing;
     globals.elements.replayForwardButton = new Button(
       {
@@ -186,7 +186,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       ],
     );
     globals.elements.replayForwardButton.on("click tap", () => {
-      // Prevent accidental double clicks
+      // Prevent accidental double clicks.
       if (Date.now() - globals.UIClickTime < 50) {
         return;
       }
@@ -198,7 +198,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
       globals.elements.replayForwardButton as unknown as Konva.Group,
     );
 
-    // Go forward to the end (the right-most button)
+    // Go forward to the end (the right-most button).
     x += replayButtonValues.w + replayButtonValues.spacing;
     globals.elements.replayForwardFullButton = new Button(
       {
@@ -235,7 +235,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
     replayButtonValues.x +
     replayButtonValues.w * 2 +
     replayButtonValues.spacing * 2;
-  // The "Exit Replay" button
+  // The "Exit Replay" button.
   globals.elements.replayExitButton = new Button({
     x: bottomRightReplayButtonX * winW,
     y: bottomButtonValues.y * winH,
@@ -249,8 +249,8 @@ export default function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayExitButton as unknown as Konva.Group,
   );
 
-  // The next two buttons will be moved to the left for replay leaders
-  // and centered for non-replay-leaders
+  // The next two buttons will be moved to the left for replay leaders and centered for
+  // non-replay-leaders.
   function setCenter(this: SharedTurnsButton) {
     this.x(bottomCenterReplayButtonX * winW);
   }
@@ -258,8 +258,8 @@ export default function drawReplayArea(winW: number, winH: number): void {
     this.x(bottomLeftReplayButtonX * winW);
   }
 
-  // The "Pause Shared Turns" button
-  // (this will be shown when the client receives the "replayLeader" command)
+  // The "Pause Shared Turns" button. (This will be shown when the client receives the
+  // "replayLeader" command.)
   globals.elements.pauseSharedTurnsButton = new SharedTurnsButton({
     y: bottomButtonValues.y * winH,
     width: bottomButtonValues.w * winW,
@@ -278,8 +278,8 @@ export default function drawReplayArea(winW: number, winH: number): void {
     globals.elements.pauseSharedTurnsButton as unknown as Konva.Group,
   );
 
-  // The "Use Shared Turns" button
-  // (this will be shown when the client receives the "replayLeader" command)
+  // The "Use Shared Turns" button. (This will be shown when the client receives the "replayLeader"
+  // command.)
   globals.elements.useSharedTurnsButton = new SharedTurnsButton({
     y: bottomButtonValues.y * winH,
     width: bottomButtonValues.w * winW,
@@ -298,7 +298,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
     globals.elements.useSharedTurnsButton as unknown as Konva.Group,
   );
 
-  // The "Enter Hypothetical" button
+  // The "Enter Hypothetical" button.
   globals.elements.enterHypoButton = new EnterHypoButton({
     y: bottomButtonValues.y * winH,
     width: bottomButtonValues.w * winW,
@@ -311,7 +311,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   );
 
   // This button will be moved to the left during in-game replay, centered during private replay,
-  // and right during shared replay
+  // and right during shared replay.
 
   function enterHypoSetLeft(this: EnterHypoButton) {
     this.x(bottomLeftReplayButtonX * winW);
@@ -327,7 +327,7 @@ export default function drawReplayArea(winW: number, winH: number): void {
   globals.elements.enterHypoButton.setCenter = enterHypoSetCenter;
   globals.elements.enterHypoButton.setRight = enterHypoSetRight;
 
-  // Add the replay area to the UI
+  // Add the replay area to the UI.
   globals.layers.UI.add(globals.elements.replayArea);
   replay.adjustShuttles(true); // Skip the animation
 }

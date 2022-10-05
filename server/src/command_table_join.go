@@ -151,6 +151,15 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	chatSendPastFromTable(s, t)
 	t.ChatRead[p.UserID] = len(t.Chat)
 
+	// Announce the new player (unless this is the first one)
+	if len(t.Players) > 1 {
+		msg := s.Username + " joined the game."
+		chatServerSend(ctx, msg, t.GetRoomName(), true)
+	}
+
+	// Send them the list of spectators
+	t.NotifySpectators()
+
 	// Send them messages for people typing, if any
 	for _, p := range t.Players {
 		if p.Typing {

@@ -17,11 +17,10 @@ export function onActiveChanged(active: boolean): void {
   replayArea.visible(active);
 
   if (active) {
-    // Show the replay area and initialize some UI elements
+    // Show the replay area and initialize some UI elements.
     replay.adjustShuttles(true); // We want it to immediately snap to the end
   } else if (globals.state.premove !== null) {
-    // We are exiting a replay
-
+    // We are exiting a replay.
     globals.elements.premoveCancelButton?.show();
   }
 
@@ -48,12 +47,12 @@ export function onSegmentChanged(
     return;
   }
 
-  // If we are on the first segment, disable the rewind replay buttons
+  // If we are on the first segment, disable the rewind replay buttons.
   const onFirstSegment = data.replaySegment !== 0;
   globals.elements.replayBackFullButton?.setEnabled(onFirstSegment);
   globals.elements.replayBackButton?.setEnabled(onFirstSegment);
 
-  // If we are on the last segment, disable the forward replay buttons
+  // If we are on the last segment, disable the forward replay buttons.
   const onFinalSegment = data.replaySegment !== data.ongoingGameSegment;
   globals.elements.replayForwardButton?.setEnabled(onFinalSegment);
   globals.elements.replayForwardFullButton?.setEnabled(onFinalSegment);
@@ -66,8 +65,8 @@ export function onSegmentChanged(
     return;
   }
 
-  // There are two replay shuttles,
-  // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
+  // There are two replay shuttles, so we have to adjust them whenever the "segment" or the
+  // "sharedSegment" changes.
   replay.adjustShuttles(false);
 
   globals.layers.UI.batchDraw();
@@ -96,16 +95,16 @@ export function onSharedSegmentChanged(
 
   if (data.useSharedSegments) {
     if (globals.state.replay.shared!.amLeader) {
-      // Tell the rest of the spectators to go to the turn that we are now on
+      // Tell the rest of the spectators to go to the turn that we are now on.
       globals.lobby.conn!.send("replayAction", {
         tableID: globals.lobby.tableID,
         type: ReplayActionType.Segment,
         segment: data.sharedSegment,
       });
     } else {
-      // Go to the turn where the shared replay leader is at
-      // (we set force to true in case a hypothetical just started and we are being dragged to the
-      // starting turn of the hypothetical)
+      // Go to the turn where the shared replay leader is at. (We set force to true in case a
+      // hypothetical just started and we are being dragged to the starting turn of the
+      // hypothetical.)
       replay.goToSegment(data.sharedSegment, false, true);
 
       if (
@@ -121,10 +120,9 @@ export function onSharedSegmentChanged(
   globals.elements.pauseSharedTurnsButton?.visible(data.useSharedSegments);
   globals.elements.useSharedTurnsButton?.visible(!data.useSharedSegments);
 
-  // There are two replay shuttles,
-  // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
-  // The first time we go into a shared replay, always animate fast
-  // (the condition is needed in case we are in an in-game replay when the game ends)
+  // There are two replay shuttles, so we have to adjust them whenever the "segment" or the
+  // "sharedSegment" changes The first time we go into a shared replay, always animate fast. (The
+  // condition is needed in case we are in an in-game replay when the game ends.)
   replay.adjustShuttles(
     previousData === undefined || previousData.sharedSegment === undefined,
   );
@@ -149,11 +147,10 @@ export function enterHypoButtonLocationChanged(data: {
   }
 }
 
-// In shared replays, it can be confusing as to what the shared replay leader is doing,
-// so play an appropriate animations to indicate what is going on
-// (and cancel the other tween if it is going)
+// In shared replays, it can be confusing as to what the shared replay leader is doing, so play an
+// appropriate animations to indicate what is going on (and cancel the other tween if it is going).
 // Don't play it though if we are resuming shared segments
-// (e.g. going back to where the shared replay leader is)
+// (e.g. going back to where the shared replay leader is).
 function playSharedReplayTween(
   sharedSegment: number,
   previousSharedSegment: number,
@@ -192,9 +189,9 @@ export function onDatabaseIDChanged(databaseID: number | null): void {
     return;
   }
 
-  let text;
+  let text: string;
   if (databaseID === 0) {
-    // JSON replays are hard-coded to have a database ID of 0
+    // JSON replays are hard-coded to have a database ID of 0.
     text = "JSON replay";
   } else {
     text = `ID: ${databaseID}`;
@@ -202,7 +199,7 @@ export function onDatabaseIDChanged(databaseID: number | null): void {
   globals.elements.gameIDLabel?.text(text);
   globals.elements.gameIDLabel?.show();
 
-  // Also move the card count label on the deck downwards
+  // Also move the card count label on the deck downwards.
   if (globals.state.visibleState!.cardsRemainingInTheDeck === 0) {
     globals.elements.deck?.nudgeCountDownwards();
   }
@@ -219,32 +216,31 @@ export function onFinishedChanged(
     return;
   }
 
-  // If any tooltips are open, close them
+  // If any tooltips are open, close them.
   konvaTooltips.resetActiveHover();
 
-  // If the timers are showing, hide them
+  // If the timers are showing, hide them.
   globals.elements.timer1?.hide();
   globals.elements.timer2?.hide();
   timer.stop();
 
-  // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
+  // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary.
   globals.elements.replayExitButton?.hide();
 
-  // Hide/show some buttons in the bottom-left-hand corner
+  // Hide/show some buttons in the bottom-left-hand corner.
   globals.elements.replayButton?.hide();
 
-  // Hide the terminate button and show the 3rd strike UI
+  // Hide the terminate button and show the 3rd strike UI.
   if (globals.elements.terminateButton !== null) {
-    globals.elements.terminateButton?.hide();
-    globals.elements.strikeSquares[2].show();
-    globals.elements.strikeXs[2].show();
+    globals.elements.terminateButton.hide();
+    globals.elements.strikeSquares[2]!.show();
+    globals.elements.strikeXs[2]!.show();
   }
 
-  // Re-draw the deck tooltip
-  // (it will show more information when you are in a replay)
+  // Re-draw the deck tooltip. (It will show more information when you are in a replay.)
   globals.elements.deck?.initDeckTooltip();
 
-  // Turn off the "Throw It in a Hole" UI
+  // Turn off the "Throw It in a Hole" UI.
   if (variantRules.isThrowItInAHole(globals.variant)) {
     globals.elements.scoreTextLabel?.show();
     globals.elements.scoreNumberLabel?.show();
@@ -266,8 +262,8 @@ export function onSharedLeaderChanged(
   _leader: string,
   previousLeader: string | undefined,
 ): void {
-  // Make the crown play an animation to indicate there is a new replay leader
-  // (but don't play the animation if the game just ended or we are first loading the page)
+  // Make the crown play an animation to indicate there is a new replay leader. (But don't play the
+  // animation if the game just ended or we are first loading the page.)
   if (previousLeader !== undefined) {
     globals.elements.sharedReplayLeaderLabelPulse!.play();
   }
@@ -278,8 +274,8 @@ export function onSharedAmLeaderChanged(amLeader: boolean): void {
   globals.elements.restartButton?.visible(amLeader);
   globals.elements.enterHypoButton?.visible(amLeader);
 
-  // Arrange the buttons in the center of the screen in a certain way depending on
-  // whether we are the shared replay leader
+  // Arrange the buttons in the center of the screen in a certain way depending on whether we are
+  // the shared replay leader.
   if (amLeader) {
     globals.elements.pauseSharedTurnsButton?.setLeft();
     globals.elements.useSharedTurnsButton?.setLeft();
@@ -299,7 +295,7 @@ export function onLeaderOrSpectatorsChanged(data: {
     return;
   }
 
-  // Find out if the leader is away
+  // Find out if the leader is away.
   let away = true;
   for (const spectator of data.spectators) {
     if (spectator.name === data.leader) {

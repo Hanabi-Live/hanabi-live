@@ -17,7 +17,7 @@ export default class ColorButton extends Konva.Group {
     super(config);
     this.listening(true);
 
-    this.clue = config.clue as Clue;
+    this.clue = config["clue"] as Clue;
 
     // Local variables
     const w = this.width();
@@ -41,7 +41,7 @@ export default class ColorButton extends Konva.Group {
       width: 0.8 * w,
       height: 0.8 * h,
       cornerRadius: 0.12 * 0.8 * h,
-      fill: config.color as string | undefined,
+      fill: config["color"] as string | undefined,
       opacity: 0.9,
       listening: false,
     });
@@ -49,7 +49,7 @@ export default class ColorButton extends Konva.Group {
 
     if (globals.lobby.settings.colorblindMode) {
       if (variantRules.isDualColor(globals.variant)) {
-        // For Dual-Color variants, draw the color abbreviation (as text)
+        // For Dual-Color variants, draw the color abbreviation (as text).
         const text = new Konva.Text({
           x: 0,
           y: 0.275 * h,
@@ -61,12 +61,12 @@ export default class ColorButton extends Konva.Group {
           stroke: "black",
           strokeWidth: 0.01487 * h,
           align: "center",
-          text: config.text as string | undefined,
+          text: config["text"] as string | undefined,
           listening: false,
         });
         this.add(text);
       } else {
-        // Draw the suit pip that corresponds to this color
+        // Draw the suit pip that corresponds to this color.
         const suitPip = new Konva.Shape({
           scale: {
             x: 0.25,

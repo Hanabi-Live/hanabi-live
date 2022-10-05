@@ -6,6 +6,7 @@ import Clue from "../types/Clue";
 import ClueType from "../types/ClueType";
 import MsgClue from "../types/MsgClue";
 import * as arrows from "./arrows";
+import ButtonGroup from "./ButtonGroup";
 import ColorButton from "./ColorButton";
 import PlayerButton from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
@@ -15,7 +16,7 @@ import RankButton from "./RankButton";
 import * as turn from "./turn";
 
 export function checkLegal(): void {
-  let clueTargetButtonGroup;
+  let clueTargetButtonGroup: ButtonGroup | null;
   if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
   } else {
@@ -28,9 +29,13 @@ export function checkLegal(): void {
     | RankButton;
 
   if (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     target === undefined ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     target === null || // They have not selected a target player
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     clueButton === undefined ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     clueButton === null // They have not selected a clue type
   ) {
     globals.elements.giveClueButton!.setEnabled(false);
@@ -43,7 +48,7 @@ export function checkLegal(): void {
     return;
   }
   if (who === currentPlayerIndex) {
-    // They are in a hypothetical and trying to give a clue to the current player
+    // They are in a hypothetical and trying to give a clue to the current player.
     globals.elements.giveClueButton!.setEnabled(false);
     return;
   }
@@ -55,19 +60,19 @@ export function checkLegal(): void {
     globals.metadata.characterAssignments,
   );
 
-  // By default, only enable the "Give Clue" button if the clue "touched"
-  // one or more cards in the hand
+  // By default, only enable the "Give Clue" button if the clue "touched" one or more cards in the
+  // hand.
   const enabled =
     touchedAtLeastOneCard ||
-    // Make an exception if they have the optional setting for "Empty Clues" turned on
+    // Make an exception if they have the optional setting for "Empty Clues" turned on.
     globals.options.emptyClues ||
-    // Make an exception for variants where color clues are always allowed
+    // Make an exception for variants where color clues are always allowed.
     (globals.variant.colorCluesTouchNothing &&
       clueButton.clue.type === ClueType.Color) ||
-    // Make an exception for variants where number clues are always allowed
+    // Make an exception for variants where number clues are always allowed.
     (globals.variant.rankCluesTouchNothing &&
       clueButton.clue.type === ClueType.Rank) ||
-    // Make an exception for certain characters
+    // Make an exception for certain characters.
     (ourCharacterName === "Blind Spot" &&
       who ===
         (globals.metadata.ourPlayerIndex + 1) % globals.options.numPlayers) ||
@@ -82,9 +87,9 @@ export function checkLegal(): void {
 function showClueMatch(target: number, clue: Clue) {
   arrows.hideAll();
   let touchedAtLeastOneCard = false;
-  const hand = globals.elements.playerHands[target].children;
+  const hand = globals.elements.playerHands[target]!.children;
   for (let i = 0; i < hand.length; i++) {
-    const child = globals.elements.playerHands[target].children[i];
+    const child = globals.elements.playerHands[target]!.children[i]!;
     const card: HanabiCard = child.children[0] as HanabiCard;
     if (
       card
@@ -107,7 +112,7 @@ export function getTouchedCardsFromClue(
   target: number,
   clue: MsgClue,
 ): number[] {
-  const hand = globals.elements.playerHands[target];
+  const hand = globals.elements.playerHands[target]!;
   const cardsTouched: number[] = []; // An array of the card orders
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
@@ -131,7 +136,7 @@ export function getTouchedCardsFromClue(
 }
 
 export function give(): void {
-  let clueTargetButtonGroup;
+  let clueTargetButtonGroup: ButtonGroup | null;
   if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
   } else {
@@ -148,18 +153,23 @@ export function give(): void {
   }
 
   let type: ActionType;
-  let value: ClueType;
-  if (clueButton.clue.type === ClueType.Color) {
-    type = ActionType.ColorClue;
-    value = colorToColorIndex(clueButton.clue.value, globals.variant);
-  } else if (clueButton.clue.type === ClueType.Rank) {
-    type = ActionType.RankClue;
-    value = clueButton.clue.value;
-  } else {
-    throw new Error("The clue button has an invalid clue type.");
+  let value: number;
+
+  switch (clueButton.clue.type) {
+    case ClueType.Color: {
+      type = ActionType.ColorClue;
+      value = colorToColorIndex(clueButton.clue.value, globals.variant);
+      break;
+    }
+
+    case ClueType.Rank: {
+      type = ActionType.RankClue;
+      value = clueButton.clue.value;
+      break;
+    }
   }
 
-  // Send the message to the server
+  // Send the message to the server.
   turn.end({
     type,
     target: target.targetIndex,
@@ -179,18 +189,22 @@ function shouldGiveClue(
       : globals.state.replay.hypothetical.ongoing;
 
   return (
-    // We can only give clues on our turn
+    // We can only give clues on our turn.
     (currentPlayerIndex === ourPlayerIndex ||
       globals.state.replay.hypothetical !== null) &&
-    // We can only give a clue if there is a clue token available
+    // We can only give a clue if there is a clue token available.
     ongoingGameState.clueTokens >=
       clueTokensRules.getAdjusted(1, globals.variant) &&
-    target !== undefined && // We might have not selected a clue recipient
-    target !== null && // We might have not selected a clue recipient
-    clueButton !== undefined && // We might have not selected a type of clue
-    clueButton !== null && // We might have not selected a type of clue
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    target !== undefined && // We might have not selected a clue recipient.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    target !== null && // We might have not selected a clue recipient.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    clueButton !== undefined && // We might have not selected a type of clue.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    clueButton !== null && // We might have not selected a type of clue.
     // We might be trying to give an invalid clue (e.g. an Empty Clue)
     globals.elements.giveClueButton!.enabled &&
-    Date.now() - globals.UIClickTime > 1000 // Prevent the user from accidentally giving a clue
+    Date.now() - globals.UIClickTime > 1000 // Prevent the user from accidentally giving a clue.
   );
 }

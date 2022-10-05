@@ -32,9 +32,9 @@ export default class StateObserver {
     this.registerObservers(store);
   }
 
-  // Observe the store, calling different functions when a particular path changes
+  // Observe the store, calling different functions when a particular path changes.
   registerObservers(store: Store<State, Action>): void {
-    // Clean up any existing subscribers
+    // Clean up any existing subscribers.
     this.unregisterObservers();
 
     const subscriptions: Subscriptions = earlyObservers
@@ -66,7 +66,7 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
   };
 }
 
-// A shorthand function used to subscribe an observer to the visible state
+// A shorthand function used to subscribe an observer to the visible state.
 function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
   // We do not want anything to fire if the visible state is null
   // (e.g. when the UI is still initializing)
@@ -75,8 +75,8 @@ function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
   return sub(selector, l);
 }
 
-// A shorthand function used to subscribe an observer to the state,
-// but only when the visible state has already been initialized
+// A shorthand function used to subscribe an observer to the state, but only when the visible state
+// has already been initialized.
 function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
   const selector = (state: State) =>
     state.visibleState === null ? undefined : s(state);
@@ -92,10 +92,10 @@ function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
 
 // These observers need to run before other observers
 const earlyObservers: Subscriptions = [
-  // This has to come first because it sets up animateFast correctly
+  // This has to come first because it sets up animateFast correctly.
   subAfterInit((s) => s, animateFastView.onObserversStarted),
 
-  // This has to come first because it tells the UI that we are changing to a shared replay
+  // This has to come first because it tells the UI that we are changing to a shared replay.
   subAfterInit((s) => s.finished, replayView.onFinishedChanged),
 ];
 
@@ -176,25 +176,24 @@ const visibleStateObservers: Subscriptions = [
   // Logs
   subVS((s) => s.log, logView.onLogChanged),
 
-  // Cards
-  // Each card will subscribe to changes to its own data
-  // Must come before card layout, since cards are constructed here
+  // Cards. Each card will subscribe to changes to its own data. Must come before card layout, since
+  // cards are constructed here.
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyAdded),
 
-  // Card layout - the order of the following subscriptions matters
-  // Hands have to come first to perform the adds/removes for the purposes of displaying animations
+  // Card layout - the order of the following subscriptions matters. Hands have to come first to
+  // perform the adds/removes for the purposes of displaying animations.
   subVS((s) => s.hands, cardLayoutView.onHandsChanged),
   subVS((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
   subVS((s) => s.hole, cardLayoutView.onHoleChanged),
-  // Play stacks come last so we can show the bases if they get empty
+  // Play stacks come last so we can show the bases if they get empty.
   subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
   subVS(
     (s) => s.playStackDirections,
     cardLayoutView.onPlayStackDirectionsChanged,
   ),
 
-  // Unsubscribe and reset removed cards
-  // Must come after card layout so animations to deck are correctly triggered
+  // Unsubscribe and reset removed cards. Must come after card layout so animations to deck are
+  // correctly triggered.
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
   // Clue log
@@ -217,7 +216,7 @@ const ongoingGameObservers: Subscriptions = [
     turnView.shouldShowTurnUIChanged,
   ),
 
-  // "No Clues" indicator and fade
+  // "No Clues" indicator and fade.
   subAfterInit(
     (s) => turnView.shouldIndicateNoClues(s),
     turnView.shouldIndicateNoCluesChanged,
@@ -235,7 +234,7 @@ const ongoingGameObservers: Subscriptions = [
     turnView.onLastClueTypeChanged,
   ),
 
-  // Segment + current player index
+  // Segment + current player index.
   subAfterInit(
     (s) => ({
       segment: s.ongoingGame.turn.segment,
@@ -250,7 +249,7 @@ const ongoingGameObservers: Subscriptions = [
     turnView.shouldShowYourTurnIndicatorChanged,
   ),
 
-  // The "Current Player" area should only be shown under certain conditions
+  // The "Current Player" area should only be shown under certain conditions.
   subAfterInit(
     (s) => ({
       visible: currentPlayerAreaView.isVisible(s),
@@ -347,12 +346,11 @@ const replayObservers: Subscriptions = [
     hypotheticalView.onDrawnCardsInHypotheticalChanged,
   ),
 
-  // Replay entered or exited
-  // Note that this needs to go after onActiveOrAmLeaderChanged so that the clue area is shown at
-  // game start
+  // Replay entered or exited. Note that this needs to go after onActiveOrAmLeaderChanged so that
+  // the clue area is shown at game start.
   subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
 
-  // Replay sliders and buttons
+  // Replay sliders and buttons.
   subAfterInit(
     (s) => ({
       active: s.replay.active,
@@ -382,7 +380,7 @@ const replayObservers: Subscriptions = [
     replayView.enterHypoButtonLocationChanged,
   ),
 
-  // Card and stack base morphing
+  // Card and stack base morphing.
   subAfterInit(
     (s) => ({
       hypotheticalActive: s.replay.hypothetical !== null,
@@ -391,7 +389,7 @@ const replayObservers: Subscriptions = [
     cardsView.onMorphedIdentitiesChanged,
   ),
 
-  // Remove notes morph from play stacks after game finishes
+  // Remove notes morph from play stacks after game finishes.
   subAfterInit(
     (s) => ({
       finished: s.finished,
@@ -421,12 +419,12 @@ const otherObservers = [
   ),
 ];
 
-// These observers need to run after all other observers
+// These observers need to run after all other observers.
 const lateObservers = [
-  // Reset animations back to the default
+  // Reset animations back to the default.
   subAfterInit((s) => s, animateFastView.onObserversFinished),
 
-  // Initialization finished
-  // (this will get called when the visible state becomes valid and after all other view updates)
+  // Initialization finished. (This will get called when the visible state becomes valid and after
+  // all other view updates.)
   sub((s) => !!s.visibleState, initView.onInitializationChanged), // eslint-disable-line
 ];

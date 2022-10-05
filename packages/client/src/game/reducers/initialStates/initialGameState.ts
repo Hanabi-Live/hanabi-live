@@ -44,7 +44,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   variant.suits.forEach((_, suitIndex) => {
     cardStatus[suitIndex] = [];
     variant.ranks.forEach((rank) => {
-      cardStatus[suitIndex][rank] = cardRules.status(
+      cardStatus[suitIndex]![rank] = cardRules.status(
         suitIndex,
         rank,
         [],

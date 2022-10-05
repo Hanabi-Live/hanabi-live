@@ -17,20 +17,20 @@ export function totalCards(variant: Variant): number {
       variantRules.isUpOrDown(variant) ||
       variantRules.isCriticalFours(variant)
     ) {
-      totalCardsInTheDeck -= 1;
+      totalCardsInTheDeck--;
     }
   }
   return totalCardsInTheDeck;
 }
 
-// Given a variant, and a card's rank and suit, returns how many copies of
-// this card exist in the deck
+// Given a variant, and a card's rank and suit, returns how many copies of this card exist in the
+// deck.
 export function numCopiesOfCard(
   suit: Suit,
   rank: number,
   variant: Variant,
 ): number {
-  // This implementation mirrors numCopiesOfCard in server/src/game_deck.go
+  // This implementation mirrors numCopiesOfCard in "server/src/game_deck.go".
   if (suit.oneOfEach) {
     return 1;
   }
@@ -67,7 +67,7 @@ export function numCopiesOfCard(
   return 2;
 }
 
-// Returns how many cards of a specific suit/rank that have been already discarded
+// Returns how many cards of a specific suit/rank that have been already discarded.
 export const discardedCopies = (
   deck: readonly CardState[],
   suitIndex: number,

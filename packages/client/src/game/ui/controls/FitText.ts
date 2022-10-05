@@ -8,7 +8,7 @@ export default class FitText extends Konva.Text {
   constructor(config: Konva.TextConfig) {
     super(config);
 
-    // Never listen on the text object, listen on the parent instead
+    // Never listen on the text object, listen on the parent instead.
     this.listening(false);
 
     // Class variables
@@ -35,7 +35,7 @@ export default class FitText extends Konva.Text {
     const minimumFontSize = 5;
 
     if (!textFits(this.origFontSize) && this.origFontSize > minimumFontSize) {
-      // Binary search the maximum font size that fits within a tolerance
+      // Binary search the maximum font size that fits within a tolerance.
       let low = minimumFontSize;
       let high = this.origFontSize;
       const tolerance = 0.5;

@@ -1,4 +1,4 @@
-// Rules related to properties of variants
+// Rules related to properties of variants.
 
 import { isNameUpOrDown, Variant } from "@hanabi/data";
 

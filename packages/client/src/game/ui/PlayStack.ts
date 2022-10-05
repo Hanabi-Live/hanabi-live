@@ -1,5 +1,5 @@
-// PlayStack represents the stack in the middle of the table for each suit
-// It is composed of LayoutChild objects
+// PlayStack represents the stack in the middle of the table for each suit. It is composed of
+// LayoutChild objects.
 
 import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
@@ -20,11 +20,11 @@ export default class PlayStack extends Konva.Group {
     const lh = this.height();
 
     const layoutChildren = this.children.toArray() as LayoutChild[];
-    const layoutChild = layoutChildren[layoutChildren.length - 1];
+    const layoutChild = layoutChildren[layoutChildren.length - 1]!;
     const scale = lh / layoutChild.height();
     const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
 
-    // Hide cards in "Throw It in a Hole" variants
+    // Hide cards in "Throw It in a Hole" variants.
     const opacity =
       variantRules.isThrowItInAHole(globals.variant) &&
       globals.state.playing && // Revert to the normal behavior for spectators of ongoing games
@@ -33,8 +33,8 @@ export default class PlayStack extends Konva.Group {
         ? 0
         : 1;
 
-    // Animate the card leaving the hand to the play stacks (or vice versa)
-    // (tweening from the hand to the discard pile is handled in the "CardLayout" object)
+    // Animate the card leaving the hand to the play stacks (or vice versa). (Tweening from the hand
+    // to the discard pile is handled in the "CardLayout" object.)
     layoutChild.card.startedTweening();
     layoutChild.card.setRaiseAndShadowOffset();
     animate(
@@ -68,19 +68,19 @@ export default class PlayStack extends Konva.Group {
     for (let i = 0; i < stackLength; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
       if (layoutChild.tween !== null) {
-        // Don't hide anything if one of the cards on the stack is still tweening
+        // Don't hide anything if one of the cards on the stack is still tweening.
         return;
       }
     }
 
-    // Hide all of the cards
+    // Hide all of the cards.
     for (let i = 0; i < stackLength - 1; i++) {
-      this.children[i].hide();
+      this.children[i]!.hide();
     }
 
-    // Show the top card
+    // Show the top card.
     if (stackLength > 0) {
-      this.children[stackLength - 1].show();
+      this.children[stackLength - 1]!.show();
     }
 
     globals.layers.card.batchDraw();

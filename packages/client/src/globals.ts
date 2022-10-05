@@ -1,4 +1,4 @@
-// These are exported global variables to be shared between all of the TypeScript code
+// These are exported global variables to be shared between all of the TypeScript code.
 
 import { VERSION } from "@hanabi/data";
 import Connection from "./Connection";
@@ -12,12 +12,12 @@ import Table from "./lobby/types/Table";
 import User from "./lobby/types/User";
 
 export class Globals {
-  // The version file is filled in dynamically by the build scripts
+  // The version file is filled in dynamically by the build scripts.
   version = VERSION;
 
   conn: Connection | null = null; // The WebSocket connection (set in "websocket.ts")
 
-  // Values sent to us from the server in the "welcome" message
+  // Values sent to us from the server in the "welcome" message.
   userID = -1;
   username = "";
   totalGames = 0;
@@ -44,7 +44,7 @@ export class Globals {
   idleMinutes = 0;
 
   // If the start game button is disabled due to a player leaving or joining, stores the ID of a
-  // timeout designed to re-enable it
+  // timeout designed to re-enable it.
   enableStartGameButtonTimeout: NodeJS.Timeout | null = null;
 
   game: Game | null = null; // Equal to the data from the "game" command
@@ -56,29 +56,32 @@ export class Globals {
   // UI variables
   imageLoader: Loader | null = null;
   ui: HanabiUI | null = null;
-  // Used to keep track of how many in-game chat messages are currently unread
+  // Used to keep track of how many in-game chat messages are currently unread.
   chatUnread = 0;
-  // Used to keep track of the active element before model warning box
+  // Used to keep track of the active element before model warning box.
   lastActiveElement: HTMLElement | null = null;
 
   browserIsFirefox =
-    // Check to keep Jest happy
+    // `global.navigator` is undefined in Jest tests.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     global.navigator === undefined
       ? false
-      : navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+      : navigator.userAgent.toLowerCase().includes("firefox");
 }
 
 const globals = new Globals();
 export default globals;
 
-// Also make the globals available to the window
-// (so that we can access them from the JavaScript console for debugging purposes)
+// Also make the globals available to the window (so that we can access them from the JavaScript
+// console for debugging purposes).
 declare global {
   interface Window {
     globals2: Globals;
   }
 }
-// Check to keep Jest happy
+
+// `global.window` is undefined in Jest tests.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (global.window !== undefined) {
   window.globals2 = globals;
 }

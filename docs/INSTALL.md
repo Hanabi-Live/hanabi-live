@@ -226,7 +226,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 
 <br />
 
-#### Set up iptables (optional)
+### Set up `iptables` (Optional)
 
 - `sudo apt install iptables-persistent -y`
 - `sudo iptables -A INPUT -p icmp -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT`
@@ -243,7 +243,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 
 <br />
 
-#### Install as a service (optional)
+### Install as a service (optional)
 
 This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
@@ -258,20 +258,20 @@ To manage the service:
 
 <br />
 
-#### Set up Automated Database Backups (optional)
+### Set up Automated Database Backups (optional)
 
 This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 - `crontab -e`
 
-```
+```sh
 # Every day, backup the "hanabi" database
 0 0 * * * /root/hanabi-live/database_backup.sh
 ```
 
 <br />
 
-#### Set up Secondary Automated Database Backups to Google Drive (optional)
+### Set up Secondary Automated Database Backups to Google Drive (optional)
 
 This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
@@ -292,7 +292,7 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 <br />
 
-#### Install HTTPS (optional)
+### Install HTTPS (optional)
 
 Adjust the "certbot" command below according to what domain names you want to register.
 
@@ -304,7 +304,7 @@ Adjust the "certbot" command below according to what domain names you want to re
   - Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanab.live/privkey.pem`
 - `crontab -e`
 
-```
+```sh
 # Every day, keep the Let's Encrypt certificate up to date
 0 0 * * * /root/hanab-live/renew_cert.sh
 ```

@@ -1,13 +1,12 @@
 // These are Visual Studio Code extensions that are intended to be used with this particular
-// repository
-// https://code.visualstudio.com/docs/editor/extension-gallery#_workspace-recommended-extensions
+// repository: https://go.microsoft.com/fwlink/?LinkId=827846
 {
   "recommendations": [
     "esbenp.prettier-vscode", // The TypeScript formatter
     "dbaeumer.vscode-eslint", // The TypeScript linter
     "orta.vscode-jest", // The TypeScript tester
-    "golang.go", // The server is written in Golang
-    "ms-python.python", // This project uses several Python scripts
-    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on cspell
+    "golang.go", // Golang language server
+    "ms-python.python", // Python language server
+    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on CSpell
   ],
 }

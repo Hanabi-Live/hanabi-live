@@ -1304,17 +1304,17 @@ export default function drawStylizedRank(
   ctx: CanvasRenderingContext2D,
   rank: number,
 ): void {
-  // Each rank has a shape
+  // Each rank has a shape.
   const shapeFunction = shapeFunctions.get(rank);
   if (shapeFunction === undefined) {
     throw new Error(`Failed to find the shape function for rank "${rank}".`);
   }
 
   ctx.save();
-  // Move the cursor to the top-left hand corner
+  // Move the cursor to the top-left hand corner.
   ctx.translate(60, 135);
 
-  // Draw the respective shape on the canvas
+  // Draw the respective shape on the canvas.
   shapeFunction(ctx);
   ctx.restore();
 }
