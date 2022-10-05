@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,17 +34,20 @@ func httpLocalhostInit() {
 
 	// Path handlers
 	httpRouter.POST("/ban", httpLocalhostUserAction)
+	httpRouter.POST("/mute", httpLocalhostUserAction)
+	httpRouter.POST("/sendError", httpLocalhostUserAction)
+	httpRouter.POST("/sendWarning", httpLocalhostUserAction)
+	httpRouter.POST("/sendWarningAll", httpLocalhostSendWarningAll)
+
 	httpRouter.GET("/cancel", httpLocalhostCancel)
 	httpRouter.GET("/clearEmptyTables", httpLocalhostClearEmptyTables)
 	httpRouter.GET("/debugFunction", httpLocalhostDebugFunction)
 	httpRouter.GET("/getLongTables", httpLocalhostGetLongTables)
-	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
-	httpRouter.POST("/mute", httpLocalhostUserAction)
-	httpRouter.GET("/print", httpLocalhostPrint)
 	httpRouter.GET("/gracefulRestart", httpLocalhostGracefulRestart)
+	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
+	httpRouter.GET("/memory", httpLocalhostMemory)
+	httpRouter.GET("/print", httpLocalhostPrint)
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
-	httpRouter.POST("/sendWarning", httpLocalhostUserAction)
-	httpRouter.POST("/sendError", httpLocalhostUserAction)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
 	httpRouter.GET("/terminate", httpLocalhostTerminate)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)

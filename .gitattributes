@@ -1,0 +1,2 @@
+# Prevent Windows systems from cloning this repository with "\r\n" line endings
+core.autocrlf=false

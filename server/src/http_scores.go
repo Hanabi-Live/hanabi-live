@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -118,7 +119,9 @@ func httpScores(c *gin.Context) {
 		Title:                      "Scores",
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
-		NumGames:                   profileStats.NumGames,
+		NumGamesTotal:              profileStats.NumGamesNormal + profileStats.NumGamesOther,
+		NumGamesNormal:             profileStats.NumGamesNormal,
+		NumGamesOther:              profileStats.NumGamesOther,
 		TimePlayed:                 timePlayed,
 		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,

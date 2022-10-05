@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // Game is a sub-object of a table
@@ -102,7 +104,7 @@ func NewGame(t *Table) *Game {
 		Stacks:                make([]int, len(variant.Suits)),
 		PlayStackDirections:   make([]int, len(variant.Suits)),
 		Turn:                  0,
-		DatetimeTurnBegin:     time.Time{},
+		DatetimeTurnBegin:     time.Now(),
 		TurnsInverted:         false,
 		ActivePlayerIndex:     0,
 		ClueTokens:            variant.GetAdjustedClueTokens(MaxClueNum),
@@ -240,6 +242,7 @@ func (g *Game) CheckEnd() bool {
 	// Some ending conditions will already be set by the time we get here
 	if g.EndCondition == EndConditionTimeout ||
 		g.EndCondition == EndConditionTerminated ||
+		g.EndCondition == EndConditionTerminatedByVote ||
 		g.EndCondition == EndConditionIdleTimeout ||
 		g.EndCondition == EndConditionCharacterSoftlock {
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"reflect"
 	"strconv"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandSetting is sent when the user modifies a setting
@@ -80,7 +82,7 @@ func setting(s *Session, d *CommandData) {
 		return
 	}
 
-	// We also store whether or not they are a Hyphen-ated member on the session itself
+	// We also store whether or not they are a H-Group member on the session itself
 	if d.Name == "hyphenatedConventions" {
 		if d.Setting == "1" {
 			s.SetHyphenated(true)

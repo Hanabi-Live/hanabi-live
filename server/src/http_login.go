@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,7 @@ type HTTPLoginData struct {
 	IP                 string
 	Username           string
 	Password           string
+	NewPassword        string
 	NormalizedUsername string
 }
 
@@ -65,135 +67,21 @@ func httpLogin(c *gin.Context) {
 	if exists {
 		// First, check to see if they have a a legacy password hash stored in the database
 		if user.OldPasswordHash.Valid {
-			// This is the first time that they are logging in after the password hash transition
-			// Hash the submitted password with SHA256
-			passwordSalt := "Hanabi password "
-			combined := passwordSalt + data.Password
-			oldPasswordHashBytes := sha256.Sum256([]byte(combined))
-			oldPasswordHashString := fmt.Sprintf("%x", oldPasswordHashBytes)
-			if oldPasswordHashString != user.OldPasswordHash.String {
-				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-				return
-			}
-
-			// Create an Argon2id hash of the plain-text password
-			var passwordHash string
-			if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-				logger.Error("Failed to create a hash from the submitted password for " +
-					"\"" + data.Username + "\": " + err.Error())
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			} else {
-				passwordHash = v
-			}
-
-			// Update their password to the new Argon2 format
-			if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
-				logger.Error("Failed to set the new hash for \"" + data.Username + "\": " +
-					err.Error())
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
+			if ok := httpCheckAndChangeCredentials(w, user, data); !ok {
 				return
 			}
 		} else {
-			// Check to see if their password is correct
-			if !user.PasswordHash.Valid {
-				logger.Error("Failed to get the Argon2 hash from the database for " +
-					"\"" + data.Username + "\".")
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
+			if ok := httpCheckCredentials(w, user, data); !ok {
 				return
 			}
-			if match, err := argon2id.ComparePasswordAndHash(
-				data.Password,
-				user.PasswordHash.String,
-			); err != nil {
-				logger.Error("Failed to compare the password to the Argon2 hash for " +
-					"\"" + data.Username + "\": " + err.Error())
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			} else if !match {
-				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-				return
-			}
+		}
+
+		// If they have provided a new password, replace the old one
+		if ok := httpCheckPasswordChange(w, user, data); !ok {
+			return
 		}
 	} else {
-		// Check to see if any other users have a normalized version of this username
-		// This prevents username-spoofing attacks and homoglyph usage
-		// e.g. "alice" trying to impersonate "Alice"
-		// e.g. "Alicé" trying to impersonate "Alice"
-		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
-		if data.NormalizedUsername == "" {
-			http.Error(
-				w,
-				"That username cannot be transliterated to ASCII. "+
-					"Please try using a simpler username or try using less special characters.",
-				http.StatusUnauthorized,
-			)
-			return
-		}
-		if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
-			data.NormalizedUsername,
-		); err != nil {
-			logger.Error("Failed to check for normalized password uniqueness for " +
-				"\"" + data.Username + "\": " + err.Error())
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else if normalizedExists {
-			http.Error(
-				w,
-				"That username is too similar to the existing user of "+"\""+similarUsername+"\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
-				http.StatusUnauthorized,
-			)
-			return
-		}
-
-		// Create an Argon2id hash of the plain-text password
-		var passwordHash string
-		if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-			logger.Error("Failed to create a hash from the submitted password for " +
-				"\"" + data.Username + "\": " + err.Error())
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		} else {
-			passwordHash = v
-		}
-
-		// Create the new user in the database
-		if v, err := models.Users.Insert(
-			data.Username,
-			data.NormalizedUsername,
-			passwordHash,
-			data.IP,
-		); err != nil {
-			logger.Error("Failed to insert user \"" + data.Username + "\": " + err.Error())
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
+		if v, ok := httpCreateNewUser(w, data); !ok {
 			return
 		} else {
 			user = v
@@ -221,6 +109,192 @@ func httpLogin(c *gin.Context) {
 
 	// Next, the client will attempt to establish a WebSocket connection,
 	// which is handled in "httpWS.go"
+}
+
+// Verifies user login using SHA256 and change password hashing to Argon2id
+func httpCheckAndChangeCredentials(w http.ResponseWriter, user User, data *HTTPLoginData) bool {
+	// This is the first time that they are logging in after the password hash transition
+	// Hash the submitted password with SHA256
+	passwordSalt := "Hanabi password "
+	combined := passwordSalt + data.Password
+	oldPasswordHashBytes := sha256.Sum256([]byte(combined))
+	oldPasswordHashString := fmt.Sprintf("%x", oldPasswordHashBytes)
+	if oldPasswordHashString != user.OldPasswordHash.String {
+		http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+		return false
+	}
+
+	// Create an Argon2id hash of the plain-text password
+	var passwordHash string
+	if v, ok := httpPasswordHash(w, data.Password, data.Username); !ok {
+		return false
+	} else {
+		passwordHash = v
+	}
+
+	// Update their password to the new Argon2 format
+	if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
+		logger.Error("Failed to set the new hash for \"" + data.Username + "\": " +
+			err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return false
+	}
+	return true
+}
+
+// Verifies user login using Argon2id
+func httpCheckCredentials(w http.ResponseWriter, user User, data *HTTPLoginData) bool {
+	// Check to see if their password is correct
+	if !user.PasswordHash.Valid {
+		logger.Error("Failed to get the Argon2 hash from the database for " +
+			"\"" + data.Username + "\".")
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return false
+	}
+	if match, err := argon2id.ComparePasswordAndHash(
+		data.Password,
+		user.PasswordHash.String,
+	); err != nil {
+		logger.Error("Failed to compare the password to the Argon2 hash for " +
+			"\"" + data.Username + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return false
+	} else if !match {
+		http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+		return false
+	}
+	return true
+}
+
+// Checks for password change and saves new hashed password
+func httpCheckPasswordChange(w http.ResponseWriter, user User, data *HTTPLoginData) bool {
+	if data.NewPassword == "" {
+		return true
+	}
+
+	var passwordHash string
+	if v, ok := httpPasswordHash(w, data.NewPassword, data.Username); !ok {
+		return false
+	} else {
+		passwordHash = v
+	}
+
+	// Update the user
+	if err := models.Users.ChangePassword(user.ID, passwordHash); err != nil {
+		logger.Error("Failed to update user \"" + data.Username + "\" password: " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return false
+	}
+	logger.Info("Password update for user \"" + data.Username + "\"")
+	return true
+}
+
+// Checks provided data and creates a new user
+func httpCreateNewUser(w http.ResponseWriter, data *HTTPLoginData) (User, bool) {
+	// Check for empty password and non-empty newPassword
+	if data.Password == "" {
+		http.Error(
+			w,
+			"You requested an account creation without providing a password.",
+			http.StatusUnauthorized,
+		)
+		return User{}, false
+	}
+
+	if data.NewPassword != "" {
+		http.Error(
+			w,
+			"You requested an account creation. You cannot ask for a password change at the same time.",
+			http.StatusUnauthorized,
+		)
+		return User{}, false
+	}
+
+	// Check to see if any other users have a normalized version of this username
+	// This prevents username-spoofing attacks and homoglyph usage
+	// e.g. "alice" trying to impersonate "Alice"
+	// e.g. "Alicé" trying to impersonate "Alice"
+	// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
+	if data.NormalizedUsername == "" {
+		http.Error(
+			w,
+			"That username cannot be transliterated to ASCII. "+
+				"Please try using a simpler username or try using less special characters.",
+			http.StatusUnauthorized,
+		)
+		return User{}, false
+	}
+	if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
+		data.NormalizedUsername,
+	); err != nil {
+		logger.Error("Failed to check for normalized password uniqueness for " +
+			"\"" + data.Username + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return User{}, false
+	} else if normalizedExists {
+		http.Error(
+			w,
+			"That username is too similar to the existing user of "+"\""+similarUsername+
+				"\". If you are sure that this is your username, then please check to make sure "+
+				"that you are capitalized your username correctly. If you are logging on for the first time, "+
+				"then please choose a different username.",
+			http.StatusUnauthorized,
+		)
+		return User{}, false
+	}
+
+	// Create an Argon2id hash of the plain-text password
+	var passwordHash string
+	if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
+		logger.Error("Failed to create a hash from the submitted password for " +
+			"\"" + data.Username + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return User{}, false
+	} else {
+		passwordHash = v
+	}
+
+	// Create the new user in the database
+	if v, err := models.Users.Insert(
+		data.Username,
+		data.NormalizedUsername,
+		passwordHash,
+		data.IP,
+	); err != nil {
+		logger.Error("Failed to insert user \"" + data.Username + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return User{}, false
+	} else {
+		return v, true
+	}
 }
 
 func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
@@ -285,6 +359,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		)
 		return nil, false
 	}
+	newPassword := c.PostForm("newPassword")
 	version := c.PostForm("version")
 	if version == "" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
@@ -444,7 +519,23 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		IP:                 ip,
 		Username:           username,
 		Password:           password,
+		NewPassword:        newPassword,
 		NormalizedUsername: normalizedUsername,
 	}
 	return data, true
+}
+
+func httpPasswordHash(w http.ResponseWriter, password string, username string) (string, bool) {
+	if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
+		logger.Error("Failed to create a hash from the submitted password for " +
+			"\"" + username + "\": " + err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return "", false
+	} else {
+		return v, true
+	}
 }

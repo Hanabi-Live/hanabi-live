@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -168,7 +169,7 @@ func httpExport(c *gin.Context) {
 		optionsJSON.StartingPlayer = &options.StartingPlayer
 		allDefaultOptions = false
 	}
-	if options.VariantName != "No Variant" {
+	if options.VariantName != DefaultVariantName {
 		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false
 	}

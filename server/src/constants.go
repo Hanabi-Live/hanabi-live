@@ -5,7 +5,7 @@ import (
 )
 
 // iota starts at 0 and counts upwards
-// i.e. statusLobby = 0, statusPregame = 1, etc.
+// i.e. StatusLobby = 0, StatusPregame = 1, etc.
 
 // Every player has a status associated with them for the purposes of showing "where they are" on
 // the user list in the lobby
@@ -26,6 +26,7 @@ const (
 	ActionTypeColorClue
 	ActionTypeRankClue
 	ActionTypeEndGame // Players cannot send this (internal only)
+	ActionTypeEndGameByVote
 )
 
 const (
@@ -44,6 +45,7 @@ const (
 	EndConditionCharacterSoftlock
 	EndConditionAllOrNothingFail
 	EndConditionAllOrNothingSoftlock
+	EndConditionTerminatedByVote
 )
 
 // When in a shared replay, spectators can send certain types of "actions" to the server to
@@ -93,6 +95,8 @@ const (
 	// but this may not always be the case
 	PointsPerSuit = 5
 
+	DefaultVariantName = "No Variant"
+
 	// A "reversed" version of every suit exists
 	SuitReversedSuffix = " Reversed"
 
@@ -119,4 +123,5 @@ const (
 	StartedFail     = "The game is already started, so you cannot use that command."
 	NotStartedFail  = "The game has not started yet, so you cannot use that command."
 	NotOwnerFail    = "Only the table owner can use that command."
+	NotInTwoPlayers = "You can only perform this command when there are more than two players."
 )

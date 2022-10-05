@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"strconv"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandTagDelete is sent when a user types the "/tagdelete [tag]" command

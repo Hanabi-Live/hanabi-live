@@ -1,10 +1,13 @@
+# Windows artifacts
+desktop.ini
+
 # MacOS artifacts
 .DS_Store
 
 # Contains secrets
 .env
 
-# The compiled binary
+# The compiled Golang binary
 hanabi-live
 hanabi-live~
 hanabi-live.exe
@@ -18,18 +21,23 @@ compiling_client
 # The message of the day
 motd.txt*
 
-# If we accidentally perform an npm command in the root of the repository,
-# we do not want to commit the leftover package.lock file
-/package.lock
-
 # The version file will change automatically with every commit
-/data/version.json
+/packages/data/src/version.js
 
 # Various directories
 /backups
 /letsencrypt
 /logs
-/data/ongoing_tables
+/ongoing_tables
 
 # Private keys
 GitHub_private_key.pem
+
+# NPM modules are not typically included in a repository
+node_modules
+
+# Ignore output directories for packages
+packages/**/dist
+
+# vim temporary
+.*.swp

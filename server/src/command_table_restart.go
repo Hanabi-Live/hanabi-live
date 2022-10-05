@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 var (
@@ -213,6 +215,7 @@ func tableRestart(
 		// we want to prevent the pre-game from showing up in the lobby for a brief second
 		HidePregame:  d.HidePregame,
 		NoTablesLock: true,
+		MaxPlayers:   t.MaxPlayers,
 	})
 
 	// Find the table ID for the new game

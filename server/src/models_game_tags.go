@@ -47,6 +47,15 @@ func (*GameTags) Delete(gameID int, tag string) error {
 	return err
 }
 
+func (*GameTags) DeleteAll(userID int, gameID int) error {
+	_, err := db.Exec(context.Background(), `
+		DELETE FROM game_tags
+		WHERE user_id = $1
+		    AND game_id = $2
+	`, userID, gameID)
+	return err
+}
+
 func (*GameTags) GetAll(gameID int) ([]string, error) {
 	tags := make([]string, 0)
 
@@ -56,6 +65,37 @@ func (*GameTags) GetAll(gameID int) ([]string, error) {
 		FROM game_tags
 		WHERE game_id = $1
 	`, gameID); err != nil {
+		return tags, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var tag string
+		if err := rows.Scan(&tag); err != nil {
+			return tags, err
+		}
+		tags = append(tags, tag)
+	}
+
+	if err := rows.Err(); err != nil {
+		return tags, err
+	}
+	rows.Close()
+
+	return tags, nil
+}
+
+func (*GameTags) GetAllByUserID(gameID int, userID int) ([]string, error) {
+	tags := make([]string, 0)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
+		SELECT tag
+		FROM game_tags
+		WHERE game_id = $1
+		  AND user_id = $2
+	`, gameID, userID); err != nil {
 		return tags, err
 	} else {
 		rows = v

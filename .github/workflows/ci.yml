@@ -4,86 +4,119 @@ on: [push, pull_request]
 
 jobs:
   client_build:
-    name: Client / Build (Compile TypeScript)
+    name: Client - Build (Compile TypeScript)
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./client
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-      - uses: actions/cache@v2
-        id: cache
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          path: ${{ env.working-directory }}/node_modules
-          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
-      - if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ${{ env.working-directory }}
-      - run: ./build_client.sh
-        working-directory: ${{ env.working-directory }}
+          node-version: "16"
+
+      - name: Retrieve the cached "node_modules" directory (if present)
+        uses: actions/cache@v2
+        id: client-build-cache
+        with:
+          path: node_modules
+          key: client-build-node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies (if the cached directory was not found)
+        if: steps.client-build-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build the TypeScript code
+        run: bash ./packages/client/build_client.sh
 
   client_lint:
-    name: Client / Lint (ESLint)
+    name: Client - Lint (ESLint)
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./client
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-      - uses: actions/cache@v2
-        id: cache
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          path: ${{ env.working-directory }}/node_modules
-          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
-      - if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ${{ env.working-directory }}
-      - run: ./set_version.sh
-        working-directory: ${{ env.working-directory }}
-      - run: npm run lint
-        working-directory: ${{ env.working-directory }}
+          node-version: "16"
+
+      - name: Retrieve the cached "node_modules" directory (if present)
+        uses: actions/cache@v2
+        id: client-lint-cache
+        with:
+          path: node_modules
+          key: client-lint-node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies (if the cached directory was not found)
+        if: steps.client-lint-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Create the "version.js" file
+        run: bash ./packages/client/set_version.sh
+
+      - name: Lint the TypeScript code
+        run: bash ./packages/lint_client.sh
 
   client_test:
-    name: Client / Test (Jest)
+    name: Client - Test (Jest)
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./client
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-      - uses: actions/cache@v2
-        id: cache
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          path: ${{ env.working-directory }}/node_modules
-          key: client-node-modules-${{ hashFiles('client/package-lock.json') }}
-      - if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ${{ env.working-directory }}
-      - run: ./set_version.sh
-        working-directory: ${{ env.working-directory }}
-      - run: npm run test
-        working-directory: ${{ env.working-directory }}
+          node-version: "16"
+
+      - name: Retrieve the cached "node_modules" directory (if present)
+        uses: actions/cache@v2
+        id: client-test-cache
+        with:
+          path: node_modules
+          key: client-test-node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies (if the cached directory was not found)
+        if: steps.client-test-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Create the "version.js" file
+        run: bash ./packages/client/set_version.sh
+
+      - name: Test the TypeScript code
+        run: npm test
 
   server_build:
-    name: Server / Build (Compile Go)
+    name: Server - Build (Compile Go)
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-      - run: ./build_server.sh
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Install Golang
+        uses: actions/setup-go@v2
+
+      - name: Compile the Golang code
+        run: bash build_server.sh
         working-directory: ${{ env.working-directory }}
 
   server_lint:
-    name: Server / Lint (golangci-lint)
+    name: Server - Lint (golangci-lint)
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-      - uses: golangci/golangci-lint-action@v2
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Install Golang
+        uses: actions/setup-go@v2
+
+      - name: Lint the Golang code
+        uses: golangci/golangci-lint-action@v2
         with:
           version: v1.33
           working-directory: ${{ env.working-directory }}/src
@@ -94,22 +127,41 @@ jobs:
     env:
       working-directory: ./spell_check
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-      - uses: actions/cache@v2
-        id: cache
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Retrieve the cached "node_modules" directory (if present)
+        uses: actions/cache@v2
+        id: spell-check-cache
         with:
           path: ${{ env.working-directory }}/node_modules
           key: spell-check-node-modules-${{ hashFiles('spell_check/package-lock.json') }}
-      - if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install
+
+      - name: Install dependencies (if the cached directory was not found)
+        if: steps.spell-check-cache.outputs.cache-hit != 'true'
+        run: npm ci
         working-directory: ${{ env.working-directory }}
-      - run: ./spell_check.sh
+
+      - name: Spell check both client and server code
+        run: bash spell_check.sh
         working-directory: ${{ env.working-directory }}
 
   discord:
     name: Discord Failure Notification
-    needs: [client_build, client_lint, client_test, server_build, server_lint, spell_check]
+    needs:
+      [
+        client_build,
+        client_lint,
+        client_test,
+        server_build,
+        server_lint,
+        spell_check,
+      ]
     if: always() # This is needed to always run this job, even if the other jobs fail
     runs-on: ubuntu-latest
     steps:

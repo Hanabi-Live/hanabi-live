@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
+	"github.com/Hanabi-Live/hanabi-live/variantslogic"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -17,14 +19,12 @@ import (
 )
 
 var (
-	projectName       string
-	projectPath       string
-	dataPath          string
-	versionPath       string
-	tablesPath        string
-	specificDealsPath string
+	projectName string
+	projectPath string
+	jsonPath    string
+	versionPath string
+	tablesPath  string
 
-	logger           *Logger
 	gitCommitOnStart string
 	isDev            bool
 	usingSentry      bool
@@ -34,12 +34,13 @@ var (
 )
 
 func main() {
-	// Initialize logging (in "logger.go")
-	logger = NewLogger()
-	defer logger.Sync()
-
-	// Configure the deadlock detector
-	deadlock.Opts.DisableLockOrderDetection = true
+	// Initialize Sentry (in "sentry.go")
+	usingSentry = sentryInit()
+	if usingSentry {
+		// Flush buffered events before the program terminates
+		// https://github.com/getsentry/sentry-go
+		defer sentry.Flush(2 * time.Second)
+	}
 
 	// Get the project path
 	// https://stackoverflow.com/questions/18537257/
@@ -50,6 +51,40 @@ func main() {
 		projectName = filepath.Base(v)
 		projectPath = filepath.Dir(v)
 	}
+
+	// Check to see if the ".env" file exists
+	envPath := path.Join(projectPath, ".env")
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		logger.Fatal("The \"" + envPath + "\" file does not exist. " +
+			"Did you run the \"install_dependencies.sh\" script before running the server? " +
+			"This file should automatically be created when running this script.")
+		return
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \"" + envPath + "\" file exists: " + err.Error())
+		return
+	}
+
+	// Load the ".env" file which contains environment variables with secret values
+	if err := godotenv.Load(envPath); err != nil {
+		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
+		return
+	}
+
+	// Initialize dev environment
+	if os.Getenv("DOMAIN") == "" ||
+		os.Getenv("DOMAIN") == "localhost" ||
+		strings.HasPrefix(os.Getenv("DOMAIN"), "192.168.") ||
+		strings.HasPrefix(os.Getenv("DOMAIN"), "10.") {
+
+		isDev = true
+	}
+
+	// Initialize logging
+	logger.Init(isDev, usingSentry)
+	defer logger.Sync()
+
+	// Configure the deadlock detector
+	deadlock.Opts.DisableLockOrderDetection = true
 
 	// Welcome message
 	startText := "| Starting " + projectName + " |"
@@ -71,13 +106,13 @@ func main() {
 	logger.Info("Current git commit: " + gitCommitOnStart)
 
 	// Check to see if the data path exists
-	dataPath = path.Join(projectPath, "data")
-	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
-		logger.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
+	jsonPath = path.Join(projectPath, "packages", "data", "src", "json")
+	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+		logger.Fatal("The path of \"" + jsonPath + "\" does not exist. " +
 			"This directory should always exist; please try re-cloning the repository.")
 		return
 	} else if err != nil {
-		logger.Fatal("Failed to check if the \"" + dataPath + "\" file exists: " + err.Error())
+		logger.Fatal("Failed to check if the \"" + jsonPath + "\" file exists: " + err.Error())
 		return
 	}
 
@@ -95,7 +130,7 @@ func main() {
 	}
 
 	// Check to see if the "ongoing_tables" directory exists
-	tablesPath = path.Join(dataPath, "ongoing_tables")
+	tablesPath = path.Join(projectPath, "ongoing_tables")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
 			logger.Fatal("Failed to create the \"" + tablesPath + "\" directory: " + err2.Error())
@@ -104,54 +139,6 @@ func main() {
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \"" + tablesPath + "\" file exists: " + err.Error())
 		return
-	}
-
-	// Check to see if the "specific_deals" directory exists
-	specificDealsPath = path.Join(dataPath, "specific_deals")
-	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
-		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
-			logger.Fatal("Failed to create the \"" + specificDealsPath + "\" directory: " +
-				err2.Error())
-			return
-		}
-	} else if err != nil {
-		logger.Fatal("Failed to check if the \"" + specificDealsPath + "\" file exists: " +
-			err.Error())
-		return
-	}
-
-	// Check to see if the ".env" file exists
-	envPath := path.Join(projectPath, ".env")
-	if _, err := os.Stat(envPath); os.IsNotExist(err) {
-		logger.Fatal("The \"" + envPath + "\" file does not exist. " +
-			"Did you run the \"install_dependencies.sh\" script before running the server? " +
-			"This file should automatically be created when running this script.")
-		return
-	} else if err != nil {
-		logger.Fatal("Failed to check if the \"" + envPath + "\" file exists: " + err.Error())
-		return
-	}
-
-	// Load the ".env" file which contains environment variables with secret values
-	if err := godotenv.Load(envPath); err != nil {
-		logger.Fatal("Failed to load the \".env\" file: " + err.Error())
-		return
-	}
-
-	if os.Getenv("DOMAIN") == "" ||
-		os.Getenv("DOMAIN") == "localhost" ||
-		strings.HasPrefix(os.Getenv("DOMAIN"), "192.168.") ||
-		strings.HasPrefix(os.Getenv("DOMAIN"), "10.") {
-
-		isDev = true
-	}
-
-	// Initialize Sentry (in "sentry.go")
-	usingSentry = sentryInit()
-	if usingSentry {
-		// Flush buffered events before the program terminates
-		// https://github.com/getsentry/sentry-go
-		defer sentry.Flush(2 * time.Second)
 	}
 
 	// Initialize the database model (in "models.go")
@@ -195,14 +182,14 @@ func main() {
 	// Start the Discord bot (in "discord.go")
 	discordInit()
 
-	// Start the GitHub bot (in "github.go")
-	githubInit()
-
 	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
 
 	// Initialize chat commands (in "chatCommand.go")
 	chatCommandInit()
+
+	// Calculate variant efficiencies
+	variantslogic.Init(jsonPath)
 
 	// Record the time that the server started
 	datetimeStarted = time.Now()

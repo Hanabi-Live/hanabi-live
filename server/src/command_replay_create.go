@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandReplayCreate is sent when the user clicks on the "Watch Replay", "Share Replay",
@@ -43,7 +45,12 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 	} else if d.Source == "json" {
 		// Before creating a new game and emulating the actions,
 		// ensure that the submitted JSON does not have any obvious errors
-		if !validateJSON(s, d) {
+
+		if d.GameJSON == nil {
+			s.Warning("You must send the game specification in the \"gameJSON\" field.")
+			return
+		} else if valid, message := isJSONValid(d); !valid {
+			s.Warning(message)
 			return
 		}
 	}
@@ -213,10 +220,9 @@ func validateDatabase(s *Session, d *CommandData) bool {
 	return true
 }
 
-func validateJSON(s *Session, d *CommandData) bool {
+func isJSONValid(d *CommandData) (bool, string) {
 	if d.GameJSON == nil {
-		s.Warning("You must send the game specification in the \"gameJSON\" field.")
-		return false
+		return true, ""
 	}
 
 	// All options are optional; specify defaults if they were not specified
@@ -224,99 +230,105 @@ func validateJSON(s *Session, d *CommandData) bool {
 		d.GameJSON.Options = &OptionsJSON{}
 	}
 	if d.GameJSON.Options.Variant == nil {
-		variantText := "No Variant"
+		variantText := DefaultVariantName
 		d.GameJSON.Options.Variant = &variantText
 	}
 
 	// Validate that the specified variant exists
 	var variant *Variant
 	if v, ok := variants[*d.GameJSON.Options.Variant]; !ok {
-		s.Warning("\"" + *d.GameJSON.Options.Variant + "\" is not a valid variant.")
-		return false
+		msg := "\"" + *d.GameJSON.Options.Variant + "\" is not a valid variant."
+		return false, msg
 	} else {
 		variant = v
 	}
 
 	// Validate that there is at least one action
 	if len(d.GameJSON.Actions) < 1 {
-		s.Warning("There must be at least one game action in the JSON array.")
-		return false
+		msg := "There must be at least one game action in the JSON array."
+		return false, msg
 	}
 
 	// Validate actions
 	for i, action := range d.GameJSON.Actions {
 		if action.Type == ActionTypePlay || action.Type == ActionTypeDiscard {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
-				s.Warning("Action at index " + strconv.Itoa(i) +
+				msg := "Action at index " + strconv.Itoa(i) +
 					" is a play or discard with an invalid target (card order) of " +
-					strconv.Itoa(action.Target) + ".")
-				return false
+					strconv.Itoa(action.Target) + "."
+				return false, msg
 			}
 			if action.Value != 0 {
-				s.Warning("Action at index " + strconv.Itoa(i) +
+				msg := "Action at index " + strconv.Itoa(i) +
 					" is a play or discard with a value of " + strconv.Itoa(action.Value) +
-					", which is nonsensical.")
-				return false
+					", which is nonsensical."
+				return false, msg
 			}
 		} else if action.Type == ActionTypeColorClue || action.Type == ActionTypeRankClue {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
-				s.Warning("Action at index " + strconv.Itoa(i) +
+				msg := "Action at index " + strconv.Itoa(i) +
 					" is a clue with an invalid target (player index) of " +
-					strconv.Itoa(action.Target) + ".")
-				return false
+					strconv.Itoa(action.Target) + "."
+				return false, msg
 			}
 			if action.Type == ActionTypeColorClue {
 				if action.Value < 0 || action.Value > len(variant.ClueColors) {
-					s.Warning("Action at index " + strconv.Itoa(i) +
+					msg := "Action at index " + strconv.Itoa(i) +
 						" is a color clue with an invalid value of " +
-						strconv.Itoa(action.Value) + ".")
-					return false
+						strconv.Itoa(action.Value) + "."
+					return false, msg
 				}
 			} else if action.Type == ActionTypeRankClue {
 				if action.Value < 1 || action.Value > 5 {
-					s.Warning("Action at index " + strconv.Itoa(i) +
+					msg := "Action at index " + strconv.Itoa(i) +
 						" is a rank clue with an invalid value of " +
-						strconv.Itoa(action.Value) + ".")
-					return false
+						strconv.Itoa(action.Value) + "."
+					return false, msg
 				}
 			}
 		} else if action.Type == ActionTypeEndGame {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
-				s.Warning("Action at index " + strconv.Itoa(i) +
+				msg := "Action at index " + strconv.Itoa(i) +
 					" is an end game with an invalid target (player index) of " +
-					strconv.Itoa(action.Target) + ".")
-				return false
+					strconv.Itoa(action.Target) + "."
+				return false, msg
+			}
+		} else if action.Type == ActionTypeEndGameByVote {
+			if action.Target != -1 {
+				msg := "Action at index " + strconv.Itoa(i) +
+					" is an end game by vote with an invalid target not equal to -1."
+				return false, msg
 			}
 		} else {
-			s.Warning("Action at index " + strconv.Itoa(i) + " has an invalid type of " +
-				strconv.Itoa(action.Type) + ".")
-			return false
+			msg := "Action at index " + strconv.Itoa(i) + " has an invalid type of " +
+				strconv.Itoa(action.Type) + "."
+			return false, msg
 		}
 	}
 
 	// Validate the deck
 	deckSize := variant.GetDeckSize()
 	if len(d.GameJSON.Deck) != deckSize {
-		s.Warning("The deck must have " + strconv.Itoa(deckSize) + " cards in it.")
-		return false
+		msg := "The deck must have " + strconv.Itoa(deckSize) + " cards in it."
+		return false, msg
 	}
 	for i, card := range d.GameJSON.Deck {
 		if card.SuitIndex < 0 || card.SuitIndex > len(variant.Suits)-1 {
-			s.Warning("The card at index " + strconv.Itoa(i) +
-				" has an invalid suit number of " + strconv.Itoa(card.SuitIndex) + ".")
-			return false
+			msg := "The card at index " + strconv.Itoa(i) +
+				" has an invalid suit number of " + strconv.Itoa(card.SuitIndex) + "."
+			return false, msg
 		}
 		if (card.Rank < 1 || card.Rank > 5) && card.Rank != StartCardRank {
-			s.Warning("The card at index " + strconv.Itoa(i) +
-				" has an invalid rank number of " + strconv.Itoa(card.Rank) + ".")
-			return false
+			msg := "The card at index " + strconv.Itoa(i) +
+				" has an invalid rank number of " + strconv.Itoa(card.Rank) + "."
+			return false, msg
 		}
 	}
 
 	// Validate the amount of players
 	if len(d.GameJSON.Players) < 2 || len(d.GameJSON.Players) > 6 {
-		s.Warning("The number of players must be between 2 and 6.")
-		return false
+		msg := "The number of players must be between 2 and 6."
+		return false, msg
 	}
 
 	// Validate the notes
@@ -327,16 +339,16 @@ func validateJSON(s *Session, d *CommandData) bool {
 			d.GameJSON.Notes[i] = make([]string, deckSize)
 		}
 	} else if len(d.GameJSON.Notes) != len(d.GameJSON.Players) {
-		s.Warning("The number of note arrays must match the number of players.")
-		return false
+		msg := "The number of note arrays must match the number of players."
+		return false, msg
 	} else {
 		for i, playerNotes := range d.GameJSON.Notes {
 			// We add the number of suits to account for notes on the stack bases
 			maxSize := deckSize + len(variant.Suits)
 			if len(playerNotes) > maxSize {
-				s.Warning("The note array at index " + strconv.Itoa(i) +
-					" has too many notes; it must have at most " + strconv.Itoa(maxSize) + ".")
-				return false
+				msg := "The note array at index " + strconv.Itoa(i) +
+					" has too many notes; it must have at most " + strconv.Itoa(maxSize) + "."
+				return false, msg
 			}
 
 			// If a note array is empty or does not have enough notes, fill them up with blank notes
@@ -350,11 +362,11 @@ func validateJSON(s *Session, d *CommandData) bool {
 	if d.GameJSON.Options.DetrimentalCharacters != nil &&
 		len(d.GameJSON.Characters) != len(d.GameJSON.Players) {
 
-		s.Warning("The amount of characters specified must match the number of players in the game.")
-		return false
+		msg := "The amount of characters specified must match the number of players in the game."
+		return false, msg
 	}
 
-	return true
+	return true, ""
 }
 
 func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlayer, bool) {
@@ -460,7 +472,7 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 	if d.GameJSON.Options.StartingPlayer != nil {
 		startingPlayer = *d.GameJSON.Options.StartingPlayer
 	}
-	variantName := "No Variant"
+	variantName := DefaultVariantName
 	if d.GameJSON.Options.Variant != nil {
 		variantName = *d.GameJSON.Options.Variant
 	}
@@ -527,6 +539,8 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 		OneLessCard:           oneLessCard,
 		AllOrNothing:          allOrNothing,
 		DetrimentalCharacters: detrimentalCharacters,
+		TableName:             "",
+		MaxPlayers:            0,
 	}
 	t.ExtraOptions = &ExtraOptions{
 		// Normally, "DatabaseID" is set to either -1 (in an ongoing game)
@@ -561,13 +575,14 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		id := (i + 1) * -1
 
 		player := &Player{
-			UserID:    id,
-			Name:      name,
-			Session:   NewFakeSession(id, name),
-			Present:   true,
-			Stats:     &PregameStats{},
-			Typing:    false,
-			LastTyped: time.Time{},
+			UserID:     id,
+			Name:       name,
+			Session:    NewFakeSession(id, name),
+			Present:    true,
+			Stats:      &PregameStats{},
+			Typing:     false,
+			LastTyped:  time.Time{},
+			VoteToKill: false,
 		}
 		t.Players = append(t.Players, player)
 	}

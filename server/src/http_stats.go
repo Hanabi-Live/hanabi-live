@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -161,7 +162,9 @@ func httpStats(c *gin.Context) {
 	data := &TemplateData{ // nolint: exhaustivestruct
 		Title: "Stats",
 
-		NumGames:                   globalStats.NumGames,
+		NumGamesTotal:              globalStats.NumGamesNormal + globalStats.NumGamesOther,
+		NumGamesNormal:             globalStats.NumGamesNormal,
+		NumGamesOther:              globalStats.NumGamesOther,
 		TimePlayed:                 timePlayed,
 		NumGamesSpeedrun:           globalStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,

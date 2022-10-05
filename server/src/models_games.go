@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -23,6 +25,17 @@ type GameRow struct {
 	EndCondition     int
 	DatetimeStarted  time.Time
 	DatetimeFinished time.Time
+}
+
+type GamesRow struct {
+	ID          int    `json:"id"`
+	NumPlayers  int    `json:"num_players"`
+	Score       int    `json:"score"`
+	Variant     int    `json:"variant"`
+	Users       string `json:"users"`
+	DateTime    string `json:"datetime"`
+	Seed        string `json:"seed"`
+	OtherScores int    `json:"other_scores"`
 }
 
 func (*Games) Insert(gameRow GameRow) (int, error) {
@@ -124,19 +137,25 @@ func (*Games) Exists(databaseID int) (bool, error) {
 	return true, nil
 }
 
+type GameHistoryTags struct {
+	Username string `json:"username"`
+	Tag      string `json:"tag"`
+}
+
 type GameHistory struct {
-	ID                 int       `json:"id"`
-	Options            *Options  `json:"options"`
-	Seed               string    `json:"seed"`
-	Score              int       `json:"score"`
-	NumTurns           int       `json:"numTurns"`
-	EndCondition       int       `json:"endCondition"`
-	DatetimeStarted    time.Time `json:"datetimeStarted"`
-	DatetimeFinished   time.Time `json:"datetimeFinished"`
-	NumGamesOnThisSeed int       `json:"numGamesOnThisSeed"`
-	PlayerNames        []string  `json:"playerNames"`
-	IncrementNumGames  bool      `json:"incrementNumGames"`
-	Tags               string    `json:"tags"`
+	ID                 int             `json:"id"`
+	Options            *Options        `json:"options"`
+	Seed               string          `json:"seed"`
+	Score              int             `json:"score"`
+	NumTurns           int             `json:"numTurns"`
+	EndCondition       int             `json:"endCondition"`
+	DatetimeStarted    time.Time       `json:"datetimeStarted"`
+	DatetimeFinished   time.Time       `json:"datetimeFinished"`
+	NumGamesOnThisSeed int             `json:"numGamesOnThisSeed"`
+	PlayerNames        []string        `json:"playerNames"`
+	IncrementNumGames  bool            `json:"incrementNumGames"`
+	Tags               string          `json:"tags"`
+	UsersTags          json.RawMessage `json:"users_tags"`
 }
 
 func (g *Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
@@ -184,10 +203,10 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 			games1.datetime_finished,
 			(
 				/*
-				 * We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
-				 * does not exist
-				 * This row should always exist, but check it just to be safe
-				 */
+				* We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
+				* does not exist
+				* This row should always exist, but check it just to be safe
+				*/
 				SELECT COALESCE((
 					SELECT seeds.num_games
 					FROM seeds
@@ -199,12 +218,22 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games1.id
-			) AS player_names
+			) AS player_names,
+			(
+				SELECT COALESCE(STRING_AGG(DISTINCT game_tags.tag, ', ' ORDER BY game_tags.tag), '')
+				FROM game_tags
+				WHERE game_tags.game_id = games1.id
+			) AS tags,
+			(
+				SELECT COALESCE(json_agg(json_build_object(users.username, game_tags.tag)), '[]'::json)
+				FROM game_tags, users
+				WHERE game_tags.user_id = users.id AND game_tags.game_id = games1.id
+			) AS tags_by_user
 		FROM games AS games1
 		/*
-		 * We must use the ANY operator for matching an array of IDs:
-		 * https://github.com/jackc/pgx/issues/334
-		 */
+		* We must use the ANY operator for matching an array of IDs:
+		* https://github.com/jackc/pgx/issues/334
+		*/
 		WHERE games1.id = ANY($1)
 	`
 	SQLString += "ORDER BY " + sortSQL
@@ -245,6 +274,8 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 			&gameHistory.DatetimeFinished,
 			&gameHistory.NumGamesOnThisSeed,
 			&playerNamesString,
+			&gameHistory.Tags,
+			&gameHistory.UsersTags,
 		); err != nil {
 			return games, err
 		}
@@ -415,7 +446,7 @@ func (*Games) GetGameIDsFriends(
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
+func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery, orderBy, limit string, args []interface{}) ([]int, error) {
 	gameIDs := make([]int, 0)
 
 	// First, validate that all of the user IDs are unique
@@ -438,6 +469,63 @@ func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
 		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
 	}
 
+	SQLString += " " + wQuery + orderBy + limit
+
+	var rows pgx.Rows
+
+	if v, err := db.Query(context.Background(), SQLString, args...); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var gameID int
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetFullGameIDsMultiUser(userIDs []int, idStart *int, idEnd *int) ([]int, error) {
+	gameIDs := make([]int, 0)
+
+	// First, validate that all of the user IDs are unique
+	userIDMap := make(map[int]struct{})
+	for _, userID := range userIDs {
+		if _, ok := userIDMap[userID]; ok {
+			err := errors.New("the list of user IDs contained a duplicate entry of " + strconv.Itoa(userID))
+			return gameIDs, err
+		}
+		userIDMap[userID] = struct{}{}
+	}
+
+	SQLString := `
+		SELECT DISTINCT games.id
+		FROM games
+	`
+	for _, id := range userIDs {
+		SQLString += "JOIN game_participants AS player" + strconv.Itoa(id) + "_games "
+		SQLString += "ON games.id = player" + strconv.Itoa(id) + "_games.game_id "
+		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
+	}
+
+	if idStart != nil {
+		SQLString += "AND games.id >= " + strconv.Itoa(*idStart) + " "
+	}
+
+	if idEnd != nil {
+		SQLString += "AND games.id <= " + strconv.Itoa(*idEnd) + " "
+	}
+
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), SQLString); err != nil {
 		return gameIDs, err
@@ -461,20 +549,17 @@ func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsVariant(variantID int, amount int) ([]int, error) {
+func (*Games) GetGameIDsForSeed(wQuery, orderBy, limit string, args []interface{}) ([]int, error) {
 	gameIDs := make([]int, 0)
 
 	SQLString := `
-		SELECT id
+		SELECT DISTINCT games.id
 		FROM games
-		WHERE variant_id = $1
-		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY id DESC
-		LIMIT $2
-	`
+	` + wQuery + orderBy + limit
 
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, variantID, amount); err != nil {
+
+	if v, err := db.Query(context.Background(), SQLString, args...); err != nil {
 		return gameIDs, err
 	} else {
 		rows = v
@@ -496,105 +581,98 @@ func (*Games) GetGameIDsVariant(variantID int, amount int) ([]int, error) {
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsPastX(amount int) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY id DESC
-		LIMIT $1
-	`
-
+func (*Games) GetGamesForHistoryFromGameIDs(gameIDs []int, orderBy string) ([]GamesRow, error) {
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, amount); err != nil {
-		return gameIDs, err
+	args := []interface{}{gameIDs}
+
+	dbQuery := `
+		SELECT
+			games.id, num_players, score, variant_id,
+			STRING_AGG(username, ', ' ORDER BY LOWER(username)) AS usernames,
+			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished,
+			games.seed as seed,
+			MAX(seeds.num_games) as total_games
+		FROM
+			games
+			JOIN game_participants on games.id = game_id
+			JOIN users on user_id = users.id
+			JOIN seeds ON seeds.seed = games.seed
+		WHERE games.id = ANY($1)
+		GROUP BY games.id
+	` + orderBy
+
+	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
+		return nil, err
 	} else {
 		rows = v
 	}
 
+	var dbRows []GamesRow
+
 	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
+		row := GamesRow{}
+		if err := rows.Scan(
+			&row.ID,
+			&row.NumPlayers,
+			&row.Score,
+			&row.Variant,
+			&row.Users,
+			&row.DateTime,
+			&row.Seed,
+			&row.OtherScores,
+		); err != nil {
+			return nil, err
 		}
-		gameIDs = append(gameIDs, gameID)
+		dbRows = append(dbRows, row)
 	}
-
 	if err := rows.Err(); err != nil {
-		return gameIDs, err
+		return nil, err
 	}
-	rows.Close()
-
-	return gameIDs, nil
+	return dbRows, nil
 }
 
-func (*Games) GetGameIDsSinceDatetime(datetime string) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY id DESC
-		WHERE datetime_started > $1
-	`
-
+func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]APIVariantRow, error) {
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, datetime); err != nil {
-		return gameIDs, err
+	args := []interface{}{gameIDs}
+	dbQuery := `
+		SELECT
+			games.id, num_players, score,
+			STRING_AGG(username, ', ' ORDER BY LOWER(username)) AS usernames,
+			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished
+		FROM
+			games
+			JOIN game_participants on games.id = game_id
+			JOIN users on user_id = users.id
+	    WHERE games.id = ANY($1)
+	    GROUP BY games.id
+	` + orderBy
+
+	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
+		return nil, err
 	} else {
 		rows = v
 	}
 
-	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
-		}
-		gameIDs = append(gameIDs, gameID)
-	}
-
-	if err := rows.Err(); err != nil {
-		return gameIDs, err
-	}
-	rows.Close()
-
-	return gameIDs, nil
-}
-
-func (*Games) GetGameIDsSinceInterval(interval string) ([]int, error) {
-	gameIDs := make([]int, 0)
-
-	SQLString := `
-		SELECT id
-		FROM games
-		WHERE datetime_started > NOW() - INTERVAL
-	`
-	SQLString += "'" + interval + "'" // We can't use $1 for intervals for some reason
-
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString); err != nil {
-		return gameIDs, err
-	} else {
-		rows = v
-	}
+	var dbRows []APIVariantRow
 
 	for rows.Next() {
-		var gameID int
-		if err := rows.Scan(&gameID); err != nil {
-			return gameIDs, err
+		row := APIVariantRow{}
+		if err := rows.Scan(
+			&row.ID,
+			&row.NumPlayers,
+			&row.Score,
+			&row.Users,
+			&row.DateTime,
+		); err != nil {
+			return nil, err
 		}
-		gameIDs = append(gameIDs, gameID)
+		dbRows = append(dbRows, row)
 	}
-
 	if err := rows.Err(); err != nil {
-		return gameIDs, err
+		return nil, err
 	}
 	rows.Close()
-
-	return gameIDs, nil
+	return dbRows, nil
 }
 
 func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
@@ -603,6 +681,7 @@ func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
+		      AND games.end_condition = 1
 	`
 	if !includeSpeedrun {
 		SQLString += "AND games.speedrun = FALSE"
@@ -663,17 +742,6 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 	}
 
 	return &options, nil
-}
-
-func (*Games) GetNumPlayers(databaseID int) (int, error) {
-	var numPlayers int
-	err := db.QueryRow(context.Background(), `
-		SELECT COUNT(game_participants.game_id)
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE games.id = $1
-	`, databaseID).Scan(&numPlayers)
-	return numPlayers, err
 }
 
 func (*Games) GetNumTurns(databaseID int) (int, error) {
@@ -851,7 +919,8 @@ func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string
 
 type Stats struct {
 	DateJoined         time.Time
-	NumGames           int
+	NumGamesNormal     int
+	NumGamesOther      int
 	TimePlayed         int // In seconds
 	NumGamesSpeedrun   int
 	TimePlayedSpeedrun int // In seconds
@@ -873,7 +942,16 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
 					AND games.speedrun = FALSE
-			) AS num_games,
+					AND games.end_condition = 1
+			) AS num_games_normal,
+			(
+				SELECT COUNT(games.id)
+				FROM games
+					JOIN game_participants ON games.id = game_participants.game_id
+				WHERE game_participants.user_id = $1
+					AND games.speedrun = FALSE
+					AND games.end_condition != 1
+			) AS num_games_other,
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
@@ -911,7 +989,8 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 			) AS time_played_speedrun
 	`, userID).Scan(
 		&stats.DateJoined,
-		&stats.NumGames,
+		&stats.NumGamesNormal,
+		&stats.NumGamesOther,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
 		&stats.TimePlayedSpeedrun,
@@ -931,7 +1010,14 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				SELECT COUNT(id)
 				FROM games
 				WHERE games.speedrun = FALSE
-			) AS num_games,
+					AND games.end_condition = 1
+			) AS num_games_normal,
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE games.speedrun = FALSE
+				AND games.end_condition != 1
+			) AS num_games_other,
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
@@ -964,7 +1050,8 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = TRUE
 			) AS time_played_speedrun
 	`).Scan(
-		&stats.NumGames,
+		&stats.NumGamesNormal,
+		&stats.NumGamesOther,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
 		&stats.TimePlayedSpeedrun,
@@ -985,7 +1072,15 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 				FROM games
 				WHERE variant_id = $1
 					AND speedrun = FALSE
-			) AS num_games,
+					AND games.end_condition = 1
+			) AS num_games_normal,
+			(
+				SELECT COUNT(id)
+				FROM games
+				WHERE variant_id = $1
+					AND speedrun = FALSE
+					AND games.end_condition != 1
+			) AS num_games_other,
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
@@ -1021,7 +1116,8 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 					AND games.speedrun = TRUE
 			) AS time_played_speedrun
 	`, variantID).Scan(
-		&stats.NumGames,
+		&stats.NumGamesNormal,
+		&stats.NumGamesOther,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
 		&stats.TimePlayedSpeedrun,
@@ -1030,34 +1126,4 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 	}
 
 	return stats, nil
-}
-
-func (*Games) GetAllIDs() ([]int, error) {
-	ids := make([]int, 0)
-
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), `
-		SELECT id
-		FROM games
-		ORDER BY id
-	`); err != nil {
-		return ids, err
-	} else {
-		rows = v
-	}
-
-	for rows.Next() {
-		var id int
-		if err := rows.Scan(&id); err != nil {
-			return ids, err
-		}
-		ids = append(ids, id)
-	}
-
-	if err := rows.Err(); err != nil {
-		return ids, err
-	}
-	rows.Close()
-
-	return ids, nil
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/alexedwards/argon2id"
 )
 
@@ -16,7 +17,10 @@ const (
 )
 
 var (
-	isValidTableName = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
+	// Only allow [:alphanum], [!@$()-_;:,?], [space]
+	tableNameHasValidCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
+	// Only allow [:alphanum], [-]
+	seedHasValidCharacters = regexp.MustCompile(`^[\-a-zA-Z0-9]+$`).MatchString
 )
 
 // Data relating to games created with a special custom prefix (e.g. "!seed")
@@ -54,51 +58,7 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Truncate long table names
-	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
-	if len(d.Name) > MaxGameNameLength {
-		d.Name = d.Name[0 : MaxGameNameLength-1]
-	}
-
-	// Remove any non-printable characters, if any
-	d.Name = removeNonPrintableCharacters(d.Name)
-
-	// Trim whitespace from both sides
-	d.Name = strings.TrimSpace(d.Name)
-
-	// Make a default game name if they did not provide one
-	if len(d.Name) == 0 {
-		d.Name = getName()
-	}
-
-	// Check for non-ASCII characters
-	if !containsAllPrintableASCII(d.Name) {
-		s.Warning("Game names can only contain ASCII characters.")
-		return
-	}
-
-	// Validate that the game name does not contain any special characters
-	// (this mitigates XSS attacks)
-	if !isValidTableName(d.Name) {
-		msg := "Game names can only contain English letters, numbers, spaces, " +
-			"<code>!</code>, " +
-			"<code>@</code>, " +
-			"<code>#</code>, " +
-			"<code>$</code>, " +
-			"<code>(</code>, " +
-			"<code>)</code>, " +
-			"<code>-</code>, " +
-			"<code>_</code>, " +
-			"<code>=</code>, " +
-			"<code>+</code>, " +
-			"<code>;</code>, " +
-			"<code>:</code>, " +
-			"<code>,</code>, " +
-			"<code>.</code>, " +
-			"and <code>?</code>."
-		s.Warning(msg)
-		return
-	}
+	d.Name = truncateTrimCheckEmpty(d.Name)
 
 	// Set default values for data relating to tables created with a special prefix or custom data
 	data := &SpecialGameData{
@@ -111,159 +71,33 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		SetReplayTurn: 0,
 	}
 
-	// Handle special game option creation
-	if strings.HasPrefix(d.Name, "!") {
-		if d.GameJSON != nil {
-			s.Warning("You cannot create a table with a special prefix if JSON data is also provided.")
-			return
-		}
-
-		args := strings.Split(d.Name, " ")
-		command := args[0]
-		args = args[1:] // This will be an empty slice if there is nothing after the command
-		command = strings.TrimPrefix(command, "!")
-		command = strings.ToLower(command) // Commands are case-insensitive
-
-		if command == "seed" {
-			// !seed - Play a specific seed
-			if len(args) != 1 {
-				s.Warning("Games on specific seeds must be created in the form: " +
-					"!seed [seed number]")
-				return
-			}
-
-			// For normal games, the server creates seed suffixes sequentially from 0, 1, 2,
-			// and so on
-			// However, the seed does not actually have to be a number,
-			// so allow the user to use any arbitrary string as a seed suffix
-			data.SetSeedSuffix = args[0]
-		} else if command == "replay" {
-			// !replay - Replay a specific game up to a specific turn
-			if len(args) != 1 && len(args) != 2 {
-				s.Warning("Replays of specific games must be created in the form: " +
-					"!replay [game ID] [turn number]")
-				return
-			}
-
-			if v, err := strconv.Atoi(args[0]); err != nil {
-				s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
-				return
-			} else {
-				data.DatabaseID = v
-			}
-
-			// Check to see if the game ID exists on the server
-			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
-				logger.Error("Failed to check to see if game " + strconv.Itoa(data.DatabaseID) +
-					" exists: " + err.Error())
-				s.Error(CreateGameFail)
-				return
-			} else if !exists {
-				s.Warning("That game ID does not exist in the database.")
-				return
-			}
-
-			if len(args) == 1 {
-				data.SetReplayTurn = 1
-			} else {
-				if v, err := strconv.Atoi(args[1]); err != nil {
-					s.Warning("The turn of \"" + args[1] + "\" is not a number.")
-					return
-				} else {
-					data.SetReplayTurn = v
-				}
-
-				if data.SetReplayTurn < 1 {
-					s.Warning("The replay turn must be greater than 0.")
-					return
-				}
-			}
-
-			// We have to minus the turn by one since turns are stored on the server starting at 0
-			// and turns are shown to the user starting at 1
-			data.SetReplayTurn--
-
-			// Check to see if this turn is valid
-			// (it has to be a turn before the game ends)
-			var numTurns int
-			if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
-				logger.Error("Failed to get the number of turns from the database for game " +
-					strconv.Itoa(data.DatabaseID) + ": " + err.Error())
-				s.Error(InitGameFail)
-				return
-			} else {
-				numTurns = v
-			}
-			if data.SetReplayTurn >= numTurns {
-				s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
-					strconv.Itoa(numTurns) + " turns.")
-				return
-			}
-
-			data.SetReplay = true
-		} else {
-			msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
-			s.Warning(msg)
-			return
-		}
-	}
-
-	// Validate that they sent the options object
-	if d.Options == nil {
-		d.Options = NewOptions()
-	}
-
-	// Validate that the variant name is valid
-	if _, ok := variants[d.Options.VariantName]; !ok {
-		s.Warning("\"" + d.Options.VariantName + "\" is not a valid variant.")
+	if valid, message := isTableNameValid(d.Name); !valid {
+		s.Warning(message)
 		return
 	}
 
-	// Validate that the time controls are sane
-	if d.Options.Timed {
-		if d.Options.TimeBase <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.Options.TimeBase) + "\" is too small of a value for \"Base Time\".")
-			return
-		}
-		if d.Options.TimeBase > 604800 { // 1 week in seconds
-			s.Warning("\"" + strconv.Itoa(d.Options.TimeBase) + "\" is too large of a value for \"Base Time\".")
-			return
-		}
-		if d.Options.TimePerTurn <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.Options.TimePerTurn) + "\" is too small of a value for \"Time per Turn\".")
-			return
-		}
-		if d.Options.TimePerTurn > 86400 { // 1 day in seconds
-			s.Warning("\"" + strconv.Itoa(d.Options.TimePerTurn) + "\" is too large of a value for \"Time per Turn\".")
-			return
-		}
+	if valid, message := isTableCommandValid(s, d, data); !valid {
+		s.Warning(message)
+		return
 	}
 
-	// Validate that there can be no time controls if this is not a timed game
-	if !d.Options.Timed {
-		d.Options.TimeBase = 0
-		d.Options.TimePerTurn = 0
+	d.Options = fixGameOptions(d.Options)
+
+	if valid, message := areGameOptionsValid(d.Options); !valid {
+		s.Warning(message)
+		return
 	}
 
-	// Validate that a speedrun cannot be timed
-	if d.Options.Speedrun {
-		d.Options.Timed = false
-		d.Options.TimeBase = 0
-		d.Options.TimePerTurn = 0
-	}
-
-	// Validate that they did not send both the "One Extra Card" and the "One Less Card" option at
-	// the same time (they effectively cancel each other out)
-	if d.Options.OneExtraCard && d.Options.OneLessCard {
-		d.Options.OneExtraCard = false
-		d.Options.OneLessCard = false
-	}
-
-	// Validate games with custom JSON
 	if d.GameJSON != nil {
-		if !validateJSON(s, d) {
+		if valid, message := isJSONValid(d); !valid {
+			s.Warning(message)
 			return
 		}
+	}
+
+	// Validate that the maximum player count is valid, default to 5
+	if d.MaxPlayers < 2 || d.MaxPlayers > 6 {
+		d.MaxPlayers = 5
 	}
 
 	tableCreate(ctx, s, d, data)
@@ -305,6 +139,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 	defer t.Unlock(ctx)
 	t.Visible = !d.HidePregame
 	t.PasswordHash = passwordHash
+	t.MaxPlayers = d.MaxPlayers
 	t.Options = d.Options
 	t.ExtraOptions = &ExtraOptions{
 		DatabaseID:                 data.DatabaseID,

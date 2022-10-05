@@ -9,11 +9,11 @@
 
 <head>
   <title>
-    {{if eq .Title "Dev"}}
+    {{if eq .Title "Dev" -}}
       Test
-    {{else}}
+    {{- else -}}
       {{.WebsiteName}}{{if ne .Title "Main"}} - {{.Title}}{{end}}
-    {{end}}
+    {{- end}}
   </title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,7 +28,7 @@
   >
   <!-- Load the Critical CSS first -->
   {{if ne .Title "Dev"}}
-    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css?{{.Version}}" />
   {{end}}
   <!-- Preload fonts -->
   <link

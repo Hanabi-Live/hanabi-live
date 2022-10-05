@@ -1,0 +1,253 @@
+{{define "content"}}
+<style>
+  th:hover {
+    background-color: rgb(220, 220, 220);
+    cursor: pointer;
+  }
+</style>
+
+<div id="page-wrapper">
+
+  <!-- Header -->
+  <header id="header">
+    <h1>{{ template "logo" }}</h1>
+    <nav id="nav"></nav>
+  </header>
+
+  <!-- Main -->
+  <section id="main" class="container max history-page">
+    <header>
+      <h2><img src="/public/img/logos/header.svg" width="259"></h2>
+    </header>
+    <div class="row uniform 100%">
+      <div class="col-12">
+        <section class="box">
+          <h2 class="align-center">
+            {{if .NamesTitle}}
+              {{.NamesTitle}}
+            {{else}}
+              {{.Name}}'s Profile
+            {{end}}
+          </h2>
+
+          {{if not .NamesTitle}}
+          <div>
+            <ul class="actions fit" id="profile-buttons">
+              <li>
+                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">
+                  Scores & Statistics
+                </a>
+              </li>
+              <li>
+                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">
+                  Full Game History
+                </a>
+              </li>
+              <li>
+                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">
+                  Missing Scores
+                </a>
+              </li>
+              <li>
+                <a class="button fit icon fa-tag{{if eq .Title "Tagged Games"}} disabled{{else}}" href="/tags/{{.Name}}{{end}}">
+                  Tagged Games
+                </a>
+              </li>
+            </ul>
+          </div>
+          {{end}}
+
+          <div class="pager">
+            Page: <select class="gotoPage"></select>
+            <i class="fas fa-fast-backward first"></i>
+            <i class="fas fa-backward prev"></i>
+            <!-- the "pagedisplay" can be any element, including an input -->
+            <span class="pagedisplay"></span>
+            <i class="fas fa-forward next"></i>
+            <i class="fas fa-fast-forward last"></i>
+            <select class="pagesize" title="Select page size">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+
+          <table class="history personal-history">
+            <thead>
+              <tr>
+                <th class="tablesorter-header tablesorter-headerDesc" width="8%">Game ID</th>
+                <th class="filter-select filter-match" width="7%"># of Players</th>
+                <th width="7%">Score</th>
+                <th class="filter-select" width="23%">Variant</th>
+                <th width="30%">Players</th>
+                <th width="22%">Date & Time</th>
+                {{if not .SpecificSeed}}<th width="8%">Other</th>{{end}}
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+
+          <div class="pager">
+            Page: <select class="gotoPage"></select>
+            <i class="fas fa-fast-backward first"></i>
+            <i class="fas fa-backward prev"></i>
+            <!-- the "pagedisplay" can be any element, including an input -->
+            <span class="pagedisplay"></span>
+            <i class="fas fa-forward next"></i>
+            <i class="fas fa-fast-forward last"></i>
+            <select class="pagesize" title="Select page size">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+
+          <div class="tableSpinner"><span class="tableSpinner"></span></div>
+        </section>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/widget-filter-2.30.0.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(() => {
+    const variants = [];
+    const variants_filter = [];
+    const setEnable = function(enabled) {
+      if (enabled) {
+        $("div.tableSpinner").css("display", "none");
+      } else {
+        $("div.tableSpinner").css("display", "flex");
+      }
+    }
+
+    $.getJSON('/api/v1/variants', function (data) {
+      for (let i in data) {
+        variants[i] = data[i];
+        variants_filter.push({
+          text: data[i],
+          value: i,
+        });
+      }
+      const getVariant = (id) => variants[id];
+      const pagerOptions = {
+        // target the pager markup - see the HTML block below
+        container: $(".pager"),
+        // output string - default is '{page}/{totalPages}';
+        // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
+        // also {page:input} & {startRow:input} will add a modifiable input in place of the value
+        output: '{startRow} - {endRow} / {filteredRows} ({totalRows})',
+        // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
+        // table row set to a height to compensate; default is false
+        fixedHeight: true,
+        // remove rows from the table to speed up the sort of large tables.
+        // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
+        removeRows: false,
+        // go to page selector - select dropdown that sets the current page
+        cssGoto: '.gotoPage',
+        {{if not .SpecificSeed}}
+        ajaxUrl : '/api/v1/history/{{.Names}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
+        {{else}}
+        ajaxUrl : '/api/v1/seed/{{.Seed}}?page={page}&size={size}&{sortList:col}&{filterList:fcol}',
+        {{end}}
+        customAjaxUrl: function(table, url) {
+          setEnable(false);
+          return url;
+        },
+        updateArrows: true,
+        ajaxProcessing: function(data) {
+          let total = 0;
+          const rows = [];
+          if (data && data.hasOwnProperty('rows')) {
+            const d = data.rows;
+            // total number of rows (required)
+            total = data.total_rows;
+            // array of header names (optional)
+            // all rows: array of arrays; each internal array has the table cell data for that row
+            // len should match pager set size (c.size)
+            let len = 0;
+            if (total > 0 && d !== null) {
+              len = d.length;
+            }
+            for (let r = 0; r < len; r++ ) {
+              const users = d[r]["users"].split(", ").join("/");
+              const row = [
+                `<a href="/replay/${d[r]["id"]}">${d[r]["id"]}</a>`,
+                d[r]["num_players"],
+                d[r]["score"],
+                `<a href="/variant/${d[r]["variant"]}">${getVariant(d[r]["variant"])}</a>`,
+                `<a href="/history/${users}">${d[r]["users"]}</a>`,
+                d[r]["datetime"],
+                {{if not .SpecificSeed}}`<a href="/seed/${d[r]["seed"]}">${d[r]["other_scores"]}</a>`,{{end}}
+              ]; // new row array
+              rows.push(row); // add new row array to rows array
+            }
+          }
+          setEnable(true);
+          return [ total, rows ];
+        },
+      };
+
+      // Initialize the table sorting
+      $('table:not(.plain)').tablesorter({
+        showProcessing: true,
+        {{if not .SpecificSeed}}
+        headers: {
+          0: { filter: false },
+          1: { filter: true, sorter: false },
+          2: { filter: true, sorter: false },
+          3: { filter: true, sorter: false },
+          4: { filter: false, sorter: false },
+          5: { filter: false, sorter: false },
+          6: { filter: false, sorter: false },
+        },
+        {{else}}
+        headers: {
+          0: { filter: false },
+          1: { filter: false, sorter: false },
+          2: { filter: true, sorter: false },
+          3: { filter: false, sorter: false },
+          4: { filter: false, sorter: false },
+          5: { filter: false, sorter: false },
+        },
+        {{end}}
+        sortList: [[0, 1]],
+        widgets: ['zebra', 'filter', 'pager'],
+        widgetOptions : {
+          filter_selectSource  : {
+            1 : [
+              { text: "2", value: "2" },
+              { text: "3", value: "3" },
+              { text: "4", value: "4" },
+              { text: "5", value: "5" },
+              { text: "6", value: "6" },
+            ],
+            3: variants_filter,
+          },
+        },
+      })
+
+      // Bind to pager events
+      // *********************
+      .bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c) {
+        var msg = '"</span> event triggered, ' + (e.type === 'pagerChange' ? 'going to' : 'now on') +
+          ' page <span class="typ">' + (c.page + 1) + '/' + c.totalPages + '</span>';
+        $('#display')
+          .append('<li><span class="str">"' + e.type + msg + '</li>')
+          .find('li:first').remove();
+      })
+
+      // Initialize the pager plugin
+      // ****************************
+      .tablesorterPager(pagerOptions)
+    })
+  });
+</script>
+{{end}}

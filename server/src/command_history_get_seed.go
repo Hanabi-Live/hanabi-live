@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandHistoryGetSeed is sent when the user clicks on the "Compare Scores" button
@@ -49,12 +51,20 @@ func commandHistoryGetSeed(ctx context.Context, s *Session, d *CommandData) {
 		gameHistoryList = v
 	}
 
+	variantName := "n/a"
+	if len(gameHistoryList) > 0 {
+		firstGame := gameHistoryList[0]
+		variantName = firstGame.Options.VariantName
+	}
+
 	type GameHistoryOtherScoresMessage struct {
-		Games   []*GameHistory `json:"games"`
-		Friends bool           `json:"friends"`
+		Games       []*GameHistory `json:"games"`
+		VariantName string         `json:"variantName"`
+		Friends     bool           `json:"friends"`
 	}
 	s.Emit("gameHistoryOtherScores", &GameHistoryOtherScoresMessage{
-		Games:   gameHistoryList,
-		Friends: d.Friends,
+		Games:       gameHistoryList,
+		VariantName: variantName,
+		Friends:     d.Friends,
 	})
 }

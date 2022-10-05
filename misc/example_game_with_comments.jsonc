@@ -133,7 +133,7 @@
       "target": 1,
 
       // The reason for ending the game, corresponding to the "endCondition" value in "constants.go"
-      // https://github.com/Zamiell/hanabi-live/blob/master/server/src/constants.go
+      // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/src/constants.go
       // e.g. 3 corresponds to someone running out of time in a timed game,
       // 4 corresponds to a player manually terminating the game, etc.
       "value": 3
@@ -145,15 +145,15 @@
   "options": {
     // The name of the variant, e.g. "No Variant" for the base game
     // A full list of variants can be found here:
-    // https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md#full-variant-listing
+    // https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/VARIANTS.md#full-variant-listing
     // If this value is not specified, "No Variant" will be assumed
     "variant": "No Variant",
 
     // Any other website option can be specified, such as "cardCycle" or "emptyClues"
     // A full list of options can be found in the "OptionsJSON" struct, located here:
-    // https://github.com/Zamiell/hanabi-live/blob/master/src/options.go
+    // https://github.com/Hanabi-Live/hanabi-live/blob/main/src/options.go
     // The various options are documented here:
-    // https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options
+    // https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options
     // If an option is not specified, the default will be assumed (e.g. false or 0)
     "emptyClues": true
   },

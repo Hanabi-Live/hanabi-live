@@ -30,31 +30,7 @@ func (g *Game) InitDeck() {
 		// Ranks are represented as a slice of integers
 		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
 		for _, rank := range variant.Ranks {
-			// In a normal suit, there are:
-			// - three 1's
-			// - two 2's
-			// - two 3's
-			// - two 4's
-			// - one five
-			var amountToAdd int
-			if rank == 1 {
-				amountToAdd = 3
-				if variant.IsUpOrDown() || suit.Reversed {
-					amountToAdd = 1
-				}
-			} else if rank == 5 {
-				amountToAdd = 1
-				if suit.Reversed {
-					amountToAdd = 3
-				}
-			} else if rank == StartCardRank {
-				amountToAdd = 1
-			} else {
-				amountToAdd = 2
-			}
-			if suit.OneOfEach {
-				amountToAdd = 1
-			}
+			amountToAdd := numCopiesOfCard(suit, rank, variant)
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
@@ -66,6 +42,39 @@ func (g *Game) InitDeck() {
 			}
 		}
 	}
+}
+
+func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
+	// This implementation mirrors numCopiesOfCard in the "deck.ts" file
+	if suit.OneOfEach {
+		return 1
+	}
+
+	if rank == 1 {
+		if variant.IsUpOrDown() || suit.Reversed {
+			return 1
+		}
+		return 3
+	}
+
+	if rank == 4 {
+		if variant.IsCriticalFours() {
+			return 1
+		}
+	}
+
+	if rank == 5 {
+		if suit.Reversed {
+			return 3
+		}
+		return 1
+	}
+
+	if rank == StartCardRank {
+		return 1
+	}
+
+	return 2
 }
 
 func (g *Game) ShuffleDeck() {

@@ -1,0 +1,8 @@
+# We don't need to include the converted TypeScript --> Javascript files
+/webpack_output
+
+# Jest Code coverage
+/coverage
+
+# Dependency graph output
+/graph.html

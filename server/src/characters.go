@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"path"
 	"strconv"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 var (
@@ -42,7 +44,7 @@ var (
 
 func charactersInit() {
 	// Import the JSON file
-	filePath := path.Join(dataPath, "characters.json")
+	filePath := path.Join(jsonPath, "characters.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
@@ -683,6 +685,30 @@ func characterAdjustEndTurn(g *Game) {
 			g.EndTurn = g.Turn + 3
 		}
 	}
+}
+
+func characterHasTakenLastTurn(g *Game) bool {
+	if g.EndTurn == -1 {
+		return false
+	}
+	originalPlayer := g.ActivePlayerIndex
+	activePlayer := g.ActivePlayerIndex
+	turnsInverted := g.TurnsInverted
+	for turn := g.Turn + 1; turn <= g.EndTurn; turn++ {
+		if turnsInverted {
+			activePlayer += len(g.Players)
+			activePlayer = (activePlayer - 1) % len(g.Players)
+		} else {
+			activePlayer = (activePlayer + 1) % len(g.Players)
+		}
+		if activePlayer == originalPlayer {
+			return false
+		}
+		if g.Players[activePlayer].Character == "Contrarian" { // 27
+			turnsInverted = !turnsInverted
+		}
+	}
+	return true
 }
 
 func characterCheckSoftlock(g *Game, p *GamePlayer) {

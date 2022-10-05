@@ -1,6 +1,6 @@
 # Variants
 
-[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
 
 <br />
 
@@ -16,11 +16,11 @@ Normal amount of cards per suit (e.g. 10 in total):
 
 One of each card per suit (e.g. 5 in total):
 
-|                    |  No color clues  | Own color clue | All color clues |
-| ------------------ | ---------------- | -------------- | --------------- |
-| **No rank clues**  | Dark Null        | Dark Brown     | Cocoa Rainbow   |
-| **Own rank clue**  | Gray             | Black          | Dark Rainbow    |
-| **All rank clues** | Gray Pink        | Dark Pink      | Dark Omni       |
+|                    | No color clues | Own color clue | All color clues |
+| ------------------ | -------------- | -------------- | --------------- |
+| **No rank clues**  | Dark Null      | Dark Brown     | Cocoa Rainbow   |
+| **Own rank clue**  | Gray           | Black          | Dark Rainbow    |
+| **All rank clues** | Gray Pink      | Dark Pink      | Dark Omni       |
 
 <br />
 
@@ -114,11 +114,11 @@ One of each card per suit (e.g. 5 in total):
 
 - Two suits are replaced with special suits.
 
-### Rainbow-Ones, Pink-Ones, White-Ones, etc.
+### Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
 
 - Ones have the property of the suit prefix. For example, rainbow-ones are "touched" by all colors.
 
-### Rainbow-Fives, Pink-Fives, White-Fives, etc.
+### Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
 
 - Fives have the property of the suit prefix. For example, rainbow-fives are "touched" by all colors.
 
@@ -140,13 +140,13 @@ One of each card per suit (e.g. 5 in total):
   - The fourth suit is touched by a rank 4 clue
   - The fifth suit is touched by a rank 1 clue (wrapping around)
 
-### Suit-Ones or Suit-Fives with Another Special Suit
+### Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
 
 - Suit-Ones or Suit-Fives of a special suit inherit the special suit's properties.
-  - For example, consider the "Rainbow-Fives & Pink" variant:
+  - For example, consider the "Rainbow-Ones & Pink" variant:
     - The rainbow suit has the property of being touched by all colors.
     - The pink suit has the property of being touched by all ranks.
-    - These add together and the pink 5 is touched by all colors and touched by all ranks.
+    - These add together and the pink 1 is touched by all colors and touched by all ranks.
 - If a conflict is present, the suit property will override the special property.
   - For example, consider the "Null-Ones & Rainbow" variant:
     - The null suit has the property of being touched by no colors and touched by no ranks.
@@ -218,6 +218,14 @@ One of each card per suit (e.g. 5 in total):
   5. Tangelo (yellow / red)
   6. Peach (yellow / red)
 
+### Critical Fours
+
+- One 4 is removed from each suit.
+
+### Clue Starved
+
+- Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
+
 ### Color Blind
 
 - Color clues touch no suits. (Empty color clues are always allowed.)
@@ -244,10 +252,6 @@ One of each card per suit (e.g. 5 in total):
 - For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
 - This variant was invented by Jake Stiles.
 
-### Clue Starved
-
-- Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
-
 ### Cow & Pig
 
 - When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a rank clue.
@@ -257,13 +261,16 @@ One of each card per suit (e.g. 5 in total):
 - When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
 - This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
-### Throw It in a Hole
+### Odds and Evens
 
-- When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
-- The score of the game is not revealed until the game is over.
-- Players do not get a clue back for successfully playing a 5.
-- The game will automatically end if 3 strikes are accumulated.
-- This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
+- Rank clues are limited to 1 and 2.
+- "O" (Odd) rank clue touches all odd cards, "E" (Even) touches all even cards.
+
+### Synesthesia
+
+- Only color clues may be given.
+- In addition to their normal color, cards with rank 1 count as the first color, cards with rank 2 count as the second color, and so on.
+- If the brown suit is in use, its cards only get clued by brown, and not as the color of their rank.
 
 ### Reversed
 
@@ -283,8 +290,57 @@ One of each card per suit (e.g. 5 in total):
 - A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
 - This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 
+### Throw It in a Hole
+
+- When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
+- The score of the game is not revealed until the game is over.
+- Players do not get a clue back for successfully playing a 5.
+- The game will automatically end if 3 strikes are accumulated.
+- This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
+
 <br />
 
 ## Full Variant Listing
 
-- See [this page](/data/variants.txt).
+- See [this page](/misc/variants.txt).
+
+## Variant Order Summary
+
+- Normal Variants
+- Black
+- Rainbow
+- Pink
+- White
+- Brown
+- Omni
+- Null
+- Muddy Rainbow
+- Light Pink
+- Prism
+- Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
+- Special Suit Combinations (e.g. Black & Rainbow)
+- Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
+- Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
+- Deceptive-Ones
+- Deceptive-Fives
+- Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
+- Ambiguous
+- Very Ambiguous
+- Extremely Ambiguous
+- Dual-Color
+- Mixes
+- Critical Fours
+- Clue Starved
+- Color Blind
+- Number Blind
+- Totally Blind
+- Color Mute
+- Number Mute
+- Alternating Clues
+- Cow & Pig
+- Duck
+- Odds and Evens
+- Synesthesia
+- Reversed
+- Up or Down
+- Throw It in a Hole

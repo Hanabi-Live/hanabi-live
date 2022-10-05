@@ -3,52 +3,53 @@
   From: https://google-webfonts-helper.herokuapp.com/
 */
 
-/* source-sans-pro-300 - latin */
+/* source-sans-pro-300 - latin_greek_cyrillic */
 @font-face {
   font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 300;
-  src: local("Source Sans Pro Light"), local("SourceSansPro-Light"),
-    url("/public/webfonts/source-sans-pro-v11-latin-300.woff2") format("woff2"),
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff2")
+      format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
-      url("/public/webfonts/source-sans-pro-v11-latin-300.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
-
-/* source-sans-pro-300italic - latin */
+/* source-sans-pro-300italic - latin_greek_cyrillic */
 @font-face {
   font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 300;
-  src: local("Source Sans Pro Light Italic"), local("SourceSansPro-LightItalic"),
-    url("/public/webfonts/source-sans-pro-v11-latin-300italic.woff2")
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff2")
       format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
-      url("/public/webfonts/source-sans-pro-v11-latin-300italic.woff")
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff")
       format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
-
-/* source-sans-pro-regular - latin */
-@font-face {
-  font-family: "Source Sans Pro";
-  font-style: normal;
-  font-weight: 400;
-  src: local("Source Sans Pro Regular"), local("SourceSansPro-Regular"),
-    url("/public/webfonts/source-sans-pro-v11-latin-regular.woff2")
-      format("woff2"),
-    /* Chrome 26+, Opera 23+, Firefox 39+ */
-      url("/public/webfonts/source-sans-pro-v11-latin-regular.woff")
-      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-}
-
-/* source-sans-pro-italic - latin */
+/* source-sans-pro-italic - latin_greek_cyrillic */
 @font-face {
   font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 400;
-  src: local("Source Sans Pro Italic"), local("SourceSansPro-Italic"),
-    url("/public/fonts/source-sans-pro-v11-latin-italic.woff2") format("woff2"),
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff2")
+      format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
-      url("/public/fonts/source-sans-pro-v11-latin-italic.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* source-sans-pro-regular - latin_greek_cyrillic */
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 400;
+  src: local(""),
+    url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /*
@@ -66,9 +67,12 @@ input[type="radio"] + label:before,
   Alpha edits
 */
 
-#main > header p {
-  border-top: 0;
-  margin-top: 0;
+#header a {
+  cursor: pointer;
+}
+
+#header a.disabled {
+  cursor: not-allowed;
 }
 
 .button {
@@ -98,19 +102,6 @@ a {
 
 .friend {
   color: hotpink;
-}
-
-#header nav > ul > li .button {
-  /* Decrease the padding of the nav buttons on the left and the right sides */
-  padding: 0 0.8em;
-  /* Center it vertically */
-  vertical-align: middle;
-}
-
-@media screen and (min-width: 1440px) {
-  #header nav > ul > li .button {
-    margin-bottom: 3px;
-  }
 }
 
 /*
@@ -151,10 +142,6 @@ table td {
 
 .margin0 {
   margin: 0 !important;
-}
-
-.margin1 {
-  margin-bottom: 1em;
 }
 
 .margin3 {
@@ -265,6 +252,64 @@ table td {
   text-align: center;
 }
 
+.login-header {
+  margin-top: 4em;
+}
+
+#main-login,
+#main-tutorial {
+  padding: 4em 0;
+}
+
+#main-login > header,
+#main-tutorial > header {
+  text-align: center;
+  margin: 0 0 3em 0;
+}
+
+#main-login > header h2,
+#main-tutorial > header h2 {
+  font-size: 2.75em;
+  margin: 0;
+}
+
+#main-login > header p,
+#main-tutorial > header p {
+  border-top: solid 2px #e5e5e5;
+  color: #777;
+  display: inline-block;
+  font-style: normal;
+  margin: 0;
+  padding: 1em 0 1.25em 0;
+}
+
+@media screen and (max-width: 980px) {
+  #main-login,
+  #main-tutorial {
+    padding: 0.5em 0;
+  }
+  #main-login > header,
+  #main-tutorial > header {
+    text-align: center;
+    margin: 0 0 1em 0;
+  }
+  .login-header {
+    margin-top: 1em;
+  }
+}
+@media screen and (max-width: 640px) {
+  .row > .login-box {
+    width: 90% !important;
+    margin-left: 5% !important;
+  }
+}
+
+.login-logo {
+  min-width: 180px;
+  max-width: 306px;
+  width: 30%;
+}
+
 #title-discord {
   width: 5em;
 }
@@ -272,7 +317,6 @@ table td {
 /*
   Nav (the top bar)
 */
-
 .nav-icon {
   position: relative;
   top: 0.05em;
@@ -280,12 +324,13 @@ table td {
 }
 
 .nav-hotkey-indicator {
-  border-bottom: dotted 1px;
+  border-bottom: 1px solid #999;
 }
 
 .help-button {
   background-color: rgb(68, 150, 68) !important;
 }
+
 .help-button:hover {
   background-color: #84c884 !important;
 }
@@ -296,7 +341,7 @@ table td {
 
 #lobby {
   margin-top: 1.5em;
-  margin-bottom: 1.5em;
+  margin-bottom: 0.5em;
   /* Left and right margins are handled on the rows in "alpha.css" */
   height: calc(100% - 3em); /* The header is 3em */
 }
@@ -379,28 +424,28 @@ table td {
 
 .lobby-games-table-joined:hover {
   background-color: #e0e0ff !important;
-  cursor: url('/public/img/hover-cursors/play.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/play.png") 28 12.5, pointer;
 }
 .lobby-games-table-unstarted:hover {
   background-color: #ffffe1 !important;
-  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/join.png") 28 12.5, pointer;
 }
 .lobby-games-table-unstarted-password:hover {
   background-color: #ffd5d5 !important;
-  cursor: url('/public/img/hover-cursors/join.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/join.png") 28 12.5, pointer;
 }
 .lobby-games-table-started:hover {
   background-color: #cdffdd !important;
-  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/view.png") 28 12.5, pointer;
 }
 .lobby-games-table-replay:hover {
   background-color: #ffe1ff !important;
-  cursor: url('/public/img/hover-cursors/view.png') 28 12.5, pointer;
+  cursor: url("/public/img/hover-cursors/view.png") 28 12.5, pointer;
 }
-.lobby-games-table-unstarted.full:hover, .lobby-games-table-unstarted-password.full:hover {
-  cursor: url('/public/img/hover-cursors/forbid.png') 28 12.5, pointer;
+.lobby-games-table-unstarted.full:hover,
+.lobby-games-table-unstarted-password.full:hover {
+  cursor: url("/public/img/hover-cursors/forbid.png") 28 12.5, pointer;
 }
-
 
 /*
   Lobby chat
@@ -449,19 +494,36 @@ table td {
   Pregame
 */
 
-#lobby-pregame > div {
+.lobby-pregame-container {
   height: 100%;
+  display: flex;
 }
 
-#lobby-pregame-left {
+.lobby-pregame-info {
   font-size: 0.85em;
+  width: 200px;
+  padding-right: 0.5em;
+  overflow-y: auto;
+}
+
+.lobby-pregame-players {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
+  height: 100%;
+  overflow-y: auto;
+  justify-content: flex-start;
 }
 
 .lobby-pregame-player {
   border: 1px solid black;
   border-radius: 5px;
-  padding: 1em;
-  height: 100%;
+  padding: 0.8em;
+  flex: 1 1 160px;
+  margin: 0 0.5em 0.5em 0;
+  max-width: 300px;
+  max-height: calc(100% - 0.5em);
+  overflow-y: auto;
 }
 
 .lobby-pregame-player-away {
@@ -471,10 +533,14 @@ table td {
 
 #lobby-pregame-options {
   padding-left: 1em;
+  list-style-type: none;
+  padding: 0;
 }
 
-#lobby-pregame-options > li {
+#lobby-pregame-options li {
   padding-left: 0;
+  display: inline-block;
+  margin-right: 0.5em;
 }
 
 .lobby-pregame-tooltip {
@@ -506,23 +572,8 @@ table td {
 }
 
 /*
-  Create Game Tooltip
+  Create Game modal
 */
-
-#create-game-tooltip-title {
-  width: 11em;
-}
-
-#create-game-tooltip > div {
-  /* Alpha sets this to -2em, so we have to reset it */
-  margin-left: 0em;
-  text-align: left;
-}
-
-#create-game-tooltip > div > div {
-  padding-left: 0;
-}
-
 .create-game-icon {
   display: inline-block;
   width: 2em;
@@ -538,6 +589,15 @@ table td {
   /* Annoyingly, the text does not line up with the checkbox */
   position: relative;
   top: 0.25em;
+}
+
+#create-game-timed-row {
+  min-height: 3em;
+}
+
+#create-game-timed-option-1,
+#create-game-timed-option-3 {
+  line-height: 1.2em;
 }
 
 #create-game-timed-label {
@@ -606,13 +666,8 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /*
-  Watch Specific Replay Tooltip
+  Watch Specific Replay Dialog
 */
-
-#replay-tooltip-title {
-  width: 13em;
-}
-
 #replay-json {
   resize: none;
 }
@@ -637,6 +692,72 @@ input::-webkit-calendar-picker-indicator {
 /*
   Settings
 */
+#settings-modal {
+  min-width: unset;
+  max-width: 100vw;
+}
+
+#settings-modal .settings-content {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: space-between;
+  justify-content: flex-start;
+  align-items: stretch;
+  column-gap: 2em;
+  width: 1100px;
+  max-height: 800px;
+  max-width: unset;
+}
+
+@media screen and (max-width: 1920px) {
+  #settings-modal .settings-content {
+    max-width: 900px;
+    max-height: 650px;
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  #settings-modal .settings-content {
+    max-width: 700px;
+    max-height: 550px;
+  }
+}
+
+@media screen and (max-width: 980px) {
+  #settings-modal .settings-content {
+    max-width: 500px;
+    max-height: unset;
+    width: fit-content;
+  }
+}
+
+@media screen and (max-height: 660px) and (min-width: 1180px) {
+  #settings-modal .settings-content {
+    max-width: 60vw;
+    max-height: 90vh;
+  }
+}
+
+@media screen and (max-height: 539px) and (min-width: 1180px) {
+  #settings-modal .settings-content {
+    max-width: 100vw;
+    max-height: 90vh;
+  }
+}
+
+#settings-modal h5 {
+  font-weight: normal;
+  font-size: 1.2em;
+}
+
+#settings-modal p {
+  margin-bottom: 0.5em;
+}
+
+#settings-modal div p:last-child {
+  margin-bottom: 2em;
+}
 
 .horizontal {
   margin: 0;
@@ -669,25 +790,191 @@ input::-webkit-calendar-picker-indicator {
   Modals
 */
 
-.modal {
+#page-cover {
+  display: none;
   position: absolute;
-  z-index: 1000;
-  top: 15%;
-  left: 5em;
-  right: 5em;
-  bottom: 5em;
-  overflow: auto;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  animation: pageCoverHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
 }
 
-#page-cover {
+#page-cover.show {
+  animation: pageCoverShow 0.4s forwards 1;
+}
+
+@keyframes pageCoverHide {
+  0% {
+    background-color: rgba(0, 24, 5, 0.7);
+    z-index: 99999;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+}
+
+@keyframes pageCoverShow {
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+  100% {
+    background-color: rgba(0, 24, 5, 0.7);
+    z-index: 99999;
+  }
+}
+
+.modal {
+  align-self: flex-start;
+  background-color: white;
+  border: 2px solid #308943;
+  border-radius: 5px;
+  max-height: calc(100% - 4em);
+  max-width: 80vw;
+  overflow-y: auto;
+  padding: 20px 30px;
   position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: #001805;
-  top: 0;
-  left: 0;
-  z-index: 999;
-  opacity: 0;
+  scrollbar-gutter: stable;
+  top: 3.5em;
+  min-width: 40vw;
+}
+
+.modal .row {
+  margin-bottom: 1em;
+}
+
+.modal-message {
+  border: 0;
+  left: 5em;
+  max-width: 100%;
+  right: 5em;
+  overflow: auto;
+  padding: 30px 30px 0 30px;
+  scrollbar-gutter: unset;
+  top: 15vh;
+}
+
+.modal-prompt {
+  min-width: unset;
+}
+
+@media screen and (max-width: 510px) {
+  .modal,
+  .modal-message {
+    left: 0;
+    right: 0;
+    max-width: unset;
+  }
+}
+
+#resources-modal ul {
+  margin: 0;
+}
+
+#set-modifier-current {
+  margin-left: 15px;
+}
+
+#play-discard-title {
+  text-transform: capitalize;
+}
+
+#morph-modal h2 {
+  margin: 0;
+}
+
+#morph-modal p {
+  margin: 0;
+}
+
+#morph-modal form {
+  margin-bottom: 0.5em;
+}
+
+#morph-modal-suits,
+#morph-modal-ranks {
+  display: flex;
+  justify-content: center;
+}
+
+#morph-modal-ranks {
+  margin-bottom: 1em;
+}
+
+#morph-modal input[type="checkbox"] {
+  display: none;
+}
+
+#morph-modal label {
+  border: 1px solid gray;
+  padding: 10px;
+  display: block;
+  position: relative;
+  margin: 5px 10px;
+  cursor: pointer;
+  line-height: 1em;
+  max-height: 73px;
+  overflow: hidden;
+}
+
+#morph-modal label:before {
+  background-color: white;
+  color: white;
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  border: 1px solid grey;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  line-height: 28px;
+  transition-duration: 0.4s;
+  transform: scale(0);
+}
+
+#morph-modal label canvas {
+  height: 10vh;
+  transition-duration: 0.2s;
+  transform-origin: 50% 50%;
+}
+
+#morph-modal :checked + label {
+  border-color: orange;
+}
+
+#morph-modal :checked + label:before {
+  background-color: grey;
+  content: "✓";
+  line-height: 1.2em;
+  transform: scale(1);
+  z-index: 1;
+  border: unset;
+}
+
+#morph-modal :checked + label canvas {
+  transform: scale(0.9);
+  z-index: -1;
+}
+
+#morph-modal .row {
+  margin-top: 1em;
+  margin-bottom: 0;
+}
+
+#morph-modal form .row {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#morph-modal .input-text {
+  top: 1.5em;
 }
 
 /*
@@ -802,6 +1089,10 @@ input::-webkit-calendar-picker-indicator {
   width: 8em;
 }
 
+.container.max {
+  width: 80%;
+}
+
 /*
   Profile
 */
@@ -832,44 +1123,99 @@ input::-webkit-calendar-picker-indicator {
   width: 19em;
 }
 
+/* Make pregame name, variant, and number of players appear on next line always */
+#lobby-pregame-name,
+#lobby-pregame-variant,
+#lobby-pregame-seats {
+  display: block;
+}
+
+/*
+  Media Responsive Utilities
+  Breakpoints:
+    Alpha names   Max Res   Media names
+    Wide:          1680px   xxl
+    Normal:        1280px   xl
+    Narrow:         980px   lg
+    Narrower:       840px   md
+    Mobile:         736px   sm
+    Portrait:       480px   xs
+
+    hidden-*:      hidden on this and all smaller screens
+*/
+@media screen and (max-width: 1680px) {
+  .hidden-xxl {
+    display: none !important;
+  }
+}
+@media screen and (max-width: 1280px) {
+  .hidden-xl {
+    display: none !important;
+  }
+}
+@media screen and (max-width: 980px) {
+  .hidden-lg {
+    display: none !important;
+  }
+}
+@media screen and (max-width: 840px) {
+  .hidden-md {
+    display: none !important;
+  }
+}
+@media screen and (max-width: 736px) {
+  .hidden-sm {
+    display: none !important;
+  }
+}
+@media screen and (max-width: 480px) {
+  .hidden-xs {
+    display: none !important;
+  }
+}
+
 /*
   Media edits
 */
-
-/* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
-@media screen and (min-width: 1280px) {
+@media screen and (max-width: 1500px) {
+  .lobby-pregame-info {
+    width: 150px;
+  }
   .container.max {
-    width: 80%;
+    width: calc(100% - 2em) !important;
   }
 }
 
-/*
-  Make the lobby nav bar show only the button icons for low priority buttons on smaller resolutions
-*/
-@media screen and (max-width: 1220px) {
-  #nav-buttons-lobby .pri2 .mobile-hide {
-    display: none;
-  }
-  #nav-buttons-lobby .pri2 .nav-icon {
-    margin-right: 0em;
+/* Tighter nav buttons before text disappears */
+@media screen and (max-width: 1086px) {
+  #header nav > ul > li .button {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
   }
 }
 
-/* Make the lobby nav bar show only the button icons for all buttons on smaller resolutions */
-@media screen and (max-width: 970px) {
-  #nav-buttons-lobby .pri1 .mobile-hide {
+@media screen and (max-width: 980px) {
+  .lobby-pregame-player {
+    max-width: 200px;
+  }
+}
+
+/* Hide the logo text */
+@media screen and (max-width: 950px) {
+  #logo-text {
     display: none;
   }
-  #nav-buttons-lobby .pri1 .nav-icon {
-    margin-right: 0em;
+}
+
+/* Reinstate the containers round box */
+@media screen and (max-width: 480px) {
+  .box {
+    border-radius: 6px;
   }
 }
 
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 400px) {
-  #nav-buttons-pregame .mobile-hide {
-    display: none;
-  }
   #nav-buttons-pregame .nav-icon {
     margin-right: 0em;
   }
@@ -877,28 +1223,13 @@ input::-webkit-calendar-picker-indicator {
 
 /* Make the history nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 290px) {
-  #nav-buttons-history .mobile-hide {
-    display: none;
-  }
   #nav-buttons-history .nav-icon {
     margin-right: 0em;
   }
 }
 
-/* Hide the logo on the header when it overlaps with the lobby nav bar buttons */
-@media screen and (max-width: 650px) {
-  .lobby-header #logo-text {
-    display: none;
-  }
-}
-@media screen and (max-width: 490px) {
-  .lobby-header {
-    display: none;
-  }
-}
-
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
-@media screen and (max-width: 830px) {
+@media screen and (max-width: 840px) {
   #profile-buttons {
     /* These lines are copied from alpha.css which has breakpoint 480 px */
     display: flex;
@@ -907,17 +1238,16 @@ input::-webkit-calendar-picker-indicator {
     align-items: stretch;
   }
 
+  /* Remove extra space from nav icons */
+  .nav-icon {
+    margin-right: 0;
+  }
+
   #profile-buttons li {
     padding-top: 1em;
   }
-}
 
-/* Make the main screen appear the same way, even on smaller resolutions */
-@media screen and (max-width: 840px) {
-  #header {
-    display: block;
-  }
-
+  /* Make the main screen appear the same way, even on smaller resolutions */
   #page-wrapper {
     padding-top: 3em;
   }
@@ -936,4 +1266,548 @@ input::-webkit-calendar-picker-indicator {
     padding: 1.5em !important;
     overflow-y: hidden;
   }
+}
+
+/*
+  Tables headers
+*/
+table th {
+  padding: 0 0.75em 0.25em 0.75em;
+  font-size: 0.8em;
+}
+
+/*
+  Media queries for lobby redesign on smaller screens
+*/
+@media screen and (max-width: 980px) {
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.8em;
+  }
+}
+@media screen and (max-width: 840px) {
+  /* override alpha.css default behavior */
+  #header {
+    display: block;
+  }
+
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.5em;
+  }
+
+  /* hide column '# of Players' */
+  #lobby-games-table th:nth-child(2),
+  #lobby-games-table td:nth-child(2) {
+    display: none;
+  }
+}
+@media screen and (max-width: 670px) {
+  /* hide column 'Name' */
+  #lobby-games-table th:nth-child(1),
+  #lobby-games-table td:nth-child(1) {
+    display: none;
+  }
+
+  /* fix border of column 'Variant' */
+  #lobby-games-table th:nth-child(3),
+  #lobby-games-table td:nth-child(3) {
+    border-left-width: 1px;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(7),
+  #lobby-games-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 570px) {
+  /* hide 'help' nav menu */
+  #header nav > ul > li a#nav-buttons-lobby-stats,
+  #header nav > ul > li a#nav-buttons-lobby-resources {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(4),
+  #lobby-games-table td:nth-child(4) {
+    display: none;
+  }
+}
+@media screen and (max-width: 410px) {
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.3em;
+  }
+  /* hide column 'Status' */
+  #lobby-games-table th:nth-child(5),
+  #lobby-games-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+/*
+  Small screen toggle buttons
+*/
+#lobby-small-screen-buttons {
+  margin-top: 1em;
+  height: 2em;
+  display: none;
+}
+#lobby-small-screen-buttons nav > ul {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+#lobby-small-screen-buttons nav > ul li:first-child {
+  padding-left: 0;
+}
+
+.only-on-narrow-screen {
+  display: none;
+}
+
+@media screen and (max-height: 530px) {
+  /* Put pregame chat boxes side by side */
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout,
+  #lobby-users-box-container.pregame-chat-layout {
+    flex: 1 1 33%;
+    height: 100%;
+  }
+  #lobby-toggle-show-online {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* Put pregame chat boxes on top of each other */
+  #lobby-chat-container.pregame-chat-layout,
+  #lobby-chat-pregame-container.pregame-chat-layout,
+  #lobby-users-box-container.pregame-chat-layout {
+    flex: 1 1 100%;
+    height: calc((100% - 1em) / 2);
+  }
+  #lobby-chat-pregame-container {
+    margin-left: 0.5em !important;
+  }
+  .narrow-screen-hidden {
+    display: none !important;
+  }
+}
+
+@media screen and (max-height: 530px) and (max-width: 620px) {
+  #lobby-toggle-show-online {
+    display: inline-block;
+  }
+}
+
+@media screen and (max-height: 530px), screen and (max-width: 620px) {
+  #lobby-top-half,
+  #lobby-bottom-half {
+    display: none;
+    height: calc(100% - 4em);
+  }
+  #lobby-separator {
+    display: none;
+  }
+  #lobby-top-half.toggle-active {
+    display: flex;
+  }
+  #lobby-bottom-half.toggle-active {
+    display: flex;
+  }
+
+  #lobby-small-screen-buttons {
+    display: block;
+  }
+
+  #lobby-top-half.hidden,
+  #lobby-bottom-half.hidden,
+  #lobby-small-screen-buttons.hidden {
+    display: none;
+  }
+
+  #lobby {
+    height: calc(100% - 1.25em); /* The header is 3em */
+  }
+
+  .pregame-hidden {
+    display: none;
+  }
+  .pregame-lobby-chat {
+    margin-bottom: 1em;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  #small-screen-toggle-users-h3 {
+    display: none;
+  }
+  .only-on-narrow-screen {
+    display: inline;
+  }
+  .lobby-users-box-container {
+    padding-left: 2em !important;
+  }
+  .narrow-screen-hidden {
+    display: none !important;
+  }
+  .row > #lobby-chat-container {
+    width: 100%;
+  }
+  .row > #lobby-online-users {
+    width: 100%;
+  }
+}
+
+a.toggle-active {
+  background-color: rgb(68, 150, 68) !important;
+}
+
+/* Chat padding for options proposal */
+span.cp {
+  padding-left: 52px;
+  display: block;
+}
+
+/* Make all chat text display as block */
+#lobby-chat-pregame-text > span {
+  display: block;
+}
+
+#lobby-chat-pregame-text > span.hidden {
+  display: none;
+}
+
+/* Wrong input indicator */
+input[type="text"].wrongInput {
+  border: 2px solid red;
+}
+
+/* Dialogs */
+#backdrop {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  animation: backdropHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
+}
+
+#backdrop.show {
+  animation: backdropShow 0.4s forwards 1;
+}
+
+@keyframes backdropHide {
+  0% {
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+}
+
+@keyframes backdropShow {
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+  }
+}
+
+.dialog {
+  background-color: white;
+  border: 2px solid #308943;
+  border-radius: 5px;
+  max-height: 90vh;
+  max-width: 80vw;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 20px 30px;
+}
+
+#leader-placeholder {
+  display: flex;
+  justify-content: center;
+  align-content: space-evenly;
+  column-gap: 10px;
+}
+
+#set-turn-label {
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 1em;
+}
+
+#set-turn-range-container {
+  text-align: center;
+  background-color: rgba(102, 102, 102, 0.3);
+  border-radius: 5px;
+  margin-bottom: 1em;
+  padding-bottom: 10px;
+}
+
+#set-turn-range {
+  -webkit-appearance: none;
+  width: 90%;
+  height: 2px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.3);
+  outline: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+#set-turn-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+}
+
+#set-turn-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+}
+
+#set-turn-label::after {
+  content: attr(data-value);
+}
+
+/* Cursors styles for game container */
+.game-cursor-default {
+  cursor: auto;
+}
+.game-cursor-look {
+  cursor: url("/public/img/cursors/look.png"), auto;
+}
+.game-cursor-edit {
+  cursor: url("/public/img/cursors/edit.png"), auto;
+}
+.game-cursor-hand {
+  cursor: grab;
+}
+.game-cursor-dragging {
+  cursor: grabbing;
+}
+
+/* History Pages */
+section.history-page {
+  padding: 0 !important;
+}
+
+.history-page > header {
+  margin: 0 !important;
+}
+
+table.history {
+  margin-top: 2em;
+}
+
+.history th.center,
+.history td.center,
+.history th.center .tablesorter-header-inner,
+.history td.center .tablesorter-header-inner {
+  text-align: center;
+}
+
+.history td.normal {
+}
+
+.history td.hard {
+  color: white;
+  background-color: darkgoldenrod;
+}
+
+.history td.very-hard {
+  color: white;
+  background-color: darkred;
+}
+
+.pager {
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pager select {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  margin: 0 0.5em;
+}
+
+.pager i {
+  margin: 0 0.5em;
+  cursor: pointer;
+}
+
+.pager .pagedisplay {
+  display: inline-block;
+  padding: 0 1em;
+  font-weight: 400;
+}
+
+.tablesorter .filtered {
+  display: none;
+}
+
+.tablesorter .tablesorter-errorRow td {
+  text-align: center;
+  cursor: pointer;
+  background-color: #e6bf99;
+}
+
+.tablesorter thead .disabled {
+  display: none;
+}
+
+.tablesorter thead select {
+  width: auto;
+  max-width: 150px;
+  height: auto;
+  padding: 0 2.5em 0 0.5em;
+}
+
+.tablesorter thead input {
+  width: auto;
+  height: auto;
+  border: 1px solid lightgray;
+  border-radius: 6px;
+}
+
+.tablesorter thead input[aria-label='Filter "ID" column by...'],
+.tablesorter thead input[aria-label='Filter "Score" column by...'],
+.tablesorter thead input[aria-label='Filter "Other Scores" column by...'] {
+  max-width: 50px;
+}
+
+.history-bullets {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-around;
+}
+.history-bullets ul {
+  flex-direction: column;
+}
+
+@media screen and (max-width: 640px) {
+  .history.variant.tablesorter th:nth-child(5),
+  .history.variant.tablesorter td:nth-child(5) {
+    display: none !important;
+  }
+  .history.personal-history.tablesorter th:nth-child(6),
+  .history.personal-history.tablesorter td:nth-child(6) {
+    display: none !important;
+  }
+}
+
+.tablesorter-header {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+  background-position: center right;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  white-space: normal;
+}
+.tablesorter-header:hover {
+  background-color: unset;
+}
+.tablesorter-headerAsc {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+  background-color: lightblue !important;
+}
+.tablesorter-headerDesc {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+  background-color: lightblue !important;
+}
+.tablesorter .sorter-false {
+  background-image: none;
+  cursor: default;
+  padding: 4px;
+}
+
+/* Spinner during ajax */
+div.tableSpinner {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+span.tableSpinner {
+  width: 48px;
+  height: 48px;
+  display: inline-block;
+  position: relative;
+  border-width: 3px 2px 3px 2px;
+  border-style: solid dotted solid dotted;
+  border-color: #de3500 rgba(255, 255, 255, 0.3) #fff rgba(151, 107, 93, 0.3);
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: 1s rotate linear infinite;
+}
+span.tableSpinner:before,
+span.tableSpinner:after {
+  content: "";
+  top: 0;
+  left: 0;
+  position: absolute;
+  border: 10px solid transparent;
+  border-bottom-color: #fff;
+  transform: translate(-10px, 19px) rotate(-35deg);
+}
+span.tableSpinner:after {
+  border-color: #de3500 #0000 #0000 #0000;
+  transform: translate(32px, 3px) rotate(-35deg);
+}
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Discord replacements */
+.spoiler {
+  background: black;
+  color: black;
+}
+.spoiler:hover {
+  background: unset;
+  color: unset;
+}
+
+/* Hyphenated empty placeholder */
+.lobby-hyphen-empty {
+  width: 0.75em;
+  display: inline-block;
 }

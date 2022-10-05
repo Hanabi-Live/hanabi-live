@@ -1,0 +1,5 @@
+**.*.swp
+Dockerfile
+Dockerfile.postgres
+docker-compose.yml
+docker-compose-dev.yml

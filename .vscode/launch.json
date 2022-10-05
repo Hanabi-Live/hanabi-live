@@ -5,16 +5,17 @@
 // https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
 {
   "version": "0.2.0",
+  /*
   "configurations": [
     {
       "type": "node",
       "name": "vscode-jest-tests",
       "request": "launch",
-      "program": "${workspaceFolder}/client/node_modules/jest/bin/jest",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
       "args": [
         "--runInBand",
         "--config",
-        "${workspaceFolder}/client/jest.config.js"
+        "${workspaceFolder}/jest.config.js"
       ],
       "cwd": "${workspaceFolder}/client",
       "console": "integratedTerminal",
@@ -22,4 +23,5 @@
       "disableOptimisticBPs": true
     }
   ]
+  */
 }

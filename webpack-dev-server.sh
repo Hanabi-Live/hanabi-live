@@ -18,5 +18,5 @@ if [[ -z $WEBPACK_DEV_SERVER_PORT ]]; then
   WEBPACK_DEV_SERVER_PORT=8080
 fi
 
-cd "$DIR/client"
-npx webpack-dev-server --host "$DOMAIN" --port "$WEBPACK_DEV_SERVER_PORT"
+cd "$DIR/packages/client"
+npx webpack serve --host "$DOMAIN" --port "$WEBPACK_DEV_SERVER_PORT"

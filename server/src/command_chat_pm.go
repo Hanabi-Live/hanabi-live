@@ -4,6 +4,8 @@ import (
 	"context"
 	"html"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandChatPM is sent when a user sends a private message

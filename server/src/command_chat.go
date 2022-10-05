@@ -9,6 +9,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 const (
@@ -99,8 +101,7 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		return
 	}
 
-	d.Msg = chatFillMentions(d.Msg) // Convert Discord mentions from number to username
-	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel links from number to name
+	d.Msg = chatFillAll(d.Msg) // Convert Discord mentions from number to username, role or channel
 
 	// Add the message to the database
 	if d.Discord {
@@ -118,12 +119,20 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		}
 	}
 
+	// Check for command handler
+	if !chatCommandShouldOutput(ctx, s, d, nil) { // We pass nil because there is no associated table
+		return
+	}
+
+	// Fill mentions
+	msg := chatFillAll(html.EscapeString(d.Msg))
+
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
 		sessionList := sessions.GetList()
 		for _, s2 := range sessionList {
 			s2.Emit("chat", &ChatMessage{
-				Msg:       d.Msg,
+				Msg:       msg,
 				Who:       d.Username,
 				Discord:   d.Discord,
 				Server:    d.Server,
@@ -140,6 +149,12 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
 		// (since Discord can handle escaping HTML special characters itself)
 		discordSend(discordChannelSyncWithLobby, d.Username, rawMsg)
+
+		// Some messages are also sent to website-development
+		if sendMessageToWebDevChannel {
+			sendMessageToWebDevChannel = false
+			discordSend(discordChannelWebsiteDev, d.Username, rawMsg)
+		}
 	}
 
 	// Check for commands

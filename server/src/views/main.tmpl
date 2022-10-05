@@ -6,88 +6,77 @@
   <header id="header">
     <h1 class="lobby-header">{{ template "logo" }}</h1>
     <nav id="nav">
-      <!-- We use <i> instead of the icon class because it results in a more compact button -->
       <ul id="nav-buttons-lobby" class="hidden">
         <li>
           <a
             id="nav-buttons-lobby-create-game"
-            class="button tooltip pri1"
-            data-tooltip-content="#create-game-tooltip"
+            class="button"
           >
             <i class="fas fa-plus nav-icon"></i>
-            <span class="mobile-hide">
-              <span class="nav-hotkey-indicator">C</span>reate Game <!-- cspell:disable-line -->
-            </span>
+            <span class="hidden-xs"><span class="nav-hotkey-indicator">N</span>ew<span class="hidden-xl"> Game</span></span> <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
-          <a id="nav-buttons-lobby-history" class="button pri1">
+          <a id="nav-buttons-lobby-history" class="button hidden-xs">
             <i class="fas fa-history nav-icon"></i>
-            <span class="mobile-hide">
-              Show <span class="nav-hotkey-indicator">H</span>istory <!-- cspell:disable-line -->
-            </span>
+            <span class="hidden-xs"><span class="nav-hotkey-indicator">H</span>istory</span> <!-- cspell:disable-line -->
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-replay"
-            class="button tooltip pri1"
-            data-tooltip-content="#replay-tooltip"
+            class="button"
           >
             <i class="fas fa-eye nav-icon"></i>
-            <span class="mobile-hide">
-              W<span class="nav-hotkey-indicator">a</span>tch Specific Replay
-            </span>
+            <span class="hidden-xs"><span class="hidden-xl">Watch </span>Repl<span class="nav-hotkey-indicator">a</span>y</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-stats"
-            class="button pri2"
+            class="button hidden-xs"
             href="/stats"
             target="_blank"
             rel="noopener noreferrer"
           >
             <i class="fas fa-chart-area nav-icon"></i>
-            <span class="mobile-hide">Stats</span>
+            <span class="hidden-md">Stats</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-resources"
-            class="button tooltip pri2"
-            data-tooltip-content="#resources-tooltip"
+            class="button hidden-xs"
           >
             <i class="fas fa-link nav-icon"></i>
-            <span class="mobile-hide">Resources</span>
+            <span class="hidden-md">Resources</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-settings"
-            class="button tooltip pri2"
-            data-tooltip-content="#settings-tooltip"
+            class="button"
           >
             <i class="fas fa-cog nav-icon"></i>
-            <span class="mobile-hide">Settings</span>
+            <span class="hidden-md">Settings</span>
           </a>
         </li>
         <li>
           <a
             id="nav-buttons-lobby-help"
-            class="button pri2 help-button"
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
+            class="button help-button hidden-xs"
+            href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md"
             target="_blank"
             rel="noopener noreferrer"
           >
             <i class="fas fa-question-circle nav-icon"></i>
-            <span class="mobile-hide">Help</span>
+            <span class="hidden-md">Help</span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-lobby-sign-out" class="button signout pri2">
+          <a id="nav-buttons-lobby-sign-out" class="button signout">
             <i class="fas fa-sign-out-alt nav-icon"></i>
-            <span class="mobile-hide">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
+            <span class="hidden-md">Sign <span class="nav-hotkey-indicator">O</span>ut</span>
           </a>
         </li>
       </ul>
@@ -95,33 +84,36 @@
         <li>
           <a id="nav-buttons-pregame-start" class="button disabled">
             <i class="fas fa-play nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">S</span>tart Game</span>
+            <span class="hidden-xs">
+              <span class="nav-hotkey-indicator">S</span>tart<span class="hidden-md"> Game</span>
+            </span>
           </a>
         </li>
         <li>
           <a
-            id="nav-buttons-pregame-change-variant"
-            class="button disabled tooltip pri1"
-            data-tooltip-content="#change-variant-tooltip"
+            id="nav-buttons-pregame-change-options"
+            class="button"
           >
             <i class="fas fa-rainbow nav-icon"></i>
-            <span class="mobile-hide">
-              Change <span class="nav-hotkey-indicator">V</span>ariant <!-- cspell:disable-line -->
+            <span class="hidden-xs">
+              <span class="hidden-md"><span class="nav-hotkey-indicator">C</span>hange Options <!-- cspell:disable-line -->
             </span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-pregame-unattend" class="button">
             <i class="fas fa-pause nav-icon"></i>
-            <span class="mobile-hide">
-              <span class="nav-hotkey-indicator">R</span>eturn to Lobby <!-- cspell:disable-line -->
+            <span class="hidden-xs">
+              <span class="hidden-md"><span class="nav-hotkey-indicator">R</span>eturn to </span>Lobby <!-- cspell:disable-line -->
             </span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-pregame-leave" class="button">
             <i class="fas fa-times nav-icon"></i>
-            <span class="mobile-hide"><span class="nav-hotkey-indicator">L</span>eave Game</span>
+            <span class="hidden-xs">
+              <span class="nav-hotkey-indicator">L</span>eave<span class="hidden-md"> Game</span><!-- cspell:disable-line -->
+            </span>
           </a>
         </li>
       </ul>
@@ -134,13 +126,13 @@
         <li>
           <a id="nav-buttons-history-show-friends" class="button">
             <i class="fas fa-heart nav-icon"></i>
-            <span class="mobile-hide">Show History of Friends</span>
+            <span class="hidden-sm">Show History of Friends</span>
           </a>
         </li>
         <li>
           <a id="nav-buttons-history-return" class="button">
             <i class="fas fa-home nav-icon"></i>
-            <span class="mobile-hide">
+            <span class="hidden-sm">
               <span class="nav-hotkey-indicator">R</span>eturn to Lobby <!-- cspell:disable-line -->
             </span>
           </a>
@@ -171,10 +163,10 @@
 
   <!-- Login -->
   <div id="login">
-    <section id="main" class="container">
-      <header>
+    <section id="main-login" class="container">
+      <header class="login-header">
         <h2 class="align-center-v">
-          <img src="/public/img/logos/header.svg" height=200 />
+          <img src="/public/img/logos/header.svg" class="login-logo" />
         </h2>
         <p id="title-sub">
           A place to play <strong>Hanab</strong> online,<br />
@@ -183,7 +175,7 @@
       </header>
 
       <div class="row">
-        <div class="col-8 off-2">
+        <div class="col-8 off-2 login-box">
           <section id="loading" class="box align-center">
             <h3>Loading...</h3>
             <p>{{.WebsiteName}} is loading. Please wait!</p>
@@ -206,7 +198,7 @@
               To create a new account, simply login with a new username and select a password.<br />
               Do <strong>NOT</strong> reuse any of your
               <a
-                href="https://github.com/Zamiell/hanabi-live/blob/master/docs/PASSWORDS.md"
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/PASSWORDS.md"
                 target="_blank"
                 rel="noopener noreferrer"
               >previous passwords</a>!
@@ -229,23 +221,34 @@
                   <input id="login-password" type="password" placeholder="Password" />
                 </div>
               </div>
+              <div class="padding0p75"></div>
+              <div class="change-password hidden">
+                <div class="row">
+                  <div class="col-1 off-2">
+                    <i class="fas fa-sync fa-2x login-icon"></i>
+                  </div>
+                  <div class="col-7">
+                    <input id="change-password" type="password" placeholder="New Password" />
+                  </div>
+                </div>
+              </div>
               <br />
               <div class="row">
-                <div class="col-3 off-3">
-                  <ul class="actions">
-                    <li>
-                      <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
-                    </li>
-                  </ul>
+                <div class="col-7 off-3">
+                  <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
                 </div>
                 <div class="col-1">
                   <img id="login-ajax" class="hidden" src="/public/img/ajax.gif">
                 </div>
               </div>
               <div class="row">
-                <div class="col-12">
+                <div class="col-7 off-3">
                   <p id="login-alert" class="hidden"></p>
-                  <p style="margin-bottom: 0;"><a href="/password-reset">Forgot password?</a></p>
+                  <p style="margin-bottom: 0;">
+                    <a id="change-password-link" href="#">Change password</a>
+                    |
+                    <a href="/password-reset">Forgot password?</a>
+                  </p>
                 </div>
               </div>
             </form>
@@ -305,7 +308,7 @@
 
   <!-- Tutorial -->
   <div id="tutorial" class="hidden">
-    <section id="main" class="container">
+    <section id="main-tutorial" class="container">
       <div class="row">
         <div class="col-10 off-1">
           <section id="tutorial-1" class="box align-center">
@@ -356,7 +359,7 @@
             <p>
               Well, unfortunately the website does not have a tutorial mode or anything like that.
               You will have to learn <a
-                href="https://github.com/Zamiell/hanabi-live/blob/master/docs/RULES.md"
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/RULES.md"
                 target="_blank"
                 rel="noopener noreferrer"
               >the rules</a> on your own. So read those, or try
@@ -481,14 +484,14 @@
               That's good to hear. In general, the website is mostly used by people who already have
               a team, so finding quick games with strangers can be difficult. If you are interested
               in doing some prep work, I would like to welcome you to play with my group, the
-              <em>Hyphen-ated Group</em>. We have been playing the game for many years, but we could
+              <em>H-Group</em>. We have been playing the game for many years, but we could
               always use new players.
             </p>
             <p></p>
             <div class="row">
               <div class="col-6">
                 <a id="tutorial-6-ok" class="button icon fa-question-circle">
-                  Ok, how do I join the Hyphen-ated group?
+                  Ok, how do I join the H-Group?
                 </a>
               </div>
               <div class="col-6">
@@ -550,11 +553,11 @@
               If you try to play with our group and don't understand what our clues mean, things
               won't go well. We ask that you spend some time and read the
               <a
-                href="https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
+                href="https://hanabi.github.io/docs/beginner/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Hyphen-ated Group beginners guide
+                H-Group beginners guide
               </a>. It shouldn't take all that long. And the guide has further instructions about
               how to get games going with members of the group.
             </p>
@@ -573,12 +576,13 @@
 
   <!-- Lobby -->
   <div id="lobby" class="container max hidden">
-    <div id="lobby-top-half" class="row lobby-half">
+    <div id="lobby-top-half" class="row lobby-half toggle-active">
       <div class="col-12">
         <!-- The "games" table (all current games) -->
         <section id="lobby-games" class="box align-center-v">
           <h3 id="lobby-games-no">No current games.</h3>
           <div id="lobby-games-table-container" class="hidden lobby-table-container">
+            <h3 class="lobby-title">List of games</h3>
             <table id="lobby-games-table" class="alt">
               <thead>
                 <tr>
@@ -598,8 +602,8 @@
 
         <!-- The "pregame" table -->
         <section id="lobby-pregame" class="box hidden">
-          <div class="row">
-            <div id="lobby-pregame-left" class="col-2 padding-right1">
+          <div class="lobby-pregame-container">
+            <div id="lobby-pregame-left" class="lobby-pregame-info">
               <h4 class="padding0p5">
                 <strong><i class="fas fa-signature"></i>&nbsp; Name:</strong><br />
                 <span id="lobby-pregame-name"></span>
@@ -609,16 +613,22 @@
                 <span id="lobby-pregame-variant"></span>
               </h4>
               <h4 class="padding0p5">
+                <strong><i class="fas fa-users"></i>&nbsp; Players:</strong><br />
+                <span id="lobby-pregame-seats"></span>
+              </h4>
+              <h4 class="padding0p5">
                 <span id="lobby-pregame-options-title"><strong>Options:</strong></span><br />
                 <ul id="lobby-pregame-options"></ul>
               </h4>
             </div>
-            <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
-            <div id="lobby-pregame-player-6" class="col-2 lobby-pregame-player"></div>
+            <div class="lobby-pregame-players">
+              <div id="lobby-pregame-player-1" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-2" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-3" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-4" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-5" class="lobby-pregame-player"></div>
+              <div id="lobby-pregame-player-6" class="lobby-pregame-player"></div>
+            </div>
           </div>
         </section>
       </div>
@@ -631,7 +641,7 @@
       <!-- The chat for the entire lobby -->
       <div id="lobby-chat-container" class="col-8">
         <section id="lobby-chat" class="box">
-          <h3 class="lobby-title">Lobby Chat</h3>
+          <h3 class="lobby-title">Lobby Chat<span class="only-on-narrow-screen"> (<span class="lobby-users-num">0</span> online)</span></h3>
           <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
           <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
         </section>
@@ -640,7 +650,7 @@
       <!-- The chat for the players in the currently unstarted game -->
       <div id="lobby-chat-pregame-container" class="col-4 hidden">
         <section id="lobby-chat-pregame" class="box">
-          <h3 class="lobby-title">Pre-Game Chat</h3>
+          <h3 class="lobby-title">Pre-game Chat</h3>
           <div id="lobby-chat-pregame-text" class="lobby-chat-text-box"></div>
           <input id="lobby-chat-pregame-input" type="text" placeholder="Chat" autocomplete="off" />
           <div id="lobby-chat-pregame-istyping" class="istyping"></div>
@@ -648,9 +658,9 @@
       </div>
 
       <!-- The "Online Users" section -->
-      <div class="col-4 lobby-users-box-container">
+      <div id="lobby-online-users" class="col-4 lobby-users-box-container narrow-screen-toggle">
         <section class="box">
-          <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+          <h3 class="lobby-title">Online<span id="small-screen-toggle-users-h3"> Users</span> (<span class="lobby-users-num">0</span>)</h3>
           <div id="lobby-users-container">
             <table id="lobby-users-table" class="slim-table">
               <thead>
@@ -664,6 +674,20 @@
           </div>
         </section>
       </div>
+    </div>
+
+    <!-- small screen toggle buttons -->
+    <div id="lobby-small-screen-buttons">
+      <nav id="nav-bottom">
+        <ul>
+          <li>
+            <a id="lobby-toggle-show-tables" class="button small toggle-active">Tables</a>
+            <a id="lobby-toggle-show-online" class="button small">Who's Online</a>
+            <a id="lobby-toggle-show-chat" class="button small">Chat</a>
+            <a id="lobby-toggle-show-game-chat" class="button small hidden">Pre-game Chat</a>
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <!-- History -->
@@ -733,10 +757,61 @@
   </div>
 </div>
 
-<!-- Tooltips -->
-<div class="hidden">
-  <div id="create-game-tooltip">
-    <h2 id="create-game-tooltip-title">Create a New Game</h2>
+<!-- Modals -->
+<div id="modals-container" class="hidden">
+  <!-- Warning modal -->
+  <div id="warning-modal" class="modal modal-message">
+    <section>
+      <h3>Warning</h3>
+      <p id="warning-modal-description"></p>
+      <ul class="actions">
+        <li>
+          <button id="warning-modal-button" class="button small">Close</button>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Error modal -->
+  <div id="error-modal" class="modal modal-message">
+    <section>
+      <h3>Error</h3>
+      <p id="error-modal-description"></p>
+      <ul class="actions">
+        <li>
+          <button id="error-modal-button" class="button small">Reload</button>
+          <a><button id="error-modal-signout" class="button small signout">Sign Out</button></a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Password modal -->
+  <div id="password-modal" class="modal modal-message">
+    <section>
+      <h3>Enter Password</h3>
+      <p>Enter the password for this game:</p>
+      <input id="password-modal-id" type="hidden" />
+      <input id="password-modal-password" type="text" placeholder="Password" />
+      <br />
+      <ul class="actions">
+        <li>
+          <button id="password-modal-submit" class="button small">Submit</button>
+        </li>
+        <li>
+          <button id="password-modal-cancel" class="button small">Cancel</button>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Create Game modal -->
+  <div id="create-game-modal" class="modal">
+    <div class="row">
+      <div class="col-12">
+        <h2 id="create-game-modal-title">Create a New Game</h2>
+      </div>
+    </div>
 
     <div class="row">
       <div class="col-3 input-text">
@@ -745,11 +820,10 @@
         </div>
         Name
       </div>
-      <div class="col-8">
+      <div class="col-9">
         <input id="createTableName" type="text" placeholder="Name" />
       </div>
     </div>
-    <br />
 
     <div class="row">
       <div class="col-3 input-text">
@@ -758,7 +832,7 @@
         </div>
         Variant
       </div>
-      <div class="col-6">
+      <div class="col-7">
         <!-- See "createGame.ts" -->
         <span id="createTableVariant" class="hidden"></span>
         <select id="create-game-variant-dropdown1"></select>
@@ -779,7 +853,7 @@
       </div>
       <div class="col-1 input-text align-center">
         <a
-          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md"
+          href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/VARIANTS.md"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -787,7 +861,6 @@
         </a>
       </div>
     </div>
-    <br />
 
     <div id="create-game-timed-row" class="row">
       <div id="create-game-timed-label" class="col-3">
@@ -816,22 +889,29 @@
       </div>
     </div>
 
-    <span id="create-game-timed-row-spacing">
-      <br /><br />
-    </span>
-
-    <div class="row">
-      <div class="col-4 input-text">
+    <div class="row" id="password-row">
+      <div class="col-3 input-text">
         <div class="create-game-icon">
           <i class="fas fa-key nav-icon" style="position: relative; left: 1px;"></i>
         </div>
         Password
       </div>
-      <div class="col-6">
+      <div class="col-9">
         <input id="createTablePassword" type="text" placeholder="Password (optional)" />
       </div>
     </div>
-    <br />
+
+    <div class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-users nav-icon" style="position: relative; left: 1px;"></i>
+        </div>
+        Max Players
+      </div>
+      <div class="col-9">
+        <input id="createTableMaxPlayers" type="number" placeholder="5" min="2" max="6" />
+      </div>
+    </div>
 
     <div id="create-game-show-extra-options-row" class="row">
       <div class="col-12 align-center">
@@ -844,189 +924,179 @@
 
     <div id="create-game-extra-options" class="hidden">
       <div class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            <i class="fas fa-running"></i>
+        <div class="col-6 col-12-narrow">
+          <div class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-running"></i>
+              </div>
+              Speedrun
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableSpeedrun" type="checkbox" />
+              <label for="createTableSpeedrun"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#speedruns"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
           </div>
-          Speedrun
+          <div class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-sync-alt"></i>
+              </div>
+              Card Cycling
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableCardCycle" type="checkbox" />
+              <label for="createTableCardCycle"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#card-cycling"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
+              </div>
+              Bottom-Deck Blind-Plays
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableDeckPlays" type="checkbox" />
+              <label for="createTableDeckPlays"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#bottom-deck-blind-plays"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon" style="position: relative; top: 1px;">
+                <i class="fas fa-expand"></i>
+              </div>
+              Empty Clues
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableEmptyClues" type="checkbox" />
+              <label for="createTableEmptyClues"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#empty-clues"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
         </div>
-        <div class="col-1">
-          <input id="createTableSpeedrun" type="checkbox" />
-          <label for="createTableSpeedrun"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
+        <div class="col-6 col-12-narrow">
+          <div id="createTableOneExtraCardRow" class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-plus-circle"></i>
+              </div>
+              One Extra Card
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableOneExtraCard" type="checkbox" />
+              <label id="createTableOneExtraCardLabel" for="createTableOneExtraCard"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#one-extra-card"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
+          <div id="createTableOneLessCardRow" class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-minus-circle"></i>
+              </div>
+              One Less Card
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableOneLessCard" type="checkbox" />
+              <label id="createTableOneLessCardLabel" for="createTableOneLessCard"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#one-less-card"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              All or Nothing
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableAllOrNothing" type="checkbox" />
+              <label for="createTableAllOrNothing"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#all-or-nothing"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8 col-10-narrow create-game-text-label">
+              <div class="create-game-icon">
+                <i class="fas fa-flushed"></i>
+              </div>
+              Detrimental Characters
+            </div>
+            <div class="col-2 col-1-narrow">
+              <input id="createTableDetrimentalCharacters" type="checkbox" />
+              <label for="createTableDetrimentalCharacters"></label>
+            </div>
+            <div class="col-2 col-1-narrow align-center">
+              <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHARACTERS.md"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-      <br />
-
-      <div class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            <i class="fas fa-sync-alt"></i>
-          </div>
-          Card Cycling
-        </div>
-        <div class="col-1">
-          <input id="createTableCardCycle" type="checkbox" />
-          <label for="createTableCardCycle"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
-      <div class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
-          </div>
-          Bottom-Deck Blind-Plays
-        </div>
-        <div class="col-1">
-          <input id="createTableDeckPlays" type="checkbox" />
-          <label for="createTableDeckPlays"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
-      <div class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon" style="position: relative; top: 1px;">
-            <i class="fas fa-expand"></i>
-          </div>
-          Empty Clues
-        </div>
-        <div class="col-1">
-          <input id="createTableEmptyClues" type="checkbox" />
-          <label for="createTableEmptyClues"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
-      <div id="createTableOneExtraCardRow" class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            <i class="fas fa-plus-circle"></i>
-          </div>
-          One Extra Card
-        </div>
-        <div class="col-1">
-          <input id="createTableOneExtraCard" type="checkbox" />
-          <label id="createTableOneExtraCardLabel" for="createTableOneExtraCard"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-extra-card"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
-      <div id="createTableOneLessCardRow" class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            <i class="fas fa-minus-circle"></i>
-          </div>
-          One Less Card
-        </div>
-        <div class="col-1">
-          <input id="createTableOneLessCard" type="checkbox" />
-          <label id="createTableOneLessCardLabel" for="createTableOneLessCard"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-less-card"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
-      <div class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            <i class="fas fa-layer-group"></i>
-          </div>
-          All or Nothing
-        </div>
-        <div class="col-1">
-          <input id="createTableAllOrNothing" type="checkbox" />
-          <label for="createTableAllOrNothing"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#all-or-nothing"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
-      <div class="row">
-        <div class="col-9 create-game-text-label">
-          <div class="create-game-icon">
-            🤔
-          </div>
-          Detrimental Characters
-        </div>
-        <div class="col-1">
-          <input id="createTableDetrimentalCharacters" type="checkbox" />
-          <label for="createTableDetrimentalCharacters"></label>
-        </div>
-        <div class="col-1 align-center">
-          <a
-            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-          </a>
-        </div>
-      </div>
-      <br />
-
       <div id="create-game-json-row" class="row">
         <div class="col-3 input-text">
           <div class="create-game-icon">
@@ -1034,26 +1104,30 @@
           </div>
           JSON
         </div>
-        <div class="col-8">
+        <div class="col-9">
           <input id="createTableJSON" type="text" placeholder="JSON" />
         </div>
       </div>
     </div>
 
-    <br />
-    <button id="create-game-submit" class="button fit" type="submit">
-      <i class="fas fa-check"></i>&nbsp;
-      Create
-    </button>
+    <div class="row">
+      <div class="col-12">
+        <button id="create-game-submit" class="button fit" type="submit">
+          <i class="fas fa-check"></i>&nbsp;
+          Create
+        </button>
+        <input id="create-game-table-number" type="hidden" value="" />
+      </div>
+    </div>
   </div>
 
-  <div id="resources-tooltip">
-    <div id="resources-tooltip-container">
+  <!-- Resources modal -->
+  <div id="resources-modal">
     <h2>Resources</h2>
     <ul>
       <li>
         <a
-          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md"
+          href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -1061,48 +1135,38 @@
         </a><br />
         Get answers to the most common questions.
       </li>
-      <br />
-
       <li>
         <a href="https://www.youtube.com/watch?v=VrFCekQb4nY" target="_blank" rel="noopener noreferrer">
           The Rules / How to Play
         </a><br />
         This website does not have a tutorial on how to play, so watch this video instead.
       </li>
-      <br />
-
       <li>
         <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">
           The Discord Server
         </a><br />
         A place to find teammates and discuss strategy.
       </li>
-      <br />
-
       <li>
         <a
-          href="https://github.com/Zamiell/hanabi-conventions"
+          href="https://hanabi.github.io/"
           target="_blank"
           rel="noopener noreferrer"
         >
           Strategies and Conventions
         </a><br />
-        This is a document that lists the strategies and conventions used by the Hyphen-ated group.<br />
+        This is a document that lists the strategies and conventions used by the H-Group.<br />
         (You don't have to use them if you don't want to.)
       </li>
-      <br />
-
       <li>
-        <a href="https://github.com/Zamiell/hanabi-live" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/Hanabi-Live/hanabi-live" target="_blank" rel="noopener noreferrer">
           The Code Repository
         </a><br />
         This client and server are open-source, hosted on GitHub.
       </li>
-      <br />
-
       <li>
         <a
-          href="https://github.com/Zamiell/hanabi-live/issues"
+          href="https://github.com/Hanabi-Live/hanabi-live/issues"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -1112,8 +1176,6 @@
         (You will need to create a free GitHub account.)<br />
         Make sure that someone else has not already opened the same issue.
       </li>
-      <br />
-
       <li>
         <a
           href="https://hanabi-competitions.com/static/about.html"
@@ -1124,16 +1186,12 @@
         </a><br />
         Compete with other players around the world to get the highest score on a new random deal.
       </li>
-      <br />
-
       <li>
         <a href="https://www.speedrun.com/hanabi" target="_blank" rel="noopener noreferrer">
           Speedrun.com Leaderboards
         </a><br />
         The fastest times in the world are tracked here.
       </li>
-      <br />
-
       <li>
         <a
           href="https://www.givewell.org/charities/top-charities"
@@ -1152,180 +1210,142 @@
         for assessing which charities are good.)
       </li>
     </ul>
-    </div>
   </div>
 
-  <div id="change-variant-tooltip">
-    <h2>Change Variant</h2>
-    <div class="row">
-      <div class="col-10">
-        <input
-          id="change-variant-dropdown"
-          type="text"
-          list="change-variant-dropdown-list"
-          autocomplete="off"
-        />
-        <datalist id="change-variant-dropdown-list"></datalist>
-      </div>
-      <div class="col-1 input-text align-center">
-        <a
-          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <i class="fas fa-question-circle question-mark"></i>
-        </a>
-      </div>
-    </div>
-  <br />
-    <p class="margin1">
-      <button id="change-variant-submit" class="button fit" type="submit">
-        <i class="fas fa-check"></i>&nbsp;
-        Update
-      </button>
-    </p>
-  </div>
-
-  <div id="settings-tooltip">
+  <!-- Settings modal -->
+  <div id="settings-modal">
     <h2>Settings</h2>
 
-    <p class="margin1"><strong>Notifications</strong></p>
-
-    <input id="desktopNotification" type="checkbox">
-    <label for="desktopNotification">
-      <span class="label-text">
-        Show a desktop notification when it reaches your turn
-      </span>
-    </label>
-
-    <br />
-
-    <input id="soundMove" type="checkbox">
-    <label for="soundMove">
-      <span class="label-text">
-        Play a sound when a move is made
-      </span>
-    </label>
-
-    <br />
-
-    <input id="soundTimer" type="checkbox">
-    <label for="soundTimer">
-      <span class="label-text">
-        Play a sound when a timer is below 10 seconds
-      </span>
-    </label>
-
-    <br /><br /><br />
-
-    <p class="margin1"><strong>Appearance</strong></p>
-
-    <input id="keldonMode" type="checkbox">
-    <label for="keldonMode">
-      <span class="label-text">
-        Keldon mode (hands spread around the table)
-      </span>
-    </label>
-
-    <br />
-
-    <input id="colorblindMode" type="checkbox">
-    <label for="colorblindMode">
-      <span class="label-text">
-        Colorblind mode
-      </span>
-    </label>
-
-    <br />
-
-    <input id="realLifeMode" type="checkbox">
-    <label for="realLifeMode">
-      <span class="label-text">
-        Real-life mode (no extra UI elements)
-      </span>
-    </label>
-
-    <br />
-
-    <input id="reverseHands" type="checkbox">
-    <label for="reverseHands">
-      <span class="label-text">
-        Reverse hand direction (new cards go on the right)
-      </span>
-    </label>
-
-    <br />
-
-    <input id="styleNumbers" type="checkbox">
-    <label for="styleNumbers">
-      <span class="label-text">
-        Make numbers on cards match the art style
-      </span>
-    </label>
-
-    <br />
-
-    <input id="showTimerInUntimed" type="checkbox">
-    <label for="showTimerInUntimed">
-      <span class="label-text">
-        Show turn timers in untimed games
-      </span>
-    </label>
-
-    <br /><br /><br />
-
-    <p class="margin1"><strong>Expert Features</strong></p>
-
-    <input id="speedrunPreplay" type="checkbox">
-    <label for="speedrunPreplay">
-      <span class="label-text">
-        Enable pre-playing cards
-      </span>
-    </label>
-
-    <br />
-
-    <input id="speedrunMode" type="checkbox">
-    <label for="speedrunMode">
-      <span class="label-text">
-        Enable speedrun features in non-speedrun games
-      </span>
-    </label>
-
-    <br />
-
-    <input id="hyphenatedConventions" type="checkbox">
-    <label for="hyphenatedConventions">
-      <span class="label-text">
-        Enable <a
-          href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Hyphen-ated group</a> features
-      </span>
-    </label>
-
-    <br /><br /><br />
-
-    <p class="margin1"><strong>Volume</strong></p>
-
-    <ul id="settings-volume" class="horizontal">
-      <li>
-        <input id="settings-volume-slider" type="range" min="0" max="100" step="5" value="50" />
-      </li>
-      <li id="settings-volume-slider-value"></li>
-      <li>
-        <button id="settings-volume-test" class="button alt small" type="button">
-          Test
-        </button>
-      </li>
-    </ul>
-
-    <br /><br /><br />
+    <div class="settings-content">
+      <div>
+        <h5>Notifications</h5>
+        <p>
+          <input id="desktopNotification" type="checkbox">
+          <label for="desktopNotification">
+            <span class="label-text">
+              Show a desktop notification when it reaches your turn
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="soundMove" type="checkbox">
+          <label for="soundMove">
+            <span class="label-text">
+              Play a sound when a move is made
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="soundTimer" type="checkbox">
+          <label for="soundTimer">
+            <span class="label-text">
+              Play a sound when a timer is below 10 seconds
+            </span>
+          </label>
+        </p>
+      </div>
+      <div>
+        <h5>Appearance</h5>
+        <p>
+          <input id="keldonMode" type="checkbox">
+          <label for="keldonMode">
+            <span class="label-text">
+              Keldon mode (hands spread around the table)
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="colorblindMode" type="checkbox">
+          <label for="colorblindMode">
+            <span class="label-text">
+              Colorblind mode
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="realLifeMode" type="checkbox">
+          <label for="realLifeMode">
+            <span class="label-text">
+              Real-life mode (no extra UI elements)
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="reverseHands" type="checkbox">
+          <label for="reverseHands">
+            <span class="label-text">
+              Reverse hand direction (new cards go on the right)
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="styleNumbers" type="checkbox">
+          <label for="styleNumbers">
+            <span class="label-text">
+              Make numbers on cards match the art style
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="showTimerInUntimed" type="checkbox">
+          <label for="showTimerInUntimed">
+            <span class="label-text">
+              Show turn timers in untimed games
+            </span>
+          </label>
+        </p>
+      </div>
+      <div>
+        <h5>Expert Features</h5>
+        <p>
+          <input id="speedrunPreplay" type="checkbox">
+          <label for="speedrunPreplay">
+            <span class="label-text">
+              Enable pre-playing cards
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="speedrunMode" type="checkbox">
+          <label for="speedrunMode">
+            <span class="label-text">
+              Enable speedrun features in non-speedrun games
+            </span>
+          </label>
+        </p>
+        <p>
+          <input id="hyphenatedConventions" type="checkbox">
+          <label for="hyphenatedConventions">
+            <span class="label-text">
+              Enable <a
+                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#hyphen-ated-conventions"
+                target="_blank"
+                rel="noopener noreferrer"
+              >H-Group</a> features
+            </span>
+          </label>
+        </p>
+      </div>
+      <div>
+        <h5>Volume</h5>
+        <ul id="settings-volume" class="horizontal">
+          <li>
+            <input id="settings-volume-slider" type="range" min="0" max="100" step="5" value="50" />
+          </li>
+          <li id="settings-volume-slider-value"></li>
+          <li>
+            <button id="settings-volume-test" class="button alt small" type="button">
+              Test
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 
-  <div id="replay-tooltip">
-    <h2 id="replay-tooltip-title">Watch a Specific Replay</h2>
+  <!-- Replay modal -->
+  <div id="replay-modal">
+    <h2 id="replay-modal-title">Watch a Specific Replay</h2>
 
     <div class="row">
       <div class="col-3 input-text">
@@ -1347,7 +1367,6 @@
         </label>
       </div>
     </div>
-    <br /><br />
 
     <div id="replay-id-row" class="row">
       <div class="col-3 input-text">
@@ -1373,15 +1392,9 @@
       </div>
     </div>
 
-    <!-- Spacing for the ID row or the JSON row -->
-    <br />
-
     <div id="replay-error-row" class="row">
       <div class="col-3 input-text"></div>
       <div id="replay-error-row-text" class="col-8"></div>
-    </div>
-    <div id="replay-error-row-spacing">
-      <br /><br />
     </div>
 
     <div class="row">
@@ -1404,13 +1417,123 @@
         </label>
       </div>
     </div>
-    <br />
 
-    <br />
-    <button id="replay-submit" class="button fit" type="submit">
-      <i class="fas fa-eye"></i>&nbsp;
-      Watch
-    </button>
+    <div class="row">
+      <div class="col-12">
+        <button id="replay-submit" class="button fit" type="submit">
+          <i class="fas fa-eye"></i>&nbsp;
+          Watch
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Set Leader modal -->
+  <div id="set-leader-modal" class="modal-prompt">
+    <h2>Set New Leader</h2>
+
+    <p>Who is the person that you want to pass the replay leader to?</p>
+
+    <div id="leader-placeholder"></div>
+  </div>
+
+  <!-- Set Turn modal -->
+  <div id="set-turn-modal" class="modal-prompt">
+    <h2>Which turn do you want to go to?</h2>
+
+    <div class="row">
+      <div class="col-6">Turn:</div>
+      <div class="col-6">
+        <input id="set-turn-input" name="set-turn-input" type="number">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-2 off-5">
+        <button id="set-turn-button" type="submit" class="button">Go</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Play / Discard modal -->
+  <div id="play-discard-modal" class="modal-prompt">
+    <h2 id="play-discard-title"></h2>
+
+    <p id="play-discard-message"></p>
+
+    <div class="row">
+      <div class="col-6">
+        Card:
+      </div>
+      <div class="col-6">
+        <input id="play-discard-card" name="play-discard-card" type="number">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-2 off-5">
+        <button id="play-discard-button" type="submit" class="button">Go</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Set Modifier modal -->
+  <div id="set-modifier-modal" class="modal-prompt">
+    <h2>Set Modifier</h2>
+
+    <p>Enter a modifier for the "cards currently gotten". (e.g. "1", "-2", etc.)</p>
+
+    <div class="row">
+      <div class="col-6">
+        Current modifier:
+      </div>
+      <div class="col-6">
+        <span id="set-modifier-current"></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        New modifier:
+      </div>
+      <div class="col-6">
+        <input id="set-modifier-new" name="set-modifier-new" type="number" value="0">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-2 off-5">
+        <button id="set-modifier-button" type="submit" class="button">Go</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morph modal -->
+  <div id="morph-modal" class="modal-prompt">
+    <h2>Morph</h2>
+
+    <p>Select the card you want to morph it into:</p>
+
+    <form name="morph-modal-form">
+      <div id="morph-modal-cards"></div>
+      <div class="row">
+        <div class="col-6 input-text">
+          or type in the card (e.g. red 1, b3, ...)
+        </div>
+        <div class="row">
+          <input type="text" id="morph-modal-textbox" name="morph-modal-textbox" value="" data-suit="" data-rank="">
+        </div>
+      </div>
+    </form>
+
+    <div class="row">
+      <div class="col-2 off-3">
+        <button id="morph-modal-button-ok" type="submit" class="button">Ok</button>
+      </div>
+      <div class="col-2 off-1">
+        <button id="morph-modal-button-cancel" type="submit" class="button">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1419,25 +1542,6 @@
 
 <!-- Game tooltips (which are initialized in "tooltips.js") -->
 <span id="game-tooltips"></span><!-- This span cannot be hidden -->
-
-<!-- Password modal -->
-<div id="password-modal" class="modal hidden">
-  <section class="box">
-    <h3>Enter Password</h3>
-    <p>Enter the password for this game:</p>
-    <input id="password-modal-id" type="hidden" />
-    <input id="password-modal-password" type="text" placeholder="Password" />
-    <br />
-    <ul class="actions">
-      <li>
-        <button id="password-modal-submit" class="button small">Submit</button>
-      </li>
-      <li>
-        <button id="password-modal-cancel" class="button small">Cancel</button>
-      </li>
-    </ul>
-  </section>
-</div>
 
 <!-- Game chat modal -->
 <div id="game-chat-modal" class="hidden draggable">
@@ -1453,35 +1557,8 @@
   </section>
 </div>
 
-<!-- Warning modal -->
-<div id="warning-modal" class="modal hidden">
-  <section class="box">
-    <h3>Warning</h3>
-    <p id="warning-modal-description"></p>
-    <ul class="actions">
-      <li>
-        <button id="warning-modal-button" class="button small">Close</button>
-      </li>
-    </ul>
-  </section>
-</div>
-
-<!-- Error modal -->
-<div id="error-modal" class="modal hidden">
-  <section class="box">
-    <h3>Error</h3>
-    <p id="error-modal-description"></p>
-    <ul class="actions">
-      <li>
-        <button id="error-modal-button" class="button small">Reload</button>
-        <a><button id="error-modal-signout" class="button small signout">Sign Out</button></a>
-      </li>
-    </ul>
-  </section>
-</div>
-
 <!-- Page cover (which fades the background when a modal is showing) -->
-<div id="page-cover" class="hidden"></div>
+<div id="page-cover"></div>
 
 <!-- Used to validate that we are connecting to the correct URL -->
 <div id="domain" class="hidden">{{.Domain}}</div>

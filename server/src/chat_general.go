@@ -2,67 +2,103 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
+	"path"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
-// /help
-func chatHelp(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "You can see the list of chat commands here: https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+type SimpleResponse struct {
+	Command  string
+	Response string
+	Alias    []string
+	Private  bool
+	IsHelp   bool
 }
 
-// /discord
-func chatDiscord(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Join the Discord server: https://discord.gg/FADvkJp"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+const ChatReplyCommands = "chatReplyCommands.json"
+
+var (
+	simpleResponses = make(map[string]SimpleResponse)
+	helpCommands    = make([]string, 0)
+)
+
+func chatMapAddSimpleResponses() {
+	// Make a list of commands so far
+	commands := make([]string, 0)
+	for c := range chatCommandMap {
+		commands = append(commands, "/"+c)
+	}
+
+	// Load external one-line responses
+	source := path.Join(jsonPath, ChatReplyCommands)
+	var contents []byte
+	if c, err := ioutil.ReadFile(source); err != nil {
+		logger.Error("Error reading file " + ChatReplyCommands)
+		return
+	} else {
+		contents = c
+	}
+
+	var responses []SimpleResponse
+	if err := json.Unmarshal(contents, &responses); err != nil {
+		logger.Error("chatMapAddSimpleResponses: Error during responses init.")
+		return
+	}
+
+	// General commands (that work both in the lobby and at a table)
+	for _, r := range responses {
+		simpleResponses[r.Command] = r
+		chatCommandMap[r.Command] = chatSimpleResponse
+		commands = append(commands, "/"+r.Command)
+		if r.IsHelp {
+			helpCommands = append(helpCommands, r.Command)
+		}
+		for _, alias := range r.Alias {
+			simpleResponses[alias] = r
+			chatCommandMap[alias] = chatSimpleResponse
+			if r.IsHelp {
+				helpCommands = append(helpCommands, r.Command)
+			}
+		}
+	}
+
+	// Add list of commands to helpers
+	sort.Strings(commands)
+	help := strings.Join(commands, ", ")
+	// replace hyphen with non breaking one
+	help = strings.Replace(help, "-", "&#8209;", -1)
+	for c, r := range simpleResponses {
+		if r.IsHelp {
+			r.Response = "<br>List of commands:<br>" + help + "<br>" + r.Response
+			simpleResponses[c] = r
+		}
+	}
 }
 
-// /rules
-func chatRules(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Please follow the community guidelines: https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /new
-func chatNew(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /doc
-func chatDoc(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "The strategy reference for the Hyphen-ated group: https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /bga
-func chatBGA(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the Hyphen-ated group, then read this: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/BGA.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
-}
-
-// /efficiency
-func chatEfficiency(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	msg := "Info on efficiency calculation: https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md"
-	// (we can't put "<" or ">" around the link because then it won't display properly in the lobby)
-	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+// All single response commands
+func chatSimpleResponse(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
+	r := simpleResponses[cmd]
+	if r.Private {
+		chatServerSendPM(s, r.Response, d.Room)
+	} else {
+		chatServerSend(ctx, r.Response, d.Room, d.NoTablesLock)
+	}
 }
 
 // /replay [databaseID] [turn]
-func chatReplay(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatReplay(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	msg := getReplayURL(d.Args)
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 }
 
 // /random [min] [max]
-func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	// We expect something like "/random 2" or "/random 1 2"
 	if len(d.Args) != 1 && len(d.Args) != 2 {
 		msg := "The format of the /random command is: /random [min] [max]"
@@ -74,7 +110,7 @@ func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	var arg1, arg2 int
 	if v, err := strconv.Atoi(d.Args[0]); err != nil {
 		if _, err := strconv.ParseFloat(d.Args[0], 64); err != nil {
-			msg := "\"" + d.Args[0] + "\" is not a number."
+			msg := "\"" + d.Args[0] + "\" is not an integer."
 			chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 		} else {
 			msg := "The /random command only accepts integers."
@@ -87,7 +123,7 @@ func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if len(d.Args) == 2 {
 		if v, err := strconv.Atoi(d.Args[1]); err != nil {
 			if _, err := strconv.ParseFloat(d.Args[1], 64); err != nil {
-				msg := "\"" + d.Args[1] + "\" is not a number."
+				msg := "\"" + d.Args[1] + "\" is not an integer."
 				chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 			} else {
 				msg := "The /random command only accepts integers."
@@ -124,7 +160,7 @@ func chatRandom(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /uptime
-func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	chatServerSend(ctx, getCameOnline(), d.Room, d.NoTablesLock)
 	var uptime string
 	if v, err := getUptime(); err != nil {
@@ -138,7 +174,7 @@ func chatUptime(ctx context.Context, s *Session, d *CommandData, t *Table) {
 }
 
 // /timeleft
-func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table) {
+func chatTimeLeft(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
 		logger.Error("Failed to get the time left: " + err.Error())

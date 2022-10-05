@@ -3,10 +3,11 @@
 // https://code.visualstudio.com/docs/editor/extension-gallery#_workspace-recommended-extensions
 {
   "recommendations": [
+    "esbenp.prettier-vscode", // The TypeScript formatter
     "dbaeumer.vscode-eslint", // The TypeScript linter
     "orta.vscode-jest", // The TypeScript tester
     "golang.go", // The server is written in Golang
     "ms-python.python", // This project uses several Python scripts
-    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on cspell is used
+    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on cspell
   ],
 }

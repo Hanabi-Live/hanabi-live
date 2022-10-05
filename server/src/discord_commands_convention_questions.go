@@ -14,7 +14,13 @@ func discordCommand2P(ctx context.Context, m *discordgo.MessageCreate, args []st
 
 // /badquestion
 func discordCommandBadQuestion(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#the-reverse-finesse>)"
+	msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://hanabi.github.io/docs/level_2/#the-reverse-finesse>)"
+	discordSend(m.ChannelID, "", msg)
+}
+
+// /github
+func discordCommandGithub(ctx context.Context, m *discordgo.MessageCreate, args []string) {
+	msg := "Post website bugs and feature requests on the GitHub repository, but make sure that you search for existing issues: <https://github.com/Zamiell/hanabi-live/issues>"
 	discordSend(m.ChannelID, "", msg)
 }
 
@@ -32,13 +38,19 @@ func discordCommandLowEffort(ctx context.Context, m *discordgo.MessageCreate, ar
 
 // /notation
 func discordCommandNotation(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	msg := "It looks like you are using non-standard card notation in your question. Please use notation that the Hyphen-ated group will be familiar with. For example:\n- Use \"red 3\" instead of \"3 red\".\n- Use \"r3\" instead of \"3r\".\n- Use \"r[3]\" to indicate that a card is a red 3 but has a number 3 clue on it.\n- Always use the characters of Alice, Bob, Cathy, Donald, Emily, and Frank instead of real player names. Alice should always be the player who performs the first action, and so forth."
+	msg := "It looks like you are using non-standard card notation in your question. Please use notation that the H-Group group will be familiar with. For example:\n- Use \"red 3\" instead of \"3 red\".\n- Use \"r3\" instead of \"3r\".\n- Use \"r[3]\" to indicate that a card is a red 3 but has a number 3 clue on it.\n- Always use the characters of Alice, Bob, Cathy, Donald, Emily, and Frank instead of real player names. Alice should always be the player who performs the first action, and so forth."
 	discordSend(m.ChannelID, "", msg)
 }
 
 // /oop
 func discordCommandOOP(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (i, ii, or iii)."
+	discordSend(m.ChannelID, "", msg)
+}
+
+// /rtfm
+func discordCommandRTFM(ctx context.Context, m *discordgo.MessageCreate, args []string) {
+	msg := "Make sure you have thoroughly read the relevant documentation before asking questions. Try the #rules-and-resources first."
 	discordSend(m.ChannelID, "", msg)
 }
 
@@ -51,6 +63,6 @@ func discordCommandScreenshot(ctx context.Context, m *discordgo.MessageCreate, a
 // /undefined
 func discordCommandUndefined(ctx context.Context, m *discordgo.MessageCreate, args []string) {
 	msg := "**Why isn't [situation X] defined in the conventions document?**\n\n"
-	msg += "Not everything has to have a meaning. We intentionally want to have some situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Convention_Goals.md>"
+	msg += "Not everything has to have a meaning. We intentionally want to have some situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/hanabi/hanabi.github.io/blob/main/misc/convention-goals.md>"
 	discordSend(m.ChannelID, "", msg)
 }

@@ -73,6 +73,7 @@ CREATE TABLE user_settings (
     create_table_one_less_card           BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_all_or_nothing          BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_detrimental_characters  BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_max_players             INTEGER   NOT NULL  DEFAULT 5,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
@@ -207,8 +208,7 @@ CREATE TABLE game_tags (
     user_id  INTEGER  NOT NULL,
     tag      TEXT     NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT game_tags_unique UNIQUE (game_id, tag)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS seeds CASCADE;

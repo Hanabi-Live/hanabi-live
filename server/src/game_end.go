@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strconv"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 func (g *Game) End(ctx context.Context, d *CommandData) {
@@ -73,7 +75,7 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 	}
 	sortStringsCaseInsensitive(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
-	gameHistoryList = append(gameHistoryList, &GameHistory{
+	gameHistoryList = append(gameHistoryList, &GameHistory{ // nolint: exhaustivestruct
 		// The ID is recorded in the "WriteDatabase()" function above
 		ID:                 g.ExtraOptions.DatabaseID,
 		Options:            g.Options,

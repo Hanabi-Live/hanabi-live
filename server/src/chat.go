@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 const (
@@ -17,8 +19,11 @@ const (
 )
 
 var (
-	mentionRegExp = regexp.MustCompile(`&lt;@!*(\d+?)&gt;`)
-	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
+	// From https://github.com/discordjs/discord.js/blob/stable/src/structures/MessageMentions.js#L221
+	mentionRegExp = regexp.MustCompile(`&lt;@!?(\d{17,19})&gt;`)
+	roleRegExp    = regexp.MustCompile(`&lt;@&amp;(\d{17,19})&gt;`)
+	channelRegExp = regexp.MustCompile(`&lt;#(\d{17,19})&gt;`)
+	spoilerRegExp = regexp.MustCompile(`(?:^| )\|\|(.+?)\|\|(?: |$)`)
 )
 
 type ChatMessage struct {
@@ -65,15 +70,34 @@ func chatServerSendAll(ctx context.Context, msg string) {
 
 // chatServerSendPM is for sending non-public messages to specific users
 func chatServerSendPM(s *Session, msg string, room string) {
-	s.Emit("chat", &ChatMessage{
-		Msg:       msg,
-		Who:       WebsiteName,
-		Discord:   false,
-		Server:    true,
-		Datetime:  time.Now(),
-		Room:      room,
-		Recipient: s.Username,
-	})
+	// Some messages are sent from Discord
+	if s != nil {
+		s.Emit("chat", &ChatMessage{
+			Msg:       msg,
+			Who:       WebsiteName,
+			Discord:   false,
+			Server:    true,
+			Datetime:  time.Now(),
+			Room:      room,
+			Recipient: s.Username,
+		})
+	}
+}
+
+func chatFillAll(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	// Convert Discord mentions to users, channels and roles
+	msg = chatFillMentions(msg)
+	msg = chatFillRoles(msg)
+	msg = chatFillChannels(msg)
+
+	// Convert other Discord tags
+	msg = chatReplaceSpoilers(msg)
+
+	return msg
 }
 
 func chatFillMentions(msg string) string {
@@ -100,6 +124,25 @@ func chatFillMentions(msg string) string {
 	return msg
 }
 
+func chatFillRoles(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	// Discord roles are in the form of "<@&12345678901234567>"
+	// By the time the message gets here, it will be sanitized to "&lt;@&amp;12345678901234567&gt;"
+	for {
+		match := roleRegExp.FindStringSubmatch(msg)
+		if match == nil || len(match) <= 1 {
+			break
+		}
+		discordID := match[1]
+		role := discordGetRole(discordID)
+		msg = strings.ReplaceAll(msg, "&lt;@&amp;"+discordID+"&gt;", "@"+role)
+	}
+	return msg
+}
+
 func chatFillChannels(msg string) string {
 	if discord == nil {
 		return msg
@@ -115,6 +158,25 @@ func chatFillChannels(msg string) string {
 		discordID := match[1]
 		channel := discordGetChannel(discordID)
 		msg = strings.ReplaceAll(msg, "&lt;#"+discordID+"&gt;", "#"+channel)
+	}
+	return msg
+}
+
+func chatReplaceSpoilers(msg string) string {
+	if discord == nil {
+		return msg
+	}
+
+	for {
+		match := spoilerRegExp.FindAllStringSubmatch(msg, -1)
+		if len(match) == 0 {
+			break
+		}
+
+		for _, m := range match {
+			text := m[1]
+			msg = strings.ReplaceAll(msg, "||"+text+"||", "<span class=\"spoiler\">"+text+"</span>")
+		}
 	}
 	return msg
 }
@@ -150,7 +212,7 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 			discord = true
 			rawMsg.Name = rawMsg.DiscordName.String
 		}
-		rawMsg.Message = chatFillMentions(rawMsg.Message)
+		rawMsg.Message = chatFillAll(rawMsg.Message)
 		msg := &ChatMessage{
 			Msg:       rawMsg.Message,
 			Who:       rawMsg.Name,

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gabstv/melody"
 	"github.com/sasha-s/go-deadlock"
 )

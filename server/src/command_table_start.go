@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandTableStart is sent when the owner of a table clicks on the "Start Game" button
@@ -60,6 +62,28 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 		for _, p := range t.Players {
 			if !p.Present {
 				s.Warning("Everyone must be present before you can start this game.")
+				return
+			}
+		}
+	}
+
+	if d.IntendedPlayers != nil {
+		// Check that the game is starting with the intended set of players
+
+		// If not, fail silently and allow the user to notice that the button they pressed has
+		// become disabled
+		if len(*d.IntendedPlayers) != len(t.Players) {
+			return
+		}
+		for _, p := range t.Players {
+			found := false
+			for _, name := range *d.IntendedPlayers {
+				if name == p.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
 				return
 			}
 		}

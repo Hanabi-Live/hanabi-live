@@ -18,6 +18,8 @@ func discordCommandInit() {
 	discordCommandMap["2player"] = discordCommand2P
 	discordCommandMap["2pquestion"] = discordCommand2P
 	discordCommandMap["badquestion"] = discordCommandBadQuestion
+	discordCommandMap["github"] = discordCommandGithub
+	discordCommandMap["issues"] = discordCommandGithub
 	discordCommandMap["level"] = discordCommandLevel
 	discordCommandMap["loweffort"] = discordCommandLowEffort
 	discordCommandMap["noreplay"] = discordCommandScreenshot
@@ -25,15 +27,19 @@ func discordCommandInit() {
 	discordCommandMap["oop"] = discordCommandOOP
 	discordCommandMap["screenshot"] = discordCommandScreenshot
 	discordCommandMap["undefined"] = discordCommandUndefined
-
-	// Special commands for use in other channels
-	discordCommandMap["issue"] = discordCommandIssue
+	discordCommandMap["rtfm"] = discordCommandRTFM
 
 	// Duplicated commands (e.g. commands that also work in the lobby)
 	discordCommandMap["replay"] = discordCommandReplay
 	discordCommandMap["link"] = discordCommandReplay
 	discordCommandMap["game"] = discordCommandReplay
 	discordCommandMap["uptime"] = discordUptime
+
+	discordCommandMap["ping"] = discordPing
+	discordCommandMap["here"] = discordPing
+	discordCommandMap["teachme"] = discordTeachMe
+	discordCommandMap["subscribe"] = discordSubscribe
+	discordCommandMap["unsubscribe"] = discordUnsubscribe
 }
 
 func discordCommand(ctx context.Context, m *discordgo.MessageCreate, command string, args []string) {

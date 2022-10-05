@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/Zamiell/hanabi-live/raw/master/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
+  <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
 </p>
 <br />
 
@@ -7,7 +7,7 @@
 
 - This is the source code for [Hanab Live](http://hanab.live/), which is a website that allows people to play a cooperative card game online. It is similar to the card game [Hanabi](https://boardgamegeek.com/boardgame/98778/hanabi).
 - This project has no affiliation with the card game Hanabi, [Antoine Bauza](https://en.wikipedia.org/wiki/Antoine_Bauza) (the creator of Hanabi), or any of the the real-life publishers of the game (of which there are many).
-- The client is programmed in [TypeScript](https://www.typescriptlang.org/). It is located in the `client` directory.
+- The client is programmed in [TypeScript](https://www.typescriptlang.org/). It is located in the `packages/client` directory.
   - A lot of the code was originally taken from [Keldon Jones'](http://keldon.net/) implementation of the game. (His site no longer exists.)
 - The server is programmed in [Go](https://golang.org/). It is located in the `server` subdirectory.
   - It uses a [PostgreSQL](https://www.postgresql.org/) database to store information about the users and games.
@@ -22,19 +22,19 @@ Find teammates to play games with at [the Discord server](https://discord.gg/FAD
 
 ## List of Variants
 
-Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
+Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
 
 <br />
 
 ## List of Features
 
-See the [features documentation](https://github.com/Zamiell/hanabi-live/tree/master/docs/FEATURES.md).
+See the [features documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/FEATURES.md).
 
 <br />
 
 ## Installation
 
-See the [installation documentation](https://github.com/Zamiell/hanabi-live/tree/master/docs/INSTALL.md).
+See the [installation documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/INSTALL.md).
 
 <br />
 

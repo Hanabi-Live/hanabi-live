@@ -6,12 +6,16 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 var (
 	variants     map[string]*Variant
 	variantIDMap map[int]string
 	variantNames []string
+	oddClues     []int
+	evenClues    []int
 )
 
 // VariantJSON is very similar to Variant,
@@ -32,11 +36,12 @@ type VariantJSON struct {
 	SpecialNoClueColors    bool      `json:"specialNoClueColors"`
 	SpecialNoClueRanks     bool      `json:"specialNoClueRanks"`
 	SpecialDeceptive       bool      `json:"specialDeceptive"`
+	OddsAndEvens           bool      `json:"oddsAndEvens"`
 }
 
 func variantsInit() {
 	// Import the JSON file
-	filePath := path.Join(dataPath, "variants.json")
+	filePath := path.Join(jsonPath, "variants.json")
 	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
@@ -157,6 +162,7 @@ func variantsInit() {
 			SpecialNoClueColors:    variant.SpecialNoClueColors,
 			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
 			SpecialDeceptive:       variant.SpecialDeceptive,
+			OddsAndEvens:           variant.OddsAndEvens,
 			MaxScore:               len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
@@ -173,6 +179,9 @@ func variantsInit() {
 
 		// Create an array with every variant name
 		variantNames = append(variantNames, variant.Name)
+
+		oddClues = []int{1, 3, 5}
+		evenClues = []int{2, 4}
 	}
 
 	// Validate that there are no skipped ID numbers
@@ -197,6 +206,8 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	suit := variant.Suits[card.SuitIndex]
 
 	if clue.Type == ClueTypeColor {
+		clueColorName := variant.ClueColors[clue.Value]
+
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
@@ -208,6 +219,15 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
+		if variant.IsSynesthesia() && !suit.NoClueRanks {
+			// In addition to any other matching, match color based on rank.
+			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
+			prismColorName := variant.ClueColors[prismColorIndex]
+			if clueColorName == prismColorName {
+				return true
+			}
+		}
+
 		if variant.SpecialRank == card.Rank {
 			if variant.SpecialAllClueColors {
 				return true
@@ -216,8 +236,6 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 				return false
 			}
 		}
-
-		clueColorName := variant.ClueColors[clue.Value]
 
 		if suit.Prism {
 			// The color that touches a prism card is contingent upon the card's rank
@@ -259,8 +277,24 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 		}
 
+		if variant.OddsAndEvens {
+			// Clue ranks in Odds and Evens can only be 1 or 2
+			if clue.Value == 1 {
+				return intInSlice(card.Rank, oddClues)
+			}
+			return intInSlice(card.Rank, evenClues)
+		}
+
 		return clue.Value == card.Rank
 	}
 
 	return false
+}
+
+func variantsIsValidID(id int) bool {
+	if _, ok := variantIDMap[id]; !ok {
+		return false
+	}
+
+	return true
 }

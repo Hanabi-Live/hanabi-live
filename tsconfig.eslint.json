@@ -1,0 +1,12 @@
+// A special TypeScript project file, used by ESLint only
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    // These are ESLint-only inclusions
+    "./.eslintrc.js",
+    "./jest.config.js",
+    "./packages/client/Gruntfile.js",
+    "./packages/client/jest.config.js",
+    "./packages/client/webpack.config.js",
+  ],
+}

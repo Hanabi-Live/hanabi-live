@@ -26,14 +26,40 @@
     "**/misc/keldon/**": true,
   },
 
-  // ------------------
-  // Extension settings
-  // ------------------
+  // -----------------------
+  // JavaScript / TypeScript
+  // -----------------------
 
   // This is needed because the ".eslintrc.js" is not located in the root of the repository
   "eslint.workingDirectories": [
     "./client",
   ],
+
+  // By default, VSCode will not automatically fill-in function arguments
+  "javascript.suggest.completeFunctionCalls": true,
+  "typescript.suggest.completeFunctionCalls": true,
+
+  // Automatically run the formatter when a JavaScript or TypeScript file is saved
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true,
+    },
+    "editor.tabSize": 2,
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true,
+    },
+    "editor.tabSize": 2,
+  },
+
+  // ------
+  // Golang
+  // ------
 
   // The default Golang linter is golint, which is only concerned with coding style
   // GolangCI-Lint does a suite of different checks
@@ -45,40 +71,20 @@
       "--fast",
   ],
 
-  // This is needed because the "jest.config.js" is not located in the root of the repository
-  "jest.rootPath": "client",
-
-  // Use "black" to automatically format Python files
-  // https://github.com/psf/black
-  "python.formatting.provider": "black",
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
-
-  // -----------------
-  // Language settings
-  // -----------------
-
   "[go]": {
     "editor.tabSize": 4,
     "editor.insertSpaces": false,
   },
 
-  // Automatically run the formatter when a TypeScript or JavaScript file is saved
-  // "Organize Imports" must be before ESLint because it will delete trailing commas
-  "[typescript]": {
-    "editor.codeActionsOnSave": [
-      "source.organizeImports",
-      "source.fixAll.eslint",
-    ],
-    "editor.tabSize": 2,
-  },
-  "[javascript]": {
-    "editor.codeActionsOnSave": [
-      "source.organizeImports",
-      "source.fixAll.eslint",
-    ],
-    "editor.tabSize": 2,
-  },
+  // ------
+  // Python
+  // ------
+
+  // Use "black" to automatically format Python files
+  // https://github.com/psf/black
+  "python.formatting.provider": "black",
+  "python.linting.pylintEnabled": true,
+  "python.linting.enabled": false,
 
   // Automatically run the formatter when a Python file is saved
   "[python]": {

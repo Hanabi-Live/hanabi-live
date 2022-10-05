@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandChatFriend is sent when a user types the "/friend" command

@@ -1,0 +1,55 @@
+[
+  {
+    "command": "help",
+    "response": "You can find detailed explanation of commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHAT_COMMANDS.md",
+    "alias": ["commands", "?"],
+    "private": true,
+    "isHelp": true
+  },
+  {
+    "command": "discord",
+    "response": "Join the Discord server for the H-Group: https://discord.gg/FADvkJp"
+  },
+  {
+    "command": "manual",
+    "response": "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md",
+    "alias": ["features"]
+  },
+  {
+    "command": "rules",
+    "response": "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md",
+    "alias": ["community", "guidelines"]
+  },
+  {
+    "command": "new",
+    "response": "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the H-Group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: https://hanabi.github.io/docs/beginner/",
+    "alias": ["beginner", "beginners", "guide"]
+  },
+  {
+    "command": "doc",
+    "response": "The strategy reference for the H-Group: https://hanabi.github.io/docs/reference/",
+    "alias": ["document", "reference"]
+  },
+  {
+    "command": "path",
+    "response": "The level summary for the H-Group: https://hanabi.github.io/docs/learning-path/#level-summary",
+    "alias": ["learningpath", "level", "levels", "learning"]
+  },
+  {
+    "command": "bga",
+    "response": "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the H-Group, then read this: https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md"
+  },
+  {
+    "command": "efficiency",
+    "response": "Info on efficiency calculation: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md"
+  },
+  {
+    "command": "ptt",
+    "response": "Please read the Push-to-Talk History: https://github.com/hanabi/hanabi.github.io/blob/main/misc/push-to-talk.md"
+  },
+  {
+    "command": "sin",
+    "response": "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context.",
+    "alias": ["cardinal", "cardinalsin"]
+  }
+]

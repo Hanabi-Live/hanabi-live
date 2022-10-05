@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 

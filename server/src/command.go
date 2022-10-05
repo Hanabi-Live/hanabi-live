@@ -18,14 +18,21 @@ type CommandData struct {
 	Recipient string `json:"recipient"`
 
 	// tableCreate
-	Name     string   `json:"name"`
-	Options  *Options `json:"options"`
-	Password string   `json:"password"`
+	Name       string   `json:"name"`
+	Options    *Options `json:"options"`
+	Password   string   `json:"password"`
+	MaxPlayers int      `json:"maxPlayers"`
+
+	// tableStart
+	IntendedPlayers *[]string `json:"intendedPlayers"`
 
 	// action
 	Type   int `json:"type"`
 	Target int `json:"target"`
 	Value  int `json:"value"`
+
+	// votes to kill
+	Votes []int `json:"votes"`
 
 	// note
 	Note  string `json:"note"`
@@ -69,7 +76,6 @@ type CommandData struct {
 	Server   bool   `json:"-"` // Used to mark if the server generated the chat message
 	// True if this is a chat message that should only go to Discord
 	OnlyDiscord          bool   `json:"-"`
-	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`
@@ -96,8 +102,10 @@ func commandInit() {
 	commandMap["tableSetLeader"] = commandTableSetLeader
 	commandMap["tableStart"] = commandTableStart
 	commandMap["tableTerminate"] = commandTableTerminate
+	commandMap["tableVoteForTermination"] = commandTableVoteForTermination
 	commandMap["tableSpectate"] = commandTableSpectate
 	commandMap["tableRestart"] = commandTableRestart
+	commandMap["tableUpdate"] = commandTableUpdate
 
 	// Other lobby commands
 	commandMap["setting"] = commandSetting
@@ -122,6 +130,7 @@ func commandInit() {
 	commandMap["loaded"] = commandLoaded
 	commandMap["tag"] = commandTag
 	commandMap["tagDelete"] = commandTagDelete
+	commandMap["tagsDeleteAll"] = commandTagsDeleteAll
 
 	// Game commands
 	commandMap["action"] = commandAction

@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
 	"github.com/tevino/abool"
 )
@@ -14,8 +16,15 @@ var (
 	discordToken                string
 	discordGuildID              string
 	discordChannelSyncWithLobby string
+	discordChannelWebsiteDev    string
+	discordChannelQuestions     string
+	sendMessageToWebDevChannel  bool
 	discordBotID                string
 	discordIsReady              = abool.New()
+
+	discordPingCrew       string
+	discordTrustedTeacher string
+	discordLobbyCommands  = []string{"subscribe", "unsubscribe"}
 )
 
 /*
@@ -23,24 +32,31 @@ var (
 */
 
 func discordInit() {
+	// Messages are only sent to website-development channel when the server restarts
+	sendMessageToWebDevChannel = false
+
 	// Read some configuration values from environment variables
 	// (they were loaded from the .env file in main.go)
-	discordToken = os.Getenv("DISCORD_TOKEN")
-	if len(discordToken) == 0 {
-		logger.Info("The \"DISCORD_TOKEN\" environment variable is blank; " +
-			"aborting Discord initialization.")
+	var ok bool
+	if discordToken, ok = discordReadEnvVar("DISCORD_TOKEN"); !ok {
 		return
 	}
-	discordGuildID = os.Getenv("DISCORD_GUILD_ID")
-	if len(discordGuildID) == 0 {
-		logger.Info("The \"DISCORD_GUILD_ID\" environment variable is blank; " +
-			"aborting Discord initialization.")
+	if discordGuildID, ok = discordReadEnvVar("DISCORD_GUILD_ID"); !ok {
 		return
 	}
-	discordChannelSyncWithLobby = os.Getenv("DISCORD_CHANNEL_SYNC_WITH_LOBBY")
-	if len(discordChannelSyncWithLobby) == 0 {
-		logger.Info("The \"DISCORD_CHANNEL_SYNC_WITH_LOBBY\" environment variable is blank; " +
-			"aborting Discord initialization.")
+	if discordChannelSyncWithLobby, ok = discordReadEnvVar("DISCORD_CHANNEL_SYNC_WITH_LOBBY"); !ok {
+		return
+	}
+	if discordChannelWebsiteDev, ok = discordReadEnvVar("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT"); !ok {
+		return
+	}
+	if discordChannelQuestions, ok = discordReadEnvVar("DISCORD_CHANNEL_CONVENTION_QUESTIONS"); !ok {
+		return
+	}
+	if discordPingCrew, ok = discordReadEnvVar("DISCORD_PING_CREW_ROLE_NAME"); !ok {
+		return
+	}
+	if discordTrustedTeacher, ok = discordReadEnvVar("DISCORD_TRUSTED_TEACHER_ROLE_NAME"); !ok {
 		return
 	}
 
@@ -76,6 +92,8 @@ func discordConnect() {
 	// (we wait for Discord to connect before displaying this message)
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + " " +
 		"(" + gitCommitOnStart + ")"
+	// Send once this message to website-development as well
+	sendMessageToWebDevChannel = true
 	chatServerSend(ctx, msg, "lobby", false)
 }
 
@@ -120,21 +138,18 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Handle specific Discord commands in channels other than the lobby
 	// (to replicate some lobby functionality to the Discord server more generally)
 	if m.ChannelID != discordChannelSyncWithLobby {
-		discordCheckCommand(ctx, m)
+		discordCheckNonLobbyCommands(ctx, m)
+		return
+	}
+
+	// Handle command specific for lobby
+	if discordCheckLobbyCommands(ctx, m) {
 		return
 	}
 
 	// Send everyone the notification
-	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-		Username: discordGetNickname(m.Author.ID),
-		Msg:      m.Content,
-		Discord:  true,
-		Room:     "lobby",
-		// Pass through the ID in case we need it for a custom command
-		DiscordID: m.Author.ID,
-		// Pass through the discriminator so we can append it to the username
-		DiscordDiscriminator: m.Author.Discriminator,
-	})
+	username := discordGetNickname(m.Author.ID)
+	discordSendToChat(ctx, m.Content, username)
 }
 
 /*
@@ -163,14 +178,23 @@ func discordSend(to string, username string, msg string) {
 	}
 	fullMsg += msg
 
+	// Allow pinging specific roles
+	var roles []string
+	pingable := []string{discordPingCrew, discordTrustedTeacher}
+	for _, role := range pingable {
+		if role, ok := discordGetRoleByName(role); ok {
+			roles = append(roles, role.ID)
+		}
+	}
+
 	// We use "ChannelMessageSendComplex" instead of "ChannelMessageSend" because we need to specify
 	// the "AllowedMentions" property
 	messageSendData := &discordgo.MessageSend{ // nolint: exhaustivestruct
 		Content: fullMsg,
-		// Specifying an empty "MessageAllowedMentions" struct means that the bot is not allowed to
-		// mention anybody
-		// This prevents people from abusing the bot to spam @everyone, for example
-		AllowedMentions: &discordgo.MessageAllowedMentions{},
+		// This prevents people from abusing the bot to spam @everyone
+		AllowedMentions: &discordgo.MessageAllowedMentions{ // nolint: exhaustivestruct
+			Roles: roles,
+		},
 	}
 	if _, err := discord.ChannelMessageSendComplex(to, messageSendData); err != nil {
 		// Occasionally, sending messages to Discord can time out; if this occurs,
@@ -206,19 +230,99 @@ func discordGetChannel(discordID string) string {
 
 // We need to check for special commands that occur in Discord channels other than #general
 // (because the messages will not flow to the normal "chatCommandMap")
-func discordCheckCommand(ctx context.Context, m *discordgo.MessageCreate) {
-	// This code is duplicated from the "chatCommand()" function
-	args := strings.Split(m.Content, " ")
-	command := args[0]
-	args = args[1:] // This will be an empty slice if there is nothing after the command
-	// (we need to pass the arguments through to the command handler)
+func discordCheckNonLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) {
+	// There could be a command on any line
+	for _, line := range strings.Split(m.Content, "\n") {
+		var command string
+		var args []string
 
-	// Commands will start with a "/", so we can ignore everything else
-	if !strings.HasPrefix(command, "/") {
-		return
+		if cmd, a := chatParseCommand(line); cmd == "" {
+			continue
+		} else {
+			command = cmd
+			args = a
+		}
+
+		discordCommand(ctx, m, command, args)
 	}
-	command = strings.TrimPrefix(command, "/")
-	command = strings.ToLower(command) // Commands are case-insensitive
+}
 
-	discordCommand(ctx, m, command, args)
+// Check for commands in lobby.
+// Handles the command and returns true if it can be issued in Discord lobby
+func discordCheckLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) bool {
+	// There could be a command on any line
+	for _, line := range strings.Split(m.Content, "\n") {
+		var command string
+		var args []string
+
+		if cmd, _ := chatParseCommand(line); cmd == "" {
+			continue
+		} else {
+			command = cmd
+		}
+
+		if stringInSlice(command, discordLobbyCommands) {
+			// Send everyone the notification
+			// Get the username once, and put it in args
+			// Because repeated calls to getUsername produce Discord errors
+			username := discordGetNickname(m.Author.ID)
+			discordSendToChat(ctx, "/"+command, username)
+
+			args = []string{username}
+			discordCommand(ctx, m, command, args)
+			return true
+		}
+	}
+	return false
+}
+
+func discordGetRoles() []*discordgo.Role {
+	roles := make([]*discordgo.Role, 0)
+	if v, err := discord.GuildRoles(discordGuildID); err != nil {
+		logger.Info("Failed to get the Discord channel: " + err.Error())
+	} else {
+		roles = v
+	}
+
+	return roles
+}
+
+// Search for a Discord role by ID
+func discordGetRole(id string) string {
+	roles := discordGetRoles()
+	for _, role := range roles {
+		if role.ID == id {
+			return role.Name
+		}
+	}
+	return "[unknown role]"
+}
+
+// Search for a Discord role by name
+func discordGetRoleByName(name string) (*discordgo.Role, bool) {
+	roles := discordGetRoles()
+	for _, role := range roles {
+		if role.Name == name {
+			return role, true
+		}
+	}
+	return nil, false
+}
+
+func discordSendToChat(ctx context.Context, msg string, username string) {
+	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
+		Username: username,
+		Msg:      msg,
+		Discord:  true,
+		Room:     "lobby",
+	})
+}
+
+func discordReadEnvVar(envVar string) (string, bool) {
+	val := os.Getenv(envVar)
+	if len(val) == 0 {
+		logger.Info(fmt.Sprintf("The \"%s\" environment variable is blank; aborting Discord initialization.", envVar))
+		return "", false
+	}
+	return val, true
 }

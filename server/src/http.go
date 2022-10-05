@@ -8,8 +8,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/didip/tollbooth"
-	"github.com/didip/tollbooth_gin"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
@@ -30,14 +29,20 @@ type TemplateData struct {
 	Name       string
 	NamesTitle string
 
+	// Player Names
+	Names string
+
 	// History
 	History      []*GameHistory
 	SpecificSeed bool
+	Seed         string
 	Tags         map[int][]string
 
 	// Scores
 	DateJoined                 string
-	NumGames                   int
+	NumGamesTotal              int
+	NumGamesNormal             int
+	NumGamesOther              int
 	TimePlayed                 string
 	NumGamesSpeedrun           int
 	TimePlayedSpeedrun         string
@@ -55,6 +60,8 @@ type TemplateData struct {
 	Variants    []*VariantStatsData
 
 	// Variants
+	VariantID     int
+	VariantsNames map[int]string
 	BestScores    []int
 	MaxScoreRate  string
 	MaxScore      int
@@ -62,6 +69,7 @@ type TemplateData struct {
 	NumStrikeouts int
 	StrikeoutRate string
 	RecentGames   []*GameHistory
+	Efficiencies  []float64
 }
 
 const (
@@ -143,12 +151,18 @@ func httpInit() {
 	// Thus, this does not impact the ability of a user to download CSS and image files all at once
 	// (However, we do not want to use the rate-limiter in development, since we might have multiple
 	// tabs open that are automatically-refreshing with webpack-dev-server)
-	if !isDev {
-		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
-		httpRouter.Use(limiterMiddleware)
-	}
+	//
+	// The rate limiter is commented out for now to prevent bugs with Apple browsers
+	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
+	// problems
+	/*
+		if !isDev {
+			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+			limiterMiddleware := httpLimitHandler(limiter)
+			httpRouter.Use(limiterMiddleware)
+		}
+	*/
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
@@ -211,6 +225,8 @@ func httpInit() {
 	httpRouter.GET("/shared-replay", httpMain)
 	httpRouter.GET("/shared-replay/:databaseID", httpMain)
 	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
+	httpRouter.GET("/replay-json/:string", httpMain)
+	httpRouter.GET("/shared-replay-json/:string", httpMain)
 	httpRouter.GET("/create-table", httpMain)
 
 	// Path handlers for other URLs
@@ -228,13 +244,13 @@ func httpInit() {
 	httpRouter.GET("/missing-scores", httpMissingScores)
 	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
 	httpRouter.GET("/missing-scores/:player1/:numPlayers", httpMissingScores)
-	httpRouter.GET("/shared-missing-scores", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
 	httpRouter.GET("/tags", httpTags)
 	httpRouter.GET("/tags/:player1", httpTags)
 	httpRouter.GET("/seed", httpSeed)
@@ -247,6 +263,9 @@ func httpInit() {
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
+
+	// API V1 routes
+	apiSetRoutes(httpRouter)
 
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)
@@ -346,6 +365,21 @@ func httpInit() {
 		logger.Fatal("ListenAndServe ended prematurely.")
 	}
 }
+
+/*
+// From: https://github.com/didip/tollbooth_gin/blob/master/tollbooth_gin.go
+func httpLimitHandler(lmt *limiter.Limiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		httpError := tollbooth.LimitByRequest(lmt, c.Writer, c.Request)
+		if httpError != nil {
+			c.Data(httpError.StatusCode, lmt.GetMessageContentType(), []byte(httpError.Message))
+			c.Abort()
+		} else {
+			c.Next()
+		}
+	}
+}
+*/
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)

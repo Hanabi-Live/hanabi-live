@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"runtime"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // We want to record all of the ongoing games to a flat file on the disk
@@ -14,7 +16,7 @@ func gracefulRestart(ctx context.Context) {
 	// total amount of downtime (but executing Bash scripts will not work on Windows)
 	if runtime.GOOS != "windows" {
 		logger.Info("Building the client...")
-		if err := executeScript("client/build_client.sh"); err != nil {
+		if err := executeScript("packages/client/build_client.sh"); err != nil {
 			logger.Error("Failed to execute the \"build_client.sh\" script: " + err.Error())
 			return
 		}
@@ -44,7 +46,10 @@ func gracefulRestart(ctx context.Context) {
 	}
 
 	msg := "The server went down for a restart at: " + getCurrentTimestamp() + " " +
-		"(" + gitCommitOnStart + ")"
+		"(" + gitCommitOnStart + ") - "
+	uptime, _ := getUptime()
+	msg += uptime
+	sendMessageToWebDevChannel = true
 	chatServerSend(ctx, msg, "lobby", false)
 
 	if runtime.GOOS == "windows" {

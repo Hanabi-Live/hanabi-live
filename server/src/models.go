@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 

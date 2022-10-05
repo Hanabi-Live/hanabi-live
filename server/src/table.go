@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/sasha-s/go-deadlock"
 )
 
@@ -18,6 +19,7 @@ type Table struct {
 	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*Player
+	MaxPlayers int          // Player limit for this table
 	Spectators []*Spectator `json:"-"`
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
@@ -79,6 +81,7 @@ func NewTable(name string, ownerID int) *Table {
 		InitialName: "", // This must stay blank in shared replays
 
 		Players:       make([]*Player, 0),
+		MaxPlayers:    5,
 		Spectators:    make([]*Spectator, 0),
 		KickedPlayers: make(map[int]struct{}),
 
@@ -373,4 +376,30 @@ func (t *Table) GetSharedReplayLeaderName() string {
 	} else {
 		return v
 	}
+}
+
+func (t *Table) ChangeVote(playerIndex int) bool {
+	newVote := !t.Players[playerIndex].VoteToKill
+	t.Players[playerIndex].VoteToKill = newVote
+	return newVote
+}
+
+func (t *Table) ShouldTerminateByVotes() bool {
+	count := 0
+	for _, sp := range t.Players {
+		if sp.VoteToKill {
+			count++
+		}
+	}
+	return count*2 >= len(t.Players)
+}
+
+func (t *Table) GetVotes() []int {
+	votes := make([]int, 0)
+	for i, sp := range t.Players {
+		if sp.VoteToKill {
+			votes = append(votes, i)
+		}
+	}
+	return votes
 }

@@ -41,6 +41,10 @@ linters:
     # wsl requires excessive newlines around if statements
     - wsl
 
+    # Temp
+    - deadcode
+    - unused
+
 issues:
   # We want to use golint but we don't care about some of the things that it complains about
   exclude:

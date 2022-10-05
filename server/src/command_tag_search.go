@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 	"strings"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandTagSearch is sent when a user types the "/tagsearch [tag]" command

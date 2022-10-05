@@ -2,7 +2,7 @@
 
 If you just want to install the website without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
 
-Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
+Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
 The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. Some adjustments will be needed if you are using a different editor.
 
@@ -36,16 +36,17 @@ Building the client code can be memory intensive. Make sure that your system has
   - `git config --global user.name "Your_Username"`
   - `git config --global user.email "your@email.com"`
   - `git config --global core.autocrlf false` <br />
-  (so that Git does not convert LF to CRLF when cloning repositories)
+    (so that Git does not convert LF to CRLF when cloning repositories)
   - `git config --global pull.rebase true` <br />
-  (so that Git automatically rebases when pulling)
+    (so that Git automatically rebases when pulling)
 - Install [PostgreSQL](https://www.postgresql.org/):
   - Manually download it and install it. (Don't use `choco`, because the package is bugged.)
+  - Check to see if `psql` works. If not, you'll have to [manually add it to your PATH variable](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
 - Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
-  - `notepad "C:\Program Files\PostgreSQL\12\data\postgresql.conf"`
+  - `notepad "C:\Program Files\PostgreSQL\13\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
-  - `net stop postgresql-x64-12`
-  - `net start postgresql-x64-12`
+  - `net stop postgresql-x64-13`
+  - `net start postgresql-x64-13`
 - Create a new database and set up a database user:
   - `refreshenv`
   - `psql -U postgres`
@@ -53,7 +54,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace "1234567890" with a secure password)
+    (replace "1234567890" with a secure password)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
@@ -62,26 +63,26 @@ Building the client code can be memory intensive. Make sure that your system has
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
-    - `git clone git@github.com:Zamiell/hanabi-live.git`
+    - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
-    - `git clone https://github.com/Zamiell/hanabi-live.git`
+    - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
     - `git clone https://github.com/[Your_Username]/hanabi-live.git`
 - Enter the cloned repository:
-    - `cd hanabi-live`
+  - `cd hanabi-live`
 - Change from the Windows Command Prompt to Git Bash
-  -  `"%PROGRAMFILES%\Git\bin\sh.exe"`
+  - `"%PROGRAMFILES%\Git\bin\sh.exe"`
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`
   - `exit`
 - Set up environment variables (optional):
   - `notepad .env` <br />
-  (the two important ones to verify are "DOMAIN" and "DB_PASS")
+    (the two important ones to verify are "DOMAIN" and "DB_PASS")
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
-  - `code .`
+  - `code hanab.code-workspace`
 - In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 - Test the Golang linter:
   - On the left pane, navigate to and open "src\main.go".
@@ -89,7 +90,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - Add a new line of "test" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   - Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 - Test the TypeScript linter:
-  - On the left pane, navigate to and open "public\js\src\main.ts".
+  - On the left pane, navigate to and open "packages/client/src/main.ts".
   - Add a new line of "test" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 - See [Running the Server](#running-the-server).
 
@@ -106,19 +107,19 @@ Building the client code can be memory intensive. Make sure that your system has
   - `git config --global user.name "Your_Username"`
   - `git config --global user.email "your@email.com"`
   - `git config --global pull.rebase true` <br />
-  (so that Git automatically rebases when pulling)
+    (so that Git automatically rebases when pulling)
 - Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 - Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
   - `brew install postgresql`
   - `brew services start postgresql`
   - `psql postgres` <br />
-  (on MacOS, there is no password by default)
+    (on MacOS, there is no password by default)
   - `\password postgres`
   - Enter a secure password for the postgres user. (This is the "master" account that has access to all databases.)
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace "1234567890" with a secure password)
+    (replace "1234567890" with a secure password)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
@@ -127,9 +128,9 @@ Building the client code can be memory intensive. Make sure that your system has
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
-    - `git clone git@github.com:Zamiell/hanabi-live.git`
+    - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
-    - `git clone https://github.com/Zamiell/hanabi-live.git`
+    - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
     - `git clone https://github.com/[Your_Username]/hanabi-live.git`
 - Enter the cloned repository:
@@ -139,11 +140,11 @@ Building the client code can be memory intensive. Make sure that your system has
   - `./install/install_development_dependencies.sh`
 - Set up environment variables (optional):
   - `open -t .env` <br />
-  (the two important ones to verify are "DOMAIN" and "DB_PASS")
+    (the two important ones to verify are "DOMAIN" and "DB_PASS")
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
-  - `code .`
+  - `code hanab.code-workspace`
 - In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 - Test the Golang linter:
   - On the left pane, navigate to and open "src\main.go".
@@ -151,11 +152,23 @@ Building the client code can be memory intensive. Make sure that your system has
   - Add a new line of "testing" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   - Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 - Test the TypeScript linter:
-  - On the left pane, navigate to and open "public\js\src\main.ts".
+  - On the left pane, navigate to and open "packages/client/src/main.ts".
   - Add a new line of "testing" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 - See [Running the Server](#running-the-server).
 
 <br />
+
+## Automate test running in VSCode
+
+To have VSCode automatically run tests you need to perform the following steps:
+
+- Windows:
+  - Open a Command Prompt as an administrator
+  - Go to `cd [code path]\package\client`
+  - Create a symbolic link to the `node_modules` directory of the root path: `mklink /D node_modules ..\..\node_modules`
+- Mac / Linux:
+  - Go to `cd [code path root]/package/client`
+  - Create a symbolic link to the `node_modules` directory of the root path: `ln -s ..\..\node_modules node_modules`
 
 ## Installation for Production (Linux)
 
@@ -169,17 +182,17 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `git config --global user.name "Your_Username"`
   - `git config --global user.email "your@email.com"`
   - `git config --global pull.rebase true` <br />
-  (so that Git automatically rebases when pulling)
+    (so that Git automatically rebases when pulling)
 - Install [Golang](https://golang.org/):
   - `sudo apt install golang -y`
 - Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
   - `sudo apt install postgresql -y` <br />
   - `sudo -u postgres psql` <br />
-  (on Linux, there is no default password; you must connect through the "postgres" operating system account)
+    (on Linux, there is no default password; you must connect through the "postgres" operating system account)
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace "1234567890" with a secure password)
+    (replace "1234567890" with a secure password)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
@@ -192,19 +205,21 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
   - `[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"`
   - `nvm install node` <br />
-  (this installs the latest version)
+    (this installs the latest version)
 - Clone the server:
   - `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
-    - `git clone git@github.com:Zamiell/hanabi-live.git`
+    - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
-    - `git clone https://github.com/Zamiell/hanabi-live.git`
+    - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - `cd hanabi-live`
 - Install the project dependencies:
   - `./install/install_dependencies.sh`
+- Install the project development dependencies (but only if this is not a production installation):
+  - `./install/install_development_dependencies.sh`
 - Set up environment variables:
   - `nano .env`
-  (the two important ones to verify are "DOMAIN" and "DB_PASS")
+    (the two important ones to verify are "DOMAIN" and "DB_PASS")
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - See [Running the Server](#running-the-server).
@@ -308,6 +323,6 @@ Adjust the "certbot" command below according to what domain names you want to re
   - If it does not work or is stuck loading, look at the JavaScript console for hints as to what went wrong.
 - If you change any of the Golang code, then you must restart the server for the changes to take effect.
 - If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
-  - Alternatively, if you are actively changing or developing TypeScript code, leave the `webpack-dev-server.sh` script running and go to "http://localhost/?dev". That way, the code will be automatically compiled whenever you change a file, and the page will automatically refresh.
+  - Alternatively, if you are actively changing or developing TypeScript code, run the `webpack-dev-server.sh` script and go to "http://localhost/?dev". That way, the code will be automatically compiled whenever you change a file, and the page will automatically refresh.
   - You can also go to "http://localhost/?dev&login=test1" to automatically log in as "test1", "http://localhost/?dev&login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
 - If you change any CSS, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes longer than `build_client.sh`, so you only need to run it once before committing your changes.

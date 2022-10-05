@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/alexedwards/argon2id"
 )
 
@@ -31,9 +32,9 @@ func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that this table does not already have 6 players
-	if len(t.Players) >= 6 {
-		s.Warning("That table is already full. (You can not play with more than 6 players.)")
+	// Validate that this table does not already have the maximum number of players
+	if len(t.Players) >= t.MaxPlayers {
+		s.Warning("That table is already full.")
 		return
 	}
 
@@ -127,8 +128,9 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			NumGames: numGames,
 			Variant:  variantStats,
 		},
-		Typing:    false,
-		LastTyped: time.Time{},
+		Typing:     false,
+		LastTyped:  time.Time{},
+		VoteToKill: false,
 	}
 
 	t.Players = append(t.Players, p)

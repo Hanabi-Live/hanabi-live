@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 // commandHistoryFriendsGet is sent when the user clicks the "Show More History" button
