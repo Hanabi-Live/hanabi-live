@@ -2443,9 +2443,7 @@ function drawRestartArea() {
       hidePregame: true,
     });
   });
-  globals.elements.restartArea.add(
-    (restartGameButton as unknown) as Konva.Group,
-  );
+  globals.elements.restartArea.add(restartGameButton as unknown as Konva.Group);
 
   const restartTableButton = new Button({
     x: (2 * spacing + buttonW) * winW,
@@ -2461,7 +2459,7 @@ function drawRestartArea() {
     });
   });
   globals.elements.restartArea.add(
-    (restartTableButton as unknown) as Konva.Group,
+    restartTableButton as unknown as Konva.Group,
   );
 
   const restartCancelButton = new Button({
@@ -2476,7 +2474,7 @@ function drawRestartArea() {
     globals.layers.UI2.batchDraw();
   });
   globals.elements.restartArea.add(
-    (restartCancelButton as unknown) as Konva.Group,
+    restartCancelButton as unknown as Konva.Group,
   );
 }
 
