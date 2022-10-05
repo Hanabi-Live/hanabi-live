@@ -270,9 +270,9 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - locked hand notification (in the "Current Player" area)
 - _Low Score Phase_ notification (via the score being cyan)
 - a [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)
-- a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_turn_double_discard_cause.mp3)
-- a [special sound effect when discarding in a double discard situation](../public/sounds/turn_turn_double_discard.mp3)
-- a [special sound effect when playing a 1 out of order](../public/sounds/turn_turn_1s.mp3)
+- a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_double_discard_cause.mp3)
+- a [special sound effect when discarding in a double discard situation](../public/sounds/turn_double_discard.mp3)
+- a [special sound effect when playing a 1 out of order](../public/sounds/turn_1s.mp3)
 
 <br />
 
