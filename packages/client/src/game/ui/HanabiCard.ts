@@ -1174,22 +1174,6 @@ export default class HanabiCard
     }
   }
 
-  prependNote(note: string): void {
-    const existingNote =
-      globals.state.notes.ourNotes[this.state.order]?.text ?? "";
-    const noteText = existingNote.trim();
-    const lastPipe = noteText.lastIndexOf("|");
-    const currentNoteString = noteText.slice(lastPipe + 1).trim();
-    const noteString = this.protectedNote(currentNoteString);
-    if (lastPipe === -1) {
-      this.setNote(`${note}${noteString}`);
-    } else {
-      this.setNote(
-        `${noteText.slice(0, lastPipe).trim()} | ${note}${noteString}`,
-      );
-    }
-  }
-
   protectedNote(noteString: string): string {
     const currentNote = parseNote(this.variant, noteString);
     const bracketNoteString = `[${noteString}]`;
@@ -1203,24 +1187,50 @@ export default class HanabiCard
     return noteString;
   }
 
-  appendNote(note: string): void {
+  updateNote(
+    noteAdded: string,
+    updateFunc: (a: string, b: string) => string, // how to combine last pipe section and noteAdded
+    keepLast = false, // true to repeat (and add to) the last pipe section
+    protect = true, // true to add [] to meaningful updates
+  ): void {
     const existingNote =
       globals.state.notes.ourNotes[this.state.order]?.text ?? "";
     const noteText = existingNote.trim();
-    if (noteText === "") {
-      this.setNote(`[${note}]`);
-    } else {
-      const lastPipe = noteText.lastIndexOf("|");
-      const currentNoteString = noteText.slice(lastPipe + 1).trim();
-      const noteString = this.protectedNote(currentNoteString);
-      const currentNote = parseNote(this.variant, noteString);
-      const appendedNoteString = `${noteString} [${note}]`;
-      // Case of: updating note does not change note meaning.
-      if (noteEqual(currentNote, parseNote(this.variant, appendedNoteString))) {
-        return;
-      }
-      this.setNote(`${noteText} | ${appendedNoteString}`);
+    const note = protect ? this.protectedNote(noteAdded) : noteAdded;
+    const lastPipe = noteText.lastIndexOf("|");
+    const currentNoteString = noteText.slice(lastPipe + 1).trim();
+    const noteString = this.protectedNote(currentNoteString);
+    const currentNote = parseNote(this.variant, noteString);
+    const newNoteString = updateFunc(noteString, note);
+    const newNoteText = keepLast
+      ? noteText
+      : noteText.slice(0, Math.max(lastPipe, 0)).trim();
+    // Case of: updating note does not change note meaning.
+    if (
+      noteHasMeaning(this.variant, parseNote(this.variant, note)) &&
+      noteEqual(currentNote, parseNote(this.variant, newNoteString))
+    ) {
+      return;
     }
+    this.setNote(
+      `${newNoteText}${newNoteText === "" ? "" : " | "}${newNoteString}`,
+    );
+  }
+
+  prependNote(noteAdded: string): void {
+    this.updateNote(noteAdded, (a: string, b: string): string => `${b} ${a}`);
+  }
+
+  appendNoteOnly(noteAdded: string): void {
+    this.updateNote(noteAdded, (a: string, b: string): string => `${a} ${b}`);
+  }
+
+  appendNote(noteAdded: string): void {
+    this.updateNote(
+      noteAdded,
+      (a: string, b: string): string => `${a} ${b}`,
+      true,
+    );
   }
 
   checkSpecialNote(): void {

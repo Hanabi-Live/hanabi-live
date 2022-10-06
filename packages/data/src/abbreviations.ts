@@ -21,7 +21,7 @@ export const CHOP_MOVED_NOTES = [
 export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
 export const BLANK_NOTES = ["blank"];
-export const CLUED_NOTES = ["clued", "y"];
+export const CLUED_NOTES = ["clued", "yy"];
 export const UNCLUED_NOTES = ["unclued", "x"];
 
 export const ALL_RESERVED_NOTES = ([] as string[]).concat(
