@@ -168,7 +168,13 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     }
 
     const previousSegment = nextState.turn.segment;
-    nextState = gameStateReducer(nextState, action, false, false, state.metadata);
+    nextState = gameStateReducer(
+      nextState,
+      action,
+      false,
+      false,
+      state.metadata,
+    );
 
     if (
       segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)
