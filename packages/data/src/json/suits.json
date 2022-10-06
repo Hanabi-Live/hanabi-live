@@ -267,6 +267,7 @@
   {
     "name": "Forest",
     "id": "AG2",
+    "abbreviation": "R",
     "showSuitName": true,
     "fill": "#008000",
     "pip": "hanabiGreen",
