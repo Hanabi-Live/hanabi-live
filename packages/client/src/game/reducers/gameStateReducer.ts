@@ -107,7 +107,14 @@ function gameStateReducerFunction(
       }
 
       const touched = cardRules.isClued(state.deck[action.order]!);
-      const text = textRules.discard(action, slot, touched, playing, hypothetical, metadata);
+      const text = textRules.discard(
+        action,
+        slot,
+        touched,
+        playing,
+        hypothetical,
+        metadata,
+      );
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -208,7 +215,14 @@ function gameStateReducerFunction(
       state.score++;
 
       const touched = cardRules.isClued(state.deck[action.order]!);
-      const text = textRules.play(action, slot, touched, playing, hypothetical, metadata);
+      const text = textRules.play(
+        action,
+        slot,
+        touched,
+        playing,
+        hypothetical,
+        metadata,
+      );
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
