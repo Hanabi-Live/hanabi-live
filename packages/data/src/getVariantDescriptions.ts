@@ -1034,3 +1034,20 @@ export function getOddsAndEvensVariants(
 
   return variantDescriptions;
 }
+
+export function getFunnelsVariants(
+  basicVariantSuits: string[][],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Funnels (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits]!,
+      funnels: true,
+    });
+  }
+  return variantDescriptions;
+}

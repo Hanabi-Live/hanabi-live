@@ -131,6 +131,11 @@ export function touchesCard(
       return false;
     }
 
+    if (variant.funnels) {
+      // Rank clues in Funnels touch also all lower ranked cards.
+      return rank <= clue.value;
+    }
+
     if (suit.allClueRanks) {
       return true;
     }
@@ -163,15 +168,6 @@ export function touchesCard(
           variant.clueRanks[suitIndex % variant.clueRanks.length];
         return clue.value === deceptiveRank;
       }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (variant.oddsAndEvens) {
-      // Clue ranks in Odds and Evens can only be 1 or 2.
-      if (clue.value === 1) {
-        return [1, 3, 5].includes(rank);
-      }
-      return [2, 4].includes(rank);
     }
 
     return clue.value === rank;

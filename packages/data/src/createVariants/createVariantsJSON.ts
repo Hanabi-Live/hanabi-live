@@ -12,6 +12,7 @@ import {
   getDualColorsVariants,
   getDuckVariants,
   getExtremelyAmbiguousVariants,
+  getFunnelsVariants,
   getMixVariants,
   getMuteVariants,
   getOddsAndEvensVariants,
@@ -81,6 +82,7 @@ function main() {
     ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getFunnelsVariants(basicVariantSuits),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 

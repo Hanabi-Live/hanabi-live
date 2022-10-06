@@ -298,6 +298,10 @@ One of each card per suit (e.g. 5 in total):
 - The game will automatically end if 3 strikes are accumulated.
 - This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
+### Funnels
+
+- Rank clues also touch all lower ranked cards.
+
 <br />
 
 ## Full Variant Listing
