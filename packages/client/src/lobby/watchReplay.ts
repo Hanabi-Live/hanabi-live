@@ -1,13 +1,13 @@
-// The "Watch Specific Replay" nav button
+// The "Watch Specific Replay" nav button.
 
+import { parseIntSafe } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import globals from "../globals";
-import { parseIntSafe } from "../misc";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
 
 export function init(): void {
-  // Make the text box appear and disappear depending on which source is selected
+  // Make the text box appear and disappear depending on which source is selected.
   $("#replay-source-id").change(replaySourceChange);
   $("#replay-source-json").change(replaySourceChange);
 
@@ -27,26 +27,26 @@ function replaySourceChange() {
     $("#replay-id-row").show();
     setTimeout(() => {
       $("#replay-id").select(); // Automatically highlight the ID field
-      // (this has to be in a timeout in order to work properly)
+      // (This has to be in a timeout in order to work properly.)
     }, 0);
   } else if ($("#replay-source-json").prop("checked") === true) {
     $("#replay-id-row").hide();
     $("#replay-json-row").show();
     setTimeout(() => {
       $("#replay-json").select(); // Automatically highlight the JSON field
-      // (this has to be in a timeout in order to work properly)
+      // (This has to be in a timeout in order to work properly.)
     }, 0);
   } else {
     throw new Error('Invalid value for "replay-source".');
   }
 
-  // Redraw the tooltip so that the new elements will fit better
+  // Redraw the tooltip so that the new elements will fit better.
   tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 function submit() {
   // Source
-  const sourceID = $("input[type=radio][name=replay-source]:checked")[0].id;
+  const sourceID = $("input[type=radio][name=replay-source]:checked")[0]!.id;
   let source: string;
   if (sourceID === "replay-source-id") {
     source = "id";
@@ -63,7 +63,7 @@ function submit() {
     $("#replay-error-row").show();
     $("#replay-error-row-text").text(text);
 
-    // Redraw the tooltip so that the new elements will fit better
+    // Redraw the tooltip so that the new elements will fit better.
     tooltips.reposition("#nav-buttons-lobby-replay");
   };
 
@@ -107,8 +107,9 @@ function submit() {
   }
 
   // Visibility
-  const visibilityID = $("input[type=radio][name=replay-visibility]:checked")[0]
-    .id;
+  const visibilityID = $(
+    "input[type=radio][name=replay-visibility]:checked",
+  )[0]!.id;
   let visibility: string;
   if (visibilityID === "replay-visibility-solo") {
     visibility = "solo";
@@ -138,12 +139,12 @@ function submit() {
   closeModals();
 }
 
-// This function is executed every time the "Watch Specific Replay" button is clicked
-// (after the tooltip is added to the DOM)
+// This function is executed every time the "Watch Specific Replay" button is clicked (after the
+// tooltip is added to the DOM).
 export function ready(): void {
-  // Set the "Source" radio button
+  // Set the "Source" radio button.
   const source = localStorage.getItem("watchReplaySource");
-  let sourceBox;
+  let sourceBox: string;
   if (source === "id") {
     sourceBox = "#replay-source-id";
   } else if (source === "json") {
@@ -155,26 +156,26 @@ export function ready(): void {
   $(sourceBox).prop("checked", true);
   $(sourceBox).change();
 
-  // Set the "ID" field
+  // Set the "ID" field.
   let databaseID = localStorage.getItem("watchReplayID");
   if (typeof databaseID !== "string") {
     databaseID = "";
   }
   $("#replay-id").val(databaseID);
 
-  // Set the "JSON" field
+  // Set the "JSON" field.
   let json = localStorage.getItem("watchReplayJSON");
   if (typeof json !== "string") {
     json = "";
   }
   $("#replay-json").val(json);
 
-  // Hide the error row
+  // Hide the error row.
   $("#replay-error-row").hide();
 
-  // Set the "Visibility" radio button
+  // Set the "Visibility" radio button.
   const visibility = localStorage.getItem("watchReplayVisibility");
-  let visibilityBox;
+  let visibilityBox: string;
   if (visibility === "solo") {
     visibilityBox = "#replay-visibility-solo";
   } else if (visibility === "shared") {
@@ -186,6 +187,6 @@ export function ready(): void {
   $(visibilityBox).prop("checked", true);
   $(visibilityBox).change();
 
-  // Redraw the tooltip so that the new elements will fit better
+  // Redraw the tooltip so that the new elements will fit better.
   tooltips.reposition("#nav-buttons-lobby-replay");
 }

@@ -26,15 +26,16 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   }
 
   if (lastClue === undefined || lastClue.segment !== segment - 1) {
-    // We are initializing (or we rewinded and just removed the first clue)
+    // We are initializing (or we rewinded and just removed the first clue).
     return;
   }
 
   let clue: Clue;
+  // eslint-disable-next-line isaacscript/strict-enums
   if (lastClue.type === ClueType.Rank) {
     clue = rankClue(lastClue.value);
   } else {
-    clue = colorClue(globals.variant.clueColors[lastClue.value]);
+    clue = colorClue(globals.variant.clueColors[lastClue.value]!);
   }
 
   lastClue.list.forEach((order, i) => {
@@ -73,7 +74,7 @@ function updateLog(clues: readonly StateClue[]) {
     }
   });
 
-  // Delete any left over clues
+  // Delete any left over clues.
   if (clueLog.children.length > clues.length) {
     clueLog.children.splice(
       clues.length,

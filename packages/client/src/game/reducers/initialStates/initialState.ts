@@ -1,5 +1,5 @@
 import { getVariant } from "@hanabi/data";
-import { initArray } from "../../../misc";
+import { initArray } from "../../../utils";
 import * as deckRules from "../../rules/deck";
 import GameMetadata from "../../types/GameMetadata";
 import State from "../../types/State";
@@ -32,8 +32,8 @@ export default function initialState(metadata: GameMetadata): State {
     datetimeStarted: null,
     datetimeFinished: null,
 
-    // The array needs to be longer than just the total cards in the deck
-    // because we also need to account for notes on a stack base
+    // The array needs to be longer than just the total cards in the deck because we also need to
+    // account for notes on a stack base.
     notes: {
       ourNotes: initArray(totalCards + variant.suits.length + 1, {
         possibilities: [],

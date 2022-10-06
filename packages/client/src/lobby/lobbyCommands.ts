@@ -1,6 +1,7 @@
-// We will receive WebSocket messages / commands from the server that tell us to do things
+// We will receive WebSocket messages / commands from the server that tell us to do things.
 
 import * as gameMain from "../game/main";
+import Spectator from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
 import globals from "../globals";
 import * as sentry from "../sentry";
@@ -19,7 +20,7 @@ import WelcomeData from "./types/WelcomeData";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 
-// Define a command handler map
+// Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
@@ -29,11 +30,11 @@ interface FriendsData {
   friends: string[];
 }
 commands.set("friends", (data: FriendsData) => {
-  // The server has sent us a new list of our friends; store this locally
+  // The server has sent us a new list of our friends; store this locally.
   globals.friends = data.friends;
 
   // Since our list of friends has changed, we need to redraw some UI elements so that users that
-  // happen to be our friend will be shown in the correct color
+  // happen to be our friend will be shown in the correct color.
   if (
     globals.currentScreen === Screen.Lobby ||
     globals.currentScreen === Screen.PreGame
@@ -72,17 +73,16 @@ commands.set("game", (data: Game) => {
 });
 
 commands.set("gameHistory", (dataArray: GameHistory[]) => {
-  // data will be an array of all of the games that we have previously played
+  // `data` will be an array of all of the games that we have previously played.
   for (const data of dataArray) {
     globals.history[data.id] = data;
 
     if (data.incrementNumGames) {
-      globals.totalGames += 1;
+      globals.totalGames++;
     }
   }
 
-  // The server sent us more games because
-  // we clicked on the "Show More History" button
+  // The server sent us more games because we clicked on the "Show More History" button.
   if (globals.showMoreHistoryClicked) {
     globals.showMoreHistoryClicked = false;
     history.draw(false);
@@ -97,13 +97,12 @@ commands.set("gameHistory", (dataArray: GameHistory[]) => {
 });
 
 commands.set("gameHistoryFriends", (dataArray: GameHistory[]) => {
-  // data will be an array of all of the games that our friends have previously played
+  // `data` will be an array of all of the games that our friends have previously played.
   for (const data of dataArray) {
     globals.historyFriends[data.id] = data;
   }
 
-  // The server sent us more games because
-  // we clicked on the "Show More History" button
+  // The server sent us more games because we clicked on the "Show More History" button.
   if (globals.showMoreHistoryClicked) {
     globals.showMoreHistoryClicked = false;
     history.draw(true);
@@ -125,12 +124,12 @@ interface JoinedData {
 commands.set("joined", (data: JoinedData) => {
   globals.tableID = data.tableID;
 
-  // We joined a new game, so transition between screens
+  // We joined a new game, so transition between screens.
   pregame.show();
 });
 
 commands.set("left", () => {
-  // We left a table, so transition between screens
+  // We left a table, so transition between screens.
   pregame.hide();
 });
 
@@ -164,7 +163,7 @@ commands.set("soundLobby", (data: SoundLobbyData) => {
   sounds.play(data.file);
 });
 
-// Received by the client when a table is created or modified
+// Received by the client when a table is created or modified.
 commands.set("table", (data: Table) => {
   globals.tableMap.set(data.id, data);
   if (globals.currentScreen === Screen.Lobby) {
@@ -172,7 +171,7 @@ commands.set("table", (data: Table) => {
   }
 });
 
-// Received by the client when a table no longer has any members present
+// Received by the client when a table no longer has any members present.
 interface TableGoneData {
   tableID: number;
 }
@@ -184,7 +183,7 @@ commands.set("tableGone", (data: TableGoneData) => {
   }
 });
 
-// Received by the client upon initial connection
+// Received by the client upon initial connection.
 commands.set("tableList", (dataList: Table[]) => {
   for (const data of dataList) {
     globals.tableMap.set(data.id, data);
@@ -215,7 +214,7 @@ interface TableStartData {
   replay: boolean;
 }
 commands.set("tableStart", (data: TableStartData) => {
-  // Record the table ID for later
+  // Record the table ID for later.
   globals.tableID = data.tableID;
 
   if (!data.replay) {
@@ -224,7 +223,17 @@ commands.set("tableStart", (data: TableStartData) => {
   gameMain.show();
 });
 
-// Received by the client when a user connects or has a new status
+interface SpectatorsData {
+  tableID: number;
+  spectators: Spectator[];
+}
+commands.set("pregameSpectators", (data: SpectatorsData) => {
+  globals.tableID = data.tableID;
+
+  pregame.drawSpectators(globals.tableID);
+});
+
+// Received by the client when a user connects or has a new status.
 commands.set("user", (data: User) => {
   globals.userMap.set(data.userID, data);
   if (
@@ -247,7 +256,7 @@ commands.set("userList", (dataList: User[]) => {
   }
 });
 
-// Received by the client when a user disconnects
+// Received by the client when a user disconnects.
 interface UserLeftData {
   userID: number;
 }
@@ -280,9 +289,9 @@ commands.set("userInactive", (data: UserInactiveData) => {
   }
 });
 
-// Received by the client upon first connecting
+// Received by the client upon first connecting.
 commands.set("welcome", (data: WelcomeData) => {
-  // Store some variables (mostly relating to our user account)
+  // Store some variables (mostly relating to our user account).
   globals.userID = data.userID;
   globals.username = data.username; // We might have logged-in with a different stylization
   globals.totalGames = data.totalGames;
@@ -294,17 +303,16 @@ commands.set("welcome", (data: WelcomeData) => {
   globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
   globals.maintenanceMode = data.maintenanceMode;
 
-  // Now that we know what our user ID and username are, we can attach them to the Sentry context
+  // Now that we know what our user ID and username are, we can attach them to the Sentry context.
   sentry.setUserContext(globals.userID, globals.username);
 
-  // Update various elements of the UI to reflect our settings
+  // Update various elements of the UI to reflect our settings.
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
   playerSettings.setPlayerSettings();
   lobbyLogin.hide(data.firstTimeUser);
 
-  // If the server has informed us that we are currently playing in an ongoing game,
-  // automatically reconnect to that game
-  // (and ignore any specific custom path that the user has entered)
+  // If the server has informed us that we are currently playing in an ongoing game, automatically
+  // reconnect to that game (and ignore any specific custom path that the user has entered).
   if (data.playingAtTables.length > 0) {
     const firstTableID = data.playingAtTables[0];
     globals.conn!.send("tableReattend", {
@@ -314,8 +322,8 @@ commands.set("welcome", (data: WelcomeData) => {
   }
 
   // If the server has informed us that were previously spectating an ongoing shared replay,
-  // automatically spectate that table
-  // (and ignore any specific custom path that the user has entered)
+  // automatically spectate that table (and ignore any specific custom path that the user has
+  // entered).
   if (data.disconSpectatingTable !== 0) {
     globals.conn!.send("tableSpectate", {
       tableID: data.disconSpectatingTable,
@@ -324,6 +332,6 @@ commands.set("welcome", (data: WelcomeData) => {
     return;
   }
 
-  // If we have entered a specific URL, we might want to go somewhere specific instead of the lobby
+  // If we have entered a specific URL, we might want to go somewhere specific instead of the lobby.
   url.parseAndGoto(data);
 });

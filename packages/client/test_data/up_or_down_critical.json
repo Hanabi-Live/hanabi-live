@@ -1,10 +1,6 @@
 {
   "id": 675774,
-  "players": [
-    "Alice",
-    "Bob",
-    "Cathy"
-  ],
+  "players": ["Alice", "Bob", "Cathy"],
   "deck": [
     {
       "suitIndex": 4,
@@ -528,9 +524,5 @@
   "options": {
     "variant": "Up or Down & Brown (6 Suits)"
   },
-  "notes": [
-    [],
-    [],
-    []
-  ]
+  "notes": [[], [], []]
 }

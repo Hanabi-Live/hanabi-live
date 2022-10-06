@@ -5,12 +5,12 @@ import LayoutChild from "./LayoutChild";
 
 export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 
-// Module variables
-// (this does not have to be on the globals because it is explicitly reset in HanabiUI constructor)
+// Module variables. (This does not have to be on the globals because it is explicitly reset in
+// HanabiUI constructor.)
 let currentCursorType = "default";
 
 export function set(cursorType: CursorType): void {
-  // It is possible to receive cursor events before the UI has initialized
+  // It is possible to receive cursor events before the UI has initialized.
   if (globals.store === null) {
     return;
   }
@@ -19,7 +19,7 @@ export function set(cursorType: CursorType): void {
     return;
   }
 
-  // Don't show any custom cursors if we are an active player in a speedrun
+  // Don't show any custom cursors if we are an active player in a speedrun.
   if (
     (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
     globals.state.playing
@@ -40,7 +40,7 @@ export function set(cursorType: CursorType): void {
 
   element.classList.add(`game-cursor-${cursorType}`);
 
-  // If the Chrome development tools are open, then the cursor may not update properly
+  // If the Chrome development tools are open, then the cursor may not update properly:
   // https://stackoverflow.com/questions/37462132/update-mouse-cursor-without-moving-mouse-with-changed-css-cursor-property
 }
 
@@ -73,8 +73,9 @@ export function elementOverlaps(element: LayoutChild): boolean {
   }
 
   const pos = globals.stage.getPointerPosition();
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (pos === undefined) {
-    // This method will return undefined if the cursor is not inside of the stage
+    // This method will return undefined if the cursor is not inside of the stage.
     return false;
   }
 

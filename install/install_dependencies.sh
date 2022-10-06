@@ -11,7 +11,7 @@ REPO_ROOT="$DIR/.."
 
 # Ensure that the ".env" file exists
 if [[ ! -f "$REPO_ROOT/.env" ]]; then
-  cp "$REPO_ROOT/.env_template" "$REPO_ROOT/.env"
+  cp "$REPO_ROOT/.env.example" "$REPO_ROOT/.env"
 fi
 
 # Install the JavaScript/TypeScript dependencies and build the client

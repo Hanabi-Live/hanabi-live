@@ -1,7 +1,7 @@
 import Konva from "konva";
 
-// These are arrows used to show which cards that are touched by a clue
-// (and for pointing to various things in a shared replay)
+// These are arrows used to show which cards that are touched by a clue (and for pointing to various
+// things in a shared replay).
 export default class Arrow extends Konva.Group {
   pointingTo: Konva.Node | null;
   tween: Konva.Tween | null;
@@ -25,15 +25,15 @@ export default class Arrow extends Konva.Group {
       listening: false,
     });
 
-    // Class variables
-    // (we can't initialize these above due to "super()" not being on the first line)
+    // Class variables. (We can't initialize these above due to "super()" not being on the first
+    // line.)
     this.pointingTo = null;
     this.tween = null;
 
     const pointerLength = 0.006 * winW;
 
-    // We want there to be a black outline around the arrow,
-    // so we draw a second arrow that is slightly bigger than the first
+    // We want there to be a black outline around the arrow, so we draw a second arrow that is
+    // slightly bigger than the first.
     const border = new Konva.Arrow({
       points: [x, 0, x, y * 0.8],
       pointerLength,
@@ -47,8 +47,8 @@ export default class Arrow extends Konva.Group {
     });
     this.add(border);
 
-    // The border arrow will be missing a bottom edge,
-    // so draw that manually at the bottom of the arrow
+    // The border arrow will be missing a bottom edge, so draw that manually at the bottom of the
+    // arrow.
     const edge = new Konva.Line({
       points: [x - pointerLength, 0, x + pointerLength, 0],
       fill: "black",
@@ -58,7 +58,7 @@ export default class Arrow extends Konva.Group {
     });
     this.add(edge);
 
-    // The main (inside) arrow is exported so that we can change the color later
+    // The main (inside) arrow is exported so that we can change the color later.
     this.base = new Konva.Arrow({
       points: [x, 0, x, y * 0.8],
       pointerLength,
@@ -70,7 +70,7 @@ export default class Arrow extends Konva.Group {
     });
     this.add(this.base);
 
-    // A circle will appear on the body of the arrow to indicate the type of clue given
+    // A circle will appear on the body of the arrow to indicate the type of clue given.
     this.circle = new Konva.Circle({
       x,
       y: y * 0.3,
@@ -83,7 +83,7 @@ export default class Arrow extends Konva.Group {
     });
     this.add(this.circle);
 
-    // The circle will have text inside of it to indicate the number of the clue given
+    // The circle will have text inside of it to indicate the number of the clue given.
     this.text = new Konva.Text({
       x,
       y: y * 0.3,
@@ -92,8 +92,8 @@ export default class Arrow extends Konva.Group {
         y: this.circle.height() / 2,
       },
       width: this.circle.width(),
-      // For some reason the text is offset if we place it exactly in the middle of the
-      // circle, so nudge it downwards
+      // For some reason the text is offset if we place it exactly in the middle of the circle, so
+      // nudge it downwards.
       height: this.circle.height() * 1.09,
       fontSize: y * 0.38,
       fontFamily: "Verdana",
@@ -105,7 +105,7 @@ export default class Arrow extends Konva.Group {
     });
     this.add(this.text);
 
-    // In colorblind mode, the circle will show the suit pip corresponding to the color
+    // In colorblind mode, the circle will show the suit pip corresponding to the color.
     if (colorblindMode) {
       this.suitPip = new Konva.Shape({
         x,

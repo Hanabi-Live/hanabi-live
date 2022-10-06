@@ -4,7 +4,7 @@ import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";
 
-// onEfficiencyChanged updates the labels on the right-hand side of the screen
+/** Updates the labels on the right-hand side of the screen. */
 export function onEfficiencyChanged(data: {
   cardsGotten: number;
   cardsGottenByNotes: number | null;
@@ -14,7 +14,7 @@ export function onEfficiencyChanged(data: {
   cluesStillUsable: number | null;
   finalRoundEffectivelyStarted: boolean;
 }): void {
-  // Ensure that the labels exist
+  // Ensure that the labels exist.
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (effLabel === null) {
     throw new Error(
@@ -34,15 +34,15 @@ export function onEfficiencyChanged(data: {
     );
   }
 
-  let shouldModifyEff;
+  let shouldModifyEff: boolean;
   if (globals.state.finished) {
-    // If we are not currently using the shared segments,
-    // the shared efficiency modifier will not be applicable
+    // If we are not currently using the shared segments, the shared efficiency modifier will not be
+    // applicable.
     shouldModifyEff =
       globals.state.replay.shared !== null &&
       globals.state.replay.shared.useSharedSegments;
   } else {
-    // Don't use the efficiency modifier during in-game replays
+    // Don't use the efficiency modifier during in-game replays.
     shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
   }
 
@@ -53,7 +53,7 @@ export function onEfficiencyChanged(data: {
     cardsGotten += efficiencyModifier;
     if (efficiencyModifier !== 0) {
       // The user has specified a manual efficiency modification
-      // (e.g. to account for a card that is Finessed)
+      // (e.g. to account for a card that is Finessed).
       cardsGottenModified = true;
     }
     if (cardsGottenByNotes !== null) {
@@ -78,7 +78,7 @@ export function onEfficiencyChanged(data: {
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
   if (shouldShowFutureEfficiency) {
-    // Show the efficiency and round it to 2 decimal places
+    // Show the efficiency and round it to 2 decimal places.
     effLabel.text(futureEfficiency.toFixed(2));
   } else {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
@@ -91,8 +91,7 @@ export function onEfficiencyChanged(data: {
   effLabel.width(width);
 
   // Reposition the two labels to the right of the efficiency label so that they are aligned
-  // properly
-  // The type of Konva.Text.width is "any" for some reason
+  // properly. The type of Konva.Text.width is "any" for some reason.
   const effLabelSize = effLabel.measureSize(effLabel.text()).width as number;
   if (typeof effLabelSize !== "number") {
     throw new Error("The width of effLabel was not a number.");
@@ -100,7 +99,7 @@ export function onEfficiencyChanged(data: {
   const pipeX = effLabel.x() + effLabelSize;
   effPipeLabel.x(pipeX);
 
-  // The type of Konva.Text.width is "any" for some reason
+  // The type of Konva.Text.width is "any" for some reason.
   const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text())
     .width as number;
   if (typeof effPipeLabelSize !== "number") {
@@ -109,7 +108,7 @@ export function onEfficiencyChanged(data: {
   const minEffX = pipeX + effPipeLabelSize;
   effMinLabel.x(minEffX);
 
-  // Change the color of the efficiency label if there is a custom modification
+  // Change the color of the efficiency label if there is a custom modification.
   const effLabelColor = cardsGottenModified ? "#00ffff" : LABEL_COLOR;
   effLabel.fill(effLabelColor);
 
@@ -169,9 +168,8 @@ export function onPaceOrPaceRiskChanged(data: {
     throw new Error("paceNumberLabel is not initialized.");
   }
 
-  // Update the pace
-  // (part of the efficiency statistics on the right-hand side of the screen)
-  // If there are no cards left in the deck, pace is meaningless
+  // Update the pace. (Part of the efficiency statistics on the right-hand side of the screen.) If
+  // there are no cards left in the deck, pace is meaningless.
   if (
     data.pace === null ||
     data.finalRoundEffectivelyStarted ||
@@ -186,23 +184,22 @@ export function onPaceOrPaceRiskChanged(data: {
     }
     label.text(paceText);
 
-    // Color the pace label depending on how "risky" it would be to discard
-    // (approximately)
+    // Color the pace label depending on how "risky" it would be to discard (approximately).
     switch (data.paceRisk) {
       case "Zero": {
-        // No more discards can occur in order to get a maximum score
+        // No more discards can occur in order to get a maximum score.
         label.fill("#df1c2d"); // Red
         break;
       }
 
       case "HighRisk": {
-        // It would probably be risky to discard
+        // It would probably be risky to discard.
         label.fill("#ef8c1d"); // Orange
         break;
       }
 
       case "MediumRisk": {
-        // It might be risky to discard
+        // It might be risky to discard.
         label.fill("#efef1d"); // Yellow
         break;
       }
@@ -216,7 +213,7 @@ export function onPaceOrPaceRiskChanged(data: {
 
       case "LowRisk":
       default: {
-        // We are not even close to the "End-Game", so give it the default color
+        // We are not even close to the "End-Game", so give it the default color.
         label.fill(LABEL_COLOR);
         break;
       }

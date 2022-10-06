@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -170,7 +169,7 @@ func normalizeString(str string) string {
 
 func numConsecutiveDiacritics(s string) int {
 	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
-	// are seprated from other characters
+	// are separated from other characters
 	// https://en.wikipedia.org/wiki/Unicode_equivalence
 	// https://blog.golang.org/normalization
 	normalizedString := norm.NFD.String(s)
@@ -279,6 +278,11 @@ func secondsToDurationString(seconds int) (string, error) {
 // We use the CRC64 hash function to do this
 // Also note that seeding with negative numbers will not work
 func setSeed(seed string) {
+	// Remove the "legacy-x-" prefix from the seed, if it exists
+	// (e.g. "legacy-1-", "legacy-2-", and so on)
+	if strings.HasPrefix(seed, "legacy-") {
+		seed = seed[len("legacy-x-"):]
+	}
 	crc64Table := crc64.MakeTable(crc64.ECMA)
 	intSeed := crc64.Checksum([]byte(seed), crc64Table)
 	rand.Seed(int64(intSeed))
@@ -529,22 +533,4 @@ func isTableCommandValid(s *Session, d *CommandData, data *SpecialGameData) (boo
 	}
 
 	return true, ""
-}
-
-func getMemoryReport() string {
-	// Based on https://golangcode.com/print-the-current-memory-usage/
-	var memStats runtime.MemStats
-	runtime.ReadMemStats(&memStats)
-
-	msg := "Memory Report:"
-	msg += fmt.Sprintf("\nAlloc = %v MiB", byteToMegaByte(memStats.Alloc))
-	msg += fmt.Sprintf("\nTotalAlloc = %v MiB", byteToMegaByte(memStats.TotalAlloc))
-	msg += fmt.Sprintf("\nSys = %v MiB", byteToMegaByte(memStats.TotalAlloc))
-	msg += fmt.Sprintf("\nNumGC = %v\n", memStats.NumGC)
-
-	return msg
-}
-
-func byteToMegaByte(b uint64) uint64 {
-	return b / 1024 / 1024
 }

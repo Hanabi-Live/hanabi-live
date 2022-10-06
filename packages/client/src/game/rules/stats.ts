@@ -1,4 +1,4 @@
-// Functions to calculate game stats such as pace and efficiency
+// Functions to calculate game stats such as pace and efficiency.
 
 import { MAX_CLUE_NUM, Variant } from "@hanabi/data";
 import CardNote from "../types/CardNote";
@@ -16,8 +16,8 @@ export function getMaxScorePerStack(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): number[] {
-  // Getting the maximum score is much more complicated if we are playing a
-  // "Reversed" or "Up or Down" variant
+  // Getting the maximum score is much more complicated if we are playing a "Reversed" or "Up or
+  // Down" variant.
   return reversibleRules.getMaxScorePerStack(
     deck,
     playStackDirections,
@@ -60,7 +60,7 @@ function maxPlays(
   return endGameLength + deckSize;
 }
 
-// Pace is the number of discards that can happen while still getting the maximum score
+// Pace is the number of discards that can happen while still getting the maximum score.
 export function pace(
   score: number,
   deckSize: number,
@@ -76,12 +76,12 @@ export function pace(
     return null;
   }
 
-  // The formula for pace was derived by Libster
+  // The formula for pace was derived by Libster.
   const adjustedScorePlusDeck = score + deckSize - maxScore;
   return adjustedScorePlusDeck + endGameLength;
 }
 
-// A measure of how risky a discard would be right now, using different heuristics
+// A measure of how risky a discard would be right now, using different heuristics.
 export function paceRisk(
   currentPace: number | null,
   numPlayers: number,
@@ -94,14 +94,14 @@ export function paceRisk(
     return "Zero";
   }
 
-  // Formula derived by Florrat;
-  // a strategical estimate of "End-Game" that tries to account for the number of players
+  // Formula derived by Florrat; a strategical estimate of "End-Game" that tries to account for the
+  // number of players.
   if (currentPace - numPlayers + Math.floor(numPlayers / 2) < 0) {
     return "HighRisk";
   }
 
-  // Formula derived by Hyphen-ated;
-  // a more conservative estimate of "End-Game" that does not account for the number of players
+  // Formula derived by Hyphen-ated; a more conservative estimate of "End-Game" that does not
+  // account for the number of players.
   if (currentPace - numPlayers < 0) {
     return "MediumRisk";
   }
@@ -120,11 +120,15 @@ export function startingDeckSize(
 }
 
 // Calculate the starting pace with the following formula:
+//
+// ```
 //   total cards in the deck
 //   + number of turns in the final round
 //   - (number of cards in a player's hand * number of players)
 //   - (5 * number of suits)
-// https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
+// ```
+//
+// See: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
 export function startingPace(
   deckSize: number,
   maxScore: number,
@@ -143,7 +147,7 @@ export function cardsGotten(
 ): number {
   let currentCardsGotten = 0;
 
-  // Go through the deck and count the cards that are gotten
+  // Go through the deck and count the cards that are gotten.
   for (const card of deck) {
     if (
       card.location === "playStack" ||
@@ -152,9 +156,9 @@ export function cardsGotten(
         variantRules.isThrowItInAHole(variant) &&
         playing)
     ) {
-      // A card is considered to be gotten if it is already played
-      // (and failed discards count as played for the purposes of "Throw It in a Hole" variants)
-      currentCardsGotten += 1;
+      // A card is considered to be gotten if it is already played (and failed discards count as
+      // played for the purposes of "Throw It in a Hole" variants).
+      currentCardsGotten++;
     } else if (
       cardRules.isInPlayerHand(card) &&
       cardRules.isClued(card) &&
@@ -166,10 +170,9 @@ export function cardsGotten(
         variant,
       )
     ) {
-      // Clued cards in player's hands are considered to be gotten,
-      // since they will eventually be played from Good Touch Principle
-      // (unless the card is globally known to be trash)
-      currentCardsGotten += 1;
+      // Clued cards in player's hands are considered to be gotten, since they will eventually be
+      // played from Good Touch Principle (unless the card is globally known to be trash).
+      currentCardsGotten++;
     }
   }
 
@@ -202,9 +205,9 @@ export function cardsGottenByNotes(
     ) {
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
-      const note = notes[order];
+      const note = notes[order]!;
 
-      // Contribution desired based on notes
+      // Contribution desired based on notes.
       const b =
         !note.knownTrash &&
         (note.finessed ||
@@ -219,7 +222,7 @@ export function cardsGottenByNotes(
   return currentCardsGottenByNotes;
 }
 
-// Calculate the minimum amount of efficiency needed in order to win this variant
+// Calculate the minimum amount of efficiency needed in order to win this variant.
 export function minEfficiency(
   numPlayers: number,
   endGameLength: number,
@@ -231,8 +234,8 @@ export function minEfficiency(
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
-  //   max score /
-  //   maximum number of clues that can be given before the game ends
+  //
+  // `max score / maximum number of clues that can be given before the game ends`
   const { maxScore } = variant;
   const totalClues = startingCluesUsable(endGameLength, deckSize, variant);
 
@@ -240,7 +243,7 @@ export function minEfficiency(
 }
 
 // Returns the max number of clues that can be spent while getting the max possible score from a
-// given game state onward (not accounting for the locations of playable cards)
+// given game state onward (not accounting for the locations of playable cards).
 export function cluesStillUsable(
   score: number,
   scorePerStack: readonly number[],
@@ -257,7 +260,7 @@ export function cluesStillUsable(
     );
   }
   // We want to discard as many times as possible while still getting a max score as long as
-  // discardValue >= suitValue (which is currently true for all variants)
+  // discardValue >= suitValue (which is currently true for all variants).
   if (discardValue < suitValue) {
     throw Error(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
@@ -288,11 +291,11 @@ export function cluesStillUsable(
     );
     const minPlaysBeforeFinalRound =
       maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
-    const missingCardsPerCompletableSuit = [];
+    const missingCardsPerCompletableSuit: number[] = [];
     for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
-      if (maxScorePerStack[suitIndex] === 5 && scorePerStack[suitIndex] < 5) {
+      if (maxScorePerStack[suitIndex] === 5 && scorePerStack[suitIndex]! < 5) {
         missingCardsPerCompletableSuit.push(
-          maxScorePerStack[suitIndex] - scorePerStack[suitIndex],
+          maxScorePerStack[suitIndex]! - scorePerStack[suitIndex]!,
         );
       }
     }
@@ -304,7 +307,7 @@ export function cluesStillUsable(
         break;
       }
       cardsPlayed += missingCardsInSuit;
-      suitsCompletedBeforeFinalRound += 1;
+      suitsCompletedBeforeFinalRound++;
     }
     cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
   }
@@ -313,15 +316,21 @@ export function cluesStillUsable(
 }
 
 // This is used as the denominator of an efficiency calculation:
+//
+// ```
 // (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
-// https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
+// ```
+//
+// See: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
 export function startingCluesUsable(
   endGameLength: number,
   deckSize: number,
   variant: Variant,
 ): number {
   const score = 0;
+  // eslint-disable-next-line isaacscript/no-object-any
   const scorePerStack = new Array(variant.suits.length).fill(0);
+  // eslint-disable-next-line isaacscript/no-object-any
   const maxScorePerStack = new Array(variant.suits.length).fill(5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
@@ -358,24 +367,24 @@ export function futureEfficiency(state: GameState): number | null {
 }
 
 // After a discard, it is a "double discard" situation if there is only one other copy of this card
-// and it needs to be played
+// and it needs to be played.
 export function doubleDiscard(
   orderOfDiscardedCard: number,
   state: GameState,
   variant: Variant,
 ): number | null {
-  // It is never a double discard situation if the game is over
+  // It is never a double discard situation if the game is over.
   if (state.turn.currentPlayerIndex === null) {
     return null;
   }
 
   // It is never a double discard situation if the next player has one or more positive clues on
-  // every card in their hand
+  // every card in their hand.
   const hand =
-    state.hands[(state.turn.currentPlayerIndex + 1) % state.hands.length];
+    state.hands[(state.turn.currentPlayerIndex + 1) % state.hands.length]!;
   let allClued = true;
   for (const orderOfCardInHand of hand) {
-    const cardInHand = state.deck[orderOfCardInHand];
+    const cardInHand = state.deck[orderOfCardInHand]!;
     if (!cardRules.isClued(cardInHand)) {
       allClued = false;
       break;
@@ -386,13 +395,13 @@ export function doubleDiscard(
   }
 
   // It is never a double discard situation if we do not know the identity of the discarded card
-  // (which can happen in certain variants)
-  const cardDiscarded = state.deck[orderOfDiscardedCard];
+  // (which can happen in certain variants).
+  const cardDiscarded = state.deck[orderOfDiscardedCard]!;
   if (cardDiscarded.suitIndex === null || cardDiscarded.rank === null) {
     return null;
   }
 
-  // It is never a double discard situation if the discarded card does not need to be played
+  // It is never a double discard situation if the discarded card does not need to be played.
   const needsToBePlayed = cardRules.needsToBePlayed(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
@@ -406,7 +415,7 @@ export function doubleDiscard(
   }
 
   // It is never a double discard situation if another player has a copy of the card in their hand
-  // that happens to be fully "fill-in" from clues
+  // that happens to be fully "fill-in" from clues.
   for (const cardInDeck of state.deck) {
     if (
       cardInDeck.order !== cardDiscarded.order &&
@@ -419,8 +428,8 @@ export function doubleDiscard(
     }
   }
 
-  // Otherwise, it is a double discard situation if there is only one copy of the card left
-  const suit = variant.suits[cardDiscarded.suitIndex];
+  // Otherwise, it is a double discard situation if there is only one copy of the card left.
+  const suit = variant.suits[cardDiscarded.suitIndex]!;
   const numCopiesTotal = deckRules.numCopiesOfCard(
     suit,
     cardDiscarded.rank,

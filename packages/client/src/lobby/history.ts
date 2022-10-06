@@ -1,11 +1,11 @@
-// The screens that show past games and other scores
+// The screens that show past games and other scores.
 
-import { getVariant } from "@hanabi/data";
+import { getVariant, parseIntSafe } from "@hanabi/data";
 import globals from "../globals";
-import { dateTimeFormatter, parseIntSafe, timerFormatter } from "../misc";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
 import Options from "../types/Options";
+import { dateTimeFormatter, timerFormatter } from "../utils";
 import * as nav from "./nav";
 import tablesDraw from "./tablesDraw";
 import GameHistory from "./types/GameHistory";
@@ -42,7 +42,7 @@ export function show(): void {
   $("#lobby-bottom-half").addClass("hidden");
   $("#lobby-small-screen-buttons").addClass("hidden");
 
-  // Update the nav
+  // Update the nav.
   nav.show("history");
   if (globals.friends.length === 0) {
     $("#nav-buttons-history-show-friends").hide();
@@ -50,11 +50,11 @@ export function show(): void {
     $("#nav-buttons-history-show-friends").show();
   }
 
-  // It might be hidden if we are returning from the "Show History of Friends" view
+  // It might be hidden if we are returning from the "Show History of Friends" view.
   $("#lobby-history-show-all").show();
   $("#lobby-history-show-all").attr("href", `/history/${globals.username}`);
 
-  // Draw the history table
+  // Draw the history table.
   draw(false);
 }
 
@@ -75,10 +75,10 @@ export function hide(): void {
 export function draw(friends: boolean): void {
   const tbody = $("#lobby-history-table-tbody");
 
-  // Clear all of the existing rows
+  // Clear all of the existing rows.
   tbody.html("");
 
-  // JavaScript keys come as strings, so we need to convert them to integers
+  // JavaScript keys come as strings, so we need to convert them to integers.
   let ids: number[];
   if (!friends) {
     ids = Object.keys(globals.history).map((i) => parseIntSafe(i));
@@ -86,7 +86,7 @@ export function draw(friends: boolean): void {
     ids = Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
   }
 
-  // Handle if the user has no history
+  // Handle if the user has no history.
   if (ids.length === 0) {
     $("#lobby-history-no").show();
     if (!friends) {
@@ -104,83 +104,80 @@ export function draw(friends: boolean): void {
   $("#lobby-history").removeClass("align-center-v");
   $("#lobby-history-table-container").show();
 
-  // Sort the game IDs in reverse order (so that the most recent ones are near the top)
-  // By default, JavaScript will sort them in alphabetical order,
-  // so we must specify an ascending sort
+  // Sort the game IDs in reverse order (so that the most recent ones are near the top). By default,
+  // JavaScript will sort them in alphabetical order, so we must specify an ascending sort.
   ids.sort((a, b) => a - b);
   ids.reverse();
 
-  // Add all of the history
+  // Add all of the history.
   for (let i = 0; i < ids.length; i++) {
-    let gameData;
+    let gameData: GameHistory;
     if (!friends) {
-      gameData = globals.history[ids[i]];
+      gameData = globals.history[ids[i]!]!;
     } else {
-      gameData = globals.historyFriends[ids[i]];
+      gameData = globals.historyFriends[ids[i]!]!;
     }
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
     const row = $("<tr>");
 
-    // Column 1 - Game ID
+    // Column 1 - Game ID.
     $("<td>").html(`#${ids[i]}`).appendTo(row);
 
-    // Column 2 - # of Players
+    // Column 2 - # of Players.
     $("<td>").html(gameData.options.numPlayers.toString()).appendTo(row);
 
-    // Column 3 - Score
+    // Column 3 - Score.
     $("<td>").html(`${gameData.score}/${maxScore}`).appendTo(row);
 
-    // Column 4 - Variant
+    // Column 4 - Variant.
     $("<td>").html(gameData.options.variantName).appendTo(row);
 
-    // Column 5 - Options
+    // Column 5 - Options.
     const options = makeOptions(i, gameData.options, false);
     $("<td>").html(options).appendTo(row);
 
-    // Column 6 - Other Players / Players
-    // (depending on if we are in the "Friends" view or not)
+    // Column 6 - Other Players / Players (depending on if we are in the "Friends" view or not).
     const playerNames = gameData.playerNames.slice();
     let playerNamesString = playerNames.join(", ");
     if (!friends) {
-      // Remove our name from the list of players
+      // Remove our name from the list of players.
       const ourIndex = gameData.playerNames.indexOf(globals.username);
       playerNames.splice(ourIndex, 1);
       playerNamesString = playerNames.join(", ");
     }
     $("<td>").html(playerNamesString).appendTo(row);
 
-    // Column 7 - Date Played
+    // Column 7 - Date Played.
     const datePlayed = dateTimeFormatter.format(
       new Date(gameData.datetimeFinished),
     );
     $("<td>").html(datePlayed).appendTo(row);
 
-    // Column 8 - Watch Replay
-    const watchReplayButton = makeReplayButton(ids[i], "solo");
-    $("<td>").html(watchReplayButton[0]).appendTo(row);
+    // Column 8 - Watch Replay.
+    const watchReplayButton = makeReplayButton(ids[i]!, "solo");
+    $("<td>").html(watchReplayButton[0]!).appendTo(row);
 
-    // Column 9 - Share Replay
-    const shareReplayButton = makeReplayButton(ids[i], "shared");
-    $("<td>").html(shareReplayButton[0]).appendTo(row);
+    // Column 9 - Share Replay.
+    const shareReplayButton = makeReplayButton(ids[i]!, "shared");
+    $("<td>").html(shareReplayButton[0]!).appendTo(row);
 
-    // Column 10 - Other Scores
+    // Column 10 - Other Scores.
     const otherScoresButton = makeOtherScoresButton(
-      ids[i],
+      ids[i]!,
       gameData.seed,
       gameData.numGamesOnThisSeed,
     );
-    $("<td>").html(otherScoresButton[0]).appendTo(row);
+    $("<td>").html(otherScoresButton[0]!).appendTo(row);
 
     row.appendTo(tbody);
 
-    // Initialize the tooltips, if any
-    // (this has to be done after adding the HTML to the page)
+    // Initialize the tooltips, if any (this has to be done after adding the HTML to the page).
     tooltips.create(`#lobby-history-table-${i}-options`);
   }
 
-  // Don't show the "Show More History" if we have 10 or less games played
+  // Don't show the "Show More History" if we have 10 or less games played.
   if (globals.totalGames <= 10) {
     $("#lobby-history-show-more").hide();
   } else {
@@ -257,7 +254,7 @@ export function drawOtherScores(
     return;
   }
 
-  // Define the functionality of the "Return to History" button
+  // Define the functionality of the "Return to History" button.
   if (!friends) {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
       hideOtherScores();
@@ -270,47 +267,47 @@ export function drawOtherScores(
 
   const tbody = $("#lobby-history-other-scores-table-tbody");
 
-  // Clear all of the existing rows
+  // Clear all of the existing rows.
   tbody.html("");
 
-  // The game played by the user will also include its variant
+  // The game played by the user will also include its variant.
   const variant = getVariant(variantName);
 
-  // Add all of the games for this particular seed
+  // Add all of the games for this particular seed.
   for (let i = 0; i < games.length; i++) {
-    const gameData = games[i];
+    const gameData = games[i]!;
 
-    // Find out if this game was played by us
+    // Find out if this game was played by us.
     const ourGame = gameData.playerNames.includes(globals.username);
 
     const row = $("<tr>");
 
-    // Column 1 - Game ID
+    // Column 1 - Game ID.
     let id = `#${gameData.id}`;
     if (ourGame) {
       id = `<strong>${id}</strong>`;
     }
     $("<td>").html(id).appendTo(row);
 
-    // Column 2 - Score
+    // Column 2 - Score.
     let score = `${gameData.score}/${variant.maxScore}`;
     if (ourGame) {
       score = `<strong>${score}</strong>`;
     }
     $("<td>").html(score).appendTo(row);
 
-    // Column 3 - Options
+    // Column 3 - Options.
     const options = makeOptions(i, gameData.options, true);
     $("<td>").html(options).appendTo(row);
 
-    // Column 4 - Players
+    // Column 4 - Players.
     let playerNamesString = gameData.playerNames.join(", ");
     if (ourGame) {
       playerNamesString = `<strong>${playerNamesString}</strong>`;
     }
     $("<td>").html(playerNamesString).appendTo(row);
 
-    // Column 5 - Date Played
+    // Column 5 - Date Played.
     let datePlayed = dateTimeFormatter.format(
       new Date(gameData.datetimeFinished),
     );
@@ -319,32 +316,30 @@ export function drawOtherScores(
     }
     $("<td>").html(datePlayed).appendTo(row);
 
-    // Column 6 - Seed
-    // Chop off the prefix
+    // Column 6 - Seed. Chop off the prefix.
     const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
-    let seed;
+    let seed: string;
     if (match === null || match.length < 2) {
       seed = "Unknown";
     } else {
-      seed = match[1];
+      seed = match[1]!;
     }
     if (ourGame) {
       seed = `<strong>${seed}</strong>`;
     }
     $("<td>").html(seed).appendTo(row);
 
-    // Column 7 - Watch Replay
+    // Column 7 - Watch Replay.
     const watchReplayButton = makeReplayButton(gameData.id, "solo");
-    $("<td>").html(watchReplayButton[0]).appendTo(row);
+    $("<td>").html(watchReplayButton[0]!).appendTo(row);
 
-    // Column 8 - Share Replay
+    // Column 8 - Share Replay.
     const shareReplayButton = makeReplayButton(gameData.id, "shared");
-    $("<td>").html(shareReplayButton[0]).appendTo(row);
+    $("<td>").html(shareReplayButton[0]!).appendTo(row);
 
     row.appendTo(tbody);
 
-    // Initialize the tooltips, if any
-    // (this has to be done after adding the HTML to the page)
+    // Initialize the tooltips, if any. (This has to be done after adding the HTML to the page.)
     tooltips.create(`#lobby-history-table-${i}-options-other-scores`);
   }
 }
@@ -423,7 +418,6 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   if (otherScores) {
     id += "-other-scores";
   }
-  // let html = `<i id="${id}" class="${mainClassFromIcons(icons)}" `;
   let html = `<div id="${id}" data-tooltip-content="#${id}-tooltip">`;
   html += `${iconsFromOptions(icons)}`;
   html += "</div>";
@@ -446,8 +440,8 @@ function iconsFromOptions(icons: string[]): string {
     case 1:
     case 2:
     case 3:
-      for (let i = 0; i < icons.length; i++) {
-        answer += `<i class="${icons[i]}"></i> `;
+      for (const icon of icons) {
+        answer += `<i class="${icon}"></i> `;
       }
       return answer.trim();
     default:
@@ -459,7 +453,7 @@ function makeReplayButton(databaseID: number, visibility: string) {
   const button = $("<button>")
     .attr("type", "button")
     .addClass("button fit margin0");
-  let text;
+  let text: string;
   if (visibility === "solo") {
     text = '<i class="fas fa-eye lobby-button-icon"></i>';
   } else if (visibility === "shared") {

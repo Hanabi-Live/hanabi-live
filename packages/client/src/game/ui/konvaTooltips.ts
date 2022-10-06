@@ -51,12 +51,12 @@ export function init(
 }
 
 export function show(element: NodeWithTooltip): void {
-  // Don't do anything if we are no longer in the game
+  // Don't do anything if we are no longer in the game.
   if (globals.lobby.currentScreen !== Screen.Game) {
     return;
   }
 
-  // Don't do anything if the user has moved the mouse away in the meantime
+  // Don't do anything if the user has moved the mouse away in the meantime.
   if (globals.activeHover !== element) {
     return;
   }
@@ -71,9 +71,8 @@ export function show(element: NodeWithTooltip): void {
   if (element instanceof Konva.Text) {
     width = element.getTextWidth();
 
-    // For text elements consisting of only one emoji,
-    // "getTextWidth()" will not return the correct width
-    // Fall back to the element width instead
+    // For text elements consisting of only one emoji, "getTextWidth()" will not return the correct
+    // width. Fall back to the element width instead.
     const text = element as TextWithTooltip;
     if (text.emoji) {
       width = element.width();

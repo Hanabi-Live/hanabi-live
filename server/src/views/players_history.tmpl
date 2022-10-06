@@ -173,7 +173,7 @@
             // all rows: array of arrays; each internal array has the table cell data for that row
             // len should match pager set size (c.size)
             let len = 0;
-            if (total > 0) {
+            if (total > 0 && d !== null) {
               len = d.length;
             }
             for (let r = 0; r < len; r++ ) {

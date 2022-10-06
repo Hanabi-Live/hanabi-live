@@ -7,6 +7,7 @@ export default class TextWithTooltip
 {
   tooltipName = "";
   tooltipContent = "";
-  // Whether or not this element contains only emoji (which is used for alignment purposes)
+
+  /** Whether or not this element contains only emoji (which is used for alignment purposes). */
   emoji = false;
 }

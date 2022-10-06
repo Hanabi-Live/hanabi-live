@@ -36,7 +36,7 @@ type HTTPLoginData struct {
 // By allowing this function to run concurrently with no locking, there is a race condition where
 // a new user can login twice at the same time and "models.Users.Insert()" will be called twice
 // However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row will
-// prevent the 2nd insersion from completing, and the second goroutine will return at that point
+// prevent the 2nd insertion from completing, and the second goroutine will return at that point
 func httpLogin(c *gin.Context) {
 	// Local variables
 	w := c.Writer

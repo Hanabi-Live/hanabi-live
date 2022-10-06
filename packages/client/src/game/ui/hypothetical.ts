@@ -1,7 +1,7 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
-// to see what will happen
+// to see what will happen.
 
-import { negativeOneIfNull } from "../../misc";
+import { negativeOneIfNull } from "../../utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionIncludingHypothetical } from "../types/actions";
 import ActionType from "../types/ActionType";
@@ -62,7 +62,7 @@ export function end(): void {
 export function send(hypoAction: ClientAction): void {
   const gameState = globals.state.replay.hypothetical!.ongoing;
 
-  let type;
+  let type: string;
   switch (hypoAction.type) {
     case ActionType.Play: {
       type = "play";
@@ -91,17 +91,17 @@ export function send(hypoAction: ClientAction): void {
       const card = getCardOrStackBase(hypoAction.target);
       const { suitIndex, rank } = card.getMorphedIdentity();
       if (suitIndex === null || rank === null) {
-        // Play or discard action could have been initiated from the keyboard
+        // Play or discard action could have been initiated from the keyboard.
         return;
       }
 
-      // Find out if this card misplays
+      // Find out if this card misplays.
       let failed = false;
       let newType = type;
       if (type === "play") {
         const nextRanks = playStacksRules.nextRanks(
-          gameState.playStacks[suitIndex],
-          gameState.playStackDirections[suitIndex],
+          gameState.playStacks[suitIndex]!,
+          gameState.playStackDirections[suitIndex]!,
           gameState.deck,
         );
         if (!nextRanks.includes(rank)) {
@@ -131,15 +131,15 @@ export function send(hypoAction: ClientAction): void {
 
       // Draw
       if (gameState.deck.length < globals.state.cardIdentities.length) {
-        // All the cards might have already been drawn
+        // All the cards might have already been drawn.
         const nextCardOrder = gameState.deck.length;
         const nextCard = globals.state.cardIdentities[nextCardOrder];
         sendHypoAction({
           type: "draw",
           order: nextCardOrder,
           playerIndex: gameState.turn.currentPlayerIndex!,
-          // Always send the correct suitIndex and rank if known;
-          // the blanking of the card will be performed on the client
+          // Always send the correct suitIndex and rank if known; the blanking of the card will be
+          // performed on the client.
           suitIndex: negativeOneIfNull(nextCard?.suitIndex),
           rank: negativeOneIfNull(nextCard?.rank),
         });
@@ -181,9 +181,9 @@ export function send(hypoAction: ClientAction): void {
     }
   }
 
-  // Finally, send a turn action
-  // Even though this action is unnecessary from the point of the client, for now we MUST send it to
-  // the server so that it can correctly shave off the last action during a "hypoBack"
+  // Finally, send a turn action. Even though this action is unnecessary from the point of the
+  // client, for now we MUST send it to the server so that it can correctly shave off the last
+  // action during a "hypoBack".
   let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
   if (nextPlayerIndex === globals.options.numPlayers) {
     nextPlayerIndex = 0;
@@ -252,8 +252,8 @@ export function toggleRevealed(): void {
   }
 }
 
-// Check if we need to disable the toggleRevealedButton
-// This happens when a newly drawn card is played, discarded, or clued
+// Check if we need to disable the toggleRevealedButton. This happens when a newly drawn card is
+// played, discarded, or clued.
 export function checkToggleRevealedButton(
   actionMessage: ActionIncludingHypothetical,
 ): void {
@@ -301,11 +301,11 @@ export function changeStartingHandVisibility(): void {
   const startingPlayerIndex =
     globals.state.replay.hypothetical?.startingPlayerIndex;
   if (
+    startingPlayerIndex === undefined ||
     startingPlayerIndex === null ||
-    globals.elements.playerHands[startingPlayerIndex!] === undefined ||
-    globals.elements.playerHands[startingPlayerIndex!].children === null
+    globals.elements.playerHands[startingPlayerIndex] === undefined
   ) {
-    // Remove all empathy visibility, no longer in hypo
+    // Remove all empathy visibility, no longer in hypo.
     for (let i = 0; i < globals.elements.playerHands.length; i++) {
       forceHandEmpathy(i, false);
     }
@@ -313,19 +313,21 @@ export function changeStartingHandVisibility(): void {
   }
 
   forceHandEmpathy(
-    startingPlayerIndex!,
+    startingPlayerIndex,
     !globals.state.replay.hypothetical!.showDrawnCards,
   );
 }
 
 function forceHandEmpathy(playerIndex: number, force: boolean) {
-  for (
-    let i = 0;
-    i < globals.elements.playerHands[playerIndex].children?.length;
-    i++
-  ) {
-    const child = globals.elements.playerHands[playerIndex].children[i];
-    const card: HanabiCard = child.children[0] as HanabiCard;
+  const hand = globals.elements.playerHands[playerIndex];
+  if (hand === undefined) {
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
+  for (let i = 0; i < hand.children.length; i++) {
+    const layoutChild = hand.children[i]!;
+    const card = layoutChild.children[0] as HanabiCard;
     setEmpathyOnHand(card, force);
   }
 }

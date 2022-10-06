@@ -1,4 +1,4 @@
-// A collection of miscellaneous functions
+// A collection of miscellaneous functions.
 
 // From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
 export function copyStringToClipboard(str: string): void {
@@ -16,8 +16,6 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   month: "2-digit",
   day: "2-digit",
 });
-
-export const ensureAllCases = (obj: never): never => obj;
 
 export const getRandomNumber = (min: number, max: number): number =>
   Math.floor(Math.random() * (max - min + 1) + min);
@@ -41,7 +39,7 @@ export function isDevWebpack(): boolean {
   return urlParams.has("dev");
 }
 
-// This is a helper to check for empty/invalid HTML elements without worrying about the linter
+// This is a helper to check for empty/invalid HTML elements without worrying about the linter.
 export const isEmpty = (
   value: string | string[] | number | undefined,
 ): boolean => !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
@@ -51,7 +49,7 @@ export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T =>
   p in target;
 
 export function millisecondsToClockString(milliseconds: number): string {
-  // Non timed games measure time in negative values
+  // Non timed games measure time in negative values.
   const time = Math.abs(milliseconds);
   const seconds = Math.ceil(time / 1000);
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
@@ -61,8 +59,8 @@ export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-export function negativeOneIfNull(x: number | null): number {
-  return x === null ? -1 : x;
+export function negativeOneIfNull(x: number | null | undefined): number {
+  return x === null || x === undefined ? -1 : x;
 }
 
 function pad2(num: number) {
@@ -72,43 +70,12 @@ function pad2(num: number) {
   return `${num}`;
 }
 
-/**
- * parseIntSafe is a more reliable version of parseInt. By default, "parseInt('1a')" will return
- * "1", which is unexpected. This returns either an integer or NaN.
- */
-export function parseIntSafe(input: string): number {
-  if (typeof input !== "string") {
-    return NaN;
-  }
-
-  // Remove all leading and trailing whitespace
-  let trimmedInput = input.trim();
-
-  const isNegativeNumber = trimmedInput.startsWith("-");
-  if (isNegativeNumber) {
-    // Remove the leading minus sign before we match the regular expression
-    trimmedInput = trimmedInput.substring(1);
-  }
-
-  if (/^\d+$/.exec(trimmedInput) === null) {
-    // "\d" matches any digit (same as "[0-9]")
-    return NaN;
-  }
-
-  if (isNegativeNumber) {
-    // Add the leading minus sign back
-    trimmedInput = `-${trimmedInput}`;
-  }
-
-  return parseInt(trimmedInput, 10);
-}
-
 export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
   const queryParameters = new URLSearchParams(window.location.search);
   const modifiedQueryParameters = queryParameters
     .toString()
-    // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable
+    // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable.
     .replace(/=&/g, "&")
     .replace(/=$/, "");
 

@@ -1,5 +1,5 @@
 import { getVariant, MAX_CLUE_NUM } from "@hanabi/data";
-import { initArray } from "../../../misc";
+import { initArray } from "../../../utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -44,7 +44,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   variant.suits.forEach((_, suitIndex) => {
     cardStatus[suitIndex] = [];
     variant.ranks.forEach((rank) => {
-      cardStatus[suitIndex][rank] = cardRules.status(
+      cardStatus[suitIndex]![rank] = cardRules.status(
         suitIndex,
         rank,
         [],

@@ -210,15 +210,6 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	if clue.Type == ClueTypeColor {
 		clueColorName := variant.ClueColors[clue.Value]
 
-		if variant.IsSynesthesia() && !suit.NoClueRanks {
-			// In addition to any other matching, match color based on rank.
-			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
-			prismColorName := variant.ClueColors[prismColorIndex]
-			if clueColorName == prismColorName {
-				return true
-			}
-		}
-
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
@@ -228,6 +219,15 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		}
 		if suit.NoClueColors {
 			return false
+		}
+
+		if variant.IsSynesthesia() && !suit.NoClueRanks {
+			// In addition to any other matching, match color based on rank.
+			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
+			prismColorName := variant.ClueColors[prismColorIndex]
+			if clueColorName == prismColorName {
+				return true
+			}
 		}
 
 		if variant.SpecialRank == card.Rank {
@@ -258,19 +258,6 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		if variant.OddsAndEvens {
-			// Clue ranks in Odds and Evens can only be 1 or 2
-			if clue.Value == 1 {
-				return intInSlice(card.Rank, oddClues)
-			}
-			return intInSlice(card.Rank, evenClues)
-		}
-
-		if variant.Funnels {
-			// Rank clues in Funnels touch also all lower ranked cards
-			return card.Rank <= clue.Value
-		}
-
 		if variant.Suits[card.SuitIndex].AllClueRanks {
 			return true
 		}
@@ -292,6 +279,19 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 		}
 
+		if variant.OddsAndEvens {
+			// Clue ranks in Odds and Evens can only be 1 or 2
+			if clue.Value == 1 {
+				return intInSlice(card.Rank, oddClues)
+			}
+			return intInSlice(card.Rank, evenClues)
+		}
+
+		if variant.Funnels {
+			// Rank clues in Funnels touch also all lower ranked cards
+			return card.Rank <= clue.Value
+		}
+
 		return clue.Value == card.Rank
 	}
 
@@ -302,5 +302,6 @@ func variantsIsValidID(id int) bool {
 	if _, ok := variantIDMap[id]; !ok {
 		return false
 	}
+
 	return true
 }

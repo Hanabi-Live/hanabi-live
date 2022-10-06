@@ -19,6 +19,7 @@ export function getClueName(
       return "Moo";
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (clueType === ClueType.Rank) {
       return "Oink";
     }
@@ -39,9 +40,10 @@ export function getClueName(
   }
 
   if (clueType === ClueType.Color) {
-    return variant.clueColors[clueValue].name;
+    return variant.clueColors[clueValue]!.name;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (clueType === ClueType.Rank) {
     return clueValue.toString();
   }
@@ -49,86 +51,84 @@ export function getClueName(
   throw new Error("Invalid clue type.");
 }
 
-// Convert a clue from the format used by the server to the format used by the client
-// On the client, the color is a rich object
-// On the server, the color is a simple integer mapping
+// Convert a clue from the format used by the server to the format used by the client. On the
+// client, the color is a rich object. On the server, the color is a simple integer mapping.
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
-  let clueValue;
   if (msgClue.type === ClueType.Color) {
-    clueValue = variant.clueColors[msgClue.value]; // This is a Color object
+    const clueValue = variant.clueColors[msgClue.value]!; // This is a Color object
     return colorClue(clueValue);
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (msgClue.type === ClueType.Rank) {
-    clueValue = msgClue.value;
+    const clueValue = msgClue.value;
     return rankClue(clueValue);
   }
+
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 }
 
-// This mirrors the function "variantIsCardTouched()" in "variants.go"
+// This mirrors the function "variantIsCardTouched()" in "variants.go".
 export function touchesCard(
   variant: Variant,
   clue: Clue,
   suitIndex: number,
   rank: number,
 ): boolean {
-  const suit = variant.suits[suitIndex];
+  const suit = variant.suits[suitIndex]!;
 
   if (clue.type === ClueType.Color) {
     if (variant.colorCluesTouchNothing) {
       return false;
     }
 
-    if (variantRules.isSynesthesia(variant) && !suit.noClueRanks) {
-      // A card matches if it would match a prism card, in addition to normal color matches.
-      const prismColorIndex = (rank - 1) % variant.clueColors.length;
-      const prismColorName = variant.clueColors[prismColorIndex].name;
-      if (clue.value.name === prismColorName) {
-        return true;
-      }
-    }
-
     if (suit.allClueColors) {
       return true;
     }
+
     if (suit.noClueColors) {
       return false;
+    }
+
+    if (variantRules.isSynesthesia(variant) && !suit.noClueRanks) {
+      // A card matches if it would match a prism card, in addition to normal color matches.
+      const prismColorIndex = (rank - 1) % variant.clueColors.length;
+      const prismColorName = variant.clueColors[prismColorIndex]!.name;
+      if (clue.value.name === prismColorName) {
+        return true;
+      }
     }
 
     if (rank === variant.specialRank) {
       if (variant.specialAllClueColors) {
         return true;
       }
+
       if (variant.specialNoClueColors) {
         return false;
       }
     }
 
     if (suit.prism) {
-      // The color that touches a prism card is contingent upon the card's rank
+      // The color that touches a prism card is contingent upon the card's rank.
       let prismColorIndex = (rank - 1) % variant.clueColors.length;
+
+      // "START" cards count as rank 0, so they are touched by the final color.
       if (rank === START_CARD_RANK) {
-        // "START" cards count as rank 0, so they are touched by the final color
         prismColorIndex = variant.clueColors.length - 1;
       }
-      const prismColorName = variant.clueColors[prismColorIndex].name;
-      return clue.value.name === prismColorName;
+
+      const prismColor = variant.clueColors[prismColorIndex]!;
+      return clue.value.name === prismColor.name;
     }
 
     return suit.clueColors.map((c) => c.name).includes(clue.value.name);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (clue.type === ClueType.Rank) {
     if (variant.rankCluesTouchNothing) {
       return false;
-    }
-
-    if (variant.oddsAndEvens) {
-      // Clue ranks in Odds and Evens can only be 1 or 2
-      if (clue.value === 1) {
-        return [1, 3, 5].includes(rank);
-      }
-      return [2, 4].includes(rank);
     }
 
     if (variant.funnels) {
@@ -144,15 +144,26 @@ export function touchesCard(
       return false;
     }
 
+    // Clue ranks in Odds And Evens can only be 1 or 2.
+    if (variant.oddsAndEvens) {
+      if (clue.value === 1) {
+        return [1, 3, 5].includes(rank);
+      }
+
+      return [2, 4].includes(rank);
+    }
+
     if (rank === variant.specialRank) {
       if (variant.specialAllClueRanks) {
         return true;
       }
+
       if (variant.specialNoClueRanks) {
         return false;
       }
+
+      // The rank that touches a deceptive card is contingent upon the card's suit.
       if (variant.specialDeceptive) {
-        // The rank that touches a deceptive card is contingent upon the card's suit
         const deceptiveRank =
           variant.clueRanks[suitIndex % variant.clueRanks.length];
         return clue.value === deceptiveRank;

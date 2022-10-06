@@ -22,7 +22,7 @@ export default function getSoundType(
 ): SoundType {
   const variant = getVariant(metadata.options.variantName);
 
-  // In some variants, failed plays are treated as normal plays
+  // In some variants, failed plays are treated as normal plays.
   let action = originalAction;
   if (
     action.type === "discard" &&
@@ -56,6 +56,7 @@ export default function getSoundType(
           return SoundType.Moo;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (action.clue.type === ClueType.Rank) {
           return SoundType.Oink;
         }
@@ -86,20 +87,20 @@ export default function getSoundType(
         return SoundType.Sad;
       }
 
-      const discardedCard = originalState.deck[action.order];
+      const discardedCard = originalState.deck[action.order]!;
       const touched = cardRules.isClued(discardedCard);
       if (touched) {
         return SoundType.DiscardClued;
       }
 
-      const nextPlayerHand = currentState.hands[action.playerIndex];
+      const nextPlayerHand = currentState.hands[action.playerIndex]!;
       if (
         originalState.stats.doubleDiscard !== null &&
         !metadata.hardVariant &&
         !handRules.isLocked(nextPlayerHand, currentState.deck)
       ) {
         const previouslyDiscardedCard =
-          originalState.deck[originalState.stats.doubleDiscard];
+          originalState.deck[originalState.stats.doubleDiscard]!;
         if (
           cardRules.canPossiblyBeFromCluesOnly(
             discardedCard,
@@ -107,13 +108,13 @@ export default function getSoundType(
             previouslyDiscardedCard.rank,
           )
         ) {
-          // A player has discarded *in* a double discard situation
+          // A player has discarded *in* a double discard situation.
           return SoundType.DoubleDiscard;
         }
       }
 
       if (stats.doubleDiscard !== null && !metadata.hardVariant) {
-        // A player has discarded to *cause* a double discard situation
+        // A player has discarded to *cause* a double discard situation.
         return SoundType.DoubleDiscardCause;
       }
 
@@ -140,7 +141,7 @@ export default function getSoundType(
         return SoundType.Sad;
       }
 
-      const touched = cardRules.isClued(currentState.deck[action.order]);
+      const touched = cardRules.isClued(currentState.deck[action.order]!);
       if (!touched) {
         if (stats.soundTypeForLastAction === SoundType.Blind1) {
           return SoundType.Blind2;
@@ -187,63 +188,64 @@ function isOrderChopMove(
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
 
-  // Don't bother trying to see if this is an Order Chop Move in an "Up or Down" variant,
-  // as the logic for that is more complicated
+  // Don't bother trying to see if this is an Order Chop Move in an "Up or Down" variant, as the
+  // logic for that is more complicated.
   if (variantRules.isUpOrDown(variant)) {
     return false;
   }
 
-  const playedCard = originalState.deck[action.order];
+  const playedCard = originalState.deck[action.order]!;
   if (!isCandidateOneForOCM(playedCard)) {
     return false;
   }
 
-  // Get the number of 1's left to play on the stacks
+  // Get the number of 1's left to play on the stacks.
   let numOnesLeftToPlay = 0;
   for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i];
+    const suit = variant.suits[i]!;
     if (suit.reversed) {
       continue;
     }
-    const playStack = currentState.playStacks[i];
+
+    const playStack = currentState.playStacks[i]!;
     if (playStack.length === 0) {
-      numOnesLeftToPlay += 1;
+      numOnesLeftToPlay++;
     }
   }
 
-  // We can't Order Chop Move if all of the 1s are played or there is only one 1 left to be played
+  // We can't Order Chop Move if all of the 1s are played or there is only one 1 left to be played.
   if (numOnesLeftToPlay === 0 || numOnesLeftToPlay === 1) {
     return false;
   }
 
-  // Find out if there are any other candidate 1s in the hand
-  const playerHand = originalState.hands[action.playerIndex];
+  // Find out if there are any other candidate 1s in the hand.
+  const playerHand = originalState.hands[action.playerIndex]!;
   const candidateCards: CardState[] = [];
   for (const order of playerHand) {
     if (order === action.order) {
-      // Skip the card that we already played
+      // Skip the card that we already played.
       continue;
     }
 
-    const card = originalState.deck[order];
+    const card = originalState.deck[order]!;
     if (isCandidateOneForOCM(card)) {
       candidateCards.push(card);
     }
   }
 
-  // We can't Order Chop Move if there are no other candidate 1s in the hand
+  // We can't Order Chop Move if there are no other candidate 1s in the hand.
   if (candidateCards.length === 0) {
     return false;
   }
 
-  // Find the card that should have precedence to be played
+  // Find the card that should have precedence to be played.
   candidateCards.push(playedCard);
 
-  // Playing Multiple 1's - The Fresh 1's Rule (Part 2)
-  // Find out if there are any "fresh" 1s (e.g. 1s that were not dealt to the starting hand)
+  // Playing Multiple 1's - The Fresh 1's Rule (Part 2). Find out if there are any "fresh" 1s (e.g.
+  // 1s that were not dealt to the starting hand).
   const freshCards = candidateCards.filter((card) => !card.dealtToStartingHand);
   if (freshCards.length > 0) {
-    // Find the newest 1
+    // Find the newest 1.
     let newestOneOrder = -1;
     for (const card of freshCards) {
       if (card.order > newestOneOrder) {
@@ -252,8 +254,8 @@ function isOrderChopMove(
     }
 
     // Find out if the clue that touched the newest 1 also touched a 1 that was on chop at the same
-    // time
-    const newestOne = originalState.deck[newestOneOrder];
+    // time.
+    const newestOne = originalState.deck[newestOneOrder]!;
     const startingHandCards = candidateCards.filter(
       (card) => card.dealtToStartingHand,
     );
@@ -262,18 +264,17 @@ function isOrderChopMove(
         startingHandCard.segmentFirstClued === newestOne.segmentFirstClued &&
         startingHandCard.firstCluedWhileOnChop === true
       ) {
-        // Playing Multiple 1's - The Chop Focus Exception (Part 3)
-        // They were clued at the same time and the card in the starting was on chop,
-        // so the Chop Focus Exception applies
+        // Playing Multiple 1's - The Chop Focus Exception (Part 3). They were clued at the same
+        // time and the card in the starting was on chop, so the Chop Focus Exception applies.
         return startingHandCard.order !== action.order;
       }
     }
 
-    // The Fresh 1's Rule applies
+    // The Fresh 1's Rule applies.
     return newestOneOrder !== action.order;
   }
 
-  // All of the 1s were dealt to the starting hand, so the oldest 1 has precedence
+  // All of the 1s were dealt to the starting hand, so the oldest 1 has precedence.
   let lowestOrder = 999;
   for (const card of candidateCards) {
     if (card.order < lowestOrder) {
@@ -287,8 +288,8 @@ const isCandidateOneForOCM = (card: CardState) =>
   // Order Chop Moves are only performed when a player plays a card that they think is a 1
   // (e.g. a card having a positive rank 1 clue on it)
   card.positiveRankClues.includes(1) &&
-  // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example
+  // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example.
   card.positiveRankClues.length === 1 &&
-  // It is technically possible to perform an Order Chop Move with two 1s that have an equal
-  // number of positive color clues on them, but ignore this for simplicity
+  // It is technically possible to perform an Order Chop Move with two 1s that have an equal number
+  // of positive color clues on them, but ignore this for simplicity.
   card.positiveColorClues.length === 0;

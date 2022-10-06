@@ -15,7 +15,7 @@ export function checkNoteImpossibility(
     return;
   }
 
-  // Prevent players from accidentally mixing up which stack base is which
+  // Prevent players from accidentally mixing up which stack base is which.
   if (
     cardState.rank === STACK_BASE_RANK &&
     possibilities.every((possibility) => possibility[0] !== cardState.suitIndex)
@@ -26,7 +26,7 @@ export function checkNoteImpossibility(
     return;
   }
 
-  // Only validate cards in our own hand
+  // Only validate cards in our own hand.
   if (
     !(cardState.location === globals.metadata.ourPlayerIndex) ||
     possibilities.some((possibility) =>
@@ -36,9 +36,9 @@ export function checkNoteImpossibility(
     return;
   }
 
-  // We have specified a list of identities where none are possible
+  // We have specified a list of identities where none are possible.
   const impossibilities = Array.from(possibilities, ([suitIndex, rank]) => {
-    const suitName = variant.suits[suitIndex].displayName;
+    const suitName = variant.suits[suitIndex]!.displayName;
     const impossibleSuit = suitName.toLowerCase();
     const impossibleRank = rank === START_CARD_RANK ? "START" : rank.toString();
     return `${impossibleSuit} ${impossibleRank}`;
@@ -75,7 +75,7 @@ export function getSuitIndexFromNote(
 ): number | null {
   if (note.possibilities.length !== 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
-    const [candidateSuitIndex] = possibilities[0];
+    const [candidateSuitIndex] = possibilities[0]!;
     if (
       possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
     ) {
@@ -91,7 +91,7 @@ export function getRankFromNote(
 ): number | null {
   if (note.possibilities.length !== 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
-    const candidateRank = possibilities[0][1];
+    const candidateRank = possibilities[0]![1];
     if (possibilities.every((card) => card[1] === candidateRank)) {
       return candidateRank;
     }

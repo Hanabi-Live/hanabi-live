@@ -119,12 +119,20 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 		}
 	}
 
+	// Check for command handler
+	if !chatCommandShouldOutput(ctx, s, d, nil) { // We pass nil because there is no associated table
+		return
+	}
+
+	// Fill mentions
+	msg := chatFillAll(html.EscapeString(d.Msg))
+
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
 		sessionList := sessions.GetList()
 		for _, s2 := range sessionList {
 			s2.Emit("chat", &ChatMessage{
-				Msg:       d.Msg,
+				Msg:       msg,
 				Who:       d.Username,
 				Discord:   d.Discord,
 				Server:    d.Server,
@@ -144,8 +152,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 
 		// Some messages are also sent to website-development
 		if sendMessageToWebDevChannel {
-			discordSend(discordChannelWebsiteDev, d.Username, rawMsg)
 			sendMessageToWebDevChannel = false
+			discordSend(discordChannelWebsiteDev, d.Username, rawMsg)
 		}
 	}
 

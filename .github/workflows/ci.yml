@@ -8,23 +8,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
+          cache: "yarn"
 
       - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: client-build-cache
         with:
           path: node_modules
-          key: client-build-node-modules-${{ hashFiles('package-lock.json') }}
+          key: client-build-node-modules-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-build-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Build the TypeScript code
         run: bash ./packages/client/build_client.sh
@@ -34,58 +35,60 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
+          cache: "yarn"
 
       - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: client-lint-cache
         with:
           path: node_modules
-          key: client-lint-node-modules-${{ hashFiles('package-lock.json') }}
+          key: client-lint-node-modules-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-lint-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
 
       - name: Lint the TypeScript code
-        run: bash ./packages/client/lint_client.sh
+        run: bash ./packages/lint_client.sh
 
   client_test:
     name: Client - Test (Jest)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
+          cache: "yarn"
 
       - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: client-test-cache
         with:
           path: node_modules
-          key: client-test-node-modules-${{ hashFiles('package-lock.json') }}
+          key: client-test-node-modules-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-test-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
 
       - name: Test the TypeScript code
-        run: npm test
+        run: yarn test
 
   server_build:
     name: Server - Build (Compile Go)
@@ -94,7 +97,7 @@ jobs:
       working-directory: ./server
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Golang
         uses: actions/setup-go@v2
@@ -110,46 +113,43 @@ jobs:
       working-directory: ./server
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Golang
         uses: actions/setup-go@v2
 
-      - name: Lint the Golang code
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.33
-          working-directory: ${{ env.working-directory }}/src
+      #- name: Lint the Golang code
+      #  uses: golangci/golangci-lint-action@v2
+      #  with:
+      #    version: v1.33
+      #    working-directory: ${{ env.working-directory }}/src
 
   spell_check:
     name: Spell Check
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./spell_check
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
+          cache: "yarn"
 
       - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: spell-check-cache
         with:
           path: ${{ env.working-directory }}/node_modules
-          key: spell-check-node-modules-${{ hashFiles('spell_check/package-lock.json') }}
+          key: spell-check-node-modules-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.spell-check-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ env.working-directory }}
+        run: yarn install --frozen-lockfile
 
-      - name: Spell check both client and server code
+      - name: Spell check the entire repository
         run: bash spell_check.sh
-        working-directory: ${{ env.working-directory }}
 
   discord:
     name: Discord Failure Notification
@@ -162,7 +162,7 @@ jobs:
         server_lint,
         spell_check,
       ]
-    if: always() # This is needed to always run this job, even if the other jobs fail
+    if: always() # This is needed to always run this job, even if the other jobs fail.
     runs-on: ubuntu-latest
     steps:
       - uses: technote-space/workflow-conclusion-action@v2

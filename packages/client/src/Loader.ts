@@ -1,8 +1,8 @@
 type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;
 
-// The list of all game-related images to preload
-// All of these files should have a ".png" extension
+// The list of all game-related images to preload. All of these files should have a ".png"
+// extension.
 const fileIDs = [
   "checkbox-on",
   "checkbox-off",
@@ -43,11 +43,11 @@ export default class Loader {
   finishedCallback: FinishedCallback | null = null;
 
   constructor() {
-    // Build a map of image identifiers to URL paths
+    // Build a map of image identifiers to URL paths.
     for (const fileID of fileIDs) {
       this.filePathMap.set(fileID, `/public/img/${fileID}.png`);
     }
-    // This is the only file with a non ".png" extension
+    // This is the only file with a non ".png" extension.
     this.filePathMap.set("background", "/public/img/background.jpg");
 
     this.start();
@@ -57,7 +57,7 @@ export default class Loader {
     for (const [fileID, filePath] of this.filePathMap.entries()) {
       const img = new Image();
       img.onload = () => {
-        this.numLoaded += 1;
+        this.numLoaded++;
         this.progress();
         if (this.numLoaded === this.filePathMap.size) {
           this.finished = true;

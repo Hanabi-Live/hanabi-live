@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
-	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/gabstv/melody v1.0.2
 	github.com/getsentry/sentry-go v0.12.0
@@ -13,9 +12,6 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/go-github/v29 v29.0.3 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jackc/pgx/v4 v4.14.1
@@ -36,6 +32,5 @@ require (
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

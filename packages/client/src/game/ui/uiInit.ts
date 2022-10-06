@@ -6,9 +6,8 @@ import drawUI from "./drawUI";
 import globals from "./globals";
 import * as keyboard from "./keyboard";
 
-// When the HanabiUI object is instantiated,
-// we do not know how many players are in the game or what the variant is
-// Now that the server has sent us that information, we can initialize the UI
+// When the HanabiUI object is instantiated, we do not know how many players are in the game or what
+// the variant is. Now that the server has sent us that information, we can initialize the UI.
 export default function uiInit(): void {
   if (globals.lobby.imageLoader === null) {
     throw new Error(
@@ -16,25 +15,25 @@ export default function uiInit(): void {
     );
   }
 
-  // Once the initial page (e.g. the login screen / lobby) is finished loading and ready,
-  // all of the images relating to the game screen start to get pre-loaded by the "Loader" class
-  // Copy the reference to the existing "Loader" object to our UI globals (for convenience)
+  // Once the initial page (e.g. the login screen / lobby) is finished loading and ready, all of the
+  // images relating to the game screen start to get pre-loaded by the "Loader" class. Copy the
+  // reference to the existing "Loader" object to our UI globals (for convenience).
   globals.imageLoader = globals.lobby.imageLoader;
 
   if (globals.imageLoader.finished) {
     // The user has spent enough time in the lobby before joining a game such that all of the
-    // game-related images have had time to fully download
-    // This means we do not have to show the loading screen; skip directly to the next step
+    // game-related images have had time to fully download. This means we do not have to show the
+    // loading screen; skip directly to the next step.
     finishedDownloadingImages();
     return;
   }
 
-  // We have joined a game very soon after reaching the lobby,
-  // so there has not been enough time for all of the game-related images to be downloaded
-  // Show the loading screen so that the user can see how many images are left to download
+  // We have joined a game very soon after reaching the lobby, so there has not been enough time for
+  // all of the game-related images to be downloaded. Show the loading screen so that the user can
+  // see how many images are left to download.
 
-  // The Loader object was not instantiated without a progress callback or a finished callback,
-  // so attach those now
+  // The Loader object was not instantiated without a progress callback or a finished callback, so
+  // attach those now.
   globals.imageLoader.progressCallback = (done: number, total: number) => {
     progressLabel.text(`${done}/${total}`);
     loadingLayer.batchDraw();
@@ -45,7 +44,7 @@ export default function uiInit(): void {
   const winW = globals.stage.width();
   const winH = globals.stage.height();
 
-  // Draw the loading screen
+  // Draw the loading screen.
   const loadingLayer = new Konva.Layer({
     listening: false,
   });
@@ -88,9 +87,8 @@ export default function uiInit(): void {
 }
 
 function finishedDownloadingImages() {
-  // Build images for every card
-  // (with respect to the variant that we are playing
-  // and whether or not we have the colorblind UI feature enabled)
+  // Build images for every card (with respect to the variant that we are playing and whether or not
+  // we have the colorblind UI feature enabled).
   globals.cardImages = drawCards(
     globals.variant,
     globals.lobby.settings.colorblindMode,
@@ -101,14 +99,14 @@ function finishedDownloadingImages() {
     drawCardsBrowser.saveCanvas,
   );
 
-  // Draw the user interface
+  // Draw the user interface.
   drawUI();
 
-  // Keyboard hotkeys can only be initialized once the clue buttons are drawn
+  // Keyboard hotkeys can only be initialized once the clue buttons are drawn.
   keyboard.init();
 
-  // Tell the server that we are finished loading the UI and
-  // we now need the specific actions that have taken place in this game so far
+  // Tell the server that we are finished loading the UI and we now need the specific actions that
+  // have taken place in this game so far.
   globals.lobby.conn!.send("getGameInfo2", {
     tableID: globals.lobby.tableID,
   });

@@ -1,10 +1,10 @@
 import {
   ALL_RESERVED_NOTES,
   MAX_RANK,
+  parseIntSafe,
   START_CARD_RANK,
   Variant,
 } from "@hanabi/data";
-import { parseIntSafe } from "../../misc";
 import CardIdentity from "../types/CardIdentity";
 
 interface CardIdentities {
@@ -44,8 +44,8 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
     variant.identityNotePattern.toLowerCase(),
   ).exec(keyword.toLowerCase());
 
-  let suitIndex = null;
-  let rank = null;
+  let suitIndex: number | null = null;
+  let rank: number | null = null;
   if (identityMatch !== null) {
     const suitText = extractSuitText(identityMatch);
     if (suitText !== null) {
@@ -62,8 +62,8 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
-  let suitIndex = null;
-  let rank = null;
+  let suitIndex: number | null = null;
+  let rank: number | null = null;
   if (identityMatch !== null) {
     const squishText = extractSquishText(identityMatch);
     const suitIndices: number[] = [];
@@ -74,6 +74,7 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
         rank = parseRank(letter);
         if (suitIndex !== null) {
           suitIndices.push(suitIndex);
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (rank !== null) {
           ranks.push(rank);
         }
@@ -117,9 +118,9 @@ function range(
 function identityMapToArray(cardMap: number[][]) {
   const possibilities: Array<[number, number]> = [];
   for (let rank = 1; rank <= cardMap.length; rank++) {
-    for (let suitIndex = 0; suitIndex < cardMap[0].length; suitIndex++) {
+    for (let suitIndex = 0; suitIndex < cardMap[0]!.length; suitIndex++) {
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (cardMap[rank - 1][suitIndex]) {
+      if (cardMap[rank - 1]![suitIndex]) {
         possibilities.push([suitIndex, rank]);
       }
     }
@@ -143,8 +144,8 @@ function getPossibilitiesFromKeyword(
   variant: Variant,
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
-  const positiveIdentities = []; // Any combination of suits and ranks
-  const negativeIdentities = []; // Any negative cluing `!r1` `!3`
+  const positiveIdentities: CardIdentities[] = []; // Any combination of suits and ranks
+  const negativeIdentities: CardIdentities[] = []; // Any negative cluing `!r1` `!3`
   for (const substring of keywordPreTrim.split(",")) {
     const trimmed = substring.trim();
     const negative = trimmed.startsWith("!");
@@ -159,7 +160,7 @@ function getPossibilitiesFromKeyword(
     }
   }
 
-  // Start with all 1's if no positive info, else all 0's
+  // Start with all 1's if no positive info, else all 0's.
   const identityMap: number[][] = [];
   const positiveRanks = new Set(
     positiveIdentities.length > 0 ? [] : variant.ranks,
@@ -171,7 +172,7 @@ function getPossibilitiesFromKeyword(
     );
   }
 
-  // Then add positive items and remove all negatives
+  // Then add positive items and remove all negatives.
   for (const identities of [positiveIdentities, negativeIdentities]) {
     const negative = identities === negativeIdentities;
     for (const identity of identities) {
@@ -182,7 +183,7 @@ function getPossibilitiesFromKeyword(
             ? identity.suitIndices
             : range(variant.suits.length);
         for (const suitIndex of suitIndices) {
-          identityMap[rank - 1][suitIndex] = negative ? 0 : 1;
+          identityMap[rank - 1]![suitIndex] = negative ? 0 : 1;
         }
       }
     }
@@ -191,14 +192,15 @@ function getPossibilitiesFromKeyword(
   return identityMapToArray(identityMap);
 }
 
-// Examines a whole note and for each keyword that declares card possibilities, merges them into one list.
+// Examines a whole note and for each keyword that declares card possibilities, merges them into one
+// list.
 export function getPossibilitiesFromKeywords(
   variant: Variant,
   keywords: string[],
 ): Array<[number, number]> {
   let possibilities: Array<[number, number]> = [];
 
-  // Empty keyword list returns all possibilities
+  // Empty keyword list returns all possibilities.
   for (const keyword of keywords.length > 0 ? keywords : [""]) {
     const newPossibilities = getPossibilitiesFromKeyword(variant, keyword);
     if (newPossibilities === null) {
@@ -213,8 +215,8 @@ export function getPossibilitiesFromKeywords(
       ),
     );
 
-    // If this new term completely conflicts with the previous terms, then reset our state to
-    // just the new term
+    // If this new term completely conflicts with the previous terms, then reset our state to just
+    // the new term.
     possibilities = intersection.length === 0 ? newPossibilities : intersection;
   }
 
@@ -230,8 +232,8 @@ const extractRankText = (match: RegExpMatchArray) =>
 const extractSquishText = (match: RegExpMatchArray) => {
   const text = match[7]?.trim();
 
-  if (ALL_RESERVED_NOTES.indexOf(text) === -1) {
-    return text ?? null;
+  if (text !== undefined && !ALL_RESERVED_NOTES.includes(text)) {
+    return text;
   }
 
   return null;

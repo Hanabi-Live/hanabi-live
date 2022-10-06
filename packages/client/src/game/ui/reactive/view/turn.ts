@@ -1,4 +1,4 @@
-import { ensureAllCases } from "../../../../misc";
+import { ensureAllCases } from "@hanabi/data";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as variantRules from "../../../rules/variant";
 import ClueType from "../../../types/ClueType";
@@ -30,7 +30,7 @@ export function shouldShowTurnUIChanged(shouldShow: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-// Fade the clue UI if there is not a clue available
+// Fade the clue UI if there is not a clue available.
 export const shouldIndicateNoClues = (state: State): boolean =>
   shouldShowTurnUI(state) &&
   state.visibleState!.clueTokens <
@@ -55,7 +55,7 @@ export function shouldEnableBottomDeckBlindPlayChanged(
   globals.elements.deckPlayAvailableLabel!.visible(shouldEnable);
 
   if (shouldEnable) {
-    // Ensure the deck is above other cards and UI elements
+    // Ensure the deck is above other cards and UI elements.
     globals.elements.deck!.moveToTop();
   }
 }
@@ -73,7 +73,7 @@ export function onLastClueTypeChanged(lastClueType: ClueType | null): void {
     }
   }
 
-  // Hide some specific clue buttons in certain variants with clue restrictions
+  // Hide some specific clue buttons in certain variants with clue restrictions.
   if (variantRules.isAlternatingClues(globals.variant)) {
     switch (lastClueType) {
       case null: {

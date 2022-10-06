@@ -1,6 +1,6 @@
-// This function draws the UI when going into a game for the first time
+// This function draws the UI when going into a game for the first time.
 
-import { STACK_BASE_RANK } from "@hanabi/data";
+import { STACK_BASE_RANK, Suit } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -53,15 +53,14 @@ interface Values {
   h?: number;
 }
 
-// Variables
 let winW: number;
 let winH: number;
 let basicTextLabel: Konva.Text;
 let basicNumberLabel: Konva.Text;
 let actionLogValues: Values;
 let playAreaValues: Values;
-let cardWidth;
-let cardHeight;
+let cardWidth: number;
+let cardHeight: number;
 let bottomLeftButtonValues: Values;
 let deckValues: Values;
 let scoreAreaValues: Values;
@@ -76,17 +75,17 @@ export default function drawUI(): void {
   winW = globals.stage.width();
   winH = globals.stage.height();
 
-  // Create the various Konva layers upon which all graphic elements reside
+  // Create the various Konva layers upon which all graphic elements reside.
   drawBackground();
 
-  // We can reuse some UI elements
+  // We can reuse some UI elements.
   initReusableObjects();
 
-  // The top-left
+  // The top-left.
   drawActionLog();
   drawPlayStacks();
 
-  // The bottom-left
+  // The bottom-left.
   drawBottomLeftButtons();
   drawDeck();
   drawScoreArea();
@@ -94,16 +93,16 @@ export default function drawUI(): void {
   drawSharedReplay();
   drawYourTurn();
 
-  // The middle column
+  // The middle column.
   drawHands(winW, winH);
 
-  // The right column
+  // The right column.
   drawClueLog();
   drawStatistics();
   drawDiscardArea();
   drawDiscardStacks();
 
-  // Conditional elements
+  // Conditional elements.
   drawArrows();
   drawTimers();
   drawClueArea();
@@ -112,9 +111,10 @@ export default function drawUI(): void {
   drawReplayArea(winW, winH);
   drawHypotheticalArea();
   drawPauseArea();
+  drawRestartArea();
   drawExtraAnimations();
 
-  // Just in case, delete all existing layers
+  // Just in case, delete all existing layers.
   globals.stage.getLayers().each((layer) => {
     layer.remove();
   });
@@ -137,7 +137,7 @@ export function setSkullNormal(): void {
 }
 
 function drawBackground() {
-  // Draw a green background behind everything
+  // Draw a green background behind everything.
   const background = new Konva.Image({
     x: 0,
     y: 0,
@@ -152,8 +152,8 @@ function drawBackground() {
 
   globals.layers.UI.add(background);
 
-  // The dark overlay that appears when you click the action log is clicked,
-  // when a player's name is clicked, when the game is paused, etc.
+  // The dark overlay that appears when you click the action log is clicked, when a player's name is
+  // clicked, when the game is paused, etc.
   globals.elements.stageFade = new Konva.Rect({
     x: 0,
     y: 0,
@@ -168,7 +168,7 @@ function drawBackground() {
 }
 
 function initReusableObjects() {
-  // Create some default objects
+  // Create some default objects.
   basicTextLabel = new Konva.Text({
     x: 0.01 * winW,
     y: 0.01 * winH,
@@ -217,7 +217,7 @@ function drawActionLog() {
   });
   globals.layers.UI.add(actionLogGroup);
 
-  // The faded rectangle around the action log
+  // The faded rectangle around the action log.
   const actionLogRect = new Konva.Rect({
     x: 0,
     y: 0,
@@ -270,7 +270,7 @@ function drawActionLog() {
   );
   actionLogGroup.add(globals.elements.actionLog as unknown as Konva.Group);
 
-  // The full action log (that appears when you click on the action log)
+  // The full action log (that appears when you click on the action log).
   globals.elements.fullActionLog = new FullActionLog(winW, winH);
   globals.layers.UI2.add(
     globals.elements.fullActionLog as unknown as Konva.Group,
@@ -278,15 +278,14 @@ function drawActionLog() {
 }
 
 function drawPlayStacks() {
-  // Local variables
-  let yOffset;
+  let yOffset: number;
 
   if (globals.variant.suits.length === 6 || globals.variant.showSuitNames) {
     cardWidth = 0.06;
     cardHeight = 0.151;
     yOffset = 0.019;
   } else {
-    // 3, 4, or 5 stacks
+    // 3, 4, or 5 stacks.
     cardWidth = 0.075;
     cardHeight = 0.189;
     yOffset = 0;
@@ -315,8 +314,8 @@ function drawPlayStacks() {
   playStackValues.w +=
     playStackValues.spacing * (globals.variant.suits.length - 1);
 
-  // Variants with less than 5 stacks will be left-aligned instead of centered
-  // unless we manually adjust them
+  // Variants with less than 5 stacks will be left-aligned instead of centered unless we manually
+  // adjust them.
   if (
     (globals.variant.suits.length === 4 && !globals.variant.showSuitNames) ||
     (globals.variant.suits.length === 5 &&
@@ -341,8 +340,8 @@ function drawPlayStacks() {
     playStackValues.x += (cardWidth + playStackValues.spacing) * 1.5;
   }
 
-  // Make the invisible "hole" play stack for "Throw It in a Hole" variants
-  // (centered in the middle of the rest of the stacks)
+  // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
+  // of the rest of the stacks).
   if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
     const playStackX =
       playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
@@ -358,9 +357,9 @@ function drawPlayStacks() {
   }
 
   for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i];
+    const suit = globals.variant.suits[i]!;
 
-    // Make the play stack for this suit
+    // Make the play stack for this suit.
     const playStackX =
       playStackValues.x + (cardWidth + playStackValues.spacing) * i;
     const playStack = new PlayStack({
@@ -373,9 +372,9 @@ function drawPlayStacks() {
     globals.elements.playStacks.set(suit, playStack);
     globals.layers.card.add(playStack as unknown as Konva.Group);
 
-    // Add the stack base to the play stack
+    // Add the stack base to the play stack.
     const order = deck.totalCards(globals.variant) + i;
-    // Stack bases use card orders after the final card in the deck
+    // Stack bases use card orders after the final card in the deck.
     const stackBase = new HanabiCard(
       order,
       i,
@@ -386,8 +385,7 @@ function drawPlayStacks() {
 
     playStack.addChild(stackBase.layout);
 
-    // Draw the suit name next to each suit
-    // (a text description of the suit)
+    // Draw the suit name next to each suit (a text description of the suit).
     if (globals.variant.showSuitNames) {
       let text = suit.displayName;
       if (
@@ -424,8 +422,8 @@ function drawPlayStacks() {
     }
   }
 
-  // This is the invisible rectangle that players drag cards to in order to play them
-  // Make it a little big bigger than the stacks
+  // This is the invisible rectangle that players drag cards to in order to play them. Make it a
+  // little big bigger than the stacks.
   const overlap = 0.03;
   let w = cardWidth * globals.variant.suits.length;
   w += playStackValues.spacing * (globals.variant.suits.length - 1);
@@ -445,19 +443,18 @@ function drawPlayStacks() {
 }
 
 function drawDiscardStacks() {
-  // Local variables
-  let discardStackSpacing;
+  let discardStackSpacing: number;
   if (globals.variant.suits.length === 6) {
     discardStackSpacing = 0.038;
   } else {
-    // 3, 4, or 5 stacks
+    // 3, 4, or 5 stacks.
     discardStackSpacing = 0.047;
   }
 
   for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i];
+    const suit = globals.variant.suits[i]!;
 
-    // Make the discard stack for this suit
+    // Make the discard stack for this suit.
     const discardStack = new CardLayout({
       x: 0.81 * winW,
       y: (0.64 + discardStackSpacing * i) * winH,
@@ -478,7 +475,7 @@ function drawBottomLeftButtons() {
     h: 0.0563,
   };
 
-  // The toggle in-game replay button
+  // The toggle in-game replay button.
   const replayButton = new Button(
     {
       x: bottomLeftButtonValues.x * winW,
@@ -503,8 +500,7 @@ function drawBottomLeftButtons() {
   konvaTooltips.init(replayButton, true, false);
   globals.elements.replayButton = replayButton;
 
-  // The restart button
-  // (to go into a new game with the same settings as the current shared replay)
+  // The restart button (to go into a new game with the same settings as the current shared replay).
   const restartButton = new Button({
     x: bottomLeftButtonValues.x * winW,
     y: bottomLeftButtonValues.y * winH,
@@ -517,13 +513,15 @@ function drawBottomLeftButtons() {
   restartButton.on("click tap", () => {
     if (
       globals.options.speedrun ||
-      debug.amTestUser(globals.metadata.ourUsername) ||
-      globals.lobby.totalGames >= 1000 ||
-      window.confirm("Are you sure you want to restart the game?")
+      debug.amTestUser(globals.metadata.ourUsername)
     ) {
       globals.lobby.conn!.send("tableRestart", {
         tableID: globals.lobby.tableID,
+        hidePregame: true,
       });
+    } else {
+      globals.elements.restartArea?.visible(true);
+      globals.layers.UI2.batchDraw();
     }
   });
   restartButton.tooltipName = "restart";
@@ -532,7 +530,7 @@ function drawBottomLeftButtons() {
   konvaTooltips.init(restartButton, true, false);
   globals.elements.restartButton = restartButton;
 
-  // The chat button
+  // The chat button.
   const chatButton = new Button({
     x: bottomLeftButtonValues.x * winW,
     y: (bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01) * winH,
@@ -550,7 +548,7 @@ function drawBottomLeftButtons() {
   konvaTooltips.init(chatButton, true, false);
   globals.elements.chatButton = chatButton;
 
-  // The lobby button (which takes the user back to the lobby)
+  // The lobby button (which takes the user back to the lobby).
   const lobbyButtonValues = {
     x: bottomLeftButtonValues.x,
     y: bottomLeftButtonValues.y + 2 * bottomLeftButtonValues.h! + 0.02,
@@ -579,8 +577,8 @@ function drawDeck() {
     h: 0.189,
   };
 
-  // This is the faded rectangle that is hidden until all of the deck has been depleted
-  // (this has to be separate from the Deck object since it exists on a separate layer)
+  // This is the faded rectangle that is hidden until all of the deck has been depleted. (This has
+  // to be separate from the Deck object since it exists on a separate layer.)
   const deckRect = new RectWithTooltip({
     x: deckValues.x * winW,
     y: deckValues.y * winH,
@@ -593,8 +591,8 @@ function drawDeck() {
   });
   globals.layers.UI.add(deckRect);
 
-  // Near the top of the deck, draw the database ID for the respective game
-  // (in an ongoing game, this will not show)
+  // Near the top of the deck, draw the database ID for the respective game. (In an ongoing game,
+  // this will not show.)
   globals.elements.gameIDLabel = new FitText({
     text: `ID: ${globals.state.replay.databaseID ?? 0}`,
     x: deckValues.x * winW,
@@ -614,12 +612,12 @@ function drawDeck() {
     visible: globals.state.finished && globals.state.replay.databaseID !== null,
     listening: false,
   });
-  // We draw the label on the arrow layer because it is on top of the card but
-  // not on top of the black second layer
+  // We draw the label on the arrow layer because it is on top of the card but not on top of the
+  // black second layer.
   globals.layers.arrow.add(globals.elements.gameIDLabel);
 
   // At the bottom of the deck, draw a thing hinting that the user can mouse over the deck for
-  // detailed information about the current game
+  // detailed information about the current game.
   globals.elements.gameInfoImage = new Konva.Image({
     x: (deckValues.x + 0.004) * winW,
     y: (deckValues.y + 0.161) * winH,
@@ -634,7 +632,7 @@ function drawDeck() {
     },
     shadowOpacity: 0.9,
   });
-  // This goes on the same layer as the gameIDLabel
+  // This goes on the same layer as the gameIDLabel.
   globals.layers.arrow.add(globals.elements.gameInfoImage);
 
   globals.elements.deck = new Deck({
@@ -648,13 +646,13 @@ function drawDeck() {
   });
   globals.layers.card.add(globals.elements.deck as unknown as Konva.Group);
 
-  // Also apply the card deck tooltip to the faded background rectangle
+  // Also apply the card deck tooltip to the faded background rectangle.
   deckRect.tooltipName = "deck";
   deckRect.tooltipContent = globals.elements.deck.tooltipContent;
   konvaTooltips.init(deckRect, true, true);
 
-  // When there are no cards left in the deck,
-  // show a label that indicates how many turns are left before the game ends
+  // When there are no cards left in the deck, show a label that indicates how many turns are left
+  // before the game ends.
   const xOffset = 0.017;
   const fontSize = 0.025;
   globals.elements.deckTurnsRemainingLabel1 = basicTextLabel.clone({
@@ -674,8 +672,8 @@ function drawDeck() {
   }) as Konva.Text;
   globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2);
 
-  // This is a yellow border around the deck that will appear when only one card is left
-  // (if the "Bottom-Deck Blind-Plays" game option is enabled)
+  // This is a yellow border around the deck that will appear when only one card is left (if the
+  // "Bottom-Deck Blind-Plays" game option is enabled).
   globals.elements.deckPlayAvailableLabel = new Konva.Rect({
     x: deckValues.x * winW,
     y: deckValues.y * winH,
@@ -690,7 +688,7 @@ function drawDeck() {
 }
 
 function drawScoreArea() {
-  // The rectangle that holds the turn, score, and clue count
+  // The rectangle that holds the turn, score, and clue count.
   const scoreAreaHeight = 0.18;
   scoreAreaValues = {
     x: 0.66,
@@ -709,7 +707,7 @@ function drawScoreArea() {
   });
   globals.layers.UI.add(globals.elements.scoreArea);
 
-  // The border that surrounds the score area when the team is at X clues
+  // The border that surrounds the score area when the team is at X clues.
   globals.elements.scoreAreaBorder = new Konva.Rect({
     x: scoreAreaValues.x * winW,
     y: scoreAreaValues.y * winH,
@@ -723,7 +721,7 @@ function drawScoreArea() {
   });
   globals.layers.UI.add(globals.elements.scoreAreaBorder);
 
-  // The faded rectangle around the score area
+  // The faded rectangle around the score area.
   const scoreAreaRect = new Konva.Rect({
     x: 0,
     y: 0,
@@ -747,10 +745,10 @@ function drawScoreArea() {
   }) as Konva.Text;
   globals.elements.scoreArea.add(turnTextLabel);
   turnTextLabel.on("click", (event: Konva.KonvaEventObject<MouseEvent>) => {
-    // "event.evt.buttons" is always 0 here
+    // "event.evt.buttons" is always 0 here.
     if (event.evt.button === 0) {
-      // Left-click
-      // We want to be able to left-click the turn number to go to a specific turn in the replay
+      // Left-click. We want to be able to left-click the turn number to go to a specific turn in
+      // the replay.
       replay.promptTurn();
     } else if (event.evt.button === 2) {
       // Right-click
@@ -770,13 +768,13 @@ function drawScoreArea() {
   globals.elements.turnNumberLabel.on(
     "click",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      // "event.evt.buttons" is always 0 here
+      // "event.evt.buttons" is always 0 here.
       if (event.evt.button === 0) {
-        // Left-click
-        // We want to be able to left-click the turn number to go to a specific turn in the replay
+        // Left-click. We want to be able to left-click the turn number to go to a specific turn in
+        // the replay.
         replay.promptTurn();
       } else if (event.evt.button === 2) {
-        // Right-click
+        // Right-click.
         arrows.click(event, ReplayArrowOrder.Turn);
       }
     },
@@ -891,7 +889,7 @@ function drawScoreArea() {
     },
   );
 
-  // Add an animation to signify that discarding at 8 clues is illegal
+  // Add an animation to signify that discarding at 8 clues is illegal.
   globals.elements.cluesNumberLabelPulse = new Konva.Tween({
     node: cluesNumberLabel,
     fontSize: 0.04 * winH,
@@ -902,17 +900,14 @@ function drawScoreArea() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
-      if (
-        globals.elements.cluesNumberLabelPulse !== undefined &&
-        globals.elements.cluesNumberLabelPulse !== null
-      ) {
+      if (globals.elements.cluesNumberLabelPulse !== null) {
         globals.elements.cluesNumberLabelPulse.reverse();
       }
     },
   });
   globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
-  // Draw the 3 strike (bomb) black squares / X's
+  // Draw the 3 strike (bomb) black squares / X's.
   function strikeClick(
     this: StrikeSquare | StrikeX,
     event: Konva.KonvaEventObject<MouseEvent>,
@@ -923,12 +918,12 @@ function drawScoreArea() {
 
     switch (event.evt.button) {
       case 0: {
-        // Left-click
-        // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
+        // Left-click. Left-clicking a strike X or a strike square takes us to the turn that the
+        // strike happened.
         const { strikes } = globals.state.ongoingGame;
         const strike = strikes[this.num];
         if (strike === undefined) {
-          // There is no strike yet that corresponds to this square / X, so do nothing
+          // There is no strike yet that corresponds to this square / X, so do nothing.
           return;
         }
 
@@ -942,9 +937,9 @@ function drawScoreArea() {
       }
 
       case 2: {
-        // Right-click
-        // Right-clicking a strike X or a strike square shows an arrow over the strike square
-        let order;
+        // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
+        // square.
+        let order: ReplayArrowOrder;
         if (this.num === 0) {
           order = ReplayArrowOrder.Strike1;
         } else if (this.num === 1) {
@@ -966,7 +961,7 @@ function drawScoreArea() {
     }
   }
   for (let i = 0; i < 3; i++) {
-    // Draw the background square
+    // Draw the background square.
     const strikeSquare = new StrikeSquare(
       {
         x: (0.01 + 0.04 * i) * winW,
@@ -983,7 +978,7 @@ function drawScoreArea() {
     globals.elements.scoreArea.add(strikeSquare);
     globals.elements.strikeSquares.push(strikeSquare);
 
-    // Draw the red X that indicates the strike
+    // Draw the red X that indicates the strike.
     const strikeX = new StrikeX(
       {
         x: (0.015 + 0.04 * i) * winW,
@@ -1024,17 +1019,17 @@ function drawScoreArea() {
     konvaTooltips.init(strikeSquare, true, false);
     konvaTooltips.init(strikeX, true, false);
 
-    // Click on the strike to go to the turn that the strike happened, if any
-    // (and highlight the card that misplayed)
+    // Click on the strike to go to the turn that the strike happened, if any (and highlight the
+    // card that misplayed).
     strikeSquare.on("click tap", strikeClick);
     strikeX.on("click tap", strikeClick);
   }
 
-  // The terminate button (which immediately ends the current game)
-  // This is placed on top of the 3rd strike
+  // The terminate button (which immediately ends the current game). This is placed on top of the
+  // 3rd strike.
   if (globals.state.playing) {
-    globals.elements.strikeSquares[2].hide();
-    globals.elements.strikeXs[2].hide();
+    globals.elements.strikeSquares[2]!.hide();
+    globals.elements.strikeXs[2]!.hide();
     const questionMarkLabel = globals.elements.questionMarkLabels[2];
     if (questionMarkLabel !== undefined) {
       questionMarkLabel.hide();
@@ -1052,9 +1047,9 @@ function drawScoreArea() {
     );
     globals.elements.scoreArea.add(terminateButton as unknown as Konva.Group);
     terminateButton.on("click tap", () => {
-      // In 2p game, single click instantly terminates the game
-      // For users < 1000, only show the warning if this is a 2p game
-      // Otherwise the dbl click never fires (prevented by windows.alert of single click)
+      // In 2p game, single click instantly terminates the game. For users < 1000, only show the
+      // warning if this is a 2p game. Otherwise the double click never fires (prevented by
+      // windows.alert of single click).
       const numPlayers = globals.lobby.game?.players.length;
       if (
         globals.options.speedrun ||
@@ -1088,15 +1083,15 @@ function drawScoreArea() {
   }
 }
 
-// The "eyes" symbol to show that one or more people are spectating the game
+// The "eyes" symbol to show that one or more people are spectating the game.
 function drawSpectators() {
-  // Position it to the bottom-left of the score area
+  // Position it to the bottom-left of the score area.
   spectatorsLabelValues = {
     x: scoreAreaValues.x - 0.037,
     y: scoreAreaValues.y + 0.09,
   };
   if (!globals.lobby.settings.keldonMode) {
-    // Position it to the bottom-right of the score area
+    // Position it to the bottom-right of the score area.
     spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w! + 0.01;
   }
   const imageSize = 0.02;
@@ -1105,7 +1100,7 @@ function drawSpectators() {
     y: spectatorsLabelValues.y * winH,
     width: imageSize * winW,
     height: imageSize * winW,
-    // (this is not a typo; we want it to have the same width and height)
+    // (This is not a typo; we want it to have the same width and height.)
     align: "center",
     image: globals.imageLoader!.get("eyes")!,
     shadowColor: "black",
@@ -1120,7 +1115,7 @@ function drawSpectators() {
   });
   globals.layers.UI.add(spectatorsLabel);
   spectatorsLabel.tooltipName = "spectators";
-  spectatorsLabel.tooltipContent = ""; // This will be filled in later by the "spectators" command
+  spectatorsLabel.tooltipContent = ""; // This will be filled in later by the "spectators" command.
   konvaTooltips.init(spectatorsLabel, false, true);
   globals.elements.spectatorsLabel = spectatorsLabel;
 
@@ -1147,15 +1142,15 @@ function drawSpectators() {
   globals.layers.UI.add(globals.elements.spectatorsNumLabel);
 }
 
-// The "crown" symbol to show that we are in a shared replay
+// The "crown" symbol to show that we are in a shared replay.
 function drawSharedReplay() {
   const sharedReplayLeaderLabelValues = {
     x: spectatorsLabelValues.x,
     y: spectatorsLabelValues.y - 0.06,
   };
 
-  // A circle around the crown indicates that we are the current replay leader
-  // (we want the icon to be on top of this so that it does not interfere with mouse events)
+  // A circle around the crown indicates that we are the current replay leader. (We want the icon to
+  // be on top of this so that it does not interfere with mouse events.)
   globals.elements.sharedReplayLeaderCircle = new Konva.Circle({
     x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
@@ -1188,7 +1183,7 @@ function drawSharedReplay() {
   globals.layers.UI.add(sharedReplayLeaderLabel);
   globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
-  // Add an animation to alert everyone when shared replay leadership has been transferred
+  // Add an animation to alert everyone when shared replay leadership has been transferred.
   globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
     node: sharedReplayLeaderLabel,
     width: size * 2,
@@ -1199,10 +1194,7 @@ function drawSharedReplay() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
-      if (
-        globals.elements.sharedReplayLeaderLabelPulse !== undefined &&
-        globals.elements.sharedReplayLeaderLabelPulse !== null
-      ) {
+      if (globals.elements.sharedReplayLeaderLabelPulse !== null) {
         globals.elements.sharedReplayLeaderLabelPulse.reverse();
       }
     },
@@ -1211,14 +1203,14 @@ function drawSharedReplay() {
     globals.layers.UI,
   );
 
-  // Tooltip for the crown
+  // Tooltip for the crown.
   sharedReplayLeaderLabel.tooltipName = "leader";
-  // This will get filled in later by the "replayLeader" command
+  // This will get filled in later by the "replayLeader" command.
   sharedReplayLeaderLabel.tooltipContent = "";
   konvaTooltips.init(sharedReplayLeaderLabel, false, true);
 
-  // The user can click on the crown to pass the replay leader to an arbitrary person
-  // Require a double tap to prevent accidentally opening the dialog when hovering over the crown
+  // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
+  // double tap to prevent accidentally opening the dialog when hovering over the crown.
   sharedReplayLeaderLabel.on("click dbltap", () => {
     if (
       globals.state.replay.shared === null ||
@@ -1264,10 +1256,10 @@ function drawSharedReplay() {
 
       button.innerHTML = spectator.name;
       button.classList.add("button");
-      button.dataset.player = spectator.name;
+      button.dataset["player"] = spectator.name;
       button.addEventListener("click", (evt) => {
-        const element = <HTMLElement>evt.target;
-        newLeader(element?.dataset?.player);
+        const element = evt.target as HTMLElement;
+        newLeader(element.dataset["player"]);
       });
       button.type = "submit";
 
@@ -1278,7 +1270,7 @@ function drawSharedReplay() {
   });
 }
 
-// A notification that shows it is your turn
+// A notification that shows it is your turn.
 function drawYourTurn() {
   if (globals.lobby.settings.keldonMode) {
     return;
@@ -1350,7 +1342,7 @@ function drawClueLog() {
   globals.layers.UI.add(globals.elements.clueLog as unknown as Konva.Group);
 }
 
-// Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
+// Statistics are shown on the right-hand side of the screen (at the bottom of the clue log).
 function drawStatistics() {
   const statsRect = new Konva.Rect({
     x: clueLogValues.x * winW,
@@ -1485,7 +1477,7 @@ function drawStatistics() {
   efficiencyNumberLabel.on("click", stats.efficiencyLabelClick);
   efficiencyNumberLabel.on("dbltap", stats.askForEfficiency);
   efficiencyNumberLabel.tooltipName = "efficiency-number";
-  // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
+  // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function.
 
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
@@ -1502,14 +1494,14 @@ function drawStatistics() {
     x: 0.918 * winW,
     y: 0.59 * winH,
     fontSize: 0.02 * winH,
-    // "Easy" variants use the default color (off-white)
-    // "Hard" variants use pink
+    // - "Easy" variants use the default color (off-white).
+    // - "Hard" variants use pink.
     fill:
       globals.metadata.hardVariant &&
       globals.lobby.settings.hyphenatedConventions
         ? "#ffb2b2"
         : LABEL_COLOR,
-    // If colorblindMode is activated, indicate make font bold if "Hard"
+    // If colorblindMode is activated, indicate make font bold if "Hard".
     fontStyle:
       globals.metadata.hardVariant &&
       globals.lobby.settings.hyphenatedConventions &&
@@ -1529,7 +1521,7 @@ function drawStatistics() {
 }
 
 function drawDiscardArea() {
-  // The red border that surrounds the discard pile when the team is at 8 clues
+  // The red border that surrounds the discard pile when the team is at 8 clues.
   globals.elements.noDiscardBorder = new Konva.Rect({
     x: 0.8 * winW,
     y: 0.63 * winH,
@@ -1543,7 +1535,7 @@ function drawDiscardArea() {
   });
   globals.layers.UI.add(globals.elements.noDiscardBorder);
 
-  // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
+  // The yellow border that surrounds the discard pile when it is a "Double Discard" situation.
   globals.elements.noDoubleDiscardBorder = new Konva.Rect({
     x: 0.8 * winW,
     y: 0.63 * winH,
@@ -1558,7 +1550,7 @@ function drawDiscardArea() {
   });
   globals.layers.UI.add(globals.elements.noDoubleDiscardBorder);
 
-  // The faded rectangle around the trash can
+  // The faded rectangle around the trash can.
   const discardAreaRect = new Konva.Rect({
     x: 0.8 * winW,
     y: 0.63 * winH,
@@ -1570,7 +1562,7 @@ function drawDiscardArea() {
   });
   globals.layers.UI.add(discardAreaRect);
 
-  // The trash can icon over the discard pile
+  // The trash can icon over the discard pile.
   const trashcan = new Konva.Image({
     x: 0.82 * winW,
     y: 0.65 * winH,
@@ -1582,7 +1574,7 @@ function drawDiscardArea() {
   });
   globals.layers.UI.add(trashcan);
 
-  // This is the invisible rectangle that players drag cards to in order to discard them
+  // This is the invisible rectangle that players drag cards to in order to discard them.
   globals.elements.discardArea = new Konva.Rect({
     x: 0.8 * winW,
     y: 0.63 * winH,
@@ -1601,11 +1593,11 @@ function drawArrows() {
 }
 
 function drawTimers() {
-  // Just in case, stop the previous timer, if any
+  // Just in case, stop the previous timer, if any.
   timer.stop();
 
-  // We don't want the timer to show in replays or untimed games
-  // (unless they have the optional setting turned on)
+  // We don't want the timer to show in replays or untimed games (unless they have the optional
+  // setting turned on).
   if (
     globals.state.finished ||
     (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
@@ -1631,8 +1623,8 @@ function drawTimers() {
     timerValues.y2 = 0.885;
   }
 
-  // A circle around the timer indicates that we have queued a pause
-  // (we want the timer to be on top of this so that it does not interfere with mouse events)
+  // A circle around the timer indicates that we have queued a pause. (We want the timer to be on
+  // top of this so that it does not interfere with mouse events.)
   globals.elements.timer1Circle = new Konva.Ellipse({
     x: (timerValues.x1 + 0.0328) * winW,
     y: (timerValues.y1 + 0.034) * winH,
@@ -1645,7 +1637,7 @@ function drawTimers() {
   });
   globals.layers.UI.add(globals.elements.timer1Circle);
 
-  // The timer for "You"
+  // The timer for "You".
   globals.elements.timer1 = new TimerDisplay({
     x: timerValues.x1 * winW,
     y: timerValues.y1 * winH,
@@ -1670,7 +1662,7 @@ function drawTimers() {
     const { currentPlayerIndex } = globals.state.ongoingGame.turn;
     const { ourPlayerIndex } = globals.metadata;
 
-    let setting;
+    let setting: string;
     if (currentPlayerIndex === ourPlayerIndex) {
       setting = "pause";
     } else if (globals.state.pause.queued) {
@@ -1697,7 +1689,7 @@ function drawTimers() {
   globals.elements.timer1.on(
     "click",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      // "event.evt.buttons" is always 0 here
+      // "event.evt.buttons" is always 0 here.
       if (event.evt.button === 2) {
         // Right-click
         timerClick();
@@ -1706,7 +1698,7 @@ function drawTimers() {
   );
   globals.elements.timer1.on("dbltap", timerClick);
 
-  // The timer for the current player
+  // The timer for the current player.
   globals.elements.timer2 = new TimerDisplay({
     x: timerValues.x2 * winW,
     y: timerValues.y2 * winH,
@@ -1722,13 +1714,13 @@ function drawTimers() {
   globals.layers.timer.add(globals.elements.timer2 as unknown as Konva.Group);
   if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
     globals.elements.timer2.tooltipName = "time-taken";
-    // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
+    // (The content will be updated in the "setTickingDownTimeCPTooltip()" function.)
     konvaTooltips.init(globals.elements.timer2, true, false);
   }
 }
 
 function drawClueArea() {
-  // Put the clue area directly below the play stacks, with a little bit of spacing
+  // Put the clue area directly below the play stacks, with a little bit of spacing.
   clueAreaValues = {
     x: actionLogValues.x,
     y: playAreaValues.y + playAreaValues.h! + 0.005,
@@ -1738,7 +1730,7 @@ function drawClueArea() {
   if (globals.variant.showSuitNames) {
     clueAreaValues.y += 0.03;
   }
-  // In BGA mode, we can afford to put a bit more spacing to make it look less packed together
+  // In BGA mode, we can afford to put a bit more spacing to make it look less packed together.
   if (!globals.lobby.settings.keldonMode) {
     clueAreaValues.y += 0.02;
   }
@@ -1752,14 +1744,14 @@ function drawClueArea() {
 
   // Player buttons
   const { numPlayers } = globals.options;
-  const playerButtonH = 0.025;
+  const playerButtonH = globals.lobby.settings.keldonMode ? 0.025 : 0.035;
   const playerButtonSpacing = 0.0075;
 
-  // If this is a two player game, we can slide the clue UI down by a bit
-  // (since the clue target buttons won't be shown)
+  // If this is a two player game, we can slide the clue UI down by a bit (since the clue target
+  // buttons won't be shown).
   const playerButtonAdjustment = numPlayers === 2 ? playerButtonH / 2 : 0;
 
-  // This is the normal button group, which does not include us
+  // This is the normal button group, which does not include us.
   globals.elements.clueTargetButtonGroup = new ButtonGroup({
     listening: false,
   });
@@ -1791,14 +1783,14 @@ function drawClueArea() {
     globals.elements.clueTargetButtonGroup as unknown as Konva.Group,
   );
   if (numPlayers === 2) {
-    // The clue target buttons are pointless if we are playing a 2-player game
-    // (because we only have the ability to clue one player)
+    // The clue target buttons are pointless if we are playing a 2-player game (because we only have
+    // the ability to clue one player).
     globals.elements.clueTargetButtonGroup.hide();
-    // Default the clue recipient button to the only other player available
-    globals.elements.clueTargetButtonGroup.list[0].setPressed(true);
+    // Default the clue recipient button to the only other player available.
+    globals.elements.clueTargetButtonGroup.list[0]!.setPressed(true);
   }
 
-  // This button group includes us, which is used for hypotheticals
+  // This button group includes us, which is used for hypotheticals.
   globals.elements.clueTargetButtonGroup2 = new ButtonGroup({
     listening: false,
   });
@@ -1810,7 +1802,7 @@ function drawClueArea() {
 
     for (let i = 0; i < totalPlayerButtons; i++) {
       // We change the calculation of j from the above code block because we want the buttons to
-      // follow the order of players from top to bottom (in BGA mode)
+      // follow the order of players from top to bottom (in BGA mode).
       const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
       const button = new PlayerButton(
         {
@@ -1843,7 +1835,7 @@ function drawClueArea() {
   });
 
   // In a hypo, the lower part of the clue ui slides left independently of the clue target buttons.
-  // The limiting factor on how far it can slide is when there's 6 color buttons
+  // The limiting factor on how far it can slide is when there's 6 color buttons.
   const maxColorWidth = buttonW * 6 + buttonXSpacing * 5;
   const lowerClueAreaWidth = maxColorWidth * winW;
   const offsetX = -0.5 * (clueAreaValues.w! * winW - lowerClueAreaWidth);
@@ -1882,10 +1874,10 @@ function drawClueArea() {
   const colorX = clueAreaValues.w! * 0.5 - totalColorWidth * 0.5;
   const colorY = buttonYSpacing - playerButtonAdjustment;
   for (let i = 0; i < globals.variant.clueColors.length; i++) {
-    const color = globals.variant.clueColors[i];
+    const color = globals.variant.clueColors[i]!;
 
-    // Find the first suit that matches this color
-    let matchingSuit;
+    // Find the first suit that matches this color.
+    let matchingSuit: Suit | undefined;
     for (const suit of globals.variant.suits) {
       if (suit.clueColors.includes(color)) {
         matchingSuit = suit;
@@ -1916,7 +1908,7 @@ function drawClueArea() {
     globals.elements.colorClueButtons.push(button);
   }
 
-  // Rank buttons / number buttons
+  // Rank buttons / number buttons.
   const rankTextFromVariant = (rank: number): string => {
     if (!variantRules.isOddsAndEvens(globals.variant)) {
       return rank.toString();
@@ -1934,7 +1926,7 @@ function drawClueArea() {
   const rankX = clueAreaValues.w! * 0.5 - totalRankWidth * 0.5;
   const rankY = colorY + buttonH + buttonYSpacing;
   for (let i = 0; i < globals.variant.clueRanks.length; i++) {
-    const rank = globals.variant.clueRanks[i];
+    const rank = globals.variant.clueRanks[i]!;
     const button = new RankButton({
       x: (rankX + i * (buttonW + buttonXSpacing)) * winW,
       y: rankY * winH,
@@ -1958,7 +1950,7 @@ function drawClueArea() {
     globals.elements.clueTypeButtonGroup as unknown as Konva.Group,
   );
 
-  // The "Give Clue" button
+  // The "Give Clue" button.
   giveClueValues = {
     x: 0,
     y: rankY + buttonH + buttonYSpacing,
@@ -1985,7 +1977,7 @@ function drawClueArea() {
 }
 
 function drawClueAreaDisabled(offsetX: number) {
-  // We fade the clue area and draw a rectangle on top of it when there are no clues available
+  // We fade the clue area and draw a rectangle on top of it when there are no clues available.
   globals.elements.clueAreaDisabled = new SlidableGroup({
     x: clueAreaValues.x * winW,
     y: clueAreaValues.y * winH,
@@ -2004,11 +1996,11 @@ function drawClueAreaDisabled(offsetX: number) {
   globals.elements.clueAreaDisabled.setCenter = setCenter;
   globals.elements.clueAreaDisabled.setCenter();
 
-  // A transparent rectangle to stop clicks
+  // A transparent rectangle to stop clicks.
   const rect = new Konva.Rect({
     width: clueAreaValues.w! * winW,
     height: clueAreaValues.h! * winH,
-    listening: true, // It must listen or it won't stop clicks
+    listening: true, // It must listen or it won't stop clicks.
   });
   globals.elements.clueAreaDisabled.add(rect);
 
@@ -2018,7 +2010,7 @@ function drawClueAreaDisabled(offsetX: number) {
   };
   const lineColor = "#1a1a1a";
 
-  // The line from top-left to bottom-right
+  // The line from top-left to bottom-right.
   const line1 = new Konva.Line({
     points: [
       spacing.x * winW,
@@ -2032,7 +2024,7 @@ function drawClueAreaDisabled(offsetX: number) {
   });
   globals.elements.clueAreaDisabled.add(line1);
 
-  // The line from bottom-left to top-right
+  // The line from bottom-left to top-right.
   const line2 = new Konva.Line({
     points: [
       spacing.x * winW,
@@ -2046,7 +2038,7 @@ function drawClueAreaDisabled(offsetX: number) {
   });
   globals.elements.clueAreaDisabled.add(line2);
 
-  // The "No clues available" text
+  // The "No clues available" text.
   const noCluesText = new FitText({
     y: clueAreaValues.h! * 0.4 * winH,
     width: clueAreaValues.w! * winW,
@@ -2119,7 +2111,7 @@ function drawHypotheticalArea() {
     h: 0.05,
   };
 
-  // The "Hypothetical" circle that shows we are currently in a hypothetical
+  // The "Hypothetical" circle that shows we are currently in a hypothetical.
   globals.elements.hypoCircle = new Konva.Group({
     x: hypoValues.x * winW,
     y: hypoValues.y * winH,
@@ -2160,7 +2152,7 @@ function drawHypotheticalArea() {
 
   globals.layers.UI.add(globals.elements.hypoButtonsArea);
 
-  // The "Back 1 Turn" button (to the right of the give clue button)
+  // The "Back 1 Turn" button (to the right of the give clue button).
   const hypoBackButtonValues = {
     x:
       clueAreaValues.x +
@@ -2196,7 +2188,7 @@ function drawHypotheticalArea() {
   const hypoButtonHeight = 0.051;
   const hypoButtonSpacing = 0.008;
 
-  // The "End Hypothetical" button (to the right of the back button)
+  // The "End Hypothetical" button (to the right of the back button).
   const endHypotheticalButtonValues = {
     x: hypoBackButtonValues.x + hypoBackButtonValues.w + hypoButtonSpacing,
     y: hypoBackButtonValues.y,
@@ -2218,7 +2210,7 @@ function drawHypotheticalArea() {
   });
   globals.elements.endHypotheticalButton = endHypotheticalButton;
 
-  // The "Edit Cards" button (above the exit hypo button)
+  // The "Edit Cards" button (above the exit hypo button).
   const editCardsButtonValues = {
     x: endHypotheticalButtonValues.x,
     y: endHypotheticalButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
@@ -2239,14 +2231,14 @@ function drawHypotheticalArea() {
 
   globals.elements.editCardsButton.on("click tap", () => {
     globals.elements.editCardsButton?.setPressed(
-      !globals.elements.editCardsButton?.pressed,
+      !globals.elements.editCardsButton.pressed,
     );
   });
   globals.elements.hypoButtonsArea.add(
     globals.elements.editCardsButton as unknown as Konva.Group,
   );
 
-  // The "Show Drawn Cards" / "Hide Drawn Cards" button (above the edit cards button)
+  // The "Show Drawn Cards" / "Hide Drawn Cards" button (above the edit cards button).
   const toggleDrawnCardsButtonValues = {
     x: editCardsButtonValues.x,
     y: editCardsButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
@@ -2381,9 +2373,103 @@ function drawPauseArea() {
   pauseLobbyButton.on("click tap", lobbyButtonClick);
 }
 
+function drawRestartArea() {
+  const restartAreaValues = {
+    w: 0.7,
+    h: 0.6,
+  };
+
+  globals.elements.restartArea = new Konva.Group({
+    x: 0.15 * winW,
+    y: 0.2 * winH,
+    visible: false,
+    listening: false,
+  });
+  globals.layers.UI2.add(globals.elements.restartArea);
+
+  const restartRect = new Konva.Rect({
+    width: restartAreaValues.w * winW,
+    height: restartAreaValues.h * winH,
+    fill: "#b3b3b3",
+    cornerRadius: 0.01 * winH,
+    listening: true,
+  });
+  globals.elements.restartArea.add(restartRect);
+
+  const restartTitle = new Konva.Text({
+    y: 0.1 * winH,
+    width: restartAreaValues.w * winW,
+    fontFamily: "Verdana",
+    fontSize: 0.08 * winH,
+    text: "Restart?",
+    align: "center",
+    fill: "white",
+    shadowColor: "black",
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    listening: false,
+  });
+  globals.elements.restartArea.add(restartTitle);
+
+  const buttonW = restartAreaValues.w * 0.35;
+  const buttonH = 0.25;
+  const spacing = restartAreaValues.w * 0.1;
+
+  const restartGameButton = new Button({
+    x: spacing * winW,
+    y: buttonH * winH,
+    width: buttonW * winW,
+    height: 0.1 * winH,
+    text: "Restart game",
+  });
+  restartGameButton.on("click tap", () => {
+    globals.lobby.conn!.send("tableRestart", {
+      tableID: globals.lobby.tableID,
+      hidePregame: true,
+    });
+  });
+  globals.elements.restartArea.add(restartGameButton as unknown as Konva.Group);
+
+  const restartTableButton = new Button({
+    x: (2 * spacing + buttonW) * winW,
+    y: buttonH * winH,
+    width: buttonW * winW,
+    height: 0.1 * winH,
+    text: "Remake table",
+  });
+  restartTableButton.on("click tap", () => {
+    globals.lobby.conn!.send("tableRestart", {
+      tableID: globals.lobby.tableID,
+      hidePregame: false,
+    });
+  });
+  globals.elements.restartArea.add(
+    restartTableButton as unknown as Konva.Group,
+  );
+
+  const restartCancelButton = new Button({
+    x: (restartAreaValues.w - buttonW / 2 - spacing) * winW,
+    y: (buttonH * 1.5 + spacing) * winH,
+    width: (buttonW / 2) * winW,
+    height: 0.1 * winH,
+    text: "Cancel",
+  });
+  restartCancelButton.on("click tap", () => {
+    globals.elements.restartArea?.visible(false);
+    globals.layers.UI2.batchDraw();
+  });
+  globals.elements.restartArea.add(
+    restartCancelButton as unknown as Konva.Group,
+  );
+}
+
 function drawExtraAnimations() {
-  // These images are shown to the player to
-  // indicate which direction we are moving in a shared replay
+  // These images are shown to the player to indicate which direction we are moving in a shared
+  // replay.
   const x = playAreaValues.x + playAreaValues.w! / 2 - 0.05;
   const y = playAreaValues.y + playAreaValues.h! / 2 - 0.05;
   const size = 0.1;
@@ -2414,8 +2500,8 @@ function drawExtraAnimations() {
 
 // Subroutines
 function lobbyButtonClick(this: Button) {
-  // Unregister the click handler to ensure that the user does not double-click
-  // and go to the lobby twice
+  // Unregister the click handler to ensure that the user does not double-click and go to the lobby
+  // twice.
   this.off("click tap");
 
   backToLobby();

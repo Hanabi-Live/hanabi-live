@@ -12,7 +12,7 @@ export default class RankButton extends Konva.Group {
     this.listening(true);
 
     // Class variables
-    this.clue = config.clue as Clue;
+    this.clue = config["clue"] as Clue;
 
     // Local variables
     const w = this.width();
@@ -39,7 +39,7 @@ export default class RankButton extends Konva.Group {
       fontFamily: "Verdana",
       fill: "white",
       align: "center",
-      text: config.label as string,
+      text: config["label"] as string,
       listening: false,
     });
     this.add(text);

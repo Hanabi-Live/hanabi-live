@@ -10,7 +10,7 @@ If you want to learn the basics of the game with a helpful video, then [watch th
 - Unlike other card games, it is cooperative, meaning that everyone either wins or loses together.
 - Unlike other card games, you cannot see your own hand, but you can see the hands of the other players.
 - There is a deck of 50 cards comprised of 5 colors and numbers 1 through 5.
-- The goal is to play the cards for each color in order (e.g. 1 through 5), kind of like [Solitaire](https://en.wikipedia.org/wiki/Klondike_(solitaire)).
+- The goal is to play the cards for each color in order (e.g. 1 through 5), kind of like [Solitaire](<https://en.wikipedia.org/wiki/Klondike_(solitaire)>).
 
 <br />
 

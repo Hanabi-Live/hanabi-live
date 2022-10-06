@@ -1,5 +1,4 @@
-import { getVariant } from "@hanabi/data";
-import { ensureAllCases } from "../../misc";
+import { ensureAllCases, getVariant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import ClueType from "../types/ClueType";
@@ -19,12 +18,12 @@ export function clue(
   metadata: GameMetadata,
 ): string {
   const giver = metadata.playerNames[action.giver];
-  let target = metadata.playerNames[action.target];
+  let target = metadata.playerNames[action.target]!;
   const words = ["zero", "one", "two", "three", "four", "five", "six"];
   const word = words[action.list.length];
   const variant = getVariant(metadata.options.variantName);
 
-  // First, handle the case of clue text in some special variants
+  // First, handle the case of clue text in some special variants.
   const characterName = getCharacterNameForPlayer(
     action.giver,
     metadata.characterAssignments,
@@ -38,6 +37,7 @@ export function clue(
     if (variantRules.isCowAndPig(variant)) {
       if (action.clue.type === ClueType.Color) {
         actionName = "moos";
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (action.clue.type === ClueType.Rank) {
         actionName = "oinks";
       }
@@ -50,7 +50,7 @@ export function clue(
       target += "s";
     }
 
-    // Create a list of slot numbers that correspond to the cards touched
+    // Create a list of slot numbers that correspond to the cards touched.
     const slots: number[] = [];
     for (const order of action.list) {
       const slot = handRules.cardSlot(order, targetHand);
@@ -71,7 +71,7 @@ export function clue(
     return `${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
   }
 
-  // Handle the default case of a normal clue
+  // Handle the default case of a normal clue.
   let clueName = cluesRules.getClueName(
     action.clue.type,
     action.clue.value,
@@ -156,14 +156,14 @@ export function play(
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let card;
+  let card: string;
   if (variantRules.isThrowItInAHole(variant) && playing) {
     card = "a card";
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
-  let location;
+  let location: string;
   if (slot === null) {
     location = "the deck";
   } else {
@@ -203,7 +203,7 @@ export function discard(
     card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
-  let location;
+  let location: string;
   if (slot === null) {
     location = "the deck";
   } else {

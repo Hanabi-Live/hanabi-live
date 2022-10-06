@@ -3,8 +3,8 @@ import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
 import GameMetadata from "../src/game/types/GameMetadata";
-import { initArray } from "../src/misc";
 import Options from "../src/types/Options";
+import { initArray } from "../src/utils";
 
 export default function testMetadata(
   numPlayers: number,

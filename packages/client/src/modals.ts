@@ -1,31 +1,30 @@
-// Modals (boxes that hover on top of the UI)
+// Modals (boxes that hover on top of the UI).
 
-import { Suit, Variant } from "@hanabi/data";
+import { parseIntSafe, Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import HanabiCard from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import globals from "./globals";
 import * as lobbyNav from "./lobby/nav";
-import { parseIntSafe } from "./misc";
 import * as sounds from "./sounds";
 
 let initialized = false;
 let allowCloseModal = true;
 let currentModal: HTMLElement | null = null;
 
-// Used by morph dialog
+// Used by morph dialog.
 type DragAreaType = "playArea" | "discardArea" | null;
 
 const pageCover = getElement("#page-cover");
 const modalsContainer = getElement("#modals-container");
 
-// Initialize various element behavior within the modals
+// Initialize various element behavior within the modals.
 function init() {
   if (initialized) {
     return true;
   }
 
-  // Close modal on escape press or by clicking outside
+  // Close modal on escape press or by clicking outside.
   pageCover.onpointerdown = () => {
     closeModals();
   };
@@ -35,7 +34,7 @@ function init() {
     }
   });
 
-  // Password modal setup
+  // Password modal setup.
   getElement("#password-modal-password").addEventListener(
     "keypress",
     (event) => {
@@ -52,25 +51,25 @@ function init() {
     closeModals();
   };
 
-  // Warning modal setup
+  // Warning modal setup.
   getElement("#warning-modal-button").onpointerdown = () => {
     closeModals();
   };
 
-  // Error modal setup
+  // Error modal setup.
   getElement("#error-modal-button").onpointerdown = () => {
     window.location.reload();
   };
 
-  // Create Game modal setup
+  // Create Game modal setup.
   getElement("#createTablePassword").onkeydown = (event) => {
     if (event.key === "Enter") {
       getElement("#create-game-submit").click();
     }
   };
 
-  // Morph modal textbox
-  const morphTextbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+  // Morph modal textbox.
+  const morphTextbox = getInputElement("#morph-modal-textbox");
   const morphTextboxObserver = new MutationObserver(() => {
     const suit = morphTextbox.getAttribute("data-suit");
     const rank = morphTextbox.getAttribute("data-rank");
@@ -102,7 +101,7 @@ export function askForPassword(tableID: number): void {
   getElement("#password-modal-id").setAttribute("value", tableID.toString());
   getElement("#password-modal-password").focus();
 
-  // We want to fill in the text field with the player's last typed-in password
+  // We want to fill in the text field with the player's last typed-in password.
   const password = localStorage.getItem("joinTablePassword");
   const element = getInputElement("#password-modal-password");
   if (password !== null && password !== "") {
@@ -124,13 +123,13 @@ export function askForMorph(
     return;
   }
   let dragArea = draggedTo;
-  // Morph dialog button actions
+  // Morph dialog button actions.
   const morphFinishLayout = () => {
-    // finish drag action
-    if (card?.getLayoutParent() === null) {
+    // Finish drag action.
+    if (card === null) {
       return;
     }
-    card?.getLayoutParent().continueDragAction(dragArea);
+    card.getLayoutParent().continueDragAction(dragArea);
   };
 
   const morphReplayOkButton = (): boolean => {
@@ -150,7 +149,9 @@ export function askForMorph(
   };
   const morphInGameOkButton = () => {
     const success = morphReplayOkButton();
-    if (!success) dragArea = null;
+    if (!success) {
+      dragArea = null;
+    }
     morphFinishLayout();
   };
 
@@ -166,8 +167,8 @@ export function askForMorph(
 
   allowCloseModal = false;
 
-  const suits = variant.suits;
-  const ranks = variant.ranks;
+  const { suits } = variant;
+  const { ranks } = variant;
   const start =
     card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
   const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
@@ -177,40 +178,40 @@ export function askForMorph(
     "#morph-modal-cards",
     suits,
     ranks,
-    suits[startSuit],
+    suits[startSuit]!,
     startRank,
   );
 
   showModal("#morph-modal", false);
   setTimeout(() => {
-    const textbox = <HTMLInputElement>getElement("#morph-modal-textbox");
+    const textbox = getInputElement("#morph-modal-textbox");
     textbox.focus();
     textbox.select();
   }, 100);
 
   if (draggedTo === null) {
-    // If action is null, the function was called from HanabiCardClick.ts during replay hypo
+    // If action is null, the function was called from HanabiCardClick.ts during replay hypo.
 
-    // Set the dialog text
+    // Set the dialog text.
     getElement("#morph-modal p").innerHTML =
       "Select the card you want to morph it into:";
 
-    // Morph modal OK button
+    // Morph modal OK button.
     getElement("#morph-modal-button-ok").onclick = morphReplayOkButton;
 
-    // Morph modal Cancel button
+    // Morph modal Cancel button.
     getElement("#morph-modal-button-cancel").onclick = morphReplayCancelButton;
   } else {
-    // The function was called from LayoutChild.ts during in-game hypo
+    // The function was called from LayoutChild.ts during in-game hypo.
 
-    // Set the dialog text
+    // Set the dialog text.
     getElement("#morph-modal p").innerHTML =
       "What the card will be for the purposes of this hypothetical?";
 
-    // Morph modal OK button
+    // Morph modal OK button.
     getElement("#morph-modal-button-ok").onclick = morphInGameOkButton;
 
-    // Morph modal Cancel button
+    // Morph modal Cancel button.
     getElement("#morph-modal-button-cancel").onclick = morphInGameCancelButton;
   }
 }
@@ -230,7 +231,7 @@ function passwordSubmit() {
     password,
   });
 
-  // Record the password in local storage (cookie)
+  // Record the password in local storage (cookie).
   localStorage.setItem("joinTablePassword", password);
 
   closeModals();
@@ -245,10 +246,10 @@ export function showWarning(msg: string): void {
 
   getElement("#warning-modal-description").innerHTML = msg;
 
-  // Store the screen's active element
+  // Store the screen's active element.
   globals.lastActiveElement = document.activeElement as HTMLElement;
 
-  // Show the modal and focus the close button
+  // Show the modal and focus the close button.
   showModal("#warning-modal", () => {
     getElement("#warning-modal-button").focus();
   });
@@ -259,19 +260,19 @@ export function showError(msg: string): void {
     return;
   }
 
-  // Do nothing if we are already showing the error modal
+  // Do nothing if we are already showing the error modal.
   if (globals.errorOccurred) {
     return;
   }
   globals.errorOccurred = true;
 
-  // Clear out the top navigation buttons
+  // Clear out the top navigation buttons.
   lobbyNav.show("nothing");
 
   getElement("#error-modal-description").innerHTML = msg;
   showModal("#error-modal", false);
 
-  // Play a sound if the server has shut down
+  // Play a sound if the server has shut down.
   if (
     /The server is going down for scheduled maintenance./.exec(msg) !== null
   ) {
@@ -293,7 +294,6 @@ export function setModal(
   const button = getElement(buttonSelector);
 
   button.onclick = () => {
-    // TODO fix this
     // eslint-disable-next-line
     if (!(test?.call(null) ?? true)) {
       return;
@@ -322,7 +322,6 @@ export function showPrompt(
     return;
   }
 
-  // TODO fix this
   // eslint-disable-next-line
   if (!(test?.call(null) ?? true)) {
     return;
@@ -343,8 +342,8 @@ export function showPrompt(
       focusElement.focus();
       const oldType = focusElement.type;
       if (oldType === "number" || oldType === "text") {
-        const length = focusElement.value.length;
-        // Cannot put the cursor past the text unless it's a text input
+        const { length } = focusElement.value;
+        // Cannot put the cursor past the text unless it's a text input.
         focusElement.type = "text";
         focusElement.setSelectionRange(0, length);
         focusElement.type = oldType;
@@ -388,10 +387,9 @@ function getElement(element: string): HTMLElement {
 }
 
 function getInputElement(element: string): HTMLInputElement {
-  return <HTMLInputElement>getElement(element);
+  return getElement(element) as HTMLInputElement;
 }
 
-function showModal(selector: string): void;
 function showModal(selector: string, allowClose: boolean): void;
 function showModal(selector: string, before?: () => unknown): void;
 function showModal(
@@ -418,13 +416,12 @@ function showModal(
 
   element.classList.add("modal");
   element.onpointerdown = (event) => {
-    // Do not bubble clicks to pageCover
+    // Do not bubble clicks to pageCover.
     event.stopPropagation();
   };
 
   if (typeof param2 === "function") {
-    const result = param2?.call(null);
-    // TODO fix this
+    const result = param2.call(null);
     // eslint-disable-next-line
     if (result ?? false) {
       return;
@@ -445,8 +442,8 @@ function showModal(
 }
 
 function getMorphModalSelection(): string {
-  const val = (<HTMLInputElement>getElement("#morph-modal-textbox")).value;
-  return val;
+  const inputElement = getInputElement("#morph-modal-textbox");
+  return inputElement.value;
 }
 
 function fillMorphModalWithRadios(
@@ -493,7 +490,7 @@ function fillMorphModalWithRadios(
           return;
         }
 
-        // Set textbox data attribute
+        // Set textbox data attribute.
         textbox.setAttribute("data-suit", suit.displayName);
         textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
       });

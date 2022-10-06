@@ -200,7 +200,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 
 	// Log a chat message so that future players can see a timestamp of when the table was created
-	msg := s.Username + " created the table."
+	msg := "<strong>" + s.Username + "</strong> created the table."
 	chatServerSend(ctx, msg, t.GetRoomName(), true)
 
 	// If the server is shutting down / restarting soon, warn the players

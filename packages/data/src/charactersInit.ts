@@ -19,8 +19,7 @@ export function charactersInit(): ReadonlyMap<number, Character> {
       );
     }
 
-    // Validate the ID
-    // (the first character has an ID of 0)
+    // Validate the ID. (The first character has an ID of 0.)
     if (character.id < 0) {
       throw new Error(`The "${character.name}" character has an invalid ID.`);
     }
@@ -39,7 +38,7 @@ export function charactersInit(): ReadonlyMap<number, Character> {
       );
     }
 
-    // Add it to the map
+    // Add it to the map.
     CHARACTERS.set(character.id, character);
   }
 

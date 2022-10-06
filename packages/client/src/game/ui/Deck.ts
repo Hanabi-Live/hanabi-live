@@ -1,11 +1,11 @@
 import Konva from "konva";
+import * as tooltips from "../../tooltips";
+import { OptionIcons } from "../../types/OptionIcons";
 import {
   dateTimeFormatter,
   millisecondsToClockString,
   timerFormatter,
-} from "../../misc";
-import * as tooltips from "../../tooltips";
-import { OptionIcons } from "../../types/OptionIcons";
+} from "../../utils";
 import * as deckRules from "../rules/deck";
 import ActionType from "../types/ActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
@@ -40,7 +40,7 @@ export default class Deck extends Konva.Group {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     this.cardBack.on("dragend", this.dragEnd);
 
-    // The text that shows the number of cards remaining in the deck
+    // The text that shows the number of cards remaining in the deck.
     this.numLeft = deckRules.totalCards(globals.variant);
     this.numLeftText = new Konva.Text({
       fill: "white",
@@ -59,7 +59,7 @@ export default class Deck extends Konva.Group {
     });
     this.add(this.numLeftText);
 
-    // Right-click on the deck to highlight it with an arrow
+    // Right-click on the deck to highlight it with an arrow.
     this.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(event, ReplayArrowOrder.Deck);
     });
@@ -68,13 +68,13 @@ export default class Deck extends Konva.Group {
     this.initCursors();
   }
 
-  // Most of this function is copy-pasted from "LayoutChild.dragEnd()"
-  // It contains a subset of the real card features in order to minimize complexity
+  // Most of this function is copy-pasted from "LayoutChild.dragEnd()". It contains a subset of the
+  // real card features in order to minimize complexity.
   dragEnd(): void {
     const draggedTo = cursor.getElementDragLocation(this);
 
     if (draggedTo === null) {
-      // The card was dragged to an invalid location; tween it back to the hand
+      // The card was dragged to an invalid location; tween it back to the hand.
       this.to({
         // Tween
         duration: CARD_ANIMATION_LENGTH,
@@ -84,6 +84,7 @@ export default class Deck extends Konva.Group {
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
           const layer = globals.layers.UI;
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (layer !== undefined) {
             layer.batchDraw();
           }
@@ -92,19 +93,19 @@ export default class Deck extends Konva.Group {
     } else if (draggedTo === "playArea") {
       turn.end({
         type: ActionType.Play,
-        // Card orders start at 0, so the final card order is the length of the deck - 1
+        // Card orders start at 0, so the final card order is the length of the deck - 1.
         target: deckRules.totalCards(globals.variant) - 1,
       });
     }
   }
 
-  // The deck tooltip shows the custom options for this game, if any
+  // The deck tooltip shows the custom options for this game, if any.
   initDeckTooltip(): void {
-    // If the user hovers over the deck, show a tooltip that shows extra game options, if any
-    // (we don't use the "tooltip.init()" function because we need the extra condition in the
-    // "mouseover" event)
+    // If the user hovers over the deck, show a tooltip that shows extra game options, if any. (We
+    // don't use the "tooltip.init()" function because we need the extra condition in the
+    // "mouseover" event.)
     this.on("mouseover touchstart", function mouseOver(this: Deck) {
-      // Don't do anything if we might be dragging the deck
+      // Don't do anything if we might be dragging the deck.
       if (globals.elements.deckPlayAvailableLabel!.isVisible() === true) {
         return;
       }
@@ -121,14 +122,14 @@ export default class Deck extends Konva.Group {
     });
 
     // We store the content as a class variable so that it can be reused for the faded background
-    // rectangle behind the card
-    // (so that the tooltip will work when there are 0 cards left in the deck)
+    // rectangle behind the card (so that the tooltip will work when there are 0 cards left in the
+    // deck).
     this.tooltipContent = getTooltipContent();
     tooltips.setInstanceContent("#tooltip-deck", this.tooltipContent);
   }
 
-  // When dragging the deck, change the cursor to emulate the behavior when dragging a card
-  // It does not emulate the full cursor behavior in order to minimum complexity
+  // When dragging the deck, change the cursor to emulate the behavior when dragging a card. It does
+  // not emulate the full cursor behavior in order to minimum complexity.
   initCursors(): void {
     this.on("mouseenter", () => {
       if (this.canDragDeck()) {
@@ -142,7 +143,7 @@ export default class Deck extends Konva.Group {
     });
     this.on("mousedown", (event: Konva.KonvaEventObject<MouseEvent>) => {
       if (this.canDragDeck() && event.evt.buttons === 1) {
-        // Left-click is being held down
+        // Left-click is being held down.
         cursor.set("dragging");
       }
     });
@@ -161,8 +162,8 @@ export default class Deck extends Konva.Group {
     this.numLeft = count;
     this.numLeftText.text(count.toString());
 
-    // When there are no cards left in the deck, remove the card-back
-    // and show a label that indicates how many turns are left before the game ends
+    // When there are no cards left in the deck, remove the card-back and show a label that
+    // indicates how many turns are left before the game ends.
     this.cardBack.visible(count > 0);
     let h = 0.3;
     if (count === 0) {
@@ -176,8 +177,7 @@ export default class Deck extends Konva.Group {
       count === 0 && !globals.options.allOrNothing,
     );
 
-    // If the game ID is showing,
-    // we want to center the deck count between it and the other labels
+    // If the game ID is showing, we want to center the deck count between it and the other labels.
     if (count === 0 && globals.elements.gameIDLabel!.isVisible() === true) {
       this.nudgeCountDownwards();
     }
@@ -198,14 +198,14 @@ export default class Deck extends Konva.Group {
 }
 
 function getTooltipContent() {
-  // The tooltip will show the current game options
+  // The tooltip will show the current game options.
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
-  // Disable this row in JSON replays
+  // Disable this row in JSON replays.
   if (
     globals.state.finished &&
-    // JSON replays are hard-coded to have a database ID of 0
+    // JSON replays are hard-coded to have a database ID of 0.
     globals.state.replay.databaseID !== 0 &&
     globals.state.datetimeStarted !== null &&
     globals.state.datetimeFinished !== null

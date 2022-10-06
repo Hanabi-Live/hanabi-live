@@ -1,4 +1,4 @@
-// Integration tests, involving loading a full game and checking state at different points
+// Integration tests, involving loading a full game and checking state at different points.
 
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
 import loadGameJSON from "../../../test/loadGameJSON";
@@ -16,13 +16,13 @@ const redSuit = 0;
 describe("UI", () => {
   describe("Up or Down test game", () => {
     beforeAll(() => {
-      // Load the game and get the final state
+      // Load the game and get the final state.
       testState = loadGameJSON(upOrDownGame);
     });
 
     describe("at turn 3", () => {
       test("red S is not critical", () => {
-        const turnState = getStateAtTurn(testState, 2);
+        const turnState = getStateAtTurn(testState, 2)!;
         expect(
           isCritical(
             redSuit,
@@ -37,7 +37,7 @@ describe("UI", () => {
 
     describe("at turn 6", () => {
       test("red 1 is not critical", () => {
-        const turnState = getStateAtTurn(testState, 5);
+        const turnState = getStateAtTurn(testState, 5)!;
         expect(
           isCritical(
             redSuit,
@@ -52,7 +52,7 @@ describe("UI", () => {
 
     describe("at turn 22", () => {
       test("red 5 is critical", () => {
-        const turnState = getStateAtTurn(testState, 21);
+        const turnState = getStateAtTurn(testState, 21)!;
         expect(
           isCritical(
             redSuit,

@@ -1,6 +1,6 @@
 # Variants
 
-[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further customize a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
 
 <br />
 
@@ -151,7 +151,7 @@ One of each card per suit (e.g. 5 in total):
   - For example, consider the "Null-Ones & Rainbow" variant:
     - The null suit has the property of being touched by no colors and touched by no ranks.
     - The rainbow suit has the property of being touched by all colors.
-    - These add together, but the the color touch property is in conflict. The rainbow property takes precedence, so the rainbow 1 is touched by all colors and touched by no ranks.
+    - These add together, but the color touch property is in conflict. The rainbow property takes precedence, so the rainbow 1 is touched by all colors and touched by no ranks.
 
 ### Ambiguous
 
@@ -218,6 +218,14 @@ One of each card per suit (e.g. 5 in total):
   5. Tangelo (yellow / red)
   6. Peach (yellow / red)
 
+### Critical Fours
+
+- One 4 is removed from each suit.
+
+### Clue Starved
+
+- Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
+
 ### Color Blind
 
 - Color clues touch no suits. (Empty color clues are always allowed.)
@@ -244,10 +252,6 @@ One of each card per suit (e.g. 5 in total):
 - For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
 - This variant was invented by Jake Stiles.
 
-### Clue Starved
-
-- Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
-
 ### Cow & Pig
 
 - When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a rank clue.
@@ -257,13 +261,16 @@ One of each card per suit (e.g. 5 in total):
 - When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
 - This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
-### Throw It in a Hole
+### Odds and Evens
 
-- When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
-- The score of the game is not revealed until the game is over.
-- Players do not get a clue back for successfully playing a 5.
-- The game will automatically end if 3 strikes are accumulated.
-- This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
+- Rank clues are limited to 1 and 2.
+- "O" (Odd) rank clue touches all odd cards, "E" (Even) touches all even cards.
+
+### Synesthesia
+
+- Only color clues may be given.
+- In addition to their normal color, cards with rank 1 count as the first color, cards with rank 2 count as the second color, and so on.
+- If the brown suit is in use, its cards only get clued by brown, and not as the color of their rank.
 
 ### Reversed
 
@@ -283,20 +290,13 @@ One of each card per suit (e.g. 5 in total):
 - A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
 - This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 
-### Synesthesia
+### Throw It in a Hole
 
-- Only color clues may be given.
-- In addition to their normal color, cards with rank 1 count as the first color, cards with rank 2 count as the second color, and so on.
-- If the brown suit is in use, its cards only get clued by brown, and not as the color of their rank.
-
-### Critical Fours
-
-- One 4 is removed from each suit.
-
-### Odds And Evens
-
-- Rank clues are limited to 1 and 2.
-- "1" rank clue touches all odd cards, "2" touches all even cards.
+- When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
+- The score of the game is not revealed until the game is over.
+- Players do not get a clue back for successfully playing a 5.
+- The game will automatically end if 3 strikes are accumulated.
+- This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
 ### Funnels
 
@@ -307,3 +307,44 @@ One of each card per suit (e.g. 5 in total):
 ## Full Variant Listing
 
 - See [this page](/misc/variants.txt).
+
+## Variant Order Summary
+
+- Normal Variants
+- Black
+- Rainbow
+- Pink
+- White
+- Brown
+- Omni
+- Null
+- Muddy Rainbow
+- Light Pink
+- Prism
+- Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
+- Special Suit Combinations (e.g. Black & Rainbow)
+- Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
+- Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
+- Deceptive-Ones
+- Deceptive-Fives
+- Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
+- Ambiguous
+- Very Ambiguous
+- Extremely Ambiguous
+- Dual-Color
+- Mixes
+- Critical Fours
+- Clue Starved
+- Color Blind
+- Number Blind
+- Totally Blind
+- Color Mute
+- Number Mute
+- Alternating Clues
+- Cow & Pig
+- Duck
+- Odds and Evens
+- Synesthesia
+- Reversed
+- Up or Down
+- Throw It in a Hole

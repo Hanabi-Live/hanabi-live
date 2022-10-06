@@ -1,7 +1,7 @@
-// SoundType represents the type of sound that should play,
-// depending on what the last action of the game was
+// SoundType represents the type of sound that should play, depending on what the last action of the
+// game was.
 enum SoundType {
-  // A "normal" or "boring" game action occurred, so do not play any special sound effect
+  // A "normal" or "boring" game action occurred, so do not play any special sound effect.
   Standard,
 
   // Play sounds
@@ -20,10 +20,10 @@ enum SoundType {
   DoubleDiscard, // When a player discards *in* a "double discard" situation
   DoubleDiscardCause, // When a player discards to cause a "double discard" situation
 
-  // Play or discard sounds
+  // Play or discard sounds.
   Sad, // When the maximum score decreases
-  // (this normally happens when discarding a critical card,
-  // but it can also happen from playing a card in some variants)
+  // (This normally happens when discarding a critical card, but it can also happen from playing a
+  // card in some variants.)
 
   // Clue sounds
   Moo, // For "Cow & Pig" variants

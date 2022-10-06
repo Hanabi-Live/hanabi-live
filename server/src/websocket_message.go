@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	RateLimitRate = float64(100) // Number of messages sent
+	RateLimitRate = float64(200) // Number of messages sent
 	RateLimitPer  = float64(2)   // Per seconds
 )
 

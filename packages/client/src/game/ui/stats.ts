@@ -1,5 +1,5 @@
+import { parseIntSafe } from "@hanabi/data";
 import Konva from "konva";
-import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
 import ReplayActionType from "../types/ReplayActionType";
 import ReplayArrowOrder from "../types/ReplayArrowOrder";
@@ -33,7 +33,7 @@ export function efficiencyLabelClick(
   this: TextWithTooltip,
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
-  // "event.evt.buttons" is always 0 here
+  // "event.evt.buttons" is always 0 here.
   if (event.evt.button === 2) {
     arrows.click(event, ReplayArrowOrder.Efficiency);
     return;
@@ -67,21 +67,24 @@ export function askForEfficiency(): void {
   if (current !== null) {
     current.innerHTML = currentModifier.toString();
   }
-  const element = <HTMLInputElement>document.getElementById("set-modifier-new");
+  const element = document.getElementById(
+    "set-modifier-new",
+  ) as HTMLInputElement;
   element.value = currentModifier.toString();
 
-  const button = <HTMLButtonElement>(
-    document.getElementById("set-modifier-button")
-  );
+  const button = document.getElementById(
+    "set-modifier-button",
+  ) as HTMLButtonElement;
   button.onclick = () => {
     modals.closeModals();
 
-    const effModString =
-      (<HTMLInputElement>document.getElementById("set-modifier-new"))?.value ??
-      "";
+    const inputElement = document.getElementById(
+      "set-modifier-new",
+    ) as HTMLInputElement | null;
+    const effModString = inputElement?.value ?? "";
     const effMod = parseIntSafe(effModString);
     if (Number.isNaN(effMod)) {
-      // Don't do anything if they entered something that is not a number
+      // Don't do anything if they entered something that is not a number.
       return;
     }
     setEfficiencyMod(effMod);

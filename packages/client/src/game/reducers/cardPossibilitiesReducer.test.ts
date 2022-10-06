@@ -10,7 +10,7 @@ const defaultMetadata = testMetadata(numPlayers);
 const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
-// Count possible cards, respecting both clues and observations
+// Count possible cards, respecting both clues and observations.
 function countPossibleCards(state: CardState) {
   return state.possibleCardsForEmpathy.length;
 }
@@ -18,8 +18,8 @@ function countPossibleCards(state: CardState) {
 function possibilities(
   possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
 ) {
-  const possibleSuits: Set<number> = new Set();
-  const possibleRanks: Set<number> = new Set();
+  const possibleSuits = new Set<number>();
+  const possibleRanks = new Set<number>();
   for (const [suit, rank] of possibleCardsFromClues) {
     possibleSuits.add(suit);
     possibleRanks.add(rank);
@@ -29,7 +29,7 @@ function possibilities(
 
 describe("cardPossibilitiesReducer", () => {
   test("applies a simple positive clue", () => {
-    const red = colorClue(variant.clueColors[0]);
+    const red = colorClue(variant.clueColors[0]!);
 
     const newCard = cardPossibilitiesReducer(
       defaultCard,
@@ -46,12 +46,12 @@ describe("cardPossibilitiesReducer", () => {
 
     expect(possibleRanks.size).toBe(5);
 
-    // This card can only be red
+    // This card can only be red.
     expect(countPossibleCards(newCard)).toBe(5);
   });
 
   test("applies a simple negative clue", () => {
-    const red = colorClue(variant.clueColors[0]);
+    const red = colorClue(variant.clueColors[0]!);
 
     const newCard = cardPossibilitiesReducer(
       defaultCard,
@@ -68,7 +68,7 @@ describe("cardPossibilitiesReducer", () => {
 
     expect(possibleRanks.size).toBe(5);
 
-    // This card can be any color except red
+    // This card can be any color except red.
     expect(countPossibleCards(newCard)).toBe(20);
   });
 
@@ -76,15 +76,15 @@ describe("cardPossibilitiesReducer", () => {
     const metadata = testMetadata(numPlayers, "Rainbow-Ones & Brown (6 Suits)");
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
-    const redClue = colorClue(variant.clueColors[0]);
-    const oneClue = rankClue(variant.clueRanks[0]);
+    const redClue = colorClue(variant.clueColors[0]!);
+    const oneClue = rankClue(variant.clueRanks[0]!);
 
     let card = initialCardState(0, rainbowOnesAndBrown);
     card = cardPossibilitiesReducer(card, redClue, true, metadata);
     card = cardPossibilitiesReducer(card, oneClue, false, metadata);
 
     const { possibleSuits } = possibilities(card.possibleCardsFromClues);
-    // A card with positive red and negative one cannot be yellow
+    // A card with positive red and negative one cannot be yellow.
     expect(possibleSuits.has(1)).toBe(false);
   });
 });

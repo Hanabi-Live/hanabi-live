@@ -1,6 +1,6 @@
-// In production, we send all errors to the cloud using the Sentry.io service
+// In production, we send all errors to the cloud using the Sentry.io service.
 
-import { VERSION } from "@hanabi/data";
+import { DOMAIN, VERSION } from "@hanabi/data";
 import * as Sentry from "@sentry/browser";
 import InitData from "./game/types/InitData";
 
@@ -12,13 +12,13 @@ export function init(): void {
   Sentry.init({
     dsn: "https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482",
     release: VERSION,
-    whitelistUrls: ["hanab.live"], // Otherwise, we get errors for LastPass, etc.
+    allowUrls: [DOMAIN], // Otherwise, we get errors for LastPass, etc.
     ignoreErrors,
   });
 }
 
 const ignoreErrors = [
-  // All of these are related to playing a sound file before the user has interacted with the page
+  // All of these are related to playing a sound file before the user has interacted with the page:
   // https://gamedev.stackexchange.com/questions/163365
   "AbortError: The operation was aborted.",
   "AbortError: The play() request was interrupted by a call to pause().",
@@ -39,10 +39,10 @@ export function setUserContext(userID: number, username: string): void {
     return;
   }
 
-  // If we encounter an error later on, we want metadata to be attached to the error message,
-  // which can be helpful for debugging (since we can ask the user how they caused the error)
-  // We use "SetTags()" instead of "SetUser()" since tags are more easy to see in the
-  // Sentry GUI than users
+  // If we encounter an error later on, we want metadata to be attached to the error message, which
+  // can be helpful for debugging (since we can ask the user how they caused the error). We use
+  // "SetTags()" instead of "SetUser()" since tags are more easy to see in the Sentry GUI than
+  // users:
   // https://docs.sentry.io/enriching-error-data/context/?platform=browser
   Sentry.configureScope((scope) => {
     scope.setTag("userID", userID.toString());
@@ -55,8 +55,8 @@ export function setGameContext(gameInitData: InitData): void {
     return;
   }
 
-  // If we encounter an error later on, we want metadata to be attached to the error message,
-  // which can be helpful for debugging (since we know what type of game that the user was in)
+  // If we encounter an error later on, we want metadata to be attached to the error message, which
+  // can be helpful for debugging (since we know what type of game that the user was in):
   // https://docs.sentry.io/enriching-error-data/context/?platform=browser
   Sentry.configureScope((scope) => {
     scope.setTag("gameInitData", JSON.stringify(gameInitData));

@@ -7,10 +7,29 @@ import { Character } from "./types/Character";
 import { Suit } from "./types/Suit";
 import { variantsInit } from "./variantsInit";
 
+/** Indexed by character ID. */
 const CHARACTERS = charactersInit();
+
+/** Indexed by color name. */
 const COLORS = colorsInit();
+
+/** Indexed by suit name. */
 const SUITS = suitsInit(COLORS);
+
+/** Indexed by variant name. */
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
+
+/** Indexed by variant ID. */
+const VARIANTS_BY_ID = getVariantsMapByID();
+
+function getVariantsMapByID(): ReadonlyMap<number, Variant> {
+  const variantsMapByID = new Map<number, Variant>();
+  for (const variant of Array.from(VARIANTS.values())) {
+    variantsMapByID.set(variant.id, variant);
+  }
+
+  return variantsMapByID;
+}
 
 export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);
@@ -34,6 +53,17 @@ export function getVariant(variantName: string): Variant {
   return variant;
 }
 
+export function getVariantByID(variantID: number): Variant {
+  const variant = VARIANTS_BY_ID.get(variantID);
+  if (variant === undefined) {
+    throw new Error(
+      `Failed to find the #"${variantID}" variant in the "VARIANTS" map.`,
+    );
+  }
+
+  return variant;
+}
+
 export function getDefaultVariant(): Variant {
   return getVariant(DEFAULT_VARIANT_NAME);
 }
@@ -42,7 +72,7 @@ export function getVariantNames(): readonly string[] {
   return Array.from(VARIANTS.keys());
 }
 
-export function doesVariantExist(variantName: string) {
+export function doesVariantExist(variantName: string): boolean {
   return VARIANTS.has(variantName);
 }
 

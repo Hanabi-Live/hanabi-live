@@ -4,5 +4,8 @@
   "include": [
     // These must match the base the "include" setting in the base "tsconfig.json" file
     "./src/**/*.ts",
+
+    // Also lint test files.
+    "./test/**/*.ts",
   ],
 }
