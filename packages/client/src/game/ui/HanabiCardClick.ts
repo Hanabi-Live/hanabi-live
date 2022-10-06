@@ -207,19 +207,15 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Ctrl + Alt + right-click is edit a note + turn count.
+  // Ctrl + Alt + right-click is prepend turn count.
   if (
     event.ctrlKey &&
-    event.shiftKey &&
+    !event.shiftKey &&
     event.altKey &&
     !event.metaKey &&
     globals.state.playing
   ) {
-    notes.openEditTooltip(
-      card,
-      true,
-      `#${globals.elements.turnNumberLabel?.text()} `,
-    );
+    card.prependNote(`#${globals.elements.turnNumberLabel?.text()} `);
     return;
   }
 

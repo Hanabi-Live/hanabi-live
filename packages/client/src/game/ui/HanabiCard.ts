@@ -1174,6 +1174,35 @@ export default class HanabiCard
     }
   }
 
+  prependNote(note: string): void {
+    const existingNote =
+      globals.state.notes.ourNotes[this.state.order]?.text ?? "";
+    const noteText = existingNote.trim();
+    const lastPipe = noteText.lastIndexOf("|");
+    const currentNoteString = noteText.slice(lastPipe + 1).trim();
+    const noteString = this.protectedNote(currentNoteString);
+    if (lastPipe === -1) {
+      this.setNote(`${note}${noteString}`);
+    } else {
+      this.setNote(
+        `${noteText.slice(0, lastPipe).trim()} | ${note}${noteString}`,
+      );
+    }
+  }
+
+  protectedNote(noteString: string): string {
+    const currentNote = parseNote(this.variant, noteString);
+    const bracketNoteString = `[${noteString}]`;
+    // Protect notes like 'k3' whose meaning is preserved by bracketing: '[k3]'
+    if (
+      noteHasMeaning(this.variant, currentNote) &&
+      noteEqual(currentNote, parseNote(this.variant, bracketNoteString))
+    ) {
+      return bracketNoteString;
+    }
+    return noteString;
+  }
+
   appendNote(note: string): void {
     const existingNote =
       globals.state.notes.ourNotes[this.state.order]?.text ?? "";
@@ -1182,19 +1211,10 @@ export default class HanabiCard
       this.setNote(`[${note}]`);
     } else {
       const lastPipe = noteText.lastIndexOf("|");
-      let currentNoteString = noteText.slice(lastPipe + 1).trim();
-      let currentNote = parseNote(this.variant, currentNoteString);
-      const bracketNoteString = `[${currentNoteString}]`;
-      const bracketNote = parseNote(this.variant, bracketNoteString);
-      // Protect notes like 'k3' whose meaning is preserved by bracketing: '[k3]'
-      if (
-        noteHasMeaning(this.variant, currentNote) &&
-        noteEqual(currentNote, bracketNote)
-      ) {
-        currentNoteString = bracketNoteString;
-        currentNote = bracketNote;
-      }
-      const appendedNoteString = `${currentNoteString} [${note}]`;
+      const currentNoteString = noteText.slice(lastPipe + 1).trim();
+      const noteString = this.protectedNote(currentNoteString);
+      const currentNote = parseNote(this.variant, noteString);
+      const appendedNoteString = `${noteString} [${note}]`;
       // Case of: updating note does not change note meaning.
       if (noteEqual(currentNote, parseNote(this.variant, appendedNoteString))) {
         return;
