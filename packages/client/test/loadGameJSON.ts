@@ -139,7 +139,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
             rank: a.rank,
             failed: true,
           };
-          nextState = gameStateReducer(s, action, false, state.metadata);
+          nextState = gameStateReducer(s, action, false, false, state.metadata);
 
           if (
             segmentRules.shouldStore(
@@ -168,7 +168,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     }
 
     const previousSegment = nextState.turn.segment;
-    nextState = gameStateReducer(nextState, action, false, state.metadata);
+    nextState = gameStateReducer(nextState, action, false, false, state.metadata);
 
     if (
       segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)

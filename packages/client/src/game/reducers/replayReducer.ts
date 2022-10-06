@@ -282,6 +282,7 @@ function hypoAction(
     state.hypothetical.ongoing,
     action,
     true,
+    true,
     metadata,
   );
   state.hypothetical.ongoing = newState;

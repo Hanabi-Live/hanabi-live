@@ -244,6 +244,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           original(state.ongoingGame),
           action,
           state.playing,
+          state.replay.hypothetical !== null,
           state.metadata,
           state.notes.ourNotes,
         );
@@ -258,6 +259,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         original(state.ongoingGame),
         action,
         state.playing,
+        state.replay.hypothetical !== null,
         state.metadata,
         state.notes.ourNotes,
       );
@@ -297,7 +299,7 @@ function reduceGameActions(
 ) {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameStateReducer(s, a, playing, metadata);
+    const nextState = gameStateReducer(s, a, playing, false, metadata);
 
     if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, a)) {
       states[nextState.turn.segment!] = nextState;
