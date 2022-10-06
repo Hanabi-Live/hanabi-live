@@ -119,6 +119,8 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
   }
 }
 
+let lastNote = "";
+
 function clickRight(card: HanabiCard, event: MouseEvent) {
   // Alt + right-click is a card morph (in a hypothetical).
   if (
@@ -159,11 +161,21 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   if (
     event.ctrlKey &&
     event.shiftKey &&
-    !event.altKey &&
     !event.metaKey &&
     globals.state.playing
   ) {
-    card.setNote(globals.lastNote);
+    if (event.altKey) {
+      // When Alt is held, copy only the new part of the last note.
+      if (lastNote === "") {
+        const noteText = globals.lastNote;
+        const lastPipe = noteText.lastIndexOf("|");
+        const lastNoteString = noteText.slice(lastPipe + 1).trim();
+        lastNote = lastNoteString;
+      }
+      card.appendNoteOnly(lastNote);
+    } else {
+      card.setNote(globals.lastNote);
+    }
     return;
   }
 
@@ -175,7 +187,8 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     globals.state.playing
   ) {
-    card.appendNote("f");
+    lastNote = "f";
+    card.appendNote(lastNote);
     return;
   }
 
@@ -188,7 +201,8 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     globals.state.playing
   ) {
-    card.appendNote("cm");
+    lastNote = "cm";
+    card.appendNote(lastNote);
     return;
   }
 
@@ -207,6 +221,19 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
+  // Ctrl + Alt + right-click is prepend turn count.
+  if (
+    event.ctrlKey &&
+    !event.shiftKey &&
+    event.altKey &&
+    !event.metaKey &&
+    globals.state.playing
+  ) {
+    lastNote = `#${globals.elements.turnNumberLabel?.text()}`;
+    card.prependNote(lastNote);
+    return;
+  }
+
   // A normal right-click is edit a note.
   if (
     !event.ctrlKey &&
@@ -215,6 +242,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     !globals.state.finished
   ) {
+    lastNote = "";
     notes.openEditTooltip(card);
   }
 }

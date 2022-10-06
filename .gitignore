@@ -30,6 +30,9 @@ motd.txt*
 /logs
 /ongoing_tables
 
+# Development files
+*.code-workspace
+
 # Private keys
 GitHub_private_key.pem
 
