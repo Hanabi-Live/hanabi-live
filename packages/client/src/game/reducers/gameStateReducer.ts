@@ -28,6 +28,7 @@ function gameStateReducerFunction(
   state: Draft<GameState>,
   action: GameAction,
   playing: boolean,
+  hypothetical: boolean,
   metadata: GameMetadata,
   ourNotes?: CardNote[],
 ) {
@@ -58,7 +59,7 @@ function gameStateReducerFunction(
       });
 
       const targetHand = state.hands[action.target]!;
-      const text = textRules.clue(action, targetHand, metadata);
+      const text = textRules.clue(action, targetHand, hypothetical, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -106,7 +107,14 @@ function gameStateReducerFunction(
       }
 
       const touched = cardRules.isClued(state.deck[action.order]!);
-      const text = textRules.discard(action, slot, touched, playing, metadata);
+      const text = textRules.discard(
+        action,
+        slot,
+        touched,
+        playing,
+        hypothetical,
+        metadata,
+      );
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -207,7 +215,14 @@ function gameStateReducerFunction(
       state.score++;
 
       const touched = cardRules.isClued(state.deck[action.order]!);
-      const text = textRules.play(action, slot, touched, playing, metadata);
+      const text = textRules.play(
+        action,
+        slot,
+        touched,
+        playing,
+        hypothetical,
+        metadata,
+      );
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,

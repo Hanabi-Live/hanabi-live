@@ -12,9 +12,12 @@ import * as cluesRules from "./clues";
 import * as handRules from "./hand";
 import * as variantRules from "./variant";
 
+const HYPO_PREFIX = "[Hypo] ";
+
 export function clue(
   action: ActionClue,
   targetHand: number[],
+  hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
   const giver = metadata.playerNames[action.giver];
@@ -22,6 +25,7 @@ export function clue(
   const words = ["zero", "one", "two", "three", "four", "five", "six"];
   const word = words[action.list.length];
   const variant = getVariant(metadata.options.variantName);
+  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
   // First, handle the case of clue text in some special variants.
   const characterName = getCharacterNameForPlayer(
@@ -68,7 +72,7 @@ export function clue(
 
     const slotsText = slots.join("/");
 
-    return `${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
+    return `${hypoPrefix}${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
   }
 
   // Handle the default case of a normal clue.
@@ -82,7 +86,7 @@ export function clue(
     clueName += "s";
   }
 
-  return `${giver} tells ${target} about ${word} ${clueName}`;
+  return `${hypoPrefix}${giver} tells ${target} about ${word} ${clueName}`;
 }
 
 export function gameOver(
@@ -151,6 +155,7 @@ export function play(
   slot: number | null,
   touched: boolean,
   playing: boolean,
+  hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
   const variant = getVariant(metadata.options.variantName);
@@ -175,7 +180,8 @@ export function play(
     suffix = " (blind)";
   }
 
-  return `${playerName} plays ${card} from ${location}${suffix}`;
+  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  return `${hypoPrefix}${playerName} plays ${card} from ${location}${suffix}`;
 }
 
 export function discard(
@@ -183,6 +189,7 @@ export function discard(
   slot: number | null,
   touched: boolean,
   playing: boolean,
+  hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
   const variant = getVariant(metadata.options.variantName);
@@ -218,5 +225,6 @@ export function discard(
     suffix = " (blind)";
   }
 
-  return `${playerName} ${verb} ${card} from ${location}${suffix}`;
+  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  return `${hypoPrefix}${playerName} ${verb} ${card} from ${location}${suffix}`;
 }
