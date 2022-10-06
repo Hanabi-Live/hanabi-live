@@ -32,7 +32,7 @@ function get(order: number, our: boolean, escape = false) {
     const name = escapeFunc(noteObject.name);
     const text = escapeFunc(noteObject.text);
     if (noteObject.text.length > 0) {
-      content += `<strong>${name}:</strong> ${text}}<br />`;
+      content += `<strong>${name}:</strong> ${text}<br />`;
     }
   }
   if (content.length !== 0) {
