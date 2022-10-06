@@ -211,7 +211,7 @@ export function discard(
   }
 
   let suffix = "";
-  if (action.failed && touched) {
+  if (action.failed && touched && !variantRules.isThrowItInAHole(variant)) {
     suffix = " (clued)";
   }
   if (action.failed && slot !== null && !touched) {
