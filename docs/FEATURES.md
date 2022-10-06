@@ -340,10 +340,14 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 
 There are also some keyboard shortcuts for making notes:
 
-- Shift + Right-click --> f
-- Alt + Right-click --> cm
+- Shift + Right-click --> [f]
+- Alt + Right-click --> [cm]
+- Alt + Ctrl + Right-click --> Insert turn count
 - Ctrl + Shift + Right-click --> [previously entered note]
   - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
+- Ctrl + Shift + Alt + Right-click --> [last pipe section]
+  - _Adds_ just the text of your most recent note to the end of the note section
+  - For instance add `>b3` elimination to a card. Then use this to _add_ the elimination to other cards
 
 <br />
 
