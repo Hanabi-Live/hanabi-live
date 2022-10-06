@@ -16,7 +16,7 @@ fi
 
 # Install the JavaScript/TypeScript dependencies and build the client
 cd "$REPO_ROOT"
-npm ci
+yarn install
 bash "$REPO_ROOT/packages/client/build_client.sh"
 
 # Build the server, which will automatically install the Golang dependencies
