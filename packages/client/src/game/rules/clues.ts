@@ -132,7 +132,7 @@ export function touchesCard(
     }
 
     if (variant.funnels) {
-      // Rank clues in Funnels touch also all lower ranked cards
+      // Rank clues in Funnels touch also all lower ranked cards.
       return rank <= clue.value;
     }
 
