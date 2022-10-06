@@ -253,8 +253,8 @@ export function variantsInit(
     }
     const oddsAndEvens = variantJSON.oddsAndEvens ?? false;
 
-    // Validate the "funnels" property
-    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    // Validate the "funnels" property. If it is not specified, assume false
+    // (e.g. cluing ranks in this variant works normally)
     if (
       Object.hasOwnProperty.call(variantJSON, "funnels") &&
       variantJSON.funnels !== true
