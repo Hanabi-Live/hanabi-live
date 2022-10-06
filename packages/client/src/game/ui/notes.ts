@@ -7,20 +7,32 @@ import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Get the contents of the note tooltip.
-function get(order: number, our: boolean) {
+function get(order: number, our: boolean, escape = false) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note.
+  const escapeFunc = (text: string) => (escape ? escapeHtml(text) : text);
   if (our || globals.state.playing) {
-    return globals.state.notes.ourNotes[order]?.text ?? "";
+    return escapeFunc(globals.state.notes.ourNotes[order]?.text ?? "");
   }
 
   // Build a string that shows the combined notes from the players & spectators.
   let content = "";
   const noteObjectArray = globals.state.notes.allNotes[order]!;
   for (const noteObject of noteObjectArray) {
+    const name = escapeFunc(noteObject.name);
+    const text = escapeFunc(noteObject.text);
     if (noteObject.text.length > 0) {
-      content += `<strong>${noteObject.name}:</strong> ${noteObject.text}<br />`;
+      content += `<strong>${name}:</strong> ${text}<br />`;
     }
   }
   if (content.length !== 0) {
@@ -101,8 +113,7 @@ export function show(card: HanabiCard): void {
   tooltips.setPosition(tooltip, posX, posY);
 
   // Update the tooltip content.
-  const note = get(card.state.order, false);
-  let shownNote = escapeHtml(note);
+  let shownNote = get(card.state.order, false, true);
   if (card.state.location === "playStack") {
     if (shownNote !== "") {
       shownNote += "<br><br>";
@@ -111,15 +122,6 @@ export function show(card: HanabiCard): void {
   }
   tooltips.setInstanceContent(tooltip, shownNote);
   tooltips.open(tooltip);
-}
-
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 export function openEditTooltip(
