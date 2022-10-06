@@ -207,6 +207,22 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
+  // Ctrl + Alt + right-click is edit a note + turn count.
+  if (
+    event.ctrlKey &&
+    event.shiftKey &&
+    event.altKey &&
+    !event.metaKey &&
+    globals.state.playing
+  ) {
+    notes.openEditTooltip(
+      card,
+      true,
+      `#${globals.elements.turnNumberLabel?.text()} `,
+    );
+    return;
+  }
+
   // A normal right-click is edit a note.
   if (
     !event.ctrlKey &&

@@ -102,7 +102,7 @@ export function show(card: HanabiCard): void {
 
   // Update the tooltip content.
   const note = get(card.state.order, false);
-  let shownNote = note;
+  let shownNote = escapeHtml(note);
   if (card.state.location === "playStack") {
     if (shownNote !== "") {
       shownNote += "<br><br>";
@@ -113,7 +113,20 @@ export function show(card: HanabiCard): void {
   tooltips.open(tooltip);
 }
 
-export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export function openEditTooltip(
+  card: HanabiCard,
+  isDesktop = true,
+  addText = "",
+): void {
   // Don't edit any notes in dedicated replays.
   if (globals.state.finished) {
     return;
@@ -162,20 +175,23 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     "Delete",
   ];
   const keysClosingNote = ["Enter", "Escape"];
+  const keysMeta = ["Control", "Alt", "Shift"];
 
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const { key } = event;
 
     // Only check the first time if the key is a special one.
-    if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
-      // Restore the old note, removing the pipe.
-      if (key !== "Home") {
-        event.preventDefault();
+    if (!keysMeta.includes(key)) {
+      if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
+        // Restore the old note, removing the pipe.
+        if (key !== "Home") {
+          event.preventDefault();
+        }
+        noteTextbox.val(note);
       }
-      noteTextbox.val(note);
+      shouldRemovePipe = false;
     }
-    shouldRemovePipe = false;
 
     if (!keysClosingNote.includes(key)) {
       return;
@@ -220,11 +236,16 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
     tooltips.close(tooltip);
   });
 
-  // Automatically and a pipe to a non empty note input box when it is focused.
+  // Automatically add a pipe to a non empty note input box when it is focused.
   noteTextbox.on("focus", function tooltipCardInputFocus(this: HTMLElement) {
-    const oldNote = $(this).val();
+    const oldNote = $(this).val() ?? "";
+    let newNote = oldNote;
     if (oldNote !== "") {
-      $(this).val(`${oldNote} | `);
+      newNote += " | ";
+    }
+    newNote += addText;
+    if (newNote !== oldNote) {
+      $(this).val(newNote);
     }
   });
 

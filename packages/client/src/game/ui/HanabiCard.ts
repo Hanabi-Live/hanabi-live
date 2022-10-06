@@ -1182,21 +1182,24 @@ export default class HanabiCard
       this.setNote(`[${note}]`);
     } else {
       const lastPipe = noteText.lastIndexOf("|");
-      const lastNote = noteText.slice(lastPipe + 1).trim();
-      const currentNote = parseNote(this.variant, lastNote);
-      const bracketedNote = lastNote.startsWith("[")
-        ? `${lastNote}`
-        : `[${lastNote}]`;
-      const appendedNote = `${bracketedNote} [${note}]`;
+      let lastNoteString = noteText.slice(lastPipe + 1).trim();
+      let currentNote = parseNote(this.variant, lastNoteString);
+      const bracketNoteString = `[${lastNoteString}]`;
+      const bracketNote = parseNote(this.variant, bracketNoteString);
+      // Protect notes like 'k3' whose meaning is preserved by bracketing ([k3])
+      if (
+        noteHasMeaning(this.variant, currentNote) &&
+        noteEqual(currentNote, bracketNote)
+      ) {
+        lastNoteString = bracketNoteString;
+        currentNote = bracketNote;
+      }
+      const appendedNoteString = `${lastNoteString} [${note}]`;
       // Case of: adding note does not change note meaning
-      if (noteEqual(currentNote, parseNote(this.variant, appendedNote))) {
+      if (noteEqual(bracketNote, parseNote(this.variant, appendedNoteString))) {
         return;
       }
-      if (!noteHasMeaning(this.variant, currentNote)) {
-        this.setNote(`${noteText} | [${note}]`);
-      } else {
-        this.setNote(`${noteText} | ${appendedNote}`);
-      }
+      this.setNote(`${noteText} | ${appendedNoteString}`);
     }
   }
 
