@@ -214,6 +214,7 @@ interface ActionNoteList {
   type: "noteList";
   readonly names: string[];
   readonly noteTextLists: string[][];
+  readonly isSpectators: boolean[];
 }
 
 interface ActionSetEffMod {

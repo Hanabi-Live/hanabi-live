@@ -28,10 +28,19 @@ function get(order: number, our: boolean, escape = false) {
   // Build a string that shows the combined notes from the players & spectators.
   let content = "";
   const noteObjectArray = globals.state.notes.allNotes[order]!;
+  let firstSpectator = false;
   for (const noteObject of noteObjectArray) {
     const name = escapeFunc(noteObject.name);
     const text = escapeFunc(noteObject.text);
+    const { isSpectator } = noteObject;
     if (noteObject.text.length > 0) {
+      if (!firstSpectator && Boolean(isSpectator)) {
+        firstSpectator = true;
+        if (content.length > 0) {
+          content = `<div class='noteTitle'><span>Players</span></div>${content}`;
+        }
+        content += "<div class='noteTitle'><span>Spectators</span></div>";
+      }
       content += `<strong>${name}:</strong> ${text}<br />`;
     }
   }

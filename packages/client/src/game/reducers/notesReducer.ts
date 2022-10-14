@@ -83,6 +83,7 @@ function notesReducerFunction(
           notes.allNotes[order]!.push({
             name: action.names[i]!,
             text,
+            isSpectator: action.isSpectators[i]!,
           });
         });
       });
