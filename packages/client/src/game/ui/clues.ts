@@ -113,20 +113,25 @@ export function getTouchedCardsFromClue(
   clue: MsgClue,
 ): number[] {
   const hand = globals.elements.playerHands[target]!;
-  const cardsTouched: number[] = []; // An array of the card orders
+  const cardsTouched: number[] = []; // An array of the card orders.
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
+    const identity = card.getMorphedIdentity();
+    if (identity.rank === null && identity.suitIndex === null) {
+      // It is a "blank" card, so the clue should not touch it.
+      return;
+    }
+
+    const morphedPossibilities = card.getMorphedPossibilities();
     if (
-      card
-        .getMorphedPossibilities()
-        .every(([suitIndexC, rankC]) =>
-          cluesRules.touchesCard(
-            globals.variant,
-            cluesRules.msgClueToClue(clue, globals.variant),
-            suitIndexC,
-            rankC,
-          ),
-        )
+      morphedPossibilities.every(([suitIndexC, rankC]) =>
+        cluesRules.touchesCard(
+          globals.variant,
+          cluesRules.msgClueToClue(clue, globals.variant),
+          suitIndexC,
+          rankC,
+        ),
+      )
     ) {
       cardsTouched.push(card.state.order);
     }
