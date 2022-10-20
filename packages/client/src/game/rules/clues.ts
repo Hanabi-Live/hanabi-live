@@ -131,6 +131,14 @@ export function touchesCard(
       return false;
     }
 
+    if (suit.allClueRanks) {
+      return true;
+    }
+
+    if (suit.noClueRanks) {
+      return false;
+    }
+
     if (variant.funnels) {
       // Rank clues in Funnels touch also all lower ranked cards.
       return rank <= clue.value;
@@ -139,14 +147,6 @@ export function touchesCard(
     if (variant.chimneys) {
       // Rank clues in Chimneys touch also all lower ranked cards.
       return rank >= clue.value;
-    }
-
-    if (suit.allClueRanks) {
-      return true;
-    }
-
-    if (suit.noClueRanks) {
-      return false;
     }
 
     // Clue ranks in Odds And Evens can only be 1 or 2.
