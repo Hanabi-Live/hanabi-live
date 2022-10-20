@@ -101,7 +101,7 @@ function main() {
 }
 
 function getPaths(): [string, string, string] {
-  const repoRootPath = path.join(__dirname, "..", "..", "..");
+  const repoRootPath = path.join(__dirname, "..", "..", "..", "..");
   const jsonDirectoryPath = path.join(
     repoRootPath,
     "packages",
@@ -286,6 +286,8 @@ function getNextUnusedVariantID(variantName: string) {
     const existingVariantName = oldVariantsIDToNameMap.get(variantID);
     if (existingVariantName === undefined) {
       foundUnusedVariantID = true;
+      oldVariantsIDToNameMap.set(variantID, variantName);
+      oldVariantsNameToIDMap.set(variantName, variantID);
     }
   } while (!foundUnusedVariantID);
 
