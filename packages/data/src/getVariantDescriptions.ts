@@ -1051,3 +1051,20 @@ export function getFunnelsVariants(
   }
   return variantDescriptions;
 }
+
+export function getChimneysVariants(
+  basicVariantSuits: string[][],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Chimneys (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits]!,
+      chimneys: true,
+    });
+  }
+  return variantDescriptions;
+}

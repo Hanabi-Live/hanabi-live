@@ -13732,5 +13732,30 @@
     "id": 1899,
     "suits": ["Red", "Green", "Blue"],
     "funnels": true
+  },
+  {
+    "name": "Chimneys (6 Suits)",
+    "id": 1900,
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
+    "chimneys": true
+  },
+  {
+    "name": "Chimneys (5 Suits)",
+    "id": 1901,
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
+    "chimneys": true
+  },
+  {
+    "name": "Chimneys (4 Suits)",
+    "id": 1902,
+    "suits": ["Red", "Yellow", "Green", "Blue"],
+    "chimneys": true
+  },
+  {
+    "name": "Chimneys (3 Suits)",
+    "id": 1903,
+    "suits": ["Red", "Green", "Blue"],
+    "chimneys": true
   }
+
 ]

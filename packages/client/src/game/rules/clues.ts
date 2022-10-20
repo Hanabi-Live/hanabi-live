@@ -136,6 +136,11 @@ export function touchesCard(
       return rank <= clue.value;
     }
 
+    if (variant.chimneys) {
+      // Rank clues in Chimneys touch also all lower ranked cards.
+      return rank >= clue.value;
+    }
+
     if (suit.allClueRanks) {
       return true;
     }

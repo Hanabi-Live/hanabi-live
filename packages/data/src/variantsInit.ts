@@ -265,6 +265,19 @@ export function variantsInit(
     }
     const funnels = variantJSON.funnels ?? false;
 
+    // Validate the "chimneys" property. If it is not specified, assume false
+    // (e.g. cluing ranks in this variant works normally)
+    if (
+      Object.hasOwnProperty.call(variantJSON, "chimneys") &&
+      variantJSON.chimneys !== true
+    ) {
+      throw new Error(
+        `The "chimneys" property for the variant "${variantJSON.name}" must be set to true.`,
+      );
+    }
+    const chimneys = variantJSON.chimneys ?? false;
+
+
     // Validate the "showSuitNames" property. If it is not specified, assume that we are not showing
     // the suit names.
     if (
@@ -321,6 +334,7 @@ export function variantsInit(
       specialDeceptive,
       oddsAndEvens,
       funnels,
+      chimneys,
       showSuitNames,
       maxScore,
       offsetCornerElements,
