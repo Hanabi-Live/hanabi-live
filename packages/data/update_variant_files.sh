@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# This script reads the source files
+# - src/getVariantDescriptions.ts
+# - src/createVariants/createVariantsJSON.ts (and helpers)
+# and writes to the files
+# - $REPO_ROOT/misc/variants.txt
+# - src/json/variants.json
+
 set -e # Exit on any errors
 
 # Get the directory of this script
