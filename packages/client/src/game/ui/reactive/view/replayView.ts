@@ -8,6 +8,7 @@ import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
+import toggleZen from "../../zen";
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
@@ -249,6 +250,9 @@ export function onFinishedChanged(
     globals.elements.playsNumberLabel?.hide();
     globals.elements.questionMarkLabels.forEach((label) => label.hide());
   }
+
+  // Disable zen mode
+  toggleZen();
 
   globals.layers.timer.batchDraw();
   globals.layers.UI.batchDraw();
