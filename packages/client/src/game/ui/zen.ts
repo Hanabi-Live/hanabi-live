@@ -7,10 +7,11 @@ export default function toggleZen() {
     globals.lobby.zenModeEnabled = false;
   } else {
     globals.lobby.zenModeEnabled = !globals.lobby.zenModeEnabled;
-    let text = "Zen mode (☯️) has been ";
-    text += globals.lobby.zenModeEnabled ? "enabled," : "disabled,";
-    text += " which hides incoming chats and the spectator count.";
-    text += "Toggle by right-clicking the chat icon.";
+    let text = "Zen mode (☯️) is ";
+    text += globals.lobby.zenModeEnabled
+      ? "enabled, which hides chat/spectator counts."
+      : "disabled.";
+    text += " Toggle by right-clicking the chat button.";
     sendSelfPMFromServer(text, `table${globals.lobby.tableID}`);
   }
 

@@ -289,7 +289,15 @@ chatCommands.set("version", (room: string) => {
 });
 
 // /version
-chatCommands.set("zen", () => {
+chatCommands.set("zen", (room: string) => {
+  if (globals.tableID === -1) {
+    sendSelfPMFromServer(
+      "You are not currently at a table, so you cannot use the <code>/zen</code> command.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
   toggleZen();
 });
 
