@@ -1036,6 +1036,7 @@ export function getOddsAndEvensVariants(
 }
 
 export function getFunnelsVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -1049,10 +1050,32 @@ export function getFunnelsVariants(
       funnels: true,
     });
   }
+
+  // Create combinations with special suits.
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
+      // suit.
+      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
+        continue;
+      }
+
+      const variantName = `Funnels & ${suit.name} (${numSuits} Suits)`;
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
+      const variantSuits = [...basicSuits, suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        funnels: true,
+      });
+    }
+  }
+
   return variantDescriptions;
 }
 
 export function getChimneysVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -1066,5 +1089,26 @@ export function getChimneysVariants(
       chimneys: true,
     });
   }
+
+  // Create combinations with special suits.
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
+      // suit.
+      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
+        continue;
+      }
+
+      const variantName = `Chimneys & ${suit.name} (${numSuits} Suits)`;
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
+      const variantSuits = [...basicSuits, suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        chimneys: true,
+      });
+    }
+  }
+
   return variantDescriptions;
 }

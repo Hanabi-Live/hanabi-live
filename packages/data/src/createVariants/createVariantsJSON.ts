@@ -83,8 +83,8 @@ function main() {
     ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getFunnelsVariants(basicVariantSuits),
-    ...getChimneysVariants(basicVariantSuits),
+    ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
