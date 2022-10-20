@@ -23,6 +23,7 @@ type Variant struct {
 	SpecialDeceptive       bool
 	OddsAndEvens           bool
 	Funnels                bool
+	Chimneys               bool
 	MaxScore               int
 }
 

@@ -11826,6 +11826,16 @@
     "showSuitNames": true
   },
   {
+    "id": 2016,
+    "name": "Candy Corn Mix (5 Suits)",
+    "suits": ["Red", "Orange D2", "Yellow", "White", "Brown"]
+  },
+  {
+    "id": 2017,
+    "name": "Candy Corn Mix (6 Suits)",
+    "suits": ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"]
+  },
+  {
     "id": 10,
     "name": "Color Blind (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
@@ -13710,27 +13720,723 @@
     "oddsAndEvens": true
   },
   {
-    "name": "Funnels (6 Suits)",
     "id": 1896,
+    "name": "Funnels (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
     "funnels": true
   },
   {
-    "name": "Funnels (5 Suits)",
     "id": 1897,
+    "name": "Funnels (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
     "funnels": true
   },
   {
-    "name": "Funnels (4 Suits)",
     "id": 1898,
+    "name": "Funnels (4 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue"],
     "funnels": true
   },
   {
-    "name": "Funnels (3 Suits)",
     "id": 1899,
+    "name": "Funnels (3 Suits)",
     "suits": ["Red", "Green", "Blue"],
     "funnels": true
+  },
+  {
+    "id": 1900,
+    "name": "Funnels & Black (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
+    "funnels": true
+  },
+  {
+    "id": 1901,
+    "name": "Funnels & Black (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Black"],
+    "funnels": true
+  },
+  {
+    "id": 1902,
+    "name": "Funnels & Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1903,
+    "name": "Funnels & Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1904,
+    "name": "Funnels & Rainbow (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1905,
+    "name": "Funnels & Rainbow (3 Suits)",
+    "suits": ["Red", "Blue", "Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1906,
+    "name": "Funnels & Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1907,
+    "name": "Funnels & Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1908,
+    "name": "Funnels & Pink (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1909,
+    "name": "Funnels & Pink (3 Suits)",
+    "suits": ["Red", "Blue", "Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1910,
+    "name": "Funnels & White (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White"],
+    "funnels": true
+  },
+  {
+    "id": 1911,
+    "name": "Funnels & White (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White"],
+    "funnels": true
+  },
+  {
+    "id": 1912,
+    "name": "Funnels & White (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "White"],
+    "funnels": true
+  },
+  {
+    "id": 1913,
+    "name": "Funnels & White (3 Suits)",
+    "suits": ["Red", "Blue", "White"],
+    "funnels": true
+  },
+  {
+    "id": 1914,
+    "name": "Funnels & Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Brown"],
+    "funnels": true
+  },
+  {
+    "id": 1915,
+    "name": "Funnels & Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Brown"],
+    "funnels": true
+  },
+  {
+    "id": 1916,
+    "name": "Funnels & Brown (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Brown"],
+    "funnels": true
+  },
+  {
+    "id": 1917,
+    "name": "Funnels & Brown (3 Suits)",
+    "suits": ["Red", "Blue", "Brown"],
+    "funnels": true
+  },
+  {
+    "id": 1918,
+    "name": "Funnels & Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Omni"],
+    "funnels": true
+  },
+  {
+    "id": 1919,
+    "name": "Funnels & Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni"],
+    "funnels": true
+  },
+  {
+    "id": 1920,
+    "name": "Funnels & Omni (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Omni"],
+    "funnels": true
+  },
+  {
+    "id": 1921,
+    "name": "Funnels & Omni (3 Suits)",
+    "suits": ["Red", "Blue", "Omni"],
+    "funnels": true
+  },
+  {
+    "id": 1922,
+    "name": "Funnels & Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Null"],
+    "funnels": true
+  },
+  {
+    "id": 1923,
+    "name": "Funnels & Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null"],
+    "funnels": true
+  },
+  {
+    "id": 1924,
+    "name": "Funnels & Null (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Null"],
+    "funnels": true
+  },
+  {
+    "id": 1925,
+    "name": "Funnels & Null (3 Suits)",
+    "suits": ["Red", "Blue", "Null"],
+    "funnels": true
+  },
+  {
+    "id": 1926,
+    "name": "Funnels & Muddy Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Muddy Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1927,
+    "name": "Funnels & Muddy Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1928,
+    "name": "Funnels & Muddy Rainbow (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Muddy Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1929,
+    "name": "Funnels & Muddy Rainbow (3 Suits)",
+    "suits": ["Red", "Blue", "Muddy Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1930,
+    "name": "Funnels & Light Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Light Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1931,
+    "name": "Funnels & Light Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1932,
+    "name": "Funnels & Light Pink (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Light Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1933,
+    "name": "Funnels & Light Pink (3 Suits)",
+    "suits": ["Red", "Blue", "Light Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1934,
+    "name": "Funnels & Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Prism"],
+    "funnels": true
+  },
+  {
+    "id": 1935,
+    "name": "Funnels & Prism (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Prism"],
+    "funnels": true
+  },
+  {
+    "id": 1936,
+    "name": "Funnels & Prism (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Prism"],
+    "funnels": true
+  },
+  {
+    "id": 1937,
+    "name": "Funnels & Prism (3 Suits)",
+    "suits": ["Red", "Blue", "Prism"],
+    "funnels": true
+  },
+  {
+    "id": 1938,
+    "name": "Funnels & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1939,
+    "name": "Funnels & Dark Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1940,
+    "name": "Funnels & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1941,
+    "name": "Funnels & Dark Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1942,
+    "name": "Funnels & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
+    "funnels": true
+  },
+  {
+    "id": 1943,
+    "name": "Funnels & Gray (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray"],
+    "funnels": true
+  },
+  {
+    "id": 1944,
+    "name": "Funnels & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
+    "funnels": true
+  },
+  {
+    "id": 1945,
+    "name": "Funnels & Dark Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown"],
+    "funnels": true
+  },
+  {
+    "id": 1946,
+    "name": "Funnels & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
+    "funnels": true
+  },
+  {
+    "id": 1947,
+    "name": "Funnels & Dark Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni"],
+    "funnels": true
+  },
+  {
+    "id": 1948,
+    "name": "Funnels & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
+    "funnels": true
+  },
+  {
+    "id": 1949,
+    "name": "Funnels & Dark Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"],
+    "funnels": true
+  },
+  {
+    "id": 1950,
+    "name": "Funnels & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1951,
+    "name": "Funnels & Cocoa Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
+    "funnels": true
+  },
+  {
+    "id": 1952,
+    "name": "Funnels & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1953,
+    "name": "Funnels & Gray Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
+    "funnels": true
+  },
+  {
+    "id": 1954,
+    "name": "Funnels & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "funnels": true
+  },
+  {
+    "id": 1955,
+    "name": "Funnels & Dark Prism (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "funnels": true
+  },
+  {
+    "id": 1956,
+    "name": "Chimneys (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
+    "chimneys": true
+  },
+  {
+    "id": 1957,
+    "name": "Chimneys (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
+    "chimneys": true
+  },
+  {
+    "id": 1958,
+    "name": "Chimneys (4 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue"],
+    "chimneys": true
+  },
+  {
+    "id": 1959,
+    "name": "Chimneys (3 Suits)",
+    "suits": ["Red", "Green", "Blue"],
+    "chimneys": true
+  },
+  {
+    "id": 1960,
+    "name": "Chimneys & Black (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
+    "chimneys": true
+  },
+  {
+    "id": 1961,
+    "name": "Chimneys & Black (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Black"],
+    "chimneys": true
+  },
+  {
+    "id": 1962,
+    "name": "Chimneys & Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1963,
+    "name": "Chimneys & Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1964,
+    "name": "Chimneys & Rainbow (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1965,
+    "name": "Chimneys & Rainbow (3 Suits)",
+    "suits": ["Red", "Blue", "Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1966,
+    "name": "Chimneys & Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1967,
+    "name": "Chimneys & Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1968,
+    "name": "Chimneys & Pink (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1969,
+    "name": "Chimneys & Pink (3 Suits)",
+    "suits": ["Red", "Blue", "Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1970,
+    "name": "Chimneys & White (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White"],
+    "chimneys": true
+  },
+  {
+    "id": 1971,
+    "name": "Chimneys & White (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White"],
+    "chimneys": true
+  },
+  {
+    "id": 1972,
+    "name": "Chimneys & White (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "White"],
+    "chimneys": true
+  },
+  {
+    "id": 1973,
+    "name": "Chimneys & White (3 Suits)",
+    "suits": ["Red", "Blue", "White"],
+    "chimneys": true
+  },
+  {
+    "id": 1974,
+    "name": "Chimneys & Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Brown"],
+    "chimneys": true
+  },
+  {
+    "id": 1975,
+    "name": "Chimneys & Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Brown"],
+    "chimneys": true
+  },
+  {
+    "id": 1976,
+    "name": "Chimneys & Brown (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Brown"],
+    "chimneys": true
+  },
+  {
+    "id": 1977,
+    "name": "Chimneys & Brown (3 Suits)",
+    "suits": ["Red", "Blue", "Brown"],
+    "chimneys": true
+  },
+  {
+    "id": 1978,
+    "name": "Chimneys & Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Omni"],
+    "chimneys": true
+  },
+  {
+    "id": 1979,
+    "name": "Chimneys & Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni"],
+    "chimneys": true
+  },
+  {
+    "id": 1980,
+    "name": "Chimneys & Omni (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Omni"],
+    "chimneys": true
+  },
+  {
+    "id": 1981,
+    "name": "Chimneys & Omni (3 Suits)",
+    "suits": ["Red", "Blue", "Omni"],
+    "chimneys": true
+  },
+  {
+    "id": 1982,
+    "name": "Chimneys & Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Null"],
+    "chimneys": true
+  },
+  {
+    "id": 1983,
+    "name": "Chimneys & Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null"],
+    "chimneys": true
+  },
+  {
+    "id": 1984,
+    "name": "Chimneys & Null (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Null"],
+    "chimneys": true
+  },
+  {
+    "id": 1985,
+    "name": "Chimneys & Null (3 Suits)",
+    "suits": ["Red", "Blue", "Null"],
+    "chimneys": true
+  },
+  {
+    "id": 1986,
+    "name": "Chimneys & Muddy Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Muddy Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1987,
+    "name": "Chimneys & Muddy Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1988,
+    "name": "Chimneys & Muddy Rainbow (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Muddy Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1989,
+    "name": "Chimneys & Muddy Rainbow (3 Suits)",
+    "suits": ["Red", "Blue", "Muddy Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1990,
+    "name": "Chimneys & Light Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Light Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1991,
+    "name": "Chimneys & Light Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1992,
+    "name": "Chimneys & Light Pink (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Light Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1993,
+    "name": "Chimneys & Light Pink (3 Suits)",
+    "suits": ["Red", "Blue", "Light Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 1994,
+    "name": "Chimneys & Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Prism"],
+    "chimneys": true
+  },
+  {
+    "id": 1995,
+    "name": "Chimneys & Prism (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Prism"],
+    "chimneys": true
+  },
+  {
+    "id": 1996,
+    "name": "Chimneys & Prism (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Prism"],
+    "chimneys": true
+  },
+  {
+    "id": 1997,
+    "name": "Chimneys & Prism (3 Suits)",
+    "suits": ["Red", "Blue", "Prism"],
+    "chimneys": true
+  },
+  {
+    "id": 1998,
+    "name": "Chimneys & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 1999,
+    "name": "Chimneys & Dark Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 2000,
+    "name": "Chimneys & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 2001,
+    "name": "Chimneys & Dark Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 2002,
+    "name": "Chimneys & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
+    "chimneys": true
+  },
+  {
+    "id": 2003,
+    "name": "Chimneys & Gray (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray"],
+    "chimneys": true
+  },
+  {
+    "id": 2004,
+    "name": "Chimneys & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
+    "chimneys": true
+  },
+  {
+    "id": 2005,
+    "name": "Chimneys & Dark Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown"],
+    "chimneys": true
+  },
+  {
+    "id": 2006,
+    "name": "Chimneys & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
+    "chimneys": true
+  },
+  {
+    "id": 2007,
+    "name": "Chimneys & Dark Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni"],
+    "chimneys": true
+  },
+  {
+    "id": 2008,
+    "name": "Chimneys & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
+    "chimneys": true
+  },
+  {
+    "id": 2009,
+    "name": "Chimneys & Dark Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"],
+    "chimneys": true
+  },
+  {
+    "id": 2010,
+    "name": "Chimneys & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 2011,
+    "name": "Chimneys & Cocoa Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
+    "chimneys": true
+  },
+  {
+    "id": 2012,
+    "name": "Chimneys & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 2013,
+    "name": "Chimneys & Gray Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
+    "chimneys": true
+  },
+  {
+    "id": 2014,
+    "name": "Chimneys & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "chimneys": true
+  },
+  {
+    "id": 2015,
+    "name": "Chimneys & Dark Prism (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "chimneys": true
   }
 ]
