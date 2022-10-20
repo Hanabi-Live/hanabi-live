@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# This script reads the source files
+# This script reads the source files:
 # - src/getVariantDescriptions.ts
 # - src/createVariants/createVariantsJSON.ts (and helpers)
-# and writes to the files
+# and writes to the files:
 # - $REPO_ROOT/misc/variants.txt
 # - src/json/variants.json
 
@@ -15,9 +15,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 cd "$DIR"
 
-echo "Compiling typescript..."
-tsc
 echo "Creating variants files..."
-node dist/createVariants/createVariantsJSON.js
+npx ts-node "$DIR/createVariants/createVariantsJSON.ts"
 echo "Applying prettier to variants.json..."
-npx prettier -w src/json/variants.json
+npx prettier --write "$DIR/src/json/variants.json"
+echo "Done."
