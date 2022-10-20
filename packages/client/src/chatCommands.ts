@@ -1,5 +1,6 @@
 import { getVariantNames } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
+import toggleZen from "./game/ui/zen";
 import globals from "./globals";
 import * as createGame from "./lobby/createGame";
 import createJSONFromReplay from "./lobby/createReplayJSON";
@@ -285,6 +286,11 @@ chatCommands.set("unfriend", (room: string, args: string[]) => {
 chatCommands.set("version", (room: string) => {
   const msg = `You are running version <strong>${globals.version}</strong> of the client.`;
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
+});
+
+// /version
+chatCommands.set("zen", () => {
+  toggleZen();
 });
 
 // /copy
