@@ -288,7 +288,7 @@ chatCommands.set("version", (room: string) => {
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
 });
 
-// /version
+// /zen
 chatCommands.set("zen", (room: string) => {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
