@@ -277,7 +277,6 @@ export function variantsInit(
     }
     const chimneys = variantJSON.chimneys ?? false;
 
-
     // Validate the "showSuitNames" property. If it is not specified, assume that we are not showing
     // the suit names.
     if (
