@@ -2,7 +2,7 @@ import { sendSelfPMFromServer } from "../../chat";
 import globals from "./globals";
 import { onSpectatorsChanged } from "./reactive/view/spectatorsView";
 
-export default function toggleZen() {
+export default function toggleZen(): void {
   if (globals.state.finished) {
     globals.lobby.zenModeEnabled = false;
   } else {
