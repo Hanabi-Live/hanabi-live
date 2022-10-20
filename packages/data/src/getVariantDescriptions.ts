@@ -605,6 +605,14 @@ export function getMixVariants(): VariantDescription[] {
       ],
       showSuitNames: true,
     },
+    {
+      name: "Candy Corn Mix (5 Suits)",
+      suits: ["Yellow", "Orange", "Red", "White", "Brown"],
+    },
+    {
+      name: "Candy Corn Mix (6 Suits)",
+      suits: ["Yellow", "Orange", "Red", "White", "Brown", "Cocoa Rainbow"],
+    },
   ];
 }
 

@@ -11826,6 +11826,16 @@
     "showSuitNames": true
   },
   {
+    "id": 2016,
+    "name": "Candy Corn Mix (5 Suits)",
+    "suits": ["Yellow", "Orange", "Red", "White", "Brown"]
+  },
+  {
+    "id": 2017,
+    "name": "Candy Corn Mix (6 Suits)",
+    "suits": ["Yellow", "Orange", "Red", "White", "Brown", "Cocoa Rainbow"]
+  },
+  {
     "id": 10,
     "name": "Color Blind (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
