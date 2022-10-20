@@ -6,6 +6,7 @@ import {
   getAmbiguousVariants,
   getBasicVariants,
   getBlindVariants,
+  getChimneysVariants,
   getClueStarvedVariants,
   getCowAndPigVariants,
   getCriticalFoursVariants,
@@ -82,7 +83,8 @@ function main() {
     ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getFunnelsVariants(basicVariantSuits),
+    ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
@@ -99,7 +101,7 @@ function main() {
 }
 
 function getPaths(): [string, string, string] {
-  const repoRootPath = path.join(__dirname, "..", "..", "..");
+  const repoRootPath = path.join(__dirname, "..", "..", "..", "..");
   const jsonDirectoryPath = path.join(
     repoRootPath,
     "packages",
@@ -284,6 +286,8 @@ function getNextUnusedVariantID(variantName: string) {
     const existingVariantName = oldVariantsIDToNameMap.get(variantID);
     if (existingVariantName === undefined) {
       foundUnusedVariantID = true;
+      oldVariantsIDToNameMap.set(variantID, variantName);
+      oldVariantsNameToIDMap.set(variantName, variantID);
     }
   } while (!foundUnusedVariantID);
 

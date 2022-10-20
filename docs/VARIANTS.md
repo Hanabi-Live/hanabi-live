@@ -302,6 +302,10 @@ One of each card per suit (e.g. 5 in total):
 
 - Rank clues also touch all lower ranked cards.
 
+### Chimneys
+
+- Rank clues also touch all higher ranked cards.
+
 <br />
 
 ## Full Variant Listing
