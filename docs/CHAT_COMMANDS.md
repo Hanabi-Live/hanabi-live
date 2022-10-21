@@ -100,6 +100,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | ---------- | ---------------------------------------- |
 | `/pause`   | Pause the game (can be done on any turn) |
 | `/unpause` | Unpause the game                         |
+| `/zen`     | Enables or disables zen mode             |
 
 <br />
 
