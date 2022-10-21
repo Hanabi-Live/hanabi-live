@@ -36,7 +36,7 @@ const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
 const suitsNameMap = new Map<string, SuitJSON>();
 const suitsIDMap = new Map<string, SuitJSON>();
-let largestVariantID = -1;
+const lastUsedVariantID = -1;
 
 main();
 
@@ -235,7 +235,6 @@ function setOldVariantMaps(variants: VariantJSON[]) {
   for (const variant of variants) {
     oldVariantsNameToIDMap.set(variant.name, variant.id);
     oldVariantsIDToNameMap.set(variant.id, variant.name);
-    largestVariantID = Math.max(largestVariantID, variant.id);
   }
 }
 
@@ -280,8 +279,19 @@ function getNextUnusedVariantID(variantName: string) {
   }
 
   // Otherwise, find the lowest unused variant ID.
-  largestVariantID++;
-  return largestVariantID;
+  let foundUnusedVariantID = false;
+  let variantID = lastUsedVariantID;
+  do {
+    variantID++;
+    const existingVariantName = oldVariantsIDToNameMap.get(variantID);
+    if (existingVariantName === undefined) {
+      foundUnusedVariantID = true;
+      oldVariantsIDToNameMap.set(variantID, variantName);
+      oldVariantsNameToIDMap.set(variantName, variantID);
+    }
+  } while (!foundUnusedVariantID);
+
+  return variantID;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
