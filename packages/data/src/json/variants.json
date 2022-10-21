@@ -470,11 +470,6 @@
     "suits": ["Red", "Blue", "Rainbow", "White"]
   },
   {
-    "id": 150,
-    "name": "Rainbow & White (3 Suits)",
-    "suits": ["Red", "Rainbow", "White"]
-  },
-  {
     "id": 75,
     "name": "Rainbow & Brown (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Brown"]
@@ -510,11 +505,6 @@
     "suits": ["Red", "Blue", "Rainbow", "Omni"]
   },
   {
-    "id": 193,
-    "name": "Rainbow & Omni (3 Suits)",
-    "suits": ["Red", "Rainbow", "Omni"]
-  },
-  {
     "id": 194,
     "name": "Rainbow & Null (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Null"]
@@ -528,11 +518,6 @@
     "id": 196,
     "name": "Rainbow & Null (4 Suits)",
     "suits": ["Red", "Blue", "Rainbow", "Null"]
-  },
-  {
-    "id": 197,
-    "name": "Rainbow & Null (3 Suits)",
-    "suits": ["Red", "Rainbow", "Null"]
   },
   {
     "id": 1292,
@@ -550,11 +535,6 @@
     "suits": ["Red", "Blue", "Rainbow", "Muddy Rainbow"]
   },
   {
-    "id": 1295,
-    "name": "Rainbow & Muddy Rainbow (3 Suits)",
-    "suits": ["Red", "Rainbow", "Muddy Rainbow"]
-  },
-  {
     "id": 782,
     "name": "Rainbow & Light Pink (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Light Pink"]
@@ -570,11 +550,6 @@
     "suits": ["Red", "Blue", "Rainbow", "Light Pink"]
   },
   {
-    "id": 785,
-    "name": "Rainbow & Light Pink (3 Suits)",
-    "suits": ["Red", "Rainbow", "Light Pink"]
-  },
-  {
     "id": 1473,
     "name": "Rainbow & Prism (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Prism"]
@@ -588,11 +563,6 @@
     "id": 1475,
     "name": "Rainbow & Prism (4 Suits)",
     "suits": ["Red", "Blue", "Rainbow", "Prism"]
-  },
-  {
-    "id": 1476,
-    "name": "Rainbow & Prism (3 Suits)",
-    "suits": ["Red", "Rainbow", "Prism"]
   },
   {
     "id": 140,
@@ -1010,11 +980,6 @@
     "suits": ["Red", "Blue", "White", "Prism"]
   },
   {
-    "id": 1488,
-    "name": "White & Prism (3 Suits)",
-    "suits": ["Red", "White", "Prism"]
-  },
-  {
     "id": 83,
     "name": "White & Dark Rainbow (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "White", "Dark Rainbow"]
@@ -1350,11 +1315,6 @@
     "suits": ["Red", "Blue", "Omni", "Prism"]
   },
   {
-    "id": 1500,
-    "name": "Omni & Prism (3 Suits)",
-    "suits": ["Red", "Omni", "Prism"]
-  },
-  {
     "id": 226,
     "name": "Omni & Dark Rainbow (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Dark Rainbow"]
@@ -1490,11 +1450,6 @@
     "suits": ["Red", "Blue", "Null", "Prism"]
   },
   {
-    "id": 1506,
-    "name": "Null & Prism (3 Suits)",
-    "suits": ["Red", "Null", "Prism"]
-  },
-  {
     "id": 228,
     "name": "Null & Dark Rainbow (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Dark Rainbow"]
@@ -1610,11 +1565,6 @@
     "suits": ["Red", "Blue", "Muddy Rainbow", "Prism"]
   },
   {
-    "id": 1512,
-    "name": "Muddy Rainbow & Prism (3 Suits)",
-    "suits": ["Red", "Muddy Rainbow", "Prism"]
-  },
-  {
     "id": 1304,
     "name": "Muddy Rainbow & Dark Rainbow (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow", "Dark Rainbow"]
@@ -1708,11 +1658,6 @@
     "id": 1517,
     "name": "Light Pink & Prism (4 Suits)",
     "suits": ["Red", "Blue", "Light Pink", "Prism"]
-  },
-  {
-    "id": 1518,
-    "name": "Light Pink & Prism (3 Suits)",
-    "suits": ["Red", "Light Pink", "Prism"]
   },
   {
     "id": 806,
