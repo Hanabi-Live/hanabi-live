@@ -143,7 +143,7 @@ export function getVariantsForEachSpecialSuitCombination(
           continue;
         }
 
-        // Prism and Rainbow require 2 clueable suits, else they are just ambiguous red
+        // Prism and Rainbow require 2 clueable suits, else they are just ambiguous red.
         if (
           numSuits === 3 &&
           ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name) &&
