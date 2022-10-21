@@ -1,4 +1,4 @@
-// The default qualities of a card
+// The default qualities of a card.
 export const CARD_W = 286;
 export const CARD_H = 406;
 export const CARD_FADE = 0.6;
@@ -10,7 +10,7 @@ export const ARROW_COLOR = {
   DEFAULT: "#ffffff", // White
   RETOUCHED: "#737373", // Dark gray
   HIGHLIGHT: "#ffdf00", // Yellow
-};
+} as const;
 export const CLUED_COLOR = "orange";
 export const CHOP_MOVE_COLOR = "#fffce6"; // White with a yellow tint
 export const FINESSE_COLOR = "aqua";

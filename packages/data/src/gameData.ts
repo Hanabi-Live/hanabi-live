@@ -19,7 +19,7 @@ const SUITS = suitsInit(COLORS);
 /** Indexed by variant name. */
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 
-/** Indexed by variant ID */
+/** Indexed by variant ID. */
 const VARIANTS_BY_ID = getVariantsMapByID();
 
 function getVariantsMapByID(): ReadonlyMap<number, Variant> {
@@ -72,7 +72,7 @@ export function getVariantNames(): readonly string[] {
   return Array.from(VARIANTS.keys());
 }
 
-export function doesVariantExist(variantName: string) {
+export function doesVariantExist(variantName: string): boolean {
   return VARIANTS.has(variantName);
 }
 

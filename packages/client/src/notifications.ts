@@ -1,4 +1,4 @@
-// The site has the ability to send (optional) notifications
+// The site has the ability to send (optional) notifications.
 
 import * as modals from "./modals";
 
@@ -17,7 +17,7 @@ export function test(): void {
   Notification.requestPermission()
     .then((permission) => {
       // If they have previously denied the permission pop-up dialog, then nothing will appear when
-      // "Notification.requestPermission()" is invoked
+      // "Notification.requestPermission()" is invoked.
       if (permission !== "granted") {
         modals.showWarning(
           `The website does not have permissions to send desktop notifications. ${notificationAdvice}`,

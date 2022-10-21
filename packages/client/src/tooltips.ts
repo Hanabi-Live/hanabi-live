@@ -1,16 +1,15 @@
-// Central point for all game tooltips
+// Central point for all game tooltips.
 
 // Tooltipster is a jQuery library, so we import it purely for the side-effects
-// (e.g. so that it can add the ".tooltipster" property to the "$" object)
-// webpack will purge modules like this from the resulting bundled file (e.g. the "tree shaking"
-// feature) if we have "sideEffects" equal to true in the "package.json" file
-// So we have to make sure that "sideEffects" is is either removed or set to false
-// Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have
-// to worry about that for now
+// (e.g. so that it can add the ".tooltipster" property to the "$" object). `webpack` will purge
+// modules like this from the resulting bundled file (e.g. the "tree shaking" feature) if we have
+// "sideEffects" equal to true in the "package.json" file. So we have to make sure that
+// "sideEffects" is is either removed or set to false. Tree shaking only makes a difference of 2 KB
+// in the resulting bundled file, so we do not have to worry about that for now.
 import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
 import "tooltipster";
-// ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
-// We import it for the side-effects for the same reason
+// ScrollableTip is a Tooltipster library that allows for a scrolling tooltip. We import it for the
+// side-effects for the same reason.
 import "../lib/tooltipster-scrollableTip.min";
 
 export const TOOLTIP_DELAY = 500; // In milliseconds
@@ -35,8 +34,8 @@ const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   trigger: "click",
   interactive: true,
   delay: 0,
-  // Some tooltips are too large for small resolutions and will wrap off the screen;
-  // we can use a Tooltipster plugin to automatically create a scroll bar for it
+  // Some tooltips are too large for small resolutions and will wrap off the screen; we can use a
+  // Tooltipster plugin to automatically create a scroll bar for it:
   // https://github.com/louisameline/tooltipster-scrollableTip
   plugins: [
     "sideTip", // Make it have the ability to be positioned on a specific side
@@ -79,7 +78,7 @@ export function create(
     ...customType,
     args,
   };
-  // Create the tooltip only once
+  // Create the tooltip only once:
   // https://stackoverflow.com/a/40916543/180243
   if ($.tooltipster.instances($(tooltip)).length === 0) {
     tooltip.tooltipster(tooltipOptions);
@@ -159,9 +158,7 @@ export function getStatus(selector: string): JQueryTooltipster.ITooltipStatus {
     destroyed: true,
     destroying: false,
     enabled: false,
-    /** if the tooltip is open (either appearing, stable or disappearing) */
     open: false,
-    /** the state equals one of these four values: */
     state: "closed",
   };
 }
@@ -193,7 +190,7 @@ function appendDiv(selector: string, id: string) {
 }
 
 function createGameTooltips() {
-  // Initialize some basic tooltips
+  // Initialize some basic tooltips.
   const tooltips = [
     "chat",
     "deck",
@@ -221,12 +218,12 @@ function createGameTooltips() {
     create(`#${id}`, gameOptions);
   }
 
-  // The "time-taken" tooltip should have centered text
+  // The "time-taken" tooltip should have centered text.
   setInstanceOption("#tooltip-time-taken", "theme", TOOLTIP_THEME_CENTERED);
 }
 
 function createPlayerTooltips() {
-  // Dynamically create the player tooltips
+  // Dynamically create the player tooltips.
   for (let i = 0; i < MAX_PLAYERS; i++) {
     let id = `tooltip-player-${i}`;
     appendDiv("#game-tooltips", id);
@@ -241,20 +238,20 @@ function createPlayerTooltips() {
 }
 
 function createCardTooltips() {
-  // Dynamically create the card note tooltips
+  // Dynamically create the card note tooltips.
   for (let i = 0; i < MAX_CARDS_IN_A_DECK + 6; i++) {
-    // The number in the id matches the order of the card in the deck
-    // We add 6 because we also need note tooltips for the stack bases
+    // The number in the id matches the order of the card in the deck. We add 6 because we also need
+    // note tooltips for the stack bases.
     const id = `tooltip-card-${i}`;
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);
   }
 }
 
-function getElementFromSelector(selector: string): JQuery<HTMLElement> {
+function getElementFromSelector(selector: string): JQuery {
   return typeof selector === "string" ? $(selector) : selector;
 }
 
-function isTooltipster(element: JQuery<HTMLElement>): boolean {
+function isTooltipster(element: JQuery): boolean {
   return element.hasClass("tooltipstered");
 }

@@ -20,6 +20,8 @@ export interface Variant {
   readonly rankCluesTouchNothing: boolean;
 
   readonly oddsAndEvens: boolean;
+  readonly funnels: boolean;
+  readonly chimneys: boolean;
 
   readonly showSuitNames: boolean;
   readonly maxScore: number;

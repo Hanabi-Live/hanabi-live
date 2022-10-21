@@ -12,18 +12,22 @@ import * as cluesRules from "./clues";
 import * as handRules from "./hand";
 import * as variantRules from "./variant";
 
+const HYPO_PREFIX = "[Hypo] ";
+
 export function clue(
   action: ActionClue,
   targetHand: number[],
+  hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
   const giver = metadata.playerNames[action.giver];
-  let target = metadata.playerNames[action.target];
+  let target = metadata.playerNames[action.target]!;
   const words = ["zero", "one", "two", "three", "four", "five", "six"];
   const word = words[action.list.length];
   const variant = getVariant(metadata.options.variantName);
+  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
-  // First, handle the case of clue text in some special variants
+  // First, handle the case of clue text in some special variants.
   const characterName = getCharacterNameForPlayer(
     action.giver,
     metadata.characterAssignments,
@@ -37,6 +41,7 @@ export function clue(
     if (variantRules.isCowAndPig(variant)) {
       if (action.clue.type === ClueType.Color) {
         actionName = "moos";
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (action.clue.type === ClueType.Rank) {
         actionName = "oinks";
       }
@@ -49,7 +54,7 @@ export function clue(
       target += "s";
     }
 
-    // Create a list of slot numbers that correspond to the cards touched
+    // Create a list of slot numbers that correspond to the cards touched.
     const slots: number[] = [];
     for (const order of action.list) {
       const slot = handRules.cardSlot(order, targetHand);
@@ -67,10 +72,10 @@ export function clue(
 
     const slotsText = slots.join("/");
 
-    return `${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
+    return `${hypoPrefix}${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
   }
 
-  // Handle the default case of a normal clue
+  // Handle the default case of a normal clue.
   let clueName = cluesRules.getClueName(
     action.clue.type,
     action.clue.value,
@@ -81,7 +86,7 @@ export function clue(
     clueName += "s";
   }
 
-  return `${giver} tells ${target} about ${word} ${clueName}`;
+  return `${hypoPrefix}${giver} tells ${target} about ${word} ${clueName}`;
 }
 
 export function gameOver(
@@ -150,19 +155,20 @@ export function play(
   slot: number | null,
   touched: boolean,
   playing: boolean,
+  hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let card;
+  let card: string;
   if (variantRules.isThrowItInAHole(variant) && playing) {
     card = "a card";
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
-  let location;
+  let location: string;
   if (slot === null) {
     location = "the deck";
   } else {
@@ -174,7 +180,8 @@ export function play(
     suffix = " (blind)";
   }
 
-  return `${playerName} plays ${card} from ${location}${suffix}`;
+  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  return `${hypoPrefix}${playerName} plays ${card} from ${location}${suffix}`;
 }
 
 export function discard(
@@ -182,6 +189,7 @@ export function discard(
   slot: number | null,
   touched: boolean,
   playing: boolean,
+  hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
   const variant = getVariant(metadata.options.variantName);
@@ -202,7 +210,7 @@ export function discard(
     card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
-  let location;
+  let location: string;
   if (slot === null) {
     location = "the deck";
   } else {
@@ -210,12 +218,13 @@ export function discard(
   }
 
   let suffix = "";
-  if (action.failed && touched) {
+  if (action.failed && touched && !variantRules.isThrowItInAHole(variant)) {
     suffix = " (clued)";
   }
   if (action.failed && slot !== null && !touched) {
     suffix = " (blind)";
   }
 
-  return `${playerName} ${verb} ${card} from ${location}${suffix}`;
+  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  return `${hypoPrefix}${playerName} ${verb} ${card} from ${location}${suffix}`;
 }

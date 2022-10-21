@@ -24,7 +24,7 @@ export function begin(): void {
   handlePremove();
 }
 
-// Handle pre-playing / pre-discarding / pre-cluing
+// Handle pre-playing / pre-discarding / pre-cluing.
 function handlePremove() {
   // Local variables
   const { premove } = globals.state;
@@ -34,7 +34,7 @@ function handlePremove() {
     return;
   }
 
-  // Make a copy of the premove values and then clear the premove action
+  // Make a copy of the premove values and then clear the premove action.
   const { type, target, value } = premove;
   globals.store!.dispatch({
     type: "premove",
@@ -45,7 +45,7 @@ function handlePremove() {
   switch (type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
-      // Prevent pre-cluing if there is not a clue available
+      // Prevent pre-cluing if there is not a clue available.
       if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
         return;
       }
@@ -54,7 +54,7 @@ function handlePremove() {
     }
 
     case ActionType.Discard: {
-      // Prevent discarding if the team is at the maximum amount of clues
+      // Prevent discarding if the team is at the maximum amount of clues.
       if (clueTokensRules.atMax(clueTokens, globals.variant)) {
         return;
       }
@@ -67,9 +67,9 @@ function handlePremove() {
     }
   }
 
-  // We don't want to send the action right away, or else it introduces bugs
+  // We don't want to send the action right away, or else it introduces bugs.
   setTimeout(() => {
-    // As a sanity check, ensure that it is still our turn
+    // As a sanity check, ensure that it is still our turn.
     if (!isOurTurn()) {
       return;
     }
@@ -86,7 +86,7 @@ function handlePremove() {
 }
 
 export function resetSelectedClue(): void {
-  // Reset the clue UI, leaving the last target player selected
+  // Reset the clue UI, leaving the last target player selected.
   globals.elements.clueTypeButtonGroup!.clearPressed();
 
   globals.layers.UI.batchDraw();
@@ -120,8 +120,8 @@ export function end(clientAction: ClientAction): void {
 export function hideArrowsAndDisableDragging(): void {
   arrows.hideAll();
 
-  // Make all of the cards in our hand not draggable
-  // (but we need to keep them draggable if the pre-play setting is enabled)
+  // Make all of the cards in our hand not draggable. (But we need to keep them draggable if the
+  // pre-play setting is enabled.)
   if (!globals.lobby.settings.speedrunPreplay) {
     ourHand.checkSetDraggableAll();
   }

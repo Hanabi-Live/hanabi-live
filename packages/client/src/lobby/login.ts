@@ -1,4 +1,4 @@
-// The initial login page
+// The initial login page.
 
 import { VERSION } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
@@ -47,7 +47,7 @@ export function init(): void {
 }
 
 function submit(event: JQuery.Event) {
-  // By default, the form will reload the page, so stop this from happening
+  // By default, the form will reload the page, so stop this from happening.
   event.preventDefault();
 
   let username = $("#login-username").val();
@@ -73,8 +73,8 @@ function submit(event: JQuery.Event) {
 
   let newPassword: string | null = null;
   if (!$(".change-password").hasClass("hidden")) {
-    // change password was requested
-    newPassword = <string>$("#change-password").val();
+    // Change password was requested.
+    newPassword = $("#change-password").val() as string;
     if (isEmpty(newPassword)) {
       formError("You must provide a new password.");
       return;
@@ -92,7 +92,7 @@ function send(username: string, password: string, newPassword: string | null) {
   $("#login-explanation").hide();
   $("#login-ajax").show();
 
-  // Send a login request to the server; if successful, we will get a cookie back
+  // Send a login request to the server; if successful, we will get a cookie back.
   const url = getURLFromPath("/login");
   const postData = {
     username,
@@ -101,6 +101,7 @@ function send(username: string, password: string, newPassword: string | null) {
     version: VERSION,
   };
 
+  // eslint-disable-next-line isaacscript/no-object-any
   const request = $.ajax({
     url,
     type: "POST",
@@ -110,7 +111,7 @@ function send(username: string, password: string, newPassword: string | null) {
 
   request
     .done(() => {
-      // We successfully got a cookie; attempt to establish a WebSocket connection
+      // We successfully got a cookie; attempt to establish a WebSocket connection.
       websocketInit();
     })
     .fail((jqXHR) => {
@@ -121,8 +122,7 @@ function send(username: string, password: string, newPassword: string | null) {
     });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAjaxError(jqXHR: JQuery.jqXHR<any>) {
+function getAjaxError(jqXHR: JQuery.jqXHR) {
   if (jqXHR.readyState === 0) {
     return "A network error occurred. The server might be down!";
   }
@@ -133,8 +133,8 @@ function getAjaxError(jqXHR: JQuery.jqXHR<any>) {
 }
 
 export function automaticLogin(): void {
-  // Automatically sign in to the WebSocket server if a query string of "?login" is present
-  // (which is intended to be used with test accounts)
+  // Automatically sign in to the WebSocket server if a query string of "?login" is present (which
+  // is intended to be used with test accounts).
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get("login");
   if (username !== null && username !== "") {
@@ -143,13 +143,12 @@ export function automaticLogin(): void {
     return;
   }
 
-  // If we have logged in previously and our cookie is still good, automatically login
+  // If we have logged in previously and our cookie is still good, automatically login.
   console.log("Testing to see if we have a cached WebSocket cookie.");
   const testCookiePath = "/test-cookie";
   fetch(testCookiePath)
     .then((response) => {
-      // Check to see if we have accepted the Firefox warning
-      // (cookies are strings)
+      // Check to see if we have accepted the Firefox warning (cookies are strings).
       if (
         globals.browserIsFirefox &&
         localStorage.getItem("acceptedFirefoxWarning") !== "true"
@@ -205,15 +204,12 @@ export function hide(firstTimeUser: boolean): void {
   }
   $("#tutorial").hide();
 
-  // Disable scroll bars
-  // Even with height and width 100%,
-  // the scroll bar can pop up when going back from a game to the lobby
-  // It also can show up in-game if a tooltip animates off of the edge of the screen
-  // So we can set "overflow" to explicitly prevent this from occurring
-  // We don't want to set this in "hanabi.css" because
-  // there should be scrolling enabled on the login screen
-  // We need to scroll to the top of the screen before disabling the scroll bars
-  // or else the lobby can become misaligned when logging in from a scroll-down state
+  // Disable scroll bars. Even with height and width 100%, the scroll bar can pop up when going back
+  // from a game to the lobby. It also can show up in-game if a tooltip animates off of the edge of
+  // the screen. So we can set "overflow" to explicitly prevent this from occurring. We don't want
+  // to set this in "hanabi.css" because there should be scrolling enabled on the login screen. We
+  // need to scroll to the top of the screen before disabling the scroll bars or else the lobby can
+  // become misaligned when logging in from a scroll-down state.
   window.scrollTo(0, 0);
   $("body").css("overflow", "hidden");
 
@@ -223,24 +219,24 @@ export function hide(firstTimeUser: boolean): void {
   usersDraw.draw(); // If we were in the tutorial, we have to re-draw all of the user rows
   $("#lobby").show();
   $("#lobby-history").hide();
-  // We can't hide this element by default in "index.html" or else the "No game history" text
-  // will not be centered
+  // We can't hide this element by default in "index.html" or else the "No game history" text will
+  // not be centered.
   nav.show("lobby");
   $("#lobby-chat-input").trigger("focus");
 
-  // Scroll to the bottom of the chat
-  // (this is necessary if we are going to the lobby after the tutorial)
+  // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the
+  // tutorial.)
   const chat = $("#lobby-chat-text");
   chat.animate(
     {
-      scrollTop: chat[0].scrollHeight,
+      scrollTop: chat[0]!.scrollHeight,
     },
     0,
   );
 }
 
 function formError(msg: string) {
-  // For some reason this has to be invoked asynchronously in order to work properly
+  // For some reason this has to be invoked asynchronously in order to work properly.
   setTimeout(() => {
     $("#login-ajax").hide();
     $("#login-button").removeClass("disabled");

@@ -56,45 +56,45 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 ## Major Features
 
-#### Clue Indication
+### Clue Indication
 
 - Arrows indicate the cards that are touched by a clue.
   - A circle on the arrow shows the type of clue that was given.
-  - Arrows with a white border indicate that they are touching a "brand new" card (e.g. a card that has not been touched by any positive clues yet).
-  - Arrows with a gray border indicate that they are re-touching a card that has been previously touched by one or more positive clues.
+  - Arrows with a white fill indicate that they are touching a "brand new" card (e.g. a card that has not been touched by any positive clues yet).
+  - Arrows with a gray fill indicate that they are re-touching a card that has been previously touched by one or more positive clues.
 - An orange border around a card signifies that it has been "touched" by one or more positive clues. The card will also be raised slightly.
 - The game will keep track of the clues that accumulate on cards, "filling them in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand to see how it appears to them. (This is referred to as "empathy".)
 
-#### Pips
+### Pips
 
 - Suit pips (that represent the possible suits) and white numbers (that represent the possible ranks) will appear on cards in a player's hand.
 - The pips and numbers will automatically disappear as positive clues and negative clues "touch" the card.
 - The pips and numbers will automatically be crossed out if all the particular cards for that suit/rank are visible.
 
-#### Critical Indicator
+### Critical Indicator
 
 A "❗" icon will appear on cards that are "critical". (Critical cards are cards that have not been played yet and have only one copy remaining.)
 
-#### Clue Log
+### Clue Log
 
 - A clue log is shown in the top-right-hand corner.
 - When the cursor is hovering over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
 - You can click on an entry in the clue log to go to the turn when the clue was given.
 
-#### Termination
+### Termination
 
 - Games will be automatically terminated by the server if no move is performed in 30 minutes. (This helps to clean the lobby of games that will never be finished.)
 - Players can vote to terminate a game by clicking on the X button where the strike indicators are (near the bottom of the screen).
 
-#### Spectators
+### Spectators
 
 - All games have the ability to be spectated by others.
 - Spectators will see all of the hands.
 - The list of current spectators can be seen by hovering over the "👀" icon in the bottom-right-hand corner.
 - Spectators can right-click on a player's name to view the game from their perspective. In ongoing games, this is indicated with a "🕵️" icon.
 
-#### In-Game Replay
+### In-Game Replay
 
 - In the middle of a game, players can click on the arrow button in the bottom-left-hand corner to open the in-game replay feature.
 - Using this feature, players can go back in time to see the exact game state at a specific turn.
@@ -107,18 +107,18 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   - You can click on the three strike squares to go to the turn before the strike happened, if any.
   - You can right-click on the "Turn" label to go to an arbitrary turn.
 
-#### Game History and Profiles
+### Game History and Profiles
 
 - After a game is completed, it will be recorded in the database.
 - Players will be able to see their past games in the "Show History" screen.
 - You can click on a player's name in the lobby to view their profile, which will show all of their past games and some extra statistics.
 
-#### Replays
+### Replays
 
 - Any past game can be viewed as a replay or a shared replay.
 - Similar to an in-game replay, in a post-game replay, you can review the game turn by turn.
 
-#### Shared Replays
+### Shared Replays
 
 - A shared replay is similar to a normal replay, but others can join to have a coordinated review session.
 - At the end of each game, you will automatically be put into a shared replay with everyone who played the game.
@@ -129,7 +129,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
 - The leader role can be transferred by clicking or double-tapping the crown.
 
-#### Hypotheticals
+### Hypotheticals
 
 - In a shared replay, the leader has the option to begin a hypothetical.
 - In a hypothetical, the leader can perform actions for all of the players, playing the game forward for as long as desired.
@@ -137,12 +137,12 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - When a hypothetical is active, other players cannot "break free" or return to previous turns.
 - The leader can Alt + right-click on a card to morph it into an arbitrary card. This can be useful for showing how players have to account for different kinds of situations or to create specific game states.
 
-#### In-Game Statistics
+### In-Game Statistics
 
 - Some statistics are shown on the right hand side of the screen to show how well the game is going.
 - More information about the stats can be found in [the Pace & Efficiency section](#pace--efficiency) below.
 
-#### 6-Player Games
+### 6-Player Games
 
 - In 6-player games, only three cards are dealt to each player.
 
@@ -155,11 +155,11 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 <br />
 
-#### Variants
+### Variants
 
 - The server implements several variants, which are listed on [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/VARIANTS.md).
 
-#### Timed Games
+### Timed Games
 
 - Each game has the option to be created with as a "Timed Game".
 - Similar to chess, each player has a bank of time that decreases only during their turn.
@@ -168,7 +168,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The player who goes first will be refunded the amount of time that it took for them to load the page.
 - Players can pause (or queue a pause) by right clicking on their timer.
 
-#### Speedruns
+### Speedruns
 
 - Each game has the option to be created as a speedrun. In speedruns, players attempt to beat the game as fast as possible (as a special challenge). The best speedrun times are tracked on the [Speedrun.com leaderboards](https://www.speedrun.com/hanabi).
 - In a speedrun, the controls work differently and are optimized for faster play:
@@ -181,13 +181,13 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - Speedrunning games will not count towards your statistics.
 - If this mode is enabled, then the "Timed" option will be disabled.
 
-#### Card Cycling
+### Card Cycling
 
 - Each game has the option to enable algorithmic card cycling.
 - If enabled, whenever a player gives a clue, their oldest unclued card will be moved to their newest slot.
 - This is a way to play that is used by [Alessandro Iraci's](https://sites.google.com/view/iraci) group from the [Scuola Normale Superiore di Pisa](https://www.sns.it/en).
 
-#### Bottom Deck Blind Plays
+### Bottom Deck Blind Plays
 
 - Each game has the option to allow a special "house" rule.
 - If enabled, when there is 1 card left in the deck, players are allowed to blind play it.
@@ -195,23 +195,23 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - A golden border will appear around the deck when there is 1 card left in order to signify that this is possible.
 - This feature can prevent losses that occur from being "bottom decked" by a 3 or a 4 that was impossible to save in the early or mid-game.
 
-#### Empty Clues
+### Empty Clues
 
 - By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 - Each game has the option to allow empty clues.
 - More information on the history of empty clues can be found in the [H-Group conventions repository](https://github.com/hanabi/hanabi.github.io/blob/main/misc/empty-clues.md#history).
 
-#### One Extra Card
+### One Extra Card
 
 - Each game has the option to play with one extra card dealt to each player at the start of the game.
 - This can make the game easier with a low amount of players, but make the game harder with a high amount of players.
 
-#### One Less Card
+### One Less Card
 
 - Each game has the option to play with one less card dealt to each player at the start of the game.
 - This can make the game easier with a high amount of players, but make the game harder with a low amount of players.
 
-#### All or Nothing
+### All or Nothing
 
 - Each game has the option to play it as "All or Nothing", which changes the rules.
 - In this mode, the game does not end when the final card is drawn, allowing players to continue playing as normal until all of the stacks are completed.
@@ -220,13 +220,13 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The game immediately ends with a score of 0 if a player has no cards in their hand and no clue tokens are available.
 - (This is the fourth [official variant](https://github.com/hanabi/hanabi.github.io/blob/main/misc/rules.md#multicolor-variants).)
 
-#### Detrimental Character Assignments
+### Detrimental Character Assignments
 
 - Each game has the option to enable "Detrimental Character Assignments". When enabled, it will restrict players in additional ways beyond the normal rules.
 - The characters are loosely based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
 - More information on the characters are listed on [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/CHARACTERS.md).
 
-#### Password-Protected Games
+### Password-Protected Games
 
 - Each game has the option to be created with a password.
 - This allows private tables to be created.
@@ -235,32 +235,32 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 ## Other Options
 
-#### Keldon Mode
+### Keldon Mode
 
 - By default, the interface will group all of the hands together in rows.
 - In Keldon mode, the hands are distributed around the table, similar to how it would look if you were playing a card game in real-life.
 - (This is named after [Keldon Jones](http://www.keldon.net/), since he is the person who originally created this mode and the UI more generally.)
 
-#### Color-Blind Mode
+### Color-Blind Mode
 
 - Each player has the option to toggle a color-blind mode that will add a letter to each card that signifies which suit it is.
 
-#### Real-Life Mode
+### Real-Life Mode
 
 - In real-life mode, cards will no longer be filled in with positive and negative clues.
 - Furthermore, extra UI elements are turned off (8 clue warning, etc.).
 
-#### Reverse Hand Direction
+### Reverse Hand Direction
 
 - Each player has the option to toggle a "reverse hand direction" option, in which the user interface will display the hand from right-to-left instead of from left-to-right.
 - This is useful for players that are used to drawing cards from the right side instead of from the left.
 
-#### Pre-Playing
+### Pre-Playing
 
 - Each player has the option to enable the ability to pre-play cards, which is similar to "pre-moves" in Chess.
 - Players can pre-play or pre-discard by clicking and dragging a card to the respective location and releasing the mouse button. Once done, the card will hover over the location until their turn has arrived, and then the action will be automatically performed.
 
-#### H-Group Conventions
+### H-Group Conventions
 
 If you are playing with the [H-Group](https://hanabi.github.io/), some additional UI elements are enabled:
 
@@ -270,15 +270,15 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - locked hand notification (in the "Current Player" area)
 - _Low Score Phase_ notification (via the score being cyan)
 - a [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)
-- a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_turn_double_discard_cause.mp3)
-- a [special sound effect when discarding in a double discard situation](../public/sounds/turn_turn_double_discard.mp3)
-- a [special sound effect when playing a 1 out of order](../public/sounds/turn_turn_1s.mp3)
+- a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_double_discard_cause.mp3)
+- a [special sound effect when discarding in a double discard situation](../public/sounds/turn_double_discard.mp3)
+- a [special sound effect when playing a 1 out of order](../public/sounds/turn_1s.mp3)
 
 <br />
 
 ## Notes
 
-#### Basic Description
+### Basic Description
 
 - When in the middle of an ongoing game, players can right-click or double-tap on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 - This is useful for storing contextual information about a card for later. (e.g. "they should know that this card is exactly red 2 from the clue on turn 3")
@@ -287,7 +287,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - Notes are saved in the database and will persist into the replay.
 - Everyone's notes are combined and shown to spectators, which is fun to see.
 
-#### Card Identity Notes
+### Card Identity Notes
 
 - If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match.
   - The new card face will automatically be deactivated if a clue is received that falsifies the note.
@@ -311,7 +311,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
   - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
 
-#### Card Partial Identity Notes
+### Card Partial Identity Notes
 
 - If you don't know the exact identity of a card, but you do have it narrowed it down to a few possibilities, then you can also express that as a note on the card.
 - List all the possibilities separated by commas.
@@ -319,31 +319,35 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - You can also remove card possibilities with an exclamation point.
 - For example, a note of "!r2" will remove the possibility of that card being the red 2.
 
-#### Special Note Borders
+### Special Note Borders
 
 - A note of "f" can be written to indicate that the card is _Finessed_. This will draw a special border around the card.
 - A note of "cm" can be written to indicate that the card is _Chop Moved_. This will draw a special border around the card.
 
-#### Other Special Notes
+### Other Special Notes
 
 - A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
 - A note of "fix", "fixme", or "needs fix" can be be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
 - A note of "blank" can be written on a card to make it look like the deck back.
 - A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
 
-#### Adding Context to Special Notes
+### Adding Context to Special Notes
 
 - If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. (e.g. "[r2] known from turn 3")
 - This feature can also be used to stack multiple effects on top of each other. (e.g. "[r1] [f]" will mark a card as both a red 1 and having the _Finesse_ border)
 
-#### Note Shortcuts
+### Note Shortcuts
 
 There are also some keyboard shortcuts for making notes:
 
-- Shift + Right-click --> f
-- Alt + Right-click --> cm
+- Shift + Right-click --> [f]
+- Alt + Right-click --> [cm]
+- Alt + Ctrl + Right-click --> Insert turn count
 - Ctrl + Shift + Right-click --> [previously entered note]
   - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
+- Ctrl + Shift + Alt + Right-click --> [last pipe section]
+  - _Adds_ just the text of your most recent note to the end of the note section
+  - For instance add `>b3` elimination to a card. Then use this to _add_ the elimination to other cards
 
 <br />
 
@@ -374,7 +378,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
 - Pace is calculated with the following formula:
   - `current score + cards in deck + number of players - maximum score`.
-- If you discard all copies of a card (so that the the maximum achievable score lowers), pace will adjust accordingly.
+- If you discard all copies of a card (so that the maximum achievable score lowers), pace will adjust accordingly.
 - At pace 0, the only way to get the maximum score is if every player plays a card in the last round of the game.
 
 ### Efficiency
@@ -482,6 +486,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
 - There are various chat commands. The full list can be found [here](CHAT_COMMANDS.md).
 - All lobby chat will be replicated to (and from) the [Discord server](https://discord.gg/FADvkJp).
+- During an ongoing game, right-clicking the chat button will mute notifications from chat and hide the spectator count ("zen mode", indicated by ☯️). Right-clicking again reverts this.
 
 <br />
 
@@ -501,7 +506,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - For example, if you performed a massive _Quadruple Finesse_, then you could do a `/tag Quadruple Finesse`.
 - You can have an unlimited amount of tags per game. Anyone can add a tag to a game, regardless of whether they played in it or not. Everyone's tags are shared.
 - You can add tags during an ongoing game. The server will not reveal what the tag is to the other players (in order to avoid leaking information about the game).
-- Tags added during a replay will echo the everyone in the replay.
+- Tags added during a replay will echo to everyone in the replay.
 - You can use the `/tagdelete [tag]` command to delete an existing tag, or `/tagsdeleteall` to delete all your tags in that game.
 - You can use the `/tagsearch [tag]` command to search through all games for a specific tag.
 

@@ -1,7 +1,5 @@
-/* eslint-disable import/no-relative-packages */
-
-// This script will populate the card images directory with the SVG conversions
-// This is meant to be run from NodeJS
+// This script will populate the card images directory with the SVG conversions This is meant to be
+// run from NodeJS
 // e.g. "node createAllCards.js"
 
 // Imports
@@ -12,7 +10,7 @@ import { getVariant } from "../../data/src/gameData";
 import drawCards from "../src/game/ui/drawCards";
 import * as drawCardsNode from "./drawCardsNode";
 
-// Get the specified variant
+// Get the specified variant.
 const variant = getVariant("Brown (6 Suits)");
 
 const cardImages = drawCards(
@@ -41,7 +39,7 @@ for (const [key, value] of allCardImages.entries()) {
   // e.g. "card-Blue-0.svg" --> "b.svg"
   // e.g. "card-Blue-1.svg" --> "b1.svg"
   const match = /^(\w+)-(\w+)-(\d)$/.exec(key);
-  let fileName: string |undefined;
+  let fileName: string | undefined;
   if (match !== null) {
     const type = match[1];
     const suit = match[2];
@@ -58,8 +56,11 @@ for (const [key, value] of allCardImages.entries()) {
           fileName = rank.toString();
         }
       } else {
-        const suitAbbrev = variant.suits.find(s => s.name === suit)?.abbreviation.toLowerCase();
-        fileName = rank === UNKNOWN_CARD_RANK ? suitAbbrev : `${suitAbbrev}${rank}`;
+        const suitAbbrev = variant.suits
+          .find((s) => s.name === suit)
+          ?.abbreviation.toLowerCase();
+        fileName =
+          rank === UNKNOWN_CARD_RANK ? suitAbbrev : `${suitAbbrev}${rank}`;
       }
     }
   } else {
@@ -71,7 +72,7 @@ for (const [key, value] of allCardImages.entries()) {
 
   const filePath = path.join(__dirname, "cards", `${fileName}.svg`);
   try {
-    fs.writeFileSync(filePath, (value as unknown) as string, "utf8");
+    fs.writeFileSync(filePath, value as unknown as string, "utf8");
   } catch (err) {
     throw new Error(`Failed to write the SVG file "${filePath}": ${err}`);
   }

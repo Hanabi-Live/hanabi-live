@@ -3,7 +3,7 @@ FROM node:16-buster
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
-COPY .env_template .env
+COPY .env.example .env
 COPY tsconfig.json tsconfig.json
 COPY package.json package.json
 COPY package-lock.json package-lock.json
@@ -21,7 +21,7 @@ FROM golang:1.17-buster
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
-COPY .env_template .env
+COPY .env.example .env
 COPY server server
 
 RUN server/build_server.sh

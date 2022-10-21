@@ -1,5 +1,5 @@
-// These are helper functions that convert objects to the integers that the server expects and
-// vice versa
+// These are helper functions that convert objects to the integers that the server expects and vice
+// versa.
 
 import { Color, Suit, Variant } from "@hanabi/data";
 
@@ -15,7 +15,7 @@ export function suitIndexToSuit(
     return null;
   }
 
-  return variant.suits[suitIndex];
+  return variant.suits[suitIndex]!;
 }
 
 export const colorToColorIndex = (color: Color, variant: Variant): number =>

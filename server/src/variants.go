@@ -37,6 +37,8 @@ type VariantJSON struct {
 	SpecialNoClueRanks     bool      `json:"specialNoClueRanks"`
 	SpecialDeceptive       bool      `json:"specialDeceptive"`
 	OddsAndEvens           bool      `json:"oddsAndEvens"`
+	Funnels                bool      `json:"funnels"`
+	Chimneys               bool      `json:"chimneys"`
 }
 
 func variantsInit() {
@@ -163,6 +165,8 @@ func variantsInit() {
 			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
 			SpecialDeceptive:       variant.SpecialDeceptive,
 			OddsAndEvens:           variant.OddsAndEvens,
+			Funnels:                variant.Funnels,
+			Chimneys:               variant.Chimneys,
 			MaxScore:               len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
@@ -283,6 +287,16 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 				return intInSlice(card.Rank, oddClues)
 			}
 			return intInSlice(card.Rank, evenClues)
+		}
+
+		if variant.Funnels {
+			// Rank clues in Funnels touch also all lower ranked cards
+			return card.Rank <= clue.Value
+		}
+
+		if variant.Chimneys {
+			// Rank clues in Chimneys touch also all higher ranked cards
+			return card.Rank >= clue.Value
 		}
 
 		return clue.Value == card.Rank

@@ -16,6 +16,8 @@ export interface VariantDescription {
   specialDeceptive?: boolean;
 
   oddsAndEvens?: boolean;
+  funnels?: boolean;
+  chimneys?: boolean;
   clueStarved?: boolean;
   alternatingClues?: boolean;
   cowPig?: boolean;

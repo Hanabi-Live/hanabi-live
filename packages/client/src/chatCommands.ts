@@ -1,10 +1,11 @@
 import { getVariantNames } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
+import toggleZen from "./game/ui/zen";
 import globals from "./globals";
 import * as createGame from "./lobby/createGame";
 import createJSONFromReplay from "./lobby/createReplayJSON";
 
-// Define a command handler map
+// Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Callback = (...args: any) => void;
 const chatCommands = new Map<string, Callback>();
@@ -12,7 +13,7 @@ export default chatCommands;
 
 // /friend [username]
 function friend(room: string, args: string[]) {
-  // Validate that the format of the command is correct
+  // Validate that the format of the command is correct.
   if (args.length < 1) {
     sendSelfPMFromServer(
       "The format of the /friend command is: <code>/friend Alice</code>",
@@ -22,7 +23,7 @@ function friend(room: string, args: string[]) {
     return;
   }
 
-  // Validate that we are not targeting ourselves
+  // Validate that we are not targeting ourselves.
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer("You cannot friend yourself.", room);
@@ -37,7 +38,7 @@ chatCommands.set("addfriend", friend);
 
 // /friends
 function friends(room: string) {
-  let msg;
+  let msg: string;
   if (globals.friends.length === 0) {
     msg = "Currently, you do not have any friends on your friends list.";
   } else {
@@ -52,7 +53,7 @@ chatCommands.set("friendslist", friends);
 
 // /pm [username] [msg]
 function pm(room: string, args: string[]) {
-  // Validate that the format of the command is correct
+  // Validate that the format of the command is correct.
   if (args.length < 2) {
     sendSelfPMFromServer(
       "The format of a private message is: <code>/w Alice hello</code>",
@@ -62,10 +63,10 @@ function pm(room: string, args: string[]) {
     return;
   }
 
-  let recipient = args[0];
+  let recipient = args[0]!;
   args.shift(); // Remove the recipient
 
-  // Validate that they are not sending a private message to themselves
+  // Validate that they are not sending a private message to themselves.
   if (recipient.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer(
       "You cannot send a private message to yourself.",
@@ -75,13 +76,13 @@ function pm(room: string, args: string[]) {
     return;
   }
 
-  // Validate that the recipient is online
+  // Validate that the recipient is online.
   let isOnline = false;
   for (const user of globals.userMap.values()) {
     if (user.name.toLowerCase() === recipient.toLowerCase()) {
       isOnline = true;
 
-      // Overwrite the recipient in case the user capitalized the username wrong
+      // Overwrite the recipient in case the user capitalized the username wrong.
       recipient = user.name;
 
       break;
@@ -140,9 +141,9 @@ function setVariant(room: string, args: string[]) {
     return;
   }
 
-  // Sanitize the variant name
+  // Sanitize the variant name.
   let variantName = getVariantFromArgs(args);
-  // Get the first match
+  // Get the first match.
   variantName = getVariantFromPartial(variantName);
   if (variantName === "") {
     sendSelfPMFromServer(
@@ -160,7 +161,7 @@ function setVariant(room: string, args: string[]) {
     },
   });
 
-  // Update our stored create table setting to be equal to this variant
+  // Update our stored create table setting to be equal to this variant.
   createGame.checkChanged("createTableVariant", variantName);
 }
 chatCommands.set("sv", setVariant);
@@ -231,17 +232,16 @@ chatCommands.set("tagsdeleteall", (room: string) => {
 function playerinfo(_room: string, args: string[]) {
   let usernames: string[] = [];
   if (args.length === 0) {
-    // If there are no arguments and we are at a table
-    // return stats for all the players
+    // If there are no arguments and we are at a table return stats for all the players.
     if (globals.tableID !== -1 && globals.ui !== null) {
       usernames = globals.ui.globals.metadata.playerNames;
     } else {
-      // Otherwise, return stats for the caller
+      // Otherwise, return stats for the caller.
       usernames = [globals.username];
     }
   } else {
-    // We can return the stats for a list of provided users separated by spaces
-    // since usernames cannot contain spaces
+    // We can return the stats for a list of provided users separated by spaces since usernames
+    // cannot contain spaces.
     usernames = args;
   }
   for (const name of usernames) {
@@ -257,7 +257,7 @@ chatCommands.set("stats", playerinfo);
 
 // /unfriend [username]
 chatCommands.set("unfriend", (room: string, args: string[]) => {
-  // Validate that the format of the command is correct
+  // Validate that the format of the command is correct.
   if (args.length < 1) {
     sendSelfPMFromServer(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
@@ -267,7 +267,7 @@ chatCommands.set("unfriend", (room: string, args: string[]) => {
     return;
   }
 
-  // Validate that we are not targeting ourselves
+  // Validate that we are not targeting ourselves.
   const name = args.join(" ");
   if (name.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer(
@@ -286,6 +286,19 @@ chatCommands.set("unfriend", (room: string, args: string[]) => {
 chatCommands.set("version", (room: string) => {
   const msg = `You are running version <strong>${globals.version}</strong> of the client.`;
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
+});
+
+// /zen
+chatCommands.set("zen", (room: string) => {
+  if (globals.tableID === -1) {
+    sendSelfPMFromServer(
+      "You are not currently at a table, so you cannot use the <code>/zen</code> command.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+  toggleZen();
 });
 
 // /copy
@@ -312,14 +325,14 @@ export function getVariantFromArgs(args: string[]): string {
     // Capitalize
     .map((arg) => capitalize(arg))
     .join(" ")
-    // Remove space after opening and before closing parenthesis
+    // Remove space after opening and before closing parenthesis.
     .replace(patterns.openingParenthesis, " (")
     .replace(patterns.closingParenthesis, ") ")
-    // Remove space before and after hyphen
+    // Remove space before and after hyphen.
     .replace(patterns.hyphen, "-")
-    // Add space before and after ampersand
+    // Add space before and after ampersand.
     .replace(patterns.ampersand, " & ")
-    // Remove double spaces
+    // Remove double spaces.
     .replace(patterns.doubleSpaces, " ")
     .trim();
 

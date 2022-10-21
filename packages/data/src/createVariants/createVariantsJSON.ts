@@ -6,12 +6,14 @@ import {
   getAmbiguousVariants,
   getBasicVariants,
   getBlindVariants,
+  getChimneysVariants,
   getClueStarvedVariants,
   getCowAndPigVariants,
   getCriticalFoursVariants,
   getDualColorsVariants,
   getDuckVariants,
   getExtremelyAmbiguousVariants,
+  getFunnelsVariants,
   getMixVariants,
   getMuteVariants,
   getOddsAndEvensVariants,
@@ -54,7 +56,7 @@ function main() {
   // (e.g. "Red" does not get its own variants because it is a basic suit)
   const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
 
-  // Start to build all of the variants
+  // Start to build all of the variants.
   const basicVariantSuits = getBasicVariantSuits();
   const variantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
@@ -81,10 +83,12 @@ function main() {
     ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
-  // validateNewVariantIDs(variants); // TODO uncomment
+  /// validateNewVariantIDs(variants); // TODO uncomment
 
   if (checkForMissingVariants(variants, oldVariants)) {
     error(
@@ -96,8 +100,8 @@ function main() {
   createVariantsTextFile(variants, textPath);
 }
 
-function getPaths(): string[] {
-  const repoRootPath = path.join(__dirname, "..", "..", "..");
+function getPaths(): [string, string, string] {
+  const repoRootPath = path.join(__dirname, "..", "..", "..", "..");
   const jsonDirectoryPath = path.join(
     repoRootPath,
     "packages",
@@ -122,6 +126,7 @@ function validateSuits(suits: SuitJSON[]) {
   const suitIDs = new Set<string>();
 
   for (const suit of suits) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (suit.name === undefined || suit.name === "") {
       error('One of the suits in the "suits.json" file does not have a name.');
     }
@@ -132,6 +137,7 @@ function validateSuits(suits: SuitJSON[]) {
 
     suitNames.add(suit.name);
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (suit.id === undefined || suit.id === "") {
       error(`Suit "${suit.name}" does not have an ID.`);
     }
@@ -195,6 +201,7 @@ function validateVariants(variants: VariantJSON[]) {
   const variantIDs = new Set<number>();
 
   for (const variant of variants) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (variant.name === undefined || variant.name === "") {
       error(
         'One of the variants in the "variants.json" file does not have a name.',
@@ -207,6 +214,7 @@ function validateVariants(variants: VariantJSON[]) {
 
     variantNames.add(variant.name);
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (variant.id === undefined) {
       error(`Variant "${variant.name}" does not have an ID.`);
     }
@@ -239,11 +247,11 @@ function getBasicVariantSuits(): string[][] {
   variantSuits[1] = ["Red"];
   variantSuits[2] = [...variantSuits[1], "Blue"];
 
-  // Green is inserted before Blue to keep the colors in "rainbow" order
+  // Green is inserted before Blue to keep the colors in "rainbow" order.
   variantSuits[3] = [...variantSuits[2]];
   variantSuits[3].splice(1, 0, "Green");
 
-  // Yellow is inserted before Green to keep the colors in "rainbow" order
+  // Yellow is inserted before Green to keep the colors in "rainbow" order.
   variantSuits[4] = [...variantSuits[3]];
   variantSuits[4].splice(1, 0, "Yellow");
 
@@ -264,20 +272,22 @@ function getVariantsFromVariantDescriptions(
 }
 
 function getNextUnusedVariantID(variantName: string) {
-  // First, prefer the old/existing variant ID, if present
+  // First, prefer the old/existing variant ID, if present.
   const id = oldVariantsNameToIDMap.get(variantName);
   if (id !== undefined) {
     return id;
   }
 
-  // Otherwise, find the lowest unused variant ID
+  // Otherwise, find the lowest unused variant ID.
   let foundUnusedVariantID = false;
   let variantID = lastUsedVariantID;
   do {
-    variantID += 1;
+    variantID++;
     const existingVariantName = oldVariantsIDToNameMap.get(variantID);
     if (existingVariantName === undefined) {
       foundUnusedVariantID = true;
+      oldVariantsIDToNameMap.set(variantID, variantName);
+      oldVariantsNameToIDMap.set(variantName, variantID);
     }
   } while (!foundUnusedVariantID);
 

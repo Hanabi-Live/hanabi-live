@@ -1,4 +1,4 @@
-// The main reducer for the game mode, contemplating replays and game actions
+// The main reducer for the game mode, contemplating replays and game actions.
 
 import produce, { castDraft, Draft, original } from "immer";
 import * as segmentRules from "../rules/segment";
@@ -19,7 +19,7 @@ export default stateReducer;
 function stateReducerFunction(state: Draft<State>, action: Action) {
   switch (action.type) {
     case "gameActionList": {
-      // Calculate all the intermediate states
+      // Calculate all the intermediate states.
       const initialState = initialGameState(state.metadata);
 
       const { game, states } = reduceGameActions(
@@ -31,10 +31,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
       state.ongoingGame = castDraft(game);
 
-      // Initialized, ready to show
+      // Initialized, ready to show.
       state.visibleState = state.ongoingGame;
 
-      // We copy the card identities to the global state for convenience
+      // We copy the card identities to the global state for convenience.
       updateCardIdentities(state);
 
       state.replay.states = castDraft(states);
@@ -43,11 +43,11 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "cardIdentities": {
-      // Either we just entered a new replay or an ongoing game ended,
-      // so the server sent us a list of the identities for every card in the deck
+      // Either we just entered a new replay or an ongoing game ended, so the server sent us a list
+      // of the identities for every card in the deck.
       state.cardIdentities = action.cardIdentities;
 
-      // If we were in a variant that scrubbed plays and discards, rehydrate them now
+      // If we were in a variant that scrubbed plays and discards, rehydrate them now.
       state.replay.actions = castDraft(
         rehydrateScrubbedActions(state, action.cardIdentities),
       );
@@ -57,8 +57,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
     case "finishOngoingGame": {
       if (state.playing) {
-        // We were playing in a game that just ended
-        // Recalculate the whole game as a spectator to fix card possibilities
+        // We were playing in a game that just ended. Recalculate the whole game as a spectator to
+        // fix card possibilities.
         state.playing = false;
 
         const initialState = initialGameState(state.metadata);
@@ -74,20 +74,19 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.replay.states = castDraft(states);
       }
 
-      // Mark that this game is now finished
-      // The finished view will take care of enabling the UI elements for a shared replay
+      // Mark that this game is now finished. The finished view will take care of enabling the UI
+      // elements for a shared replay.
       state.finished = true;
       state.datetimeFinished = action.datetimeFinished;
 
-      // Record the database ID of the game
+      // Record the database ID of the game.
       state.replay.databaseID = action.databaseID;
 
-      // If we were in an in-game replay when the game ended,
-      // keep us at the current turn so that we are not taken away from what we are looking at
-      // Otherwise, go to the penultimate segment
-      // We want to use the penultimate segment instead of the final segment,
-      // because the final segment will contain the times for all of the players,
-      // and this will drown out the reason that the game ended
+      // If we were in an in-game replay when the game ended, keep us at the current turn so that we
+      // are not taken away from what we are looking at. Otherwise, go to the penultimate segment.
+      // We want to use the penultimate segment instead of the final segment, because the final
+      // segment will contain the times for all of the players, and this will drown out the reason
+      // that the game ended.
       const inInGameReplay = state.replay.active;
       if (state.ongoingGame.turn.segment === null) {
         throw new Error(
@@ -105,7 +104,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.replay.segment = penultimateSegment;
       }
 
-      // Initialize the shared replay
+      // Initialize the shared replay.
       state.replay.shared = {
         segment: penultimateSegment,
         useSharedSegments: !inInGameReplay,
@@ -132,7 +131,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.replay.databaseID = action.databaseID;
 
         if (action.sharedReplay) {
-          // In dedicated shared replays, start on the shared replay turn
+          // In dedicated shared replays, start on the shared replay turn.
           state.replay.segment = action.sharedReplaySegment;
           state.replay.shared = {
             segment: action.sharedReplaySegment,
@@ -178,14 +177,13 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
     case "premove": {
       if (action.premove === null) {
-        // Allow the clearing of a premove anytime
-        // (it might be our turn and we are clearing the premove prior to sending our action to the
-        // server)
+        // Allow the clearing of a premove anytime. (It might be our turn and we are clearing the
+        // premove prior to sending our action to the server.)
         state.premove = null;
       } else if (
-        // Only allow premoves in ongoing games
+        // Only allow premoves in ongoing games.
         !state.finished &&
-        // Only allow premoves when it is not our turn
+        // Only allow premoves when it is not our turn.
         state.ongoingGame.turn.currentPlayerIndex !==
           state.metadata.ourPlayerIndex
       ) {
@@ -199,7 +197,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.pause.active = action.active;
       state.pause.playerIndex = action.playerIndex;
 
-      // If the game is now paused, unqueue any queued pauses
+      // If the game is now paused, unqueue any queued pauses.
       if (action.active) {
         state.pause.queued = false;
       }
@@ -241,11 +239,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       );
 
       if (state.playing && !state.finished) {
-        // Recompute efficiency since it could change
+        // Recompute efficiency since it could change.
         state.ongoingGame = gameStateReducer(
           original(state.ongoingGame),
           action,
           state.playing,
+          state.replay.hypothetical !== null,
           state.metadata,
           state.notes.ourNotes,
         );
@@ -254,17 +253,18 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     default: {
-      // A new game action happened
+      // A new game action happened.
       const previousSegment = state.ongoingGame.turn.segment;
       state.ongoingGame = gameStateReducer(
         original(state.ongoingGame),
         action,
         state.playing,
+        state.replay.hypothetical !== null,
         state.metadata,
         state.notes.ourNotes,
       );
 
-      // We copy the card identities to the global state for convenience
+      // We copy the card identities to the global state for convenience.
       updateCardIdentities(state);
 
       if (
@@ -278,19 +278,19 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.ongoingGame;
       }
 
-      // Save the action so that we can recompute the state at the end of the game
+      // Save the action so that we can recompute the state at the end of the game.
       state.replay.actions.push(action);
 
       break;
     }
   }
 
-  // Show the appropriate state depending on the situation
-  state.visibleState = visualStateToShow(state, action);
+  // Show the appropriate state depending on the situation.
+  state.visibleState = visualStateToShow(state, action)!;
 }
 
-// Runs through a list of actions from an initial state,
-// and returns the final state and all intermediate states
+// Runs through a list of actions from an initial state, and returns the final state and all
+// intermediate states.
 function reduceGameActions(
   actions: GameAction[],
   initialState: GameState,
@@ -299,7 +299,7 @@ function reduceGameActions(
 ) {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameStateReducer(s, a, playing, metadata);
+    const nextState = gameStateReducer(s, a, playing, false, metadata);
 
     if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, a)) {
       states[nextState.turn.segment!] = nextState;
@@ -310,22 +310,21 @@ function reduceGameActions(
   return { game, states };
 }
 
-// We keep a copy of each card identity in the global state for convenience
-// After each game action, check to see if we can add any new card identities
-// (or any suit/rank information to existing card identities)
-// We cannot just replace the array every time because we need to keep the "full" deck that the
-// server sends us
+// We keep a copy of each card identity in the global state for convenience After each game action,
+// check to see if we can add any new card identities (or any suit/rank information to existing card
+// identities). We cannot just replace the array every time because we need to keep the "full" deck
+// that the server sends us.
 function updateCardIdentities(state: Draft<State>) {
   state.ongoingGame.deck.forEach((newCardIdentity, i) => {
     if (i >= state.cardIdentities.length) {
-      // Add the new card identity
+      // Add the new card identity.
       state.cardIdentities[i] = {
         suitIndex: newCardIdentity.suitIndex,
         rank: newCardIdentity.rank,
       };
     } else {
-      // Update the existing card identity
-      const existingCardIdentity = state.cardIdentities[i];
+      // Update the existing card identity.
+      const existingCardIdentity = state.cardIdentities[i]!;
       if (existingCardIdentity.suitIndex === null) {
         existingCardIdentity.suitIndex = newCardIdentity.suitIndex;
       }
@@ -338,13 +337,13 @@ function updateCardIdentities(state: Draft<State>) {
 
 function visualStateToShow(state: Draft<State>, action: Action) {
   if (state.visibleState === null) {
-    // The state is still initializing, so do not show anything
+    // The state is still initializing, so do not show anything.
     return null;
   }
 
   if (state.replay.active) {
     if (state.replay.hypothetical === null) {
-      // Show the current replay segment
+      // Show the current replay segment.
       const currentReplayState = state.replay.states[state.replay.segment];
       if (currentReplayState === undefined) {
         throw new Error(
@@ -354,23 +353,17 @@ function visualStateToShow(state: Draft<State>, action: Action) {
       return currentReplayState;
     }
 
-    // Show the current hypothetical
-    if (state.replay.hypothetical.ongoing === undefined) {
-      throw new Error("The ongoing hypothetical state is undefined.");
-    }
+    // Show the current hypothetical.
     return state.replay.hypothetical.ongoing;
   }
 
   // After an ongoing game ends, do not automatically show the final segment with the player's times
-  // by default in order to avoid drowning out the reason why the game ended
+  // by default in order to avoid drowning out the reason why the game ended.
   if (action.type === "playerTimes") {
     return state.replay.states[state.replay.states.length - 2]; // The penultimate segment
   }
 
-  // Show the final segment of the current game
-  if (state.ongoingGame === undefined) {
-    throw new Error("The ongoing state is undefined.");
-  }
+  // Show the final segment of the current game.
   return state.ongoingGame;
 }
 
@@ -385,8 +378,8 @@ const rehydrateScrubbedActions = (
     ) {
       return {
         ...a,
-        suitIndex: cardIdentities[a.order].suitIndex!,
-        rank: cardIdentities[a.order].rank!,
+        suitIndex: cardIdentities[a.order]!.suitIndex!,
+        rank: cardIdentities[a.order]!.rank!,
       };
     }
     return a;

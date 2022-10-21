@@ -63,38 +63,36 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         (action.type === "discard" || action.type === "play")
       ) {
         actions.push(drawCard(currentPlayerIndex, topOfDeck, gameJSON.deck));
-        topOfDeck += 1;
+        topOfDeck++;
       }
     }
 
-    turn += 1;
+    turn++;
     currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
   });
 
-  // If the game was exported from the server and it ended in a specific way,
-  // the final action will be a "gameOver" action
-  // Otherwise, we need to insert one at the end,
-  // which matches what the server would do when emulating all of the database actions
-  const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1];
+  // If the game was exported from the server and it ended in a specific way, the final action will
+  // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
+  // server would do when emulating all of the database actions.
+  const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1]!;
+  // eslint-disable-next-line isaacscript/strict-enums
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions.push({
       type: "gameOver",
-      // Assume that the game ended normally;
-      // this is not necessarily the case and will break if a test game is added with a strikeout,
-      // a termination, etc.
+      // Assume that the game ended normally; this is not necessarily the case and will break if a
+      // test game is added with a strikeout, a termination, etc.
       endCondition: 1,
       playerIndex: currentPlayerIndex,
       votes: [],
     });
   }
 
-  // Run the list of states through the state reducer
-  // We need to fix the list of cards touched in a clue, since that is not saved in the JSON
-  // We also need to figure out if plays are successful or not,
-  // since they both show up as plays in the JSON
+  // Run the list of states through the state reducer We need to fix the list of cards touched in a
+  // clue, since that is not saved in the JSON. We also need to figure out if plays are successful
+  // or not, since they both show up as plays in the JSON.
   const state = initialState(metadata);
 
-  // Calculate all the intermediate states
+  // Calculate all the intermediate states.
   const states: GameState[] = [state.ongoingGame];
 
   const game = actions.reduce((s: GameState, a: GameAction) => {
@@ -103,9 +101,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
     switch (a.type) {
       case "clue": {
-        // Fix the list of touched cards
-        const list: number[] = s.hands[a.target].filter((order) => {
-          const jsonCard = gameJSON.deck[order];
+        // Fix the list of touched cards.
+        const list: number[] = s.hands[a.target]!.filter((order) => {
+          const jsonCard = gameJSON.deck[order]!;
           return cluesRules.touchesCard(
             variant,
             cluesRules.msgClueToClue(a.clue, variant),
@@ -118,8 +116,8 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       }
 
       case "play": {
-        // Check if this is actually a play or a misplay
-        const jsonCard: CardIdentity = gameJSON.deck[a.order];
+        // Check if this is actually a play or a misplay.
+        const jsonCard: CardIdentity = gameJSON.deck[a.order]!;
         if (jsonCard.suitIndex === null || jsonCard.rank === null) {
           throw new Error(
             `Failed to get the rank or the suit for card ${a.order} in the JSON deck.`,
@@ -127,12 +125,12 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         }
 
         const nextRanks = playStacksRules.nextRanks(
-          s.playStacks[jsonCard.suitIndex],
-          s.playStackDirections[jsonCard.suitIndex],
+          s.playStacks[jsonCard.suitIndex]!,
+          s.playStackDirections[jsonCard.suitIndex]!,
           s.deck,
         );
         if (!nextRanks.includes(jsonCard.rank)) {
-          // Send a discard and a strike
+          // Send a discard and a strike.
           action = {
             type: "discard",
             playerIndex: a.playerIndex,
@@ -141,7 +139,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
             rank: a.rank,
             failed: true,
           };
-          nextState = gameStateReducer(s, action, false, state.metadata);
+          nextState = gameStateReducer(s, action, false, false, state.metadata);
 
           if (
             segmentRules.shouldStore(
@@ -170,7 +168,13 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     }
 
     const previousSegment = nextState.turn.segment;
-    nextState = gameStateReducer(nextState, action, false, state.metadata);
+    nextState = gameStateReducer(
+      nextState,
+      action,
+      false,
+      false,
+      state.metadata,
+    );
 
     if (
       segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)
@@ -248,7 +252,7 @@ function dealInitialCards(
   for (let player = 0; player < numPlayers; player++) {
     for (let card = 0; card < cardsPerHand; card++) {
       actions.push(drawCard(player, topOfDeck, deck));
-      topOfDeck += 1;
+      topOfDeck++;
     }
   }
   return topOfDeck;
@@ -268,8 +272,8 @@ function parseJSONAction(
         type: isPlay ? "play" : "discard",
         playerIndex: currentPlayer,
         order: a.target,
-        suitIndex: deck[a.target].suitIndex,
-        rank: deck[a.target].rank,
+        suitIndex: deck[a.target]!.suitIndex,
+        rank: deck[a.target]!.rank,
       };
       return isPlay ? (action as ActionPlay) : (action as ActionDiscard);
     }

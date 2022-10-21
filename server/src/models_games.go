@@ -314,7 +314,7 @@ func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) 
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
-		/* We must get the results in decending order for the limit to work properly */
+		/* We must get the results in descending order for the limit to work properly */
 		ORDER BY games.id DESC
 	`
 	if amount > 0 {
@@ -411,7 +411,7 @@ func (*Games) GetGameIDsFriends(
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $2
-		/* We must get the results in decending order for the limit to work properly */
+		/* We must get the results in descending order for the limit to work properly */
 		ORDER BY id DESC
 		LIMIT $3 OFFSET $4
 	`
@@ -830,7 +830,7 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 func (*Games) GetPlayerSeeds(userID int, variantID int) ([]string, error) {
 	seeds := make([]string, 0)
 
-	// We want to use "DISCTINCT" since it is possible for a player to play on the same seed twice
+	// We want to use "DISTINCT" since it is possible for a player to play on the same seed twice
 	// with the "!seed" feature or the "!replay" feature
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), `

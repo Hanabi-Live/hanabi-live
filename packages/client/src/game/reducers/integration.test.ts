@@ -1,4 +1,4 @@
-// Integration tests, involving loading a full game and checking state at different points
+// Integration tests, involving loading a full game and checking state at different points.
 
 import loadGameJSON from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
@@ -13,14 +13,14 @@ import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 let testState: State;
 
 const getStateAtTurn = (state: State, turn: number) =>
-  state.replay.states[turn];
+  state.replay.states[turn]!;
 const getFinalState = (state: State) =>
-  state.replay.states[state.replay.states.length - 1];
+  state.replay.states[state.replay.states.length - 1]!;
 
 describe("integration", () => {
   describe("Up or Down test game", () => {
     beforeAll(() => {
-      // Load the game and get the final state
+      // Load the game and get the final state.
       testState = loadGameJSON(upOrDownGame);
     });
 
@@ -61,11 +61,11 @@ describe("integration", () => {
         "card %i has the correct pips and possibilities",
         (order) => {
           const turn5State = getStateAtTurn(testState, 4);
-          const card = turn5State.deck[order];
-          // The compiler won't accept a list of tuples from JSON
+          const card = turn5State.deck[order]!;
+          // The compiler won't accept a list of tuples from JSON.
           const expected = (upOrDownTurn5Cards as unknown as CardState[])[
             order
-          ];
+          ]!;
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibleCardsForEmpathy(card, expected);
         },
@@ -109,10 +109,10 @@ describe("integration", () => {
         "card %i has the correct pips and possibilities",
         (order) => {
           const finalState = getFinalState(testState);
-          const card = finalState.deck[order];
+          const card = finalState.deck[order]!;
           const expected = (upOrDownFinalCards as unknown as CardState[])[
             order
-          ];
+          ]!;
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibleCardsForEmpathy(card, expected);
         },
@@ -122,7 +122,7 @@ describe("integration", () => {
 
   describe("Rainbow-Ones & Pink test game", () => {
     beforeAll(() => {
-      // Load the game and get the final state
+      // Load the game and get the final state.
       testState = loadGameJSON(rainbowOnesAndPinkGame);
     });
 

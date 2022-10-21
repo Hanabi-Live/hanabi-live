@@ -8,7 +8,7 @@ export default function UIReducer(state: UIState, action: UIAction): UIState {
       if (action.card instanceof HanabiCard) {
         return {
           ...state,
-          // This is required due to Konva bug
+          // This is required due to Konva bug.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           cardDragged: JSON.parse(JSON.stringify(action.card)),
         };

@@ -21,10 +21,10 @@ export const CHOP_MOVED_NOTES = [
 export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
 export const BLANK_NOTES = ["blank"];
-export const CLUED_NOTES = ["clued"];
+export const CLUED_NOTES = ["clued", "cl"];
 export const UNCLUED_NOTES = ["unclued", "x"];
 
-export const ALL_RESERVED_NOTES = (<string[]>[]).concat(
+export const ALL_RESERVED_NOTES = ([] as string[]).concat(
   KNOWN_TRASH_NOTES,
   CHOP_MOVED_NOTES,
   FINESSED_NOTES,
@@ -52,20 +52,21 @@ export function getSuitAbbreviationsForVariant(
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
     if (!abbreviations.includes(suit.abbreviation)) {
-      if (ALL_RESERVED_NOTES.indexOf(suit.abbreviation) !== -1) {
+      if (ALL_RESERVED_NOTES.includes(suit.abbreviation)) {
         throw new Error(
           `Suit abbreviation for "${suit.name}" in the variant of "${variantName}" conflicts with a reserved word.`,
         );
       }
-      // There is no overlap with the normal abbreviation
+      // There is no overlap with the normal abbreviation.
       abbreviationToUse = suit.abbreviation;
     } else {
-      // There is an overlap with the normal abbreviation
+      // There is an overlap with the normal abbreviation.
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < suit.displayName.length; i++) {
-        const suitLetter = suit.displayName[i].toUpperCase();
+        const suitLetter = suit.displayName[i]!.toUpperCase();
         if (
           !abbreviations.includes(suitLetter) &&
-          ALL_RESERVED_NOTES.indexOf(suitLetter) === -1 &&
+          !ALL_RESERVED_NOTES.includes(suitLetter) &&
           !skipLetters.includes(suitLetter)
         ) {
           abbreviationToUse = suitLetter;
@@ -81,7 +82,7 @@ export function getSuitAbbreviationsForVariant(
     abbreviations.push(abbreviationToUse);
   }
 
-  // Validate that each suit has a unique abbreviation
+  // Validate that each suit has a unique abbreviation.
   const abbreviationSet = new Set(abbreviations);
   if (abbreviationSet.size !== abbreviations.length) {
     throw new Error(

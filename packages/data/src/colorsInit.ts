@@ -18,8 +18,8 @@ export function colorsInit(): ReadonlyMap<string, Color> {
       );
     }
 
-    // Validate the abbreviation
-    // If it is not specified, assume that it is the first letter of the color
+    // Validate the abbreviation. If it is not specified, assume that it is the first letter of the
+    // color.
     const abbreviation = colorJSON.abbreviation ?? name.charAt(0);
     if (abbreviation.length !== 1) {
       throw new Error(
@@ -27,17 +27,17 @@ export function colorsInit(): ReadonlyMap<string, Color> {
       );
     }
 
-    // Validate the fill
+    // Validate the fill.
     const { fill } = colorJSON;
     if (fill.length === 0) {
       throw new Error(`The "${colorJSON.name}" color has an empty fill.`);
     }
 
-    // Validate the colorblind fill (which is an alternate fill when "Colorblind Mode" is enabled)
-    // If it is not specified, assume that it is the same as the default fill
+    // Validate the colorblind fill (which is an alternate fill when "Colorblind Mode" is enabled).
+    // If it is not specified, assume that it is the same as the default fill.
     const fillColorblind = colorJSON.fillColorblind ?? fill;
 
-    // Add it to the map
+    // Add it to the map.
     const color: Color = {
       name,
       abbreviation,

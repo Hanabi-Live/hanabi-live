@@ -10,8 +10,9 @@ export function shouldEndTurnAfterDraw(
   clueTokens: number,
   variant: Variant,
 ): boolean {
-  // Some "Detrimental Characters" are able to perform two actions
-  // Panicky - After discarding, discards again if there are 4 clues or less
+  // Some "Detrimental Characters" are able to perform two actions.
+
+  // Panicky - After discarding, discards again if there are 4 clues or less.
   const panickyFirstDiscard =
     cardsDiscardedThisTurn === 1 &&
     clueTokens <= clueTokensRules.getAdjusted(4, variant) &&
@@ -27,13 +28,13 @@ export function shouldEndTurnAfterClue(
   cluesGivenThisTurn: number,
   characterName: string,
 ): boolean {
-  // Some "Detrimental Characters" are able to perform two clues
-  // Otherwise, the turn always increments when a clue is given
+  // Some "Detrimental Characters" are able to perform two clues. Otherwise, the turn always
+  // increments when a clue is given.
   return characterName !== "Genius" || cluesGivenThisTurn === 2;
 }
 
 export function shouldPlayOrderInvert(characterName: string): boolean {
-  // Some "Detrimental Characters" are able to invert the play order
+  // Some "Detrimental Characters" are able to invert the play order.
   return characterName === "Contrarian";
 }
 
@@ -43,11 +44,11 @@ export function getNextPlayerIndex(
   turnsInverted: boolean,
 ): number | null {
   if (currentPlayerIndex === null) {
-    // If the game is already over, then there is no next player
+    // If the game is already over, then there is no next player.
     return null;
   }
 
-  let nextPlayerIndex;
+  let nextPlayerIndex: number;
   if (!turnsInverted) {
     nextPlayerIndex = currentPlayerIndex + 1;
     if (nextPlayerIndex === numPlayers) {
@@ -67,7 +68,7 @@ export function endGameLength(
   options: Options,
   characterAssignments: Readonly<Array<number | null>>,
 ): number {
-  // The Contrarian detrimental character has a 2-turn end game
+  // The Contrarian detrimental character has a 2-turn end game.
   if (options.detrimentalCharacters) {
     for (const characterID of characterAssignments) {
       if (characterID !== null) {
@@ -79,7 +80,7 @@ export function endGameLength(
     }
   }
 
-  // By default, each player gets one more turn after the final card is drawn
+  // By default, each player gets one more turn after the final card is drawn.
   return options.numPlayers;
 }
 

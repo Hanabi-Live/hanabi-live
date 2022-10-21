@@ -29,7 +29,7 @@ describe("direction", () => {
   });
 
   describe("Up or Down", () => {
-    // Cards for Up or Down tests
+    // Cards for Up or Down tests.
     const redStart = {
       ...initialCardState(0, upOrDown),
       rank: START_CARD_RANK,

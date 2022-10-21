@@ -1,6 +1,6 @@
 # Variants
 
-[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further customize a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
 
 <br />
 
@@ -151,7 +151,7 @@ One of each card per suit (e.g. 5 in total):
   - For example, consider the "Null-Ones & Rainbow" variant:
     - The null suit has the property of being touched by no colors and touched by no ranks.
     - The rainbow suit has the property of being touched by all colors.
-    - These add together, but the the color touch property is in conflict. The rainbow property takes precedence, so the rainbow 1 is touched by all colors and touched by no ranks.
+    - These add together, but the color touch property is in conflict. The rainbow property takes precedence, so the rainbow 1 is touched by all colors and touched by no ranks.
 
 ### Ambiguous
 
@@ -298,11 +298,21 @@ One of each card per suit (e.g. 5 in total):
 - The game will automatically end if 3 strikes are accumulated.
 - This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
+### Funnels
+
+- Rank clues also touch all lower ranked cards.
+
+### Chimneys
+
+- Rank clues also touch all higher ranked cards.
+
 <br />
 
 ## Full Variant Listing
 
 - See [this page](/misc/variants.txt).
+
+<br />
 
 ## Variant Order Summary
 

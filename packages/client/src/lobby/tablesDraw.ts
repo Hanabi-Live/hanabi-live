@@ -1,4 +1,4 @@
-// The lobby area that shows all of the current tables
+// The lobby area that shows all of the current tables.
 
 import globals from "../globals";
 import * as modals from "../modals";
@@ -15,7 +15,7 @@ import Table from "./types/Table";
 export default function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");
 
-  // Clear all of the existing rows
+  // Clear all of the existing rows.
   tbody.html("");
 
   if (globals.tableMap.size === 0) {
@@ -40,12 +40,12 @@ export default function tablesDraw(): void {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap.entries()) {
-        //  Tables that we are currently in
+        // Tables that we are currently in.
         if (friends && i === 1 && table.joined && !table.sharedReplay) {
           tableIDsOfThisType.push(id);
         }
 
-        // Tables our friends are currently in
+        // Tables our friends are currently in.
         const hasFriends = tableHasFriends(table);
         if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
@@ -65,7 +65,7 @@ export default function tablesDraw(): void {
           table.passwordProtected &&
           !table.joined
         ) {
-          // Unstarted & password-protected tables
+          // Unstarted & password-protected tables.
           tableIDsOfThisType.push(id);
         } else if (
           i === 4 &&
@@ -85,7 +85,7 @@ export default function tablesDraw(): void {
     }
   }
 
-  // Add all of the games
+  // Add all of the games.
   let addedJoinFirstTableButton = false;
   for (const id of sortedTableIDs) {
     const table = globals.tableMap.get(id);
@@ -93,8 +93,8 @@ export default function tablesDraw(): void {
       throw new Error(`Failed to get the table for the ID of "${id}".`);
     }
 
-    // Set the background color of the row, depending on what kind of game it is
-    let htmlClass;
+    // Set the background color of the row, depending on what kind of game it is.
+    let htmlClass: string;
     if (table.sharedReplay) {
       htmlClass = "replay";
     } else if (table.joined) {
@@ -108,14 +108,14 @@ export default function tablesDraw(): void {
     }
     const row = $(`<tr class="lobby-games-table-${htmlClass}">`);
 
-    // Column 1 - Name
+    // Column 1 - Name.
     let { name } = table;
     if (table.passwordProtected && !table.running && !table.sharedReplay) {
       name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
     }
     $("<td>").html(name).appendTo(row);
 
-    // Column 2 - # of Players
+    // Column 2 - # of Players.
     const tdCell = $("<td>").html(
       table.running || table.sharedReplay
         ? table.numPlayers.toString()
@@ -126,10 +126,10 @@ export default function tablesDraw(): void {
     }
     tdCell.appendTo(row);
 
-    // Column 3 - Variant
+    // Column 3 - Variant.
     $("<td>").html(table.variant).appendTo(row);
 
-    // Column 4 - Timed
+    // Column 4 - Timed.
     let timed = "No";
     if (table.timed) {
       timed = `${timerFormatter(table.timeBase)} + ${timerFormatter(
@@ -138,8 +138,8 @@ export default function tablesDraw(): void {
     }
     $("<td>").html(timed).appendTo(row);
 
-    // Column 5 - Status
-    let status;
+    // Column 5 - Status.
+    let status: string;
     if (table.sharedReplay) {
       status = "Reviewing";
     } else if (table.running) {
@@ -152,7 +152,7 @@ export default function tablesDraw(): void {
     }
     $("<td>").html(status).appendTo(row);
 
-    // Column 6 - Players
+    // Column 6 - Players.
     const playersArray: string[] = [];
     for (const player of table.players) {
       if (player === globals.username) {
@@ -166,7 +166,7 @@ export default function tablesDraw(): void {
     const playersString = playersArray.join(", ");
     $("<td>").html(playersString).appendTo(row);
 
-    // Column 7 - Spectators
+    // Column 7 - Spectators.
     let spectatorsString = "";
     const spectatorsArray: string[] = [];
     for (const spectator of table.spectators) {
@@ -177,11 +177,11 @@ export default function tablesDraw(): void {
       }
     }
     spectatorsString = spectatorsArray.join(", ");
-    // Change click behavior on the spectators cell
+    // Change click behavior on the spectators cell.
     if (table.joined) {
       $("<td>").html(spectatorsString).appendTo(row);
     } else {
-      // Can also join as a spectator
+      // Can also join as a spectator.
       $("<td>")
         .html(spectatorsString)
         .addClass("lobbySpectators")
@@ -192,8 +192,8 @@ export default function tablesDraw(): void {
         .appendTo(row);
     }
 
-    // There is a keyboard shortcut to join the first table available
-    // Add a class to the first relevant row to facilitate this
+    // There is a keyboard shortcut to join the first table available. Add a class to the first
+    // relevant row to facilitate this.
     if (
       !table.running &&
       !table.joined &&
@@ -204,14 +204,14 @@ export default function tablesDraw(): void {
       row.addClass("lobby-games-join-first-table-button");
     }
 
-    // Setup click actions
+    // Setup click actions.
     if (table.sharedReplay || (!table.joined && table.running)) {
       const rowId = `spectate-${table.id}`;
       row
         .attr("id", rowId)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row
+            // Copy the URL that would occur from clicking on this table row.
             let gameID = table.id.toString();
             if (table.sharedReplay) {
               gameID = table.name.substring("Shared replay for game #".length);
@@ -232,7 +232,7 @@ export default function tablesDraw(): void {
       } else {
         row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row
+            // Copy the URL that would occur from clicking on this table row.
             copyURLToClipboard(`/pre-game/${table.id}`, `#${rowId}`);
           } else {
             tableJoin(table);
@@ -245,7 +245,7 @@ export default function tablesDraw(): void {
         .attr("id", rowId)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row
+            // Copy the URL that would occur from clicking on this table row.
             copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
           } else {
             tableReattend(table);
@@ -266,7 +266,7 @@ export function tableSpectate(table: Table): void {
     tableID: table.id,
     shadowingPlayerIndex: -1,
   });
-  // (we will get a "tableStart" response back from the server)
+  // (We will get a "tableStart" response back from the server.)
 }
 
 export function tableJoin(table: Table): void {
@@ -281,9 +281,9 @@ export function tableJoin(table: Table): void {
       tableID: table.id,
     });
 
-    // Prepare the Change Options dialog for guest
+    // Prepare the Change Options dialog for guest.
     createGame.ready();
-    // (we will get a "joined" response back from the server)
+    // (We will get a "joined" response back from the server.)
   }
 }
 
@@ -295,8 +295,8 @@ function tableReattend(table: Table) {
   globals.conn!.send("tableReattend", {
     tableID: table.id,
   });
-  // (we will get either a "game" or a "tableStart" response back from the server,
-  // depending on if the game has started or not)
+  // (We will get either a "game" or a "tableStart" response back from the server, depending on if
+  // the game has started or not.)
 }
 
 function tableHasFriends(table: Table) {
@@ -321,7 +321,7 @@ function copyURLToClipboard(path: string, selector: string) {
   const url = getURLFromPath(path);
   copyStringToClipboard(url);
 
-  // Show a visual indication that the copy worked
+  // Show a visual indication that the copy worked.
   tooltips.create(selector, "clipboard");
   tooltips.openInstance(selector);
   setTimeout(() => {

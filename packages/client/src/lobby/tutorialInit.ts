@@ -1,4 +1,4 @@
-// A short tutorial is shown to brand-new users
+// A short tutorial is shown to brand-new users.
 
 import { FADE_TIME } from "../constants";
 import * as login from "./login";

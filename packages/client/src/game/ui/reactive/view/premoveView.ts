@@ -17,14 +17,14 @@ export function onChanged(
   previousAction: ClientAction | null | undefined,
 ): void {
   if (previousAction === undefined) {
-    // The state is initializing to a null action
+    // The state is initializing to a null action.
     return;
   }
 
   if (action === null && previousAction !== null) {
-    // We just canceled a premove action
+    // We just canceled a premove action.
 
-    // If we dragged a card, we have to make the card tween back to the hand
+    // If we dragged a card, we have to make the card tween back to the hand.
     if (
       previousAction.type === ActionType.Play ||
       previousAction.type === ActionType.Discard
@@ -33,7 +33,7 @@ export function onChanged(
       globals.layers.card.draw();
     }
   } else if (action !== null && previousAction === null) {
-    // We just specified a premove action
+    // We just specified a premove action.
     ourHand.checkSetDraggableAll();
 
     let text = "Cancel Pre-";

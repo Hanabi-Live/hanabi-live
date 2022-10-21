@@ -26,10 +26,10 @@ function turnReducerFunction(
 
   switch (action.type) {
     case "play": {
-      turn.cardsPlayedOrDiscardedThisTurn += 1;
+      turn.cardsPlayedOrDiscardedThisTurn++;
 
       if (currentState.cardsRemainingInTheDeck === 0) {
-        turn.segment! += 1;
+        turn.segment!++;
         nextTurn(
           turn,
           currentState.cardsRemainingInTheDeck,
@@ -42,13 +42,13 @@ function turnReducerFunction(
     }
 
     case "discard": {
-      turn.cardsPlayedOrDiscardedThisTurn += 1;
+      turn.cardsPlayedOrDiscardedThisTurn++;
       if (!action.failed) {
-        turn.cardsDiscardedThisTurn += 1;
+        turn.cardsDiscardedThisTurn++;
       }
 
       if (currentState.cardsRemainingInTheDeck === 0) {
-        turn.segment! += 1;
+        turn.segment!++;
         if (
           turnRules.shouldEndTurnAfterDraw(
             turn.cardsPlayedOrDiscardedThisTurn,
@@ -71,14 +71,14 @@ function turnReducerFunction(
     }
 
     case "clue": {
-      turn.cluesGivenThisTurn += 1;
+      turn.cluesGivenThisTurn++;
 
       if (turn.segment === null) {
         throw new Error(
           `A "${action.type}" action happened before all of the initial cards were dealt.`,
         );
       }
-      turn.segment += 1;
+      turn.segment++;
 
       if (
         turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterName)
@@ -95,7 +95,7 @@ function turnReducerFunction(
 
     case "draw": {
       if (turn.segment === null) {
-        // If the initial deal is still going on
+        // If the initial deal is still going on.
         if (
           deckRules.isInitialDealFinished(
             currentState.cardsRemainingInTheDeck,
@@ -106,9 +106,9 @@ function turnReducerFunction(
         }
       } else {
         // We do not want to increment the segment if we are drawing the final card of the deck in
-        // order to perform a bottom-deck blind-play
+        // order to perform a bottom-deck blind-play.
         if (turn.cardsPlayedOrDiscardedThisTurn > 0) {
-          turn.segment += 1;
+          turn.segment++;
         }
 
         if (
@@ -140,23 +140,21 @@ function turnReducerFunction(
       }
 
       // Setting the current player index to null signifies that the game is over and will prevent
-      // any name frames from being highlighted on subsequent segments
+      // any name frames from being highlighted on subsequent segments.
       turn.currentPlayerIndex = null;
 
-      // For some types of game overs,
-      // we want the explanation text to appear on its own replay segment
-      // The types of "gameOver" that do not have to do with the previous action should be on
-      // their own separate replay segment
-      // Otherwise, we want the "gameOver" explanation to be on the same segment as the final action
-      // Any new end conditions must also be updated in the "shouldStoreSegment()" function in
-      // "stateReducer.ts"
+      // For some types of game overs, we want the explanation text to appear on its own replay
+      // segment. The types of "gameOver" that do not have to do with the previous action should be
+      // on their own separate replay segment. Otherwise, we want the "gameOver" explanation to be
+      // on the same segment as the final action. Any new end conditions must also be updated in the
+      // "shouldStoreSegment()" function in "stateReducer.ts".
       if (
         action.endCondition === EndCondition.Timeout ||
         action.endCondition === EndCondition.Terminated ||
         action.endCondition === EndCondition.VotedToKill ||
         action.endCondition === EndCondition.IdleTimeout
       ) {
-        turn.segment += 1;
+        turn.segment++;
       }
 
       break;
@@ -169,10 +167,10 @@ function turnReducerFunction(
         );
       }
 
-      // At the end of the game, the server will send us how much time each player finished with
-      // as well as the total game duration; we want all of this text on its own replay segment to
-      // avoid cluttering the final turn of the game
-      turn.segment += 1;
+      // At the end of the game, the server will send us how much time each player finished with as
+      // well as the total game duration; we want all of this text on its own replay segment to
+      // avoid cluttering the final turn of the game.
+      turn.segment++;
       break;
     }
 
@@ -188,7 +186,7 @@ function nextTurn(
   characterName: string,
   metadata: GameMetadata,
 ) {
-  state.turnNum += 1;
+  state.turnNum++;
 
   if (turnRules.shouldPlayOrderInvert(characterName)) {
     state.playOrderInverted = !state.playOrderInverted;

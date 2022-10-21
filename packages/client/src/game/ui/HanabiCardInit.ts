@@ -1,4 +1,4 @@
-// Initialization functions for the HanabiCard object
+// Initialization functions for the HanabiCard object.
 
 import { START_CARD_RANK, Suit, Variant } from "@hanabi/data";
 import Konva from "konva";
@@ -22,9 +22,9 @@ import drawPip from "./drawPip";
 import globals from "./globals";
 
 export function image(getBareName: () => string): Konva.Image {
-  // Create the "bare" card image, which is the main card graphic
-  // If the card is not revealed, it will just be a gray rounded rectangle
-  // The pips and other elements of a card are drawn on top of the bare image
+  // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it
+  // will just be a gray rounded rectangle. The pips and other elements of a card are drawn on top
+  // of the bare image.
   const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
@@ -142,7 +142,7 @@ export function directionArrow(
   return { arrow, arrowBase };
 }
 
-// Cache the pip objects to save time on the multiple cards
+// Cache the pip objects to save time on the multiple cards.
 let cachedVariant: Variant | null = null;
 let cachedPips: {
   suitPipsMap: Map<number, Konva.Shape>;
@@ -153,28 +153,28 @@ let cachedPips: {
 };
 
 function makeCachedPips(variant: Variant) {
-  // Initialize the suit pips (colored shapes) on the back of the card,
-  // which will be removed one by one as the card gains negative information
-  // For each pip also create the one with positive information
+  // Initialize the suit pips (colored shapes) on the back of the card, which will be removed one by
+  // one as the card gains negative information. For each pip also create the one with positive
+  // information.
 
   const suitPipsMap = new Map<number, Konva.Shape>();
   const suitPipsPositiveMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
   const pipTypes = new Set<string>();
   for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i];
+    const suit = variant.suits[i]!;
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
-    // Set the pip at the middle of the card
+    // Set the pip at the middle of the card.
     const x = Math.floor(CARD_W * 0.5);
     const y = Math.floor(CARD_H * 0.5);
     const scale = {
-      // Scale numbers are magic
+      // Scale numbers are magic.
       x: 0.4,
       y: 0.4,
     };
-    // Transform polar to Cartesian coordinates
+    // Transform polar to Cartesian coordinates.
     const offsetBase = CARD_W * 0.7;
     const offsetTrig = (-i / variant.suits.length + 0.25) * Math.PI * 2;
     const offset = {
@@ -209,7 +209,7 @@ function makeCachedPips(variant: Variant) {
     suitPipsMap.set(i, suitPip);
     suitPipsPositiveMap.set(i, suitPipPositive);
 
-    // Also create the X that will show when a certain suit can be ruled out
+    // Also create the X that will show when a certain suit can be ruled out.
     const suitPipX = new Konva.Shape({
       x,
       y,
@@ -232,7 +232,7 @@ function makeCachedPips(variant: Variant) {
     suitPipsXMap.set(i, suitPipX);
   }
 
-  // Initialize the rank pips (along the bottom of the card)
+  // Initialize the rank pips (along the bottom of the card).
   const rankPipsMap = new Map<number, RankPip>();
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
@@ -266,7 +266,7 @@ function makeCachedPips(variant: Variant) {
     });
     rankPipsMap.set(rank, rankPip);
 
-    // Also create the X that will show when a certain rank can be ruled out
+    // Also create the X that will show when a certain rank can be ruled out.
     const rankPipX = new Konva.Shape({
       x,
       y: Math.floor(CARD_H * 0.02),
@@ -367,14 +367,13 @@ export function note(
   offsetCornerElements: boolean,
   shouldShowIndicator: () => boolean,
 ): NoteIndicator {
-  // Define the note indicator image
+  // Define the note indicator image.
   const noteX = 0.78;
   const noteY = 0.03;
   const size = 0.2 * CARD_W;
   const noteIndicator = new NoteIndicator({
-    // If the cards have triangles on the corners that show the color composition,
-    // the images will overlap
-    // Thus, we move it downwards if this is the case
+    // If the cards have triangles on the corners that show the color composition, the images will
+    // overlap. Thus, we move it downwards if this is the case.
     x: (offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
     y: (offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
     align: "center",
@@ -402,14 +401,13 @@ export function note(
 }
 
 export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
-  // Define the critical indicator image
+  // Define the critical indicator image.
   const critX = 0.06;
   const critY = 0.82;
   const size = 0.2 * CARD_W;
   const indicator = new Konva.Image({
-    // If the cards have triangles on the corners that show the color composition,
-    // the images will overlap
-    // Thus, we move it upwards if this is the case
+    // If the cards have triangles on the corners that show the color composition, the images will
+    // overlap. Thus, we move it upwards if this is the case.
     x: (offsetCornerElements ? critX + 0.05 : critX) * CARD_W,
     y: (offsetCornerElements ? critY - 0.05 : critY) * CARD_H,
     align: "center",
@@ -471,9 +469,8 @@ export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
   const ddaY = 0.82;
   const size = 0.2 * CARD_W;
   const indicator = new Konva.Image({
-    // If the cards have triangles on the corners that show the color composition,
-    // the images will overlap
-    // Thus, we move it upwards if this is the case
+    // If the cards have triangles on the corners that show the color composition, the images will
+    // overlap. Thus, we move it upwards if this is the case.
     x: (offsetCornerElements ? ddaX + 0.05 : ddaX) * CARD_W,
     y: (offsetCornerElements ? ddaY - 0.05 : ddaY) * CARD_H,
     align: "center",
@@ -498,8 +495,8 @@ function scaleCardImage(
     throw new Error(`The image "${name}" was not generated.`);
   }
 
-  const dw = Math.sqrt(tf.m[0] * tf.m[0] + tf.m[1] * tf.m[1]) * width;
-  const dh = Math.sqrt(tf.m[2] * tf.m[2] + tf.m[3] * tf.m[3]) * height;
+  const dw = Math.sqrt(tf.m[0]! * tf.m[0]! + tf.m[1]! * tf.m[1]!) * width;
+  const dh = Math.sqrt(tf.m[2]! * tf.m[2]! + tf.m[3]! * tf.m[3]!) * height;
 
   if (dw < 1 || dh < 1) {
     return;
@@ -515,8 +512,8 @@ function scaleCardImage(
     globals.scaledCardImages.set(name, scaledCardImages);
   }
 
-  // This code was written by Keldon;
-  // scaling the card down in steps of half in each dimension presumably improves the scaling
+  // This code was written by Keldon; scaling the card down in steps of half in each dimension
+  // presumably improves the scaling.
   while (dw < sw / 2) {
     let scaledCardImage = scaledCardImages[steps];
 
@@ -540,7 +537,7 @@ function scaleCardImage(
     }
 
     src = scaledCardImage;
-    steps += 1;
+    steps++;
   }
 
   ctx.drawImage(src, 0, 0, width, height);
@@ -556,7 +553,7 @@ function drawX(
 ) {
   let x = positionX;
   let y = positionY;
-  // Start at the top left corner and draw an X
+  // Start at the top left corner and draw an X.
   ctx.beginPath();
   x -= size;
   y -= size;
@@ -640,19 +637,19 @@ function getNewColorPip(
     listening: false,
   });
 
-  // Gradient numbers are magic
+  // Gradient numbers are magic.
   if (suit.fill === "multi") {
     suitPip.fillRadialGradientColorStops([
       0.3,
-      suit.fillColors[0],
+      suit.fillColors[0]!,
       0.425,
-      suit.fillColors[1],
+      suit.fillColors[1]!,
       0.65,
-      suit.fillColors[2],
+      suit.fillColors[2]!,
       0.875,
-      suit.fillColors[3],
+      suit.fillColors[3]!,
       1,
-      suit.fillColors[4],
+      suit.fillColors[4]!,
     ]);
     suitPip.fillRadialGradientStartPoint({
       x: 75,

@@ -23,7 +23,7 @@ export default class CheckButton extends Konva.Group {
     // Local variables
     const w = this.width();
     const h = this.height();
-    const textSize = (config.fontSize as number) ?? 0.5 * h;
+    const textSize = (config["fontSize"] as number | undefined) ?? 0.5 * h;
 
     this.background = new Konva.Rect({
       x: 0,
@@ -89,7 +89,7 @@ export default class CheckButton extends Konva.Group {
     this.updateImageVisibility();
 
     this.textElement = null;
-    if (config.text !== undefined) {
+    if (config["text"] !== undefined) {
       this.textElement = new Konva.Text({
         x: checkW + checkX * 1.5,
         y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered
@@ -99,7 +99,7 @@ export default class CheckButton extends Konva.Group {
         fontFamily: "Verdana",
         fill: "white",
         align: "left",
-        text: config.text as string,
+        text: config["text"] as string,
         listening: false,
       });
       this.add(this.textElement);

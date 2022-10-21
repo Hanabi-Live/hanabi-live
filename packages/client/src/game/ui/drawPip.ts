@@ -2364,10 +2364,10 @@ shapeFunctions.set(
     ctx.closePath();
     ctx.scale(5 / 6, 5 / 6);
     if (colors !== undefined) {
-      // When multiple colors are passed, create a gradient
+      // When multiple colors are passed, create a gradient.
       const gradient = ctx.createLinearGradient(500, 0, 700, 0);
-      for (let i = 0; i < colors.length; ++i) {
-        gradient.addColorStop(i / (colors.length - 1), colors[i]);
+      for (let i = 0; i < colors.length; i++) {
+        gradient.addColorStop(i / (colors.length - 1), colors[i]!);
       }
       ctx.fillStyle = gradient;
       ctx.fill();
@@ -2483,7 +2483,7 @@ shapeFunctions.set(
       112.94779,
     );
     if (colors !== undefined) {
-      ctx.fillStyle = colors[1];
+      ctx.fillStyle = colors[1]!;
       ctx.fill();
     }
     ctx.closePath();
@@ -2590,7 +2590,7 @@ shapeFunctions.set(
       90.934275,
     );
     if (colors !== undefined) {
-      ctx.fillStyle = colors[4];
+      ctx.fillStyle = colors[4]!;
       ctx.fill();
     }
     ctx.closePath();
@@ -2713,7 +2713,7 @@ shapeFunctions.set(
       106.21146,
     );
     if (colors !== undefined) {
-      ctx.fillStyle = colors[0];
+      ctx.fillStyle = colors[0]!;
       ctx.fill();
     }
     ctx.closePath();
@@ -2826,7 +2826,7 @@ shapeFunctions.set(
       90.856545,
     );
     if (colors !== undefined) {
-      ctx.fillStyle = colors[3];
+      ctx.fillStyle = colors[3]!;
       ctx.fill();
     }
     ctx.closePath();
@@ -2925,7 +2925,7 @@ shapeFunctions.set(
       111.57048,
     );
     if (colors !== undefined) {
-      ctx.fillStyle = colors[2];
+      ctx.fillStyle = colors[2]!;
       ctx.fill();
     }
     ctx.closePath();
@@ -3367,7 +3367,7 @@ export default function drawPip(
   lineWidth?: number,
   highLight?: boolean,
 ): void {
-  // Positive indication for Color pips
+  // Positive indication for Color pips.
   if (highLight === true) {
     ctx.save();
     ctx.beginPath();
@@ -3378,7 +3378,7 @@ export default function drawPip(
     ctx.restore();
   }
 
-  // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
+  // Each suit has a shape defined in the "suits.json" file (as the 'pip' property).
   const shapeFunction = shapeFunctions.get(suit.pip);
   if (shapeFunction === undefined) {
     throw new Error(`Failed to find the shape function for pip "${suit.pip}".`);
@@ -3404,16 +3404,16 @@ export default function drawPip(
     } else if (suit.fill === "multi") {
       const colors = suit.fillColors;
       const grad = ctx.createLinearGradient(0, -100, 30, 100);
-      for (let i = 0; i < colors.length; ++i) {
-        grad.addColorStop(i / (colors.length - 1), colors[i]);
+      for (let i = 0; i < colors.length; i++) {
+        grad.addColorStop(i / (colors.length - 1), colors[i]!);
       }
       ctx.fillStyle = grad;
     } else {
       ctx.fillStyle = suit.fill;
     }
 
-    // Workaround for Konva.Shape's Context not supporting evenodd
-    // This is used in e.g. Empathy view
+    // Workaround for Konva.Shape's Context not supporting `evenodd`. This is used in e.g. Empathy
+    // view.
     interface KonvaCanvas {
       _context: CanvasRenderingContext2D | undefined;
     }
@@ -3434,22 +3434,22 @@ export default function drawPip(
   }
 
   if (hasCustomFill) {
-    // The parent function has specified a custom fill color
+    // The parent function has specified a custom fill color.
     ctx.fillStyle = customFill!;
     shapeFunction(ctx);
     ctx.fill();
   } else if (suit.fill === "multi") {
     // Rainbow and omni cards have a multiple color fill which is passed as an array to the drawing
-    // function; the drawing function will handle the filling
+    // function; the drawing function will handle the filling.
     shapeFunction(ctx, suit.fillColors);
   } else {
-    // All other suits have a solid fill
+    // All other suits have a solid fill.
     ctx.fillStyle = suit.fill;
     shapeFunction(ctx);
     ctx.fill();
   }
 
-  // Draw a black border around the shape
+  // Draw a black border around the shape.
   if (shadow === true) {
     ctx.lineWidth = lineWidth ?? (hasCustomFill ? 8 : 5);
     ctx.shadowColor = "rgba(0, 0, 0, 0)";

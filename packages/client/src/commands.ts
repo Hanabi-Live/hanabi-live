@@ -1,4 +1,4 @@
-// We will receive WebSocket messages / commands from the server that tell us to do things
+// We will receive WebSocket messages / commands from the server that tell us to do things.
 
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
@@ -8,7 +8,7 @@ import Screen from "./lobby/types/Screen";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
-// Define a command handler map
+// Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
@@ -22,7 +22,7 @@ commands.set("warning", (data: WarningData) => {
   modals.closeModals(true);
   setTimeout(() => {
     modals.showWarning(data.warning);
-    // Re-activate some lobby elements
+    // Re-activate some lobby elements.
     $("#nav-buttons-lobby-create-game").removeClass("disabled");
     if (globals.currentScreen === Screen.PreGame) {
       pregame.toggleStartGameButton();
@@ -37,14 +37,14 @@ commands.set("error", (data: ErrorData) => {
   console.error(data.error);
   modals.showError(data.error);
 
-  // Disconnect from the server, if connected
+  // Disconnect from the server, if connected.
   if (globals.conn !== null) {
-    // This is safe to call if the WebSocket connection is already closed
+    // This is safe to call if the WebSocket connection is already closed.
     globals.conn.close();
   }
 });
 
-// Received by the client when a new chat message arrives
+// Received by the client when a new chat message arrives.
 commands.set("chat", (data: ChatMessage) => {
   chat.add(data, false); // The second argument is "fast"
 
@@ -52,14 +52,14 @@ commands.set("chat", (data: ChatMessage) => {
     return;
   }
   if (globals.currentScreen === Screen.PreGame) {
-    // Notify the server that we have read the chat message that was just received
+    // Notify the server that we have read the chat message that was just received.
     globals.conn!.send("chatRead", {
       tableID: globals.tableID,
     });
   } else if (globals.currentScreen === Screen.Game && globals.ui !== null) {
     if ($("#game-chat-modal").is(":visible")) {
-      // The chat window was open;
-      // notify the server that we have read the chat message that was just received
+      // The chat window was open; notify the server that we have read the chat message that was
+      // just received.
       globals.conn!.send("chatRead", {
         tableID: globals.tableID,
       });
@@ -72,22 +72,21 @@ commands.set("chat", (data: ChatMessage) => {
 
     const UIState = globals.ui.globals.state;
     if (!UIState.playing && !UIState.finished) {
-      // The chat window was not open; pop open the chat window every time for spectators
+      // The chat window was not open; pop open the chat window every time for spectators.
       gameChat.toggle();
       globals.conn!.send("chatRead", {
         tableID: globals.tableID,
       });
     } else {
-      // The chat window was not open; by default, keep it closed
-      // Change the "Chat" button to say "Chat (1)"
-      // (or e.g. "Chat (2)", if they have multiple unread messages)
-      globals.chatUnread += 1;
+      // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
+      // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
+      globals.chatUnread++;
       globals.ui.updateChatLabel();
     }
   }
 });
 
-// Received by the client when someone either starts or stops typing
+// Received by the client when someone either starts or stops typing.
 interface ChatTypingMessage {
   name: string;
   typing: boolean;
@@ -106,9 +105,9 @@ commands.set("chatTyping", (data: ChatTypingMessage) => {
   chat.updatePeopleTyping();
 });
 
-// The "chatList" command is sent upon initial connection
-// to give the client a list of past lobby chat messages
-// It is also sent upon connecting to a game to give a list of past in-game chat messages
+// The "chatList" command is sent upon initial connection to give the client a list of past lobby
+// chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
+// messages.
 interface ChatListData {
   list: ChatMessage[];
   unread: number;
@@ -118,7 +117,7 @@ commands.set("chatList", (data: ChatListData) => {
     chat.add(line, true); // The second argument is "fast"
   }
   if (globals.ui !== null && !$("#game-chat-modal").is(":visible")) {
-    // If the UI is open, we assume that this is a list of in-game chat messages
+    // If the UI is open, we assume that this is a list of in-game chat messages.
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();
   }

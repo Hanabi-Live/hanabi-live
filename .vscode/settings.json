@@ -1,59 +1,82 @@
-// These are Visual Studio Code settings that should apply to this particular repository
+// These are Visual Studio Code settings that should apply to this particular repository:
 // https://code.visualstudio.com/docs/getstarted/settings
 {
   // ----------------
   // Vanilla settings
   // ----------------
 
-  // This matches the Airbnb JavaScript style guide
-  // Golang code also conforms to this rule
+  // This matches the Airbnb JavaScript style guide.
   "editor.rulers": [100],
   "editor.tabSize": 2,
 
   "files.associations": {
-    "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files
+    "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files.
+    ".env*": "shellscript", // e.g. ".env.example" is the same as ".env".
   },
 
-  // Linux line endings are used in this project
+  // We want to always use "lf" to be consistent with all platforms.
   "files.eol": "\n",
 
-  // Automatically removing all trailing whitespace when saving a file
+  // Automatically removing all trailing whitespace when saving a file.
   "files.trimTrailingWhitespace": true,
 
   // Configure glob patterns for excluding files and folders in full text searches and quick open
   "search.exclude": {
     "**/*.min.js*": true,
-    "**/misc/keldon/**": true,
+    "**/dist/": true,
+    "**/misc/keldon/": true,
+    "**/node_modules/": true,
   },
 
   // -----------------------
   // JavaScript / TypeScript
   // -----------------------
 
-  // This is needed because the ".eslintrc.js" is not located in the root of the repository
-  "eslint.workingDirectories": [
-    "./client",
-  ],
-
-  // By default, VSCode will not automatically fill-in function arguments
+  // By default, VSCode will not automatically fill-in function arguments.
   "javascript.suggest.completeFunctionCalls": true,
   "typescript.suggest.completeFunctionCalls": true,
 
-  // Automatically run the formatter when a JavaScript or TypeScript file is saved
-  "[typescript]": {
+  // Automatically run the formatter when certain files are saved.
+  "[javascript]": {
+    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-    },
     "editor.tabSize": 2,
   },
-  "[javascript]": {
+  "[typescript]": {
+    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-    },
+    "editor.tabSize": 2,
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
 
@@ -67,9 +90,7 @@
 
   // This is recommended as per the GolangCI-Lint README file
   // https://github.com/golangci/golangci-lint/blob/master/README.md
-  "go.lintFlags": [
-      "--fast",
-  ],
+  "go.lintFlags": ["--fast"],
 
   "[go]": {
     "editor.tabSize": 4,

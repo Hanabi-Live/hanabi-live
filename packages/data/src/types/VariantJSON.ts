@@ -15,6 +15,8 @@ export interface VariantJSON {
   specialDeceptive?: boolean;
 
   oddsAndEvens?: boolean;
+  funnels?: boolean;
+  chimneys?: boolean;
   alternatingClues?: boolean;
   clueStarved?: boolean;
   duck?: boolean;

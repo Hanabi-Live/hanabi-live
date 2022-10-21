@@ -1,4 +1,4 @@
-// Speedrun click functions for the HanabiCard object
+// Speedrun click functions for the HanabiCard object.
 
 import { Color, START_CARD_RANK } from "@hanabi/data";
 import * as cardRules from "../rules/card";
@@ -16,13 +16,12 @@ export default function HanabiCardClickSpeedrun(
   event: MouseEvent,
 ): void {
   if (
-    // Do nothing if we are clicking on a card that is not in a hand
-    // (this is likely a misclick)
+    // Do nothing if we are clicking on a card that is not in a hand. (This is likely a misclick.)
     card.layout.parent === null ||
     typeof card.state.location !== "number" ||
     // Unlike the "click()" function, we do not want to disable all clicks if the card is tweening
-    // because we want to be able to click on cards as they are sliding down
-    // However, make an exception for the first card in the hand (as it is sliding in from the deck)
+    // because we want to be able to click on cards as they are sliding down. However, make an
+    // exception for the first card in the hand (as it is sliding in from the deck).
     (card.tweening &&
       card.layout.index === card.layout.parent.children.length - 1)
   ) {
@@ -39,7 +38,7 @@ export default function HanabiCardClickSpeedrun(
 }
 
 function clickLeft(card: HanabiCard, event: MouseEvent) {
-  // Left-clicking on cards in our own hand is a play action
+  // Left-clicking on cards in our own hand is a play action.
   if (
     card.state.location === globals.metadata.ourPlayerIndex &&
     !event.ctrlKey &&
@@ -54,13 +53,13 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Left-clicking on cards in other people's hands is a color clue action
-  // (but if we are holding Ctrl, then we are using Empathy)
+  // Left-clicking on cards in other people's hands is a color clue action. (But if we are holding
+  // Ctrl, then we are using Empathy.)
   if (
     card.state.location !== globals.metadata.ourPlayerIndex &&
     cardRules.isInPlayerHand(card.state) &&
     card.state.suitIndex !== null &&
-    // Ensure there is at least 1 clue token available
+    // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
       clueTokensRules.getAdjusted(1, globals.variant) &&
     !event.ctrlKey &&
@@ -68,44 +67,46 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     !event.altKey &&
     !event.metaKey
   ) {
-    // A card may be cluable by more than one color,
-    // so we need to figure out which color to use
-    // First, find out if they have a clue color button selected
+    // A card may be cluable by more than one color, so we need to figure out which color to use.
+    // First, find out if they have a clue color button selected.
     const clueButton =
       globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
     let clueColor: Color;
-    const suit = globals.variant.suits[card.state.suitIndex];
+    const suit = globals.variant.suits[card.state.suitIndex]!;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (clueButton === null) {
-      // They have not clicked on a clue color button yet,
-      // so assume that they want to use the first possible color of the card
-      clueColor = suit.clueColors[0];
+      // They have not clicked on a clue color button yet, so assume that they want to use the first
+      // possible color of the card.
+      clueColor = suit.clueColors[0]!;
     } else if (typeof clueButton.clue.value === "number") {
-      // They have clicked on a number clue button,
-      // so assume that they want to use the first possible color of the card
-      clueColor = suit.clueColors[0];
+      // They have clicked on a number clue button, so assume that they want to use the first
+      // possible color of the card.
+      clueColor = suit.clueColors[0]!;
     } else {
-      // They have clicked on a color button, so assume that they want to use that color
+      // They have clicked on a color button, so assume that they want to use that color.
       clueColor = clueButton.clue.value;
 
-      // See if this is a valid color for the clicked card
+      // See if this is a valid color for the clicked card.
       const clueColorIndex = suit.clueColors.findIndex(
         (cardColor: Color) => cardColor === clueColor,
       );
-      // Ignore clue validation if suit has no clueColors
+      // Ignore clue validation if suit has no clueColors.
       if (suit.clueColors.length > 0 && clueColorIndex === -1) {
-        // It is not possible to clue this color to this card,
-        // so default to using the first valid color
-        clueColor = suit.clueColors[0];
+        // It is not possible to clue this color to this card, so default to using the first valid
+        // color.
+        clueColor = suit.clueColors[0]!;
       }
     }
 
     let colorIndex = colorToColorIndex(clueColor, globals.variant);
     if (suit.clueColors.length === 0) {
       if (suit.fillColors.length === 0) {
-        // Send invalid action to server since we tried to color clue a card that truly has no color
+        // Send invalid action to server since we tried to color clue a card that truly has no
+        // color.
         colorIndex = -1;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (clueColor === undefined) {
-        // Use whatever color is index 0, since the suit had no defined clueColors but has colors
+        // Use whatever color is index 0, since the suit had no defined clueColors but has colors.
         colorIndex = 0;
       }
     }
@@ -119,7 +120,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 }
 
 function clickRight(card: HanabiCard, event: MouseEvent) {
-  // Right-clicking on cards in our own hand is a discard action
+  // Right-clicking on cards in our own hand is a discard action.
   if (
     card.state.location === globals.metadata.ourPlayerIndex &&
     !event.ctrlKey &&
@@ -127,7 +128,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.altKey &&
     !event.metaKey
   ) {
-    // Prevent discarding while at the maximum amount of clues
+    // Prevent discarding while at the maximum amount of clues.
     if (
       clueTokensRules.atMax(
         globals.state.ongoingGame.clueTokens,
@@ -144,14 +145,14 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Right-clicking on cards in other people's hands is a rank clue action
+  // Right-clicking on cards in other people's hands is a rank clue action.
   if (
     card.state.location !== globals.metadata.ourPlayerIndex &&
     cardRules.isInPlayerHand(card.state) &&
     card.state.rank !== null &&
-    // It is not possible to clue a Start Card with a rank clue
+    // It is not possible to clue a Start Card with a rank clue.
     card.state.rank !== START_CARD_RANK &&
-    // Ensure there is at least 1 clue token available
+    // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
       clueTokensRules.getAdjusted(1, globals.variant) &&
     !event.ctrlKey &&
@@ -167,21 +168,20 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Ctrl + right-click is the normal note pop-up
+  // Ctrl + right-click is the normal note pop-up.
   if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
     notes.openEditTooltip(card);
     return;
   }
 
-  // Shift + right-click is a "f" note
-  // (this is a common abbreviation for "this card is Finessed")
+  // Shift + right-click is a "f" note. (This is a common abbreviation for "this card is Finessed".)
   if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
     card.appendNote("f");
     return;
   }
 
-  // Alt + right-click is a "cm" note
-  // (this is a common abbreviation for "this card is chop moved")
+  // Alt + right-click is a "cm" note. (This is a common abbreviation for "this card is chop
+  // moved".)
   if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
     card.appendNote("cm");
   }

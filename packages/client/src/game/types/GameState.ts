@@ -9,17 +9,27 @@ export default interface GameState {
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];
   readonly cardsRemainingInTheDeck: number;
-  // Card statuses only depend on a card's identity, not the card itself,
-  // so it is stored here rather than as a sub-property of CardState
+
+  /**
+   * This only depends on a card's identity, not the card itself, so it is stored here rather than
+   * as a sub-property of `CardState`.
+   */
   readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
+
   readonly score: number;
-  readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants
+
+  /** For "Throw It in a Hole" variants. */
+  readonly numAttemptedCardsPlayed: number;
+
   readonly clueTokens: number;
   readonly strikes: readonly StateStrike[];
   readonly hands: ReadonlyArray<readonly number[]>;
   readonly playStacks: ReadonlyArray<readonly number[]>;
   readonly playStackDirections: readonly StackDirection[];
-  readonly hole: readonly number[]; // For "Throw It in a Hole" variants
+
+  /** For "Throw It in a Hole" variants. */
+  readonly hole: readonly number[];
+
   readonly discardStacks: ReadonlyArray<readonly number[]>;
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;
@@ -41,9 +51,11 @@ export interface StateClue {
   readonly giver: number;
   readonly target: number;
   readonly segment: number;
-  // The list of cards that the clue touches
+
+  /** The list of cards that the clue touches. */
   readonly list: readonly number[];
-  // The list of cards in the same hand that the clue does not touch
+
+  /** The list of cards in the same hand that the clue does not touch. */
   readonly negativeList: readonly number[];
 }
 

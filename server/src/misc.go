@@ -169,7 +169,7 @@ func normalizeString(str string) string {
 
 func numConsecutiveDiacritics(s string) int {
 	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
-	// are seprated from other characters
+	// are separated from other characters
 	// https://en.wikipedia.org/wiki/Unicode_equivalence
 	// https://blog.golang.org/normalization
 	normalizedString := norm.NFD.String(s)

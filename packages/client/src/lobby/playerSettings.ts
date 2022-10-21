@@ -1,4 +1,4 @@
-// The "Settings" nav button
+// The "Settings" nav button.
 
 import { parseIntSafe } from "@hanabi/data";
 import globals from "../globals";
@@ -10,9 +10,6 @@ export function init(): void {
     this: HTMLElement,
   ) {
     const element = $(this);
-    if (element === undefined) {
-      throw new Error('Failed to get the "settings-volume-slider" element.');
-    }
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
       throw new Error(
@@ -31,9 +28,6 @@ export function init(): void {
   $("#settings-volume-test").click(() => {
     const audio = new Audio("/public/sounds/turn_us.mp3");
     const element = $("#settings-volume-slider");
-    if (element === undefined) {
-      throw new Error('Failed to get the "settings-volume-slider" element.');
-    }
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
       throw new Error(
@@ -49,11 +43,12 @@ export function init(): void {
 }
 
 export function setPlayerSettings(): void {
-  // The server has delivered to us a list of all of our settings
-  // Check the checkboxes for the settings that we have enabled (and adjust the volume slider)
+  // The server has delivered to us a list of all of our settings. Check the checkboxes for the
+  // settings that we have enabled (and adjust the volume slider).
+  // eslint-disable-next-line isaacscript/no-object-any
   for (const [setting, value] of Object.entries(globals.settings)) {
     if (setting.startsWith("createTable")) {
-      // Settings for the "Create Game" nav button are handled when the user clicks on it
+      // Settings for the "Create Game" nav button are handled when the user clicks on it.
       continue;
     } else if (setting === "volume") {
       if (typeof value !== "number") {
@@ -63,9 +58,6 @@ export function setPlayerSettings(): void {
       $("#settings-volume-slider-value").html(`${value}%`);
     } else {
       const element = $(`#${setting}`);
-      if (element === undefined) {
-        throw new Error(`Failed to get the "${setting}" element.`);
-      }
       if (typeof value !== "boolean") {
         throw new Error("The volume setting is not stored as a string.");
       }
@@ -77,11 +69,6 @@ export function setPlayerSettings(): void {
 
 function changeSetting(this: HTMLElement) {
   const element = $(this);
-  if (element === undefined) {
-    throw new Error(
-      'Failed to get the element in the "changeSetting()" function.',
-    );
-  }
   const settingName = element.attr("id");
   if (settingName === undefined || settingName === "") {
     throw new Error(
@@ -100,15 +87,15 @@ function changeSetting(this: HTMLElement) {
     return;
   }
 
-  // Write the new value to our local variable
-  // We must cast the settings to any since this assignment violates type safety
+  // Write the new value to our local variable. We must cast the settings to any since this
+  // assignment violates type safety.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (globals.settings[settingName] as any) = checked;
 
-  // Send the new value to the server
+  // Send the new value to the server.
   globals.conn!.send("setting", {
     name: settingName,
-    setting: checked.toString(), // The server expects all setting values as strings
+    setting: checked.toString(), // The server expects all setting values as strings.
   });
 
   if (settingName === "desktopNotification" && checked) {

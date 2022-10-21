@@ -15,8 +15,7 @@ export default interface InitData {
   options: Options;
 
   // Character settings
-  // "characterAssignments" comes from the server as only numbers,
-  // but we want to convert -1 to null in place
+  /** Comes from the server as only numbers, but we want to convert -1 to null in place. */
   characterAssignments: Array<number | null>;
   characterMetadata: number[];
 
