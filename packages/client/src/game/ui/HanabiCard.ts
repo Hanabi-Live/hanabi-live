@@ -1219,8 +1219,8 @@ export default class HanabiCard
 
   prependTurnCountNote(noteAdded: string): void {
     this.updateNote(noteAdded, (a: string, b: string): string => {
-      const turnStripped = a.replace(/^#\d+ /, "")
-      return `${b} ${turnStripped}`
+      const turnStripped = a.replace(/^#\d+ /, "");
+      return `${b} ${turnStripped}`;
     });
   }
 
