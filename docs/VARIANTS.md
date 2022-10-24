@@ -29,10 +29,10 @@ One of each card per suit (e.g. 5 in total):
 ### No Variant
 
 - This is the "normal" game, with 5 suits. Unlike some other versions of the game, the website uses the following five suit colors:
-  - Blue
-  - Green
-  - Yellow
   - Red
+  - Yellow
+  - Green
+  - Blue
   - Purple
 
 ### 6 Suits
