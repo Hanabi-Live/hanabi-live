@@ -15,7 +15,7 @@ func (t *Table) NotifyChat(chatMessage *ChatMessage) {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.Emit("chat", chatMessage)
 	}
 }
@@ -29,7 +29,7 @@ func (t *Table) NotifyChatTyping(name string, typing bool) {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		if sp.Name != name { // We do not need to alert the person who is typing
 			sp.Session.NotifyChatTyping(t, name, typing)
 		}
@@ -110,7 +110,7 @@ func (t *Table) NotifyPlayerChange() {
 	}
 
 	// Emit game the information to all pregame spectators
-	for _, s := range t.Spectators {
+	for _, s := range t.ActiveSpectators() {
 		s.Session.Emit("game", &GameMessage{
 			TableID:           t.ID,
 			Name:              t.Name,
@@ -144,7 +144,7 @@ func (t *Table) NotifyConnected() {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyConnected(t)
 	}
 }
@@ -164,7 +164,7 @@ func (t *Table) NotifySpectators() {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifySpectators(t)
 	}
 }
@@ -190,7 +190,7 @@ func (t *Table) NotifyGameAction() {
 	}
 
 	// Also send the spectators an update
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyGameAction(t, a)
 	}
 }
@@ -235,13 +235,13 @@ func (t *Table) NotifyFinishOngoingGame() {
 	}
 
 	// At this point, all of the players will have been converted to spectators
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.Emit("finishOngoingGame", finishOngoingGameMessage)
 	}
 }
 
 func (t *Table) NotifyCardIdentities() {
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyCardIdentities(t)
 	}
 }
@@ -253,7 +253,7 @@ func (t *Table) NotifyTime() {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyTime(t)
 	}
 }
@@ -265,13 +265,22 @@ func (t *Table) NotifyPause() {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyPause(t)
 	}
 }
 
-func (t *Table) NotifyReplayLeader() {
+func (t *Table) NotifySuggestion(userName string, segment int) {
 	for _, sp := range t.Spectators {
+		if sp.UserID == t.OwnerID {
+			sp.Session.NotifySuggestion(t, userName, segment)
+			break
+		}
+	}
+}
+
+func (t *Table) NotifyReplayLeader() {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyReplayLeader(t)
 	}
 }
@@ -279,29 +288,32 @@ func (t *Table) NotifyReplayLeader() {
 func (t *Table) NotifySpectatorsNote(order int) {
 	g := t.Game
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		// Make an array that contains the combined notes for all the players & spectators
 		// (for a specific card)
 		// However, if this spectator is shadowing a specific player, then only include the note for
 		// the shadowed player
 		type Note struct {
-			Name string `json:"name"`
-			Text string `json:"text"`
+			Name        string `json:"name"`
+			Text        string `json:"text"`
+			IsSpectator bool   `json:"isSpectator"`
 		}
 		notes := make([]Note, 0)
 		for _, p := range g.Players {
 			if sp.ShadowingPlayerIndex == -1 || sp.ShadowingPlayerIndex == p.Index {
 				notes = append(notes, Note{
-					Name: p.Name,
-					Text: p.Notes[order],
+					Name:        p.Name,
+					Text:        p.Notes[order],
+					IsSpectator: false,
 				})
 			}
 		}
 		if sp.ShadowingPlayerIndex == -1 {
 			for _, sp2 := range t.Spectators {
 				notes = append(notes, Note{
-					Name: sp2.Name,
-					Text: sp2.Notes(g)[order],
+					Name:        sp2.Name,
+					Text:        sp2.Notes(g)[order],
+					IsSpectator: true,
 				})
 			}
 		}
@@ -347,7 +359,7 @@ func (t *Table) NotifyBoot() {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		sp.Session.NotifyBoot(t)
 	}
 }

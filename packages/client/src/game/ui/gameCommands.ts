@@ -3,6 +3,7 @@
 // e.g. in-game replays.
 
 import { getVariant, parseIntSafe } from "@hanabi/data";
+import { sendSelfPMFromServer } from "client/src/chat";
 import { createStore } from "redux";
 import * as sentry from "../../sentry";
 import { initArray, setBrowserAddressBarPath } from "../../utils";
@@ -207,17 +208,21 @@ interface NoteListData {
 interface NoteList {
   name: string;
   notes: string[];
+  isSpectator: boolean;
 }
 commands.set("noteList", (data: NoteListData) => {
   const names = [] as string[];
   const noteTextLists = [] as string[][];
+  const isSpectators = [] as boolean[];
   for (const noteList of data.notes) {
     names.push(noteList.name);
     noteTextLists.push(noteList.notes);
+    isSpectators.push(noteList.isSpectator);
   }
   globals.store!.dispatch({
     type: "noteList",
     names,
+    isSpectators,
     noteTextLists,
   });
   // Show the note indicator for currently-visible cards.
@@ -363,6 +368,20 @@ commands.set("replayLeader", (data: ReplayLeaderData) => {
   });
 });
 
+// This is used in shared replays to specify who the leader is.
+interface SuggestData {
+  userName: string;
+  segment: number;
+  tableID: string;
+}
+commands.set("suggestion", (data: SuggestData) => {
+  if (globals.state.replay.shared === null) {
+    return;
+  }
+
+  suggestTurn(data.userName, data.tableID, data.segment);
+});
+
 // This is used in shared replays to change the segment (e.g. turn)
 interface ReplaySegmentData {
   segment: number;
@@ -419,6 +438,32 @@ commands.set("spectators", (data: SpectatorsData) => {
 // Subroutines
 // -----------
 
+function suggestTurn(who: string, room: string, segment: number) {
+  // We minus one to account for the fact that turns are presented to the user starting from 1.
+  const internalSegment = segment - 1;
+  if (
+    globals.state.finished &&
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader &&
+    globals.state.replay.hypothetical === null
+  ) {
+    const leaderSuggested = who === globals.metadata.ourUsername;
+    if (
+      leaderSuggested ||
+      internalSegment === globals.state.replay.shared.segment ||
+      window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)
+    ) {
+      replay.goToSegment(internalSegment);
+    }
+    if (leaderSuggested) {
+      sendSelfPMFromServer(
+        "You are the shared replay leader, so you can simply click on the turn number instead of using the <code>/suggest</code> command.",
+        room,
+      );
+    }
+  }
+}
+
 function setURL(data: InitData) {
   let path: string;
   if (data.sharedReplay) {
@@ -432,7 +477,7 @@ function setURL(data: InitData) {
 }
 
 function initStateStore(data: InitData) {
-  // Set the variant (as a helper reference)
+  // Set the variant (as a helper reference).
   globals.variant = getVariant(data.options.variantName);
 
   // Handle the special case of when players can be given assignments of "-1" during debugging

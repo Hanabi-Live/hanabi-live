@@ -1,13 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import {
-  emojis,
-  emotes,
-  ensureAllCases,
-  parseIntSafe,
-  PROJECT_NAME,
-} from "@hanabi/data";
+import { emojis, emotes, ensureAllCases, PROJECT_NAME } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import chatCommands from "./chatCommands";
@@ -563,20 +557,6 @@ export function add(data: ChatMessage, fast: boolean): void {
   if (index !== -1) {
     globals.peopleTyping.splice(index, 1);
     updatePeopleTyping();
-  }
-
-  // Handle client-side commands
-  const match = /^\/suggest (\d+)$/.exec(data.msg);
-  if (match !== null) {
-    const segmentString = match[1]!;
-    const segment = parseIntSafe(segmentString);
-    if (
-      !Number.isNaN(segment) &&
-      globals.currentScreen === Screen.Game &&
-      globals.ui !== null
-    ) {
-      globals.ui.suggestTurn(data.who, data.room, segment);
-    }
   }
 }
 

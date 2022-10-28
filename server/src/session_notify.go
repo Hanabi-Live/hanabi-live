@@ -89,7 +89,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 
 	spectators := make([]string, 0)
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		spectators = append(spectators, sp.Name)
 	}
 
@@ -294,7 +294,7 @@ func (s *Session) NotifySpectators(t *Table) {
 
 	s.Emit(command, &SpectatorsMessage{
 		TableID:    t.ID,
-		Spectators: t.Spectators,
+		Spectators: t.ActiveSpectators(),
 	})
 }
 
@@ -344,14 +344,28 @@ func (s *Session) NotifyReplayLeader(t *Table) {
 	})
 }
 
+func (s *Session) NotifySuggestion(t *Table, userName string, segment int) {
+	type SuggestionMessage struct {
+		TableID  uint64 `json:"tableID"`
+		UserName string `json:"userName"`
+		Segment  int    `json:"segment"`
+	}
+	s.Emit("suggestion", &SuggestionMessage{
+		TableID:  t.ID,
+		UserName: userName,
+		Segment:  segment,
+	})
+}
+
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
 func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
-		Name  string   `json:"name"`
-		Notes []string `json:"notes"`
+		Name        string   `json:"name"`
+		Notes       []string `json:"notes"`
+		IsSpectator bool     `json:"isSpectator"`
 	}
 
 	// Get the notes from all the players & spectators
@@ -359,16 +373,18 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	for _, p := range g.Players {
 		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
-				Name:  p.Name,
-				Notes: p.Notes,
+				Name:        p.Name,
+				Notes:       p.Notes,
+				IsSpectator: false,
 			})
 		}
 	}
-	if !t.Replay && shadowingPlayerIndex == -1 {
+	if shadowingPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
-				Name:  sp.Name,
-				Notes: sp.Notes(g),
+				Name:        sp.Name,
+				Notes:       sp.Notes(g),
+				IsSpectator: true,
 			})
 		}
 	}

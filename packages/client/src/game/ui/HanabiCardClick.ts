@@ -230,7 +230,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     globals.state.playing
   ) {
     lastNote = `#${globals.elements.turnNumberLabel?.text()}`;
-    card.prependNote(lastNote);
+    card.prependTurnCountNote(lastNote);
     return;
   }
 
