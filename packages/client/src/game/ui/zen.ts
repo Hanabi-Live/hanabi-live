@@ -15,6 +15,7 @@ export default function toggleZen(): void {
   if (globals.lobby.ui !== null) {
     globals.lobby.ui.updateChatLabel();
   }
+
   onSpectatorsChanged({
     spectators: globals.state.spectators,
     finished: globals.state.finished,
