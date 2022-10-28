@@ -106,6 +106,7 @@ func commandInit() {
 	commandMap["tableSpectate"] = commandTableSpectate
 	commandMap["tableRestart"] = commandTableRestart
 	commandMap["tableUpdate"] = commandTableUpdate
+	commandMap["tableSuggest"] = commandTableSuggest
 
 	// Other lobby commands
 	commandMap["setting"] = commandSetting

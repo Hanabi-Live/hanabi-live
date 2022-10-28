@@ -270,6 +270,15 @@ func (t *Table) NotifyPause() {
 	}
 }
 
+func (t *Table) NotifySuggestion(userName string, segment int) {
+	for _, sp := range t.Spectators {
+		if sp.UserID == t.OwnerID {
+			sp.Session.NotifySuggestion(t, userName, segment)
+			break
+		}
+	}
+}
+
 func (t *Table) NotifyReplayLeader() {
 	for _, sp := range t.Spectators {
 		sp.Session.NotifyReplayLeader(t)
