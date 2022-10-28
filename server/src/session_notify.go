@@ -344,6 +344,19 @@ func (s *Session) NotifyReplayLeader(t *Table) {
 	})
 }
 
+func (s *Session) NotifySuggestion(t *Table, userName string, segment int) {
+	type SuggestionMessage struct {
+		TableID  uint64 `json:"tableID"`
+		UserName string `json:"userName"`
+		Segment  int    `json:"segment"`
+	}
+	s.Emit("suggestion", &SuggestionMessage{
+		TableID:  t.ID,
+		UserName: userName,
+		Segment:  segment,
+	})
+}
+
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
 func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {

@@ -1,4 +1,4 @@
-import { getVariantNames } from "@hanabi/data";
+import { getVariantNames, parseIntSafe } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
 import toggleZen from "./game/ui/zen";
 import globals from "./globals";
@@ -168,6 +168,40 @@ chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
 chatCommands.set("changevariant", setVariant);
 chatCommands.set("cv", setVariant);
+
+// /suggest [turn]
+chatCommands.set("suggest", (room: string, args: string[]) => {
+  if (globals.tableID === -1) {
+    sendSelfPMFromServer(
+      "You are not currently at a table, so you cannot use the <code>/suggest</code> command.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+
+  if (args.length < 1) {
+    sendSelfPMFromServer(
+      "The format of the /suggest command is: <code>/suggest [turn]</code>",
+      room,
+      SelfChatMessageType.Info,
+    );
+    return;
+  }
+
+  const segment = parseIntSafe(args[0]!);
+  if (Number.isNaN(segment)) {
+    sendSelfPMFromServer(
+      "The [turn] argument must be a valid number",
+      room,
+      SelfChatMessageType.Info,
+    );
+  }
+  globals.conn!.send("tableSuggest", {
+    tableID: globals.tableID,
+    segment,
+  });
+});
 
 // /tag [tag]
 chatCommands.set("tag", (room: string, args: string[]) => {
