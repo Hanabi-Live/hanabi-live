@@ -5,10 +5,6 @@ jest.mock("./globals", () => ({}));
 jest.mock("./lobby/createGame", () => ({}));
 jest.mock("./modals", () => ({}));
 jest.mock("./lobby/createReplayJSON.ts", () => ({}));
-jest.mock("./game/ui/zen", () => ({
-  __esModule: true,
-  default: jest.fn(() => null),
-}));
 
 const brownFives = "Brown-Fives (6 Suits)";
 const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";

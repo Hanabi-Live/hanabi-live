@@ -45,7 +45,6 @@ import RankButton from "./RankButton";
 import * as replay from "./replay";
 import * as stats from "./stats";
 import * as timer from "./timer";
-import toggleZen from "./zen";
 
 interface Values {
   x: number;
@@ -541,12 +540,8 @@ function drawBottomLeftButtons() {
     visible: !globals.state.finished || globals.state.replay.shared !== null,
   });
   globals.layers.UI.add(chatButton as unknown as Konva.Group);
-  chatButton.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.button === 2) {
-      toggleZen();
-    } else {
-      globals.game!.chat.toggle();
-    }
+  chatButton.on("click tap", () => {
+    globals.game!.chat.toggle();
   });
   chatButton.tooltipName = "chat";
   chatButton.tooltipContent = "Toggle the in-game chat.";
