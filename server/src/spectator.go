@@ -17,6 +17,7 @@ type Spectator struct {
 	Session   *Session  `json:"-"`
 	Typing    bool      `json:"-"`
 	LastTyped time.Time `json:"-"`
+	Active    bool      `json:"-"`
 
 	// Spectators have the ability to watch a game from a specific player's perspective
 	// Equal to -1 if they are not shadowing a specific player

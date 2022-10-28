@@ -15,11 +15,12 @@ import (
 // 4) on behalf of a user when they reconnect after having been in a shared replay
 //
 // Example data:
-// {
-//   tableID: 15103,
-//   // A value of "-1" must be specified if we do not want to shadow a player
-//   shadowingPlayerIndex: -1,
-// }
+//
+//	{
+//	  tableID: 15103,
+//	  // A value of "-1" must be specified if we do not want to shadow a player
+//	  shadowingPlayerIndex: -1,
+//	}
 func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -40,10 +41,12 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not already spectating this table
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		if sp.UserID == s.UserID {
-			s.Warning("You are already spectating this table.")
-			return
+			if sp.Active {
+				s.Warning("You are already spectating this table.")
+				return
+			}
 		}
 	}
 
@@ -88,17 +91,24 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// (this will be a no-op if they were not in the "DisconSpectators" map)
 	tables.DeleteDisconSpectating(s.UserID)
 
-	// Add them to the spectators object
-	sp := &Spectator{
-		UserID:               s.UserID,
-		Name:                 s.Username,
-		Session:              s,
-		Typing:               false,
-		LastTyped:            time.Time{},
-		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+	if spectatorIndex == -1 {
+		// Add them to the spectators object
+		sp := &Spectator{
+			UserID:               s.UserID,
+			Name:                 s.Username,
+			Session:              s,
+			Active:               true,
+			Typing:               false,
+			LastTyped:            time.Time{},
+			ShadowingPlayerIndex: d.ShadowingPlayerIndex,
+		}
+		t.Spectators = append(t.Spectators, sp)
+	} else {
+		t.Spectators[spectatorIndex].Active = true
+		t.Spectators[spectatorIndex].ShadowingPlayerIndex = d.ShadowingPlayerIndex
 	}
 
-	t.Spectators = append(t.Spectators, sp)
 	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships
 
 	notifyAllTable(t) // Update the spectator list for the row in the lobby
