@@ -43,10 +43,16 @@ export default class HanabiUI {
       return;
     }
 
-    let text = "💬";
-    if (globals.lobby.chatUnread > 0) {
-      text += ` (${globals.lobby.chatUnread})`;
+    let text = "";
+    if (globals.lobby.zenModeEnabled) {
+      text += "☯️";
+    } else {
+      text += "💬";
+      if (globals.lobby.chatUnread > 0) {
+        text += ` (${globals.lobby.chatUnread})`;
+      }
     }
+
     globals.elements.chatButton.text(text);
     globals.layers.UI.batchDraw();
   }

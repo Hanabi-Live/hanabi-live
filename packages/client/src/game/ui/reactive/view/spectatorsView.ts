@@ -6,6 +6,12 @@ export function onSpectatorsChanged(data: {
   spectators: Spectator[];
   finished: boolean;
 }): void {
+  if (!data.finished && globals.lobby.zenModeEnabled) {
+    globals.elements.spectatorsLabel?.visible(false);
+    globals.elements.spectatorsNumLabel?.visible(false);
+    return;
+  }
+
   const visible = data.spectators.length > 0;
   globals.elements.spectatorsLabel?.visible(visible);
   globals.elements.spectatorsNumLabel?.visible(visible);

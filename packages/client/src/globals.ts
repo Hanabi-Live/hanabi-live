@@ -58,6 +58,7 @@ export class Globals {
   ui: HanabiUI | null = null;
   // Used to keep track of how many in-game chat messages are currently unread.
   chatUnread = 0;
+  zenModeEnabled = false;
   // Used to keep track of the active element before model warning box.
   lastActiveElement: HTMLElement | null = null;
 
