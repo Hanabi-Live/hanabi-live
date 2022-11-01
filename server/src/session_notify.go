@@ -89,7 +89,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 
 	spectators := make([]string, 0)
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		spectators = append(spectators, sp.Name)
 	}
 
@@ -294,7 +294,7 @@ func (s *Session) NotifySpectators(t *Table) {
 
 	s.Emit(command, &SpectatorsMessage{
 		TableID:    t.ID,
-		Spectators: t.ActiveSpectators(),
+		Spectators: t.Spectators,
 	})
 }
 
@@ -363,9 +363,8 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
-		Name        string   `json:"name"`
-		Notes       []string `json:"notes"`
-		IsSpectator bool     `json:"isSpectator"`
+		Name  string   `json:"name"`
+		Notes []string `json:"notes"`
 	}
 
 	// Get the notes from all the players & spectators
@@ -373,18 +372,16 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	for _, p := range g.Players {
 		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
-				Name:        p.Name,
-				Notes:       p.Notes,
-				IsSpectator: false,
+				Name:  p.Name,
+				Notes: p.Notes,
 			})
 		}
 	}
-	if shadowingPlayerIndex == -1 {
+	if !t.Replay && shadowingPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
-				Name:        sp.Name,
-				Notes:       sp.Notes(g),
-				IsSpectator: true,
+				Name:  sp.Name,
+				Notes: sp.Notes(g),
 			})
 		}
 	}
