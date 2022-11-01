@@ -28,11 +28,10 @@ var (
 // so we have to check for this before displaying WebSocket error messages
 //
 // Example data:
-//
-//	{
-//	  msg: 'hi',
-//	  room: 'lobby', // Room can also be "table1", "table1234", etc.
-//	}
+// {
+//   msg: 'hi',
+//   room: 'lobby', // Room can also be "table1", "table1234", etc.
+// }
 func commandChat(ctx context.Context, s *Session, d *CommandData) {
 	// Local variables
 	var userID int
@@ -195,7 +194,9 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 	var playerIndex int
 	var spectatorIndex int
 	if !d.Server {
-		if !t.IsPlayerOrSpectating(s.UserID) {
+		playerIndex = t.GetPlayerIndexFromID(s.UserID)
+		spectatorIndex = t.GetSpectatorIndexFromID(s.UserID)
+		if playerIndex == -1 && spectatorIndex == -1 {
 			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 				", so you cannot send chat to it.")
 			return
