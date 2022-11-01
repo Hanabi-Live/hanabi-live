@@ -11836,6 +11836,16 @@
     "suits": ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"]
   },
   {
+    "id": 2018,
+    "name": "Holiday Mix (5 Suits)",
+    "suits": ["Dark Pink", "Green", "White", "Sky", "Navy"]
+  },
+  {
+    "id": 2019,
+    "name": "Holiday Mix (6 Suits)",
+    "suits": ["Light Pink", "Red", "Green", "White", "Sky", "Navy"]
+  },
+  {
     "id": 10,
     "name": "Color Blind (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
