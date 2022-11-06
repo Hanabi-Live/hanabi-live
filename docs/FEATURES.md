@@ -416,7 +416,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 - If the _Future Required Efficiency_ is below the _Minimum Required Efficiency_, then:
   - The team is on track to get a perfect score.
-  - Future clues to not necessarily have to be as efficient as the ones previously given.
+  - Future clues do not necessarily have to be as efficient as the ones previously given.
   - The team can probably afford to give mediocre clues and play conservatively.
 - If the _Future Required Efficiency_ is above the _Minimum Required Efficiency_, then:
   - The team is not on track to get a perfect score.
