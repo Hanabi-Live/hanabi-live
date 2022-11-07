@@ -218,6 +218,63 @@ One of each card per suit (e.g. 5 in total):
   5. Tangelo (yellow / red)
   6. Peach (yellow / red)
 
+### Candy Corn Mix (5 Suits)
+
+- This is a mix of several variants. The suits are as follows:
+  1. Red
+  2. Orange (red / yellow)
+  3. Yellow
+  4. White (colorless)
+  5. Brown (rankless)
+
+### Candy Corn Mix (6 Suits)
+
+- This is a mix of several variants. The suits are as follows:
+  1. Red
+  2. Orange (red / yellow)
+  3. Yellow
+  4. White (colorless)
+  5. Brown (rankless)
+  6. Cocoa Rainbow (all colors, rankless, one of each)
+
+### Holiday Mix (5 Suits)
+
+- This is a mix of several variants. The suits are as follows:
+  1. Dark Pink (all ranks, one of each)
+  2. Green
+  3. White (colorless)
+  4. Sky (blue)
+  5. Navy (blue)
+
+### Holiday Mix (6 Suits)
+
+- This is a mix of several variants. The suits are as follows:
+  1. Light Pink (all ranks, colorless)
+  2. Red
+  3. Green
+  4. White (colorless)
+  5. Sky (blue)
+  6. Navy (blue)
+
+### Valentine Mix (5 Suits)
+
+- This is a mix of several variants. The suits are as follows:
+  1. White (colorless)
+  2. Light Pink (all ranks, colorless)
+  3. Pink (all ranks)
+  4. Red
+  5. Purple
+
+### Valentine Mix (6 Suits)
+
+- This is a mix of several variants. The suits are as follows:
+  1. White (colorless)
+  2. Light Pink (all ranks, colorless)
+  3. Pink (all ranks)
+  4. Red
+  5. Purple
+  6. Cardinal (red/purple)
+
 ### Critical Fours
 
 - One 4 is removed from each suit.
