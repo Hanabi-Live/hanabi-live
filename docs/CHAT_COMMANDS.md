@@ -28,15 +28,6 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### General commands (that work in the lobby and the Discord lobby)
-
-| Command    | Description                                                                                         |
-| ---------- | --------------------------------------------------------------------------------------------------- |
-| `/here`    | Asks for more players on lobby and on Discord (pings the users with the `@Ping Crew` role)          |
-| `/teachme` | Asks for a teaching game on lobby and on Discord (pings the users with the `@Trusted Teacher` role) |
-
-<br />
-
 ### General commands (that work everywhere except for Discord)
 
 | Command                | Description                                 |
@@ -48,15 +39,6 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/unfriend [username]` | Remove someone from your friends list       |
 | `/tagsearch [tag]`     | Search through all games for a specific tag |
 | `/version`             | Show the version number of the client code  |
-
-<br />
-
-### General commands (that work only on Discord)
-
-| Command        | Description                                    |
-| -------------- | ---------------------------------------------- |
-| `/subscribe`   | Add the `@Ping Crew` role to your profile      |
-| `/unsubscribe` | Remove the `@Ping Crew` role from your profile |
 
 <br />
 
