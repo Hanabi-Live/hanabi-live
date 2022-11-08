@@ -109,9 +109,6 @@ func (ts *Tables) Delete(tableID uint64) {
 		}
 	}
 	for _, userID := range usersSpectatingTable {
-		t := ts.tables[tableID]
-		sp := t.Spectators[t.GetSpectatorIndexFromID(userID)]
-		sp.Active = false
 		ts.DeleteSpectating(userID, tableID)
 	}
 }

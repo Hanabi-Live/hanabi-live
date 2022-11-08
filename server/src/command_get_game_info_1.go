@@ -141,7 +141,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
 		PlayerNames:      playerNames,
 		OurPlayerIndex:   ourPlayerIndex,
-		Spectating:       spectatorIndex != -1 && t.Spectators[spectatorIndex].Active && !t.Replay,
+		Spectating:       spectatorIndex != -1 && t.IsActivelySpectating(t.Spectators[spectatorIndex].UserID) && !t.Replay,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
 		HasCustomSeed:    g.ExtraOptions.CustomSeed != "",

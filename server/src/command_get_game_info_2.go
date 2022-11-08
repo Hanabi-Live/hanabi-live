@@ -102,7 +102,7 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		} else if spectatorIndex > -1 {
 			// They are a spectator in an ongoing game
 			sp := t.Spectators[spectatorIndex]
-			if sp.Active {
+			if t.IsActivelySpectating(sp.UserID) {
 				s.NotifyNoteList(t, sp.ShadowingPlayerIndex)
 			}
 		}

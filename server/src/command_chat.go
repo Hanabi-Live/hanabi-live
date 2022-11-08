@@ -192,8 +192,6 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that this player is in the game or spectating
-	var playerIndex int
-	var spectatorIndex int
 	if !d.Server {
 		if !t.IsPlayerOrSpectating(s.UserID) {
 			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
@@ -235,6 +233,9 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 	if d.Server {
 		return
 	}
+
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
 	if spectatorIndex != -1 {
 		sp := t.Spectators[spectatorIndex]
 		if sp.Typing {

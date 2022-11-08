@@ -82,8 +82,6 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 		defer tables.Unlock(ctx)
 	}
 
-	sp := t.Spectators[j]
-	sp.Active = false
 	tables.DeleteSpectating(s.UserID, t.ID) // Keep track of user to table relationships
 
 	if t.Replay && len(t.ActiveSpectators()) == 0 {

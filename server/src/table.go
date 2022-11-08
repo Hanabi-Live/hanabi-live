@@ -274,8 +274,15 @@ func (t *Table) GetSpectatorIndexFromID(userID int) int {
 }
 
 func (t *Table) IsActivelySpectating(userID int) bool {
-	spectatorIndex := t.GetSpectatorIndexFromID(userID)
-	return spectatorIndex != -1 && t.Spectators[spectatorIndex].Active
+	if t.GetSpectatorIndexFromID(userID) != -1 {
+		spectatingTables := tables.GetTablesUserSpectating(userID)
+		for _, spectatingTable := range spectatingTables {
+			if spectatingTable == t.ID {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (t *Table) IsPlayerOrSpectating(userID int) bool {
@@ -420,8 +427,13 @@ func (t *Table) GetVotes() []int {
 func (t *Table) ActiveSpectators() []*Spectator {
 	activeSpectators := make([]*Spectator, 0)
 	for _, sp := range t.Spectators {
-		if sp.Active {
-			activeSpectators = append(activeSpectators, sp)
+		for _, tId := range tables.GetTablesUserSpectating(sp.UserID) {
+			if tId == t.ID {
+				logger.Info(sp.Name + " is active Spectator")
+				activeSpectators = append(activeSpectators, sp)
+			} else {
+				logger.Info(sp.Name + " is NOT active Spectator")
+			}
 		}
 	}
 	return activeSpectators

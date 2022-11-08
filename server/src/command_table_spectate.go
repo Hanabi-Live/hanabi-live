@@ -43,10 +43,8 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are not already spectating this table
 	for _, sp := range t.ActiveSpectators() {
 		if sp.UserID == s.UserID {
-			if sp.Active {
-				s.Warning("You are already spectating this table.")
-				return
-			}
+			s.Warning("You are already spectating this table.")
+			return
 		}
 	}
 
@@ -98,14 +96,14 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			UserID:               s.UserID,
 			Name:                 s.Username,
 			Session:              s,
-			Active:               true,
 			Typing:               false,
 			LastTyped:            time.Time{},
 			ShadowingPlayerIndex: d.ShadowingPlayerIndex,
 		}
 		t.Spectators = append(t.Spectators, sp)
 	} else {
-		t.Spectators[spectatorIndex].Active = true
+		t.Spectators[spectatorIndex].Session = s
+		t.Spectators[spectatorIndex].Typing = false
 		t.Spectators[spectatorIndex].ShadowingPlayerIndex = d.ShadowingPlayerIndex
 	}
 
