@@ -11791,16 +11791,6 @@
     "suits": ["Light Pink", "Red", "Green", "White", "Sky", "Navy"]
   },
   {
-    "id": 2020,
-    "name": "Valentine Mix (5 Suits)",
-    "suits": ["White", "Light Pink", "Pink", "Red", "Purple"]
-  },
-  {
-    "id": 2021,
-    "name": "Valentine Mix (6 Suits)",
-    "suits": ["White", "Light Pink", "Pink", "Red", "Purple", "Cardinal D"]
-  },
-  {
     "id": 10,
     "name": "Color Blind (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
