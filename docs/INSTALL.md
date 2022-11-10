@@ -193,6 +193,8 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
     (replace "1234567890" with a secure password)
+  - `CREATE ROLE hanabiuser WITH CREATEDB LOGIN PASSWORD '1234567890';` <br />
+    (replace "1234567890" with a secure password)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
