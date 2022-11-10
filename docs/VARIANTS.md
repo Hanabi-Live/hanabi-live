@@ -304,7 +304,7 @@ One of each card per suit (e.g. 5 in total):
 
 ### Cow & Pig
 
-- When players give a clue, they point at the cards clued, but say "moo" if it a color clue and "oink" if it is a rank clue.
+- When players give a clue, they point at the cards clued, but say "moo" if it is a color clue, and "oink" if it is a rank clue.
 
 ### Duck
 

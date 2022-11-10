@@ -72,6 +72,8 @@ Building the client code can be memory intensive. Make sure that your system has
   - `cd hanabi-live`
 - Change from the Windows Command Prompt to Git Bash
   - `"%PROGRAMFILES%\Git\bin\sh.exe"`
+- Install [Yarn](https://yarnpkg.com/) v2:
+  - `npm install yarn --global`
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`

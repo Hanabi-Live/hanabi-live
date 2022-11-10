@@ -4,7 +4,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### General commands (that work everywhere):
+## General Commands (that work everywhere)
 
 | Command                               | Description                                                                                                                        |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -28,16 +28,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### General commands (that work in the lobby and the Discord lobby)
-
-| Command    | Description                                                                                         |
-| ---------- | --------------------------------------------------------------------------------------------------- |
-| `/here`    | Asks for more players on lobby and on Discord (pings the users with the `@Ping Crew` role)          |
-| `/teachme` | Asks for a teaching game on lobby and on Discord (pings the users with the `@Trusted Teacher` role) |
-
-<br />
-
-### General commands (that work everywhere except for Discord)
+## General Commands (that work everywhere except for Discord)
 
 | Command                | Description                                 |
 | ---------------------- | ------------------------------------------- |
@@ -51,16 +42,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### General commands (that work only on Discord)
-
-| Command        | Description                                    |
-| -------------- | ---------------------------------------------- |
-| `/subscribe`   | Add the `@Ping Crew` role to your profile      |
-| `/unsubscribe` | Remove the `@Ping Crew` role from your profile |
-
-<br />
-
-### Pre-game commands (table-owner-only)
+## Pre-game Commands (table-owner-only)
 
 | Command                 | Description                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------ |
@@ -77,7 +59,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Pre-game or game commands
+## Pre-game or Game Commands
 
 | Command        | Description                                                |
 | -------------- | ---------------------------------------------------------- |
@@ -86,7 +68,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Pre-game, game, and replay commands
+## Pre-game, Game, and Replay Commands
 
 | Command      | Description                         |
 | ------------ | ----------------------------------- |
@@ -94,7 +76,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Game commands
+## Game Commands
 
 | Command    | Description                              |
 | ---------- | ---------------------------------------- |
@@ -103,7 +85,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Game or replay commands
+## Game or Replay commands
 
 | Command      | Description                                                       |
 | ------------ | ----------------------------------------------------------------- |
@@ -111,7 +93,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Replay commands
+## Replay Commands
 
 | Command            | Description                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------- |
