@@ -66,8 +66,8 @@ export default function drawCards(
         drawCardBackground(ctx, enableShadows);
       }
 
-      // Make the special corners on the cards for dual-color suits.
-      // (Don't do this for Matryoshka suits which have names ending in MD.)
+      // Make the special corners on the cards for dual-color suits. Don't do this for Matryoshka
+      // suits which have names ending in MD.
       if (suit.clueColors.length === 2 && !suit.name.endsWith("MD")) {
         drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
       }
