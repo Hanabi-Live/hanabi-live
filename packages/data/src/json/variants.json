@@ -14393,5 +14393,407 @@
     "name": "Chimneys & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
     "chimneys": true
+  },
+  {
+    "id": 150,
+    "name": "Matryoshka (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Taupe MD"],
+    "showSuitNames": true
+  },
+  {
+    "id": 193,
+    "name": "Matryoshka (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD"],
+    "showSuitNames": true
+  },
+  {
+    "id": 197,
+    "name": "Matryoshka (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD"],
+    "showSuitNames": true
+  },
+  {
+    "id": 785,
+    "name": "Matryoshka (3 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1295,
+    "name": "Matryoshka & Black (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Black"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1476,
+    "name": "Matryoshka & Black (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Black"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1488,
+    "name": "Matryoshka & Rainbow (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1500,
+    "name": "Matryoshka & Rainbow (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1506,
+    "name": "Matryoshka & Rainbow (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1512,
+    "name": "Matryoshka & Rainbow (3 Suits)",
+    "suits": ["Red", "Yam MD", "Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 1518,
+    "name": "Matryoshka & Pink (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2020,
+    "name": "Matryoshka & Pink (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2021,
+    "name": "Matryoshka & Pink (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2022,
+    "name": "Matryoshka & Pink (3 Suits)",
+    "suits": ["Red", "Yam MD", "Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2023,
+    "name": "Matryoshka & White (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "White"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2024,
+    "name": "Matryoshka & White (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "White"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2025,
+    "name": "Matryoshka & White (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "White"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2026,
+    "name": "Matryoshka & White (3 Suits)",
+    "suits": ["Red", "Yam MD", "White"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2027,
+    "name": "Matryoshka & Brown (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Brown"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2028,
+    "name": "Matryoshka & Brown (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Brown"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2029,
+    "name": "Matryoshka & Brown (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Brown"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2030,
+    "name": "Matryoshka & Brown (3 Suits)",
+    "suits": ["Red", "Yam MD", "Brown"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2031,
+    "name": "Matryoshka & Omni (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Omni"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2032,
+    "name": "Matryoshka & Omni (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Omni"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2033,
+    "name": "Matryoshka & Omni (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Omni"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2034,
+    "name": "Matryoshka & Omni (3 Suits)",
+    "suits": ["Red", "Yam MD", "Omni"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2035,
+    "name": "Matryoshka & Null (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Null"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2036,
+    "name": "Matryoshka & Null (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Null"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2037,
+    "name": "Matryoshka & Null (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Null"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2038,
+    "name": "Matryoshka & Null (3 Suits)",
+    "suits": ["Red", "Yam MD", "Null"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2039,
+    "name": "Matryoshka & Muddy Rainbow (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Muddy Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "id": 2040,
+    "name": "Matryoshka & Muddy Rainbow (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Muddy Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2041,
+    "name": "Matryoshka & Muddy Rainbow (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Muddy Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2042,
+    "name": "Matryoshka & Muddy Rainbow (3 Suits)",
+    "suits": ["Red", "Yam MD", "Muddy Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2043,
+    "name": "Matryoshka & Light Pink (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "id": 2044,
+    "name": "Matryoshka & Light Pink (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Light Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2045,
+    "name": "Matryoshka & Light Pink (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Light Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2046,
+    "name": "Matryoshka & Light Pink (3 Suits)",
+    "suits": ["Red", "Yam MD", "Light Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2047,
+    "name": "Matryoshka & Prism (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Prism"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2048,
+    "name": "Matryoshka & Prism (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Prism"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2049,
+    "name": "Matryoshka & Prism (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Prism"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2050,
+    "name": "Matryoshka & Prism (3 Suits)",
+    "suits": ["Red", "Yam MD", "Prism"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2051,
+    "name": "Matryoshka & Dark Rainbow (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Dark Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "id": 2052,
+    "name": "Matryoshka & Dark Rainbow (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2053,
+    "name": "Matryoshka & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Dark Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2054,
+    "name": "Matryoshka & Dark Pink (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2055,
+    "name": "Matryoshka & Gray (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Gray"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2056,
+    "name": "Matryoshka & Gray (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Gray"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2057,
+    "name": "Matryoshka & Dark Brown (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Dark Brown"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "id": 2058,
+    "name": "Matryoshka & Dark Brown (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Brown"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2059,
+    "name": "Matryoshka & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Dark Omni"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2060,
+    "name": "Matryoshka & Dark Omni (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Omni"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2061,
+    "name": "Matryoshka & Dark Null (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Dark Null"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2062,
+    "name": "Matryoshka & Dark Null (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Null"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2063,
+    "name": "Matryoshka & Cocoa Rainbow (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Cocoa Rainbow"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "id": 2064,
+    "name": "Matryoshka & Cocoa Rainbow (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Cocoa Rainbow"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2065,
+    "name": "Matryoshka & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Gray Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2066,
+    "name": "Matryoshka & Gray Pink (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Gray Pink"],
+    "showSuitNames": true
+  },
+  {
+    "id": 2067,
+    "name": "Matryoshka & Dark Prism (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Dark Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "id": 2068,
+    "name": "Matryoshka & Dark Prism (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Prism"],
+    "showSuitNames": true
   }
 ]
