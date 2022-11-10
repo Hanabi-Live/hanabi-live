@@ -1169,7 +1169,8 @@ export function getMatryoshkaVariants(
   // Second, create the special suit combinations, e.g. "Matryoshka & Rainbow (6 Suits)"
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each suit.
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
+      // suit.
       if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
         continue;
       }
