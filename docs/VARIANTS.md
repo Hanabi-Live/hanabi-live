@@ -256,25 +256,6 @@ One of each card per suit (e.g. 5 in total):
   5. Sky (blue)
   6. Navy (blue)
 
-### Valentine Mix (5 Suits)
-
-- This is a mix of several variants. The suits are as follows:
-  1. White (colorless)
-  2. Light Pink (all ranks, colorless)
-  3. Pink (all ranks)
-  4. Red
-  5. Purple
-
-### Valentine Mix (6 Suits)
-
-- This is a mix of several variants. The suits are as follows:
-  1. White (colorless)
-  2. Light Pink (all ranks, colorless)
-  3. Pink (all ranks)
-  4. Red
-  5. Purple
-  6. Cardinal (red/purple)
-
 ### Critical Fours
 
 - One 4 is removed from each suit.
