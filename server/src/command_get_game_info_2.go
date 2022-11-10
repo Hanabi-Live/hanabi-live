@@ -9,10 +9,9 @@ import (
 // It is sent when the user has joined a game and the UI has been initialized
 //
 // Example data:
-//
-//	{
-//	  tableID: 5,
-//	}
+// {
+//   tableID: 5,
+// }
 func commandGetGameInfo2(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -31,7 +30,7 @@ func commandGetGameInfo2(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are either a player or a spectator
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if !t.IsPlayerOrSpectating(s.UserID) {
+	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not a player or a spectator at table " +
 			strconv.FormatUint(t.ID, 10) + ", so you cannot be ready for it.")
 		return
@@ -102,9 +101,7 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		} else if spectatorIndex > -1 {
 			// They are a spectator in an ongoing game
 			sp := t.Spectators[spectatorIndex]
-			if sp.Active {
-				s.NotifyNoteList(t, sp.ShadowingPlayerIndex)
-			}
+			s.NotifyNoteList(t, sp.ShadowingPlayerIndex)
 		}
 	}
 
@@ -121,7 +118,7 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 				s.NotifyChatTyping(t, p.Name, p.Typing)
 			}
 		}
-		for _, sp := range t.ActiveSpectators() {
+		for _, sp := range t.Spectators {
 			if sp.Typing {
 				s.NotifyChatTyping(t, sp.Name, sp.Typing)
 			}

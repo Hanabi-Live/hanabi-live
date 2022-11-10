@@ -139,7 +139,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 ### In-Game Statistics
 
-- Some statistics are shown on the right hand side of the screen to show how well the game is going.
+- Some statistics are shown on the right-hand side of the screen to show how well the game is going.
 - More information about the stats can be found in [the Pace & Efficiency section](#pace--efficiency) below.
 
 ### 6-Player Games
@@ -166,14 +166,14 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - By default, each player starts with 2 minutes and adds 20 seconds to their clock after performing each move.
 - If time runs out for any player, the game immediately ends and a score of 0 will be given.
 - The player who goes first will be refunded the amount of time that it took for them to load the page.
-- Players can pause (or queue a pause) by right clicking on their timer.
+- Players can pause (or queue a pause) by right-clicking on their timer.
 
 ### Speedruns
 
 - Each game has the option to be created as a speedrun. In speedruns, players attempt to beat the game as fast as possible (as a special challenge). The best speedrun times are tracked on the [Speedrun.com leaderboards](https://www.speedrun.com/hanabi).
 - In a speedrun, the controls work differently and are optimized for faster play:
   - Left-clicking on a card in your hand will play it.
-  - Right-clicking on a card in your hand hand will discard it.
+  - Right-clicking on a card in your hand will discard it.
   - Left-clicking on a card in your teammate's hand will give it a color clue.
   - Right-clicking on a card in your teammate's hand will give it a rank clue.
   - Ctrl + right-clicking on a card in your hand opens a note on the card.
@@ -327,7 +327,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 ### Other Special Notes
 
 - A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
-- A note of "fix", "fixme", or "needs fix" can be be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
+- A note of "fix", "fixme", or "needs fix" can be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
 - A note of "blank" can be written on a card to make it look like the deck back.
 - A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
 
@@ -416,7 +416,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 - If the _Future Required Efficiency_ is below the _Minimum Required Efficiency_, then:
   - The team is on track to get a perfect score.
-  - Future clues to not necessarily have to be as efficient as the ones previously given.
+  - Future clues do not necessarily have to be as efficient as the ones previously given.
   - The team can probably afford to give mediocre clues and play conservatively.
 - If the _Future Required Efficiency_ is above the _Minimum Required Efficiency_, then:
   - The team is not on track to get a perfect score.
@@ -430,7 +430,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
   - That means everyone on the team can simply give "1-for-1" clues for the rest of the game and the team will still get the max score.
   - Thus, a player in this situation should probably give a 1-for-1 clue and let someone else discard (if the other person has a known-safe discard).
 - If _Future Required Efficiency_ is above 1.00:
-  - That means that if everyone on the team gave 1-for-1 clues for the rest of the game, the clues would run out before all of the cards could be played and a max score would not be achieved.
+  - That means that if everyone on the team gave 1-for-1 clues for the rest of the game, the clues would run out before all of the cards could be played, and a max score would not be achieved.
   - Thus, a player in this situation should probably discard and in that hopes that a teammate can perform a 2-for-1 clue.
 
 <br />
@@ -470,7 +470,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 ## Similar Deals and Competitive Play
 
 - Normally, when a game is started, the server will find a deal in the database (based on a seed) that none of the players have played before.
-- If there were no old deals that matched this criteria, the server will generate a new random deal.
+- If there were no old deals that matched these criteria, the server will generate a new random deal.
 - After the game is completed, the "Other Scores" button on the game history screen will show other players who played the same deal, if any. You can even view the replay of other people's games to see how they played the deal.
 - If two groups of players want to compete against each other, then there are a few ways to play a non-randomly generated deal:
   - Start a game with a name of `!seed [seed]` to play a deal generated by that specific seed. For example: `!seed showmatch-jan-2050-game-1`
@@ -549,7 +549,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 | `/api/v1/history/[username]/[username2]` \*1      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
 | `/api/v1/history-full/[username]` \*2             | Lists all the player's past games.                                                                          |
 | `/api/v1/history-full/[username]/[username2]` \*2 | Lists all the past games that 2 players were in together. (You can specify up to 6 players.)                |
-| `/api/v1/seed/[seed]` \*1                         | Lists a paginated games played on a specific seed.                                                          |
+| `/api/v1/seed/[seed]` \*1                         | Lists paginated games played on a specific seed.                                                            |
 | `/api/v1/seed-full/[seed]` \*2                    | Lists all the games played on a specific seed.                                                              |
 
 Notes:

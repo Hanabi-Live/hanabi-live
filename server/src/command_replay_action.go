@@ -30,13 +30,12 @@ func replayActionsFunctionsInit() {
 // commandReplayAction is sent when the user performs an action in a shared replay
 //
 // Example data:
-//
-//	{
-//	  tableID: 5,
-//	  type: 0, // Types are listed in the "constants.go" file
-//	  value: 10, // Optional
-//	  name: 'Alice', // Optional
-//	}
+// {
+//   tableID: 5,
+//   type: 0, // Types are listed in the "constants.go" file
+//   value: 10, // Optional
+//   name: 'Alice', // Optional
+// }
 func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -54,7 +53,8 @@ func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that this person is spectating the shared replay
-	if !t.IsActivelySpectating(s.UserID) {
+	j := t.GetSpectatorIndexFromID(s.UserID)
+	if j < -1 {
 		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
 	}
 
@@ -97,7 +97,7 @@ func replayActionSegment(s *Session, d *CommandData, t *Table) {
 		TableID: t.ID,
 		Segment: d.Segment,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("replaySegment", replaySegmentMessage)
 	}
 
@@ -135,7 +135,7 @@ func replayActionArrow(s *Session, d *CommandData, t *Table) {
 		TableID: t.ID,
 		Order:   d.Order,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("replayIndicator", replayIndicatorMessage)
 	}
 }
@@ -150,7 +150,7 @@ func replayActionSound(s *Session, d *CommandData, t *Table) {
 		TableID: t.ID,
 		Sound:   d.Sound,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("replaySound", replaySoundMessage)
 	}
 }
@@ -174,7 +174,7 @@ func replayActionHypoStart(s *Session, d *CommandData, t *Table) {
 	hypoStartMessage := &HypoStartMessage{
 		TableID: t.ID,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoStart", hypoStartMessage)
 	}
 }
@@ -198,7 +198,7 @@ func replayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	hypoEndMessage := &HypoEndMessage{
 		TableID: t.ID,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoEnd", hypoEndMessage)
 	}
 }
@@ -223,7 +223,7 @@ func replayActionHypoAction(s *Session, d *CommandData, t *Table) {
 	// Perform a move in the hypothetical
 	g.HypoActions = append(g.HypoActions, d.ActionJSON)
 
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoAction", d.ActionJSON)
 	}
 }
@@ -259,7 +259,7 @@ func replayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	hypoBackMessage := &HypoBackMessage{
 		TableID: t.ID,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoBack", hypoBackMessage)
 	}
 }
@@ -278,7 +278,7 @@ func replayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 		TableID:        t.ID,
 		ShowDrawnCards: g.HypoShowDrawnCards,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoShowDrawnCards", hypoShowDrawnCardsMessage)
 	}
 }
@@ -296,7 +296,7 @@ func replayActionEfficiencyMod(s *Session, d *CommandData, t *Table) {
 		TableID: t.ID,
 		Mod:     g.EfficiencyMod,
 	}
-	for _, sp := range t.ActiveSpectators() {
+	for _, sp := range t.Spectators {
 		sp.Session.Emit("replayEfficiencyMod", replayEfficiencyModMessage)
 	}
 }

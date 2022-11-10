@@ -59,7 +59,8 @@ func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 		}
 
 		// They could be one of the spectators (2/2)
-		if t.IsActivelySpectating(s.UserID) {
+		spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+		if spectatorIndex != -1 {
 			spectatingTableIDs = append(spectatingTableIDs, t.ID)
 		}
 
