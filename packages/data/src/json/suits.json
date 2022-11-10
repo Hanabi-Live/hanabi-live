@@ -546,5 +546,55 @@
     "fill": "#008000",
     "pip": "hanabiGreen",
     "clueColors": ["Yellow", "Blue"]
+  },
+  {
+    "name": "Yam MD",
+    "id": "MDY",
+    "abbreviation": "Y",
+    "displayName": "Yam",
+    "showSuitName": true,
+    "fill": "#cc6600",
+    "pip": "hanabiYellow",
+    "clueColors": ["Red", "Yellow"]
+  },
+  {
+    "name": "Geas MD",
+    "id": "MDG",
+    "abbreviation": "G",
+    "displayName": "Geas",
+    "showSuitName": true,
+    "fill": "#78a890",
+    "pip": "hanabiGreen",
+    "clueColors": ["Red", "Yellow", "Green"]
+  },
+  {
+    "name": "Beatnik MD",
+    "id": "MDB",
+    "abbreviation": "B",
+    "displayName": "Beatnik",
+    "showSuitName": true,
+    "fill": "#1f4f54",
+    "pip": "hanabiBlue",
+    "clueColors": ["Red", "Yellow", "Green", "Blue"]
+  },
+  {
+    "name": "Plum MD",
+    "id": "MDP",
+    "abbreviation": "P",
+    "displayName": "Plum",
+    "showSuitName": true,
+    "fill": "#381a38",
+    "pip": "hanabiWhite",
+    "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
+  },
+  {
+    "name": "Taupe MD",
+    "id": "MDT",
+    "abbreviation": "T",
+    "displayName": "Teal",
+    "showSuitName": true,
+    "fill": "#483c32",
+    "pip": "hanabiTeal",
+    "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
   }
 ]

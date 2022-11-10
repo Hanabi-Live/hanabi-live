@@ -1144,3 +1144,48 @@ export function getChimneysVariants(
 
   return variantDescriptions;
 }
+export function getMatryoshkaVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+  const matryoshkaSuits = [
+    "Red",
+    "Yam MD",
+    "Geas MD",
+    "Beatnik MD",
+    "Plum MD",
+    "Taupe MD",
+  ];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    variantDescriptions.push({
+      name: `Matryoshka (${numSuits} Suits)`,
+      suits: matryoshkaSuits.slice(0, numSuits),
+      showSuitNames: true,
+    });
+  }
+
+  // Second, create the special suit combinations, e.g. "Matryoshka & Rainbow (6 Suits)"
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each suit.
+      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
+        continue;
+      }
+
+      const variantName = `Matryoshka & ${suit.name} (${numSuits} Suits)`;
+      const variantSuits = [
+        ...matryoshkaSuits.slice(0, numSuits - 1),
+        suit.name,
+      ];
+      const variantDescription: VariantDescription = {
+        name: variantName,
+        suits: variantSuits,
+        showSuitNames: true,
+      };
+      variantDescriptions.push(variantDescription);
+    }
+  }
+  return variantDescriptions;
+}
