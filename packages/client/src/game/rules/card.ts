@@ -194,7 +194,7 @@ export function allPossibilitiesTrash(
   empathy: boolean,
 ): boolean {
   // If we fully know the card already, just check if it's playable.
-  if (card.rank !== null && card.suitIndex !== null) {
+  if (!empathy && card.rank !== null && card.suitIndex !== null) {
     return !needsToBePlayed(
       card.suitIndex,
       card.rank,
