@@ -489,7 +489,7 @@ export const trashMiniIndicatorTop = (): Konva.Image =>
     y: 0.05 * CARD_H,
     width: 0.25 * CARD_W,
     height: 0.25 * CARD_W,
-    image: globals.imageLoader!.get("trashcan2")!,
+    image: globals.imageLoader!.get("wastebasket")!,
     visible: false,
     listening: false,
   });
@@ -506,7 +506,7 @@ export function trashMiniIndicatorBottom(
     x: (offsetCornerElements ? ddaX + 0.05 : ddaX) * CARD_W,
     y: (offsetCornerElements ? ddaY - 0.05 : ddaY) * CARD_H,
     align: "center",
-    image: globals.imageLoader!.get("trashcan2")!,
+    image: globals.imageLoader!.get("wastebasket")!,
     width: size,
     height: size,
     visible: false,
