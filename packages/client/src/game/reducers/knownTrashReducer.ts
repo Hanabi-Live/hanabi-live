@@ -20,6 +20,7 @@ export default function knownTrashReducer(
         playStacks,
         playStackDirections,
         variant,
+        true,
       ),
     };
   }
