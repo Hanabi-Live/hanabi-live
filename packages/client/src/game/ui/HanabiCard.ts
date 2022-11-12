@@ -821,7 +821,7 @@ export default class HanabiCard
 
   private setTrashMiniIndicator(isTrash: boolean) {
     const known = this.visibleSuitIndex !== null || this.visibleRank !== null;
-    if (isTrash && !this.trashcan.isVisible()) {
+    if (isTrash && this.trashcan.isVisible() === false) {
       this.trashMiniIndicatorTop.visible(!known);
       this.trashMiniIndicatorBottom.visible(known);
     } else {
