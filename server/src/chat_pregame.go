@@ -176,7 +176,7 @@ func chatMissingScores(ctx context.Context, s *Session, d *CommandData, t *Table
 	// If this is a shared replay, make a list of the spectators
 	usernames := make([]string, 0)
 	if t.Replay {
-		for _, sp := range t.Spectators {
+		for _, sp := range t.ActiveSpectators() {
 			usernames = append(usernames, sp.Name)
 		}
 	} else {
@@ -208,7 +208,7 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 	// If this is a shared replay, make a list of the spectators
 	userIDs := make([]int, 0)
 	if t.Replay {
-		for _, sp := range t.Spectators {
+		for _, sp := range t.ActiveSpectators() {
 			userIDs = append(userIDs, sp.UserID)
 		}
 	} else {

@@ -24,7 +24,7 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 				// A table that has not started yet (e.g. pregame)
 				deleteTable(t)
 				logger.Info("Successfully cleared pregame table #" + strconv.FormatUint(t.ID, 10) + ".")
-			} else if t.Replay && len(t.Spectators) == 0 {
+			} else if t.Replay && len(t.ActiveSpectators()) == 0 {
 				// A replay or shared replay
 				deleteTable(t)
 				logger.Info("Successfully cleared replay table #" + strconv.FormatUint(t.ID, 10) + ".")

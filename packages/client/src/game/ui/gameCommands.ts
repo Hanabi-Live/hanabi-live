@@ -208,17 +208,21 @@ interface NoteListData {
 interface NoteList {
   name: string;
   notes: string[];
+  isSpectator: boolean;
 }
 commands.set("noteList", (data: NoteListData) => {
   const names = [] as string[];
   const noteTextLists = [] as string[][];
+  const isSpectators = [] as boolean[];
   for (const noteList of data.notes) {
     names.push(noteList.name);
     noteTextLists.push(noteList.notes);
+    isSpectators.push(noteList.isSpectator);
   }
   globals.store!.dispatch({
     type: "noteList",
     names,
+    isSpectators,
     noteTextLists,
   });
   // Show the note indicator for currently-visible cards.

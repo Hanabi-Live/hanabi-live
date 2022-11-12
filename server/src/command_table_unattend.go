@@ -13,9 +13,10 @@ import (
 // 3) viewing a reply or shared replay
 //
 // Example data:
-// {
-//   tableID: 5,
-// }
+//
+//	{
+//	  tableID: 5,
+//	}
 func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	// Unlike other command handlers, we do not want to show a warning to the user if the table does
 	// not exist, so we pass "nil" instead of "s" to the "getTableAndLock()" function
@@ -32,12 +33,12 @@ func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are either playing or spectating the game
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(s.UserID) {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot unattend it.")
 		return
 	}
-	if spectatorIndex == -1 && t.Replay {
+	if !t.IsActivelySpectating(s.UserID) && t.Replay {
 		s.Warning("You are not spectating replay " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot unattend it.")
 		return
@@ -81,21 +82,9 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 		defer tables.Unlock(ctx)
 	}
 
-	// If this is an ongoing game, create a list of card orders which they wrote a note on
-	notedCards := make([]int, 0)
-	if t.Running {
-		sp := t.Spectators[j]
-		for order, note := range sp.Notes(t.Game) {
-			if note != "" {
-				notedCards = append(notedCards, order)
-			}
-		}
-	}
-
-	t.Spectators = append(t.Spectators[:j], t.Spectators[j+1:]...)
 	tables.DeleteSpectating(s.UserID, t.ID) // Keep track of user to table relationships
 
-	if t.Replay && len(t.Spectators) == 0 {
+	if t.Replay && len(t.ActiveSpectators()) == 0 {
 		// This was the last person to leave the replay, so delete it
 		deleteTable(t)
 		logger.Info("Ended replay #" + strconv.FormatUint(t.ID, 10) + " because everyone left.")
@@ -109,12 +98,4 @@ func tableUnattendSpectator(ctx context.Context, s *Session, d *CommandData, t *
 		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
 	t.NotifySpectators() // Update the in-game spectator list
-
-	if len(notedCards) > 0 {
-		// Since this is a spectator leaving an ongoing game, all of their notes will be deleted
-		// Send the other spectators a message about the new list of notes, if any
-		for _, order := range notedCards {
-			t.NotifySpectatorsNote(order)
-		}
-	}
 }

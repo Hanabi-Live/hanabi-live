@@ -1833,3 +1833,19 @@ span.tableSpinner:after {
   width: 0.75em;
   display: inline-block;
 }
+
+div.noteTitle {
+  width: 100%;
+  height: 10px;
+  border-bottom: 1px solid #777;
+  text-align: center;
+  margin-bottom: 7px;
+  line-height: 10px;
+}
+
+div.noteTitle span {
+  font-size: 14px;
+  background-color: #fff;
+  text-align: center;
+  padding: 0 10px;
+}

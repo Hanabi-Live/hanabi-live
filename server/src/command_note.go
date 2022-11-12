@@ -12,11 +12,12 @@ import (
 // commandNote is sent when the user writes a note
 //
 // Example data:
-// {
-//   tableID: 5,
-//   order: 3,
-//   note: 'b1, m1',
-// }
+//
+//	{
+//	  tableID: 5,
+//	  order: 3,
+//	  note: 'b1, m1',
+//	}
 func commandNote(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -41,7 +42,7 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are in the game
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(s.UserID) {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot send a note.")
 		return
