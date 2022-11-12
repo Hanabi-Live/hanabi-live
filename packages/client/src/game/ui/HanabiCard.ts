@@ -812,7 +812,11 @@ export default class HanabiCard
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
     this.setDDA(this.state.inDoubleDiscard && status !== CardStatus.Critical);
-    this.setTrashMiniIndicator(this.state.isKnownTrashFromEmpathy);
+    this.setTrashMiniIndicator(
+      !cardRules.isPlayed(this.state) &&
+        !cardRules.isDiscarded(this.state) &&
+        this.state.isKnownTrashFromEmpathy,
+    );
   }
 
   private setTrashMiniIndicator(isTrash: boolean) {
