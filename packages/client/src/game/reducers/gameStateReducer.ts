@@ -18,6 +18,7 @@ import GameMetadata, { getPlayerName } from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import cardsReducer from "./cardsReducer";
 import ddaReducer from "./ddaReducer";
+import knownTrashReducer from "./knownTrashReducer";
 import statsReducer from "./statsReducer";
 import turnReducer from "./turnReducer";
 
@@ -354,6 +355,16 @@ function gameStateReducerFunction(
       state.deck,
       state.stats.doubleDiscard,
       state.turn.currentPlayerIndex,
+    ),
+  );
+
+  // Finally, mark cards as known-trash.
+  state.deck = castDraft(
+    knownTrashReducer(
+      state.deck,
+      state.playStacks,
+      state.playStackDirections,
+      variant,
     ),
   );
 }

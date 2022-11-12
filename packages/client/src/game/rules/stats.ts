@@ -168,6 +168,7 @@ export function cardsGotten(
         playStacks,
         playStackDirections,
         variant,
+        false,
       )
     ) {
       // Clued cards in player's hands are considered to be gotten, since they will eventually be
@@ -201,6 +202,7 @@ export function cardsGottenByNotes(
         playStacks,
         playStackDirections,
         variant,
+        false,
       )
     ) {
       // Original contribution

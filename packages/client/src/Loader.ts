@@ -31,6 +31,7 @@ const fileIDs = [
   "trashcan",
   "trashcan2",
   "x",
+  "wastebasket",
   "wrench",
 ];
 
