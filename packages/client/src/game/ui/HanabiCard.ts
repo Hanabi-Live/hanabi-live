@@ -82,6 +82,8 @@ export default class HanabiCard
   private wrench: Konva.Image;
   private ddaIndicatorTop: Konva.Image;
   private ddaIndicatorBottom: Konva.Image;
+  private trashMiniIndicatorTop: Konva.Image;
+  private trashMiniIndicatorBottom: Konva.Image;
 
   // -------------------
   // Getters and setters
@@ -216,6 +218,12 @@ export default class HanabiCard
       this.variant.offsetCornerElements,
     );
     this.add(this.ddaIndicatorBottom);
+    this.trashMiniIndicatorTop = HanabiCardInit.trashMiniIndicatorTop();
+    this.add(this.trashMiniIndicatorTop);
+    this.trashMiniIndicatorBottom = HanabiCardInit.trashMiniIndicatorBottom(
+      this.variant.offsetCornerElements,
+    );
+    this.add(this.trashMiniIndicatorBottom);
 
     // Register mouse events for hovering, clicking, etc.
     this.registerMouseHandlers();
@@ -804,6 +812,18 @@ export default class HanabiCard
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
     this.setDDA(this.state.inDoubleDiscard && status !== CardStatus.Critical);
+    this.setTrashMiniIndicator(this.state.isKnownTrashFromEmpathy);
+  }
+
+  private setTrashMiniIndicator(isTrash: boolean) {
+    const known = this.visibleSuitIndex !== null || this.visibleRank !== null;
+    if (isTrash) {
+      this.trashMiniIndicatorTop.visible(!known);
+      this.trashMiniIndicatorBottom.visible(known);
+    } else {
+      this.trashMiniIndicatorTop.visible(false);
+      this.trashMiniIndicatorBottom.visible(false);
+    }
   }
 
   private setDDA(dda: boolean) {

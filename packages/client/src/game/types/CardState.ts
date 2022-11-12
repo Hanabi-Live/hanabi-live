@@ -47,6 +47,9 @@ export default interface CardState {
   // not CardStatus.
   readonly inDoubleDiscard: boolean;
 
+  // Similarly, track whether known-trash from empathy alone.
+  readonly isKnownTrashFromEmpathy: boolean;
+
   // Needed so that we can animate a misplayed card different from a discarded card.
   readonly isMisplayed: boolean;
 
