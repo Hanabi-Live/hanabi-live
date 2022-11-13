@@ -314,7 +314,7 @@ export function cluesStillUsable(
     cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
   }
 
-  return Math.floor(cluesFromDiscards + cluesFromSuits + currentClues);
+  return cluesFromDiscards + cluesFromSuits + currentClues;
 }
 
 // This is used as the denominator of an efficiency calculation:
