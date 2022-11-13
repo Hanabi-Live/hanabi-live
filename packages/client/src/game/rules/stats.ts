@@ -335,11 +335,7 @@ export function cluesStillUsable(
     suitValue,
     currentClues,
   );
-  if (result === null) {
-    return result;
-  } else {
-    return Math.floor(result);
-  }
+  return result === null ? null : Math.floor(result);
 }
 
 // This is used as the denominator of an efficiency calculation:
