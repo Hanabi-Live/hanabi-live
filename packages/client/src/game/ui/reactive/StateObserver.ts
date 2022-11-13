@@ -148,7 +148,8 @@ const visibleStateObservers: Subscriptions = [
       efficiencyModifier: s.notes.efficiencyModifier,
       potentialCluesLost: s.visibleState!.stats.potentialCluesLost,
       maxScore: s.visibleState!.stats.maxScore,
-      cluesStillUsable: s.visibleState!.stats.cluesStillUsable,
+      cluesStillUsableNotRounded:
+        s.visibleState!.stats.cluesStillUsableNotRounded,
       finalRoundEffectivelyStarted:
         s.visibleState!.stats.finalRoundEffectivelyStarted,
     }),

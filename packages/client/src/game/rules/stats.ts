@@ -246,7 +246,7 @@ export function minEfficiency(
 
 // Returns the max number of clues that can be spent while getting the max possible score from a
 // given game state onward (not accounting for the locations of playable cards).
-export function cluesStillUsable(
+export function cluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
@@ -313,8 +313,33 @@ export function cluesStillUsable(
     }
     cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
   }
-
-  return Math.floor(cluesFromDiscards + cluesFromSuits + currentClues);
+  return cluesFromDiscards + cluesFromSuits + currentClues;
+}
+export function cluesStillUsable(
+  score: number,
+  scorePerStack: readonly number[],
+  maxScorePerStack: readonly number[],
+  deckSize: number,
+  endGameLength: number,
+  discardValue: number,
+  suitValue: number,
+  currentClues: number,
+): number | null {
+  const result = cluesStillUsableNotRounded(
+    score,
+    scorePerStack,
+    maxScorePerStack,
+    deckSize,
+    endGameLength,
+    discardValue,
+    suitValue,
+    currentClues,
+  );
+  if (result === null) {
+    return result;
+  } else {
+    return Math.floor(result);
+  }
 }
 
 // This is used as the denominator of an efficiency calculation:
