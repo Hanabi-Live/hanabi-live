@@ -335,6 +335,8 @@ export function cluesStillUsable(
     suitValue,
     currentClues,
   );
+  // Since we can't use up a fractional clue, we round it down for most purposes. This only matters
+  // in clue starved variants.
   return result === null ? null : Math.floor(result);
 }
 
