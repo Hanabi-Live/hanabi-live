@@ -86,11 +86,20 @@ func websocketConnect(ms *melody.Session) {
 		websocketDisconnectRemoveFromGames(ctx, s2)
 	}
 
+	go websocketConnectMessages(ctx, s, data)
+
 	// Add the session to a map so that we can keep track of all of the connected users
 	sessions.Set(s.UserID, s)
 	logger.Info("User \"" + s.Username + "\" connected; " +
 		strconv.Itoa(sessions.Length()) + " user(s) now connected.")
 
+	// Alert everyone that a new user has logged in
+	notifyAllUser(s)
+
+	logger.Info("Exited the \"websocketConnect()\" function for user: " + username)
+}
+
+func websocketConnectMessages(ctx context.Context, s *Session, data *WebsocketConnectData) {
 	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
 	websocketConnectUserList(s)
@@ -100,11 +109,6 @@ func websocketConnect(ms *melody.Session) {
 	if len(data.Friends) > 0 {
 		websocketConnectHistoryFriends(s)
 	}
-
-	// Alert everyone that a new user has logged in
-	notifyAllUser(s)
-
-	logger.Info("Exited the \"websocketConnect()\" function for user: " + username)
 }
 
 func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int, username string) *WebsocketConnectData {
