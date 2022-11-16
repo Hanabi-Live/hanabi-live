@@ -11,9 +11,14 @@ export function onEfficiencyChanged(data: {
   efficiencyModifier: number;
   potentialCluesLost: number;
   maxScore: number;
-  cluesStillUsable: number | null;
+  cluesStillUsableNotRounded: number | null;
   finalRoundEffectivelyStarted: boolean;
 }): void {
+  const cluesStillUsable =
+    data.cluesStillUsableNotRounded === null
+      ? null
+      : Math.floor(data.cluesStillUsableNotRounded);
+
   // Ensure that the labels exist.
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (effLabel === null) {
@@ -72,9 +77,9 @@ export function onEfficiencyChanged(data: {
   const shouldShowEfficiency =
     Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
   const futureEfficiency =
-    data.cluesStillUsable === null
+    cluesStillUsable === null
       ? NaN
-      : statsRules.efficiency(cardsNotGotten, data.cluesStillUsable);
+      : statsRules.efficiency(cardsNotGotten, cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
   if (shouldShowFutureEfficiency) {
@@ -137,7 +142,9 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Cards remaining to get", cardsNotGotten)}
     ${formatLine(
       "Remaining possible clues",
-      data.cluesStillUsable === null ? "-" : data.cluesStillUsable,
+      data.cluesStillUsableNotRounded === null
+        ? "-"
+        : data.cluesStillUsableNotRounded,
     )}
     ${formatLine(
       "Future required efficiency",
@@ -145,8 +152,8 @@ export function onEfficiencyChanged(data: {
     )}
     ${formatLine(
       "Number finesses required",
-      data.cluesStillUsable !== null && shouldShowFutureEfficiency
-        ? Math.max(cardsNotGotten - data.cluesStillUsable, 0)
+      cluesStillUsable !== null && shouldShowFutureEfficiency
+        ? Math.max(cardsNotGotten - cluesStillUsable, 0)
         : "-",
     )}
     <br />

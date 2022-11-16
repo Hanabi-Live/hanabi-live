@@ -132,6 +132,16 @@ function statsReducerFunction(
     clueTokensRules.suitValue(variant),
     clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
   );
+  stats.cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
+    score,
+    scorePerStack,
+    stats.maxScorePerStack,
+    currentState.cardsRemainingInTheDeck,
+    numEndGameTurns,
+    clueTokensRules.discardValue(variant),
+    clueTokensRules.suitValue(variant),
+    clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
+  );
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed
   // number of turns.
