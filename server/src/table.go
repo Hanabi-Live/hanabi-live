@@ -429,10 +429,7 @@ func (t *Table) ActiveSpectators() []*Spectator {
 	for _, sp := range t.Spectators {
 		for _, tId := range tables.GetTablesUserSpectating(sp.UserID) {
 			if tId == t.ID {
-				logger.Info(sp.Name + " is active Spectator")
 				activeSpectators = append(activeSpectators, sp)
-			} else {
-				logger.Info(sp.Name + " is NOT active Spectator")
 			}
 		}
 	}
