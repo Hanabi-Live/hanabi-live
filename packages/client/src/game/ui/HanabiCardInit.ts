@@ -9,12 +9,17 @@ import * as KonvaUtil from "konva/types/Util";
 import * as variantRules from "../rules/variant";
 import Pips from "../types/Pips";
 import {
+  BOTTOM_LEFT_X,
+  BOTTOM_LEFT_Y,
   CARD_H,
   CARD_W,
   CHOP_MOVE_COLOR,
   CLUED_COLOR,
   FINESSE_COLOR,
   OFF_BLACK,
+  SMALL_ICON_W,
+  TOP_LEFT_X,
+  TOP_LEFT_Y,
 } from "./constants";
 import NoteIndicator from "./controls/NoteIndicator";
 import RankPip from "./controls/RankPip";
@@ -370,7 +375,6 @@ export function note(
   // Define the note indicator image.
   const noteX = 0.78;
   const noteY = 0.03;
-  const size = 0.2 * CARD_W;
   const noteIndicator = new NoteIndicator({
     // If the cards have triangles on the corners that show the color composition, the images will
     // overlap. Thus, we move it downwards if this is the case.
@@ -378,8 +382,8 @@ export function note(
     y: (offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("note")!,
-    width: size,
-    height: size,
+    width: SMALL_ICON_W,
+    height: SMALL_ICON_W,
     rotation: 180,
     shadowEnabled: !globals.options.speedrun,
     shadowColor: "black",
@@ -402,18 +406,15 @@ export function note(
 
 export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
   // Define the critical indicator image.
-  const critX = 0.06;
-  const critY = 0.82;
-  const size = 0.2 * CARD_W;
   const indicator = new Konva.Image({
     // If the cards have triangles on the corners that show the color composition, the images will
     // overlap. Thus, we move it upwards if this is the case.
-    x: (offsetCornerElements ? critX + 0.05 : critX) * CARD_W,
-    y: (offsetCornerElements ? critY - 0.05 : critY) * CARD_H,
+    x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
+    y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("critical")!,
-    width: size,
-    height: size,
+    width: SMALL_ICON_W,
+    height: SMALL_ICON_W,
     rotation: 180,
     shadowEnabled: !globals.options.speedrun,
     shadowColor: "black",
@@ -455,28 +456,25 @@ export const wrench = (): Konva.Image =>
 
 export const ddaIndicatorTop = (): Konva.Image =>
   new Konva.Image({
-    x: 0.05 * CARD_W,
-    y: 0.05 * CARD_H,
-    width: 0.25 * CARD_W,
-    height: 0.25 * CARD_W,
+    x: TOP_LEFT_X,
+    y: TOP_LEFT_Y,
+    width: SMALL_ICON_W,
+    height: SMALL_ICON_W,
     image: globals.imageLoader!.get("dda")!,
     visible: false,
     listening: false,
   });
 
 export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
-  const ddaX = 0.06;
-  const ddaY = 0.82;
-  const size = 0.2 * CARD_W;
   const indicator = new Konva.Image({
     // If the cards have triangles on the corners that show the color composition, the images will
     // overlap. Thus, we move it upwards if this is the case.
-    x: (offsetCornerElements ? ddaX + 0.05 : ddaX) * CARD_W,
-    y: (offsetCornerElements ? ddaY - 0.05 : ddaY) * CARD_H,
+    x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
+    y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("dda")!,
-    width: size,
-    height: size,
+    width: SMALL_ICON_W,
+    height: SMALL_ICON_W,
     visible: false,
     listening: false,
   });
@@ -485,10 +483,10 @@ export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
 
 export const trashMiniIndicatorTop = (): Konva.Image =>
   new Konva.Image({
-    x: 0.05 * CARD_W,
-    y: 0.05 * CARD_H,
-    width: 0.2 * CARD_W,
-    height: 0.2 * CARD_W,
+    x: TOP_LEFT_X,
+    y: TOP_LEFT_Y,
+    width: SMALL_ICON_W,
+    height: SMALL_ICON_W,
     image: globals.imageLoader!.get("wastebasket")!,
     visible: false,
     listening: false,
@@ -497,18 +495,15 @@ export const trashMiniIndicatorTop = (): Konva.Image =>
 export function trashMiniIndicatorBottom(
   offsetCornerElements: boolean,
 ): Konva.Image {
-  const ddaX = 0.06;
-  const ddaY = 0.82;
-  const size = 0.2 * CARD_W;
   const indicator = new Konva.Image({
     // If the cards have triangles on the corners that show the color composition, the images will
     // overlap. Thus, we move it upwards if this is the case.
-    x: (offsetCornerElements ? ddaX + 0.05 : ddaX) * CARD_W,
-    y: (offsetCornerElements ? ddaY - 0.05 : ddaY) * CARD_H,
+    x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
+    y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("wastebasket")!,
-    width: size,
-    height: size,
+    width: SMALL_ICON_W,
+    height: SMALL_ICON_W,
     visible: false,
     listening: false,
   });
