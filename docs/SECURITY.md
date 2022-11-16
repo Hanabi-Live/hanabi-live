@@ -20,7 +20,7 @@ The site is [open-source](https://en.wikipedia.org/wiki/Open_source), meaning th
 
 I am the only administrator for the website. This means that only I have the ability to mute users, ban users, and so forth.
 
-In the [Discord server](https://discord.gg/FADvkJp), any user with a "Community Leaders" role is considered a Discord administrator, and has the ability to delete messages, ban users, and so forth (in the Discord).
+In the [Discord server](https://discord.gg/FADvkJp), any user with a "Moderator" role is considered a Discord administrator, and has the ability to delete messages, ban users, and so forth (in the Discord).
 
 <br />
 
