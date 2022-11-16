@@ -487,8 +487,8 @@ export const trashMiniIndicatorTop = (): Konva.Image =>
   new Konva.Image({
     x: 0.05 * CARD_W,
     y: 0.05 * CARD_H,
-    width: 0.25 * CARD_W,
-    height: 0.25 * CARD_W,
+    width: 0.2 * CARD_W,
+    height: 0.2 * CARD_W,
     image: globals.imageLoader!.get("wastebasket")!,
     visible: false,
     listening: false,
