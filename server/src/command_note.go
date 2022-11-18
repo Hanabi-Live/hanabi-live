@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"html"
 	"strconv"
 	"strings"
 	"unicode"
@@ -81,9 +80,6 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 			" consecutive diacritics.")
 		return
 	}
-
-	// Escape all HTML special characters (to stop various attacks against other players)
-	d.Note = html.EscapeString(d.Note)
 
 	note(d, t, playerIndex, spectatorIndex)
 }
