@@ -832,7 +832,7 @@ export default class HanabiCard
 
   private setDDA(dda: boolean) {
     const visible = this.shouldSetDDA(dda);
-    const known = this.visibleSuitIndex !== null || this.visibleRank !== null;
+    const known = this.visibleRank !== null;
     if (visible) {
       this.ddaIndicatorTop.visible(!known);
       this.ddaIndicatorBottom.visible(known);
