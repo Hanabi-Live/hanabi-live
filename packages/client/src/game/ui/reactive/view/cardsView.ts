@@ -154,6 +154,14 @@ function subscribeToCardChanges(order: number) {
     () => updatePips(order),
   );
 
+  // Status
+  sub(
+    (c) => ({
+      isKnownTrashFromEmpathy: c.isKnownTrashFromEmpathy,
+    }),
+    () => updateCardStatus(order),
+  );
+
   // Card visuals
   subFullState(
     (s) => {
