@@ -1,6 +1,6 @@
 import { Suit } from "./types/Suit";
 
-export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"];
+export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
@@ -24,22 +24,29 @@ export const CHOP_MOVED_NOTES = [
   "atcm", // Assisted Trash Chop Move
   "ttcm", // Time Travel Chop Move
   // cspell:enable
-];
-export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
-export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
-export const BLANK_NOTES = ["blank"];
-export const CLUED_NOTES = ["clued", "cl"];
-export const UNCLUED_NOTES = ["unclued", "x"];
+] as const;
+export const FINESSED_NOTES = [
+  "f", // Finesse
+  "hf", // Hidden Finesse
+  "sf", // Sarcastic Finesse
+  "cf", // Certain Finesse / Composition Finesse
+  "pf", // Priority Finesse
+  "gd", // Gentleman's Discard
+] as const;
+export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"] as const;
+export const BLANK_NOTES = ["blank"] as const;
+export const CLUED_NOTES = ["clued", "cl"] as const;
+export const UNCLUED_NOTES = ["unclued", "x"] as const;
 
-export const ALL_RESERVED_NOTES = ([] as string[]).concat(
-  KNOWN_TRASH_NOTES,
-  CHOP_MOVED_NOTES,
-  FINESSED_NOTES,
-  NEEDS_FIX_NOTES,
-  BLANK_NOTES,
-  CLUED_NOTES,
-  UNCLUED_NOTES,
-);
+export const ALL_RESERVED_NOTES: readonly string[] = [
+  ...KNOWN_TRASH_NOTES,
+  ...CHOP_MOVED_NOTES,
+  ...FINESSED_NOTES,
+  ...NEEDS_FIX_NOTES,
+  ...BLANK_NOTES,
+  ...CLUED_NOTES,
+  ...UNCLUED_NOTES,
+];
 
 /**
  * Suit abbreviations are hard-coded in the "suits.json" file. In some variants, two or more suits
