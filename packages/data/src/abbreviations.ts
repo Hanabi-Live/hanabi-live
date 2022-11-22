@@ -5,21 +5,23 @@ export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
   "chop moved",
-  "5cm", // 5's chop move
-  "e5cm", // early 5's chop move
-  "tcm", // trash chop move
-  "tccm", // tempo clue chop move
-  "sdcm", // scream discard chop move
-  "sbpcm", // scream blind play chop move
-  "ocm", // order chop move
-  "tocm", // trash order chop move
-  "mcm", // misplay chop move
-  "utfcm", // unnecessary trash finesse chop move
-  "utdcm", // unnecessary trash finesse chop move
-  "utbcm", // unnecessary trash bluff chop move
-  "dtc", // duplicitous tempo clue
-  "atcm", // assisted trash chop move
-  "ttcm", // time travel chop move
+  "5cm", // 5's Chop Move
+  "e5cm", // Early 5's Chop Move
+  "tcm", // Trash Chop Move
+  "tccm", // Tempo Clue Chop Move
+  "sdcm", // Scream Discard Chop Move
+  "esdcm", // Echo Scream Discard Chop Move
+  "sbpcm", // Scream Blind Play Chop Move
+  "ocm", // Order Chop Move
+  "tocm", // Trash Order Chop Move
+  "mcm", // Misplay Chop Move
+  "utfcm", // Unnecessary Trash Finesse Chop Move
+  "utbcm", // Unnecessary Trash Bluff Chop Move
+  "utdcm", // Unnecessary Trash Discharge Chop Move
+  "uddcm", // Unnecessary Dupe Discharge Chop Move
+  "dtccm", // Duplicitous Tempo Clue Chop Move
+  "atcm", // Assisted Trash Chop Move
+  "ttcm", // Time Travel Chop Move
 ];
 export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
