@@ -25,7 +25,8 @@
     "go.mod",
     "go.sum",
     "hanabi.websynths-patch.json",
-    "node_modules/**"
+    "node_modules/**",
+    "./hanabi-live"
   ],
   "words": [
     "abacusspiele",

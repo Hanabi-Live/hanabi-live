@@ -5,18 +5,25 @@ export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
   "chop moved",
-  "5cm",
-  "e5cm",
-  "tcm",
-  "tccm",
-  "sdcm",
-  "sbpcm",
-  "ocm",
-  "tocm",
-  "mcm",
-  "utfcm",
-  "utdcm",
-  "utbcm",
+  // cspell:disable
+  "5cm", // 5's Chop Move
+  "e5cm", // Early 5's Chop Move
+  "tcm", // Trash Chop Move
+  "tccm", // Tempo Clue Chop Move
+  "sdcm", // Scream Discard Chop Move
+  "esdcm", // Echo Scream Discard Chop Move
+  "sbpcm", // Scream Blind Play Chop Move
+  "ocm", // Order Chop Move
+  "tocm", // Trash Order Chop Move
+  "mcm", // Misplay Chop Move
+  "utfcm", // Unnecessary Trash Finesse Chop Move
+  "utbcm", // Unnecessary Trash Bluff Chop Move
+  "utdcm", // Unnecessary Trash Discharge Chop Move
+  "uddcm", // Unnecessary Dupe Discharge Chop Move
+  "dtccm", // Duplicitous Tempo Clue Chop Move
+  "atcm", // Assisted Trash Chop Move
+  "ttcm", // Time Travel Chop Move
+  // cspell:enable
 ];
 export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
