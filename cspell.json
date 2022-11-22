@@ -25,7 +25,8 @@
     "go.mod",
     "go.sum",
     "hanabi.websynths-patch.json",
-    "node_modules/**"
+    "node_modules/**",
+    "./hanabi-live"
   ],
   "words": [
     "abacusspiele",
@@ -38,7 +39,6 @@
     "allornothing",
     "allusersprofile",
     "alphanum",
-    "atcm",
     "ated",
     "autocrlf",
     "autofocus",
@@ -274,7 +274,6 @@
     "tooltipstered",
     "tweening",
     "tweens",
-    "ttcm",
     "typesystem",
     "unattend",
     "unattending",
