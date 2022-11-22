@@ -17,6 +17,9 @@ export const CHOP_MOVED_NOTES = [
   "utfcm", // unnecessary trash finesse chop move
   "utdcm", // unnecessary trash finesse chop move
   "utbcm", // unnecessary trash bluff chop move
+  "dtc", // duplicitous tempo clue
+  "atcm", // assisted trash chop move
+  "ttcm", // time travel chop move
 ];
 export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
