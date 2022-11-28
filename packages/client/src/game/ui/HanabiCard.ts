@@ -797,6 +797,12 @@ export default class HanabiCard
       return;
     }
 
+    // Don't show any status in realLifeMode.
+    if(globals.lobby.settings.realLifeMode)
+    {
+      return;
+    }
+
     let status: CardStatus;
     if (
       this.visibleSuitIndex === null ||
@@ -848,7 +854,6 @@ export default class HanabiCard
       !this.shouldShowClueBorder() &&
       this.trashcan.isVisible() === false &&
       globals.lobby.settings.hyphenatedConventions &&
-      !globals.lobby.settings.realLifeMode &&
       !globals.metadata.hardVariant
     );
   }
@@ -875,8 +880,7 @@ export default class HanabiCard
       !(globals.state.playing && this.note.blank) &&
       !(globals.state.playing && this.note.chopMoved) &&
       !variantRules.isThrowItInAHole(this.variant) &&
-      !globals.options.speedrun &&
-      !globals.lobby.settings.realLifeMode
+      !globals.options.speedrun
     );
   }
 
@@ -889,8 +893,7 @@ export default class HanabiCard
     return (
       critical &&
       !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state) &&
-      !globals.lobby.settings.realLifeMode
+      !cardRules.isDiscarded(this.state)
     );
   }
 
