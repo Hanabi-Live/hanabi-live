@@ -48,35 +48,34 @@ function parseRank(rankText: string): number {
  * @returns Return {suitIndex, rank}.
  */
 export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
-  let suitIndex: number | null = CardIdentityType.Fail;
-  let rank: number | null = CardIdentityType.Fail;
-
   if (keyword.toLowerCase() === "blank") {
     // Create a blank morph.
-    suitIndex = null;
-    rank = null;
-  } else if (keyword.length === 0) {
+    return { suitIndex: null, rank: null };
+  }
+  if (keyword.length === 0) {
     // Return morph to original.
-    suitIndex = CardIdentityType.Original;
-    rank = CardIdentityType.Original;
-  } else {
-    const identityMatch = new RegExp(
-      variant.identityNotePattern.toLowerCase(),
-    ).exec(keyword.toLowerCase());
+    return {
+      suitIndex: CardIdentityType.Original,
+      rank: CardIdentityType.Original,
+    };
+  }
 
-    if (identityMatch !== null) {
-      const suitText = extractSuitText(identityMatch);
-      if (suitText !== null) {
-        suitIndex = parseSuit(variant, suitText);
-      }
-      const rankText = extractRankText(identityMatch);
-      if (rankText !== null) {
-        rank = parseRank(rankText);
-      }
+  const identityMatch = new RegExp(
+    variant.identityNotePattern.toLowerCase(),
+  ).exec(keyword.toLowerCase());
+
+  if (identityMatch !== null) {
+    const suitText = extractSuitText(identityMatch);
+    const rankText = extractRankText(identityMatch);
+    if (suitText !== null && rankText !== null) {
+      return {
+        suitIndex: parseSuit(variant, suitText),
+        rank: parseRank(rankText),
+      };
     }
   }
 
-  return { suitIndex, rank };
+  return { suitIndex: CardIdentityType.Fail, rank: CardIdentityType.Fail };
 }
 
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {

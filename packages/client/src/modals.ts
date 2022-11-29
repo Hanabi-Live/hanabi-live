@@ -475,11 +475,10 @@ function fillMorphModalWithRadios(
     const row = document.createElement("tr");
     suits.forEach((suit, i) => {
       const cell = document.createElement("td");
-      if (
-        !possibilities.some(
-          (possibility) => possibility[0] === i && possibility[1] === rank,
-        )
-      ) {
+      const possibleCardIdentity = possibilities.some(
+        (possibility) => possibility[0] === i && possibility[1] === rank,
+      );
+      if (!possibleCardIdentity) {
         cell.classList.add("faded");
       }
       const radio = document.createElement("input");
