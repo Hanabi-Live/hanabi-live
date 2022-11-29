@@ -931,6 +931,10 @@ input::-webkit-calendar-picker-indicator {
   display: none;
 }
 
+#morph-modal .faded {
+  opacity: 50%;
+}
+
 #morph-modal label {
   border: 1px solid gray;
   padding: 10px;
