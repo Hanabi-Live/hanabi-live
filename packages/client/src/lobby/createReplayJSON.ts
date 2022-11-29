@@ -34,11 +34,23 @@ export default function createJSONFromReplay(room: string): void {
   };
 
   // Copy the entire deck.
-  globals.state.cardIdentities.forEach((el) => {
-    game.deck.push({
-      suitIndex: el.suitIndex,
-      rank: el.rank,
-    });
+  globals.state.cardIdentities.forEach((el, i) => {
+    const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
+    if (
+      morph !== undefined &&
+      morph.suitIndex !== null &&
+      morph.rank !== null
+    ) {
+      game.deck.push({
+        suitIndex: morph.suitIndex,
+        rank: morph.rank,
+      });
+    } else {
+      game.deck.push({
+        suitIndex: el.suitIndex,
+        rank: el.rank,
+      });
+    }
   });
 
   // Copy actions up to current segment.

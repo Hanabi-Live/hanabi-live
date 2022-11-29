@@ -2,6 +2,7 @@
 
 import { parseIntSafe, Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
+import { CardIdentityType } from "./game/types/CardIdentityType";
 import HanabiCard from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import globals from "./globals";
@@ -83,6 +84,10 @@ function init() {
     if (event.key === "Enter") {
       event.preventDefault();
       getElement("#morph-modal-button-ok").click();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      getElement("#morph-modal-button-cancel").click();
     }
   };
 
@@ -140,13 +145,17 @@ export function askForMorph(
       variant,
       getMorphModalSelection(),
     );
-    if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+    if (
+      cardIdentity.suitIndex === CardIdentityType.Fail ||
+      cardIdentity.rank === CardIdentityType.Fail
+    ) {
       // Morph didn't succeed
       return false;
     }
     morphReplayFromModal(card!, cardIdentity);
     return true;
   };
+
   const morphInGameOkButton = () => {
     const success = morphReplayOkButton();
     if (!success) {
@@ -173,6 +182,7 @@ export function askForMorph(
     card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
   const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
   const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
+  const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
 
   fillMorphModalWithRadios(
     "#morph-modal-cards",
@@ -180,6 +190,7 @@ export function askForMorph(
     ranks,
     suits[startSuit]!,
     startRank,
+    possibilities,
   );
 
   showModal("#morph-modal", false);
@@ -452,6 +463,7 @@ function fillMorphModalWithRadios(
   ranks: readonly number[],
   startSuit: Suit,
   startRank: number,
+  possibilities: ReadonlyArray<readonly [number, number]>,
 ) {
   const placeHolder = getElement(element)!;
   placeHolder.innerHTML = "";
@@ -461,8 +473,15 @@ function fillMorphModalWithRadios(
 
   ranks.forEach((rank) => {
     const row = document.createElement("tr");
-    suits.forEach((suit) => {
+    suits.forEach((suit, i) => {
       const cell = document.createElement("td");
+      if (
+        !possibilities.some(
+          (possibility) => possibility[0] === i && possibility[1] === rank,
+        )
+      ) {
+        cell.classList.add("faded");
+      }
       const radio = document.createElement("input");
       const radioId = `morph-radio-${suit.abbreviation}-${rank}`;
 

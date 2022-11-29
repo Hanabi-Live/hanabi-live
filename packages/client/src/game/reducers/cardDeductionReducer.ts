@@ -183,10 +183,21 @@ function getCardPossibilitiesForPlayer(
     // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
   }
+
+  if (
+    card.revealedToPlayer[playerIndex]! &&
+    card.suitIndex !== null &&
+    card.rank !== null
+  ) {
+    // If we know the suit and rank, maybe because it's morphed, we should use that first.
+    return [[card.suitIndex, card.rank]];
+  }
+
   if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]!) {
     // This is revealed to the player or we are the requested player => just use our best knowledge.
     return card.possibleCards;
   }
+
   // This is an unrevealed card outside of the players hand but not revealed to them. That can
   // happen with something like a detrimental character (such as 'Slow-Witted') or 'Throw It in a
   // Hole'. We can't use our best (empathy) guess, because it might be in our own hand and we might
