@@ -138,7 +138,7 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
 
       case "discard": {
         actions.push({
-          type: ActionType.Discard,
+          type: action.failed ? ActionType.Play : ActionType.Discard,
           target: action.order,
         });
         currentSegment++;
