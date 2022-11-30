@@ -143,12 +143,7 @@ function mouseUp(this: HanabiCard) {
   }
 
   // During replay hypo, skip the starting player.
-  if (checkForHypoEmpathy(this)) {
-    return;
-  }
-
-  // Empathy
-  if (!globals.globalEmpathyEnabled) {
+  if (!checkForHypoEmpathy(this) && !globals.globalEmpathyEnabled) {
     setEmpathyOnHand(this, false);
   }
 
@@ -322,7 +317,8 @@ function dragStart(card: HanabiCard) {
   // automatically reset if the card tweens back to the hand.
   if (
     globals.state.replay.hypothetical !== null &&
-    card.layout.parent !== null
+    card.layout.parent !== null &&
+    globals.lobby.settings.keldonMode
   ) {
     card.layout.rotation(card.layout.parent.rotation() * -1);
   }
