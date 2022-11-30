@@ -101,7 +101,7 @@ function showClueMatch(target: number, clue: Clue) {
       card.visibleSuitIndex !== null
     ) {
       touchedAtLeastOneCard = true;
-      arrows.set(i, card, null, clue);
+      arrows.set(i, card, null, clue, true);
     }
   }
 
