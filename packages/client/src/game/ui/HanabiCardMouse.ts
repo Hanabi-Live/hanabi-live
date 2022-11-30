@@ -312,6 +312,17 @@ function dragStart(card: HanabiCard) {
   // We need to change the cursor from the hand to the grabbing icon.
   card.setCursor();
 
+  // In a hypothetical, dragging a rotated card from another person's hand is frustrating, so
+  // temporarily remove all rotation (for the duration of the drag). The rotation will be
+  // automatically reset if the card tweens back to the hand.
+  if (
+    globals.state.replay.hypothetical !== null &&
+    card.layout.parent !== null &&
+    globals.lobby.settings.keldonMode
+  ) {
+    card.layout.rotation(card.layout.parent.rotation() * -1);
+  }
+
   // Hide any visible arrows on the rest of a hand when the card begins to be dragged.
   const hand = card.layout.parent;
   if (hand === null) {
