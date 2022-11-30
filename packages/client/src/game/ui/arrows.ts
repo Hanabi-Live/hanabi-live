@@ -47,6 +47,7 @@ export function set(
   element: Konva.Node | null,
   giver: number | null,
   clue: Clue | null,
+  preview = false,
 ): void {
   // Show the arrow
   const arrow = globals.elements.arrows[i]!;
@@ -99,7 +100,11 @@ export function set(
   } else {
     // This is a clue arrow.
     let color: string;
-    if (element instanceof HanabiCard && element.state.numPositiveClues >= 2) {
+    if (
+      element instanceof HanabiCard &&
+      (element.state.numPositiveClues >= 2 ||
+        (element.state.numPositiveClues >= 1 && preview))
+    ) {
       // Cards that are re-clued use a different color.
       color = ARROW_COLOR.RETOUCHED;
     } else {
