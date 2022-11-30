@@ -220,8 +220,7 @@ chatCommands.set("tag", (room: string, args: string[]) => {
   });
 });
 
-// /tagdelete [tag]
-chatCommands.set("tagdelete", (room: string, args: string[]) => {
+function tagdelete(room: string, args: string[]) {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/tagdelete</code> command.",
@@ -236,7 +235,11 @@ chatCommands.set("tagdelete", (room: string, args: string[]) => {
     tableID: globals.tableID,
     msg: tag,
   });
-});
+}
+
+// /tagdelete [tag]
+chatCommands.set("tagdelete", tagdelete);
+chatCommands.set("untag", tagdelete);
 
 // /tagsearch
 chatCommands.set("tagsearch", (room: string, args: string[]) => {
