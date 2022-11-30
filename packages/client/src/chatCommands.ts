@@ -220,7 +220,6 @@ chatCommands.set("tag", (room: string, args: string[]) => {
   });
 });
 
-
 function tagdelete(room: string, args: string[]) {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
