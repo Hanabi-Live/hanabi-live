@@ -142,6 +142,7 @@ export function cardsGotten(
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   playing: boolean,
+  shadowing: boolean,
   maxScore: number,
   variant: Variant,
 ): number {
@@ -154,7 +155,7 @@ export function cardsGotten(
       (card.location === "discard" &&
         card.isMisplayed &&
         variantRules.isThrowItInAHole(variant) &&
-        playing)
+        (playing || shadowing))
     ) {
       // A card is considered to be gotten if it is already played (and failed discards count as
       // played for the purposes of "Throw It in a Hole" variants).

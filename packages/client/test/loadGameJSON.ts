@@ -139,7 +139,14 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
             rank: a.rank,
             failed: true,
           };
-          nextState = gameStateReducer(s, action, false, false, state.metadata);
+          nextState = gameStateReducer(
+            s,
+            action,
+            false,
+            false,
+            false,
+            state.metadata,
+          );
 
           if (
             segmentRules.shouldStore(
@@ -173,6 +180,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       action,
       false,
       false,
+      false,
       state.metadata,
     );
 
@@ -192,6 +200,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     cardIdentities: [],
 
     playing: false,
+    shadowing: false,
     finished: true,
     notes: {
       ourNotes: [],

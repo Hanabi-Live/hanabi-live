@@ -29,6 +29,7 @@ function gameStateReducerFunction(
   state: Draft<GameState>,
   action: GameAction,
   playing: boolean,
+  shadowing: boolean,
   hypothetical: boolean,
   metadata: GameMetadata,
   ourNotes?: CardNote[],
@@ -89,7 +90,15 @@ function gameStateReducerFunction(
         hand.splice(handIndex, 1);
       }
 
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
+      if (
+        !throwItInAHolePlayedOrMisplayed(
+          state,
+          action,
+          variant,
+          playing,
+          shadowing,
+        )
+      ) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
             `The suit index for the discarded card was: ${action.suitIndex}`,
@@ -113,6 +122,7 @@ function gameStateReducerFunction(
         slot,
         touched,
         playing,
+        shadowing,
         hypothetical,
         metadata,
       );
@@ -193,7 +203,15 @@ function gameStateReducerFunction(
       }
 
       // Add it to the play stacks.
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
+      if (
+        !throwItInAHolePlayedOrMisplayed(
+          state,
+          action,
+          variant,
+          playing,
+          shadowing,
+        )
+      ) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
             `The suit index for the played card was: ${action.suitIndex}`,
@@ -221,6 +239,7 @@ function gameStateReducerFunction(
         slot,
         touched,
         playing,
+        shadowing,
         hypothetical,
         metadata,
       );
@@ -345,6 +364,7 @@ function gameStateReducerFunction(
     original(state)!,
     state,
     playing,
+    shadowing,
     metadata,
     ourNotes ?? null,
   );
@@ -396,8 +416,9 @@ function throwItInAHolePlayedOrMisplayed(
   action: ActionPlay | ActionDiscard,
   variant: Variant,
   playing: boolean,
+  shadowing: boolean,
 ) {
-  if (!variantRules.isThrowItInAHole(variant) || !playing) {
+  if (!variantRules.isThrowItInAHole(variant) || (!playing && !shadowing)) {
     return false;
   }
 

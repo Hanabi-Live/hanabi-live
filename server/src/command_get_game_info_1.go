@@ -112,6 +112,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		PlayerNames      []string  `json:"playerNames"`
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
+		Shadowing        bool      `json:"shadowing"`
 		Replay           bool      `json:"replay"`
 		DatabaseID       int       `json:"databaseID"`
 		HasCustomSeed    bool      `json:"hasCustomSeed"`
@@ -142,6 +143,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		PlayerNames:      playerNames,
 		OurPlayerIndex:   ourPlayerIndex,
 		Spectating:       spectatorIndex != -1 && t.IsActivelySpectating(t.Spectators[spectatorIndex].UserID) && !t.Replay,
+		Shadowing:        spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
 		HasCustomSeed:    g.ExtraOptions.CustomSeed != "",
