@@ -155,6 +155,7 @@ export function play(
   slot: number | null,
   touched: boolean,
   playing: boolean,
+  shadowing: boolean,
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
@@ -162,7 +163,7 @@ export function play(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card: string;
-  if (variantRules.isThrowItInAHole(variant) && playing) {
+  if (variantRules.isThrowItInAHole(variant) && (playing || shadowing)) {
     card = "a card";
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
@@ -189,6 +190,7 @@ export function discard(
   slot: number | null,
   touched: boolean,
   playing: boolean,
+  shadowing: boolean,
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
@@ -198,7 +200,7 @@ export function discard(
   let verb = "discards";
   if (action.failed) {
     verb = "fails to play";
-    if (variantRules.isThrowItInAHole(variant) && playing) {
+    if (variantRules.isThrowItInAHole(variant) && (playing || shadowing)) {
       verb = "plays";
     }
   }

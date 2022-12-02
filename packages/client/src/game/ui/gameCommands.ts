@@ -525,6 +525,7 @@ function initStateStore(data: InitData) {
   globals.store.dispatch({
     type: "init",
     spectating: data.spectating,
+    shadowing: data.shadowing,
     datetimeStarted: data.datetimeStarted.toString(),
     datetimeFinished: data.datetimeFinished.toString(),
     replay: data.replay,

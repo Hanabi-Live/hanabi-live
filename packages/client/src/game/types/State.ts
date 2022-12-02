@@ -17,6 +17,9 @@ export default interface State {
   // ongoing game, in a dedicated solo replay, or in a shared replay.
   readonly playing: boolean;
 
+  // Equal to true if we are shadowing a player.
+  readonly shadowing: boolean;
+
   // Equal to true if we are in a dedicated solo replay or a shared replay.
   readonly finished: boolean;
 

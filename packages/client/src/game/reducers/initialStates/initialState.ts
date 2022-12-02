@@ -27,6 +27,7 @@ export default function initialState(metadata: GameMetadata): State {
     },
 
     playing: true,
+    shadowing: false,
     finished: false,
 
     datetimeStarted: null,

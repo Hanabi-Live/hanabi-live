@@ -216,7 +216,10 @@ export function onOngoingOrVisibleStrikesChanged(data: {
   visibleStrikes: readonly StateStrike[];
 }): void {
   // Strikes are hidden from the players in "Throw It in a Hole" variants.
-  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+  if (
+    variantRules.isThrowItInAHole(globals.variant) &&
+    (globals.state.playing || globals.state.shadowing)
+  ) {
     return;
   }
 
