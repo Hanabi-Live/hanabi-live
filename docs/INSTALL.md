@@ -84,7 +84,7 @@ Building the client code can be memory intensive. Make sure that your system has
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
-  - `code hanab.code-workspace`
+  - `code .`
 - In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 - Test the Golang linter:
   - On the left pane, navigate to and open "src\main.go".
