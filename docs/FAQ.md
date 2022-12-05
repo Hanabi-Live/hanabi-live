@@ -8,7 +8,7 @@ Adding a new option to the website for you (and the people who share your use-ca
 
 1. Every option added to the website has to be stored in the database. For every user. For perpetuity. You're not paying for this, I am.
 
-2. Every option added to the website makes it more complicated and harder to understand for the end-user. Adding more optional features obfuscates the existing features. More does not equal better. There's a reason why the Apple design philosophy [is considered to be among the best in the industry](https://medium.com/macoclock/what-makes-apple-design-so-good-d430ef97c6d2).
+2. Every option added to the website makes it more complicated and harder to understand for the end-user. Adding more optional features obfuscates existing features. More does not equal better. There's a reason why the Apple design philosophy [is considered to be among the best in the industry](https://medium.com/macoclock/what-makes-apple-design-so-good-d430ef97c6d2).
 
 3. Every option added to the website increases the code surface, which produces more bugs and makes the website harder to maintain. It's a non-zero amount of work to maintain code, as it will eventually have to be updated, refactored, and rewritten. You're not going to be around when the code needs to be refactored, but I will.
 
@@ -16,7 +16,7 @@ Adding a new option to the website for you (and the people who share your use-ca
 
 Often times, the usability of the site for basic users and the long term health of the website is going to be more important than your feature request. Thanks for understanding.
 
-## Q: Can you add automated turn counts to notes?
+## Q: Can you add automated turn tracking to notes?
 
 A: No.
 
