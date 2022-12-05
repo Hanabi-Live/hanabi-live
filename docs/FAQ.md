@@ -12,7 +12,7 @@ Adding a new option to the website for you (and the people who share your use-ca
 
 3. Every option added to the website increases the code surface, which produces more bugs and makes the website harder to maintain. It's a non-zero amount of work to maintain code, as it will eventually have to be updated, refactored, and rewritten. You're not going to be around when the code needs to be refactored, but I will.
 
-4. Every option added to the website increases [feature bloat](https://www.productplan.com/blog/feature-bloat/). The best software products are minimal, easy to use and understand. That means routinely saying "no" to small groups of users who want specific things.
+4. Every option added to the website increases [feature bloat](https://www.productplan.com/blog/feature-bloat/). The best software products are minimal and deliver on their core mission without a lot of extra bells and whistles. That means routinely saying "no" to small groups of users who want specific things.
 
 Often times, the usability of the site for basic users and the long term health of the website is going to be more important than your feature request. Thanks for understanding.
 
