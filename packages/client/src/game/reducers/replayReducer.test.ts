@@ -31,7 +31,12 @@ describe("replayReducer", () => {
 
   describe("hypothetical", () => {
     test("can start", () => {
-      const state = replayReducer(testState.replay, hypoStart(), metadata);
+      const state = replayReducer(
+        testState.replay,
+        hypoStart(),
+        false,
+        metadata,
+      );
 
       expect(state.hypothetical?.ongoing).toBe(
         testState.replay.states[testState.replay.segment],
@@ -41,11 +46,11 @@ describe("replayReducer", () => {
     });
 
     test("can give a clue", () => {
-      let state = replayReducer(testState.replay, hypoStart(), metadata);
+      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
 
       // Give a number 3 clue in the new hypothetical.
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
-      state = replayReducer(state, hypoClue, testState.metadata);
+      state = replayReducer(state, hypoClue, false, testState.metadata);
 
       const expectedClues =
         testState.replay.states[testState.replay.segment]!.clueTokens - 1;
@@ -53,22 +58,22 @@ describe("replayReducer", () => {
     });
 
     test("can go back on a hypothetical after giving a clue", () => {
-      let state = replayReducer(testState.replay, hypoStart(), metadata);
+      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
 
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
-      state = replayReducer(state, hypoClue, metadata);
-      state = replayReducer(state, hypoBack(), metadata);
+      state = replayReducer(state, hypoClue, false, metadata);
+      state = replayReducer(state, hypoBack(), false, metadata);
 
       const originalState = testState.visibleState;
       expect(state.hypothetical?.ongoing).toBe(originalState);
     });
 
     test("can end hypothetical after giving a clue", () => {
-      let state = replayReducer(testState.replay, hypoStart(), metadata);
+      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
 
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
-      state = replayReducer(state, hypoClue, metadata);
-      state = replayReducer(state, hypoEnd(), metadata);
+      state = replayReducer(state, hypoClue, false, metadata);
+      state = replayReducer(state, hypoEnd(), false, metadata);
       expect(state.hypothetical).toBeNull();
     });
   });

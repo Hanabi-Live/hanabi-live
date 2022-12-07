@@ -843,8 +843,7 @@ function drawScoreArea() {
 
   if (
     variantRules.isThrowItInAHole(globals.variant) &&
-    !globals.state.playing &&
-    !globals.state.shadowing
+    (globals.state.playing || globals.state.shadowing)
   ) {
     globals.elements.playsTextLabel = basicTextLabel.clone({
       text: "Plays",

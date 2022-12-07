@@ -30,6 +30,7 @@ function gameStateReducerFunction(
   action: GameAction,
   playing: boolean,
   shadowing: boolean,
+  finished: boolean,
   hypothetical: boolean,
   metadata: GameMetadata,
   ourNotes?: CardNote[],
@@ -97,6 +98,7 @@ function gameStateReducerFunction(
           variant,
           playing,
           shadowing,
+          finished,
         )
       ) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
@@ -210,6 +212,7 @@ function gameStateReducerFunction(
           variant,
           playing,
           shadowing,
+          finished,
         )
       ) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
@@ -417,8 +420,13 @@ function throwItInAHolePlayedOrMisplayed(
   variant: Variant,
   playing: boolean,
   shadowing: boolean,
+  finished: boolean,
 ) {
-  if (!variantRules.isThrowItInAHole(variant) || (!playing && !shadowing)) {
+  if (
+    !variantRules.isThrowItInAHole(variant) ||
+    (!playing && !shadowing) ||
+    finished
+  ) {
     return false;
   }
 

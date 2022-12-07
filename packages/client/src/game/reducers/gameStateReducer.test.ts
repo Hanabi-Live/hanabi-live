@@ -27,6 +27,7 @@ describe("gameStateReducer", () => {
       true,
       false,
       false,
+      false,
       defaultMetadata,
     );
     expect(newState).not.toEqual(state);
@@ -46,6 +47,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
       expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
@@ -62,6 +64,7 @@ describe("gameStateReducer", () => {
         state,
         testClue,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -84,6 +87,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -93,6 +97,7 @@ describe("gameStateReducer", () => {
         state,
         playAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -113,6 +118,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -122,6 +128,7 @@ describe("gameStateReducer", () => {
         state,
         discardAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -134,6 +141,7 @@ describe("gameStateReducer", () => {
         state,
         strikeAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -155,6 +163,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           defaultMetadata,
         );
       }
@@ -165,6 +174,7 @@ describe("gameStateReducer", () => {
         state,
         clueAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -185,6 +195,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -194,6 +205,7 @@ describe("gameStateReducer", () => {
         state,
         drawRed1Action,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -207,6 +219,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -216,6 +229,7 @@ describe("gameStateReducer", () => {
         state,
         playAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -229,6 +243,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -239,6 +254,7 @@ describe("gameStateReducer", () => {
         state,
         strikeAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -259,6 +275,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
       const drawRed4Action = draw(0, 1, 0, 4);
@@ -268,6 +285,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
       const drawRed5Action = draw(0, 2, 0, 5);
@@ -275,6 +293,7 @@ describe("gameStateReducer", () => {
         state,
         drawRed5Action,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -288,6 +307,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
       const drawRed3Action = draw(1, 4, 0, 3);
@@ -297,6 +317,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
       const drawRed1Action2 = draw(1, 5, 0, 1);
@@ -304,6 +325,7 @@ describe("gameStateReducer", () => {
         state,
         drawRed1Action2,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -317,6 +339,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -326,6 +349,7 @@ describe("gameStateReducer", () => {
         state,
         playRed1Action,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -339,6 +363,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -348,6 +373,7 @@ describe("gameStateReducer", () => {
         state,
         playRed3Action,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -361,6 +387,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -370,6 +397,7 @@ describe("gameStateReducer", () => {
         state,
         discardAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -385,6 +413,7 @@ describe("gameStateReducer", () => {
         state,
         playRed5Action,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -406,6 +435,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
         const drawRed4Action = draw(0, 1, 0, 4);
@@ -415,6 +445,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
         const drawRed5Action = draw(1, 2, 0, 5);
@@ -422,6 +453,7 @@ describe("gameStateReducer", () => {
           state,
           drawRed5Action,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -435,6 +467,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
         const drawRed3Action = draw(1, 4, 0, 3);
@@ -442,6 +475,7 @@ describe("gameStateReducer", () => {
           state,
           drawRed3Action,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -453,6 +487,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
         const drawRed1Action3 = draw(0, 6, 0, 1);
@@ -460,6 +495,7 @@ describe("gameStateReducer", () => {
           state,
           drawRed1Action3,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -473,6 +509,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
 
@@ -482,6 +519,7 @@ describe("gameStateReducer", () => {
           state,
           playRed1Action,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -495,6 +533,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
 
@@ -504,6 +543,7 @@ describe("gameStateReducer", () => {
           state,
           playRed3Action,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -517,6 +557,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
 
@@ -528,6 +569,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           clueStarvedMetadata,
         );
         const discardAction2 = discard(1, 6, 0, 1, false);
@@ -535,6 +577,7 @@ describe("gameStateReducer", () => {
           state,
           discardAction2,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -550,6 +593,7 @@ describe("gameStateReducer", () => {
           state,
           playRed5Action,
           true,
+          false,
           false,
           false,
           clueStarvedMetadata,
@@ -573,6 +617,7 @@ describe("gameStateReducer", () => {
         state,
         testClue,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -599,6 +644,7 @@ describe("gameStateReducer", () => {
           true,
           false,
           false,
+          false,
           defaultMetadata,
         );
       }
@@ -609,6 +655,7 @@ describe("gameStateReducer", () => {
         state,
         testClue,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -627,6 +674,7 @@ describe("gameStateReducer", () => {
         state,
         testClue,
         true,
+        false,
         false,
         false,
         defaultMetadata,
@@ -648,6 +696,7 @@ describe("gameStateReducer", () => {
         true,
         false,
         false,
+        false,
         defaultMetadata,
       );
 
@@ -657,6 +706,7 @@ describe("gameStateReducer", () => {
         state,
         playAction,
         true,
+        false,
         false,
         false,
         defaultMetadata,

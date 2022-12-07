@@ -145,6 +145,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
             false,
             false,
             false,
+            false,
             state.metadata,
           );
 
@@ -178,6 +179,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     nextState = gameStateReducer(
       nextState,
       action,
+      false,
       false,
       false,
       false,
