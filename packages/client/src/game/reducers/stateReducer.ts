@@ -28,6 +28,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         initialState,
         state.playing,
         state.shadowing,
+        state.finished,
         state.metadata,
       );
 
@@ -70,6 +71,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           initialState,
           state.playing,
           state.shadowing,
+          true,
           state.metadata,
         );
 
@@ -169,7 +171,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypoEnd":
     case "hypoAction":
     case "hypoShowDrawnCards": {
-      state.replay = replayReducer(state.replay, action, state.metadata);
+      state.replay = replayReducer(
+        state.replay,
+        action,
+        state.finished,
+        state.metadata,
+      );
       break;
     }
 
@@ -253,6 +260,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           action,
           state.playing,
           state.shadowing,
+          state.finished,
           state.replay.hypothetical !== null,
           state.metadata,
           state.notes.ourNotes,
@@ -269,6 +277,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         action,
         state.playing,
         state.shadowing,
+        state.finished,
         state.replay.hypothetical !== null,
         state.metadata,
         state.notes.ourNotes,
@@ -306,6 +315,7 @@ function reduceGameActions(
   initialState: GameState,
   playing: boolean,
   shadowing: boolean,
+  finished: boolean,
   metadata: GameMetadata,
 ) {
   const states: GameState[] = [initialState];
@@ -315,6 +325,7 @@ function reduceGameActions(
       a,
       playing,
       shadowing,
+      finished,
       false,
       metadata,
     );

@@ -15,6 +15,7 @@ export default replayReducer;
 function replayReducerFunction(
   state: Draft<ReplayState>,
   action: ReplayAction,
+  finished: boolean,
   metadata: GameMetadata,
 ) {
   // Validate current state
@@ -151,7 +152,7 @@ function replayReducerFunction(
       };
 
       for (const a of action.actions) {
-        hypoAction(state, a, metadata);
+        hypoAction(state, a, finished, metadata);
       }
 
       break;
@@ -228,7 +229,7 @@ function replayReducerFunction(
         );
       }
 
-      hypoAction(state, action.action, metadata);
+      hypoAction(state, action.action, finished, metadata);
       break;
     }
 
@@ -242,6 +243,7 @@ function replayReducerFunction(
 function hypoAction(
   state: Draft<ReplayState>,
   action: ActionIncludingHypothetical,
+  finished: boolean,
   metadata: GameMetadata,
 ) {
   if (state.hypothetical === null) {
@@ -294,6 +296,7 @@ function hypoAction(
     action,
     true,
     false,
+    finished,
     true,
     metadata,
   );
