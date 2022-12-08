@@ -73,11 +73,6 @@ export function set(order: number, text: string): void {
     text,
   });
 
-  // The note identity features are only enabled for active players.
-  if (!globals.state.playing) {
-    return;
-  }
-
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
   card.setRaiseAndShadowOffset();
