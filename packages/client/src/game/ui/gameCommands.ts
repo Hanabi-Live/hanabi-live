@@ -225,8 +225,8 @@ commands.set("noteList", (data: NoteListData) => {
     isSpectators,
     noteTextLists,
   });
-  // Show the note indicator for currently-visible cards.
-  notes.setAllCardIndicators();
+
+  setNoteIndicatorAndCheckForSpecialNote();
 });
 
 // Received when reconnecting to an existing game as a player. (It only gets the notes of one
@@ -241,20 +241,7 @@ commands.set("noteListPlayer", (data: NoteListPlayerData) => {
     texts: data.notes,
   });
 
-  // Show the note indicator for currently-visible cards.
-  notes.setAllCardIndicators();
-
-  // Check for special notes.
-  const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
-  for (let i = 0; i <= indexOfLastDrawnCard; i++) {
-    const card = getCardOrStackBase(i);
-    card.checkSpecialNote();
-  }
-
-  // Check for special notes on the stack bases.
-  for (const stackBase of globals.stackBases) {
-    stackBase.checkSpecialNote();
-  }
+  setNoteIndicatorAndCheckForSpecialNote();
 });
 
 // Used when the game state changes.
@@ -437,6 +424,24 @@ commands.set("spectators", (data: SpectatorsData) => {
 // -----------
 // Subroutines
 // -----------
+
+function setNoteIndicatorAndCheckForSpecialNote() {
+  // Show the note indicator for currently-visible cards.
+  notes.setAllCardIndicators();
+
+  // Check for special notes.
+  const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
+  for (let i = 0; i <= indexOfLastDrawnCard; i++) {
+    const card = getCardOrStackBase(i);
+    card.checkSpecialNote();
+    card.setRaiseAndShadowOffset();
+  }
+
+  // Check for special notes on the stack bases.
+  for (const stackBase of globals.stackBases) {
+    stackBase.checkSpecialNote();
+  }
+}
 
 function suggestTurn(who: string, room: string, segment: number) {
   // We minus one to account for the fact that turns are presented to the user starting from 1.

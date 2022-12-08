@@ -316,6 +316,13 @@ func (t *Table) NotifySpectatorsNote(order int) {
 					IsSpectator: true,
 				})
 			}
+		} else {
+			// If we are shadowing, also include out own notes
+			notes = append(notes, Note{
+				Name:        sp.Name,
+				Text:        sp.Notes(g)[order],
+				IsSpectator: true,
+			})
 		}
 
 		type NoteMessage struct {

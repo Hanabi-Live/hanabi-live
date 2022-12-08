@@ -379,14 +379,16 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 			})
 		}
 	}
-	if shadowingPlayerIndex == -1 {
-		for _, sp := range t.Spectators {
-			notes = append(notes, NoteList{
-				Name:        sp.Name,
-				Notes:       sp.Notes(g),
-				IsSpectator: true,
-			})
+	for _, sp := range t.Spectators {
+		// If we are shadowing, we are still allowed to see our own notes.
+		if shadowingPlayerIndex != -1 && sp.UserID != s.UserID {
+			continue
 		}
+		notes = append(notes, NoteList{
+			Name:        sp.Name,
+			Notes:       sp.Notes(g),
+			IsSpectator: true,
+		})
 	}
 
 	// Send it
