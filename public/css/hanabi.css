@@ -464,7 +464,7 @@ table td {
 }
 .lobby-games-table-started .shadow:hover {
   /* detective */
-  cursor: url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 7.499 6.615' xmlns='http://www.w3.org/2000/svg'><text y='15'>\01F575 \FE0F</text></svg>"),
+  cursor: url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>\01F575 \FE0F</text></svg>"),
     pointer;
   color: #3350cb;
 }
