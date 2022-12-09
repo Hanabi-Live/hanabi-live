@@ -22,6 +22,15 @@ if [[ ! -z $TLS_CERT_FILE ]]; then
   exit 1
 fi
 
+URL="http://$DOMAIN:$PORT"
+
+# Test to see if the server is running
+curl --silent "$URL" > /dev/null
+if [ $? -ne 0 ]; then
+  echo "You must ensure that the server is running before running this script."
+  exit 1
+fi
+
 # Rebuild the critical CSS
 cd "$DIR"
-npx grunt critical --url="http://$DOMAIN:$PORT"
+npx grunt critical --url="$URL"
