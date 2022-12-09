@@ -153,18 +153,26 @@ export default function tablesDraw(): void {
     $("<td>").html(status).appendTo(row);
 
     // Column 6 - Players.
-    const playersArray: string[] = [];
-    for (const player of table.players) {
+    const td = $("<td>");
+    table.players.forEach((player, index) => {
+      const span = $("<span>").html(player);
       if (player === globals.username) {
-        playersArray.push(`<span class="name-me">${player}</span>`);
+        span.addClass("name-me");
       } else if (globals.friends.includes(player)) {
-        playersArray.push(`<span class="friend">${player}</span>`);
-      } else {
-        playersArray.push(player);
+        span.addClass("friend");
       }
-    }
-    const playersString = playersArray.join(", ");
-    $("<td>").html(playersString).appendTo(row);
+      if (!table.joined && table.running && !table.sharedReplay) {
+        span.addClass("shadow").on("click", (evt) => {
+          evt.stopPropagation();
+          tableSpectate(table, index);
+        });
+      }
+      if (td.html().length > 0) {
+        td.append(", ");
+      }
+      span.appendTo(td);
+    });
+    td.appendTo(row);
 
     // Column 7 - Spectators.
     let spectatorsString = "";
@@ -257,14 +265,14 @@ export default function tablesDraw(): void {
   }
 }
 
-export function tableSpectate(table: Table): void {
+export function tableSpectate(table: Table, shadowingPlayerIndex = -1): void {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
 
   globals.conn!.send("tableSpectate", {
     tableID: table.id,
-    shadowingPlayerIndex: -1,
+    shadowingPlayerIndex,
   });
   // (We will get a "tableStart" response back from the server.)
 }
