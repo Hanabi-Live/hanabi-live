@@ -17,6 +17,10 @@ fi
 if [[ -z $PORT ]]; then
   PORT="80"
 fi
+if [[ ! -z $TLS_CERT_FILE ]]; then
+  echo "A production environment has been detected. You cannot build critical CSS in production. Instead, run this script on a local development server and push the changes to the git repository."
+  exit 1
+fi
 
 # Rebuild the critical CSS
 cd "$DIR"
