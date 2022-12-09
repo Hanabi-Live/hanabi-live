@@ -16,13 +16,14 @@ const bundleFilename = `main.${VERSION}.min.css`;
 
 // Constants
 const repoRoot = path.join(__dirname, "..", "..");
+const packageJSON = path.join(repoRoot, "package.json");
 const cssDir = path.join(repoRoot, "public", "css");
 const cssLibDir = path.join(cssDir, "lib");
 const gruntOutputDir = path.join(__dirname, "grunt_output");
 
 module.exports = (grunt) => {
   grunt.initConfig({
-    pkg: grunt.file.readJSON("package.json"),
+    pkg: grunt.file.readJSON(packageJSON),
 
     // Concatenate all of the CSS files together into the "main.css" file.
     concat: {
