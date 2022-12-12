@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -40,14 +39,6 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
-	// Validate that they are not already spectating this table
-	for _, sp := range t.ActiveSpectators() {
-		if sp.UserID == s.UserID {
-			s.Warning("You are already spectating this table.")
-			return
-		}
-	}
-
 	// Validate the shadowing player index
 	// (if provided, they want to spectate from a specific player's perspective)
 	if d.ShadowingPlayerIndex != -1 {
@@ -72,10 +63,9 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	// Validate that they are not already spectating another table
-	if len(tables.GetTablesUserSpectating(s.UserID)) > 0 {
-		s.Warning("You are already spectating a table, so you cannot spectate table " +
-			strconv.FormatUint(t.ID, 10) + ".")
-		return
+
+	for _, tableID := range tables.GetTablesUserSpectating(s.UserID) {
+		tables.DeleteSpectating(s.UserID, tableID)
 	}
 
 	if t.Replay {
