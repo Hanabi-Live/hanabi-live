@@ -38,11 +38,16 @@ func websocketDisconnectRemoveFromMap(s *Session) {
 		strconv.Itoa(sessions.Length()) + " user(s) now connected.")
 }
 
+type spectatorData struct {
+	tableId  uint64
+	shadowId int
+}
+
 func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 	// Look for the disconnecting player in all of the tables
 	ongoingGameTableIDs := make([]uint64, 0)
 	preGameTableIDs := make([]uint64, 0)
-	spectatingTableIDs := make([]uint64, 0)
+	spectatingTableIDs := make([]spectatorData, 0)
 
 	tableList := tables.GetList(true)
 	for _, t := range tableList {
@@ -60,7 +65,13 @@ func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 
 		// They could be one of the spectators (2/2)
 		if t.IsActivelySpectating(s.UserID) {
-			spectatingTableIDs = append(spectatingTableIDs, t.ID)
+			spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+			shadowingIndex := -1
+			if spectatorIndex != -1 {
+				sp := t.Spectators[spectatorIndex]
+				shadowingIndex = sp.ShadowingPlayerIndex
+			}
+			spectatingTableIDs = append(spectatingTableIDs, spectatorData{tableId: t.ID, shadowId: shadowingIndex})
 		}
 
 		t.Unlock(ctx)
@@ -84,19 +95,20 @@ func websocketDisconnectRemoveFromGames(ctx context.Context, s *Session) {
 
 	for _, spectatingTableID := range spectatingTableIDs {
 		logger.Info("Ejecting spectator \"" + s.Username + "\" from table " +
-			strconv.FormatUint(spectatingTableID, 10) + " since they disconnected.")
+			strconv.FormatUint(spectatingTableID.tableId, 10) + " since they disconnected.")
 		commandTableUnattend(ctx, s, &CommandData{ // nolint: exhaustivestruct
-			TableID: spectatingTableID,
+			TableID: spectatingTableID.tableId,
 		})
 
 		// They might have been the last person spectating the table
 		// If they were, the table will no longer exist
 		// Check to see if the table still exists
-		if _, ok := getTable(s, spectatingTableID, true); ok {
+		if _, ok := getTable(s, spectatingTableID.tableId, true); ok {
 			// We want to add this relationship to the map of disconnected spectators
 			// (so that the user will be automatically reconnected to the game if/when they
 			// reconnect)
-			tables.SetDisconSpectating(s.UserID, spectatingTableID)
+
+			tables.SetDisconSpectating(s.UserID, spectatingTableID.tableId, spectatingTableID.shadowId)
 		}
 	}
 }

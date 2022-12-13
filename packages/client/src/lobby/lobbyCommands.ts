@@ -327,7 +327,7 @@ commands.set("welcome", (data: WelcomeData) => {
   if (data.disconSpectatingTable !== 0) {
     globals.conn!.send("tableSpectate", {
       tableID: data.disconSpectatingTable,
-      shadowingPlayerIndex: -1,
+      shadowingPlayerIndex: data.disconShadowingSeat,
     });
     return;
   }

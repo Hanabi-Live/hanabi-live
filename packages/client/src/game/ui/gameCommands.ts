@@ -476,7 +476,9 @@ function setURL(data: InitData) {
   } else if (data.replay) {
     path = `/replay/${data.databaseID}`;
   } else {
-    path = `/game/${data.tableID}`;
+    path = `/game/${data.tableID}${
+      data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""
+    }`;
   }
   setBrowserAddressBarPath(path, window.location.hash);
 }
