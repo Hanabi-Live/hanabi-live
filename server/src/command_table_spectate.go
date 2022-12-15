@@ -83,18 +83,27 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if spectatorIndex == -1 {
 		// Add them to the spectators object
 		sp := &Spectator{
-			UserID:               s.UserID,
-			Name:                 s.Username,
-			Session:              s,
-			Typing:               false,
-			LastTyped:            time.Time{},
-			ShadowingPlayerIndex: d.ShadowingPlayerIndex,
+			UserID:                      s.UserID,
+			Name:                        s.Username,
+			Session:                     s,
+			Typing:                      false,
+			LastTyped:                   time.Time{},
+			ShadowingPlayerIndex:        d.ShadowingPlayerIndex,
+			ShadowingPlayerPregameIndex: -1,
 		}
 		t.Spectators = append(t.Spectators, sp)
 	} else {
 		t.Spectators[spectatorIndex].Session = s
 		t.Spectators[spectatorIndex].Typing = false
 		t.Spectators[spectatorIndex].ShadowingPlayerIndex = d.ShadowingPlayerIndex
+		t.Spectators[spectatorIndex].ShadowingPlayerPregameIndex = -1
+	}
+
+	// If we are in pregame
+	if !t.Running && !t.Replay && d.ShadowingPlayerIndex != -1 {
+		sp := t.Spectators[t.GetSpectatorIndexFromID(s.UserID)]
+		p := t.Players[d.ShadowingPlayerIndex]
+		sp.ShadowingPlayerPregameIndex = p.UserID
 	}
 
 	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships

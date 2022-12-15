@@ -62,22 +62,22 @@ func (s *Session) NotifyTable(t *Table) {
 }
 
 type TableMessage struct {
-	ID                uint64   `json:"id"`
-	Name              string   `json:"name"`
-	PasswordProtected bool     `json:"passwordProtected"`
-	Joined            bool     `json:"joined"`
-	NumPlayers        int      `json:"numPlayers"`
-	Owned             bool     `json:"owned"`
-	Running           bool     `json:"running"`
-	Variant           string   `json:"variant"`
-	Timed             bool     `json:"timed"`
-	TimeBase          int      `json:"timeBase"`
-	TimePerTurn       int      `json:"timePerTurn"`
-	SharedReplay      bool     `json:"sharedReplay"`
-	Progress          int      `json:"progress"`
-	Players           []string `json:"players"`
-	Spectators        []string `json:"spectators"`
-	MaxPlayers        int      `json:"maxPlayers"`
+	ID                uint64       `json:"id"`
+	Name              string       `json:"name"`
+	PasswordProtected bool         `json:"passwordProtected"`
+	Joined            bool         `json:"joined"`
+	NumPlayers        int          `json:"numPlayers"`
+	Owned             bool         `json:"owned"`
+	Running           bool         `json:"running"`
+	Variant           string       `json:"variant"`
+	Timed             bool         `json:"timed"`
+	TimeBase          int          `json:"timeBase"`
+	TimePerTurn       int          `json:"timePerTurn"`
+	SharedReplay      bool         `json:"sharedReplay"`
+	Progress          int          `json:"progress"`
+	Players           []string     `json:"players"`
+	Spectators        []*Spectator `json:"spectators"`
+	MaxPlayers        int          `json:"maxPlayers"`
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
@@ -108,7 +108,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		SharedReplay:      t.Replay,
 		Progress:          t.Progress,
 		Players:           players,
-		Spectators:        spectators,
+		Spectators:        t.ActiveSpectators(),
 		MaxPlayers:        t.MaxPlayers,
 	}
 }
