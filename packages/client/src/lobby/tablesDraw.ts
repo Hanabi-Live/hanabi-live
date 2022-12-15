@@ -161,7 +161,7 @@ export default function tablesDraw(): void {
       } else if (globals.friends.includes(player)) {
         span.addClass("friend");
       }
-      if (!table.joined && table.running && !table.sharedReplay) {
+      if (!table.joined && !table.sharedReplay) {
         span.addClass("shadow").on("click", (evt) => {
           evt.stopPropagation();
           tableSpectate(table, index);
@@ -178,10 +178,10 @@ export default function tablesDraw(): void {
     let spectatorsString = "";
     const spectatorsArray: string[] = [];
     for (const spectator of table.spectators) {
-      if (globals.friends.includes(spectator)) {
-        spectatorsArray.push(`<span class="friend">${spectator}</span>`);
+      if (globals.friends.includes(spectator.name)) {
+        spectatorsArray.push(`<span class="friend">${spectator.name}</span>`);
       } else {
-        spectatorsArray.push(spectator);
+        spectatorsArray.push(spectator.name);
       }
     }
     spectatorsString = spectatorsArray.join(", ");
@@ -317,7 +317,7 @@ function tableHasFriends(table: Table) {
   }
 
   for (const spectator of table.spectators) {
-    if (globals.friends.includes(spectator)) {
+    if (globals.friends.includes(spectator.name)) {
       return true;
     }
   }

@@ -70,6 +70,8 @@ commands.set("game", (data: Game) => {
       pregame.toggleStartGameButton();
     }, 500);
   }
+
+  pregame.drawSpectators(globals.tableID);
 });
 
 commands.set("gameHistory", (dataArray: GameHistory[]) => {
@@ -229,7 +231,6 @@ interface SpectatorsData {
 }
 commands.set("pregameSpectators", (data: SpectatorsData) => {
   globals.tableID = data.tableID;
-
   pregame.drawSpectators(globals.tableID);
 });
 

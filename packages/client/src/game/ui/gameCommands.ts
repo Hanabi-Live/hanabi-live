@@ -408,13 +408,6 @@ interface SpectatorsData {
   spectators: Spectator[];
 }
 commands.set("spectators", (data: SpectatorsData) => {
-  // The shadowing index will be -1 if they are not shadowing a player. Convert this to null.
-  for (const spectator of data.spectators) {
-    if (spectator.shadowingPlayerIndex === -1) {
-      spectator.shadowingPlayerIndex = null;
-    }
-  }
-
   globals.store!.dispatch({
     type: "spectators",
     spectators: data.spectators,

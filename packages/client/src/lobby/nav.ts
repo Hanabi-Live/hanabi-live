@@ -6,6 +6,7 @@ import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as pregame from "./pregame";
+import Table from "./types/Table";
 import * as watchReplay from "./watchReplay";
 
 export function init(): void {
@@ -180,7 +181,7 @@ export function init(): void {
     if (table === undefined) {
       return;
     }
-    if (table.spectators.includes(globals.username)) {
+    if (isSpectating(table, globals.username)) {
       pregame.hide();
       globals.conn!.send("tableUnattend", {
         tableID: globals.tableID,
@@ -226,4 +227,13 @@ export function show(target: string): void {
   if (target !== "nothing") {
     $(`#nav-buttons-${target}`).show();
   }
+}
+
+function isSpectating(table: Table, name: string): boolean {
+  for (const spectator of table.spectators) {
+    if (spectator.name === name) {
+      return true;
+    }
+  }
+  return false;
 }

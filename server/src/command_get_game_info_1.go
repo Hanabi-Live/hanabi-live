@@ -97,6 +97,14 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	}
 
 	// Account for if a spectator is shadowing a specific player
+	if spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerPregameIndex != -1 {
+		sp := t.Spectators[spectatorIndex]
+		ourPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+		sp.ShadowingPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+		sp.ShadowingPlayerPregameIndex = -1
+	}
+
+	// Account for if a spectator is shadowing a specific player
 	if spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
 		ourPlayerIndex = t.Spectators[spectatorIndex].ShadowingPlayerIndex
 	}
