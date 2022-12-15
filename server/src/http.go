@@ -225,7 +225,7 @@ func httpInit() {
 	httpRouter.GET("/replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/shared-replay", httpMain)
 	httpRouter.GET("/shared-replay/:databaseID", httpMain)
-	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to
+	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
 	httpRouter.GET("/replay-json/:string", httpMain)
 	httpRouter.GET("/shared-replay-json/:string", httpMain)
 	httpRouter.GET("/create-table", httpMain)
