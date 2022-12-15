@@ -314,17 +314,16 @@ function drawPlayerBox(i: number) {
   const numPlayers = globals.game.players.length; // The "numPlayers" in the options is not set yet
   const div = $(`#lobby-pregame-player-${i + 1}`);
 
+  div.html("");
+
   const player = globals.game.players[i];
   if (player === undefined) {
-    div.html("");
     div.hide();
     return;
   }
 
   div.show();
-  div.html("");
 
-  console.log(globals);
   const span = getNameSpan(player.name);
   if (isSpectator()) {
     span.addClass("shadow").on("click", (evt) => {
