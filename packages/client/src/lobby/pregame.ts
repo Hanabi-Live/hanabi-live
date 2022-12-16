@@ -370,7 +370,7 @@ function drawPlayerBox(i: number) {
         ...of this variant:
       </div>
       <div class="col-2 align-right padding0">
-        ${variantStats.numGames}
+        ${variantStats.numGames - variantStats.numStrikeouts}
       </div>
     </div>
     <div class="row">
