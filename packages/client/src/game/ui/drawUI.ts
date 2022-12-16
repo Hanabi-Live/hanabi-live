@@ -1226,10 +1226,7 @@ function drawSharedReplay() {
   // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
   // double tap to prevent accidentally opening the dialog when hovering over the crown.
   sharedReplayLeaderLabel.on("click dbltap", () => {
-    if (
-      globals.state.replay.shared === null ||
-      !globals.state.replay.shared.amLeader
-    ) {
+    if (globals.state.replay.shared === null) {
       return;
     }
 
@@ -1249,7 +1246,7 @@ function drawSharedReplay() {
     placeholder.innerHTML = "";
 
     for (const spectator of globals.state.spectators) {
-      if (spectator.name === globals.metadata.ourUsername) {
+      if (spectator.name === globals.state.replay.shared.leader) {
         continue;
       }
 
