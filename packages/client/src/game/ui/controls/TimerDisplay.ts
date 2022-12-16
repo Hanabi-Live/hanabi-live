@@ -5,14 +5,19 @@ import FitText from "./FitText";
 export default class TimerDisplay extends Konva.Group {
   timerText: FitText;
   labelText: FitText;
+  private _oval: Konva.Rect;
 
   tooltipName = "";
   tooltipContent = "";
 
+  get oval(): Konva.Rect {
+    return this._oval;
+  }
+
   constructor(config: Konva.ContainerConfig) {
     super(config);
 
-    const oval = new Konva.Rect({
+    this._oval = new Konva.Rect({
       x: 0,
       y: 0,
       width: config.width,
@@ -22,7 +27,7 @@ export default class TimerDisplay extends Konva.Group {
       opacity: 0.2,
       listening: true,
     });
-    this.add(oval);
+    this.add(this._oval);
 
     this.timerText = new FitText({
       x: 0,
