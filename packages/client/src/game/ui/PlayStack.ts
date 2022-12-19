@@ -27,7 +27,7 @@ export default class PlayStack extends Konva.Group {
     // Hide cards in "Throw It in a Hole" variants.
     const opacity =
       variantRules.isThrowItInAHole(globals.variant) &&
-      globals.state.playing && // Revert to the normal behavior for spectators of ongoing games
+      (globals.state.playing || globals.state.shadowing) && // Revert to the normal behavior for spectators of ongoing games
       !globals.state.finished && // Revert to the normal behavior for dedicated replays
       !stackBase // We want the stack bases to always be visible
         ? 0

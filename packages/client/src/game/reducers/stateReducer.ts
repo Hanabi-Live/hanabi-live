@@ -22,10 +22,13 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // Calculate all the intermediate states.
       const initialState = initialGameState(state.metadata);
 
+      console.log(JSON.parse(JSON.stringify(state, null, 2)));
       const { game, states } = reduceGameActions(
         action.actions,
         initialState,
         state.playing,
+        state.shadowing,
+        state.finished,
         state.metadata,
       );
 
@@ -56,16 +59,19 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "finishOngoingGame": {
-      if (state.playing) {
+      if (state.playing || state.shadowing) {
         // We were playing in a game that just ended. Recalculate the whole game as a spectator to
         // fix card possibilities.
         state.playing = false;
+        state.shadowing = false;
 
         const initialState = initialGameState(state.metadata);
         const { game, states } = reduceGameActions(
           state.replay.actions,
           initialState,
           state.playing,
+          state.shadowing,
+          true,
           state.metadata,
         );
 
@@ -122,9 +128,13 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       if (action.spectating) {
         state.playing = false;
       }
+      if (action.shadowing) {
+        state.shadowing = true;
+      }
 
       if (action.replay) {
         state.playing = false;
+        state.shadowing = false;
         state.finished = true;
         state.replay.active = true;
         state.replay.segment = 0; // In dedicated solo replays, start on the first segment
@@ -161,7 +171,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypoEnd":
     case "hypoAction":
     case "hypoShowDrawnCards": {
-      state.replay = replayReducer(state.replay, action, state.metadata);
+      state.replay = replayReducer(
+        state.replay,
+        action,
+        state.finished,
+        state.metadata,
+      );
       break;
     }
 
@@ -244,6 +259,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           original(state.ongoingGame),
           action,
           state.playing,
+          state.shadowing,
+          state.finished,
           state.replay.hypothetical !== null,
           state.metadata,
           state.notes.ourNotes,
@@ -259,6 +276,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         original(state.ongoingGame),
         action,
         state.playing,
+        state.shadowing,
+        state.finished,
         state.replay.hypothetical !== null,
         state.metadata,
         state.notes.ourNotes,
@@ -295,11 +314,21 @@ function reduceGameActions(
   actions: GameAction[],
   initialState: GameState,
   playing: boolean,
+  shadowing: boolean,
+  finished: boolean,
   metadata: GameMetadata,
 ) {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameStateReducer(s, a, playing, false, metadata);
+    const nextState = gameStateReducer(
+      s,
+      a,
+      playing,
+      shadowing,
+      finished,
+      false,
+      metadata,
+    );
 
     if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, a)) {
       states[nextState.turn.segment!] = nextState;

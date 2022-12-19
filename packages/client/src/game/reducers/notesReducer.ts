@@ -123,8 +123,10 @@ function getNoteKeywords(note: string) {
   return keywords;
 }
 
-const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
-  keywords.some((k) => patterns.some((pattern) => k === pattern));
+const checkNoteKeywordsForMatch = (
+  patterns: readonly string[],
+  keywords: string[],
+) => keywords.some((k) => patterns.some((pattern) => k === pattern));
 
 function getEmptyNote(variant: Variant): CardNote {
   const note: CardNote = emptyNotes.get(variant.name) ?? parseNote(variant, "");

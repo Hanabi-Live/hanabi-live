@@ -136,6 +136,7 @@ export const init = (): ActionInit => ({
   datetimeStarted: new Date(0).toString(),
   datetimeFinished: new Date(0).toString(),
   spectating: false,
+  shadowing: false,
   replay: true,
   sharedReplay: true,
   databaseID: 1,

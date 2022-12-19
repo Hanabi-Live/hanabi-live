@@ -151,16 +151,14 @@ export default class LayoutChild extends Konva.Group {
   }
 
   // Before we play a card, do a check to ensure that it is actually playable to prevent silly
-  // mistakes from players. (But disable this in speedruns and certain variants.)
+  // mistakes from players. (But disable this in speedruns, hypotheticals and certain variants.)
   checkMisplay(): boolean {
     const { currentPlayerIndex } = globals.state.ongoingGame.turn;
     const { ourPlayerIndex } = globals.metadata;
-    let { ongoingGame } = globals.state;
-    if (globals.state.replay.hypothetical !== null) {
-      ongoingGame = globals.state.replay.hypothetical.ongoing;
-    }
+    const { ongoingGame } = globals.state;
 
     if (
+      globals.state.replay.hypothetical === null &&
       !globals.options.speedrun &&
       !variantRules.isThrowItInAHole(globals.variant) &&
       // Don't use warnings for preplays unless we are at 2 strikes.

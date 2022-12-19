@@ -6,6 +6,7 @@ export default interface InitData {
   playerNames: string[];
   ourPlayerIndex: number; // 0 if a spectator or a replay of a game that we were not in
   spectating: boolean;
+  shadowing: boolean;
   replay: boolean;
   databaseID: number; // 0 if this is an ongoing game
   hasCustomSeed: boolean; // If playing a table started with the "!seed" prefix

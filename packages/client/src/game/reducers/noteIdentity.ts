@@ -6,6 +6,7 @@ import {
   Variant,
 } from "@hanabi/data";
 import CardIdentity from "../types/CardIdentity";
+import { CardIdentityType } from "../types/CardIdentityType";
 
 interface CardIdentities {
   readonly suitIndices: number[];
@@ -39,25 +40,42 @@ function parseRank(rankText: string): number {
   return rank;
 }
 
+/**
+ * Parse a string into a CardIdentity.
+ *
+ * @param variant The game variant.
+ * @param keyword The string to be parsed.
+ * @returns Return {suitIndex, rank}.
+ */
 export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
+  if (keyword.toLowerCase() === "blank") {
+    // Create a blank morph.
+    return { suitIndex: null, rank: null };
+  }
+  if (keyword.length === 0) {
+    // Return morph to original.
+    return {
+      suitIndex: CardIdentityType.Original,
+      rank: CardIdentityType.Original,
+    };
+  }
+
   const identityMatch = new RegExp(
     variant.identityNotePattern.toLowerCase(),
   ).exec(keyword.toLowerCase());
 
-  let suitIndex: number | null = null;
-  let rank: number | null = null;
   if (identityMatch !== null) {
     const suitText = extractSuitText(identityMatch);
-    if (suitText !== null) {
-      suitIndex = parseSuit(variant, suitText);
-    }
     const rankText = extractRankText(identityMatch);
-    if (rankText !== null) {
-      rank = parseRank(rankText);
+    if (suitText !== null && rankText !== null) {
+      return {
+        suitIndex: parseSuit(variant, suitText),
+        rank: parseRank(rankText),
+      };
     }
   }
 
-  return { suitIndex, rank };
+  return { suitIndex: CardIdentityType.Fail, rank: CardIdentityType.Fail };
 }
 
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {

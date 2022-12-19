@@ -378,12 +378,13 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		if spectatorIndex == -1 {
 			// Add the new spectator
 			sp := &Spectator{
-				UserID:               p.UserID,
-				Name:                 p.Name,
-				Session:              p.Session,
-				Typing:               false,
-				LastTyped:            time.Time{},
-				ShadowingPlayerIndex: -1, // To indicate that they are not shadowing anyone
+				UserID:                      p.UserID,
+				Name:                        p.Name,
+				Session:                     p.Session,
+				Typing:                      false,
+				LastTyped:                   time.Time{},
+				ShadowingPlayerIndex:        -1, // To indicate that they are not shadowing anyone
+				ShadowingPlayerPregameIndex: -1, // To indicate that they are not shadowing anyone
 			}
 			t.Spectators = append(t.Spectators, sp)
 		} else {

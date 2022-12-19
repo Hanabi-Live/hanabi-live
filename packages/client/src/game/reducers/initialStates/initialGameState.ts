@@ -62,7 +62,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const maxScorePerStack: number[] = initArray(playStacks.length, 5);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
-  const cluesStillUsable = statsRules.cluesStillUsable(
+  const cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
     scorePerStack.reduce((a, b) => a + b, 0),
     scorePerStack,
     maxScorePerStack,
@@ -72,6 +72,10 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     suitClueValue,
     clueTokensRules.getUnadjusted(clueTokens, variant),
   );
+  const cluesStillUsable =
+    cluesStillUsableNotRounded === null
+      ? null
+      : Math.floor(cluesStillUsableNotRounded);
 
   return {
     turn: turnState,
@@ -102,6 +106,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       potentialCluesLost: 0,
 
       cluesStillUsable,
+      cluesStillUsableNotRounded,
 
       doubleDiscard: null,
       lastAction: null,

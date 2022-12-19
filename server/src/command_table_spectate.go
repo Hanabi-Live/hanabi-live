@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -40,14 +39,6 @@ func commandTableSpectate(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
-	// Validate that they are not already spectating this table
-	for _, sp := range t.ActiveSpectators() {
-		if sp.UserID == s.UserID {
-			s.Warning("You are already spectating this table.")
-			return
-		}
-	}
-
 	// Validate the shadowing player index
 	// (if provided, they want to spectate from a specific player's perspective)
 	if d.ShadowingPlayerIndex != -1 {
@@ -72,10 +63,9 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	// Validate that they are not already spectating another table
-	if len(tables.GetTablesUserSpectating(s.UserID)) > 0 {
-		s.Warning("You are already spectating a table, so you cannot spectate table " +
-			strconv.FormatUint(t.ID, 10) + ".")
-		return
+
+	for _, tableID := range tables.GetTablesUserSpectating(s.UserID) {
+		tables.DeleteSpectating(s.UserID, tableID)
 	}
 
 	if t.Replay {
@@ -93,18 +83,27 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if spectatorIndex == -1 {
 		// Add them to the spectators object
 		sp := &Spectator{
-			UserID:               s.UserID,
-			Name:                 s.Username,
-			Session:              s,
-			Typing:               false,
-			LastTyped:            time.Time{},
-			ShadowingPlayerIndex: d.ShadowingPlayerIndex,
+			UserID:                      s.UserID,
+			Name:                        s.Username,
+			Session:                     s,
+			Typing:                      false,
+			LastTyped:                   time.Time{},
+			ShadowingPlayerIndex:        d.ShadowingPlayerIndex,
+			ShadowingPlayerPregameIndex: -1,
 		}
 		t.Spectators = append(t.Spectators, sp)
 	} else {
 		t.Spectators[spectatorIndex].Session = s
 		t.Spectators[spectatorIndex].Typing = false
 		t.Spectators[spectatorIndex].ShadowingPlayerIndex = d.ShadowingPlayerIndex
+		t.Spectators[spectatorIndex].ShadowingPlayerPregameIndex = -1
+	}
+
+	// If we are in pregame
+	if !t.Running && !t.Replay && d.ShadowingPlayerIndex != -1 {
+		sp := t.Spectators[t.GetSpectatorIndexFromID(s.UserID)]
+		p := t.Players[d.ShadowingPlayerIndex]
+		sp.ShadowingPlayerPregameIndex = p.UserID
 	}
 
 	tables.AddSpectating(s.UserID, t.ID) // Keep track of user to table relationships

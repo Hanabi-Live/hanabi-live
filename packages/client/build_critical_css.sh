@@ -5,7 +5,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Import the domain and port
-ENV_PATH="$DIR/../.env"
+ENV_PATH="$DIR/../../.env"
 if [[ ! -f $ENV_PATH ]]; then
   echo "Failed to find the \".env\" file at: $ENV_PATH"
   exit 1
@@ -17,7 +17,20 @@ fi
 if [[ -z $PORT ]]; then
   PORT="80"
 fi
+if [[ ! -z $TLS_CERT_FILE ]]; then
+  echo "A production environment has been detected. You cannot build critical CSS in production. Instead, run this script on a local development server and push the changes to the git repository."
+  exit 1
+fi
+
+URL="http://$DOMAIN:$PORT"
+
+# Test to see if the server is running
+curl --silent "$URL" > /dev/null
+if [ $? -ne 0 ]; then
+  echo "You must ensure that the server is running before running this script."
+  exit 1
+fi
 
 # Rebuild the critical CSS
 cd "$DIR"
-npx grunt critical --url="http://$DOMAIN:$PORT"
+npx grunt critical --url="$URL"

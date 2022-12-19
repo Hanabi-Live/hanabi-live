@@ -97,7 +97,15 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	}
 
 	// Account for if a spectator is shadowing a specific player
-	if spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
+	if playerIndex == -1 && spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerPregameIndex != -1 {
+		sp := t.Spectators[spectatorIndex]
+		ourPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+		sp.ShadowingPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+		sp.ShadowingPlayerPregameIndex = -1
+	}
+
+	// Account for if a spectator is shadowing a specific player
+	if playerIndex == -1 && spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
 		ourPlayerIndex = t.Spectators[spectatorIndex].ShadowingPlayerIndex
 	}
 
@@ -112,6 +120,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		PlayerNames      []string  `json:"playerNames"`
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
+		Shadowing        bool      `json:"shadowing"`
 		Replay           bool      `json:"replay"`
 		DatabaseID       int       `json:"databaseID"`
 		HasCustomSeed    bool      `json:"hasCustomSeed"`
@@ -142,6 +151,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		PlayerNames:      playerNames,
 		OurPlayerIndex:   ourPlayerIndex,
 		Spectating:       spectatorIndex != -1 && t.IsActivelySpectating(t.Spectators[spectatorIndex].UserID) && !t.Replay,
+		Shadowing:        spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
 		HasCustomSeed:    g.ExtraOptions.CustomSeed != "",
