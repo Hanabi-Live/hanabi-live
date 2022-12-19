@@ -11,7 +11,6 @@ export function hardVariant(variant: Variant, minEfficiency: number): boolean {
     variant.suits.some(
       (suit) => suit.name === "Null" || suit.name === "Dark Null",
     ) ||
-    variantRules.isMix(variant) ||
     variantRules.isColorMute(variant) ||
     variantRules.isNumberMute(variant) ||
     variantRules.isThrowItInAHole(variant) ||
@@ -22,5 +21,5 @@ export function hardVariant(variant: Variant, minEfficiency: number): boolean {
     return true;
   }
 
-  return minEfficiency >= 1.25;
+  return minEfficiency >= 1.33;
 }

@@ -35,7 +35,7 @@ export default function testMetadata(
     characterMetadata: [],
 
     minEfficiency,
-    hardVariant: minEfficiency >= 1.25,
+    hardVariant: minEfficiency >= 1.33,
 
     hasCustomSeed: false,
     seed: "",
