@@ -1,4 +1,5 @@
 import { Variant } from "@hanabi/data";
+import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../../constants";
 import * as variantRules from "./variant";
 
 // The H-Group makes a distinction between a "Hard Variant" and an "Easy Variant":
@@ -16,5 +17,5 @@ export function hardVariant(variant: Variant, minEfficiency: number): boolean {
     return true;
   }
 
-  return minEfficiency >= 1.33;
+  return minEfficiency >= HARD_VARIANT_EFFICIENCY_THRESHOLD;
 }
