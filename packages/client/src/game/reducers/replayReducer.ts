@@ -4,6 +4,7 @@ import { ensureAllCases } from "@hanabi/data";
 import produce, { Draft, original } from "immer";
 import { nullIfNegative } from "../../utils";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
+import { CardIdentityType } from "../types/CardIdentityType";
 import GameMetadata from "../types/GameMetadata";
 import ReplayState from "../types/ReplayState";
 import gameStateReducer from "./gameStateReducer";
@@ -14,6 +15,7 @@ export default replayReducer;
 function replayReducerFunction(
   state: Draft<ReplayState>,
   action: ReplayAction,
+  finished: boolean,
   metadata: GameMetadata,
 ) {
   // Validate current state
@@ -150,7 +152,7 @@ function replayReducerFunction(
       };
 
       for (const a of action.actions) {
-        hypoAction(state, a, metadata);
+        hypoAction(state, a, finished, metadata);
       }
 
       break;
@@ -227,7 +229,7 @@ function replayReducerFunction(
         );
       }
 
-      hypoAction(state, action.action, metadata);
+      hypoAction(state, action.action, finished, metadata);
       break;
     }
 
@@ -241,6 +243,7 @@ function replayReducerFunction(
 function hypoAction(
   state: Draft<ReplayState>,
   action: ActionIncludingHypothetical,
+  finished: boolean,
   metadata: GameMetadata,
 ) {
   if (state.hypothetical === null) {
@@ -252,24 +255,34 @@ function hypoAction(
   // The morph action is handled here. Also take note of any draws that conflict with the known card
   // identities.
   if (action.type === "morph" || action.type === "draw") {
-    let suitIndex = nullIfNegative(action.suitIndex);
-    let rank = nullIfNegative(action.rank);
+    if (
+      // eslint-disable-next-line isaacscript/strict-enums
+      action.suitIndex === CardIdentityType.Original &&
+      // eslint-disable-next-line isaacscript/strict-enums
+      action.rank === CardIdentityType.Original
+    ) {
+      // unmorph the card
+      state.hypothetical.morphedIdentities.splice(action.order, 1);
+    } else {
+      let suitIndex = nullIfNegative(action.suitIndex);
+      let rank = nullIfNegative(action.rank);
 
-    if (action.type === "draw") {
-      // Store drawn cards to be able to show/hide in the future.
-      state.hypothetical.drawnCardsInHypothetical.push(action.order);
-      if (!state.hypothetical.showDrawnCards) {
-        // Mark this one as blank.
-        suitIndex = null;
-        rank = null;
+      if (action.type === "draw") {
+        // Store drawn cards to be able to show/hide in the future.
+        state.hypothetical.drawnCardsInHypothetical.push(action.order);
+        if (!state.hypothetical.showDrawnCards) {
+          // Mark this one as blank.
+          suitIndex = null;
+          rank = null;
+        }
       }
-    }
 
-    // This card has been morphed or blanked.
-    state.hypothetical.morphedIdentities[action.order] = {
-      suitIndex,
-      rank,
-    };
+      // This card has been morphed or blanked.
+      state.hypothetical.morphedIdentities[action.order] = {
+        suitIndex,
+        rank,
+      };
+    }
   }
 
   // The game state doesn't care about morphed cards.
@@ -282,6 +295,8 @@ function hypoAction(
     state.hypothetical.ongoing,
     action,
     true,
+    false,
+    finished,
     true,
     metadata,
   );

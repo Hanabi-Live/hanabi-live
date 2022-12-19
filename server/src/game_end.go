@@ -374,16 +374,24 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 			continue
 		}
 
-		// Add the new spectator
-		sp := &Spectator{
-			UserID:               p.UserID,
-			Name:                 p.Name,
-			Session:              p.Session,
-			Typing:               false,
-			LastTyped:            time.Time{},
-			ShadowingPlayerIndex: -1, // To indicate that they are not shadowing anyone
+		spectatorIndex := t.GetSpectatorIndexFromID(p.UserID)
+		if spectatorIndex == -1 {
+			// Add the new spectator
+			sp := &Spectator{
+				UserID:                      p.UserID,
+				Name:                        p.Name,
+				Session:                     p.Session,
+				Typing:                      false,
+				LastTyped:                   time.Time{},
+				ShadowingPlayerIndex:        -1, // To indicate that they are not shadowing anyone
+				ShadowingPlayerPregameIndex: -1, // To indicate that they are not shadowing anyone
+			}
+			t.Spectators = append(t.Spectators, sp)
+		} else {
+			t.Spectators[spectatorIndex].Session = p.Session
+			t.Spectators[spectatorIndex].Typing = false
+			t.Spectators[spectatorIndex].ShadowingPlayerIndex = -1
 		}
-		t.Spectators = append(t.Spectators, sp)
 
 		// Also, keep track of user to table relationships
 		tables.DeletePlaying(p.UserID, t.ID)
@@ -393,7 +401,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 	}
 
 	// End the shared replay if no-one is left
-	if len(t.Spectators) == 0 {
+	if len(t.ActiveSpectators()) == 0 {
 		deleteTable(t)
 		logger.Info("Ended table #" + strconv.FormatUint(t.ID, 10) +
 			" because no-one was present when the game ended.")
@@ -416,7 +424,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 
 		if t.OwnerID == -1 {
 			// All of the players are away, so make the first spectator the leader
-			t.OwnerID = t.Spectators[0].UserID
+			t.OwnerID = t.ActiveSpectators()[0].UserID
 			logger.Info("All players are offline; set the new leader to be: " +
 				t.Spectators[0].Name)
 		}
@@ -436,7 +444,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 	// Notify everyone that the game is over and that they should prepare the UI for a shared replay
 	t.NotifyFinishOngoingGame()
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
 			sp.Session.SetStatus(StatusSharedReplay)

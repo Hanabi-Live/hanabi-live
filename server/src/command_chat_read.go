@@ -8,9 +8,10 @@ import (
 // when they receive a chat message when the in-game chat is already open
 //
 // Example data:
-// {
-//   tableID: 5,
-// }
+//
+//	{
+//	  tableID: 5,
+//	}
 func commandChatRead(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -21,14 +22,12 @@ func commandChatRead(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game or are a spectator
-	playerIndex := t.GetPlayerIndexFromID(s.UserID)
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(s.UserID) {
 		// Return without an error message if they are not playing or spectating at the table
 		// (to account for lag)
 		return
 	}
-	if spectatorIndex == -1 && t.Replay {
+	if !t.IsActivelySpectating(s.UserID) && t.Replay {
 		// Return without an error message if they are not spectating at the replay
 		// (to account for lag)
 		return

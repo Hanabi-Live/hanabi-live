@@ -629,6 +629,14 @@ export function getMixVariants(): VariantDescription[] {
       name: "Candy Corn Mix (6 Suits)",
       suits: ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"],
     },
+    {
+      name: "Holiday Mix (5 Suits)",
+      suits: ["Dark Pink", "Green", "White", "Sky", "Navy"],
+    },
+    {
+      name: "Holiday Mix (6 Suits)",
+      suits: ["Light Pink", "Red", "Green", "White", "Sky", "Navy"],
+    },
   ];
 }
 

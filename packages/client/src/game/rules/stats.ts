@@ -142,6 +142,7 @@ export function cardsGotten(
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   playing: boolean,
+  shadowing: boolean,
   maxScore: number,
   variant: Variant,
 ): number {
@@ -154,7 +155,7 @@ export function cardsGotten(
       (card.location === "discard" &&
         card.isMisplayed &&
         variantRules.isThrowItInAHole(variant) &&
-        playing)
+        (playing || shadowing))
     ) {
       // A card is considered to be gotten if it is already played (and failed discards count as
       // played for the purposes of "Throw It in a Hole" variants).
@@ -168,6 +169,7 @@ export function cardsGotten(
         playStacks,
         playStackDirections,
         variant,
+        false,
       )
     ) {
       // Clued cards in player's hands are considered to be gotten, since they will eventually be
@@ -201,6 +203,7 @@ export function cardsGottenByNotes(
         playStacks,
         playStackDirections,
         variant,
+        false,
       )
     ) {
       // Original contribution
@@ -244,7 +247,7 @@ export function minEfficiency(
 
 // Returns the max number of clues that can be spent while getting the max possible score from a
 // given game state onward (not accounting for the locations of playable cards).
-export function cluesStillUsable(
+export function cluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
@@ -311,8 +314,31 @@ export function cluesStillUsable(
     }
     cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
   }
-
-  return Math.floor(cluesFromDiscards + cluesFromSuits + currentClues);
+  return cluesFromDiscards + cluesFromSuits + currentClues;
+}
+export function cluesStillUsable(
+  score: number,
+  scorePerStack: readonly number[],
+  maxScorePerStack: readonly number[],
+  deckSize: number,
+  endGameLength: number,
+  discardValue: number,
+  suitValue: number,
+  currentClues: number,
+): number | null {
+  const result = cluesStillUsableNotRounded(
+    score,
+    scorePerStack,
+    maxScorePerStack,
+    deckSize,
+    endGameLength,
+    discardValue,
+    suitValue,
+    currentClues,
+  );
+  // Since we can't use up a fractional clue, we round it down for most purposes. This only matters
+  // in clue starved variants.
+  return result === null ? null : Math.floor(result);
 }
 
 // This is used as the denominator of an efficiency calculation:

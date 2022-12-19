@@ -30,6 +30,7 @@ type WebsocketConnectData struct {
 	// Information about their current activity
 	PlayingAtTables       []uint64
 	DisconSpectatingTable uint64
+	DisconShadowingSeat   int
 }
 
 // websocketConnect is fired when a new Melody WebSocket session is established
@@ -86,11 +87,20 @@ func websocketConnect(ms *melody.Session) {
 		websocketDisconnectRemoveFromGames(ctx, s2)
 	}
 
+	go websocketConnectMessages(ctx, s, data)
+
 	// Add the session to a map so that we can keep track of all of the connected users
 	sessions.Set(s.UserID, s)
 	logger.Info("User \"" + s.Username + "\" connected; " +
 		strconv.Itoa(sessions.Length()) + " user(s) now connected.")
 
+	// Alert everyone that a new user has logged in
+	notifyAllUser(s)
+
+	logger.Info("Exited the \"websocketConnect()\" function for user: " + username)
+}
+
+func websocketConnectMessages(ctx context.Context, s *Session, data *WebsocketConnectData) {
 	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
 	websocketConnectUserList(s)
@@ -100,11 +110,6 @@ func websocketConnect(ms *melody.Session) {
 	if len(data.Friends) > 0 {
 		websocketConnectHistoryFriends(s)
 	}
-
-	// Alert everyone that a new user has logged in
-	notifyAllUser(s)
-
-	logger.Info("Exited the \"websocketConnect()\" function for user: " + username)
 }
 
 func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int, username string) *WebsocketConnectData {
@@ -212,6 +217,9 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	if tableID, ok := tables.GetDisconSpectatingTable(userID); ok {
 		data.DisconSpectatingTable = tableID
 	}
+	if shadowingSeat, ok := tables.GetDisconShadowingSeat(userID); ok {
+		data.DisconShadowingSeat = shadowingSeat
+	}
 
 	return data
 }
@@ -230,6 +238,7 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 
 		PlayingAtTables       []uint64 `json:"playingAtTables"`
 		DisconSpectatingTable uint64   `json:"disconSpectatingTable"`
+		DisconShadowingSeat   int      `json:"disconShadowingSeat"`
 
 		RandomTableName      string    `json:"randomTableName"`
 		ShuttingDown         bool      `json:"shuttingDown"`
@@ -261,6 +270,7 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 		// (so that they can choose to rejoin it)
 		PlayingAtTables:       data.PlayingAtTables,
 		DisconSpectatingTable: data.DisconSpectatingTable,
+		DisconShadowingSeat:   data.DisconShadowingSeat,
 
 		// Provide them with a random table name
 		// (which will be used by default on the first table that they create)

@@ -18,10 +18,11 @@ var (
 // start a new game with the same settings as the current game
 //
 // Example data:
-// {
-//   tableID: 15103,
-//   hidePregame: true,
-// }
+//
+//	{
+//	  tableID: 15103,
+//	  hidePregame: true,
+//	}
 func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -39,8 +40,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that this person is spectating the shared replay
-	j := t.GetSpectatorIndexFromID(s.UserID)
-	if j < -1 {
+	if !t.IsActivelySpectating(s.UserID) {
 		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
 		return
 	}
@@ -65,7 +65,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that there are at least two people in the shared replay
-	if len(t.Spectators) < 2 {
+	if len(t.ActiveSpectators()) < 2 {
 		s.Warning("You cannot restart a game unless there are at least two people in it.")
 		return
 	}
@@ -74,7 +74,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 	// the shared replay
 	playerSessions := make([]*Session, 0)
 	spectatorSessions := make([]*Session, 0)
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		if sp.Session == nil {
 			// A spectator's session should never be nil
 			// Assume that someone is in the process of reconnecting

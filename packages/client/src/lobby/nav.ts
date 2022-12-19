@@ -180,7 +180,11 @@ export function init(): void {
     if (table === undefined) {
       return;
     }
-    if (table.spectators.includes(globals.username)) {
+
+    if (
+      table.spectators.some((spectator) => spectator.name === globals.username)
+    ) {
+      // We are a spectator.
       pregame.hide();
       globals.conn!.send("tableUnattend", {
         tableID: globals.tableID,

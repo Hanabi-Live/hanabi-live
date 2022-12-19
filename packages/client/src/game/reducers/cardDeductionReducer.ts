@@ -44,6 +44,7 @@ function makeDeductions(
     newDeck,
     oldDeck,
     cardCountMap,
+    metadata,
   );
   for (let playerIndex = 0; playerIndex < hands.length; playerIndex++) {
     if (playerIndex !== metadata.ourPlayerIndex) {
@@ -54,6 +55,7 @@ function makeDeductions(
         newDeck,
         oldDeck,
         cardCountMap,
+        metadata,
       );
     }
   }
@@ -67,6 +69,7 @@ function calculatePlayerPossibilities(
   deck: CardState[],
   oldDeck: readonly CardState[],
   cardCountMap: readonly number[][],
+  metadata: GameMetadata,
 ) {
   hands.forEach((hand) => {
     hand.forEach((order) => {
@@ -74,7 +77,14 @@ function calculatePlayerPossibilities(
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
       ) {
-        calculateCard(card, playerIndex, ourPlayerIndex, deck, cardCountMap);
+        calculateCard(
+          card,
+          playerIndex,
+          ourPlayerIndex,
+          deck,
+          cardCountMap,
+          metadata,
+        );
       }
     });
   });
@@ -86,12 +96,14 @@ function calculateCard(
   ourPlayerIndex: number,
   deck: CardState[],
   cardCountMap: readonly number[][],
+  metadata: GameMetadata,
 ) {
   const deckPossibilities = generateDeckPossibilities(
     card.order,
     deck,
     playerIndex,
     ourPlayerIndex,
+    metadata,
   );
   let { possibleCards, possibleCardsForEmpathy } = card;
   if (playerIndex === ourPlayerIndex) {
@@ -171,10 +183,21 @@ function getCardPossibilitiesForPlayer(
     // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
   }
+
+  if (
+    card.revealedToPlayer[playerIndex]! &&
+    card.suitIndex !== null &&
+    card.rank !== null
+  ) {
+    // If we know the suit and rank, maybe because it's morphed, we should use that first.
+    return [[card.suitIndex, card.rank]];
+  }
+
   if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]!) {
     // This is revealed to the player or we are the requested player => just use our best knowledge.
     return card.possibleCards;
   }
+
   // This is an unrevealed card outside of the players hand but not revealed to them. That can
   // happen with something like a detrimental character (such as 'Slow-Witted') or 'Throw It in a
   // Hole'. We can't use our best (empathy) guess, because it might be in our own hand and we might
@@ -188,6 +211,7 @@ function generateDeckPossibilities(
   deck: readonly CardState[],
   playerIndex: number,
   ourPlayerIndex: number,
+  metadata: GameMetadata,
 ): Array<ReadonlyArray<readonly [number, number]>> {
   const deckPossibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
   for (const card of deck) {
@@ -235,7 +259,30 @@ function generateDeckPossibilities(
    * applies to more than just cards that have one possibility (such as red 5 in the example).
    */
   deckPossibilities.sort((a, b) => a.length - b.length);
-  return deckPossibilities;
+  const cardCountMap = getCardCountMap(
+    getVariant(metadata.options.variantName),
+  );
+  return deckPossibilities.filter((a) => isPossibleCard(a, cardCountMap));
+}
+
+/*
+ * When we are in a hypo and morph cards, we can create impossible decks,
+ * if we do the empathy will be broken.
+ * Remove cards from possibilities that we know are from an impossible deck.
+ */
+function isPossibleCard(
+  possibilities: ReadonlyArray<readonly [number, number]>,
+  cardCountMap: readonly number[][],
+) {
+  // We know the card.
+  if (possibilities.length === 1) {
+    const [suit, rank] = possibilities[0]!;
+    cardCountMap[suit]![rank]!--;
+    if (cardCountMap[suit]![rank]! < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function canBeUsedToDisprovePossibility(
@@ -391,8 +438,7 @@ function updatePossibilitiesToValidate(
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < possibilitiesToValidate.length; i++) {
     const [suit, rank] = possibilitiesToValidate[i]!;
-    // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
-    if (cardCountMap[suit]![rank]! === 0) {
+    if (cardCountMap[suit]![rank]! <= 0) {
       possibilitiesToValidate[j] = [suit, rank];
       j++;
     }

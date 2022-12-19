@@ -88,6 +88,10 @@ export function update(data: ClockData): void {
     return;
   }
 
+  // Reset both timers to black background, if player was running out of time.
+  globals.elements.timer1.oval.fill("black").opacity(0.2);
+  globals.elements.timer2.oval.fill("black").opacity(0.2);
+
   // Start the local timer for the active player.
   const activeTimer = ourTurn
     ? globals.elements.timer1
@@ -149,6 +153,8 @@ function setTickingDownTime(timer: TimerDisplay) {
     !globals.state.pause.active &&
     !globals.lobby.errorOccurred
   ) {
+    timer.oval.opacity(timer.oval.fill() === "black" ? 0.7 : 0.2);
+    timer.oval.fill(timer.oval.fill() === "black" ? "red" : "black");
     globals.game!.sounds.play("tone");
   }
 }

@@ -13,9 +13,10 @@ const (
 // commandChatTyping is sent when the user types something into a chat box
 //
 // Example data:
-// {
-//   tableID: 15103,
-// }
+//
+//	{
+//	  tableID: 15103,
+//	}
 func commandChatTyping(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -28,12 +29,12 @@ func commandChatTyping(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are in the game or are a spectator
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(s.UserID) {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot report that you are typing.")
 		return
 	}
-	if spectatorIndex == -1 && t.Replay {
+	if !t.IsActivelySpectating(s.UserID) && t.Replay {
 		s.Warning("You are not spectating replay " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot report that you are typing.")
 		return
@@ -86,13 +87,13 @@ func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	// Validate that they are in the game or are a spectator
 	playerIndex := t.GetPlayerIndexFromID(userID)
 	spectatorIndex := t.GetSpectatorIndexFromID(userID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(userID) {
 		// They left the game shortly after they started typing
 		// The "typing" message is automatically removed when a player leaves a table,
 		// so we don't have to do anything
 		return
 	}
-	if spectatorIndex == -1 && t.Replay {
+	if !t.IsActivelySpectating(userID) && t.Replay {
 		// Same as above
 		return
 	}

@@ -1,38 +1,52 @@
 import { Suit } from "./types/Suit";
 
-export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"];
+export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
   "chop moved",
-  "5cm",
-  "e5cm",
-  "tcm",
-  "tccm",
-  "sdcm",
-  "sbpcm",
-  "ocm",
-  "tocm",
-  "mcm",
-  "utfcm",
-  "utdcm",
-  "utbcm",
-];
-export const FINESSED_NOTES = ["f", "hf", "pf", "gd", "utf"];
-export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"];
-export const BLANK_NOTES = ["blank"];
-export const CLUED_NOTES = ["clued", "cl"];
-export const UNCLUED_NOTES = ["unclued", "x"];
+  // cspell:disable
+  "5cm", // 5's Chop Move
+  "e5cm", // Early 5's Chop Move
+  "tcm", // Trash Chop Move
+  "tccm", // Tempo Clue Chop Move
+  "sdcm", // Scream Discard Chop Move
+  "esdcm", // Echo Scream Discard Chop Move
+  "sbpcm", // Scream Blind Play Chop Move
+  "ocm", // Order Chop Move
+  "tocm", // Trash Order Chop Move
+  "mcm", // Misplay Chop Move
+  "utfcm", // Unnecessary Trash Finesse Chop Move
+  "utbcm", // Unnecessary Trash Bluff Chop Move
+  "utdcm", // Unnecessary Trash Discharge Chop Move
+  "uddcm", // Unnecessary Dupe Discharge Chop Move
+  "dtccm", // Duplicitous Tempo Clue Chop Move
+  "atcm", // Assisted Trash Chop Move
+  "ttcm", // Time Travel Chop Move
+  // cspell:enable
+] as const;
+export const FINESSED_NOTES = [
+  "f", // Finesse
+  "hf", // Hidden Finesse
+  "sf", // Sarcastic Finesse
+  "cf", // Certain Finesse / Composition Finesse
+  "pf", // Priority Finesse
+  "gd", // Gentleman's Discard
+] as const;
+export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"] as const;
+export const BLANK_NOTES = ["blank"] as const;
+export const CLUED_NOTES = ["clued", "cl"] as const;
+export const UNCLUED_NOTES = ["unclued", "x"] as const;
 
-export const ALL_RESERVED_NOTES = ([] as string[]).concat(
-  KNOWN_TRASH_NOTES,
-  CHOP_MOVED_NOTES,
-  FINESSED_NOTES,
-  NEEDS_FIX_NOTES,
-  BLANK_NOTES,
-  CLUED_NOTES,
-  UNCLUED_NOTES,
-);
+export const ALL_RESERVED_NOTES: readonly string[] = [
+  ...KNOWN_TRASH_NOTES,
+  ...CHOP_MOVED_NOTES,
+  ...FINESSED_NOTES,
+  ...NEEDS_FIX_NOTES,
+  ...BLANK_NOTES,
+  ...CLUED_NOTES,
+  ...UNCLUED_NOTES,
+];
 
 /**
  * Suit abbreviations are hard-coded in the "suits.json" file. In some variants, two or more suits

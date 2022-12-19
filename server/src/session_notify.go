@@ -62,22 +62,22 @@ func (s *Session) NotifyTable(t *Table) {
 }
 
 type TableMessage struct {
-	ID                uint64   `json:"id"`
-	Name              string   `json:"name"`
-	PasswordProtected bool     `json:"passwordProtected"`
-	Joined            bool     `json:"joined"`
-	NumPlayers        int      `json:"numPlayers"`
-	Owned             bool     `json:"owned"`
-	Running           bool     `json:"running"`
-	Variant           string   `json:"variant"`
-	Timed             bool     `json:"timed"`
-	TimeBase          int      `json:"timeBase"`
-	TimePerTurn       int      `json:"timePerTurn"`
-	SharedReplay      bool     `json:"sharedReplay"`
-	Progress          int      `json:"progress"`
-	Players           []string `json:"players"`
-	Spectators        []string `json:"spectators"`
-	MaxPlayers        int      `json:"maxPlayers"`
+	ID                uint64       `json:"id"`
+	Name              string       `json:"name"`
+	PasswordProtected bool         `json:"passwordProtected"`
+	Joined            bool         `json:"joined"`
+	NumPlayers        int          `json:"numPlayers"`
+	Owned             bool         `json:"owned"`
+	Running           bool         `json:"running"`
+	Variant           string       `json:"variant"`
+	Timed             bool         `json:"timed"`
+	TimeBase          int          `json:"timeBase"`
+	TimePerTurn       int          `json:"timePerTurn"`
+	SharedReplay      bool         `json:"sharedReplay"`
+	Progress          int          `json:"progress"`
+	Players           []string     `json:"players"`
+	Spectators        []*Spectator `json:"spectators"`
+	MaxPlayers        int          `json:"maxPlayers"`
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
@@ -89,7 +89,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 
 	spectators := make([]string, 0)
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		spectators = append(spectators, sp.Name)
 	}
 
@@ -108,7 +108,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		SharedReplay:      t.Replay,
 		Progress:          t.Progress,
 		Players:           players,
-		Spectators:        spectators,
+		Spectators:        t.ActiveSpectators(),
 		MaxPlayers:        t.MaxPlayers,
 	}
 }
@@ -294,7 +294,7 @@ func (s *Session) NotifySpectators(t *Table) {
 
 	s.Emit(command, &SpectatorsMessage{
 		TableID:    t.ID,
-		Spectators: t.Spectators,
+		Spectators: t.ActiveSpectators(),
 	})
 }
 
@@ -363,8 +363,9 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
-		Name  string   `json:"name"`
-		Notes []string `json:"notes"`
+		Name        string   `json:"name"`
+		Notes       []string `json:"notes"`
+		IsSpectator bool     `json:"isSpectator"`
 	}
 
 	// Get the notes from all the players & spectators
@@ -372,18 +373,22 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	for _, p := range g.Players {
 		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
-				Name:  p.Name,
-				Notes: p.Notes,
+				Name:        p.Name,
+				Notes:       p.Notes,
+				IsSpectator: false,
 			})
 		}
 	}
-	if !t.Replay && shadowingPlayerIndex == -1 {
-		for _, sp := range t.Spectators {
-			notes = append(notes, NoteList{
-				Name:  sp.Name,
-				Notes: sp.Notes(g),
-			})
+	for _, sp := range t.Spectators {
+		// If we are shadowing, we are still allowed to see our own notes.
+		if shadowingPlayerIndex != -1 && sp.UserID != s.UserID {
+			continue
 		}
+		notes = append(notes, NoteList{
+			Name:        sp.Name,
+			Notes:       sp.Notes(g),
+			IsSpectator: true,
+		})
 	}
 
 	// Send it

@@ -343,7 +343,10 @@ function drawPlayStacks() {
 
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
   // of the rest of the stacks).
-  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+  if (
+    variantRules.isThrowItInAHole(globals.variant) &&
+    (globals.state.playing || globals.state.shadowing)
+  ) {
     const playStackX =
       playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
     const playStack = new PlayStack({
@@ -792,7 +795,8 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
+      !variantRules.isThrowItInAHole(globals.variant) ||
+      (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel);
   globals.elements.scoreTextLabel.on(
@@ -808,7 +812,8 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
+      !variantRules.isThrowItInAHole(globals.variant) ||
+      (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
   globals.elements.scoreNumberLabel.on(
@@ -825,7 +830,8 @@ function drawScoreArea() {
     fontSize: 0.017 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
+      !variantRules.isThrowItInAHole(globals.variant) ||
+      (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
   globals.elements.maxScoreNumberLabel.on(
@@ -835,7 +841,10 @@ function drawScoreArea() {
     },
   );
 
-  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+  if (
+    variantRules.isThrowItInAHole(globals.variant) &&
+    (globals.state.playing || globals.state.shadowing)
+  ) {
     globals.elements.playsTextLabel = basicTextLabel.clone({
       text: "Plays",
       x: labelX * winW,
@@ -1002,7 +1011,7 @@ function drawScoreArea() {
     // For variants where the strikes are hidden, draw a "?"
     if (
       variantRules.isThrowItInAHole(globals.variant) &&
-      globals.state.playing
+      (globals.state.playing || globals.state.shadowing)
     ) {
       const questionMarkLabel = basicTextLabel.clone({
         text: "?",
@@ -1217,10 +1226,7 @@ function drawSharedReplay() {
   // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
   // double tap to prevent accidentally opening the dialog when hovering over the crown.
   sharedReplayLeaderLabel.on("click dbltap", () => {
-    if (
-      globals.state.replay.shared === null ||
-      !globals.state.replay.shared.amLeader
-    ) {
+    if (globals.state.replay.shared === null) {
       return;
     }
 
@@ -1240,7 +1246,7 @@ function drawSharedReplay() {
     placeholder.innerHTML = "";
 
     for (const spectator of globals.state.spectators) {
-      if (spectator.name === globals.metadata.ourUsername) {
+      if (spectator.name === globals.state.replay.shared.leader) {
         continue;
       }
 

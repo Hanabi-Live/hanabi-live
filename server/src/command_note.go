@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"html"
 	"strconv"
 	"strings"
 	"unicode"
@@ -12,11 +11,12 @@ import (
 // commandNote is sent when the user writes a note
 //
 // Example data:
-// {
-//   tableID: 5,
-//   order: 3,
-//   note: 'b1, m1',
-// }
+//
+//	{
+//	  tableID: 5,
+//	  order: 3,
+//	  note: 'b1, m1',
+//	}
 func commandNote(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -41,7 +41,7 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are in the game
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(s.UserID) {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot send a note.")
 		return
@@ -54,7 +54,7 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Remove any non-printable characters, if any
-	d.Msg = removeNonPrintableCharacters(d.Msg)
+	d.Note = removeNonPrintableCharacters(d.Note)
 
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(d.Note)) {
@@ -80,9 +80,6 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 			" consecutive diacritics.")
 		return
 	}
-
-	// Escape all HTML special characters (to stop various attacks against other players)
-	d.Msg = html.EscapeString(d.Msg)
 
 	note(d, t, playerIndex, spectatorIndex)
 }

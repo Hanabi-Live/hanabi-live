@@ -1,3 +1,5 @@
+import Spectator from "client/src/game/types/Spectator";
+
 export default interface Table {
   id: number;
   name: string;
@@ -14,6 +16,6 @@ export default interface Table {
   sharedReplay: boolean;
   progress: number;
   players: string[]; // e.g. ['Alice', 'Bob']
-  spectators: string[];
+  spectators: Spectator[];
   maxPlayers: number;
 }
