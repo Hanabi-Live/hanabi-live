@@ -255,7 +255,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.detrimentalCharacters) {
-    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
+    html += `<li><i id="lobby-pregame-options-characters" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
     html += 'data-tooltip-content="#pregame-tooltip-characters"></i></li>';
     html += `
       <div class="hidden">
