@@ -1,145 +1,191 @@
-{{define "content"}}
-<style>
-  th:hover {
-    background-color: rgb(220, 220, 220);
-    cursor: pointer;
-  }
-</style>
+{{ define "content" }}
+  <style>
+    th:hover {
+      background-color: rgb(220, 220, 220);
+      cursor: pointer;
+    }
+  </style>
 
-<div id="page-wrapper">
-
-  <!-- Header -->
-  <header id="header">
-    <h1>{{ template "logo" }}</h1>
-    <nav id="nav"></nav>
-  </header>
-
-  <!-- Main -->
-  <section id="main" class="container max history-page">
-    <header>
-      <h2><img src="/public/img/logos/header.svg" width="259"></h2>
+  <div id="page-wrapper">
+    <!-- Header -->
+    <header id="header">
+      <h1>{{ template "logo" }}</h1>
+      <nav id="nav"></nav>
     </header>
-    <div class="row uniform 100%">
-      <div class="col-12">
-        <section class="box">
-          <h2 class="align-center">Global Statistics for <em>{{.Name}}</em></h2>
 
-          {{if eq .NumGamesTotal 0}}
-            <p>No-one has played a game on this variant yet.</p>
-          {{else}}
-            <div class="history-bullets">
-              <ul>
-                <li>
-                  <span class="stat-description">Total games played (in non-speedruns):</span>
-                  {{.NumGamesTotal}} ({{.NumGamesNormal}} normally finished)
-                </li>
-                <li>
-                  <span class="stat-description">Total time spent playing (in non-speedruns):</span>
-                  {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
-                </li>
-                <li>
-                  <span class="stat-description">Total games played (in speedruns):</span>
-                  {{.NumGamesSpeedrun}}
-                </li>
-                <li>
-                  <span class="stat-description">Total time spent playing (in speedruns):</span>
-                  {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
-                </li>
-                <li>
-                  <span class="stat-description">Total perfect scores:</span>
-                  {{.NumMaxScores}} / {{.NumGamesTotal}} &nbsp;({{.MaxScoreRate}}%)
-                </li>
-                <li>
-                  <span class="stat-description">Total strikeouts:</span>
-                  {{.NumStrikeouts}} / {{.NumGamesTotal}} &nbsp;({{.StrikeoutRate}}%)
-                </li>
-              </ul>
-              <ul>
-                <li>
-                  <span class="stat-description">2-player best score:</span>
-                  {{index .BestScores 0}} / {{.MaxScore}}
-                </li>
-                <li>
-                  <span class="stat-description">3-player best score:</span>
-                  {{index .BestScores 1}} / {{.MaxScore}}
-                </li>
-                <li>
-                  <span class="stat-description">4-player best score:</span>
-                  {{index .BestScores 2}} / {{.MaxScore}}
-                </li>
-                <li>
-                  <span class="stat-description">5-player best score:</span>
-                  {{index .BestScores 3}} / {{.MaxScore}}
-                </li>
-                <li>
-                  <span class="stat-description">6-player best score:</span>
-                  {{index .BestScores 4}} / {{.MaxScore}}
-                </li>
-              </ul>
-            </div>
+    <!-- Main -->
+    <section id="main" class="container max history-page">
+      <header>
+        <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
+      </header>
+      <div class="row uniform 100%">
+        <div class="col-12">
+          <section class="box">
+            <h2 class="align-center">
+              Global Statistics for <em>{{ .Name }}</em>
+            </h2>
 
-            <h2 class="align-center">Games of <em>{{.Name}}</em></h2>
+            {{ if eq .NumGamesTotal 0 }}
+              <p>No-one has played a game on this variant yet.</p>
+            {{ else }}
+              <div class="history-bullets">
+                <ul>
+                  <li>
+                    <span class="stat-description"
+                      >Total games played (in non-speedruns):</span
+                    >
+                    {{ .NumGamesTotal }} ({{ .NumGamesNormal }} normally
+                    finished)
+                  </li>
+                  <li>
+                    <span class="stat-description"
+                      >Total time spent playing (in non-speedruns):</span
+                    >
+                    {{ if .TimePlayed }}
+                      {{ .TimePlayed }}
+                    {{ else }}
+                      -
+                    {{ end }}
+                  </li>
+                  <li>
+                    <span class="stat-description"
+                      >Total games played (in speedruns):</span
+                    >
+                    {{ .NumGamesSpeedrun }}
+                  </li>
+                  <li>
+                    <span class="stat-description"
+                      >Total time spent playing (in speedruns):</span
+                    >
+                    {{ if .TimePlayedSpeedrun }}
+                      {{ .TimePlayedSpeedrun }}
+                    {{ else }}
+                      -
+                    {{ end }}
+                  </li>
+                  <li>
+                    <span class="stat-description">Total perfect scores:</span>
+                    {{ .NumMaxScores }} / {{ .NumGamesTotal }}
+                    &nbsp;({{ .MaxScoreRate }}%)
+                  </li>
+                  <li>
+                    <span class="stat-description">Total strikeouts:</span>
+                    {{ .NumStrikeouts }} / {{ .NumGamesTotal }}
+                    &nbsp;({{ .StrikeoutRate }}%)
+                  </li>
+                </ul>
+                <ul>
+                  <li>
+                    <span class="stat-description">2-player best score:</span>
+                    {{ index .BestScores 0 }} /
+                    {{ .MaxScore }}
+                  </li>
+                  <li>
+                    <span class="stat-description">3-player best score:</span>
+                    {{ index .BestScores 1 }} /
+                    {{ .MaxScore }}
+                  </li>
+                  <li>
+                    <span class="stat-description">4-player best score:</span>
+                    {{ index .BestScores 2 }} /
+                    {{ .MaxScore }}
+                  </li>
+                  <li>
+                    <span class="stat-description">5-player best score:</span>
+                    {{ index .BestScores 3 }} /
+                    {{ .MaxScore }}
+                  </li>
+                  <li>
+                    <span class="stat-description">6-player best score:</span>
+                    {{ index .BestScores 4 }} /
+                    {{ .MaxScore }}
+                  </li>
+                </ul>
+              </div>
 
-            <!-- Pagination controls -->
-            <div class="pager">
-              Page: <select class="gotoPage"></select>
-              <i class="fas fa-fast-backward first"></i>
-              <i class="fas fa-backward prev"></i>
-              <span class="pagedisplay"></span>
-              <i class="fas fa-forward next"></i>
-              <i class="fas fa-fast-forward last"></i>
-              <select class="pagesize" title="Select page size">
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-            <!-- End of pagination controls -->
+              <h2 class="align-center">Games of <em>{{ .Name }}</em></h2>
 
-            <table class="history variant">
-              <thead>
-                <tr>
-                  <th class="tablesorter-header tablesorter-headerDesc" width="10%">Game ID</th>
-                  <th class="filter-select filter-match" width="10%"># of Players</th>
-                  <th width="10%">Score</th>
-                  <th width="40%">Players</th>
-                  <th width="30%">Date & Time</th>
-                </tr>
-              </thead>
-              <tbody>
-              </tbody>
-            </table>
+              <!-- Pagination controls -->
+              <div class="pager">
+                Page:
+                <select class="gotoPage"></select>
+                <i class="fas fa-fast-backward first"></i>
+                <i class="fas fa-backward prev"></i>
+                <span class="pagedisplay"></span>
+                <i class="fas fa-forward next"></i>
+                <i class="fas fa-fast-forward last"></i>
+                <select class="pagesize" title="Select page size">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <!-- End of pagination controls -->
 
-            <!-- Pagination controls -->
-            <div class="pager">
-              Page: <select class="gotoPage"></select>
-              <i class="fas fa-fast-backward first"></i>
-              <i class="fas fa-backward prev"></i>
-              <span class="pagedisplay"></span>
-              <i class="fas fa-forward next"></i>
-              <i class="fas fa-fast-forward last"></i>
-              <select class="pagesize" title="Select page size">
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-            <!-- End of pagination controls -->
-          {{end}}
+              <table class="history variant">
+                <thead>
+                  <tr>
+                    <th
+                      class="tablesorter-header tablesorter-headerDesc"
+                      width="10%"
+                    >
+                      Game ID
+                    </th>
+                    <th class="filter-select filter-match" width="10%">
+                      # of Players
+                    </th>
+                    <th width="10%">Score</th>
+                    <th width="40%">Players</th>
+                    <th width="30%">Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
 
-          <div class="tableSpinner"><span class="tableSpinner"></span></div>
-        </section>
+              <!-- Pagination controls -->
+              <div class="pager">
+                Page:
+                <select class="gotoPage"></select>
+                <i class="fas fa-fast-backward first"></i>
+                <i class="fas fa-backward prev"></i>
+                <span class="pagedisplay"></span>
+                <i class="fas fa-forward next"></i>
+                <i class="fas fa-fast-forward last"></i>
+                <select class="pagesize" title="Select page size">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <!-- End of pagination controls -->
+            {{ end }}
+
+
+            <div class="tableSpinner"><span class="tableSpinner"></span></div>
+          </section>
+        </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 
-<script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
-<script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"></script>
-<script type="text/javascript" src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"></script>
-<script type="text/javascript" src="/public/js/lib/widget-filter-2.30.0.min.js"></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/jquery-3.5.0.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/widget-filter-2.30.0.min.js"
+  ></script>
 <script type="text/javascript">
   $(document).ready(() => {
     const pagerOptions = {
@@ -237,4 +283,4 @@
     .tablesorterPager(pagerOptions);
   });
 </script>
-{{end}}
+{{ end }}

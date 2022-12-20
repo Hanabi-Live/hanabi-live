@@ -1,25 +1,24 @@
-{{define "content"}}
-<div id="page-wrapper">
-
-  <!-- Header -->
-  <header id="header">
-    <h1>{{ template "logo" }}</h1>
-    <nav id="nav"></nav>
-  </header>
-
-  <!-- Main -->
-  <section id="main" class="container">
-    <header>
-      <h2><img src="/public/img/logos/header.svg" height="200"></h2>
+{{ define "content" }}
+  <div id="page-wrapper">
+    <!-- Header -->
+    <header id="header">
+      <h1>{{ template "logo" }}</h1>
+      <nav id="nav"></nav>
     </header>
-    <div class="row uniform 100%">
-      <div class="col-6 off-3">
-        <!-- Text -->
-        <section class="box">
-          {{template "informational" .}}
-        </section>
+
+    <!-- Main -->
+    <section id="main" class="container">
+      <header>
+        <h2><img src="/public/img/logos/header.svg" height="200" /></h2>
+      </header>
+      <div class="row uniform 100%">
+        <div class="col-6 off-3">
+          <!-- Text -->
+          <section class="box">
+            {{ template "informational" . }}
+          </section>
+        </div>
       </div>
-    </div>
-  </section>
-</div>
-{{end}}
+    </section>
+  </div>
+{{ end }}
