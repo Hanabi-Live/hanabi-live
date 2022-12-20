@@ -1,104 +1,63 @@
-{{ define "layout" -}}
-  <!DOCTYPE html>
-  <!--
+{{define "layout" -}}
+<!DOCTYPE HTML>
+<!--
   Alpha by HTML5 UP
   html5up.net | @ajlkn
   Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-  <html lang="en">
-    <head>
-      <title>
-        {{ if eq .Title "Dev" -}}
-          Test
-        {{- else -}}
-          {{ .WebsiteName }}{{ if ne .Title "Main" }}- {{ .Title }}{{ end }}
-        {{- end }}
-      </title>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
-      <meta
-        name="description"
-        content="A place to play Hanab online, a cooperative card game of logic and reasoning."
-      />
-      <meta
-        name="keywords"
-        content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning"
-      />
-      <!-- Load the Critical CSS first -->
-      {{ if ne .Title "Dev" }}
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/critical.min.css?{{ .Version }}"
-        />
-      {{ end }}
-      <!-- Preload fonts -->
-      <link
-        rel="preload"
-        as="font"
-        crossorigin="anonymous"
-        type="font/woff2"
-        href="/public/webfonts/fa-solid-900.woff2"
-      />
-      {{ if eq .Title "Dev" }}
-        <!-- These should match the CSS array in "Gruntfile.js" -->
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/lib/fontawesome.min.css"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/lib/solid.min.css"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/lib/tooltipster.bundle.min.css"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/lib/tooltipster-sideTip-shadow.min.css"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/lib/alpha.css"
-        />
-        <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
-      {{ else }}
-        <!-- Delay loading non-critical CSS -->
-        <link
-          rel="preload"
-          type="text/css"
-          href="/public/css/main.{{ .Version }}.min.css"
-          as="style"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/public/css/main.{{ .Version }}.min.css"
-        />
-      {{ end }}
-      <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="/public/img/favicon-32x32.png"
-      />
-      <link
-        rel="icon"
-        type="image/png"
-        sizes="16x16"
-        href="/public/img/favicon-16x16.png"
-      />
-    </head>
+<html lang="en">
 
-    <body>
-      {{ template "content" . }}
-    </body>
-  </html>
-{{ end }}
+<head>
+  <title>
+    {{if eq .Title "Dev" -}}
+      Test
+    {{- else -}}
+      {{.WebsiteName}}{{if ne .Title "Main"}} - {{.Title}}{{end}}
+    {{- end}}
+  </title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
+  <meta
+    name="description"
+    content="A place to play Hanab online, a cooperative card game of logic and reasoning."
+  >
+  <meta
+    name="keywords"
+    content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning"
+  >
+  <!-- Load the Critical CSS first -->
+  {{if ne .Title "Dev"}}
+    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css?{{.Version}}" />
+  {{end}}
+  <!-- Preload fonts -->
+  <link
+    rel="preload"
+    as="font"
+    crossorigin="anonymous"
+    type="font/woff2"
+    href="/public/webfonts/fa-solid-900.woff2"
+  />
+  {{if eq .Title "Dev"}}
+    <!-- These should match the CSS array in "Gruntfile.js" -->
+    <link rel="stylesheet" type="text/css" href="/public/css/lib/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/lib/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/lib/tooltipster.bundle.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/lib/tooltipster-sideTip-shadow.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/lib/alpha.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
+  {{else}}
+    <!-- Delay loading non-critical CSS -->
+    <link rel="preload" type="text/css" href="/public/css/main.{{.Version}}.min.css" as="style">
+    <link rel="stylesheet" type="text/css" href="/public/css/main.{{.Version}}.min.css">
+  {{end}}
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/img/favicon-16x16.png">
+</head>
+
+<body>
+  {{template "content" .}}
+</body>
+
+</html>
+{{end}}

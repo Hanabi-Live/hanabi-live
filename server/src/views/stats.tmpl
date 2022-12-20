@@ -1,108 +1,75 @@
-{{ define "content" }}
-  <style>
-    th:hover {
-      background-color: rgb(220, 220, 220);
-      cursor: pointer;
-    }
-  </style>
+{{define "content"}}
+<style>
+  th:hover {
+    background-color: rgb(220, 220, 220);
+    cursor: pointer;
+  }
+</style>
 
-  <div id="page-wrapper">
-    <!-- Header -->
-    <header id="header">
-      <h1>{{ template "logo" }}</h1>
-      <nav id="nav"></nav>
+<div id="page-wrapper">
+
+  <!-- Header -->
+  <header id="header">
+    <h1>{{ template "logo" }}</h1>
+    <nav id="nav"></nav>
+  </header>
+
+  <!-- Main -->
+  <section id="main" class="container max history-page">
+    <header>
+      <h2><img src="/public/img/logos/header.svg" width="259"></h2>
     </header>
-
-    <!-- Main -->
-    <section id="main" class="container max history-page">
-      <header>
-        <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
-      </header>
-      <div class="row uniform 100%">
+    <div class="row uniform 100%">
         <div class="col-12">
           <section class="box">
             <h2 class="align-center">Global Statistics</h2>
             <div class="history-bullets">
               <ul>
                 <li>
-                  <span class="stat-description"
-                    >Games played (in non-speedruns):</span
-                  >
-                  {{ .NumGamesTotal }} ({{ .NumGamesNormal }} normally
-                  terminated)
+                  <span class="stat-description">Games played (in non-speedruns):</span>
+                  {{.NumGamesTotal}} ({{.NumGamesNormal}} normally terminated)
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >Time spent playing (in non-speedruns):</span
-                  >
-                  {{ if .TimePlayed }}
-                    {{ .TimePlayed }}
-                  {{ else }}
-                    -
-                  {{ end }}
+                  <span class="stat-description">Time spent playing (in non-speedruns):</span>
+                  {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >Games played (in speedruns):</span
-                  >
-                  {{ .NumGamesSpeedrun }}
+                  <span class="stat-description">Games played (in speedruns):</span>
+                  {{.NumGamesSpeedrun}}
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >Time spent playing (in speedruns):</span
-                  >
-                  {{ if .TimePlayedSpeedrun }}
-                    {{ .TimePlayedSpeedrun }}
-                  {{ else }}
-                    -
-                  {{ end }}
+                  <span class="stat-description">Time spent playing (in speedruns):</span>
+                  {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
                 </li>
                 <li>
                   <span class="stat-description">Number of variants:</span>
-                  {{ .NumVariants }}
+                  {{.NumVariants}}
                 </li>
               </ul>
               <ul>
                 <li>
-                  <span class="stat-description"
-                    >2-player max scores achieved:</span
-                  >
-                  {{ index .NumMaxScoresPerType 0 }}
-                  &nbsp;({{ index .PercentageMaxScoresPerType 0 }}%)
+                  <span class="stat-description">2-player max scores achieved:</span>
+                  {{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >3-player max scores achieved:</span
-                  >
-                  {{ index .NumMaxScoresPerType 1 }}
-                  &nbsp;({{ index .PercentageMaxScoresPerType 1 }}%)
+                  <span class="stat-description">3-player max scores achieved:</span>
+                  {{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >4-player max scores achieved:</span
-                  >
-                  {{ index .NumMaxScoresPerType 2 }}
-                  &nbsp;({{ index .PercentageMaxScoresPerType 2 }}%)
+                  <span class="stat-description">4-player max scores achieved:</span>
+                  {{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >5-player max scores achieved:</span
-                  >
-                  {{ index .NumMaxScoresPerType 3 }}
-                  &nbsp;({{ index .PercentageMaxScoresPerType 3 }}%)
+                  <span class="stat-description">5-player max scores achieved:</span>
+                  {{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >6-player max scores achieved:</span
-                  >
-                  {{ index .NumMaxScoresPerType 4 }}
-                  &nbsp;({{ index .PercentageMaxScoresPerType 4 }}%)
+                  <span class="stat-description">6-player max scores achieved:</span>
+                  {{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)
                 </li>
                 <li>
-                  <span class="stat-description"
-                    >Total max scores achieved:</span
-                  >
-                  {{ .NumMaxScores }} &nbsp;({{ .PercentageMaxScores }}%)
+                  <span class="stat-description">Total max scores achieved:</span>
+                  {{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)
                 </li>
               </ul>
             </div>
@@ -111,8 +78,7 @@
 
             <!-- Pagination controls -->
             <div class="pager">
-              Page:
-              <select class="gotoPage"></select>
+              Page: <select class="gotoPage"></select>
               <i class="fas fa-fast-backward first"></i>
               <i class="fas fa-backward prev"></i>
               <span class="pagedisplay"></span>
@@ -138,20 +104,16 @@
                 </tr>
               </thead>
               <tbody>
-                {{ range $index, $results := .Variants }}
+                {{range $index, $results := .Variants}}
                   <tr>
-                    <td><a href="/variant/{{ .ID }}">{{ .Name }}</a></td>
-                    <td class="center">{{ .NumGames }}</td>
-                    <td class="center">{{ .AverageScore }}</td>
+                    <td><a href="/variant/{{.ID}}">{{.Name}}</a></td>
+                    <td class="center">{{.NumGames}}</td>
+                    <td class="center">{{.AverageScore}}</td>
                     <td class="center">
-                      {{ .NumMaxScores }}{{ if ne .NumMaxScores 0 }}
-                        &nbsp;({{ .MaxScoreRate }}%)
-                      {{ end }}
+                      {{.NumMaxScores}}{{if ne .NumMaxScores 0}} &nbsp;({{.MaxScoreRate}}%){{end}}
                     </td>
                     <td class="center">
-                      {{ .NumStrikeouts }}{{ if ne .NumStrikeouts 0 }}
-                        &nbsp;({{ .StrikeoutRate }}%)
-                      {{ end }}
+                      {{.NumStrikeouts}}{{if ne .NumStrikeouts 0}} &nbsp;({{.StrikeoutRate}}%){{end}}
                     </td>
                   </tr>
                 {{- end -}}
@@ -160,8 +122,7 @@
 
             <!-- Pagination controls -->
             <div class="pager">
-              Page:
-              <select class="gotoPage"></select>
+              Page: <select class="gotoPage"></select>
               <i class="fas fa-fast-backward first"></i>
               <i class="fas fa-backward prev"></i>
               <span class="pagedisplay"></span>
@@ -177,110 +138,87 @@
             <!-- End of pagination controls -->
           </section>
         </div>
-      </div>
-    </section>
-  </div>
+    </div>
+  </section>
+</div>
 
-  <script
-    type="text/javascript"
-    src="/public/js/lib/jquery-3.5.0.min.js"
-  ></script>
-  <script
-    type="text/javascript"
-    src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"
-  ></script>
-  <script
-    type="text/javascript"
-    src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"
-  ></script>
-  <script
-    type="text/javascript"
-    src="/public/js/lib/widget-filter-2.30.0.min.js"
-  ></script>
-  <script type="text/javascript">
-    $(document).ready(() => {
-      const pagerOptions = {
-        // target the pager markup - see the HTML block below
-        container: $(".pager"),
-        // output string - default is '{page}/{totalPages}';
-        // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
-        // also {page:input} & {startRow:input} will add a modifiable input in place of the value
-        output: "{startRow} - {endRow} / {filteredRows} ({totalRows})",
-        // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
-        // table row set to a height to compensate; default is false
-        fixedHeight: true,
-        // remove rows from the table to speed up the sort of large tables.
-        // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
-        removeRows: false,
-        // go to page selector - select dropdown that sets the current page
-        cssGoto: ".gotoPage",
-      };
-
-      // Initialize the table sorting
-      $("table:not(.plain)")
-        .tablesorter({
-          headers: {
-            1: { filter: false },
-            2: { filter: false },
-            3: { filter: false },
-            4: { filter: false },
-          },
-          widgets: ["zebra", "filter"],
-          // Filter options
-          // From https://mottie.github.io/tablesorter/docs/example-widget-filter.html
-          widgetOptions: {
-            filter_cssFilter: "",
-            filter_childRows: false,
-            filter_hideFilters: false,
-            filter_ignoreCase: true,
-            filter_reset: "",
-            filter_saveFilters: true,
-            filter_searchDelay: 300,
-            filter_startsWith: false,
-            filter_functions: {},
-          },
-        })
-
-        // Bind to pager events
-        // *********************
-        .bind(
-          "pagerChange pagerComplete pagerInitialized pageMoved",
-          function (e, c) {
-            var msg =
-              '"</span> event triggered, ' +
-              (e.type === "pagerChange" ? "going to" : "now on") +
-              ' page <span class="typ">' +
-              (c.page + 1) +
-              "/" +
-              c.totalPages +
-              "</span>";
-            $("#display")
-              .append('<li><span class="str">"' + e.type + msg + "</li>")
-              .find("li:first")
-              .remove();
-          },
-        )
-
-        .bind("filterEnd", () => {
-          setRowColors();
-        })
-
-        // Initialize the pager plugin
-        // ****************************
-        .tablesorterPager(pagerOptions);
-    });
-
-    // In the Alpha HTML5 template, table rows are supposed to alternate colors
-    // After sorting, the color alternation will be messed up, so manually reset all of the row colors
-    const setRowColors = () => {
-      const selector = "table.history.tablesorter tbody tr:not(.filtered)";
-      const numRows = $(selector).length;
-      const color1 = "#f8f8f8";
-      const color2 = "white";
-      for (let i = 0; i < numRows; i++) {
-        const colorForThisRow = i % 2 == 0 ? color1 : color2;
-        $(selector).eq(i).css("background-color", colorForThisRow);
-      }
+<script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"></script>
+<script type="text/javascript" src="/public/js/lib/widget-filter-2.30.0.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(() => {
+    const pagerOptions = {
+      // target the pager markup - see the HTML block below
+      container: $(".pager"),
+      // output string - default is '{page}/{totalPages}';
+      // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
+      // also {page:input} & {startRow:input} will add a modifiable input in place of the value
+      output: '{startRow} - {endRow} / {filteredRows} ({totalRows})',
+      // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
+      // table row set to a height to compensate; default is false
+      fixedHeight: true,
+      // remove rows from the table to speed up the sort of large tables.
+      // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
+      removeRows: false,
+      // go to page selector - select dropdown that sets the current page
+      cssGoto: '.gotoPage'
     };
-  </script>
-{{ end }}
+
+    // Initialize the table sorting
+    $('table:not(.plain)').tablesorter({
+      headers: {
+        1: { filter: false },
+        2: { filter: false },
+        3: { filter: false },
+        4: { filter: false },
+      },
+      widgets: ['zebra', 'filter'],
+      // Filter options
+      // From https://mottie.github.io/tablesorter/docs/example-widget-filter.html
+      widgetOptions: {
+        filter_cssFilter   : '',
+        filter_childRows   : false,
+        filter_hideFilters : false,
+        filter_ignoreCase  : true,
+        filter_reset : '',
+        filter_saveFilters : true,
+        filter_searchDelay : 300,
+        filter_startsWith  : false,
+        filter_functions : {
+        }
+      }
+    })
+
+    // Bind to pager events
+    // *********************
+    .bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c) {
+      var msg = '"</span> event triggered, ' + (e.type === 'pagerChange' ? 'going to' : 'now on') +
+        ' page <span class="typ">' + (c.page + 1) + '/' + c.totalPages + '</span>';
+      $('#display')
+        .append('<li><span class="str">"' + e.type + msg + '</li>')
+        .find('li:first').remove();
+    })
+
+    .bind('filterEnd', () => { setRowColors() })
+
+    // Initialize the pager plugin
+    // ****************************
+    .tablesorterPager(pagerOptions);
+
+  });
+
+  // In the Alpha HTML5 template, table rows are supposed to alternate colors
+  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
+  const setRowColors = () => {
+    const selector = "table.history.tablesorter tbody tr:not(.filtered)";
+    const numRows = $(selector).length;
+    const color1 = '#f8f8f8';
+    const color2 = 'white';
+    for (let i = 0; i < numRows; i++) {
+      const colorForThisRow = i % 2 == 0 ? color1 : color2;
+      $(selector).eq(i).css('background-color', colorForThisRow);
+    }
+  }
+</script>
+{{end}}

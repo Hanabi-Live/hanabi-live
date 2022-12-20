@@ -1,173 +1,144 @@
-{{ define "profile" }}
-  <style>
-    .stat-description {
-      /* Override the existing width since the columns are shorter on this page */
-      width: 11em;
-    }
-  </style>
+{{define "profile"}}
+<style>
+  .stat-description {
+    /* Override the existing width since the columns are shorter on this page */
+    width: 11em;
+  }
+</style>
 
-  {{ if .NumMaxScores }}
-    <h3>Current Max Scores:</h3>
+{{if .NumMaxScores }}
+  <h3>Current Max Scores:</h3>
 
-    <table class="history plain">
-      <thead>
-        <tr>
-          <th class="center">2-player</th>
-          <th class="center">3-player</th>
-          <th class="center">4-player</th>
-          <th class="center">5-player</th>
-          <th class="center">6-player</th>
-          <th class="center">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="center">
-            {{ index .NumMaxScoresPerType 0 }}
-            &nbsp;({{ index .PercentageMaxScoresPerType 0 }}%)
-          </td>
-          <td class="center">
-            {{ index .NumMaxScoresPerType 1 }}
-            &nbsp;({{ index .PercentageMaxScoresPerType 1 }}%)
-          </td>
-          <td class="center">
-            {{ index .NumMaxScoresPerType 2 }}
-            &nbsp;({{ index .PercentageMaxScoresPerType 2 }}%)
-          </td>
-          <td class="center">
-            {{ index .NumMaxScoresPerType 3 }}
-            &nbsp;({{ index .PercentageMaxScoresPerType 3 }}%)
-          </td>
-          <td class="center">
-            {{ index .NumMaxScoresPerType 4 }}
-            &nbsp;({{ index .PercentageMaxScoresPerType 4 }}%)
-          </td>
-          <td class="center">
-            {{ .NumMaxScores }} &nbsp;({{ .PercentageMaxScores }}%)
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <table class="history plain">
+    <thead>
+      <tr>
+        <th class="center">2-player</th>
+        <th class="center">3-player</th>
+        <th class="center">4-player</th>
+        <th class="center">5-player</th>
+        <th class="center">6-player</th>
+        <th class="center">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="center">{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
+        <td class="center">{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
+        <td class="center">{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
+      </tr>
+    </tbody>
+  </table>
 
-    <ul id="filter-players" class="horizontal">
-      <li>
-        <div class="create-game-icon">
+  <ul id="filter-players" class="horizontal">
+    <li>
+      <div class="create-game-icon">
           <i class="fas fa-users" style="position: relative; top: 1px;"></i>
-        </div>
-        Filter by # of Players
-      </li>
-      <li>
-        <select id="filter-by-players">
-          <option value="-">-</option>
-          <option value="2">2-Players</option>
-          <option value="3">3-Players</option>
-          <option value="4">4-Players</option>
-          <option value="5">5-Players</option>
-          <option value="6">6-Players</option>
-        </select>
-      </li>
-    </ul>
-
-    <br /><br /><br />
-  {{ end }}
-
-  {{ if ne .RequestedNumPlayers 0 }}
-    <!-- Pagination controls -->
-    <div class="pager">
-      Page:
-      <select class="gotoPage"></select>
-      <i class="fas fa-fast-backward first"></i>
-      <i class="fas fa-backward prev"></i>
-      <span class="pagedisplay"></span>
-      <i class="fas fa-forward next"></i>
-      <i class="fas fa-fast-forward last"></i>
-      <select class="pagesize" title="Select page size">
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="30">30</option>
-        <option value="all">All Rows</option>
+      </div>
+      Filter by # of Players
+    </li>
+    <li>
+      <select id="filter-by-players">
+        <option value="-">-</option>
+        <option value="2">2-Players</option>
+        <option value="3">3-Players</option>
+        <option value="4">4-Players</option>
+        <option value="5">5-Players</option>
+        <option value="6">6-Players</option>
       </select>
-    </div>
-    <!-- End of pagination controls -->
+    </li>
+  </ul>
 
-    <table class="history">
-      <thead>
-        <tr>
-          <th width="55%">Variant</th>
-          <th width="15%" class="center"># of Players</th>
-          <th width="15%" class="sorter-current-max-score center">
-            {{ if .SharedMissingScores }}
-              Highest Score
-            {{ else }}
-              Current Score
-            {{ end }}
-          </th>
-          <th width="15%" class="sorter-efficiency center">Efficiency</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{ range $index, $results := .VariantStats }}
-          {{ range $index2, $results2 := .BestScores }}
-            {{ if or (ne .Score $results.MaxScore) (ne .Modifier 0) }}
-              {{ if or (not $.RequestedNumPlayers) (eq $.RequestedNumPlayers .NumPlayers) }}
-                {{ $eff := index $.Efficiencies $index }}
-                {{ $effclass := "very-hard" }}
-                {{ if lt $eff 1.25 }}
-                  {{ $effclass = "normal" }}
-                {{ else if lt $eff 1.5 }}
-                  {{ $effclass = "hard" }}
-                {{ end }}
-                <tr
-                  class="missing-scores-row missing-scores-row-players-{{ .NumPlayers }}"
-                >
-                  <td>{{ $results.Name }}</td>
-                  <td class="center">{{ .NumPlayers }}</td>
-                  <td class="center">
-                    {{ .Score }} / {{ $results.MaxScore }} &nbsp;
-                    {{ if eq .Modifier 1 }}
-                      <i
-                        class="fas fa-times score-modifier red tooltip"
-                        data-tooltip-content="#modifier-deckplays"
-                      ></i>
-                    {{ else if eq .Modifier 2 }}
-                      <i
-                        class="fas fa-times score-modifier red tooltip"
-                        data-tooltip-content="#modifier-emptyclues"
-                      ></i>
-                    {{ else if eq .Modifier 3 }}
-                      <i
-                        class="fas fa-times score-modifier red tooltip"
-                        data-tooltip-content="#modifier-deckplays-emptyclues"
-                      ></i>
-                    {{ end }}
-                  </td>
-                  <td class="center {{ $effclass }}">
-                    {{ printf "%.2f" $eff }}
-                  </td>
-                </tr>
-              {{ end }}
-            {{ end }}
-          {{- end -}}
-        {{- end -}}
-      </tbody>
-    </table>
+  <br /><br /><br />
+{{end}}
 
-    <!-- Pagination controls -->
-    <div class="pager">
-      Page:
-      <select class="gotoPage"></select>
-      <i class="fas fa-fast-backward first"></i>
-      <i class="fas fa-backward prev"></i>
-      <span class="pagedisplay"></span>
-      <i class="fas fa-forward next"></i>
-      <i class="fas fa-fast-forward last"></i>
-      <select class="pagesize" title="Select page size">
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="30">30</option>
-        <option value="all">All Rows</option>
-      </select>
-    </div>
-    <!-- End of pagination controls -->
-  {{ end }}
-{{ end }}
+{{if ne .RequestedNumPlayers 0}}
+<!-- Pagination controls -->
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+    <option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+<!-- End of pagination controls -->
+
+<table class="history">
+  <thead>
+    <tr>
+      <th width="55%">Variant</th>
+      <th width="15%" class="center"># of Players</th>
+      <th width="15%" class="sorter-current-max-score center">{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
+      <th width="15%" class="sorter-efficiency center">Efficiency</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $index, $results := .VariantStats}}
+      {{range $index2, $results2 := .BestScores}}
+        {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
+          {{if or (not $.RequestedNumPlayers) (eq $.RequestedNumPlayers .NumPlayers)}}
+            {{$eff := index $.Efficiencies $index}}
+            {{$effclass := "very-hard"}}
+            {{if lt $eff 1.25}}
+              {{$effclass = "normal"}}
+            {{else if lt $eff 1.5}}
+              {{$effclass = "hard"}}
+            {{end}}
+            <tr class="missing-scores-row missing-scores-row-players-{{.NumPlayers}}">
+              <td>{{$results.Name}}</td>
+              <td class="center">{{.NumPlayers}}</td>
+              <td class="center">
+                {{.Score}} / {{$results.MaxScore}} &nbsp;
+                {{if eq .Modifier 1}}
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-deckplays"
+                    ></i>
+                {{else if eq .Modifier 2}}
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-emptyclues"
+                    ></i>
+                {{else if eq .Modifier 3}}
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-deckplays-emptyclues"
+                    ></i>
+                {{end}}
+              </td>
+              <td class="center {{$effclass}}">{{printf "%.2f" $eff}}</td>
+            </tr>
+          {{end}}
+        {{end}}
+      {{- end -}}
+    {{- end -}}
+  </tbody>
+</table>
+
+<!-- Pagination controls -->
+<div class="pager">
+  Page: <select class="gotoPage"></select>
+	<i class="fas fa-fast-backward first"></i>
+  <i class="fas fa-backward prev"></i>
+	<span class="pagedisplay"></span>
+	<i class="fas fa-forward next"></i>
+	<i class="fas fa-fast-forward last"></i>
+	<select class="pagesize" title="Select page size">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="all">All Rows</option>
+	</select>
+</div>
+<!-- End of pagination controls -->
+{{end}}
+{{end}}
