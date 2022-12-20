@@ -1,121 +1,169 @@
-{{define "content"}}
-<style>
-  th:hover {
-    background-color: rgb(220, 220, 220);
-    cursor: pointer;
-  }
-</style>
+{{ define "content" }}
+  <style>
+    th:hover {
+      background-color: rgb(220, 220, 220);
+      cursor: pointer;
+    }
+  </style>
 
-<div id="page-wrapper">
-
-  <!-- Header -->
-  <header id="header">
-    <h1>{{ template "logo" }}</h1>
-    <nav id="nav"></nav>
-  </header>
-
-  <!-- Main -->
-  <section id="main" class="container max history-page">
-    <header>
-      <h2><img src="/public/img/logos/header.svg" width="259"></h2>
+  <div id="page-wrapper">
+    <!-- Header -->
+    <header id="header">
+      <h1>{{ template "logo" }}</h1>
+      <nav id="nav"></nav>
     </header>
-    <div class="row uniform 100%">
-      <div class="col-12">
-        <section class="box">
-          <h2 class="align-center">
-            {{if .NamesTitle}}
-              {{.NamesTitle}}
-            {{else}}
-              {{.Name}}'s Profile
-            {{end}}
-          </h2>
 
-          {{if not .NamesTitle}}
-          <div>
-            <ul class="actions fit" id="profile-buttons">
-              <li>
-                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">
-                  Scores & Statistics
-                </a>
-              </li>
-              <li>
-                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">
-                  Full Game History
-                </a>
-              </li>
-              <li>
-                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">
-                  Missing Scores
-                </a>
-              </li>
-              <li>
-                <a class="button fit icon fa-tag{{if eq .Title "Tagged Games"}} disabled{{else}}" href="/tags/{{.Name}}{{end}}">
-                  Tagged Games
-                </a>
-              </li>
-            </ul>
-          </div>
-          {{end}}
+    <!-- Main -->
+    <section id="main" class="container max history-page">
+      <header>
+        <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
+      </header>
+      <div class="row uniform 100%">
+        <div class="col-12">
+          <section class="box">
+            <h2 class="align-center">
+              {{ if .NamesTitle }}
+                {{ .NamesTitle }}
+              {{ else }}
+                {{ .Name }}'s Profile
+              {{ end }}
+            </h2>
 
-          <div class="pager">
-            Page: <select class="gotoPage"></select>
-            <i class="fas fa-fast-backward first"></i>
-            <i class="fas fa-backward prev"></i>
-            <!-- the "pagedisplay" can be any element, including an input -->
-            <span class="pagedisplay"></span>
-            <i class="fas fa-forward next"></i>
-            <i class="fas fa-fast-forward last"></i>
-            <select class="pagesize" title="Select page size">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
+            {{ if not .NamesTitle }}
+              <div>
+                <ul class="actions fit" id="profile-buttons">
+                  <li>
+                    <a
+                      class="button fit icon fa-chart-area{{ if eq .Title "Scores" }}
+                        disabled
+                      {{ else }}
+                        "
+                        href="/scores/{{ .Name }}
+                      {{ end }}"
+                    >
+                      Scores & Statistics
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      class="button fit icon fa-history{{ if eq .Title "History" }}
+                        disabled
+                      {{ else }}
+                        "
+                        href="/history/{{ .Name }}
+                      {{ end }}"
+                    >
+                      Full Game History
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      class="button fit icon fa-question{{ if eq .Title "Missing Scores" }}
+                        disabled
+                      {{ else }}
+                        "
+                        href="/missing-scores/{{ .Name }}
+                      {{ end }}"
+                    >
+                      Missing Scores
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      class="button fit icon fa-tag{{ if eq .Title "Tagged Games" }}
+                        disabled
+                      {{ else }}
+                        "
+                        href="/tags/{{ .Name }}
+                      {{ end }}"
+                    >
+                      Tagged Games
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            {{ end }}
 
-          <table class="history personal-history">
-            <thead>
-              <tr>
-                <th class="tablesorter-header tablesorter-headerDesc" width="8%">Game ID</th>
-                <th class="filter-select filter-match" width="7%"># of Players</th>
-                <th width="7%">Score</th>
-                <th class="filter-select" width="23%">Variant</th>
-                <th width="30%">Players</th>
-                <th width="22%">Date & Time</th>
-                {{if not .SpecificSeed}}<th width="8%">Other</th>{{end}}
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
 
-          <div class="pager">
-            Page: <select class="gotoPage"></select>
-            <i class="fas fa-fast-backward first"></i>
-            <i class="fas fa-backward prev"></i>
-            <!-- the "pagedisplay" can be any element, including an input -->
-            <span class="pagedisplay"></span>
-            <i class="fas fa-forward next"></i>
-            <i class="fas fa-fast-forward last"></i>
-            <select class="pagesize" title="Select page size">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
+            <div class="pager">
+              Page:
+              <select class="gotoPage"></select>
+              <i class="fas fa-fast-backward first"></i>
+              <i class="fas fa-backward prev"></i>
+              <!-- the "pagedisplay" can be any element, including an input -->
+              <span class="pagedisplay"></span>
+              <i class="fas fa-forward next"></i>
+              <i class="fas fa-fast-forward last"></i>
+              <select class="pagesize" title="Select page size">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
 
-          <div class="tableSpinner"><span class="tableSpinner"></span></div>
-        </section>
+            <table class="history personal-history">
+              <thead>
+                <tr>
+                  <th
+                    class="tablesorter-header tablesorter-headerDesc"
+                    width="8%"
+                  >
+                    Game ID
+                  </th>
+                  <th class="filter-select filter-match" width="7%">
+                    # of Players
+                  </th>
+                  <th width="7%">Score</th>
+                  <th class="filter-select" width="23%">Variant</th>
+                  <th width="30%">Players</th>
+                  <th width="22%">Date & Time</th>
+                  {{ if not .SpecificSeed }}<th width="8%">Other</th>{{ end }}
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+
+            <div class="pager">
+              Page:
+              <select class="gotoPage"></select>
+              <i class="fas fa-fast-backward first"></i>
+              <i class="fas fa-backward prev"></i>
+              <!-- the "pagedisplay" can be any element, including an input -->
+              <span class="pagedisplay"></span>
+              <i class="fas fa-forward next"></i>
+              <i class="fas fa-fast-forward last"></i>
+              <select class="pagesize" title="Select page size">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
+            <div class="tableSpinner"><span class="tableSpinner"></span></div>
+          </section>
+        </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 
-<script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>
-<script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"></script>
-<script type="text/javascript" src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"></script>
-<script type="text/javascript" src="/public/js/lib/widget-filter-2.30.0.min.js"></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/jquery-3.5.0.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="/public/js/lib/widget-filter-2.30.0.min.js"
+  ></script>
 <script type="text/javascript">
   $(document).ready(() => {
     const variants = [];
@@ -250,4 +298,4 @@
     })
   });
 </script>
-{{end}}
+{{ end }}
