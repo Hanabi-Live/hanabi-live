@@ -66,10 +66,13 @@
           <td class="center">{{.NumGames}}</td>
           {{range $index2, $results2 := .BestScores}}
             <td class="center">
-              {{if eq .Score $results.MaxScore}}<strong>{{end}}
-              {{.Score}} / {{$results.MaxScore}}
               {{if eq .Score $results.MaxScore}}
-                </strong>&nbsp;
+              <strong>{{.Score}} / {{$results.MaxScore}}</strong>
+              {{ else }}
+              {{.Score}} / {{$results.MaxScore}}
+              {{end}}
+              {{if eq .Score $results.MaxScore}}
+                &nbsp;
                 <!--
                   Since only one modifier tooltip will show,
                   we order modifiers in order of severity
