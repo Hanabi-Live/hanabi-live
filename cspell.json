@@ -26,7 +26,8 @@
     "go.sum",
     "hanabi.websynths-patch.json",
     "node_modules/**",
-    "./hanabi-live"
+    "./hanabi-live",
+    "yarn.lock"
   ],
   "words": [
     "abacusspiele",
@@ -162,7 +163,6 @@
     "misclick",
     "missingscores",
     "mitchellh",
-    "mkdir",
     "mklink",
     "monka",
     "mozillazg",
