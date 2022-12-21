@@ -365,6 +365,8 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 				logger.Info(p.Name + " was the owner of the game and they are offline; " +
 					"passing the leader to someone else.")
 			}
+			// We still need to update table relationships
+			tables.DeletePlaying(p.UserID, t.ID)
 			continue
 		}
 
