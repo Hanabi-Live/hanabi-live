@@ -45,7 +45,7 @@ export const isEmpty = (
 ): boolean => !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
 
 // From: https://stackoverflow.com/questions/61526746
-export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T =>
+export const isKeyOf = <T extends Object>(p: PropertyKey, target: T): p is keyof T =>
   p in target;
 
 export function millisecondsToClockString(milliseconds: number): string {
