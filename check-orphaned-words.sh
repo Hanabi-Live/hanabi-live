@@ -44,7 +44,7 @@ CSPELL_CONFIG_TEMP_PATH="/tmp/cspell-temp.json"
 mv "$CSPELL_CONFIG_PATH" "$CSPELL_CONFIG_TEMP_PATH"
 echo "$CSPELL_CONFIG_WITHOUT_WORDS" > "$CSPELL_CONFIG_PATH"
 MISSPELLED_WORDS_PATH="/tmp/misspelled-words.txt"
-npx cspell lint --no-progress --no-summary --unique --words-only | sort --ignore-case --unique > "$MISSPELLED_WORDS_PATH"
+npx cspell lint --no-progress --no-summary --unique --words-only --gitignore | sort --ignore-case --unique > "$MISSPELLED_WORDS_PATH"
 mv "$CSPELL_CONFIG_TEMP_PATH" "$CSPELL_CONFIG_PATH"
 
 # Check that each "cspell.json" word is actually being used.
