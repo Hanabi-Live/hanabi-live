@@ -411,6 +411,12 @@ func (t *Table) ShouldTerminateByVotes() bool {
 			count++
 		}
 	}
+
+	// In 2 player, the naive 50% majority is just one player, so we require both players instead
+	if len(t.Players) == 2 {
+		return count == 2
+	}
+
 	return count*2 >= len(t.Players)
 }
 
