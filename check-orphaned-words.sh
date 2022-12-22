@@ -23,10 +23,23 @@ if ! grep -q '"words": ' "$CSPELL_CONFIG_PATH"; then
   exit 0
 fi
 
-# Make a list of every misspelled word without any custom words.
-# We need to move the configuration path temporarily or else the cspell command won't work properly.
-CSPELL_CONFIG_WORDS=$(cat "$CSPELL_CONFIG_PATH" | python -c "import sys, json; print('\n'.join(json.load(sys.stdin)['words']))")
-CSPELL_CONFIG_WITHOUT_WORDS=$(cat "$CSPELL_CONFIG_PATH" | python -c "import sys, json; config = json.load(sys.stdin); del config['words']; print(json.dumps(config))")
+# Make a list of every word that would be reported as misspelled if we didn't have any custom exceptions.
+
+# Extract the custom exceptions from the config
+CSPELL_CONFIG_WORDS=$(node -p "
+const jsonc = require('jsonc-parser');
+const fs = require('fs');
+const text = fs.readFileSync('$CSPELL_CONFIG_PATH', 'utf8');
+const document = jsonc.parse(text);
+document['words'].join('\n')")
+# Create a version of the config without custom exceptions
+CSPELL_CONFIG_WITHOUT_WORDS=$(node --print "
+const jsonc = require('jsonc-parser');
+const fs = require('fs');
+const text = fs.readFileSync('$CSPELL_CONFIG_PATH', 'utf8');
+// Remove the 'words' property from the document
+jsonc.applyEdits(text, jsonc.modify(text, ['words'], undefined, {}))
+")
 CSPELL_CONFIG_TEMP_PATH="/tmp/cspell-temp.json"
 mv "$CSPELL_CONFIG_PATH" "$CSPELL_CONFIG_TEMP_PATH"
 echo "$CSPELL_CONFIG_WITHOUT_WORDS" > "$CSPELL_CONFIG_PATH"

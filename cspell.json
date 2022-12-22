@@ -18,6 +18,7 @@
     "*.pyc",
     "*.svg",
     ".git/**",
+    // The files in keldon/ are an archive and spelling errors therein should not be fixed
     "**/keldon/**",
     "dist/**",
     "emojis.json",
