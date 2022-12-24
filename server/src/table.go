@@ -411,6 +411,7 @@ func (t *Table) ShouldTerminateByVotes() bool {
 			count++
 		}
 	}
+
 	// Require a >50% majority
 	return count*2 > len(t.Players)
 }
