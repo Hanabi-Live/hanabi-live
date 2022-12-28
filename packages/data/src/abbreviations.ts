@@ -34,7 +34,7 @@ export const FINESSED_NOTES = [
   "gd", // Gentleman's Discard
 ] as const;
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"] as const;
-export const BLANK_NOTES = ["blank"] as const;
+export const BLANK_NOTES = ["blank", "unknown"] as const;
 export const CLUED_NOTES = ["clued", "cl"] as const;
 export const UNCLUED_NOTES = ["unclued", "x"] as const;
 
