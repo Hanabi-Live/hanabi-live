@@ -12,15 +12,14 @@ lint() {
   cd "$1"
 
   # Step 1 - Use ESLint to lint the TypeScript.
-  # Since all ESLint errors are set to warnings, we set max warnings to 0 so that warnings will fail
-  # in CI.
+  # We use "--max-warnings" so that any warnings will fail in CI.
   echo "Running eslint on: $1"
   npx eslint --max-warnings 0 src
 
   # Step 2 - Use ts-prune to check for unused imports.
   # The "--error" flag makes it return an error code of 1 if unused exports are found.
-  # ts-prune is conditional because there are many exports in "@hanabi/data" used in other projects
-  # only.
+  # ts-prune is conditional because there are many exports in "@hanabi/data" that are used in other
+  # projects only.
   if [ $# -eq 1 ]; then
     echo "Running ts-prune on: $1"
     npx ts-prune --error

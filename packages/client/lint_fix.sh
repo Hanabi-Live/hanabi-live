@@ -13,7 +13,4 @@ cd "$DIR"
 npx eslint --max-warnings 0 src --fix
 npx prettier --write "src/**/*.ts"
 
-# TODO
-#npx ts-prune --error
-
-echo "Successfully linted in $SECONDS seconds."
+echo "Successfully lint-fixed in $SECONDS seconds."
