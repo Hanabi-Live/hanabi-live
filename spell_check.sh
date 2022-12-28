@@ -10,10 +10,7 @@ cd "$DIR"
 
 # Spell check every file using CSpell.
 # We use "--no-progress" and "--no-summary" because we want to only output errors.
-# We use "--gitignore" because we want to ignore files which will are not included in the repo.
-# (The VS Code extension ignores gitignore files by default, so we want the CLI to be unified with
-# the editor.)
-npx cspell lint --no-progress --no-summary --gitignore
+npx cspell lint --no-progress --no-summary
 
 # Check for orphaned words.
 bash "$DIR/check-orphaned-words.sh"
