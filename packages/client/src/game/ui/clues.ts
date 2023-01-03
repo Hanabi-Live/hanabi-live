@@ -157,6 +157,8 @@ export function give(): void {
     return;
   }
 
+  globals.elements.giveClueButton!.setEnabled(false);
+
   let type: ActionType;
   let value: number;
 
