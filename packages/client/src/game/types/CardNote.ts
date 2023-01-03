@@ -4,6 +4,7 @@ export default interface CardNote {
 
   readonly knownTrash: boolean;
   readonly needsFix: boolean;
+  readonly questionMark: boolean;
   readonly chopMoved: boolean;
   readonly finessed: boolean;
   readonly blank: boolean;

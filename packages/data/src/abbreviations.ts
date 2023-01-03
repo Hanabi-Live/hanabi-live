@@ -1,6 +1,7 @@
 import { Suit } from "./types/Suit";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
+export const QUESTION_MARK_NOTES = ["?"] as const;
 export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
@@ -40,6 +41,7 @@ export const UNCLUED_NOTES = ["unclued", "x"] as const;
 
 export const ALL_RESERVED_NOTES: readonly string[] = [
   ...KNOWN_TRASH_NOTES,
+  ...QUESTION_MARK_NOTES,
   ...CHOP_MOVED_NOTES,
   ...FINESSED_NOTES,
   ...NEEDS_FIX_NOTES,

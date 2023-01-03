@@ -79,6 +79,7 @@ export default class HanabiCard
 
   noteIndicator: NoteIndicator;
   private trashcan: Konva.Image;
+  private questionMark: Konva.Image;
   private wrench: Konva.Image;
   private ddaIndicatorTop: Konva.Image;
   private ddaIndicatorBottom: Konva.Image;
@@ -210,6 +211,8 @@ export default class HanabiCard
 
     this.trashcan = HanabiCardInit.trashcan();
     this.add(this.trashcan);
+    this.questionMark = HanabiCardInit.questionMark();
+    this.add(this.questionMark);
     this.wrench = HanabiCardInit.wrench();
     this.add(this.wrench);
     this.ddaIndicatorTop = HanabiCardInit.ddaIndicatorTop();
@@ -553,7 +556,8 @@ export default class HanabiCard
       this.shouldShowAnyBorder() &&
       // The clue border and the finesse border have precedence over the chop move border
       !this.shouldShowClueBorder() &&
-      !this.shouldShowFinesseBorder()
+      !this.shouldShowFinesseBorder() &&
+      !globals.state.finished
     );
   }
 
@@ -562,7 +566,8 @@ export default class HanabiCard
       this.note.finessed &&
       this.shouldShowAnyBorder() &&
       // The clue border has precedence over the finesse border.
-      !this.shouldShowClueBorder()
+      !this.shouldShowClueBorder() &&
+      !globals.state.finished
     );
   }
 
@@ -697,13 +702,25 @@ export default class HanabiCard
       this.suitPips.visible(suitUnknown);
       this.rankPips.visible(rankUnknown);
     }
+    console.warn(this.state.suitIndex, this.state.rank);
+    console.warn(this.note);
+
+    // Show or hide the "question mark" image.
+    this.questionMark.visible(
+      this.note.questionMark &&
+        !this.empathy &&
+        !cardRules.isPlayed(this.state) &&
+        !cardRules.isDiscarded(this.state) &&
+        !globals.state.finished,
+    );
 
     // Show or hide the "trash" image.
     this.trashcan.visible(
       this.note.knownTrash &&
         !this.empathy &&
         !cardRules.isPlayed(this.state) &&
-        !cardRules.isDiscarded(this.state),
+        !cardRules.isDiscarded(this.state) &&
+        !globals.state.finished,
     );
 
     // Show or hide the "fix" image.
@@ -711,7 +728,8 @@ export default class HanabiCard
       this.note.needsFix &&
         !this.empathy &&
         !cardRules.isPlayed(this.state) &&
-        !cardRules.isDiscarded(this.state),
+        !cardRules.isDiscarded(this.state) &&
+        !globals.state.finished,
     );
 
     // Show or hide the direction arrows.

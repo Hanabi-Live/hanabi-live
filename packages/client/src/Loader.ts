@@ -15,6 +15,7 @@ const fileIDs = [
   "home",
   "note",
   "question-mark",
+  "question-mark2",
   "replay",
   "replay-back",
   "replay-back-border",

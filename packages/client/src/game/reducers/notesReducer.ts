@@ -7,6 +7,7 @@ import {
   getVariant,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
+  QUESTION_MARK_NOTES,
   UNCLUED_NOTES,
   Variant,
 } from "@hanabi/data";
@@ -139,6 +140,7 @@ function noteWithoutText(note: CardNote): CardNote {
     possibilities: Array<[number, number]>;
     knownTrash: boolean;
     needsFix: boolean;
+    questionMark: boolean;
     chopMoved: boolean;
     finessed: boolean;
     blank: boolean;
@@ -174,6 +176,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
   const finessed = checkNoteKeywordsForMatch(FINESSED_NOTES, keywords);
   const knownTrash = checkNoteKeywordsForMatch(KNOWN_TRASH_NOTES, keywords);
   const needsFix = checkNoteKeywordsForMatch(NEEDS_FIX_NOTES, keywords);
+  const questionMark = checkNoteKeywordsForMatch(QUESTION_MARK_NOTES, keywords);
   const blank = checkNoteKeywordsForMatch(BLANK_NOTES, keywords);
   const unclued = checkNoteKeywordsForMatch(UNCLUED_NOTES, keywords);
   const clued = checkNoteKeywordsForMatch(CLUED_NOTES, keywords);
@@ -184,6 +187,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
     finessed,
     knownTrash,
     needsFix,
+    questionMark,
     blank,
     unclued,
     clued,
