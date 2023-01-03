@@ -278,7 +278,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.playing,
         state.shadowing,
         state.finished,
-        state.replay.hypothetical !== null,
+        false,
         state.metadata,
         state.notes.ourNotes,
       );
