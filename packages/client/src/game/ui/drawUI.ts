@@ -1060,38 +1060,29 @@ function drawScoreArea() {
       [globals.imageLoader!.get("skull")!],
     );
     globals.elements.scoreArea.add(terminateButton as unknown as Konva.Group);
-    terminateButton.on("click tap", () => {
-      // In 2p game, single click instantly terminates the game. For users < 1000, only show the
-      // warning if this is a 2p game. Otherwise the double click never fires (prevented by
-      // windows.alert of single click).
-      const numPlayers = globals.lobby.game?.players.length;
-      if (
-        globals.options.speedrun ||
-        debug.amTestUser(globals.metadata.ourUsername) ||
-        globals.lobby.totalGames >= 1000 ||
-        numPlayers! > 2 ||
-        window.confirm("Are you sure you want to terminate the game?")
-      ) {
-        globals.lobby.conn!.send("tableVoteForTermination", {
-          tableID: globals.lobby.tableID,
-        });
-      }
-    });
-    terminateButton.on("dblclick dbltap", () => {
-      if (
-        globals.options.speedrun ||
-        debug.amTestUser(globals.metadata.ourUsername) ||
-        globals.lobby.totalGames >= 1000 ||
-        window.confirm("Are you sure you want to terminate the game?")
-      ) {
-        globals.lobby.conn!.send("tableTerminate", {
-          tableID: globals.lobby.tableID,
-        });
-      }
-    });
+    terminateButton.on(
+      "click tap",
+      (event: Konva.KonvaEventObject<MouseEvent>) => {
+        if (event.evt.button === 0) {
+          // Left click.
+          globals.lobby.conn!.send("tableVoteForTermination", {
+            tableID: globals.lobby.tableID,
+          });
+        } else if (event.evt.button === 2) {
+          // Right click.
+          globals.lobby.conn!.send("tableTerminate", {
+            tableID: globals.lobby.tableID,
+          });
+        }
+      },
+    );
     terminateButton.tooltipName = "kill";
-    terminateButton.tooltipContent =
-      'Vote to terminate the game (click again to cancel the vote).<br /><span style="padding-left: 30px;">Double click to terminate immediately.</span>';
+    let terminateContent =
+      "<strong>Left click</strong> to cast a vote to terminate the game (click again to cancel the vote).<br />";
+    terminateContent += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+    terminateContent +=
+      "<strong>Right click</strong> to terminate immediately.";
+    terminateButton.tooltipContent = terminateContent;
     konvaTooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
