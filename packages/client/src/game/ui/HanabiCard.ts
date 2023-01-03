@@ -702,8 +702,6 @@ export default class HanabiCard
       this.suitPips.visible(suitUnknown);
       this.rankPips.visible(rankUnknown);
     }
-    console.warn(this.state.suitIndex, this.state.rank);
-    console.warn(this.note);
 
     // Show or hide the "question mark" image.
     this.questionMark.visible(
