@@ -79,9 +79,12 @@ export default class HanabiCard
 
   noteIndicator: NoteIndicator;
   private trashcan: Konva.Image;
+  private questionMark: Konva.Image;
   private wrench: Konva.Image;
   private ddaIndicatorTop: Konva.Image;
   private ddaIndicatorBottom: Konva.Image;
+  private trashMiniIndicatorTop: Konva.Image;
+  private trashMiniIndicatorBottom: Konva.Image;
 
   // -------------------
   // Getters and setters
@@ -208,6 +211,8 @@ export default class HanabiCard
 
     this.trashcan = HanabiCardInit.trashcan();
     this.add(this.trashcan);
+    this.questionMark = HanabiCardInit.questionMark();
+    this.add(this.questionMark);
     this.wrench = HanabiCardInit.wrench();
     this.add(this.wrench);
     this.ddaIndicatorTop = HanabiCardInit.ddaIndicatorTop();
@@ -216,6 +221,12 @@ export default class HanabiCard
       this.variant.offsetCornerElements,
     );
     this.add(this.ddaIndicatorBottom);
+    this.trashMiniIndicatorTop = HanabiCardInit.trashMiniIndicatorTop();
+    this.add(this.trashMiniIndicatorTop);
+    this.trashMiniIndicatorBottom = HanabiCardInit.trashMiniIndicatorBottom(
+      this.variant.offsetCornerElements,
+    );
+    this.add(this.trashMiniIndicatorBottom);
 
     // Register mouse events for hovering, clicking, etc.
     this.registerMouseHandlers();
@@ -496,8 +507,7 @@ export default class HanabiCard
       this.note.blank &&
       !this.empathy &&
       !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state) &&
-      globals.state.playing
+      !cardRules.isDiscarded(this.state)
     ) {
       return DECK_BACK_IMAGE;
     }
@@ -535,7 +545,7 @@ export default class HanabiCard
   private shouldShowClueBorder() {
     return (
       this.shouldShowAnyBorder() &&
-      !(this.note.unclued && globals.state.playing) &&
+      !this.note.unclued &&
       (cardRules.isClued(this.state) || this.note.clued)
     );
   }
@@ -547,7 +557,7 @@ export default class HanabiCard
       // The clue border and the finesse border have precedence over the chop move border
       !this.shouldShowClueBorder() &&
       !this.shouldShowFinesseBorder() &&
-      globals.state.playing
+      !globals.state.finished
     );
   }
 
@@ -557,7 +567,7 @@ export default class HanabiCard
       this.shouldShowAnyBorder() &&
       // The clue border has precedence over the finesse border.
       !this.shouldShowClueBorder() &&
-      globals.state.playing
+      !globals.state.finished
     );
   }
 
@@ -693,13 +703,22 @@ export default class HanabiCard
       this.rankPips.visible(rankUnknown);
     }
 
+    // Show or hide the "question mark" image.
+    this.questionMark.visible(
+      this.note.questionMark &&
+        !this.empathy &&
+        !cardRules.isPlayed(this.state) &&
+        !cardRules.isDiscarded(this.state) &&
+        !globals.state.finished,
+    );
+
     // Show or hide the "trash" image.
     this.trashcan.visible(
       this.note.knownTrash &&
         !this.empathy &&
         !cardRules.isPlayed(this.state) &&
         !cardRules.isDiscarded(this.state) &&
-        globals.state.playing,
+        !globals.state.finished,
     );
 
     // Show or hide the "fix" image.
@@ -708,7 +727,7 @@ export default class HanabiCard
         !this.empathy &&
         !cardRules.isPlayed(this.state) &&
         !cardRules.isDiscarded(this.state) &&
-        globals.state.playing,
+        !globals.state.finished,
     );
 
     // Show or hide the direction arrows.
@@ -789,6 +808,11 @@ export default class HanabiCard
       return;
     }
 
+    // Don't show any status in realLifeMode.
+    if (globals.lobby.settings.realLifeMode) {
+      return;
+    }
+
     let status: CardStatus;
     if (
       this.visibleSuitIndex === null ||
@@ -803,12 +827,33 @@ export default class HanabiCard
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
-    this.setDDA(this.state.inDoubleDiscard && status !== CardStatus.Critical);
+
+    const isKnownTrash =
+      !cardRules.isPlayed(this.state) &&
+      !cardRules.isDiscarded(this.state) &&
+      this.state.isKnownTrashFromEmpathy;
+    this.setTrashMiniIndicator(isKnownTrash);
+    this.setDDA(
+      this.state.inDoubleDiscard &&
+        status !== CardStatus.Critical &&
+        !isKnownTrash,
+    );
+  }
+
+  private setTrashMiniIndicator(isTrash: boolean) {
+    const known = this.visibleRank !== null;
+    if (isTrash && this.trashcan.isVisible() === false) {
+      this.trashMiniIndicatorTop.visible(!known);
+      this.trashMiniIndicatorBottom.visible(known);
+    } else {
+      this.trashMiniIndicatorTop.visible(false);
+      this.trashMiniIndicatorBottom.visible(false);
+    }
   }
 
   private setDDA(dda: boolean) {
     const visible = this.shouldSetDDA(dda);
-    const known = this.visibleSuitIndex !== null || this.visibleRank !== null;
+    const known = this.visibleRank !== null;
     if (visible) {
       this.ddaIndicatorTop.visible(!known);
       this.ddaIndicatorBottom.visible(known);
@@ -824,7 +869,6 @@ export default class HanabiCard
       !this.shouldShowClueBorder() &&
       this.trashcan.isVisible() === false &&
       globals.lobby.settings.hyphenatedConventions &&
-      !globals.lobby.settings.realLifeMode &&
       !globals.metadata.hardVariant
     );
   }
@@ -848,11 +892,10 @@ export default class HanabiCard
       !cardRules.isClued(this.state) &&
       !cardRules.isPlayed(this.state) &&
       !cardRules.isDiscarded(this.state) &&
-      !(globals.state.playing && this.note.blank) &&
-      !(globals.state.playing && this.note.chopMoved) &&
+      !this.note.blank &&
+      !this.note.chopMoved &&
       !variantRules.isThrowItInAHole(this.variant) &&
-      !globals.options.speedrun &&
-      !globals.lobby.settings.realLifeMode
+      !globals.options.speedrun
     );
   }
 
@@ -865,8 +908,7 @@ export default class HanabiCard
     return (
       critical &&
       !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state) &&
-      !globals.lobby.settings.realLifeMode
+      !cardRules.isDiscarded(this.state)
     );
   }
 

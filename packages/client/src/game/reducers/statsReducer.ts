@@ -23,6 +23,7 @@ function statsReducerFunction(
   originalState: GameState,
   currentState: GameState,
   playing: boolean,
+  shadowing: boolean,
   metadata: GameMetadata,
   ourNotes: CardNote[] | null,
 ) {
@@ -40,7 +41,7 @@ function statsReducerFunction(
       // TODO: move this check to the play action when we have logic for knowing which cards play.
       // A strike is equivalent to losing a clue. But don't reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (!variantRules.isThrowItInAHole(variant) || !playing) {
+      if (!variantRules.isThrowItInAHole(variant) || (!playing && !shadowing)) {
         stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
@@ -83,7 +84,7 @@ function statsReducerFunction(
 
   // Handle pace calculation.
   const score =
-    variantRules.isThrowItInAHole(variant) && playing
+    variantRules.isThrowItInAHole(variant) && (playing || shadowing)
       ? currentState.numAttemptedCardsPlayed
       : currentState.score;
   stats.pace = statsRules.pace(
@@ -102,6 +103,7 @@ function statsReducerFunction(
     currentState.playStacks,
     currentState.playStackDirections,
     playing,
+    shadowing,
     stats.maxScore,
     variant,
   );
@@ -123,6 +125,16 @@ function statsReducerFunction(
     (playStack) => playStack.length,
   );
   stats.cluesStillUsable = statsRules.cluesStillUsable(
+    score,
+    scorePerStack,
+    stats.maxScorePerStack,
+    currentState.cardsRemainingInTheDeck,
+    numEndGameTurns,
+    clueTokensRules.discardValue(variant),
+    clueTokensRules.suitValue(variant),
+    clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
+  );
+  stats.cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
     score,
     scorePerStack,
     stats.maxScorePerStack,

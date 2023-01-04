@@ -65,6 +65,7 @@ export interface ActionInit {
   datetimeStarted: string;
   datetimeFinished: string;
   spectating: boolean;
+  shadowing: boolean;
   replay: boolean; // True if either a dedicated solo replay or a shared replay
   sharedReplay: boolean;
   databaseID: number;
@@ -214,6 +215,7 @@ interface ActionNoteList {
   type: "noteList";
   readonly names: string[];
   readonly noteTextLists: string[][];
+  readonly isSpectators: boolean[];
 }
 
 interface ActionSetEffMod {

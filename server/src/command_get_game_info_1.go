@@ -20,9 +20,10 @@ import (
 // the client will send a "getGameInfo2" command later to get more specific data
 //
 // Example data:
-// {
-//   tableID: 5,
-// }
+//
+//	{
+//	  tableID: 5,
+//	}
 func commandGetGameInfo1(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -41,7 +42,7 @@ func commandGetGameInfo1(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are either playing or spectating the game
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if playerIndex == -1 && spectatorIndex == -1 {
+	if !t.IsPlayerOrSpectating(s.UserID) {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			".")
 		return
@@ -96,7 +97,15 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	}
 
 	// Account for if a spectator is shadowing a specific player
-	if spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
+	if playerIndex == -1 && spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerPregameIndex != -1 {
+		sp := t.Spectators[spectatorIndex]
+		ourPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+		sp.ShadowingPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+		sp.ShadowingPlayerPregameIndex = -1
+	}
+
+	// Account for if a spectator is shadowing a specific player
+	if playerIndex == -1 && spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
 		ourPlayerIndex = t.Spectators[spectatorIndex].ShadowingPlayerIndex
 	}
 
@@ -111,6 +120,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		PlayerNames      []string  `json:"playerNames"`
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
+		Shadowing        bool      `json:"shadowing"`
 		Replay           bool      `json:"replay"`
 		DatabaseID       int       `json:"databaseID"`
 		HasCustomSeed    bool      `json:"hasCustomSeed"`
@@ -140,7 +150,8 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
 		PlayerNames:      playerNames,
 		OurPlayerIndex:   ourPlayerIndex,
-		Spectating:       spectatorIndex != -1 && !t.Replay,
+		Spectating:       spectatorIndex != -1 && t.IsActivelySpectating(t.Spectators[spectatorIndex].UserID) && !t.Replay,
+		Shadowing:        spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
 		HasCustomSeed:    g.ExtraOptions.CustomSeed != "",

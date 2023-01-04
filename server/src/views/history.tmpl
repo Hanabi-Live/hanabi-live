@@ -1,97 +1,118 @@
-{{define "profile"}}
+{{ define "profile" }}
+  <h3 class="align-center">
+    {{ $length := len .History }}
+    {{ if eq $length 0 }}
+      {{ if eq .Title "History" }}
+        No games played.
+      {{ end }}
+      {{ if eq .Title "Tagged Games" }}
+        No tagged games.
+      {{ end }}
+    {{ else }}
+      Total games: <span id="total-number-of-games">{{ $length }}</span>
+    {{ end }}
+  </h3>
 
-<h3 class="align-center">
-{{ $length := len .History }}
-{{if eq $length 0}}
-  {{if eq .Title "History" }}
-    No games played.
-  {{end}}
-  {{if eq .Title "Tagged Games" }}
-    No tagged games.
-  {{end}}
-{{else}}
-  Total games: <span id="total-number-of-games">{{$length}}</span>
-{{end}}
-</h3>
+  {{ if eq $length 0 }}
+    {{ if eq .Title "Tagged Games" }}
+      <h4 class="align-center">
+        Get them to tag some games with the <code>/tag</code> command. (e.g.
+        <code>/tag Layered Finesse</code>)
+      </h4>
+    {{ end }}
 
-{{if eq $length 0}}{{if eq .Title "Tagged Games" }}
-<h4 class="align-center">
-  Get them to tag some games with the <code>/tag</code> command. (e.g. <code>/tag Layered Finesse</code>)
-</h4>
-{{end}}{{end}}
+  {{ end }}
 
-{{if gt $length 0}}
+  {{ if gt $length 0 }}
+    <div class="pager">
+      Page:
+      <select class="gotoPage"></select>
+      <i class="fas fa-fast-backward first"></i>
+      <i class="fas fa-backward prev"></i>
+      <!-- the "pagedisplay" can be any element, including an input -->
+      <span class="pagedisplay"></span>
+      <i class="fas fa-forward next"></i>
+      <i class="fas fa-fast-forward last"></i>
+      <select class="pagesize" title="Select page size">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="all">All Rows</option>
+      </select>
+    </div>
 
-<div class="pager">
-  Page: <select class="gotoPage"></select>
-	<i class="fas fa-fast-backward first"></i>
-  <i class="fas fa-backward prev"></i>
-	<!-- the "pagedisplay" can be any element, including an input -->
-	<span class="pagedisplay"></span>
-	<i class="fas fa-forward next"></i>
-	<i class="fas fa-fast-forward last"></i>
-	<select class="pagesize" title="Select page size">
-		<option value="10">10</option>
-		<option value="20">20</option>
-		<option value="30">30</option>
-		<option value="all">All Rows</option>
-	</select>
-</div>
+    <table id="history-table" class="history">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th class="center filter-select"># of Players</th>
+          <th class="center">Score</th>
+          <th class="filter-select">Variant</th>
+          <th class="sorter-date-and-time">Date & Time</th>
+          <th>Players</th>
+          {{ if not .SpecificSeed }}
+            <th class="center">Other Scores</th>
+          {{ end }}
+          {{ if eq .Title "Tagged Games" }}<th class="center">Tags</th>{{ end }}
+        </tr>
+      </thead>
+      <tbody>
+        {{ range $index, $results := .History }}
+          <tr
+            id="history-row-{{ $index }}"
+            class="history-row history-row-players-{{ .Options.NumPlayers }} history-row-score-{{ .Score }}"
+            data-variant="{{ .Options.VariantName }}"
+          >
+            <td><a href="/replay/{{ .ID }}">{{ .ID }}</a></td>
+            <td class="center">{{ .Options.NumPlayers }}</td>
+            <td class="center">{{ .Score }}</td>
+            <td>
+              <a href="/variant/{{ .Options.VariantID }}"
+                >{{ .Options.VariantName }}</a
+              >
+            </td>
+            <td>{{ .DatetimeFinished | formatDate }}</td>
+            <td>
+              <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
+              <a
+                href="/history/{{ range $index2, $results2 := .PlayerNames }}
+                  {{ if $index2 }}/{{ end }}{{ $results2 }}
+                {{ end }}"
+              >
+                {{ range $index2, $results2 := .PlayerNames }}
+                  {{ if $index2 }},{{ end }}{{ $results2 }}
+                {{ end }}
+              </a>
+            </td>
+            {{ if not $.SpecificSeed }}
+              <td class="center">
+                <a href="/seed/{{ .Seed }}">{{ .NumGamesOnThisSeed }}</a>
+              </td>
+            {{ end }}
+            {{ if eq $.Title "Tagged Games" }}
+              <td class="center">{{ .Tags }}</td>
+            {{ end }}
+          </tr>
+        {{- end -}}
+      </tbody>
+    </table>
 
-<table id="history-table" class="history">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th class="center filter-select"># of Players</th>
-      <th class="center">Score</th>
-      <th class="filter-select">Variant</th>
-      <th class="sorter-date-and-time">Date & Time</th>
-      <th>Players</th>
-      {{if not .SpecificSeed}}<th class="center">Other Scores</th>{{end}}
-      {{if eq .Title "Tagged Games" }}<th class="center">Tags</th>{{end}}
-    </tr>
-  </thead>
-  <tbody>
-    {{range $index, $results := .History}}
-      <tr
-        id="history-row-{{$index}}"
-        class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}"
-        data-variant="{{.Options.VariantName}}"
-      >
-        <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
-        <td class="center">{{.Options.NumPlayers}}</td>
-        <td class="center">{{.Score}}</td>
-        <td><a href="/variant/{{.Options.VariantID}}">{{.Options.VariantName}}</a></td>
-        <td>{{.DatetimeFinished | formatDate}}</td>
-        <td>
-          <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
-          <a href="/history/{{range $index2, $results2 := .PlayerNames}}{{if $index2}}/{{end}}{{$results2}}{{end}}">
-            {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
-          </a>
-        </td>
-        {{if not $.SpecificSeed}}<td class="center"><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
-        {{if eq $.Title "Tagged Games" }}<td class="center">{{.Tags}}</td>{{end}}
-      </tr>
-    {{- end -}}
-  </tbody>
-</table>
+    <div class="pager">
+      Page:
+      <select class="gotoPage"></select>
+      <i class="fas fa-fast-backward first"></i>
+      <i class="fas fa-backward prev"></i>
+      <!-- the "pagedisplay" can be any element, including an input -->
+      <span class="pagedisplay"></span>
+      <i class="fas fa-forward next"></i>
+      <i class="fas fa-fast-forward last"></i>
+      <select class="pagesize" title="Select page size">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="all">All Rows</option>
+      </select>
+    </div>
+  {{ end }}
 
-<div class="pager">
-  Page: <select class="gotoPage"></select>
-	<i class="fas fa-fast-backward first"></i>
-  <i class="fas fa-backward prev"></i>
-	<!-- the "pagedisplay" can be any element, including an input -->
-	<span class="pagedisplay"></span>
-	<i class="fas fa-forward next"></i>
-	<i class="fas fa-fast-forward last"></i>
-	<select class="pagesize" title="Select page size">
-		<option value="10">10</option>
-		<option value="20">20</option>
-		<option value="30">30</option>
-		<option value="all">All Rows</option>
-	</select>
-</div>
-
-{{end}}
-
-{{end}}
+{{ end }}

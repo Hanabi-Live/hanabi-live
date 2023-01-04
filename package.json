@@ -60,6 +60,7 @@
     "linkifyjs": "^3.0.5",
     "node-ts": "^5.1.2",
     "prettier": "^2.7.1",
+    "prettier-plugin-go-template": "^0.0.13",
     "source-map-loader": "^4.0.0",
     "ts-jest": "^28.0.8",
     "ts-loader": "^9.3.1",

@@ -70,6 +70,8 @@ commands.set("game", (data: Game) => {
       pregame.toggleStartGameButton();
     }, 500);
   }
+
+  pregame.drawSpectators(globals.tableID);
 });
 
 commands.set("gameHistory", (dataArray: GameHistory[]) => {
@@ -229,7 +231,6 @@ interface SpectatorsData {
 }
 commands.set("pregameSpectators", (data: SpectatorsData) => {
   globals.tableID = data.tableID;
-
   pregame.drawSpectators(globals.tableID);
 });
 
@@ -327,7 +328,7 @@ commands.set("welcome", (data: WelcomeData) => {
   if (data.disconSpectatingTable !== 0) {
     globals.conn!.send("tableSpectate", {
       tableID: data.disconSpectatingTable,
-      shadowingPlayerIndex: -1,
+      shadowingPlayerIndex: data.disconShadowingSeat,
     });
     return;
   }

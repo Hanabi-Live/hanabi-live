@@ -191,9 +191,10 @@ export function allPossibilitiesTrash(
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
+  empathy: boolean,
 ): boolean {
   // If we fully know the card already, just check if it's playable.
-  if (card.rank !== null && card.suitIndex !== null) {
+  if (!empathy && card.rank !== null && card.suitIndex !== null) {
     return !needsToBePlayed(
       card.suitIndex,
       card.rank,
@@ -205,7 +206,10 @@ export function allPossibilitiesTrash(
   }
 
   // Otherwise, check based on possibilities from clues/deduction.
-  return !card.possibleCards.some(([suitIndex, rank]) =>
+  const possibilities = empathy
+    ? card.possibleCardsForEmpathy
+    : card.possibleCards;
+  return !possibilities.some(([suitIndex, rank]) =>
     needsToBePlayed(
       suitIndex,
       rank,

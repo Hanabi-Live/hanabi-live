@@ -11,6 +11,7 @@ export default interface WelcomeData {
 
   playingAtTables: number[];
   disconSpectatingTable: number;
+  disconShadowingSeat: number;
 
   randomTableName: string;
   shuttingDown: boolean;

@@ -343,7 +343,10 @@ function drawPlayStacks() {
 
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
   // of the rest of the stacks).
-  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+  if (
+    variantRules.isThrowItInAHole(globals.variant) &&
+    (globals.state.playing || globals.state.shadowing)
+  ) {
     const playStackX =
       playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
     const playStack = new PlayStack({
@@ -792,7 +795,8 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
+      !variantRules.isThrowItInAHole(globals.variant) ||
+      (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel);
   globals.elements.scoreTextLabel.on(
@@ -808,7 +812,8 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
+      !variantRules.isThrowItInAHole(globals.variant) ||
+      (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
   globals.elements.scoreNumberLabel.on(
@@ -825,7 +830,8 @@ function drawScoreArea() {
     fontSize: 0.017 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
+      !variantRules.isThrowItInAHole(globals.variant) ||
+      (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
   globals.elements.maxScoreNumberLabel.on(
@@ -835,7 +841,10 @@ function drawScoreArea() {
     },
   );
 
-  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+  if (
+    variantRules.isThrowItInAHole(globals.variant) &&
+    (globals.state.playing || globals.state.shadowing)
+  ) {
     globals.elements.playsTextLabel = basicTextLabel.clone({
       text: "Plays",
       x: labelX * winW,
@@ -1002,7 +1011,7 @@ function drawScoreArea() {
     // For variants where the strikes are hidden, draw a "?"
     if (
       variantRules.isThrowItInAHole(globals.variant) &&
-      globals.state.playing
+      (globals.state.playing || globals.state.shadowing)
     ) {
       const questionMarkLabel = basicTextLabel.clone({
         text: "?",
@@ -1051,38 +1060,29 @@ function drawScoreArea() {
       [globals.imageLoader!.get("skull")!],
     );
     globals.elements.scoreArea.add(terminateButton as unknown as Konva.Group);
-    terminateButton.on("click tap", () => {
-      // In 2p game, single click instantly terminates the game. For users < 1000, only show the
-      // warning if this is a 2p game. Otherwise the double click never fires (prevented by
-      // windows.alert of single click).
-      const numPlayers = globals.lobby.game?.players.length;
-      if (
-        globals.options.speedrun ||
-        debug.amTestUser(globals.metadata.ourUsername) ||
-        globals.lobby.totalGames >= 1000 ||
-        numPlayers! > 2 ||
-        window.confirm("Are you sure you want to terminate the game?")
-      ) {
-        globals.lobby.conn!.send("tableVoteForTermination", {
-          tableID: globals.lobby.tableID,
-        });
-      }
-    });
-    terminateButton.on("dblclick dbltap", () => {
-      if (
-        globals.options.speedrun ||
-        debug.amTestUser(globals.metadata.ourUsername) ||
-        globals.lobby.totalGames >= 1000 ||
-        window.confirm("Are you sure you want to terminate the game?")
-      ) {
-        globals.lobby.conn!.send("tableTerminate", {
-          tableID: globals.lobby.tableID,
-        });
-      }
-    });
+    terminateButton.on(
+      "click tap",
+      (event: Konva.KonvaEventObject<MouseEvent>) => {
+        if (event.evt.button === 0) {
+          // Left click.
+          globals.lobby.conn!.send("tableVoteForTermination", {
+            tableID: globals.lobby.tableID,
+          });
+        } else if (event.evt.button === 2) {
+          // Right click.
+          globals.lobby.conn!.send("tableTerminate", {
+            tableID: globals.lobby.tableID,
+          });
+        }
+      },
+    );
     terminateButton.tooltipName = "kill";
-    terminateButton.tooltipContent =
-      'Vote to terminate the game (click again to cancel the vote).<br /><span style="padding-left: 30px;">Double click to terminate immediately.</span>';
+    let terminateContent =
+      "<strong>Left click</strong> to cast a vote to terminate the game (click again to cancel the vote).<br />";
+    terminateContent += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+    terminateContent +=
+      "<strong>Right click</strong> to terminate immediately.";
+    terminateButton.tooltipContent = terminateContent;
     konvaTooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
@@ -1217,10 +1217,7 @@ function drawSharedReplay() {
   // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
   // double tap to prevent accidentally opening the dialog when hovering over the crown.
   sharedReplayLeaderLabel.on("click dbltap", () => {
-    if (
-      globals.state.replay.shared === null ||
-      !globals.state.replay.shared.amLeader
-    ) {
+    if (globals.state.replay.shared === null) {
       return;
     }
 
@@ -1240,7 +1237,7 @@ function drawSharedReplay() {
     placeholder.innerHTML = "";
 
     for (const spectator of globals.state.spectators) {
-      if (spectator.name === globals.metadata.ourUsername) {
+      if (spectator.name === globals.state.replay.shared.leader) {
         continue;
       }
 

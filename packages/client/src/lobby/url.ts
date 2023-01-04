@@ -63,15 +63,18 @@ export function parseAndGoto(data: WelcomeData): void {
     return;
   }
 
-  // Automatically spectate a game if we are using a "/game/123" URL. (We want to spectate it
-  // instead of reattend it because if we are at this point, it is assumed that if we were in the
-  // respective game, we would have already tried to join it.)
+  // Automatically spectate a game if we are using a "/game/123" URL. We can also shadow a player in
+  // a seat with "/game/123/shadow/0" (We want to spectate it instead of reattend it because if we
+  // are at this point, it is assumed that if we were in the respective game, we would have already
+  // tried to join it.)
   const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
   if (gameMatch !== null) {
     const tableID = parseIntSafe(gameMatch[1]!); // The server expects the game ID as an integer.
+    const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
+    const shadowID = shadowMatch !== null ? parseIntSafe(shadowMatch[1]!) : -1; // The server expects the game ID as an integer.
     globals.conn!.send("tableSpectate", {
       tableID,
-      shadowingPlayerIndex: -1,
+      shadowingPlayerIndex: shadowID,
     });
     return;
   }

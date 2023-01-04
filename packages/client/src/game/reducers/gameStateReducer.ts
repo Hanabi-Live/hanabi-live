@@ -18,6 +18,7 @@ import GameMetadata, { getPlayerName } from "../types/GameMetadata";
 import GameState from "../types/GameState";
 import cardsReducer from "./cardsReducer";
 import ddaReducer from "./ddaReducer";
+import knownTrashReducer from "./knownTrashReducer";
 import statsReducer from "./statsReducer";
 import turnReducer from "./turnReducer";
 
@@ -28,6 +29,8 @@ function gameStateReducerFunction(
   state: Draft<GameState>,
   action: GameAction,
   playing: boolean,
+  shadowing: boolean,
+  finished: boolean,
   hypothetical: boolean,
   metadata: GameMetadata,
   ourNotes?: CardNote[],
@@ -88,7 +91,16 @@ function gameStateReducerFunction(
         hand.splice(handIndex, 1);
       }
 
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
+      if (
+        !throwItInAHolePlayedOrMisplayed(
+          state,
+          action,
+          variant,
+          playing,
+          shadowing,
+          finished,
+        )
+      ) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
             `The suit index for the discarded card was: ${action.suitIndex}`,
@@ -112,6 +124,7 @@ function gameStateReducerFunction(
         slot,
         touched,
         playing,
+        shadowing,
         hypothetical,
         metadata,
       );
@@ -192,7 +205,16 @@ function gameStateReducerFunction(
       }
 
       // Add it to the play stacks.
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
+      if (
+        !throwItInAHolePlayedOrMisplayed(
+          state,
+          action,
+          variant,
+          playing,
+          shadowing,
+          finished,
+        )
+      ) {
         if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
           throw new Error(
             `The suit index for the played card was: ${action.suitIndex}`,
@@ -220,6 +242,7 @@ function gameStateReducerFunction(
         slot,
         touched,
         playing,
+        shadowing,
         hypothetical,
         metadata,
       );
@@ -344,6 +367,7 @@ function gameStateReducerFunction(
     original(state)!,
     state,
     playing,
+    shadowing,
     metadata,
     ourNotes ?? null,
   );
@@ -354,6 +378,16 @@ function gameStateReducerFunction(
       state.deck,
       state.stats.doubleDiscard,
       state.turn.currentPlayerIndex,
+    ),
+  );
+
+  // Finally, mark cards as known-trash.
+  state.deck = castDraft(
+    knownTrashReducer(
+      state.deck,
+      state.playStacks,
+      state.playStackDirections,
+      variant,
     ),
   );
 }
@@ -385,8 +419,14 @@ function throwItInAHolePlayedOrMisplayed(
   action: ActionPlay | ActionDiscard,
   variant: Variant,
   playing: boolean,
+  shadowing: boolean,
+  finished: boolean,
 ) {
-  if (!variantRules.isThrowItInAHole(variant) || !playing) {
+  if (
+    !variantRules.isThrowItInAHole(variant) ||
+    (!playing && !shadowing) ||
+    finished
+  ) {
     return false;
   }
 

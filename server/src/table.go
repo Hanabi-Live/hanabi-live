@@ -187,8 +187,8 @@ func (t *Table) EndIdle(ctx context.Context) {
 	}
 
 	// Boot all of the spectators, if any
-	for len(t.Spectators) > 0 {
-		sp := t.Spectators[0]
+	for len(t.ActiveSpectators()) > 0 {
+		sp := t.ActiveSpectators()[0]
 		s := sp.Session
 		if s == nil {
 			// A spectator's session should never be nil
@@ -260,6 +260,10 @@ func (t *Table) GetPlayerIndexFromID(userID int) int {
 	return -1
 }
 
+func (t *Table) IsPlayer(userID int) bool {
+	return t.GetPlayerIndexFromID(userID) != -1
+}
+
 func (t *Table) GetSpectatorIndexFromID(userID int) int {
 	for i, sp := range t.Spectators {
 		if sp.UserID == userID {
@@ -267,6 +271,22 @@ func (t *Table) GetSpectatorIndexFromID(userID int) int {
 		}
 	}
 	return -1
+}
+
+func (t *Table) IsActivelySpectating(userID int) bool {
+	if t.GetSpectatorIndexFromID(userID) != -1 {
+		spectatingTables := tables.GetTablesUserSpectating(userID)
+		for _, spectatingTable := range spectatingTables {
+			if spectatingTable == t.ID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (t *Table) IsPlayerOrSpectating(userID int) bool {
+	return t.IsActivelySpectating(userID) || t.IsPlayer(userID)
 }
 
 func (t *Table) GetOwnerSession() *Session {
@@ -321,7 +341,7 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 		}
 	}
 
-	for _, sp := range t.Spectators {
+	for _, sp := range t.ActiveSpectators() {
 		if sp.Session == nil {
 			continue
 		}
@@ -391,6 +411,12 @@ func (t *Table) ShouldTerminateByVotes() bool {
 			count++
 		}
 	}
+
+	// In 2 player, the naive 50% majority is just one player, so we require both players instead
+	if len(t.Players) == 2 {
+		return count == 2
+	}
+
 	return count*2 >= len(t.Players)
 }
 
@@ -402,4 +428,16 @@ func (t *Table) GetVotes() []int {
 		}
 	}
 	return votes
+}
+
+func (t *Table) ActiveSpectators() []*Spectator {
+	activeSpectators := make([]*Spectator, 0)
+	for _, sp := range t.Spectators {
+		for _, tId := range tables.GetTablesUserSpectating(sp.UserID) {
+			if tId == t.ID {
+				activeSpectators = append(activeSpectators, sp)
+			}
+		}
+	}
+	return activeSpectators
 }

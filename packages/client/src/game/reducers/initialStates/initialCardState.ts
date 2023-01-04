@@ -41,5 +41,6 @@ export default function initialCardState(
     dealtToStartingHand: false,
     firstCluedWhileOnChop: null,
     inDoubleDiscard: false,
+    isKnownTrashFromEmpathy: false,
   };
 }

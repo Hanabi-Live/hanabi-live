@@ -27,6 +27,7 @@ export default function initialState(metadata: GameMetadata): State {
     },
 
     playing: true,
+    shadowing: false,
     finished: false,
 
     datetimeStarted: null,
@@ -39,6 +40,7 @@ export default function initialState(metadata: GameMetadata): State {
         possibilities: [],
         chopMoved: false,
         needsFix: false,
+        questionMark: false,
         knownTrash: false,
         finessed: false,
         blank: false,

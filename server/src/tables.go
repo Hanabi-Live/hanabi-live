@@ -16,6 +16,7 @@ type Tables struct {
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
 	disconSpectating map[int]uint64    // Indexed by user ID, value is a table ID
+	disconShadowing  map[int]int       // Indexed by user ID, value is a table ID
 	mutex            *deadlock.RWMutex // For handling concurrent access
 }
 
@@ -25,6 +26,7 @@ func NewTables() *Tables {
 		playing:          make(map[int][]uint64),
 		spectating:       make(map[int][]uint64),
 		disconSpectating: make(map[int]uint64),
+		disconShadowing:  make(map[int]int),
 		mutex:            &deadlock.RWMutex{},
 	}
 }
@@ -227,21 +229,28 @@ func (ts *Tables) PrintSpectating() {
 // Methods related to "disconSpectating"
 // -------------------------------------
 
-func (ts *Tables) SetDisconSpectating(userID int, tableID uint64) {
+func (ts *Tables) SetDisconSpectating(userID int, tableID uint64, shadowId int) {
 	ts.mutex.Lock()
 	ts.disconSpectating[userID] = tableID
+	ts.disconShadowing[userID] = shadowId
 	ts.mutex.Unlock()
 }
 
 func (ts *Tables) DeleteDisconSpectating(userID int) {
 	// It is assumed that the tables mutex is locked when calling this function
 	delete(ts.disconSpectating, userID)
+	delete(ts.disconShadowing, userID)
 }
 
 func (ts *Tables) GetDisconSpectatingTable(userID int) (uint64, bool) {
 	// It is assumed that the tables mutex is locked when calling this function
 	tableID, ok := ts.disconSpectating[userID]
 	return tableID, ok
+}
+func (ts *Tables) GetDisconShadowingSeat(userID int) (int, bool) {
+	// It is assumed that the tables mutex is locked when calling this function
+	shadowingSeat, ok := ts.disconShadowing[userID]
+	return shadowingSeat, ok
 }
 
 func (ts *Tables) PrintDisconSpectating() {

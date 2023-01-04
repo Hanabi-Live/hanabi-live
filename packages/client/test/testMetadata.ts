@@ -1,4 +1,5 @@
 import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
+import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
@@ -35,7 +36,7 @@ export default function testMetadata(
     characterMetadata: [],
 
     minEfficiency,
-    hardVariant: minEfficiency >= 1.25,
+    hardVariant: minEfficiency >= HARD_VARIANT_EFFICIENCY_THRESHOLD,
 
     hasCustomSeed: false,
     seed: "",

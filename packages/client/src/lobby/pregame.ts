@@ -255,7 +255,7 @@ function drawOptions() {
   }
 
   if (globals.game.options.detrimentalCharacters) {
-    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
+    html += `<li><i id="lobby-pregame-options-characters" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
     html += 'data-tooltip-content="#pregame-tooltip-characters"></i></li>';
     html += `
       <div class="hidden">
@@ -314,24 +314,27 @@ function drawPlayerBox(i: number) {
   const numPlayers = globals.game.players.length; // The "numPlayers" in the options is not set yet
   const div = $(`#lobby-pregame-player-${i + 1}`);
 
+  div.html("");
+
   const player = globals.game.players[i];
   if (player === undefined) {
-    div.html("");
     div.hide();
     return;
   }
 
   div.show();
 
-  let html = '<p class="margin0 padding0p5"><strong>';
-  if (player.name === globals.username) {
-    html += `<span class="name-me">${player.name}</span>`;
-  } else if (globals.friends.includes(player.name)) {
-    html += `<span class="friend">${player.name}</span>`;
-  } else {
-    html += player.name;
+  const span = getNameSpan(player.name);
+  if (isSpectator()) {
+    span.addClass("shadow").on("click", (evt) => {
+      evt.stopPropagation();
+      reattend(i);
+    });
   }
-  html += "</strong></p>";
+  const strong = $("<strong>");
+  strong.append(span);
+  const p = $("<p>").addClass("margin0 padding0p5").append(strong);
+  div.append(p);
 
   // Calculate some stats
   const variantStats = player.stats.variant;
@@ -353,7 +356,7 @@ function drawPlayerBox(i: number) {
     strikeoutRateString = "-";
   }
 
-  html += `
+  let html = `
     <div class="row">
       <div class="col-10">
         Total games:
@@ -367,7 +370,7 @@ function drawPlayerBox(i: number) {
         ...of this variant:
       </div>
       <div class="col-2 align-right padding0">
-        ${variantStats.numGames}
+        ${variantStats.numGames - variantStats.numStrikeouts}
       </div>
     </div>
     <div class="row">
@@ -448,10 +451,29 @@ function drawPlayerBox(i: number) {
     html += '<p class="lobby-pregame-player-away"><strong>AWAY</strong></p>';
   }
 
-  div.html(html);
+  div.append($(html));
 
   // Initialize the tooltip
   tooltips.create(`#lobby-pregame-player-${i + 1}-scores-icon`);
+}
+
+function getNameSpan(name: string) {
+  const span = $("<span>").html(name);
+  if (name === globals.username) {
+    span.addClass("name-me");
+  } else if (globals.friends.includes(name)) {
+    span.addClass("friend");
+  }
+  return span;
+}
+
+function isSpectator() {
+  for (const loopPlayer of globals.game!.players) {
+    if (loopPlayer.name === globals.username) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function drawSpectators(tableID: number): void {
@@ -467,7 +489,37 @@ export function drawSpectators(tableID: number): void {
   }
 
   for (const spectator of table.spectators) {
-    const item = `<li>&bull; ${spectator}</li>`;
+    const nameSpan = getNameSpan(spectator.name);
+    const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
+    if (spectator.shadowingPlayerIndex !== -1) {
+      const shadowingPlayer = table.players[spectator.shadowingPlayerIndex];
+      if (spectator.name === globals.username) {
+        // Me.
+        if (
+          spectator.shadowingPlayerIndex >= table.players.length || // Shadow index is out of range
+          spectator.shadowingPlayerIndex < -1 || // Shadow index is out of range
+          (spectator.shadowingPlayerName !== undefined &&
+            spectator.shadowingPlayerName.length > 0 &&
+            spectator.shadowingPlayerName !== shadowingPlayer) // The player we where going to shadow, has left.
+        ) {
+          spectator.shadowingPlayerName = "";
+          reattend(-1);
+          return;
+        }
+        $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
+          .removeClass("shadow")
+          .addClass("unShadow")
+          .on("click", (evt) => {
+            evt.stopPropagation();
+            reattend(-1);
+          })
+          .append(" 🕵️");
+      }
+      spectator.shadowingPlayerName = shadowingPlayer!;
+      item.html(
+        `${item.html()} (🕵️ <em>${spectator.shadowingPlayerName}</em>)`,
+      );
+    }
     list.append(item);
   }
 }
@@ -497,4 +549,16 @@ export function toggleStartGameButton(): void {
   } else {
     $("#nav-buttons-pregame-change-variant").removeClass("disabled");
   }
+}
+
+function reattend(shadowingPlayerIndex: number) {
+  setTimeout(() => {
+    globals.conn!.send("tableUnattend", {
+      tableID: globals.tableID,
+    });
+    globals.conn!.send("tableSpectate", {
+      tableID: globals.tableID,
+      shadowingPlayerIndex,
+    });
+  }, 0);
 }

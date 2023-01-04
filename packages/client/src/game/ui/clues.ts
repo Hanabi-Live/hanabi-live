@@ -101,7 +101,7 @@ function showClueMatch(target: number, clue: Clue) {
       card.visibleSuitIndex !== null
     ) {
       touchedAtLeastOneCard = true;
-      arrows.set(i, card, null, clue);
+      arrows.set(i, card, null, clue, true);
     }
   }
 
@@ -156,6 +156,8 @@ export function give(): void {
   if (!shouldGiveClue(target, clueButton)) {
     return;
   }
+
+  globals.elements.giveClueButton!.setEnabled(false);
 
   let type: ActionType;
   let value: number;

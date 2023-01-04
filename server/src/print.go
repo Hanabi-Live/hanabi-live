@@ -157,16 +157,16 @@ func printTablePlayers(t *Table) {
 }
 
 func printTableSpectators(t *Table) {
-	logger.Debug("    Spectators (" + strconv.Itoa(len(t.Spectators)) + "):")
+	logger.Debug("    Spectators (" + strconv.Itoa(len(t.ActiveSpectators())) + "):")
 	if t.Spectators == nil {
 		logger.Debug("      [Spectators is nil; this should never happen]")
 	} else {
-		for j, sp := range t.Spectators { // This is a []*Spectator
+		for j, sp := range t.ActiveSpectators() { // This is a []*Spectator
 			logger.Debug("        " + strconv.Itoa(j) + " - " +
 				"User ID: " + strconv.Itoa(sp.UserID) + ", " +
 				"Username: " + sp.Name)
 		}
-		if len(t.Spectators) == 0 {
+		if len(t.ActiveSpectators()) == 0 {
 			logger.Debug("        [no spectators]")
 		}
 	}

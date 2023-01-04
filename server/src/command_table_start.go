@@ -15,9 +15,10 @@ import (
 // game)
 //
 // Example data:
-// {
-//   tableID: 5,
-// }
+//
+//	{
+//	  tableID: 5,
+//	}
 func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -271,7 +272,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			p.Session.NotifyTableStart(t)
 		}
 	}
-	for _, s := range t.Spectators {
+	for _, s := range t.ActiveSpectators() {
 		s.Session.NotifyTableStart(t)
 	}
 

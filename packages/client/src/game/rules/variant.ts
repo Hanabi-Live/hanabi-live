@@ -5,9 +5,6 @@ import { isNameUpOrDown, Variant } from "@hanabi/data";
 export const isDualColor = (variant: Variant): boolean =>
   variant.name.startsWith("Dual-Color");
 
-export const isMix = (variant: Variant): boolean =>
-  variant.name.includes("Mix");
-
 export const isColorMute = (variant: Variant): boolean =>
   variant.clueColors.length === 0;
 

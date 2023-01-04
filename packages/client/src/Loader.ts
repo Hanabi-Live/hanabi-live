@@ -15,6 +15,7 @@ const fileIDs = [
   "home",
   "note",
   "question-mark",
+  "question-mark2",
   "replay",
   "replay-back",
   "replay-back-border",
@@ -31,6 +32,7 @@ const fileIDs = [
   "trashcan",
   "trashcan2",
   "x",
+  "wastebasket",
   "wrench",
 ];
 

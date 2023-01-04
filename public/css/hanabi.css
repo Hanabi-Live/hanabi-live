@@ -462,6 +462,19 @@ table td {
   cursor: url("data:image/svg+xml;utf8,<svg width='28.343' height='25.001' viewBox='0 0 7.499 6.615' xmlns='http://www.w3.org/2000/svg'><g stroke-dasharray='.265 .265' stroke-width='.265'><g transform='translate(-10.083 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g><g transform='translate(-6.343 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g></g></svg>"),
     pointer;
 }
+.lobby-pregame-players .shadow:hover,
+#lobby-games-table-tbody .shadow:hover {
+  /* detective */
+  cursor: url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>🕵️</text></svg>"),
+    pointer;
+  color: #3350cb;
+}
+.lobby-pregame-players .unShadow:hover {
+  /* eyes */
+  cursor: url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>👀</text></svg>"),
+    pointer;
+  color: #3350cb;
+}
 
 /*
   Lobby chat
@@ -929,6 +942,10 @@ input::-webkit-calendar-picker-indicator {
 
 #morph-modal input[type="checkbox"] {
   display: none;
+}
+
+#morph-modal .faded {
+  opacity: 50%;
 }
 
 #morph-modal label {
@@ -1832,4 +1849,20 @@ span.tableSpinner:after {
 .lobby-hyphen-empty {
   width: 0.75em;
   display: inline-block;
+}
+
+div.noteTitle {
+  width: 100%;
+  height: 10px;
+  border-bottom: 1px solid #777;
+  text-align: center;
+  margin-bottom: 7px;
+  line-height: 10px;
+}
+
+div.noteTitle span {
+  font-size: 14px;
+  background-color: #fff;
+  text-align: center;
+  padding: 0 10px;
 }
