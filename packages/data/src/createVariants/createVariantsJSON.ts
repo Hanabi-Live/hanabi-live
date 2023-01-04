@@ -14,6 +14,7 @@ import {
   getDuckVariants,
   getExtremelyAmbiguousVariants,
   getFunnelsVariants,
+  getMatryoshkaVariants,
   getMixVariants,
   getMuteVariants,
   getOddsAndEvensVariants,
@@ -85,6 +86,7 @@ function main() {
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getMatryoshkaVariants(suitsToCreateVariantsFor),
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
