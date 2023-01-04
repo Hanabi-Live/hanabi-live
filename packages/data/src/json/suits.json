@@ -594,7 +594,7 @@
     "displayName": "Teal",
     "showSuitName": true,
     "fill": "#483c32",
-    "pip": "hanabiTeal",
+    "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
   }
 ]
