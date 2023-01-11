@@ -327,6 +327,9 @@ function keyup(event: JQuery.KeyUpEvent) {
   if (event.which === KeyCode.KEY_SPACE) {
     // Space bar
     setGlobalEmpathy(false);
+    if (globals.state.replay.hypothetical !== null) {
+      hypothetical.changeStartingHandVisibility();
+    }
   }
 }
 
