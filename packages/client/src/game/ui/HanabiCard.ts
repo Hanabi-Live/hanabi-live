@@ -374,6 +374,11 @@ export default class HanabiCard
         return this.variant.suits[this.state.suitIndex]!;
       }
 
+      if (this.isMorphed()) {
+        const morphedIdentity = this.getMorphedIdentity();
+        return suitIndexToSuit(morphedIdentity.suitIndex, this.variant)!;
+      }
+
       return unknownSuit;
     }
 
@@ -399,6 +404,11 @@ export default class HanabiCard
     if (this.empathy) {
       if (this.state.rankDetermined && this.state.rank !== null) {
         return this.state.rank;
+      }
+
+      if (this.isMorphed()) {
+        const morphedIdentity = this.getMorphedIdentity();
+        return morphedIdentity.rank!;
       }
 
       return UNKNOWN_CARD_RANK;
@@ -428,6 +438,16 @@ export default class HanabiCard
     }
 
     return UNKNOWN_CARD_RANK;
+  }
+
+  isMorphed(): boolean {
+    if (globals.state.replay.hypothetical === null) {
+      return false;
+    }
+
+    const morphedIdentity =
+      globals.state.replay.hypothetical.morphedIdentities[this.state.order];
+    return morphedIdentity !== undefined;
   }
 
   getMorphedIdentity(): CardIdentity {
