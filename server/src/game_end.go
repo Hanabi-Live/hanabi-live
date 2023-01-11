@@ -345,7 +345,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 
 	t.Replay = true
 	t.InitialName = t.Name
-	t.Name = "Shared replay for game #" + strconv.Itoa(t.ExtraOptions.DatabaseID)
+	t.Name += " (Game #" + strconv.Itoa(t.ExtraOptions.DatabaseID) + ")"
 	// Update the "EndTurn" field (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn
 	// Initialize the shared replay on the 2nd to last turn (since the end times are not important)
