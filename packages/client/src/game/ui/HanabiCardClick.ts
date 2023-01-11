@@ -162,7 +162,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     event.ctrlKey &&
     event.shiftKey &&
     !event.metaKey &&
-    globals.state.playing
+    !globals.state.finished
   ) {
     if (event.altKey) {
       // When Alt is held, copy only the new part of the last note.
@@ -185,7 +185,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     event.shiftKey &&
     !event.altKey &&
     !event.metaKey &&
-    globals.state.playing
+    !globals.state.finished
   ) {
     lastNote = "f";
     card.appendNote(lastNote);
@@ -199,7 +199,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.shiftKey &&
     event.altKey &&
     !event.metaKey &&
-    globals.state.playing
+    !globals.state.finished
   ) {
     lastNote = "cm";
     card.appendNote(lastNote);
@@ -227,7 +227,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.shiftKey &&
     event.altKey &&
     !event.metaKey &&
-    globals.state.playing
+    !globals.state.finished
   ) {
     lastNote = `#${globals.elements.turnNumberLabel?.text()}`;
     card.prependTurnCountNote(lastNote);
