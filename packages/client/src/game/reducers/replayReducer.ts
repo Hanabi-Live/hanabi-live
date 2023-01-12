@@ -193,20 +193,15 @@ function replayReducerFunction(
       state.hypothetical.showDrawnCards = action.showDrawnCards;
       if (action.showDrawnCards) {
         // Filter out all identities morphed to blank.
-        const morphed = original(state.hypothetical.morphedIdentities)!;
-        state.hypothetical.morphedIdentities = [];
-        for (let i = 0; i < morphed.length; i++) {
-          // The for loop is necessary because the array is not contiguous. `Array.filter` would
-          // change the indexes.
-          const cardIdentity = morphed[i];
-          if (
-            cardIdentity !== undefined &&
-            cardIdentity.rank !== null &&
-            cardIdentity.suitIndex !== null
-          ) {
-            state.hypothetical.morphedIdentities[i] = cardIdentity;
-          }
-        }
+
+        original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
+          (order) => {
+            state.hypothetical!.morphedIdentities[order] = {
+              rank: CardIdentityType.Original,
+              suitIndex: CardIdentityType.Original,
+            };
+          },
+        );
       } else {
         // Hide all cards drawn since the beginning of the hypothetical.
         original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
@@ -254,7 +249,7 @@ function hypoAction(
 
   // The morph action is handled here. Also take note of any draws that conflict with the known card
   // identities.
-  if (action.type === "morph" || action.type === "draw") {
+  if (action.type === "morph") {
     if (
       // eslint-disable-next-line isaacscript/strict-enums
       action.suitIndex === CardIdentityType.Original &&
@@ -262,25 +257,30 @@ function hypoAction(
       action.rank === CardIdentityType.Original
     ) {
       // unmorph the card
-      state.hypothetical.morphedIdentities.splice(action.order, 1);
+      state.hypothetical.morphedIdentities[action.order] = {
+        suitIndex: CardIdentityType.Original,
+        rank: CardIdentityType.Original,
+      };
     } else {
-      let suitIndex = nullIfNegative(action.suitIndex);
-      let rank = nullIfNegative(action.rank);
-
-      if (action.type === "draw") {
-        // Store drawn cards to be able to show/hide in the future.
-        state.hypothetical.drawnCardsInHypothetical.push(action.order);
-        if (!state.hypothetical.showDrawnCards) {
-          // Mark this one as blank.
-          suitIndex = null;
-          rank = null;
-        }
-      }
+      const suitIndex = nullIfNegative(action.suitIndex);
+      const rank = nullIfNegative(action.rank);
 
       // This card has been morphed or blanked.
       state.hypothetical.morphedIdentities[action.order] = {
         suitIndex,
         rank,
+      };
+    }
+  }
+
+  if (action.type === "draw") {
+    // Store drawn cards to be able to show/hide in the future.
+    state.hypothetical.drawnCardsInHypothetical.push(action.order);
+    if (!state.hypothetical.showDrawnCards) {
+      // This card has been morphed or blanked.
+      state.hypothetical.morphedIdentities[action.order] = {
+        suitIndex: null,
+        rank: null,
       };
     }
   }

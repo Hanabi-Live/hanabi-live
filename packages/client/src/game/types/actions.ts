@@ -1,4 +1,5 @@
 import CardIdentity from "./CardIdentity";
+import { CardIdentityType } from "./CardIdentityType";
 import ClientAction from "./ClientAction";
 import EndCondition from "./EndCondition";
 import MsgClue from "./MsgClue";
@@ -281,8 +282,8 @@ export interface ActionHypotheticalBack {
 
 interface ActionHypotheticalMorph {
   type: "morph"; // This is not "hypoMorph" because it is a game action
-  readonly suitIndex: number;
-  readonly rank: number;
+  readonly suitIndex: number | CardIdentityType;
+  readonly rank: number | CardIdentityType;
   readonly order: number;
 }
 

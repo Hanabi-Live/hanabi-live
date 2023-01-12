@@ -15,6 +15,7 @@ import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
 import CardIdentity from "../types/CardIdentity";
+import { CardIdentityType } from "../types/CardIdentityType";
 import CardNote from "../types/CardNote";
 import CardState from "../types/CardState";
 import CardStatus from "../types/CardStatus";
@@ -340,12 +341,8 @@ export default class HanabiCard
     // (e.g. it is a card in our hand that we have learned about in the future).
 
     // First, check if we have an alternate identity (e.g. blank or morphed) for this card.
-    if (globals.state.replay.hypothetical !== null) {
-      const morphedIdentity =
-        globals.state.replay.hypothetical.morphedIdentities[this.state.order];
-      if (morphedIdentity !== undefined) {
-        return morphedIdentity;
-      }
+    if (this.isMorphed()) {
+      return this.getMorph()!;
     }
 
     // We do not track the card identities for the stack bases. (For stack bases, the suit and rank
@@ -375,8 +372,13 @@ export default class HanabiCard
       }
 
       if (this.isMorphed()) {
-        const morphedIdentity = this.getMorphedIdentity();
-        return suitIndexToSuit(morphedIdentity.suitIndex, this.variant)!;
+        const morphedIdentity = this.getMorph()!;
+        if (
+          morphedIdentity.rank !== null &&
+          morphedIdentity.suitIndex !== null
+        ) {
+          return suitIndexToSuit(morphedIdentity.suitIndex, this.variant)!;
+        }
       }
 
       return unknownSuit;
@@ -407,8 +409,13 @@ export default class HanabiCard
       }
 
       if (this.isMorphed()) {
-        const morphedIdentity = this.getMorphedIdentity();
-        return morphedIdentity.rank!;
+        const morphedIdentity = this.getMorph()!;
+        if (
+          morphedIdentity.rank !== null &&
+          morphedIdentity.suitIndex !== null
+        ) {
+          return morphedIdentity.rank;
+        }
       }
 
       return UNKNOWN_CARD_RANK;
@@ -445,19 +452,25 @@ export default class HanabiCard
       return false;
     }
 
-    const morphedIdentity =
-      globals.state.replay.hypothetical.morphedIdentities[this.state.order];
-    return morphedIdentity !== undefined;
+    const morphedIdentity = this.getMorph();
+    return (
+      morphedIdentity !== undefined &&
+      morphedIdentity.rank !== CardIdentityType.Original &&
+      morphedIdentity.suitIndex !== CardIdentityType.Original
+    );
+  }
+
+  getMorph(): CardIdentity | undefined {
+    return globals.state.replay.hypothetical!.morphedIdentities[
+      this.state.order
+    ]!;
   }
 
   getMorphedIdentity(): CardIdentity {
+    if (this.isMorphed()) {
+      return this.getMorph()!;
+    }
     if (globals.state.replay.hypothetical !== null) {
-      const morphedIdentity =
-        globals.state.replay.hypothetical.morphedIdentities[this.state.order];
-      if (morphedIdentity !== undefined) {
-        return morphedIdentity;
-      }
-
       if (globals.state.playing) {
         const possibilities = possibleCardsFromNoteAndClues(
           this.note,
@@ -498,17 +511,12 @@ export default class HanabiCard
   }
 
   isMorphedBlank(): boolean {
-    if (globals.state.replay.hypothetical === null) {
+    if (!this.isMorphed()) {
       return false;
     }
 
-    const morphedIdentity =
-      globals.state.replay.hypothetical.morphedIdentities[this.state.order];
-    return (
-      morphedIdentity !== undefined &&
-      morphedIdentity.rank === null &&
-      morphedIdentity.suitIndex === null
-    );
+    const morphedIdentity = this.getMorph()!;
+    return morphedIdentity.rank === null && morphedIdentity.suitIndex === null;
   }
 
   getBareName(
@@ -1024,12 +1032,8 @@ export default class HanabiCard
     }
 
     // Morphed cards (in a hypothetical) should never show the note indicator.
-    if (globals.state.replay.hypothetical !== null) {
-      const { morphedIdentities } = globals.state.replay.hypothetical;
-      const morphedIdentity = morphedIdentities[this.state.order];
-      if (morphedIdentity !== undefined) {
-        return false;
-      }
+    if (this.isMorphed()) {
+      return false;
     }
 
     // We are not a player in an ongoing game. Only show the note indicator if there is one or more
