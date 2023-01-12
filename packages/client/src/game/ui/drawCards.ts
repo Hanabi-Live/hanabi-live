@@ -118,7 +118,8 @@ export default function drawCards(
         if (
           variant.specialDeceptive &&
           rank === variant.specialRank &&
-          suit.name !== "Unknown"
+          suit.name !== "Unknown" &&
+          !suit.noClueRanks
         ) {
           const deceptiveRank =
             variant.clueRanks[suitIndex % variant.clueRanks.length]!;
