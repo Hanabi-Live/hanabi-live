@@ -2,7 +2,7 @@ import charactersJSON from "./json/characters.json";
 import { Character } from "./types/Character";
 
 export function charactersInit(): ReadonlyMap<number, Character> {
-  const CHARACTERS = new Map<number, Character>();
+  const characters = new Map<number, Character>();
 
   const charactersJSONArray = Array.from(charactersJSON);
   if (charactersJSONArray.length === 0) {
@@ -39,8 +39,8 @@ export function charactersInit(): ReadonlyMap<number, Character> {
     }
 
     // Add it to the map.
-    CHARACTERS.set(character.id, character);
+    characters.set(character.id, character);
   }
 
-  return CHARACTERS;
+  return characters;
 }

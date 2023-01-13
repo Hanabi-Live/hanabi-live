@@ -12,16 +12,18 @@ export interface ClockData {
   timeTaken: number;
 }
 
-// This function handles the "clock" WebSocket command. It is sent at the beginning of every turn to
-// update the client about how much time each player has left. It has the following data:
-//
-// ```
-// {
-//   times: [100, 200], // A list of the times for each player
-//   activePlayerIndex: 0,
-//   timeTaken: 500, // The amount of time that has elapsed since the turn began
-// }
-// ```
+/**
+ * This function handles the "clock" WebSocket command. It is sent at the beginning of every turn to
+ * update the client about how much time each player has left. It has the following data:
+ *
+ * ```ts
+ * {
+ *   times: [100, 200], // A list of the times for each player.
+ *   activePlayerIndex: 0,
+ *   timeTaken: 500, // The amount of time that has elapsed since the turn began.
+ * }
+ * ```
+ */
 export function update(data: ClockData): void {
   stop();
 

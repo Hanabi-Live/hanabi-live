@@ -11,7 +11,7 @@ const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";
 const SUIT_MODIFIER_DELIMITER = "/";
 const REVERSE_MODIFIER = "R";
-const SUIT_MODIFIERS = new Set<string>([REVERSE_MODIFIER]);
+const SUIT_MODIFIERS: ReadonlySet<string> = new Set([REVERSE_MODIFIER]);
 
 export function getVariantFromNewID(
   newID: string,

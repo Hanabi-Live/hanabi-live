@@ -2,8 +2,8 @@ import { DEFAULT_CLUE_RANKS } from "./constants";
 import { SuitJSON } from "./types/SuitJSON";
 import { VariantDescription } from "./types/VariantDescription";
 
-const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3];
-const SPECIAL_RANKS = [1, 5];
+const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
+const SPECIAL_RANKS = [1, 5] as const;
 export const SUIT_REVERSED_SUFFIX = " Reversed";
 
 /** These are suit properties that are transferred to special ranks. */
@@ -14,29 +14,31 @@ const SUIT_SPECIAL_PROPERTIES = [
   "noClueRanks",
 ] as const;
 
-const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = new Set<string>([
+const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS: ReadonlySet<string> =
+  new Set([
+    "Rainbow",
+    "Prism",
+    "Dark Prism", // This is the same as Dark Rainbow
+  ]);
+
+const SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS: ReadonlySet<string> = new Set([
   "Rainbow",
   "Prism",
-  "Dark Prism", // This is the same as Dark Rainbow
 ]);
 
-const SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS = new Set<string>([
-  "Rainbow",
-  "Prism",
-]);
-
-const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA = new Set<string>([
-  "Prism", // Same as White
-  "Muddy Rainbow", // Same as Rainbow
-  "Light Pink", // Same as Rainbow
-  "Pink", // Same as Rainbow
-  "Omni", // Same as Rainbow
-  "Dark Prism", // Same as White
-  "Cocoa Rainbow", // Same as Dark Rainbow
-  "Gray Pink", // Same as Dark Rainbow
-  "Dark Pink", // Same as Dark Rainbow
-  "Dark Omni", // Same as Dark Rainbow
-]);
+const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA: ReadonlySet<string> =
+  new Set([
+    "Prism", // Same as White
+    "Muddy Rainbow", // Same as Rainbow
+    "Light Pink", // Same as Rainbow
+    "Pink", // Same as Rainbow
+    "Omni", // Same as Rainbow
+    "Dark Prism", // Same as White
+    "Cocoa Rainbow", // Same as Dark Rainbow
+    "Gray Pink", // Same as Dark Rainbow
+    "Dark Pink", // Same as Dark Rainbow
+    "Dark Omni", // Same as Dark Rainbow
+  ]);
 
 export function getBasicVariants(
   basicVariantSuits: string[][],

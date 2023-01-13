@@ -2,7 +2,7 @@ import colorsJSON from "./json/colors.json";
 import { Color } from "./types/Color";
 
 export function colorsInit(): ReadonlyMap<string, Color> {
-  const COLORS = new Map<string, Color>();
+  const colors = new Map<string, Color>();
 
   const colorsJSONArray = Array.from(colorsJSON);
   if (colorsJSONArray.length === 0) {
@@ -44,8 +44,8 @@ export function colorsInit(): ReadonlyMap<string, Color> {
       fill,
       fillColorblind,
     };
-    COLORS.set(colorJSON.name, color);
+    colors.set(colorJSON.name, color);
   }
 
-  return COLORS;
+  return colors;
 }

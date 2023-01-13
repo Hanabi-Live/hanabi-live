@@ -48,7 +48,7 @@ export const ALL_RESERVED_NOTES: readonly string[] = [
   ...BLANK_NOTES,
   ...CLUED_NOTES,
   ...UNCLUED_NOTES,
-];
+] as const;
 
 /**
  * Suit abbreviations are hard-coded in the "suits.json" file. In some variants, two or more suits

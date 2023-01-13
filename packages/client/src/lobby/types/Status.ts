@@ -14,4 +14,4 @@ export const StatusText = [
   "Spectating",
   "Replay",
   "Shared Replay",
-];
+] as const;

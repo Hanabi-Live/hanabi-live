@@ -15,7 +15,9 @@ import "../lib/tooltipster-scrollableTip.min";
 export const TOOLTIP_DELAY = 500; // In milliseconds
 
 // Constants
+// eslint-disable-next-line isaacscript/require-capital-const-assertions
 const TOOLTIP_THEME = ["tooltipster-shadow", "tooltipster-shadow-big"];
+// eslint-disable-next-line isaacscript/require-capital-const-assertions
 const TOOLTIP_THEME_CENTERED = [
   "tooltipster-shadow",
   "tooltipster-shadow-big",

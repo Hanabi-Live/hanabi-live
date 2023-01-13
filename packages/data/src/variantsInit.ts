@@ -16,7 +16,7 @@ export function variantsInit(
   SUITS: ReadonlyMap<string, Suit>,
   START_CARD_RANK: number,
 ): ReadonlyMap<string, Variant> {
-  const VARIANTS = new Map<string, Variant>();
+  const variants = new Map<string, Variant>();
 
   const variantsJSONArray = Array.from(variantsJSON) as VariantJSON[];
   if (variantsJSONArray.length === 0) {
@@ -340,8 +340,8 @@ export function variantsInit(
       suitAbbreviations,
       identityNotePattern,
     };
-    VARIANTS.set(variantJSON.name, variant);
+    variants.set(variantJSON.name, variant);
   }
 
-  return VARIANTS;
+  return variants;
 }

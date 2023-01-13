@@ -7,7 +7,7 @@ const SUIT_REVERSED_SUFFIX = " Reversed";
 export function suitsInit(
   COLORS: ReadonlyMap<string, Color>,
 ): ReadonlyMap<string, Suit> {
-  const SUITS = new Map<string, Suit>();
+  const suits = new Map<string, Suit>();
 
   const suitsJSONArray = Array.from(suitsJSON);
   if (suitsJSONArray.length === 0) {
@@ -223,15 +223,15 @@ export function suitsInit(
       noClueRanks,
       prism,
     };
-    SUITS.set(suitJSON.name, suit);
+    suits.set(suitJSON.name, suit);
 
     // Additionally, add the reversed version of this suit.
     const suitReversed: Suit = {
       ...suit,
       reversed: true,
     };
-    SUITS.set(suitJSON.name + SUIT_REVERSED_SUFFIX, suitReversed);
+    suits.set(suitJSON.name + SUIT_REVERSED_SUFFIX, suitReversed);
   }
 
-  return SUITS;
+  return suits;
 }
