@@ -73,7 +73,7 @@ export function variantsInit(
     }
 
     // Derive the ranks that the cards of each suit will be.
-    const ranks = [...DEFAULT_CARD_RANKS];
+    const ranks: number[] = [...DEFAULT_CARD_RANKS];
     if (name.startsWith("Up or Down")) {
       // The "Up or Down" variants have START cards.
       ranks.push(START_CARD_RANK);

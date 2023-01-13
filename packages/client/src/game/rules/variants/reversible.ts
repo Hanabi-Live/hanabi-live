@@ -155,7 +155,7 @@ export function getMaxScorePerStack(
     const suit = variant.suits[suitIndex]!;
 
     // Make a map that shows if all of some particular rank in this suit has been discarded.
-    const ranks = [...DEFAULT_CARD_RANKS];
+    const ranks: number[] = [...DEFAULT_CARD_RANKS];
     if (variantRules.isUpOrDown(variant)) {
       ranks.push(START_CARD_RANK);
     }
