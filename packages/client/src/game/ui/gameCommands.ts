@@ -7,57 +7,56 @@ import { sendSelfPMFromServer } from "client/src/chat";
 import { createStore } from "redux";
 import * as sentry from "../../sentry";
 import { initArray, setBrowserAddressBarPath } from "../../utils";
-import initialState from "../reducers/initialStates/initialState";
-import stateReducer from "../reducers/stateReducer";
+import { initialState } from "../reducers/initialStates/initialState";
+import { stateReducer } from "../reducers/stateReducer";
 import * as handRules from "../rules/hand";
 import * as hGroupRules from "../rules/hGroup";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import { ActionIncludingHypothetical, GameAction } from "../types/actions";
-import CardIdentity from "../types/CardIdentity";
-import GameMetadata from "../types/GameMetadata";
-import InitData from "../types/InitData";
-import ReplayArrowOrder from "../types/ReplayArrowOrder";
-import Spectator from "../types/Spectator";
-import SpectatorNote from "../types/SpectatorNote";
-import State from "../types/State";
+import { CardIdentity } from "../types/CardIdentity";
+import { GameMetadata } from "../types/GameMetadata";
+import { InitData } from "../types/InitData";
+import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
+import { Spectator } from "../types/Spectator";
+import { SpectatorNote } from "../types/SpectatorNote";
+import { State } from "../types/State";
 import * as arrows from "./arrows";
 import { setSkullEnabled, setSkullNormal } from "./drawUI";
-import getCardOrStackBase from "./getCardOrStackBase";
-import globals from "./globals";
+import { getCardOrStackBase } from "./getCardOrStackBase";
+import { globals } from "./globals";
 import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
-import StateObserver from "./reactive/StateObserver";
+import { StateObserver } from "./reactive/StateObserver";
 import * as replay from "./replay";
 import * as stats from "./stats";
 import * as timer from "./timer";
-import uiInit from "./uiInit";
+import { uiInit } from "./uiInit";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
-const commands = new Map<string, CommandCallback>();
-export default commands;
+export const gameCommands = new Map<string, CommandCallback>();
 
 // ----------------
 // Command handlers
 // ----------------
 
 // Received when the server wants to force the client to go back to the lobby
-commands.set("boot", () => {
+gameCommands.set("boot", () => {
   timer.stop();
   globals.game!.hide();
 });
 
 // Updates the clocks to show how much time people are taking or how much time people have left.
-commands.set("clock", (data: timer.ClockData) => {
+gameCommands.set("clock", (data: timer.ClockData) => {
   timer.update(data);
 });
 
 interface ConnectedData {
   list: boolean[];
 }
-commands.set("connected", (data: ConnectedData) => {
+gameCommands.set("connected", (data: ConnectedData) => {
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
@@ -71,7 +70,7 @@ interface CardIdentitiesData {
   tableID: number;
   cardIdentities: CardIdentity[];
 }
-commands.set("cardIdentities", (data: CardIdentitiesData) => {
+gameCommands.set("cardIdentities", (data: CardIdentitiesData) => {
   globals.store!.dispatch({
     type: "cardIdentities",
     cardIdentities: data.cardIdentities,
@@ -82,7 +81,7 @@ interface FinishOngoingGameData {
   databaseID: number;
   sharedReplayLeader: string;
 }
-commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
+gameCommands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
   globals.store!.dispatch({
@@ -106,7 +105,7 @@ interface HypotheticalData {
   showDrawnCards: boolean;
   actions: string[];
 }
-commands.set("hypothetical", (data: HypotheticalData) => {
+gameCommands.set("hypothetical", (data: HypotheticalData) => {
   // We are joining an ongoing shared replay that is currently playing through a hypothetical line.
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
   // have taken place.
@@ -127,7 +126,7 @@ commands.set("hypothetical", (data: HypotheticalData) => {
   });
 });
 
-commands.set("hypoAction", (data: string) => {
+gameCommands.set("hypoAction", (data: string) => {
   const action = JSON.parse(data) as ActionIncludingHypothetical;
   globals.store!.dispatch({
     type: "hypoAction",
@@ -136,31 +135,31 @@ commands.set("hypoAction", (data: string) => {
   hypothetical.checkToggleRevealedButton(action);
 });
 
-commands.set("hypoBack", () => {
+gameCommands.set("hypoBack", () => {
   globals.store!.dispatch({
     type: "hypoBack",
   });
 });
 
-commands.set("hypoEnd", () => {
+gameCommands.set("hypoEnd", () => {
   hypothetical.end();
 });
 
 interface HypoShowDrawnCardsData {
   showDrawnCards: boolean;
 }
-commands.set("hypoShowDrawnCards", (data: HypoShowDrawnCardsData) => {
+gameCommands.set("hypoShowDrawnCards", (data: HypoShowDrawnCardsData) => {
   globals.store!.dispatch({
     type: "hypoShowDrawnCards",
     showDrawnCards: data.showDrawnCards,
   });
 });
 
-commands.set("hypoStart", () => {
+gameCommands.set("hypoStart", () => {
   hypothetical.start();
 });
 
-commands.set("init", (metadata: InitData) => {
+gameCommands.set("init", (metadata: InitData) => {
   // Data contains the game settings for the game we are entering; attach this to the Sentry context
   // to make debugging easier.
   sentry.setGameContext(metadata);
@@ -177,7 +176,7 @@ interface NoteData {
   order: number;
   notes: SpectatorNote[];
 }
-commands.set("note", (data: NoteData) => {
+gameCommands.set("note", (data: NoteData) => {
   // If we are an active player and we got this message, something has gone wrong.
   if (globals.state.playing) {
     return;
@@ -210,7 +209,7 @@ interface NoteList {
   notes: string[];
   isSpectator: boolean;
 }
-commands.set("noteList", (data: NoteListData) => {
+gameCommands.set("noteList", (data: NoteListData) => {
   const names = [] as string[];
   const noteTextLists = [] as string[][];
   const isSpectators = [] as boolean[];
@@ -234,7 +233,7 @@ commands.set("noteList", (data: NoteListData) => {
 interface NoteListPlayerData {
   notes: string[];
 }
-commands.set("noteListPlayer", (data: NoteListPlayerData) => {
+gameCommands.set("noteListPlayer", (data: NoteListPlayerData) => {
   // Store our notes
   globals.store!.dispatch({
     type: "noteListPlayer",
@@ -249,7 +248,7 @@ interface GameActionData {
   tableID: number;
   action: GameAction;
 }
-commands.set("gameAction", (data: GameActionData) => {
+gameCommands.set("gameAction", (data: GameActionData) => {
   // Update the game state.
   globals.store!.dispatch(data.action);
 });
@@ -258,7 +257,7 @@ interface GameActionListData {
   tableID: number;
   list: GameAction[];
 }
-commands.set("gameActionList", (data: GameActionListData) => {
+gameCommands.set("gameActionList", (data: GameActionListData) => {
   // Users can load a specific turn in a replay by using a URL hash
   // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
   // with "#1", corresponding to the first turn).
@@ -283,7 +282,7 @@ interface PauseData {
   active: boolean;
   playerIndex: number;
 }
-commands.set("pause", (data: PauseData) => {
+gameCommands.set("pause", (data: PauseData) => {
   globals.store!.dispatch({
     type: "pause",
     active: data.active,
@@ -295,7 +294,7 @@ interface ReplayEfficiencyModData {
   tableID: number;
   mod: number;
 }
-commands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
+gameCommands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
   if (
     globals.state.replay.shared === null ||
     // Shared replay leaders already set the efficiency after sending the "replayAction" message.
@@ -310,7 +309,7 @@ commands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
 interface VoteData {
   vote: boolean;
 }
-commands.set("voteChange", (data: VoteData) => {
+gameCommands.set("voteChange", (data: VoteData) => {
   if (data.vote) {
     setSkullEnabled();
   } else {
@@ -322,7 +321,7 @@ commands.set("voteChange", (data: VoteData) => {
 interface ReplayIndicatorData {
   order: ReplayArrowOrder;
 }
-commands.set("replayIndicator", (data: ReplayIndicatorData) => {
+gameCommands.set("replayIndicator", (data: ReplayIndicatorData) => {
   if (
     globals.state.replay.shared === null ||
     // Shared replay leaders already drew the arrow after sending the "replayAction" message.
@@ -344,7 +343,7 @@ commands.set("replayIndicator", (data: ReplayIndicatorData) => {
 interface ReplayLeaderData {
   name: string;
 }
-commands.set("replayLeader", (data: ReplayLeaderData) => {
+gameCommands.set("replayLeader", (data: ReplayLeaderData) => {
   if (globals.state.replay.shared === null) {
     return;
   }
@@ -361,7 +360,7 @@ interface SuggestData {
   segment: number;
   tableID: string;
 }
-commands.set("suggestion", (data: SuggestData) => {
+gameCommands.set("suggestion", (data: SuggestData) => {
   if (globals.state.replay.shared === null) {
     return;
   }
@@ -373,7 +372,7 @@ commands.set("suggestion", (data: SuggestData) => {
 interface ReplaySegmentData {
   segment: number;
 }
-commands.set("replaySegment", (data: ReplaySegmentData) => {
+gameCommands.set("replaySegment", (data: ReplaySegmentData) => {
   // If we are the replay leader, we will already have the shared segment set to be equal to what
   // the server is broadcasting.
   if (
@@ -398,7 +397,7 @@ commands.set("replaySegment", (data: ReplaySegmentData) => {
 interface ReplaySoundData {
   sound: string;
 }
-commands.set("replaySound", (data: ReplaySoundData) => {
+gameCommands.set("replaySound", (data: ReplaySoundData) => {
   globals.game!.sounds.play(data.sound);
 });
 
@@ -407,7 +406,7 @@ interface SpectatorsData {
   tableID: number;
   spectators: Spectator[];
 }
-commands.set("spectators", (data: SpectatorsData) => {
+gameCommands.set("spectators", (data: SpectatorsData) => {
   globals.store!.dispatch({
     type: "spectators",
     spectators: data.spectators,

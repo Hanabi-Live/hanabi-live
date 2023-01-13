@@ -1,7 +1,7 @@
-import CardIdentity from "./CardIdentity";
-import GameState from "./GameState";
+import { CardIdentity } from "./CardIdentity";
+import { GameState } from "./GameState";
 
-export default interface HypotheticalState {
+export interface HypotheticalState {
   readonly ongoing: GameState;
 
   /**

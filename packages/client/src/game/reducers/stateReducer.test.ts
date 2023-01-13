@@ -1,7 +1,7 @@
 import { draw, replayEnter } from "../../../test/testActions";
-import testMetadata from "../../../test/testMetadata";
-import initialState from "./initialStates/initialState";
-import stateReducer from "./stateReducer";
+import { testMetadata } from "../../../test/testMetadata";
+import { initialState } from "./initialStates/initialState";
+import { stateReducer } from "./stateReducer";
 
 jest.mock("./UIReducer", () => ({
   UIReducer: jest.fn(),

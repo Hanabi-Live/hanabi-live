@@ -14,14 +14,14 @@ import {
 import equal from "fast-deep-equal";
 import produce, { Draft } from "immer";
 import { NoteAction } from "../types/actions";
-import CardNote from "../types/CardNote";
-import GameMetadata from "../types/GameMetadata";
-import NotesState from "../types/NotesState";
+import { CardNote } from "../types/CardNote";
+import { GameMetadata } from "../types/GameMetadata";
+import { NotesState } from "../types/NotesState";
 import * as noteIdentity from "./noteIdentity";
 
-const notesReducer = produce(notesReducerFunction, {} as NotesState);
+export const notesReducer = produce(notesReducerFunction, {} as NotesState);
+
 const emptyNotes: Map<string, CardNote> = new Map<string, CardNote>();
-export default notesReducer;
 
 function notesReducerFunction(
   notes: Draft<NotesState>,

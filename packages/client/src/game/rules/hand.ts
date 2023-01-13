@@ -1,7 +1,7 @@
 // Functions related to hand management.
 
-import Options from "../../types/Options";
-import CardState from "../types/CardState";
+import { Options } from "../../types/Options";
+import { CardState } from "../types/CardState";
 import * as cardRules from "./card";
 
 export const cardsPerHand = (options: Options): number =>

@@ -7,17 +7,17 @@ import {
   timerFormatter,
 } from "../../utils";
 import * as deckRules from "../rules/deck";
-import ActionType from "../types/ActionType";
-import ReplayArrowOrder from "../types/ReplayArrowOrder";
+import { ActionType } from "../types/ActionType";
+import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
 import { CARD_ANIMATION_LENGTH } from "./constants";
 import * as cursor from "./cursor";
-import globals from "./globals";
-import isOurTurn from "./isOurTurn";
+import { globals } from "./globals";
+import { isOurTurn } from "./isOurTurn";
 import * as konvaTooltips from "./konvaTooltips";
 import * as turn from "./turn";
 
-export default class Deck extends Konva.Group {
+export class Deck extends Konva.Group {
   cardBack: Konva.Image;
   numLeft: number;
   numLeftText: Konva.Text;

@@ -1,6 +1,6 @@
-import Settings from "./Settings";
+import { Settings } from "./Settings";
 
-export default interface WelcomeData {
+export interface WelcomeData {
   userID: number;
   username: string;
   totalGames: number;

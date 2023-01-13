@@ -1,6 +1,6 @@
-import Button from "./Button";
+import { Button } from "./Button";
 
-export default class SharedTurnsButton extends Button {
+export class SharedTurnsButton extends Button {
   // eslint-disable-next-line class-methods-use-this
   setLeft: (this: SharedTurnsButton) => void = () => {};
 

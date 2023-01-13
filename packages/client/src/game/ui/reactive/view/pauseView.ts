@@ -1,6 +1,6 @@
-import PauseState from "../../../types/PauseState";
-import globals from "../../globals";
-import isOurTurn from "../../isOurTurn";
+import { PauseState } from "../../../types/PauseState";
+import { globals } from "../../globals";
+import { isOurTurn } from "../../isOurTurn";
 
 export function onChanged(pause: PauseState): void {
   const stageFadeOpacity = pause.active ? 0.8 : 0.3;

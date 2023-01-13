@@ -1,10 +1,10 @@
-import CardState from "./CardState";
-import CardStatus from "./CardStatus";
-import StackDirection from "./StackDirection";
-import StatsState from "./StatsState";
-import TurnState from "./TurnState";
+import { CardState } from "./CardState";
+import { CardStatus } from "./CardStatus";
+import { StackDirection } from "./StackDirection";
+import { StatsState } from "./StatsState";
+import { TurnState } from "./TurnState";
 
-export default interface GameState {
+export interface GameState {
   readonly turn: TurnState;
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];

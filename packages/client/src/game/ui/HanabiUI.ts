@@ -4,12 +4,12 @@
 import { Globals as LobbyGlobals } from "../../globals";
 import { GameExports } from "../main";
 import * as cursor from "./cursor";
-import globals, { Globals } from "./globals";
+import { globals, Globals } from "./globals";
 import * as keyboard from "./keyboard";
-import setGlobalEmpathy from "./setGlobalEmpathy";
+import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
 
-export default class HanabiUI {
+export class HanabiUI {
   globals: Globals;
 
   constructor(lobby: LobbyGlobals, game: GameExports) {

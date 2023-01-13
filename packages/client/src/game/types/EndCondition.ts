@@ -1,4 +1,4 @@
-enum EndCondition {
+export enum EndCondition {
   InProgress,
   Normal,
   Strikeout,
@@ -11,4 +11,3 @@ enum EndCondition {
   AllOrNothingSoftlock,
   VotedToKill,
 }
-export default EndCondition;

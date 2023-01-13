@@ -3,12 +3,12 @@
 
 import Konva from "konva";
 import { CARD_ANIMATION_LENGTH } from "./constants";
-import globals from "./globals";
-import HanabiCard from "./HanabiCard";
+import { globals } from "./globals";
+import { HanabiCard } from "./HanabiCard";
 import { animate } from "./konvaHelpers";
-import LayoutChild from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 
-export default class CardLayout extends Konva.Group {
+export class CardLayout extends Konva.Group {
   private align: string;
   private reverse: boolean;
   origRotation: number;

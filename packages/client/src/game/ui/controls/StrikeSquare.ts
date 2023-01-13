@@ -1,6 +1,6 @@
 import Konva from "konva";
 
-export default class StrikeSquare extends Konva.Rect {
+export class StrikeSquare extends Konva.Rect {
   num: number;
 
   tooltipName = "";

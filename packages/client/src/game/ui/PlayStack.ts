@@ -4,11 +4,11 @@
 import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as variantRules from "../rules/variant";
-import globals from "./globals";
+import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
-import LayoutChild from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 
-export default class PlayStack extends Konva.Group {
+export class PlayStack extends Konva.Group {
   addChild(layoutChild: LayoutChild): void {
     const pos = layoutChild.getAbsolutePosition();
     this.add(layoutChild as unknown as Konva.Group);

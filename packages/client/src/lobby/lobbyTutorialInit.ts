@@ -3,7 +3,7 @@
 import { FADE_TIME } from "../constants";
 import * as login from "./login";
 
-export default function tutorialInit(): void {
+export function lobbyTutorialInit(): void {
   $("#tutorial-yes").on("click", () => {
     $("#tutorial-1").fadeOut(FADE_TIME, () => {
       $("#tutorial-2").fadeIn(FADE_TIME);

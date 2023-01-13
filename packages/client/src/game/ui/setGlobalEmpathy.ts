@@ -1,6 +1,6 @@
-import globals from "./globals";
+import { globals } from "./globals";
 
-export default function setGlobalEmpathy(enabled: boolean): void {
+export function setGlobalEmpathy(enabled: boolean): void {
   if (enabled === globals.globalEmpathyEnabled) {
     return;
   }

@@ -11,19 +11,21 @@ import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
 import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
-import CardNote from "../types/CardNote";
-import CardState from "../types/CardState";
-import EndCondition from "../types/EndCondition";
-import GameMetadata, { getPlayerName } from "../types/GameMetadata";
-import GameState from "../types/GameState";
-import cardsReducer from "./cardsReducer";
-import ddaReducer from "./ddaReducer";
-import knownTrashReducer from "./knownTrashReducer";
-import statsReducer from "./statsReducer";
-import turnReducer from "./turnReducer";
+import { CardNote } from "../types/CardNote";
+import { CardState } from "../types/CardState";
+import { EndCondition } from "../types/EndCondition";
+import { GameMetadata, getPlayerName } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
+import { cardsReducer } from "./cardsReducer";
+import { ddaReducer } from "./ddaReducer";
+import { knownTrashReducer } from "./knownTrashReducer";
+import { statsReducer } from "./statsReducer";
+import { turnReducer } from "./turnReducer";
 
-const gameStateReducer = produce(gameStateReducerFunction, {} as GameState);
-export default gameStateReducer;
+export const gameStateReducer = produce(
+  gameStateReducerFunction,
+  {} as GameState,
+);
 
 function gameStateReducerFunction(
   state: Draft<GameState>,

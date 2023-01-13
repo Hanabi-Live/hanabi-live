@@ -1,14 +1,14 @@
 // The Hanabi game UI.
 
 import { FADE_TIME } from "../constants";
-import globals from "../globals";
-import tablesDraw from "../lobby/tablesDraw";
-import Screen from "../lobby/types/Screen";
+import { globals } from "../globals";
+import { tablesDraw } from "../lobby/tablesDraw";
+import { Screen } from "../lobby/types/Screen";
 import * as usersDraw from "../lobby/usersDraw";
 import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
 import * as chat from "./chat";
-import HanabiUI from "./ui/HanabiUI";
+import { HanabiUI } from "./ui/HanabiUI";
 
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {

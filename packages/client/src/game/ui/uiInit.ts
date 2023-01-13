@@ -1,14 +1,14 @@
 import Konva from "konva";
 import { LABEL_COLOR } from "./constants";
-import drawCards from "./drawCards";
+import { drawCards } from "./drawCards";
 import * as drawCardsBrowser from "./drawCardsBrowser";
-import drawUI from "./drawUI";
-import globals from "./globals";
+import { drawUI } from "./drawUI";
+import { globals } from "./globals";
 import * as keyboard from "./keyboard";
 
 // When the HanabiUI object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
-export default function uiInit(): void {
+export function uiInit(): void {
   if (globals.lobby.imageLoader === null) {
     throw new Error(
       'The "globals.lobby.imageLoader" object was never instantiated upon reaching the "uiInit()" function.',

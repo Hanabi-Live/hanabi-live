@@ -17,7 +17,7 @@ import {
   ActionStrike,
   ActionTurn,
 } from "../src/game/types/actions";
-import ClueType from "../src/game/types/ClueType";
+import { ClueType } from "../src/game/types/ClueType";
 
 const clue = (
   type: ClueType,

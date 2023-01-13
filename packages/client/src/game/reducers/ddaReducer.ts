@@ -1,7 +1,7 @@
 import * as cardRules from "../rules/card";
-import CardState from "../types/CardState";
+import { CardState } from "../types/CardState";
 
-export default function ddaReducer(
+export function ddaReducer(
   deck: readonly CardState[],
   dda: number | null,
   currentPlayerIndex: number | null,

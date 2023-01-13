@@ -1,6 +1,6 @@
 import Konva from "konva";
 import * as KonvaBaseLayer from "konva/types/BaseLayer";
-import globals from "./globals";
+import { globals } from "./globals";
 
 export const drawLayer = (node: Konva.Node): void => {
   const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;

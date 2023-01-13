@@ -1,6 +1,6 @@
-import Options from "../../types/Options";
+import { Options } from "../../types/Options";
 
-export default interface InitData {
+export interface InitData {
   // Game settings
   tableID: number; // Equal to the table ID on the server
   playerNames: string[];

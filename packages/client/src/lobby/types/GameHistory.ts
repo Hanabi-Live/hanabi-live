@@ -1,6 +1,6 @@
-import Options from "../../types/Options";
+import { Options } from "../../types/Options";
 
-export default interface GameHistory {
+export interface GameHistory {
   id: number;
   options: Options;
   seed: string;

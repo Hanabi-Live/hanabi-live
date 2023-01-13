@@ -3,15 +3,15 @@
 import { Color, START_CARD_RANK } from "@hanabi/data";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
-import ActionType from "../types/ActionType";
-import ColorButton from "./ColorButton";
+import { ActionType } from "../types/ActionType";
+import { ColorButton } from "./ColorButton";
 import { colorToColorIndex } from "./convert";
-import globals from "./globals";
-import HanabiCard from "./HanabiCard";
+import { globals } from "./globals";
+import { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as turn from "./turn";
 
-export default function HanabiCardClickSpeedrun(
+export function HanabiCardClickSpeedrun(
   card: HanabiCard,
   event: MouseEvent,
 ): void {

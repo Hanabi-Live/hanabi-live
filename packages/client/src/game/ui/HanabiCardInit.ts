@@ -7,7 +7,7 @@ import { Arrow } from "konva/types/shapes/Arrow";
 import { RectConfig } from "konva/types/shapes/Rect";
 import * as KonvaUtil from "konva/types/Util";
 import * as variantRules from "../rules/variant";
-import Pips from "../types/Pips";
+import { Pips } from "../types/Pips";
 import {
   BOTTOM_LEFT_X,
   BOTTOM_LEFT_Y,
@@ -21,10 +21,10 @@ import {
   TOP_LEFT_X,
   TOP_LEFT_Y,
 } from "./constants";
-import NoteIndicator from "./controls/NoteIndicator";
-import RankPip from "./controls/RankPip";
-import drawPip from "./drawPip";
-import globals from "./globals";
+import { NoteIndicator } from "./controls/NoteIndicator";
+import { RankPip } from "./controls/RankPip";
+import { drawPip } from "./drawPip";
+import { globals } from "./globals";
 
 export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it

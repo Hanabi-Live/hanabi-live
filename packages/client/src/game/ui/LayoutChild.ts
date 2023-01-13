@@ -6,16 +6,16 @@ import * as sounds from "../../sounds";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as variantRules from "../rules/variant";
-import ActionType from "../types/ActionType";
-import CardLayout from "./CardLayout";
+import { ActionType } from "../types/ActionType";
+import { CardLayout } from "./CardLayout";
 import * as cursor from "./cursor";
-import globals from "./globals";
-import HanabiCard from "./HanabiCard";
-import isOurTurn from "./isOurTurn";
-import PlayStack from "./PlayStack";
+import { globals } from "./globals";
+import { HanabiCard } from "./HanabiCard";
+import { isOurTurn } from "./isOurTurn";
+import { PlayStack } from "./PlayStack";
 import * as turn from "./turn";
 
-export default class LayoutChild extends Konva.Group {
+export class LayoutChild extends Konva.Group {
   tween: Konva.Tween | null = null;
   doMisplayAnimation = false;
   blank = false;

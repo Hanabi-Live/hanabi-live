@@ -1,8 +1,8 @@
 import Konva from "konva";
-import FitText from "./controls/FitText";
-import globals from "./globals";
+import { FitText } from "./controls/FitText";
+import { globals } from "./globals";
 
-export default class MultiFitText extends Konva.Group {
+export class MultiFitText extends Konva.Group {
   maxLines: number;
   smallHistory: string[] = [];
 

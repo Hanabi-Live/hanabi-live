@@ -4,15 +4,15 @@
 import { negativeOneIfNull } from "../../utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionIncludingHypothetical } from "../types/actions";
-import ActionType from "../types/ActionType";
-import ClientAction from "../types/ClientAction";
-import ClueType from "../types/ClueType";
-import MsgClue from "../types/MsgClue";
-import ReplayActionType from "../types/ReplayActionType";
+import { ActionType } from "../types/ActionType";
+import { ClientAction } from "../types/ClientAction";
+import { ClueType } from "../types/ClueType";
+import { MsgClue } from "../types/MsgClue";
+import { ReplayActionType } from "../types/ReplayActionType";
 import { getTouchedCardsFromClue } from "./clues";
-import getCardOrStackBase from "./getCardOrStackBase";
-import globals from "./globals";
-import HanabiCard from "./HanabiCard";
+import { getCardOrStackBase } from "./getCardOrStackBase";
+import { globals } from "./globals";
+import { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 
 export function start(): void {

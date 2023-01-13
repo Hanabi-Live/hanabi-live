@@ -10,7 +10,7 @@ type WebSocketCallbacks = WebSocketCallbackCommands & {
 // protocol, the client and the server communicate using a specific format based on the protocol
 // that the Golem WebSocket framework uses. For more information, see "websocketMessage.go".
 // Based on: https://github.com/trevex/golem_client/blob/master/golem.js
-export default class Connection {
+export class Connection {
   ws: WebSocket;
   callbacks: WebSocketCallbacks = {};
   debug: boolean;

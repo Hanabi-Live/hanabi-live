@@ -1,9 +1,9 @@
 import { GameAction } from "./actions";
-import GameState from "./GameState";
-import HypotheticalState from "./HypotheticalState";
-import SharedReplayState from "./SharedReplayState";
+import { GameState } from "./GameState";
+import { HypotheticalState } from "./HypotheticalState";
+import { SharedReplayState } from "./SharedReplayState";
 
-export default interface ReplayState {
+export interface ReplayState {
   readonly active: boolean;
   readonly segment: number;
   readonly states: readonly GameState[]; // Indexed by segment

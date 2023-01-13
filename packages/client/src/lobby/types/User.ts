@@ -1,6 +1,6 @@
-import Status from "./Status";
+import { Status } from "./Status";
 
-export default interface User {
+export interface User {
   userID: number;
   name: string;
   status: Status;

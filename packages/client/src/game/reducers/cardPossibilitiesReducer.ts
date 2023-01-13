@@ -3,12 +3,12 @@
 import { getVariant, Variant } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
 import { isOddsAndEvens } from "../rules/variant";
-import CardState from "../types/CardState";
-import Clue from "../types/Clue";
-import ClueType from "../types/ClueType";
-import GameMetadata from "../types/GameMetadata";
+import { CardState } from "../types/CardState";
+import { Clue } from "../types/Clue";
+import { ClueType } from "../types/ClueType";
+import { GameMetadata } from "../types/GameMetadata";
 
-export default function cardPossibilitiesReducer(
+export function cardPossibilitiesReducer(
   state: CardState,
   clue: Clue,
   positive: boolean,

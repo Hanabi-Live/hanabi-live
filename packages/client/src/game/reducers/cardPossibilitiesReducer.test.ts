@@ -1,9 +1,9 @@
 import { getVariant } from "@hanabi/data";
-import testMetadata from "../../../test/testMetadata";
-import CardState from "../types/CardState";
+import { testMetadata } from "../../../test/testMetadata";
+import { CardState } from "../types/CardState";
 import { colorClue, rankClue } from "../types/Clue";
-import cardPossibilitiesReducer from "./cardPossibilitiesReducer";
-import initialCardState from "./initialStates/initialCardState";
+import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
+import { initialCardState } from "./initialStates/initialCardState";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);

@@ -1,8 +1,8 @@
 import Konva from "konva";
 import { drawLayer } from "../konvaHelpers";
-import FitText from "./FitText";
+import { FitText } from "./FitText";
 
-export default class Button extends Konva.Group {
+export class Button extends Konva.Group {
   enabled = true;
   pressed = false;
   assignedTextSize = false;

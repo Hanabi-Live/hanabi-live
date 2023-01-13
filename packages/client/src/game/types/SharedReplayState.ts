@@ -1,4 +1,4 @@
-export default interface SharedReplayState {
+export interface SharedReplayState {
   readonly segment: number;
   readonly useSharedSegments: boolean;
   readonly leader: string;

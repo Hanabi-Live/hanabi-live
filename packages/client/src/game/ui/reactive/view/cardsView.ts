@@ -1,12 +1,13 @@
-import CardIdentity from "../../../types/CardIdentity";
-import CardState from "../../../types/CardState";
-import State from "../../../types/State";
-import getCardOrStackBase from "../../getCardOrStackBase";
-import globals from "../../globals";
-import HanabiCard from "../../HanabiCard";
+import { CardIdentity } from "../../../types/CardIdentity";
+import { CardState } from "../../../types/CardState";
+import { State } from "../../../types/State";
+import { getCardOrStackBase } from "../../getCardOrStackBase";
+import { globals } from "../../globals";
+import { HanabiCard } from "../../HanabiCard";
 import { changeStartingHandVisibility } from "../../hypothetical";
-import observeStore, {
+import {
   Listener,
+  observeStore,
   Selector,
   Subscription,
 } from "../observeStore";

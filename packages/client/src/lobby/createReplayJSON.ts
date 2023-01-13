@@ -1,16 +1,16 @@
 import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
-import ActionType from "../game/types/ActionType";
+import { ActionType } from "../game/types/ActionType";
 import { CardIdentityType } from "../game/types/CardIdentityType";
-import ClientAction from "../game/types/ClientAction";
-import ClueType from "../game/types/ClueType";
+import { ClientAction } from "../game/types/ClientAction";
+import { ClueType } from "../game/types/ClueType";
 import { LogEntry } from "../game/types/GameState";
 import { JSONGame } from "../game/types/JSONGame";
-import ReplayState from "../game/types/ReplayState";
-import globals from "../game/ui/globals";
+import { ReplayState } from "../game/types/ReplayState";
+import { globals } from "../game/ui/globals";
 import { shrink } from "./hypoCompress";
 
-export default function createJSONFromReplay(room: string): void {
+export function createJSONFromReplay(room: string): void {
   if (globals.store === null || !globals.state.finished) {
     sendSelfPMFromServer(
       "You can only use the <code>/copy</code> command during the review of a game.",

@@ -1,5 +1,4 @@
-enum ClueType {
+export enum ClueType {
   Color,
   Rank,
 }
-export default ClueType;

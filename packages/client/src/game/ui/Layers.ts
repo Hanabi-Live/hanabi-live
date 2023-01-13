@@ -10,7 +10,7 @@ const defaultLayerSettings = {
 
 // We don't want to add too many layers; the Konva documentation states that 3-5 is max:
 // https://konvajs.org/docs/performance/Layer_Management.html
-export default class Layers {
+export class Layers {
   UI: Konva.Layer = new Konva.Layer(defaultLayerSettings);
   // The timer gets its own layer since it is being constantly updated.
   timer: Konva.Layer = new Konva.Layer(defaultLayerSettings);

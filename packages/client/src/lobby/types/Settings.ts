@@ -1,6 +1,6 @@
 // These are per-user settings that are changed from the main lobby screen (in the "Settings" button
 // tooltip).
-export default class Settings {
+export class Settings {
   desktopNotification = false;
   soundMove = true;
   soundTimer = true;

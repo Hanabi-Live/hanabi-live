@@ -1,4 +1,4 @@
-enum ReplayActionType {
+export enum ReplayActionType {
   Segment,
   Arrow,
   Sound,
@@ -9,4 +9,3 @@ enum ReplayActionType {
   HypoToggleRevealed,
   EfficiencyMod,
 }
-export default ReplayActionType;

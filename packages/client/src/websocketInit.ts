@@ -1,15 +1,15 @@
 // Communication with the server is done through the WebSocket protocol. The client uses a slightly
 // modified version of the Golem WebSocket library.
 
-import commands from "./commands";
-import Connection from "./Connection";
-import gameCommands from "./game/ui/gameCommands";
-import globals from "./globals";
-import lobbyCommands from "./lobby/lobbyCommands";
-import Screen from "./lobby/types/Screen";
+import { commands } from "./commands";
+import { Connection } from "./Connection";
+import { gameCommands } from "./game/ui/gameCommands";
+import { globals } from "./globals";
+import { lobbyCommands } from "./lobby/lobbyCommands";
+import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 
-export default function websocketInit(): void {
+export function websocketInit(): void {
   // Ensure that we are connecting to the right URL.
   const domain = $("#domain").html();
   if (
@@ -60,21 +60,21 @@ export default function websocketInit(): void {
 // We specify a callback for each command/message that we expect to receive from the server.
 function initCommands(conn: Connection) {
   // Activate the command handlers for commands relating to both the lobby and the game.
-  for (const [commandName, commandFunction] of commands.entries()) {
+  for (const [commandName, commandFunction] of commands) {
     conn.on(commandName, (data: unknown) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for lobby-related commands.
-  for (const [commandName, commandFunction] of lobbyCommands.entries()) {
+  for (const [commandName, commandFunction] of lobbyCommands) {
     conn.on(commandName, (data: unknown) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for game-related commands.
-  for (const [commandName, commandFunction] of gameCommands.entries()) {
+  for (const [commandName, commandFunction] of gameCommands) {
     conn.on(commandName, (data: unknown) => {
       // As a safety precaution, ignore any game-related commands if we are not inside of a game.
       if (globals.currentScreen !== Screen.Game || globals.ui === null) {

@@ -1,4 +1,4 @@
-import loadGameJSON from "../../../test/loadGameJSON";
+import { loadGameJSON } from "../../../test/loadGameJSON";
 import {
   hypoAction,
   hypoBack,
@@ -8,10 +8,10 @@ import {
   rankClue,
 } from "../../../test/testActions";
 import testGame from "../../../test_data/up_or_down.json";
-import GameMetadata from "../types/GameMetadata";
-import State from "../types/State";
-import replayReducer from "./replayReducer";
-import stateReducer from "./stateReducer";
+import { GameMetadata } from "../types/GameMetadata";
+import { State } from "../types/State";
+import { replayReducer } from "./replayReducer";
+import { stateReducer } from "./stateReducer";
 
 jest.mock("./UIReducer", () => ({
   UIReducer: jest.fn(),

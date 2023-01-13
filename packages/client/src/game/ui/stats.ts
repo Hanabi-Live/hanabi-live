@@ -1,11 +1,11 @@
 import { parseIntSafe } from "@hanabi/data";
 import Konva from "konva";
 import * as modals from "../../modals";
-import ReplayActionType from "../types/ReplayActionType";
-import ReplayArrowOrder from "../types/ReplayArrowOrder";
+import { ReplayActionType } from "../types/ReplayActionType";
+import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
-import TextWithTooltip from "./controls/TextWithTooltip";
-import globals from "./globals";
+import { TextWithTooltip } from "./controls/TextWithTooltip";
+import { globals } from "./globals";
 
 export function setEfficiencyMod(mod: number): void {
   globals.store!.dispatch({

@@ -1,4 +1,4 @@
-import globals from "../../globals";
+import { globals } from "../../globals";
 
 export function onInitializationChanged(initialized: boolean): void {
   if (!initialized) {

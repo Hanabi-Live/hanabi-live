@@ -2,17 +2,16 @@
 
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as pregame from "./lobby/pregame";
-import Screen from "./lobby/types/Screen";
+import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
-import ChatMessage from "./types/ChatMessage";
+import { ChatMessage } from "./types/ChatMessage";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
-const commands = new Map<string, CommandCallback>();
-export default commands;
+export const commands = new Map<string, CommandCallback>();
 
 interface WarningData {
   warning: string;

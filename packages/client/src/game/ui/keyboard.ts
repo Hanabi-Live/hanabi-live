@@ -3,20 +3,20 @@
 import { parseIntSafe } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import Konva from "konva";
-import Screen from "../../lobby/types/Screen";
+import { Screen } from "../../lobby/types/Screen";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
 import { copyStringToClipboard } from "../../utils";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
-import ActionType from "../types/ActionType";
-import ReplayActionType from "../types/ReplayActionType";
-import backToLobby from "./backToLobby";
+import { ActionType } from "../types/ActionType";
+import { ReplayActionType } from "../types/ReplayActionType";
+import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
-import globals from "./globals";
-import HanabiCard from "./HanabiCard";
+import { globals } from "./globals";
+import { HanabiCard } from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
-import setGlobalEmpathy from "./setGlobalEmpathy";
+import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as turn from "./turn";
 
 type Callback = () => void;

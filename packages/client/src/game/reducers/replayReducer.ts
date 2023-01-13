@@ -5,12 +5,11 @@ import produce, { Draft, original } from "immer";
 import { nullIfNegative } from "../../utils";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import { CardIdentityType } from "../types/CardIdentityType";
-import GameMetadata from "../types/GameMetadata";
-import ReplayState from "../types/ReplayState";
-import gameStateReducer from "./gameStateReducer";
+import { GameMetadata } from "../types/GameMetadata";
+import { ReplayState } from "../types/ReplayState";
+import { gameStateReducer } from "./gameStateReducer";
 
-const replayReducer = produce(replayReducerFunction, {} as ReplayState);
-export default replayReducer;
+export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 
 function replayReducerFunction(
   state: Draft<ReplayState>,

@@ -1,7 +1,7 @@
-import Options from "../../types/Options";
+import { Options } from "../../types/Options";
 
 /** This is for data that does not change. */
-export default interface GameMetadata {
+export interface GameMetadata {
   readonly ourUsername: string;
   readonly options: Options;
   readonly playerNames: string[];

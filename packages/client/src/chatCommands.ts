@@ -1,14 +1,13 @@
 import { getVariantNames, parseIntSafe } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as createGame from "./lobby/createGame";
-import createJSONFromReplay from "./lobby/createReplayJSON";
+import { createJSONFromReplay } from "./lobby/createReplayJSON";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Callback = (...args: any) => void;
-const chatCommands = new Map<string, Callback>();
-export default chatCommands;
+export const chatCommands = new Map<string, Callback>();
 
 // /friend [username]
 function friend(room: string, args: string[]) {

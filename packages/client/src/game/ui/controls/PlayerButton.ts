@@ -1,7 +1,7 @@
 import Konva from "konva";
-import Button from "./Button";
+import { Button } from "./Button";
 
-export default class PlayerButton extends Button {
+export class PlayerButton extends Button {
   targetIndex: number;
   radioBackground: Konva.Circle;
   radioDot: Konva.Circle;

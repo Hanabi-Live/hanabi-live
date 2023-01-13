@@ -1,9 +1,10 @@
 import { ensureAllCases, getVariant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
-import ClueType from "../types/ClueType";
-import EndCondition from "../types/EndCondition";
-import GameMetadata, {
+import { ClueType } from "../types/ClueType";
+import { EndCondition } from "../types/EndCondition";
+import {
+  GameMetadata,
   getPlayerName,
   getPlayerNames,
 } from "../types/GameMetadata";

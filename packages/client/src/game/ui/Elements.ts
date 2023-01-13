@@ -1,30 +1,30 @@
 import { Suit } from "@hanabi/data";
 import Konva from "konva";
-import ButtonGroup from "./ButtonGroup";
-import CardLayout from "./CardLayout";
-import ClueLog from "./ClueLog";
-import ColorButton from "./ColorButton";
-import Arrow from "./controls/Arrow";
-import Button from "./controls/Button";
-import CheckButton from "./controls/CheckButton";
-import CurrentPlayerArea from "./controls/CurrentPlayerArea";
-import EnterHypoButton from "./controls/EnterHypoButton";
-import FitText from "./controls/FitText";
-import SharedTurnsButton from "./controls/SharedTurnsButton";
-import Shuttle from "./controls/Shuttle";
-import SlidableGroup from "./controls/SlidableGroup";
-import StrikeSquare from "./controls/StrikeSquare";
-import StrikeX from "./controls/StrikeX";
-import TextWithTooltip from "./controls/TextWithTooltip";
-import TimerDisplay from "./controls/TimerDisplay";
-import Deck from "./Deck";
-import FullActionLog from "./FullActionLog";
-import MultiFitText from "./MultiFitText";
-import NameFrame from "./NameFrame";
-import PlayStack from "./PlayStack";
-import RankButton from "./RankButton";
+import { ButtonGroup } from "./ButtonGroup";
+import { CardLayout } from "./CardLayout";
+import { ClueLog } from "./ClueLog";
+import { ColorButton } from "./ColorButton";
+import { Arrow } from "./controls/Arrow";
+import { Button } from "./controls/Button";
+import { CheckButton } from "./controls/CheckButton";
+import { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
+import { EnterHypoButton } from "./controls/EnterHypoButton";
+import { FitText } from "./controls/FitText";
+import { SharedTurnsButton } from "./controls/SharedTurnsButton";
+import { Shuttle } from "./controls/Shuttle";
+import { SlidableGroup } from "./controls/SlidableGroup";
+import { StrikeSquare } from "./controls/StrikeSquare";
+import { StrikeX } from "./controls/StrikeX";
+import { TextWithTooltip } from "./controls/TextWithTooltip";
+import { TimerDisplay } from "./controls/TimerDisplay";
+import { Deck } from "./Deck";
+import { FullActionLog } from "./FullActionLog";
+import { MultiFitText } from "./MultiFitText";
+import { NameFrame } from "./NameFrame";
+import { PlayStack } from "./PlayStack";
+import { RankButton } from "./RankButton";
 
-export default class Elements {
+export class Elements {
   // The main screen
   stageFade: Konva.Rect | null = null;
   playArea: Konva.Rect | null = null;

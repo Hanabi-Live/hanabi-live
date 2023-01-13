@@ -3,11 +3,11 @@ import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
-import GameMetadata from "../src/game/types/GameMetadata";
-import Options from "../src/types/Options";
+import { GameMetadata } from "../src/game/types/GameMetadata";
+import { Options } from "../src/types/Options";
 import { initArray } from "../src/utils";
 
-export default function testMetadata(
+export function testMetadata(
   numPlayers: number,
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {

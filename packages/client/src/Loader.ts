@@ -36,7 +36,7 @@ const fileIDs = [
   "wrench",
 ];
 
-export default class Loader {
+export class Loader {
   filePathMap = new Map<string, string>();
   numLoaded = 0;
   finished = false;
@@ -56,7 +56,7 @@ export default class Loader {
   }
 
   start(): void {
-    for (const [fileID, filePath] of this.filePathMap.entries()) {
+    for (const [fileID, filePath] of this.filePathMap) {
       const img = new Image();
       img.onload = () => {
         this.numLoaded++;

@@ -2,7 +2,7 @@
 
 import * as cardRules from "../rules/card";
 import { DOUBLE_TAP_DELAY } from "./constants";
-import HanabiCard from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as replay from "./replay";
 

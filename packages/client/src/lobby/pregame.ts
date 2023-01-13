@@ -2,13 +2,13 @@
 
 import { getVariant } from "@hanabi/data";
 import * as chat from "../chat";
-import globals from "../globals";
+import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
 import { setBrowserAddressBarPath, timerFormatter } from "../utils";
 import * as nav from "./nav";
-import tablesDraw from "./tablesDraw";
-import Screen from "./types/Screen";
+import { tablesDraw } from "./tablesDraw";
+import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
 export function show(): void {

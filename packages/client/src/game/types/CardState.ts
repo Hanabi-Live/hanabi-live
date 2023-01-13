@@ -2,7 +2,7 @@ import { Color } from "@hanabi/data";
 
 type CardLocation = "deck" | "discard" | "playStack" | number;
 
-export default interface CardState {
+export interface CardState {
   readonly order: number;
   // If location is a number, it is the index of the player that holds this card.
   readonly location: CardLocation;

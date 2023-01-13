@@ -1,8 +1,8 @@
 import { GameAction } from "./actions";
 import { PaceRisk } from "./GameState";
-import SoundType from "./SoundType";
+import { SoundType } from "./SoundType";
 
-export default interface StatsState {
+export interface StatsState {
   // For max score
   readonly maxScore: number;
   readonly maxScorePerStack: number[];

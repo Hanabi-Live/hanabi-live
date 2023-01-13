@@ -3,18 +3,17 @@
 import produce, { castDraft, Draft, original } from "immer";
 import * as segmentRules from "../rules/segment";
 import { Action, GameAction } from "../types/actions";
-import CardIdentity from "../types/CardIdentity";
-import GameMetadata from "../types/GameMetadata";
-import GameState from "../types/GameState";
-import State from "../types/State";
-import gameStateReducer from "./gameStateReducer";
-import initialGameState from "./initialStates/initialGameState";
-import notesReducer from "./notesReducer";
-import replayReducer from "./replayReducer";
-import UIReducer from "./UIReducer";
+import { CardIdentity } from "../types/CardIdentity";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
+import { State } from "../types/State";
+import { gameStateReducer } from "./gameStateReducer";
+import { initialGameState } from "./initialStates/initialGameState";
+import { notesReducer } from "./notesReducer";
+import { replayReducer } from "./replayReducer";
+import { UIReducer } from "./UIReducer";
 
-const stateReducer = produce(stateReducerFunction, {} as State);
-export default stateReducer;
+export const stateReducer = produce(stateReducerFunction, {} as State);
 
 function stateReducerFunction(state: Draft<State>, action: Action) {
   switch (action.type) {

@@ -1,9 +1,9 @@
 import { Variant } from "@hanabi/data";
 import * as cardRules from "../rules/card";
-import CardState from "../types/CardState";
-import StackDirection from "../types/StackDirection";
+import { CardState } from "../types/CardState";
+import { StackDirection } from "../types/StackDirection";
 
-export default function knownTrashReducer(
+export function knownTrashReducer(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],

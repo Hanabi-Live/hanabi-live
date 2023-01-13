@@ -2,12 +2,12 @@ import { Suit } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import * as variantRules from "../rules/variant";
-import Clue from "../types/Clue";
-import drawPip from "./drawPip";
-import globals from "./globals";
+import { Clue } from "../types/Clue";
+import { drawPip } from "./drawPip";
+import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 
-export default class ColorButton extends Konva.Group {
+export class ColorButton extends Konva.Group {
   pressed = false;
   clue: Clue;
 

@@ -7,12 +7,12 @@ import {
   play,
   rankClue,
 } from "../../../test/testActions";
-import testMetadata from "../../../test/testMetadata";
+import { testMetadata } from "../../../test/testMetadata";
 import * as deckRules from "../rules/deck";
-import CardState from "../types/CardState";
-import cardsReducer from "./cardsReducer";
-import initialCardState from "./initialStates/initialCardState";
-import initialGameState from "./initialStates/initialGameState";
+import { CardState } from "../types/CardState";
+import { cardsReducer } from "./cardsReducer";
+import { initialCardState } from "./initialStates/initialCardState";
+import { initialGameState } from "./initialStates/initialGameState";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);

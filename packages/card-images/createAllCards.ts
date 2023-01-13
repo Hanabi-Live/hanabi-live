@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import { START_CARD_RANK, UNKNOWN_CARD_RANK } from "../../data/src/constants";
 import { getVariant } from "../../data/src/gameData";
-import drawCards from "../src/game/ui/drawCards";
+import { drawCards } from "../src/game/ui/drawCards";
 import * as drawCardsNode from "./drawCardsNode";
 
 // Get the specified variant.

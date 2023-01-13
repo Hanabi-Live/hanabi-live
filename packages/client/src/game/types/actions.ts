@@ -1,10 +1,10 @@
-import CardIdentity from "./CardIdentity";
+import { CardIdentity } from "./CardIdentity";
 import { CardIdentityType } from "./CardIdentityType";
-import ClientAction from "./ClientAction";
-import EndCondition from "./EndCondition";
-import MsgClue from "./MsgClue";
-import Spectator from "./Spectator";
-import SpectatorNote from "./SpectatorNote";
+import { ClientAction } from "./ClientAction";
+import { EndCondition } from "./EndCondition";
+import { MsgClue } from "./MsgClue";
+import { Spectator } from "./Spectator";
+import { SpectatorNote } from "./SpectatorNote";
 import { UIAction } from "./UI";
 
 export type Action =

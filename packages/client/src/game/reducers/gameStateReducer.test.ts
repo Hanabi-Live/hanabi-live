@@ -7,10 +7,10 @@ import {
   rankClue,
   strike,
 } from "../../../test/testActions";
-import testMetadata from "../../../test/testMetadata";
-import gameStateReducer from "./gameStateReducer";
-import initialGameState from "./initialStates/initialGameState";
-import initialGameStateTest from "./initialStates/initialGameStateTest";
+import { testMetadata } from "../../../test/testMetadata";
+import { gameStateReducer } from "./gameStateReducer";
+import { initialGameState } from "./initialStates/initialGameState";
+import { initialGameStateTest } from "./initialStates/initialGameStateTest";
 import { getEfficiency } from "./reducerHelpers";
 
 const numPlayers = 3;

@@ -7,17 +7,17 @@ import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
 import { GameAction } from "../types/actions";
-import CardState from "../types/CardState";
+import { CardState } from "../types/CardState";
 import { colorClue, rankClue } from "../types/Clue";
-import ClueType from "../types/ClueType";
-import GameMetadata from "../types/GameMetadata";
-import GameState from "../types/GameState";
-import cardDeductionReducer from "./cardDeductionReducer";
-import cardPossibilitiesReducer from "./cardPossibilitiesReducer";
-import initialCardState from "./initialStates/initialCardState";
+import { ClueType } from "../types/ClueType";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
+import { cardDeductionReducer } from "./cardDeductionReducer";
+import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
+import { initialCardState } from "./initialStates/initialCardState";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
-export default function cardsReducer(
+export function cardsReducer(
   deck: readonly CardState[],
   action: GameAction,
   game: GameState,

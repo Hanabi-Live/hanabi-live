@@ -1,10 +1,10 @@
 import * as chat from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
 import * as timer from "./timer";
 
-export default function backToLobby(): void {
+export function backToLobby(): void {
   // Hide the tooltip, if showing.
   konvaTooltips.resetActiveHover();
 

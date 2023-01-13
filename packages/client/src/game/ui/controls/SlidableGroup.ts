@@ -1,6 +1,6 @@
 import Konva from "konva";
 
-export default class SlidableGroup extends Konva.Group {
+export class SlidableGroup extends Konva.Group {
   // eslint-disable-next-line class-methods-use-this
   setLeft: (this: SlidableGroup) => void = () => {};
 

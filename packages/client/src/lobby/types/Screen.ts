@@ -1,4 +1,4 @@
-enum Screen {
+export enum Screen {
   Login,
   Lobby,
   PreGame,
@@ -7,4 +7,3 @@ enum Screen {
   HistoryFriends,
   HistoryOtherScores,
 }
-export default Screen;

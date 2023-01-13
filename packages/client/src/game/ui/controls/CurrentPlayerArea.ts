@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { LABEL_COLOR } from "../constants";
-import globals from "../globals";
-import FitText from "./FitText";
+import { globals } from "../globals";
+import { FitText } from "./FitText";
 
 interface ElementValues {
   x: number;
@@ -18,7 +18,7 @@ interface TextElementValues {
   x2: number;
 }
 
-export default class CurrentPlayerArea extends Konva.Group {
+export class CurrentPlayerArea extends Konva.Group {
   values: ElementValues;
   textValues: TextElementValues;
   rect1: Konva.Rect;

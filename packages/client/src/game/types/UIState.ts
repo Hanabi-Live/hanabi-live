@@ -1,5 +1,5 @@
-import UICard from "./UICard";
+import { UICard } from "./UICard";
 
-export default interface UIState {
+export interface UIState {
   readonly cardDragged: UICard | null;
 }

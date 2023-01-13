@@ -1,6 +1,6 @@
-import Spectator from "client/src/game/types/Spectator";
+import { Spectator } from "client/src/game/types/Spectator";
 
-export default interface Table {
+export interface Table {
   id: number;
   name: string;
   passwordProtected: boolean;

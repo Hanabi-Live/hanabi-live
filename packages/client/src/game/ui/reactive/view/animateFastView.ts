@@ -1,5 +1,5 @@
-import State from "../../../types/State";
-import globals from "../../globals";
+import { State } from "../../../types/State";
+import { globals } from "../../globals";
 
 export function onObserversStarted(
   state: State,

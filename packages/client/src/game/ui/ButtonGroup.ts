@@ -1,11 +1,11 @@
 import Konva from "konva";
-import ColorButton from "./ColorButton";
-import PlayerButton from "./controls/PlayerButton";
-import RankButton from "./RankButton";
+import { ColorButton } from "./ColorButton";
+import { PlayerButton } from "./controls/PlayerButton";
+import { RankButton } from "./RankButton";
 
 type ClueButton = PlayerButton | ColorButton | RankButton;
 
-export default class ButtonGroup extends Konva.Group {
+export class ButtonGroup extends Konva.Group {
   list: ClueButton[] = [];
 
   constructor(config: Konva.ContainerConfig) {

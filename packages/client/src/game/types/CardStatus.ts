@@ -1,4 +1,4 @@
-enum CardStatus {
+export enum CardStatus {
   /**
    * Represents that the card needs to be played at some point in the future in order to get the
    * maximum score.
@@ -17,4 +17,3 @@ enum CardStatus {
    */
   Trash,
 }
-export default CardStatus;

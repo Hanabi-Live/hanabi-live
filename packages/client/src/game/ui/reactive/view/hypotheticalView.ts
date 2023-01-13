@@ -1,7 +1,7 @@
-import State from "../../../types/State";
+import { State } from "../../../types/State";
 import * as clues from "../../clues";
-import PlayerButton from "../../controls/PlayerButton";
-import globals from "../../globals";
+import { PlayerButton } from "../../controls/PlayerButton";
+import { globals } from "../../globals";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import * as turn from "../../turn";
 

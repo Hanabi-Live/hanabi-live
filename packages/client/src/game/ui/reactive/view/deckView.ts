@@ -1,4 +1,4 @@
-import globals from "../../globals";
+import { globals } from "../../globals";
 
 export function onCardsRemainingChanged(cardsRemainingInTheDeck: number): void {
   // Update the deck label.

@@ -3,9 +3,9 @@
 import { parseIntSafe, Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
-import HanabiCard from "./game/ui/HanabiCard";
+import { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";
 

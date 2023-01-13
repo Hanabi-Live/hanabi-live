@@ -1,6 +1,6 @@
 // The lobby area that shows all of the current tables.
 
-import globals from "../globals";
+import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import {
@@ -9,10 +9,10 @@ import {
   timerFormatter,
 } from "../utils";
 import * as createGame from "./createGame";
-import Screen from "./types/Screen";
-import Table from "./types/Table";
+import { Screen } from "./types/Screen";
+import { Table } from "./types/Table";
 
-export default function tablesDraw(): void {
+export function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");
 
   // Clear all of the existing rows.
@@ -39,7 +39,7 @@ export default function tablesDraw(): void {
   for (const friends of [true, false]) {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
-      for (const [id, table] of globals.tableMap.entries()) {
+      for (const [id, table] of globals.tableMap) {
         // Tables that we are currently in.
         if (friends && i === 1 && table.joined && !table.sharedReplay) {
           tableIDsOfThisType.push(id);

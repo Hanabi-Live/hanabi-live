@@ -1,7 +1,7 @@
 import Konva from "konva";
-import RankPip from "../ui/controls/RankPip";
+import { RankPip } from "../ui/controls/RankPip";
 
-export default interface Pips {
+export interface Pips {
   suitPips: Konva.Group;
   suitPipsMap: Map<number, Konva.Shape>;
   suitPipsPositiveMap: Map<number, Konva.Shape>;

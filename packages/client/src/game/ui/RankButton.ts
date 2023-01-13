@@ -1,8 +1,8 @@
 import Konva from "konva";
-import Clue from "../types/Clue";
+import { Clue } from "../types/Clue";
 import { drawLayer } from "./konvaHelpers";
 
-export default class RankButton extends Konva.Group {
+export class RankButton extends Konva.Group {
   pressed = false;
   clue: Clue;
   background: Konva.Rect;

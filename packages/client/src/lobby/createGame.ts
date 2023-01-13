@@ -9,13 +9,13 @@ import {
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
-import globals from "../globals";
+import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import Options from "../types/Options";
+import { Options } from "../types/Options";
 import { getRandomNumber, isEmpty } from "../utils";
-import Screen from "./types/Screen";
-import Settings from "./types/Settings";
+import { Screen } from "./types/Screen";
+import { Settings } from "./types/Settings";
 
 // Constants
 const basicVariants = [
@@ -562,6 +562,7 @@ export function ready(): void {
 
   // Fill in the rest of form with the settings that we used last time (which is stored on the
   // server).
+
   // eslint-disable-next-line isaacscript/no-object-any
   for (const [key, value] of Object.entries(dialogOptions)) {
     const element = $(`#${key}`);

@@ -1,11 +1,11 @@
 // Lobby keyboard shortcuts
 
 import * as KeyCode from "keycode-js";
-import globals from "../globals";
+import { globals } from "../globals";
 import { isModalVisible } from "../modals";
-import Screen from "./types/Screen";
+import { Screen } from "./types/Screen";
 
-export default function keyboardInit(): void {
+export function lobbyKeyboardInit(): void {
   $(document).keydown((event) => {
     // On the "Create Game" tooltip, submit the form if enter is pressed.
     if (

@@ -1,11 +1,8 @@
 import { Variant } from "@hanabi/data";
 import * as deck from "../../rules/deck";
-import CardState from "../../types/CardState";
+import { CardState } from "../../types/CardState";
 
-export default function initialCardState(
-  order: number,
-  variant: Variant,
-): CardState {
+export function initialCardState(order: number, variant: Variant): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately from knowledge of the
   // true suit and rank.
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);

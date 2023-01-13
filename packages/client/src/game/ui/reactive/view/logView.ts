@@ -1,5 +1,5 @@
 import { LogEntry } from "../../../types/GameState";
-import globals from "../../globals";
+import { globals } from "../../globals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {
   updateActionLog(log);

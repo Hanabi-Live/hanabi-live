@@ -13,7 +13,7 @@ lint() {
 
   # Step 1 - Use ESLint to lint the TypeScript.
   # We use "--max-warnings" so that any warnings will fail in CI.
-  echo "Running eslint on: $1"
+  echo "Running ESLint on: $1"
   npx eslint --max-warnings 0 src
 
   # Step 2 - Use ts-prune to check for unused imports.
@@ -33,7 +33,7 @@ cd "$DIR/client"
 npx eslint --max-warnings 0 test
 
 # Use Prettier to check formatting on the entire repository.
-echo "Running prettier on the repository."
+echo "Running Prettier on the repository."
 cd "$DIR/.."
 npx prettier --check .
 

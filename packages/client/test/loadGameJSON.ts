@@ -1,6 +1,6 @@
 import { getVariant } from "@hanabi/data";
-import gameStateReducer from "../src/game/reducers/gameStateReducer";
-import initialState from "../src/game/reducers/initialStates/initialState";
+import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
+import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
 import * as handRules from "../src/game/rules/hand";
 import * as playStacksRules from "../src/game/rules/playStacks";
@@ -12,13 +12,13 @@ import {
   ActionPlay,
   GameAction,
 } from "../src/game/types/actions";
-import ActionType from "../src/game/types/ActionType";
-import CardIdentity from "../src/game/types/CardIdentity";
-import ClueType from "../src/game/types/ClueType";
-import GameState from "../src/game/types/GameState";
-import State from "../src/game/types/State";
+import { ActionType } from "../src/game/types/ActionType";
+import { CardIdentity } from "../src/game/types/CardIdentity";
+import { ClueType } from "../src/game/types/ClueType";
+import { GameState } from "../src/game/types/GameState";
+import { State } from "../src/game/types/State";
 import testGame from "../test_data/up_or_down.json";
-import testMetadata from "./testMetadata";
+import { testMetadata } from "./testMetadata";
 
 type JSONGame = typeof testGame;
 
@@ -36,7 +36,7 @@ interface JSONAction {
   value: number;
 }
 
-export default function loadGameJSON(gameJSON: JSONGame): State {
+export function loadGameJSON(gameJSON: JSONGame): State {
   const numPlayers = gameJSON.players.length;
   const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
@@ -75,6 +75,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
   const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1]!;
+
   // eslint-disable-next-line isaacscript/strict-enums
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions.push({

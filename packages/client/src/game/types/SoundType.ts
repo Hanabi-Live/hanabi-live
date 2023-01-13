@@ -1,6 +1,7 @@
-// SoundType represents the type of sound that should play, depending on what the last action of the
-// game was.
-enum SoundType {
+/**
+ * Represents the type of sound that should play, depending on what the last action of the game was.
+ */
+export enum SoundType {
   // A "normal" or "boring" game action occurred, so do not play any special sound effect.
   Standard,
 
@@ -35,4 +36,3 @@ enum SoundType {
   FinishedFail, // When the game is finished with a score of 0
   FinishedPerfect, // When the game is finished with the maximum score possible
 }
-export default SoundType;

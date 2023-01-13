@@ -1,4 +1,4 @@
-enum Status {
+export enum Status {
   Lobby,
   PreGame,
   Playing,
@@ -6,7 +6,6 @@ enum Status {
   Replay,
   SharedReplay,
 }
-export default Status;
 
 export const StatusText = [
   "Lobby",

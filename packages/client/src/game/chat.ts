@@ -3,7 +3,7 @@
 import { parseIntSafe } from "@hanabi/data";
 import interact from "interactjs";
 import { FADE_TIME } from "../constants";
-import globals from "../globals";
+import { globals } from "../globals";
 
 export function init(): void {
   // Make the chat modal draggable (using the InteractJS library).

@@ -1,11 +1,11 @@
 // The lobby area that shows all of the current logged-in users.
 
 import { ensureAllCases } from "@hanabi/data";
-import globals from "../globals";
+import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
-import Screen from "./types/Screen";
-import Status, { StatusText } from "./types/Status";
+import { Screen } from "./types/Screen";
+import { Status, StatusText } from "./types/Status";
 
 export function draw(): void {
   $(".lobby-users-num").text(globals.userMap.size);
@@ -24,7 +24,7 @@ export function draw(): void {
   // Make a mapping of user names to IDs (and keep track of our friends).
   const usernameMapping = new Map<string, number>();
   const onlineFriends: string[] = [];
-  for (const [id, user] of globals.userMap.entries()) {
+  for (const [id, user] of globals.userMap) {
     usernameMapping.set(user.name, id);
     if (globals.friends.includes(user.name)) {
       onlineFriends.push(user.name);

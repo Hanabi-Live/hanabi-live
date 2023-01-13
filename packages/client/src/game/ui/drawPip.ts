@@ -3358,7 +3358,7 @@ shapeFunctions.set("triangle", (ctx: CanvasRenderingContext2D) => {
   ctx.scale(42 / 150, 42 / 150);
 });
 
-export default function drawPip(
+export function drawPip(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
   secondary?: boolean,

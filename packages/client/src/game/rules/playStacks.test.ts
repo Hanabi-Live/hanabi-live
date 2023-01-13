@@ -1,6 +1,6 @@
 import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
-import initialCardState from "../reducers/initialStates/initialCardState";
-import StackDirection from "../types/StackDirection";
+import { initialCardState } from "../reducers/initialStates/initialCardState";
+import { StackDirection } from "../types/StackDirection";
 import { direction, nextRanks } from "./playStacks";
 
 const noVariant = getDefaultVariant();

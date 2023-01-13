@@ -1,12 +1,12 @@
 import { Character, getCharacter } from "@hanabi/data";
 import Konva from "konva";
 import * as hand from "../rules/hand";
-import CardLayout from "./CardLayout";
+import { CardLayout } from "./CardLayout";
 import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
-import TextWithTooltip from "./controls/TextWithTooltip";
-import globals from "./globals";
+import { TextWithTooltip } from "./controls/TextWithTooltip";
+import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
-import NameFrame from "./NameFrame";
+import { NameFrame } from "./NameFrame";
 
 interface HandConfig {
   x: number;
@@ -21,7 +21,7 @@ const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
 
-export default function drawHands(winW: number, winH: number): void {
+export function drawHands(winW: number, winH: number): void {
   // Constants
   const { numPlayers } = globals.options;
   const numCardsPerHand = hand.cardsPerHand(globals.options);

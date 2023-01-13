@@ -8,14 +8,13 @@ import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import * as variantRules from "../rules/variant";
 import { GameAction } from "../types/actions";
-import CardNote from "../types/CardNote";
-import GameMetadata from "../types/GameMetadata";
-import GameState from "../types/GameState";
-import StatsState from "../types/StatsState";
-import getSoundType from "./getSoundType";
+import { CardNote } from "../types/CardNote";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
+import { StatsState } from "../types/StatsState";
+import { getSoundType } from "./getSoundType";
 
-const statsReducer = produce(statsReducerFunction, {} as StatsState);
-export default statsReducer;
+export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 
 function statsReducerFunction(
   stats: Draft<StatsState>,

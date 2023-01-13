@@ -2,7 +2,7 @@ import Konva from "konva";
 
 // These are arrows used to show which cards that are touched by a clue (and for pointing to various
 // things in a shared replay).
-export default class Arrow extends Konva.Group {
+export class Arrow extends Konva.Group {
   pointingTo: Konva.Node | null;
   tween: Konva.Tween | null;
 

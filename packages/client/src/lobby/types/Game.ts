@@ -1,6 +1,6 @@
-import Options from "../../types/Options";
+import { Options } from "../../types/Options";
 
-export default interface Game {
+export interface Game {
   name: string;
   owner: number;
   players: Player[];

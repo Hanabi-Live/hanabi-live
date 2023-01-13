@@ -1,9 +1,6 @@
 # Ignore compiled output.
 **/dist
 
-# The VSCode CSpell plugin causes the file to become unformatted whenever a new word is added.
-cspell.json
-
 # Keldon files
 **/keldon
 
@@ -16,3 +13,6 @@ go.mod
 # Minified files
 **/*.min.js
 **/*.min.css
+
+# Temporary files
+critical.css

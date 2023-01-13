@@ -1,11 +1,11 @@
 import { getVariant } from "@hanabi/data";
 import { initArray } from "../../../utils";
 import * as deckRules from "../../rules/deck";
-import GameMetadata from "../../types/GameMetadata";
-import State from "../../types/State";
-import initialGameState from "./initialGameState";
+import { GameMetadata } from "../../types/GameMetadata";
+import { State } from "../../types/State";
+import { initialGameState } from "./initialGameState";
 
-export default function initialState(metadata: GameMetadata): State {
+export function initialState(metadata: GameMetadata): State {
   const game = initialGameState(metadata);
 
   const { options } = metadata;

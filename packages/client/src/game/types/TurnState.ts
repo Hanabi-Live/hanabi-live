@@ -1,4 +1,4 @@
-export default interface TurnState {
+export interface TurnState {
   /**
    * "segment" mostly corresponds to the turn, with some exceptions:
    * 1) Some Detrimental Characters can take two actions, and each action should be on a separate

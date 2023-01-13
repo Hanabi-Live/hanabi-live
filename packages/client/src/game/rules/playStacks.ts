@@ -5,8 +5,8 @@ import {
   UNKNOWN_CARD_RANK,
   Variant,
 } from "@hanabi/data";
-import CardState from "../types/CardState";
-import StackDirection from "../types/StackDirection";
+import { CardState } from "../types/CardState";
+import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
 
 export function lastPlayedRank(

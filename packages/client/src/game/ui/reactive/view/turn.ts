@@ -1,10 +1,10 @@
 import { ensureAllCases } from "@hanabi/data";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as variantRules from "../../../rules/variant";
-import ClueType from "../../../types/ClueType";
-import State from "../../../types/State";
-import globals from "../../globals";
-import isOurTurn from "../../isOurTurn";
+import { ClueType } from "../../../types/ClueType";
+import { State } from "../../../types/State";
+import { globals } from "../../globals";
+import { isOurTurn } from "../../isOurTurn";
 import * as ourHand from "../../ourHand";
 import * as turn from "../../turn";
 

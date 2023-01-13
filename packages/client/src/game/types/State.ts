@@ -1,14 +1,14 @@
-import CardIdentity from "./CardIdentity";
-import ClientAction from "./ClientAction";
-import GameMetadata from "./GameMetadata";
-import GameState from "./GameState";
-import NotesState from "./NotesState";
-import PauseState from "./PauseState";
-import ReplayState from "./ReplayState";
-import Spectator from "./Spectator";
-import UIState from "./UIState";
+import { CardIdentity } from "./CardIdentity";
+import { ClientAction } from "./ClientAction";
+import { GameMetadata } from "./GameMetadata";
+import { GameState } from "./GameState";
+import { NotesState } from "./NotesState";
+import { PauseState } from "./PauseState";
+import { ReplayState } from "./ReplayState";
+import { Spectator } from "./Spectator";
+import { UIState } from "./UIState";
 
-export default interface State {
+export interface State {
   readonly visibleState: GameState | null; // Null during initialization
   readonly ongoingGame: GameState; // In a replay, this is the state of the final turn
   readonly replay: ReplayState;

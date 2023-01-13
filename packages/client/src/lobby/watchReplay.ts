@@ -2,7 +2,7 @@
 
 import { parseIntSafe } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
-import globals from "../globals";
+import { globals } from "../globals";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
 

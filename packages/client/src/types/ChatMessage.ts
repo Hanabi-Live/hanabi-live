@@ -1,4 +1,4 @@
-export default interface ChatMessage {
+export interface ChatMessage {
   msg: string;
   who: string;
   discord: boolean;

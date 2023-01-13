@@ -1,15 +1,15 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
 import { VERSION } from "@hanabi/data";
-import Connection from "./Connection";
-import HanabiUI from "./game/ui/HanabiUI";
-import Loader from "./Loader";
-import Game from "./lobby/types/Game";
-import GameHistory from "./lobby/types/GameHistory";
-import Screen from "./lobby/types/Screen";
-import Settings from "./lobby/types/Settings";
-import Table from "./lobby/types/Table";
-import User from "./lobby/types/User";
+import { Connection } from "./Connection";
+import { HanabiUI } from "./game/ui/HanabiUI";
+import { Loader } from "./Loader";
+import { Game } from "./lobby/types/Game";
+import { GameHistory } from "./lobby/types/GameHistory";
+import { Screen } from "./lobby/types/Screen";
+import { Settings } from "./lobby/types/Settings";
+import { Table } from "./lobby/types/Table";
+import { User } from "./lobby/types/User";
 
 export class Globals {
   // The version file is filled in dynamically by the build scripts.
@@ -70,8 +70,7 @@ export class Globals {
       : navigator.userAgent.toLowerCase().includes("firefox");
 }
 
-const globals = new Globals();
-export default globals;
+export const globals = new Globals();
 
 // Also make the globals available to the window (so that we can access them from the JavaScript
 // console for debugging purposes).

@@ -1,13 +1,13 @@
 import Konva from "konva";
-import Button from "./controls/Button";
-import EnterHypoButton from "./controls/EnterHypoButton";
-import SharedTurnsButton from "./controls/SharedTurnsButton";
-import Shuttle from "./controls/Shuttle";
-import globals from "./globals";
+import { Button } from "./controls/Button";
+import { EnterHypoButton } from "./controls/EnterHypoButton";
+import { SharedTurnsButton } from "./controls/SharedTurnsButton";
+import { Shuttle } from "./controls/Shuttle";
+import { globals } from "./globals";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 
-export default function drawReplayArea(winW: number, winH: number): void {
+export function drawReplayArea(winW: number, winH: number): void {
   const replayAreaValues = {
     x: 0.15,
     y: 0.51,

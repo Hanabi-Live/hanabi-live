@@ -1,10 +1,10 @@
-import globals from "../globals";
+import { globals } from "../globals";
 
 // Constants
 const minutesToTriggerIdle = 15;
 
 // From: https://stackoverflow.com/questions/667555/how-to-detect-idle-time-in-javascript-elegantly
-export default function idleInit(): void {
+export function lobbyIdleInit(): void {
   // Increment the global idle variable every minute.
   setInterval(timerIncrement, 60000); // 1 minute
 

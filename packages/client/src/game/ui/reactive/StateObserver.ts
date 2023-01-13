@@ -1,9 +1,9 @@
 import { Store, Unsubscribe } from "redux";
 import { Action } from "../../types/actions";
-import GameState from "../../types/GameState";
-import State from "../../types/State";
-import globals from "../globals";
-import observeStore, { Listener, Selector, Subscription } from "./observeStore";
+import { GameState } from "../../types/GameState";
+import { State } from "../../types/State";
+import { globals } from "../globals";
+import { Listener, observeStore, Selector, Subscription } from "./observeStore";
 import * as animateFastView from "./view/animateFastView";
 import * as cardLayoutView from "./view/cardLayoutView";
 import * as cardsView from "./view/cardsView";
@@ -25,7 +25,7 @@ import * as turnView from "./view/turn";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscriptions = Array<Subscription<State, any>>;
 
-export default class StateObserver {
+export class StateObserver {
   private unsubscribe: Unsubscribe | null = null;
 
   constructor(store: Store<State, Action>) {

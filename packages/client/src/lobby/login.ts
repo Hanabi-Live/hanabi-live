@@ -3,12 +3,12 @@
 import { VERSION } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
-import globals from "../globals";
+import { globals } from "../globals";
 import { getURLFromPath, isDevWebpack, isEmpty } from "../utils";
-import websocketInit from "../websocketInit";
+import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";
-import tablesDraw from "./tablesDraw";
-import Screen from "./types/Screen";
+import { tablesDraw } from "./tablesDraw";
+import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
 export function init(): void {

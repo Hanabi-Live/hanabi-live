@@ -12,12 +12,12 @@ import {
 import * as abbreviationRules from "../rules/abbreviation";
 import * as variantRules from "../rules/variant";
 import { CARD_H, CARD_W } from "./constants";
-import drawPip from "./drawPip";
-import drawStylizedRank from "./drawStylizedRank";
+import { drawPip } from "./drawPip";
+import { drawStylizedRank } from "./drawStylizedRank";
 
 // This function returns an object containing all of the drawn cards images (on individual
 // canvases).
-export default function drawCards(
+export function drawCards(
   variant: Variant,
   colorblindMode: boolean,
   styleNumbers: boolean,

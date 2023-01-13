@@ -1,12 +1,12 @@
 import * as notifications from "../../notifications";
 import * as clueTokensRules from "../rules/clueTokens";
-import ActionType from "../types/ActionType";
-import ClientAction from "../types/ClientAction";
+import { ActionType } from "../types/ActionType";
+import { ClientAction } from "../types/ClientAction";
 import * as arrows from "./arrows";
 import { PREPLAY_DELAY } from "./constants";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as hypothetical from "./hypothetical";
-import isOurTurn from "./isOurTurn";
+import { isOurTurn } from "./isOurTurn";
 import * as ourHand from "./ourHand";
 import * as replay from "./replay";
 

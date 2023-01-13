@@ -1,14 +1,14 @@
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import * as variantRules from "../../../rules/variant";
-import ReplayActionType from "../../../types/ReplayActionType";
-import Spectator from "../../../types/Spectator";
-import globals from "../../globals";
+import { ReplayActionType } from "../../../types/ReplayActionType";
+import { Spectator } from "../../../types/Spectator";
+import { globals } from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
-import toggleZen from "../../zen";
+import { toggleZen } from "../../zen";
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;

@@ -1,12 +1,12 @@
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";
-import backToLobby from "./backToLobby";
+import { backToLobby } from "./backToLobby";
 import { LABEL_COLOR } from "./constants";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
 
-export default class NameFrame extends Konva.Group {
+export class NameFrame extends Konva.Group {
   playerIndex: number;
   tooltipName: string;
 

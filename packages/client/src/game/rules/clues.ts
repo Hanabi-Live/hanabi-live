@@ -2,10 +2,10 @@
 
 import { START_CARD_RANK, Variant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import Clue, { colorClue, rankClue } from "../types/Clue";
-import ClueType from "../types/ClueType";
-import GameMetadata from "../types/GameMetadata";
-import MsgClue from "../types/MsgClue";
+import { Clue, colorClue, rankClue } from "../types/Clue";
+import { ClueType } from "../types/ClueType";
+import { GameMetadata } from "../types/GameMetadata";
+import { MsgClue } from "../types/MsgClue";
 import * as variantRules from "./variant";
 
 export function getClueName(

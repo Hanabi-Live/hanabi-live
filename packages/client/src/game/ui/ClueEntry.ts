@@ -4,12 +4,12 @@ import Konva from "konva";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
 import { StateClue } from "../types/GameState";
-import FitText from "./controls/FitText";
-import globals from "./globals";
+import { FitText } from "./controls/FitText";
+import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 import * as replay from "./replay";
 
-export default class ClueEntry extends Konva.Group {
+export class ClueEntry extends Konva.Group {
   clue: StateClue;
 
   background: Konva.Rect;

@@ -3,14 +3,13 @@ import produce, { Draft } from "immer";
 import * as deckRules from "../rules/deck";
 import * as turnRules from "../rules/turn";
 import { GameAction } from "../types/actions";
-import EndCondition from "../types/EndCondition";
-import GameMetadata from "../types/GameMetadata";
-import GameState from "../types/GameState";
-import TurnState from "../types/TurnState";
+import { EndCondition } from "../types/EndCondition";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
+import { TurnState } from "../types/TurnState";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
-const turnReducer = produce(turnReducerFunction, {} as TurnState);
-export default turnReducer;
+export const turnReducer = produce(turnReducerFunction, {} as TurnState);
 
 function turnReducerFunction(
   turn: Draft<TurnState>,

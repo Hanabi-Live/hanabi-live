@@ -1,4 +1,4 @@
-import UICard from "./UICard";
+import { UICard } from "./UICard";
 
 export type UIAction = ActionDragStart | ActionDragReset;
 

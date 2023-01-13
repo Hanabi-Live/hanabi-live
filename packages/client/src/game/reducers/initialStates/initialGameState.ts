@@ -7,13 +7,13 @@ import * as handRules from "../../rules/hand";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
-import CardStatus from "../../types/CardStatus";
-import GameMetadata from "../../types/GameMetadata";
-import GameState from "../../types/GameState";
-import SoundType from "../../types/SoundType";
-import initialTurnState from "./initialTurnState";
+import { CardStatus } from "../../types/CardStatus";
+import { GameMetadata } from "../../types/GameMetadata";
+import { GameState } from "../../types/GameState";
+import { SoundType } from "../../types/SoundType";
+import { initialTurnState } from "./initialTurnState";
 
-export default function initialGameState(metadata: GameMetadata): GameState {
+export function initialGameState(metadata: GameMetadata): GameState {
   const { options } = metadata;
   const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);

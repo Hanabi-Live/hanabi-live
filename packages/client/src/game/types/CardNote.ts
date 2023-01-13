@@ -1,4 +1,4 @@
-export default interface CardNote {
+export interface CardNote {
   /** The possible card identities included in the note (or an empty array if there are none). */
   possibilities: Array<[number, number]>;
 

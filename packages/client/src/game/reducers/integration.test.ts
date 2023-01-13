@@ -1,13 +1,13 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
-import loadGameJSON from "../../../test/loadGameJSON";
+import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";
 import upOrDownFinalCards from "../../../test_data/up_or_down_final_cards.json";
 import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
-import CardState from "../types/CardState";
-import StackDirection from "../types/StackDirection";
-import State from "../types/State";
+import { CardState } from "../types/CardState";
+import { StackDirection } from "../types/StackDirection";
+import { State } from "../types/State";
 import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 
 let testState: State;

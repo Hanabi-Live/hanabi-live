@@ -1300,7 +1300,7 @@ shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-export default function drawStylizedRank(
+export function drawStylizedRank(
   ctx: CanvasRenderingContext2D,
   rank: number,
 ): void {

@@ -5,17 +5,17 @@ import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
 import * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../globals";
-import Loader from "../../Loader";
-import Options from "../../types/Options";
+import { Loader } from "../../Loader";
+import { Options } from "../../types/Options";
 import { GameExports } from "../main";
 import { Action, GameAction } from "../types/actions";
-import GameMetadata from "../types/GameMetadata";
-import State from "../types/State";
+import { GameMetadata } from "../types/GameMetadata";
+import { State } from "../types/State";
 import * as cursor from "./cursor";
-import Elements from "./Elements";
-import HanabiCard from "./HanabiCard";
-import Layers from "./Layers";
-import StateObserver from "./reactive/StateObserver";
+import { Elements } from "./Elements";
+import { HanabiCard } from "./HanabiCard";
+import { Layers } from "./Layers";
+import { StateObserver } from "./reactive/StateObserver";
 
 export class Globals {
   // Objects sent upon UI initialization.
@@ -142,8 +142,7 @@ export class Globals {
   }
 }
 
-const globals = new Globals();
-export default globals;
+export const globals = new Globals();
 
 // Allow TypeScript to modify the browser's "window" object.
 declare global {

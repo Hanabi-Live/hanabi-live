@@ -1,8 +1,8 @@
 import { DEFAULT_VARIANT_NAME, parseIntSafe } from "@hanabi/data";
-import globals from "../globals";
+import { globals } from "../globals";
 import { setBrowserAddressBarPath } from "../utils";
 import { expand, GameJSON } from "./hypoCompress";
-import WelcomeData from "./types/WelcomeData";
+import { WelcomeData } from "./types/WelcomeData";
 
 export function parseAndGoto(data: WelcomeData): void {
   // Disable custom path functionality for first time users.

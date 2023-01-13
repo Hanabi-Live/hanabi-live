@@ -4,15 +4,15 @@ import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as cardRules from "../rules/card";
-import CardIdentity from "../types/CardIdentity";
+import { CardIdentity } from "../types/CardIdentity";
 import * as arrows from "./arrows";
-import globals from "./globals";
-import HanabiCard from "./HanabiCard";
+import { globals } from "./globals";
+import { HanabiCard } from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
-export default function HanabiCardClick(
+export function HanabiCardClick(
   this: HanabiCard,
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {

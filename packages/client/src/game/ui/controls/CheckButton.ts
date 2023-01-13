@@ -1,8 +1,8 @@
 import Konva from "konva";
-import globals from "../globals";
+import { globals } from "../globals";
 import { drawLayer } from "../konvaHelpers";
 
-export default class CheckButton extends Konva.Group {
+export class CheckButton extends Konva.Group {
   enabled = true;
   pressed = false;
 

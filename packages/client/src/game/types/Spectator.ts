@@ -1,4 +1,4 @@
-export default interface Spectator {
+export interface Spectator {
   name: string;
   shadowingPlayerIndex: number;
   shadowingPlayerName: string | undefined;

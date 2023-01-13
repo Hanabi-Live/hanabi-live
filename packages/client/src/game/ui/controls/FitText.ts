@@ -1,7 +1,7 @@
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 
-export default class FitText extends Konva.Text {
+export class FitText extends Konva.Text {
   origFontSize: number;
   needsResize: boolean;
 

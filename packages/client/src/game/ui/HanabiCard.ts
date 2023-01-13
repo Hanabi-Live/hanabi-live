@@ -9,29 +9,29 @@ import {
   Variant,
 } from "@hanabi/data";
 import Konva from "konva";
-import initialCardState from "../reducers/initialStates/initialCardState";
+import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
-import CardIdentity from "../types/CardIdentity";
+import { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
-import CardNote from "../types/CardNote";
-import CardState from "../types/CardState";
-import CardStatus from "../types/CardStatus";
-import StackDirection from "../types/StackDirection";
-import UICard from "../types/UICard";
+import { CardNote } from "../types/CardNote";
+import { CardState } from "../types/CardState";
+import { CardStatus } from "../types/CardStatus";
+import { StackDirection } from "../types/StackDirection";
+import { UICard } from "../types/UICard";
 import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
-import NodeWithTooltip from "./controls/NodeWithTooltip";
-import NoteIndicator from "./controls/NoteIndicator";
-import RankPip from "./controls/RankPip";
+import { NodeWithTooltip } from "./controls/NodeWithTooltip";
+import { NoteIndicator } from "./controls/NoteIndicator";
+import { RankPip } from "./controls/RankPip";
 import { suitIndexToSuit } from "./convert";
 import { CursorType } from "./cursor";
-import globals from "./globals";
+import { globals } from "./globals";
 import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { animate } from "./konvaHelpers";
-import LayoutChild from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 import {
   checkNoteImpossibility,
   getRankFromNote,
@@ -42,10 +42,7 @@ import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
 
-export default class HanabiCard
-  extends Konva.Group
-  implements NodeWithTooltip, UICard
-{
+export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // ---------------
   // Class variables
   // ---------------

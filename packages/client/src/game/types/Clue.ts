@@ -1,5 +1,5 @@
 import { Color } from "@hanabi/data";
-import ClueType from "./ClueType";
+import { ClueType } from "./ClueType";
 
 interface RankClue {
   readonly type: ClueType.Rank;
@@ -11,8 +11,7 @@ interface ColorClue {
   readonly value: Color;
 }
 
-type Clue = RankClue | ColorClue;
-export default Clue;
+export type Clue = RankClue | ColorClue;
 
 export const rankClue = (rank: number): RankClue => ({
   type: ClueType.Rank,
