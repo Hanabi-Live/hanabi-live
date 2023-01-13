@@ -91,15 +91,7 @@ function showClueMatch(target: number, clue: Clue) {
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target]!.children[i]!;
     const card: HanabiCard = child.children[0] as HanabiCard;
-    if (
-      card
-        .getMorphedPossibilities()
-        .every(([suitIndex, rank]) =>
-          cluesRules.touchesCard(globals.variant, clue, suitIndex, rank),
-        ) &&
-      card.visibleRank !== null &&
-      card.visibleSuitIndex !== null
-    ) {
+    if (isTouched(card, clue)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue, true);
     }
@@ -122,22 +114,22 @@ export function getTouchedCardsFromClue(
       return;
     }
 
-    const morphedPossibilities = card.getMorphedPossibilities();
-    if (
-      morphedPossibilities.every(([suitIndexC, rankC]) =>
-        cluesRules.touchesCard(
-          globals.variant,
-          cluesRules.msgClueToClue(clue, globals.variant),
-          suitIndexC,
-          rankC,
-        ),
-      )
-    ) {
+    if (isTouched(card, cluesRules.msgClueToClue(clue, globals.variant))) {
       cardsTouched.push(card.state.order);
     }
   });
 
   return cardsTouched;
+}
+
+function isTouched(card: HanabiCard, clue: Clue): boolean {
+  const morphedPossibilities = card.getMorphedPossibilities();
+  return morphedPossibilities.every(
+    ([suitIndexC, rankC]) =>
+      cluesRules.touchesCard(globals.variant, clue, suitIndexC, rankC) &&
+      ((clue.type === ClueType.Rank && card.visibleRank !== null) ||
+        (clue.type === ClueType.Color && card.visibleSuitIndex !== null)),
+  );
 }
 
 export function give(): void {
