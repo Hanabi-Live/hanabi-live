@@ -138,6 +138,7 @@ export interface ActionClue {
   readonly list: number[];
   readonly target: number;
   readonly turn: number; // TODO: remove. This is unused
+  ignoreNegative?: boolean;
 }
 
 export interface ActionDiscard {

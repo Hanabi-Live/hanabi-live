@@ -289,6 +289,13 @@ function hypoAction(
     return;
   }
 
+  if (
+    action.type === "clue" &&
+    !state.hypothetical.showDrawnCards &&
+    state.hypothetical.startingPlayerIndex === action.target
+  ) {
+    action.ignoreNegative = true;
+  }
   const oldSegment = state.hypothetical.ongoing.turn.segment;
   const newState = gameStateReducer(
     state.hypothetical.ongoing,
