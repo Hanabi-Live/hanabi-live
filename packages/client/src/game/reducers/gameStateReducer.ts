@@ -56,9 +56,12 @@ function gameStateReducerFunction(
         target: action.target,
         segment: state.turn.segment,
         list: action.list,
-        negativeList: state.hands[action.target]!.filter(
-          (i) => !action.list.includes(i),
-        ),
+        negativeList:
+          action.ignoreNegative !== undefined && action.ignoreNegative
+            ? []
+            : state.hands[action.target]!.filter(
+                (i) => !action.list.includes(i),
+              ),
       });
 
       const targetHand = state.hands[action.target]!;
