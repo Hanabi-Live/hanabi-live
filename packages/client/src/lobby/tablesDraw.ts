@@ -3,12 +3,9 @@
 import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import {
-  copyStringToClipboard,
-  getURLFromPath,
-  timerFormatter,
-} from "../utils";
+import { copyStringToClipboard, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
+import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
 import { Table } from "./types/Table";
 
@@ -129,14 +126,11 @@ export function tablesDraw(): void {
     // Column 3 - Variant.
     $("<td>").html(table.variant).appendTo(row);
 
-    // Column 4 - Timed.
-    let timed = "No";
-    if (table.timed) {
-      timed = `${timerFormatter(table.timeBase)} + ${timerFormatter(
-        table.timePerTurn,
-      )}`;
-    }
-    $("<td>").html(timed).appendTo(row);
+    // Column 4 - Options.
+    $("<td>")
+      .addClass("lobby-games-table-options")
+      .html(getOptionIcons(table.options, "lobby-games-table", table.id))
+      .appendTo(row);
 
     // Column 5 - Status.
     let status: string;
@@ -262,6 +256,7 @@ export function tablesDraw(): void {
     }
 
     row.appendTo(tbody);
+    initializeOptionTooltips(table.options, "lobby-games-table", table.id);
   }
 }
 

@@ -1,5 +1,6 @@
 export const OptionIcons = {
   TIMED: "fas fa-clock",
+  UNLIMITED: "fas fa-infinity",
   SPEEDRUN: "fas fa-running",
   CARD_CYCLE: "fas fa-sync-alt",
   DECK_PLAYS: "fas fa-blind",
