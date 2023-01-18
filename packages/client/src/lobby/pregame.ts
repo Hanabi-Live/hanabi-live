@@ -197,23 +197,15 @@ export function getOptionIcons(
         </div>
       </div>
     `;
-  } else if (options.speedrun) {
+  }
+
+  if (options.speedrun) {
     html += `<li><i id="${idPrefix}-options-speedrun-${rowId}" class="${OptionIcons.SPEEDRUN}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-speedrun-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
         <div id="${idPrefix}-tooltip-speedrun-${rowId}" class="${idPrefix}-tooltip-icon">
           This is a <strong>Speedrun</strong>.
-        </div>
-      </div>
-    `;
-  } else {
-    html += `<li><i id="${idPrefix}-options-unlimited-${rowId}" class="${OptionIcons.UNLIMITED}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-unlimited-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-unlimited-${rowId}" class="${idPrefix}-tooltip-icon">
-          This game is <strong>not timed</strong>.
         </div>
       </div>
     `;
@@ -313,10 +305,9 @@ export function initializeOptionTooltips(
 ): void {
   if (options.timed) {
     tooltips.create(`#${idPrefix}-options-timer-${rowId}`);
-  } else if (options.speedrun) {
+  }
+  if (options.speedrun) {
     tooltips.create(`#${idPrefix}-options-speedrun-${rowId}`);
-  } else {
-    tooltips.create(`#${idPrefix}-options-unlimited-${rowId}`);
   }
   if (options.cardCycle) {
     tooltips.create(`#${idPrefix}-options-card-cycle-${rowId}`);
