@@ -562,7 +562,6 @@ table td {
 
 #lobby-pregame-options,
 #lobby-pregame-spectators {
-  padding-left: 1em;
   list-style-type: none;
   padding: 0;
   margin: 0;
@@ -572,12 +571,22 @@ table td {
   font-weight: 400;
 }
 
+.lobby-games-table-options li,
 #lobby-pregame-options li {
   padding-left: 0;
   display: inline-block;
   margin-right: 0.5em;
 }
+.lobby-games-table-options li:hover {
+  cursor: pointer;
+}
 
+.lobby-games-table-options {
+  list-style-type: none;
+  margin: 0;
+}
+
+.lobby-games-table-tooltip,
 .lobby-pregame-tooltip {
   font-size: 0.75em;
   width: 8em;

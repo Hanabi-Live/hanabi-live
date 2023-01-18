@@ -1,4 +1,5 @@
 import { Spectator } from "client/src/game/types/Spectator";
+import { Options } from "client/src/types/Options";
 
 export interface Table {
   id: number;
@@ -7,6 +8,7 @@ export interface Table {
   joined: boolean;
   numPlayers: number;
   owned: boolean;
+  options: Options;
   running: boolean;
   variant: string; // e.g. "No Variant"
   timed: boolean;

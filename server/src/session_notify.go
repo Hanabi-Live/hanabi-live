@@ -70,6 +70,7 @@ type TableMessage struct {
 	Owned             bool         `json:"owned"`
 	Running           bool         `json:"running"`
 	Variant           string       `json:"variant"`
+	Options           *Options     `json:"options"`
 	Timed             bool         `json:"timed"`
 	TimeBase          int          `json:"timeBase"`
 	TimePerTurn       int          `json:"timePerTurn"`
@@ -102,6 +103,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		Owned:             s.UserID == t.OwnerID,
 		Running:           t.Running,
 		Variant:           t.Options.VariantName,
+		Options:           t.Options,
 		Timed:             t.Options.Timed,
 		TimeBase:          t.Options.TimeBase,
 		TimePerTurn:       t.Options.TimePerTurn,

@@ -5,6 +5,7 @@ import * as chat from "../chat";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
+import { Options } from "../types/Options";
 import { setBrowserAddressBarPath, timerFormatter } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -153,118 +154,7 @@ function drawOptions() {
     `;
   }
 
-  if (globals.game.options.timed) {
-    html += `<li><i id="lobby-pregame-options-timer" class="${OptionIcons.TIMED}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
-    html += timerFormatter(globals.game.options.timeBase);
-    html += " + ";
-    html += timerFormatter(globals.game.options.timePerTurn);
-    html += ")</li>";
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-timer" class="lobby-pregame-tooltip-icon">
-          This is a timed game.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.speedrun) {
-    html += `<li><i id="lobby-pregame-options-speedrun" class="${OptionIcons.SPEEDRUN}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-speedrun"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-speedrun" class="lobby-pregame-tooltip-icon">
-          This is a speedrun.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.cardCycle) {
-    html += `<li><i id="lobby-pregame-options-card-cycle" class="${OptionIcons.CARD_CYCLE}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-card-cycle"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-card-cycle" class="lobby-pregame-tooltip-icon">
-          The <strong>Card Cycling</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.deckPlays) {
-    html += `<li><i id="lobby-pregame-options-deck-plays" class="${OptionIcons.DECK_PLAYS}" `;
-    html += 'style="position: relative; left: 0.2em;" ';
-    html += 'data-tooltip-content="#pregame-tooltip-deck-plays"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-deck-plays" class="lobby-pregame-tooltip-icon">
-          The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.emptyClues) {
-    html += `<li><i id="lobby-pregame-options-empty-clues" class="${OptionIcons.EMPTY_CLUES}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-empty-clues"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-empty-clues" class="lobby-pregame-tooltip-icon">
-          The <strong>Empty Clues</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.oneExtraCard) {
-    html += `<li><i id="lobby-pregame-options-one-extra-card" class="${OptionIcons.ONE_EXTRA_CARD}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-one-extra-card"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-one-extra-card" class="lobby-pregame-tooltip-icon">
-          The <strong>One Extra Card</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.oneLessCard) {
-    html += `<li><i id="lobby-pregame-options-one-less-card" class="${OptionIcons.ONE_LESS_CARD}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-one-less-card"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-one-less-card" class="lobby-pregame-tooltip-icon">
-          The <strong>One Less Card</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.allOrNothing) {
-    html += `<li><i id="lobby-pregame-options-all-or-nothing" class="${OptionIcons.ALL_OR_NOTHING}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-all-or-nothing"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-all-or-nothing" class="lobby-pregame-tooltip-icon">
-          The <strong>All or Nothing</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (globals.game.options.detrimentalCharacters) {
-    html += `<li><i id="lobby-pregame-options-characters" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
-    html += 'data-tooltip-content="#pregame-tooltip-characters"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-characters" class="lobby-pregame-tooltip-icon">
-          The <strong>Detrimental Characters</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
+  html += getOptionIcons(globals.game.options, "lobby-pregame", 0);
 
   // Set the HTML
   const optionsTitleDiv = $("#lobby-pregame-options-title");
@@ -274,35 +164,171 @@ function drawOptions() {
   optionsDiv.html(html);
 
   // Initialize the tooltips, if any. (This has to be done after adding the HTML to the page.)
+
   if (globals.game.passwordProtected) {
     tooltips.create("#lobby-pregame-options-password");
   }
-  if (globals.game.options.timed) {
-    tooltips.create("#lobby-pregame-options-timer");
+
+  initializeOptionTooltips(globals.game.options, "lobby-pregame", 0);
+}
+
+export function getOptionIcons(
+  options: Options,
+  idPrefix: string,
+  rowId: number,
+): string {
+  let html = "";
+
+  if (options.timed) {
+    html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.TIMED}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-timer-${rowId}"></i>&nbsp; (`;
+    html += timerFormatter(options.timeBase);
+    html += " + ";
+    html += timerFormatter(options.timePerTurn);
+    html += ")</li>";
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-timer-${rowId}" class="${idPrefix}-tooltip-icon">
+          This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
+            options.timeBase,
+          )} minute(s)</strong> plus <strong>${
+      options.timePerTurn
+    } second(s)</strong> per turn.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.speedrun) {
-    tooltips.create("#lobby-pregame-options-speedrun");
+
+  if (options.speedrun) {
+    html += `<li><i id="${idPrefix}-options-speedrun-${rowId}" class="${OptionIcons.SPEEDRUN}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-speedrun-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-speedrun-${rowId}" class="${idPrefix}-tooltip-icon">
+          This is a <strong>Speedrun</strong>.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.cardCycle) {
-    tooltips.create("#lobby-pregame-options-card-cycle");
+
+  if (options.cardCycle) {
+    html += `<li><i id="${idPrefix}-options-card-cycle-${rowId}" class="${OptionIcons.CARD_CYCLE}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-card-cycle-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-card-cycle-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>Card Cycling</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.deckPlays) {
-    tooltips.create("#lobby-pregame-options-deck-plays");
+
+  if (options.deckPlays) {
+    html += `<li><i id="${idPrefix}-options-deck-plays-${rowId}" class="${OptionIcons.DECK_PLAYS}" `;
+    html += 'style="position: relative; left: 0.2em;" ';
+    html += `data-tooltip-content="#${idPrefix}-tooltip-deck-plays-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-deck-plays-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.emptyClues) {
-    tooltips.create("#lobby-pregame-options-empty-clues");
+
+  if (options.emptyClues) {
+    html += `<li><i id="${idPrefix}-options-empty-clues-${rowId}" class="${OptionIcons.EMPTY_CLUES}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-empty-clues-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-empty-clues-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>Empty Clues</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.oneExtraCard) {
-    tooltips.create("#lobby-pregame-options-one-extra-card");
+
+  if (options.oneExtraCard) {
+    html += `<li><i id="${idPrefix}-options-one-extra-card-${rowId}" class="${OptionIcons.ONE_EXTRA_CARD}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-one-extra-card-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-one-extra-card-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>One Extra Card</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.oneLessCard) {
-    tooltips.create("#lobby-pregame-options-one-less-card");
+
+  if (options.oneLessCard) {
+    html += `<li><i id="${idPrefix}-options-one-less-card-${rowId}" class="${OptionIcons.ONE_LESS_CARD}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-one-less-card-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-one-less-card-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>One Less Card</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.allOrNothing) {
-    tooltips.create("#lobby-pregame-options-all-or-nothing");
+
+  if (options.allOrNothing) {
+    html += `<li><i id="${idPrefix}-options-all-or-nothing-${rowId}" class="${OptionIcons.ALL_OR_NOTHING}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-all-or-nothing-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-all-or-nothing-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>All or Nothing</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
-  if (globals.game.options.detrimentalCharacters) {
-    tooltips.create("#lobby-pregame-options-characters");
+
+  if (options.detrimentalCharacters) {
+    html += `<li><i id="${idPrefix}-options-characters-${rowId}" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-characters-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-characters-${rowId}" class="${idPrefix}-tooltip-icon">
+          The <strong>Detrimental Characters</strong> option is enabled.
+        </div>
+      </div>
+    `;
+  }
+  return html;
+}
+
+export function initializeOptionTooltips(
+  options: Options,
+  idPrefix: string,
+  rowId: number,
+): void {
+  if (options.timed) {
+    tooltips.create(`#${idPrefix}-options-timer-${rowId}`);
+  }
+  if (options.speedrun) {
+    tooltips.create(`#${idPrefix}-options-speedrun-${rowId}`);
+  }
+  if (options.cardCycle) {
+    tooltips.create(`#${idPrefix}-options-card-cycle-${rowId}`);
+  }
+  if (options.deckPlays) {
+    tooltips.create(`#${idPrefix}-options-deck-plays-${rowId}`);
+  }
+  if (options.emptyClues) {
+    tooltips.create(`#${idPrefix}-options-empty-clues-${rowId}`);
+  }
+  if (options.oneExtraCard) {
+    tooltips.create(`#${idPrefix}-options-one-extra-card-${rowId}`);
+  }
+  if (options.oneLessCard) {
+    tooltips.create(`#${idPrefix}-options-one-less-card-${rowId}`);
+  }
+  if (options.allOrNothing) {
+    tooltips.create(`#${idPrefix}-options-all-or-nothing-${rowId}`);
+  }
+  if (options.detrimentalCharacters) {
+    tooltips.create(`#${idPrefix}-options-characters-${rowId}`);
   }
 }
 
