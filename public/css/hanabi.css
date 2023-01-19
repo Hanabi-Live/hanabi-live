@@ -183,13 +183,13 @@ table td {
 /* For text input labels */
 .input-text {
   position: relative;
-  top: 1em;
+  top: 0.75em;
 }
 
 /* For text input labels with 2 lines */
 .input-text2 {
   position: relative;
-  top: 0.5em;
+  top: 0.25em;
 }
 
 /* For checkbox labels */
@@ -671,6 +671,7 @@ input::-webkit-calendar-picker-indicator {
 
 #create-game-variant-dropdown2 {
   padding-right: 2.25em;
+  float: left;
 }
 
 #create-game-variant-dropdown2-icon {
