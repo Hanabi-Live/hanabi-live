@@ -6,8 +6,6 @@
   "enableGlobDot": true,
   "useGitignore": true,
   "ignorePaths": [
-    //Ignore yourself
-    "cspell.json",
     ".git/**",
     // Assets which are not edited by hand
     "*.cdr",
@@ -230,7 +228,6 @@
     "repanic",
     "resizeend",
     "resizemove",
-    "resizers",
     "rewinded",
     "rpcinterface",
     "sarisia",
@@ -245,7 +242,6 @@
     "sharedmissingscores",
     "shortfile",
     "showmatch",
-    "sidetip",
     "signout",
     "softlock",
     "softlocks",
