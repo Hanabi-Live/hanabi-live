@@ -20,6 +20,8 @@
     // Minified dependencies
     "*.min.js",
     "*.min.css",
+    //The css might have strange paths
+    "hanabi.css",
     // Archived files where spelling errors will not be fixed.
     "/misc/keldon/**",
     // Emoji names are often two words without a space.
@@ -226,7 +228,6 @@
     "repanic",
     "resizeend",
     "resizemove",
-    "resizers",
     "rewinded",
     "rpcinterface",
     "sarisia",
@@ -241,7 +242,6 @@
     "sharedmissingscores",
     "shortfile",
     "showmatch",
-    "sidetip",
     "signout",
     "softlock",
     "softlocks",
