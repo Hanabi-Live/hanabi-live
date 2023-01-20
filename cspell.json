@@ -6,6 +6,8 @@
   "enableGlobDot": true,
   "useGitignore": true,
   "ignorePaths": [
+    //Ignore yourself
+    "cspell.json",
     ".git/**",
     // Assets which are not edited by hand
     "*.cdr",
