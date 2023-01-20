@@ -78,6 +78,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   noteIndicator: NoteIndicator;
   private trashcan: Konva.Image;
   private questionMark: Konva.Image;
+  private exclamationMark: Konva.Image;
   private wrench: Konva.Image;
   private ddaIndicatorTop: Konva.Image;
   private ddaIndicatorBottom: Konva.Image;
@@ -211,6 +212,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.add(this.trashcan);
     this.questionMark = HanabiCardInit.questionMark();
     this.add(this.questionMark);
+    this.exclamationMark = HanabiCardInit.exclamationMark();
+    this.add(this.exclamationMark);
     this.wrench = HanabiCardInit.wrench();
     this.add(this.wrench);
     this.ddaIndicatorTop = HanabiCardInit.ddaIndicatorTop();
@@ -731,6 +734,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide the "question mark" image.
     this.questionMark.visible(
       this.note.questionMark &&
+        !this.empathy &&
+        !cardRules.isPlayed(this.state) &&
+        !cardRules.isDiscarded(this.state) &&
+        !globals.state.finished,
+    );
+
+    // Show or hide the "exclamation mark" image.
+    this.exclamationMark.visible(
+      this.note.exclamationMark &&
         !this.empathy &&
         !cardRules.isPlayed(this.state) &&
         !cardRules.isDiscarded(this.state) &&

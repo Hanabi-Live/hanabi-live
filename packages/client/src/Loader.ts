@@ -11,6 +11,7 @@ const fileIDs = [
   "crown",
   "critical",
   "dda",
+  "exclamation-mark",
   "eyes",
   "home",
   "note",

@@ -444,6 +444,16 @@ export const questionMark = (): Konva.Image =>
     visible: false,
   });
 
+export const exclamationMark = (): Konva.Image =>
+  new Konva.Image({
+    x: 0.15 * CARD_W,
+    y: 0.2 * CARD_H,
+    width: 0.8 * CARD_W,
+    height: 0.8 * CARD_W,
+    image: globals.imageLoader!.get("exclamation-mark")!,
+    visible: false,
+  });
+
 export const trashcan = (): Konva.Image =>
   new Konva.Image({
     x: 0.15 * CARD_W,

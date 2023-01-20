@@ -41,6 +41,7 @@ export function initialState(metadata: GameMetadata): State {
         chopMoved: false,
         needsFix: false,
         questionMark: false,
+        exclamationMark: false,
         knownTrash: false,
         finessed: false,
         blank: false,

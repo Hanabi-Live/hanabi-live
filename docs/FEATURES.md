@@ -329,6 +329,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
 - A note of "fix", "fixme", or "needs fix" can be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
 - A note of "?" can be written to indicate that the card have uncertain information written on it. This will draw a special image on the card.
+- A note of "!" can be written to indicate that the card have certain information written on it. This will draw a special image on the card.
 - A note of "blank" can be written on a card to make it look like the deck back.
 - A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
 - A note of "clued" can be written to manually raise a card and add the border that normally appear on a card when it is touched by one or more clues.

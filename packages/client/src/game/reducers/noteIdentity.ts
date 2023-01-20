@@ -220,6 +220,9 @@ export function getPossibilitiesFromKeywords(
 
   // Empty keyword list returns all possibilities.
   for (const keyword of keywords.length > 0 ? keywords : [""]) {
+    if (keyword === "!") {
+      continue;
+    }
     const newPossibilities = getPossibilitiesFromKeyword(variant, keyword);
     if (newPossibilities === null) {
       continue;
