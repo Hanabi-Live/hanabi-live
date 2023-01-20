@@ -3,6 +3,7 @@ import {
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
   ensureAllCases,
+  EXCLAMATION_MARK_NOTES,
   FINESSED_NOTES,
   getVariant,
   KNOWN_TRASH_NOTES,
@@ -141,6 +142,7 @@ function noteWithoutText(note: CardNote): CardNote {
     knownTrash: boolean;
     needsFix: boolean;
     questionMark: boolean;
+    exclamationMark: boolean;
     chopMoved: boolean;
     finessed: boolean;
     blank: boolean;
@@ -177,6 +179,10 @@ export function parseNote(variant: Variant, text: string): CardNote {
   const knownTrash = checkNoteKeywordsForMatch(KNOWN_TRASH_NOTES, keywords);
   const needsFix = checkNoteKeywordsForMatch(NEEDS_FIX_NOTES, keywords);
   const questionMark = checkNoteKeywordsForMatch(QUESTION_MARK_NOTES, keywords);
+  const exclamationMark = checkNoteKeywordsForMatch(
+    EXCLAMATION_MARK_NOTES,
+    keywords,
+  );
   const blank = checkNoteKeywordsForMatch(BLANK_NOTES, keywords);
   const unclued = checkNoteKeywordsForMatch(UNCLUED_NOTES, keywords);
   const clued = checkNoteKeywordsForMatch(CLUED_NOTES, keywords);
@@ -188,6 +194,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
     knownTrash,
     needsFix,
     questionMark,
+    exclamationMark,
     blank,
     unclued,
     clued,
