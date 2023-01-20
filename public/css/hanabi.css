@@ -665,8 +665,11 @@ table td {
   color: #6666ff;
 }
 
-input::-webkit-calendar-picker-indicator {
-  display: none;
+/* The default arrow on input lists */
+input::-webkit-list-button, /* iOS */
+input::-webkit-calendar-picker-indicator /* Chrome */ {
+  /* This needs to be important since Chrome 91 */
+  display: none !important;
 }
 
 #create-game-variant-dropdown2 {
