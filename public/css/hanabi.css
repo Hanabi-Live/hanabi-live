@@ -592,6 +592,7 @@ table td {
   width: 8em;
 }
 
+.lobby-games-table-tooltip-icon,
 .lobby-pregame-tooltip-icon {
   font-size: 0.75em;
 }
