@@ -47,7 +47,7 @@
     "grunt-contrib-concat": "^2.1.0",
     "grunt-contrib-cssmin": "^4.0.0",
     "grunt-criticalcss": "^2.1.0",
-    "isaacscript-lint": "^4.6.2",
+    "isaacscript-lint": "^4.7.0",
     "isaacscript-tsconfig": "^3.0.2",
     "jest": "^29.3.1",
     "jsdom": "^21.1.0",
