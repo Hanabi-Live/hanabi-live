@@ -16,3 +16,4 @@ go.mod
 
 # Temporary files
 critical.css
+**/grunt_output
