@@ -118,6 +118,7 @@ jobs:
       - name: Install Golang
         uses: actions/setup-go@v2
 
+      # Linting of the server is disabled until it is rewritten in TypeScript.
       #- name: Lint the Golang code
       #  uses: golangci/golangci-lint-action@v2
       #  with:

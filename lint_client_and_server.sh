@@ -7,4 +7,5 @@ set -e # Exit on any errors
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 bash "$DIR/packages/lint_client.sh"
-bash "$DIR/server/lint_server.sh"
+# Linting of the server is disabled until it is rewritten in TypeScript.
+#bash "$DIR/server/lint_server.sh"
