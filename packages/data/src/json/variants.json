@@ -11791,6 +11791,16 @@
     "suits": ["Light Pink", "Red", "Green", "White", "Sky", "Navy"]
   },
   {
+    "id": 2069,
+    "name": "Valentine Mix (5 Suits)",
+    "suits": ["Red", "Pink", "White", "Light Pink", "Cocoa Rainbow"]
+  },
+  {
+    "id": 2070,
+    "name": "Valentine Mix (6 Suits)",
+    "suits": ["Red", "Pink", "White", "Light Pink", "Cocoa Rainbow", "Null"]
+  },
+  {
     "id": 10,
     "name": "Color Blind (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
