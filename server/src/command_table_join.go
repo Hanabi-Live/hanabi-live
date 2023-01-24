@@ -13,9 +13,10 @@ import (
 // commandTableJoin is sent when the user clicks on the "Join" button in the lobby
 //
 // Example data:
-// {
-//   tableID: 15103,
-// }
+//
+//	{
+//	  tableID: 15103,
+//	}
 func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -135,6 +136,12 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	t.Players = append(t.Players, p)
 	tables.AddPlaying(s.UserID, t.ID) // Keep track of user to table relationships
+
+	// Sanity check, that we are not actively spectating this table
+	// Might occur if a command to joinTable happens after a tableSpectate, without tableUnattend in between
+	if t.IsActivelySpectating(s.UserID) {
+		tables.DeleteSpectating(s.UserID, t.ID) // Update user to table relationships
+	}
 
 	notifyAllTable(t)
 	t.NotifyPlayerChange()
