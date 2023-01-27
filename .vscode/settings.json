@@ -84,13 +84,15 @@
   // Golang
   // ------
 
-  // The default Golang linter is golint, which is only concerned with coding style
-  // GolangCI-Lint does a suite of different checks
-  "go.lintTool": "golangci-lint",
+  // The default Golang linter is golint, which is only concerned with coding style. GolangCI-Lint
+  // does a suite of different checks.
+  // Linting the server is disabled until it is rewritten in TypeScript.
+  // "go.lintTool": "golangci-lint",
 
-  // This is recommended as per the GolangCI-Lint README file
+  // This is recommended as per the GolangCI-Lint README file:
   // https://github.com/golangci/golangci-lint/blob/master/README.md
-  "go.lintFlags": ["--fast"],
+  // Linting the server is disabled until it is rewritten in TypeScript.
+  // "go.lintFlags": ["--fast"],
 
   "[go]": {
     "editor.tabSize": 4,
@@ -101,13 +103,13 @@
   // Python
   // ------
 
-  // Use "black" to automatically format Python files
+  // Use "black" to automatically format Python files.
   // https://github.com/psf/black
   "python.formatting.provider": "black",
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": false,
 
-  // Automatically run the formatter when a Python file is saved
+  // Automatically run the formatter when a Python file is saved.
   "[python]": {
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
