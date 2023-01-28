@@ -2,7 +2,6 @@ import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
-  ensureAllCases,
   EXCLAMATION_MARK_NOTES,
   FINESSED_NOTES,
   getVariant,
@@ -89,11 +88,6 @@ function notesReducerFunction(
           });
         });
       });
-      break;
-    }
-
-    default: {
-      ensureAllCases(action);
       break;
     }
   }

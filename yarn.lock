@@ -4605,6 +4605,11 @@ is-wsl@^2.2.0:
   dependencies:
     is-docker "^2.0.0"
 
+isaacscript-common-ts@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/isaacscript-common-ts/-/isaacscript-common-ts-3.0.1.tgz#49eacb40c8fae3d9d9883593a08f3a66ea1d5e8e"
+  integrity sha512-mi0T0FAWVHPl5FWuIab5sFTbKR4r82D1pmVHsHkUAeiL7tHhDhwao8I80INu+XH9DuwHs1+e/Np5KtKDkc+5jA==
+
 isaacscript-lint@^4.8.0:
   version "4.8.0"
   resolved "https://registry.yarnpkg.com/isaacscript-lint/-/isaacscript-lint-4.8.0.tgz#9e1eece68a9e3dcfe5178e3b86247fe98c3a60d7"

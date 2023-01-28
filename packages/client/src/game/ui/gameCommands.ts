@@ -2,8 +2,9 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import { getVariant, parseIntSafe } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
 import { sendSelfPMFromServer } from "client/src/chat";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { createStore } from "redux";
 import * as sentry from "../../sentry";
 import { initArray, setBrowserAddressBarPath } from "../../utils";

@@ -1,4 +1,3 @@
-import { ensureAllCases } from "@hanabi/data";
 import * as variantRules from "../../../rules/variant";
 import { GameAction } from "../../../types/actions";
 import { SoundType } from "../../../types/SoundType";
@@ -136,11 +135,6 @@ function getFileName(soundType: SoundType, ourTurn: boolean) {
 
     case SoundType.FinishedPerfect: {
       return "finished_perfect";
-    }
-
-    default: {
-      ensureAllCases(soundType);
-      throw new Error("Failed to find the file name for a sound type.");
     }
   }
 }

@@ -1,7 +1,7 @@
 // In-game chat
 
-import { parseIntSafe } from "@hanabi/data";
 import interact from "interactjs";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
 

@@ -1,6 +1,6 @@
 // Calculates the state of the deck after an action.
 
-import { ensureAllCases, getVariant } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
 import { nullIfNegative } from "../../utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
@@ -238,11 +238,6 @@ export function cardsReducer(
     case "playerTimes":
     case "strike":
     case "turn": {
-      break;
-    }
-
-    default: {
-      ensureAllCases(action);
       break;
     }
   }

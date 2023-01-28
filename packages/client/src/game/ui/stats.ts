@@ -1,4 +1,4 @@
-import { parseIntSafe } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as modals from "../../modals";
 import { ReplayActionType } from "../types/ReplayActionType";

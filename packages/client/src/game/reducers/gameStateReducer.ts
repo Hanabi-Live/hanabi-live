@@ -1,6 +1,6 @@
 // Functions for building a state table for every turn.
 
-import { ensureAllCases, getVariant, Variant } from "@hanabi/data";
+import { getVariant, Variant } from "@hanabi/data";
 import produce, { castDraft, Draft, original } from "immer";
 import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
@@ -310,11 +310,6 @@ function gameStateReducerFunction(
     case "receiveNote":
     case "turn":
     case "cardIdentity": {
-      break;
-    }
-
-    default: {
-      ensureAllCases(action);
       break;
     }
   }

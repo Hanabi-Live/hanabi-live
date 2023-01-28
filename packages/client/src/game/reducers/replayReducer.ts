@@ -1,6 +1,5 @@
 // The reducer for replays and hypotheticals.
 
-import { ensureAllCases } from "@hanabi/data";
 import produce, { Draft, original } from "immer";
 import { nullIfNegative } from "../../utils";
 import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
@@ -224,11 +223,6 @@ function replayReducerFunction(
       }
 
       hypoAction(state, action.action, finished, metadata);
-      break;
-    }
-
-    default: {
-      ensureAllCases(action);
       break;
     }
   }

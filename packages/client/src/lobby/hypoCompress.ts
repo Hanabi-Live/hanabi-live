@@ -4,8 +4,8 @@ import {
   HYPO_PLAYER_NAMES,
   MAX_PLAYERS,
   MIN_PLAYERS,
-  parseIntSafe,
 } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { isEqual } from "lodash";
 
 interface DeckCard {

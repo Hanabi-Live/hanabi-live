@@ -11,7 +11,6 @@ export * from "./types/Character";
 export * from "./types/Color";
 export * from "./types/Suit";
 export * from "./types/Variant";
-export * from "./utils";
 export * from "./variants";
 export * from "./version";
 export { emojis, emotes };

@@ -1,6 +1,5 @@
 // The lobby area that shows all of the current logged-in users.
 
-import { ensureAllCases } from "@hanabi/data";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
@@ -178,10 +177,6 @@ function setLink(userID: number) {
       case Status.SharedReplay: {
         tablesDraw.tableSpectate(table);
         break;
-      }
-
-      default: {
-        ensureAllCases(user.status);
       }
     }
   });

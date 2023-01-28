@@ -1,6 +1,6 @@
 // Functions for progressing forward and backward through time.
 
-import { parseIntSafe } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";

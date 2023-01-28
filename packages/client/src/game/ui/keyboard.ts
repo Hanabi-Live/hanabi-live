@@ -1,6 +1,6 @@
 // Functions for handling all of the keyboard shortcuts.
 
-import { parseIntSafe } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";

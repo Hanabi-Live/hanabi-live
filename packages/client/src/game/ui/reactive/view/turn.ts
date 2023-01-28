@@ -1,4 +1,3 @@
-import { ensureAllCases } from "@hanabi/data";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as variantRules from "../../../rules/variant";
 import { ClueType } from "../../../types/ClueType";
@@ -81,18 +80,18 @@ export function onLastClueTypeChanged(lastClueType: ClueType | null): void {
         setRankClueButtonsVisible(true);
         break;
       }
+
       case ClueType.Color: {
         setColorClueButtonsVisible(false);
         setRankClueButtonsVisible(true);
         break;
       }
+
       case ClueType.Rank: {
         setColorClueButtonsVisible(true);
         setRankClueButtonsVisible(false);
         break;
       }
-      default:
-        ensureAllCases(lastClueType);
     }
   }
   globals.layers.UI.batchDraw();

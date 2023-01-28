@@ -1,5 +1,4 @@
 import {
-  ensureAllCases,
   STACK_BASE_RANK,
   START_CARD_RANK,
   UNKNOWN_CARD_RANK,
@@ -56,13 +55,7 @@ export function nextRanks(
     case StackDirection.Finished: {
       return [];
     }
-
-    default: {
-      ensureAllCases(playStackDirection);
-    }
   }
-
-  return [];
 }
 
 export function direction(

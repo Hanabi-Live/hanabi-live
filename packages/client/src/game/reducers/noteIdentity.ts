@@ -1,10 +1,10 @@
 import {
   ALL_RESERVED_NOTES,
   MAX_RANK,
-  parseIntSafe,
   START_CARD_RANK,
   Variant,
 } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 

@@ -4,8 +4,8 @@ import {
   DEFAULT_VARIANT_NAME,
   doesVariantExist,
   getVariantNames,
-  parseIntSafe,
 } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";

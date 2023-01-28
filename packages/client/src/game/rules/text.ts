@@ -1,4 +1,4 @@
-import { ensureAllCases, getVariant } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import { ClueType } from "../types/ClueType";
@@ -140,11 +140,6 @@ export function gameOver(
 
     case EndCondition.AllOrNothingSoftlock: {
       return `${playerName} was left with 0 clues and 0 cards!`;
-    }
-
-    default: {
-      ensureAllCases(endCondition);
-      break;
     }
   }
 

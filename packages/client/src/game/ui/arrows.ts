@@ -1,7 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import { ensureAllCases, STACK_BASE_RANK, Suit } from "@hanabi/data";
+import { STACK_BASE_RANK, Suit } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
 import { KonvaEventObject } from "konva/types/Node";
@@ -415,44 +415,49 @@ function getElementFromNegativeOrder(order: ReplayArrowOrder): NodeWithTooltip {
         `An order of ${ReplayArrowOrder.Nothing} does not correspond to an element.`,
       );
     }
+
     case ReplayArrowOrder.Deck: {
       return globals.elements.deck!;
     }
+
     case ReplayArrowOrder.Turn: {
       return globals.elements.turnNumberLabel!;
     }
+
     case ReplayArrowOrder.Score: {
       return globals.elements.scoreNumberLabel!;
     }
+
     case ReplayArrowOrder.MaxScore: {
       return globals.elements.maxScoreNumberLabel!;
     }
+
     case ReplayArrowOrder.Clues: {
       return globals.elements.cluesNumberLabel!;
     }
+
     case ReplayArrowOrder.Strike1: {
       return globals.elements.strikeSquares[0]!;
     }
+
     case ReplayArrowOrder.Strike2: {
       return globals.elements.strikeSquares[1]!;
     }
+
     case ReplayArrowOrder.Strike3: {
       return globals.elements.strikeSquares[2]!;
     }
+
     case ReplayArrowOrder.Pace: {
       return globals.elements.paceNumberLabel!;
     }
+
     case ReplayArrowOrder.Efficiency: {
       return globals.elements.efficiencyNumberLabel!;
     }
+
     case ReplayArrowOrder.MinEfficiency: {
       return globals.elements.efficiencyMinNeededLabel!;
-    }
-    default: {
-      ensureAllCases(order);
-      throw new Error(
-        "Failed to get the element corresponding to arrow order.",
-      );
     }
   }
 }
