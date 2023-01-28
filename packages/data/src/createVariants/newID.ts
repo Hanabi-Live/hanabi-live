@@ -1,10 +1,10 @@
+import { parseIntSafe } from "isaacscript-common-ts";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,
 } from "../getVariantDescriptions";
 import { SuitJSON } from "../types/SuitJSON";
 import { VariantJSON } from "../types/VariantJSON";
-import { parseIntSafe } from "../utils";
 import { error } from "./utils";
 
 const VARIANT_DELIMITER = ":";
