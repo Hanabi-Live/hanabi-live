@@ -248,9 +248,9 @@
         showProcessing: true,
         {{if not .SpecificSeed}}
         headers: {
-          0: { filter: false },
+          0: { filter: false, sorter: true },
           1: { filter: true, sorter: false },
-          2: { filter: true, sorter: false },
+          2: { filter: true, sorter: true },
           3: { filter: true, sorter: false },
           4: { filter: false, sorter: false },
           5: { filter: false, sorter: false },
@@ -258,15 +258,15 @@
         },
         {{else}}
         headers: {
-          0: { filter: false },
+          0: { filter: false, sorter: true },
           1: { filter: false, sorter: false },
-          2: { filter: true, sorter: false },
+          2: { filter: true, sorter: true },
           3: { filter: false, sorter: false },
           4: { filter: false, sorter: false },
           5: { filter: false, sorter: false },
         },
         {{end}}
-        sortList: [[0, 1]],
+        sortList: [[2, 1]],
         widgets: ['zebra', 'filter', 'pager'],
         widgetOptions : {
           filter_selectSource  : {

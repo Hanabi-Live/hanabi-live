@@ -72,9 +72,9 @@ func apiVariantsSingle(c *gin.Context) {
 		id = v
 	}
 
-	defaultSort := APISortColumn{Column: "games.id", Ascending: false}
+	defaultSort := APISortColumn{Column: "score", Ascending: false}
 	initialFilter := APIColumnDescription{Column: "variant_id", Value: strconv.Itoa(id)}
-	orderCols := []string{"games.id"}
+	orderCols := []string{"games.id", "num_players", "score"}
 	filterCols := []string{"games.id", "num_players", "score"}
 
 	var rows pgx.Rows
