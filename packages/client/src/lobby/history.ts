@@ -250,6 +250,7 @@ export function drawOtherScores(
   games: GameHistory[],
   variantName: string,
   friends: boolean,
+  seed: string,
 ): void {
   if (globals.currentScreen !== Screen.HistoryOtherScores) {
     return;
@@ -265,6 +266,9 @@ export function drawOtherScores(
       hideOtherScoresToFriends();
     });
   }
+
+  // Set the link for the "View seed data" button.
+  $("#nav-buttons-history-other-scores-view-all").attr("href", `/seed/${seed}`);
 
   const tbody = $("#lobby-history-other-scores-table-tbody");
 
@@ -319,16 +323,16 @@ export function drawOtherScores(
 
     // Column 6 - Seed. Chop off the prefix.
     const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
-    let seed: string;
+    let seedNumber: string;
     if (match === null || match.length < 2) {
-      seed = "Unknown";
+      seedNumber = "Unknown";
     } else {
-      seed = match[1]!;
+      seedNumber = match[1]!;
     }
     if (ourGame) {
-      seed = `<strong>${seed}</strong>`;
+      seedNumber = `<strong>${seedNumber}</strong>`;
     }
-    $("<td>").html(seed).appendTo(row);
+    $("<td>").html(seedNumber).appendTo(row);
 
     // Column 7 - Watch Replay.
     const watchReplayButton = makeReplayButton(gameData.id, "solo");

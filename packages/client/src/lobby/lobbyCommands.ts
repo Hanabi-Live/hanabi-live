@@ -114,11 +114,17 @@ interface GameHistoryOtherScoresData {
   games: GameHistory[];
   variantName: string;
   friends: boolean;
+  seed: string;
 }
 lobbyCommands.set(
   "gameHistoryOtherScores",
   (data: GameHistoryOtherScoresData) => {
-    history.drawOtherScores(data.games, data.variantName, data.friends);
+    history.drawOtherScores(
+      data.games,
+      data.variantName,
+      data.friends,
+      data.seed,
+    );
   },
 );
 
