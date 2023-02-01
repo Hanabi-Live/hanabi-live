@@ -323,16 +323,16 @@ export function drawOtherScores(
 
     // Column 6 - Seed. Chop off the prefix.
     const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
-    let seedNumber: string;
+    let seedNumberSuffix: string;
     if (match === null || match.length < 2) {
-      seedNumber = "Unknown";
+      seedNumberSuffix = "Unknown";
     } else {
-      seedNumber = match[1]!;
+      seedNumberSuffix = match[1]!;
     }
     if (ourGame) {
-      seedNumber = `<strong>${seedNumber}</strong>`;
+      seedNumberSuffix = `<strong>${seedNumberSuffix}</strong>`;
     }
-    $("<td>").html(seedNumber).appendTo(row);
+    $("<td>").html(seedNumberSuffix).appendTo(row);
 
     // Column 7 - Watch Replay.
     const watchReplayButton = makeReplayButton(gameData.id, "solo");
