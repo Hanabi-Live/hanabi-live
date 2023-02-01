@@ -61,10 +61,12 @@ func commandHistoryGetSeed(ctx context.Context, s *Session, d *CommandData) {
 		Games       []*GameHistory `json:"games"`
 		VariantName string         `json:"variantName"`
 		Friends     bool           `json:"friends"`
+		Seed        string         `json:"seed"`
 	}
 	s.Emit("gameHistoryOtherScores", &GameHistoryOtherScoresMessage{
 		Games:       gameHistoryList,
 		VariantName: variantName,
 		Friends:     d.Friends,
+		Seed:        d.Seed,
 	})
 }

@@ -553,7 +553,7 @@ func (*Games) GetGameIDsForSeed(wQuery, orderBy, limit string, args []interface{
 	gameIDs := make([]int, 0)
 
 	SQLString := `
-		SELECT DISTINCT games.id
+		SELECT games.id
 		FROM games
 	` + wQuery + orderBy + limit
 
@@ -643,8 +643,8 @@ func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]AP
 			games
 			JOIN game_participants on games.id = game_id
 			JOIN users on user_id = users.id
-	    WHERE games.id = ANY($1)
-	    GROUP BY games.id
+			WHERE games.id = ANY($1)
+			GROUP BY games.id
 	` + orderBy
 
 	if v, err := db.Query(context.Background(), dbQuery, args...); err != nil {
@@ -681,7 +681,7 @@ func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
-		      AND games.end_condition = 1
+			AND games.end_condition = 1
 	`
 	if !includeSpeedrun {
 		SQLString += "AND games.speedrun = FALSE"

@@ -249,13 +249,13 @@
     // Initialize the table sorting
     $('table:not(.plain)').tablesorter({
       headers: {
-        0: { filter: false },
+        0: { filter: false, sorter: true },
         1: { filter: true, sorter: false },
-        2: { filter: true, sorter: false },
+        2: { filter: true, sorter: true },
         3: { filter: false, sorter: false },
         4: { filter: false, sorter: false },
       },
-      sortList: [[0, 1]],
+      sortList: [[2, 1]],
       widgets: ['zebra', 'filter', 'pager'],
       widgetOptions : {
         filter_selectSource  : {

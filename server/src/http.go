@@ -37,6 +37,7 @@ type TemplateData struct {
 	SpecificSeed bool
 	Seed         string
 	Tags         map[int][]string
+	ScoreFreqs   []*ScoreFreq
 
 	// Scores
 	DateJoined                 string

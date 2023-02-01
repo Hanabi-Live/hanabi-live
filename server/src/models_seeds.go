@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/Hanabi-Live/hanabi-live/logger"
+	"fmt"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -59,6 +61,40 @@ func (*Seeds) GetNumGames(seed string) (int, error) {
 	}
 
 	return numGames, nil
+}
+
+type ScoreFreq struct {
+	Score int `json:"score"`
+	NumTimes int `json:"numTimes"`
+}
+
+func (*Seeds) GetScoreFreqs(seed string) ([]*ScoreFreq, error) {
+	scoreFreqs := make([]*ScoreFreq, 0)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
+		SELECT score, COUNT(*) as numtimes
+		FROM games
+		WHERE seed = $1
+		GROUP BY score
+		ORDER BY score ASC
+	`, seed); errors.Is(err, pgx.ErrNoRows) {
+		return scoreFreqs, nil
+	} else if err != nil {
+		return scoreFreqs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		freq := ScoreFreq{ // nolint: exhaustivestruct
+		}
+		rows.Scan(&freq.Score, &freq.NumTimes)
+		logger.Debug(fmt.Sprintf("%d instances of score %d", freq.NumTimes, freq.Score));
+		scoreFreqs = append(scoreFreqs, &freq);
+	}
+
+	return scoreFreqs, nil
 }
 
 func (s *Seeds) UpdateAll() error {
