@@ -15,6 +15,7 @@ type APIVariantRow struct {
 	Score      int    `json:"score"`
 	Users      string `json:"users"`
 	DateTime   string `json:"datetime"`
+	Seed       string `json:"seed"`
 }
 
 type APIVariantAnswer struct {

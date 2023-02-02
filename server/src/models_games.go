@@ -638,7 +638,8 @@ func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]AP
 		SELECT
 			games.id, num_players, score,
 			STRING_AGG(username, ', ' ORDER BY LOWER(username)) AS usernames,
-			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished
+			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished,
+			seed
 		FROM
 			games
 			JOIN game_participants on games.id = game_id
@@ -663,6 +664,7 @@ func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]AP
 			&row.Score,
 			&row.Users,
 			&row.DateTime,
+			&row.Seed,
 		); err != nil {
 			return nil, err
 		}
