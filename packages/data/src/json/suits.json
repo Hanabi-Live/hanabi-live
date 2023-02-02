@@ -553,7 +553,7 @@
     "abbreviation": "Y",
     "displayName": "Yam",
     "showSuitName": true,
-    "fill": "#cc6600",
+    "fill": "#cc9900",
     "pip": "hanabiYellow",
     "clueColors": ["Red", "Yellow"]
   },
@@ -563,7 +563,7 @@
     "abbreviation": "G",
     "displayName": "Geas",
     "showSuitName": true,
-    "fill": "#78a890",
+    "fill": "#68b840",
     "pip": "hanabiGreen",
     "clueColors": ["Red", "Yellow", "Green"]
   },
@@ -573,7 +573,7 @@
     "abbreviation": "B",
     "displayName": "Beatnik",
     "showSuitName": true,
-    "fill": "#1f4f54",
+    "fill": "#3f6fa4",
     "pip": "hanabiBlue",
     "clueColors": ["Red", "Yellow", "Green", "Blue"]
   },
@@ -583,7 +583,7 @@
     "abbreviation": "P",
     "displayName": "Plum",
     "showSuitName": true,
-    "fill": "#381a38",
+    "fill": "#281a58",
     "pip": "hanabiWhite",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
   },
@@ -593,7 +593,7 @@
     "abbreviation": "T",
     "displayName": "Taupe",
     "showSuitName": true,
-    "fill": "#483c32",
+    "fill": "#381c12",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
   },
