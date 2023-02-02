@@ -48,7 +48,7 @@ func apiHistory(c *gin.Context) {
 		playerIDs = v1
 	}
 
-	defaultSort := APISortColumn{Column: "score", Ascending: false}
+	defaultSort := APISortColumn{Column: "games.id", Ascending: false}
 	orderCols := []string{"games.id", "num_players", "score"}
 	filterCols := []string{"games.id", "num_players", "score", "variant_id"}
 
@@ -67,7 +67,7 @@ func apiHistory(c *gin.Context) {
 
 	// Get row count
 	var rowCount int
-	dbQuery := "SELECT COUNT(DISTINCT games.id) FROM games " + SQLString + wQuery
+	dbQuery := "SELECT COUNT(games.id) FROM games " + SQLString + wQuery
 	if err := db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount); err != nil {
 		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
@@ -163,7 +163,7 @@ func apiSeed(c *gin.Context) {
 
 	// Get row count
 	var rowCount int
-	dbQuery := "SELECT COUNT(DISTINCT games.id) FROM games " + wQuery
+	dbQuery := "SELECT COUNT(games.id) FROM games " + wQuery
 	if err := db.QueryRow(context.Background(), dbQuery, args...).Scan(&rowCount); err != nil {
 		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
