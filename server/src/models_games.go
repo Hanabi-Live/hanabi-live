@@ -460,7 +460,7 @@ func (*Games) GetGameIDsMultiUser(userIDs []int, wQuery, orderBy, limit string, 
 	}
 
 	SQLString := `
-		SELECT DISTINCT games.id
+		SELECT games.id
 		FROM games
 	`
 	for _, id := range userIDs {
@@ -509,7 +509,7 @@ func (*Games) GetFullGameIDsMultiUser(userIDs []int, idStart *int, idEnd *int) (
 	}
 
 	SQLString := `
-		SELECT DISTINCT games.id
+		SELECT games.id
 		FROM games
 	`
 	for _, id := range userIDs {
