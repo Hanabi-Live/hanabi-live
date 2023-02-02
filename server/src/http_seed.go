@@ -36,5 +36,5 @@ func httpSeed(c *gin.Context) {
 		ScoreFreqs:   seedScoreFreqs,
 	}
 
-	httpServeTemplate(c.Writer, data, "players_history", "history")
+	httpServeTemplate(c.Writer, data, "players-history", "history")
 }

@@ -32,5 +32,5 @@ func httpHistory(c *gin.Context) {
 		lastIndex := len(playerNames) - 1
 		data.NamesTitle = "Game History for " + strings.Join(playerNames[:lastIndex], ", ") + " and " + playerNames[lastIndex]
 	}
-	httpServeTemplate(c.Writer, data, "players_history", "history")
+	httpServeTemplate(c.Writer, data, "players-history", "history")
 }
