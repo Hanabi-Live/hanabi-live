@@ -188,44 +188,58 @@
         $("div.tableSpinner").css("display", "flex");
       }
     }
+
     {{ if .ScoreFreqs }}
     const xValues = [{{ range .ScoreFreqs }}{{.Score}},{{ end }}];
     const yValues = [{{ range .ScoreFreqs }}{{ .NumTimes }},{{ end }}];
     Chart.register(ChartDataLabels);
-    Chart.defaults.set('plugins.datalabels', {
-      color: '#000000',
-      anchor: 'end',
-      align: 'end',
+    Chart.defaults.set("plugins.datalabels", {
+      color: "#000000",
+      anchor: "end",
+      align: "end",
       clamp: false,
       font: {
-        weight: 'bold',
+        weight: "bold",
         size: 16,
-        lineHeight: 1
+        lineHeight: 1,
       },
     });
     let chartColors = [];
     let color;
-    for (let i=0; i<xValues.length; i++) {
-      if (xValues[i] === 0) { color = "#aa5555"; }
-      else if (i === xValues.length-1) { color = "#00aa00"; }
-      else if (i % 3 === 1) { color = "#3366ff"; }
-      else if (i % 3 === 2) { color = "#6699ff"; }
-      else if (i % 3 === 0) { color = "#99bbff"; }
+    for (let i = 0; i < xValues.length; i++) {
+      if (xValues[i] === 0) {
+        color = "#aa5555";
+      } else if (i === xValues.length - 1) {
+        color = "#00aa00";
+      } else if (i % 3 === 1) {
+        color = "#3366ff";
+      } else if (i % 3 === 2) {
+        color = "#6699ff";
+      } else if (i % 3 === 0) {
+        color = "#99bbff";
+      }
       chartColors.push(color);
     }
     new Chart("scoreFreqs", {
       type: "bar",
       data: {
         labels: xValues,
-        datasets: [{
-          backgroundColor: chartColors,
-          data: yValues
-        }]},
+        datasets: [
+          {
+            backgroundColor: chartColors,
+            data: yValues,
+          },
+        ],
+      },
       options: {
         layout: { padding: { top: 40 } },
         plugins: { legend: { display: false } },
-        xAxes: { scaleLabel: { fontStyle:"bold" } } }
-      });
+        scales: {
+          x: { title: { display: true, text: "Score" } },
+          y: { title: { display: true, text: "Number of games" } },
+        },
+      },
+    });
     {{ end }}
 
     $.getJSON('/api/v1/variants', function (data) {
