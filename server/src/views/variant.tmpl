@@ -139,7 +139,8 @@
                     </th>
                     <th width="10%">Score</th>
                     <th width="40%">Players</th>
-                    <th width="30%">Date & Time</th>
+                    <th width="20%">Date & Time</th>
+                    <th width="10%">Seed</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -230,6 +231,7 @@
               d[r]["score"],
               `<a href="/history/${users}">${d[r]["users"]}</a>`,
               d[r]["datetime"],
+              `<a href="/seed/${d[r]["seed"]}">${d[r]["seed"]}</a>`,
             ]; // new row array
             rows.push(row); // add new row array to rows array
           }
@@ -254,6 +256,7 @@
         2: { filter: true, sorter: true },
         3: { filter: false, sorter: false },
         4: { filter: false, sorter: false },
+        5: { filter: false, sorter: false },
       },
       sortList: [[2, 1]],
       widgets: ['zebra', 'filter', 'pager'],
