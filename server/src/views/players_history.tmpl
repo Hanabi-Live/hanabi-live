@@ -302,13 +302,14 @@
         {{if not .SpecificSeed}}
         headers: {
           0: { filter: false, sorter: true },
-          1: { filter: true, sorter: false },
+          1: { filter: true, sorter: true },
           2: { filter: true, sorter: true },
           3: { filter: true, sorter: false },
           4: { filter: false, sorter: false },
           5: { filter: false, sorter: false },
           6: { filter: false, sorter: false },
         },
+        sortList: [[0, 1]],
         {{else}}
         headers: {
           0: { filter: false, sorter: true },
@@ -318,8 +319,8 @@
           4: { filter: false, sorter: false },
           5: { filter: false, sorter: false },
         },
-        {{end}}
         sortList: [[2, 1]],
+        {{end}}
         widgets: ['zebra', 'filter', 'pager'],
         widgetOptions : {
           filter_selectSource  : {
