@@ -190,7 +190,6 @@
     }
     {{ if .ScoreFreqs }}
     const xValues = [{{ range .ScoreFreqs }}{{.Score}},{{ end }}];
-    const xLabels = [{{ range .ScoreFreqs }}"Score {{ .Score }}",{{ end }}];
     const yValues = [{{ range .ScoreFreqs }}{{ .NumTimes }},{{ end }}];
     Chart.register(ChartDataLabels);
     Chart.defaults.set('plugins.datalabels', {
@@ -217,15 +216,15 @@
     new Chart("scoreFreqs", {
       type: "bar",
       data: {
-        labels: xLabels,
+        labels: xValues,
         datasets: [{
           backgroundColor: chartColors,
-          data:yValues}
-        ]},
+          data: yValues
+        }]},
       options: {
         layout: { padding: { top: 40 } },
-        plugins: { legend: {display: false} },
-        xAxes: { scaleLabel: {fontStyle:"bold"} } }
+        plugins: { legend: { display: false } },
+        xAxes: { scaleLabel: { fontStyle:"bold" } } }
       });
     {{ end }}
 
