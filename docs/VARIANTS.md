@@ -167,19 +167,37 @@ One of each card per suit (e.g. 5 in total):
 
 ### Matryoshka
 
-- The six "basic" suits are replaced with six nested ones:
+- The 6 "basic" suits are replaced with 6 nested ones:
   - Red (red)
   - Yam (red / yellow)
   - Geas (red / yellow / green)
   - Beatnik (red / yellow / green / blue)
   - Plum (red / yellow / green / blue / purple)
   - Taupe (red / yellow / green / blue / purple / teal)
-- In a five-suit game, the Taupe suit would be removed, and so on.
+- In a 5-suit game, the Taupe suit would be removed, and so on.
 - The name of the variant comes from [nested doll sets](https://en.wikipedia.org/wiki/Matryoshka_doll).
 
 ### Dual-Color
 
-- Each suit is touched by two separate colors.
+- Each suit is touched by 2 separate colors.
+- In the 6-suit version, there are 4 different colors:
+  - Orange (red/yellow)
+  - Purple (red/blue)
+  - Mahogany (red/black)
+  - Green (yellow/blue)
+  - Tan (yellow/black)
+  - Navy (blue/black)
+- In the 5-suit version, there are 5 different colors:
+  - Orange (red/yellow)
+  - Lime (yellow/green)
+  - Teal (green/blue)
+  - Indigo (blue/purple)
+  - Cardinal (purple/red)
+- In the 3-suit version, there are 4 different colors:
+  - Orange (red/yellow)
+  - Green (yellow/blue)
+  - Purple (blue/red)
+- There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
 
 ### Special Mix (5 Suits)
 
