@@ -180,6 +180,25 @@ One of each card per suit (e.g. 5 in total):
 ### Dual-Color
 
 - Each suit is touched by two separate colors.
+- In the six-suit version, there are four colors, and 4 choose 2 = 6 suits:
+  - Orange (red/yellow)
+  - Purple (red/blue)
+  - Mahogany (red/black)
+  - Green (yellow/blue)
+  - Tan (yellow/black)
+  - Navy (blue/black)
+- In the five-suit version, there are five colors, and 5 suits:
+  - Orange (red/yellow)
+  - Lime (yellow/green)
+  - Teal (green/blue)
+  - Indigo (blue/purple)
+  - Cardinal (purple/red)
+- In the three-suit version, there are four colors, and 3 choose 2 = 6 suits:
+  - Orange (red/yellow)
+  - Green (yellow/blue)
+  - Purple (blue/red)
+- There are also dual-color variants with one standard special suit
+  in addition to either the three-suit or five-suit versions above.
 
 ### Special Mix (5 Suits)
 
