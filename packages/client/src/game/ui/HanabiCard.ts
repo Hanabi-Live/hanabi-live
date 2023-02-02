@@ -540,12 +540,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return DECK_BACK_IMAGE;
     }
 
-    // In Real-Life mode, or in Cow & Pig variants, or in Duck variants, always show the vanilla
-    // card back if the card is not fully revealed.
+    // In Real-Life mode, always show the vanilla card back if the card is not fully revealed.
     if (
-      (globals.lobby.settings.realLifeMode ||
-        variantRules.isCowAndPig(this.variant) ||
-        variantRules.isDuck(this.variant)) &&
+      globals.lobby.settings.realLifeMode &&
       (suitToShow === unknownSuit || rankToShow === UNKNOWN_CARD_RANK)
     ) {
       return DECK_BACK_IMAGE;
@@ -716,12 +713,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     unknownSuit: Suit,
   ): void {
     // Show or hide the pips.
-    if (
-      globals.lobby.settings.realLifeMode ||
-      variantRules.isCowAndPig(this.variant) ||
-      variantRules.isDuck(this.variant) ||
-      morphedBlank
-    ) {
+    if (globals.lobby.settings.realLifeMode || morphedBlank) {
       this.suitPips.hide();
       this.rankPips.hide();
     } else {
