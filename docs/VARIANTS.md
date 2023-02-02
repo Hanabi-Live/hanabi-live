@@ -181,6 +181,16 @@ One of each card per suit (e.g. 5 in total):
 
 - Each suit is touched by two separate colors.
 
+### RGB Mix (6 Suits)
+
+- There are three colors and six suits:
+  - Red
+  - Yellow (red / green)
+  - Green
+  - Cyan (green / blue)
+  - Blue
+  - Purple (blue / red)
+
 ### Special Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:

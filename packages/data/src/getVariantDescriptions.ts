@@ -647,6 +647,10 @@ export function getMixVariants(): VariantDescription[] {
       name: "Valentine Mix (6 Suits)",
       suits: ["Red", "Pink", "White", "Light Pink", "Cocoa Rainbow", "Null"],
     },
+    {
+      name: "RGB Mix (6 Suits)",
+      suits: ["Red", "Yellow D", "Green", "Cyan D", "Blue", "Purple D"],
+    },
   ];
 }
 

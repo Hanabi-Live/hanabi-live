@@ -11801,6 +11801,11 @@
     "suits": ["Red", "Pink", "White", "Light Pink", "Cocoa Rainbow", "Null"]
   },
   {
+    "id": 2071,
+    "name": "RGB Mix (6 Suits)",
+    "suits": ["Red", "Yellow D", "Green", "Cyan D", "Blue", "Purple D"]
+  },
+  {
     "id": 10,
     "name": "Color Blind (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
