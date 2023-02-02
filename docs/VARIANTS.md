@@ -181,22 +181,22 @@ One of each card per suit (e.g. 5 in total):
 
 - Each suit is touched by 2 separate colors.
 - In the 6-suit version, there are 4 different colors:
-  - Orange (red/yellow)
-  - Purple (red/blue)
-  - Mahogany (red/black)
-  - Green (yellow/blue)
-  - Tan (yellow/black)
-  - Navy (blue/black)
+  - Orange (red / yellow)
+  - Purple (red / blue)
+  - Mahogany (red / black)
+  - Green (yellow / blue)
+  - Tan (yellow / black)
+  - Navy (blue / black)
 - In the 5-suit version, there are 5 different colors:
-  - Orange (red/yellow)
-  - Lime (yellow/green)
-  - Teal (green/blue)
-  - Indigo (blue/purple)
-  - Cardinal (purple/red)
+  - Orange (red / yellow)
+  - Lime (yellow / green)
+  - Teal (green / blue)
+  - Indigo (blue / purple)
+  - Cardinal (purple / red)
 - In the 3-suit version, there are 4 different colors:
-  - Orange (red/yellow)
-  - Green (yellow/blue)
-  - Purple (blue/red)
+  - Orange (red / yellow)
+  - Green (yellow / blue)
+  - Purple (blue / red)
 - There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
 
 ### RGB Mix (6 Suits)
@@ -208,6 +208,8 @@ One of each card per suit (e.g. 5 in total):
   - Cyan (green / blue)
   - Blue
   - Purple (blue / red)
+- The color names are taken from the
+  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
 
 ### Special Mix (5 Suits)
 
