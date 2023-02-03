@@ -20,7 +20,7 @@
     // Minified dependencies
     "*.min.js",
     "*.min.css",
-    //The css might have strange paths
+    // The css might have strange paths.
     "hanabi.css",
     // Archived files where spelling errors will not be fixed.
     "/misc/keldon/**",
