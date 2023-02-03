@@ -17,7 +17,7 @@
   // We want to always use "lf" to be consistent with all platforms.
   "files.eol": "\n",
 
-  // Automatically removing all trailing whitespace when saving a file.
+  // Automatically remove all trailing whitespace when saving a file.
   "files.trimTrailingWhitespace": true,
 
   // Configure glob patterns for excluding files and folders in full text searches and quick open
@@ -27,6 +27,13 @@
     "**/misc/keldon/": true,
     "**/node_modules/": true,
   },
+
+  // ------------------
+  // Extension settings
+  // ------------------
+
+  // Use Prettier to format "cspell.json".
+  "cSpell.autoFormatConfigFile": true,
 
   // -----------------------
   // JavaScript / TypeScript
