@@ -311,7 +311,7 @@ One of each card per suit (e.g. 5 in total):
 
 ### Clue Starved
 
-- Each discard only generates 0.5 clues. (The team still starts with 8 clues.)
+- Each discard or 5 played only generates 0.5 clues. (The team still starts with 8 clues.)
 
 ### Color Blind
 
