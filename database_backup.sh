@@ -42,15 +42,15 @@ fi
 echo "Zipping the backup..."
 gzip "$BACKUPS_DIR/$FILENAME"
 
-# Delete old backups if the hard drive is getting full (but skip this if we are
-# on Windows).
+# Delete old backups if the hard drive is getting full (but skip this if we are on Windows).
 function delete_file_if_near_full_local {
   AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
   echo "Local hard drive amount full: $AMOUNT_FULL"
   if [[ $AMOUNT_FULL -gt 80 ]]; then
     # Delete the oldest file in the backups directory.
     echo "Hard drive over 80% full; deleting the oldest backup."
-    rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
+    OLDEST_FILE=$(ls -t "$BACKUPS_DIR" | tail -1)
+    rm -f "$OLDEST_FILE"
     delete_file_if_near_full_local
   fi
 }
@@ -80,8 +80,8 @@ if [[ -z $GDRIVE_PATH ]]; then
   exit 1
 fi
 
-# Check for free space; if we have less than a gig left, then start deleting
-# old files until we have at least a gig of storage left.
+# Check for free space; if we have less than a gig left, then start deleting old files until we have
+# at least a gig of storage left.
 function delete_file_if_near_full_gdrive {
   AMOUNT_FULL=$($GDRIVE_PATH about --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | grep Free)
   echo "GDrive amount full: $AMOUNT_FULL"
