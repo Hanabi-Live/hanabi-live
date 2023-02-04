@@ -48,9 +48,9 @@ function delete_file_if_near_full_local {
   echo "Local hard drive amount full: $AMOUNT_FULL"
   if [[ $AMOUNT_FULL -gt 75 ]]; then
     # Delete the oldest file in the backups directory.
-    echo "Hard drive over 80% full; deleting the oldest backup."
     OLDEST_FILE=$(ls -t "$BACKUPS_DIR" | tail -1)
-    rm -f "$OLDEST_FILE"
+    rm -f "$BACKUPS_DIR/$OLDEST_FILE"
+    echo "Hard drive over 80% full; deleted the oldest backup: $OLDEST_FILE"
     delete_file_if_near_full_local
   fi
 }
@@ -85,12 +85,15 @@ fi
 function delete_file_if_near_full_gdrive {
   AMOUNT_FULL=$($GDRIVE_PATH about --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | grep Free)
   echo "GDrive amount full: $AMOUNT_FULL"
-  if [[ $($AMOUNT_FULL | grep GB) ]]; then
+  if [[ $(echo $AMOUNT_FULL | grep GB) ]]; then
     return
   fi
-  echo "Google Drive account has under 1 gig of free space left; deleting the oldest backup."
-  OLDEST_FILE_ID=$($GDRIVE_PATH list --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO'" | head -n 1 | cut -f 1 -d " ")
+
+  # We need to filter out directories, so we make sure to include the file extension.
+  # https://developers.google.com/drive/api/guides/search-shareddrives
+  OLDEST_FILE_ID=$($GDRIVE_PATH list --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO' and name contains '.sql.gz'" | head -n 1 | cut -f 1 -d " ")
   $GDRIVE_PATH delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$OLDEST_FILE_ID"
+  echo "Google Drive account has under 1 gig of free space left; deleted the oldest backup: $OLDEST_FILE_ID"
   delete_file_if_near_full_gdrive
 }
 delete_file_if_near_full_gdrive
