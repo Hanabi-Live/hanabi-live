@@ -46,7 +46,7 @@ gzip "$BACKUPS_DIR/$FILENAME"
 function delete_file_if_near_full_local {
   AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
   echo "Local hard drive amount full: $AMOUNT_FULL"
-  if [[ $AMOUNT_FULL -gt 80 ]]; then
+  if [[ $AMOUNT_FULL -gt 75 ]]; then
     # Delete the oldest file in the backups directory.
     echo "Hard drive over 80% full; deleting the oldest backup."
     OLDEST_FILE=$(ls -t "$BACKUPS_DIR" | tail -1)
