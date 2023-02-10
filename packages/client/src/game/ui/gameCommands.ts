@@ -284,6 +284,7 @@ interface PauseData {
   playerIndex: number;
 }
 gameCommands.set("pause", (data: PauseData) => {
+  globals.game!.sounds.play(data.active ? "game_paused" : "game_unpaused");
   globals.store!.dispatch({
     type: "pause",
     active: data.active,
