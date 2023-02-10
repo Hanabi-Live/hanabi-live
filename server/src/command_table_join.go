@@ -52,7 +52,7 @@ func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate that they entered the correct password
-	if t.PasswordHash != "" {
+	if t.PasswordHash != "" && !d.BypassPassword {
 		if match, err := argon2id.ComparePasswordAndHash(d.Password, t.PasswordHash); err != nil {
 			logger.Error("Failed to compare the submitted password to the Argon2 hash: " +
 				err.Error())
