@@ -132,6 +132,8 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 		} else {
 			passwordHash = v
 		}
+	} else if d.PasswordHash != "" {
+		passwordHash = d.PasswordHash
 	}
 
 	t := NewTable(d.Name, s.UserID)
@@ -215,9 +217,10 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 	// Join the user to the new table
 	commandTableJoin(ctx, s, &CommandData{ // nolint: exhaustivestruct
-		TableID:      t.ID,
-		Password:     d.Password,
-		NoTableLock:  true,
-		NoTablesLock: true,
+		TableID:        t.ID,
+		Password:       d.Password,
+		NoTableLock:    true,
+		NoTablesLock:   true,
+		BypassPassword: d.BypassPassword,
 	})
 }

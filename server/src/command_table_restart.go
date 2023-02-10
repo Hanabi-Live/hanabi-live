@@ -206,6 +206,12 @@ func tableRestart(
 		newTableName = oldTableName + tableNameSuffix
 	}
 
+	// If passwordHash was nonempty, preserve old value
+	passwordHash := ""
+	if (t.PasswordHash != "") {
+		passwordHash = t.PasswordHash
+	}
+
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby
 	commandTableCreate(ctx, s, &CommandData{ // nolint: exhaustivestruct
@@ -213,9 +219,11 @@ func tableRestart(
 		Options: t.Options,
 		// If pregame option is false, then
 		// we want to prevent the pre-game from showing up in the lobby for a brief second
-		HidePregame:  d.HidePregame,
-		NoTablesLock: true,
-		MaxPlayers:   t.MaxPlayers,
+		HidePregame:    d.HidePregame,
+		NoTablesLock:   true,
+		MaxPlayers:     t.MaxPlayers,
+		PasswordHash:   passwordHash,
+		BypassPassword: true,
 	})
 
 	// Find the table ID for the new game
@@ -254,9 +262,10 @@ func tableRestart(
 			continue
 		}
 		commandTableJoin(ctx, s2, &CommandData{ // nolint: exhaustivestruct
-			TableID:      t2.ID,
-			NoTableLock:  true,
-			NoTablesLock: true,
+			TableID:        t2.ID,
+			NoTableLock:    true,
+			NoTablesLock:   true,
+			BypassPassword: true,
 		})
 	}
 

@@ -83,6 +83,9 @@ type CommandData struct {
 	// (e.g. the mutex lock is already acquired and does not need to be acquired again)
 	NoTableLock  bool `json:"-"` // To avoid "t.Lock()"
 	NoTablesLock bool `json:"-"` // To avoid "tables.Lock()"
+	// More remake table shenanigans
+	PasswordHash   string `json:"-"`
+	BypassPassword bool   `json:"-"`
 }
 
 var (
