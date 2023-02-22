@@ -6,10 +6,10 @@ set -euo pipefail # Exit on errors and undefined variables.
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# Get the name of the repository
+# Get the name of the repository:
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
-REPO="$(dirname "$DIR")"
-REPO="$(basename "$REPO")"
+DIR_NAME="$(dirname "$DIR")"
+REPO="$(basename "$DIR_NAME")"
 
 # For non-interactive shells (e.g. the server running this script to build itself),
 # the "HOME" environment variable must be specified or there will be a cache error when compiling
@@ -26,14 +26,14 @@ if [[ -z $CI ]]; then
     exit 1
   fi
   source "$ENV_PATH"
-  if [[ -z $DOMAIN ]]; then
+  if [[ -z ${DOMAIN-} ]]; then
     DOMAIN="localhost"
   fi
 fi
 
 # Compile the Golang code
 cd "$DIR/src"
-if [[ $DOMAIN == "localhost" ]]; then
+if [[ ${DOMAIN-} == "localhost" ]]; then
   # In development environments, turn on the Go race condition detector
   # https://blog.golang.org/race-detector
   go build -o "$DIR/../$REPO" -race
