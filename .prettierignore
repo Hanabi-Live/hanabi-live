@@ -1,19 +1,19 @@
 # Ignore compiled output.
-**/dist
+dist
 
 # Keldon files
-**/keldon
+keldon
 
 # Golang files
 go.mod
 
 # Images
-**/*.svg
+*.svg
 
 # Minified files
-**/*.min.js
-**/*.min.css
+*.min.js
+*.min.css
 
 # Temporary files
 critical.css
-**/grunt_output
+grunt_output

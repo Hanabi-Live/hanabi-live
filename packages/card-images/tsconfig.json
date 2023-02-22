@@ -1,4 +1,7 @@
 {
+  // We extend the TypeScript config for the monorepo.
+  "extends": "../../tsconfig.monorepo.json",
+
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
     "outDir": "./dist",

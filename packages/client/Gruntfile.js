@@ -1,16 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 // Imports
-const path = require("path");
+const path = require("node:path");
 const { VERSION } = require("../data/src/version");
 
 // Define the name of the final CSS file. We want to include the version inside of the filename (as
 // opposed to other solutions like using a version query string). This will:
-// 1) allow proxies to cache the file properly
-// 2) properly force a download of a new version in a reliable way
+// 1) Allow proxies to cache the file properly.
+// 2) Properly force a download of a new version in a reliable way.
 // https://www.alainschlesser.com/bust-cache-content-hash/
 const bundleFilename = `main.${VERSION}.min.css`;
 
@@ -64,7 +59,7 @@ module.exports = (grunt) => {
     criticalcss: {
       custom: {
         options: {
-          url: grunt.option("url"), // Pass the URL when running the task
+          url: grunt.option("url"), // Pass the URL when running the task.
           width: 1200,
           height: 900,
           filename: path.join(gruntOutputDir, bundleFilename),

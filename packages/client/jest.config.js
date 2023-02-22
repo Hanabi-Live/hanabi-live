@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
-const fs = require("fs");
+const fs = require("node:fs");
+const path = require("node:path");
 const jsoncParser = require("jsonc-parser");
-const path = require("path");
 const { pathsToModuleNameMapper } = require("ts-jest");
 
-// Read and parse the compiler options from the "tsconfig.json" file
+// Read and parse the compiler options from the "tsconfig.json" file.
 const repoRootPath = path.join(__dirname, "..", "..");
 const tsconfigPath = path.join(repoRootPath, "tsconfig.json");
 if (!fs.existsSync(tsconfigPath)) {

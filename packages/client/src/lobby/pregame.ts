@@ -520,7 +520,6 @@ export function drawSpectators(tableID: number): void {
     if (spectator.shadowingPlayerIndex !== -1) {
       const shadowingPlayer = table.players[spectator.shadowingPlayerIndex];
       if (spectator.name === globals.username) {
-        // Me.
         if (
           spectator.shadowingPlayerIndex >= table.players.length || // Shadow index is out of range
           spectator.shadowingPlayerIndex < -1 || // Shadow index is out of range

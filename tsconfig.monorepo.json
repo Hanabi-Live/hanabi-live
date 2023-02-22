@@ -1,0 +1,24 @@
+// This is a tsconfig.json intended to be used by packages in this monorepo. It is separate from the
+// root "tsconfig.json" file so that individual packages can extend the root settings without
+// inheriting the Node environment.
+{
+  // We extend the base IsaacScript config:
+  // https://github.com/IsaacScript/isaacscript/blob/main/packages/isaacscript-tsconfig/tsconfig.base.json
+  "extends": "isaacscript-tsconfig/tsconfig.base.json",
+
+  // https://www.typescriptlang.org/docs/handbook/compiler-options.html
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+
+    // Performance optimization; see: https://www.npmjs.com/package/tslib
+    "importHelpers": true,
+
+    "paths": {
+      "@hanabi/client": ["./packages/client/src"],
+      "@hanabi/data": ["./packages/data/src"],
+    },
+  },
+
+  "exclude": ["node_modules", "tmp"],
+}

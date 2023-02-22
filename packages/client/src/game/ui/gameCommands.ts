@@ -3,9 +3,9 @@
 // e.g. in-game replays.
 
 import { getVariant } from "@hanabi/data";
-import { sendSelfPMFromServer } from "client/src/chat";
 import { parseIntSafe } from "isaacscript-common-ts";
 import { createStore } from "redux";
+import { sendSelfPMFromServer } from "../../chat";
 import * as sentry from "../../sentry";
 import { initArray, setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";

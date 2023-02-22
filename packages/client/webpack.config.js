@@ -1,23 +1,21 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 // It is possible for the webpack configuration to be written in TypeScript, but this will not work
 // with the full range of options in "tsconfig.json". Keep the config file written in JavaScript for
 // simplicity.
 
 // Imports
-const SentryWebpackPlugin = require("@sentry/webpack-plugin");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const dotenv = require("dotenv");
-const fs = require("fs");
-const os = require("os");
-const path = require("path");
+const SentryWebpackPlugin = require("@sentry/webpack-plugin");
 const webpack = require("webpack");
-const TsconfigPathsWebpackPlugin = require("tsconfig-paths-webpack-plugin");
+const TSConfigPathsWebpackPlugin = require("tsconfig-paths-webpack-plugin");
 const { VERSION } = require("../data/src/version");
 
 // Define the name of the compiled JS file. We want to include the version inside of the filename
 // (as opposed to other solutions like using a version query string). This will:
-// 1) allow proxies to cache the file properly
-// 2) properly force a download of a new version in a reliable way
+// 1) Allow proxies to cache the file properly.
+// 2) Properly force a download of a new version in a reliable way.
 // https://www.alainschlesser.com/bust-cache-content-hash/
 const bundleFilename = `main.${VERSION}.min.js`;
 
@@ -60,7 +58,7 @@ module.exports = {
 
   resolve: {
     extensions: [".js", ".ts", ".json"],
-    plugins: [new TsconfigPathsWebpackPlugin()],
+    plugins: [new TSConfigPathsWebpackPlugin()],
   },
 
   // Webpack will display a warning unless we specify the mode. Production mode minifies the
