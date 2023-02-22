@@ -4,18 +4,22 @@ const jsoncParser = require("jsonc-parser");
 const { pathsToModuleNameMapper } = require("ts-jest");
 
 // Read and parse the compiler options from the "tsconfig.json" file.
-const tsconfigPath = path.join(__dirname, "tsconfig.json");
-if (!fs.existsSync(tsconfigPath)) {
-  throw new Error(`The "${tsconfigPath}" file does not exist.`);
+const repoRootPath = path.join(__dirname, "..", "..");
+const monorepoTSConfigPath = path.join(repoRootPath, "tsconfig.monorepo.json");
+if (!fs.existsSync(monorepoTSConfigPath)) {
+  throw new Error(`The "${monorepoTSConfigPath}" file does not exist.`);
 }
-const tsconfigString = fs.readFileSync(tsconfigPath).toString().trim();
+const tsconfigString = fs.readFileSync(monorepoTSConfigPath).toString().trim();
 const tsconfig = jsoncParser.parse(tsconfigString);
-const { compilerOptions } = tsconfig;
 
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: "<rootDir>/../../packages/",
+
+  // From: https://kulshekhar.github.io/ts-jest/docs/getting-started/paths-mapping/
+  roots: ["<rootDir>"],
+  modulePaths: [tsconfig.compilerOptions.baseUrl],
+  moduleNameMapper: pathsToModuleNameMapper(tsconfig.compilerOptions.paths, {
+    prefix: "<rootDir>/../../",
   }),
 };

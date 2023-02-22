@@ -15,8 +15,7 @@
     "importHelpers": true,
 
     "paths": {
-      "@hanabi/client": ["./packages/client/src"],
-      "@hanabi/data": ["./packages/data/src"],
+      "@hanabi/data": ["./packages/data/src/index.ts"],
     },
   },
 

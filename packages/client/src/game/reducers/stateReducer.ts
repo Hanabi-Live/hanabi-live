@@ -21,7 +21,6 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // Calculate all the intermediate states.
       const initialState = initialGameState(state.metadata);
 
-      console.log(JSON.parse(JSON.stringify(state, null, 2)));
       const { game, states } = reduceGameActions(
         action.actions,
         initialState,

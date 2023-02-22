@@ -34,7 +34,6 @@ function notesReducerFunction(
   switch (action.type) {
     case "setEffMod": {
       notes.efficiencyModifier = action.mod;
-      console.log(action.mod);
       break;
     }
 
