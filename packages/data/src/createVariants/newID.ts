@@ -1,4 +1,4 @@
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe, ReadonlySet } from "isaacscript-common-ts";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,
@@ -11,7 +11,7 @@ const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";
 const SUIT_MODIFIER_DELIMITER = "/";
 const REVERSE_MODIFIER = "R";
-const SUIT_MODIFIERS: ReadonlySet<string> = new Set([REVERSE_MODIFIER]);
+const SUIT_MODIFIERS = new ReadonlySet<string>([REVERSE_MODIFIER]);
 
 export function getVariantFromNewID(
   newID: string,
