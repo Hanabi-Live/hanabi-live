@@ -4,8 +4,7 @@ const jsoncParser = require("jsonc-parser");
 const { pathsToModuleNameMapper } = require("ts-jest");
 
 // Read and parse the compiler options from the "tsconfig.json" file.
-const repoRootPath = path.join(__dirname, "..", "..");
-const tsconfigPath = path.join(repoRootPath, "tsconfig.json");
+const tsconfigPath = path.join(__dirname, "tsconfig.json");
 if (!fs.existsSync(tsconfigPath)) {
   throw new Error(`The "${tsconfigPath}" file does not exist.`);
 }
