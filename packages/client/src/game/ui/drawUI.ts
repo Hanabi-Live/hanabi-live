@@ -1008,7 +1008,7 @@ function drawScoreArea() {
     globals.elements.scoreArea.add(strikeX);
     globals.elements.strikeXs.push(strikeX);
 
-    // For variants where the strikes are hidden, draw a "?"
+    // For variants where the strikes are hidden, draw a "?".
     if (
       variantRules.isThrowItInAHole(globals.variant) &&
       (globals.state.playing || globals.state.shadowing)

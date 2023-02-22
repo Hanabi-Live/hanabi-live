@@ -114,7 +114,7 @@ export class Deck extends Konva.Group {
       globals.activeHover = this;
       setTimeout(() => {
         konvaTooltips.show(this);
-      }, tooltips.TOOLTIP_DELAY);
+      }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
     });
     this.on("mouseout touchend", () => {
       globals.activeHover = null;

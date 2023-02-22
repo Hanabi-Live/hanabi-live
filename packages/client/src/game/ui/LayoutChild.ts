@@ -175,6 +175,7 @@ export class LayoutChild extends Konva.Group {
       text += "It is known to be unplayable based on the current information\n";
       text +=
         "available to you. (e.g. positive clues, negative clues, cards seen, etc.)";
+      // eslint-disable-next-line no-alert
       return !window.confirm(text);
     }
 

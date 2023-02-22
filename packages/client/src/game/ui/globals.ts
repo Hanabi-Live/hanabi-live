@@ -136,7 +136,9 @@ export class Globals {
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
-    this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => u());
+    this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => {
+      u();
+    });
     this.cardSubscriptions = [];
     this.store = null;
   }

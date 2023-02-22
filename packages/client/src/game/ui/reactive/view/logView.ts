@@ -32,7 +32,9 @@ function updateFullActionLog(log: readonly LogEntry[]) {
   }
 
   fullActionLog.reset();
-  log.forEach((line) => fullActionLog.addMessage(line.turn, line.text));
+  log.forEach((line) => {
+    fullActionLog.addMessage(line.turn, line.text);
+  });
 
   globals.layers.UI2.batchDraw();
 }

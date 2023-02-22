@@ -9,9 +9,11 @@ export function initialCardState(order: number, variant: Variant): CardState {
   const possibleRanks: number[] = variant.ranks.slice();
 
   const possibleCards: Array<[number, number]> = [];
-  possibleSuits.forEach((s) =>
-    possibleRanks.forEach((r) => possibleCards.push([s, r])),
-  );
+  possibleSuits.forEach((s) => {
+    possibleRanks.forEach((r) => {
+      possibleCards.push([s, r]);
+    });
+  });
 
   const total = deck.totalCards(variant);
 

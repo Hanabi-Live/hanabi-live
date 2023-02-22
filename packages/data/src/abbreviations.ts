@@ -1,8 +1,10 @@
+import { ReadonlySet } from "isaacscript-common-ts";
 import { Suit } from "./types/Suit";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const QUESTION_MARK_NOTES = ["?"] as const;
 export const EXCLAMATION_MARK_NOTES = ["!"] as const;
+
 export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
@@ -27,6 +29,7 @@ export const CHOP_MOVED_NOTES = [
   "ttcm", // Time Travel Chop Move
   // cspell:enable
 ] as const;
+
 export const FINESSED_NOTES = [
   "f", // Finesse
   "hf", // Hidden Finesse
@@ -35,12 +38,13 @@ export const FINESSED_NOTES = [
   "pf", // Priority Finesse
   "gd", // Gentleman's Discard
 ] as const;
+
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"] as const;
 export const BLANK_NOTES = ["blank", "unknown"] as const;
 export const CLUED_NOTES = ["clued", "cl"] as const;
 export const UNCLUED_NOTES = ["unclued", "x"] as const;
 
-export const ALL_RESERVED_NOTES: readonly string[] = [
+export const ALL_RESERVED_NOTES = new ReadonlySet<string>([
   ...KNOWN_TRASH_NOTES,
   ...QUESTION_MARK_NOTES,
   ...EXCLAMATION_MARK_NOTES,
@@ -50,7 +54,7 @@ export const ALL_RESERVED_NOTES: readonly string[] = [
   ...BLANK_NOTES,
   ...CLUED_NOTES,
   ...UNCLUED_NOTES,
-] as const;
+]);
 
 /**
  * Suit abbreviations are hard-coded in the "suits.json" file. In some variants, two or more suits
@@ -70,7 +74,7 @@ export function getSuitAbbreviationsForVariant(
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
     if (!abbreviations.includes(suit.abbreviation)) {
-      if (ALL_RESERVED_NOTES.includes(suit.abbreviation)) {
+      if (ALL_RESERVED_NOTES.has(suit.abbreviation)) {
         throw new Error(
           `Suit abbreviation for "${suit.name}" in the variant of "${variantName}" conflicts with a reserved word.`,
         );
@@ -84,7 +88,7 @@ export function getSuitAbbreviationsForVariant(
         const suitLetter = suit.displayName[i]!.toUpperCase();
         if (
           !abbreviations.includes(suitLetter) &&
-          !ALL_RESERVED_NOTES.includes(suitLetter) &&
+          !ALL_RESERVED_NOTES.has(suitLetter) &&
           !skipLetters.includes(suitLetter)
         ) {
           abbreviationToUse = suitLetter;

@@ -60,7 +60,9 @@ export function onPlayStackDirectionsChanged(
 
     globals.deck
       .filter((c) => c.visibleSuitIndex === i)
-      .forEach((c) => c.setDirectionArrow(i, direction));
+      .forEach((c) => {
+        c.setDirectionArrow(i, direction);
+      });
   });
 
   globals.layers.UI.batchDraw();
@@ -70,7 +72,9 @@ export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
   syncChildren(
     hands,
     (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
-    (card, i) => card.animateToPlayerHand(i),
+    (card, i) => {
+      card.animateToPlayerHand(i);
+    },
   );
 
   globals.layers.card.batchDraw();
@@ -110,7 +114,9 @@ export function onPlayStacksChanged(
         suit,
       )! as unknown as Konva.Container;
     },
-    (card) => card.animateToPlayStacks(),
+    (card) => {
+      card.animateToPlayStacks();
+    },
   );
 
   playStacks.forEach((stack, i) => {
@@ -137,7 +143,9 @@ export function onHoleChanged(
   syncChildren(
     [hole],
     () => globals.elements.playStacks.get("hole") as unknown as Konva.Container,
-    (card) => card.animateToHole(),
+    (card) => {
+      card.animateToHole();
+    },
   );
 
   globals.layers.card.batchDraw();
@@ -184,7 +192,9 @@ function syncChildren(
     collection
       .filter((n) => !current.includes(n))
       .map(getCard)
-      .forEach((card) => addToCollectionUI(card!, i));
+      .forEach((card) => {
+        addToCollectionUI(card!, i);
+      });
 
     // Reorder the elements to match the collection.
     collection.forEach((order, pos) => {

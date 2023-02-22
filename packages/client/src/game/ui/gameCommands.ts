@@ -450,6 +450,7 @@ function suggestTurn(who: string, room: string, segment: number) {
     if (
       leaderSuggested ||
       internalSegment === globals.state.replay.shared.segment ||
+      // eslint-disable-next-line no-alert
       window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)
     ) {
       replay.goToSegment(internalSegment);

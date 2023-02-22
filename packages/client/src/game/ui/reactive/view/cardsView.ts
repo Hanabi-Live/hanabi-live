@@ -114,7 +114,9 @@ function subscribeToCardChanges(order: number) {
       numPositiveClues: c.numPositiveClues,
       location: c.location,
     }),
-    () => updateBorder(order),
+    () => {
+      updateBorder(order);
+    },
   );
 
   // Card fade and critical indicator.
@@ -132,7 +134,9 @@ function subscribeToCardChanges(order: number) {
         doubleDiscard: card.inDoubleDiscard,
       };
     },
-    () => updateCardStatus(order),
+    () => {
+      updateCardStatus(order);
+    },
   );
 
   // Notes
@@ -140,7 +144,9 @@ function subscribeToCardChanges(order: number) {
     (c) => ({
       possibleCards: c.possibleCards.length,
     }),
-    () => checkNoteDisproved(order),
+    () => {
+      checkNoteDisproved(order);
+    },
   );
 
   // Pips
@@ -152,7 +158,9 @@ function subscribeToCardChanges(order: number) {
       numPositiveColorClues: c.positiveColorClues.length,
       numPositiveRankClues: c.positiveRankClues.length,
     }),
-    () => updatePips(order),
+    () => {
+      updatePips(order);
+    },
   );
 
   // Status
@@ -160,7 +168,9 @@ function subscribeToCardChanges(order: number) {
     (c) => ({
       isKnownTrashFromEmpathy: c.isKnownTrashFromEmpathy,
     }),
-    () => updateCardStatus(order),
+    () => {
+      updateCardStatus(order);
+    },
   );
 
   // Card visuals
@@ -177,7 +187,9 @@ function subscribeToCardChanges(order: number) {
         identity: s.cardIdentities[order],
       };
     },
-    () => updateCardVisuals(order),
+    () => {
+      updateCardVisuals(order);
+    },
   );
 
   return observeStore(globals.store!, subscriptions);

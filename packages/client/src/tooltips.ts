@@ -6,23 +6,19 @@
 // "sideEffects" equal to true in the "package.json" file. So we have to make sure that
 // "sideEffects" is is either removed or set to false. Tree shaking only makes a difference of 2 KB
 // in the resulting bundled file, so we do not have to worry about that for now.
-import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
-import "tooltipster";
+
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip. We import it for the
 // side-effects for the same reason.
+
+import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
+import "tooltipster";
 import "../lib/tooltipster-scrollableTip.min";
 
-export const TOOLTIP_DELAY = 500; // In milliseconds
-
 // Constants
-// eslint-disable-next-line isaacscript/require-capital-const-assertions
+export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
+// eslint-disable-next-line isaacscript/require-capital-const-assertions, isaacscript/require-capital-read-only
 const TOOLTIP_THEME = ["tooltipster-shadow", "tooltipster-shadow-big"];
-// eslint-disable-next-line isaacscript/require-capital-const-assertions
-const TOOLTIP_THEME_CENTERED = [
-  "tooltipster-shadow",
-  "tooltipster-shadow-big",
-  "align-center",
-];
+const TOOLTIP_THEME_CENTERED = [...TOOLTIP_THEME, "align-center"] as const;
 
 // Tooltip options
 const defaultOptions: JQueryTooltipster.ITooltipsterOptions = {
@@ -143,7 +139,7 @@ export function setPosition(selector: string, x: number, y: number): void {
 export function setInstanceOption(
   selector: string,
   option: string,
-  value: string | string[],
+  value: string | string[] | readonly string[],
 ): void {
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {

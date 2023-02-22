@@ -29,7 +29,7 @@ export function init(
     } else {
       setTimeout(() => {
         show(this);
-      }, tooltips.TOOLTIP_DELAY);
+      }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
     }
   });
   element.on("mouseout touchend", () => {

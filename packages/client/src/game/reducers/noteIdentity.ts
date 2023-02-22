@@ -253,7 +253,7 @@ const extractRankText = (match: RegExpMatchArray) =>
 const extractSquishText = (match: RegExpMatchArray) => {
   const text = match[7]?.trim();
 
-  if (text !== undefined && !ALL_RESERVED_NOTES.includes(text)) {
+  if (text !== undefined && !ALL_RESERVED_NOTES.has(text)) {
     return text;
   }
 

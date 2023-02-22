@@ -364,7 +364,9 @@ export function toggle(order: number, alwaysShow = false): void {
   // If we are showing an arrow on a card that is currently tweening, delay showing it until the
   // tween is finished.
   if (element instanceof HanabiCard && element.tweening) {
-    element.waitForTweening(() => toggle(order, alwaysShow));
+    element.waitForTweening(() => {
+      toggle(order, alwaysShow);
+    });
     return;
   }
 
