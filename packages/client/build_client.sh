@@ -84,7 +84,7 @@ echo $(git rev-parse HEAD) > "$JS_BUNDLES_DIR/git_revision.txt"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
-if [[ $1 == "crit" ]]; then
+if [[ ${1-} == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
   npm init --yes # Grunt needs a package.json to exist for some reason.
