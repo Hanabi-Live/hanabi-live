@@ -19,7 +19,7 @@ if [[ -z $HOME ]] && [[ -z $CI ]]; then
 fi
 
 # Import the domain
-if [[ -z $CI ]]; then
+if [[ -z ${CI-} ]]; then
   ENV_PATH="$DIR/../.env"
   if [[ ! -f $ENV_PATH ]]; then
     echo "Failed to find the \".env\" file at: $ENV_PATH"
