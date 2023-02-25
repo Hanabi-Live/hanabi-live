@@ -13,14 +13,14 @@ SECONDS=0
 REPO_ROOT="$DIR/../.."
 
 # Import the port
-if [[ -z $CI ]]; then
+if [[ -z ${CI-} ]]; then
   ENV_PATH="$REPO_ROOT/.env"
   if [[ ! -f $ENV_PATH ]]; then
     echo "Failed to find the \".env\" file at: $ENV_PATH"
     exit 1
   fi
   source "$ENV_PATH"
-  if [[ -z $PORT ]]; then
+  if [[ -z ${PORT-} ]]; then
     PORT="80"
   fi
 fi
