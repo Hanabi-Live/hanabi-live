@@ -6,10 +6,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Import the database information
 source "$DIR/../.env"
-if [[ -z $DB_HOST ]]; then
+if [[ -z ${DB_HOST-} ]]; then
   DB_HOST=localhost
 fi
-if [[ -z $DB_PORT ]]; then
+if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
 

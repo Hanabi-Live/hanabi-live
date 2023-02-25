@@ -11,10 +11,10 @@ if [[ ! -f $ENV_PATH ]]; then
   exit 1
 fi
 source "$ENV_PATH"
-if [[ -z $DB_HOST ]]; then
+if [[ -z ${DB_HOST-} ]]; then
   DB_HOST=localhost
 fi
-if [[ -z $DB_PORT ]]; then
+if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
 

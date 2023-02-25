@@ -18,7 +18,7 @@ source "$DIR/../../.env"
 
 URL_PREFIX="https"
 WS_PREFIX="wss"
-if [[ -z $TLS_CERT_FILE ]]; then
+if [[ -z ${TLS_CERT_FILE-} ]]; then
   URL_PREFIX="http"
   WS_PREFIX="ws"
 fi

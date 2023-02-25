@@ -14,7 +14,7 @@ REPO="$(basename "$DIR_NAME")"
 # For non-interactive shells (e.g. the server running this script to build itself),
 # the "HOME" environment variable must be specified or there will be a cache error when compiling
 # the Go code (but don't do this in Travis, since doing this will cause it to break)
-if [[ -z $HOME ]] && [[ -z $CI ]]; then
+if [[ -z ${HOME-} ]] && [[ -z ${CI-} ]]; then
   export HOME=/root
 fi
 

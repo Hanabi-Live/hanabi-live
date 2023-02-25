@@ -8,21 +8,21 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Import the database information
 source "$DIR/../../.env"
-if [[ -z $DB_HOST ]]; then
+if [[ -z ${DB_HOST-} ]]; then
   DB_HOST=localhost
 fi
-if [[ -z $DB_PORT ]]; then
+if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
-if [[ -z $DB_USER ]]; then
+if [[ -z ${DB_USER-} ]]; then
   echo "Error: You must specify the database username in the \".env\" file."
   exit 1
 fi
-if [[ -z $DB_PASS ]]; then
+if [[ -z ${DB_PASS-} ]]; then
   echo "Error: You must specify the database password in the \".env\" file."
   exit 1
 fi
-if [[ -z $DB_NAME ]]; then
+if [[ -z ${DB_NAME-} ]]; then
   echo "Error: You must specify the database name in the \".env\" file."
   exit 1
 fi

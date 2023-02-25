@@ -20,7 +20,7 @@ lint() {
   # "--error" makes it return an error code of 1 if unused exports are found.
   # ts-prune is conditional because there are many exports in "@hanabi/data" that are used in other
   # projects only.
-  if [ $# -eq 1 ]; then
+  if [[ $# -eq 1 ]]; then
     echo "Running ts-prune on: $1"
     npx ts-prune --error
   fi

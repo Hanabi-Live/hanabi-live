@@ -11,10 +11,10 @@ if [[ ! -f $ENV_PATH ]]; then
   exit 1
 fi
 source "$ENV_PATH"
-if [[ -z $DOMAIN ]]; then
+if [[ -z ${DOMAIN-} ]]; then
   DOMAIN="localhost"
 fi
-if [[ -z $WEBPACK_DEV_SERVER_PORT ]]; then
+if [[ -z ${WEBPACK_DEV_SERVER_PORT-} ]]; then
   WEBPACK_DEV_SERVER_PORT=8080
 fi
 

@@ -13,13 +13,13 @@ if [[ ! -f $ENV_PATH ]]; then
   exit 1
 fi
 source "$ENV_PATH"
-if [[ -z $DOMAIN ]]; then
+if [[ -z ${DOMAIN-} ]]; then
   DOMAIN="localhost"
 fi
-if [[ -z $PORT ]]; then
+if [[ -z ${PORT-} ]]; then
   PORT="80"
 fi
-if [[ ! -z $TLS_CERT_FILE ]]; then
+if [[ -n ${TLS_CERT_FILE-} ]]; then
   echo "A production environment has been detected. You cannot build critical CSS in production. Instead, run this script on a local development server and push the changes to the git repository."
   exit 1
 fi
@@ -27,8 +27,7 @@ fi
 URL="http://$DOMAIN:$PORT"
 
 # Test to see if the server is running
-curl --silent "$URL" > /dev/null
-if [ $? -ne 0 ]; then
+if ! curl --silent "$URL" > /dev/null; then
   echo "You must ensure that the server is running before running this script."
   exit 1
 fi

@@ -16,7 +16,7 @@ REPO="$(basename "$DIR")"
 
 # Configuration
 BACKUPS_DIR="$DIR/backups"
-FILENAME=$REPO-`date +%s`.sql # "date +%s" returns the epoch timestamp.
+FILENAME=$REPO-$(date +%s).sql # "date +%s" returns the epoch timestamp.
 
 # Import the database information.
 ENV_PATH="$DIR/.env"
@@ -25,10 +25,10 @@ if [[ ! -f $ENV_PATH ]]; then
   exit 1
 fi
 source "$ENV_PATH"
-if [[ -z $DB_HOST ]]; then
+if [[ -z ${DB_HOST-} ]]; then
   DB_HOST=localhost
 fi
-if [[ -z $DB_PORT ]]; then
+if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
 
@@ -59,11 +59,11 @@ if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
 fi
 
 # Detect to see if we have Google Drive backups configured (see "INSTALL.md").
-if [[ -z $GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME ]]; then
+if [[ -z ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME-} ]]; then
   echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME\" is not set in the \".env\" file."
   exit 0
 fi
-if [[ -z $GOOGLE_DRIVE_PARENT_DIRECTORY_ID ]]; then
+if [[ -z ${GOOGLE_DRIVE_PARENT_DIRECTORY_ID-} ]]; then
   echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_PARENT_DIRECTORY_ID\" is not set in the \".env\" file."
   exit 0
 fi
@@ -75,7 +75,7 @@ else
     GDRIVE_PATH=$GDRIVE_ROOT_PATH
   fi
 fi
-if [[ -z $GDRIVE_PATH ]]; then
+if [[ -z ${GDRIVE_PATH-} ]]; then
   echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
   exit 1
 fi
