@@ -44,12 +44,18 @@
     "response": "Info on efficiency calculation: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md"
   },
   {
-    "command": "ptt",
-    "response": "Please read the Push-to-Talk History: https://github.com/hanabi/hanabi.github.io/blob/main/misc/push-to-talk.md"
-  },
-  {
     "command": "sin",
     "response": "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context.",
     "alias": ["cardinal", "cardinalsin"]
+  },
+  {
+    "command": "github",
+    "response": "Github repository for Hanab Live: https://github.com/Hanabi-Live/hanabi-live",
+    "alias": ["gh"]
+  },
+  {
+    "command": "variants",
+    "response": "Description of variants: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/VARIANTS.md",
+    "alias": ["vars"]
   }
 ]
