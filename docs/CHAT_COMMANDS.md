@@ -16,6 +16,8 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md) |
 | `/new`                                | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/docs/beginner)                                            |
 | `/path`                               | Get the link for the [H-Group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)                           |
+| `/variants`                           | Get the link for the [list of variant descriptions](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/VARIANTS.md)         |
+| `/github`                             | Get the link for the [GitHub repository](https://github.com/Hanabi-Live/hanabi-live)                                               |
 | `/playerinfo [username]`              | Get the number of games played for a specific player                                                                               |
 | `/playerinfo [username1] [username2]` | Get the number of games played for a list of players                                                                               |
 | `/playerinfo`                         | Get the number of games played for all the players in the current game                                                             |
