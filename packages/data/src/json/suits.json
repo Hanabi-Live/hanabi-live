@@ -608,10 +608,10 @@
     "clueColors": ["Red", "Green"]
   },
   {
-    "name": "Cyan D",
-    "id": "CD",
-    "abbreviation": "C",
-    "displayName": "Cyan",
+    "name": "Teal D",
+    "id": "TD",
+    "abbreviation": "T",
+    "displayName": "Teal",
     "showSuitName": true,
     "fill": "#00ffff",
     "pip": "hanabiAltWhite",

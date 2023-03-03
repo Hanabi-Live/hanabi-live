@@ -649,7 +649,7 @@ export function getMixVariants(): VariantDescription[] {
     },
     {
       name: "RGB Mix (6 Suits)",
-      suits: ["Red", "Yellow D", "Green", "Cyan D", "Blue", "Purple D"],
+      suits: ["Red", "Yellow D", "Green", "Teal D", "Blue", "Purple D"],
     },
   ];
 }

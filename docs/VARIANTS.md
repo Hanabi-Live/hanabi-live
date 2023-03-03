@@ -205,7 +205,7 @@ One of each card per suit (e.g. 5 in total):
   - Red
   - Yellow (red / green)
   - Green
-  - Cyan (green / blue)
+  - Teal (green / blue)
   - Blue
   - Purple (blue / red)
 - The color names are taken from the
