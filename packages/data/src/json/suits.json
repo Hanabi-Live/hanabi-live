@@ -606,15 +606,5 @@
     "fill": "#ffff00",
     "pip": "hanabiYellow",
     "clueColors": ["Red", "Green"]
-  },
-  {
-    "name": "Teal D",
-    "id": "TD",
-    "abbreviation": "T",
-    "displayName": "Teal",
-    "showSuitName": true,
-    "fill": "#00ffff",
-    "pip": "hanabiAltWhite",
-    "clueColors": ["Green", "Blue"]
   }
 ]
