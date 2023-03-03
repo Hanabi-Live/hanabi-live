@@ -596,5 +596,25 @@
     "fill": "#381c12",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
+  },
+  {
+    "name": "Yellow D",
+    "id": "YD",
+    "abbreviation": "Y",
+    "displayName": "Yellow",
+    "showSuitName": true,
+    "fill": "#ffff00",
+    "pip": "hanabiYellow",
+    "clueColors": ["Red", "Green"]
+  },
+  {
+    "name": "Cyan D",
+    "id": "CD",
+    "abbreviation": "C",
+    "displayName": "Cyan",
+    "showSuitName": true,
+    "fill": "#00ffff",
+    "pip": "hanabiAltWhite",
+    "clueColors": ["Green", "Blue"]
   }
 ]

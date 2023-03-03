@@ -199,6 +199,18 @@ One of each card per suit (e.g. 5 in total):
   - Purple (blue / red)
 - There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
 
+### RGB Mix (6 Suits)
+
+- There are three colors and six suits:
+  - Red
+  - Yellow (red / green)
+  - Green
+  - Cyan (green / blue)
+  - Blue
+  - Purple (blue / red)
+- The color names are taken from the
+  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
+
 ### Special Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
