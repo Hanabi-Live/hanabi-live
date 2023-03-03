@@ -610,8 +610,8 @@
   {
     "name": "Cyan D",
     "id": "CD",
-    "abbreviation": "C",
-    "displayName": "Cyan",
+    "abbreviation": "T",
+    "displayName": "Teal",
     "showSuitName": true,
     "fill": "#00ffff",
     "pip": "hanabiAltWhite",

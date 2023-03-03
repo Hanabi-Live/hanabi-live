@@ -205,11 +205,12 @@ One of each card per suit (e.g. 5 in total):
   - Red
   - Yellow (red / green)
   - Green
-  - Cyan (green / blue)
+  - Teal (green / blue)
   - Blue
   - Purple (blue / red)
 - The color names are taken from the
-  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
+  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model)
+  (although cyan is changed to teal for consistency with 6-suit variants).
 
 ### Special Mix (5 Suits)
 
