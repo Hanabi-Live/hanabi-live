@@ -613,7 +613,6 @@
     "abbreviation": "T",
     "displayName": "Teal",
     "showSuitName": true,
-    "fill": "#00ffff",
     "pip": "hanabiAltWhite",
     "clueColors": ["Green", "Blue"]
   }
