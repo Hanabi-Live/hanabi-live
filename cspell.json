@@ -27,7 +27,10 @@
     // Emoji names are often two words without a space.
     "emojis.json",
     // Most emote names are not words.
-    "emotes.json"
+    "emotes.json",
+    // Word lists
+    "word_list.txt",
+    "words.txt"
   ],
   "words": [
     "abacusspiele",
