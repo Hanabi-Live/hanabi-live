@@ -79,6 +79,20 @@ func httpExport(c *gin.Context) {
 		options = v
 	}
 
+	// As a sanity check, ensure that the number of game participants in the database matches the
+	// number of players that are supposed to be in the game (according to the options)
+	if len(dbPlayers) != options.NumPlayers {
+		logger.Error("There are not enough game participants for game #" + strconv.Itoa(databaseID) +
+			" in the database. (There were " + strconv.Itoa(len(dbPlayers)) +
+			" player rows and there should be " + strconv.Itoa(options.NumPlayers) + ".)")
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
 	// Deck specification for a particular game are not stored in the database
 	// Thus, we must recalculate the deck order based on the seed of the game
 	// Get the seed from the database
