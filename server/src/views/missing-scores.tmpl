@@ -112,7 +112,7 @@
               {{ if or (not $.RequestedNumPlayers) (eq $.RequestedNumPlayers .NumPlayers) }}
                 {{ $eff := index $.Efficiencies $index }}
                 {{ $effclass := "very-hard" }}
-                {{ if lt $eff 1.25 }}
+                {{ if lt $eff 1.33 }}
                   {{ $effclass = "normal" }}
                 {{ else if lt $eff 1.5 }}
                   {{ $effclass = "hard" }}
