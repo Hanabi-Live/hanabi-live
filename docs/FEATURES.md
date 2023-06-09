@@ -555,13 +555,13 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `/export/[game ID]`                               | Provides the data for an arbitrary game from the database.                                                  |
 | `/api/v1/variants`                                | Displays a paginated list of variants and their IDs.                                                        |
-| `/api/v1/variants/[variant ID]` \*1               | Displays a paginated list of games played in that specific variant.                                         |
-| `/api/v1/history/[username]` \*1                  | Lists a paginated list of the player's past games.                                                          |
-| `/api/v1/history/[username]/[username2]` \*1      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
-| `/api/v1/history-full/[username]` \*2             | Lists all the player's past games.                                                                          |
-| `/api/v1/history-full/[username]/[username2]` \*2 | Lists all the past games that 2 players were in together. (You can specify up to 6 players.)                |
-| `/api/v1/seed/[seed]` \*1                         | Lists paginated games played on a specific seed.                                                            |
-| `/api/v1/seed-full/[seed]` \*2                    | Lists all the games played on a specific seed.                                                              |
+| `/api/v1/variants/[variant ID]`               | Displays a paginated list of games played in that specific variant.                                         |
+| `/api/v1/history/[username]`                  | Lists a paginated list of the player's past games.                                                          |
+| `/api/v1/history/[username]/[username2]`       | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
+| `/api/v1/history-full/[username]`              | Lists all the player's past games.                                                                          |
+| `/api/v1/history-full/[username]/[username2]`  | Lists all the past games that 2 players were in together. (You can specify up to 6 players.)                |
+| `/api/v1/seed/[seed]`                          | Lists paginated games played on a specific seed.                                                            |
+| `/api/v1/seed-full/[seed]`                     | Lists all the games played on a specific seed.                                                              |
 
 Notes:
 The following query parameters can be used by adding a `?` at the end of the URL (e.g. `/api/v1/variants/1?size=50&page=2`):
