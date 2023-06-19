@@ -13,7 +13,7 @@ HANABI_PASSWORD="test"
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# Import the website information
+# Import the website information.
 source "$DIR/../../.env"
 
 URL_PREFIX="https"
@@ -23,7 +23,6 @@ if [[ -z ${TLS_CERT_FILE-} ]]; then
   WS_PREFIX="ws"
 fi
 URL="$URL_PREFIX://$DOMAIN:$PORT/login"
-WEBSOCKET_URL="$WS_PREFIX://$DOMAIN:$PORT/ws"
 WEBSOCKET_URL="$WS_PREFIX://$DOMAIN:$PORT/ws"
 
 echo "Getting a cookie..."
