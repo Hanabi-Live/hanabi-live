@@ -47230,8 +47230,6 @@ kidskin
 kielbasa
 kielbasas
 kielbasi
-kike
-kikes
 kill
 killdeer
 killdeers
@@ -54167,9 +54165,6 @@ negotiation
 negotiations
 negotiator
 negotiators
-negritude
-negro
-negroid
 neigh
 neighbor
 neighbored
