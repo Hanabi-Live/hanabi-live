@@ -56,6 +56,19 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
+  // A Ctrl + left-click also opens the node tooltip, since on some mac devices, right-click is not
+  // available.
+  if (
+    event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    !globals.state.finished
+  ) {
+    lastNote = "";
+    notes.openEditTooltip(card);
+  }
+
   if (
     event.ctrlKey || // No actions in this function use modifiers other than Alt
     event.shiftKey ||
