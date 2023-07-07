@@ -167,6 +167,17 @@ CREATE TABLE game_participants (
     CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)
 );
 
+CREATE FUNCTION delete_game_of_deleted_participant() RETURNS TRIGGER AS $_$
+BEGIN
+DELETE FROM games WHERE games.id = OLD.game_id;
+RETURN OLD;
+END $_$ LANGUAGE 'plpgsql';
+
+CREATE TRIGGER delete_game_upon_participant_deletion
+AFTER DELETE ON game_participants
+FOR EACH ROW
+EXECUTE PROCEDURE delete_game_of_deleted_participant();
+
 DROP TABLE IF EXISTS game_participant_notes CASCADE;
 CREATE TABLE game_participant_notes (
     game_participant_id  INTEGER   NOT NULL,
