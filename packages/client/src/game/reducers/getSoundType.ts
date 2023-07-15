@@ -190,7 +190,7 @@ function isOrderChopMove(
 
   // Don't bother trying to see if this is an Order Chop Move in an "Up or Down" variant, as the
   // logic for that is more complicated.
-  if (variantRules.isUpOrDown(variant)) {
+  if (variantRules.isUpOrDown(variant) || variantRules.isSudoku(variant)) {
     return false;
   }
 

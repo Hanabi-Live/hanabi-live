@@ -50,6 +50,11 @@ func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
 		return 1
 	}
 
+  if variant.IsSudoku() {
+      // Always 2 cards
+      return 2
+  }
+
 	if rank == 1 {
 		if variant.IsUpOrDown() || suit.Reversed {
 			return 1

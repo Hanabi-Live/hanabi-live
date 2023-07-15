@@ -404,7 +404,10 @@ function drawPlayStacks() {
       if (variantRules.isUpOrDown(globals.variant)) {
         text = "";
       }
-
+      if (variantRules.isSudoku(globals.variant)) {
+        // Show the initial rank
+        text += " [x]";
+      }
       const suitLabelText = new FitText({
         x:
           (playStackValues.x -

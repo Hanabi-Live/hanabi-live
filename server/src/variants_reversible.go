@@ -4,6 +4,8 @@
 
 package main
 
+import "sort"
+
 // iota starts at 0 and counts upwards
 // i.e. stackDirectionUndecided = 0, stackDirectionUp = 1, etc.
 
@@ -21,6 +23,28 @@ const (
 	// Rank 7 is a "START" card
 	StartCardRank = 7
 )
+
+func variantSudokuPlay(g *Game, c *Card) bool {
+	variant := variants[g.Options.VariantName]
+	if g.Stacks[c.SuitIndex] == 0 {
+		for _, b := range g.StackStarts {
+			if b == c.Rank {
+				return true
+			}
+		}
+		return false
+	} else {
+		nextRank := g.Stacks[c.SuitIndex] % len(variant.Ranks) + 1
+		failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
+		if !failed {
+			nextRank := c.Rank % len(variant.Ranks) + 1
+			if g.StackStarts[c.SuitIndex] == nextRank {
+				g.PlayStackDirections[c.SuitIndex] = StackDirectionFinished
+			}
+		}
+		return failed
+	}
+}
 
 func variantReversiblePlay(g *Game, c *Card) bool {
 	// Local variables
@@ -212,6 +236,54 @@ func variantReversibleCheckAllDead(g *Game) bool {
 			continue
 		}
 
+		for _, c := range g.Deck {
+			for _, neededRank := range neededRanks {
+				if c.SuitIndex == suitIndex &&
+					c.Rank == neededRank &&
+					!c.Discarded &&
+					!c.CannotBePlayed {
+
+					return false
+				}
+			}
+		}
+	}
+
+	// If we got this far, nothing can be played
+	return true
+}
+
+// variantSudokuCheckAllDead returns true if no more cards can be played on the stacks
+func variantSudokuCheckAllDead(g *Game) bool {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
+	for suitIndex, stackRank := range g.Stacks {
+		neededRanks := make([]int, 0)
+		if g.PlayStackDirections[suitIndex] == StackDirectionFinished {
+			continue
+		} else {
+			if stackRank != 0 {
+				// Find the next card up (cyclic)
+				nextRank := stackRank % len(variant.Ranks) + 1
+				neededRanks = append(neededRanks, nextRank)
+			} else {
+				// New stack start limited by other started stacks
+				unavailable := g.StackStarts
+				sort.Ints(unavailable)
+				neededRanks = []int{1}
+				for i := 1; i <= len(variant.Ranks); i++ {
+					neededRanks = []int{1}
+					idx := sort.Search(len(unavailable),
+									  func(j int) bool { return unavailable[j] >= i } )
+					if (idx < len(unavailable) && unavailable[idx] == i) {
+						// neededRanks = []int{1}
+						// neededRanks = append(neededRanks, 1)
+						neededRanks = append(neededRanks, i)
+					}
+				}
+			}
+		}
 		for _, c := range g.Deck {
 			for _, neededRank := range neededRanks {
 				if c.SuitIndex == suitIndex &&

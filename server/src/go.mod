@@ -23,6 +23,7 @@ require (
 	github.com/petermattis/goid v0.0.0-20211229010228-4d14c490ee36 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/tevino/abool v1.2.0
 	github.com/ugorji/go v1.2.6 // indirect
 	go.uber.org/atomic v1.9.0 // indirect

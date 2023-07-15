@@ -26,6 +26,9 @@ export const isDuck = (variant: Variant): boolean =>
 export const isThrowItInAHole = (variant: Variant): boolean =>
   variant.name.startsWith("Throw It in a Hole");
 
+export const isSudoku = (variant: Variant): boolean =>
+  isNameSudoku(variant.name);
+
 export const isUpOrDown = (variant: Variant): boolean =>
   isNameUpOrDown(variant.name);
 
@@ -37,6 +40,9 @@ export const isCriticalFours = (variant: Variant): boolean =>
 
 export const isOddsAndEvens = (variant: Variant): boolean =>
   variant.name.startsWith("Odds and Evens");
+
+export const isNameSudoku = (variantName: string): boolean =>
+  variantName.startsWith("Sudoku");
 
 export const hasReversedSuits = (variant: Variant): boolean =>
   isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0;

@@ -59,6 +59,10 @@ func (v *Variant) IsCriticalFours() bool {
 	return strings.HasPrefix(v.Name, "Critical Fours")
 }
 
+func (v *Variant) IsSudoku() bool {
+	return strings.HasPrefix(v.Name, "Sudoku")
+}
+
 func (v *Variant) HasReversedSuits() bool {
 	if v.IsUpOrDown() {
 		return true
