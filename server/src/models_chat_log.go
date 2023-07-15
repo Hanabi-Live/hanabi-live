@@ -74,7 +74,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 		WHERE
 			room = $1
 		ORDER BY
-			chat_log.datetime_sent DESC
+			chat_log.datetime_sent DESC, id DESC
 	`
 	if count > 0 {
 		SQLString += "LIMIT " + strconv.Itoa(count)
