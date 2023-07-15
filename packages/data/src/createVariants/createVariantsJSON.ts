@@ -19,6 +19,7 @@ import {
   getMuteVariants,
   getOddsAndEvensVariants,
   getReversedVariants,
+  getSudokuVariants,
   getSynesthesiaVariants,
   getThrowItInAHoleVariants,
   getUpOrDownVariants,
@@ -87,6 +88,7 @@ function main() {
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getMatryoshkaVariants(suitsToCreateVariantsFor),
+    ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits)
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
