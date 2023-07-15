@@ -144,7 +144,7 @@ func apiBuildSubquery(params APIQueryVars) (string, string, string, []interface{
 			` + where[:len(where)-len(" AND ")]
 	}
 
-  // Note that we order by descending id as a secondary sorting criterium.
+  // Note that we order by descending id as a secondary sorting criterion.
   // This ensures that resulting queries have deterministic order.
 	orderBy := `
 		ORDER BY ` + params.Order.Column + " " + params.Order.Value + ", id DESC "
