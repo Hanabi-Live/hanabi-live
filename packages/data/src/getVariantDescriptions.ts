@@ -1217,7 +1217,7 @@ export function getSudokuVariants(
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      chimneys: true,
+      showSuitNames: true,
     });
   }
 
@@ -1236,6 +1236,7 @@ export function getSudokuVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
+        showSuitNames: true,
       });
     }
   }
