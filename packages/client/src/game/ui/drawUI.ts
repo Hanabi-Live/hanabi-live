@@ -405,8 +405,9 @@ function drawPlayStacks() {
         text = "";
       }
       if (variantRules.isSudoku(globals.variant)) {
-        // Show the initial rank
-        text += " [x]";
+        // Don't show anything here, the starting values will be written by the state observers updating when the
+        // starting value changes
+        text = "";
       }
       const suitLabelText = new FitText({
         x:

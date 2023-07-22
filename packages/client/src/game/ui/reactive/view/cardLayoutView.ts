@@ -23,47 +23,69 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
   [StackDirection.Finished, "Finished"],
 ]);
 
+const stackStringsSudoku = new Map<StackDirection, string>([
+    [StackDirection.Undecided, ""],
+    [StackDirection.Up, ""],
+    [StackDirection.Down, ""],
+    [StackDirection.Finished, "Finished"],
+]);
+
 export function onPlayStackDirectionsChanged(
   directions: readonly StackDirection[],
   previousDirections: readonly StackDirection[] | undefined,
 ): void {
-  if (!variantRules.hasReversedSuits(globals.variant)) {
+  if (variantRules.hasReversedSuits(globals.variant)) {
+    // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
+    let text = "";
+    directions.forEach((direction, i) => {
+      if (
+          previousDirections !== undefined &&
+          direction === previousDirections[i]
+      ) {
+        return;
+      }
+
+      const suit = globals.variant.suits[i]!;
+      let text = "";
+      const isUpOrDown = variantRules.isUpOrDown(globals.variant);
+      if (isUpOrDown || suit.reversed) {
+        const stackStrings = isUpOrDown
+            ? stackStringsUpOrDown
+            : stackStringsReversed;
+        const stackText = stackStrings.get(direction);
+        if (stackText === undefined) {
+          throw new Error(
+              `Failed to find the stack string for the stack direction of: ${direction}`,
+          );
+        }
+        text = stackText;
+      }
+
+      globals.elements.suitLabelTexts[i]!.fitText(text);
+
+      globals.deck
+          .filter((c) => c.visibleSuitIndex === i)
+          .forEach((c) => {
+            c.setDirectionArrow(i, direction);
+          });
+    });
+  } else if (variantRules.isSudoku(globals.variant)) {
+    directions.forEach((direction, i) => {
+      if (
+          previousDirections !== undefined &&
+          direction === previousDirections[i]
+      ) {
+        return;
+      }
+
+      if (direction == StackDirection.Finished) {
+        const text = stackStringsSudoku.get(direction)!;
+        globals.elements.suitLabelTexts[i]!.fitText(text);
+      }
+    });
+  } else {
     return;
   }
-
-  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
-  directions.forEach((direction, i) => {
-    if (
-      previousDirections !== undefined &&
-      direction === previousDirections[i]
-    ) {
-      return;
-    }
-
-    const suit = globals.variant.suits[i]!;
-    let text = "";
-    const isUpOrDown = variantRules.isUpOrDown(globals.variant);
-    if (isUpOrDown || suit.reversed) {
-      const stackStrings = isUpOrDown
-        ? stackStringsUpOrDown
-        : stackStringsReversed;
-      const stackText = stackStrings.get(direction);
-      if (stackText === undefined) {
-        throw new Error(
-          `Failed to find the stack string for the stack direction of: ${direction}`,
-        );
-      }
-      text = stackText;
-    }
-
-    globals.elements.suitLabelTexts[i]!.fitText(text);
-
-    globals.deck
-      .filter((c) => c.visibleSuitIndex === i)
-      .forEach((c) => {
-        c.setDirectionArrow(i, direction);
-      });
-  });
 
   globals.layers.UI.batchDraw();
 }

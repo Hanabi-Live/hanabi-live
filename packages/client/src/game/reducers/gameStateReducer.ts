@@ -325,7 +325,7 @@ function gameStateReducerFunction(
   );
 
   // Resolve the stack direction.
-  if (action.type === "play" && variantRules.hasReversedSuits(variant)) {
+  if (action.type === "play" && (variantRules.hasReversedSuits(variant) || variantRules.isSudoku(variant))) {
     // We have to wait until the deck is updated with the information of the card that we played
     // before the "direction()" function will work.
     const playStack = state.playStacks[action.suitIndex]!;
