@@ -14813,306 +14813,122 @@
   },
   {
     "id": 2072,
-    "name": "Sudoku (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
-    "chimneys": true
+    "name": "Sudoku (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
+    "showSuitNames": true
   },
   {
     "id": 2073,
-    "name": "Sudoku (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
-    "chimneys": true
+    "name": "Sudoku & Black (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Black"],
+    "showSuitNames": true
   },
   {
     "id": 2074,
-    "name": "Sudoku (4 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue"],
-    "chimneys": true
+    "name": "Sudoku & Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"],
+    "showSuitNames": true
   },
   {
     "id": 2075,
-    "name": "Sudoku (3 Suits)",
-    "suits": ["Red", "Green", "Blue"],
-    "chimneys": true
+    "name": "Sudoku & Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink"],
+    "showSuitNames": true
   },
   {
     "id": 2076,
-    "name": "Sudoku & Black (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"]
+    "name": "Sudoku & White (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White"],
+    "showSuitNames": true
   },
   {
     "id": 2077,
-    "name": "Sudoku & Black (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Black"]
+    "name": "Sudoku & Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Brown"],
+    "showSuitNames": true
   },
   {
     "id": 2078,
-    "name": "Sudoku & Rainbow (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"]
+    "name": "Sudoku & Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni"],
+    "showSuitNames": true
   },
   {
     "id": 2079,
-    "name": "Sudoku & Rainbow (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"]
+    "name": "Sudoku & Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null"],
+    "showSuitNames": true
   },
   {
     "id": 2080,
-    "name": "Sudoku & Rainbow (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Rainbow"]
+    "name": "Sudoku & Muddy Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow"],
+    "showSuitNames": true
   },
   {
     "id": 2081,
-    "name": "Sudoku & Rainbow (3 Suits)",
-    "suits": ["Red", "Blue", "Rainbow"]
+    "name": "Sudoku & Light Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"],
+    "showSuitNames": true
   },
   {
     "id": 2082,
-    "name": "Sudoku & Pink (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"]
+    "name": "Sudoku & Prism (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Prism"],
+    "showSuitNames": true
   },
   {
     "id": 2083,
-    "name": "Sudoku & Pink (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Pink"]
+    "name": "Sudoku & Dark Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow"],
+    "showSuitNames": true
   },
   {
     "id": 2084,
-    "name": "Sudoku & Pink (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Pink"]
+    "name": "Sudoku & Dark Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink"],
+    "showSuitNames": true
   },
   {
     "id": 2085,
-    "name": "Sudoku & Pink (3 Suits)",
-    "suits": ["Red", "Blue", "Pink"]
+    "name": "Sudoku & Gray (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray"],
+    "showSuitNames": true
   },
   {
     "id": 2086,
-    "name": "Sudoku & White (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White"]
+    "name": "Sudoku & Dark Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown"],
+    "showSuitNames": true
   },
   {
     "id": 2087,
-    "name": "Sudoku & White (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "White"]
+    "name": "Sudoku & Dark Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni"],
+    "showSuitNames": true
   },
   {
     "id": 2088,
-    "name": "Sudoku & White (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "White"]
+    "name": "Sudoku & Dark Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"],
+    "showSuitNames": true
   },
   {
     "id": 2089,
-    "name": "Sudoku & White (3 Suits)",
-    "suits": ["Red", "Blue", "White"]
+    "name": "Sudoku & Cocoa Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"],
+    "showSuitNames": true
   },
   {
     "id": 2090,
-    "name": "Sudoku & Brown (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Brown"]
+    "name": "Sudoku & Gray Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"],
+    "showSuitNames": true
   },
   {
     "id": 2091,
-    "name": "Sudoku & Brown (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Brown"]
-  },
-  {
-    "id": 2092,
-    "name": "Sudoku & Brown (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Brown"]
-  },
-  {
-    "id": 2093,
-    "name": "Sudoku & Brown (3 Suits)",
-    "suits": ["Red", "Blue", "Brown"]
-  },
-  {
-    "id": 2094,
-    "name": "Sudoku & Omni (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Omni"]
-  },
-  {
-    "id": 2095,
-    "name": "Sudoku & Omni (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Omni"]
-  },
-  {
-    "id": 2096,
-    "name": "Sudoku & Omni (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Omni"]
-  },
-  {
-    "id": 2097,
-    "name": "Sudoku & Omni (3 Suits)",
-    "suits": ["Red", "Blue", "Omni"]
-  },
-  {
-    "id": 2098,
-    "name": "Sudoku & Null (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Null"]
-  },
-  {
-    "id": 2099,
-    "name": "Sudoku & Null (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Null"]
-  },
-  {
-    "id": 2100,
-    "name": "Sudoku & Null (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Null"]
-  },
-  {
-    "id": 2101,
-    "name": "Sudoku & Null (3 Suits)",
-    "suits": ["Red", "Blue", "Null"]
-  },
-  {
-    "id": 2102,
-    "name": "Sudoku & Muddy Rainbow (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Muddy Rainbow"]
-  },
-  {
-    "id": 2103,
-    "name": "Sudoku & Muddy Rainbow (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow"]
-  },
-  {
-    "id": 2104,
-    "name": "Sudoku & Muddy Rainbow (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Muddy Rainbow"]
-  },
-  {
-    "id": 2105,
-    "name": "Sudoku & Muddy Rainbow (3 Suits)",
-    "suits": ["Red", "Blue", "Muddy Rainbow"]
-  },
-  {
-    "id": 2106,
-    "name": "Sudoku & Light Pink (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Light Pink"]
-  },
-  {
-    "id": 2107,
-    "name": "Sudoku & Light Pink (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"]
-  },
-  {
-    "id": 2108,
-    "name": "Sudoku & Light Pink (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Light Pink"]
-  },
-  {
-    "id": 2109,
-    "name": "Sudoku & Light Pink (3 Suits)",
-    "suits": ["Red", "Blue", "Light Pink"]
-  },
-  {
-    "id": 2110,
-    "name": "Sudoku & Prism (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Prism"]
-  },
-  {
-    "id": 2111,
-    "name": "Sudoku & Prism (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Prism"]
-  },
-  {
-    "id": 2112,
-    "name": "Sudoku & Prism (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Prism"]
-  },
-  {
-    "id": 2113,
-    "name": "Sudoku & Prism (3 Suits)",
-    "suits": ["Red", "Blue", "Prism"]
-  },
-  {
-    "id": 2114,
-    "name": "Sudoku & Dark Rainbow (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"]
-  },
-  {
-    "id": 2115,
-    "name": "Sudoku & Dark Rainbow (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow"]
-  },
-  {
-    "id": 2116,
-    "name": "Sudoku & Dark Pink (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"]
-  },
-  {
-    "id": 2117,
-    "name": "Sudoku & Dark Pink (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink"]
-  },
-  {
-    "id": 2118,
-    "name": "Sudoku & Gray (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"]
-  },
-  {
-    "id": 2119,
-    "name": "Sudoku & Gray (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Gray"]
-  },
-  {
-    "id": 2120,
-    "name": "Sudoku & Dark Brown (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"]
-  },
-  {
-    "id": 2121,
-    "name": "Sudoku & Dark Brown (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown"]
-  },
-  {
-    "id": 2122,
-    "name": "Sudoku & Dark Omni (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"]
-  },
-  {
-    "id": 2123,
-    "name": "Sudoku & Dark Omni (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni"]
-  },
-  {
-    "id": 2124,
-    "name": "Sudoku & Dark Null (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"]
-  },
-  {
-    "id": 2125,
-    "name": "Sudoku & Dark Null (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"]
-  },
-  {
-    "id": 2126,
-    "name": "Sudoku & Cocoa Rainbow (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"]
-  },
-  {
-    "id": 2127,
-    "name": "Sudoku & Cocoa Rainbow (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow"]
-  },
-  {
-    "id": 2128,
-    "name": "Sudoku & Gray Pink (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"]
-  },
-  {
-    "id": 2129,
-    "name": "Sudoku & Gray Pink (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink"]
-  },
-  {
-    "id": 2130,
-    "name": "Sudoku & Dark Prism (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"]
-  },
-  {
-    "id": 2131,
     "name": "Sudoku & Dark Prism (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"]
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "showSuitNames": true
   }
 ]
