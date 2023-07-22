@@ -1211,34 +1211,29 @@ export function getSudokuVariants(
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Sudoku (${numSuits} Suits)`;
-    variantDescriptions.push({
-      name: variantName,
-      suits: basicVariantSuits[numSuits]!,
-      showSuitNames: true,
-    });
-  }
+  // Create the basic variant.
+  // Note that for sudoku, we only want 5-suit variants, so that each starting stack will be used
+  // exactly once.
+  let numSuits = 5;
+  const variantName = `Sudoku (${numSuits} Suits)`;
+  variantDescriptions.push({
+    name: variantName,
+    suits: basicVariantSuits[numSuits]!,
+    showSuitNames: true,
+  });
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
-      const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1]!;
-      const variantSuits = [...basicSuits, suit.name];
-      variantDescriptions.push({
-        name: variantName,
-        suits: variantSuits,
-        showSuitNames: true,
-      });
-    }
+    // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
+    // suit.
+    const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
+    const basicSuits = basicVariantSuits[numSuits - 1]!;
+    const variantSuits = [...basicSuits, suit.name];
+    variantDescriptions.push({
+      name: variantName,
+      suits: variantSuits,
+      showSuitNames: true,
+    });
   }
 
   return variantDescriptions;
