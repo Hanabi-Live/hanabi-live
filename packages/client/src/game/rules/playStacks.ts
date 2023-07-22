@@ -101,3 +101,14 @@ export function direction(
   const secondCard = deck[playStack[playStack.length - 2]!]!.rank;
   return secondCard === 4 ? StackDirection.Down : StackDirection.Up;
 }
+
+export function stackStart(
+    playStack: readonly number[],
+    deck: readonly CardState[],
+    variant: Variant,
+) {
+  if(!variantRules.isSudoku(variant)) {
+    return 1;
+  }
+  return lastPlayedRank(playStack, deck);
+}

@@ -338,6 +338,16 @@ function gameStateReducerFunction(
     state.playStackDirections[action.suitIndex] = direction;
   }
 
+  // In Sudoku variants, resolve the stack starting value
+  if (action.type === "play" && variantRules.isSudoku(variant)) {
+    const playStack = state.playStacks[action.suitIndex]!;
+    state.playStackStarts[action.suitIndex] = playStacksRules.stackStart(
+        playStack,
+        state.deck,
+        variant,
+    );
+  }
+
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can
   // make other cards critical.
   if (
