@@ -26,6 +26,9 @@ export interface GameState {
   readonly hands: ReadonlyArray<readonly number[]>;
   readonly playStacks: ReadonlyArray<readonly number[]>;
   readonly playStackDirections: readonly StackDirection[];
+
+  /** For Sudoku variants, this denotes the first rank played of this stack. If the stack is not started yet,
+   * then the value stored is UNKNOWN_CARD_RANK */
   readonly playStackStarts: readonly number[];
 
   /** For "Throw It in a Hole" variants. */

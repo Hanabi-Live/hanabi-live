@@ -142,5 +142,10 @@ export function stackStart(
   if(!variantRules.isSudoku(variant)) {
     return 1;
   }
-  return lastPlayedRank(playStack, deck);
+  if (playStack.length === 0) {
+    return UNKNOWN_CARD_RANK;
+  } else {
+    const orderOfBottomCard = playStack[0]!;
+    return deck[orderOfBottomCard]!.rank ?? UNKNOWN_CARD_RANK;
+  }
 }
