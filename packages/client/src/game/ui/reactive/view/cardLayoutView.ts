@@ -1,4 +1,4 @@
-import { STACK_BASE_RANK } from "@hanabi/data";
+import {STACK_BASE_RANK, UNKNOWN_CARD_RANK} from "@hanabi/data";
 import equal from "fast-deep-equal";
 import Konva from "konva";
 import * as deck from "../../../rules/deck";
@@ -66,6 +66,26 @@ export function onPlayStackDirectionsChanged(
   });
 
   globals.layers.UI.batchDraw();
+}
+
+export function onPlayStackStartsChanged(
+    stackStarts: readonly number[],
+    previousStackStarts: readonly number[] | undefined,
+) {
+  if (!variantRules.isSudoku(globals.variant)) {
+    return;
+  }
+
+  stackStarts.forEach((stackStart, i) => {
+    if (previousStackStarts !== undefined && previousStackStarts[i] === stackStart) {
+      return;
+    }
+    let text = "";
+    if (stackStart != UNKNOWN_CARD_RANK) {
+      text = "Starts at " + stackStart;
+    }
+    globals.elements.suitLabelTexts[i]!.fitText(text);
+  });
 }
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
