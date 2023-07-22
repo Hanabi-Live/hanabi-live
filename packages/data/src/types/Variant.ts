@@ -24,6 +24,7 @@ export interface Variant {
   readonly chimneys: boolean;
 
   readonly showSuitNames: boolean;
+  readonly showStackStarts: boolean;
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
   readonly suitAbbreviations: readonly string[];
