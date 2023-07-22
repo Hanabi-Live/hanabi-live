@@ -125,10 +125,12 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           );
         }
 
-        const nextRanks = playStacksRules.nextRanks(
-          s.playStacks[jsonCard.suitIndex]!,
-          s.playStackDirections[jsonCard.suitIndex]!,
-          s.deck,
+        const nextRanks = playStacksRules.nextPlayableRanks(
+            s.playStacks[jsonCard.suitIndex]!,
+            s.playStackDirections[jsonCard.suitIndex]!,
+            game.playStackStarts,
+            variant,
+            s.deck
         );
         if (!nextRanks.includes(jsonCard.rank)) {
           // Send a discard and a strike.

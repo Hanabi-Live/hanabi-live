@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CARD_RANKS,
   STACK_BASE_RANK,
   START_CARD_RANK,
   UNKNOWN_CARD_RANK,
@@ -20,11 +21,13 @@ export function lastPlayedRank(
   return deck[orderOfTopCard]!.rank ?? UNKNOWN_CARD_RANK;
 }
 
-export function nextRanks(
-  playStack: readonly number[],
-  playStackDirection: StackDirection,
-  deck: readonly CardState[],
-): number[] {
+export function nextPlayableRanks(
+    playStack: readonly number[],
+    playStackDirection: StackDirection,
+    playStackStarts: readonly number[],
+    variant: Variant,
+    deck: readonly CardState[]): number[] {
+
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
   if (currentlyPlayedRank === UNKNOWN_CARD_RANK) {
     return [];
@@ -32,6 +35,8 @@ export function nextRanks(
 
   switch (playStackDirection) {
     case StackDirection.Undecided: {
+      // Check that we are in fact in an Up-Or-Down Variant
+      console.assert(variantRules.isUpOrDown(variant));
       if (currentlyPlayedRank === START_CARD_RANK) {
         return [2, 4];
       }
@@ -39,17 +44,44 @@ export function nextRanks(
     }
 
     case StackDirection.Up: {
-      if (currentlyPlayedRank === STACK_BASE_RANK) {
-        return [1];
+      if (!variantRules.isSudoku(variant)) {
+        // In non-Sudoku variants, the next playable card is just one higher, or 1 if the stack is not stared yet
+        if (currentlyPlayedRank === STACK_BASE_RANK) {
+          return [1];
+        }
+        return [currentlyPlayedRank + 1];
+      } else {
+        // In Sudoku variants, determining the next playable ranks is more complicated:
+        // If the stack is already started, then we just go up, wrapping around from 5 to 1 (unless the stack was
+        // started at 1, in which case 5 will be the last card of this suit)
+        // If it is not started, in can be started with any rank that is not the starting rank of another stack yet
+        if (currentlyPlayedRank !== STACK_BASE_RANK) {
+          // Note that we first mod by 5 and then add, to obtain values 1,...,5
+          return [currentlyPlayedRank % 5 + 1];
+        } else {
+          return DEFAULT_CARD_RANKS.filter((rank) => {
+            return !playStackStarts.includes(rank);
+          });
+        }
       }
-      return [currentlyPlayedRank + 1];
     }
 
     case StackDirection.Down: {
-      if (currentlyPlayedRank === STACK_BASE_RANK) {
-        return [5];
+      if (!variantRules.isSudoku(variant)) {
+        if (currentlyPlayedRank === STACK_BASE_RANK) {
+          return [5];
+        }
+        return [currentlyPlayedRank - 1];
+      } else {
+        if (currentlyPlayedRank !== STACK_BASE_RANK) {
+          // Note that in total, we add 4 (=subtract 1 mod 5) to ensure outputs of 1,...,5
+          return [(currentlyPlayedRank + 3) % 5 + 1];
+        } else {
+          return DEFAULT_CARD_RANKS.filter((rank) => {
+            return !playStackStarts.includes(rank);
+          });
+        }
       }
-      return [currentlyPlayedRank - 1];
     }
 
     case StackDirection.Finished: {

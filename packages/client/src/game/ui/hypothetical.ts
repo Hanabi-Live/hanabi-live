@@ -99,10 +99,12 @@ export function send(hypoAction: ClientAction): void {
       let failed = false;
       let newType = type;
       if (type === "play") {
-        const nextRanks = playStacksRules.nextRanks(
-          gameState.playStacks[suitIndex]!,
-          gameState.playStackDirections[suitIndex]!,
-          gameState.deck,
+        const nextRanks = playStacksRules.nextPlayableRanks(
+            gameState.playStacks[suitIndex]!,
+            gameState.playStackDirections[suitIndex]!,
+            gameState.playStackStarts,
+            globals.variant,
+            gameState.deck
         );
         if (!nextRanks.includes(rank)) {
           newType = "discard";

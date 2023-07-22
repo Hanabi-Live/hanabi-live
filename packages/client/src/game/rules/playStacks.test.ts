@@ -1,11 +1,16 @@
 import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { StackDirection } from "../types/StackDirection";
-import { direction, nextRanks } from "./playStacks";
+import { direction, nextPlayableRanks } from "./playStacks";
+import {initArray} from "../../utils";
 
 const noVariant = getDefaultVariant();
 const upOrDown = getVariant("Up or Down (6 Suits)");
 const reversed = getVariant("Reversed (6 Suits)");
+const sudoku = getVariant("Sudoku (5 Suits)");
+
+const defaultStackStarts = initArray(noVariant.suits.length, 1);
+const defaultReverseStackStarts = initArray(noVariant.suits.length, 5);
 
 describe("direction", () => {
   test("returns Up for No Variant, not finished", () => {
@@ -113,8 +118,8 @@ describe("direction", () => {
 });
 
 describe("nextRanks", () => {
-  test("returns [1] for an empty play stack going up", () => {
-    const nextRanksArray = nextRanks([], StackDirection.Up, []);
+  test("returns [1] for an empty play stack going up in NoVariant", () => {
+    const nextRanksArray = nextPlayableRanks([], StackDirection.Up, defaultStackStarts, noVariant,[]);
     expect(nextRanksArray).toStrictEqual([1]);
   });
 
@@ -129,13 +134,13 @@ describe("nextRanks", () => {
         rank: n,
         suitIndex: 0,
       };
-      const nextRanksArray = nextRanks([0], StackDirection.Up, [redCard]);
+      const nextRanksArray = nextPlayableRanks([0], StackDirection.Up, defaultStackStarts, noVariant, [redCard]);
       expect(nextRanksArray).toStrictEqual([n + 1]);
     },
   );
 
   test("returns [5] for an empty play stack going down", () => {
-    const nextRanksArray = nextRanks([], StackDirection.Down, []);
+    const nextRanksArray = nextPlayableRanks([], StackDirection.Down, defaultReverseStackStarts, noVariant, []);
     expect(nextRanksArray).toStrictEqual([5]);
   });
 
@@ -150,25 +155,25 @@ describe("nextRanks", () => {
         rank: n,
         suitIndex: 0,
       };
-      const nextRanksArray = nextRanks([0], StackDirection.Down, [redCard]);
+      const nextRanksArray = nextPlayableRanks([0], StackDirection.Down, defaultReverseStackStarts, noVariant, [redCard]);
       expect(nextRanksArray).toStrictEqual([n - 1]);
     },
   );
 
   test("returns [] for a finished play stack (with a red 5)", () => {
     const redFive = { ...initialCardState(0, upOrDown), rank: 5, suitIndex: 0 };
-    const nextRanksArray = nextRanks([0], StackDirection.Finished, [redFive]);
+    const nextRanksArray = nextPlayableRanks([0], StackDirection.Finished, defaultStackStarts, noVariant, [redFive]);
     expect(nextRanksArray).toStrictEqual([]);
   });
 
   test("returns [] for a finished play stack (with a red 1)", () => {
     const redOne = { ...initialCardState(0, upOrDown), rank: 1, suitIndex: 0 };
-    const nextRanksArray = nextRanks([0], StackDirection.Finished, [redOne]);
+    const nextRanksArray = nextPlayableRanks([0], StackDirection.Finished, defaultReverseStackStarts, noVariant, [redOne]);
     expect(nextRanksArray).toStrictEqual([]);
   });
 
   test("returns [1, 5, START_CARD_RANK] for an empty Up or Down play stack", () => {
-    const nextRanksArray = nextRanks([], StackDirection.Undecided, []);
+    const nextRanksArray = nextPlayableRanks([], StackDirection.Undecided, defaultStackStarts, upOrDown, []);
     expect(nextRanksArray).toStrictEqual([1, 5, START_CARD_RANK]);
   });
 
@@ -178,7 +183,7 @@ describe("nextRanks", () => {
       rank: START_CARD_RANK,
       suitIndex: 0,
     };
-    const nextRanksArray = nextRanks([0], StackDirection.Undecided, [redStart]);
+    const nextRanksArray = nextPlayableRanks([0], StackDirection.Undecided, defaultStackStarts,upOrDown, [redStart]);
     expect(nextRanksArray).toStrictEqual([2, 4]);
   });
 });

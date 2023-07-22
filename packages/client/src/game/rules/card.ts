@@ -140,12 +140,16 @@ export function isPotentiallyPlayable(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
+  variant: Variant,
 ): boolean {
   for (const [suitIndex, rank] of card.possibleCards) {
-    const nextRanksArray = playStacksRules.nextRanks(
-      playStacks[suitIndex]!,
-      playStackDirections[suitIndex]!,
-      deck,
+    const nextRanksArray = playStacksRules.nextPlayableRanks(
+        playStacks[suitIndex]!,
+        playStackDirections[suitIndex]!,
+        playStackStarts,
+        variant,
+        deck
     );
     if (nextRanksArray.includes(rank)) {
       return true;
