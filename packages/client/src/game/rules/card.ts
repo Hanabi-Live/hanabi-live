@@ -43,6 +43,7 @@ export function needsToBePlayed(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): boolean {
+  // TODO Sudoku: update this
   // First, check to see if a copy of this card has already been played.
   if (playStacks[suitIndex]!.some((order) => deck[order]!.rank === rank)) {
     return false;
