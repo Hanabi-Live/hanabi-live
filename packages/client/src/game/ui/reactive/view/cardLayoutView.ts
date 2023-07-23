@@ -77,11 +77,8 @@ export function onPlayStackDirectionsChanged(
       ) {
         return;
       }
-
-      if (direction == StackDirection.Finished) {
-        const text = stackStringsSudoku.get(direction)!;
-        globals.elements.suitLabelTexts[i]!.fitText(text);
-      }
+      const text = stackStringsSudoku.get(direction)!;
+      globals.elements.suitLabelTexts[i]!.fitText(text);
     });
   } else {
     return;
