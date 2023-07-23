@@ -35,18 +35,17 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 		}
 		g.StackStarts[c.SuitIndex] = c.Rank
 		return true
-	} else {
-		nextRank := g.Stacks[c.SuitIndex]%len(variant.Ranks) + 1
-		failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
-		if !failed {
-			// This subtracts 1 (mod 5) from the stack starts and outputs one of 1,...,5
-			finalRank := (g.StackStarts[c.SuitIndex]+len(variant.Ranks)-2)%len(variant.Ranks) + 1
-			if c.Rank == finalRank {
-				g.PlayStackDirections[c.SuitIndex] = StackDirectionFinished
-			}
-		}
-		return failed
 	}
+	nextRank := g.Stacks[c.SuitIndex]%len(variant.Ranks) + 1
+	failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
+	if !failed {
+		// This subtracts 1 (mod 5) from the stack starts and outputs one of 1,...,5
+		finalRank := (g.StackStarts[c.SuitIndex]+len(variant.Ranks)-2)%len(variant.Ranks) + 1
+		if c.Rank == finalRank {
+			g.PlayStackDirections[c.SuitIndex] = StackDirectionFinished
+		}
+	}
+	return failed
 }
 
 func variantReversiblePlay(g *Game, c *Card) bool {
@@ -319,7 +318,7 @@ func variantSudokuGetMaxScore(g *Game) int {
 
 	localSuitIndex := 0
 	curAssignment := make([]int, len(unassignedSuits))
-	for i, _ := range curAssignment {
+	for i := range curAssignment {
 		curAssignment[i] = unassigned
 	}
 	assigned := make([]bool, len(possibleStackStarts))
@@ -408,13 +407,12 @@ func sudokuWalkUpAll(allDiscarded [5]bool) (bool, [5]int) {
 	// If no value was dead, we did not write anything so far, so we can just return
 	if lastDead == -1 {
 		return true, maxScores
-	} else {
-		// Here, we still need to write all 'higher' values, adding the longest sequence starting at 0
-		for writeVal := lastDead + 1; writeVal < 5; writeVal++ {
-			maxScores[writeVal] = min(maxScores[0]+5-writeVal, 5)
-		}
-		return false, maxScores
 	}
+	// Here, we still need to write all 'higher' values, adding the longest sequence starting at 0
+	for writeVal := lastDead + 1; writeVal < 5; writeVal++ {
+		maxScores[writeVal] = min(maxScores[0]+5-writeVal, 5)
+	}
+	return false, maxScores
 }
 
 // variantSudokuCheckAllDead returns true if no more cards can be played on the stacks
@@ -427,15 +425,14 @@ func variantSudokuCheckAllDead(g *Game) bool {
 		possibleNextRanks := make([]int, 0)
 		if g.PlayStackDirections[suitIndex] == StackDirectionFinished {
 			continue
+		}
+		if stackRank != 0 {
+			// Find the next card up (cyclic)
+			nextRank := stackRank%len(variant.Ranks) + 1
+			possibleNextRanks = []int{nextRank}
 		} else {
-			if stackRank != 0 {
-				// Find the next card up (cyclic)
-				nextRank := stackRank%len(variant.Ranks) + 1
-				possibleNextRanks = []int{nextRank}
-			} else {
-				// New stack start only limited by other started stacks
-				possibleNextRanks = possibleStackStarts
-			}
+			// New stack start only limited by other started stacks
+			possibleNextRanks = possibleStackStarts
 		}
 		// Now, just check if there are cards left behind with the desired rank
 		for _, c := range g.Deck {
