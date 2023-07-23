@@ -277,23 +277,24 @@ func variantSudokuGetMaxScore(g *Game) int {
 	// 	 we will probably never have to do this, since for most of the suits, we should have one copy of each card
 	//   or known starting value, in which case they will be filtered out in step 2 or 3 already.
 
-	maxScore := 0
+	independentPartOfMaxScore := 0
 	maxPartialScores := [5][5]int{}
 	unassignedSuits := make([]int, 0)
 	for suitIndex, stackStart := range g.StackStarts {
 		allMax, suitMaxScores := sudokuWalkUpAll(checkAllDiscarded(g, suitIndex))
 		if allMax {
-			maxScore += 5
+			independentPartOfMaxScore += 5
 			continue
 		}
 		if stackStart != 0 {
-			maxScore += suitMaxScores[stackStart-1]
+			independentPartOfMaxScore += suitMaxScores[stackStart-1]
+			continue
 		}
 		maxPartialScores[suitIndex] = suitMaxScores
 		unassignedSuits = append(unassignedSuits, suitIndex)
 	}
 	if len(unassignedSuits) == 0 {
-		return maxScore
+		return independentPartOfMaxScore
 	}
 
 	bestAssignment := 0
@@ -323,7 +324,7 @@ func variantSudokuGetMaxScore(g *Game) int {
 	}
 	assigned := make([]bool, len(possibleStackStarts))
 
-	for localSuitIndex > 0 {
+	for localSuitIndex >= 0 {
 		if curAssignment[localSuitIndex] != unassigned {
 			assigned[curAssignment[localSuitIndex]] = false
 		}
@@ -340,15 +341,17 @@ func variantSudokuGetMaxScore(g *Game) int {
 			if localSuitIndex == len(unassignedSuits)-1 {
 				// evaluate the current assignment
 				val := 0
-				for suitIndex, assignment := range curAssignment {
-					val += maxPartialScores[suitIndex][possibleStackStarts[assignment]]
+				for assignedLocalSuitIndex, assignment := range curAssignment {
+					val += maxPartialScores[unassignedSuits[assignedLocalSuitIndex]][possibleStackStarts[assignment]-1]
 				}
 				bestAssignment = max(bestAssignment, val)
 			}
 			if localSuitIndex < len(unassignedSuits)-1 {
 				// reset all assignments of the higher-indexed suits
 				for higherlocalSuitIndex := localSuitIndex + 1; higherlocalSuitIndex < len(unassignedSuits); higherlocalSuitIndex++ {
-					assigned[curAssignment[higherlocalSuitIndex]] = false
+					if curAssignment[higherlocalSuitIndex] != unassigned {
+						assigned[curAssignment[higherlocalSuitIndex]] = false
+					}
 					curAssignment[higherlocalSuitIndex] = unassigned
 				}
 				localSuitIndex++
@@ -361,8 +364,7 @@ func variantSudokuGetMaxScore(g *Game) int {
 	}
 
 	// Now that we have the best assignment, we just need to put this together with the rest of the score
-	maxScore += bestAssignment
-	return maxScore
+	return independentPartOfMaxScore + bestAssignment
 }
 
 func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
