@@ -4,8 +4,6 @@
 
 package main
 
-import "sort"
-
 // iota starts at 0 and counts upwards
 // i.e. stackDirectionUndecided = 0, stackDirectionUp = 1, etc.
 
@@ -421,39 +419,29 @@ func sudokuWalkUpAll(allDiscarded [5]bool) (bool, [5]int) {
 
 // variantSudokuCheckAllDead returns true if no more cards can be played on the stacks
 func variantSudokuCheckAllDead(g *Game) bool {
-	// Local variables
+	// This implementation is way easier than finding the max score, since we can check each suit independently
 	variant := variants[g.Options.VariantName]
+	possibleStackStarts := variantSudokuGetFreeStackStarts(g)
 
 	for suitIndex, stackRank := range g.Stacks {
-		neededRanks := make([]int, 0)
+		possibleNextRanks := make([]int, 0)
 		if g.PlayStackDirections[suitIndex] == StackDirectionFinished {
 			continue
 		} else {
 			if stackRank != 0 {
 				// Find the next card up (cyclic)
-				nextRank := stackRank % len(variant.Ranks) + 1
-				neededRanks = append(neededRanks, nextRank)
+				nextRank := stackRank%len(variant.Ranks) + 1
+				possibleNextRanks = []int{nextRank}
 			} else {
-				// New stack start limited by other started stacks
-				unavailable := g.StackStarts
-				sort.Ints(unavailable)
-				neededRanks = []int{1}
-				for i := 1; i <= len(variant.Ranks); i++ {
-					neededRanks = []int{1}
-					idx := sort.Search(len(unavailable),
-									  func(j int) bool { return unavailable[j] >= i } )
-					if (idx < len(unavailable) && unavailable[idx] == i) {
-						// neededRanks = []int{1}
-						// neededRanks = append(neededRanks, 1)
-						neededRanks = append(neededRanks, i)
-					}
-				}
+				// New stack start only limited by other started stacks
+				possibleNextRanks = possibleStackStarts
 			}
 		}
+		// Now, just check if there are cards left behind with the desired rank
 		for _, c := range g.Deck {
-			for _, neededRank := range neededRanks {
+			for _, possibleNextRank := range possibleNextRanks {
 				if c.SuitIndex == suitIndex &&
-					c.Rank == neededRank &&
+					c.Rank == possibleNextRank &&
 					!c.Discarded &&
 					!c.CannotBePlayed {
 
@@ -462,7 +450,5 @@ func variantSudokuCheckAllDead(g *Game) bool {
 			}
 		}
 	}
-
-	// If we got this far, nothing can be played
 	return true
 }
