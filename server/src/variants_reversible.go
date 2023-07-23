@@ -30,11 +30,11 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 	if g.Stacks[c.SuitIndex] == 0 {
 		for _, b := range g.StackStarts {
 			if b == c.Rank {
-				return false
+				return true
 			}
 		}
 		g.StackStarts[c.SuitIndex] = c.Rank
-		return true
+		return false
 	}
 	nextRank := g.Stacks[c.SuitIndex]%len(variant.Ranks) + 1
 	failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
