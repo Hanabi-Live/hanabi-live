@@ -154,9 +154,6 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	// Handle successful card plays
 	c.Played = true
 	g.Score++
-	if g.Stacks[c.SuitIndex] == 0 {
-		g.StackStarts[c.SuitIndex] = c.Rank;
-	}
 	g.Stacks[c.SuitIndex] = c.Rank
 	if c.Rank == 0 {
 		g.Stacks[c.SuitIndex] = -1 // A rank 0 card is the "START" card

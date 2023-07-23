@@ -24,21 +24,26 @@ const (
 	StartCardRank = 7
 )
 
+// variantSudokuPlay trys to play the specified card, assuming that the variant is a Sudoku variant
+// If success and this is the last card of the stack, the stack direction and the stack starts are updated accordingly
+// Returns if the card misplayed
 func variantSudokuPlay(g *Game, c *Card) bool {
 	variant := variants[g.Options.VariantName]
 	if g.Stacks[c.SuitIndex] == 0 {
 		for _, b := range g.StackStarts {
 			if b == c.Rank {
-				return true
+				return false
 			}
 		}
-		return false
+		g.StackStarts[c.SuitIndex] = c.Rank
+		return true
 	} else {
-		nextRank := g.Stacks[c.SuitIndex] % len(variant.Ranks) + 1
+		nextRank := g.Stacks[c.SuitIndex]%len(variant.Ranks) + 1
 		failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 		if !failed {
-			nextRank := c.Rank % len(variant.Ranks) + 1
-			if g.StackStarts[c.SuitIndex] == nextRank {
+			// This subtracts 1 (mod 5) from the stack starts and outputs one of 1,...,5
+			finalRank := (g.StackStarts[c.SuitIndex]+len(variant.Ranks)-2)%len(variant.Ranks) + 1
+			if c.Rank == finalRank {
 				g.PlayStackDirections[c.SuitIndex] = StackDirectionFinished
 			}
 		}

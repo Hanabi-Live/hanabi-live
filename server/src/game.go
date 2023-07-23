@@ -39,7 +39,7 @@ type Game struct {
 	CardIdentities      []*CardIdentity // A bare-bones version of the deck
 	DeckIndex           int
 	Stacks              []int
-	StackStarts         []int // For sudoku variants, the first card in the stack
+	StackStarts         []int // For sudoku variants, the first card in the stack, 0 if the stack is empty so far
 	PlayStackDirections []int // The values for this are listed in "constants.go"
 	Turn                int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	DatetimeTurnBegin   time.Time
