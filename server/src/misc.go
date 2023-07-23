@@ -152,6 +152,13 @@ func max(x, y int) int {
 	return y
 }
 
+func min(x, y int) int {
+	if x > y {
+		return y
+	}
+	return x
+}
+
 // Ensures a number is between limits.
 // Returns that number or the default value
 func between(x, minimum, maximum, defaultValue int) int {
@@ -159,6 +166,16 @@ func between(x, minimum, maximum, defaultValue int) int {
 		return defaultValue
 	}
 	return x
+}
+
+// Checks if the sequence contains the specified element
+func contains(sequence []int, element int) bool {
+	for _, s := range sequence {
+		if s == element {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizeString(str string) string {

@@ -376,11 +376,11 @@ func (g *Game) GetMaxScore() int {
 	variant := variants[g.Options.VariantName]
 
 	// Getting the maximum score is much more complicated if we are playing a
-	// "Reversed" or "Up or Down" variant
+	// "Reversed", "Up or Down" or "Sudoku" variant
 	if variant.HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
 	} else if variant.IsSudoku() {
-		// TODO impl
+		return variantSudokuGetMaxScore(g)
 	}
 
 	maxScore := 0
