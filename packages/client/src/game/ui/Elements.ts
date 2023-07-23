@@ -32,6 +32,7 @@ export class Elements {
   playStacks = new Map<Suit | "hole", PlayStack>();
 
   suitLabelTexts: FitText[] = [];
+  suitLabelStackStartTexts: FitText[] = [];
   discardArea: Konva.Rect | null = null;
   discardStacks = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];

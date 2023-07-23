@@ -106,7 +106,7 @@ export function onPlayStackStartsChanged(
     if (stackStart != UNKNOWN_CARD_RANK) {
       text = "Starts at " + stackStart;
     }
-    globals.elements.suitLabelTexts[i]!.fitText(text);
+    globals.elements.suitLabelStackStartTexts[i]!.fitText(text);
   });
 }
 
