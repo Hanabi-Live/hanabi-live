@@ -158,6 +158,7 @@ export function fillInRemainingStackStartIfUnique(
       numDeterminedStarts++;
       continue;
     }
+
     undeterminedStack = i;
   }
 
