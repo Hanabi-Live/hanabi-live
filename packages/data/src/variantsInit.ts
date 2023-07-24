@@ -298,7 +298,8 @@ export function variantsInit(
 
     // The second UI row only makes sense if we already have a first one.
     if (showStackStarts && !showSuitNames) {
-      throw new Error("The 'showStackStarts' property can only be set to true if 'showSuitNames' is already true.",
+      throw new Error(
+        "The 'showStackStarts' property can only be set to true if 'showSuitNames' is already true.",
       );
     }
 

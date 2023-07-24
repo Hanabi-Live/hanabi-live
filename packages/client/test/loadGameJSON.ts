@@ -126,11 +126,11 @@ export function loadGameJSON(gameJSON: JSONGame): State {
         }
 
         const nextRanks = playStacksRules.nextPlayableRanks(
-            s.playStacks[jsonCard.suitIndex]!,
-            s.playStackDirections[jsonCard.suitIndex]!,
-            s.playStackStarts,
-            variant,
-            s.deck
+          s.playStacks[jsonCard.suitIndex]!,
+          s.playStackDirections[jsonCard.suitIndex]!,
+          s.playStackStarts,
+          variant,
+          s.deck,
         );
         if (!nextRanks.includes(jsonCard.rank)) {
           // Send a discard and a strike.

@@ -178,8 +178,9 @@ One of each card per suit (e.g. 5 in total):
 - The name of the variant comes from [nested doll sets](https://en.wikipedia.org/wiki/Matryoshka_doll).
 
 ### Sudoku
+
 - Stacks can be started at arbitrary ranks and will wrap around from 5 to 1 until 5 cards are played
-    - Each stack has to be started with a different rank (but it is not predetermined, which suit starts where)
+  - Each stack has to be started with a different rank (but it is not predetermined, which suit starts where)
 - As ranks are now completely symmetric, there are two copies of each card
 - Playing the fifth card of a suit gives back a clue
 
