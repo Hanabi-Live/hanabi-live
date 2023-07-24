@@ -11,11 +11,6 @@ export function sudokuCanStillBePlayed(
   playStackStarts: readonly number[],
   variant: Variant,
 ): boolean {
-  if (!variantRules.isSudoku(variant)) {
-    throw new Error(
-      "Sudoku function 'sudokuCanStillBePlayed' called for non-Sudoku variant",
-    );
-  }
   const [_, maxScoresFromStarts] = sudokuWalkUpAll(
     createAllDiscardedMap(variant, deck, suitIndex),
   );
