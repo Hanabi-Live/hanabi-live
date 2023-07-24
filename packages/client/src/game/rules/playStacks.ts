@@ -35,7 +35,7 @@ export function nextPlayableRanks(
 
   switch (playStackDirection) {
     case StackDirection.Undecided: {
-      // Check that we are in fact in an Up-Or-Down Variant
+      // Check that we are in fact in an Up-Or-Down Variant.
       console.assert(variantRules.isUpOrDown(variant));
       if (currentlyPlayedRank === START_CARD_RANK) {
         return [2, 4];
@@ -45,43 +45,31 @@ export function nextPlayableRanks(
 
     case StackDirection.Up: {
       if (!variantRules.isSudoku(variant)) {
-        // In non-Sudoku variants, the next playable card is just one higher, or 1 if the stack is not stared yet
+        // In non-Sudoku variants, the next playable card is just one higher, or 1 if the stack is
+        // not stared yet.
         if (currentlyPlayedRank === STACK_BASE_RANK) {
           return [1];
         }
         return [currentlyPlayedRank + 1];
-      } else {
-        // In Sudoku variants, determining the next playable ranks is more complicated:
-        // If the stack is already started, then we just go up, wrapping around from 5 to 1 (unless the stack was
-        // started at 1, in which case 5 will be the last card of this suit)
-        // If it is not started, in can be started with any rank that is not the starting rank of another stack yet
-        if (currentlyPlayedRank !== STACK_BASE_RANK) {
-          // Note that we first mod by 5 and then add, to obtain values 1,...,5
-          return [currentlyPlayedRank % 5 + 1];
-        } else {
-          return DEFAULT_CARD_RANKS.filter((rank) => {
-            return !playStackStarts.includes(rank);
-          });
-        }
       }
+      // In Sudoku variants, determining the next playable ranks is more complicated: If the stack
+      // is already started, then we just go up, wrapping around from 5 to 1 (unless the stack was
+      // started at 1, in which case 5 will be the last card of this suit). If it is not started, it
+      // can be started with any rank that is not the starting rank of another stack yet.
+      if (currentlyPlayedRank !== STACK_BASE_RANK) {
+        // Note that we first mod by 5 and then add, to obtain values 1,...,5.
+        return [currentlyPlayedRank % 5 + 1];
+      }
+      return DEFAULT_CARD_RANKS.filter((rank) =>
+          !playStackStarts.includes(rank)
+      );
     }
 
     case StackDirection.Down: {
-      if (!variantRules.isSudoku(variant)) {
-        if (currentlyPlayedRank === STACK_BASE_RANK) {
-          return [5];
-        }
-        return [currentlyPlayedRank - 1];
-      } else {
-        if (currentlyPlayedRank !== STACK_BASE_RANK) {
-          // Note that in total, we add 4 (=subtract 1 mod 5) to ensure outputs of 1,...,5
-          return [(currentlyPlayedRank + 3) % 5 + 1];
-        } else {
-          return DEFAULT_CARD_RANKS.filter((rank) => {
-            return !playStackStarts.includes(rank);
-          });
-        }
+      if (currentlyPlayedRank === STACK_BASE_RANK) {
+        return [5];
       }
+      return [currentlyPlayedRank - 1];
     }
 
     case StackDirection.Finished: {
@@ -138,16 +126,15 @@ export function stackStart(
     playStack: readonly number[],
     deck: readonly CardState[],
     variant: Variant,
-) {
+): number {
   if(!variantRules.isSudoku(variant)) {
     return 1;
   }
   if (playStack.length === 0) {
     return UNKNOWN_CARD_RANK;
-  } else {
-    const orderOfBottomCard = playStack[0]!;
-    return deck[orderOfBottomCard]!.rank ?? UNKNOWN_CARD_RANK;
   }
+  const orderOfBottomCard = playStack[0]!;
+  return deck[orderOfBottomCard]!.rank ?? UNKNOWN_CARD_RANK;
 }
 
 export function fillInRemainingStackStartIfUnique(
@@ -155,16 +142,16 @@ export function fillInRemainingStackStartIfUnique(
 ): number[] {
   let sumStarts = 0;
   let numDeterminedStarts = 0;
-  let undeterminedStack = undefined;
+  let undeterminedStack: number;
   for(let i = 0; i < playStackStarts.length; i++) {
     if (playStackStarts[i] !== UNKNOWN_CARD_RANK) {
       sumStarts += playStackStarts[i]!;
-      numDeterminedStarts += 1;
+      numDeterminedStarts++;
       continue
     }
     undeterminedStack = i;
   }
-  if (numDeterminedStarts == playStackStarts.length - 1) {
+  if (numDeterminedStarts === playStackStarts.length - 1) {
     playStackStarts[undeterminedStack!] = 15 - sumStarts;
   }
   return playStackStarts;

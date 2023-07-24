@@ -60,17 +60,18 @@ export function needsToBePlayed(
       playStackDirections,
       variant,
     );
-  } else if (variantRules.isSudoku(variant)) {
-      // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked cards
-      // even though lower ones are dead due to the ability to start stacks anywhere
-      return sudokuRules.sudokuCanStillBePlayed(
-          suitIndex,
-          rank,
-          deck,
-          playStacks,
-          playStackStarts,
-          variant
-      );
+  }
+
+  // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked
+  // cards, even though lower ones are dead due to the ability to start stacks anywhere.
+  if (variantRules.isSudoku(variant)) {
+    return sudokuRules.sudokuCanStillBePlayed(
+        suitIndex,
+        rank,
+        deck,
+        playStackStarts,
+        variant
+    );
   }
 
   const total = (s: number, r: number) =>

@@ -286,9 +286,9 @@ interface PlayStackValues {
 }
 
 function createLabelTextBelowStack(
-    winH: number,
-    winW: number,
-    cardWidth: number,
+    winHeight: number,
+    winWidth: number,
+    stackCardWidth: number,
     text: string,
     playStackValues: PlayStackValues,
     index: number,
@@ -298,12 +298,12 @@ function createLabelTextBelowStack(
     x:
         (playStackValues.x -
             0.01 +
-            (cardWidth + playStackValues.spacing) * index) *
-        winW,
-    y: (playStackValues.y + 0.155) * winH + row * 0.02 * winH,
-    width: 0.08 * winW,
-    height: 0.051 * winH,
-    fontSize: 0.02 * winH,
+            (stackCardWidth + playStackValues.spacing) * index) *
+        winWidth,
+    y: (playStackValues.y + 0.155) * winHeight + row * 0.02 * winHeight,
+    width: 0.08 * winWidth,
+    height: 0.051 * winHeight,
+    fontSize: 0.02 * winHeight,
     fontFamily: "Verdana",
     align: "center",
     text,
@@ -440,37 +440,35 @@ function drawPlayStacks() {
         text = "";
       }
       if (variantRules.isSudoku(globals.variant)) {
-        // Don't show anything here, the starting values will be written by the state observers updating when the
-        // starting value changes
+        // Don't show anything here, the starting values will be written by the state observers
+        // updating when the starting value changes.
         text = "";
       }
 
-      // This is the text box for the suit names or, in UpOrDown, for the stack directions
-      let suitLabelText = undefined;
+      // This is the text box for the suit names or, in UpOrDown, for the stack directions.
+      let suitLabelText: FitText;
 
       if (!globals.variant.showStackStarts) {
-        // If we don't have a second UI row (for the stack starts), this is placed directly below
+        // If we don't have a second UI row (for the stack starts), this is placed directly below.
         suitLabelText = createLabelTextBelowStack(
             winH, winW, cardWidth, text, playStackValues, i, 0
         );
       } else {
-        // If we have two UI rows, then the suit names / stack directions will be the second row
+        // If we have two UI rows, then the suit names / stack directions will be the second row.
         suitLabelText = createLabelTextBelowStack(
             winH, winW, cardWidth, text, playStackValues, i, 1
         );
 
-        // The first row now consists of the stack starts
+        // The first row now consists of the stack starts.
         const stackStartText = createLabelTextBelowStack(
             winH, winW, cardWidth, "", playStackValues, i, 0
         );
         globals.layers.UI.add(stackStartText);
         globals.elements.suitLabelStackStartTexts.push(stackStartText);
-        console.log('Created some stack start field');
       }
 
-      globals.layers.UI.add(suitLabelText!);
-      globals.elements.suitLabelTexts.push(suitLabelText!);
-
+      globals.layers.UI.add(suitLabelText);
+      globals.elements.suitLabelTexts.push(suitLabelText);
     }
   }
 

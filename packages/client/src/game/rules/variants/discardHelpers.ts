@@ -2,7 +2,11 @@ import {Variant} from "@hanabi/data";
 import {CardState} from "../../types/CardState";
 import * as deckRules from "../deck";
 
-export function discardedHelpers(variant: Variant, deck: readonly CardState[]) {
+export function discardedHelpers(variant: Variant, deck: readonly CardState[]):
+   {
+       isLastCopy: (s: number, r: number) => boolean,
+       isAllDiscarded: (s: number, r: number) => boolean
+   } {
     const total = (s: number, r: number) =>
         deckRules.numCopiesOfCard(variant.suits[s]!, r, variant);
     const discarded = (s: number, r: number) =>

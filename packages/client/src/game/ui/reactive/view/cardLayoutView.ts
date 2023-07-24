@@ -37,8 +37,8 @@ export function onPlayStackDirectionsChanged(
   previousDirections: readonly StackDirection[] | undefined,
 ): void {
   if (variantRules.hasReversedSuits(globals.variant)) {
-    // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
-    let text = "";
+    // Update the stack directions (which are only used in the "Up or Down" and "Reversed"
+    // variants).
     directions.forEach((direction, i) => {
       if (
           previousDirections !== undefined &&
@@ -78,7 +78,7 @@ export function onPlayStackDirectionsChanged(
 export function onPlayStackStartsChanged(
     stackStarts: readonly number[],
     previousStackStarts: readonly number[] | undefined,
-) {
+): void {
   if (!variantRules.isSudoku(globals.variant)) {
     return;
   }
@@ -88,8 +88,8 @@ export function onPlayStackStartsChanged(
       return;
     }
     let text = "";
-    if (stackStart != UNKNOWN_CARD_RANK) {
-      text = "Starts at " + stackStart;
+    if (stackStart !== UNKNOWN_CARD_RANK) {
+      text = `Starts at ${stackStart}`;
     }
     globals.elements.suitLabelStackStartTexts[i]!.fitText(text);
   });
@@ -157,10 +157,10 @@ export function onPlayStacksChanged(
     }
 
     if(variantRules.isSudoku(globals.variant)) {
-      // Update the 'x cards played'
+      // Update the 'x cards played' field.
       const text = stackStringsSudoku.get(stack.length);
       if (text === undefined) {
-        throw new Error("Failed to get the stack string for " + stack.length + " card(s) played.");
+        throw new Error(`Failed to get the stack string for ${stack.length} card(s) played.`);
       }
       globals.elements.suitLabelTexts[i]!.fitText(text);
     }

@@ -18,7 +18,7 @@ export function getMaxScorePerStack(
   playStackStarts: readonly number[],
   variant: Variant,
 ): number[] {
-  // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these
+  // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
   if (variantRules.isSudoku(variant)) {
     return sudokuRules.getMaxScorePerStack(
         deck,
@@ -26,7 +26,7 @@ export function getMaxScorePerStack(
         variant
     );
   }
-  // This handles the maximum scores in Reversed or "Up Or Down" variants
+  // This handles the maximum scores in Reversed or "Up Or Down" variants.
   return reversibleRules.getMaxScorePerStack(
     deck,
     playStackDirections,

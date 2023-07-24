@@ -339,7 +339,7 @@ function gameStateReducerFunction(
     state.playStackDirections[action.suitIndex] = direction;
   }
 
-  // In Sudoku variants, resolve the stack starting value
+  // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variantRules.isSudoku(variant)) {
     const playStack = state.playStacks[action.suitIndex]!;
     state.playStackStarts[action.suitIndex] = playStacksRules.stackStart(
@@ -347,7 +347,7 @@ function gameStateReducerFunction(
         state.deck,
         variant,
     );
-    const playStackStarts = state.playStackStarts;
+    const {playStackStarts} = state;
     state.playStackStarts = fillInRemainingStackStartIfUnique(playStackStarts);
   }
 

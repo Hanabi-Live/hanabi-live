@@ -7,7 +7,6 @@ import {initArray} from "../../utils";
 const noVariant = getDefaultVariant();
 const upOrDown = getVariant("Up or Down (6 Suits)");
 const reversed = getVariant("Reversed (6 Suits)");
-const sudoku = getVariant("Sudoku (5 Suits)");
 
 const defaultStackStarts = initArray(noVariant.suits.length, 1);
 const defaultReverseStackStarts = initArray(noVariant.suits.length, 5);
