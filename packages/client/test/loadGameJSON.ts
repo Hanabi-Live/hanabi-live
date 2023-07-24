@@ -128,7 +128,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
         const nextRanks = playStacksRules.nextPlayableRanks(
             s.playStacks[jsonCard.suitIndex]!,
             s.playStackDirections[jsonCard.suitIndex]!,
-            game.playStackStarts,
+            s.playStackStarts,
             variant,
             s.deck
         );
