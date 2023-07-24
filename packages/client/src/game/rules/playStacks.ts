@@ -123,7 +123,7 @@ export function direction(
   return secondCard === 4 ? StackDirection.Down : StackDirection.Up;
 }
 
-export function stackStart(
+export function stackStartRank(
   playStack: readonly number[],
   deck: readonly CardState[],
   variant: Variant,
@@ -132,15 +132,11 @@ export function stackStart(
     return 1;
   }
 
-  if (playStack.length === 0) {
-    return UNKNOWN_CARD_RANK;
-  }
-
   const bottomCardOrder = playStack[0];
   if (bottomCardOrder === undefined) {
     return UNKNOWN_CARD_RANK;
   }
-  
+
   const bottomCard = deck[bottomCardOrder];
   if (bottomCard === undefined) {
     return UNKNOWN_CARD_RANK;

@@ -345,7 +345,7 @@ function gameStateReducerFunction(
   // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variantRules.isSudoku(variant)) {
     const playStack = state.playStacks[action.suitIndex]!;
-    state.playStackStarts[action.suitIndex] = playStacksRules.stackStart(
+    state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
       playStack,
       state.deck,
       variant,
