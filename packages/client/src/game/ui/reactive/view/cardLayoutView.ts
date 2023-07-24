@@ -23,11 +23,13 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
   [StackDirection.Finished, "Finished"],
 ]);
 
-const stackStringsSudoku = new Map<StackDirection, string>([
-    [StackDirection.Undecided, ""],
-    [StackDirection.Up, ""],
-    [StackDirection.Down, ""],
-    [StackDirection.Finished, "Finished"],
+const stackStringsSudoku = new Map<number, string>([
+    [0, ""],
+    [1, ""],
+    [2, "2 cards played"],
+    [3, "3 cards played"],
+    [4, "4 cards played"],
+    [5, "Finished"],
 ]);
 
 export function onPlayStackDirectionsChanged(
@@ -69,22 +71,8 @@ export function onPlayStackDirectionsChanged(
             c.setDirectionArrow(i, direction);
           });
     });
-  } else if (variantRules.isSudoku(globals.variant)) {
-    directions.forEach((direction, i) => {
-      if (
-          previousDirections !== undefined &&
-          direction === previousDirections[i]
-      ) {
-        return;
-      }
-      const text = stackStringsSudoku.get(direction)!;
-      globals.elements.suitLabelTexts[i]!.fitText(text);
-    });
-  } else {
-    return;
+    globals.layers.UI.batchDraw();
   }
-
-  globals.layers.UI.batchDraw();
 }
 
 export function onPlayStackStartsChanged(
@@ -166,6 +154,15 @@ export function onPlayStacksChanged(
       const suit = globals.variant.suits[i]!;
       const playStack = globals.elements.playStacks.get(suit)!;
       playStack.hideCardsUnderneathTheTopCard();
+    }
+
+    if(variantRules.isSudoku(globals.variant)) {
+      // Update the 'x cards played'
+      const text = stackStringsSudoku.get(stack.length);
+      if (text === undefined) {
+        throw new Error("Failed to get the stack string for " + stack.length + " card(s) played.");
+      }
+      globals.elements.suitLabelTexts[i]!.fitText(text);
     }
   });
 
