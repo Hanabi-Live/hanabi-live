@@ -52,12 +52,13 @@ export function nextPlayableRanks(
         }
         return [currentlyPlayedRank + 1];
       }
-      // In Sudoku variants, determining the next playable ranks is more complicated: If the stack
+
+      // In Sudoku variants, determining the next playable ranks is more complicated. If the stack
       // is already started, then we just go up, wrapping around from 5 to 1 (unless the stack was
       // started at 1, in which case 5 will be the last card of this suit). If it is not started, it
       // can be started with any rank that is not the starting rank of another stack yet.
       if (currentlyPlayedRank !== STACK_BASE_RANK) {
-        // Note that we first mod by 5 and then add, to obtain values 1,...,5.
+        // Note that we first mod by 5 and then add, to obtain values 1 through 5.
         return [(currentlyPlayedRank % 5) + 1];
       }
       return DEFAULT_CARD_RANKS.filter(
