@@ -367,6 +367,7 @@ func variantSudokuGetMaxScore(g *Game) int {
 	return independentPartOfMaxScore + bestAssignment
 }
 
+// Returns an array indicating for each rank of the specified suit if all copies of it have been discarded
 func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
 	allDiscarded := [5]bool{}
 	for rank := 1; rank <= 5; rank++ {
