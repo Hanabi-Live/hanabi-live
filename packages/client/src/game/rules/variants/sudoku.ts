@@ -41,7 +41,7 @@ export function sudokuCanStillBePlayed(
         // Here, we check if we can play the specified card if we start the stack at 'stackStart'
         // For this, note that we can compare the difference of our card and the start with the longest play sequence
         // starting at the start, thereby checking if the specified rank is included
-        if(maxScoresFromStarts[suitIndex]! > (rank - playStackStarts[suitIndex]! + 5) % 5) {
+        if(maxScoresFromStarts[stackStart]! > (rank - stackStart + 5) % 5) {
             return true;
         }
     }
@@ -64,8 +64,8 @@ function sudokuWalkUpAll(
     for (const curRank of DEFAULT_CARD_RANKS) {
         if (allDiscardedMap.get(curRank)) {
            // We hit a new dead rank
-           for (let writeRank = lastDead + 1; writeRank < curRank; writeRank) {
-               maxScores[writeRank -1] =  curRank - lastDead - 1;
+           for (let writeRank = lastDead + 1; writeRank < curRank; writeRank++) {
+               maxScores[writeRank -1] =  curRank - writeRank;
            }
            maxScores[curRank - 1] = 0;
            lastDead = curRank;
@@ -81,7 +81,7 @@ function sudokuWalkUpAll(
     // Here, we still need to write all 'higher' values, adding the longest sequence starting at 1 to them
     for (let writeRank = lastDead +1; writeRank <= 5; writeRank++) {
         maxScores[writeRank - 1] = Math.min(
-            maxScores[0]! - writeRank + 1,
+            maxScores[0]! +  6 - writeRank,
             DEFAULT_CARD_RANKS.length
         );
     }
@@ -140,6 +140,10 @@ export function getMaxScorePerStack(
         unassignedSuits.push(suitIndex);
     });
 
+    if (unassignedSuits.length == 0) {
+        return independentPartOfMaxScore;
+    }
+
     // Solve the assignment problem
     const unassigned = -1;
 
@@ -173,7 +177,7 @@ export function getMaxScorePerStack(
             }
         }
         if (couldIncrement) {
-            if (localSuitIndex == unassignedSuits.length) {
+            if (localSuitIndex == unassignedSuits.length - 1) {
                 // evaluate the current assignment
                 let assignment_val = 0;
                 let assignment = new Array<number>(unassignedSuits.length);

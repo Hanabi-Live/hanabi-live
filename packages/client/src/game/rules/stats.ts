@@ -22,7 +22,7 @@ export function getMaxScorePerStack(
   if (variantRules.isSudoku(variant)) {
     return sudokuRules.getMaxScorePerStack(
         deck,
-        playStackDirections,
+        playStackStarts,
         variant
     );
   }
