@@ -131,11 +131,22 @@ export function stackStart(
   if (!variantRules.isSudoku(variant)) {
     return 1;
   }
+
   if (playStack.length === 0) {
     return UNKNOWN_CARD_RANK;
   }
-  const orderOfBottomCard = playStack[0]!;
-  return deck[orderOfBottomCard]!.rank ?? UNKNOWN_CARD_RANK;
+
+  const bottomCardOrder = playStack[0];
+  if (bottomCardOrder === undefined) {
+    return UNKNOWN_CARD_RANK;
+  }
+  
+  const bottomCard = deck[bottomCardOrder];
+  if (bottomCard === undefined) {
+    return UNKNOWN_CARD_RANK;
+  }
+
+  return bottomCard.rank ?? UNKNOWN_CARD_RANK;
 }
 
 export function fillInRemainingStackStartIfUnique(
@@ -144,6 +155,7 @@ export function fillInRemainingStackStartIfUnique(
   let sumStarts = 0;
   let numDeterminedStarts = 0;
   let undeterminedStack: number;
+
   for (let i = 0; i < playStackStarts.length; i++) {
     if (playStackStarts[i] !== UNKNOWN_CARD_RANK) {
       sumStarts += playStackStarts[i]!;
@@ -152,8 +164,10 @@ export function fillInRemainingStackStartIfUnique(
     }
     undeterminedStack = i;
   }
+
   if (numDeterminedStarts === playStackStarts.length - 1) {
     playStackStarts[undeterminedStack!] = 15 - sumStarts;
   }
+
   return playStackStarts;
 }
