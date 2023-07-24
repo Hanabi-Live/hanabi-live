@@ -10,14 +10,23 @@ import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
 import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
+import * as sudokuRules from "./variants/sudoku"
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): number[] {
-  // Getting the maximum score is much more complicated if we are playing a "Reversed" or "Up or
-  // Down" variant.
+  // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these
+  if (variantRules.isSudoku(variant)) {
+    return sudokuRules.getMaxScorePerStack(
+        deck,
+        playStackDirections,
+        variant
+    );
+  }
+  // This handles the maximum scores in Reversed or "Up Or Down" variants
   return reversibleRules.getMaxScorePerStack(
     deck,
     playStackDirections,

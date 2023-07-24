@@ -76,6 +76,7 @@ function statsReducerFunction(
     stats.maxScorePerStack = statsRules.getMaxScorePerStack(
       currentState.deck,
       currentState.playStackDirections,
+      currentState.playStackStarts,
       variant,
     );
     stats.maxScore = stats.maxScorePerStack.reduce((a, b) => a + b, 0);
