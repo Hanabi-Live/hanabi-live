@@ -4,6 +4,7 @@
 import { DEFAULT_CARD_RANKS, START_CARD_RANK, Variant } from "@hanabi/data";
 import { CardState } from "../../types/CardState";
 import { StackDirection } from "../../types/StackDirection";
+import { discardedHelpers, createAllDiscardedMap } from "./discardHelpers";
 import * as deckRules from "../deck";
 import * as playStacksRules from "../playStacks";
 import * as variantRules from "../variant";
@@ -76,13 +77,7 @@ function isDead(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ) {
-  const { isAllDiscarded } = discardedHelpers(variant, deck);
-
-  // Make a map that shows if all of some particular rank in this suit has been discarded.
-  const allDiscarded = new Map<number, boolean>();
-  for (const variantRank of variant.ranks.slice()) {
-    allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
-  }
+  const allDiscarded = createAllDiscardedMap(variant, deck, suitIndex);
 
   // Start by handling the easy cases of up and down.
   if (playStackDirections[suitIndex] === StackDirection.Up) {
@@ -285,14 +280,3 @@ export function isCritical(
   return true;
 }
 
-function discardedHelpers(variant: Variant, deck: readonly CardState[]) {
-  const total = (s: number, r: number) =>
-    deckRules.numCopiesOfCard(variant.suits[s]!, r, variant);
-  const discarded = (s: number, r: number) =>
-    deckRules.discardedCopies(deck, s, r);
-  const isLastCopy = (s: number, r: number) =>
-    total(s, r) === discarded(s, r) + 1;
-  const isAllDiscarded = (s: number, r: number) =>
-    total(s, r) === discarded(s, r);
-  return { isLastCopy, isAllDiscarded };
-}
