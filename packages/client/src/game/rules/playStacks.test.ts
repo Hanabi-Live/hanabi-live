@@ -117,7 +117,7 @@ describe("direction", () => {
 });
 
 describe("nextRanks", () => {
-  test("returns [1] for an empty play stack going up in NoVariant", () => {
+  test("returns [1] for an empty play stack going up in No Variant", () => {
     const nextRanksArray = nextPlayableRanks(
       [],
       StackDirection.Up,
