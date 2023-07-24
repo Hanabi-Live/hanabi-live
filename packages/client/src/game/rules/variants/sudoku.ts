@@ -222,7 +222,9 @@ export function getMaxScorePerStack(
     // Now, we just need to put the found assignment together with the independ parts found already
     let maxScorePerStack = independentPartOfMaxScore;
     unassignedSuits.forEach((unassignedSuit, localSuitIndex) => {
-        maxScorePerStack[unassignedSuit] = bestAssignment[localSuitIndex]!;
+        // Note the ?? here, since it can be that there is actually no feasible assignment, in which case these values
+        // are still undefined at this point, so we replace them by 0.
+        maxScorePerStack[unassignedSuit] = bestAssignment[localSuitIndex] ?? 0;
     });
 
     return maxScorePerStack;
