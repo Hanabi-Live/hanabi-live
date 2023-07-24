@@ -36,7 +36,7 @@ export function numCopiesOfCard(
   }
 
   if (variantRules.isSudoku(variant)) {
-    // Always 2 cards
+    // Sudoku always has 2 cards.
     return 2;
   }
 
