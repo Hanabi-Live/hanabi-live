@@ -88,7 +88,7 @@ function main() {
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getMatryoshkaVariants(suitsToCreateVariantsFor),
-    ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits)
+    ...getSudokuVariants([], basicVariantSuits)
   ];
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
