@@ -1,5 +1,6 @@
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import equal from "fast-deep-equal";
+import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as deck from "../../../rules/deck";
 import * as variantRules from "../../../rules/variant";
@@ -9,21 +10,21 @@ import { HanabiCard } from "../../HanabiCard";
 import { LayoutChild } from "../../LayoutChild";
 import { updateCardVisuals } from "./cardsView";
 
-const stackStringsReversed = new Map<StackDirection, string>([
+const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([
   [StackDirection.Undecided, ""],
   [StackDirection.Up, ""],
   [StackDirection.Down, "Reversed"],
   [StackDirection.Finished, "Reversed"],
 ]);
 
-const stackStringsUpOrDown = new Map<StackDirection, string>([
+const STACK_STRINGS_UP_OR_DOWN = new ReadonlyMap<StackDirection, string>([
   [StackDirection.Undecided, ""],
   [StackDirection.Up, "Up"],
   [StackDirection.Down, "Down"],
   [StackDirection.Finished, "Finished"],
 ]);
 
-const stackStringsSudoku = new Map<number, string>([
+const STACK_STRINGS_SUDOKU = new ReadonlyMap<number, string>([
   [0, ""],
   [1, ""],
   [2, "2 cards played"],
@@ -52,8 +53,8 @@ export function onPlayStackDirectionsChanged(
       const isUpOrDown = variantRules.isUpOrDown(globals.variant);
       if (isUpOrDown || suit.reversed) {
         const stackStrings = isUpOrDown
-          ? stackStringsUpOrDown
-          : stackStringsReversed;
+          ? STACK_STRINGS_UP_OR_DOWN
+          : STACK_STRINGS_REVERSED;
         const stackText = stackStrings.get(direction);
         if (stackText === undefined) {
           throw new Error(
@@ -161,7 +162,7 @@ export function onPlayStacksChanged(
 
     if (variantRules.isSudoku(globals.variant)) {
       // Update the 'x cards played' field.
-      const text = stackStringsSudoku.get(stack.length);
+      const text = STACK_STRINGS_SUDOKU.get(stack.length);
       if (text === undefined) {
         throw new Error(
           `Failed to get the stack string for ${stack.length} card(s) played.`,

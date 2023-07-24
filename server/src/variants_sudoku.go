@@ -15,8 +15,10 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 			}
 		}
 		g.StackStarts[c.SuitIndex] = c.Rank
+
 		return false
 	}
+
 	nextRank := g.Stacks[c.SuitIndex]%len(variant.Ranks) + 1
 	failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 	if !failed {
@@ -26,31 +28,31 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 			g.PlayStackDirections[c.SuitIndex] = StackDirectionFinished
 		}
 	}
+
 	return failed
 }
 
+// Calculating maximum scores in Sudoku variants is complicated, since the starting values of the stacks
+// are not predetermined, so we will also have to find the optimum distribution of starting values depending on
+// which cards remain.
+// Suits that have already at least one card played can be easily disregarded and treated similar to the usual
+// variants (except that cards wrap around from 5 to 1), since their maximum progress is independent of the rest
+// For all other suits, we will calculate their maximum score for each possible starting value.
+// Then, we need to find a maximum-weight matching assigning starting values to the suits (where we can of course
+// only pick starting values that are not used already)
+// Since the resulting matchings have size at most 5, it is not worth doing a proper bipartite-matching algorithm
+// here, since most instances will be trivial. Therefore, we will use the following practical approach:
+//  0. Init max_score = 0
+//  1. Filter out suits with known starting value, find out their maximum scores separately, add it to max_score
+//  2. For each suit, calculate {m1, ..., m5} as the maximum score for this suit if we start the suit at 1,...,5
+//  3. Filter out each suit with {m1, ..., m5} = {5,...,5}. For each, add 5 to max_score
+//     Note that OPT = 5 + OPT(subinstance), since we can just assign these suits arbitrarily
+//  4. Solve the remaining subinstance, assigning the remaining suits to the possible starting values with
+//     the computed weight {m1, ..., m5}
+//     We will do this by brute-force, which will be at most 120 possibilities to check, although in actual games,
+//     we will probably never have to do this, since for most of the suits, we should have one copy of each card
+//     or known starting value, in which case they will be filtered out in step 2 or 3 already.
 func variantSudokuGetMaxScore(g *Game) int {
-	// Calculating maximum scores in Sudoku variants is complicated, since the starting values of the stacks
-	// are not predetermined, so we will also have to find the optimum distribution of starting values depending on
-	// which cards remain.
-	// Suits that have already at least one card played can be easily disregarded and treated similar to the usual
-	// variants (except that cards wrap around from 5 to 1), since their maximum progress is independent of the rest
-	// For all other suits, we will calculate their maximum score for each possible starting value.
-	// Then, we need to find a maximum-weight matching assigning starting values to the suits (where we can of course
-	// only pick starting values that are not used already)
-	// Since the resulting matchings have size at most 5, it is not worth doing a proper bipartite-matching algorithm
-	// here, since most instances will be trivial. Therefore, we will use the following practical approach:
-	// 0. Init max_score = 0
-	// 1. Filter out suits with known starting value, find out their maximum scores separately, add it to max_score
-	// 2. For each suit, calculate {m1, ..., m5} as the maximum score for this suit if we start the suit at 1,...,5
-	// 3. Filter out each suit with {m1, ..., m5} = {5,...,5}. For each, add 5 to max_score
-	//   Note that OPT = 5 + OPT(subinstance), since we can just assign these suits arbitrarily
-	// 4. Solve the remaining subinstance, assigning the remaining suits to the possible starting values with
-	// 	 the computed weight {m1, ..., m5}
-	//   We will do this by brute-force, which will be at most 120 possibilities to check, although in actual games,
-	// 	 we will probably never have to do this, since for most of the suits, we should have one copy of each card
-	//   or known starting value, in which case they will be filtered out in step 2 or 3 already.
-
 	independentPartOfMaxScore := 0
 	maxPartialScores := [5][5]int{}
 	unassignedSuits := make([]int, 0)
@@ -144,21 +146,25 @@ func variantSudokuGetMaxScore(g *Game) int {
 // Returns an array indicating for each rank of the specified suit if all copies of it have been discarded
 func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
 	allDiscarded := [5]bool{}
+
 	for rank := 1; rank <= 5; rank++ {
 		total, discarded := g.GetSpecificCardNum(suitIndex, rank)
 		allDiscarded[rank-1] = total == discarded
 	}
+
 	return allDiscarded
 }
 
 // Returns a (sorted) list of the remaining free stack starts of the game
 func variantSudokuGetFreeStackStarts(g *Game) []int {
 	possibleStackStarts := make([]int, 0)
+
 	for possibleStackStart := 1; possibleStackStart <= 5; possibleStackStart++ {
 		if !contains(g.StackStarts, possibleStackStart) {
 			possibleStackStarts = append(possibleStackStarts, possibleStackStart)
 		}
 	}
+
 	return possibleStackStarts
 }
 
@@ -181,14 +187,17 @@ func sudokuWalkUpAll(allDiscarded [5]bool) (bool, [5]int) {
 			lastDead = curVal
 		}
 	}
+
 	// If no value was dead, we did not write anything so far, so we can just return
 	if lastDead == -1 {
 		return true, maxScores
 	}
+
 	// Here, we still need to write all 'higher' values, adding the longest sequence starting at 0
 	for writeVal := lastDead + 1; writeVal < 5; writeVal++ {
 		maxScores[writeVal] = min(maxScores[0]+5-writeVal, 5)
 	}
+
 	return false, maxScores
 }
 
@@ -203,6 +212,7 @@ func variantSudokuCheckAllDead(g *Game) bool {
 		if g.PlayStackDirections[suitIndex] == StackDirectionFinished {
 			continue
 		}
+
 		if stackRank != 0 {
 			// Find the next card up (cyclic)
 			nextRank := stackRank%len(variant.Ranks) + 1
@@ -211,6 +221,7 @@ func variantSudokuCheckAllDead(g *Game) bool {
 			// New stack start only limited by other started stacks
 			possibleNextRanks = possibleStackStarts
 		}
+
 		// Now, just check if there are cards left behind with the desired rank
 		for _, c := range g.Deck {
 			for _, possibleNextRank := range possibleNextRanks {
@@ -224,5 +235,6 @@ func variantSudokuCheckAllDead(g *Game) bool {
 			}
 		}
 	}
+
 	return true
 }

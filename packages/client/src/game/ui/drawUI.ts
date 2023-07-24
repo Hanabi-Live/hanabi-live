@@ -426,6 +426,7 @@ function drawPlayStacks() {
     // Draw the suit name next to each suit (a text description of the suit).
     if (globals.variant.showSuitNames) {
       let text = suit.displayName;
+
       if (
         globals.lobby.settings.colorblindMode &&
         suit.clueColors.length === 2
@@ -435,9 +436,11 @@ function drawPlayStacks() {
           .join("/");
         text += ` [${colorList}]`;
       }
+
       if (variantRules.isUpOrDown(globals.variant)) {
         text = "";
       }
+
       if (variantRules.isSudoku(globals.variant)) {
         // Don't show anything here, the starting values will be written by the state observers
         // updating when the starting value changes.

@@ -4,7 +4,6 @@
 package main
 
 import (
-	// "fmt"
 	"math"
 	"strconv"
 	"time"

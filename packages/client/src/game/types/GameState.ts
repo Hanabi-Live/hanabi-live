@@ -29,7 +29,7 @@ export interface GameState {
 
   /**
    * For Sudoku variants, this denotes the first rank played of this stack. If the stack is not
-   * started yet, then the value stored is UNKNOWN_CARD_RANK.
+   * started yet, then the value stored is `UNKNOWN_CARD_RANK`.
    */
   readonly playStackStarts: readonly number[];
 

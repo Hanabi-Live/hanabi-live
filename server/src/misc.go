@@ -165,6 +165,7 @@ func between(x, minimum, maximum, defaultValue int) int {
 	if x < minimum || x > maximum {
 		return defaultValue
 	}
+
 	return x
 }
 
@@ -175,6 +176,7 @@ func contains(sequence []int, element int) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -219,6 +221,7 @@ func removeNonPrintableCharacters(s string) string {
 			// replacement
 			return -1
 		}
+
 		return r
 	}, s)
 }
@@ -236,9 +239,11 @@ func secondsToDurationString(seconds int) (string, error) {
 	if duration.Minutes() < 1 {
 		seconds := math.Round(duration.Seconds())
 		msg := fmt.Sprintf("%.0f second", seconds)
+
 		if int(seconds) != 1 {
 			msg += "s"
 		}
+
 		return msg, nil
 	}
 
@@ -246,9 +251,11 @@ func secondsToDurationString(seconds int) (string, error) {
 	if duration.Hours() < 1 {
 		minutes := math.Round(duration.Minutes())
 		msg := fmt.Sprintf("%.0f minute", minutes)
+
 		if int(minutes) != 1 {
 			msg += "s"
 		}
+
 		return msg, nil
 	}
 
@@ -311,6 +318,7 @@ func stringInSlice(a string, slice []string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -325,6 +333,7 @@ func sortStringsCaseInsensitive(slice []string) []string {
 func toSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+
 	return strings.ToLower(snake)
 }
 
@@ -440,12 +449,14 @@ func yesNoFromBoolean(option bool) string {
 	if option {
 		return "Yes"
 	}
+
 	return "No"
 }
 
 // Valid Commands are:
-//   !replay [int] [int]
-//   !seed [alphanum and hyphen]
+//
+//	!replay [int] [int]
+//	!seed [alphanum and hyphen]
 func isTableCommandValid(s *Session, d *CommandData, data *SpecialGameData) (bool, string) {
 	if !strings.HasPrefix(d.Name, "!") {
 		return true, ""
