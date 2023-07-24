@@ -1211,13 +1211,11 @@ export function getSudokuVariants(
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  // Create the basic variant.
-  // Note that for sudoku, we only want 5-suit variants, so that each starting stack will be used
-  // exactly once.
-  let numSuits = 5;
-  const variantName = `Sudoku (${numSuits} Suits)`;
+  // Create the basic variant. Note that for sudoku, we only want 5-suit variants, so that each
+  // starting stack will be used exactly once.
+  const numSuits = 5;
   variantDescriptions.push({
-    name: variantName,
+    name: `Sudoku (${numSuits} Suits)`,
     suits: basicVariantSuits[numSuits]!,
     showSuitNames: true,
     showStackStarts: true,

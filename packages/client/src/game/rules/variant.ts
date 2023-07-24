@@ -27,7 +27,7 @@ export const isThrowItInAHole = (variant: Variant): boolean =>
   variant.name.startsWith("Throw It in a Hole");
 
 export const isSudoku = (variant: Variant): boolean =>
-    variant.name.startsWith("Sudoku");
+  variant.name.startsWith("Sudoku");
 
 export const isUpOrDown = (variant: Variant): boolean =>
   isNameUpOrDown(variant.name);

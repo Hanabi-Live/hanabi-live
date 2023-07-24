@@ -1,8 +1,8 @@
 import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
+import { initArray } from "../../utils";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { StackDirection } from "../types/StackDirection";
 import { direction, nextPlayableRanks } from "./playStacks";
-import {initArray} from "../../utils";
 
 const noVariant = getDefaultVariant();
 const upOrDown = getVariant("Up or Down (6 Suits)");
@@ -118,7 +118,13 @@ describe("direction", () => {
 
 describe("nextRanks", () => {
   test("returns [1] for an empty play stack going up in NoVariant", () => {
-    const nextRanksArray = nextPlayableRanks([], StackDirection.Up, defaultStackStarts, noVariant,[]);
+    const nextRanksArray = nextPlayableRanks(
+      [],
+      StackDirection.Up,
+      defaultStackStarts,
+      noVariant,
+      [],
+    );
     expect(nextRanksArray).toStrictEqual([1]);
   });
 
@@ -133,13 +139,25 @@ describe("nextRanks", () => {
         rank: n,
         suitIndex: 0,
       };
-      const nextRanksArray = nextPlayableRanks([0], StackDirection.Up, defaultStackStarts, noVariant, [redCard]);
+      const nextRanksArray = nextPlayableRanks(
+        [0],
+        StackDirection.Up,
+        defaultStackStarts,
+        noVariant,
+        [redCard],
+      );
       expect(nextRanksArray).toStrictEqual([n + 1]);
     },
   );
 
   test("returns [5] for an empty play stack going down", () => {
-    const nextRanksArray = nextPlayableRanks([], StackDirection.Down, defaultReverseStackStarts, noVariant, []);
+    const nextRanksArray = nextPlayableRanks(
+      [],
+      StackDirection.Down,
+      defaultReverseStackStarts,
+      noVariant,
+      [],
+    );
     expect(nextRanksArray).toStrictEqual([5]);
   });
 
@@ -154,25 +172,49 @@ describe("nextRanks", () => {
         rank: n,
         suitIndex: 0,
       };
-      const nextRanksArray = nextPlayableRanks([0], StackDirection.Down, defaultReverseStackStarts, noVariant, [redCard]);
+      const nextRanksArray = nextPlayableRanks(
+        [0],
+        StackDirection.Down,
+        defaultReverseStackStarts,
+        noVariant,
+        [redCard],
+      );
       expect(nextRanksArray).toStrictEqual([n - 1]);
     },
   );
 
   test("returns [] for a finished play stack (with a red 5)", () => {
     const redFive = { ...initialCardState(0, upOrDown), rank: 5, suitIndex: 0 };
-    const nextRanksArray = nextPlayableRanks([0], StackDirection.Finished, defaultStackStarts, noVariant, [redFive]);
+    const nextRanksArray = nextPlayableRanks(
+      [0],
+      StackDirection.Finished,
+      defaultStackStarts,
+      noVariant,
+      [redFive],
+    );
     expect(nextRanksArray).toStrictEqual([]);
   });
 
   test("returns [] for a finished play stack (with a red 1)", () => {
     const redOne = { ...initialCardState(0, upOrDown), rank: 1, suitIndex: 0 };
-    const nextRanksArray = nextPlayableRanks([0], StackDirection.Finished, defaultReverseStackStarts, noVariant, [redOne]);
+    const nextRanksArray = nextPlayableRanks(
+      [0],
+      StackDirection.Finished,
+      defaultReverseStackStarts,
+      noVariant,
+      [redOne],
+    );
     expect(nextRanksArray).toStrictEqual([]);
   });
 
   test("returns [1, 5, START_CARD_RANK] for an empty Up or Down play stack", () => {
-    const nextRanksArray = nextPlayableRanks([], StackDirection.Undecided, defaultStackStarts, upOrDown, []);
+    const nextRanksArray = nextPlayableRanks(
+      [],
+      StackDirection.Undecided,
+      defaultStackStarts,
+      upOrDown,
+      [],
+    );
     expect(nextRanksArray).toStrictEqual([1, 5, START_CARD_RANK]);
   });
 
@@ -182,7 +224,13 @@ describe("nextRanks", () => {
       rank: START_CARD_RANK,
       suitIndex: 0,
     };
-    const nextRanksArray = nextPlayableRanks([0], StackDirection.Undecided, defaultStackStarts,upOrDown, [redStart]);
+    const nextRanksArray = nextPlayableRanks(
+      [0],
+      StackDirection.Undecided,
+      defaultStackStarts,
+      upOrDown,
+      [redStart],
+    );
     expect(nextRanksArray).toStrictEqual([2, 4]);
   });
 });

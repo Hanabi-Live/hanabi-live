@@ -1,4 +1,4 @@
-import {STACK_BASE_RANK, UNKNOWN_CARD_RANK} from "@hanabi/data";
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import equal from "fast-deep-equal";
 import Konva from "konva";
 import * as deck from "../../../rules/deck";
@@ -24,12 +24,12 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
 ]);
 
 const stackStringsSudoku = new Map<number, string>([
-    [0, ""],
-    [1, ""],
-    [2, "2 cards played"],
-    [3, "3 cards played"],
-    [4, "4 cards played"],
-    [5, "Finished"],
+  [0, ""],
+  [1, ""],
+  [2, "2 cards played"],
+  [3, "3 cards played"],
+  [4, "4 cards played"],
+  [5, "Finished"],
 ]);
 
 export function onPlayStackDirectionsChanged(
@@ -41,8 +41,8 @@ export function onPlayStackDirectionsChanged(
     // variants).
     directions.forEach((direction, i) => {
       if (
-          previousDirections !== undefined &&
-          direction === previousDirections[i]
+        previousDirections !== undefined &&
+        direction === previousDirections[i]
       ) {
         return;
       }
@@ -52,12 +52,12 @@ export function onPlayStackDirectionsChanged(
       const isUpOrDown = variantRules.isUpOrDown(globals.variant);
       if (isUpOrDown || suit.reversed) {
         const stackStrings = isUpOrDown
-            ? stackStringsUpOrDown
-            : stackStringsReversed;
+          ? stackStringsUpOrDown
+          : stackStringsReversed;
         const stackText = stackStrings.get(direction);
         if (stackText === undefined) {
           throw new Error(
-              `Failed to find the stack string for the stack direction of: ${direction}`,
+            `Failed to find the stack string for the stack direction of: ${direction}`,
           );
         }
         text = stackText;
@@ -66,25 +66,28 @@ export function onPlayStackDirectionsChanged(
       globals.elements.suitLabelTexts[i]!.fitText(text);
 
       globals.deck
-          .filter((c) => c.visibleSuitIndex === i)
-          .forEach((c) => {
-            c.setDirectionArrow(i, direction);
-          });
+        .filter((c) => c.visibleSuitIndex === i)
+        .forEach((c) => {
+          c.setDirectionArrow(i, direction);
+        });
     });
     globals.layers.UI.batchDraw();
   }
 }
 
 export function onPlayStackStartsChanged(
-    stackStarts: readonly number[],
-    previousStackStarts: readonly number[] | undefined,
+  stackStarts: readonly number[],
+  previousStackStarts: readonly number[] | undefined,
 ): void {
   if (!variantRules.isSudoku(globals.variant)) {
     return;
   }
 
   stackStarts.forEach((stackStart, i) => {
-    if (previousStackStarts !== undefined && previousStackStarts[i] === stackStart) {
+    if (
+      previousStackStarts !== undefined &&
+      previousStackStarts[i] === stackStart
+    ) {
       return;
     }
     let text = "";
@@ -156,11 +159,13 @@ export function onPlayStacksChanged(
       playStack.hideCardsUnderneathTheTopCard();
     }
 
-    if(variantRules.isSudoku(globals.variant)) {
+    if (variantRules.isSudoku(globals.variant)) {
       // Update the 'x cards played' field.
       const text = stackStringsSudoku.get(stack.length);
       if (text === undefined) {
-        throw new Error(`Failed to get the stack string for ${stack.length} card(s) played.`);
+        throw new Error(
+          `Failed to get the stack string for ${stack.length} card(s) played.`,
+        );
       }
       globals.elements.suitLabelTexts[i]!.fitText(text);
     }

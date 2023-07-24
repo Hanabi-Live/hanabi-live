@@ -22,12 +22,12 @@ export function lastPlayedRank(
 }
 
 export function nextPlayableRanks(
-    playStack: readonly number[],
-    playStackDirection: StackDirection,
-    playStackStarts: readonly number[],
-    variant: Variant,
-    deck: readonly CardState[]): number[] {
-
+  playStack: readonly number[],
+  playStackDirection: StackDirection,
+  playStackStarts: readonly number[],
+  variant: Variant,
+  deck: readonly CardState[],
+): number[] {
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
   if (currentlyPlayedRank === UNKNOWN_CARD_RANK) {
     return [];
@@ -58,10 +58,10 @@ export function nextPlayableRanks(
       // can be started with any rank that is not the starting rank of another stack yet.
       if (currentlyPlayedRank !== STACK_BASE_RANK) {
         // Note that we first mod by 5 and then add, to obtain values 1,...,5.
-        return [currentlyPlayedRank % 5 + 1];
+        return [(currentlyPlayedRank % 5) + 1];
       }
-      return DEFAULT_CARD_RANKS.filter((rank) =>
-          !playStackStarts.includes(rank)
+      return DEFAULT_CARD_RANKS.filter(
+        (rank) => !playStackStarts.includes(rank),
       );
     }
 
@@ -123,11 +123,11 @@ export function direction(
 }
 
 export function stackStart(
-    playStack: readonly number[],
-    deck: readonly CardState[],
-    variant: Variant,
+  playStack: readonly number[],
+  deck: readonly CardState[],
+  variant: Variant,
 ): number {
-  if(!variantRules.isSudoku(variant)) {
+  if (!variantRules.isSudoku(variant)) {
     return 1;
   }
   if (playStack.length === 0) {
@@ -138,16 +138,16 @@ export function stackStart(
 }
 
 export function fillInRemainingStackStartIfUnique(
-    playStackStarts: number[],
+  playStackStarts: number[],
 ): number[] {
   let sumStarts = 0;
   let numDeterminedStarts = 0;
   let undeterminedStack: number;
-  for(let i = 0; i < playStackStarts.length; i++) {
+  for (let i = 0; i < playStackStarts.length; i++) {
     if (playStackStarts[i] !== UNKNOWN_CARD_RANK) {
       sumStarts += playStackStarts[i]!;
       numDeterminedStarts++;
-      continue
+      continue;
     }
     undeterminedStack = i;
   }

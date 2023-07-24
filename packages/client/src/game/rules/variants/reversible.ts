@@ -4,10 +4,10 @@
 import { DEFAULT_CARD_RANKS, START_CARD_RANK, Variant } from "@hanabi/data";
 import { CardState } from "../../types/CardState";
 import { StackDirection } from "../../types/StackDirection";
-import { discardedHelpers, createAllDiscardedMap } from "./discardHelpers";
 import * as deckRules from "../deck";
 import * as playStacksRules from "../playStacks";
 import * as variantRules from "../variant";
+import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -279,4 +279,3 @@ export function isCritical(
   // Default case: all other ranks
   return true;
 }
-

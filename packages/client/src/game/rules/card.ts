@@ -66,11 +66,11 @@ export function needsToBePlayed(
   // cards, even though lower ones are dead due to the ability to start stacks anywhere.
   if (variantRules.isSudoku(variant)) {
     return sudokuRules.sudokuCanStillBePlayed(
-        suitIndex,
-        rank,
-        deck,
-        playStackStarts,
-        variant
+      suitIndex,
+      rank,
+      deck,
+      playStackStarts,
+      variant,
     );
   }
 
@@ -161,11 +161,11 @@ export function isPotentiallyPlayable(
 ): boolean {
   for (const [suitIndex, rank] of card.possibleCards) {
     const nextRanksArray = playStacksRules.nextPlayableRanks(
-        playStacks[suitIndex]!,
-        playStackDirections[suitIndex]!,
-        playStackStarts,
-        variant,
-        deck
+      playStacks[suitIndex]!,
+      playStackDirections[suitIndex]!,
+      playStackStarts,
+      variant,
+      deck,
     );
     if (nextRanksArray.includes(rank)) {
       return true;

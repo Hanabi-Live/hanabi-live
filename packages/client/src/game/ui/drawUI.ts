@@ -279,27 +279,27 @@ function drawActionLog() {
 }
 
 interface PlayStackValues {
-  x: number,
-  y: number,
-  w: number,
-  spacing: number
+  x: number;
+  y: number;
+  w: number;
+  spacing: number;
 }
 
 function createLabelTextBelowStack(
-    winHeight: number,
-    winWidth: number,
-    stackCardWidth: number,
-    text: string,
-    playStackValues: PlayStackValues,
-    index: number,
-    row: number
+  winHeight: number,
+  winWidth: number,
+  stackCardWidth: number,
+  text: string,
+  playStackValues: PlayStackValues,
+  index: number,
+  row: number,
 ) {
   return new FitText({
     x:
-        (playStackValues.x -
-            0.01 +
-            (stackCardWidth + playStackValues.spacing) * index) *
-        winWidth,
+      (playStackValues.x -
+        0.01 +
+        (stackCardWidth + playStackValues.spacing) * index) *
+      winWidth,
     y: (playStackValues.y + 0.155) * winHeight + row * 0.02 * winHeight,
     width: 0.08 * winWidth,
     height: 0.051 * winHeight,
@@ -311,7 +311,6 @@ function createLabelTextBelowStack(
     listening: false,
   });
 }
-
 
 function drawPlayStacks() {
   let yOffset: number;
@@ -451,17 +450,35 @@ function drawPlayStacks() {
       if (!globals.variant.showStackStarts) {
         // If we don't have a second UI row (for the stack starts), this is placed directly below.
         suitLabelText = createLabelTextBelowStack(
-            winH, winW, cardWidth, text, playStackValues, i, 0
+          winH,
+          winW,
+          cardWidth,
+          text,
+          playStackValues,
+          i,
+          0,
         );
       } else {
         // If we have two UI rows, then the suit names / stack directions will be the second row.
         suitLabelText = createLabelTextBelowStack(
-            winH, winW, cardWidth, text, playStackValues, i, 1
+          winH,
+          winW,
+          cardWidth,
+          text,
+          playStackValues,
+          i,
+          1,
         );
 
         // The first row now consists of the stack starts.
         const stackStartText = createLabelTextBelowStack(
-            winH, winW, cardWidth, "", playStackValues, i, 0
+          winH,
+          winW,
+          cardWidth,
+          "",
+          playStackValues,
+          i,
+          0,
         );
         globals.layers.UI.add(stackStartText);
         globals.elements.suitLabelStackStartTexts.push(stackStartText);
