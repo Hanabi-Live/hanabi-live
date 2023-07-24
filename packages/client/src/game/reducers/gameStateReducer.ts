@@ -21,7 +21,7 @@ import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
 import { statsReducer } from "./statsReducer";
 import { turnReducer } from "./turnReducer";
-import { fillinRemainingStackStartIfUnique } from "../rules/playStacks";
+import { fillInRemainingStackStartIfUnique } from "../rules/playStacks";
 
 export const gameStateReducer = produce(
   gameStateReducerFunction,
@@ -348,7 +348,7 @@ function gameStateReducerFunction(
         variant,
     );
     const playStackStarts = state.playStackStarts;
-    state.playStackStarts = fillinRemainingStackStartIfUnique(playStackStarts);
+    state.playStackStarts = fillInRemainingStackStartIfUnique(playStackStarts);
   }
 
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can

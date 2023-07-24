@@ -3,7 +3,7 @@
 
 package main
 
-// variantSudokuPlay trys to play the specified card, assuming that the variant is a Sudoku variant
+// variantSudokuPlay tries to play the specified card, assuming that the variant is a Sudoku variant
 // If success and this is the last card of the stack, the stack direction and the stack starts are updated accordingly
 // Returns if the card misplayed
 func variantSudokuPlay(g *Game, c *Card) bool {
@@ -75,13 +75,13 @@ func variantSudokuGetMaxScore(g *Game) int {
 
 	// At each entry of execution of the loop
 	// - 'curAssignment' denotes a legal partial assignment of the unassignedSuits to the possible stack starts,
-	//   where an assigment of -1 denotes 'no assignment'
+	//   where an assignment of -1 denotes 'no assignment'
 	// - 'assigned' always denotes, for each of the stack starts, whether they are currently assigned to by some suit
 	// - localSuitIndex tracks the (local: referring to unassignedSuits array) index of the suit whose assignment we
 	//   will increment in the current iteration. In total, we choose lexicographic order here, so after incrementing
 	//   some index, we will always increment the higher ones after
 	// In each iteration, we will then increase the assignment of the localSuitIndex (if possible). If this is possible,
-	// we evaluate the assigment if this was the lowest recursion level, otherwise we reset higher assignment and
+	// we evaluate the assignment if this was the lowest recursion level, otherwise we reset higher assignment and
 	// recurse one level deeper. If this is not possible, then we decrease the localSuitIndex to increase the assignment
 	// of a lower index.
 	// Note that the loop naturally terminates when we cannot increase index 0 anymore, as then we would like to
@@ -122,11 +122,11 @@ func variantSudokuGetMaxScore(g *Game) int {
 			}
 			if localSuitIndex < len(unassignedSuits)-1 {
 				// reset all assignments of the higher-indexed suits
-				for higherlocalSuitIndex := localSuitIndex + 1; higherlocalSuitIndex < len(unassignedSuits); higherlocalSuitIndex++ {
-					if curAssignment[higherlocalSuitIndex] != unassigned {
-						assigned[curAssignment[higherlocalSuitIndex]] = false
+				for higherLocalSuitIndex := localSuitIndex + 1; higherLocalSuitIndex < len(unassignedSuits); higherLocalSuitIndex++ {
+					if curAssignment[higherLocalSuitIndex] != unassigned {
+						assigned[curAssignment[higherLocalSuitIndex]] = false
 					}
-					curAssignment[higherlocalSuitIndex] = unassigned
+					curAssignment[higherLocalSuitIndex] = unassigned
 				}
 				localSuitIndex++
 			}

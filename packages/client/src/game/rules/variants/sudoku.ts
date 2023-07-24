@@ -50,7 +50,7 @@ export function sudokuCanStillBePlayed(
 
 /**
  * For Sudoku variants, given a boolean map for which ranks (of the default ranks 1,...,5) are all discarded,
- * returns an aray for these ranks of the longest play sequences starting at these maps (indexed 0,...,4),
+ * returns an array for these ranks of the longest play sequences starting at these maps (indexed 0,...,4),
  * and a boolean stating whether all ranks are still available, i.e. whether the returned array is [5,5,5,5,5]
  * @param allDiscardedMap
  *
@@ -112,7 +112,7 @@ function sudokuGetFreeStackStarts(
  * since the distribution of playable cards to the stacks matters for how many clues we can get back before the extra
  * round starts), we will find an optimum solution (in terms of score) such that the distribution of the played cards
  * to the stacks is lexicographically minimal (after sorting the values) as well, since this allows for the most amount
- * of clues to be gotten back before the extraround.
+ * of clues to be gotten back before the extra-round.
  *
  */
 export function getMaxScorePerStack(
@@ -194,7 +194,7 @@ export function getMaxScorePerStack(
                     bestAssignment = assignment;
                     bestAssignmentSorted = assignmentSorted
                 } else if (assignment_val == bestAssignmentSum) {
-                    // If the values are the same, we want to update if the assigment is lexicographically smaller
+                    // If the values are the same, we want to update if the assignment is lexicographically smaller
                     for (let i = 0; i < assignmentSorted.length; i++) {
                         if (assignmentSorted[i]! < bestAssignmentSorted[i]!) {
                             bestAssignment = assignment;
@@ -219,7 +219,7 @@ export function getMaxScorePerStack(
         }
     }
 
-    // Now, we just need to put the found assignment together with the independ parts found already
+    // Now, we just need to put the found assignment together with the independent parts found already
     let maxScorePerStack = independentPartOfMaxScore;
     unassignedSuits.forEach((unassignedSuit, localSuitIndex) => {
         // Note the ?? here, since it can be that there is actually no feasible assignment, in which case these values

@@ -150,7 +150,7 @@ export function stackStart(
   }
 }
 
-export function fillinRemainingStackStartIfUnique(
+export function fillInRemainingStackStartIfUnique(
     playStackStarts: number[],
 ): number[] {
   let sumStarts = 0;
