@@ -1,4 +1,4 @@
-import {DEFAULT_CARD_RANKS, START_CARD_RANK, UNKNOWN_CARD_RANK, Variant} from "@hanabi/data";
+import {DEFAULT_CARD_RANKS, DEFAULT_CLUE_RANKS, START_CARD_RANK, UNKNOWN_CARD_RANK, Variant} from "@hanabi/data";
 import { CardState } from "../../types/CardState";
 import * as deckRules from "../deck";
 import * as playStacksRules from "../playStacks";
@@ -41,7 +41,7 @@ export function sudokuCanStillBePlayed(
         // Here, we check if we can play the specified card if we start the stack at 'stackStart'
         // For this, note that we can compare the difference of our card and the start with the longest play sequence
         // starting at the start, thereby checking if the specified rank is included
-        if(maxScoresFromStarts[stackStart]! > (rank - stackStart + 5) % 5) {
+        if(maxScoresFromStarts[stackStart-1]! > (rank - stackStart + 5) % 5) {
             return true;
         }
     }
