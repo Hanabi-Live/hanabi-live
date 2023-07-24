@@ -100,6 +100,7 @@ export function send(hypoAction: ClientAction): void {
       let newType = type;
       if (type === "play") {
         const nextRanks = playStacksRules.nextPlayableRanks(
+          suitIndex,
           gameState.playStacks[suitIndex]!,
           gameState.playStackDirections[suitIndex]!,
           gameState.playStackStarts,

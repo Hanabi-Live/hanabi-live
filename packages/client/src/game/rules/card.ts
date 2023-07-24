@@ -161,6 +161,7 @@ export function isPotentiallyPlayable(
 ): boolean {
   for (const [suitIndex, rank] of card.possibleCards) {
     const nextRanksArray = playStacksRules.nextPlayableRanks(
+      suitIndex,
       playStacks[suitIndex]!,
       playStackDirections[suitIndex]!,
       playStackStarts,

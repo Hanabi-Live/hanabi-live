@@ -119,6 +119,7 @@ describe("direction", () => {
 describe("nextRanks", () => {
   test("returns [1] for an empty play stack going up in No Variant", () => {
     const nextRanksArray = nextPlayableRanks(
+        0,
       [],
       StackDirection.Up,
       defaultStackStarts,
@@ -140,6 +141,7 @@ describe("nextRanks", () => {
         suitIndex: 0,
       };
       const nextRanksArray = nextPlayableRanks(
+          0,
         [0],
         StackDirection.Up,
         defaultStackStarts,
@@ -152,6 +154,7 @@ describe("nextRanks", () => {
 
   test("returns [5] for an empty play stack going down", () => {
     const nextRanksArray = nextPlayableRanks(
+        0,
       [],
       StackDirection.Down,
       defaultReverseStackStarts,
@@ -173,6 +176,7 @@ describe("nextRanks", () => {
         suitIndex: 0,
       };
       const nextRanksArray = nextPlayableRanks(
+          0,
         [0],
         StackDirection.Down,
         defaultReverseStackStarts,
@@ -186,6 +190,7 @@ describe("nextRanks", () => {
   test("returns [] for a finished play stack (with a red 5)", () => {
     const redFive = { ...initialCardState(0, upOrDown), rank: 5, suitIndex: 0 };
     const nextRanksArray = nextPlayableRanks(
+        0,
       [0],
       StackDirection.Finished,
       defaultStackStarts,
@@ -198,6 +203,7 @@ describe("nextRanks", () => {
   test("returns [] for a finished play stack (with a red 1)", () => {
     const redOne = { ...initialCardState(0, upOrDown), rank: 1, suitIndex: 0 };
     const nextRanksArray = nextPlayableRanks(
+        0,
       [0],
       StackDirection.Finished,
       defaultReverseStackStarts,
@@ -209,6 +215,7 @@ describe("nextRanks", () => {
 
   test("returns [1, 5, START_CARD_RANK] for an empty Up or Down play stack", () => {
     const nextRanksArray = nextPlayableRanks(
+        0,
       [],
       StackDirection.Undecided,
       defaultStackStarts,
@@ -225,6 +232,7 @@ describe("nextRanks", () => {
       suitIndex: 0,
     };
     const nextRanksArray = nextPlayableRanks(
+        0,
       [0],
       StackDirection.Undecided,
       defaultStackStarts,

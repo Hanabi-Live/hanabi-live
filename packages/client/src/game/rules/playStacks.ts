@@ -22,6 +22,7 @@ export function lastPlayedRank(
 }
 
 export function nextPlayableRanks(
+  suitIndex: number,
   playStack: readonly number[],
   playStackDirection: StackDirection,
   playStackStarts: readonly number[],
@@ -60,6 +61,12 @@ export function nextPlayableRanks(
       if (currentlyPlayedRank !== STACK_BASE_RANK) {
         // Note that we first mod by 5 and then add, to obtain values 1 through 5.
         return [(currentlyPlayedRank % 5) + 1];
+      }
+      // As a special case, we might already know the start of the play stack, even when no cards
+      // have been played when this is the last suit. In that case, only the (known) stack start
+      // can be played.
+      if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
+        return [playStackStarts[suitIndex]!];
       }
       return DEFAULT_CARD_RANKS.filter(
         (rank) => !playStackStarts.includes(rank),
