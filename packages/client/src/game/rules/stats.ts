@@ -22,6 +22,7 @@ export function getMaxScorePerStack(
   if (variantRules.isSudoku(variant)) {
     return sudokuRules.getMaxScorePerStack(deck, playStackStarts, variant);
   }
+
   // This handles the maximum scores in Reversed or "Up Or Down" variants.
   return reversibleRules.getMaxScorePerStack(
     deck,
