@@ -101,6 +101,7 @@ function statsReducerFunction(
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
+    currentState.playStackStarts,
     playing,
     shadowing,
     stats.maxScore,
@@ -111,6 +112,7 @@ function statsReducerFunction(
       currentState.deck,
       currentState.playStacks,
       currentState.playStackDirections,
+      currentState.playStackStarts,
       variant,
       ourNotes,
     );

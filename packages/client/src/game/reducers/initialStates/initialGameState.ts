@@ -51,6 +51,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
         [],
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
       );
     });

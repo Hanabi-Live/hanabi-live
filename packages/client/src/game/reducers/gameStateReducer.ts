@@ -365,6 +365,7 @@ function gameStateReducerFunction(
         state.deck,
         state.playStacks,
         state.playStackDirections,
+        state.playStackStarts,
         variant,
       );
     });
@@ -400,6 +401,7 @@ function gameStateReducerFunction(
       state.deck,
       state.playStacks,
       state.playStackDirections,
+      state.playStackStarts,
       variant,
     ),
   );

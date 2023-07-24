@@ -141,6 +141,7 @@ export function cardsGotten(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   playing: boolean,
   shadowing: boolean,
   maxScore: number,
@@ -168,6 +169,7 @@ export function cardsGotten(
         deck,
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
         false,
       )
@@ -189,6 +191,7 @@ export function cardsGottenByNotes(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
   notes: CardNote[],
 ): number {
@@ -202,6 +205,7 @@ export function cardsGottenByNotes(
         deck,
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
         false,
       )
@@ -434,6 +438,7 @@ export function doubleDiscard(
     state.deck,
     state.playStacks,
     state.playStackDirections,
+    state.playStackStarts,
     variant,
   );
   if (!needsToBePlayed) {

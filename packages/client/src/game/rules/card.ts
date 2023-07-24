@@ -6,6 +6,7 @@ import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
+import * as sudokuRules from "./variants/sudoku";
 
 export function name(
   suitIndex: number,
@@ -41,9 +42,9 @@ export function needsToBePlayed(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): boolean {
-  // TODO Sudoku: update this
   // First, check to see if a copy of this card has already been played.
   if (playStacks[suitIndex]!.some((order) => deck[order]!.rank === rank)) {
     return false;
@@ -59,6 +60,17 @@ export function needsToBePlayed(
       playStackDirections,
       variant,
     );
+  } else if (variantRules.isSudoku(variant)) {
+      // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked cards
+      // even though lower ones are dead due to the ability to start stacks anywhere
+      return sudokuRules.sudokuCanStillBePlayed(
+          suitIndex,
+          rank,
+          deck,
+          playStacks,
+          playStackStarts,
+          variant
+      );
   }
 
   const total = (s: number, r: number) =>
@@ -87,6 +99,7 @@ export function status(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): CardStatus {
   const cardNeedsToBePlayed = needsToBePlayed(
@@ -95,6 +108,7 @@ export function status(
     deck,
     playStacks,
     playStackDirections,
+    playStackStarts,
     variant,
   );
 
@@ -195,6 +209,7 @@ export function allPossibilitiesTrash(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
   empathy: boolean,
 ): boolean {
@@ -206,6 +221,7 @@ export function allPossibilitiesTrash(
       deck,
       playStacks,
       playStackDirections,
+      playStackStarts,
       variant,
     );
   }
@@ -221,6 +237,7 @@ export function allPossibilitiesTrash(
       deck,
       playStacks,
       playStackDirections,
+      playStackStarts,
       variant,
     ),
   );
