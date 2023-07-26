@@ -1,4 +1,4 @@
-import { getVariant, MAX_CLUE_NUM } from "@hanabi/data";
+import { getVariant, MAX_CLUE_NUM, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import { initArray } from "../../../utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
@@ -39,6 +39,10 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
   const playStacks: number[][] = initArray(variant.suits.length, []);
   const discardStacks: number[][] = initArray(variant.suits.length, []);
+  const playStackStarts: number[] = initArray(
+    variant.suits.length,
+    UNKNOWN_CARD_RANK,
+  );
 
   const cardStatus: CardStatus[][] = [];
   variant.suits.forEach((_, suitIndex) => {
@@ -50,6 +54,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
         [],
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
       );
     });
@@ -90,6 +95,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     hands,
     playStacks,
     playStackDirections,
+    playStackStarts,
     hole: [],
     discardStacks,
     clues: [],

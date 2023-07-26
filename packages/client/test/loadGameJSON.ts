@@ -125,9 +125,12 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           );
         }
 
-        const nextRanks = playStacksRules.nextRanks(
+        const nextRanks = playStacksRules.nextPlayableRanks(
+          jsonCard.suitIndex,
           s.playStacks[jsonCard.suitIndex]!,
           s.playStackDirections[jsonCard.suitIndex]!,
+          s.playStackStarts,
+          variant,
           s.deck,
         );
         if (!nextRanks.includes(jsonCard.rank)) {

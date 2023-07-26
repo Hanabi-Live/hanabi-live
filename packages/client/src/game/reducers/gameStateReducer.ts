@@ -8,6 +8,7 @@ import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as playStacksRules from "../rules/playStacks";
+import { fillInRemainingStackStartIfUnique } from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
 import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
@@ -325,7 +326,10 @@ function gameStateReducerFunction(
   );
 
   // Resolve the stack direction.
-  if (action.type === "play" && variantRules.hasReversedSuits(variant)) {
+  if (
+    action.type === "play" &&
+    (variantRules.hasReversedSuits(variant) || variantRules.isSudoku(variant))
+  ) {
     // We have to wait until the deck is updated with the information of the card that we played
     // before the "direction()" function will work.
     const playStack = state.playStacks[action.suitIndex]!;
@@ -336,6 +340,18 @@ function gameStateReducerFunction(
       variant,
     );
     state.playStackDirections[action.suitIndex] = direction;
+  }
+
+  // In Sudoku variants, resolve the stack starting value.
+  if (action.type === "play" && variantRules.isSudoku(variant)) {
+    const playStack = state.playStacks[action.suitIndex]!;
+    state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
+      playStack,
+      state.deck,
+      variant,
+    );
+    const { playStackStarts } = state;
+    state.playStackStarts = fillInRemainingStackStartIfUnique(playStackStarts);
   }
 
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can
@@ -352,6 +368,7 @@ function gameStateReducerFunction(
         state.deck,
         state.playStacks,
         state.playStackDirections,
+        state.playStackStarts,
         variant,
       );
     });
@@ -387,6 +404,7 @@ function gameStateReducerFunction(
       state.deck,
       state.playStacks,
       state.playStackDirections,
+      state.playStackStarts,
       variant,
     ),
   );

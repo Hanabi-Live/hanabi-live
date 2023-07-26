@@ -35,6 +35,11 @@ export function numCopiesOfCard(
     return 1;
   }
 
+  if (variantRules.isSudoku(variant)) {
+    // Sudoku always has 2 cards.
+    return 2;
+  }
+
   if (rank === 1) {
     if (variantRules.isUpOrDown(variant) || suit.reversed) {
       return 1;

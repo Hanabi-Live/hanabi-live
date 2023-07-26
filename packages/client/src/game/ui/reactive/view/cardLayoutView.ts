@@ -1,5 +1,6 @@
-import { STACK_BASE_RANK } from "@hanabi/data";
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import equal from "fast-deep-equal";
+import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as deck from "../../../rules/deck";
 import * as variantRules from "../../../rules/variant";
@@ -9,63 +10,93 @@ import { HanabiCard } from "../../HanabiCard";
 import { LayoutChild } from "../../LayoutChild";
 import { updateCardVisuals } from "./cardsView";
 
-const stackStringsReversed = new Map<StackDirection, string>([
+const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([
   [StackDirection.Undecided, ""],
   [StackDirection.Up, ""],
   [StackDirection.Down, "Reversed"],
   [StackDirection.Finished, "Reversed"],
 ]);
 
-const stackStringsUpOrDown = new Map<StackDirection, string>([
+const STACK_STRINGS_UP_OR_DOWN = new ReadonlyMap<StackDirection, string>([
   [StackDirection.Undecided, ""],
   [StackDirection.Up, "Up"],
   [StackDirection.Down, "Down"],
   [StackDirection.Finished, "Finished"],
 ]);
 
+const STACK_STRINGS_SUDOKU = new ReadonlyMap<number, string>([
+  [0, ""],
+  [1, ""],
+  [2, "2 cards played"],
+  [3, "3 cards played"],
+  [4, "4 cards played"],
+  [5, "Finished"],
+]);
+
 export function onPlayStackDirectionsChanged(
   directions: readonly StackDirection[],
   previousDirections: readonly StackDirection[] | undefined,
 ): void {
-  if (!variantRules.hasReversedSuits(globals.variant)) {
+  if (variantRules.hasReversedSuits(globals.variant)) {
+    // Update the stack directions (which are only used in the "Up or Down" and "Reversed"
+    // variants).
+    directions.forEach((direction, i) => {
+      if (
+        previousDirections !== undefined &&
+        direction === previousDirections[i]
+      ) {
+        return;
+      }
+
+      const suit = globals.variant.suits[i]!;
+      let text = "";
+      const isUpOrDown = variantRules.isUpOrDown(globals.variant);
+      if (isUpOrDown || suit.reversed) {
+        const stackStrings = isUpOrDown
+          ? STACK_STRINGS_UP_OR_DOWN
+          : STACK_STRINGS_REVERSED;
+        const stackText = stackStrings.get(direction);
+        if (stackText === undefined) {
+          throw new Error(
+            `Failed to find the stack string for the stack direction of: ${direction}`,
+          );
+        }
+        text = stackText;
+      }
+
+      globals.elements.suitLabelTexts[i]!.fitText(text);
+
+      globals.deck
+        .filter((c) => c.visibleSuitIndex === i)
+        .forEach((c) => {
+          c.setDirectionArrow(i, direction);
+        });
+    });
+    globals.layers.UI.batchDraw();
+  }
+}
+
+export function onPlayStackStartsChanged(
+  stackStarts: readonly number[],
+  previousStackStarts: readonly number[] | undefined,
+): void {
+  if (!variantRules.isSudoku(globals.variant)) {
     return;
   }
 
-  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
-  directions.forEach((direction, i) => {
+  stackStarts.forEach((stackStart, i) => {
     if (
-      previousDirections !== undefined &&
-      direction === previousDirections[i]
+      previousStackStarts !== undefined &&
+      previousStackStarts[i] === stackStart
     ) {
       return;
     }
-
-    const suit = globals.variant.suits[i]!;
     let text = "";
-    const isUpOrDown = variantRules.isUpOrDown(globals.variant);
-    if (isUpOrDown || suit.reversed) {
-      const stackStrings = isUpOrDown
-        ? stackStringsUpOrDown
-        : stackStringsReversed;
-      const stackText = stackStrings.get(direction);
-      if (stackText === undefined) {
-        throw new Error(
-          `Failed to find the stack string for the stack direction of: ${direction}`,
-        );
-      }
-      text = stackText;
+    if (stackStart !== UNKNOWN_CARD_RANK) {
+      text = `Starts at ${stackStart}`;
     }
-
-    globals.elements.suitLabelTexts[i]!.fitText(text);
-
-    globals.deck
-      .filter((c) => c.visibleSuitIndex === i)
-      .forEach((c) => {
-        c.setDirectionArrow(i, direction);
-      });
+    globals.elements.suitLabelStackStartTexts[i]!.fitText(text);
   });
-
-  globals.layers.UI.batchDraw();
 }
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
@@ -127,6 +158,20 @@ export function onPlayStacksChanged(
       const suit = globals.variant.suits[i]!;
       const playStack = globals.elements.playStacks.get(suit)!;
       playStack.hideCardsUnderneathTheTopCard();
+    }
+
+    if (
+      variantRules.isSudoku(globals.variant) &&
+      !(globals.lobby.settings.keldonMode && globals.options.numPlayers > 2)
+    ) {
+      // Update the 'x cards played' field.
+      const text = STACK_STRINGS_SUDOKU.get(stack.length);
+      if (text === undefined) {
+        throw new Error(
+          `Failed to get the stack string for ${stack.length} card(s) played.`,
+        );
+      }
+      globals.elements.suitLabelTexts[i]!.fitText(text);
     }
   });
 

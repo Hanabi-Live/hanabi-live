@@ -119,7 +119,9 @@ func (p *GamePlayer) PlayCard(c *Card) {
 
 	// Find out if this successfully plays
 	var failed bool
-	if variant.HasReversedSuits() {
+	if variant.IsSudoku() {
+		failed = variantSudokuPlay(g, c)
+	} else if variant.HasReversedSuits() {
 		// In the "Up or Down" and "Reversed" variants, cards might not play in order
 		failed = variantReversiblePlay(g, c)
 	} else {
@@ -173,6 +175,8 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	if variant.HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
 			g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
+	} else if variant.IsSudoku() {
+		extraClue = g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 	}
 
 	if extraClue {

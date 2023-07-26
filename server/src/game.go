@@ -39,6 +39,7 @@ type Game struct {
 	CardIdentities      []*CardIdentity // A bare-bones version of the deck
 	DeckIndex           int
 	Stacks              []int
+	StackStarts         []int // For sudoku variants, the first card in the stack, 0 if the stack is empty so far
 	PlayStackDirections []int // The values for this are listed in "constants.go"
 	Turn                int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	DatetimeTurnBegin   time.Time
@@ -102,6 +103,7 @@ func NewGame(t *Table) *Game {
 		CardIdentities:        make([]*CardIdentity, 0),
 		DeckIndex:             0,
 		Stacks:                make([]int, len(variant.Suits)),
+		StackStarts:           make([]int, len(variant.Suits)),
 		PlayStackDirections:   make([]int, len(variant.Suits)),
 		Turn:                  0,
 		DatetimeTurnBegin:     time.Now(),
@@ -304,6 +306,10 @@ func (g *Game) CheckEnd() bool {
 		if !variantReversibleCheckAllDead(g) {
 			return false
 		}
+	} else if variant.IsSudoku() {
+		if !variantSudokuCheckAllDead(g) {
+			return false
+		}
 	} else {
 		for i, stackLen := range g.Stacks {
 			// Search through the deck
@@ -370,9 +376,11 @@ func (g *Game) GetMaxScore() int {
 	variant := variants[g.Options.VariantName]
 
 	// Getting the maximum score is much more complicated if we are playing a
-	// "Reversed" or "Up or Down" variant
+	// "Reversed", "Up or Down" or "Sudoku" variant
 	if variant.HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
+	} else if variant.IsSudoku() {
+		return variantSudokuGetMaxScore(g)
 	}
 
 	maxScore := 0

@@ -14810,5 +14810,12 @@
     "name": "Matryoshka & Dark Prism (5 Suits)",
     "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Prism"],
     "showSuitNames": true
+  },
+  {
+    "id": 2072,
+    "name": "Sudoku (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
+    "showSuitNames": true,
+    "showStackStarts": true
   }
 ]

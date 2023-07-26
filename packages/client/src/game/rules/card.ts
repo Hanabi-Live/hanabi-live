@@ -6,6 +6,7 @@ import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
+import * as sudokuRules from "./variants/sudoku";
 
 export function name(
   suitIndex: number,
@@ -41,6 +42,7 @@ export function needsToBePlayed(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): boolean {
   // First, check to see if a copy of this card has already been played.
@@ -56,6 +58,18 @@ export function needsToBePlayed(
       deck,
       playStacks,
       playStackDirections,
+      variant,
+    );
+  }
+
+  // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked
+  // cards, even though lower ones are dead due to the ability to start stacks anywhere.
+  if (variantRules.isSudoku(variant)) {
+    return sudokuRules.sudokuCanStillBePlayed(
+      suitIndex,
+      rank,
+      deck,
+      playStackStarts,
       variant,
     );
   }
@@ -86,6 +100,7 @@ export function status(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): CardStatus {
   const cardNeedsToBePlayed = needsToBePlayed(
@@ -94,6 +109,7 @@ export function status(
     deck,
     playStacks,
     playStackDirections,
+    playStackStarts,
     variant,
   );
 
@@ -140,11 +156,16 @@ export function isPotentiallyPlayable(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
+  variant: Variant,
 ): boolean {
   for (const [suitIndex, rank] of card.possibleCards) {
-    const nextRanksArray = playStacksRules.nextRanks(
+    const nextRanksArray = playStacksRules.nextPlayableRanks(
+      suitIndex,
       playStacks[suitIndex]!,
       playStackDirections[suitIndex]!,
+      playStackStarts,
+      variant,
       deck,
     );
     if (nextRanksArray.includes(rank)) {
@@ -190,6 +211,7 @@ export function allPossibilitiesTrash(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
   empathy: boolean,
 ): boolean {
@@ -201,6 +223,7 @@ export function allPossibilitiesTrash(
       deck,
       playStacks,
       playStackDirections,
+      playStackStarts,
       variant,
     );
   }
@@ -216,6 +239,7 @@ export function allPossibilitiesTrash(
       deck,
       playStacks,
       playStackDirections,
+      playStackStarts,
       variant,
     ),
   );

@@ -7,6 +7,7 @@ export function knownTrashReducer(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): readonly CardState[] {
   const newDeck = Array.from(deck);
@@ -19,6 +20,7 @@ export function knownTrashReducer(
         deck,
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
         true,
       ),

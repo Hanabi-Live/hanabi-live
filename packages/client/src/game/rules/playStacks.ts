@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CARD_RANKS,
   STACK_BASE_RANK,
   START_CARD_RANK,
   UNKNOWN_CARD_RANK,
@@ -20,9 +21,12 @@ export function lastPlayedRank(
   return deck[orderOfTopCard]!.rank ?? UNKNOWN_CARD_RANK;
 }
 
-export function nextRanks(
+export function nextPlayableRanks(
+  suitIndex: number,
   playStack: readonly number[],
   playStackDirection: StackDirection,
+  playStackStarts: readonly number[],
+  variant: Variant,
   deck: readonly CardState[],
 ): number[] {
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
@@ -32,6 +36,8 @@ export function nextRanks(
 
   switch (playStackDirection) {
     case StackDirection.Undecided: {
+      // Check that we are in fact in an Up-Or-Down Variant.
+      console.assert(variantRules.isUpOrDown(variant));
       if (currentlyPlayedRank === START_CARD_RANK) {
         return [2, 4];
       }
@@ -39,10 +45,32 @@ export function nextRanks(
     }
 
     case StackDirection.Up: {
-      if (currentlyPlayedRank === STACK_BASE_RANK) {
-        return [1];
+      if (!variantRules.isSudoku(variant)) {
+        // In non-Sudoku variants, the next playable card is just one higher, or 1 if the stack is
+        // not stared yet.
+        if (currentlyPlayedRank === STACK_BASE_RANK) {
+          return [1];
+        }
+        return [currentlyPlayedRank + 1];
       }
-      return [currentlyPlayedRank + 1];
+
+      // In Sudoku variants, determining the next playable ranks is more complicated. If the stack
+      // is already started, then we just go up, wrapping around from 5 to 1 (unless the stack was
+      // started at 1, in which case 5 will be the last card of this suit). If it is not started, it
+      // can be started with any rank that is not the starting rank of another stack yet.
+      if (currentlyPlayedRank !== STACK_BASE_RANK) {
+        // Note that we first mod by 5 and then add, to obtain values 1 through 5.
+        return [(currentlyPlayedRank % 5) + 1];
+      }
+      // As a special case, we might already know the start of the play stack, even when no cards
+      // have been played when this is the last suit. In that case, only the (known) stack start can
+      // be played.
+      if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
+        return [playStackStarts[suitIndex]!];
+      }
+      return DEFAULT_CARD_RANKS.filter(
+        (rank) => !playStackStarts.includes(rank),
+      );
     }
 
     case StackDirection.Down: {
@@ -100,4 +128,50 @@ export function direction(
   // The only remaining case is if the top is 3, in which case there will always be 3 cards.
   const secondCard = deck[playStack[playStack.length - 2]!]!.rank;
   return secondCard === 4 ? StackDirection.Down : StackDirection.Up;
+}
+
+export function stackStartRank(
+  playStack: readonly number[],
+  deck: readonly CardState[],
+  variant: Variant,
+): number {
+  if (!variantRules.isSudoku(variant)) {
+    return 1;
+  }
+
+  const bottomCardOrder = playStack[0];
+  if (bottomCardOrder === undefined) {
+    return UNKNOWN_CARD_RANK;
+  }
+
+  const bottomCard = deck[bottomCardOrder];
+  if (bottomCard === undefined) {
+    return UNKNOWN_CARD_RANK;
+  }
+
+  return bottomCard.rank ?? UNKNOWN_CARD_RANK;
+}
+
+export function fillInRemainingStackStartIfUnique(
+  playStackStarts: number[],
+): number[] {
+  let sumStarts = 0;
+  let numDeterminedStarts = 0;
+  let undeterminedStack: number;
+
+  for (let i = 0; i < playStackStarts.length; i++) {
+    if (playStackStarts[i] !== UNKNOWN_CARD_RANK) {
+      sumStarts += playStackStarts[i]!;
+      numDeterminedStarts++;
+      continue;
+    }
+
+    undeterminedStack = i;
+  }
+
+  if (numDeterminedStarts === playStackStarts.length - 1) {
+    playStackStarts[undeterminedStack!] = 15 - sumStarts;
+  }
+
+  return playStackStarts;
 }

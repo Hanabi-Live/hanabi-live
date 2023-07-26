@@ -193,6 +193,10 @@ const visibleStateObservers: Subscriptions = [
     cardLayoutView.onPlayStackDirectionsChanged,
   ),
 
+  // In Sudoku variants, we want to display the first rank played in each suit. This is important in
+  // order to know which ranks are still available to start the others.
+  subVS((s) => s.playStackStarts, cardLayoutView.onPlayStackStartsChanged),
+
   // Unsubscribe and reset removed cards. Must come after card layout so animations to deck are
   // correctly triggered.
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),

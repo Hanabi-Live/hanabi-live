@@ -31,7 +31,19 @@ export class Elements {
 
   playStacks = new Map<Suit | "hole", PlayStack>();
 
+  /**
+   * UI row below play stacks, usually used for information about the suits, but also for stack
+   * directions in "Up Or Down" or "Reversed" variants, and the number of played cards in "Sudoku"
+   * variants. Not initialized (and therefore fully replaced by suitLabelStackStartTexts) in
+   * "Sudoku" variants while using Keldon mode with more than 2 players, since there is no space
+   * left. Appears in the second row after the 'suitLabelStackStartTexts' if these are used.
+   */
   suitLabelTexts: FitText[] = [];
+  /**
+   * A second UI row below the play stacks (but actually shown first if present). Only initialized
+   * in Sudoku variants.
+   */
+  suitLabelStackStartTexts: FitText[] = [];
   discardArea: Konva.Rect | null = null;
   discardStacks = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];

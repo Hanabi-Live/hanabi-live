@@ -10,14 +10,20 @@ import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
 import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
+import * as sudokuRules from "./variants/sudoku";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
 ): number[] {
-  // Getting the maximum score is much more complicated if we are playing a "Reversed" or "Up or
-  // Down" variant.
+  // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
+  if (variantRules.isSudoku(variant)) {
+    return sudokuRules.getMaxScorePerStack(deck, playStackStarts, variant);
+  }
+
+  // This handles the maximum scores in Reversed or "Up Or Down" variants.
   return reversibleRules.getMaxScorePerStack(
     deck,
     playStackDirections,
@@ -141,6 +147,7 @@ export function cardsGotten(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   playing: boolean,
   shadowing: boolean,
   maxScore: number,
@@ -168,6 +175,7 @@ export function cardsGotten(
         deck,
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
         false,
       )
@@ -189,6 +197,7 @@ export function cardsGottenByNotes(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
+  playStackStarts: readonly number[],
   variant: Variant,
   notes: CardNote[],
 ): number {
@@ -202,6 +211,7 @@ export function cardsGottenByNotes(
         deck,
         playStacks,
         playStackDirections,
+        playStackStarts,
         variant,
         false,
       )
@@ -434,6 +444,7 @@ export function doubleDiscard(
     state.deck,
     state.playStacks,
     state.playStackDirections,
+    state.playStackStarts,
     variant,
   );
   if (!needsToBePlayed) {

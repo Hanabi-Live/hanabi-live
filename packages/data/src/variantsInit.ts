@@ -294,6 +294,15 @@ export function variantsInit(
       showSuitNames = true;
     }
 
+    const showStackStarts = variantJSON.showStackStarts ?? false;
+
+    // The second UI row only makes sense if we already have a first one.
+    if (showStackStarts && !showSuitNames) {
+      throw new Error(
+        "The 'showStackStarts' property can only be set to true if 'showSuitNames' is already true.",
+      );
+    }
+
     // Assume 5 cards per stack.
     const maxScore = suits.length * 5;
 
@@ -335,6 +344,7 @@ export function variantsInit(
       funnels,
       chimneys,
       showSuitNames,
+      showStackStarts,
       maxScore,
       offsetCornerElements,
       suitAbbreviations,

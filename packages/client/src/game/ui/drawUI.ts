@@ -278,6 +278,40 @@ function drawActionLog() {
   );
 }
 
+interface PlayStackValues {
+  x: number;
+  y: number;
+  w: number;
+  spacing: number;
+}
+
+function createLabelTextBelowStack(
+  winHeight: number,
+  winWidth: number,
+  stackCardWidth: number,
+  text: string,
+  playStackValues: PlayStackValues,
+  index: number,
+  row: number,
+) {
+  return new FitText({
+    x:
+      (playStackValues.x -
+        0.01 +
+        (stackCardWidth + playStackValues.spacing) * index) *
+      winWidth,
+    y: (playStackValues.y + 0.155) * winHeight + row * 0.02 * winHeight,
+    width: 0.08 * winWidth,
+    height: 0.051 * winHeight,
+    fontSize: 0.02 * winHeight,
+    fontFamily: "Verdana",
+    align: "center",
+    text,
+    fill: LABEL_COLOR,
+    listening: false,
+  });
+}
+
 function drawPlayStacks() {
   let yOffset: number;
 
@@ -291,7 +325,7 @@ function drawPlayStacks() {
     cardHeight = 0.189;
     yOffset = 0;
   }
-  const playStackValues = {
+  const playStackValues: PlayStackValues = {
     x: 0.183,
     y: 0.345 + yOffset,
     w: 0, // Is set below
@@ -392,6 +426,7 @@ function drawPlayStacks() {
     // Draw the suit name next to each suit (a text description of the suit).
     if (globals.variant.showSuitNames) {
       let text = suit.displayName;
+
       if (
         globals.lobby.settings.colorblindMode &&
         suit.clueColors.length === 2
@@ -401,28 +436,67 @@ function drawPlayStacks() {
           .join("/");
         text += ` [${colorList}]`;
       }
+
       if (variantRules.isUpOrDown(globals.variant)) {
         text = "";
       }
 
-      const suitLabelText = new FitText({
-        x:
-          (playStackValues.x -
-            0.01 +
-            (cardWidth + playStackValues.spacing) * i) *
+      if (variantRules.isSudoku(globals.variant)) {
+        // Don't show anything here, the starting values will be written by the state observers
+        // updating when the starting value changes.
+        text = "";
+      }
+
+      // This is the text box for the suit names or, in UpOrDown, for the stack directions.
+      let suitLabelText: FitText | undefined;
+
+      if (!globals.variant.showStackStarts) {
+        // If we don't have a second UI row (for the stack starts), this is placed directly below.
+        suitLabelText = createLabelTextBelowStack(
+          winH,
           winW,
-        y: (playStackValues.y + 0.155) * winH,
-        width: 0.08 * winW,
-        height: 0.051 * winH,
-        fontSize: 0.02 * winH,
-        fontFamily: "Verdana",
-        align: "center",
-        text,
-        fill: LABEL_COLOR,
-        listening: false,
-      });
-      globals.layers.UI.add(suitLabelText);
-      globals.elements.suitLabelTexts.push(suitLabelText);
+          cardWidth,
+          text,
+          playStackValues,
+          i,
+          0,
+        );
+      } else {
+        // The second UI row is deactivated in Keldon mode with at least 2 players, since there is
+        // simply no space.
+        if (
+          !(globals.lobby.settings.keldonMode && globals.options.numPlayers > 2)
+        ) {
+          // If we have two UI rows, then the suit names / stack directions will be the second row.
+          suitLabelText = createLabelTextBelowStack(
+            winH,
+            winW,
+            cardWidth,
+            text,
+            playStackValues,
+            i,
+            1,
+          );
+        }
+
+        // The first row now consists of the stack starts.
+        const stackStartText = createLabelTextBelowStack(
+          winH,
+          winW,
+          cardWidth,
+          "",
+          playStackValues,
+          i,
+          0,
+        );
+        globals.layers.UI.add(stackStartText);
+        globals.elements.suitLabelStackStartTexts.push(stackStartText);
+      }
+
+      if (suitLabelText !== undefined) {
+        globals.layers.UI.add(suitLabelText);
+        globals.elements.suitLabelTexts.push(suitLabelText);
+      }
     }
   }
 
