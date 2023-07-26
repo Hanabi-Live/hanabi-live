@@ -75,7 +75,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 			room = $1
 		ORDER BY
                 	/* We provide a secondary sort by id in case two chat messages are sent at the same time. */
-			chat_log.datetime_sent DESC, id DESC
+			chat_log.datetime_sent DESC, chat_log.id DESC
 	`
 	if count > 0 {
 		SQLString += "LIMIT " + strconv.Itoa(count)
