@@ -63,8 +63,8 @@ export function nextPlayableRanks(
         return [(currentlyPlayedRank % 5) + 1];
       }
       // As a special case, we might already know the start of the play stack, even when no cards
-      // have been played when this is the last suit. In that case, only the (known) stack start
-      // can be played.
+      // have been played when this is the last suit. In that case, only the (known) stack start can
+      // be played.
       if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
         return [playStackStarts[suitIndex]!];
       }
