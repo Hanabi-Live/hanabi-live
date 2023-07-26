@@ -448,7 +448,7 @@ function drawPlayStacks() {
       }
 
       // This is the text box for the suit names or, in UpOrDown, for the stack directions.
-      let suitLabelText: FitText;
+      let suitLabelText: FitText | undefined;
 
       if (!globals.variant.showStackStarts) {
         // If we don't have a second UI row (for the stack starts), this is placed directly below.
@@ -462,16 +462,22 @@ function drawPlayStacks() {
           0,
         );
       } else {
-        // If we have two UI rows, then the suit names / stack directions will be the second row.
-        suitLabelText = createLabelTextBelowStack(
-          winH,
-          winW,
-          cardWidth,
-          text,
-          playStackValues,
-          i,
-          1,
-        );
+        // The second UI row is deactivated in Keldon mode with at least 2 players, since there is
+        // simply no space.
+        if (
+          !(globals.lobby.settings.keldonMode && globals.options.numPlayers > 2)
+        ) {
+          // If we have two UI rows, then the suit names / stack directions will be the second row.
+          suitLabelText = createLabelTextBelowStack(
+            winH,
+            winW,
+            cardWidth,
+            text,
+            playStackValues,
+            i,
+            1,
+          );
+        }
 
         // The first row now consists of the stack starts.
         const stackStartText = createLabelTextBelowStack(
@@ -487,8 +493,10 @@ function drawPlayStacks() {
         globals.elements.suitLabelStackStartTexts.push(stackStartText);
       }
 
-      globals.layers.UI.add(suitLabelText);
-      globals.elements.suitLabelTexts.push(suitLabelText);
+      if (suitLabelText !== undefined) {
+        globals.layers.UI.add(suitLabelText);
+        globals.elements.suitLabelTexts.push(suitLabelText);
+      }
     }
   }
 

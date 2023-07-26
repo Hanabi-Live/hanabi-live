@@ -8,6 +8,7 @@ import {
   UNKNOWN_CARD_RANK,
   Variant,
 } from "@hanabi/data";
+import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -41,6 +42,15 @@ import {
 import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
+
+const STACK_STRINGS_SUDOKU_KELDON_MODE = new ReadonlyMap<number, string>([
+  [0, "No card played."],
+  [1, "1 card played."],
+  [2, "2 cards played."],
+  [3, "3 cards played."],
+  [4, "4 cards played."],
+  [5, "Finished"],
+]);
 
 export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // ---------------
@@ -1402,6 +1412,20 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       lines.push(
         `Deceptive: ${variant.specialRank} is touched by number ${deceptiveRank} clue.`,
       );
+    }
+    // In Sudoku variants, there is no space for a second UI row below the stacks if Keldon mode is
+    // used with more than 2 players. We put the number of played cards per stack into the hover of
+    // the stack cards.
+    if (
+      variantRules.isSudoku(variant) &&
+      globals.lobby.settings.keldonMode &&
+      globals.options.numPlayers > 2
+    ) {
+      const numPlayedCards =
+        globals.state.visibleState!.playStacks[
+          this.getCardIdentity().suitIndex!
+        ]!.length;
+      lines.push(STACK_STRINGS_SUDOKU_KELDON_MODE.get(numPlayedCards)!);
     }
     const abbreviation = abbreviationRules.get(suit.name, variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${

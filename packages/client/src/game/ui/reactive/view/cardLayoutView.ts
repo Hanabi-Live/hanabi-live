@@ -160,7 +160,10 @@ export function onPlayStacksChanged(
       playStack.hideCardsUnderneathTheTopCard();
     }
 
-    if (variantRules.isSudoku(globals.variant)) {
+    if (
+      variantRules.isSudoku(globals.variant) &&
+      !(globals.lobby.settings.keldonMode && globals.options.numPlayers > 2)
+    ) {
       // Update the 'x cards played' field.
       const text = STACK_STRINGS_SUDOKU.get(stack.length);
       if (text === undefined) {
