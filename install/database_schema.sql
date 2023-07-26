@@ -257,9 +257,9 @@ CREATE TABLE chat_log (
      * server messages
      */
 );
-CREATE INDEX chat_log_index_user_id       ON chat_log (user_id);
-CREATE INDEX chat_log_index_room          ON chat_log (room);
-CREATE INDEX chat_log_index_datetime_sent ON chat_log (datetime_sent);
+CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
+CREATE INDEX chat_log_index_room             ON chat_log (room);
+CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
 
 DROP TABLE IF EXISTS chat_log_pm CASCADE;
 CREATE TABLE chat_log_pm (
