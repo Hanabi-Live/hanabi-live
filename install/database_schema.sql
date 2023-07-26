@@ -1,19 +1,19 @@
 /**
  * Notes:
- * - The website uses PostgreSQL
- * - Initializing the database is accomplished in the "install_database_schema.sh" script
+ * - The website uses PostgreSQL.
+ * - Initializing the database is accomplished in the "install_database_schema.sh" script.
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial
  * - PostgreSQL automatically creates indexes for columns with primary keys, foreign keys, and
- *   constraints, so we only have to explicitly create a few indexes
- * - PostgreSQL automatically handles Unicode text, emojis, and so forth
+ *   constraints, so we only have to explicitly create a few indexes.
+ * - PostgreSQL automatically handles Unicode text, emojis, and so forth.
  * - "ON DELETE CASCADE" means that if the parent row is deleted, the child row will also be
- *   automatically deleted
+ *   automatically deleted.
  */
 
 /*
- * By default, PostgreSQL will show us notices about dropping tables
- * (even with the "--quiet" flag enabled);  we only want messages to display on warnings or errors
+ * By default, PostgreSQL will show us notices about dropping tables (even with the "--quiet" flag
+ * enabled). We only want messages to display on warnings or errors.
  */
 SET client_min_messages TO WARNING;
 
@@ -21,30 +21,26 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id                   SERIAL       PRIMARY KEY,
     username             TEXT         NOT NULL  UNIQUE,
+
     /**
-     * PostgreSQL is not case-sensitive unique by default,
-     * meaning that it will allow a username of "Alice" and "alice" to exist
-     * Furthermore, because of Unicode, it would be possible for "Αlice" with a Greek letter A
-     * (0x391) and "Alice" with a normal A (0x41) to exist
-     * To guard against users impersonating each other & phishing attacks, we also store a
-     * normalized version of the username that is transliterated to ASCII with the go-unidecode
-     * library and then lower-cased
-     * Importantly, we must verify that all new usernames are unique in code before adding them to
-     * the database
+     * PostgreSQL is not case-sensitive unique by default, meaning that it will allow a username of
+     * "Alice" and "alice" to exist. Furthermore, because of Unicode, it would be possible for
+     * "Αlice" with a Greek letter A (0x391) and "Alice" with a normal A (0x41) to exist. To guard
+     * against users impersonating each other & phishing attacks, we also store a normalized version
+     * of the username that is transliterated to ASCII with the `go-unidecode` library and then
+     * lower-cased. Importantly, we must verify that all new usernames are unique in code before
+     * adding them to the database.
      */
     normalized_username  TEXT         NOT NULL  UNIQUE,
-    /*
-     * TODO set "password_hash" to NOT NULL in April 2022; passwords not set at that time can be
-     * manually reset by an administrator if needed
-     */
-    password_hash        TEXT         NULL, /* An Argon2id hash */
+
+    password_hash        TEXT         NOT NULL, /* An Argon2id hash */
     old_password_hash    TEXT         NULL, /* A SHA-256 hash */
     last_ip              TEXT         NOT NULL,
     datetime_created     TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
 );
 
-/* Any default settings must also be applied to the "userSettings.go" file */
+/* Any default settings must also be applied to the "userSettings.go" file. */
 DROP TABLE IF EXISTS user_settings CASCADE;
 CREATE TABLE user_settings (
     user_id                              INTEGER   NOT NULL,
@@ -77,15 +73,15 @@ CREATE TABLE user_settings (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-/* User stats are per variant */
+/* User stats are per variant. */
 DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
     user_id          INTEGER   NOT NULL,
     variant_id       SMALLINT  NOT NULL,
     num_games        INTEGER   NOT NULL  DEFAULT 0,
-    /* Their best score for 2-player games on this variant */
+    /* Their best score for 2-player games on this variant. */
     best_score2      SMALLINT  NOT NULL  DEFAULT 0,
-    /* This stores if they used additional options to make the game easier */
+    /* This stores if they used additional options to make the game easier. */
     best_score2_mod  SMALLINT  NOT NULL  DEFAULT 0,
     best_score3      SMALLINT  NOT NULL  DEFAULT 0,
     best_score3_mod  SMALLINT  NOT NULL  DEFAULT 0,
@@ -124,13 +120,16 @@ CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
+
     /**
-     * By default, the starting player is always at index (seat) 0
-     * This field is only needed for legacy games before April 2020
+     * By default, the starting player is always at index (seat) 0. This field is only needed for
+     * legacy games before April 2020.
      */
     starting_player         SMALLINT     NOT NULL  DEFAULT 0,
-    /* The ID for a particular variant can be found in the "variants.json" file */
+
+    /* The ID for a particular variant can be found in the "variants.json" file. */
     variant_id              SMALLINT     NOT NULL,
+
     timed                   BOOLEAN      NOT NULL,
     time_base               INTEGER      NOT NULL, /* in seconds */
     time_per_turn           INTEGER      NOT NULL, /* in seconds */
@@ -145,8 +144,10 @@ CREATE TABLE games (
     seed                    TEXT         NOT NULL, /* e.g. "p2v0s1" */
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,
-    /* See the "endCondition" values in "constants.go" */
+
+    /* See the "endCondition" values in "constants.go". */
     end_condition           SMALLINT     NOT NULL,
+
     datetime_started        TIMESTAMPTZ  NOT NULL,
     datetime_finished       TIMESTAMPTZ  NOT NULL
 );
@@ -191,24 +192,33 @@ DROP TABLE IF EXISTS game_actions CASCADE;
 CREATE TABLE game_actions (
     game_id  INTEGER   NOT NULL,
     turn     SMALLINT  NOT NULL,
-    /* 0 - play, 1 - discard, 2 - color clue, 3 - rank clue, 4 - game over */
-    type     SMALLINT  NOT NULL,
+
     /**
-     * If a play or a discard, corresponds to the order of the the card that was played/discarded
-     * If a clue, corresponds to the index of the player that received the clue
-     * If a game over, corresponds to the index of the player that caused the game to end
+     * - 0 - play
+     * - 1 - discard
+     * - 2 - color clue
+     * - 3 - rank clue
+     * - 4 - game over
+     */
+    type     SMALLINT  NOT NULL,
+
+    /**
+     * - If a play or a discard, corresponds to the order of the the card that was played/discarded.
+     * - If a clue, corresponds to the index of the player that received the clue.
+     * - If a game over, corresponds to the index of the player that caused the game to end.
      */
     target   SMALLINT  NOT NULL,
+
     /**
-     * If a play or discard, then 0 (as NULL)
-     * It uses less database space and reduces code complexity to use a value of 0 for NULL
-     * than to use a SQL NULL
-     * https://dev.mysql.com/doc/refman/8.0/en/data-size.html
-     * If a color clue, then 0 if red, 1 if yellow, etc.
-     * If a rank clue, then 1 if 1, 2 if 2, etc.
-     * If a game over, then the value corresponds to the "endCondition" values in "constants.go"
+     * - If a play or discard, then 0 (as NULL). It uses less database space and reduces code
+     *   complexity to use a value of 0 for NULL than to use a SQL NULL:
+     *   https://dev.mysql.com/doc/refman/8.0/en/data-size.html
+     * - If a color clue, then 0 if red, 1 if yellow, etc.
+     * - If a rank clue, then 1 if 1, 2 if 2, etc.
+     * - If a game over, then the value corresponds to the "endCondition" values in "constants.go".
      */
     value    SMALLINT  NOT NULL,
+
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     PRIMARY KEY (game_id, turn)
 );
@@ -230,10 +240,10 @@ CREATE TABLE seeds (
 
 DROP TABLE IF EXISTS variant_stats CASCADE;
 CREATE TABLE variant_stats (
-    /* The ID for a particular variant can be found in the "variants.json" file */
+    /* The ID for a particular variant can be found in the "variants.json" file. */
     variant_id      SMALLINT  NOT NULL  PRIMARY KEY,
     num_games       INTEGER   NOT NULL  DEFAULT 0,
-    /* The best score from any team for a 2-player game on this variant */
+    /* The best score from any team for a 2-player game on this variant. */
     best_score2     SMALLINT  NOT NULL  DEFAULT 0,
     best_score3     SMALLINT  NOT NULL  DEFAULT 0,
     best_score4     SMALLINT  NOT NULL  DEFAULT 0,
@@ -248,13 +258,13 @@ DROP TABLE IF EXISTS chat_log CASCADE;
 CREATE TABLE chat_log (
     id             SERIAL       PRIMARY KEY,
     user_id        INTEGER      NOT NULL, /* 0 is a Discord message */
-    discord_name   TEXT         NULL,     /* Only used if it is a Discord message */
+    discord_name   TEXT         NULL,     /* Only used if it is a Discord message. */
     message        TEXT         NOT NULL,
     room           TEXT         NOT NULL, /* Either "lobby" or "table####" */
     datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
     /**
      * There is no foreign key for "user_id" because it would not exist for Discord messages or
-     * server messages
+     * server messages.
      */
 );
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
@@ -278,8 +288,10 @@ DROP TABLE IF EXISTS banned_ips CASCADE;
 CREATE TABLE banned_ips (
     id               SERIAL       PRIMARY KEY,
     ip               TEXT         NOT NULL,
-    /* An entry for a banned IP can optionally be associated with a user */
+
+    /* An entry for a banned IP can optionally be associated with a user. */
     user_id          INTEGER      NULL      DEFAULT NULL,
+
     reason           TEXT         NULL      DEFAULT NULL,
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -289,8 +301,10 @@ DROP TABLE IF EXISTS muted_ips CASCADE;
 CREATE TABLE muted_ips (
     id               SERIAL       PRIMARY KEY,
     ip               TEXT         NOT NULL,
-    /* An entry for a muted IP can optionally be associated with a user */
+
+    /* An entry for a muted IP can optionally be associated with a user. */
     user_id          INTEGER      NULL      DEFAULT NULL,
+
     reason           TEXT         NULL      DEFAULT NULL,
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -300,8 +314,10 @@ DROP TABLE IF EXISTS throttled_ips CASCADE;
 CREATE TABLE throttled_ips (
     id                  SERIAL       PRIMARY KEY,
     ip                  TEXT         NOT NULL,
-    /* An entry for a throttled IP can optionally be associated with a user */
+
+    /* An entry for a throttled IP can optionally be associated with a user. */
     user_id             INTEGER      NULL      DEFAULT NULL,
+
     reason              TEXT         NULL      DEFAULT NULL,
     datetime_throttled  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -315,6 +331,6 @@ CREATE TABLE metadata (
 );
 /**
  * We want at least one entry in the metadata table so that the "TestDatabase()" function works
- * correctly
+ * correctly.
  */
 INSERT INTO metadata (name, value) VALUES ('test_key', 'test_value');
