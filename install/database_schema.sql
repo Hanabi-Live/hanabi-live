@@ -33,8 +33,15 @@ CREATE TABLE users (
      */
     normalized_username  TEXT         NOT NULL  UNIQUE,
 
+    /**
+     * TODO: Change this value on the server:
+     * ALTER TABLE users ALTER COLUMN password_hash SET NOT NULL;
+     */
     password_hash        TEXT         NOT NULL, /* An Argon2id hash */
+
+    /* TODO: Delete this and delete the code for `old_password_hash` in Golang. */
     old_password_hash    TEXT         NULL, /* A SHA-256 hash */
+
     last_ip              TEXT         NOT NULL,
     datetime_created     TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
