@@ -132,7 +132,6 @@ export function onPlayStacksChanged(
 
   if (variantRules.isSudoku(globals.variant)) {
     // First, we will find out all available stack starts.
-
     const availableStackStartsFlags: boolean[] = [true, true, true, true, true];
     playStacks.forEach((playStack) => {
       const stackStart = stackStartRank(
