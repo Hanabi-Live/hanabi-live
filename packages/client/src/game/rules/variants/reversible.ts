@@ -1,13 +1,12 @@
 // Helper methods for variants where suits may have a different direction than up. Currently used
 // for "Up Or Down" and "Reversed" variants.
 
-import {DEFAULT_CARD_RANKS, START_CARD_RANK, Variant} from "@hanabi/data";
-import {CardState} from "../../types/CardState";
-import {StackDirection} from "../../types/StackDirection";
+import { DEFAULT_CARD_RANKS, START_CARD_RANK, Variant } from "@hanabi/data";
+import { CardState } from "../../types/CardState";
+import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
-import * as playStacksRules from "../playStacks";
 import * as variantRules from "../variant";
-import {createAllDiscardedMap, discardedHelpers} from "./discardHelpers";
+import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -31,7 +30,7 @@ export function needsToBePlayed(
 
   // Second, check to see if this card is dead. (Meaning that all of a previous card in the suit
   // have been discarded already.)
-  if (isDead(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+  if (isDead(suitIndex, rank, deck, playStackDirections, variant)) {
     return false;
   }
 
@@ -73,24 +72,30 @@ function isDead(
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ) {
   const allDiscarded = createAllDiscardedMap(variant, deck, suitIndex);
 
-  // We denote by this either the true direction or the only remaining direction
-  // in case we already lost the necessary cards for the other direction in "Up or Down".
+  // We denote by this either the true direction or the only remaining direction in case we already
+  // lost the necessary cards for the other direction in "Up or Down".
   let impliedDirection = playStackDirections[suitIndex];
 
-  if (impliedDirection == StackDirection.Undecided && allDiscarded.get(START_CARD_RANK)) {
+  if (
+    impliedDirection === StackDirection.Undecided &&
+    allDiscarded.get(START_CARD_RANK) === true
+  ) {
     // Get rid of the trivial case where the whole suit is dead.
-    if (allDiscarded.get(START_CARD_RANK) && allDiscarded.get(1) && allDiscarded.get(5)) {
+    if (
+      allDiscarded.get(START_CARD_RANK) === true &&
+      allDiscarded.get(1) === true &&
+      allDiscarded.get(5) === true
+    ) {
       return true;
     }
-    if (allDiscarded.get(5)) {
+    if (allDiscarded.get(5) === true) {
       impliedDirection = StackDirection.Up;
-    } else if (allDiscarded.get(1)) {
+    } else if (allDiscarded.get(1) === true) {
       impliedDirection = StackDirection.Down;
     }
   }
@@ -99,7 +104,7 @@ function isDead(
   if (impliedDirection === StackDirection.Up) {
     // Note that in Up or Down, having impliedDirection === StackDirection also proves that one of
     // Start or 1 is still alive, since we filtered out the case where all of 1,5 and Start are dead
-    // already
+    // already.
     let nextRank = variantRules.isUpOrDown(variant) ? 2 : 1;
     for (nextRank; nextRank < rank; nextRank++) {
       if (allDiscarded.get(nextRank) === true) {
@@ -120,12 +125,14 @@ function isDead(
     return false;
   }
 
-  // If we got this far, the stack direction is undecided and we could still start the stack
-  // from both directions. (The previous function handles the case where the stack is finished.)
+  // If we got this far, the stack direction is undecided and we could still start the stack from
+  // both directions. (The previous function handles the case where the stack is finished.)
   // Therefore, 2's and 4's can both be played by starting the stack in the corresponding direction.
   // The only possible card that could still be dead is a 3, which only happens if we lost all 2's
   // and 4's.
-  return allDiscarded.get(2) && allDiscarded.get(4) && rank === 3;
+  return (
+    allDiscarded.get(2) === true && allDiscarded.get(4) === true && rank === 3
+  );
 }
 
 /**
