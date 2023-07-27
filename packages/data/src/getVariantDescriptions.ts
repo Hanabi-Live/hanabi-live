@@ -1218,7 +1218,6 @@ export function getSudokuVariants(
     name: `Sudoku (${numSuits} Suits)`,
     suits: basicVariantSuits[numSuits]!,
     showSuitNames: true,
-    showStackStarts: true,
   });
 
   // Create combinations with special suits.
@@ -1232,7 +1231,6 @@ export function getSudokuVariants(
       name: variantName,
       suits: variantSuits,
       showSuitNames: true,
-      showStackStarts: true,
     });
   }
 

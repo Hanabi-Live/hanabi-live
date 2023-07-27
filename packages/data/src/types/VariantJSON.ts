@@ -29,5 +29,4 @@ export interface VariantJSON {
   rankCluesTouchNothing?: boolean;
 
   showSuitNames?: boolean;
-  showStackStarts?: boolean;
 }
