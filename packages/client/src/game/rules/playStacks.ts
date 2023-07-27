@@ -9,7 +9,7 @@ import { CardState } from "../types/CardState";
 import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
 
-export function lastPlayedRank(
+function lastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
 ): number {
