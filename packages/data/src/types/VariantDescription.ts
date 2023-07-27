@@ -30,5 +30,4 @@ export interface VariantDescription {
   rankCluesTouchNothing?: boolean;
 
   showSuitNames?: boolean;
-  showStackStarts?: boolean;
 }

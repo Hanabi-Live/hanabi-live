@@ -3,6 +3,7 @@ import equal from "fast-deep-equal";
 import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as deck from "../../../rules/deck";
+import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";
 import { StackDirection } from "../../../types/StackDirection";
 import { globals } from "../../globals";
@@ -22,15 +23,6 @@ const STACK_STRINGS_UP_OR_DOWN = new ReadonlyMap<StackDirection, string>([
   [StackDirection.Up, "Up"],
   [StackDirection.Down, "Down"],
   [StackDirection.Finished, "Finished"],
-]);
-
-const STACK_STRINGS_SUDOKU = new ReadonlyMap<number, string>([
-  [0, ""],
-  [1, ""],
-  [2, "2 cards played"],
-  [3, "3 cards played"],
-  [4, "4 cards played"],
-  [5, "Finished"],
 ]);
 
 export function onPlayStackDirectionsChanged(
@@ -74,29 +66,6 @@ export function onPlayStackDirectionsChanged(
     });
     globals.layers.UI.batchDraw();
   }
-}
-
-export function onPlayStackStartsChanged(
-  stackStarts: readonly number[],
-  previousStackStarts: readonly number[] | undefined,
-): void {
-  if (!variantRules.isSudoku(globals.variant)) {
-    return;
-  }
-
-  stackStarts.forEach((stackStart, i) => {
-    if (
-      previousStackStarts !== undefined &&
-      previousStackStarts[i] === stackStart
-    ) {
-      return;
-    }
-    let text = "";
-    if (stackStart !== UNKNOWN_CARD_RANK) {
-      text = `Starts at ${stackStart}`;
-    }
-    globals.elements.suitLabelStackStartTexts[i]!.fitText(text);
-  });
 }
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
@@ -159,21 +128,49 @@ export function onPlayStacksChanged(
       const playStack = globals.elements.playStacks.get(suit)!;
       playStack.hideCardsUnderneathTheTopCard();
     }
+  });
 
-    if (
-      variantRules.isSudoku(globals.variant) &&
-      !(globals.lobby.settings.keldonMode && globals.options.numPlayers > 2)
-    ) {
-      // Update the 'x cards played' field.
-      const text = STACK_STRINGS_SUDOKU.get(stack.length);
-      if (text === undefined) {
-        throw new Error(
-          `Failed to get the stack string for ${stack.length} card(s) played.`,
+  if (variantRules.isSudoku(globals.variant)) {
+    // First, we will find out all available stack starts.
+    const availableStackStartsFlags: boolean[] = [true, true, true, true, true];
+    playStacks.forEach((playStack) => {
+      const stackStart = stackStartRank(
+        playStack,
+        globals.state.visibleState!.deck,
+        globals.variant,
+      );
+      if (stackStart !== UNKNOWN_CARD_RANK) {
+        availableStackStartsFlags[stackStart - 1] = false;
+      }
+    });
+    const availableStackStarts: number[] = [];
+    availableStackStartsFlags.forEach((available, index) => {
+      if (available) {
+        availableStackStarts.push(index + 1);
+      }
+    });
+
+    // Now, add the suit label texts, showing current progress or the possible remaining starting
+    // values.
+    playStacks.forEach((stack, i) => {
+      let text = "";
+      if (stack.length === 5) {
+        text = "Finished";
+      } else if (stack.length !== 0) {
+        const stackStart = globals.deck[stack[0]!]!.visibleRank!;
+        const playedRanks = Array.from(
+          { length: stack.length },
+          (_, rankOffset) => ((rankOffset + stackStart - 1) % 5) + 1,
         );
+        text = `[ ${playedRanks.join(" ")}${Array(6 - stack.length).join(
+          " _",
+        )} ]`;
+      } else {
+        text = `Start: [${availableStackStarts.join("")}]`;
       }
       globals.elements.suitLabelTexts[i]!.fitText(text);
-    }
-  });
+    });
+  }
 
   globals.layers.card.batchDraw();
 }

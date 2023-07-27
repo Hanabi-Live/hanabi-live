@@ -151,27 +151,3 @@ export function stackStartRank(
 
   return bottomCard.rank ?? UNKNOWN_CARD_RANK;
 }
-
-export function fillInRemainingStackStartIfUnique(
-  playStackStarts: number[],
-): number[] {
-  let sumStarts = 0;
-  let numDeterminedStarts = 0;
-  let undeterminedStack: number;
-
-  for (let i = 0; i < playStackStarts.length; i++) {
-    if (playStackStarts[i] !== UNKNOWN_CARD_RANK) {
-      sumStarts += playStackStarts[i]!;
-      numDeterminedStarts++;
-      continue;
-    }
-
-    undeterminedStack = i;
-  }
-
-  if (numDeterminedStarts === playStackStarts.length - 1) {
-    playStackStarts[undeterminedStack!] = 15 - sumStarts;
-  }
-
-  return playStackStarts;
-}
