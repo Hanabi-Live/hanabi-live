@@ -166,7 +166,11 @@ export function onPlayStacksChanged(
           " _",
         )} ]`;
       } else {
-        text = `Start: [${availableStackStarts.join("")}]`;
+        const bracketText =
+          availableStackStarts.length === 5
+            ? "Any"
+            : availableStackStarts.join("");
+        text = `Start: [${bracketText}]`;
       }
       globals.elements.suitLabelTexts[i]!.fitText(text);
     });
