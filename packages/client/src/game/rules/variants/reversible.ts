@@ -1,13 +1,13 @@
 // Helper methods for variants where suits may have a different direction than up. Currently used
 // for "Up Or Down" and "Reversed" variants.
 
-import { DEFAULT_CARD_RANKS, START_CARD_RANK, Variant } from "@hanabi/data";
-import { CardState } from "../../types/CardState";
-import { StackDirection } from "../../types/StackDirection";
+import {DEFAULT_CARD_RANKS, START_CARD_RANK, Variant} from "@hanabi/data";
+import {CardState} from "../../types/CardState";
+import {StackDirection} from "../../types/StackDirection";
 import * as deckRules from "../deck";
 import * as playStacksRules from "../playStacks";
 import * as variantRules from "../variant";
-import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
+import {createAllDiscardedMap, discardedHelpers} from "./discardHelpers";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -79,8 +79,27 @@ function isDead(
 ) {
   const allDiscarded = createAllDiscardedMap(variant, deck, suitIndex);
 
-  // Start by handling the easy cases of up and down.
-  if (playStackDirections[suitIndex] === StackDirection.Up) {
+  // We denote by this either the true direction or the only remaining direction
+  // in case we already lost the necessary cards for the other direction in "Up or Down".
+  let impliedDirection = playStackDirections[suitIndex];
+
+  if (impliedDirection == StackDirection.Undecided && allDiscarded.get(START_CARD_RANK)) {
+    // Get rid of the trivial case where the whole suit is dead.
+    if (allDiscarded.get(START_CARD_RANK) && allDiscarded.get(1) && allDiscarded.get(5)) {
+      return true;
+    }
+    if (allDiscarded.get(5)) {
+      impliedDirection = StackDirection.Up;
+    } else if (allDiscarded.get(1)) {
+      impliedDirection = StackDirection.Down;
+    }
+  }
+
+  // Now we can handle both the regular / reversed and the easy "Up or Down" cases.
+  if (impliedDirection === StackDirection.Up) {
+    // Note that in Up or Down, having impliedDirection === StackDirection also proves that one of
+    // Start or 1 is still alive, since we filtered out the case where all of 1,5 and Start are dead
+    // already
     let nextRank = variantRules.isUpOrDown(variant) ? 2 : 1;
     for (nextRank; nextRank < rank; nextRank++) {
       if (allDiscarded.get(nextRank) === true) {
@@ -89,7 +108,9 @@ function isDead(
     }
     return false;
   }
-  if (playStackDirections[suitIndex] === StackDirection.Down) {
+
+  if (impliedDirection === StackDirection.Down) {
+    // Same for down, see above.
     let nextRank = variantRules.isUpOrDown(variant) ? 4 : 5;
     for (nextRank; nextRank > rank; nextRank--) {
       if (allDiscarded.get(nextRank) === true) {
@@ -99,35 +120,12 @@ function isDead(
     return false;
   }
 
-  if (!variantRules.isUpOrDown(variant)) {
-    throw new Error(
-      'A stack in a "Reversed" variant must always have a defined direction (up or down).',
-    );
-  }
-
-  // If we got this far, the stack direction is undecided. (The previous function handles the case
-  // where the stack is finished.) Check to see if the entire suit is dead in the case where all 3
-  // of the start cards are discarded.
-  if (
-    allDiscarded.get(1) === true &&
-    allDiscarded.get(5) === true &&
-    allDiscarded.get(START_CARD_RANK) === true
-  ) {
-    return true;
-  }
-
-  // If the "START" card is played on the stack, then this card will be dead if all of the 2's and
-  // all of the 4's have been discarded. (This situation also applies to 3's when no cards have been
-  // played on the stack.)
-  const playStack = playStacks[suitIndex]!;
-  const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
-  if (lastPlayedRank === START_CARD_RANK || rank === 3) {
-    if (allDiscarded.get(2) === true && allDiscarded.get(4) === true) {
-      return true;
-    }
-  }
-
-  return false;
+  // If we got this far, the stack direction is undecided and we could still start the stack
+  // from both directions. (The previous function handles the case where the stack is finished.)
+  // Therefore, 2's and 4's can both be played by starting the stack in the corresponding direction.
+  // The only possible card that could still be dead is a 3, which only happens if we lost all 2's
+  // and 4's.
+  return allDiscarded.get(2) && allDiscarded.get(4) && rank === 3;
 }
 
 /**
