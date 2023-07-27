@@ -99,6 +99,9 @@ func variantsInit() {
 		// Derive the card ranks (the ranks that the cards of each suit will be)
 		// By default, assume ranks 1 through 5
 		variantRanks := []int{1, 2, 3, 4, 5}
+		if strings.HasPrefix(variant.Name, "Sudoku") {
+			variantRanks = variantRanks[:len(variantSuits)]
+		}
 		if strings.HasPrefix(variant.Name, "Up or Down") {
 			// The "Up or Down" variants have START cards
 			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
