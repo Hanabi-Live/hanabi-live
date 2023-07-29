@@ -1288,34 +1288,42 @@ function getChimneysVariants(
   return variantDescriptions;
 }
 
-function getSudokuVariants(
-  suitsToCreateVariantsFor: readonly SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
-): readonly VariantDescription[] {
+export function getSudokuVariants(
+    suitsToCreateVariantsFor: SuitJSON[],
+    basicVariantSuits: BasicVariantSuits,
+): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  // Create the basic variant. Note that for Sudoku, we only want 5-suit variants, so that each
-  // starting stack will be used exactly once.
-  const numSuits = 5;
-  variantDescriptions.push({
-    name: `Sudoku (${numSuits} Suits)`,
-    suits: basicVariantSuits[numSuits],
-    sudoku: true,
-  });
+  // We use a custom type here so that the compiler can prove below that array access is defined.
+  type FourOrFive = 4 | 5;
+  const sudokuSuitNumbers: FourOrFive[] = [4, 5];
 
-  // Create combinations with special suits.
-  for (const suit of suitsToCreateVariantsFor) {
-    // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-    // suit.
-    const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
-    const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
-    const basicSuits = basicVariantSuits[numBasicSuits];
-    const variantSuits = [...basicSuits, suit.name];
+  // Create the basic variant. Note that for sudoku, we only want 4 or 5-suit variants.
+  for (const numSuits of sudokuSuitNumbers) {
     variantDescriptions.push({
-      name: variantName,
-      suits: variantSuits,
+      name: `Sudoku (${numSuits} Suits)`,
+      suits: basicVariantSuits[numSuits]!.slice(0, numSuits),
       sudoku: true,
     });
+  }
+
+  // Create combinations with special suits.
+  for (const numSuits of sudokuSuitNumbers) {
+    for (const suit of suitsToCreateVariantsFor) {
+      // Having a dark-suit in a 4-suit variant (especially Sudoku) is too hard.
+      if (suit.oneOfEach === true && numSuits === 4) {
+        continue;
+      }
+      const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
+      const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
+      const basicSuits = basicVariantSuits[numBasicSuits];
+      const variantSuits = [...basicSuits.slice(0, numSuits - 1), suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        sudoku: true,
+      });
+    }
   }
 
   return variantDescriptions;
