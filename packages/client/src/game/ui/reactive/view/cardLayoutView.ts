@@ -157,7 +157,7 @@ export function onPlayStacksChanged(
     // values.
     for (const [suitIndex, playStack] of playStacks.entries()) {
       let text = "";
-      if (playStack.length === 5) {
+      if (playStack.length === globals.variant.ranks.length) {
         text = "Finished";
       } else if (playStack.length > 0) {
         const firstPlayedCardOrder = playStack[0];
@@ -183,7 +183,7 @@ export function onPlayStacksChanged(
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =
-          availableStackStarts.length === 5
+          availableStackStarts.length === globals.variant.singleStackSize
             ? "Any"
             : availableStackStarts.join("");
         text = `Start: [${bracketText}]`;

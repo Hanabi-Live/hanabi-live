@@ -160,6 +160,7 @@ describe("cluesStillUsable", () => {
         0,
         [0, 0, 0, 0, 0],
         [5, 5, 5, 5, 4],
+        5,
         startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT) - 1,
         2,
         1,
@@ -180,6 +181,7 @@ describe("cluesStillUsable", () => {
         0,
         [0, 0, 0, 0, 0],
         [5, 5, 5, 4, 4],
+        5,
         startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT) - 2,
         2,
         1,
@@ -196,47 +198,47 @@ describe("cluesStillUsable", () => {
   });
   test("playing a 5 does not gain a possible clue", () => {
     expect(
-      cluesStillUsable(4, [0, 0, 0, 0, 4], [5, 5, 5, 5, 5], 26, 5, 1, 1, 4),
+      cluesStillUsable(4, [0, 0, 0, 0, 4], [5, 5, 5, 5, 5], 5, 26, 5, 1, 1, 4),
     ).toBe(17);
     expect(
-      cluesStillUsable(5, [0, 0, 0, 0, 5], [5, 5, 5, 5, 5], 25, 5, 1, 1, 5),
+      cluesStillUsable(5, [0, 0, 0, 0, 5], [5, 5, 5, 5, 5], 5, 25, 5, 1, 1, 5),
     ).toBe(17);
   });
   test("discarding a non-critical card does not gain a possible clue", () => {
     expect(
-      cluesStillUsable(0, [0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 33, 2, 1, 1, 4),
+      cluesStillUsable(0, [0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 5, 33, 2, 1, 1, 4),
     ).toBe(18);
     expect(
-      cluesStillUsable(0, [0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 32, 2, 1, 1, 5),
+      cluesStillUsable(0, [0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 5, 32, 2, 1, 1, 5),
     ).toBe(18);
   });
   test("playing the last 1 in a 4 player game loses a clue", () => {
     expect(
-      cluesStillUsable(4, [1, 1, 1, 1, 0], [5, 5, 5, 5, 5], 27, 4, 1, 1, 4),
+      cluesStillUsable(4, [1, 1, 1, 1, 0], [5, 5, 5, 5, 5], 5, 27, 4, 1, 1, 4),
     ).toBe(18);
     expect(
-      cluesStillUsable(5, [1, 1, 1, 1, 1], [5, 5, 5, 5, 5], 26, 4, 1, 1, 4),
+      cluesStillUsable(5, [1, 1, 1, 1, 1], [5, 5, 5, 5, 5], 5, 26, 4, 1, 1, 4),
     ).toBe(17);
   });
   test("finishing an imperfect suit can lose a clue", () => {
     expect(
-      cluesStillUsable(15, [3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 17, 2, 1, 1, 4),
+      cluesStillUsable(15, [3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 5, 17, 2, 1, 1, 4),
     ).toBe(17);
     expect(
-      cluesStillUsable(16, [3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 16, 2, 1, 1, 4),
+      cluesStillUsable(16, [3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 5, 16, 2, 1, 1, 4),
     ).toBe(16);
   });
   test("finishing an imperfect suit may not lose a clue", () => {
     expect(
-      cluesStillUsable(15, [3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 16, 3, 1, 1, 4),
+      cluesStillUsable(15, [3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 5, 16, 3, 1, 1, 4),
     ).toBe(16);
     expect(
-      cluesStillUsable(16, [3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 15, 3, 1, 1, 4),
+      cluesStillUsable(16, [3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 5, 15, 3, 1, 1, 4),
     ).toBe(16);
   });
   test("discards during the final round do not count", () => {
     expect(
-      cluesStillUsable(24, [5, 5, 5, 5, 4], [5, 5, 5, 5, 5], 1, 2, 1, 1, 4),
+      cluesStillUsable(24, [5, 5, 5, 5, 4], [5, 5, 5, 5, 5], 5, 1, 2, 1, 1, 4),
     ).toBe(4);
   });
 });

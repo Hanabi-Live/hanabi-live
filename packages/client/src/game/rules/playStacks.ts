@@ -58,7 +58,7 @@ export function nextPlayableRanks(
       // started at 1, in which case 5 will be the last card of this suit).
       if (currentlyPlayedRank !== undefined) {
         // We mod by 5 and then add to obtain values 1 through 5.
-        return [(currentlyPlayedRank % 5) + 1];
+        return [(currentlyPlayedRank % variant.ranks.length) + 1];
       }
 
       // The stack is not started yet. As a special case, we might already know the start of the
@@ -71,7 +71,7 @@ export function nextPlayableRanks(
 
       // If the stack is not started, it can be started with any rank that is not the starting rank
       // of another stack.
-      return DEFAULT_CARD_RANKS.filter(
+      return variant.ranks.filter(
         (rank) => !playStackStarts.includes(rank),
       );
     }

@@ -138,7 +138,7 @@ export function startingDeckSize(
  *  total cards in the deck
  *  + number of turns in the final round
  *  - (number of cards in a player's hand * number of players)
- *  - (5 * number of suits)
+ *  - (singleStackSize * number of suits)
  *  ```
  *
  * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
@@ -295,6 +295,7 @@ export function cluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
+  singleStackSize: number,
   deckSize: number,
   endGameLength: number,
   discardValue: number,
@@ -344,8 +345,8 @@ export function cluesStillUsableNotRounded(
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
       const stackMaxScore = maxScorePerStack[suitIndex];
       if (
-        stackMaxScore === DEFAULT_FINISHED_STACK_LENGTH &&
-        stackScore < DEFAULT_FINISHED_STACK_LENGTH
+        stackMaxScore === singleStackSize &&
+        stackScore < singleStackSize
       ) {
         missingCardsPerCompletableSuit.push(stackMaxScore - stackScore);
       }
@@ -375,6 +376,7 @@ export function cluesStillUsable(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
+  singleStackSize: number,
   deckSize: number,
   endGameLength: number,
   discardValue: number,
@@ -385,6 +387,7 @@ export function cluesStillUsable(
     score,
     scorePerStack,
     maxScorePerStack,
+    singleStackSize,
     deckSize,
     endGameLength,
     discardValue,
@@ -415,7 +418,7 @@ export function startingCluesUsable(
   const scorePerStack = newArray(variant.suits.length, 0);
   const maxScorePerStack = newArray(
     variant.suits.length,
-    DEFAULT_FINISHED_STACK_LENGTH,
+    variant.singleStackSize,
   );
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
@@ -424,6 +427,7 @@ export function startingCluesUsable(
     score,
     scorePerStack,
     maxScorePerStack,
+    variant.singleStackSize,
     deckSize,
     endGameLength,
     discardValue,
