@@ -6,7 +6,7 @@ export interface Variant {
   readonly id: number;
   readonly suits: readonly Suit[];
   readonly ranks: readonly number[];
-  readonly singleStackSize: number,
+  readonly singleStackSize: number;
   readonly clueColors: readonly Color[];
   readonly clueRanks: readonly number[];
 
