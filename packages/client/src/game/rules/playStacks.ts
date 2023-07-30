@@ -1,6 +1,5 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import {
-  DEFAULT_CARD_RANKS,
   DEFAULT_FINISHED_STACK_LENGTH,
   START_CARD_RANK,
 } from "@hanabi/data";
@@ -71,9 +70,7 @@ export function nextPlayableRanks(
 
       // If the stack is not started, it can be started with any rank that is not the starting rank
       // of another stack.
-      return variant.ranks.filter(
-        (rank) => !playStackStarts.includes(rank),
-      );
+      return variant.ranks.filter((rank) => !playStackStarts.includes(rank));
     }
 
     case StackDirection.Down: {

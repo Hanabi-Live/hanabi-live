@@ -348,7 +348,8 @@ export function cluesStillUsableNotRounded(
         stackMaxScore === singleStackSize &&
         stackScore < singleStackSize
       ) {
-        missingCardsPerCompletableSuit.push(stackMaxScore - stackScore);
+        missingCardsPerCompletableSuit.push(
+          stackMaxScore - stackScore);
       }
     }
 

@@ -21,7 +21,7 @@ export function sudokuCanStillBePlayed(
 ): boolean {
   const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
   const [ _, maxScoresForEachStartingValueOfSuit ] =
-    sudokuWalkUpAll(allDiscardedSet);
+    sudokuWalkUpAll(allDiscardedSet, variant);
 
   const playStackStart = playStackStarts[suitIndex];
   assertDefined(
@@ -39,8 +39,8 @@ export function sudokuCanStillBePlayed(
   // sequence starting at the start, thereby checking if the specified rank is included.
   return possibleStackStartRanks.some((possibleStackStartRank) => {
     const longestSequence =
-      (rank - possibleStackStartRank + variant.singleStackSize) %
-      variant.singleStackSize;
+      (rank - possibleStackStartRank + variant.singleStackSize) % variant.singleStackSize
+    ;
     const score =
       maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1];
     assertDefined(
@@ -94,9 +94,11 @@ export function sudokuWalkUpAll(
 
   if (lastDead !== 5) {
     // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
-    // to them.
-    for (const writeRank of iRange(lastDead + 1, 5)) {
-      maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
+    // tothem.
+  for (
+    const writeRank of iRange(lastDead + 1, 5)
+  ) {
+    maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
         maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
         DEFAULT_CARD_RANKS.length,
       );
@@ -292,7 +294,7 @@ export function getMaxScorePerStack(
 
     const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
     const { allMax, maxScoresForEachStartingValueOfSuit } =
-      sudokuWalkUpAll(allDiscardedSet);
+      sudokuWalkUpAll(allDiscardedSet, variant);
 
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
@@ -320,7 +322,10 @@ export function getMaxScorePerStack(
   // Solve the assignment problem.
   const unassigned = -1;
 
-  const possibleStackStarts = sudokuGetUnusedStackStartRanks(playStackStarts, variant);
+  const possibleStackStarts = sudokuGetUnusedStackStartRanks(
+    playStackStarts,
+    variant,
+  );
 
   // Value of the best assignment found so far.
   let bestAssignmentSum = 0;
