@@ -185,6 +185,7 @@ One of each card per suit (e.g. 5 in total):
 - Playing the fifth card of a suit gives back a clue.
 
 ### Sudoku (4 Suits)
+
 - Similar to 5-Suit Sudoku, stacks can be started at arbitrary but different ranks.
 - Cards of rank 5 are removed from the game, therefore stacks only consist of 4 cards each and will wrap around from 4 to 1.
 - Playing the fourth card of a suit gives back a clue.
