@@ -11,7 +11,7 @@
         {{ if eq .Title "Dev" -}}
           Test
         {{- else -}}
-          {{ .WebsiteName }}{{ if ne .Title "Main" }}- {{ .Title }}{{ end }}
+          {{ .WebsiteName }}{{ if ne .Title "Main" }} - {{ .Title }}{{ end }}
         {{- end }}
       </title>
       <meta charset="utf-8" />
