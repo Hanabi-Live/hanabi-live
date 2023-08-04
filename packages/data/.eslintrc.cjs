@@ -8,4 +8,8 @@ module.exports = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.eslint.json"),
   },
+
+  rules: {
+    "unicorn/prefer-module": "off",
+  },
 };
