@@ -114,7 +114,7 @@ export function askForPassword(tableID: number): void {
     element.select();
   }
 
-  showModal("#password-modal", null, () => {
+  showModal("#password-modal", true, undefined, () => {
     element.select();
   });
 }
@@ -273,7 +273,7 @@ export function showWarning(msg: string): void {
   globals.lastActiveElement = document.activeElement as HTMLElement;
 
   // Show the modal and focus the close button.
-  showModal("#warning-modal", () => {
+  showModal("#warning-modal", true, () => {
     getElement("#warning-modal-button").focus();
   });
 }
@@ -321,7 +321,7 @@ export function setModal(
       return;
     }
 
-    showModal(selector, before);
+    showModal(selector, true, before);
     if (focus === null) {
       return;
     }
@@ -338,19 +338,19 @@ export function setModal(
 
 export function showPrompt(
   selector: string,
-  test: (() => unknown) | null = null,
-  focusElement: HTMLInputElement | null = null,
-  clickButtonElement: HTMLButtonElement | null = null,
+  test?: () => boolean,
+  focusElement?: HTMLInputElement,
+  clickButtonElement?: HTMLButtonElement,
 ): void {
   if (!init()) {
     return;
   }
 
-  if (!(test?.call(null) ?? true)) {
+  if (test !== undefined && !test()) {
     return;
   }
 
-  if (focusElement !== null && clickButtonElement !== null) {
+  if (focusElement !== undefined && clickButtonElement !== undefined) {
     focusElement.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         clickButtonElement.click();
@@ -358,9 +358,9 @@ export function showPrompt(
     });
   }
 
-  showModal(selector);
+  showModal(selector, true);
 
-  if (focusElement !== null) {
+  if (focusElement !== undefined) {
     setTimeout(() => {
       focusElement.focus();
       const oldType = focusElement.type;
@@ -413,18 +413,11 @@ function getInputElement(element: string): HTMLInputElement {
   return getElement(element) as HTMLInputElement;
 }
 
-function showModal(selector: string, allowClose: boolean): void;
-function showModal(selector: string, before?: () => unknown): void;
 function showModal(
   selector: string,
-  before: (() => unknown) | null,
-  ready: (() => unknown) | null,
-): void;
-
-function showModal(
-  selector: string,
-  param2?: (() => unknown) | boolean | null,
-  param3?: (() => unknown) | boolean | null,
+  allowClose: boolean,
+  before?: () => void,
+  ready?: () => void,
 ) {
   const element = getElement(selector);
 
@@ -432,33 +425,27 @@ function showModal(
 
   currentModal = element;
 
-  allowCloseModal = true;
-  if (typeof param2 === "boolean") {
-    allowCloseModal = param2;
-  }
-
   element.classList.add("modal");
   element.addEventListener("pointerdown", (event) => {
     // Do not bubble clicks to pageCover.
     event.stopPropagation();
   });
 
-  if (typeof param2 === "function") {
-    const result = param2.call(null);
-    if (result ?? false) {
-      return;
-    }
+  allowCloseModal = allowClose;
+
+  if (before !== undefined) {
+    before();
   }
 
   pageCover.append(element);
-
   pageCover.style.display = "flex";
   pageCover.classList.add("show");
+
   setTimeout(() => {
     pageCover.append(element);
     element.classList.remove("hidden");
-    if (typeof param3 === "function") {
-      param3.call(null);
+    if (ready !== undefined) {
+      ready();
     }
   }, 100);
 }

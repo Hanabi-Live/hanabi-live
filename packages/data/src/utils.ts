@@ -1,3 +1,15 @@
+export function capitalizeFirstLetter(string: string): string {
+  if (string === "") {
+    return string;
+  }
+
+  const firstCharacter = string.charAt(0);
+  const capitalizedFirstLetter = firstCharacter.toUpperCase();
+  const restOfString = string.slice(1);
+
+  return `${capitalizedFirstLetter}${restOfString}`;
+}
+
 /**
  * This is a more reliable version of `parseInt`. By default, `parseInt('1a')` will return "1",
  * which is unexpected. This returns either an integer or NaN.
