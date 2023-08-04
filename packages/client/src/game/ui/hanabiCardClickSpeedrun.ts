@@ -11,7 +11,7 @@ import { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as turn from "./turn";
 
-export function HanabiCardClickSpeedrun(
+export function hanabiCardClickSpeedrun(
   card: HanabiCard,
   event: MouseEvent,
 ): void {

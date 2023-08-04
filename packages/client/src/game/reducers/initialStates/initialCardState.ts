@@ -1,4 +1,4 @@
-import { Variant } from "@hanabi/data";
+import { Variant, newArray } from "@hanabi/data";
 import * as deck from "../../rules/deck";
 import { CardState } from "../../types/CardState";
 
@@ -25,7 +25,7 @@ export function initialCardState(order: number, variant: Variant): CardState {
     possibleCardsFromClues: possibleCards,
     possibleCards,
     possibleCardsForEmpathy: possibleCards,
-    revealedToPlayer: Array.from({ length: 6 }).fill(false),
+    revealedToPlayer: newArray(6, false),
     positiveColorClues: [],
     positiveRankClues: [],
     suitDetermined: false,

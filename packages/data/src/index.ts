@@ -8,6 +8,8 @@ export * from "./types/Variant.js";
 export * from "./variants.js";
 export * from "./version.js";
 export * from "./utils.js";
+export * from "./types/ReadonlyMap.js";
+export * from "./types/ReadonlySet.js";
 
 export { default as emojis } from "./json/emojis.json";
 export { default as emotes } from "./json/emotes.json";

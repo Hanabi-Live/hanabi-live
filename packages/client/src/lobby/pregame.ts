@@ -366,8 +366,7 @@ function drawPlayerBox(i: number) {
   const variantStats = player.stats.variant;
   const averageScore = Math.round(variantStats.averageScore * 10) / 10;
   // (Round it to 1 decimal place.)
-  let averageScoreString: string;
-  averageScoreString = averageScore === 0 ? "-" : averageScore.toString();
+  const averageScoreString = averageScore === 0 ? "-" : averageScore.toString();
   let strikeoutRateString: string;
   if (variantStats.numGames > 0) {
     let strikeoutRate =

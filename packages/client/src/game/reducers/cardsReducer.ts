@@ -1,6 +1,6 @@
 // Calculates the state of the deck after an action.
 
-import { getVariant } from "@hanabi/data";
+import { getVariant, newArray } from "@hanabi/data";
 import { nullIfNegative } from "../../utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
@@ -103,15 +103,11 @@ export function cardsReducer(
         newDeck[order] = {
           ...card,
           numPositiveClues: card.numPositiveClues + 1,
-          segmentFirstClued:
-            card.segmentFirstClued === null
-              ? game.turn.segment!
-              : card.segmentFirstClued,
+          segmentFirstClued: card.segmentFirstClued ?? game.turn.segment!,
           hasClueApplied: true,
           firstCluedWhileOnChop:
-            card.firstCluedWhileOnChop === null
-              ? handRules.cardIsOnChop(hand, deck, card)
-              : card.firstCluedWhileOnChop,
+            card.firstCluedWhileOnChop ??
+            handRules.cardIsOnChop(hand, deck, card),
         };
         applyClue(order, true);
       }
@@ -174,7 +170,7 @@ export function cardsReducer(
         rankDetermined: card.rankDetermined || identityDetermined,
         revealedToPlayer:
           action.suitIndex >= 0 && action.rank >= 0
-            ? Array.from({ length: 6 }).fill(true)
+            ? newArray(6, true)
             : card.revealedToPlayer,
         possibleCards:
           action.suitIndex >= 0 && action.rank >= 0
@@ -302,20 +298,25 @@ function canPlayerSeeDrawnCard(
   if (playerIndex === drawLocation) {
     return false;
   }
+
   const characterName = getCharacterNameForPlayer(
     playerIndex,
     characterAssignments,
   );
+
   switch (characterName) {
     case "Slow-Witted": {
       return false;
     }
+
     case "Oblivious": {
       return drawLocation !== (playerIndex - 1) % numPlayers;
     }
+
     case "Blind Spot": {
       return drawLocation !== (playerIndex + 1) % numPlayers;
     }
+
     default: {
       return true;
     }

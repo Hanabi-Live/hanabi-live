@@ -835,17 +835,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return;
     }
 
-    let status: CardStatus;
-    if (
+    const status =
       this.visibleSuitIndex === null ||
       this.visibleRank === null ||
       this.visibleRank === STACK_BASE_RANK
-    ) {
-      status = CardStatus.NeedsToBePlayed; // Default status; not faded and not critical.
-    } else {
-      status =
-        visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
-    }
+        ? CardStatus.NeedsToBePlayed // Default status; not faded and not critical.
+        : visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
@@ -1347,30 +1342,28 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const index = this.state.suitIndex ?? 0;
     const { variant } = this;
     const suit = variant.suits[index]!;
-    function colorName(color: Color) {
-      return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
-    }
     const lines: string[] = [];
     if (suit.oneOfEach) {
       lines.push("Every card is unique.");
     }
     if (suit.clueColors.length > 1) {
-      const colors: string[] = [];
+      const colorsHTML: string[] = [];
       for (const color of suit.clueColors) {
-        colors.push(colorName(color));
+        const colorHTML = getColorHTML(color);
+        colorsHTML.push(colorHTML);
       }
-      lines.push(`Touched by ${colors.join(", ")} color clues`);
+      lines.push(`Touched by ${colorsHTML.join(", ")} color clues`);
     }
     if (suit.prism) {
       const cards: string[] = [];
       if (variantRules.isUpOrDown(variant)) {
-        cards.push(`START is ${colorName(variant.clueColors.at(-1)!)}`);
+        const colorHTML = getColorHTML(variant.clueColors.at(-1)!);
+        cards.push(`START is ${colorHTML}`);
       }
       for (let rank = 1; rank <= 5; rank++) {
         const prismColorIndex = (rank - 1) % variant.clueColors.length;
-        cards.push(
-          `${rank} is ${colorName(variant.clueColors[prismColorIndex]!)}`,
-        );
+        const colorHTML = getColorHTML(variant.clueColors[prismColorIndex]!);
+        cards.push(`${rank} is ${colorHTML}`);
       }
       lines.push(`Colors: ${cards.join(", ")}`);
     }
@@ -1401,4 +1394,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   getLayoutParent(): LayoutChild {
     return this._layout;
   }
+}
+
+function getColorHTML(color: Color) {
+  return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
 }

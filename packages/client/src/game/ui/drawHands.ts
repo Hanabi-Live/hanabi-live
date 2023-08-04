@@ -1,4 +1,4 @@
-import { Character, getCharacter } from "@hanabi/data";
+import { getCharacter } from "@hanabi/data";
 import Konva from "konva";
 import * as hand from "../rules/hand";
 import { CardLayout } from "./CardLayout";
@@ -336,19 +336,19 @@ export function drawHands(winW: number, winH: number): void {
       switch (numPlayers) {
         case 2: {
           blackLineX = -0.0075;
-
           break;
         }
+
         case 3: {
           blackLineX = -0.0125;
-
           break;
         }
+
         case 4: {
           blackLineX = -0.005;
-
           break;
         }
+
         default: {
           if (numPlayers === 5 && (j === 1 || j === 4)) {
             blackLineX = -0.01;
@@ -361,30 +361,32 @@ export function drawHands(winW: number, winH: number): void {
           }
         }
       }
+
       const blackLineY = 0;
       if (isHandReversed(j)) {
         switch (numPlayers) {
           case 2:
           case 3: {
             blackLineX = handValues.w + 0.002;
-
             break;
           }
+
           case 5: {
             blackLineX = handValues.w - 0.005;
-
             break;
           }
+
           case 6: {
             blackLineX = handValues.w - 0.005;
-
             break;
           }
+
           default: {
             blackLineX = handValues.w;
           }
         }
       }
+
       const blackLine = new Konva.Rect({
         x: blackLineX * winW,
         y: blackLineY * winH,
@@ -475,18 +477,16 @@ function drawDetrimentalCharacters(
   }
 
   const characterID = globals.metadata.characterAssignments[i];
-  let character: Character | undefined;
-  if (characterID === null || characterID === undefined) {
+  const character =
     // A character with an ID of null may be assigned when debugging.
-    character = {
-      id: -1,
-      name: "n/a",
-      description: "",
-      emoji: "",
-    };
-  } else {
-    character = getCharacter(characterID);
-  }
+    characterID === null || characterID === undefined
+      ? {
+          id: -1,
+          name: "n/a",
+          description: "",
+          emoji: "",
+        }
+      : getCharacter(characterID);
 
   const width2 = 0.03 * winW;
   const height2 = 0.03 * winH;

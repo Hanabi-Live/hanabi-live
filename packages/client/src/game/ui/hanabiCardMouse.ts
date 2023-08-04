@@ -8,9 +8,9 @@ import { DOUBLE_TAP_DELAY } from "./constants";
 import * as cursor from "./cursor";
 import { globals } from "./globals";
 import { HanabiCard } from "./HanabiCard";
-import { HanabiCardClick } from "./HanabiCardClick";
-import { HanabiCardClickSpeedrun } from "./HanabiCardClickSpeedrun";
-import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
+import { hanabiCardClick } from "./HanabiCardClick";
+import { hanabiCardClickSpeedrun } from "./hanabiCardClickSpeedrun";
+import { hanabiCardDblTap, hanabiCardTap } from "./HanabiCardTouchActions";
 import * as konvaTooltips from "./konvaTooltips";
 import { LayoutChild } from "./LayoutChild";
 import * as notes from "./notes";
@@ -21,9 +21,9 @@ export function registerMouseHandlers(this: HanabiCard): void {
   this.on("mouseleave", mouseLeave);
   this.on("touchstart", touchStart);
   this.on("touchend", mouseLeave);
-  this.on("click", HanabiCardClick);
-  this.on("tap", HanabiCardTap);
-  this.on("dbltap", HanabiCardDblTap);
+  this.on("click", hanabiCardClick);
+  this.on("tap", hanabiCardTap);
+  this.on("dbltap", hanabiCardDblTap);
   this.on("mousedown", mouseDown);
   this.on("mouseup", mouseUp);
 }
@@ -82,7 +82,7 @@ function touchStart(
     // A tap will trigger when the "touchend" event occurs. The next tap action will not run because
     // it will appear like the second tap of a double tap. Don't worry about this if we actually
     // double-tapped.
-    this.wasRecentlyTapped ||= true;
+    this.wasRecentlyTapped = true;
     if (globals.editingNote !== null) {
       globals.editingNote = null;
       tooltips.close(`#tooltip-${this.tooltipName}`);
@@ -109,7 +109,7 @@ function mouseDown(
 ) {
   // Speedrunning overrides the normal card clicking behavior.
   if (useSpeedrunClickHandlers()) {
-    HanabiCardClickSpeedrun(this, event.evt);
+    hanabiCardClickSpeedrun(this, event.evt);
     return;
   }
 

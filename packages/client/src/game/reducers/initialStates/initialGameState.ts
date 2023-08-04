@@ -1,4 +1,9 @@
-import { getVariant, MAX_CLUE_NUM, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import {
+  getVariant,
+  MAX_CLUE_NUM,
+  newArray,
+  UNKNOWN_CARD_RANK,
+} from "@hanabi/data";
 import { initArray } from "../../../utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
@@ -101,9 +106,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     clues: [],
     stats: {
       maxScore: variant.maxScore,
-      maxScorePerStack: Array.from({ length: variant.suits.length }).fill(
-        5,
-      ) as number[],
+      maxScorePerStack: newArray(variant.suits.length, 5),
 
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),

@@ -14,8 +14,7 @@ module.exports = {
      * Documentation:
      * https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-non-null-assertion.md
      *
-     * Defined at:
-     * https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts
+     * Defined at: https://isaacscript.github.io/eslint-config-isaacscript
      *
      * We use many variables that are only null during initialization; adding explicit type guards
      * would be superfluous.
@@ -26,8 +25,7 @@ module.exports = {
      * Documentation:
      * https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/no-cycle.md
      *
-     * Defined at:
-     * https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/imports.js
+     * Defined at: https://isaacscript.github.io/eslint-config-isaacscript
      *
      * The codebase uses cyclical dependencies because various objects are attached to the global
      * variables object, but methods of these objects also reference/change global variables.
@@ -36,22 +34,40 @@ module.exports = {
 
     /**
      * Documentation:
+     * https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/no-named-as-default.md
+     *
+     * Defined at: https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * Immer uses this import style.
+     */
+    "import/no-named-as-default": "off",
+
+    /**
+     * Documentation:
      * https://github.com/mysticatea/eslint-plugin-node/blob/master/docs/rules/file-extension-in-import.md
      *
-     * Defined in "base.js".
+     * Defined at: https://isaacscript.github.io/eslint-config-isaacscript
      *
      * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
      * is contingent upon the dependencies being up to date).
      */
     "n/file-extension-in-import": "off",
 
+    /**
+     * Documentation:
+     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-null.md
+     *
+     * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * We use lots of `null` for the time being. We can enable this rule in the far future.
+     */
     "unicorn/no-null": "off",
 
     /**
      * Documentation:
      * https://github.com/gund/eslint-plugin-deprecation
      *
-     * Defined in "base.js".
+     * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
      *
      * We use a lot of deprecated JQuery methods. If they are removed from the latest version of
      * JQuery, then we will stick with using an older version.
@@ -62,24 +78,31 @@ module.exports = {
      * Documentation:
      * https://eslint.org/docs/rules/no-param-reassign
      *
-     * Defined at:
-     * https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js
+     * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
      *
      * We allow reassigning properties of parameters, but not the parameters themselves.
      */
-    "no-param-reassign": ["error", { props: false }],
+    "no-param-reassign": [
+      "error",
+      {
+        props: false,
+      },
+    ],
 
     /**
      * Documentation:
      * https://eslint.org/docs/rules/no-underscore-dangle
      *
-     * Defined at:
-     * https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
+     * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
      *
      * KineticJS has functions that are prefixed with an underscore.
      */
     "no-underscore-dangle": ["off"],
 
-    "@typescript-eslint/consistent-type-imports": "off", // TODO REMOVE
+    // TODO REMOVE
+    "@typescript-eslint/consistent-type-imports": "off",
+
+    "@typescript-eslint/prefer-enum-initializers": "off",
+    "isaacscript/no-number-enums": "off",
   },
 };

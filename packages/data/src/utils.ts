@@ -10,6 +10,11 @@ export function capitalizeFirstLetter(string: string): string {
   return `${capitalizedFirstLetter}${restOfString}`;
 }
 
+/** Initializes an array with all elements containing the specified default value. */
+export function newArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
+}
+
 /**
  * This is a more reliable version of `parseInt`. By default, `parseInt('1a')` will return "1",
  * which is unexpected. This returns either an integer or NaN.

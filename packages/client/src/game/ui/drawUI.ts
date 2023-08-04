@@ -461,17 +461,10 @@ function drawPlayStacks() {
 }
 
 function drawDiscardStacks() {
-  let discardStackSpacing: number;
-  if (globals.variant.suits.length === 6) {
-    discardStackSpacing = 0.038;
-  } else {
-    // 3, 4, or 5 stacks.
-    discardStackSpacing = 0.047;
-  }
+  const discardStackSpacing =
+    globals.variant.suits.length === 6 ? 0.038 : 0.047;
 
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i]!;
-
+  for (const [i, suit] of globals.variant.suits.entries()) {
     // Make the discard stack for this suit.
     const discardStack = new CardLayout({
       x: 0.81 * winW,
@@ -945,9 +938,9 @@ function drawScoreArea() {
     }
 
     switch (event.evt.button) {
+      // Left-click. Left-clicking a strike X or a strike square takes us to the turn that the
+      // strike happened.
       case 0: {
-        // Left-click. Left-clicking a strike X or a strike square takes us to the turn that the
-        // strike happened.
         const { strikes } = globals.state.ongoingGame;
         const strike = strikes[this.num];
         if (strike === undefined) {
@@ -964,37 +957,32 @@ function drawScoreArea() {
         break;
       }
 
+      // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
+      // square.
       case 2: {
-        // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
-        // square.
         let order: ReplayArrowOrder;
         switch (this.num) {
           case 0: {
             order = ReplayArrowOrder.Strike1;
-
             break;
           }
+
           case 1: {
             order = ReplayArrowOrder.Strike2;
-
             break;
           }
+
           case 2: {
             order = ReplayArrowOrder.Strike3;
-
             break;
           }
+
           default: {
             throw new Error(`Unknown strike number of ${this.num}".`);
           }
         }
 
         arrows.click(event, order);
-
-        break;
-      }
-
-      default: {
         break;
       }
     }

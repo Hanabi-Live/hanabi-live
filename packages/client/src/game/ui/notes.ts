@@ -1,11 +1,24 @@
 // Users can right-click cards to record information on them.
 
-import { STACK_BASE_RANK } from "@hanabi/data";
+import { ReadonlySet, STACK_BASE_RANK } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
 import { HanabiCard } from "./HanabiCard";
+
+const KEYS_REMOVING_PIPE = new ReadonlySet([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Home",
+  "End",
+  "Backspace",
+  "Delete",
+]);
+const KEYS_CLOSING_NOTE = new ReadonlySet(["Enter", "Escape"]);
+const KEYS_META = new ReadonlySet(["Control", "Alt", "Shift"]);
 
 function escapeHtml(unsafe: string): string {
   return unsafe
@@ -170,26 +183,14 @@ export function openEditTooltip(
 
   const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;
-  const keysRemovingPipe = new Set([
-    "ArrowLeft",
-    "ArrowRight",
-    "ArrowUp",
-    "ArrowDown",
-    "Home",
-    "End",
-    "Backspace",
-    "Delete",
-  ]);
-  const keysClosingNote = new Set(["Enter", "Escape"]);
-  const keysMeta = new Set(["Control", "Alt", "Shift"]);
 
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const { key } = event;
 
     // Only check the first time if the key is a special one.
-    if (!keysMeta.has(key)) {
-      if (shouldRemovePipe && keysRemovingPipe.has(key)) {
+    if (!KEYS_META.has(key)) {
+      if (shouldRemovePipe && KEYS_REMOVING_PIPE.has(key)) {
         // Restore the old note, removing the pipe.
         if (key !== "Home") {
           event.preventDefault();
@@ -199,7 +200,7 @@ export function openEditTooltip(
       shouldRemovePipe = false;
     }
 
-    if (!keysClosingNote.has(key)) {
+    if (!KEYS_CLOSING_NOTE.has(key)) {
       return;
     }
 

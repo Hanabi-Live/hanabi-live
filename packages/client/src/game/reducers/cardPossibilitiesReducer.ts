@@ -1,6 +1,6 @@
 // Calculates the state of a card after a clue.
 
-import { getVariant, Variant } from "@hanabi/data";
+import { getVariant, newArray, Variant } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
 import { isOddsAndEvens } from "../rules/variant";
 import { CardState } from "../types/CardState";
@@ -112,7 +112,7 @@ function updateIdentity(
     rankDetermined,
     revealedToPlayer:
       suitDetermined && rankDetermined
-        ? Array.from({ length: 6 }).fill(true)
+        ? newArray(6, true)
         : state.revealedToPlayer,
   };
 }

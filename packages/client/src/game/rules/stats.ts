@@ -1,6 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import { MAX_CLUE_NUM, Variant } from "@hanabi/data";
+import { MAX_CLUE_NUM, Variant, newArray } from "@hanabi/data";
 import { CardNote } from "../types/CardNote";
 import { CardState } from "../types/CardState";
 import { GameState, PaceRisk } from "../types/GameState";
@@ -305,14 +305,14 @@ export function cluesStillUsableNotRounded(
     const minPlaysBeforeFinalRound =
       maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
-    for (const [suitIndex, element] of scorePerStack.entries()) {
-      if (maxScorePerStack[suitIndex] === 5 && element < 5) {
+    for (const [suitIndex, stackScore] of scorePerStack.entries()) {
+      if (maxScorePerStack[suitIndex] === 5 && stackScore < 5) {
         missingCardsPerCompletableSuit.push(
-          maxScorePerStack[suitIndex]! - element,
+          maxScorePerStack[suitIndex]! - stackScore,
         );
       }
     }
-    missingCardsPerCompletableSuit.sort();
+    missingCardsPerCompletableSuit.sort((n1, n2) => n1 - n2);
     let cardsPlayed = 0;
     let suitsCompletedBeforeFinalRound = 0;
     for (const missingCardsInSuit of missingCardsPerCompletableSuit) {
@@ -364,10 +364,8 @@ export function startingCluesUsable(
   variant: Variant,
 ): number {
   const score = 0;
-
-  const scorePerStack = Array.from({ length: variant.suits.length }).fill(0);
-
-  const maxScorePerStack = Array.from({ length: variant.suits.length }).fill(5);
+  const scorePerStack = newArray(variant.suits.length, 0);
+  const maxScorePerStack = newArray(variant.suits.length, 5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
   const startingClues = cluesStillUsable(

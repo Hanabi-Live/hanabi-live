@@ -1,6 +1,5 @@
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import { ReadonlyMap, STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import equal from "fast-deep-equal";
-import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
@@ -58,8 +57,11 @@ export function onPlayStackDirectionsChanged(
 
       globals.elements.suitLabelTexts[i]!.fitText(text);
 
-      for (const c of globals.deck.filter((c) => c.visibleSuitIndex === i)) {
-        c.setDirectionArrow(i, direction);
+      const filteredCards = globals.deck.filter(
+        (card) => card.visibleSuitIndex === i,
+      );
+      for (const card of filteredCards) {
+        card.setDirectionArrow(i, direction);
       }
     }
     globals.layers.UI.batchDraw();
@@ -207,8 +209,6 @@ function syncChildren(
   getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
 ) {
-  const getCard = (order: number) => globals.deck[order];
-
   for (const [i, collection] of collections.entries()) {
     const getCurrentSorting = () =>
       (getCollectionUI(i).children.toArray() as LayoutChild[])
@@ -216,12 +216,11 @@ function syncChildren(
         .filter((card) => card.state.rank !== STACK_BASE_RANK)
         .map((card) => card.state.order);
 
-    let current = getCurrentSorting();
+    let currentSorting = getCurrentSorting();
 
     // Remove the elements that were removed.
-    for (const card of current
-      .filter((n) => !collection.includes(n))
-      .map(getCard)) {
+    const currentSortingCards = currentSorting.map(getCard);
+    for (const card of currentSortingCards) {
       const realState =
         globals.store?.getState().visibleState?.deck[card!.state.order];
       if (realState === undefined || realState.location === "deck") {
@@ -232,25 +231,26 @@ function syncChildren(
     }
 
     // Add the elements that were added.
-    for (const card of collection
-      .filter((n) => !current.includes(n))
-      .map(getCard)) {
+    const collectionCards = collection.map(getCard);
+    for (const card of collectionCards) {
       addToCollectionUI(card!, i);
     }
 
     // Reorder the elements to match the collection.
     for (const [pos, order] of collection.entries()) {
-      current = getCurrentSorting();
-      if (current.length !== collection.length) {
+      currentSorting = getCurrentSorting();
+      if (currentSorting.length !== collection.length) {
         throw new Error("The UI collection is out of sync with the state.");
       }
 
       const layoutChild = getCard(order)!.parent as unknown as LayoutChild;
-      let sourcePosition = current.indexOf(order);
+      let sourcePosition = currentSorting.indexOf(order);
+
       while (sourcePosition < pos) {
         layoutChild.moveUp();
         sourcePosition++;
       }
+
       while (sourcePosition > pos) {
         layoutChild.moveDown();
         sourcePosition--;
@@ -258,9 +258,13 @@ function syncChildren(
     }
 
     // Verify the final result.
-    current = getCurrentSorting();
-    if (!equal(current, collection)) {
+    currentSorting = getCurrentSorting();
+    if (!equal(currentSorting, collection)) {
       throw new Error("The UI collection is out of sync with the state.");
     }
   }
+}
+
+function getCard(order: number) {
+  return globals.deck[order];
 }

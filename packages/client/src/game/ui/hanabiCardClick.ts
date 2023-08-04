@@ -12,7 +12,7 @@ import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
-export function HanabiCardClick(
+export function hanabiCardClick(
   this: HanabiCard,
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
@@ -32,25 +32,25 @@ export function HanabiCardClick(
 
   const mouseEvent = event.evt;
   switch (mouseEvent.button) {
+    // Left-click
     case 0: {
-      // Left-click
       clickLeft(this, mouseEvent);
 
       break;
     }
+
+    // Middle-click
     case 1: {
-      // Middle-click
       clickMiddle(this, mouseEvent);
 
       break;
     }
-    case 2: {
-      // Right-click
-      clickRight(this, mouseEvent);
 
+    // Right-click
+    case 2: {
+      clickRight(this, mouseEvent);
       break;
     }
-    // No default
   }
 }
 

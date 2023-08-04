@@ -67,26 +67,28 @@ function makeBorder(color: string) {
     listening: false,
   });
 
-  const borderConfig = (strokeWidth: number, stroke: string): RectConfig => ({
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
-    strokeWidth,
-    stroke,
-    listening: false,
-  });
-
   const borderOutside = new Konva.Rect(
-    borderConfig(borderStrokeWidth, borderOutsideColor),
+    getBorderConfig(borderStrokeWidth, borderOutsideColor),
   );
   const borderInside = new Konva.Rect(
-    borderConfig(borderStrokeWidthInside, color),
+    getBorderConfig(borderStrokeWidthInside, color),
   );
 
   border.add(borderOutside);
   border.add(borderInside);
 
   return border;
+}
+
+function getBorderConfig(strokeWidth: number, stroke: string): RectConfig {
+  return {
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth,
+    stroke,
+    listening: false,
+  };
 }
 
 export const cluedBorder = (): Konva.Group => makeBorder(CLUED_COLOR);

@@ -40,24 +40,26 @@ export function onChanged(
     switch (action.type) {
       case ActionType.Play: {
         text += "Play";
-
         break;
       }
+
       case ActionType.Discard: {
         text += "Discard";
-
         break;
       }
+
       case ActionType.ColorClue:
       case ActionType.RankClue: {
         text += "Clue";
-
         break;
       }
-      // No default
-    }
-    globals.elements.premoveCancelButton?.text(text);
 
+      case ActionType.GameOver: {
+        break;
+      }
+    }
+
+    globals.elements.premoveCancelButton?.text(text);
     globals.layers.UI.batchDraw();
   }
 }

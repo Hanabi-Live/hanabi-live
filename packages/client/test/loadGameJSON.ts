@@ -54,8 +54,13 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   let turn = 0; // Start on the 0th turn
   let currentPlayerIndex = 0; // The player at index 0 goes first
 
-  for (const a of gameJSON.actions) {
-    const action = parseJSONAction(currentPlayerIndex, turn, gameJSON.deck, a);
+  for (const actionJSON of gameJSON.actions) {
+    const action = parseJSONAction(
+      currentPlayerIndex,
+      turn,
+      gameJSON.deck,
+      actionJSON,
+    );
     if (action !== null) {
       actions.push(action);
       if (
@@ -76,6 +81,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // server would do when emulating all of the database actions.
   const finalGameJSONAction = gameJSON.actions.at(-1)!;
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions.push({
       type: "gameOver",
@@ -95,6 +101,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // Calculate all the intermediate states.
   const states: GameState[] = [state.ongoingGame];
 
+  // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
     let action = a;
     let nextState = s;
@@ -276,18 +283,18 @@ function parseJSONAction(
   currentPlayer: number,
   turn: number,
   deck: CardIdentity[],
-  a: JSONAction,
+  jsonAction: JSONAction,
 ): GameAction | null {
-  switch (a.type) {
+  switch (jsonAction.type) {
     case JSONActionType.ActionTypePlay:
     case JSONActionType.ActionTypeDiscard: {
-      const isPlay = a.type === JSONActionType.ActionTypePlay;
+      const isPlay = jsonAction.type === JSONActionType.ActionTypePlay;
       const action = {
         type: isPlay ? "play" : "discard",
         playerIndex: currentPlayer,
-        order: a.target,
-        suitIndex: deck[a.target]!.suitIndex,
-        rank: deck[a.target]!.rank,
+        order: jsonAction.target,
+        suitIndex: deck[jsonAction.target]!.suitIndex,
+        rank: deck[jsonAction.target]!.rank,
       };
       return isPlay ? (action as ActionPlay) : (action as ActionDiscard);
     }
@@ -297,13 +304,13 @@ function parseJSONAction(
         type: "clue",
         clue: {
           type:
-            a.type === JSONActionType.ActionTypeColorClue
+            jsonAction.type === JSONActionType.ActionTypeColorClue
               ? ClueType.Color
               : ClueType.Rank,
-          value: a.value,
+          value: jsonAction.value,
         },
         giver: currentPlayer,
-        target: a.target,
+        target: jsonAction.target,
         turn,
         list: [],
       } as ActionClue;
@@ -311,8 +318,8 @@ function parseJSONAction(
     case JSONActionType.ActionTypeGameOver: {
       return {
         type: "gameOver",
-        endCondition: a.value,
-        playerIndex: a.target,
+        endCondition: jsonAction.value,
+        playerIndex: jsonAction.target,
         votes: [],
       };
     }

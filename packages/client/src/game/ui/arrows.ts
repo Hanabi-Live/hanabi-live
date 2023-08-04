@@ -99,18 +99,15 @@ export function set(
     arrow.text.hide();
   } else {
     // This is a clue arrow.
-    let color: string;
-    if (
+    const color =
       element instanceof HanabiCard &&
       (element.state.numPositiveClues >= 2 ||
         (element.state.numPositiveClues >= 1 && preview))
-    ) {
-      // Cards that are re-clued use a different color.
-      color = ARROW_COLOR.RETOUCHED;
-    } else {
-      // Freshly touched cards use the default color.
-      color = ARROW_COLOR.DEFAULT;
-    }
+        ? // Cards that are re-clued use a different color.
+          ARROW_COLOR.RETOUCHED
+        : // Freshly touched cards use the default color.
+          ARROW_COLOR.DEFAULT;
+
     arrow.base.stroke(color);
     arrow.base.fill(color);
 
@@ -218,67 +215,73 @@ export function set(
   }
 }
 
-function getPos(element: Konva.Node, rot: number) {
-  // Start by using the absolute position of the element.
-  const pos = element.getAbsolutePosition();
-
-  if (element instanceof HanabiCard) {
-    // Order = 0 through N. If we set the arrow at the absolute position of a card, it will point to
-    // the exact center. Instead, back it off a little bit (accounting for the rotation of the
-    // hand).
-    const winH = globals.stage.height();
-    const distance = -0.075 * winH;
-    const rotRadians = (-rot / 180) * Math.PI;
-    pos.x += distance * Math.sin(rotRadians); // sin(x) = cos(x + (PI * 3 / 2))
-    pos.y -= distance * -Math.cos(rotRadians); // -cos(x) = sin(x + (PI * 3 / 2))
-  } else {
-    switch (element) {
-      case globals.elements.deck: {
-        // Order = ReplayArrowOrder.Deck (-1).
-        pos.x += element.width() * 0.5;
-        pos.y += element.height() * 0.1;
-
-        break;
-      }
-      case globals.elements.turnNumberLabel:
-      case globals.elements.scoreNumberLabel:
-      case globals.elements.playsNumberLabel:
-      case globals.elements.cluesNumberLabel: {
-        pos.x += element.width() * 0.15;
-
-        break;
-      }
-      case globals.elements.maxScoreNumberLabel: {
-        // Order = ReplayArrowOrder.MaxScore (-4).
-        pos.x += element.width() * 0.7;
-
-        break;
-      }
-      default: {
-        if (element instanceof StrikeSquare) {
-          // Order = ReplayArrowOrder.Strike1 (-6). Order = ReplayArrowOrder.Strike2 (-7). Order =
-          // ReplayArrowOrder.Strike3 (-8).
-          pos.x += element.width() * 0.5;
-        } else {
-          // Order = ReplayArrowOrder.Pace (-9). Order = ReplayArrowOrder.Efficiency (-10). Order =
-          // ReplayArrowOrder.MinEfficiency (-11). The type of Konva.Text.width is "any" for some reason.
-          const textElement = element as Konva.Text;
-          const width = textElement.measureSize(textElement.text())
-            .width as number;
-          if (typeof width !== "number") {
-            throw new TypeError("The width of the element was not a number.");
-          }
-          pos.x += width / 2;
-        }
-      }
-    }
-  }
+function getPos(element: Konva.Node, rot: number): { x: number; y: number } {
+  const pos = getPosUnsafe(element, rot);
 
   if (Number.isNaN(pos.x) || Number.isNaN(pos.y)) {
     throw new TypeError(
       "Failed to get the position for the element when drawing an arrow.",
     );
   }
+
+  return pos;
+}
+
+function getPosUnsafe(
+  element: Konva.Node,
+  rot: number,
+): { x: number; y: number } {
+  // Start by using the absolute position of the element.
+  const pos = element.getAbsolutePosition();
+
+  if (element instanceof HanabiCard) {
+    // If we set the arrow at the absolute position of a card, it will point to the exact center.
+    // Instead, back it off a little bit (accounting for the rotation of the hand).
+    const winH = globals.stage.height();
+    const distance = -0.075 * winH;
+    const rotRadians = (-rot / 180) * Math.PI;
+    pos.x += distance * Math.sin(rotRadians); // sin(x) = cos(x + (PI * 3 / 2))
+    pos.y -= distance * -Math.cos(rotRadians); // -cos(x) = sin(x + (PI * 3 / 2))
+
+    return pos;
+  }
+
+  switch (element) {
+    case globals.elements.deck: {
+      pos.x += element.width() * 0.5;
+      pos.y += element.height() * 0.1;
+
+      return pos;
+    }
+
+    case globals.elements.turnNumberLabel:
+    case globals.elements.scoreNumberLabel:
+    case globals.elements.playsNumberLabel:
+    case globals.elements.cluesNumberLabel: {
+      pos.x += element.width() * 0.15;
+
+      return pos;
+    }
+
+    case globals.elements.maxScoreNumberLabel: {
+      pos.x += element.width() * 0.7;
+
+      return pos;
+    }
+  }
+
+  if (element instanceof StrikeSquare) {
+    pos.x += element.width() * 0.5;
+    return pos;
+  }
+
+  // Assume that this is a text element.
+  const textElement = element as Konva.Text;
+  const width = textElement.measureSize(textElement.text()).width as number;
+  if (typeof width !== "number") {
+    throw new TypeError("The width of the element was not a number.");
+  }
+  pos.x += width / 2;
 
   return pos;
 }

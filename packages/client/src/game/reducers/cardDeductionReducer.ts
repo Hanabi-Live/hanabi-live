@@ -291,7 +291,6 @@ function canBeUsedToDisprovePossibility(
   playerIndex: number,
 ) {
   return (
-    card !== undefined &&
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.

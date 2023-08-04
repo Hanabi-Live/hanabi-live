@@ -26,23 +26,29 @@ export function observeStore<S, A extends Action<unknown>, T>(
     }
 
     // If the path changed, call the function.
-    for (const s of subscriptions.filter((s) => {
+    const filteredSubscriptions = subscriptions.filter((s) => {
       const nextValue = s.select(nextState);
       if (nextValue === undefined) {
         // The selector wants to skip this one.
         return false;
       }
+
       if (currentState === undefined) {
         // Initializing, always fire all.
         return true;
       }
+
       // Fire if any part of it changed.
       return !equal(nextValue, s.select(currentState));
-    })) {
+    });
+
+    for (const subscription of filteredSubscriptions) {
       // `currentState` is undefined during initialization.
       const currentValue =
-        currentState === undefined ? undefined : s.select(currentState);
-      s.onChange(s.select(nextState)!, currentValue);
+        currentState === undefined
+          ? undefined
+          : subscription.select(currentState);
+      subscription.onChange(subscription.select(nextState)!, currentValue);
     }
 
     currentState = nextState;

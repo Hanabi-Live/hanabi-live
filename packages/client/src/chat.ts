@@ -12,9 +12,9 @@ import * as modals from "./modals";
 import { ChatMessage } from "./types/ChatMessage";
 
 export enum SelfChatMessageType {
-  Normal,
-  Info,
-  Error,
+  Normal = "Normal",
+  Info = "Info",
+  Error = "Error",
 }
 
 const emojiMap = new Map<string, string>();
@@ -54,8 +54,7 @@ export function init(): void {
   // Make an emote list/map and ensure that there are no overlapping emotes.
   const emoteMap = new Map<string, boolean>(); // The map can be ephemeral
   for (const emotesInCategory of Object.values(emotes)) {
-    const emotesArray = [...emotesInCategory];
-    for (const emoteName of emotesArray) {
+    for (const emoteName of emotesInCategory) {
       if (emoteMap.has(emoteName)) {
         throw new Error(`Duplicate emote found: ${emoteName}`);
       }
@@ -242,6 +241,10 @@ function sendText(room: string, msgRaw: string) {
 function keydown(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
 
+  if (event.which === undefined) {
+    return;
+  }
+
   // The up and down arrows are only caught in the "keydown" event:
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus.
@@ -249,27 +252,25 @@ function keydown(this: HTMLElement, event: JQuery.Event) {
     case KeyCode.KEY_UP: {
       event.preventDefault();
       arrowUp(element);
-
       break;
     }
+
     case KeyCode.KEY_DOWN: {
       event.preventDefault();
       arrowDown(element);
-
       break;
     }
+
     case KeyCode.KEY_TAB: {
       event.preventDefault();
       tab(element, event);
-
       break;
     }
-    default: {
-      if (
-        [KeyCode.KEY_BACK_SPACE, KeyCode.KEY_DELETE].includes(event.which ?? 0)
-      ) {
-        typedChatHistoryIndex = null;
-      }
+
+    case KeyCode.KEY_BACK_SPACE:
+    case KeyCode.KEY_DELETE: {
+      typedChatHistoryIndex = null;
+      break;
     }
   }
 }
@@ -388,6 +389,7 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   }
 
   // Set the starting index, depending on whether or not we are pressing shift.
+  // eslint-disable-next-line unicorn/prefer-ternary
   if (event.shiftKey === true) {
     // Shift-tab goes backwards.
     tabCompleteWordListIndex = tabCompleteWordList.length - 1;
@@ -513,15 +515,17 @@ export function add(data: ChatMessage, fast: boolean): void {
       '<span class="red">[Server Notice]</span>',
     );
   }
+
   // Replace chat suggestions with anchors which, when clicked, are chat commands.
   if (chat.is($("#lobby-chat-pregame-text"))) {
-    const regex = /(.*)(@(\/.*)@)(.*)/;
+    const regex = /(.*)(@(\/.*)@)(.*)/; // eslint-disable-line prefer-named-capture-group
     let match = regex.exec(line);
     while (match !== null) {
       line = `${match[1]}<a href="#" class="suggestion">${match[3]}</a>${match[4]}`;
       match = regex.exec(line);
     }
   }
+
   line += "</span>";
 
   // Find out if we should automatically scroll down after adding the new line of chat:
@@ -539,10 +543,10 @@ export function add(data: ChatMessage, fast: boolean): void {
   // Add the new line and fade it in.
   chat.append(line);
   $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME).css("display", "block");
-  $(`#chat-line-${chatLineNum} a.suggestion`).each((_, el) => {
-    const text = el.innerText;
+  $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
+    const text = element.textContent ?? "";
     const chatInput = $("#lobby-chat-pregame-input");
-    $(el).on("click", () => {
+    $(element).on("click", () => {
       chatInput.val(text);
       chatInput.trigger("focus");
     });
@@ -596,11 +600,11 @@ function fillDiscordEmotes(message: string) {
   let filledMessed = message;
   // eslint-disable-next-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
   while (true) {
-    const match = /&lt;:(.+?):(\d+?)&gt;/.exec(filledMessed);
-    if (match === null) {
+    const match = /&lt;:(?<title>.+?):(?<fileName>\d+?)&gt;/.exec(filledMessed);
+    if (match === null || match.groups === undefined) {
       break;
     }
-    const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match[2]}.png" title="${match[1]}" height="28">`;
+    const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match.groups["fileName"]}.png" title="${match.groups["title"]}" height="28">`;
     filledMessed = filledMessed.replace(match[0]!, emoteTag);
   }
   return filledMessed;
@@ -626,8 +630,7 @@ function fillTwitchEmotes(message: string) {
 
   // Search through the text for each emote.
   for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
-    const emoteArray = [...emotesInCategory];
-    for (const emote of emoteArray) {
+    for (const emote of emotesInCategory) {
       // We don't want to replace the emote if it is followed by a quote, because we don't want to
       // replace Discord emotes.
       const index = message.indexOf(emote);
@@ -652,6 +655,7 @@ function fillTwitchEmotes(message: string) {
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
+    // eslint-disable-next-line prefer-named-capture-group
     const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
     filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces
   }
@@ -673,26 +677,28 @@ export function updatePeopleTyping(): void {
   switch (globals.peopleTyping.length) {
     case 1: {
       msg = `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
-
       break;
     }
+
     case 2: {
       msg = `<strong>${globals.peopleTyping[0]}</strong> and `;
       msg += `<strong>${globals.peopleTyping[1]}</strong> are typing...`;
-
       break;
     }
+
     case 3: {
       msg = `<strong>${globals.peopleTyping[0]}</strong>, `;
       msg += `<strong>${globals.peopleTyping[1]}</strong>, `;
       msg += `and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
-
       break;
     }
+
     default: {
       msg = "Several people are typing...";
+      break;
     }
   }
+
   chat1.html(msg);
   chat2.html(msg);
 }

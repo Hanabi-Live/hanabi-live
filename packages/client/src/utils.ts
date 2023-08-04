@@ -61,8 +61,10 @@ export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-export function negativeOneIfNull(x: number | null | undefined): number {
-  return x === null || x === undefined ? -1 : x;
+export function negativeOneIfNullOrUndefined(
+  x: number | null | undefined,
+): number {
+  return x ?? -1;
 }
 
 function pad2(num: number) {
@@ -79,7 +81,7 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
     .toString()
     // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable.
     .replaceAll("=&", "&")
-    .replace(/[=]$/, "");
+    .replace(/=$/, "");
 
   let path = newPath;
   if (modifiedQueryParameters.length > 0) {
