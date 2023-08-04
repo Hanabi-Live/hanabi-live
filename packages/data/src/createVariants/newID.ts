@@ -6,7 +6,7 @@ import { ReadonlySet } from "../types/ReadonlySet.js";
 import type { SuitJSON } from "../types/SuitJSON.js";
 import type { VariantJSON } from "../types/VariantJSON.js";
 import { parseIntSafe } from "../utils.js";
-import { error } from "./utils.js";
+import { fatalError } from "./utils.js";
 
 const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";
@@ -19,7 +19,11 @@ export function getVariantFromNewID(
   suitsIDMap: Map<string, SuitJSON>,
 ): VariantJSON {
   const [suitsString, ...variantModifiers] = newID.split(VARIANT_DELIMITER);
-  const suitIDsWithModifiers = suitsString!.split(SUIT_DELIMITER);
+  if (suitsString === undefined) {
+    fatalError(`Failed to parse the new ID: ${newID}`);
+  }
+
+  const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
   const suitNames = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
 
   const variant: VariantJSON = {
@@ -31,10 +35,13 @@ export function getVariantFromNewID(
 
   for (const suitIDWithModifiers of suitIDsWithModifiers) {
     const [suitID] = splitSuitID(suitIDWithModifiers);
+    if (suitID === undefined) {
+      fatalError(`Failed to parse the suit ID: ${suitIDWithModifiers}`);
+    }
 
-    const suit = suitsIDMap.get(suitID!);
+    const suit = suitsIDMap.get(suitID);
     if (suit === undefined) {
-      error(`Failed to find a suit with an ID of: ${suitID}`);
+      fatalError(`Failed to find a suit with an ID of: ${suitID}`);
     }
 
     if (suit.showSuitName === true) {
@@ -43,6 +50,10 @@ export function getVariantFromNewID(
   }
 
   for (const variantModifier of variantModifiers) {
+    if (variantModifier.length < 2) {
+      fatalError(`Failed to parse the variant modifier: ${variantModifier}`);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const secondCharacter = variantModifier[1]!;
     const secondCharacterNumber = parseIntSafe(secondCharacter);
     const specialRank = Number.isNaN(secondCharacterNumber)
@@ -229,7 +240,7 @@ export function getVariantFromNewID(
     }
 
     if (variant.specialRank === 0) {
-      error("Failed to parse the special rank from the variant modifier.");
+      fatalError("Failed to parse the special rank from the variant modifier.");
     }
   }
 
@@ -242,15 +253,18 @@ function getSuitNamesFromSuitID(
 ) {
   return suitIDsWithModifiers.map((suitIDWithModifiers) => {
     const [suitID, ...modifiers] = splitSuitID(suitIDWithModifiers);
+    if (suitID === undefined) {
+      fatalError(`Failed to parse the suit ID: ${suitIDWithModifiers}`);
+    }
 
-    const suit = suitsIDMap.get(suitID!);
+    const suit = suitsIDMap.get(suitID);
     if (suit === undefined) {
-      error(`Failed to find a suit with an ID of: ${suitID}`);
+      fatalError(`Failed to find a suit with an ID of: ${suitID}`);
     }
 
     for (const modifier of modifiers) {
       if (!SUIT_MODIFIERS.has(modifier)) {
-        error(
+        fatalError(
           `Suit "${suit.name}" has an unknown modifier of "${modifier}" in the suit ID of: ${suitIDWithModifiers}`,
         );
       }

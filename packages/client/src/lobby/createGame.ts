@@ -4,8 +4,8 @@ import {
   DEFAULT_VARIANT_NAME,
   doesVariantExist,
   getVariantNames,
+  parseIntSafe,
 } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
@@ -325,7 +325,7 @@ function submit() {
       'The value of the "createTableJSON" element is not a string.',
     );
   }
-  let gameJSON: unknown | undefined;
+  let gameJSON: unknown;
   if (gameJSONString !== "") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
@@ -393,9 +393,9 @@ function acceptOptionsFromGuest(options: Options) {
 }
 
 function getCheckbox(setting: keyof Settings) {
-  const element = document.getElementById(setting) as HTMLInputElement | null;
-  if (element === null) {
-    throw new Error(`Failed to get the element of "${setting}".`);
+  const element = document.querySelector(`#${setting}`);
+  if (!(element instanceof HTMLInputElement)) {
+    throw new TypeError(`Failed to get the element of "${setting}".`);
   }
   const value = element.checked;
   checkChanged(setting, value);
