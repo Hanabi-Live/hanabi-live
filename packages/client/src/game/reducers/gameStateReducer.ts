@@ -268,11 +268,9 @@ function gameStateReducerFunction(
         const playerName = getPlayerName(i, metadata);
 
         let text: string;
-        if (metadata.options.timed) {
-          text = `${playerName} had ${durationString} left`;
-        } else {
-          text = `${playerName} took: ${durationString}`;
-        }
+        text = metadata.options.timed
+          ? `${playerName} had ${durationString} left`
+          : `${playerName} took: ${durationString}`;
         state.log.push({
           turn: state.turn.turnNum + 1,
           text,
@@ -358,7 +356,7 @@ function gameStateReducerFunction(
     action.suitIndex >= 0 &&
     action.rank >= 0
   ) {
-    variant.ranks.forEach((rank) => {
+    for (const rank of variant.ranks) {
       state.cardStatus[action.suitIndex]![rank] = cardRules.status(
         action.suitIndex,
         rank,
@@ -368,7 +366,7 @@ function gameStateReducerFunction(
         state.playStackStarts,
         variant,
       );
-    });
+    }
   }
 
   // Use a sub-reducer to calculate the turn.

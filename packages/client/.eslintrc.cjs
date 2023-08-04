@@ -79,5 +79,7 @@ module.exports = {
      * KineticJS has functions that are prefixed with an underscore.
      */
     "no-underscore-dangle": ["off"],
+
+    "@typescript-eslint/consistent-type-imports": "off", // TODO REMOVE
   },
 };

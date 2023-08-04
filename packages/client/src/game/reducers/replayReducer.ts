@@ -37,7 +37,7 @@ function replayReducerFunction(
       state.active = true;
 
       if (typeof action.segment !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -58,7 +58,7 @@ function replayReducerFunction(
 
     case "replaySegment": {
       if (typeof action.segment !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -77,7 +77,7 @@ function replayReducerFunction(
         );
       }
       if (typeof action.segment !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -176,7 +176,7 @@ function replayReducerFunction(
 
       const hypoStates = state.hypothetical.states;
       hypoStates.pop();
-      const lastState = hypoStates[hypoStates.length - 1]!;
+      const lastState = hypoStates.at(-1)!;
       state.hypothetical.ongoing = lastState;
       break;
     }
@@ -192,24 +192,24 @@ function replayReducerFunction(
       if (action.showDrawnCards) {
         // Filter out all identities morphed to blank.
 
-        original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
-          (order) => {
-            state.hypothetical!.morphedIdentities[order] = {
-              rank: CardIdentityType.Original,
-              suitIndex: CardIdentityType.Original,
-            };
-          },
-        );
+        for (const order of original(
+          state.hypothetical.drawnCardsInHypothetical,
+        )!) {
+          state.hypothetical.morphedIdentities[order] = {
+            rank: CardIdentityType.Original,
+            suitIndex: CardIdentityType.Original,
+          };
+        }
       } else {
         // Hide all cards drawn since the beginning of the hypothetical.
-        original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
-          (order) => {
-            state.hypothetical!.morphedIdentities[order] = {
-              rank: null,
-              suitIndex: null,
-            };
-          },
-        );
+        for (const order of original(
+          state.hypothetical.drawnCardsInHypothetical,
+        )!) {
+          state.hypothetical.morphedIdentities[order] = {
+            rank: null,
+            suitIndex: null,
+          };
+        }
       }
 
       break;
@@ -244,9 +244,7 @@ function hypoAction(
   // identities.
   if (action.type === "morph") {
     if (
-      // eslint-disable-next-line isaacscript/strict-enums
       action.suitIndex === CardIdentityType.Original &&
-      // eslint-disable-next-line isaacscript/strict-enums
       action.rank === CardIdentityType.Original
     ) {
       // unmorph the card

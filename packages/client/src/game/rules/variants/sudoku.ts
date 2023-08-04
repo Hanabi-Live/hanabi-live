@@ -15,11 +15,10 @@ export function sudokuCanStillBePlayed(
   );
 
   let possibleStarts: number[];
-  if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
-    possibleStarts = [playStackStarts[suitIndex]!];
-  } else {
-    possibleStarts = sudokuGetFreeStackStarts(playStackStarts);
-  }
+  possibleStarts =
+    playStackStarts[suitIndex] === UNKNOWN_CARD_RANK
+      ? sudokuGetFreeStackStarts(playStackStarts)
+      : [playStackStarts[suitIndex]!];
 
   for (const stackStart of possibleStarts) {
     // Here, we check if we can play the specified card if we start the stack at 'stackStart'. For
@@ -100,26 +99,28 @@ export function getMaxScorePerStack(
   playStackStarts: readonly number[],
   variant: Variant,
 ): number[] {
-  const independentPartOfMaxScore = new Array<number>(playStackStarts.length);
-  const maxPartialScores = new Array<number[]>(5);
+  const independentPartOfMaxScore = Array.from({
+    length: playStackStarts.length,
+  });
+  const maxPartialScores = Array.from({ length: 5 });
   const unassignedSuits: number[] = [];
 
   // Find the suits for which we need to solve the assignment problem.
-  playStackStarts.forEach((stackStart, suitIndex) => {
+  for (const [suitIndex, stackStart] of playStackStarts.entries()) {
     const [allMax, suitMaxScores] = sudokuWalkUpAll(
       createAllDiscardedMap(variant, deck, suitIndex),
     );
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = 5;
-      return;
+      continue;
     }
     if (stackStart !== UNKNOWN_CARD_RANK) {
       independentPartOfMaxScore[suitIndex] = suitMaxScores[stackStart - 1]!;
-      return;
+      continue;
     }
     maxPartialScores[suitIndex] = suitMaxScores;
     unassignedSuits.push(suitIndex);
-  });
+  }
 
   if (unassignedSuits.length === 0) {
     return independentPartOfMaxScore;
@@ -134,18 +135,18 @@ export function getMaxScorePerStack(
   let bestAssignmentSum = 0;
 
   // This denotes the actual values of the best assignment found.
-  let bestAssignment = new Array<number>(unassignedSuits.length);
+  let bestAssignment = Array.from({ length: unassignedSuits.length });
 
   // Same, but sorted in ascending order.
-  let bestAssignmentSorted = new Array<number>(unassignedSuits.length);
+  let bestAssignmentSorted = Array.from({ length: unassignedSuits.length });
 
   let localSuitIndex = 0;
 
-  const curAssignment = new Array<number>(unassignedSuits.length);
+  const curAssignment = Array.from({ length: unassignedSuits.length });
   for (let i = 0; i < curAssignment.length; i++) {
     curAssignment[i] = unassigned;
   }
-  const assigned = new Array<boolean>(possibleStackStarts.length);
+  const assigned = Array.from({ length: possibleStackStarts.length });
 
   while (localSuitIndex >= 0) {
     if (curAssignment[localSuitIndex] !== unassigned) {
@@ -170,18 +171,20 @@ export function getMaxScorePerStack(
       if (localSuitIndex === unassignedSuits.length - 1) {
         // Evaluate the current assignment.
         let assignmentVal = 0;
-        const assignment = new Array<number>(unassignedSuits.length);
-        curAssignment.forEach(
-          (assignedStackStartIndex, assignedLocalSuitIndex) => {
-            const value =
-              maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
-                possibleStackStarts[assignedStackStartIndex]! - 1
-              ]!;
-            assignmentVal += value;
-            assignment[assignedLocalSuitIndex] = value;
-          },
-        );
-        const assignmentSorted = assignment.slice(0);
+        const assignment = Array.from({ length: unassignedSuits.length });
+        for (const [
+          assignedLocalSuitIndex,
+          assignedStackStartIndex,
+        ] of curAssignment.entries()) {
+          const value =
+            maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
+              possibleStackStarts[assignedStackStartIndex]! - 1
+            ]!;
+          assignmentVal += value;
+          assignment[assignedLocalSuitIndex] = value;
+        }
+
+        const assignmentSorted = [...assignment];
         assignmentSorted.sort();
 
         // Check if we need to update the best assignment.
@@ -224,12 +227,15 @@ export function getMaxScorePerStack(
   // Now, we just need to put the found assignment together with the independent parts found
   // already.
   const maxScorePerStack = independentPartOfMaxScore;
-  unassignedSuits.forEach((unassignedSuit, unassignedLocalSuitIndex) => {
+  for (const [
+    unassignedLocalSuitIndex,
+    unassignedSuit,
+  ] of unassignedSuits.entries()) {
     // Note the '??' here, since it can be that there is actually no feasible assignment. In this
     // case, these values are still undefined at this point, so we replace them by 0.
     maxScorePerStack[unassignedSuit] =
       bestAssignment[unassignedLocalSuitIndex] ?? 0;
-  });
+  }
 
   return maxScorePerStack;
 }

@@ -138,7 +138,7 @@ export class CurrentPlayerArea extends Konva.Group {
     });
     this.add(rect2);
 
-    const baseArrowLength = 0.00528 * winH;
+    const baseArrowLength = 0.005_28 * winH;
 
     this.arrow = new Konva.Group({
       x: (arrowValues.x + arrowValues.w / 2) * winW,

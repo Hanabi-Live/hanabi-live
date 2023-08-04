@@ -37,7 +37,6 @@ export class HanabiUI {
 
   // The following methods are called from various parent functions.
 
-  // eslint-disable-next-line class-methods-use-this
   updateChatLabel(): void {
     if (globals.elements.chatButton === null) {
       return;
@@ -57,13 +56,11 @@ export class HanabiUI {
     globals.layers.UI.batchDraw();
   }
 
-  // eslint-disable-next-line class-methods-use-this
   focusLost(): void {
     setGlobalEmpathy(false);
     cursor.set("default");
   }
 
-  // eslint-disable-next-line class-methods-use-this
   destroy(): void {
     keyboard.destroy();
     timer.stop();

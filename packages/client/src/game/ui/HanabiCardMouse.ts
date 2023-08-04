@@ -82,9 +82,7 @@ function touchStart(
     // A tap will trigger when the "touchend" event occurs. The next tap action will not run because
     // it will appear like the second tap of a double tap. Don't worry about this if we actually
     // double-tapped.
-    if (!this.wasRecentlyTapped) {
-      this.wasRecentlyTapped = true;
-    }
+    this.wasRecentlyTapped ||= true;
     if (globals.editingNote !== null) {
       globals.editingNote = null;
       tooltips.close(`#tooltip-${this.tooltipName}`);
@@ -232,7 +230,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // Check if there exists a possibility from clues that the note declares impossible.
   const noteNarrowsPossibilities =
-    card.note.possibilities.length !== 0 &&
+    card.note.possibilities.length > 0 &&
     card.state.possibleCardsFromClues.some(
       ([suitIndexA, rankA]) =>
         !card.note.possibilities.some(

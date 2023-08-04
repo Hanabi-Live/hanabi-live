@@ -70,7 +70,9 @@ function submit() {
   // ID
   const databaseIDString = $("#replay-id").val();
   if (typeof databaseIDString !== "string") {
-    throw new Error('The value of the "replay-id" element is not a string.');
+    throw new TypeError(
+      'The value of the "replay-id" element is not a string.',
+    );
   }
   let databaseID: number | undefined;
   if (source === "id") {
@@ -89,13 +91,15 @@ function submit() {
   // JSON
   const gameJSONString = $("#replay-json").val();
   if (typeof gameJSONString !== "string") {
-    throw new Error('The value of the "replay-json" element is not a string.');
+    throw new TypeError(
+      'The value of the "replay-json" element is not a string.',
+    );
   }
   let gameJSON: unknown;
   if (source === "json") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
-    } catch (err) {
+    } catch {
       error("Error: That is not a valid JSON object.");
       return;
     }

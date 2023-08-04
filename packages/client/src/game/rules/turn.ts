@@ -49,15 +49,15 @@ export function getNextPlayerIndex(
   }
 
   let nextPlayerIndex: number;
-  if (!turnsInverted) {
-    nextPlayerIndex = currentPlayerIndex + 1;
-    if (nextPlayerIndex === numPlayers) {
-      nextPlayerIndex = 0;
-    }
-  } else {
+  if (turnsInverted) {
     nextPlayerIndex = currentPlayerIndex - 1;
     if (nextPlayerIndex === -1) {
       nextPlayerIndex = numPlayers - 1;
+    }
+  } else {
+    nextPlayerIndex = currentPlayerIndex + 1;
+    if (nextPlayerIndex === numPlayers) {
+      nextPlayerIndex = 0;
     }
   }
 

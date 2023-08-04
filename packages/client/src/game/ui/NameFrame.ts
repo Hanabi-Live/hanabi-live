@@ -73,7 +73,7 @@ export class NameFrame extends Konva.Group {
 
     w *= 1.4;
 
-    this.defaultStrokeWidth = 0.001056 * globals.stage.height();
+    this.defaultStrokeWidth = 0.001_056 * globals.stage.height();
 
     this.leftLine = new Konva.Line({
       points: [
@@ -147,10 +147,10 @@ export class NameFrame extends Konva.Group {
 
   setActive(active: boolean): void {
     this.leftLine.strokeWidth(
-      active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth,
+      active ? 3 * this.defaultStrokeWidth : Number(this.defaultStrokeWidth),
     );
     this.rightLine.strokeWidth(
-      active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth,
+      active ? 3 * this.defaultStrokeWidth : Number(this.defaultStrokeWidth),
     );
 
     this.playerName.shadowOpacity(active ? 0.6 : 0);

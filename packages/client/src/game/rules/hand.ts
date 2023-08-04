@@ -57,8 +57,8 @@ export function chopIndex(
   deck: readonly CardState[],
 ): number {
   // The chop is defined as the oldest (right-most) unclued card.
-  for (let i = 0; i < hand.length; i++) {
-    const cardOrder = hand[i]!;
+  for (const [i, element] of hand.entries()) {
+    const cardOrder = element;
     const card = deck[cardOrder]!;
     if (!cardRules.isClued(card)) {
       return i;

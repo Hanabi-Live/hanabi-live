@@ -27,7 +27,8 @@ export function UIReducer(state: UIState, action: UIAction): UIState {
         cardDragged: null,
       };
     }
-    default:
+    default: {
       return state;
+    }
   }
 }

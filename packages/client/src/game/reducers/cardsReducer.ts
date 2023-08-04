@@ -24,8 +24,8 @@ export function cardsReducer(
   metadata: GameMetadata,
 ): readonly CardState[] {
   const variant = getVariant(metadata.options.variantName);
-  const newDeck = Array.from(deck);
-  const hands = Array.from(game.hands, (arr) => Array.from(arr));
+  const newDeck = [...deck];
+  const hands = Array.from(game.hands, (arr) => [...arr]);
 
   switch (action.type) {
     /**
@@ -97,7 +97,7 @@ export function cardsReducer(
       };
 
       // Positive clues
-      action.list.forEach((order) => {
+      for (const order of action.list) {
         const card = getCard(newDeck, order);
         const hand = game.hands[action.target]!;
         newDeck[order] = {
@@ -114,7 +114,7 @@ export function cardsReducer(
               : card.firstCluedWhileOnChop,
         };
         applyClue(order, true);
-      });
+      }
 
       // Negative clues
       const negativeClues =
@@ -123,14 +123,14 @@ export function cardsReducer(
           : hands[action.target]!.filter(
               (order) => !action.list.includes(order),
             );
-      negativeClues.forEach((order) => {
+      for (const order of negativeClues) {
         const card = getCard(newDeck, order);
         newDeck[order] = {
           ...card,
           hasClueApplied: true,
         };
         applyClue(order, false);
-      });
+      }
 
       break;
     }
@@ -174,7 +174,7 @@ export function cardsReducer(
         rankDetermined: card.rankDetermined || identityDetermined,
         revealedToPlayer:
           action.suitIndex >= 0 && action.rank >= 0
-            ? new Array(6).fill(true)
+            ? Array.from({ length: 6 }).fill(true)
             : card.revealedToPlayer,
         possibleCards:
           action.suitIndex >= 0 && action.rank >= 0
@@ -307,14 +307,18 @@ function canPlayerSeeDrawnCard(
     characterAssignments,
   );
   switch (characterName) {
-    case "Slow-Witted":
+    case "Slow-Witted": {
       return false;
-    case "Oblivious":
+    }
+    case "Oblivious": {
       return drawLocation !== (playerIndex - 1) % numPlayers;
-    case "Blind Spot":
+    }
+    case "Blind Spot": {
       return drawLocation !== (playerIndex + 1) % numPlayers;
-    default:
+    }
+    default: {
       return true;
+    }
   }
 }
 

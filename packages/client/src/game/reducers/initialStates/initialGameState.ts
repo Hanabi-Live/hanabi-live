@@ -45,9 +45,9 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
 
   const cardStatus: CardStatus[][] = [];
-  variant.suits.forEach((_, suitIndex) => {
+  for (const [suitIndex, _] of variant.suits.entries()) {
     cardStatus[suitIndex] = [];
-    variant.ranks.forEach((rank) => {
+    for (const rank of variant.ranks) {
       cardStatus[suitIndex]![rank] = cardRules.status(
         suitIndex,
         rank,
@@ -57,8 +57,8 @@ export function initialGameState(metadata: GameMetadata): GameState {
         playStackStarts,
         variant,
       );
-    });
-  });
+    }
+  }
 
   const scorePerStack: number[] = Array.from(
     playStacks,
@@ -101,7 +101,9 @@ export function initialGameState(metadata: GameMetadata): GameState {
     clues: [],
     stats: {
       maxScore: variant.maxScore,
-      maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
+      maxScorePerStack: Array.from({ length: variant.suits.length }).fill(
+        5,
+      ) as number[],
 
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),

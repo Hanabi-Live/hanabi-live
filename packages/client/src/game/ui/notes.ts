@@ -9,11 +9,11 @@ import { HanabiCard } from "./HanabiCard";
 
 function escapeHtml(unsafe: string): string {
   return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 // Get the contents of the note tooltip.
@@ -44,8 +44,8 @@ function get(order: number, our: boolean, escape = false) {
       content += `<strong>${name}:</strong> ${text}<br />`;
     }
   }
-  if (content.length !== 0) {
-    content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
+  if (content.length > 0) {
+    content = content.slice(0, Math.max(0, content.length - 6)); // Trim the trailing "<br />"
   }
   return content;
 }
@@ -170,7 +170,7 @@ export function openEditTooltip(
 
   const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;
-  const keysRemovingPipe = [
+  const keysRemovingPipe = new Set([
     "ArrowLeft",
     "ArrowRight",
     "ArrowUp",
@@ -179,17 +179,17 @@ export function openEditTooltip(
     "End",
     "Backspace",
     "Delete",
-  ];
-  const keysClosingNote = ["Enter", "Escape"];
-  const keysMeta = ["Control", "Alt", "Shift"];
+  ]);
+  const keysClosingNote = new Set(["Enter", "Escape"]);
+  const keysMeta = new Set(["Control", "Alt", "Shift"]);
 
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const { key } = event;
 
     // Only check the first time if the key is a special one.
-    if (!keysMeta.includes(key)) {
-      if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
+    if (!keysMeta.has(key)) {
+      if (shouldRemovePipe && keysRemovingPipe.has(key)) {
         // Restore the old note, removing the pipe.
         if (key !== "Home") {
           event.preventDefault();
@@ -199,7 +199,7 @@ export function openEditTooltip(
       shouldRemovePipe = false;
     }
 
-    if (!keysClosingNote.includes(key)) {
+    if (!keysClosingNote.has(key)) {
       return;
     }
 
@@ -213,7 +213,7 @@ export function openEditTooltip(
       // If Enter is pressed, get the value of the input box.
       const val = noteTextbox.val();
       if (typeof val !== "string") {
-        throw new Error(
+        throw new TypeError(
           `The value of the "#tooltip-${card.tooltipName}-input" element was not a string.`,
         );
       }
@@ -222,7 +222,7 @@ export function openEditTooltip(
 
       // Remove the last pipe.
       if (newNote.endsWith(" | ")) {
-        newNote = newNote.substring(0, newNote.length - 3);
+        newNote = newNote.slice(0, Math.max(0, newNote.length - 3));
       }
       set(card.state.order, newNote);
     }

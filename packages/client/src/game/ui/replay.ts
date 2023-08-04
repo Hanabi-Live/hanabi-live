@@ -320,12 +320,8 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const element = document.getElementById(
-    "set-turn-input",
-  ) as HTMLInputElement | null;
-  const button = document.getElementById(
-    "set-turn-button",
-  ) as HTMLButtonElement | null;
+  const element = document.querySelector("#set-turn-input");
+  const button = document.querySelector("#set-turn-button");
 
   if (element === null || button === null) {
     return;
@@ -351,12 +347,12 @@ export function promptTurn(): void {
     goToSegment(targetTurn, true);
   };
 
-  button.onclick = (evt) => {
+  button.addEventListener("click", (evt) => {
     evt.preventDefault();
     closeModals();
 
     goTo(element.value);
-  };
+  });
 
   showPrompt("#set-turn-modal", null, element, button);
 }

@@ -31,17 +31,16 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   }
 
   let clue: Clue;
-  // eslint-disable-next-line isaacscript/strict-enums
-  if (lastClue.type === ClueType.Rank) {
-    clue = rankClue(lastClue.value);
-  } else {
-    clue = colorClue(globals.variant.clueColors[lastClue.value]!);
-  }
 
-  lastClue.list.forEach((order, i) => {
+  clue =
+    lastClue.type === ClueType.Rank
+      ? rankClue(lastClue.value)
+      : colorClue(globals.variant.clueColors[lastClue.value]!);
+
+  for (const [i, order] of lastClue.list.entries()) {
     const card = getCardOrStackBase(order);
     arrows.set(i, card, lastClue.giver, clue);
-  });
+  }
 
   globals.layers.arrow.batchDraw();
 }
@@ -53,12 +52,12 @@ function updateLog(clues: readonly StateClue[]) {
   }
 
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
-  clues.slice(startingIndex).forEach((clue, i) => {
+  for (const [i, clue] of clues.slice(startingIndex).entries()) {
     if (i < clueLog.children.length) {
       const clueEntry = clueLog.children[i] as unknown as ClueEntry;
       if (equal(clue, clueEntry.clue)) {
         // No change
-        return;
+        continue;
       }
     }
 
@@ -72,7 +71,7 @@ function updateLog(clues: readonly StateClue[]) {
     } else {
       clueLog.addClue(entry);
     }
-  });
+  }
 
   // Delete any left over clues.
   if (clueLog.children.length > clues.length) {

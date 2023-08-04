@@ -31,7 +31,7 @@ function makeDeductions(
   hands: ReadonlyArray<readonly number[]>,
   metadata: GameMetadata,
 ) {
-  const newDeck: CardState[] = Array.from(deck);
+  const newDeck: CardState[] = [...deck];
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
 
@@ -71,8 +71,8 @@ function calculatePlayerPossibilities(
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
 ) {
-  hands.forEach((hand) => {
-    hand.forEach((order) => {
+  for (const hand of hands) {
+    for (const order of hand) {
       const card = deck[order]!;
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
@@ -86,8 +86,8 @@ function calculatePlayerPossibilities(
           metadata,
         );
       }
-    });
-  });
+    }
+  }
 }
 
 function calculateCard(
@@ -157,7 +157,7 @@ function shouldCalculateCard(
 
   const oldCard = oldDeck[card.order];
 
-  if (typeof oldCard === "undefined" || oldCard.location === "deck") {
+  if (oldCard === undefined || oldCard.location === "deck") {
     // This is a newly drawn card and hasn't had any calculations yet.
     return true;
   }
@@ -291,7 +291,7 @@ function canBeUsedToDisprovePossibility(
   playerIndex: number,
 ) {
   return (
-    typeof card !== "undefined" &&
+    card !== undefined &&
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
@@ -306,9 +306,9 @@ function deckPossibilitiesDifferent(
   playerIndex: number,
   ourPlayerIndex: number,
 ) {
-  for (let order = 0; order < deck.length; order++) {
+  for (const [order, element] of deck.entries()) {
     const oldCard = oldDeck[order]!;
-    const card = deck[order]!;
+    const card = element;
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
@@ -363,7 +363,7 @@ function filterCardPossibilities(
   // working combination. If so, then the new identity for our specific card is also valid and
   // doesn't need to be validated again (so it's removed from possibilitiesToValidate).
   let possibilitiesToValidate: Array<readonly [number, number]> = [];
-  possibilitiesToValidate = Array.from(cardPossibilities);
+  possibilitiesToValidate = [...cardPossibilities];
   return cardPossibilities.filter((possibility) => {
     // If the possibility is not in the list that still needs validation then it must mean the
     // possibility is already validated and we can exit early.
@@ -451,26 +451,26 @@ let cachedCardCountMap: number[][] = [];
 
 function getCardCountMap(variant: Variant) {
   if (variant.id === cachedVariantId) {
-    return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
+    return Array.from(cachedCardCountMap, (arr) => [...arr]);
   }
 
-  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
-  const possibleRanks: number[] = variant.ranks.slice();
+  const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
+  const possibleRanks: number[] = [...variant.ranks];
   const possibleCardMap: number[][] = [];
-  possibleSuits.forEach((suitIndex) => {
+  for (const suitIndex of possibleSuits) {
     possibleCardMap[suitIndex] = [];
     const suit = variant.suits[suitIndex]!;
-    possibleRanks.forEach((rank) => {
+    for (const rank of possibleRanks) {
       possibleCardMap[suitIndex]![rank] = deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,
       );
-    });
-  });
+    }
+  }
 
   cachedVariantId = variant.id;
-  cachedCardCountMap = Array.from(possibleCardMap, (arr) => Array.from(arr));
+  cachedCardCountMap = Array.from(possibleCardMap, (arr) => [...arr]);
 
   return possibleCardMap;
 }

@@ -203,7 +203,7 @@ export function cardsGottenByNotes(
 ): number {
   let currentCardsGottenByNotes = 0;
 
-  deck.forEach((card, order) => {
+  for (const [order, card] of deck.entries()) {
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -231,7 +231,7 @@ export function cardsGottenByNotes(
 
       currentCardsGottenByNotes += b - a;
     }
-  });
+  }
   return currentCardsGottenByNotes;
 }
 
@@ -268,14 +268,14 @@ export function cluesStillUsableNotRounded(
   currentClues: number,
 ): number | null {
   if (scorePerStack.length !== maxScorePerStack.length) {
-    throw Error(
+    throw new Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
     );
   }
   // We want to discard as many times as possible while still getting a max score as long as
   // discardValue >= suitValue (which is currently true for all variants).
   if (discardValue < suitValue) {
-    throw Error(
+    throw new Error(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
   }
@@ -305,10 +305,10 @@ export function cluesStillUsableNotRounded(
     const minPlaysBeforeFinalRound =
       maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
-    for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
-      if (maxScorePerStack[suitIndex] === 5 && scorePerStack[suitIndex]! < 5) {
+    for (const [suitIndex, element] of scorePerStack.entries()) {
+      if (maxScorePerStack[suitIndex] === 5 && element < 5) {
         missingCardsPerCompletableSuit.push(
-          maxScorePerStack[suitIndex]! - scorePerStack[suitIndex]!,
+          maxScorePerStack[suitIndex]! - element,
         );
       }
     }
@@ -364,10 +364,10 @@ export function startingCluesUsable(
   variant: Variant,
 ): number {
   const score = 0;
-  // eslint-disable-next-line isaacscript/no-object-any
-  const scorePerStack = new Array(variant.suits.length).fill(0);
-  // eslint-disable-next-line isaacscript/no-object-any
-  const maxScorePerStack = new Array(variant.suits.length).fill(5);
+
+  const scorePerStack = Array.from({ length: variant.suits.length }).fill(0);
+
+  const maxScorePerStack = Array.from({ length: variant.suits.length }).fill(5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
   const startingClues = cluesStillUsable(

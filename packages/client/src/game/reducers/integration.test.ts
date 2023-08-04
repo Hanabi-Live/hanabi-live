@@ -14,8 +14,7 @@ let testState: State;
 
 const getStateAtTurn = (state: State, turn: number) =>
   state.replay.states[turn]!;
-const getFinalState = (state: State) =>
-  state.replay.states[state.replay.states.length - 1]!;
+const getFinalState = (state: State) => state.replay.states.at(-1)!;
 
 describe("integration", () => {
   describe("Up or Down test game", () => {
@@ -57,7 +56,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each([...Array(18).keys()])(
+      test.each([...Array.from({ length: 18 }).keys()])(
         "card %i has the correct pips and possibilities",
         (order) => {
           const turn5State = getStateAtTurn(testState, 4);
@@ -105,7 +104,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each([...Array(45).keys()])(
+      test.each([...Array.from({ length: 45 }).keys()])(
         "card %i has the correct pips and possibilities",
         (order) => {
           const finalState = getFinalState(testState);

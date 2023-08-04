@@ -41,22 +41,33 @@ export function needsToBePlayed(
       return true;
     }
 
-    if (rank === 1) {
-      // 1's do not need to be played if the stack is going up.
-      if (direction === StackDirection.Up) {
-        return false;
+    switch (rank) {
+      case 1: {
+        // 1's do not need to be played if the stack is going up.
+        if (direction === StackDirection.Up) {
+          return false;
+        }
+
+        break;
       }
-    } else if (rank === 5) {
-      // 5's do not need to be played if the stack is going down.
-      if (direction === StackDirection.Down) {
-        return false;
+      case 5: {
+        // 5's do not need to be played if the stack is going down.
+        if (direction === StackDirection.Down) {
+          return false;
+        }
+
+        break;
       }
-    } else if (rank === START_CARD_RANK) {
-      // START cards do not need to be played if there are any cards played on the stack.
-      const playStack = playStacks[suitIndex]!;
-      if (playStack.length > 0) {
-        return false;
+      case START_CARD_RANK: {
+        // START cards do not need to be played if there are any cards played on the stack.
+        const playStack = playStacks[suitIndex]!;
+        if (playStack.length > 0) {
+          return false;
+        }
+
+        break;
       }
+      // No default
     }
   }
 
@@ -147,9 +158,9 @@ export function getMaxScorePerStack(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): number[] {
-  const maxScorePerStack: number[] = new Array(variant.suits.length).fill(
-    0,
-  ) as number[];
+  const maxScorePerStack: number[] = Array.from({
+    length: variant.suits.length,
+  }).fill(0) as number[];
 
   for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
     const suit = variant.suits[suitIndex]!;
@@ -167,16 +178,30 @@ export function getMaxScorePerStack(
       allDiscarded.set(rank, total === discarded);
     }
 
-    if (playStackDirections[suitIndex] === StackDirection.Undecided) {
-      const upWalk = walkUp(allDiscarded, variant);
-      const downWalk = walkDown(allDiscarded, variant);
-      maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
-    } else if (playStackDirections[suitIndex] === StackDirection.Up) {
-      maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
-    } else if (playStackDirections[suitIndex] === StackDirection.Down) {
-      maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
-    } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
-      maxScorePerStack[suitIndex] += 5;
+    switch (playStackDirections[suitIndex]) {
+      case StackDirection.Undecided: {
+        const upWalk = walkUp(allDiscarded, variant);
+        const downWalk = walkDown(allDiscarded, variant);
+        maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
+
+        break;
+      }
+      case StackDirection.Up: {
+        maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
+
+        break;
+      }
+      case StackDirection.Down: {
+        maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
+
+        break;
+      }
+      case StackDirection.Finished: {
+        maxScorePerStack[suitIndex] += 5;
+
+        break;
+      }
+      // No default
     }
   }
 

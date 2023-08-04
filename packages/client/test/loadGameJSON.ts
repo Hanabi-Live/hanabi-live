@@ -54,7 +54,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   let turn = 0; // Start on the 0th turn
   let currentPlayerIndex = 0; // The player at index 0 goes first
 
-  gameJSON.actions.forEach((a) => {
+  for (const a of gameJSON.actions) {
     const action = parseJSONAction(currentPlayerIndex, turn, gameJSON.deck, a);
     if (action !== null) {
       actions.push(action);
@@ -69,14 +69,13 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
     turn++;
     currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-  });
+  }
 
   // If the game was exported from the server and it ended in a specific way, the final action will
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
-  const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1]!;
+  const finalGameJSONAction = gameJSON.actions.at(-1)!;
 
-  // eslint-disable-next-line isaacscript/strict-enums
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions.push({
       type: "gameOver",

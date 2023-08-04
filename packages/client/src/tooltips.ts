@@ -172,19 +172,22 @@ function getOptionsFromType(
   type: TooltipOptionType = "default",
 ): JQueryTooltipster.ITooltipsterOptions {
   switch (type) {
-    case "clipboard":
+    case "clipboard": {
       return clipboardOptions;
-    case "nav":
+    }
+    case "nav": {
       return navOptions;
-    default:
+    }
+    default: {
       return defaultOptions;
+    }
   }
 }
 
 function appendDiv(selector: string, id: string) {
   const element = document.createElement("div");
   element.setAttribute("id", id);
-  document.querySelector(selector)?.appendChild(element);
+  document.querySelector(selector)?.append(element);
 }
 
 function createGameTooltips() {

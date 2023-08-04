@@ -41,17 +41,17 @@ export function show(): void {
 
   // Scroll to the bottom of both the lobby chat and the pregame chat. (Even if the lobby chat is
   // already at the bottom, it will change size and cause it to not be scrolled all the way down.)
-  const chat1 = document.getElementById("lobby-chat-text");
-  if (chat1 !== null) {
-    chat1.scrollTop = chat1.scrollHeight;
-  } else {
+  const chat1 = document.querySelector("#lobby-chat-text");
+  if (chat1 === null) {
     throw new Error('Failed to get the "lobby-chat-text" element.');
-  }
-  const chat2 = document.getElementById("lobby-chat-pregame-text");
-  if (chat2 !== null) {
-    chat2.scrollTop = chat2.scrollHeight;
   } else {
+    chat1.scrollTop = chat1.scrollHeight;
+  }
+  const chat2 = document.querySelector("#lobby-chat-pregame-text");
+  if (chat2 === null) {
     throw new Error('Failed to get the "lobby-chat-pregame-text" element.');
+  } else {
+    chat2.scrollTop = chat2.scrollHeight;
   }
 
   // Focus the pregame chat.
@@ -192,8 +192,8 @@ export function getOptionIcons(
           This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
             options.timeBase,
           )} minute(s)</strong> plus <strong>${
-      options.timePerTurn
-    } second(s)</strong> per turn.
+            options.timePerTurn
+          } second(s)</strong> per turn.
         </div>
       </div>
     `;
@@ -367,11 +367,7 @@ function drawPlayerBox(i: number) {
   const averageScore = Math.round(variantStats.averageScore * 10) / 10;
   // (Round it to 1 decimal place.)
   let averageScoreString: string;
-  if (averageScore === 0) {
-    averageScoreString = "-";
-  } else {
-    averageScoreString = averageScore.toString();
-  }
+  averageScoreString = averageScore === 0 ? "-" : averageScore.toString();
   let strikeoutRateString: string;
   if (variantStats.numGames > 0) {
     let strikeoutRate =
@@ -437,8 +433,8 @@ function drawPlayerBox(i: number) {
         <i id="lobby-pregame-player-${
           i + 1
         }-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${
-    i + 1
-  }-tooltip"></i>
+          i + 1
+        }-tooltip"></i>
       </div>
     </div>
     <div class="hidden">
@@ -461,11 +457,10 @@ function drawPlayerBox(i: number) {
     html += ` ${bestScore} / ${maxScore}`;
     if (bestScore === maxScore) {
       html += "</strong> &nbsp; ";
-      if (bestScoreMod === 0) {
-        html += '<i class="fas fa-check score-modifier green"></i>';
-      } else {
-        html += '<i class="fas fa-times score-modifier red"></i>';
-      }
+      html +=
+        bestScoreMod === 0
+          ? '<i class="fas fa-check score-modifier green"></i>'
+          : '<i class="fas fa-times score-modifier red"></i>';
     }
     html += "</div></div>";
   }
@@ -569,10 +564,10 @@ export function toggleStartGameButton(): void {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
 
-  if (globals.game.owner !== globals.userID) {
-    $("#nav-buttons-pregame-change-variant").addClass("disabled");
-  } else {
+  if (globals.game.owner === globals.userID) {
     $("#nav-buttons-pregame-change-variant").removeClass("disabled");
+  } else {
+    $("#nav-buttons-pregame-change-variant").addClass("disabled");
   }
 }
 

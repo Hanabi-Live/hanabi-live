@@ -51,11 +51,10 @@ export function cardPossibilitiesReducer(
     !positiveRankClues.includes(clue.value)
   ) {
     if (isOddsAndEvens(variant)) {
-      if (clue.value === 1) {
-        positiveRankClues = [...positiveRankClues, ...[1, 3, 5]];
-      } else {
-        positiveRankClues = [...positiveRankClues, ...[2, 4]];
-      }
+      positiveRankClues =
+        clue.value === 1
+          ? [...positiveRankClues, 1, 3, 5]
+          : [...positiveRankClues, 2, 4];
     } else {
       positiveRankClues = [...positiveRankClues, clue.value];
     }
@@ -113,7 +112,7 @@ function updateIdentity(
     rankDetermined,
     revealedToPlayer:
       suitDetermined && rankDetermined
-        ? new Array(6).fill(true)
+        ? Array.from({ length: 6 }).fill(true)
         : state.revealedToPlayer,
   };
 }

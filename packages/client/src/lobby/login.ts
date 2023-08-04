@@ -68,7 +68,7 @@ function submit(event: JQuery.Event) {
     password = password.toString();
   }
   if (typeof password !== "string") {
-    throw new Error("The password is not a string.");
+    throw new TypeError("The password is not a string.");
   }
 
   let newPassword: string | null = null;
@@ -80,7 +80,7 @@ function submit(event: JQuery.Event) {
       return;
     }
     if (typeof newPassword !== "string") {
-      throw new Error("The new password is not a string.");
+      throw new TypeError("The new password is not a string.");
     }
   }
 
@@ -117,8 +117,8 @@ function send(username: string, password: string, newPassword: string | null) {
     .fail((jqXHR) => {
       formError(`Login failed: ${getAjaxError(jqXHR)}`);
     })
-    .catch((jqXHR) => {
-      formError(`Login failed: ${getAjaxError(jqXHR)}`);
+    .catch((error) => {
+      formError(`Login failed: ${getAjaxError(error)}`);
     });
 }
 
@@ -178,8 +178,8 @@ export function automaticLogin(): void {
       }
       show();
     })
-    .catch((err) => {
-      console.error(`Failed to fetch "${testCookiePath}":`, err);
+    .catch((error) => {
+      console.error(`Failed to fetch "${testCookiePath}":`, error);
     });
 }
 

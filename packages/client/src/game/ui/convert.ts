@@ -19,4 +19,4 @@ export function suitIndexToSuit(
 }
 
 export const colorToColorIndex = (color: Color, variant: Variant): number =>
-  variant.clueColors.findIndex((variantColor) => variantColor === color);
+  variant.clueColors.indexOf(color);

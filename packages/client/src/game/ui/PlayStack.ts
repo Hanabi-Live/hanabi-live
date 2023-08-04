@@ -20,7 +20,7 @@ export class PlayStack extends Konva.Group {
     const lh = this.height();
 
     const layoutChildren = this.children.toArray() as LayoutChild[];
-    const layoutChild = layoutChildren[layoutChildren.length - 1]!;
+    const layoutChild = layoutChildren.at(-1)!;
     const scale = lh / layoutChild.height();
     const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
 

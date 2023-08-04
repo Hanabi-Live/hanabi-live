@@ -34,12 +34,10 @@ dotenv.config({
 
 // Clear out the output subdirectory, as it might contain old JavaScript bundles and old source
 // maps. (But don't do this if we are running the webpack dev server.)
-if (process.env.WEBPACK_DEV_SERVER === "") {
-  if (fs.existsSync(outputPath)) {
-    const files = fs.readdirSync(outputPath);
-    for (const file of files) {
-      fs.unlinkSync(path.join(outputPath, file));
-    }
+if (process.env.WEBPACK_DEV_SERVER === "" && fs.existsSync(outputPath)) {
+  const files = fs.readdirSync(outputPath);
+  for (const file of files) {
+    fs.unlinkSync(path.join(outputPath, file));
   }
 }
 

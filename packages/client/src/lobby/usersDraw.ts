@@ -31,7 +31,7 @@ export function draw(): void {
   }
 
   // Make an alphabetical list of all of the usernames.
-  const alphabeticalUsernames = Array.from(usernameMapping.keys());
+  const alphabeticalUsernames = [...usernameMapping.keys()];
   alphabeticalUsernames.sort(
     // We want to do a case-insensitive sort, which will not occur by default.
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
@@ -108,15 +108,12 @@ function drawUser(
 
   let statusColumn: string;
   const statusText = StatusText[user.status]!;
-  if (
+  statusColumn =
     globals.currentScreen === Screen.PreGame ||
     user.status === Status.Lobby ||
     user.status === Status.Replay
-  ) {
-    statusColumn = statusText;
-  } else {
-    statusColumn = `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
-  }
+      ? statusText
+      : `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
 
   const row = $("<tr>");
   $("<td>").html(nameColumn).appendTo(row);

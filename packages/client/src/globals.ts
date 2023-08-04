@@ -23,6 +23,7 @@ export class Globals {
   totalGames = 0;
   muted = false;
   randomTableName = "";
+
   /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
   settings: Settings = new Settings();
   friends: string[] = [];
@@ -32,6 +33,7 @@ export class Globals {
 
   /** Keys are IDs. */
   userMap = new Map<number, User>();
+
   /** Keys are IDs. */
   tableMap = new Map<number, Table>();
   history: GameHistory[] = [];

@@ -90,12 +90,10 @@ export function shrink(JSONString: string): string | null {
  */
 export function expand(data: string): string | null {
   // Remove all hyphens from URL.
-  const normal = data.replace(/-/g, "");
+  const normal = data.replaceAll("-", "");
 
   // The compressed string is composed of 3 substrings separated by commas.
-  const [playersAndDeck, actionsString, variantIDString] = [
-    ...normal.split(",", 3),
-  ];
+  const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
   const numberPlayersString = playersAndDeck!.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
 
@@ -104,7 +102,7 @@ export function expand(data: string): string | null {
     return null;
   }
 
-  const deckString = playersAndDeck!.substring(1);
+  const deckString = playersAndDeck!.slice(1);
   const deck = decompressDeck(deckString);
   if (deck === null) {
     return null;
@@ -192,9 +190,9 @@ function compressDeck(deck: DeckCard[]): string | null {
   }
 
   let out = `${rankRange.min}${rankRange.max}`;
-  deck.forEach((card) => {
+  for (const card of deck) {
     out += deckCardToString(card, rankRange);
-  });
+  }
 
   return out;
 }

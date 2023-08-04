@@ -17,11 +17,10 @@ import * as turn from "./turn";
 
 export function checkLegal(): void {
   let clueTargetButtonGroup: ButtonGroup | null;
-  if (globals.state.replay.hypothetical === null) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
-  } else {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  }
+  clueTargetButtonGroup =
+    globals.state.replay.hypothetical === null
+      ? globals.elements.clueTargetButtonGroup
+      : globals.elements.clueTargetButtonGroup2;
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as
@@ -134,11 +133,10 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
 
 export function give(): void {
   let clueTargetButtonGroup: ButtonGroup | null;
-  if (globals.state.replay.hypothetical === null) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
-  } else {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  }
+  clueTargetButtonGroup =
+    globals.state.replay.hypothetical === null
+      ? globals.elements.clueTargetButtonGroup
+      : globals.elements.clueTargetButtonGroup2;
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as

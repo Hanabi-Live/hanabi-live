@@ -72,7 +72,7 @@ export function parseAndGoto(data: WelcomeData): void {
   if (gameMatch !== null) {
     const tableID = parseIntSafe(gameMatch[1]!); // The server expects the game ID as an integer.
     const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
-    const shadowID = shadowMatch !== null ? parseIntSafe(shadowMatch[1]!) : -1; // The server expects the game ID as an integer.
+    const shadowID = shadowMatch === null ? -1 : parseIntSafe(shadowMatch[1]!); // The server expects the game ID as an integer.
     globals.conn!.send("tableSpectate", {
       tableID,
       shadowingPlayerIndex: shadowID,
@@ -101,7 +101,7 @@ export function parseAndGoto(data: WelcomeData): void {
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
-  const replayJSONMatch = /\/(?:shared-)?replay-json\/([a-zA-Z0-9,-]+)$/.exec(
+  const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
     window.location.pathname,
   );
   if (replayJSONMatch !== null) {
@@ -117,7 +117,7 @@ export function parseAndGoto(data: WelcomeData): void {
     let gameJSON: GameJSON;
     try {
       gameJSON = JSON.parse(gameJSONString) as GameJSON;
-    } catch (err) {
+    } catch {
       setBrowserAddressBarPath("/lobby");
       return;
     }

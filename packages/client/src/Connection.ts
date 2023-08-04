@@ -19,8 +19,8 @@ export class Connection {
     this.ws = new WebSocket(addr);
     this.debug = debug;
 
-    this.ws.onclose = this.onClose.bind(this);
-    this.ws.onopen = this.onOpen.bind(this);
+    this.ws.addEventListener("close", this.onClose.bind(this));
+    this.ws.addEventListener("open", this.onOpen.bind(this));
     this.ws.onmessage = this.onMessage.bind(this);
     this.ws.onerror = this.onError.bind(this);
   }
@@ -40,19 +40,19 @@ export class Connection {
   onMessage(evt: MessageEvent): void {
     const data = unpack(evt.data as string);
     const command = data[0]!;
-    if (this.callbacks[command] !== undefined) {
+    if (this.callbacks[command] === undefined) {
+      console.error(
+        "Received WebSocket message with no callback:",
+        command,
+        JSON.parse(data[1]!),
+      );
+    } else {
       const obj = unmarshal(data[1]!);
       if (this.debug) {
         console.log(`%cReceived ${command}:`, "color: blue;");
         console.log(obj);
       }
       this.callbacks[command]!(obj);
-    } else {
-      console.error(
-        "Received WebSocket message with no callback:",
-        command,
-        JSON.parse(data[1]!),
-      );
     }
   }
 

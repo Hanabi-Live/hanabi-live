@@ -229,13 +229,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   // Replay hotkeys
-  if (globals.state.replay.hypothetical !== null) {
-    if (event.which === KeyCode.KEY_LEFT) {
-      globals.store!.dispatch({ type: "dragReset" });
-      hypothetical.sendBack();
-      return;
-    }
-  } else {
+  if (globals.state.replay.hypothetical === null) {
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
         globals.store!.dispatch({ type: "dragReset" });
@@ -286,6 +280,10 @@ function keydown(event: JQuery.KeyDownEvent) {
         break;
       }
     }
+  } else if (event.which === KeyCode.KEY_LEFT) {
+    globals.store!.dispatch({ type: "dragReset" });
+    hypothetical.sendBack();
+    return;
   }
 
   // Check for other keyboard hotkeys.
@@ -372,27 +370,23 @@ function promptCardOrder(playAction = true) {
   const maxSlotIndex = hand.length;
   const verb = playAction ? "play" : "discard";
 
-  const title = document.getElementById("play-discard-title");
+  const title = document.querySelector("#play-discard-title");
   if (title !== null) {
     title.innerHTML = `${verb} Card`;
   }
 
-  const paragraph = document.getElementById("play-discard-message");
+  const paragraph = document.querySelector("#play-discard-message");
   if (paragraph !== null) {
     paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
   }
 
-  const element = document.getElementById(
-    "play-discard-card",
-  ) as HTMLInputElement;
+  const element = document.querySelector("#play-discard-card")!;
   element.min = "1";
   element.max = maxSlotIndex.toString();
   element.value = "1";
 
-  const button = document.getElementById(
-    "play-discard-button",
-  ) as HTMLButtonElement;
-  button.onclick = () => {
+  const button = document.querySelector("#play-discard-button")!;
+  button.addEventListener("click", () => {
     closeModals();
     const performAction = (action: boolean, target: number) => {
       const type = action ? ActionType.Play : ActionType.Discard;
@@ -430,7 +424,7 @@ function promptCardOrder(playAction = true) {
     }
 
     performAction(playAction, hand[maxSlotIndex - slot]!);
-  };
+  });
 
   showPrompt("#play-discard-modal", null, element, button);
 }

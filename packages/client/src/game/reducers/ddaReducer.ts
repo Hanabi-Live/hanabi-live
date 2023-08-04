@@ -6,7 +6,7 @@ export function ddaReducer(
   dda: number | null,
   currentPlayerIndex: number | null,
 ): readonly CardState[] {
-  const newDeck = Array.from(deck);
+  const newDeck = [...deck];
   if (dda === null || currentPlayerIndex === null) {
     for (let order = 0; order < newDeck.length; order++) {
       const card = deck[order]!;

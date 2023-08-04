@@ -195,21 +195,19 @@ function initReusableObjects() {
 }
 
 function drawActionLog() {
-  if (!globals.lobby.settings.keldonMode) {
-    actionLogValues = {
-      x: 0.01,
-      y: 0.01,
-      w: 0.4,
-      h: 0.25,
-    };
-  } else {
-    actionLogValues = {
-      x: 0.2,
-      y: 0.235,
-      w: 0.4,
-      h: 0.098,
-    };
-  }
+  actionLogValues = globals.lobby.settings.keldonMode
+    ? {
+        x: 0.2,
+        y: 0.235,
+        w: 0.4,
+        h: 0.098,
+      }
+    : {
+        x: 0.01,
+        y: 0.01,
+        w: 0.4,
+        h: 0.25,
+      };
 
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
@@ -705,7 +703,7 @@ function drawDeck() {
     height: deckValues.h! * winH,
     stroke: "yellow",
     cornerRadius: 0.01 * winH,
-    strokeWidth: 0.01056 * winH,
+    strokeWidth: 0.010_56 * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
@@ -970,14 +968,25 @@ function drawScoreArea() {
         // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
         // square.
         let order: ReplayArrowOrder;
-        if (this.num === 0) {
-          order = ReplayArrowOrder.Strike1;
-        } else if (this.num === 1) {
-          order = ReplayArrowOrder.Strike2;
-        } else if (this.num === 2) {
-          order = ReplayArrowOrder.Strike3;
-        } else {
-          throw new Error(`Unknown strike number of ${this.num}".`);
+        switch (this.num) {
+          case 0: {
+            order = ReplayArrowOrder.Strike1;
+
+            break;
+          }
+          case 1: {
+            order = ReplayArrowOrder.Strike2;
+
+            break;
+          }
+          case 2: {
+            order = ReplayArrowOrder.Strike3;
+
+            break;
+          }
+          default: {
+            throw new Error(`Unknown strike number of ${this.num}".`);
+          }
         }
 
         arrows.click(event, order);
@@ -999,7 +1008,7 @@ function drawScoreArea() {
         width: 0.03 * winW,
         height: 0.053 * winH,
         stroke: "black",
-        strokeWidth: 0.00211 * winH,
+        strokeWidth: 0.002_11 * winH,
         cornerRadius: 0.005 * winW,
         listening: true,
       },
@@ -1177,7 +1186,7 @@ function drawSharedReplay() {
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
     radius: 0.028 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.00211 * winH,
+    strokeWidth: 0.002_11 * winH,
     visible: false,
     listening: false,
   });
@@ -1244,7 +1253,7 @@ function drawSharedReplay() {
       return;
     }
 
-    const placeholder = document.getElementById("leader-placeholder");
+    const placeholder = document.querySelector("#leader-placeholder");
 
     if (placeholder === null) {
       return;
@@ -1281,7 +1290,7 @@ function drawSharedReplay() {
       });
       button.type = "submit";
 
-      placeholder.appendChild(button);
+      placeholder.append(button);
     }
 
     modals.showPrompt("#set-leader-modal");
@@ -1308,7 +1317,7 @@ function drawYourTurn() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.00422 * winH,
+    strokeWidth: 0.004_22 * winH,
     offset: {
       x: -0.0175 * winW,
       y: -0.036 * winH,
@@ -1649,7 +1658,7 @@ function drawTimers() {
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.00211 * winH,
+    strokeWidth: 0.002_11 * winH,
     visible: false,
     listening: false,
   });
@@ -2037,7 +2046,7 @@ function drawClueAreaDisabled(offsetX: number) {
       (clueAreaValues.h! - spacing.y) * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.00528 * winH,
+    strokeWidth: 0.005_28 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line1);
@@ -2051,7 +2060,7 @@ function drawClueAreaDisabled(offsetX: number) {
       spacing.y * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.00528 * winH,
+    strokeWidth: 0.005_28 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line2);
@@ -2066,7 +2075,7 @@ function drawClueAreaDisabled(offsetX: number) {
     text: "No clues",
     fill: LABEL_COLOR,
     stroke: "black",
-    strokeWidth: 0.00211 * winH,
+    strokeWidth: 0.002_11 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
@@ -2146,7 +2155,7 @@ function drawHypotheticalArea() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.00422 * winH,
+    strokeWidth: 0.004_22 * winH,
     listening: false,
   });
   globals.elements.hypoCircle.add(circle);

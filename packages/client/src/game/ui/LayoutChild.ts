@@ -20,7 +20,7 @@ export class LayoutChild extends Konva.Group {
   doMisplayAnimation = false;
   blank = false;
 
-  private _card: HanabiCard;
+  private readonly _card: HanabiCard;
   get card(): HanabiCard {
     return this._card;
   }

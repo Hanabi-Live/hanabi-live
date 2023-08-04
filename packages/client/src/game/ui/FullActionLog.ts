@@ -12,9 +12,9 @@ export class FullActionLog extends Konva.Group {
   private playerLogs: Array<MultiFitText | null> = [];
   private playerLogNumbers: Array<MultiFitText | null> = [];
   private needsRefresh = false;
-  private numbersOptions: ContainerConfig;
-  private maxLines = 38;
-  private textOptions: ContainerConfig;
+  private readonly numbersOptions: ContainerConfig;
+  private readonly maxLines = 38;
+  private readonly textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
     super({
@@ -111,9 +111,7 @@ export class FullActionLog extends Konva.Group {
   }
 
   showPlayerActions(playerName: string): void {
-    const playerIndex = globals.metadata.playerNames.findIndex(
-      (name) => name === playerName,
-    );
+    const playerIndex = globals.metadata.playerNames.indexOf(playerName);
     if (playerIndex === -1) {
       throw new Error(
         `Failed to find player "${playerName}" in the player names.`,
@@ -201,7 +199,7 @@ export class FullActionLog extends Konva.Group {
       this.makeLog();
     }
 
-    this.buffer.forEach((logEntry) => {
+    for (const logEntry of this.buffer) {
       appendLine(
         this.logText!,
         this.logNumbers!,
@@ -222,7 +220,7 @@ export class FullActionLog extends Konva.Group {
           break;
         }
       }
-    });
+    }
 
     this.logText!.refreshText();
     this.logNumbers!.refreshText();

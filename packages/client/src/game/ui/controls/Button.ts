@@ -127,23 +127,21 @@ export class Button extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement !== null) {
-      if (this.assignedTextSize) {
-        this.textElement.text(newText);
-      } else {
-        // Resize to fit the new text if we haven't been specifically given a size.
-        this.textElement.fitText(newText);
-      }
-    } else {
+    if (this.textElement === null) {
       throw new Error('The "text()" method was called on a non-text Button.');
+    } else if (this.assignedTextSize) {
+      this.textElement.text(newText);
+    } else {
+      // Resize to fit the new text if we haven't been specifically given a size.
+      this.textElement.fitText(newText);
     }
   }
 
   fill(newFill: string): void {
-    if (this.textElement !== null) {
-      this.textElement.fill(newFill);
-    } else {
+    if (this.textElement === null) {
       throw new Error('The "fill()" method was called on a non-text Button.');
+    } else {
+      this.textElement.fill(newFill);
     }
   }
 

@@ -159,18 +159,13 @@ export function play(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card: string;
-  if (variantRules.isThrowItInAHole(variant) && (playing || shadowing)) {
-    card = "a card";
-  } else {
-    card = cardRules.name(action.suitIndex, action.rank, variant);
-  }
+  card =
+    variantRules.isThrowItInAHole(variant) && (playing || shadowing)
+      ? "a card"
+      : cardRules.name(action.suitIndex, action.rank, variant);
 
   let location: string;
-  if (slot === null) {
-    location = "the deck";
-  } else {
-    location = `slot #${slot}`;
-  }
+  location = slot === null ? "the deck" : `slot #${slot}`;
 
   let suffix = "";
   if (!touched) {
@@ -202,18 +197,13 @@ export function discard(
   }
 
   let card = "";
-  if (action.suitIndex === -1 || action.rank === -1) {
-    card = "a card";
-  } else {
-    card = cardRules.name(action.suitIndex, action.rank, variant);
-  }
+  card =
+    action.suitIndex === -1 || action.rank === -1
+      ? "a card"
+      : cardRules.name(action.suitIndex, action.rank, variant);
 
   let location: string;
-  if (slot === null) {
-    location = "the deck";
-  } else {
-    location = `slot #${slot}`;
-  }
+  location = slot === null ? "the deck" : `slot #${slot}`;
 
   let suffix = "";
   if (action.failed && touched && !variantRules.isThrowItInAHole(variant)) {

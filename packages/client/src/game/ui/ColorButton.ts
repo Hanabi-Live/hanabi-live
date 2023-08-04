@@ -59,7 +59,7 @@ export class ColorButton extends Konva.Group {
           fontFamily: "Verdana",
           fill: "white",
           stroke: "black",
-          strokeWidth: 0.01487 * h,
+          strokeWidth: 0.014_87 * h,
           align: "center",
           text: config["text"] as string | undefined,
           listening: false,

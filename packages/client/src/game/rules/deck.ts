@@ -47,10 +47,8 @@ export function numCopiesOfCard(
     return 3;
   }
 
-  if (rank === 4) {
-    if (variantRules.isCriticalFours(variant)) {
-      return 1;
-    }
+  if (rank === 4 && variantRules.isCriticalFours(variant)) {
+    return 1;
   }
 
   if (rank === 5) {

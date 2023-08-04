@@ -32,12 +32,12 @@ export function onPlayStackDirectionsChanged(
   if (variantRules.hasReversedSuits(globals.variant)) {
     // Update the stack directions (which are only used in the "Up or Down" and "Reversed"
     // variants).
-    directions.forEach((direction, i) => {
+    for (const [i, direction] of directions.entries()) {
       if (
         previousDirections !== undefined &&
         direction === previousDirections[i]
       ) {
-        return;
+        continue;
       }
 
       const suit = globals.variant.suits[i]!;
@@ -58,12 +58,10 @@ export function onPlayStackDirectionsChanged(
 
       globals.elements.suitLabelTexts[i]!.fitText(text);
 
-      globals.deck
-        .filter((c) => c.visibleSuitIndex === i)
-        .forEach((c) => {
-          c.setDirectionArrow(i, direction);
-        });
-    });
+      for (const c of globals.deck.filter((c) => c.visibleSuitIndex === i)) {
+        c.setDirectionArrow(i, direction);
+      }
+    }
     globals.layers.UI.batchDraw();
   }
 }
@@ -119,7 +117,7 @@ export function onPlayStacksChanged(
     },
   );
 
-  playStacks.forEach((stack, i) => {
+  for (const [i, stack] of playStacks.entries()) {
     if (
       previousPlayStacks === undefined ||
       !equal(stack, previousPlayStacks[i])
@@ -128,12 +126,12 @@ export function onPlayStacksChanged(
       const playStack = globals.elements.playStacks.get(suit)!;
       playStack.hideCardsUnderneathTheTopCard();
     }
-  });
+  }
 
   if (variantRules.isSudoku(globals.variant)) {
     // First, we will find out all available stack starts.
     const availableStackStartsFlags: boolean[] = [true, true, true, true, true];
-    playStacks.forEach((playStack) => {
+    for (const playStack of playStacks) {
       const stackStart = stackStartRank(
         playStack,
         globals.state.visibleState!.deck,
@@ -142,29 +140,29 @@ export function onPlayStacksChanged(
       if (stackStart !== UNKNOWN_CARD_RANK) {
         availableStackStartsFlags[stackStart - 1] = false;
       }
-    });
+    }
     const availableStackStarts: number[] = [];
-    availableStackStartsFlags.forEach((available, index) => {
+    for (const [index, available] of availableStackStartsFlags.entries()) {
       if (available) {
         availableStackStarts.push(index + 1);
       }
-    });
+    }
 
     // Now, add the suit label texts, showing current progress or the possible remaining starting
     // values.
-    playStacks.forEach((stack, i) => {
+    for (const [i, stack] of playStacks.entries()) {
       let text = "";
       if (stack.length === 5) {
         text = "Finished";
-      } else if (stack.length !== 0) {
+      } else if (stack.length > 0) {
         const stackStart = globals.deck[stack[0]!]!.getCardIdentity().rank!;
         const playedRanks = Array.from(
           { length: stack.length },
           (_, rankOffset) => ((rankOffset + stackStart - 1) % 5) + 1,
         );
-        text = `[ ${playedRanks.join(" ")}${Array(6 - stack.length).join(
-          " _",
-        )} ]`;
+        text = `[ ${playedRanks.join(" ")}${Array.from({
+          length: 6 - stack.length,
+        }).join(" _")} ]`;
       } else {
         const bracketText =
           availableStackStarts.length === 5
@@ -173,7 +171,7 @@ export function onPlayStacksChanged(
         text = `Start: [${bracketText}]`;
       }
       globals.elements.suitLabelTexts[i]!.fitText(text);
-    });
+    }
   }
 
   globals.layers.card.batchDraw();
@@ -211,7 +209,7 @@ function syncChildren(
 ) {
   const getCard = (order: number) => globals.deck[order];
 
-  collections.forEach((collection, i) => {
+  for (const [i, collection] of collections.entries()) {
     const getCurrentSorting = () =>
       (getCollectionUI(i).children.toArray() as LayoutChild[])
         .map((layoutChild) => layoutChild.card)
@@ -221,29 +219,27 @@ function syncChildren(
     let current = getCurrentSorting();
 
     // Remove the elements that were removed.
-    current
+    for (const card of current
       .filter((n) => !collection.includes(n))
-      .map(getCard)
-      .forEach((card) => {
-        const realState =
-          globals.store?.getState().visibleState?.deck[card!.state.order];
-        if (realState === undefined || realState.location === "deck") {
-          card!.animateToDeck();
-        } else {
-          card!.removeLayoutChildFromParent();
-        }
-      });
+      .map(getCard)) {
+      const realState =
+        globals.store?.getState().visibleState?.deck[card!.state.order];
+      if (realState === undefined || realState.location === "deck") {
+        card!.animateToDeck();
+      } else {
+        card!.removeLayoutChildFromParent();
+      }
+    }
 
     // Add the elements that were added.
-    collection
+    for (const card of collection
       .filter((n) => !current.includes(n))
-      .map(getCard)
-      .forEach((card) => {
-        addToCollectionUI(card!, i);
-      });
+      .map(getCard)) {
+      addToCollectionUI(card!, i);
+    }
 
     // Reorder the elements to match the collection.
-    collection.forEach((order, pos) => {
+    for (const [pos, order] of collection.entries()) {
       current = getCurrentSorting();
       if (current.length !== collection.length) {
         throw new Error("The UI collection is out of sync with the state.");
@@ -259,12 +255,12 @@ function syncChildren(
         layoutChild.moveDown();
         sourcePosition--;
       }
-    });
+    }
 
     // Verify the final result.
     current = getCurrentSorting();
     if (!equal(current, collection)) {
       throw new Error("The UI collection is out of sync with the state.");
     }
-  });
+  }
 }

@@ -87,9 +87,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       clueColor = clueButton.clue.value;
 
       // See if this is a valid color for the clicked card.
-      const clueColorIndex = suit.clueColors.findIndex(
-        (cardColor: Color) => cardColor === clueColor,
-      );
+      const clueColorIndex = suit.clueColors.indexOf(clueColor);
       // Ignore clue validation if suit has no clueColors.
       if (suit.clueColors.length > 0 && clueColorIndex === -1) {
         // It is not possible to clue this color to this card, so default to using the first valid

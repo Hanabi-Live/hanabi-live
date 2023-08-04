@@ -22,7 +22,7 @@ const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 let lastPM = "";
-let datetimeLastChatInput = new Date().getTime();
+let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
 let typedChatHistoryIndex: number | null = null;
 let typedChatHistoryPrefix = "";
@@ -54,7 +54,7 @@ export function init(): void {
   // Make an emote list/map and ensure that there are no overlapping emotes.
   const emoteMap = new Map<string, boolean>(); // The map can be ephemeral
   for (const emotesInCategory of Object.values(emotes)) {
-    const emotesArray = Array.from(emotesInCategory);
+    const emotesArray = [...emotesInCategory];
     for (const emoteName of emotesArray) {
       if (emoteMap.has(emoteName)) {
         throw new Error(`Duplicate emote found: ${emoteName}`);
@@ -74,7 +74,7 @@ export function init(): void {
     let potentialArray: unknown;
     try {
       potentialArray = JSON.parse(typedChatHistoryString) as unknown;
-    } catch (err) {
+    } catch {
       return;
     }
 
@@ -88,7 +88,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
   const text = element.val();
   if (typeof text !== "string") {
-    throw new Error(
+    throw new TypeError(
       "The value of the element in the input function is not a string.",
     );
   }
@@ -96,7 +96,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
   // If this is a pregame or game input, report to the server that we are typing. (But don't spam
   // the server with more than one message a second.)
   if (this.id !== "lobby-chat-input") {
-    const datetimeNow = new Date().getTime();
+    const datetimeNow = Date.now();
     if (datetimeNow - datetimeLastChatInput >= 1000) {
       datetimeLastChatInput = datetimeNow;
       globals.conn!.send("chatTyping", {
@@ -119,7 +119,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // Check for emoji substitution.
   // e.g. :100: --> 💯
-  const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
+  const matches = text.match(/:\S+:/g); // "[^\s]" is a non-whitespace character
   if (matches !== null) {
     for (const match of matches) {
       const emojiName = match.slice(1, -1); // Strip off the colons
@@ -152,7 +152,7 @@ const keypress = (room: string) =>
 function send(room: string, element: JQuery) {
   let msg = element.val();
   if (typeof msg !== "string") {
-    throw new Error("The value of the element is not a string.");
+    throw new TypeError("The value of the element is not a string.");
   }
   msg = msg.trim();
 
@@ -222,7 +222,7 @@ function sendText(room: string, msgRaw: string) {
     if (command === undefined) {
       throw new Error("Failed to parse the command from the chat message.");
     }
-    command = command.substring(1); // Remove the forward slash
+    command = command.slice(1); // Remove the forward slash
     command = command.toLowerCase();
 
     const chatCommandFunction = chatCommands.get(command);
@@ -245,19 +245,32 @@ function keydown(this: HTMLElement, event: JQuery.Event) {
   // The up and down arrows are only caught in the "keydown" event:
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus.
-  if (event.which === KeyCode.KEY_UP) {
-    event.preventDefault();
-    arrowUp(element);
-  } else if (event.which === KeyCode.KEY_DOWN) {
-    event.preventDefault();
-    arrowDown(element);
-  } else if (event.which === KeyCode.KEY_TAB) {
-    event.preventDefault();
-    tab(element, event);
-  } else if (
-    [KeyCode.KEY_BACK_SPACE, KeyCode.KEY_DELETE].includes(event.which ?? 0)
-  ) {
-    typedChatHistoryIndex = null;
+  switch (event.which) {
+    case KeyCode.KEY_UP: {
+      event.preventDefault();
+      arrowUp(element);
+
+      break;
+    }
+    case KeyCode.KEY_DOWN: {
+      event.preventDefault();
+      arrowDown(element);
+
+      break;
+    }
+    case KeyCode.KEY_TAB: {
+      event.preventDefault();
+      tab(element, event);
+
+      break;
+    }
+    default: {
+      if (
+        [KeyCode.KEY_BACK_SPACE, KeyCode.KEY_DELETE].includes(event.which ?? 0)
+      ) {
+        typedChatHistoryIndex = null;
+      }
+    }
   }
 }
 
@@ -308,7 +321,7 @@ function tab(element: JQuery, event: JQuery.Event) {
   }
   message = message.trim();
   const messageWords = message.split(" ");
-  const finalWord = messageWords[messageWords.length - 1]!;
+  const finalWord = messageWords.at(-1)!;
 
   // Increment the tab counter.
   if (tabCompleteWordListIndex === null) {
@@ -353,9 +366,7 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   }
 
   // Combine it with the list of emotes and the list of emoji.
-  const usersAndEmojisAndEmotesList = userList
-    .concat(emojiList)
-    .concat(emoteList);
+  const usersAndEmojisAndEmotesList = [...userList, ...emojiList, ...emoteList];
   usersAndEmojisAndEmotesList.sort(
     // We want to do a case-insensitive sort, which will not occur by default.
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
@@ -483,18 +494,17 @@ export function add(data: ChatMessage, fast: boolean): void {
   }">`;
   line += `[${datetime}]&nbsp; `;
   if (data.recipient !== "") {
-    if (data.recipient === globals.username) {
-      line += `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `;
-    } else {
-      line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
-    }
+    line +=
+      data.recipient === globals.username
+        ? `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `
+        : `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
   }
   if (data.server || data.recipient !== "") {
     line += data.msg;
-  } else if (data.who !== "") {
-    line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
+  } else if (data.who === "") {
     line += data.msg;
   } else {
+    line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
     line += data.msg;
   }
   if (data.server && line.includes("[Server Notice]")) {
@@ -616,7 +626,7 @@ function fillTwitchEmotes(message: string) {
 
   // Search through the text for each emote.
   for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
-    const emoteArray = Array.from(emotesInCategory);
+    const emoteArray = [...emotesInCategory];
     for (const emote of emoteArray) {
       // We don't want to replace the emote if it is followed by a quote, because we don't want to
       // replace Discord emotes.
@@ -635,7 +645,7 @@ function fillTwitchEmotes(message: string) {
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
     const re = /&lt;3/g; // "\b" won't work with a semicolon
-    filledMessage = filledMessage.replace(re, emoteTag);
+    filledMessage = filledMessage.replaceAll(re, emoteTag);
   }
   if (filledMessage.includes("D:")) {
     // A BetterTwitchTV emote.
@@ -643,7 +653,7 @@ function fillTwitchEmotes(message: string) {
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
     const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
-    filledMessage = filledMessage.replace(re, ` ${emoteTag} `); // We have to re-add the spaces
+    filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces
   }
 
   return filledMessage;
@@ -660,17 +670,28 @@ export function updatePeopleTyping(): void {
   }
 
   let msg: string;
-  if (globals.peopleTyping.length === 1) {
-    msg = `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
-  } else if (globals.peopleTyping.length === 2) {
-    msg = `<strong>${globals.peopleTyping[0]}</strong> and `;
-    msg += `<strong>${globals.peopleTyping[1]}</strong> are typing...`;
-  } else if (globals.peopleTyping.length === 3) {
-    msg = `<strong>${globals.peopleTyping[0]}</strong>, `;
-    msg += `<strong>${globals.peopleTyping[1]}</strong>, `;
-    msg += `and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
-  } else {
-    msg = "Several people are typing...";
+  switch (globals.peopleTyping.length) {
+    case 1: {
+      msg = `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
+
+      break;
+    }
+    case 2: {
+      msg = `<strong>${globals.peopleTyping[0]}</strong> and `;
+      msg += `<strong>${globals.peopleTyping[1]}</strong> are typing...`;
+
+      break;
+    }
+    case 3: {
+      msg = `<strong>${globals.peopleTyping[0]}</strong>, `;
+      msg += `<strong>${globals.peopleTyping[1]}</strong>, `;
+      msg += `and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
+
+      break;
+    }
+    default: {
+      msg = "Several people are typing...";
+    }
   }
   chat1.html(msg);
   chat2.html(msg);

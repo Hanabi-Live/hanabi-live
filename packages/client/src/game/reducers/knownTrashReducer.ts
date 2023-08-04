@@ -10,7 +10,7 @@ export function knownTrashReducer(
   playStackStarts: readonly number[],
   variant: Variant,
 ): readonly CardState[] {
-  const newDeck = Array.from(deck);
+  const newDeck = [...deck];
   for (let order = 0; order < newDeck.length; order++) {
     const card = deck[order]!;
     newDeck[order] = {

@@ -5,7 +5,7 @@ import { FitText } from "./FitText";
 export class TimerDisplay extends Konva.Group {
   timerText: FitText;
   labelText: FitText;
-  private _oval: Konva.Rect;
+  private readonly _oval: Konva.Rect;
 
   tooltipName = "";
   tooltipContent = "";

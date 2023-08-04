@@ -47,7 +47,7 @@ export function update(data: ClockData): void {
   globals.startingTurnTime = globals.playerTimes[data.activePlayerIndex]!;
 
   // Mark the time that we updated the local player times.
-  globals.lastTimerUpdateTimeMS = new Date().getTime();
+  globals.lastTimerUpdateTimeMS = Date.now();
 
   // Update onscreen time displays.
   if (globals.state.playing) {
@@ -114,7 +114,7 @@ export function stop(): void {
 
 function setTickingDownTime(timer: TimerDisplay) {
   // Calculate the elapsed time since the last timer update.
-  const now = new Date().getTime();
+  const now = Date.now();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
   globals.lastTimerUpdateTimeMS = now;
   if (elapsedTime < 0) {
@@ -149,7 +149,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     globals.options.timed &&
     globals.lobby.settings.soundTimer &&
     millisecondsLeft > 0 && // Between 0 and 10 seconds
-    millisecondsLeft <= 10000 &&
+    millisecondsLeft <= 10_000 &&
     elapsedTime > 900 &&
     elapsedTime < 1100 &&
     !globals.state.pause.active &&
@@ -175,11 +175,7 @@ function setTickingDownTimeTooltip(i: number) {
   }
 
   let content = "Time ";
-  if (globals.options.timed) {
-    content += "remaining";
-  } else {
-    content += "taken";
-  }
+  content += globals.options.timed ? "remaining" : "taken";
   content += ":<br /><strong>";
   content += millisecondsToClockString(time);
   content += "</strong>";

@@ -141,10 +141,10 @@ export function enterHypoButtonLocationChanged(data: {
 }): void {
   if (!data.finished) {
     globals.elements.enterHypoButton?.setLeft();
-  } else if (!data.shared) {
-    globals.elements.enterHypoButton?.setCenter();
-  } else {
+  } else if (data.shared) {
     globals.elements.enterHypoButton?.setRight();
+  } else {
+    globals.elements.enterHypoButton?.setCenter();
   }
 }
 
@@ -248,9 +248,9 @@ export function onFinishedChanged(
     globals.elements.maxScoreNumberLabel?.show();
     globals.elements.playsTextLabel?.hide();
     globals.elements.playsNumberLabel?.hide();
-    globals.elements.questionMarkLabels.forEach((label) => {
+    for (const label of globals.elements.questionMarkLabels) {
       label.hide();
-    });
+    }
   }
 
   // Disable zen mode

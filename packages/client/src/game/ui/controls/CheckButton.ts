@@ -155,18 +155,18 @@ export class CheckButton extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement !== null) {
-      this.textElement.text(newText);
-    } else {
+    if (this.textElement === null) {
       throw new Error('The "text()" method was called on a non-text Button.');
+    } else {
+      this.textElement.text(newText);
     }
   }
 
   fill(newFill: string): void {
-    if (this.textElement !== null) {
-      this.textElement.fill(newFill);
-    } else {
+    if (this.textElement === null) {
       throw new Error('The "fill()" method was called on a non-text Button.');
+    } else {
+      this.textElement.fill(newFill);
     }
   }
 }

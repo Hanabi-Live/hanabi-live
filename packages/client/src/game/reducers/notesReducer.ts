@@ -52,9 +52,9 @@ function notesReducerFunction(
     }
 
     case "noteListPlayer": {
-      action.texts.forEach((text, i) => {
+      for (const [i, text] of action.texts.entries()) {
         notes.ourNotes[i] = parseNote(variant, text);
-      });
+      }
       break;
     }
 
@@ -71,22 +71,22 @@ function notesReducerFunction(
       }
 
       // Set the new notes.
-      action.noteTextLists.forEach((noteTextList, i) => {
+      for (const [i, noteTextList] of action.noteTextLists.entries()) {
         // If we are a spectator, copy our notes from combined list.
         if (action.names[i] === metadata.ourUsername && !playing && !finished) {
-          noteTextList.forEach((text, order) => {
+          for (const [order, text] of noteTextList.entries()) {
             notes.ourNotes[order] = parseNote(variant, text);
-          });
+          }
         }
 
-        noteTextList.forEach((text, order) => {
+        for (const [order, text] of noteTextList.entries()) {
           notes.allNotes[order]!.push({
             name: action.names[i]!,
             text,
             isSpectator: action.isSpectators[i]!,
           });
-        });
-      });
+        }
+      }
       break;
     }
   }
@@ -100,17 +100,17 @@ function getNoteKeywords(note: string) {
   //   - \|([^[|]*$)
   // - one or more non-pipe non-bracket characters between the start and end of the note
   //   - (^[^[|]+$)
-  const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
+  const regexp = /\[(.*?)]|\|([^[|]*$)|(^[^[|]+$)/g;
   const keywords: string[] = [];
 
   let match = regexp.exec(note);
   while (match !== null) {
     if (match[1] !== undefined) {
       keywords.push(match[1].trim());
-    } else if (match[2] !== undefined) {
-      keywords.push(match[2].trim());
-    } else {
+    } else if (match[2] === undefined) {
       keywords.push(match[3]!.trim());
+    } else {
+      keywords.push(match[2].trim());
     }
     match = regexp.exec(note);
   }
@@ -121,7 +121,7 @@ function getNoteKeywords(note: string) {
 const checkNoteKeywordsForMatch = (
   patterns: readonly string[],
   keywords: string[],
-) => keywords.some((k) => patterns.some((pattern) => k === pattern));
+) => keywords.some((k) => patterns.includes(k));
 
 function getEmptyNote(variant: Variant): CardNote {
   const note: CardNote = emptyNotes.get(variant.name) ?? parseNote(variant, "");

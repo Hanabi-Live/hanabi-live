@@ -35,15 +35,13 @@ export function createJSONFromReplay(room: string): void {
   };
 
   // Copy the entire deck.
-  globals.state.cardIdentities.forEach((el, i) => {
+  for (const [i, el] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
       morph !== undefined &&
       morph.suitIndex !== null &&
       morph.rank !== null &&
-      // eslint-disable-next-line isaacscript/strict-enums
       morph.suitIndex !== CardIdentityType.Original &&
-      // eslint-disable-next-line isaacscript/strict-enums
       morph.rank !== CardIdentityType.Original
     ) {
       game.deck.push({
@@ -56,7 +54,7 @@ export function createJSONFromReplay(room: string): void {
         rank: el.rank,
       });
     }
-  });
+  }
 
   // Copy actions up to current segment.
   const { replay } = globals.state;
@@ -65,7 +63,7 @@ export function createJSONFromReplay(room: string): void {
   // Add the hypothesis from log, after current segment.
   if (replay.hypothetical !== null) {
     const { states } = replay.hypothetical;
-    const { log } = states[states.length - 1]!;
+    const { log } = states.at(-1)!;
     if (replay.segment < log.length) {
       const logLines = log.slice(replay.segment + 1);
       const actions = getGameActionsFromLog(logLines);
@@ -103,7 +101,7 @@ export function createJSONFromReplay(room: string): void {
         room,
         SelfChatMessageType.Info,
       );
-      const urlFix = json.replace(/"/g, "\\'");
+      const urlFix = json.replaceAll('"', "\\'");
       const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
       sendSelfPMFromServer(
         `Click ${here} to copy the raw JSON data to your clipboard.`,
@@ -111,9 +109,9 @@ export function createJSONFromReplay(room: string): void {
         SelfChatMessageType.Info,
       );
     })
-    .catch((err) => {
+    .catch((error) => {
       sendSelfPMFromServer(
-        `Failed to copy the URL to your clipboard: ${err}`,
+        `Failed to copy the URL to your clipboard: ${error}`,
         room,
         SelfChatMessageType.Error,
       );
@@ -187,19 +185,18 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
 function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   const actions: ClientAction[] = [];
   const regexPlay =
-    /^(?:\[Hypo\] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
-  const regexDiscard = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/;
-  const regexClue =
-    /^(?:\[Hypo\] )?(?:.+) tells (.*) about \w+ ([a-zA-Z]+|\d)s?$/;
+    /^(?:\[Hypo] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
+  const regexDiscard = /^(?:\[Hypo] )?(.*) discards .* slot #(\d).*$/;
+  const regexClue = /^(?:\[Hypo] )?.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/;
 
-  log.forEach((line, index) => {
+  for (const [index, line] of log.entries()) {
     const foundPlay = line.text.match(regexPlay);
     const foundDiscard = line.text.match(regexDiscard);
     const foundClue = line.text.match(regexClue);
 
     let action: ClientAction | null = null;
     if (foundPlay !== null && foundPlay.length > 2) {
-      const target = parseInt(foundPlay[2]!, 10);
+      const target = Number.parseInt(foundPlay[2]!, 10);
       action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Play,
@@ -207,7 +204,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
         target,
       );
     } else if (foundDiscard !== null && foundDiscard.length > 2) {
-      const target = parseInt(foundDiscard[2]!, 10);
+      const target = Number.parseInt(foundDiscard[2]!, 10);
       action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Discard,
@@ -221,7 +218,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
     if (action !== null) {
       actions.push(action);
     }
-  });
+  }
   return actions;
 }
 
@@ -248,7 +245,7 @@ function getActionFromHypoClue(
   clue: string,
 ): ClientAction | null {
   const playerIndex = getPlayerIndexFromName(player);
-  let parsedClue = parseInt(clue, 10);
+  let parsedClue = Number.parseInt(clue, 10);
 
   // "Odds and Evens" give "Odd"/"Even" as rank clues.
   if (clue.startsWith("Odd")) {
@@ -293,11 +290,11 @@ function getCardFromHypoState(
 
 function getColorIdFromString(clue: string): number {
   let suitIndex = 0;
-  globals.variant.clueColors.forEach((color, index) => {
+  for (const [index, color] of globals.variant.clueColors.entries()) {
     if (clue.startsWith(color.name)) {
       suitIndex = index;
     }
-  });
+  }
   return suitIndex;
 }
 

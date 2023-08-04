@@ -81,21 +81,19 @@ export function draw(friends: boolean): void {
 
   // JavaScript keys come as strings, so we need to convert them to integers.
   let ids: number[];
-  if (!friends) {
-    ids = Object.keys(globals.history).map((i) => parseIntSafe(i));
-  } else {
-    ids = Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
-  }
+  ids = friends
+    ? Object.keys(globals.historyFriends).map((i) => parseIntSafe(i))
+    : Object.keys(globals.history).map((i) => parseIntSafe(i));
 
   // Handle if the user has no history.
   if (ids.length === 0) {
     $("#lobby-history-no").show();
-    if (!friends) {
-      $("#lobby-history-no").html("No game history. Play some games!");
-    } else {
+    if (friends) {
       $("#lobby-history-no").html(
         "None of your friends have played any games yet.",
       );
+    } else {
+      $("#lobby-history-no").html("No game history. Play some games!");
     }
     $("#lobby-history").addClass("align-center-v");
     $("#lobby-history-table-container").hide();
@@ -111,20 +109,16 @@ export function draw(friends: boolean): void {
   ids.reverse();
 
   // Add all of the history.
-  for (let i = 0; i < ids.length; i++) {
+  for (const [i, id] of ids.entries()) {
     let gameData: GameHistory;
-    if (!friends) {
-      gameData = globals.history[ids[i]!]!;
-    } else {
-      gameData = globals.historyFriends[ids[i]!]!;
-    }
+    gameData = friends ? globals.historyFriends[id]! : globals.history[id]!;
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
     const row = $("<tr>");
 
     // Column 1 - Game ID.
-    $("<td>").html(`#${ids[i]}`).appendTo(row);
+    $("<td>").html(`#${id}`).appendTo(row);
 
     // Column 2 - # of Players.
     $("<td>").html(gameData.options.numPlayers.toString()).appendTo(row);
@@ -140,7 +134,7 @@ export function draw(friends: boolean): void {
     $("<td>").html(options).appendTo(row);
 
     // Column 6 - Other Players / Players (depending on if we are in the "Friends" view or not).
-    const playerNames = gameData.playerNames.slice();
+    const playerNames = [...gameData.playerNames];
     let playerNamesString = playerNames.join(", ");
     if (!friends) {
       // Remove our name from the list of players.
@@ -157,16 +151,16 @@ export function draw(friends: boolean): void {
     $("<td>").html(datePlayed).appendTo(row);
 
     // Column 8 - Watch Replay.
-    const watchReplayButton = makeReplayButton(ids[i]!, "solo");
+    const watchReplayButton = makeReplayButton(id, "solo");
     $("<td>").html(watchReplayButton[0]!).appendTo(row);
 
     // Column 9 - Share Replay.
-    const shareReplayButton = makeReplayButton(ids[i]!, "shared");
+    const shareReplayButton = makeReplayButton(id, "shared");
     $("<td>").html(shareReplayButton[0]!).appendTo(row);
 
     // Column 10 - Other Scores.
     const otherScoresButton = makeOtherScoresButton(
-      ids[i]!,
+      id,
       gameData.seed,
       gameData.numGamesOnThisSeed,
     );
@@ -257,13 +251,13 @@ export function drawOtherScores(
   }
 
   // Define the functionality of the "Return to History" button.
-  if (!friends) {
+  if (friends) {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
-      hideOtherScores();
+      hideOtherScoresToFriends();
     });
   } else {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
-      hideOtherScoresToFriends();
+      hideOtherScores();
     });
   }
 
@@ -279,8 +273,8 @@ export function drawOtherScores(
   const variant = getVariant(variantName);
 
   // Add all of the games for this particular seed.
-  for (let i = 0; i < games.length; i++) {
-    const gameData = games[i]!;
+  for (const [i, game] of games.entries()) {
+    const gameData = game;
 
     // Find out if this game was played by us.
     const ourGame = gameData.playerNames.includes(globals.username);
@@ -324,11 +318,8 @@ export function drawOtherScores(
     // Column 6 - Seed. Chop off the prefix.
     const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
     let seedNumberSuffix: string;
-    if (match === null || match.length < 2) {
-      seedNumberSuffix = "Unknown";
-    } else {
-      seedNumberSuffix = match[1]!;
-    }
+    seedNumberSuffix =
+      match === null || match.length < 2 ? "Unknown" : match[1]!;
     if (ourGame) {
       seedNumberSuffix = `<strong>${seedNumberSuffix}</strong>`;
     }
@@ -444,13 +435,15 @@ function iconsFromOptions(icons: string[]): string {
   switch (icons.length) {
     case 1:
     case 2:
-    case 3:
+    case 3: {
       for (const icon of icons) {
         answer += `<i class="${icon}"></i> `;
       }
       return answer.trim();
-    default:
+    }
+    default: {
       return '<i class="fas fa-ellipsis-h"></i>';
+    }
   }
 }
 

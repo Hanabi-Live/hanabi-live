@@ -59,7 +59,7 @@ export class Loader {
   start(): void {
     for (const [fileID, filePath] of this.filePathMap) {
       const img = new Image();
-      img.onload = () => {
+      img.addEventListener("load", () => {
         this.numLoaded++;
         this.progress();
         if (this.numLoaded === this.filePathMap.size) {
@@ -68,7 +68,7 @@ export class Loader {
             this.finishedCallback();
           }
         }
-      };
+      });
       img.src = filePath;
 
       this.imageMap.set(fileID, img);

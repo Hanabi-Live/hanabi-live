@@ -31,15 +31,26 @@ export function HanabiCardClick(
   }
 
   const mouseEvent = event.evt;
-  if (mouseEvent.button === 0) {
-    // Left-click
-    clickLeft(this, mouseEvent);
-  } else if (mouseEvent.button === 1) {
-    // Middle-click
-    clickMiddle(this, mouseEvent);
-  } else if (mouseEvent.button === 2) {
-    // Right-click
-    clickRight(this, mouseEvent);
+  switch (mouseEvent.button) {
+    case 0: {
+      // Left-click
+      clickLeft(this, mouseEvent);
+
+      break;
+    }
+    case 1: {
+      // Middle-click
+      clickMiddle(this, mouseEvent);
+
+      break;
+    }
+    case 2: {
+      // Right-click
+      clickRight(this, mouseEvent);
+
+      break;
+    }
+    // No default
   }
 }
 

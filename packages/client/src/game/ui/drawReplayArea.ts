@@ -64,7 +64,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     h: 0.03,
     cornerRadius: 0.01,
     stroke: "black",
-    strokeWidth: 0.001217,
+    strokeWidth: 0.001_217,
     scale: 0.75,
   };
 

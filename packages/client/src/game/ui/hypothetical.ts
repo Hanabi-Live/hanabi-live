@@ -199,16 +199,16 @@ export function send(hypoAction: ClientAction): void {
 }
 
 export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
-  if (globals.state.replay.shared !== null) {
+  if (globals.state.replay.shared === null) {
+    globals.store!.dispatch({
+      type: "hypoAction",
+      action: hypoAction,
+    });
+  } else {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoAction,
       actionJSON: JSON.stringify(hypoAction),
-    });
-  } else {
-    globals.store!.dispatch({
-      type: "hypoAction",
-      action: hypoAction,
     });
   }
 }
@@ -221,16 +221,14 @@ export function sendBack(): void {
     return;
   }
 
-  if (globals.state.replay.shared !== null) {
-    if (globals.state.replay.shared.amLeader) {
-      globals.lobby.conn!.send("replayAction", {
-        tableID: globals.lobby.tableID,
-        type: ReplayActionType.HypoBack,
-      });
-    }
-  } else {
+  if (globals.state.replay.shared === null) {
     globals.store!.dispatch({
       type: "hypoBack",
+    });
+  } else if (globals.state.replay.shared.amLeader) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.HypoBack,
     });
   }
 }
@@ -240,17 +238,15 @@ export function toggleRevealed(): void {
     return;
   }
 
-  if (globals.state.replay.shared !== null) {
-    if (globals.state.replay.shared.amLeader) {
-      globals.lobby.conn!.send("replayAction", {
-        tableID: globals.lobby.tableID,
-        type: ReplayActionType.HypoToggleRevealed,
-      });
-    }
-  } else {
+  if (globals.state.replay.shared === null) {
     globals.store!.dispatch({
       type: "hypoShowDrawnCards",
       showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
+    });
+  } else if (globals.state.replay.shared.amLeader) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.HypoToggleRevealed,
     });
   }
 }

@@ -129,7 +129,7 @@ describe("nextRanks", () => {
     expect(nextRanksArray).toStrictEqual([1]);
   });
 
-  test.each([...Array(5).keys()])(
+  test.each([...Array.from({ length: 5 }).keys()])(
     "returns the next rank for a play stack going up",
     (n) => {
       if (n === 0) {
@@ -164,7 +164,7 @@ describe("nextRanks", () => {
     expect(nextRanksArray).toStrictEqual([5]);
   });
 
-  test.each([...Array(6).keys()])(
+  test.each([...Array.from({ length: 6 }).keys()])(
     "returns the next rank for a play stack going down",
     (n) => {
       if (n === 0 || n === 1) {

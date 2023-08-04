@@ -113,13 +113,13 @@ export function onScoreOrMaxScoreChanged(data: {
   const maxScoreLabelWidth = maxScoreLabel.measureSize(maxScoreLabel.text())
     .width as number;
   if (typeof maxScoreLabelWidth !== "number") {
-    throw new Error("The width of maxScoreLabel was not a number.");
+    throw new TypeError("The width of maxScoreLabel was not a number.");
   }
   maxScoreLabel.width(maxScoreLabelWidth);
   const scoreLabelWidth = scoreLabel.measureSize(scoreLabel.text())
     .width as number;
   if (typeof scoreLabelWidth !== "number") {
-    throw new Error("The width of scoreLabel was not a number.");
+    throw new TypeError("The width of scoreLabel was not a number.");
   }
   const x = scoreLabel.x() + scoreLabelWidth;
   maxScoreLabel.x(x);
@@ -234,17 +234,7 @@ export function onOngoingOrVisibleStrikesChanged(data: {
     }
 
     const duration = 0.5; // The duration for the strike animation
-    if (data.visibleStrikes[i] !== undefined) {
-      // There is a strike on the visible state. Animate the strike X fading in.
-      animate(
-        strikeX,
-        {
-          duration,
-          opacity: 1,
-        },
-        true,
-      );
-    } else {
+    if (data.visibleStrikes[i] === undefined) {
       // Either this strike has never happened, or we are moving backwards in a replay. If this
       // strike never happened, it should be invisible. If this strike happened in the future, then
       // it should be slightly faded.
@@ -258,6 +248,16 @@ export function onOngoingOrVisibleStrikesChanged(data: {
         {
           duration,
           opacity,
+        },
+        true,
+      );
+    } else {
+      // There is a strike on the visible state. Animate the strike X fading in.
+      animate(
+        strikeX,
+        {
+          duration,
+          opacity: 1,
         },
         true,
       );
