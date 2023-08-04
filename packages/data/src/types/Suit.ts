@@ -1,4 +1,4 @@
-import type { Color } from "./Color.js";
+import type { Color } from "./Color";
 
 export interface Suit {
   readonly name: string;

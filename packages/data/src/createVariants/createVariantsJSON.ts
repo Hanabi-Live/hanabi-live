@@ -27,12 +27,12 @@ import {
   getVariantsForEachSuit,
   getVariantsForSpecialRanks,
   getVeryAmbiguousVariants,
-} from "../getVariantDescriptions.js";
-import type { SuitJSON } from "../types/SuitJSON.js";
-import type { VariantDescription } from "../types/VariantDescription.js";
-import type { VariantJSON } from "../types/VariantJSON.js";
-import { getVariantFromNewID } from "./newID.js";
-import { fatalError } from "./utils.js";
+} from "../getVariantDescriptions";
+import type { SuitJSON } from "../types/SuitJSON";
+import type { VariantDescription } from "../types/VariantDescription";
+import type { VariantJSON } from "../types/VariantJSON";
+import { getVariantFromNewID } from "./newID";
+import { fatalError } from "./utils";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();

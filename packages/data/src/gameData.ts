@@ -1,11 +1,11 @@
-import { DEFAULT_VARIANT_NAME, START_CARD_RANK } from "./constants.js";
-import { charactersInit } from "./charactersInit.js";
-import { colorsInit } from "./colorsInit.js";
-import { suitsInit } from "./suitsInit.js";
-import type { Character } from "./types/Character.js";
-import type { Suit } from "./types/Suit.js";
-import { variantsInit } from "./variantsInit.js";
-import type { Variant } from "./types/Variant.js";
+import { DEFAULT_VARIANT_NAME, START_CARD_RANK } from "./constants";
+import { charactersInit } from "./charactersInit";
+import { colorsInit } from "./colorsInit";
+import { suitsInit } from "./suitsInit";
+import type { Character } from "./types/Character";
+import type { Suit } from "./types/Suit";
+import { variantsInit } from "./variantsInit";
+import type { Variant } from "./types/Variant";
 
 /** Indexed by character ID. */
 const CHARACTERS = charactersInit();

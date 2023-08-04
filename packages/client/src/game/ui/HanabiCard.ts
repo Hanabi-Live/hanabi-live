@@ -28,8 +28,8 @@ import { RankPip } from "./controls/RankPip";
 import { suitIndexToSuit } from "./convert";
 import { CursorType } from "./cursor";
 import { globals } from "./globals";
-import * as HanabiCardInit from "./HanabiCardInit";
-import * as HanabiCardMouse from "./HanabiCardMouse";
+import * as HanabiCardInit from "./hanabiCardInit";
+import * as HanabiCardMouse from "./hanabiCardMouse";
 import { animate } from "./konvaHelpers";
 import { LayoutChild } from "./LayoutChild";
 import {

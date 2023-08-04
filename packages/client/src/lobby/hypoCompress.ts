@@ -4,8 +4,8 @@ import {
   HYPO_PLAYER_NAMES,
   MAX_PLAYERS,
   MIN_PLAYERS,
+  parseIntSafe,
 } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
 import { isEqual } from "lodash";
 
 interface DeckCard {
@@ -296,7 +296,7 @@ function decompressActions(src: string): Action[] {
 
   let s = 2;
   while (s < src.length) {
-    const compressedAction = src.substring(s, s + 2);
+    const compressedAction = src.slice(s, s + 2);
     const action = stringToAction(compressedAction, typeRange);
     actions.push(action);
     s += 2;

@@ -4,12 +4,12 @@ import {
   getSuitAbbreviationsForVariant,
 } from ".";
 import variantsJSON from "./json/variants.json";
-import { getIdentityNotePatternForVariant } from "./notes.js";
-import type { Color } from "./types/Color.js";
-import type { Suit } from "./types/Suit.js";
-import type { Variant } from "./types/Variant.js";
-import type { VariantJSON } from "./types/VariantJSON.js";
-import { isNameUpOrDown } from "./variants.js";
+import { getIdentityNotePatternForVariant } from "./notes";
+import type { Color } from "./types/Color";
+import type { Suit } from "./types/Suit";
+import type { Variant } from "./types/Variant";
+import type { VariantJSON } from "./types/VariantJSON";
+import { isNameUpOrDown } from "./variants";
 
 export function variantsInit(
   COLORS: ReadonlyMap<string, Color>,

@@ -1,12 +1,12 @@
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,
-} from "../getVariantDescriptions.js";
-import { ReadonlySet } from "../types/ReadonlySet.js";
-import type { SuitJSON } from "../types/SuitJSON.js";
-import type { VariantJSON } from "../types/VariantJSON.js";
-import { parseIntSafe } from "../utils.js";
-import { fatalError } from "./utils.js";
+} from "../getVariantDescriptions";
+import { ReadonlySet } from "../types/ReadonlySet";
+import type { SuitJSON } from "../types/SuitJSON";
+import type { VariantJSON } from "../types/VariantJSON";
+import { parseIntSafe } from "../utils";
+import { fatalError } from "./utils";
 
 const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";

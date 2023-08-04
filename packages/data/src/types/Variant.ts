@@ -1,5 +1,5 @@
-import type { Color } from "./Color.js";
-import type { Suit } from "./Suit.js";
+import type { Color } from "./Color";
+import type { Suit } from "./Suit";
 
 export interface Variant {
   readonly name: string;

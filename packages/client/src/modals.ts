@@ -5,7 +5,7 @@ import type { Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
 import type { HanabiCard } from "./game/ui/HanabiCard";
-import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
+import { morphReplayFromModal } from "./game/ui/hanabiCardClick";
 import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";

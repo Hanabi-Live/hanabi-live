@@ -1,7 +1,7 @@
 import suitsJSON from "./json/suits.json";
-import type { Color } from "./types/Color.js";
-import type { Suit } from "./types/Suit.js";
-import type { SuitJSON } from "./types/SuitJSON.js";
+import type { Color } from "./types/Color";
+import type { Suit } from "./types/Suit";
+import type { SuitJSON } from "./types/SuitJSON";
 
 const SUIT_REVERSED_SUFFIX = " Reversed";
 

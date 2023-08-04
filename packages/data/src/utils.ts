@@ -10,6 +10,16 @@ export function capitalizeFirstLetter(string: string): string {
   return `${capitalizedFirstLetter}${restOfString}`;
 }
 
+/**
+ * Helper function to normalize an integer.
+ *
+ * - If `x` is less than `min`, then it will be clamped to `min`.
+ * - If `x` is greater than `max`, then it will be clamped to `max`.
+ */
+export function clamp(x: number, min: number, max: number): number {
+  return Math.max(min, Math.min(x, max));
+}
+
 /** Initializes an array with all elements containing the specified default value. */
 export function newArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);

@@ -103,10 +103,8 @@ export function set(
       element instanceof HanabiCard &&
       (element.state.numPositiveClues >= 2 ||
         (element.state.numPositiveClues >= 1 && preview))
-        ? // Cards that are re-clued use a different color.
-          ARROW_COLOR.RETOUCHED
-        : // Freshly touched cards use the default color.
-          ARROW_COLOR.DEFAULT;
+        ? ARROW_COLOR.RETOUCHED // Cards that are re-clued use a different color.
+        : ARROW_COLOR.DEFAULT; // Freshly touched cards use the default color.
 
     arrow.base.stroke(color);
     arrow.base.fill(color);

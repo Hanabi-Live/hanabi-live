@@ -54,12 +54,12 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   let turn = 0; // Start on the 0th turn
   let currentPlayerIndex = 0; // The player at index 0 goes first
 
-  for (const actionJSON of gameJSON.actions) {
+  for (const jsonAction of gameJSON.actions) {
     const action = parseJSONAction(
       currentPlayerIndex,
       turn,
       gameJSON.deck,
-      actionJSON,
+      jsonAction,
     );
     if (action !== null) {
       actions.push(action);

@@ -1,7 +1,6 @@
 // The screens that show past games and other scores.
 
-import { getVariant } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { getVariant, parseIntSafe } from "@hanabi/data";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
@@ -80,8 +79,7 @@ export function draw(friends: boolean): void {
   tbody.html("");
 
   // JavaScript keys come as strings, so we need to convert them to integers.
-  let ids: number[];
-  ids = friends
+  const ids = friends
     ? Object.keys(globals.historyFriends).map((i) => parseIntSafe(i))
     : Object.keys(globals.history).map((i) => parseIntSafe(i));
 
@@ -110,8 +108,9 @@ export function draw(friends: boolean): void {
 
   // Add all of the history.
   for (const [i, id] of ids.entries()) {
-    let gameData: GameHistory;
-    gameData = friends ? globals.historyFriends[id]! : globals.history[id]!;
+    const gameData = friends
+      ? globals.historyFriends[id]!
+      : globals.history[id]!;
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 

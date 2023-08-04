@@ -13,7 +13,7 @@ import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
 import { HanabiCard } from "./HanabiCard";
-import { setEmpathyOnHand } from "./HanabiCardMouse";
+import { setEmpathyOnHand } from "./hanabiCardMouse";
 
 export function start(): void {
   if (globals.state.replay.hypothetical !== null) {

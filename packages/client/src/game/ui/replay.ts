@@ -1,6 +1,5 @@
 // Functions for progressing forward and backward through time.
 
-import { parseIntSafe } from "isaacscript-common-ts";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";
@@ -8,6 +7,7 @@ import { Shuttle } from "./controls/Shuttle";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
+import { clamp, parseIntSafe } from "@hanabi/data";
 
 // ---------------------
 // Main replay functions
@@ -55,8 +55,6 @@ export function goToSegment(
   const currentSegment = getCurrentReplaySegment();
 
   // Validate the target segment. The target must be between 0 and the final replay segment.
-  const clamp = (n: number, min: number, max: number) =>
-    Math.max(min, Math.min(n, max));
   const newSegment = clamp(segment, 0, finalSegment);
   if (currentSegment === newSegment) {
     if (
@@ -205,9 +203,6 @@ export function shuttleDragBound(
   this: Konva.Rect,
   pos: Konva.Vector2d,
 ): { x: number; y: number } {
-  const clamp = (n: number, min: number, max: number) =>
-    Math.max(min, Math.min(n, max));
-
   const min =
     globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
   const w = globals.elements.replayBar!.width() - this.width();
@@ -320,41 +315,44 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const element = document.querySelector("#set-turn-input");
-  const button = document.querySelector("#set-turn-button");
+  const setTurnInput = document.querySelector("#set-turn-input");
+  if (!(setTurnInput instanceof HTMLInputElement)) {
+    throw new TypeError("Failed to get element: #set-turn-input");
+  }
 
-  if (element === null || button === null) {
-    return;
+  const setTurnButton = document.querySelector("#set-turn-button");
+  if (!(setTurnButton instanceof HTMLButtonElement)) {
+    throw new TypeError("Failed to get element: #set-turn-button");
   }
 
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
 
-  element.min = "1";
-  element.max = Math.max(finalSegment, currentSegment).toString();
-  element.value = currentSegment.toString();
+  setTurnInput.min = "1";
+  setTurnInput.max = Math.max(finalSegment, currentSegment).toString();
+  setTurnInput.value = currentSegment.toString();
 
-  const goTo = (turnString: string) => {
-    let targetTurn = parseIntSafe(turnString);
-    if (Number.isNaN(targetTurn)) {
-      return;
-    }
-
-    // We need to decrement the turn because the turn shown to the user is always one greater than
-    // the real turn.
-    targetTurn--;
-
-    goToSegment(targetTurn, true);
-  };
-
-  button.addEventListener("click", (evt) => {
+  setTurnButton.addEventListener("click", (evt) => {
     evt.preventDefault();
     closeModals();
 
-    goTo(element.value);
+    goTo(setTurnInput.value);
   });
 
-  showPrompt("#set-turn-modal", null, element, button);
+  showPrompt("#set-turn-modal", undefined, setTurnInput, setTurnButton);
+}
+
+function goTo(turnString: string) {
+  let targetTurn = parseIntSafe(turnString);
+  if (Number.isNaN(targetTurn)) {
+    return;
+  }
+
+  // We need to decrement the turn because the turn shown to the user is always one greater than the
+  // real turn.
+  targetTurn--;
+
+  goToSegment(targetTurn, true);
 }
 
 // --------------------------------

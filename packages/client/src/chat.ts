@@ -12,9 +12,9 @@ import * as modals from "./modals";
 import { ChatMessage } from "./types/ChatMessage";
 
 export enum SelfChatMessageType {
-  Normal = "Normal",
-  Info = "Info",
-  Error = "Error",
+  Normal,
+  Info,
+  Error,
 }
 
 const emojiMap = new Map<string, string>();
@@ -518,7 +518,7 @@ export function add(data: ChatMessage, fast: boolean): void {
 
   // Replace chat suggestions with anchors which, when clicked, are chat commands.
   if (chat.is($("#lobby-chat-pregame-text"))) {
-    const regex = /(.*)(@(\/.*)@)(.*)/; // eslint-disable-line prefer-named-capture-group
+    const regex = /(.*)(@(\/.*)@)(.*)/;
     let match = regex.exec(line);
     while (match !== null) {
       line = `${match[1]}<a href="#" class="suggestion">${match[3]}</a>${match[4]}`;
@@ -655,7 +655,7 @@ function fillTwitchEmotes(message: string) {
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
-    // eslint-disable-next-line prefer-named-capture-group
+
     const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
     filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces
   }

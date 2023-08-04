@@ -1,7 +1,7 @@
-import { DEFAULT_CLUE_RANKS } from "./constants.js";
-import type { BasicVariantSuits } from "./createVariants/createVariantsJSON.js";
-import type { SuitJSON } from "./types/SuitJSON.js";
-import type { VariantDescription } from "./types/VariantDescription.js";
+import { DEFAULT_CLUE_RANKS } from "./constants";
+import type { BasicVariantSuits } from "./createVariants/createVariantsJSON";
+import type { SuitJSON } from "./types/SuitJSON";
+import type { VariantDescription } from "./types/VariantDescription";
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS = [1, 5] as const;
