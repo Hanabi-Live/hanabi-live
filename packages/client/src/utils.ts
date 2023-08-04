@@ -5,10 +5,10 @@ export function copyStringToClipboard(str: string): void {
   const el = document.createElement("textarea"); // Create new element
   el.value = str; // Set the value (the string to be copied)
   el.setAttribute("readonly", ""); // Set non-editable to avoid focus
-  document.body.appendChild(el);
+  document.body.append(el);
   el.select(); // Select text inside element
   document.execCommand("copy"); // Copy text to clipboard
-  document.body.removeChild(el); // Remove temporary element
+  el.remove(); // Remove temporary element
 }
 
 export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -72,45 +72,14 @@ function pad2(num: number) {
   return `${num}`;
 }
 
-/**
- * This is a more reliable version of `parseInt`. By default, `parseInt('1a')` will return "1",
- * which is unexpected. This returns either an integer or NaN.
- */
-export function parseIntSafe(input: string): number {
-  if (typeof input !== "string") {
-    return NaN;
-  }
-
-  // Remove all leading and trailing whitespace.
-  let trimmedInput = input.trim();
-
-  const isNegativeNumber = trimmedInput.startsWith("-");
-  if (isNegativeNumber) {
-    // Remove the leading minus sign before we match the regular expression.
-    trimmedInput = trimmedInput.substring(1);
-  }
-
-  if (/^\d+$/.exec(trimmedInput) === null) {
-    // "\d" matches any digit (same as "[0-9]").
-    return NaN;
-  }
-
-  if (isNegativeNumber) {
-    // Add the leading minus sign back.
-    trimmedInput = `-${trimmedInput}`;
-  }
-
-  return Number.parseInt(trimmedInput, 10);
-}
-
 export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
   const queryParameters = new URLSearchParams(window.location.search);
   const modifiedQueryParameters = queryParameters
     .toString()
     // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable.
-    .replace(/=&/g, "&")
-    .replace(/=$/, "");
+    .replaceAll("=&", "&")
+    .replace(/[=]$/, "");
 
   let path = newPath;
   if (modifiedQueryParameters.length > 0) {

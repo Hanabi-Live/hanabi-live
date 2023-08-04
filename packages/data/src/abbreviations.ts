@@ -1,5 +1,5 @@
-import { ReadonlySet } from "isaacscript-common-ts";
-import { Suit } from "./types/Suit";
+import { ReadonlySet } from "./types/ReadonlySet.js";
+import type { Suit } from "./types/Suit.js";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const QUESTION_MARK_NOTES = ["?"] as const;
@@ -56,6 +56,8 @@ export const ALL_RESERVED_NOTES = new ReadonlySet<string>([
   ...UNCLUED_NOTES,
 ]);
 
+const SUIT_ABBREVIATION_BLACKLIST = new ReadonlySet(["d", "a", "r", "k"]);
+
 /**
  * Suit abbreviations are hard-coded in the "suits.json" file. In some variants, two or more suits
  * can have overlapping letter abbreviations. If this is the case, we dynamically find a new
@@ -69,33 +71,34 @@ export function getSuitAbbreviationsForVariant(
   suits: Suit[],
 ): readonly string[] {
   const abbreviations: string[] = [];
-  const skipLetters: string[] = ["d", "a", "r", "k"];
 
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
-    if (!abbreviations.includes(suit.abbreviation)) {
+
+    if (abbreviations.includes(suit.abbreviation)) {
+      // There is an overlap with the normal abbreviation.
+      for (const letter of suit.displayName) {
+        const upperCaseLetter = letter.toUpperCase();
+        if (
+          !abbreviations.includes(upperCaseLetter) &&
+          !ALL_RESERVED_NOTES.has(upperCaseLetter) &&
+          !SUIT_ABBREVIATION_BLACKLIST.has(upperCaseLetter)
+        ) {
+          abbreviationToUse = upperCaseLetter;
+          break;
+        }
+      }
+    } else {
       if (ALL_RESERVED_NOTES.has(suit.abbreviation)) {
         throw new Error(
           `Suit abbreviation for "${suit.name}" in the variant of "${variantName}" conflicts with a reserved word.`,
         );
       }
+
       // There is no overlap with the normal abbreviation.
       abbreviationToUse = suit.abbreviation;
-    } else {
-      // There is an overlap with the normal abbreviation.
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < suit.displayName.length; i++) {
-        const suitLetter = suit.displayName[i]!.toUpperCase();
-        if (
-          !abbreviations.includes(suitLetter) &&
-          !ALL_RESERVED_NOTES.has(suitLetter) &&
-          !skipLetters.includes(suitLetter)
-        ) {
-          abbreviationToUse = suitLetter;
-          break;
-        }
-      }
     }
+
     if (abbreviationToUse === undefined) {
       throw new Error(
         `Failed to find a suit abbreviation for "${suit.name}" in the variant of "${variantName}".`,

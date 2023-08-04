@@ -1,8 +1,13 @@
 import type { Variant } from "@hanabi/data";
-import { ALL_RESERVED_NOTES, MAX_RANK, START_CARD_RANK } from "@hanabi/data";
+import {
+  ALL_RESERVED_NOTES,
+  MAX_RANK,
+  START_CARD_RANK,
+  parseIntSafe,
+} from "@hanabi/data";
 import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
-import { parseIntSafe } from "../../utils";
+import { initArray } from "../../utils";
 
 interface CardIdentities {
   readonly suitIndices: number[];
@@ -83,16 +88,14 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
     const suitIndices: number[] = [];
     const ranks: number[] = [];
     if (squishText !== null) {
-      Array.prototype.map.call(squishText, (letter) => {
+      for (const letter of squishText) {
         suitIndex = parseSuit(variant, letter);
         rank = parseRank(letter);
         if (suitIndex !== null) {
           suitIndices.push(suitIndex);
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (rank !== null) {
-          ranks.push(rank);
         }
-      });
+        ranks.push(rank);
+      }
       if (suitIndices.length + ranks.length > 0) {
         return { suitIndices, ranks };
       }
@@ -119,7 +122,7 @@ function range(
   step = 1,
 ): number[] {
   const start: number = _stop === null ? 0 : _start;
-  const stop: number = _stop === null ? _start : _stop;
+  const stop: number = _stop ?? _start;
 
   const numbersInRange: number[] = [];
   for (let i = start; i < stop; i += step) {
@@ -180,11 +183,9 @@ function getPossibilitiesFromKeyword(
     positiveIdentities.length > 0 ? [] : variant.ranks,
   );
   for (let rank = 1; rank <= MAX_RANK; rank++) {
-    identityMap.push(
-      Array.from({ length: variant.suits.length }).fill(
-        positiveRanks.has(rank) ? 1 : 0,
-      ),
-    );
+    const value = positiveRanks.has(rank) ? 1 : 0;
+    const identities = initArray(variant.suits.length, value);
+    identityMap.push(identities);
   }
 
   // Then add positive items and remove all negatives.

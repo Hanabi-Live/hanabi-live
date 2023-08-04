@@ -1,11 +1,12 @@
-import { parseIntSafe, ReadonlySet } from "isaacscript-common-ts";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,
-} from "../getVariantDescriptions";
-import { SuitJSON } from "../types/SuitJSON";
-import { VariantJSON } from "../types/VariantJSON";
-import { error } from "./utils";
+} from "../getVariantDescriptions.js";
+import { ReadonlySet } from "../types/ReadonlySet.js";
+import type { SuitJSON } from "../types/SuitJSON.js";
+import type { VariantJSON } from "../types/VariantJSON.js";
+import { parseIntSafe } from "../utils.js";
+import { error } from "./utils.js";
 
 const VARIANT_DELIMITER = ":";
 const SUIT_DELIMITER = "+";

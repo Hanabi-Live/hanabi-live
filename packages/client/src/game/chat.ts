@@ -3,7 +3,7 @@
 import interact from "interactjs";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
-import { parseIntSafe } from "../utils";
+import { parseIntSafe } from "@hanabi/data";
 
 export function init(): void {
   // Make the chat modal draggable (using the InteractJS library).
@@ -114,18 +114,16 @@ export function show(): void {
     // We need to notify the server that we have read everything.
     if (globals.conn === null) {
       throw new Error('The "globals.conn" object is not initialized.');
-    } else {
-      globals.conn.send("chatRead", {
-        tableID: globals.tableID,
-      });
     }
+    globals.conn.send("chatRead", {
+      tableID: globals.tableID,
+    });
 
     // Reset the "Chat" UI button back to normal.
     if (globals.ui === null) {
       throw new Error('The "globals.ui" object is not initialized.');
-    } else {
-      globals.ui.updateChatLabel();
     }
+    globals.ui.updateChatLabel();
   }
 
   // Set the modal to the default position.
@@ -175,9 +173,8 @@ export function show(): void {
   const chat = document.querySelector("#game-chat-text");
   if (chat === null) {
     throw new Error('Failed to get the "game-chat-text" element.');
-  } else {
-    chat.scrollTop = chat.scrollHeight;
   }
+  chat.scrollTop = chat.scrollHeight;
 
   $("#game-chat-input").trigger("focus");
 }

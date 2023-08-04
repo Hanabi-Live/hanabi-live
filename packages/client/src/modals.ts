@@ -1,5 +1,6 @@
 // Modals (boxes that hover on top of the UI).
 
+import { parseIntSafe } from "@hanabi/data";
 import type { Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
@@ -8,7 +9,6 @@ import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";
-import { parseIntSafe } from "./utils";
 
 let initialized = false;
 let allowCloseModal = true;
@@ -73,8 +73,7 @@ function init() {
   // Morph modal textbox.
   const morphTextbox = getInputElement("#morph-modal-textbox");
   const morphTextboxObserver = new MutationObserver(() => {
-    const { suit } = morphTextbox.dataset;
-    const { rank } = morphTextbox.dataset;
+    const { suit, rank } = morphTextbox.dataset;
     morphTextbox.value = `${suit} ${rank}`;
   });
   morphTextboxObserver.observe(morphTextbox, {
@@ -181,7 +180,7 @@ export function askForMorph(
   const { ranks } = variant;
   const start =
     card === null ? { suitIndex: null, rank: null } : card.getMorphedIdentity();
-  const startSuit = start.suitIndex === null ? 0 : start.suitIndex;
+  const startSuit = start.suitIndex ?? 0;
   const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
   const possibilities = card === null ? [] : card.state.possibleCardsForEmpathy;
 
@@ -307,8 +306,8 @@ export function showError(msg: string): void {
 export function setModal(
   buttonSelector: string,
   selector: string,
-  before?: () => unknown,
-  test?: () => unknown,
+  before?: () => void,
+  test?: () => boolean,
   focus: (() => unknown) | string | null = null,
 ): void {
   if (!init()) {
@@ -318,19 +317,20 @@ export function setModal(
   const button = getElement(buttonSelector);
 
   button.addEventListener("click", () => {
-    // eslint-disable-next-line
-    if (!(test?.call(null) ?? true)) {
+    if (test !== undefined && !test()) {
       return;
     }
+
     showModal(selector, before);
     if (focus === null) {
       return;
     }
+
     setTimeout(() => {
       if (typeof focus === "string") {
         getElement(focus).focus();
       } else {
-        focus.call(null);
+        focus();
       }
     }, 100);
   });
@@ -346,7 +346,6 @@ export function showPrompt(
     return;
   }
 
-  // eslint-disable-next-line
   if (!(test?.call(null) ?? true)) {
     return;
   }
@@ -446,7 +445,6 @@ function showModal(
 
   if (typeof param2 === "function") {
     const result = param2.call(null);
-    // eslint-disable-next-line
     if (result ?? false) {
       return;
     }
@@ -513,8 +511,8 @@ function fillMorphModalWithRadios(
 
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
-        textbox.dataset.suit = suit.displayName;
-        textbox.dataset.rank = rank === 7 ? "S" : rank.toString();
+        textbox.dataset["suit"] = suit.displayName;
+        textbox.dataset["rank"] = rank === 7 ? "S" : rank.toString();
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -522,8 +520,8 @@ function fillMorphModalWithRadios(
         }
 
         // Set textbox data attribute.
-        textbox.dataset.suit = suit.displayName;
-        textbox.dataset.rank = rank === 7 ? "S" : rank.toString();
+        textbox.dataset["suit"] = suit.displayName;
+        textbox.dataset["rank"] = rank === 7 ? "S" : rank.toString();
       });
 
       row.append(cell);

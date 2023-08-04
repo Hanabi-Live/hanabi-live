@@ -12,10 +12,10 @@ import * as debug from "../debug";
 import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import { Options } from "../types/Options";
+import type { Options } from "../types/Options";
 import { getRandomNumber, isEmpty } from "../utils";
 import { Screen } from "./types/Screen";
-import { Settings } from "./types/Settings";
+import type { Settings } from "./types/Settings";
 
 // Constants
 const basicVariants = [
@@ -172,7 +172,7 @@ export function init(): void {
   $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
     const regExp = /'/g;
-    const textWithDoubleQuotes = data.replace(regExp, '"');
+    const textWithDoubleQuotes = data.replaceAll(regExp, '"');
     const options = JSON.parse(textWithDoubleQuotes) as Options;
     acceptOptionsFromGuest(options);
     $(e.target).text("sent").prop("disabled", true);
@@ -278,7 +278,7 @@ function submit() {
     try {
       timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
       timeBaseSeconds = Math.round(timeValue * 60);
-    } catch (err) {
+    } catch {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimeBaseMinutes").addClass("wrongInput");
       foundErrors = true;
@@ -286,7 +286,7 @@ function submit() {
 
     try {
       timePerTurn = getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
-    } catch (err) {
+    } catch {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimePerTurnSeconds").addClass("wrongInput");
       foundErrors = true;
@@ -304,7 +304,7 @@ function submit() {
   const password = $("#createTablePassword").val();
   if (isNew) {
     if (typeof password !== "string") {
-      throw new Error(
+      throw new TypeError(
         'The value of the "createTablePassword" element was not a string.',
       );
     }
@@ -321,7 +321,7 @@ function submit() {
   // Game JSON is not saved.
   const gameJSONString = $("#createTableJSON").val();
   if (typeof gameJSONString !== "string") {
-    throw new Error(
+    throw new TypeError(
       'The value of the "createTableJSON" element is not a string.',
     );
   }
@@ -329,7 +329,7 @@ function submit() {
   if (gameJSONString !== "") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
-    } catch (err) {
+    } catch {
       modals.showError("That is not a valid JSON object.");
       return;
     }
@@ -409,7 +409,7 @@ function getTextbox(setting: keyof Settings) {
     throw new Error(`Failed to get the value of element "${setting}".`);
   }
   if (typeof value !== "string") {
-    throw new Error(`The value of element "${setting}" is not a string.`);
+    throw new TypeError(`The value of element "${setting}" is not a string.`);
   }
   return value.trim(); // Remove all leading and trailing whitespace
 }
