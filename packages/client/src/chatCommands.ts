@@ -1,9 +1,9 @@
 import { getVariantNames } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
 import { globals } from "./globals";
 import * as createGame from "./lobby/createGame";
 import { createJSONFromReplay } from "./lobby/createReplayJSON";
+import { parseIntSafe } from "./utils";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

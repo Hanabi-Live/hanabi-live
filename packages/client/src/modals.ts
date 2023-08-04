@@ -1,14 +1,14 @@
 // Modals (boxes that hover on top of the UI).
 
-import { Suit, Variant } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
+import type { Suit, Variant } from "@hanabi/data";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
-import { HanabiCard } from "./game/ui/HanabiCard";
+import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";
+import { parseIntSafe } from "./utils";
 
 let initialized = false;
 let allowCloseModal = true;
@@ -27,9 +27,9 @@ function init() {
   }
 
   // Close modal on escape press or by clicking outside.
-  pageCover.onpointerdown = () => {
+  pageCover.addEventListener("pointerdown", () => {
     closeModals();
-  };
+  });
   document.addEventListener("keydown", (evt) => {
     if (evt.key === "Escape" && currentModal !== null) {
       closeModals();
@@ -46,42 +46,42 @@ function init() {
       }
     },
   );
-  getElement("#password-modal-submit").onpointerdown = () => {
+  getElement("#password-modal-submit").addEventListener("pointerdown", () => {
     passwordSubmit();
-  };
-  getElement("#password-modal-cancel").onpointerdown = () => {
+  });
+  getElement("#password-modal-cancel").addEventListener("pointerdown", () => {
     closeModals();
-  };
+  });
 
   // Warning modal setup.
-  getElement("#warning-modal-button").onpointerdown = () => {
+  getElement("#warning-modal-button").addEventListener("pointerdown", () => {
     closeModals();
-  };
+  });
 
   // Error modal setup.
-  getElement("#error-modal-button").onpointerdown = () => {
+  getElement("#error-modal-button").addEventListener("pointerdown", () => {
     window.location.reload();
-  };
+  });
 
   // Create Game modal setup.
-  getElement("#createTablePassword").onkeydown = (event) => {
+  getElement("#createTablePassword").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       getElement("#create-game-submit").click();
     }
-  };
+  });
 
   // Morph modal textbox.
   const morphTextbox = getInputElement("#morph-modal-textbox");
   const morphTextboxObserver = new MutationObserver(() => {
-    const suit = morphTextbox.getAttribute("data-suit");
-    const rank = morphTextbox.getAttribute("data-rank");
+    const { suit } = morphTextbox.dataset;
+    const { rank } = morphTextbox.dataset;
     morphTextbox.value = `${suit} ${rank}`;
   });
   morphTextboxObserver.observe(morphTextbox, {
     attributes: true,
     attributeFilter: ["data-suit", "data-rank"],
   });
-  morphTextbox.onkeydown = (event) => {
+  morphTextbox.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       getElement("#morph-modal-button-ok").click();
@@ -90,7 +90,7 @@ function init() {
       event.stopPropagation();
       getElement("#morph-modal-button-cancel").click();
     }
-  };
+  });
 
   initialized = true;
 
@@ -180,10 +180,10 @@ export function askForMorph(
   const { suits } = variant;
   const { ranks } = variant;
   const start =
-    card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
-  const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
+    card === null ? { suitIndex: null, rank: null } : card.getMorphedIdentity();
+  const startSuit = start.suitIndex === null ? 0 : start.suitIndex;
   const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
-  const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
+  const possibilities = card === null ? [] : card.state.possibleCardsForEmpathy;
 
   fillMorphModalWithRadios(
     "#morph-modal-cards",
@@ -209,10 +209,16 @@ export function askForMorph(
       "Select the card you want to morph it into:";
 
     // Morph modal OK button.
-    getElement("#morph-modal-button-ok").onclick = morphReplayOkButton;
+    getElement("#morph-modal-button-ok").addEventListener(
+      "click",
+      morphReplayOkButton,
+    );
 
     // Morph modal Cancel button.
-    getElement("#morph-modal-button-cancel").onclick = morphReplayCancelButton;
+    getElement("#morph-modal-button-cancel").addEventListener(
+      "click",
+      morphReplayCancelButton,
+    );
   } else {
     // The function was called from LayoutChild.ts during in-game hypo.
 
@@ -221,10 +227,16 @@ export function askForMorph(
       "What the card will be for the purposes of this hypothetical?";
 
     // Morph modal OK button.
-    getElement("#morph-modal-button-ok").onclick = morphInGameOkButton;
+    getElement("#morph-modal-button-ok").addEventListener(
+      "click",
+      morphInGameOkButton,
+    );
 
     // Morph modal Cancel button.
-    getElement("#morph-modal-button-cancel").onclick = morphInGameCancelButton;
+    getElement("#morph-modal-button-cancel").addEventListener(
+      "click",
+      morphInGameCancelButton,
+    );
   }
 }
 
@@ -305,7 +317,7 @@ export function setModal(
 
   const button = getElement(buttonSelector);
 
-  button.onclick = () => {
+  button.addEventListener("click", () => {
     // eslint-disable-next-line
     if (!(test?.call(null) ?? true)) {
       return;
@@ -321,7 +333,7 @@ export function setModal(
         focus.call(null);
       }
     }, 100);
-  };
+  });
 }
 
 export function showPrompt(
@@ -340,11 +352,11 @@ export function showPrompt(
   }
 
   if (focusElement !== null && clickButtonElement !== null) {
-    focusElement.onkeydown = (event) => {
+    focusElement.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         clickButtonElement.click();
       }
-    };
+    });
   }
 
   showModal(selector);
@@ -372,8 +384,8 @@ export function closeModals(fast = false): void {
   pageCover.classList.remove("show");
   if (currentModal !== null) {
     currentModal.classList.add("hidden");
-    pageCover.removeChild(currentModal);
-    modalsContainer.appendChild(currentModal);
+    currentModal.remove();
+    modalsContainer.append(currentModal);
     currentModal = null;
   }
 
@@ -427,10 +439,10 @@ function showModal(
   }
 
   element.classList.add("modal");
-  element.onpointerdown = (event) => {
+  element.addEventListener("pointerdown", (event) => {
     // Do not bubble clicks to pageCover.
     event.stopPropagation();
-  };
+  });
 
   if (typeof param2 === "function") {
     const result = param2.call(null);
@@ -440,12 +452,12 @@ function showModal(
     }
   }
 
-  pageCover.appendChild(element);
+  pageCover.append(element);
 
   pageCover.style.display = "flex";
   pageCover.classList.add("show");
   setTimeout(() => {
-    pageCover.appendChild(element);
+    pageCover.append(element);
     element.classList.remove("hidden");
     if (typeof param3 === "function") {
       param3.call(null);
@@ -472,9 +484,9 @@ function fillMorphModalWithRadios(
   table.classList.add("slim-table");
   const textbox = getElement("#morph-modal-textbox");
 
-  ranks.forEach((rank) => {
+  for (const rank of ranks) {
     const row = document.createElement("tr");
-    suits.forEach((suit, i) => {
+    for (const [i, suit] of suits.entries()) {
       const cell = document.createElement("td");
       const possibleCardIdentity = possibilities.some(
         (possibility) => possibility[0] === i && possibility[1] === rank,
@@ -501,8 +513,8 @@ function fillMorphModalWithRadios(
 
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
-        textbox.setAttribute("data-suit", suit.displayName);
-        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
+        textbox.dataset.suit = suit.displayName;
+        textbox.dataset.rank = rank === 7 ? "S" : rank.toString();
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -510,13 +522,13 @@ function fillMorphModalWithRadios(
         }
 
         // Set textbox data attribute.
-        textbox.setAttribute("data-suit", suit.displayName);
-        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
+        textbox.dataset.suit = suit.displayName;
+        textbox.dataset.rank = rank === 7 ? "S" : rank.toString();
       });
 
       row.append(cell);
-    });
+    }
     table.append(row);
-  });
+  }
   placeHolder.append(table);
 }

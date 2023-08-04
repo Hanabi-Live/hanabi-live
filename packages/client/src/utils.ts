@@ -72,6 +72,37 @@ function pad2(num: number) {
   return `${num}`;
 }
 
+/**
+ * This is a more reliable version of `parseInt`. By default, `parseInt('1a')` will return "1",
+ * which is unexpected. This returns either an integer or NaN.
+ */
+export function parseIntSafe(input: string): number {
+  if (typeof input !== "string") {
+    return NaN;
+  }
+
+  // Remove all leading and trailing whitespace.
+  let trimmedInput = input.trim();
+
+  const isNegativeNumber = trimmedInput.startsWith("-");
+  if (isNegativeNumber) {
+    // Remove the leading minus sign before we match the regular expression.
+    trimmedInput = trimmedInput.substring(1);
+  }
+
+  if (/^\d+$/.exec(trimmedInput) === null) {
+    // "\d" matches any digit (same as "[0-9]").
+    return NaN;
+  }
+
+  if (isNegativeNumber) {
+    // Add the leading minus sign back.
+    trimmedInput = `-${trimmedInput}`;
+  }
+
+  return Number.parseInt(trimmedInput, 10);
+}
+
 export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
   const queryParameters = new URLSearchParams(window.location.search);

@@ -1,12 +1,8 @@
-import {
-  ALL_RESERVED_NOTES,
-  MAX_RANK,
-  START_CARD_RANK,
-  Variant,
-} from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
-import { CardIdentity } from "../types/CardIdentity";
+import type { Variant } from "@hanabi/data";
+import { ALL_RESERVED_NOTES, MAX_RANK, START_CARD_RANK } from "@hanabi/data";
+import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
+import { parseIntSafe } from "../../utils";
 
 interface CardIdentities {
   readonly suitIndices: number[];
@@ -87,7 +83,7 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
     const suitIndices: number[] = [];
     const ranks: number[] = [];
     if (squishText !== null) {
-      [].map.call(squishText, (letter) => {
+      Array.prototype.map.call(squishText, (letter) => {
         suitIndex = parseSuit(variant, letter);
         rank = parseRank(letter);
         if (suitIndex !== null) {
@@ -169,7 +165,7 @@ function getPossibilitiesFromKeyword(
     const negative = trimmed.startsWith("!");
     const identity = parseIdentities(
       variant,
-      (negative ? trimmed.substring(1) : trimmed).trim(),
+      (negative ? trimmed.slice(1) : trimmed).trim(),
     );
     if (negative) {
       negativeIdentities.push(identity);
@@ -185,8 +181,9 @@ function getPossibilitiesFromKeyword(
   );
   for (let rank = 1; rank <= MAX_RANK; rank++) {
     identityMap.push(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
+      Array.from({ length: variant.suits.length }).fill(
+        positiveRanks.has(rank) ? 1 : 0,
+      ),
     );
   }
 
