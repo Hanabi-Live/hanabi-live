@@ -1,11 +1,11 @@
-import { DEFAULT_VARIANT_NAME, Variant } from ".";
-import { charactersInit } from "./charactersInit";
-import { colorsInit } from "./colorsInit";
-import { START_CARD_RANK } from "./constants";
-import { suitsInit } from "./suitsInit";
-import { Character } from "./types/Character";
-import { Suit } from "./types/Suit";
-import { variantsInit } from "./variantsInit";
+import { DEFAULT_VARIANT_NAME, START_CARD_RANK } from "./constants.js";
+import { charactersInit } from "./charactersInit.js";
+import { colorsInit } from "./colorsInit.js";
+import { suitsInit } from "./suitsInit.js";
+import type { Character } from "./types/Character.js";
+import type { Suit } from "./types/Suit.js";
+import { variantsInit } from "./variantsInit.js";
+import type { Variant } from "./types/Variant.js";
 
 /** Indexed by character ID. */
 const CHARACTERS = charactersInit();
@@ -20,16 +20,14 @@ const SUITS = suitsInit(COLORS);
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 
 /** Indexed by variant ID. */
-const VARIANTS_BY_ID = getVariantsMapByID();
-
-function getVariantsMapByID(): ReadonlyMap<number, Variant> {
+const VARIANTS_BY_ID: ReadonlyMap<number, Variant> = (() => {
   const variantsMapByID = new Map<number, Variant>();
-  for (const variant of Array.from(VARIANTS.values())) {
+  for (const variant of VARIANTS.values()) {
     variantsMapByID.set(variant.id, variant);
   }
 
   return variantsMapByID;
-}
+})();
 
 export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);
@@ -69,7 +67,7 @@ export function getDefaultVariant(): Variant {
 }
 
 export function getVariantNames(): readonly string[] {
-  return Array.from(VARIANTS.keys());
+  return [...VARIANTS.keys()];
 }
 
 export function doesVariantExist(variantName: string): boolean {

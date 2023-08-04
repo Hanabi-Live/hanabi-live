@@ -916,14 +916,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/jsdoccomment@npm:~0.39.4":
-  version: 0.39.4
-  resolution: "@es-joy/jsdoccomment@npm:0.39.4"
+"@es-joy/jsdoccomment@npm:~0.40.1":
+  version: 0.40.1
+  resolution: "@es-joy/jsdoccomment@npm:0.40.1"
   dependencies:
-    comment-parser: 1.3.1
+    comment-parser: 1.4.0
     esquery: ^1.5.0
     jsdoc-type-pratt-parser: ~4.0.0
-  checksum: efae229ae998840fdcb4faf44574bcc0a070e4aa6df69c01afedaeaddf6d2ea857a68b463df45f9437231201201f092402968c0c53c34e3c09842fef0da7f2d4
+  checksum: 6098394cd97ad0532dde4f3171980e700e4199c231969311efd2362c2b5a4eefa9d59a0bc1fe513afbb5cc456ef7633491a2984d64252e7bd8ebe22489120610
   languageName: node
   linkType: hard
 
@@ -3625,10 +3625,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"comment-parser@npm:1.3.1":
-  version: 1.3.1
-  resolution: "comment-parser@npm:1.3.1"
-  checksum: 421e6a113a3afd548500e7174ab46a2049dccf92e82bbaa3b209031b1bdf97552aabfa1ae2a120c0b62df17e1ba70e0d8b05d68504fee78e1ef974c59bcfe718
+"comment-parser@npm:1.4.0":
+  version: 1.4.0
+  resolution: "comment-parser@npm:1.4.0"
+  checksum: e086da3b14af9455177f1ab801bc54de9139a77fcef55dbfb751ae68d687ac83b0effb83d113ccf8cd217d9d93ce2b472002953cac342092a3fadfb9f5cd8e38
   languageName: node
   linkType: hard
 
@@ -4500,12 +4500,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-isaacscript@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "eslint-config-isaacscript@npm:4.0.0"
+"eslint-config-isaacscript@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "eslint-config-isaacscript@npm:4.0.1"
   dependencies:
     confusing-browser-globals: ^1.0.11
-  checksum: 40a37ac16c4478d4fb033261d74c0e4ca48990094ba270b6c4dc649196ac80215babae311cbc1cb31b8a8ebaa90e2c7ed7a0118e25ddfa8506b490b511bfb1e0
+  checksum: b4c530837b67c7cb4b786ae5f2e18705a7109c186b77295738899f27f3c4676d28c07c21e7e39a62ed86aa696077a52a9342c505808175f22b95b45ced648fda
   languageName: node
   linkType: hard
 
@@ -4615,13 +4615,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^46.4.5":
-  version: 46.4.5
-  resolution: "eslint-plugin-jsdoc@npm:46.4.5"
+"eslint-plugin-jsdoc@npm:^46.4.6":
+  version: 46.4.6
+  resolution: "eslint-plugin-jsdoc@npm:46.4.6"
   dependencies:
-    "@es-joy/jsdoccomment": ~0.39.4
+    "@es-joy/jsdoccomment": ~0.40.1
     are-docs-informative: ^0.0.2
-    comment-parser: 1.3.1
+    comment-parser: 1.4.0
     debug: ^4.3.4
     escape-string-regexp: ^4.0.0
     esquery: ^1.5.0
@@ -4630,7 +4630,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: aa470a07b8bb9fbded04d0a0c2e38236b1404a88ecac7d614942b4a6fc2b619b048dea781b4a28dfc30010ca27df1fef94b2c53ab80286789793de0f4c55a835
+  checksum: 67b90a251008fbe4ff61a9d959b49f1f6fda542bf6e56745a231f6140477a3debacd549f18dbba7c0e2908f559f9ca1ce9c19d17736355311a36f7cf42eb28c1
   languageName: node
   linkType: hard
 
@@ -5822,7 +5822,7 @@ __metadata:
     grunt-criticalcss: ^2.1.0
     immer: 8.0.4
     interactjs: ^1.10.18
-    isaacscript-lint: ^5.1.2
+    isaacscript-lint: ^5.1.3
     isaacscript-tsconfig: ^4.0.0
     jest: ^29.6.2
     jquery: ^3.7.0
@@ -6520,9 +6520,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-lint@npm:^5.1.2":
-  version: 5.1.2
-  resolution: "isaacscript-lint@npm:5.1.2"
+"isaacscript-lint@npm:^5.1.3":
+  version: 5.1.3
+  resolution: "isaacscript-lint@npm:5.1.3"
   dependencies:
     "@prettier/plugin-xml": ^3.1.1
     "@typescript-eslint/eslint-plugin": ^6.2.1
@@ -6530,13 +6530,13 @@ __metadata:
     cspell: ^6.31.2
     cspell-check-unused-words: ^1.0.4
     eslint: ^8.46.0
-    eslint-config-isaacscript: ^4.0.0
+    eslint-config-isaacscript: ^4.0.1
     eslint-config-prettier: ^8.10.0
     eslint-plugin-deprecation: ^1.5.0
     eslint-plugin-eslint-comments: ^3.2.0
     eslint-plugin-import: "npm:eslint-plugin-i@latest"
     eslint-plugin-isaacscript: ^3.0.3
-    eslint-plugin-jsdoc: ^46.4.5
+    eslint-plugin-jsdoc: ^46.4.6
     eslint-plugin-n: ^16.0.1
     eslint-plugin-no-autofix: ^1.2.3
     eslint-plugin-only-warn: ^1.1.0
@@ -6547,7 +6547,7 @@ __metadata:
     ts-prune-2: ^0.10.7
   peerDependencies:
     typescript: ">= 4.0.0"
-  checksum: 6636825513e027e568ea2698c68b21a0af754d376af8e75d87b215675f3c1513b1b368c21bd33ce78d46c0e5d6465262e2e75e33681d88f27240d1a3d8a19fea
+  checksum: 0617e9c54cc5ef9da968f0bf142c851a08cb0dc080b0c906124ff5d2d6ba2d4c989ec637bb706d17b9339fbdeb62e3796c4119b9a00fb91c441459dc467ce158
   languageName: node
   linkType: hard
 

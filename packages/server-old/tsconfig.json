@@ -1,12 +1,12 @@
-// The configuration file for TypeScript
+// The configuration file for TypeScript.
 {
   // We extend the TypeScript config for the monorepo.
   "extends": "../../tsconfig.monorepo.json",
 
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
-    // We manually implement the options from the recommended tsconfig for Node 16
-    // (because we can only extend from one config at a time)
+    // We manually implement the options from the recommended tsconfig for Node 16 (because we can
+    // only extend from one config at a time).
     // https://github.com/tsconfig/bases/blob/main/bases/node16.json
     "lib": ["es2021"],
     "module": "commonjs",
@@ -14,15 +14,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
 
-    // "sourceMap" creates source map files for emitted JavaScript files
-    // By default, it is false
+    // "sourceMap" creates source map files for emitted JavaScript files. By default, it is false.
     // We want to be able to see the TypeScript line numbers in error messages to help with
-    // debugging
+    // debugging.
     "sourceMap": true,
 
-    // "outDir" specifies the output directory
-    // By default, it will put the compiled ".js" and ".js.map" next to the respective ".ts" file,
-    // which will clutter the "src" directory
+    // "outDir" specifies the output directory. By default, it will put the compiled ".js" and
+    // ".js.map" next to the respective ".ts" file, which will clutter the "src" directory.
     "outDir": "./dist",
   },
 
