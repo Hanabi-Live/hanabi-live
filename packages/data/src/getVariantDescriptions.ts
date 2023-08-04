@@ -714,8 +714,7 @@ export function getBlindVariants(
     const variantName = `Color Blind (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      suits: basicVariantSuits[numSuits]!,
+      suits: basicVariantSuits[numSuits],
       colorCluesTouchNothing: true,
     });
   }
@@ -724,8 +723,7 @@ export function getBlindVariants(
     const variantName = `Number Blind (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      suits: basicVariantSuits[numSuits]!,
+      suits: basicVariantSuits[numSuits],
       rankCluesTouchNothing: true,
     });
   }
@@ -734,8 +732,7 @@ export function getBlindVariants(
     const variantName = `Totally Blind (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      suits: basicVariantSuits[numSuits]!,
+      suits: basicVariantSuits[numSuits],
       colorCluesTouchNothing: true,
       rankCluesTouchNothing: true,
     });
