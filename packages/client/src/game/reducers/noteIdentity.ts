@@ -1,12 +1,12 @@
-import type { Variant } from "@hanabi/data";
 import {
   ALL_RESERVED_NOTES,
   MAX_RANK,
   START_CARD_RANK,
+  Variant,
   initArray,
   parseIntSafe,
 } from "@hanabi/data";
-import type { CardIdentity } from "../types/CardIdentity";
+import { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 
 interface CardIdentities {
@@ -93,9 +93,12 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
         rank = parseRank(letter);
         if (suitIndex !== null) {
           suitIndices.push(suitIndex);
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        } else if (rank !== null) {
+          ranks.push(rank);
         }
-        ranks.push(rank);
       }
+
       if (suitIndices.length + ranks.length > 0) {
         return { suitIndices, ranks };
       }
@@ -242,13 +245,15 @@ export function getPossibilitiesFromKeywords(
   return possibilities;
 }
 
-const extractSuitText = (match: RegExpMatchArray) =>
-  match[1] ?? match[4] ?? match[5] ?? null;
+function extractSuitText(match: RegExpMatchArray) {
+  return match[1] ?? match[4] ?? match[5] ?? null;
+}
 
-const extractRankText = (match: RegExpMatchArray) =>
-  match[2] ?? match[3] ?? match[6] ?? null;
+function extractRankText(match: RegExpMatchArray) {
+  return match[2] ?? match[3] ?? match[6] ?? null;
+}
 
-const extractSquishText = (match: RegExpMatchArray) => {
+function extractSquishText(match: RegExpMatchArray) {
   const text = match[7]?.trim();
 
   if (text !== undefined && !ALL_RESERVED_NOTES.has(text)) {
@@ -256,4 +261,4 @@ const extractSquishText = (match: RegExpMatchArray) => {
   }
 
   return null;
-};
+}

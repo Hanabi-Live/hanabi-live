@@ -3,8 +3,9 @@ import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 const testVariant = getVariant("Up or Down (5 Suits)");
 
-const zeros = [0, 0, 0, 0, 0, 0];
-const ones = [1, 1, 1, 1, 1, 1];
+const zeros = [0, 0, 0, 0, 0, 0] as const;
+const ones = [1, 1, 1, 1, 1, 1] as const;
+
 const rankMap = (
   ranks: Set<number>,
   suitLength: number = testVariant.suits.length,
@@ -17,6 +18,7 @@ const rankMap = (
       cardMap.push(zeros.slice(0, suitLength));
     }
   }
+
   return cardMap;
 };
 

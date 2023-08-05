@@ -175,10 +175,14 @@ function shouldCalculateCard(
 }
 
 function getCardPossibilitiesForPlayer(
-  card: CardState,
+  card: CardState | undefined,
   playerIndex: number,
   ourPlayerIndex: number,
 ): ReadonlyArray<readonly [number, number]> {
+  if (card === undefined) {
+    return [];
+  }
+
   if (card.location === playerIndex) {
     // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
@@ -286,11 +290,12 @@ function isPossibleCard(
 }
 
 function canBeUsedToDisprovePossibility(
-  card: CardState,
+  card: CardState | undefined,
   excludeCardOrder: number,
   playerIndex: number,
 ) {
   return (
+    card !== undefined &&
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
@@ -305,9 +310,8 @@ function deckPossibilitiesDifferent(
   playerIndex: number,
   ourPlayerIndex: number,
 ) {
-  for (const [order, element] of deck.entries()) {
-    const oldCard = oldDeck[order]!;
-    const card = element;
+  for (const [order, card] of deck.entries()) {
+    const oldCard = oldDeck[order];
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
