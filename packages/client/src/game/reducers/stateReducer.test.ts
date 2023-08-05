@@ -3,8 +3,8 @@ import { testMetadata } from "../../../test/testMetadata";
 import { initialState } from "./initialStates/initialState";
 import { stateReducer } from "./stateReducer";
 
-jest.mock("./UIReducer", () => ({
-  UIReducer: jest.fn(),
+jest.mock("./uiReducer", () => ({
+  uiReducer: jest.fn(),
 }));
 
 const numPlayers = 3;
