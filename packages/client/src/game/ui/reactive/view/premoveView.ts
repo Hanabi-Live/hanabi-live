@@ -1,6 +1,6 @@
 import { ActionType } from "../../../types/ActionType";
-import type { ClientAction } from "../../../types/ClientAction";
-import type { State } from "../../../types/State";
+import { ClientAction } from "../../../types/ClientAction";
+import { State } from "../../../types/State";
 import { globals } from "../../globals";
 import * as ourHand from "../../ourHand";
 
@@ -37,29 +37,18 @@ export function onChanged(
     ourHand.checkSetDraggableAll();
 
     let text = "Cancel Pre-";
-    switch (action.type) {
-      case ActionType.Play: {
-        text += "Play";
-        break;
-      }
-
-      case ActionType.Discard: {
-        text += "Discard";
-        break;
-      }
-
-      case ActionType.ColorClue:
-      case ActionType.RankClue: {
-        text += "Clue";
-        break;
-      }
-
-      case ActionType.GameOver: {
-        break;
-      }
+    if (action.type === ActionType.Play) {
+      text += "Play";
+    } else if (action.type === ActionType.Discard) {
+      text += "Discard";
+    } else if (
+      action.type === ActionType.ColorClue ||
+      action.type === ActionType.RankClue
+    ) {
+      text += "Clue";
     }
-
     globals.elements.premoveCancelButton?.text(text);
+
     globals.layers.UI.batchDraw();
   }
 }

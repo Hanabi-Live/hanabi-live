@@ -80,7 +80,6 @@ export class Button extends Konva.Group {
       }
     }
 
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     const resetButton = () => {
       this.background.fill("black");
       drawLayer(this);
@@ -88,7 +87,6 @@ export class Button extends Konva.Group {
       this.background.off("mouseup");
       this.background.off("mouseout");
     };
-
     this.background.on("mousedown", () => {
       this.background.fill("#888888");
       drawLayer(this);
@@ -129,21 +127,23 @@ export class Button extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement === null) {
-      throw new Error('The "text()" method was called on a non-text Button.');
-    } else if (this.assignedTextSize) {
-      this.textElement.text(newText);
+    if (this.textElement !== null) {
+      if (this.assignedTextSize) {
+        this.textElement.text(newText);
+      } else {
+        // Resize to fit the new text if we haven't been specifically given a size.
+        this.textElement.fitText(newText);
+      }
     } else {
-      // Resize to fit the new text if we haven't been specifically given a size.
-      this.textElement.fitText(newText);
+      throw new Error('The "text()" method was called on a non-text Button.');
     }
   }
 
   fill(newFill: string): void {
-    if (this.textElement === null) {
-      throw new Error('The "fill()" method was called on a non-text Button.');
-    } else {
+    if (this.textElement !== null) {
       this.textElement.fill(newFill);
+    } else {
+      throw new Error('The "fill()" method was called on a non-text Button.');
     }
   }
 

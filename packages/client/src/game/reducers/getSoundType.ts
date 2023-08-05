@@ -1,16 +1,16 @@
 import { getVariant } from "@hanabi/data";
-import type { Draft } from "immer";
+import { Draft } from "immer";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
 import * as variantRules from "../rules/variant";
-import type { ActionPlay, GameAction } from "../types/actions";
-import type { CardState } from "../types/CardState";
+import { ActionPlay, GameAction } from "../types/actions";
+import { CardState } from "../types/CardState";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
 import { SoundType } from "../types/SoundType";
-import type { StatsState } from "../types/StatsState";
+import { StatsState } from "../types/StatsState";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export function getSoundType(

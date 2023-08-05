@@ -1,7 +1,7 @@
-import type Konva from "konva";
-import type { Deck } from "./Deck";
+import Konva from "konva";
+import { Deck } from "./Deck";
 import { globals } from "./globals";
-import type { LayoutChild } from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 
 export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 
@@ -29,14 +29,14 @@ export function set(cursorType: CursorType): void {
 
   currentCursorType = cursorType;
   const cursorTypes = ["default", "hand", "dragging", "look", "edit"];
-  const element = document.querySelector("#game");
+  const element = document.getElementById("game");
   if (element === null) {
     return;
   }
 
-  for (const type of cursorTypes) {
+  cursorTypes.forEach((type) => {
     element.classList.remove(`game-cursor-${type}`);
-  }
+  });
 
   element.classList.add(`game-cursor-${cursorType}`);
 

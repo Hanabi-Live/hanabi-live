@@ -1,11 +1,11 @@
-import type Konva from "konva";
+import { parseIntSafe } from "isaacscript-common-ts";
+import Konva from "konva";
 import * as modals from "../../modals";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
-import type { TextWithTooltip } from "./controls/TextWithTooltip";
+import { TextWithTooltip } from "./controls/TextWithTooltip";
 import { globals } from "./globals";
-import { parseIntSafe } from "@hanabi/data";
 
 export function setEfficiencyMod(mod: number): void {
   globals.store!.dispatch({
@@ -63,45 +63,32 @@ export function askForEfficiency(): void {
 
   const currentModifier = globals.state.notes.efficiencyModifier;
 
-  const setModifierCurrent = document.querySelector("#set-modifier-current");
-  if (setModifierCurrent === null) {
-    throw new Error("#set-modifier-current does not exist.");
+  const current = document.getElementById("set-modifier-current");
+  if (current !== null) {
+    current.innerHTML = currentModifier.toString();
   }
-  setModifierCurrent.innerHTML = currentModifier.toString();
+  const element = document.getElementById(
+    "set-modifier-new",
+  ) as HTMLInputElement;
+  element.value = currentModifier.toString();
 
-  const setModifierNew = document.querySelector("#set-modifier-new");
-  if (!(setModifierNew instanceof HTMLInputElement)) {
-    throw new TypeError("#set-modifier-new was not a HTMLInputElement.");
-  }
-  setModifierNew.value = currentModifier.toString();
+  const button = document.getElementById(
+    "set-modifier-button",
+  ) as HTMLButtonElement;
+  button.onclick = () => {
+    modals.closeModals();
 
-  const setModifierButton = document.querySelector("#set-modifier-button");
-  if (!(setModifierButton instanceof HTMLButtonElement)) {
-    throw new TypeError("#set-modifier-button was not a HTMLButtonElement.");
-  }
+    const inputElement = document.getElementById(
+      "set-modifier-new",
+    ) as HTMLInputElement | null;
+    const effModString = inputElement?.value ?? "";
+    const effMod = parseIntSafe(effModString);
+    if (Number.isNaN(effMod)) {
+      // Don't do anything if they entered something that is not a number.
+      return;
+    }
+    setEfficiencyMod(effMod);
+  };
 
-  setModifierButton.addEventListener("click", clickSetModifierButton);
-  modals.showPrompt(
-    "#set-modifier-modal",
-    undefined,
-    setModifierNew,
-    setModifierButton,
-  );
-}
-
-function clickSetModifierButton() {
-  modals.closeModals();
-
-  const setModifierNew = document.querySelector("#set-modifier-new");
-  if (!(setModifierNew instanceof HTMLInputElement)) {
-    throw new TypeError("#set-modifier-new was not an HTMLInputElement.");
-  }
-
-  const effModString = setModifierNew.value;
-  const effMod = parseIntSafe(effModString);
-  if (Number.isNaN(effMod)) {
-    // Don't do anything if they entered something that is not a number.
-    return;
-  }
-  setEfficiencyMod(effMod);
+  modals.showPrompt("#set-modifier-modal", null, element, button);
 }

@@ -1,14 +1,15 @@
 import colorsJSON from "./json/colors.json";
-import type { Color } from "./types/Color";
+import { Color } from "./types/Color";
 
 export function colorsInit(): ReadonlyMap<string, Color> {
   const colors = new Map<string, Color>();
 
-  if (colorsJSON.length === 0) {
+  const colorsJSONArray = Array.from(colorsJSON);
+  if (colorsJSONArray.length === 0) {
     throw new Error('The "colors.json" file did not have any elements in it.');
   }
 
-  for (const colorJSON of colorsJSON) {
+  for (const colorJSON of colorsJSONArray) {
     // Validate the name
     const { name } = colorJSON;
     if (name === "") {

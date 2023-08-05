@@ -1,5 +1,5 @@
 import * as statsRules from "../../../rules/stats";
-import type { PaceRisk } from "../../../types/GameState";
+import { PaceRisk } from "../../../types/GameState";
 import { LABEL_COLOR } from "../../constants";
 import { globals } from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";
@@ -39,13 +39,17 @@ export function onEfficiencyChanged(data: {
     );
   }
 
-  const shouldModifyEff = globals.state.finished
-    ? // If we are not currently using the shared segments, the shared efficiency modifier will not be
-      // applicable.
+  let shouldModifyEff: boolean;
+  if (globals.state.finished) {
+    // If we are not currently using the shared segments, the shared efficiency modifier will not be
+    // applicable.
+    shouldModifyEff =
       globals.state.replay.shared !== null &&
-      globals.state.replay.shared.useSharedSegments
-    : // Don't use the efficiency modifier during in-game replays.
-      globals.state.visibleState === globals.state.ongoingGame;
+      globals.state.replay.shared.useSharedSegments;
+  } else {
+    // Don't use the efficiency modifier during in-game replays.
+    shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
+  }
 
   let { cardsGotten, cardsGottenByNotes } = data;
   const { efficiencyModifier } = data;
@@ -74,7 +78,7 @@ export function onEfficiencyChanged(data: {
     Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
   const futureEfficiency =
     cluesStillUsable === null
-      ? Number.NaN
+      ? NaN
       : statsRules.efficiency(cardsNotGotten, cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
@@ -95,7 +99,7 @@ export function onEfficiencyChanged(data: {
   // properly. The type of Konva.Text.width is "any" for some reason.
   const effLabelSize = effLabel.measureSize(effLabel.text()).width as number;
   if (typeof effLabelSize !== "number") {
-    throw new TypeError("The width of effLabel was not a number.");
+    throw new Error("The width of effLabel was not a number.");
   }
   const pipeX = effLabel.x() + effLabelSize;
   effPipeLabel.x(pipeX);
@@ -104,7 +108,7 @@ export function onEfficiencyChanged(data: {
   const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text())
     .width as number;
   if (typeof effPipeLabelSize !== "number") {
-    throw new TypeError("The width of effPipeLabel was not a number.");
+    throw new Error("The width of effPipeLabel was not a number.");
   }
   const minEffX = pipeX + effPipeLabelSize;
   effMinLabel.x(minEffX);
@@ -114,6 +118,11 @@ export function onEfficiencyChanged(data: {
   effLabel.fill(effLabelColor);
 
   // Update the tooltip
+  function formatLine(left: string, right: number | string, usePadding = true) {
+    return `${
+      usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : ""
+    }<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
+  }
   const tooltipContent = `
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
     ${formatLine(
@@ -133,7 +142,9 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Cards remaining to get", cardsNotGotten)}
     ${formatLine(
       "Remaining possible clues",
-      data.cluesStillUsableNotRounded ?? "-",
+      data.cluesStillUsableNotRounded === null
+        ? "-"
+        : data.cluesStillUsableNotRounded,
     )}
     ${formatLine(
       "Future required efficiency",
@@ -152,16 +163,6 @@ export function onEfficiencyChanged(data: {
   konvaTooltips.init(effLabel, true, false);
 
   globals.layers.UI.batchDraw();
-}
-
-function formatLine(
-  left: string,
-  right: number | string,
-  usePadding = true,
-): string {
-  return `${
-    usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : ""
-  }<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
 }
 
 export function onPaceOrPaceRiskChanged(data: {
@@ -192,15 +193,9 @@ export function onPaceOrPaceRiskChanged(data: {
 
     // Color the pace label depending on how "risky" it would be to discard (approximately).
     switch (data.paceRisk) {
-      case "LowRisk": {
-        // We are not even close to the "End-Game", so give it the default color.
-        label.fill(LABEL_COLOR);
-        break;
-      }
-
-      case "MediumRisk": {
-        // It might be risky to discard.
-        label.fill("#efef1d"); // Yellow
+      case "Zero": {
+        // No more discards can occur in order to get a maximum score.
+        label.fill("#df1c2d"); // Red
         break;
       }
 
@@ -210,9 +205,9 @@ export function onPaceOrPaceRiskChanged(data: {
         break;
       }
 
-      case "Zero": {
-        // No more discards can occur in order to get a maximum score.
-        label.fill("#df1c2d"); // Red
+      case "MediumRisk": {
+        // It might be risky to discard.
+        label.fill("#efef1d"); // Yellow
         break;
       }
 
@@ -220,6 +215,13 @@ export function onPaceOrPaceRiskChanged(data: {
         console.error(
           `An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`,
         );
+        break;
+      }
+
+      case "LowRisk":
+      default: {
+        // We are not even close to the "End-Game", so give it the default color.
+        label.fill(LABEL_COLOR);
         break;
       }
     }

@@ -1,4 +1,4 @@
-import type { Options } from "../../types/Options";
+import { Options } from "../../types/Options";
 
 export interface GameHistory {
   id: number;

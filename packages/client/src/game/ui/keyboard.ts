@@ -1,7 +1,8 @@
 // Functions for handling all of the keyboard shortcuts.
 
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
-import type Konva from "konva";
+import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
 import { copyStringToClipboard } from "../../utils";
@@ -17,7 +18,6 @@ import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as turn from "./turn";
-import { parseIntSafe } from "@hanabi/data";
 
 type Callback = () => void;
 const hotkeyClueMap = new Map<number, Callback>();
@@ -40,15 +40,17 @@ export function init(): void {
   });
 
   // Add "1", "2", "3", "4", and "5" (for rank clues).
-  for (const [
-    i,
-    rankClueButton,
-  ] of globals.elements.rankClueButtons.entries()) {
+  for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
     // Normal keyboard
-    hotkeyClueMap.set(i + KeyCode.KEY_1, clickOnElement(rankClueButton));
-
+    hotkeyClueMap.set(
+      i + KeyCode.KEY_1,
+      click(globals.elements.rankClueButtons[i]!),
+    );
     // Numpad
-    hotkeyClueMap.set(i + KeyCode.KEY_NUMPAD1, clickOnElement(rankClueButton));
+    hotkeyClueMap.set(
+      i + KeyCode.KEY_NUMPAD1,
+      click(globals.elements.rankClueButtons[i]!),
+    );
   }
 
   // Add "q", "w", "e", "r", "t", and "y" (for color clues). (We use qwert since they are
@@ -69,7 +71,7 @@ export function init(): void {
   ) {
     hotkeyClueMap.set(
       clueKeyRow[i]!,
-      clickOnElement(globals.elements.colorClueButtons[i]!),
+      click(globals.elements.colorClueButtons[i]!),
     );
   }
 
@@ -227,7 +229,13 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   // Replay hotkeys
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical !== null) {
+    if (event.which === KeyCode.KEY_LEFT) {
+      globals.store!.dispatch({ type: "dragReset" });
+      hypothetical.sendBack();
+      return;
+    }
+  } else {
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
         globals.store!.dispatch({ type: "dragReset" });
@@ -278,10 +286,6 @@ function keydown(event: JQuery.KeyDownEvent) {
         break;
       }
     }
-  } else if (event.which === KeyCode.KEY_LEFT) {
-    globals.store!.dispatch({ type: "dragReset" });
-    hypothetical.sendBack();
-    return;
   }
 
   // Check for other keyboard hotkeys.
@@ -368,33 +372,46 @@ function promptCardOrder(playAction = true) {
   const maxSlotIndex = hand.length;
   const verb = playAction ? "play" : "discard";
 
-  const title = document.querySelector("#play-discard-title");
+  const title = document.getElementById("play-discard-title");
   if (title !== null) {
     title.innerHTML = `${verb} Card`;
   }
 
-  const paragraph = document.querySelector("#play-discard-message");
+  const paragraph = document.getElementById("play-discard-message");
   if (paragraph !== null) {
     paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
   }
 
-  const playDiscardCard = document.querySelector("#play-discard-card");
-  if (!(playDiscardCard instanceof HTMLInputElement)) {
-    throw new TypeError("Failed to find the element: #play-discard-card");
-  }
+  const element = document.getElementById(
+    "play-discard-card",
+  ) as HTMLInputElement;
+  element.min = "1";
+  element.max = maxSlotIndex.toString();
+  element.value = "1";
 
-  playDiscardCard.min = "1";
-  playDiscardCard.max = maxSlotIndex.toString();
-  playDiscardCard.value = "1";
-
-  const button = document.querySelector("#play-discard-button")!;
-  if (!(button instanceof HTMLButtonElement)) {
-    throw new TypeError("Failed to get element: #play-discard-button");
-  }
-
-  button.addEventListener("click", () => {
+  const button = document.getElementById(
+    "play-discard-button",
+  ) as HTMLButtonElement;
+  button.onclick = () => {
     closeModals();
-    const response = playDiscardCard.value;
+    const performAction = (action: boolean, target: number) => {
+      const type = action ? ActionType.Play : ActionType.Discard;
+
+      if (globals.state.replay.hypothetical === null) {
+        globals.lobby.conn!.send("action", {
+          tableID: globals.lobby.tableID,
+          type,
+          target,
+        });
+      } else {
+        hypothetical.send({
+          type,
+          target,
+        });
+      }
+      turn.hideArrowsAndDisableDragging();
+    };
+    const response = element.value;
 
     if (response === "") {
       return;
@@ -413,29 +430,11 @@ function promptCardOrder(playAction = true) {
     }
 
     performAction(playAction, hand[maxSlotIndex - slot]!);
-  });
+  };
 
-  showPrompt("#play-discard-modal", undefined, playDiscardCard, button);
+  showPrompt("#play-discard-modal", null, element, button);
 }
 
-function clickOnElement(element: Konva.Node) {
-  return () => element.dispatchEvent(new MouseEvent("click"));
-}
-
-function performAction(action: boolean, target: number) {
-  const type = action ? ActionType.Play : ActionType.Discard;
-
-  if (globals.state.replay.hypothetical === null) {
-    globals.lobby.conn!.send("action", {
-      tableID: globals.lobby.tableID,
-      type,
-      target,
-    });
-  } else {
-    hypothetical.send({
-      type,
-      target,
-    });
-  }
-  turn.hideArrowsAndDisableDragging();
-}
+const click = (element: Konva.Node) => () => {
+  element.dispatchEvent(new MouseEvent("click"));
+};

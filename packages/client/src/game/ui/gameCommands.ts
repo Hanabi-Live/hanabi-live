@@ -2,25 +2,26 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import { getVariant, initArray, parseIntSafe } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import * as sentry from "../../sentry";
-import { setBrowserAddressBarPath } from "../../utils";
+import { initArray, setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
 import * as handRules from "../rules/hand";
 import * as hGroupRules from "../rules/hGroup";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
-import type { ActionIncludingHypothetical, GameAction } from "../types/actions";
-import type { CardIdentity } from "../types/CardIdentity";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { InitData } from "../types/InitData";
+import { ActionIncludingHypothetical, GameAction } from "../types/actions";
+import { CardIdentity } from "../types/CardIdentity";
+import { GameMetadata } from "../types/GameMetadata";
+import { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
-import type { Spectator } from "../types/Spectator";
-import type { SpectatorNote } from "../types/SpectatorNote";
-import type { State } from "../types/State";
+import { Spectator } from "../types/Spectator";
+import { SpectatorNote } from "../types/SpectatorNote";
+import { State } from "../types/State";
 import * as arrows from "./arrows";
 import { setSkullEnabled, setSkullNormal } from "./drawUI";
 import { getCardOrStackBase } from "./getCardOrStackBase";

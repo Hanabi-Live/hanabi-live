@@ -1,10 +1,5 @@
-import {
-  getVariant,
-  initArray,
-  MAX_CLUE_NUM,
-  newArray,
-  UNKNOWN_CARD_RANK,
-} from "@hanabi/data";
+import { getVariant, MAX_CLUE_NUM, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import { initArray } from "../../../utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -12,9 +7,9 @@ import * as handRules from "../../rules/hand";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
-import type { CardStatus } from "../../types/CardStatus";
-import type { GameMetadata } from "../../types/GameMetadata";
-import type { GameState } from "../../types/GameState";
+import { CardStatus } from "../../types/CardStatus";
+import { GameMetadata } from "../../types/GameMetadata";
+import { GameState } from "../../types/GameState";
 import { SoundType } from "../../types/SoundType";
 import { initialTurnState } from "./initialTurnState";
 
@@ -50,9 +45,9 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
 
   const cardStatus: CardStatus[][] = [];
-  for (const [suitIndex, _] of variant.suits.entries()) {
+  variant.suits.forEach((_, suitIndex) => {
     cardStatus[suitIndex] = [];
-    for (const rank of variant.ranks) {
+    variant.ranks.forEach((rank) => {
       cardStatus[suitIndex]![rank] = cardRules.status(
         suitIndex,
         rank,
@@ -62,8 +57,8 @@ export function initialGameState(metadata: GameMetadata): GameState {
         playStackStarts,
         variant,
       );
-    }
-  }
+    });
+  });
 
   const scorePerStack: number[] = Array.from(
     playStacks,
@@ -106,7 +101,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     clues: [],
     stats: {
       maxScore: variant.maxScore,
-      maxScorePerStack: newArray(variant.suits.length, 5),
+      maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
 
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),

@@ -1,4 +1,3 @@
-import type { Variant } from "@hanabi/data";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
@@ -10,14 +9,14 @@ import {
   NEEDS_FIX_NOTES,
   QUESTION_MARK_NOTES,
   UNCLUED_NOTES,
+  Variant,
 } from "@hanabi/data";
 import equal from "fast-deep-equal";
-import type { Draft } from "immer";
-import produce from "immer";
-import type { NoteAction } from "../types/actions";
-import type { CardNote } from "../types/CardNote";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { NotesState } from "../types/NotesState";
+import produce, { Draft } from "immer";
+import { NoteAction } from "../types/actions";
+import { CardNote } from "../types/CardNote";
+import { GameMetadata } from "../types/GameMetadata";
+import { NotesState } from "../types/NotesState";
 import * as noteIdentity from "./noteIdentity";
 
 export const notesReducer = produce(notesReducerFunction, {} as NotesState);
@@ -53,9 +52,9 @@ function notesReducerFunction(
     }
 
     case "noteListPlayer": {
-      for (const [i, text] of action.texts.entries()) {
+      action.texts.forEach((text, i) => {
         notes.ourNotes[i] = parseNote(variant, text);
-      }
+      });
       break;
     }
 
@@ -72,22 +71,22 @@ function notesReducerFunction(
       }
 
       // Set the new notes.
-      for (const [i, noteTextList] of action.noteTextLists.entries()) {
+      action.noteTextLists.forEach((noteTextList, i) => {
         // If we are a spectator, copy our notes from combined list.
         if (action.names[i] === metadata.ourUsername && !playing && !finished) {
-          for (const [order, text] of noteTextList.entries()) {
+          noteTextList.forEach((text, order) => {
             notes.ourNotes[order] = parseNote(variant, text);
-          }
+          });
         }
 
-        for (const [order, text] of noteTextList.entries()) {
+        noteTextList.forEach((text, order) => {
           notes.allNotes[order]!.push({
             name: action.names[i]!,
             text,
             isSpectator: action.isSpectators[i]!,
           });
-        }
-      }
+        });
+      });
       break;
     }
   }
@@ -101,17 +100,17 @@ function getNoteKeywords(note: string) {
   //   - \|([^[|]*$)
   // - one or more non-pipe non-bracket characters between the start and end of the note
   //   - (^[^[|]+$)
-  const regexp = /\[(.*?)]|\|([^[|]*$)|(^[^[|]+$)/g;
+  const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
   const keywords: string[] = [];
 
   let match = regexp.exec(note);
   while (match !== null) {
     if (match[1] !== undefined) {
       keywords.push(match[1].trim());
-    } else if (match[2] === undefined) {
-      keywords.push(match[3]!.trim());
-    } else {
+    } else if (match[2] !== undefined) {
       keywords.push(match[2].trim());
+    } else {
+      keywords.push(match[3]!.trim());
     }
     match = regexp.exec(note);
   }
@@ -122,7 +121,7 @@ function getNoteKeywords(note: string) {
 const checkNoteKeywordsForMatch = (
   patterns: readonly string[],
   keywords: string[],
-) => keywords.some((k) => patterns.includes(k));
+) => keywords.some((k) => patterns.some((pattern) => k === pattern));
 
 function getEmptyNote(variant: Variant): CardNote {
   const note: CardNote = emptyNotes.get(variant.name) ?? parseNote(variant, "");

@@ -1,7 +1,7 @@
 // This is the list of clues in the top-right-hand corner of the UI.
 
 import Konva from "konva";
-import type { ClueEntry } from "./ClueEntry";
+import { ClueEntry } from "./ClueEntry";
 import { globals } from "./globals";
 
 export class ClueLog extends Konva.Group {

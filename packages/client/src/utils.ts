@@ -5,10 +5,10 @@ export function copyStringToClipboard(str: string): void {
   const el = document.createElement("textarea"); // Create new element
   el.value = str; // Set the value (the string to be copied)
   el.setAttribute("readonly", ""); // Set non-editable to avoid focus
-  document.body.append(el);
+  document.body.appendChild(el);
   el.select(); // Select text inside element
   document.execCommand("copy"); // Copy text to clipboard
-  el.remove(); // Remove temporary element
+  document.body.removeChild(el); // Remove temporary element
 }
 
 export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -28,6 +28,10 @@ export function getURLFromPath(path: string): string {
   url += path;
 
   return url;
+}
+
+export function initArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
 }
 
 export function isDevWebpack(): boolean {
@@ -57,10 +61,8 @@ export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-export function negativeOneIfNullOrUndefined(
-  x: number | null | undefined,
-): number {
-  return x ?? -1;
+export function negativeOneIfNull(x: number | null | undefined): number {
+  return x === null || x === undefined ? -1 : x;
 }
 
 function pad2(num: number) {
@@ -76,7 +78,7 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   const modifiedQueryParameters = queryParameters
     .toString()
     // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable.
-    .replaceAll("=&", "&")
+    .replace(/=&/g, "&")
     .replace(/=$/, "");
 
   let path = newPath;

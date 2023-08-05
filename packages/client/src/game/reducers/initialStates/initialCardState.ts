@@ -1,20 +1,19 @@
-import type { Variant } from "@hanabi/data";
-import { newArray } from "@hanabi/data";
+import { Variant } from "@hanabi/data";
 import * as deck from "../../rules/deck";
-import type { CardState } from "../../types/CardState";
+import { CardState } from "../../types/CardState";
 
 export function initialCardState(order: number, variant: Variant): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately from knowledge of the
   // true suit and rank.
-  const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
-  const possibleRanks: number[] = [...variant.ranks];
+  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
+  const possibleRanks: number[] = variant.ranks.slice();
 
   const possibleCards: Array<[number, number]> = [];
-  for (const s of possibleSuits) {
-    for (const r of possibleRanks) {
+  possibleSuits.forEach((s) => {
+    possibleRanks.forEach((r) => {
       possibleCards.push([s, r]);
-    }
-  }
+    });
+  });
 
   const total = deck.totalCards(variant);
 
@@ -26,7 +25,7 @@ export function initialCardState(order: number, variant: Variant): CardState {
     possibleCardsFromClues: possibleCards,
     possibleCards,
     possibleCardsForEmpathy: possibleCards,
-    revealedToPlayer: newArray(6, false),
+    revealedToPlayer: new Array(6).fill(false),
     positiveColorClues: [],
     positiveRankClues: [],
     suitDetermined: false,

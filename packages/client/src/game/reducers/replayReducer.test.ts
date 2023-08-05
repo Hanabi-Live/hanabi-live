@@ -8,13 +8,13 @@ import {
   rankClue,
 } from "../../../test/testActions";
 import testGame from "../../../test_data/up_or_down.json";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { State } from "../types/State";
+import { GameMetadata } from "../types/GameMetadata";
+import { State } from "../types/State";
 import { replayReducer } from "./replayReducer";
 import { stateReducer } from "./stateReducer";
 
-jest.mock("./uiReducer", () => ({
-  uiReducer: jest.fn(),
+jest.mock("./UIReducer", () => ({
+  UIReducer: jest.fn(),
 }));
 
 let testState: State;
@@ -26,7 +26,7 @@ describe("replayReducer", () => {
     // Load the game and start a replay.
     testState = loadGameJSON(testGame);
     testState = stateReducer(testState, init());
-    metadata = testState.metadata; // eslint-disable-line prefer-destructuring
+    metadata = testState.metadata;
   });
 
   describe("hypothetical", () => {

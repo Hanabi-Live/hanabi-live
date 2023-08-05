@@ -5,7 +5,7 @@ import * as chat from "../chat";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
-import type { Options } from "../types/Options";
+import { Options } from "../types/Options";
 import { setBrowserAddressBarPath, timerFormatter } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -41,17 +41,17 @@ export function show(): void {
 
   // Scroll to the bottom of both the lobby chat and the pregame chat. (Even if the lobby chat is
   // already at the bottom, it will change size and cause it to not be scrolled all the way down.)
-  const chat1 = document.querySelector("#lobby-chat-text");
-  if (chat1 === null) {
-    throw new Error('Failed to get the "lobby-chat-text" element.');
-  } else {
+  const chat1 = document.getElementById("lobby-chat-text");
+  if (chat1 !== null) {
     chat1.scrollTop = chat1.scrollHeight;
-  }
-  const chat2 = document.querySelector("#lobby-chat-pregame-text");
-  if (chat2 === null) {
-    throw new Error('Failed to get the "lobby-chat-pregame-text" element.');
   } else {
+    throw new Error('Failed to get the "lobby-chat-text" element.');
+  }
+  const chat2 = document.getElementById("lobby-chat-pregame-text");
+  if (chat2 !== null) {
     chat2.scrollTop = chat2.scrollHeight;
+  } else {
+    throw new Error('Failed to get the "lobby-chat-pregame-text" element.');
   }
 
   // Focus the pregame chat.
@@ -192,8 +192,8 @@ export function getOptionIcons(
           This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
             options.timeBase,
           )} minute(s)</strong> plus <strong>${
-            options.timePerTurn
-          } second(s)</strong> per turn.
+      options.timePerTurn
+    } second(s)</strong> per turn.
         </div>
       </div>
     `;
@@ -366,7 +366,12 @@ function drawPlayerBox(i: number) {
   const variantStats = player.stats.variant;
   const averageScore = Math.round(variantStats.averageScore * 10) / 10;
   // (Round it to 1 decimal place.)
-  const averageScoreString = averageScore === 0 ? "-" : averageScore.toString();
+  let averageScoreString: string;
+  if (averageScore === 0) {
+    averageScoreString = "-";
+  } else {
+    averageScoreString = averageScore.toString();
+  }
   let strikeoutRateString: string;
   if (variantStats.numGames > 0) {
     let strikeoutRate =
@@ -432,8 +437,8 @@ function drawPlayerBox(i: number) {
         <i id="lobby-pregame-player-${
           i + 1
         }-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${
-          i + 1
-        }-tooltip"></i>
+    i + 1
+  }-tooltip"></i>
       </div>
     </div>
     <div class="hidden">
@@ -456,10 +461,11 @@ function drawPlayerBox(i: number) {
     html += ` ${bestScore} / ${maxScore}`;
     if (bestScore === maxScore) {
       html += "</strong> &nbsp; ";
-      html +=
-        bestScoreMod === 0
-          ? '<i class="fas fa-check score-modifier green"></i>'
-          : '<i class="fas fa-times score-modifier red"></i>';
+      if (bestScoreMod === 0) {
+        html += '<i class="fas fa-check score-modifier green"></i>';
+      } else {
+        html += '<i class="fas fa-times score-modifier red"></i>';
+      }
     }
     html += "</div></div>";
   }
@@ -563,10 +569,10 @@ export function toggleStartGameButton(): void {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
 
-  if (globals.game.owner === globals.userID) {
-    $("#nav-buttons-pregame-change-variant").removeClass("disabled");
-  } else {
+  if (globals.game.owner !== globals.userID) {
     $("#nav-buttons-pregame-change-variant").addClass("disabled");
+  } else {
+    $("#nav-buttons-pregame-change-variant").removeClass("disabled");
   }
 }
 

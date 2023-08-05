@@ -1,5 +1,5 @@
 import * as tooltips from "../../../../tooltips";
-import type { Spectator } from "../../../types/Spectator";
+import { Spectator } from "../../../types/Spectator";
 import { globals } from "../../globals";
 
 export function onSpectatorsChanged(data: {
@@ -51,7 +51,11 @@ export function onSpectatorsChanged(data: {
       nameEntries += nameEntry;
     }
     let content = "<strong>";
-    content += globals.state.finished ? "Shared Replay Viewers" : "Spectators";
+    if (globals.state.finished) {
+      content += "Shared Replay Viewers";
+    } else {
+      content += "Spectators";
+    }
     content += `:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
     tooltips.setInstanceContent("#tooltip-spectators", content);
   } else {

@@ -1,4 +1,4 @@
-import type { CardIdentityType } from "./CardIdentityType";
+import { CardIdentityType } from "./CardIdentityType";
 
 export interface CardIdentity {
   readonly suitIndex: number | null | CardIdentityType;

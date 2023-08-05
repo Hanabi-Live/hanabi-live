@@ -1,11 +1,10 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import type { Variant } from "@hanabi/data";
-import { MAX_CLUE_NUM, newArray } from "@hanabi/data";
-import type { CardNote } from "../types/CardNote";
-import type { CardState } from "../types/CardState";
-import type { GameState, PaceRisk } from "../types/GameState";
-import type { StackDirection } from "../types/StackDirection";
+import { MAX_CLUE_NUM, Variant } from "@hanabi/data";
+import { CardNote } from "../types/CardNote";
+import { CardState } from "../types/CardState";
+import { GameState, PaceRisk } from "../types/GameState";
+import { StackDirection } from "../types/StackDirection";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
@@ -204,7 +203,7 @@ export function cardsGottenByNotes(
 ): number {
   let currentCardsGottenByNotes = 0;
 
-  for (const [order, card] of deck.entries()) {
+  deck.forEach((card, order) => {
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -232,7 +231,7 @@ export function cardsGottenByNotes(
 
       currentCardsGottenByNotes += b - a;
     }
-  }
+  });
   return currentCardsGottenByNotes;
 }
 
@@ -269,14 +268,14 @@ export function cluesStillUsableNotRounded(
   currentClues: number,
 ): number | null {
   if (scorePerStack.length !== maxScorePerStack.length) {
-    throw new Error(
+    throw Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
     );
   }
   // We want to discard as many times as possible while still getting a max score as long as
   // discardValue >= suitValue (which is currently true for all variants).
   if (discardValue < suitValue) {
-    throw new Error(
+    throw Error(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
   }
@@ -306,14 +305,14 @@ export function cluesStillUsableNotRounded(
     const minPlaysBeforeFinalRound =
       maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
-    for (const [suitIndex, stackScore] of scorePerStack.entries()) {
-      if (maxScorePerStack[suitIndex] === 5 && stackScore < 5) {
+    for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
+      if (maxScorePerStack[suitIndex] === 5 && scorePerStack[suitIndex]! < 5) {
         missingCardsPerCompletableSuit.push(
-          maxScorePerStack[suitIndex]! - stackScore,
+          maxScorePerStack[suitIndex]! - scorePerStack[suitIndex]!,
         );
       }
     }
-    missingCardsPerCompletableSuit.sort((n1, n2) => n1 - n2);
+    missingCardsPerCompletableSuit.sort();
     let cardsPlayed = 0;
     let suitsCompletedBeforeFinalRound = 0;
     for (const missingCardsInSuit of missingCardsPerCompletableSuit) {
@@ -365,8 +364,10 @@ export function startingCluesUsable(
   variant: Variant,
 ): number {
   const score = 0;
-  const scorePerStack = newArray(variant.suits.length, 0);
-  const maxScorePerStack = newArray(variant.suits.length, 5);
+  // eslint-disable-next-line isaacscript/no-object-any
+  const scorePerStack = new Array(variant.suits.length).fill(0);
+  // eslint-disable-next-line isaacscript/no-object-any
+  const maxScorePerStack = new Array(variant.suits.length).fill(5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
   const startingClues = cluesStillUsable(

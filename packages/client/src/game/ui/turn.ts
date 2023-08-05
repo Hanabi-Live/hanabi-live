@@ -1,7 +1,7 @@
 import * as notifications from "../../notifications";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
-import type { ClientAction } from "../types/ClientAction";
+import { ClientAction } from "../types/ClientAction";
 import * as arrows from "./arrows";
 import { PREPLAY_DELAY } from "./constants";
 import { globals } from "./globals";

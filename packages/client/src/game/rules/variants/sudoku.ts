@@ -1,6 +1,5 @@
-import type { Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS, UNKNOWN_CARD_RANK, initArray } from "@hanabi/data";
-import type { CardState } from "../../types/CardState";
+import { DEFAULT_CARD_RANKS, UNKNOWN_CARD_RANK, Variant } from "@hanabi/data";
+import { CardState } from "../../types/CardState";
 import { createAllDiscardedMap } from "./discardHelpers";
 
 // Assuming that we're dealing with a Sudoku variant, checks if the card still can be played.
@@ -15,10 +14,12 @@ export function sudokuCanStillBePlayed(
     createAllDiscardedMap(variant, deck, suitIndex),
   );
 
-  const possibleStarts =
-    playStackStarts[suitIndex] === UNKNOWN_CARD_RANK
-      ? sudokuGetFreeStackStarts(playStackStarts)
-      : [playStackStarts[suitIndex]!];
+  let possibleStarts: number[];
+  if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
+    possibleStarts = [playStackStarts[suitIndex]!];
+  } else {
+    possibleStarts = sudokuGetFreeStackStarts(playStackStarts);
+  }
 
   for (const stackStart of possibleStarts) {
     // Here, we check if we can play the specified card if we start the stack at 'stackStart'. For
@@ -86,44 +87,39 @@ function sudokuGetFreeStackStarts(stackStarts: readonly number[]): number[] {
   return possibleStackStarts;
 }
 
-/**
- * This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
- * See there for corresponding documentation on how the score is calculated. Additionally, since
- * here, we want to return the maximum score per stack (this is needed for endgame calculations,
- * since the distribution of playable cards to the stacks matters for how many clues we can get back
- * before the extra round starts), we will find an optimum solution (in terms of score) such that
- * the distribution of the played cards to the stacks is lexicographically minimal (after sorting
- * the values) as well, since this allows for the most amount of clues to be gotten back before the
- * extra-round.
- */
+// This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
+// See there for corresponding documentation on how the score is calculated. Additionally, since
+// here, we want to return the maximum score per stack (this is needed for endgame calculations,
+// since the distribution of playable cards to the stacks matters for how many clues we can get back
+// before the extra round starts), we will find an optimum solution (in terms of score) such that
+// the distribution of the played cards to the stacks is lexicographically minimal (after sorting
+// the values) as well, since this allows for the most amount of clues to be gotten back before the
+// extra-round.
 export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackStarts: readonly number[],
   variant: Variant,
 ): number[] {
-  const independentPartOfMaxScore: number[] = [];
-  const maxPartialScores: number[][] = initArray(5, []);
+  const independentPartOfMaxScore = new Array<number>(playStackStarts.length);
+  const maxPartialScores = new Array<number[]>(5);
   const unassignedSuits: number[] = [];
 
   // Find the suits for which we need to solve the assignment problem.
-  for (const [suitIndex, stackStart] of playStackStarts.entries()) {
+  playStackStarts.forEach((stackStart, suitIndex) => {
     const [allMax, suitMaxScores] = sudokuWalkUpAll(
       createAllDiscardedMap(variant, deck, suitIndex),
     );
-
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = 5;
-      continue;
+      return;
     }
-
     if (stackStart !== UNKNOWN_CARD_RANK) {
       independentPartOfMaxScore[suitIndex] = suitMaxScores[stackStart - 1]!;
-      continue;
+      return;
     }
-
     maxPartialScores[suitIndex] = suitMaxScores;
     unassignedSuits.push(suitIndex);
-  }
+  });
 
   if (unassignedSuits.length === 0) {
     return independentPartOfMaxScore;
@@ -138,18 +134,18 @@ export function getMaxScorePerStack(
   let bestAssignmentSum = 0;
 
   // This denotes the actual values of the best assignment found.
-  let bestAssignment: number[] = [];
+  let bestAssignment = new Array<number>(unassignedSuits.length);
 
   // Same, but sorted in ascending order.
-  let bestAssignmentSorted: number[] = [];
+  let bestAssignmentSorted = new Array<number>(unassignedSuits.length);
 
   let localSuitIndex = 0;
 
-  const curAssignment: number[] = [];
+  const curAssignment = new Array<number>(unassignedSuits.length);
   for (let i = 0; i < curAssignment.length; i++) {
     curAssignment[i] = unassigned;
   }
-  const assigned: boolean[] = [];
+  const assigned = new Array<boolean>(possibleStackStarts.length);
 
   while (localSuitIndex >= 0) {
     if (curAssignment[localSuitIndex] !== unassigned) {
@@ -174,21 +170,19 @@ export function getMaxScorePerStack(
       if (localSuitIndex === unassignedSuits.length - 1) {
         // Evaluate the current assignment.
         let assignmentVal = 0;
-        const assignment: number[] = [];
-        for (const [
-          assignedLocalSuitIndex,
-          assignedStackStartIndex,
-        ] of curAssignment.entries()) {
-          const value =
-            maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
-              possibleStackStarts[assignedStackStartIndex]! - 1
-            ]!;
-          assignmentVal += value;
-          assignment[assignedLocalSuitIndex] = value;
-        }
-
-        const assignmentSorted = [...assignment];
-        assignmentSorted.sort((n1, n2) => n1 - n2);
+        const assignment = new Array<number>(unassignedSuits.length);
+        curAssignment.forEach(
+          (assignedStackStartIndex, assignedLocalSuitIndex) => {
+            const value =
+              maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
+                possibleStackStarts[assignedStackStartIndex]! - 1
+              ]!;
+            assignmentVal += value;
+            assignment[assignedLocalSuitIndex] = value;
+          },
+        );
+        const assignmentSorted = assignment.slice(0);
+        assignmentSorted.sort();
 
         // Check if we need to update the best assignment.
         if (assignmentVal > bestAssignmentSum) {
@@ -230,15 +224,12 @@ export function getMaxScorePerStack(
   // Now, we just need to put the found assignment together with the independent parts found
   // already.
   const maxScorePerStack = independentPartOfMaxScore;
-  for (const [
-    unassignedLocalSuitIndex,
-    unassignedSuit,
-  ] of unassignedSuits.entries()) {
+  unassignedSuits.forEach((unassignedSuit, unassignedLocalSuitIndex) => {
     // Note the '??' here, since it can be that there is actually no feasible assignment. In this
     // case, these values are still undefined at this point, so we replace them by 0.
     maxScorePerStack[unassignedSuit] =
       bestAssignment[unassignedLocalSuitIndex] ?? 0;
-  }
+  });
 
   return maxScorePerStack;
 }

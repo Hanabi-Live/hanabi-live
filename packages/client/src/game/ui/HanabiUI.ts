@@ -1,11 +1,10 @@
 // The object that comprises the entire game UI. It is re-created every time when going into a new
 // game (and destroyed when going to the lobby).
 
-import type { Globals as LobbyGlobals } from "../../globals";
-import type { GameExports } from "../main";
+import { Globals as LobbyGlobals } from "../../globals";
+import { GameExports } from "../main";
 import * as cursor from "./cursor";
-import type { Globals } from "./globals";
-import { globals } from "./globals";
+import { globals, Globals } from "./globals";
 import * as keyboard from "./keyboard";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
@@ -38,7 +37,7 @@ export class HanabiUI {
 
   // The following methods are called from various parent functions.
 
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
   updateChatLabel(): void {
     if (globals.elements.chatButton === null) {
       return;
@@ -58,13 +57,13 @@ export class HanabiUI {
     globals.layers.UI.batchDraw();
   }
 
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
   focusLost(): void {
     setGlobalEmpathy(false);
     cursor.set("default");
   }
 
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
   destroy(): void {
     keyboard.destroy();
     timer.stop();

@@ -2,23 +2,26 @@ import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
-import type { Clue } from "../types/Clue";
+import { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
-import type { MsgClue } from "../types/MsgClue";
+import { MsgClue } from "../types/MsgClue";
 import * as arrows from "./arrows";
-import type { ColorButton } from "./ColorButton";
-import type { PlayerButton } from "./controls/PlayerButton";
+import { ButtonGroup } from "./ButtonGroup";
+import { ColorButton } from "./ColorButton";
+import { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
-import type { RankButton } from "./RankButton";
+import { HanabiCard } from "./HanabiCard";
+import { RankButton } from "./RankButton";
 import * as turn from "./turn";
 
 export function checkLegal(): void {
-  const clueTargetButtonGroup =
-    globals.state.replay.hypothetical === null
-      ? globals.elements.clueTargetButtonGroup
-      : globals.elements.clueTargetButtonGroup2;
+  let clueTargetButtonGroup: ButtonGroup | null;
+  if (globals.state.replay.hypothetical === null) {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
+  }
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as
@@ -130,10 +133,12 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
 }
 
 export function give(): void {
-  const clueTargetButtonGroup =
-    globals.state.replay.hypothetical === null
-      ? globals.elements.clueTargetButtonGroup
-      : globals.elements.clueTargetButtonGroup2;
+  let clueTargetButtonGroup: ButtonGroup | null;
+  if (globals.state.replay.hypothetical === null) {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
+  }
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as
@@ -158,7 +163,7 @@ export function give(): void {
 
     case ClueType.Rank: {
       type = ActionType.RankClue;
-      value = clueButton.clue.value; // eslint-disable-line prefer-destructuring
+      value = clueButton.clue.value;
       break;
     }
   }

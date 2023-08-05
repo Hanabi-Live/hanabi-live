@@ -1,6 +1,6 @@
 import { getVariant } from "@hanabi/data";
 import { testMetadata } from "../../../test/testMetadata";
-import type { CardState } from "../types/CardState";
+import { CardState } from "../types/CardState";
 import { colorClue, rankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { initialCardState } from "./initialStates/initialCardState";

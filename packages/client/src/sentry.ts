@@ -2,7 +2,7 @@
 
 import { DOMAIN, VERSION } from "@hanabi/data";
 import * as Sentry from "@sentry/browser";
-import type { InitData } from "./game/types/InitData";
+import { InitData } from "./game/types/InitData";
 
 export function init(): void {
   if (!useSentry()) {

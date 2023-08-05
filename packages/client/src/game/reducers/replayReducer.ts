@@ -1,15 +1,11 @@
 // The reducer for replays and hypotheticals.
 
-import type { Draft } from "immer";
-import produce, { original } from "immer";
+import produce, { Draft, original } from "immer";
 import { nullIfNegative } from "../../utils";
-import type {
-  ActionIncludingHypothetical,
-  ReplayAction,
-} from "../types/actions";
+import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import { CardIdentityType } from "../types/CardIdentityType";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { ReplayState } from "../types/ReplayState";
+import { GameMetadata } from "../types/GameMetadata";
+import { ReplayState } from "../types/ReplayState";
 import { gameStateReducer } from "./gameStateReducer";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
@@ -41,7 +37,7 @@ function replayReducerFunction(
       state.active = true;
 
       if (typeof action.segment !== "number") {
-        throw new TypeError(
+        throw new Error(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -62,7 +58,7 @@ function replayReducerFunction(
 
     case "replaySegment": {
       if (typeof action.segment !== "number") {
-        throw new TypeError(
+        throw new Error(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -81,7 +77,7 @@ function replayReducerFunction(
         );
       }
       if (typeof action.segment !== "number") {
-        throw new TypeError(
+        throw new Error(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -180,7 +176,7 @@ function replayReducerFunction(
 
       const hypoStates = state.hypothetical.states;
       hypoStates.pop();
-      const lastState = hypoStates.at(-1)!;
+      const lastState = hypoStates[hypoStates.length - 1]!;
       state.hypothetical.ongoing = lastState;
       break;
     }
@@ -195,26 +191,25 @@ function replayReducerFunction(
       state.hypothetical.showDrawnCards = action.showDrawnCards;
       if (action.showDrawnCards) {
         // Filter out all identities morphed to blank.
-        const drawnCardsInHypothetical = original(
-          state.hypothetical.drawnCardsInHypothetical,
-        )!;
-        for (const order of drawnCardsInHypothetical) {
-          state.hypothetical.morphedIdentities[order] = {
-            rank: CardIdentityType.Original,
-            suitIndex: CardIdentityType.Original,
-          };
-        }
+
+        original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
+          (order) => {
+            state.hypothetical!.morphedIdentities[order] = {
+              rank: CardIdentityType.Original,
+              suitIndex: CardIdentityType.Original,
+            };
+          },
+        );
       } else {
         // Hide all cards drawn since the beginning of the hypothetical.
-        const drawnCardsInHypothetical = original(
-          state.hypothetical.drawnCardsInHypothetical,
-        )!;
-        for (const order of drawnCardsInHypothetical) {
-          state.hypothetical.morphedIdentities[order] = {
-            rank: null,
-            suitIndex: null,
-          };
-        }
+        original(state.hypothetical.drawnCardsInHypothetical)!.forEach(
+          (order) => {
+            state.hypothetical!.morphedIdentities[order] = {
+              rank: null,
+              suitIndex: null,
+            };
+          },
+        );
       }
 
       break;
@@ -249,9 +244,9 @@ function hypoAction(
   // identities.
   if (action.type === "morph") {
     if (
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      // eslint-disable-next-line isaacscript/strict-enums
       action.suitIndex === CardIdentityType.Original &&
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      // eslint-disable-next-line isaacscript/strict-enums
       action.rank === CardIdentityType.Original
     ) {
       // unmorph the card

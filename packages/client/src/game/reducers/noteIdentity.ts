@@ -1,12 +1,11 @@
-import type { Variant } from "@hanabi/data";
 import {
   ALL_RESERVED_NOTES,
   MAX_RANK,
   START_CARD_RANK,
-  initArray,
-  parseIntSafe,
+  Variant,
 } from "@hanabi/data";
-import type { CardIdentity } from "../types/CardIdentity";
+import { parseIntSafe } from "isaacscript-common-ts";
+import { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 
 interface CardIdentities {
@@ -88,17 +87,16 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
     const suitIndices: number[] = [];
     const ranks: number[] = [];
     if (squishText !== null) {
-      for (const letter of squishText) {
+      [].map.call(squishText, (letter) => {
         suitIndex = parseSuit(variant, letter);
+        rank = parseRank(letter);
         if (suitIndex !== null) {
           suitIndices.push(suitIndex);
-          continue;
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        } else if (rank !== null) {
+          ranks.push(rank);
         }
-
-        rank = parseRank(letter);
-        ranks.push(rank);
-      }
-
+      });
       if (suitIndices.length + ranks.length > 0) {
         return { suitIndices, ranks };
       }
@@ -125,7 +123,7 @@ function range(
   step = 1,
 ): number[] {
   const start: number = _stop === null ? 0 : _start;
-  const stop: number = _stop ?? _start;
+  const stop: number = _stop === null ? _start : _stop;
 
   const numbersInRange: number[] = [];
   for (let i = start; i < stop; i += step) {
@@ -171,7 +169,7 @@ function getPossibilitiesFromKeyword(
     const negative = trimmed.startsWith("!");
     const identity = parseIdentities(
       variant,
-      (negative ? trimmed.slice(1) : trimmed).trim(),
+      (negative ? trimmed.substring(1) : trimmed).trim(),
     );
     if (negative) {
       negativeIdentities.push(identity);
@@ -186,9 +184,10 @@ function getPossibilitiesFromKeyword(
     positiveIdentities.length > 0 ? [] : variant.ranks,
   );
   for (let rank = 1; rank <= MAX_RANK; rank++) {
-    const value = positiveRanks.has(rank) ? 1 : 0;
-    const identities = initArray(variant.suits.length, value);
-    identityMap.push(identities);
+    identityMap.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
+    );
   }
 
   // Then add positive items and remove all negatives.
@@ -245,15 +244,13 @@ export function getPossibilitiesFromKeywords(
   return possibilities;
 }
 
-function extractSuitText(match: RegExpMatchArray) {
-  return match[1] ?? match[4] ?? match[5] ?? null;
-}
+const extractSuitText = (match: RegExpMatchArray) =>
+  match[1] ?? match[4] ?? match[5] ?? null;
 
-function extractRankText(match: RegExpMatchArray) {
-  return match[2] ?? match[3] ?? match[6] ?? null;
-}
+const extractRankText = (match: RegExpMatchArray) =>
+  match[2] ?? match[3] ?? match[6] ?? null;
 
-function extractSquishText(match: RegExpMatchArray) {
+const extractSquishText = (match: RegExpMatchArray) => {
   const text = match[7]?.trim();
 
   if (text !== undefined && !ALL_RESERVED_NOTES.has(text)) {
@@ -261,4 +258,4 @@ function extractSquishText(match: RegExpMatchArray) {
   }
 
   return null;
-}
+};

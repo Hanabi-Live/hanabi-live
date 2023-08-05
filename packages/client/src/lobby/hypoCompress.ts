@@ -4,8 +4,8 @@ import {
   HYPO_PLAYER_NAMES,
   MAX_PLAYERS,
   MIN_PLAYERS,
-  parseIntSafe,
 } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { isEqual } from "lodash";
 
 interface DeckCard {
@@ -90,10 +90,12 @@ export function shrink(JSONString: string): string | null {
  */
 export function expand(data: string): string | null {
   // Remove all hyphens from URL.
-  const normal = data.replaceAll("-", "");
+  const normal = data.replace(/-/g, "");
 
   // The compressed string is composed of 3 substrings separated by commas.
-  const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
+  const [playersAndDeck, actionsString, variantIDString] = [
+    ...normal.split(",", 3),
+  ];
   const numberPlayersString = playersAndDeck!.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
 
@@ -102,7 +104,7 @@ export function expand(data: string): string | null {
     return null;
   }
 
-  const deckString = playersAndDeck!.slice(1);
+  const deckString = playersAndDeck!.substring(1);
   const deck = decompressDeck(deckString);
   if (deck === null) {
     return null;
@@ -190,9 +192,9 @@ function compressDeck(deck: DeckCard[]): string | null {
   }
 
   let out = `${rankRange.min}${rankRange.max}`;
-  for (const card of deck) {
+  deck.forEach((card) => {
     out += deckCardToString(card, rankRange);
-  }
+  });
 
   return out;
 }
@@ -296,7 +298,7 @@ function decompressActions(src: string): Action[] {
 
   let s = 2;
   while (s < src.length) {
-    const compressedAction = src.slice(s, s + 2);
+    const compressedAction = src.substring(s, s + 2);
     const action = stringToAction(compressedAction, typeRange);
     actions.push(action);
     s += 2;

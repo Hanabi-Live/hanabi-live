@@ -1,13 +1,11 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import type { Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
+import { START_CARD_RANK, Variant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import type { Clue } from "../types/Clue";
-import { colorClue, rankClue } from "../types/Clue";
+import { Clue, colorClue, rankClue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { MsgClue } from "../types/MsgClue";
+import { GameMetadata } from "../types/GameMetadata";
+import { MsgClue } from "../types/MsgClue";
 import * as variantRules from "./variant";
 
 export function getClueName(

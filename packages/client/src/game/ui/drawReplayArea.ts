@@ -64,7 +64,8 @@ export function drawReplayArea(winW: number, winH: number): void {
     h: 0.03,
     cornerRadius: 0.01,
     stroke: "black",
-    strokeWidth: 0.001_217,
+    strokeWidth: 0.001217,
+    scale: 0.75,
   };
 
   // The shared (white) replay shuttle. (We want it to be behind the normal replay shuttle, so we

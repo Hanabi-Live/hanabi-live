@@ -1,10 +1,10 @@
 // The "Watch Specific Replay" nav button.
 
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../globals";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
-import { parseIntSafe } from "@hanabi/data";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected.
@@ -59,23 +59,28 @@ function submit() {
 
   // Error
   $("#replay-error-row").hide();
+  const error = (text: string) => {
+    $("#replay-error-row").show();
+    $("#replay-error-row-text").text(text);
+
+    // Redraw the tooltip so that the new elements will fit better.
+    tooltips.reposition("#nav-buttons-lobby-replay");
+  };
 
   // ID
   const databaseIDString = $("#replay-id").val();
   if (typeof databaseIDString !== "string") {
-    throw new TypeError(
-      'The value of the "replay-id" element is not a string.',
-    );
+    throw new Error('The value of the "replay-id" element is not a string.');
   }
   let databaseID: number | undefined;
   if (source === "id") {
     databaseID = parseIntSafe(databaseIDString);
     if (Number.isNaN(databaseID)) {
-      showReplayError("Error: The database ID must be a number.");
+      error("Error: The database ID must be a number.");
       return;
     }
     if (databaseID < 1) {
-      showReplayError("Error: The database ID must be a positive number.");
+      error("Error: The database ID must be a positive number.");
       return;
     }
     localStorage.setItem("watchReplayID", databaseIDString);
@@ -84,20 +89,18 @@ function submit() {
   // JSON
   const gameJSONString = $("#replay-json").val();
   if (typeof gameJSONString !== "string") {
-    throw new TypeError(
-      'The value of the "replay-json" element is not a string.',
-    );
+    throw new Error('The value of the "replay-json" element is not a string.');
   }
   let gameJSON: unknown;
   if (source === "json") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
-    } catch {
-      showReplayError("Error: That is not a valid JSON object.");
+    } catch (err) {
+      error("Error: That is not a valid JSON object.");
       return;
     }
     if (typeof gameJSON !== "object") {
-      showReplayError("Error: That is not a valid JSON object.");
+      error("Error: That is not a valid JSON object.");
       return;
     }
     localStorage.setItem("watchReplayJSON", gameJSONString);
@@ -134,14 +137,6 @@ function submit() {
   }
 
   closeModals();
-}
-
-function showReplayError(text: string) {
-  $("#replay-error-row").show();
-  $("#replay-error-row-text").text(text);
-
-  // Redraw the tooltip so that the new elements will fit better.
-  tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 // This function is executed every time the "Watch Specific Replay" button is clicked (after the

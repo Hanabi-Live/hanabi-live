@@ -6,7 +6,7 @@ import Konva from "konva";
 import * as variantRules from "../rules/variant";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
-import type { LayoutChild } from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 
 export class PlayStack extends Konva.Group {
   addChild(layoutChild: LayoutChild): void {
@@ -20,7 +20,7 @@ export class PlayStack extends Konva.Group {
     const lh = this.height();
 
     const layoutChildren = this.children.toArray() as LayoutChild[];
-    const layoutChild = layoutChildren.at(-1)!;
+    const layoutChild = layoutChildren[layoutChildren.length - 1]!;
     const scale = lh / layoutChild.height();
     const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
 

@@ -1,11 +1,13 @@
 // The card graphics are various HTML5 canvas drawings.
 
-import type { Color, Suit, Variant } from "@hanabi/data";
 import {
+  Color,
   getSuit,
   STACK_BASE_RANK,
   START_CARD_RANK,
+  Suit,
   UNKNOWN_CARD_RANK,
+  Variant,
 } from "@hanabi/data";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as variantRules from "../rules/variant";
@@ -35,7 +37,7 @@ export function drawCards(
   // Add the "Unknown" suit to the list of suits for this variant. The unknown suit has blank white
   // cards, representing cards of known rank but unknown suit.
   const unknownSuit = getSuit("Unknown");
-  const suits = [...variant.suits, unknownSuit];
+  const suits = variant.suits.concat(unknownSuit);
   const pipTypes = new Set<string>();
 
   let suitIndex = -1;
@@ -712,12 +714,12 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
 
 // From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function hexToRgb(hex: string) {
-  const result = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex);
-  return result === null
-    ? null
-    : {
-        r: Number.parseInt(result[1]!, 16),
-        g: Number.parseInt(result[2]!, 16),
-        b: Number.parseInt(result[3]!, 16),
-      };
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result !== null
+    ? {
+        r: parseInt(result[1]!, 16),
+        g: parseInt(result[2]!, 16),
+        b: parseInt(result[3]!, 16),
+      }
+    : null;
 }

@@ -1,6 +1,6 @@
 // Helper functions for doing actions to our own hand.
 
-import type { CardLayout } from "./CardLayout";
+import { CardLayout } from "./CardLayout";
 import { globals } from "./globals";
 
 export function get(): CardLayout {

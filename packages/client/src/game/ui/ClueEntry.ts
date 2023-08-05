@@ -3,7 +3,7 @@
 import Konva from "konva";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
-import type { StateClue } from "../types/GameState";
+import { StateClue } from "../types/GameState";
 import { FitText } from "./controls/FitText";
 import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";

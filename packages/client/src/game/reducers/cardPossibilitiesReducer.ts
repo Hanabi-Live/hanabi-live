@@ -1,13 +1,12 @@
 // Calculates the state of a card after a clue.
 
-import type { Variant } from "@hanabi/data";
-import { getVariant, newArray } from "@hanabi/data";
+import { getVariant, Variant } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
 import { isOddsAndEvens } from "../rules/variant";
-import type { CardState } from "../types/CardState";
-import type { Clue } from "../types/Clue";
+import { CardState } from "../types/CardState";
+import { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
-import type { GameMetadata } from "../types/GameMetadata";
+import { GameMetadata } from "../types/GameMetadata";
 
 export function cardPossibilitiesReducer(
   state: CardState,
@@ -52,10 +51,11 @@ export function cardPossibilitiesReducer(
     !positiveRankClues.includes(clue.value)
   ) {
     if (isOddsAndEvens(variant)) {
-      positiveRankClues =
-        clue.value === 1
-          ? [...positiveRankClues, 1, 3, 5]
-          : [...positiveRankClues, 2, 4];
+      if (clue.value === 1) {
+        positiveRankClues = [...positiveRankClues, ...[1, 3, 5]];
+      } else {
+        positiveRankClues = [...positiveRankClues, ...[2, 4]];
+      }
     } else {
       positiveRankClues = [...positiveRankClues, clue.value];
     }
@@ -113,7 +113,7 @@ function updateIdentity(
     rankDetermined,
     revealedToPlayer:
       suitDetermined && rankDetermined
-        ? newArray(6, true)
+        ? new Array(6).fill(true)
         : state.revealedToPlayer,
   };
 }

@@ -1,4 +1,4 @@
-import type { LogEntry } from "../../../types/GameState";
+import { LogEntry } from "../../../types/GameState";
 import { globals } from "../../globals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {
@@ -32,9 +32,9 @@ function updateFullActionLog(log: readonly LogEntry[]) {
   }
 
   fullActionLog.reset();
-  for (const line of log) {
+  log.forEach((line) => {
     fullActionLog.addMessage(line.turn, line.text);
-  }
+  });
 
   globals.layers.UI2.batchDraw();
 }

@@ -1,6 +1,6 @@
-import type { Character } from "@hanabi/data";
-import type { CardIdentity } from "./CardIdentity";
-import type { ClientAction } from "./ClientAction";
+import { Character } from "@hanabi/data";
+import { CardIdentity } from "./CardIdentity";
+import { ClientAction } from "./ClientAction";
 
 export interface JSONGame {
   players: string[];

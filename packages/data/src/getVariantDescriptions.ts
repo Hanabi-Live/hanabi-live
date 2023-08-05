@@ -1,7 +1,6 @@
 import { DEFAULT_CLUE_RANKS } from "./constants";
-import type { BasicVariantSuits } from "./createVariants/createVariantsJSON";
-import type { SuitJSON } from "./types/SuitJSON";
-import type { VariantDescription } from "./types/VariantDescription";
+import { SuitJSON } from "./types/SuitJSON";
+import { VariantDescription } from "./types/VariantDescription";
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS = [1, 5] as const;
@@ -42,24 +41,24 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA: ReadonlySet<string>
   ]);
 
 export function getBasicVariants(
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   return [
     {
       name: "No Variant",
-      suits: basicVariantSuits[5],
+      suits: basicVariantSuits[5]!,
     },
     {
       name: "6 Suits",
-      suits: basicVariantSuits[6],
+      suits: basicVariantSuits[6]!,
     },
     {
       name: "4 Suits",
-      suits: basicVariantSuits[4],
+      suits: basicVariantSuits[4]!,
     },
     {
       name: "3 Suits",
-      suits: basicVariantSuits[3],
+      suits: basicVariantSuits[3]!,
     },
   ];
 }
@@ -67,7 +66,7 @@ export function getBasicVariants(
 /** Create variants for e.g. "Rainbow (6 Suits)", "Rainbow (5 Suits)", and so on. */
 export function getVariantsForEachSuit(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -80,13 +79,7 @@ export function getVariantsForEachSuit(
       }
 
       const varianName = `${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: varianName,
@@ -101,7 +94,7 @@ export function getVariantsForEachSuit(
 /** Create variants for e.g. "Rainbow & White (6 Suits)", "Rainbow & White (5 Suits)", and so on. */
 export function getVariantsForEachSpecialSuitCombination(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
   const combinationVariantNames = new Set<string>();
@@ -164,13 +157,7 @@ export function getVariantsForEachSpecialSuitCombination(
         }
 
         const variantName = `${suit.name} & ${suit2.name} (${numSuits} Suits)`;
-        const basicSuits = basicVariantSuits[numSuits - 2];
-        if (basicSuits === undefined) {
-          throw new Error(
-            `Failed to get the basic variant suits at index: ${numSuits - 2}`,
-          );
-        }
-
+        const basicSuits = basicVariantSuits[numSuits - 2]!;
         const variantSuits = [...basicSuits, suit.name, suit2.name];
         variantDescriptions.push({
           name: variantName,
@@ -186,7 +173,7 @@ export function getVariantsForEachSpecialSuitCombination(
 /** Create variants for e.g. "Rainbow-Ones (6 Suits)", "Rainbow-Ones (5 Suits)", and so on. */
 export function getVariantsForSpecialRanks(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -209,7 +196,7 @@ export function getVariantsForSpecialRanks(
       for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
         const hyphenatedSuitName = suit.name.replace(" ", "-");
         const variantName = `${hyphenatedSuitName}-${specialRankName} (${numSuits} Suits)`;
-        const basicSuits = basicVariantSuits[numSuits];
+        const basicSuits = basicVariantSuits[numSuits]!;
         const variantSuits = [...basicSuits];
         const variantDescription = getVariantDescriptionForSpecialRankVariant(
           variantName,
@@ -232,13 +219,7 @@ export function getVariantsForSpecialRanks(
 
           const hyphenatedSuitName = suit.name.replace(" ", "-");
           const variantName = `${hyphenatedSuitName}-${specialRankName} & ${suit2.name} (${numSuits} Suits)`;
-          const basicSuits = basicVariantSuits[numSuits - 1];
-          if (basicSuits === undefined) {
-            throw new Error(
-              `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-            );
-          }
-
+          const basicSuits = basicVariantSuits[numSuits - 1]!;
           const variantSuits = [...basicSuits, suit2.name];
           const variantDescription = getVariantDescriptionForSpecialRankVariant(
             variantName,
@@ -258,7 +239,7 @@ export function getVariantsForSpecialRanks(
     // First, create "Deceptive-Ones (6 Suits)", etc.
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       const variantName = `${variantNamePrefix} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits];
+      const basicSuits = basicVariantSuits[numSuits]!;
       const variantSuits = [...basicSuits];
       const variantDescription: VariantDescription = {
         name: variantName,
@@ -280,13 +261,7 @@ export function getVariantsForSpecialRanks(
         }
 
         const variantName = `${variantNamePrefix} & ${suit.name} (${numSuits} Suits)`;
-        const basicSuits = basicVariantSuits[numSuits - 1];
-        if (basicSuits === undefined) {
-          throw new Error(
-            `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-          );
-        }
-
+        const basicSuits = basicVariantSuits[numSuits - 1]!;
         const variantSuits = [...basicSuits, suit.name];
         const variantDescription: VariantDescription = {
           name: variantName,
@@ -399,18 +374,16 @@ export function getAmbiguousVariants(
   ];
 
   // Create the basic variants.
-  variantDescriptions.push(
-    {
-      name: "Ambiguous (6 Suits)",
-      suits: ambiguousSuits[6],
-      showSuitNames: true,
-    },
-    {
-      name: "Ambiguous (4 Suits)",
-      suits: ambiguousSuits[4],
-      showSuitNames: true,
-    },
-  );
+  variantDescriptions.push({
+    name: "Ambiguous (6 Suits)",
+    suits: ambiguousSuits[6],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Ambiguous (4 Suits)",
+    suits: ambiguousSuits[4],
+    showSuitNames: true,
+  });
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -431,13 +404,7 @@ export function getAmbiguousVariants(
       }
 
       const variantName = `Ambiguous & ${suit.name} (${incrementedNumSuits} Suits)`;
-      const baseSuits = ambiguousSuits[numSuits];
-      if (baseSuits === undefined) {
-        throw new Error(
-          `Failed to get the ambiguous suits at index: ${numSuits}`,
-        );
-      }
-
+      const baseSuits = ambiguousSuits[numSuits]!;
       const variantSuits = [...baseSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -466,18 +433,16 @@ export function getVeryAmbiguousVariants(
   veryAmbiguousSuits[6] = [...redVeryAmbiguousSuits, ...blueVeryAmbiguousSuits];
 
   // Create the basic variants.
-  variantDescriptions.push(
-    {
-      name: "Very Ambiguous (6 Suits)",
-      suits: veryAmbiguousSuits[6],
-      showSuitNames: true,
-    },
-    {
-      name: "Very Ambiguous (3 Suits)",
-      suits: veryAmbiguousSuits[3],
-      showSuitNames: true,
-    },
-  );
+  variantDescriptions.push({
+    name: "Very Ambiguous (6 Suits)",
+    suits: veryAmbiguousSuits[6],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Very Ambiguous (3 Suits)",
+    suits: veryAmbiguousSuits[3],
+    showSuitNames: true,
+  });
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -515,23 +480,21 @@ export function getExtremelyAmbiguousVariants(
   extremelyAmbiguousSuits[6] = [...extremelyAmbiguousSuits[5], "Ocean EA"];
 
   // Create the basic variants.
-  variantDescriptions.push(
-    {
-      name: "Extremely Ambiguous (6 Suits)",
-      suits: extremelyAmbiguousSuits[6],
-      showSuitNames: true,
-    },
-    {
-      name: "Extremely Ambiguous (5 Suits)",
-      suits: extremelyAmbiguousSuits[5],
-      showSuitNames: true,
-    },
-    {
-      name: "Extremely Ambiguous (4 Suits)",
-      suits: extremelyAmbiguousSuits[4],
-      showSuitNames: true,
-    },
-  );
+  variantDescriptions.push({
+    name: "Extremely Ambiguous (6 Suits)",
+    suits: extremelyAmbiguousSuits[6],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Extremely Ambiguous (5 Suits)",
+    suits: extremelyAmbiguousSuits[5],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Extremely Ambiguous (4 Suits)",
+    suits: extremelyAmbiguousSuits[4],
+    showSuitNames: true,
+  });
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -551,13 +514,7 @@ export function getExtremelyAmbiguousVariants(
       }
 
       const variantName = `Extremely Ambiguous & ${suit.name} (${incrementedNumSuits} Suits)`;
-      const baseSuits = extremelyAmbiguousSuits[numSuits];
-      if (baseSuits === undefined) {
-        throw new Error(
-          `Failed to get the extremely ambiguous suits at index: ${numSuits}`,
-        );
-      }
-
+      const baseSuits = extremelyAmbiguousSuits[numSuits]!;
       const variantSuits = [...baseSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -594,23 +551,21 @@ export function getDualColorsVariants(
   ];
 
   // Create the basic variants.
-  variantDescriptions.push(
-    {
-      name: "Dual-Color (6 Suits)",
-      suits: dualColorSuits[6],
-      showSuitNames: true,
-    },
-    {
-      name: "Dual-Color (5 Suits)",
-      suits: dualColorSuits[5],
-      showSuitNames: true,
-    },
-    {
-      name: "Dual-Color (3 Suits)",
-      suits: dualColorSuits[3],
-      showSuitNames: true,
-    },
-  );
+  variantDescriptions.push({
+    name: "Dual-Color (6 Suits)",
+    suits: dualColorSuits[6],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Dual-Color (5 Suits)",
+    suits: dualColorSuits[5],
+    showSuitNames: true,
+  });
+  variantDescriptions.push({
+    name: "Dual-Color (3 Suits)",
+    suits: dualColorSuits[3],
+    showSuitNames: true,
+  });
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -623,13 +578,7 @@ export function getDualColorsVariants(
       }
 
       const variantName = `Dual-Color & ${suit.name} (${incrementedNumSuits} Suits)`;
-      const baseSuits = dualColorSuits[numSuits];
-      if (baseSuits === undefined) {
-        throw new Error(
-          `Failed to get the dual color suits at index: ${numSuits}`,
-        );
-      }
-
+      const baseSuits = dualColorSuits[numSuits]!;
       const variantSuits = [...baseSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -706,7 +655,7 @@ export function getMixVariants(): VariantDescription[] {
 }
 
 export function getBlindVariants(
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -714,7 +663,7 @@ export function getBlindVariants(
     const variantName = `Color Blind (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       colorCluesTouchNothing: true,
     });
   }
@@ -723,7 +672,7 @@ export function getBlindVariants(
     const variantName = `Number Blind (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       rankCluesTouchNothing: true,
     });
   }
@@ -732,7 +681,7 @@ export function getBlindVariants(
     const variantName = `Totally Blind (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       colorCluesTouchNothing: true,
       rankCluesTouchNothing: true,
     });
@@ -742,7 +691,7 @@ export function getBlindVariants(
 }
 
 export function getMuteVariants(
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -750,7 +699,7 @@ export function getMuteVariants(
     const variantName = `Color Mute (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       clueColors: [],
     });
   }
@@ -759,7 +708,7 @@ export function getMuteVariants(
     const variantName = `Number Mute (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       clueRanks: [],
     });
   }
@@ -769,7 +718,7 @@ export function getMuteVariants(
 
 export function getAlternatingCluesVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -778,7 +727,7 @@ export function getAlternatingCluesVariants(
     const variantName = `Alternating Clues (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       alternatingClues: true,
     });
   }
@@ -793,13 +742,7 @@ export function getAlternatingCluesVariants(
       }
 
       const variantName = `Alternating Clues & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -814,17 +757,17 @@ export function getAlternatingCluesVariants(
 
 export function getClueStarvedVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForClueStarved = [6, 5] as const; // 4 suits and 3 suits would be too difficult.
+  const numSuitsForClueStarved = [6, 5]; // 4 suits and 3 suits would be too difficult
 
   // Create the basic variants.
   for (const numSuits of numSuitsForClueStarved) {
     const variantName = `Clue Starved (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       clueStarved: true,
     });
   }
@@ -838,13 +781,7 @@ export function getClueStarvedVariants(
     for (const numSuits of numSuitsForClueStarved) {
       // 4 suits and 3 suits would be too difficult.
       const variantName = `Clue Starved & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -858,7 +795,7 @@ export function getClueStarvedVariants(
 }
 
 export function getCowAndPigVariants(
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -866,7 +803,7 @@ export function getCowAndPigVariants(
     const variantName = `Cow & Pig (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       cowPig: true,
     });
   }
@@ -875,7 +812,7 @@ export function getCowAndPigVariants(
 }
 
 export function getDuckVariants(
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -883,7 +820,7 @@ export function getDuckVariants(
     const variantName = `Duck (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       duck: true,
     });
   }
@@ -893,17 +830,17 @@ export function getDuckVariants(
 
 export function getThrowItInAHoleVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForTIIAH = [6, 5, 4] as const; // 3 suits would be too difficult.
+  const numSuitsForTIIAH = [6, 5, 4]; // 3 suits would be too difficult
 
   // Create the basic variants.
   for (const numSuits of numSuitsForTIIAH) {
     const variantName = `Throw It in a Hole (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       throwItInHole: true,
     });
   }
@@ -917,13 +854,7 @@ export function getThrowItInAHoleVariants(
 
     for (const numSuits of numSuitsForTIIAH) {
       const variantName = `Throw It in a Hole & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -938,14 +869,14 @@ export function getThrowItInAHoleVariants(
 
 export function getReversedVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   // Create the basic variants.
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
     const variantName = `Reversed (${numSuits} Suits)`;
-    const basicSuits = basicVariantSuits[numSuits];
+    const basicSuits = basicVariantSuits[numSuits]!;
     const variantSuits = [...basicSuits];
 
     // Change the final suit to be a reversed suit.
@@ -973,13 +904,7 @@ export function getReversedVariants(
       }
 
       const variantName = `${reversedSuitName} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, reversedSuitName];
       variantDescriptions.push({
         name: variantName,
@@ -993,17 +918,17 @@ export function getReversedVariants(
 
 export function getUpOrDownVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForUpOrDown = [6, 5] as const; // 4 suits and 3 suits would be too difficult.
+  const numSuitsForUpOrDown = [6, 5]; // 4 suits and 3 suits would be too difficult
 
   // Create the basic variants.
   for (const numSuits of numSuitsForUpOrDown) {
     const variantName = `Up or Down (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       showSuitNames: true,
       upOrDown: true,
     });
@@ -1018,13 +943,7 @@ export function getUpOrDownVariants(
 
     for (const numSuits of numSuitsForUpOrDown) {
       const variantName = `Up or Down & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -1040,7 +959,7 @@ export function getUpOrDownVariants(
 
 export function getSynesthesiaVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -1049,7 +968,7 @@ export function getSynesthesiaVariants(
     const variantName = `Synesthesia (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       clueRanks: [],
       synesthesia: true,
     });
@@ -1067,13 +986,7 @@ export function getSynesthesiaVariants(
       }
 
       const variantName = `Synesthesia & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -1089,17 +1002,17 @@ export function getSynesthesiaVariants(
 
 export function getCriticalFoursVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForCriticalFours = [6, 5] as const; // 4 suits and 3 suits would be too difficult.
+  const numSuitsForCriticalFours = [6, 5]; // 4 suits and 3 suits would be too difficult
 
   // Create the basic variants.
   for (const numSuits of numSuitsForCriticalFours) {
     const variantName = `Critical Fours (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       criticalFours: true,
     });
   }
@@ -1113,13 +1026,7 @@ export function getCriticalFoursVariants(
 
     for (const numSuits of numSuitsForCriticalFours) {
       const variantName = `Critical Fours & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -1134,7 +1041,7 @@ export function getCriticalFoursVariants(
 
 export function getOddsAndEvensVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
   const clueRanksForOddsAndEvens = [1, 2]; // 1 represents odd, 2 represents even
@@ -1144,7 +1051,7 @@ export function getOddsAndEvensVariants(
     const variantName = `Odds and Evens (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       clueRanks: clueRanksForOddsAndEvens,
       oddsAndEvens: true,
     });
@@ -1160,13 +1067,7 @@ export function getOddsAndEvensVariants(
       }
 
       const variantName = `Odds and Evens & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -1182,7 +1083,7 @@ export function getOddsAndEvensVariants(
 
 export function getFunnelsVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -1191,7 +1092,7 @@ export function getFunnelsVariants(
     const variantName = `Funnels (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       funnels: true,
     });
   }
@@ -1206,13 +1107,7 @@ export function getFunnelsVariants(
       }
 
       const variantName = `Funnels & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -1227,7 +1122,7 @@ export function getFunnelsVariants(
 
 export function getChimneysVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -1236,7 +1131,7 @@ export function getChimneysVariants(
     const variantName = `Chimneys (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
-      suits: basicVariantSuits[numSuits],
+      suits: basicVariantSuits[numSuits]!,
       chimneys: true,
     });
   }
@@ -1251,13 +1146,7 @@ export function getChimneysVariants(
       }
 
       const variantName = `Chimneys & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1];
-      if (basicSuits === undefined) {
-        throw new Error(
-          `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-        );
-      }
-
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
@@ -1318,7 +1207,7 @@ export function getMatryoshkaVariants(
 
 export function getSudokuVariants(
   suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
+  basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -1327,7 +1216,7 @@ export function getSudokuVariants(
   const numSuits = 5;
   variantDescriptions.push({
     name: `Sudoku (${numSuits} Suits)`,
-    suits: basicVariantSuits[numSuits],
+    suits: basicVariantSuits[numSuits]!,
     showSuitNames: true,
   });
 
@@ -1336,13 +1225,7 @@ export function getSudokuVariants(
     // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
     // suit.
     const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
-    const basicSuits = basicVariantSuits[numSuits - 1];
-    if (basicSuits === undefined) {
-      throw new Error(
-        `Failed to get the basic variant suits at index: ${numSuits - 1}`,
-      );
-    }
-
+    const basicSuits = basicVariantSuits[numSuits - 1]!;
     const variantSuits = [...basicSuits, suit.name];
     variantDescriptions.push({
       name: variantName,

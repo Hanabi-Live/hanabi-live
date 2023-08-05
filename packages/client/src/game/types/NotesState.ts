@@ -1,5 +1,5 @@
-import type { CardNote } from "./CardNote";
-import type { SpectatorNote } from "./SpectatorNote";
+import { CardNote } from "./CardNote";
+import { SpectatorNote } from "./SpectatorNote";
 
 export interface NotesState {
   // These are indexed by order.

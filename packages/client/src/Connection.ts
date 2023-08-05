@@ -19,11 +19,9 @@ export class Connection {
     this.ws = new WebSocket(addr);
     this.debug = debug;
 
-    this.ws.addEventListener("close", this.onClose.bind(this));
-    this.ws.addEventListener("open", this.onOpen.bind(this));
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    this.ws.onclose = this.onClose.bind(this);
+    this.ws.onopen = this.onOpen.bind(this);
     this.ws.onmessage = this.onMessage.bind(this);
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
     this.ws.onerror = this.onError.bind(this);
   }
 
@@ -42,19 +40,19 @@ export class Connection {
   onMessage(evt: MessageEvent): void {
     const data = unpack(evt.data as string);
     const command = data[0]!;
-    if (this.callbacks[command] === undefined) {
-      console.error(
-        "Received WebSocket message with no callback:",
-        command,
-        JSON.parse(data[1]!),
-      );
-    } else {
+    if (this.callbacks[command] !== undefined) {
       const obj = unmarshal(data[1]!);
       if (this.debug) {
         console.log(`%cReceived ${command}:`, "color: blue;");
         console.log(obj);
       }
       this.callbacks[command]!(obj);
+    } else {
+      console.error(
+        "Received WebSocket message with no callback:",
+        command,
+        JSON.parse(data[1]!),
+      );
     }
   }
 
@@ -86,7 +84,7 @@ export class Connection {
 const separator = " ";
 const unpack = (data: string) => {
   const name = data.split(separator)[0]!;
-  return [name, data.slice(name.length + 1, data.length)];
+  return [name, data.substring(name.length + 1, data.length)];
 };
 const unmarshal = (data: string) => JSON.parse(data) as unknown;
 const marshalAndPack = (name: string, data: unknown) =>

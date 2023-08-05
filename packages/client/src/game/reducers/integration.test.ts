@@ -5,16 +5,17 @@ import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.jso
 import upOrDownGame from "../../../test_data/up_or_down.json";
 import upOrDownFinalCards from "../../../test_data/up_or_down_final_cards.json";
 import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
-import type { CardState } from "../types/CardState";
+import { CardState } from "../types/CardState";
 import { StackDirection } from "../types/StackDirection";
-import type { State } from "../types/State";
+import { State } from "../types/State";
 import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 
 let testState: State;
 
 const getStateAtTurn = (state: State, turn: number) =>
   state.replay.states[turn]!;
-const getFinalState = (state: State) => state.replay.states.at(-1)!;
+const getFinalState = (state: State) =>
+  state.replay.states[state.replay.states.length - 1]!;
 
 describe("integration", () => {
   describe("Up or Down test game", () => {
@@ -56,7 +57,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each([...Array.from({ length: 18 }).keys()])(
+      test.each([...Array(18).keys()])(
         "card %i has the correct pips and possibilities",
         (order) => {
           const turn5State = getStateAtTurn(testState, 4);
@@ -104,7 +105,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each([...Array.from({ length: 45 }).keys()])(
+      test.each([...Array(45).keys()])(
         "card %i has the correct pips and possibilities",
         (order) => {
           const finalState = getFinalState(testState);

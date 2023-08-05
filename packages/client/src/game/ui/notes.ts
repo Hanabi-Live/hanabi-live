@@ -1,32 +1,19 @@
 // Users can right-click cards to record information on them.
 
-import { ReadonlySet, STACK_BASE_RANK } from "@hanabi/data";
+import { STACK_BASE_RANK } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
-
-const KEYS_REMOVING_PIPE = new ReadonlySet([
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowUp",
-  "ArrowDown",
-  "Home",
-  "End",
-  "Backspace",
-  "Delete",
-]);
-const KEYS_CLOSING_NOTE = new ReadonlySet(["Enter", "Escape"]);
-const KEYS_META = new ReadonlySet(["Control", "Alt", "Shift"]);
+import { HanabiCard } from "./HanabiCard";
 
 function escapeHtml(unsafe: string): string {
   return unsafe
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 // Get the contents of the note tooltip.
@@ -57,8 +44,8 @@ function get(order: number, our: boolean, escape = false) {
       content += `<strong>${name}:</strong> ${text}<br />`;
     }
   }
-  if (content.length > 0) {
-    content = content.slice(0, Math.max(0, content.length - 6)); // Trim the trailing "<br />"
+  if (content.length !== 0) {
+    content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
   }
   return content;
 }
@@ -183,14 +170,26 @@ export function openEditTooltip(
 
   const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;
+  const keysRemovingPipe = [
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown",
+    "Home",
+    "End",
+    "Backspace",
+    "Delete",
+  ];
+  const keysClosingNote = ["Enter", "Escape"];
+  const keysMeta = ["Control", "Alt", "Shift"];
 
   noteTextbox.on("keydown", (event) => {
     event.stopPropagation();
     const { key } = event;
 
     // Only check the first time if the key is a special one.
-    if (!KEYS_META.has(key)) {
-      if (shouldRemovePipe && KEYS_REMOVING_PIPE.has(key)) {
+    if (!keysMeta.includes(key)) {
+      if (shouldRemovePipe && keysRemovingPipe.includes(key)) {
         // Restore the old note, removing the pipe.
         if (key !== "Home") {
           event.preventDefault();
@@ -200,7 +199,7 @@ export function openEditTooltip(
       shouldRemovePipe = false;
     }
 
-    if (!KEYS_CLOSING_NOTE.has(key)) {
+    if (!keysClosingNote.includes(key)) {
       return;
     }
 
@@ -214,7 +213,7 @@ export function openEditTooltip(
       // If Enter is pressed, get the value of the input box.
       const val = noteTextbox.val();
       if (typeof val !== "string") {
-        throw new TypeError(
+        throw new Error(
           `The value of the "#tooltip-${card.tooltipName}-input" element was not a string.`,
         );
       }
@@ -223,7 +222,7 @@ export function openEditTooltip(
 
       // Remove the last pipe.
       if (newNote.endsWith(" | ")) {
-        newNote = newNote.slice(0, Math.max(0, newNote.length - 3));
+        newNote = newNote.substring(0, newNote.length - 3);
       }
       set(card.state.order, newNote);
     }
@@ -245,11 +244,7 @@ export function openEditTooltip(
 
   // Automatically add a pipe to a non empty note input box when it is focused.
   noteTextbox.on("focus", function tooltipCardInputFocus(this: HTMLElement) {
-    let oldNote = $(this).val();
-    if (typeof oldNote !== "string") {
-      oldNote = "";
-    }
-
+    const oldNote = $(this).val() ?? "";
     let newNote = oldNote;
     if (oldNote !== "") {
       newNote += " | ";

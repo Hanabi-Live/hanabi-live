@@ -1,11 +1,11 @@
 // Modals (boxes that hover on top of the UI).
 
-import { parseIntSafe } from "@hanabi/data";
-import type { Suit, Variant } from "@hanabi/data";
+import { Suit, Variant } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
-import type { HanabiCard } from "./game/ui/HanabiCard";
-import { morphReplayFromModal } from "./game/ui/hanabiCardClick";
+import { HanabiCard } from "./game/ui/HanabiCard";
+import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";
@@ -27,9 +27,9 @@ function init() {
   }
 
   // Close modal on escape press or by clicking outside.
-  pageCover.addEventListener("pointerdown", () => {
+  pageCover.onpointerdown = () => {
     closeModals();
-  });
+  };
   document.addEventListener("keydown", (evt) => {
     if (evt.key === "Escape" && currentModal !== null) {
       closeModals();
@@ -46,41 +46,42 @@ function init() {
       }
     },
   );
-  getElement("#password-modal-submit").addEventListener("pointerdown", () => {
+  getElement("#password-modal-submit").onpointerdown = () => {
     passwordSubmit();
-  });
-  getElement("#password-modal-cancel").addEventListener("pointerdown", () => {
+  };
+  getElement("#password-modal-cancel").onpointerdown = () => {
     closeModals();
-  });
+  };
 
   // Warning modal setup.
-  getElement("#warning-modal-button").addEventListener("pointerdown", () => {
+  getElement("#warning-modal-button").onpointerdown = () => {
     closeModals();
-  });
+  };
 
   // Error modal setup.
-  getElement("#error-modal-button").addEventListener("pointerdown", () => {
+  getElement("#error-modal-button").onpointerdown = () => {
     window.location.reload();
-  });
+  };
 
   // Create Game modal setup.
-  getElement("#createTablePassword").addEventListener("keydown", (event) => {
+  getElement("#createTablePassword").onkeydown = (event) => {
     if (event.key === "Enter") {
       getElement("#create-game-submit").click();
     }
-  });
+  };
 
   // Morph modal textbox.
   const morphTextbox = getInputElement("#morph-modal-textbox");
   const morphTextboxObserver = new MutationObserver(() => {
-    const { suit, rank } = morphTextbox.dataset;
+    const suit = morphTextbox.getAttribute("data-suit");
+    const rank = morphTextbox.getAttribute("data-rank");
     morphTextbox.value = `${suit} ${rank}`;
   });
   morphTextboxObserver.observe(morphTextbox, {
     attributes: true,
     attributeFilter: ["data-suit", "data-rank"],
   });
-  morphTextbox.addEventListener("keydown", (event) => {
+  morphTextbox.onkeydown = (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       getElement("#morph-modal-button-ok").click();
@@ -89,7 +90,7 @@ function init() {
       event.stopPropagation();
       getElement("#morph-modal-button-cancel").click();
     }
-  });
+  };
 
   initialized = true;
 
@@ -114,7 +115,7 @@ export function askForPassword(tableID: number): void {
     element.select();
   }
 
-  showModal("#password-modal", true, undefined, () => {
+  showModal("#password-modal", null, () => {
     element.select();
   });
 }
@@ -179,10 +180,10 @@ export function askForMorph(
   const { suits } = variant;
   const { ranks } = variant;
   const start =
-    card === null ? { suitIndex: null, rank: null } : card.getMorphedIdentity();
-  const startSuit = start.suitIndex ?? 0;
+    card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
+  const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
   const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
-  const possibilities = card === null ? [] : card.state.possibleCardsForEmpathy;
+  const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
 
   fillMorphModalWithRadios(
     "#morph-modal-cards",
@@ -208,16 +209,10 @@ export function askForMorph(
       "Select the card you want to morph it into:";
 
     // Morph modal OK button.
-    getElement("#morph-modal-button-ok").addEventListener(
-      "click",
-      morphReplayOkButton,
-    );
+    getElement("#morph-modal-button-ok").onclick = morphReplayOkButton;
 
     // Morph modal Cancel button.
-    getElement("#morph-modal-button-cancel").addEventListener(
-      "click",
-      morphReplayCancelButton,
-    );
+    getElement("#morph-modal-button-cancel").onclick = morphReplayCancelButton;
   } else {
     // The function was called from LayoutChild.ts during in-game hypo.
 
@@ -226,16 +221,10 @@ export function askForMorph(
       "What the card will be for the purposes of this hypothetical?";
 
     // Morph modal OK button.
-    getElement("#morph-modal-button-ok").addEventListener(
-      "click",
-      morphInGameOkButton,
-    );
+    getElement("#morph-modal-button-ok").onclick = morphInGameOkButton;
 
     // Morph modal Cancel button.
-    getElement("#morph-modal-button-cancel").addEventListener(
-      "click",
-      morphInGameCancelButton,
-    );
+    getElement("#morph-modal-button-cancel").onclick = morphInGameCancelButton;
   }
 }
 
@@ -273,7 +262,7 @@ export function showWarning(msg: string): void {
   globals.lastActiveElement = document.activeElement as HTMLElement;
 
   // Show the modal and focus the close button.
-  showModal("#warning-modal", true, () => {
+  showModal("#warning-modal", () => {
     getElement("#warning-modal-button").focus();
   });
 }
@@ -306,8 +295,8 @@ export function showError(msg: string): void {
 export function setModal(
   buttonSelector: string,
   selector: string,
-  before?: () => void,
-  test?: () => boolean,
+  before?: () => unknown,
+  test?: () => unknown,
   focus: (() => unknown) | string | null = null,
 ): void {
   if (!init()) {
@@ -316,51 +305,51 @@ export function setModal(
 
   const button = getElement(buttonSelector);
 
-  button.addEventListener("click", () => {
-    if (test !== undefined && !test()) {
+  button.onclick = () => {
+    // eslint-disable-next-line
+    if (!(test?.call(null) ?? true)) {
       return;
     }
-
-    showModal(selector, true, before);
+    showModal(selector, before);
     if (focus === null) {
       return;
     }
-
     setTimeout(() => {
       if (typeof focus === "string") {
         getElement(focus).focus();
       } else {
-        focus();
+        focus.call(null);
       }
     }, 100);
-  });
+  };
 }
 
 export function showPrompt(
   selector: string,
-  test?: () => boolean,
-  focusElement?: HTMLInputElement,
-  clickButtonElement?: HTMLButtonElement,
+  test: (() => unknown) | null = null,
+  focusElement: HTMLInputElement | null = null,
+  clickButtonElement: HTMLButtonElement | null = null,
 ): void {
   if (!init()) {
     return;
   }
 
-  if (test !== undefined && !test()) {
+  // eslint-disable-next-line
+  if (!(test?.call(null) ?? true)) {
     return;
   }
 
-  if (focusElement !== undefined && clickButtonElement !== undefined) {
-    focusElement.addEventListener("keydown", (event) => {
+  if (focusElement !== null && clickButtonElement !== null) {
+    focusElement.onkeydown = (event) => {
       if (event.key === "Enter") {
         clickButtonElement.click();
       }
-    });
+    };
   }
 
-  showModal(selector, true);
+  showModal(selector);
 
-  if (focusElement !== undefined) {
+  if (focusElement !== null) {
     setTimeout(() => {
       focusElement.focus();
       const oldType = focusElement.type;
@@ -383,8 +372,8 @@ export function closeModals(fast = false): void {
   pageCover.classList.remove("show");
   if (currentModal !== null) {
     currentModal.classList.add("hidden");
-    currentModal.remove();
-    modalsContainer.append(currentModal);
+    pageCover.removeChild(currentModal);
+    modalsContainer.appendChild(currentModal);
     currentModal = null;
   }
 
@@ -413,11 +402,18 @@ function getInputElement(element: string): HTMLInputElement {
   return getElement(element) as HTMLInputElement;
 }
 
+function showModal(selector: string, allowClose: boolean): void;
+function showModal(selector: string, before?: () => unknown): void;
 function showModal(
   selector: string,
-  allowClose: boolean,
-  before?: () => void,
-  ready?: () => void,
+  before: (() => unknown) | null,
+  ready: (() => unknown) | null,
+): void;
+
+function showModal(
+  selector: string,
+  param2?: (() => unknown) | boolean | null,
+  param3?: (() => unknown) | boolean | null,
 ) {
   const element = getElement(selector);
 
@@ -425,27 +421,34 @@ function showModal(
 
   currentModal = element;
 
-  element.classList.add("modal");
-  element.addEventListener("pointerdown", (event) => {
-    // Do not bubble clicks to pageCover.
-    event.stopPropagation();
-  });
-
-  allowCloseModal = allowClose;
-
-  if (before !== undefined) {
-    before();
+  allowCloseModal = true;
+  if (typeof param2 === "boolean") {
+    allowCloseModal = param2;
   }
 
-  pageCover.append(element);
+  element.classList.add("modal");
+  element.onpointerdown = (event) => {
+    // Do not bubble clicks to pageCover.
+    event.stopPropagation();
+  };
+
+  if (typeof param2 === "function") {
+    const result = param2.call(null);
+    // eslint-disable-next-line
+    if (result ?? false) {
+      return;
+    }
+  }
+
+  pageCover.appendChild(element);
+
   pageCover.style.display = "flex";
   pageCover.classList.add("show");
-
   setTimeout(() => {
-    pageCover.append(element);
+    pageCover.appendChild(element);
     element.classList.remove("hidden");
-    if (ready !== undefined) {
-      ready();
+    if (typeof param3 === "function") {
+      param3.call(null);
     }
   }, 100);
 }
@@ -469,9 +472,9 @@ function fillMorphModalWithRadios(
   table.classList.add("slim-table");
   const textbox = getElement("#morph-modal-textbox");
 
-  for (const rank of ranks) {
+  ranks.forEach((rank) => {
     const row = document.createElement("tr");
-    for (const [i, suit] of suits.entries()) {
+    suits.forEach((suit, i) => {
       const cell = document.createElement("td");
       const possibleCardIdentity = possibilities.some(
         (possibility) => possibility[0] === i && possibility[1] === rank,
@@ -498,8 +501,8 @@ function fillMorphModalWithRadios(
 
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
-        textbox.dataset["suit"] = suit.displayName;
-        textbox.dataset["rank"] = rank === 7 ? "S" : rank.toString();
+        textbox.setAttribute("data-suit", suit.displayName);
+        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -507,13 +510,13 @@ function fillMorphModalWithRadios(
         }
 
         // Set textbox data attribute.
-        textbox.dataset["suit"] = suit.displayName;
-        textbox.dataset["rank"] = rank === 7 ? "S" : rank.toString();
+        textbox.setAttribute("data-suit", suit.displayName);
+        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
       });
 
       row.append(cell);
-    }
+    });
     table.append(row);
-  }
+  });
   placeHolder.append(table);
 }

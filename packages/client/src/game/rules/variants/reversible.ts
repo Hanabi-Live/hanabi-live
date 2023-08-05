@@ -1,9 +1,8 @@
 // Helper methods for variants where suits may have a different direction than up. Currently used
 // for "Up Or Down" and "Reversed" variants.
 
-import type { Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS, START_CARD_RANK, newArray } from "@hanabi/data";
-import type { CardState } from "../../types/CardState";
+import { DEFAULT_CARD_RANKS, START_CARD_RANK, Variant } from "@hanabi/data";
+import { CardState } from "../../types/CardState";
 import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
 import * as variantRules from "../variant";
@@ -42,33 +41,21 @@ export function needsToBePlayed(
       return true;
     }
 
-    switch (rank) {
+    if (rank === 1) {
       // 1's do not need to be played if the stack is going up.
-      case 1: {
-        if (direction === StackDirection.Up) {
-          return false;
-        }
-
-        break;
+      if (direction === StackDirection.Up) {
+        return false;
       }
-
+    } else if (rank === 5) {
       // 5's do not need to be played if the stack is going down.
-      case 5: {
-        if (direction === StackDirection.Down) {
-          return false;
-        }
-
-        break;
+      if (direction === StackDirection.Down) {
+        return false;
       }
-
+    } else if (rank === START_CARD_RANK) {
       // START cards do not need to be played if there are any cards played on the stack.
-      case START_CARD_RANK: {
-        const playStack = playStacks[suitIndex]!;
-        if (playStack.length > 0) {
-          return false;
-        }
-
-        break;
+      const playStack = playStacks[suitIndex]!;
+      if (playStack.length > 0) {
+        return false;
       }
     }
   }
@@ -160,7 +147,9 @@ export function getMaxScorePerStack(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): number[] {
-  const maxScorePerStack = newArray(variant.suits.length, 0);
+  const maxScorePerStack: number[] = new Array(variant.suits.length).fill(
+    0,
+  ) as number[];
 
   for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
     const suit = variant.suits[suitIndex]!;
@@ -178,29 +167,16 @@ export function getMaxScorePerStack(
       allDiscarded.set(rank, total === discarded);
     }
 
-    const playStackDirection = playStackDirections[suitIndex]!;
-    switch (playStackDirection) {
-      case StackDirection.Undecided: {
-        const upWalk = walkUp(allDiscarded, variant);
-        const downWalk = walkDown(allDiscarded, variant);
-        maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
-        break;
-      }
-
-      case StackDirection.Up: {
-        maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
-        break;
-      }
-
-      case StackDirection.Down: {
-        maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
-        break;
-      }
-
-      case StackDirection.Finished: {
-        maxScorePerStack[suitIndex] += 5;
-        break;
-      }
+    if (playStackDirections[suitIndex] === StackDirection.Undecided) {
+      const upWalk = walkUp(allDiscarded, variant);
+      const downWalk = walkDown(allDiscarded, variant);
+      maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
+    } else if (playStackDirections[suitIndex] === StackDirection.Up) {
+      maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
+    } else if (playStackDirections[suitIndex] === StackDirection.Down) {
+      maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
+    } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
+      maxScorePerStack[suitIndex] += 5;
     }
   }
 

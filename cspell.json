@@ -7,8 +7,7 @@
   "useGitignore": true,
   "ignorePaths": [
     ".git/**",
-    ".yarn/**",
-    // Assets which are not edited by hand.
+    // Assets which are not edited by hand
     "*.cdr",
     "*.flp",
     "*.mp3",
@@ -21,7 +20,7 @@
     // Minified dependencies
     "*.min.js",
     "*.min.css",
-    // CSS files might have strange paths.
+    // The css might have strange paths.
     "hanabi.css",
     // Archived files where spelling errors will not be fixed.
     "/misc/keldon/**",
@@ -41,7 +40,6 @@
     "alessandro",
     "alexedwards",
     "Alicé",
-    "Alloc",
     "allornothing",
     "allusersprofile",
     "alphanum",
@@ -168,6 +166,7 @@
     "linkifyjs",
     "liubowei",
     "logfile",
+    "loglevel",
     "loweffort",
     "mapstructure",
     "matryoshka",
@@ -192,6 +191,7 @@
     "noot",
     "noreferrer",
     "noreplay",
+    "normale",
     "numtimes",
     "olahol",
     "omni",
@@ -211,6 +211,7 @@
     "pingable",
     "playerinfo",
     "plpgsql",
+    "pnpm",
     "pquestion",
     "prasmussen",
     "premove",
@@ -224,6 +225,7 @@
     "protobuf",
     "psql",
     "psycopg",
+    "pylint",
     "quacker",
     "qwert",
     "randomvariant",
@@ -308,6 +310,7 @@
     "xmlserializer",
     "zamiel",
     "zamiell",
+    "zapcore",
     "αlice"
   ]
 }

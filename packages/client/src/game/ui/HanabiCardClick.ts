@@ -1,18 +1,18 @@
 // Click functions for the HanabiCard object.
 
 import { STACK_BASE_RANK } from "@hanabi/data";
-import type Konva from "konva";
+import Konva from "konva";
 import * as modals from "../../modals";
 import * as cardRules from "../rules/card";
-import type { CardIdentity } from "../types/CardIdentity";
+import { CardIdentity } from "../types/CardIdentity";
 import * as arrows from "./arrows";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
-export function hanabiCardClick(
+export function HanabiCardClick(
   this: HanabiCard,
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
@@ -31,26 +31,15 @@ export function hanabiCardClick(
   }
 
   const mouseEvent = event.evt;
-  switch (mouseEvent.button) {
+  if (mouseEvent.button === 0) {
     // Left-click
-    case 0: {
-      clickLeft(this, mouseEvent);
-
-      break;
-    }
-
+    clickLeft(this, mouseEvent);
+  } else if (mouseEvent.button === 1) {
     // Middle-click
-    case 1: {
-      clickMiddle(this, mouseEvent);
-
-      break;
-    }
-
+    clickMiddle(this, mouseEvent);
+  } else if (mouseEvent.button === 2) {
     // Right-click
-    case 2: {
-      clickRight(this, mouseEvent);
-      break;
-    }
+    clickRight(this, mouseEvent);
   }
 }
 

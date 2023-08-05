@@ -1,8 +1,8 @@
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";
-import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import type { TextWithTooltip } from "./controls/TextWithTooltip";
+import { NodeWithTooltip } from "./controls/NodeWithTooltip";
+import { TextWithTooltip } from "./controls/TextWithTooltip";
 import { globals } from "./globals";
 
 export function init(
@@ -24,12 +24,12 @@ export function init(
   element.on("mouseover touchstart", function mouseOver(this: Konva.Node) {
     resetActiveHover();
     globals.activeHover = this;
-    if (delayed) {
+    if (!delayed) {
+      show(this);
+    } else {
       setTimeout(() => {
         show(this);
       }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
-    } else {
-      show(this);
     }
   });
   element.on("mouseout touchend", () => {

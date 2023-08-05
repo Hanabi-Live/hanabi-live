@@ -1,8 +1,8 @@
-import type { Suit } from "@hanabi/data";
+import { Suit } from "@hanabi/data";
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
+import * as KonvaContext from "konva/types/Context";
 import * as variantRules from "../rules/variant";
-import type { Clue } from "../types/Clue";
+import { Clue } from "../types/Clue";
 import { drawPip } from "./drawPip";
 import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
@@ -59,7 +59,7 @@ export class ColorButton extends Konva.Group {
           fontFamily: "Verdana",
           fill: "white",
           stroke: "black",
-          strokeWidth: 0.014_87 * h,
+          strokeWidth: 0.01487 * h,
           align: "center",
           text: config["text"] as string | undefined,
           listening: false,
@@ -85,7 +85,6 @@ export class ColorButton extends Konva.Group {
       }
     }
 
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     const resetButton = () => {
       this.background.fill("black");
       drawLayer(this);

@@ -1,18 +1,17 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
-import type { Draft } from "immer";
-import produce, { castDraft, original } from "immer";
+import produce, { castDraft, Draft, original } from "immer";
 import * as segmentRules from "../rules/segment";
-import type { Action, GameAction } from "../types/actions";
-import type { CardIdentity } from "../types/CardIdentity";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
-import type { State } from "../types/State";
+import { Action, GameAction } from "../types/actions";
+import { CardIdentity } from "../types/CardIdentity";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
+import { State } from "../types/State";
 import { gameStateReducer } from "./gameStateReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
-import { uiReducer } from "./uiReducer";
+import { UIReducer } from "./UIReducer";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
@@ -180,12 +179,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "dragStart": {
-      state.UI = uiReducer(state.UI, action);
+      state.UI = UIReducer(state.UI, action);
       break;
     }
 
     case "dragReset": {
-      state.UI = uiReducer(state.UI, action);
+      state.UI = UIReducer(state.UI, action);
       break;
     }
 
@@ -318,8 +317,6 @@ function reduceGameActions(
   metadata: GameMetadata,
 ) {
   const states: GameState[] = [initialState];
-
-  // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(
       s,
@@ -345,7 +342,7 @@ function reduceGameActions(
 // identities). We cannot just replace the array every time because we need to keep the "full" deck
 // that the server sends us.
 function updateCardIdentities(state: Draft<State>) {
-  for (const [i, newCardIdentity] of state.ongoingGame.deck.entries()) {
+  state.ongoingGame.deck.forEach((newCardIdentity, i) => {
     if (i >= state.cardIdentities.length) {
       // Add the new card identity.
       state.cardIdentities[i] = {
@@ -362,7 +359,7 @@ function updateCardIdentities(state: Draft<State>) {
         existingCardIdentity.rank = newCardIdentity.rank;
       }
     }
-  }
+  });
 }
 
 function visualStateToShow(state: Draft<State>, action: Action) {
@@ -390,7 +387,7 @@ function visualStateToShow(state: Draft<State>, action: Action) {
   // After an ongoing game ends, do not automatically show the final segment with the player's times
   // by default in order to avoid drowning out the reason why the game ended.
   if (action.type === "playerTimes") {
-    return state.replay.states.at(-2); // The penultimate segment
+    return state.replay.states[state.replay.states.length - 2]; // The penultimate segment
   }
 
   // Show the final segment of the current game.

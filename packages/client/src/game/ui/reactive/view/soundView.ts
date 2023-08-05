@@ -1,5 +1,5 @@
 import * as variantRules from "../../../rules/variant";
-import type { GameAction } from "../../../types/actions";
+import { GameAction } from "../../../types/actions";
 import { SoundType } from "../../../types/SoundType";
 import { globals } from "../../globals";
 

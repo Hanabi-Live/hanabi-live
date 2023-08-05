@@ -1,7 +1,7 @@
 // Functions related to hand management.
 
-import type { Options } from "../../types/Options";
-import type { CardState } from "../types/CardState";
+import { Options } from "../../types/Options";
+import { CardState } from "../types/CardState";
 import * as cardRules from "./card";
 
 export const cardsPerHand = (options: Options): number =>
@@ -57,7 +57,8 @@ export function chopIndex(
   deck: readonly CardState[],
 ): number {
   // The chop is defined as the oldest (right-most) unclued card.
-  for (const [i, cardOrder] of hand.entries()) {
+  for (let i = 0; i < hand.length; i++) {
+    const cardOrder = hand[i]!;
     const card = deck[cardOrder]!;
     if (!cardRules.isClued(card)) {
       return i;

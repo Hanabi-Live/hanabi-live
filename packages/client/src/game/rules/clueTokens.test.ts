@@ -7,7 +7,7 @@ const defaultVariant = getDefaultVariant();
 const throwItInAHoleVariant = getVariant("Throw It in a Hole (6 Suits)");
 
 describe("gain", () => {
-  test.each([...Array.from({ length: 8 }).keys()])(
+  test.each([...Array(8).keys()])(
     "adds a clue when there are %i clues",
     (n) => {
       const clueTokens = gain(discardAction, n, defaultVariant);

@@ -1,18 +1,17 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { Color } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
+import { Color, START_CARD_RANK } from "@hanabi/data";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
-import type { ColorButton } from "./ColorButton";
+import { ColorButton } from "./ColorButton";
 import { colorToColorIndex } from "./convert";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as turn from "./turn";
 
-export function hanabiCardClickSpeedrun(
+export function HanabiCardClickSpeedrun(
   card: HanabiCard,
   event: MouseEvent,
 ): void {
@@ -88,7 +87,9 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       clueColor = clueButton.clue.value;
 
       // See if this is a valid color for the clicked card.
-      const clueColorIndex = suit.clueColors.indexOf(clueColor);
+      const clueColorIndex = suit.clueColors.findIndex(
+        (cardColor: Color) => cardColor === clueColor,
+      );
       // Ignore clue validation if suit has no clueColors.
       if (suit.clueColors.length > 0 && clueColorIndex === -1) {
         // It is not possible to clue this color to this card, so default to using the first valid

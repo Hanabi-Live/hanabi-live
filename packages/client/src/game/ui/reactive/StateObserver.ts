@@ -1,10 +1,9 @@
-import type { Store, Unsubscribe } from "redux";
-import type { Action } from "../../types/actions";
-import type { GameState } from "../../types/GameState";
-import type { State } from "../../types/State";
+import { Store, Unsubscribe } from "redux";
+import { Action } from "../../types/actions";
+import { GameState } from "../../types/GameState";
+import { State } from "../../types/State";
 import { globals } from "../globals";
-import type { Listener, Selector, Subscription } from "./observeStore";
-import { observeStore } from "./observeStore";
+import { Listener, observeStore, Selector, Subscription } from "./observeStore";
 import * as animateFastView from "./view/animateFastView";
 import * as cardLayoutView from "./view/cardLayoutView";
 import * as cardsView from "./view/cardsView";
@@ -38,14 +37,12 @@ export class StateObserver {
     // Clean up any existing subscribers.
     this.unregisterObservers();
 
-    const subscriptions: Subscriptions = [
-      ...earlyObservers,
-      ...visibleStateObservers,
-      ...ongoingGameObservers,
-      ...replayObservers,
-      ...otherObservers,
-      ...lateObservers,
-    ];
+    const subscriptions: Subscriptions = earlyObservers
+      .concat(visibleStateObservers)
+      .concat(ongoingGameObservers)
+      .concat(replayObservers)
+      .concat(otherObservers)
+      .concat(lateObservers);
 
     this.unsubscribe = observeStore(store, subscriptions);
   }
@@ -205,7 +202,7 @@ const visibleStateObservers: Subscriptions = [
 
   // Clue arrows
   subVS(
-    (s) => ({ lastClue: s.clues.at(-1), segment: s.turn.segment }),
+    (s) => ({ lastClue: s.clues[s.clues.length - 1], segment: s.turn.segment }),
     cluesView.onLastClueOrSegmentChanged,
   ),
 

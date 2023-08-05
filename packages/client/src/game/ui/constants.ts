@@ -3,7 +3,6 @@ export const CARD_W = 286;
 export const CARD_H = 406;
 export const CARD_FADE = 0.6;
 export const STRIKE_FADE = 0.175;
-
 /** Based on the card's width, but used for both the icon's width and height. */
 export const SMALL_ICON_SIZE = 0.2 * CARD_W;
 export const TOP_LEFT_X = 0.05 * CARD_W;

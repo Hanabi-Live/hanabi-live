@@ -1,9 +1,9 @@
-import { DEFAULT_VARIANT_NAME, parseIntSafe } from "@hanabi/data";
+import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "../globals";
 import { setBrowserAddressBarPath } from "../utils";
-import type { GameJSON } from "./hypoCompress";
-import { expand } from "./hypoCompress";
-import type { WelcomeData } from "./types/WelcomeData";
+import { expand, GameJSON } from "./hypoCompress";
+import { WelcomeData } from "./types/WelcomeData";
 
 export function parseAndGoto(data: WelcomeData): void {
   // Disable custom path functionality for first time users.
@@ -72,7 +72,7 @@ export function parseAndGoto(data: WelcomeData): void {
   if (gameMatch !== null) {
     const tableID = parseIntSafe(gameMatch[1]!); // The server expects the game ID as an integer.
     const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
-    const shadowID = shadowMatch === null ? -1 : parseIntSafe(shadowMatch[1]!); // The server expects the game ID as an integer.
+    const shadowID = shadowMatch !== null ? parseIntSafe(shadowMatch[1]!) : -1; // The server expects the game ID as an integer.
     globals.conn!.send("tableSpectate", {
       tableID,
       shadowingPlayerIndex: shadowID,
@@ -101,7 +101,7 @@ export function parseAndGoto(data: WelcomeData): void {
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
-  const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
+  const replayJSONMatch = /\/(?:shared-)?replay-json\/([a-zA-Z0-9,-]+)$/.exec(
     window.location.pathname,
   );
   if (replayJSONMatch !== null) {
@@ -117,7 +117,7 @@ export function parseAndGoto(data: WelcomeData): void {
     let gameJSON: GameJSON;
     try {
       gameJSON = JSON.parse(gameJSONString) as GameJSON;
-    } catch {
+    } catch (err) {
       setBrowserAddressBarPath("/lobby");
       return;
     }

@@ -1,7 +1,6 @@
 // This function draws the UI when going into a game for the first time.
 
-import type { Suit } from "@hanabi/data";
-import { STACK_BASE_RANK } from "@hanabi/data";
+import { STACK_BASE_RANK, Suit } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -28,7 +27,7 @@ import { RectWithTooltip } from "./controls/RectWithTooltip";
 import { SlidableGroup } from "./controls/SlidableGroup";
 import { StrikeSquare } from "./controls/StrikeSquare";
 import { StrikeX } from "./controls/StrikeX";
-import type { TextWithTooltip } from "./controls/TextWithTooltip";
+import { TextWithTooltip } from "./controls/TextWithTooltip";
 import { TimerDisplay } from "./controls/TimerDisplay";
 import * as cursor from "./cursor";
 import { Deck } from "./Deck";
@@ -196,19 +195,21 @@ function initReusableObjects() {
 }
 
 function drawActionLog() {
-  actionLogValues = globals.lobby.settings.keldonMode
-    ? {
-        x: 0.2,
-        y: 0.235,
-        w: 0.4,
-        h: 0.098,
-      }
-    : {
-        x: 0.01,
-        y: 0.01,
-        w: 0.4,
-        h: 0.25,
-      };
+  if (!globals.lobby.settings.keldonMode) {
+    actionLogValues = {
+      x: 0.01,
+      y: 0.01,
+      w: 0.4,
+      h: 0.25,
+    };
+  } else {
+    actionLogValues = {
+      x: 0.2,
+      y: 0.235,
+      w: 0.4,
+      h: 0.098,
+    };
+  }
 
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
@@ -462,10 +463,17 @@ function drawPlayStacks() {
 }
 
 function drawDiscardStacks() {
-  const discardStackSpacing =
-    globals.variant.suits.length === 6 ? 0.038 : 0.047;
+  let discardStackSpacing: number;
+  if (globals.variant.suits.length === 6) {
+    discardStackSpacing = 0.038;
+  } else {
+    // 3, 4, or 5 stacks.
+    discardStackSpacing = 0.047;
+  }
 
-  for (const [i, suit] of globals.variant.suits.entries()) {
+  for (let i = 0; i < globals.variant.suits.length; i++) {
+    const suit = globals.variant.suits[i]!;
+
     // Make the discard stack for this suit.
     const discardStack = new CardLayout({
       x: 0.81 * winW,
@@ -697,7 +705,7 @@ function drawDeck() {
     height: deckValues.h! * winH,
     stroke: "yellow",
     cornerRadius: 0.01 * winH,
-    strokeWidth: 0.010_56 * winH,
+    strokeWidth: 0.01056 * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
@@ -939,9 +947,9 @@ function drawScoreArea() {
     }
 
     switch (event.evt.button) {
-      // Left-click. Left-clicking a strike X or a strike square takes us to the turn that the
-      // strike happened.
       case 0: {
+        // Left-click. Left-clicking a strike X or a strike square takes us to the turn that the
+        // strike happened.
         const { strikes } = globals.state.ongoingGame;
         const strike = strikes[this.num];
         if (strike === undefined) {
@@ -958,32 +966,26 @@ function drawScoreArea() {
         break;
       }
 
-      // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
-      // square.
       case 2: {
+        // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
+        // square.
         let order: ReplayArrowOrder;
-        switch (this.num) {
-          case 0: {
-            order = ReplayArrowOrder.Strike1;
-            break;
-          }
-
-          case 1: {
-            order = ReplayArrowOrder.Strike2;
-            break;
-          }
-
-          case 2: {
-            order = ReplayArrowOrder.Strike3;
-            break;
-          }
-
-          default: {
-            throw new Error(`Unknown strike number of ${this.num}".`);
-          }
+        if (this.num === 0) {
+          order = ReplayArrowOrder.Strike1;
+        } else if (this.num === 1) {
+          order = ReplayArrowOrder.Strike2;
+        } else if (this.num === 2) {
+          order = ReplayArrowOrder.Strike3;
+        } else {
+          throw new Error(`Unknown strike number of ${this.num}".`);
         }
 
         arrows.click(event, order);
+
+        break;
+      }
+
+      default: {
         break;
       }
     }
@@ -997,7 +999,7 @@ function drawScoreArea() {
         width: 0.03 * winW,
         height: 0.053 * winH,
         stroke: "black",
-        strokeWidth: 0.002_11 * winH,
+        strokeWidth: 0.00211 * winH,
         cornerRadius: 0.005 * winW,
         listening: true,
       },
@@ -1175,7 +1177,7 @@ function drawSharedReplay() {
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
     radius: 0.028 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.002_11 * winH,
+    strokeWidth: 0.00211 * winH,
     visible: false,
     listening: false,
   });
@@ -1242,7 +1244,7 @@ function drawSharedReplay() {
       return;
     }
 
-    const placeholder = document.querySelector("#leader-placeholder");
+    const placeholder = document.getElementById("leader-placeholder");
 
     if (placeholder === null) {
       return;
@@ -1279,7 +1281,7 @@ function drawSharedReplay() {
       });
       button.type = "submit";
 
-      placeholder.append(button);
+      placeholder.appendChild(button);
     }
 
     modals.showPrompt("#set-leader-modal");
@@ -1306,7 +1308,7 @@ function drawYourTurn() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.004_22 * winH,
+    strokeWidth: 0.00422 * winH,
     offset: {
       x: -0.0175 * winW,
       y: -0.036 * winH,
@@ -1647,7 +1649,7 @@ function drawTimers() {
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.002_11 * winH,
+    strokeWidth: 0.00211 * winH,
     visible: false,
     listening: false,
   });
@@ -2035,7 +2037,7 @@ function drawClueAreaDisabled(offsetX: number) {
       (clueAreaValues.h! - spacing.y) * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.005_28 * winH,
+    strokeWidth: 0.00528 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line1);
@@ -2049,7 +2051,7 @@ function drawClueAreaDisabled(offsetX: number) {
       spacing.y * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.005_28 * winH,
+    strokeWidth: 0.00528 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line2);
@@ -2064,7 +2066,7 @@ function drawClueAreaDisabled(offsetX: number) {
     text: "No clues",
     fill: LABEL_COLOR,
     stroke: "black",
-    strokeWidth: 0.002_11 * winH,
+    strokeWidth: 0.00211 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
@@ -2144,7 +2146,7 @@ function drawHypotheticalArea() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.004_22 * winH,
+    strokeWidth: 0.00422 * winH,
     listening: false,
   });
   globals.elements.hypoCircle.add(circle);

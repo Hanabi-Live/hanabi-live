@@ -1,19 +1,19 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import { negativeOneIfNullOrUndefined } from "../../utils";
+import { negativeOneIfNull } from "../../utils";
 import * as playStacksRules from "../rules/playStacks";
-import type { ActionIncludingHypothetical } from "../types/actions";
+import { ActionIncludingHypothetical } from "../types/actions";
 import { ActionType } from "../types/ActionType";
-import type { ClientAction } from "../types/ClientAction";
+import { ClientAction } from "../types/ClientAction";
 import { ClueType } from "../types/ClueType";
-import type { MsgClue } from "../types/MsgClue";
+import { MsgClue } from "../types/MsgClue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
-import { setEmpathyOnHand } from "./hanabiCardMouse";
+import { HanabiCard } from "./HanabiCard";
+import { setEmpathyOnHand } from "./HanabiCardMouse";
 
 export function start(): void {
   if (globals.state.replay.hypothetical !== null) {
@@ -143,8 +143,8 @@ export function send(hypoAction: ClientAction): void {
           playerIndex: gameState.turn.currentPlayerIndex!,
           // Always send the correct suitIndex and rank if known; the blanking of the card will be
           // performed on the client.
-          suitIndex: negativeOneIfNullOrUndefined(nextCard?.suitIndex),
-          rank: negativeOneIfNullOrUndefined(nextCard?.rank),
+          suitIndex: negativeOneIfNull(nextCard?.suitIndex),
+          rank: negativeOneIfNull(nextCard?.rank),
         });
       }
 
@@ -199,16 +199,16 @@ export function send(hypoAction: ClientAction): void {
 }
 
 export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
-  if (globals.state.replay.shared === null) {
-    globals.store!.dispatch({
-      type: "hypoAction",
-      action: hypoAction,
-    });
-  } else {
+  if (globals.state.replay.shared !== null) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoAction,
       actionJSON: JSON.stringify(hypoAction),
+    });
+  } else {
+    globals.store!.dispatch({
+      type: "hypoAction",
+      action: hypoAction,
     });
   }
 }
@@ -221,14 +221,16 @@ export function sendBack(): void {
     return;
   }
 
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared.amLeader) {
+      globals.lobby.conn!.send("replayAction", {
+        tableID: globals.lobby.tableID,
+        type: ReplayActionType.HypoBack,
+      });
+    }
+  } else {
     globals.store!.dispatch({
       type: "hypoBack",
-    });
-  } else if (globals.state.replay.shared.amLeader) {
-    globals.lobby.conn!.send("replayAction", {
-      tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoBack,
     });
   }
 }
@@ -238,15 +240,17 @@ export function toggleRevealed(): void {
     return;
   }
 
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared.amLeader) {
+      globals.lobby.conn!.send("replayAction", {
+        tableID: globals.lobby.tableID,
+        type: ReplayActionType.HypoToggleRevealed,
+      });
+    }
+  } else {
     globals.store!.dispatch({
       type: "hypoShowDrawnCards",
       showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
-    });
-  } else if (globals.state.replay.shared.amLeader) {
-    globals.lobby.conn!.send("replayAction", {
-      tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoToggleRevealed,
     });
   }
 }

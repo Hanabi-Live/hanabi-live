@@ -1,9 +1,8 @@
 // Functions related to deck information: total cards, drawing cards
 
-import type { Suit, Variant } from "@hanabi/data";
-import { getVariant, START_CARD_RANK } from "@hanabi/data";
-import type { CardState } from "../types/CardState";
-import type { GameMetadata } from "../types/GameMetadata";
+import { getVariant, START_CARD_RANK, Suit, Variant } from "@hanabi/data";
+import { CardState } from "../types/CardState";
+import { GameMetadata } from "../types/GameMetadata";
 import * as cardRules from "./card";
 import * as handRules from "./hand";
 import * as variantRules from "./variant";
@@ -48,8 +47,10 @@ export function numCopiesOfCard(
     return 3;
   }
 
-  if (rank === 4 && variantRules.isCriticalFours(variant)) {
-    return 1;
+  if (rank === 4) {
+    if (variantRules.isCriticalFours(variant)) {
+      return 1;
+    }
   }
 
   if (rank === 5) {
@@ -77,7 +78,6 @@ export const discardedCopies = (
   suitIndex: number,
   rank: number,
 ): number =>
-  // eslint-disable-next-line unicorn/no-array-reduce
   deck.reduce((discarded, c) => {
     if (
       c.suitIndex === suitIndex &&
@@ -86,7 +86,6 @@ export const discardedCopies = (
     ) {
       return discarded + 1;
     }
-
     return discarded;
   }, 0);
 

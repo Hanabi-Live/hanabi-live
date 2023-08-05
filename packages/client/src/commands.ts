@@ -6,7 +6,7 @@ import { globals } from "./globals";
 import * as pregame from "./lobby/pregame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
-import type { ChatMessage } from "./types/ChatMessage";
+import { ChatMessage } from "./types/ChatMessage";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,17 +1,17 @@
 // Calculates the state of the deck after an action.
 
-import { getVariant, newArray } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
 import { nullIfNegative } from "../../utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
-import type { GameAction } from "../types/actions";
-import type { CardState } from "../types/CardState";
+import { GameAction } from "../types/actions";
+import { CardState } from "../types/CardState";
 import { colorClue, rankClue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
+import { GameMetadata } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { initialCardState } from "./initialStates/initialCardState";
@@ -24,8 +24,8 @@ export function cardsReducer(
   metadata: GameMetadata,
 ): readonly CardState[] {
   const variant = getVariant(metadata.options.variantName);
-  const newDeck = [...deck];
-  const hands = Array.from(game.hands, (arr) => [...arr]);
+  const newDeck = Array.from(deck);
+  const hands = Array.from(game.hands, (arr) => Array.from(arr));
 
   switch (action.type) {
     /**
@@ -97,20 +97,24 @@ export function cardsReducer(
       };
 
       // Positive clues
-      for (const order of action.list) {
+      action.list.forEach((order) => {
         const card = getCard(newDeck, order);
         const hand = game.hands[action.target]!;
         newDeck[order] = {
           ...card,
           numPositiveClues: card.numPositiveClues + 1,
-          segmentFirstClued: card.segmentFirstClued ?? game.turn.segment!,
+          segmentFirstClued:
+            card.segmentFirstClued === null
+              ? game.turn.segment!
+              : card.segmentFirstClued,
           hasClueApplied: true,
           firstCluedWhileOnChop:
-            card.firstCluedWhileOnChop ??
-            handRules.cardIsOnChop(hand, deck, card),
+            card.firstCluedWhileOnChop === null
+              ? handRules.cardIsOnChop(hand, deck, card)
+              : card.firstCluedWhileOnChop,
         };
         applyClue(order, true);
-      }
+      });
 
       // Negative clues
       const negativeClues =
@@ -119,14 +123,14 @@ export function cardsReducer(
           : hands[action.target]!.filter(
               (order) => !action.list.includes(order),
             );
-      for (const order of negativeClues) {
+      negativeClues.forEach((order) => {
         const card = getCard(newDeck, order);
         newDeck[order] = {
           ...card,
           hasClueApplied: true,
         };
         applyClue(order, false);
-      }
+      });
 
       break;
     }
@@ -170,7 +174,7 @@ export function cardsReducer(
         rankDetermined: card.rankDetermined || identityDetermined,
         revealedToPlayer:
           action.suitIndex >= 0 && action.rank >= 0
-            ? newArray(6, true)
+            ? new Array(6).fill(true)
             : card.revealedToPlayer,
         possibleCards:
           action.suitIndex >= 0 && action.rank >= 0
@@ -298,28 +302,19 @@ function canPlayerSeeDrawnCard(
   if (playerIndex === drawLocation) {
     return false;
   }
-
   const characterName = getCharacterNameForPlayer(
     playerIndex,
     characterAssignments,
   );
-
   switch (characterName) {
-    case "Slow-Witted": {
+    case "Slow-Witted":
       return false;
-    }
-
-    case "Oblivious": {
+    case "Oblivious":
       return drawLocation !== (playerIndex - 1) % numPlayers;
-    }
-
-    case "Blind Spot": {
+    case "Blind Spot":
       return drawLocation !== (playerIndex + 1) % numPlayers;
-    }
-
-    default: {
+    default:
       return true;
-    }
   }
 }
 

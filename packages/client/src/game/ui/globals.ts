@@ -3,19 +3,19 @@
 
 import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
-import type * as Redux from "redux";
+import * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../globals";
-import type { Loader } from "../../Loader";
-import type { Options } from "../../types/Options";
-import type { GameExports } from "../main";
-import type { Action, GameAction } from "../types/actions";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { State } from "../types/State";
+import { Loader } from "../../Loader";
+import { Options } from "../../types/Options";
+import { GameExports } from "../main";
+import { Action, GameAction } from "../types/actions";
+import { GameMetadata } from "../types/GameMetadata";
+import { State } from "../types/State";
 import * as cursor from "./cursor";
 import { Elements } from "./Elements";
-import type { HanabiCard } from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import { Layers } from "./Layers";
-import type { StateObserver } from "./reactive/StateObserver";
+import { StateObserver } from "./reactive/StateObserver";
 
 export class Globals {
   // Objects sent upon UI initialization.
@@ -136,12 +136,10 @@ export class Globals {
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
-
-    for (const cardSubscription of this.cardSubscriptions) {
-      cardSubscription();
-    }
+    this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => {
+      u();
+    });
     this.cardSubscriptions = [];
-
     this.store = null;
   }
 }

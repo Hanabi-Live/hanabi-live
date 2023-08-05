@@ -104,7 +104,7 @@ describe("gameStateReducer", () => {
       );
 
       const efficiency = getEfficiency(state);
-      expect(efficiency).toBe(Number.POSITIVE_INFINITY);
+      expect(efficiency).toBe(Infinity);
     });
 
     test("is 0 after a misplay on the first turn", () => {

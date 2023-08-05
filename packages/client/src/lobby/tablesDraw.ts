@@ -7,7 +7,7 @@ import { copyStringToClipboard, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
 import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
-import type { Table } from "./types/Table";
+import { Table } from "./types/Table";
 
 export function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");
@@ -77,8 +77,8 @@ export function tablesDraw(): void {
           tableIDsOfThisType.push(id);
         }
       }
-      tableIDsOfThisType.sort((n1, n2) => n1 - n2);
-      sortedTableIDs = [...sortedTableIDs, ...tableIDsOfThisType];
+      tableIDsOfThisType.sort();
+      sortedTableIDs = sortedTableIDs.concat(tableIDsOfThisType);
     }
   }
 
@@ -148,7 +148,7 @@ export function tablesDraw(): void {
 
     // Column 6 - Players.
     const td = $("<td>");
-    for (const [index, player] of table.players.entries()) {
+    table.players.forEach((player, index) => {
       const span = $("<span>").html(player);
       if (player === globals.username) {
         span.addClass("name-me");
@@ -165,7 +165,7 @@ export function tablesDraw(): void {
         td.append(", ");
       }
       span.appendTo(td);
-    }
+    });
     td.appendTo(row);
 
     // Column 7 - Spectators.
@@ -216,7 +216,7 @@ export function tablesDraw(): void {
             // Copy the URL that would occur from clicking on this table row.
             let gameID = table.id.toString();
             if (table.sharedReplay) {
-              gameID = table.name.slice("Shared replay for game #".length);
+              gameID = table.name.substring("Shared replay for game #".length);
             }
             const path = table.sharedReplay
               ? `/shared-replay/${gameID}`
@@ -226,19 +226,7 @@ export function tablesDraw(): void {
             tableSpectate(table);
           }
         });
-    } else if (table.joined) {
-      const rowId = `resume-${table.id}`;
-      row
-        .attr("id", rowId)
-        .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
-          if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row.
-            copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
-          } else {
-            tableReattend(table);
-          }
-        });
-    } else {
+    } else if (!table.joined) {
       const rowId = `join-${table.id}`;
       row.attr("id", rowId);
       if (table.numPlayers >= 6) {
@@ -253,6 +241,18 @@ export function tablesDraw(): void {
           }
         });
       }
+    } else {
+      const rowId = `resume-${table.id}`;
+      row
+        .attr("id", rowId)
+        .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+          if (event.ctrlKey) {
+            // Copy the URL that would occur from clicking on this table row.
+            copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
+          } else {
+            tableReattend(table);
+          }
+        });
     }
 
     row.appendTo(tbody);

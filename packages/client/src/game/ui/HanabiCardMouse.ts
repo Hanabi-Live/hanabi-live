@@ -1,18 +1,18 @@
 import { STACK_BASE_RANK } from "@hanabi/data";
-import type Konva from "konva";
+import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import * as cardRules from "../rules/card";
 import * as arrows from "./arrows";
-import type { CardLayout } from "./CardLayout";
+import { CardLayout } from "./CardLayout";
 import { DOUBLE_TAP_DELAY } from "./constants";
 import * as cursor from "./cursor";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
-import { hanabiCardClick } from "./hanabiCardClick";
-import { hanabiCardClickSpeedrun } from "./hanabiCardClickSpeedrun";
-import { hanabiCardDblTap, hanabiCardTap } from "./hanabiCardTouchActions";
+import { HanabiCard } from "./HanabiCard";
+import { HanabiCardClick } from "./HanabiCardClick";
+import { HanabiCardClickSpeedrun } from "./HanabiCardClickSpeedrun";
+import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import * as konvaTooltips from "./konvaTooltips";
-import type { LayoutChild } from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 import * as notes from "./notes";
 
 export function registerMouseHandlers(this: HanabiCard): void {
@@ -21,9 +21,9 @@ export function registerMouseHandlers(this: HanabiCard): void {
   this.on("mouseleave", mouseLeave);
   this.on("touchstart", touchStart);
   this.on("touchend", mouseLeave);
-  this.on("click", hanabiCardClick);
-  this.on("tap", hanabiCardTap);
-  this.on("dbltap", hanabiCardDblTap);
+  this.on("click", HanabiCardClick);
+  this.on("tap", HanabiCardTap);
+  this.on("dbltap", HanabiCardDblTap);
   this.on("mousedown", mouseDown);
   this.on("mouseup", mouseUp);
 }
@@ -82,7 +82,9 @@ function touchStart(
     // A tap will trigger when the "touchend" event occurs. The next tap action will not run because
     // it will appear like the second tap of a double tap. Don't worry about this if we actually
     // double-tapped.
-    this.wasRecentlyTapped = true;
+    if (!this.wasRecentlyTapped) {
+      this.wasRecentlyTapped = true;
+    }
     if (globals.editingNote !== null) {
       globals.editingNote = null;
       tooltips.close(`#tooltip-${this.tooltipName}`);
@@ -109,7 +111,7 @@ function mouseDown(
 ) {
   // Speedrunning overrides the normal card clicking behavior.
   if (useSpeedrunClickHandlers()) {
-    hanabiCardClickSpeedrun(this, event.evt);
+    HanabiCardClickSpeedrun(this, event.evt);
     return;
   }
 
@@ -230,7 +232,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // Check if there exists a possibility from clues that the note declares impossible.
   const noteNarrowsPossibilities =
-    card.note.possibilities.length > 0 &&
+    card.note.possibilities.length !== 0 &&
     card.state.possibleCardsFromClues.some(
       ([suitIndexA, rankA]) =>
         !card.note.possibilities.some(

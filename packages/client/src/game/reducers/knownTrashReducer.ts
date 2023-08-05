@@ -1,7 +1,7 @@
-import type { Variant } from "@hanabi/data";
+import { Variant } from "@hanabi/data";
 import * as cardRules from "../rules/card";
-import type { CardState } from "../types/CardState";
-import type { StackDirection } from "../types/StackDirection";
+import { CardState } from "../types/CardState";
+import { StackDirection } from "../types/StackDirection";
 
 export function knownTrashReducer(
   deck: readonly CardState[],
@@ -10,7 +10,7 @@ export function knownTrashReducer(
   playStackStarts: readonly number[],
   variant: Variant,
 ): readonly CardState[] {
-  const newDeck = [...deck];
+  const newDeck = Array.from(deck);
   for (let order = 0; order < newDeck.length; order++) {
     const card = deck[order]!;
     newDeck[order] = {

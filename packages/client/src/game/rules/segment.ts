@@ -1,4 +1,4 @@
-import type { GameAction } from "../types/actions";
+import { GameAction } from "../types/actions";
 import { EndCondition } from "../types/EndCondition";
 
 // When the game state reducer sets "segment" to a new number, it is a signal to record the current

@@ -4,13 +4,13 @@
 import Konva from "konva";
 import { CARD_ANIMATION_LENGTH } from "./constants";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import { animate } from "./konvaHelpers";
-import type { LayoutChild } from "./LayoutChild";
+import { LayoutChild } from "./LayoutChild";
 
 export class CardLayout extends Konva.Group {
-  private readonly align: string;
-  private readonly reverse: boolean;
+  private align: string;
+  private reverse: boolean;
   origRotation: number;
   empathy: boolean;
 

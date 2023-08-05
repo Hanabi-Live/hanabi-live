@@ -8,8 +8,7 @@
   font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 300;
-  src:
-    local(""),
+  src: local(""),
     url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff2")
       format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
@@ -21,8 +20,7 @@
   font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 300;
-  src:
-    local(""),
+  src: local(""),
     url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff2")
       format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
@@ -34,8 +32,7 @@
   font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 400;
-  src:
-    local(""),
+  src: local(""),
     url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff2")
       format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
@@ -47,8 +44,7 @@
   font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 400;
-  src:
-    local(""),
+  src: local(""),
     url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff2")
       format("woff2"),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
@@ -436,8 +432,7 @@ table td {
 }
 .lobby-games-table-joined:hover {
   /* rejoin */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%232e3436' stroke-linecap='round' stroke-linejoin='round' stroke-width='.1' transform='translate(-88.655 -55.22)'><circle cx='91.792' cy='58.356' r='3.087' fill='%23e6cf04'/><path fill='%23fff' d='m93.809 58.356-1.583.914-1.583.913v-3.655l1.583.914z'/></g></svg>")
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%232e3436' stroke-linecap='round' stroke-linejoin='round' stroke-width='.1' transform='translate(-88.655 -55.22)'><circle cx='91.792' cy='58.356' r='3.087' fill='%23e6cf04'/><path fill='%23fff' d='m93.809 58.356-1.583.914-1.583.913v-3.655l1.583.914z'/></g></svg>")
       12 12,
     pointer;
 }
@@ -450,16 +445,14 @@ table td {
 .lobby-games-table-unstarted:hover,
 .lobby-games-table-unstarted-password:hover {
   /* join */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.096' height='18.894' viewBox='0 0 6.111 4.999'><g fill='%23aad400' stroke='%23000' stroke-linejoin='round' stroke-width='.1'><path d='M.051 1.628H1.91V.06l2.444 2.444L1.91 4.949V3.382H.05z'/><path d='M3.863.05h1.52c.314 0 .678.34.678.654v3.31c0 .33-.347.724-.678.724h-1.52v-.725h1.52V.703h-1.52z'/></g></svg>")
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.096' height='18.894' viewBox='0 0 6.111 4.999'><g fill='%23aad400' stroke='%23000' stroke-linejoin='round' stroke-width='.1'><path d='M.051 1.628H1.91V.06l2.444 2.444L1.91 4.949V3.382H.05z'/><path d='M3.863.05h1.52c.314 0 .678.34.678.654v3.31c0 .33-.347.724-.678.724h-1.52v-.725h1.52V.703h-1.52z'/></g></svg>")
       12 10,
     pointer;
 }
 .lobby-games-table-unstarted.full:hover,
 .lobby-games-table-unstarted-password.full:hover {
   /* full */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%23000' stroke-linecap='round' stroke-width='.1' transform='translate(-105.376 -101.255)'><circle cx='108.513' cy='104.392' r='2.778' fill='%23fff'/><path fill='%238b0000' d='M108.513 101.305a3.087 3.087 0 0 0-3.087 3.087 3.087 3.087 0 0 0 3.087 3.087 3.087 3.087 0 0 0 3.087-3.087 3.087 3.087 0 0 0-3.087-3.087zm0 .644a2.443 2.443 0 0 1 2.443 2.443 2.443 2.443 0 0 1-.428 1.381l-3.581-3.256a2.443 2.443 0 0 1 1.566-.568zm-2.015 1.061 3.582 3.256a2.443 2.443 0 0 1-1.567.57 2.443 2.443 0 0 1-2.444-2.444 2.443 2.443 0 0 1 .43-1.382z'/></g></svg>")
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%23000' stroke-linecap='round' stroke-width='.1' transform='translate(-105.376 -101.255)'><circle cx='108.513' cy='104.392' r='2.778' fill='%23fff'/><path fill='%238b0000' d='M108.513 101.305a3.087 3.087 0 0 0-3.087 3.087 3.087 3.087 0 0 0 3.087 3.087 3.087 3.087 0 0 0 3.087-3.087 3.087 3.087 0 0 0-3.087-3.087zm0 .644a2.443 2.443 0 0 1 2.443 2.443 2.443 2.443 0 0 1-.428 1.381l-3.581-3.256a2.443 2.443 0 0 1 1.566-.568zm-2.015 1.061 3.582 3.256a2.443 2.443 0 0 1-1.567.57 2.443 2.443 0 0 1-2.444-2.444 2.443 2.443 0 0 1 .43-1.382z'/></g></svg>")
       12 12,
     pointer;
 }
@@ -474,24 +467,21 @@ table td {
 .lobby-games-table-unstarted .lobbySpectators,
 .lobby-games-table-unstarted-password .lobbySpectators {
   /* eyes */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg width='28.343' height='25.001' viewBox='0 0 7.499 6.615' xmlns='http://www.w3.org/2000/svg'><g stroke-dasharray='.265 .265' stroke-width='.265'><g offset='50%' transform='translate(-10.083 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g><g transform='translate(-6.343 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g></g></svg>")
+  cursor: url("data:image/svg+xml;utf8,<svg width='28.343' height='25.001' viewBox='0 0 7.499 6.615' xmlns='http://www.w3.org/2000/svg'><g stroke-dasharray='.265 .265' stroke-width='.265'><g offset='50%' transform='translate(-10.083 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g><g transform='translate(-6.343 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g></g></svg>")
       14 12,
     pointer;
 }
 .lobby-pregame-players .shadow:hover,
 #lobby-games-table-tbody .shadow:hover {
   /* detective */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>🕵️</text></svg>")
+  cursor: url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>🕵️</text></svg>")
       12 12,
     pointer;
   color: #3350cb;
 }
 .lobby-pregame-players .unShadow:hover {
   /* eyes */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>👀</text></svg>")
+  cursor: url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>👀</text></svg>")
       12 12,
     pointer;
   color: #3350cb;

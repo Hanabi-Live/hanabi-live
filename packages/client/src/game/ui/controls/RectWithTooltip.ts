@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type { NodeWithTooltip } from "./NodeWithTooltip";
+import { NodeWithTooltip } from "./NodeWithTooltip";
 
 export class RectWithTooltip extends Konva.Rect implements NodeWithTooltip {
   tooltipName = "";

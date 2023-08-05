@@ -2,7 +2,7 @@ import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import * as variantRules from "../../../rules/variant";
 import { ReplayActionType } from "../../../types/ReplayActionType";
-import type { Spectator } from "../../../types/Spectator";
+import { Spectator } from "../../../types/Spectator";
 import { globals } from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";
@@ -141,10 +141,10 @@ export function enterHypoButtonLocationChanged(data: {
 }): void {
   if (!data.finished) {
     globals.elements.enterHypoButton?.setLeft();
-  } else if (data.shared) {
-    globals.elements.enterHypoButton?.setRight();
-  } else {
+  } else if (!data.shared) {
     globals.elements.enterHypoButton?.setCenter();
+  } else {
+    globals.elements.enterHypoButton?.setRight();
   }
 }
 
@@ -190,9 +190,13 @@ export function onDatabaseIDChanged(databaseID: number | null): void {
     return;
   }
 
-  // JSON replays are hard-coded to have a database ID of 0.
-  const text = databaseID === 0 ? "JSON replay" : `ID: ${databaseID}`;
-
+  let text: string;
+  if (databaseID === 0) {
+    // JSON replays are hard-coded to have a database ID of 0.
+    text = "JSON replay";
+  } else {
+    text = `ID: ${databaseID}`;
+  }
   globals.elements.gameIDLabel?.text(text);
   globals.elements.gameIDLabel?.show();
 
@@ -244,9 +248,9 @@ export function onFinishedChanged(
     globals.elements.maxScoreNumberLabel?.show();
     globals.elements.playsTextLabel?.hide();
     globals.elements.playsNumberLabel?.hide();
-    for (const label of globals.elements.questionMarkLabels) {
+    globals.elements.questionMarkLabels.forEach((label) => {
       label.hide();
-    }
+    });
   }
 
   // Disable zen mode

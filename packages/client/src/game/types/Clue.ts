@@ -1,4 +1,4 @@
-import type { Color } from "@hanabi/data";
+import { Color } from "@hanabi/data";
 import { ClueType } from "./ClueType";
 
 interface RankClue {

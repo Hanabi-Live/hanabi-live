@@ -1,4 +1,4 @@
-import type { Variant } from "@hanabi/data";
+import { Variant } from "@hanabi/data";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../../constants";
 import * as variantRules from "./variant";
 

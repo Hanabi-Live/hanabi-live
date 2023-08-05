@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type { ContainerConfig } from "konva/types/Container";
+import { ContainerConfig } from "konva/types/Container";
 import { FitText } from "./controls/FitText";
 import { globals } from "./globals";
 import { MultiFitText } from "./MultiFitText";
@@ -12,9 +12,9 @@ export class FullActionLog extends Konva.Group {
   private playerLogs: Array<MultiFitText | null> = [];
   private playerLogNumbers: Array<MultiFitText | null> = [];
   private needsRefresh = false;
-  private readonly numbersOptions: ContainerConfig;
-  private readonly maxLines = 38;
-  private readonly textOptions: ContainerConfig;
+  private numbersOptions: ContainerConfig;
+  private maxLines = 38;
+  private textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
     super({
@@ -111,7 +111,9 @@ export class FullActionLog extends Konva.Group {
   }
 
   showPlayerActions(playerName: string): void {
-    const playerIndex = globals.metadata.playerNames.indexOf(playerName);
+    const playerIndex = globals.metadata.playerNames.findIndex(
+      (name) => name === playerName,
+    );
     if (playerIndex === -1) {
       throw new Error(
         `Failed to find player "${playerName}" in the player names.`,
@@ -185,11 +187,21 @@ export class FullActionLog extends Konva.Group {
   }
 
   private refreshText() {
+    const appendLine = (
+      log: MultiFitText,
+      numbers: MultiFitText,
+      turn: number,
+      line: string,
+    ) => {
+      log.setMultiText(line);
+      numbers.setMultiText(turn.toString());
+    };
+
     if (this.logText === null || this.logNumbers === null) {
       this.makeLog();
     }
 
-    for (const logEntry of this.buffer) {
+    this.buffer.forEach((logEntry) => {
       appendLine(
         this.logText!,
         this.logNumbers!,
@@ -210,7 +222,7 @@ export class FullActionLog extends Konva.Group {
           break;
         }
       }
-    }
+    });
 
     this.logText!.refreshText();
     this.logNumbers!.refreshText();
@@ -232,14 +244,4 @@ export class FullActionLog extends Konva.Group {
     }
     this.needsRefresh = true;
   }
-}
-
-function appendLine(
-  log: MultiFitText,
-  numbers: MultiFitText,
-  turn: number,
-  line: string,
-) {
-  log.setMultiText(line);
-  numbers.setMultiText(turn.toString());
 }

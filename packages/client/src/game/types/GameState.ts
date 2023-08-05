@@ -1,8 +1,8 @@
-import type { CardState } from "./CardState";
-import type { CardStatus } from "./CardStatus";
-import type { StackDirection } from "./StackDirection";
-import type { StatsState } from "./StatsState";
-import type { TurnState } from "./TurnState";
+import { CardState } from "./CardState";
+import { CardStatus } from "./CardStatus";
+import { StackDirection } from "./StackDirection";
+import { StatsState } from "./StatsState";
+import { TurnState } from "./TurnState";
 
 export interface GameState {
   readonly turn: TurnState;

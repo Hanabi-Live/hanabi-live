@@ -1,9 +1,9 @@
 // In-game chat
 
 import interact from "interactjs";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
-import { parseIntSafe } from "@hanabi/data";
 
 export function init(): void {
   // Make the chat modal draggable (using the InteractJS library).
@@ -112,18 +112,20 @@ export function show(): void {
     globals.chatUnread = 0;
 
     // We need to notify the server that we have read everything.
-    if (globals.conn === null) {
+    if (globals.conn !== null) {
+      globals.conn.send("chatRead", {
+        tableID: globals.tableID,
+      });
+    } else {
       throw new Error('The "globals.conn" object is not initialized.');
     }
-    globals.conn.send("chatRead", {
-      tableID: globals.tableID,
-    });
 
     // Reset the "Chat" UI button back to normal.
-    if (globals.ui === null) {
+    if (globals.ui !== null) {
+      globals.ui.updateChatLabel();
+    } else {
       throw new Error('The "globals.ui" object is not initialized.');
     }
-    globals.ui.updateChatLabel();
   }
 
   // Set the modal to the default position.
@@ -170,11 +172,12 @@ export function show(): void {
   }
 
   // Scroll to the bottom of the chat.
-  const chat = document.querySelector("#game-chat-text");
-  if (chat === null) {
+  const chat = document.getElementById("game-chat-text");
+  if (chat !== null) {
+    chat.scrollTop = chat.scrollHeight;
+  } else {
     throw new Error('Failed to get the "game-chat-text" element.');
   }
-  chat.scrollTop = chat.scrollHeight;
 
   $("#game-chat-input").trigger("focus");
 }

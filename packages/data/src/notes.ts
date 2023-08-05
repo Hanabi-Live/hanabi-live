@@ -1,4 +1,4 @@
-import type { Suit } from "./types/Suit";
+import { Suit } from "./types/Suit";
 
 /**
  * This function generates a regular expression that is used to detect "identity notes" (notes about
@@ -26,20 +26,15 @@ function createSuitPattern(
   suitAbbreviations: readonly string[],
 ): string {
   let alternation = "";
-  for (const [i, suit] of suits.entries()) {
+  suits.forEach((suit, i) => {
     if (i !== 0) {
       alternation += "|";
     }
 
-    const suitAbbreviation = suitAbbreviations[i];
-    if (suitAbbreviation === undefined) {
-      throw new Error(`Failed to get the suit abbreviation at index: ${i}`);
-    }
-
-    alternation += suitAbbreviation.toLowerCase();
+    alternation += suitAbbreviations[i]!.toLowerCase();
     alternation += "|";
     alternation += suit.displayName.toLowerCase();
-  }
+  });
 
   return `(${alternation})`;
 }
@@ -50,7 +45,7 @@ function createRankPattern(
 ): string {
   let rankStrings = ranks.map((r) => r.toString());
   if (isUpOrDown) {
-    rankStrings = [...rankStrings, "0", "s", "start"];
+    rankStrings = rankStrings.concat("0", "s", "start");
   }
 
   return `(${rankStrings.join("|")})`;
@@ -63,9 +58,9 @@ function createSquishPattern(
 ): string {
   let rankStrings = ranks.map((r) => r.toString());
   if (isUpOrDown) {
-    rankStrings = [...rankStrings, "0", "s"];
+    rankStrings = rankStrings.concat("0", "s");
   }
 
-  const allNoteLetters = [...rankStrings, ...suitAbbreviations];
+  const allNoteLetters = rankStrings.concat(suitAbbreviations);
   return `([${allNoteLetters.join("").toLowerCase()}]+)`;
 }

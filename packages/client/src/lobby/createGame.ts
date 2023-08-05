@@ -4,18 +4,18 @@ import {
   DEFAULT_VARIANT_NAME,
   doesVariantExist,
   getVariantNames,
-  parseIntSafe,
 } from "@hanabi/data";
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
 import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import type { Options } from "../types/Options";
+import { Options } from "../types/Options";
 import { getRandomNumber, isEmpty } from "../utils";
 import { Screen } from "./types/Screen";
-import type { Settings } from "./types/Settings";
+import { Settings } from "./types/Settings";
 
 // Constants
 const basicVariants = [
@@ -172,7 +172,7 @@ export function init(): void {
   $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
     const regExp = /'/g;
-    const textWithDoubleQuotes = data.replaceAll(regExp, '"');
+    const textWithDoubleQuotes = data.replace(regExp, '"');
     const options = JSON.parse(textWithDoubleQuotes) as Options;
     acceptOptionsFromGuest(options);
     $(e.target).text("sent").prop("disabled", true);
@@ -278,7 +278,7 @@ function submit() {
     try {
       timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
       timeBaseSeconds = Math.round(timeValue * 60);
-    } catch {
+    } catch (err) {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimeBaseMinutes").addClass("wrongInput");
       foundErrors = true;
@@ -286,7 +286,7 @@ function submit() {
 
     try {
       timePerTurn = getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
-    } catch {
+    } catch (err) {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimePerTurnSeconds").addClass("wrongInput");
       foundErrors = true;
@@ -304,7 +304,7 @@ function submit() {
   const password = $("#createTablePassword").val();
   if (isNew) {
     if (typeof password !== "string") {
-      throw new TypeError(
+      throw new Error(
         'The value of the "createTablePassword" element was not a string.',
       );
     }
@@ -321,15 +321,15 @@ function submit() {
   // Game JSON is not saved.
   const gameJSONString = $("#createTableJSON").val();
   if (typeof gameJSONString !== "string") {
-    throw new TypeError(
+    throw new Error(
       'The value of the "createTableJSON" element is not a string.',
     );
   }
-  let gameJSON: unknown;
+  let gameJSON: unknown | undefined;
   if (gameJSONString !== "") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
-    } catch {
+    } catch (err) {
       modals.showError("That is not a valid JSON object.");
       return;
     }
@@ -393,9 +393,9 @@ function acceptOptionsFromGuest(options: Options) {
 }
 
 function getCheckbox(setting: keyof Settings) {
-  const element = document.querySelector(`#${setting}`);
-  if (!(element instanceof HTMLInputElement)) {
-    throw new TypeError(`Failed to get the element of "${setting}".`);
+  const element = document.getElementById(setting) as HTMLInputElement | null;
+  if (element === null) {
+    throw new Error(`Failed to get the element of "${setting}".`);
   }
   const value = element.checked;
   checkChanged(setting, value);
@@ -409,7 +409,7 @@ function getTextbox(setting: keyof Settings) {
     throw new Error(`Failed to get the value of element "${setting}".`);
   }
   if (typeof value !== "string") {
-    throw new TypeError(`The value of element "${setting}" is not a string.`);
+    throw new Error(`The value of element "${setting}" is not a string.`);
   }
   return value.trim(); // Remove all leading and trailing whitespace
 }

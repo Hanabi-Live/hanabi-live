@@ -1,8 +1,7 @@
 // Functions related to clues: gaining clues, giving clues, applying clues
 
-import type { Variant } from "@hanabi/data";
-import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { ActionDiscard, ActionPlay } from "../types/actions";
+import { MAX_CLUE_NUM, Variant } from "@hanabi/data";
+import { ActionDiscard, ActionPlay } from "../types/actions";
 import * as variantRules from "./variant";
 
 // Gain a clue by discarding or finishing a stack.

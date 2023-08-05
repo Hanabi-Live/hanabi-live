@@ -1,4 +1,4 @@
-import type { State } from "../../../types/State";
+import { State } from "../../../types/State";
 import { globals } from "../../globals";
 
 export function onObserversStarted(

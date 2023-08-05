@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type * as KonvaBaseLayer from "konva/types/BaseLayer";
+import * as KonvaBaseLayer from "konva/types/BaseLayer";
 import { globals } from "./globals";
 
 export const drawLayer = (node: Konva.Node): void => {

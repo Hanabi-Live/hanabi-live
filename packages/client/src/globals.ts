@@ -1,15 +1,15 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
 import { VERSION } from "@hanabi/data";
-import type { Connection } from "./Connection";
-import type { HanabiUI } from "./game/ui/HanabiUI";
-import type { Loader } from "./Loader";
-import type { Game } from "./lobby/types/Game";
-import type { GameHistory } from "./lobby/types/GameHistory";
+import { Connection } from "./Connection";
+import { HanabiUI } from "./game/ui/HanabiUI";
+import { Loader } from "./Loader";
+import { Game } from "./lobby/types/Game";
+import { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";
 import { Settings } from "./lobby/types/Settings";
-import type { Table } from "./lobby/types/Table";
-import type { User } from "./lobby/types/User";
+import { Table } from "./lobby/types/Table";
+import { User } from "./lobby/types/User";
 
 export class Globals {
   // The version file is filled in dynamically by the build scripts.
@@ -23,7 +23,6 @@ export class Globals {
   totalGames = 0;
   muted = false;
   randomTableName = "";
-
   /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
   settings: Settings = new Settings();
   friends: string[] = [];
@@ -33,7 +32,6 @@ export class Globals {
 
   /** Keys are IDs. */
   userMap = new Map<number, User>();
-
   /** Keys are IDs. */
   tableMap = new Map<number, Table>();
   history: GameHistory[] = [];

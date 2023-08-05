@@ -1,17 +1,18 @@
 import charactersJSON from "./json/characters.json";
-import type { Character } from "./types/Character";
+import { Character } from "./types/Character";
 
 export function charactersInit(): ReadonlyMap<number, Character> {
   const characters = new Map<number, Character>();
 
-  if (charactersJSON.length === 0) {
+  const charactersJSONArray = Array.from(charactersJSON);
+  if (charactersJSONArray.length === 0) {
     throw new Error(
       'The "characters.json" file did not have any elements in it.',
     );
   }
 
-  for (const character of charactersJSON) {
-    // Validate the name.
+  for (const character of charactersJSONArray) {
+    // Validate the name
     if (character.name === "") {
       throw new Error(
         'There is a character with an empty name in the "characters.json" file.',
@@ -23,14 +24,14 @@ export function charactersInit(): ReadonlyMap<number, Character> {
       throw new Error(`The "${character.name}" character has an invalid ID.`);
     }
 
-    // Validate the description.
+    // Validate the description
     if (character.description === "") {
       throw new Error(
         `The "${character.name}" character does not have a description.`,
       );
     }
 
-    // Validate the emoji.
+    // Validate the emoji
     if (character.emoji === "") {
       throw new Error(
         `The "${character.name}" character does not have an emoji.`,

@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
+import * as KonvaContext from "konva/types/Context";
 
 export class FitText extends Konva.Text {
   origFontSize: number;
@@ -27,7 +27,6 @@ export class FitText extends Konva.Text {
   }
 
   resize(): void {
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     const textFits = (size: number) => {
       this.fontSize(size);
       return this.measureSize(this.text()).width <= this.width();

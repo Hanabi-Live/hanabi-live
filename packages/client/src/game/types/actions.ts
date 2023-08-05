@@ -1,11 +1,11 @@
-import type { CardIdentity } from "./CardIdentity";
-import type { CardIdentityType } from "./CardIdentityType";
-import type { ClientAction } from "./ClientAction";
-import type { EndCondition } from "./EndCondition";
-import type { MsgClue } from "./MsgClue";
-import type { Spectator } from "./Spectator";
-import type { SpectatorNote } from "./SpectatorNote";
-import type { UIAction } from "./UI";
+import { CardIdentity } from "./CardIdentity";
+import { CardIdentityType } from "./CardIdentityType";
+import { ClientAction } from "./ClientAction";
+import { EndCondition } from "./EndCondition";
+import { MsgClue } from "./MsgClue";
+import { Spectator } from "./Spectator";
+import { SpectatorNote } from "./SpectatorNote";
+import { UIAction } from "./UI";
 
 export type Action =
   | ActionInit

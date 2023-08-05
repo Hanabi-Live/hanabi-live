@@ -1,7 +1,7 @@
 import Konva from "konva";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as handRules from "../../../rules/hand";
-import type { State } from "../../../types/State";
+import { State } from "../../../types/State";
 import { LABEL_COLOR } from "../../constants";
 import { globals } from "../../globals";
 

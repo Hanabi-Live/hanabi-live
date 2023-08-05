@@ -1,5 +1,5 @@
 import equal from "fast-deep-equal";
-import type { Action, Store, Unsubscribe } from "redux";
+import { Action, Store, Unsubscribe } from "redux";
 
 export type Selector<T, U> = (s: T) => U | undefined;
 export type Listener<U> = (
@@ -26,30 +26,26 @@ export function observeStore<S, A extends Action<unknown>, T>(
     }
 
     // If the path changed, call the function.
-    const filteredSubscriptions = subscriptions.filter((s) => {
-      const nextValue = s.select(nextState);
-      if (nextValue === undefined) {
-        // The selector wants to skip this one.
-        return false;
-      }
-
-      if (currentState === undefined) {
-        // Initializing, always fire all.
-        return true;
-      }
-
-      // Fire if any part of it changed.
-      return !equal(nextValue, s.select(currentState));
-    });
-
-    for (const subscription of filteredSubscriptions) {
-      // `currentState` is undefined during initialization.
-      const currentValue =
-        currentState === undefined
-          ? undefined
-          : subscription.select(currentState);
-      subscription.onChange(subscription.select(nextState)!, currentValue);
-    }
+    subscriptions
+      .filter((s) => {
+        const nextValue = s.select(nextState);
+        if (nextValue === undefined) {
+          // The selector wants to skip this one.
+          return false;
+        }
+        if (currentState === undefined) {
+          // Initializing, always fire all.
+          return true;
+        }
+        // Fire if any part of it changed.
+        return !equal(nextValue, s.select(currentState));
+      })
+      .forEach((s) => {
+        // `currentState` is undefined during initialization.
+        const currentValue =
+          currentState !== undefined ? s.select(currentState) : undefined;
+        s.onChange(s.select(nextState)!, currentValue);
+      });
 
     currentState = nextState;
   }

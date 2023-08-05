@@ -1,4 +1,4 @@
-import type { Color } from "./Color";
+import { Color } from "./Color";
 
 export interface Suit {
   readonly name: string;

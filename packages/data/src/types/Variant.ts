@@ -1,5 +1,5 @@
-import type { Color } from "./Color";
-import type { Suit } from "./Suit";
+import { Color } from "./Color";
+import { Suit } from "./Suit";
 
 export interface Variant {
   readonly name: string;

@@ -7,12 +7,12 @@ import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as variantRules from "../rules/variant";
 import { ActionType } from "../types/ActionType";
-import type { CardLayout } from "./CardLayout";
+import { CardLayout } from "./CardLayout";
 import * as cursor from "./cursor";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import { isOurTurn } from "./isOurTurn";
-import type { PlayStack } from "./PlayStack";
+import { PlayStack } from "./PlayStack";
 import * as turn from "./turn";
 
 export class LayoutChild extends Konva.Group {
@@ -20,7 +20,7 @@ export class LayoutChild extends Konva.Group {
   doMisplayAnimation = false;
   blank = false;
 
-  private readonly _card: HanabiCard;
+  private _card: HanabiCard;
   get card(): HanabiCard {
     return this._card;
   }
@@ -37,7 +37,6 @@ export class LayoutChild extends Konva.Group {
     this.width(child.width());
     this.height(child.height());
 
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     const change = (event: unknown) => {
       const changeEvent = event as { oldVal: number; newVal: number };
       if (changeEvent.oldVal === changeEvent.newVal) {

@@ -1,11 +1,11 @@
-import type { Variant } from "@hanabi/data";
 import {
   DEFAULT_CARD_RANKS,
   STACK_BASE_RANK,
   START_CARD_RANK,
   UNKNOWN_CARD_RANK,
+  Variant,
 } from "@hanabi/data";
-import type { CardState } from "../types/CardState";
+import { CardState } from "../types/CardState";
 import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
 
@@ -17,7 +17,7 @@ function lastPlayedRank(
     return STACK_BASE_RANK;
   }
 
-  const orderOfTopCard = playStack.at(-1)!;
+  const orderOfTopCard = playStack[playStack.length - 1]!;
   return deck[orderOfTopCard]!.rank ?? UNKNOWN_CARD_RANK;
 }
 
@@ -126,7 +126,7 @@ export function direction(
   }
 
   // The only remaining case is if the top is 3, in which case there will always be 3 cards.
-  const secondCard = deck[playStack.at(-2)!]!.rank;
+  const secondCard = deck[playStack[playStack.length - 2]!]!.rank;
   return secondCard === 4 ? StackDirection.Down : StackDirection.Up;
 }
 

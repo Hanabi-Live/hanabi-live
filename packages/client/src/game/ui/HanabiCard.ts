@@ -1,29 +1,35 @@
 // The `HanabiCard` object represents a single card. It has a `LayoutChild` parent.
 
-import type { Color, Suit, Variant } from "@hanabi/data";
-import { getSuit, STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import {
+  Color,
+  getSuit,
+  STACK_BASE_RANK,
+  Suit,
+  UNKNOWN_CARD_RANK,
+  Variant,
+} from "@hanabi/data";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
-import type { CardIdentity } from "../types/CardIdentity";
+import { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
-import type { CardNote } from "../types/CardNote";
-import type { CardState } from "../types/CardState";
+import { CardNote } from "../types/CardNote";
+import { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
 import { StackDirection } from "../types/StackDirection";
-import type { UICard } from "../types/UICard";
+import { UICard } from "../types/UICard";
 import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
-import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import type { NoteIndicator } from "./controls/NoteIndicator";
+import { NodeWithTooltip } from "./controls/NodeWithTooltip";
+import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { suitIndexToSuit } from "./convert";
-import type { CursorType } from "./cursor";
+import { CursorType } from "./cursor";
 import { globals } from "./globals";
-import * as HanabiCardInit from "./hanabiCardInit";
-import * as HanabiCardMouse from "./hanabiCardMouse";
+import * as HanabiCardInit from "./HanabiCardInit";
+import * as HanabiCardMouse from "./HanabiCardMouse";
 import { animate } from "./konvaHelpers";
 import { LayoutChild } from "./LayoutChild";
 import {
@@ -51,39 +57,39 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   wasRecentlyTapped = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly bare: Konva.Image;
+  private bare: Konva.Image;
   private bareName = "";
 
-  private readonly cluedBorder: Konva.Group;
-  private readonly chopMoveBorder: Konva.Group;
-  private readonly finesseBorder: Konva.Group;
+  private cluedBorder: Konva.Group;
+  private chopMoveBorder: Konva.Group;
+  private finesseBorder: Konva.Group;
 
-  private readonly suitPips: Konva.Group;
-  private readonly rankPips: Konva.Group;
-  private readonly suitPipsMap: Map<number, Konva.Shape>;
-  private readonly suitPipsPositiveMap: Map<number, Konva.Shape>;
-  private readonly suitPipsXMap: Map<number, Konva.Shape>;
-  private readonly rankPipsMap: Map<number, RankPip>;
-  private readonly rankPipsXMap: Map<number, Konva.Shape>;
-  private readonly criticalIndicator: Konva.Image;
-  private readonly arrow: Konva.Group | null = null;
-  private readonly arrowBase: Konva.Arrow | null = null;
+  private suitPips: Konva.Group;
+  private rankPips: Konva.Group;
+  private suitPipsMap: Map<number, Konva.Shape>;
+  private suitPipsPositiveMap: Map<number, Konva.Shape>;
+  private suitPipsXMap: Map<number, Konva.Shape>;
+  private rankPipsMap: Map<number, RankPip>;
+  private rankPipsXMap: Map<number, Konva.Shape>;
+  private criticalIndicator: Konva.Image;
+  private arrow: Konva.Group | null = null;
+  private arrowBase: Konva.Arrow | null = null;
 
   noteIndicator: NoteIndicator;
-  private readonly trashcan: Konva.Image;
-  private readonly questionMark: Konva.Image;
-  private readonly exclamationMark: Konva.Image;
-  private readonly wrench: Konva.Image;
-  private readonly ddaIndicatorTop: Konva.Image;
-  private readonly ddaIndicatorBottom: Konva.Image;
-  private readonly trashMiniIndicatorTop: Konva.Image;
-  private readonly trashMiniIndicatorBottom: Konva.Image;
+  private trashcan: Konva.Image;
+  private questionMark: Konva.Image;
+  private exclamationMark: Konva.Image;
+  private wrench: Konva.Image;
+  private ddaIndicatorTop: Konva.Image;
+  private ddaIndicatorBottom: Konva.Image;
+  private trashMiniIndicatorTop: Konva.Image;
+  private trashMiniIndicatorBottom: Konva.Image;
 
   // -------------------
   // Getters and setters
   // -------------------
 
-  private readonly _layout: LayoutChild;
+  private _layout: LayoutChild;
   get layout(): LayoutChild {
     return this._layout;
   }
@@ -261,9 +267,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       this.bare.listening(true);
     }
 
-    for (const callback of this.tweenCallbacks) {
+    this.tweenCallbacks.forEach((callback) => {
       callback();
-    }
+    });
     this.tweenCallbacks = [];
   }
 
@@ -299,11 +305,16 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.layout.checkSetDraggable();
 
     // Set the visible state. (This must be after the morphed blank check.)
-    this._visibleSuitIndex =
-      suitToShow === unknownSuit
-        ? null
-        : this.variant.suits.indexOf(suitToShow);
-    this._visibleRank = rankToShow === UNKNOWN_CARD_RANK ? null : rankToShow;
+    if (suitToShow === unknownSuit) {
+      this._visibleSuitIndex = null;
+    } else {
+      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
+    }
+    if (rankToShow === UNKNOWN_CARD_RANK) {
+      this._visibleRank = null;
+    } else {
+      this._visibleRank = rankToShow;
+    }
 
     // Setting "this.bareName" will automatically update how the card appears the next time that the
     // "card" layer is drawn.
@@ -459,15 +470,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (this.isMorphed()) {
       return this.getMorph()!;
     }
-    if (globals.state.replay.hypothetical !== null && globals.state.playing) {
-      const possibilities = possibleCardsFromNoteAndClues(
-        this.note,
-        this.state,
-      );
-      if (possibilities.length === 1) {
-        const possibility = possibilities[0]!;
-        const [suitIndex, rank] = possibility;
-        return { suitIndex, rank };
+    if (globals.state.replay.hypothetical !== null) {
+      if (globals.state.playing) {
+        const possibilities = possibleCardsFromNoteAndClues(
+          this.note,
+          this.state,
+        );
+        if (possibilities.length === 1) {
+          const possibility = possibilities[0]!;
+          const [suitIndex, rank] = possibility;
+          return { suitIndex, rank };
+        }
       }
     }
 
@@ -810,11 +823,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
   }
 
-  private readonly setArrowMiddleRight = () => {
+  private setArrowMiddleRight = () => {
     this.arrow!.y(0.5 * CARD_H);
   };
 
-  private readonly setArrowBottomRight = () => {
+  private setArrowBottomRight = () => {
     this.arrow!.y(0.79 * CARD_H);
   };
 
@@ -829,12 +842,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return;
     }
 
-    const status =
+    let status: CardStatus;
+    if (
       this.visibleSuitIndex === null ||
       this.visibleRank === null ||
       this.visibleRank === STACK_BASE_RANK
-        ? CardStatus.NeedsToBePlayed // Default status; not faded and not critical.
-        : visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
+    ) {
+      status = CardStatus.NeedsToBePlayed; // Default status; not faded and not critical.
+    } else {
+      status =
+        visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
+    }
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
@@ -1336,28 +1354,34 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const index = this.state.suitIndex ?? 0;
     const { variant } = this;
     const suit = variant.suits[index]!;
+    function colorName(color: Color) {
+      return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
+    }
     const lines: string[] = [];
     if (suit.oneOfEach) {
       lines.push("Every card is unique.");
     }
     if (suit.clueColors.length > 1) {
-      const colorsHTML: string[] = [];
+      const colors: string[] = [];
       for (const color of suit.clueColors) {
-        const colorHTML = getColorHTML(color);
-        colorsHTML.push(colorHTML);
+        colors.push(colorName(color));
       }
-      lines.push(`Touched by ${colorsHTML.join(", ")} color clues`);
+      lines.push(`Touched by ${colors.join(", ")} color clues`);
     }
     if (suit.prism) {
       const cards: string[] = [];
       if (variantRules.isUpOrDown(variant)) {
-        const colorHTML = getColorHTML(variant.clueColors.at(-1)!);
-        cards.push(`START is ${colorHTML}`);
+        cards.push(
+          `START is ${colorName(
+            variant.clueColors[variant.clueColors.length - 1]!,
+          )}`,
+        );
       }
       for (let rank = 1; rank <= 5; rank++) {
         const prismColorIndex = (rank - 1) % variant.clueColors.length;
-        const colorHTML = getColorHTML(variant.clueColors[prismColorIndex]!);
-        cards.push(`${rank} is ${colorHTML}`);
+        cards.push(
+          `${rank} is ${colorName(variant.clueColors[prismColorIndex]!)}`,
+        );
       }
       lines.push(`Colors: ${cards.join(", ")}`);
     }
@@ -1388,8 +1412,4 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   getLayoutParent(): LayoutChild {
     return this._layout;
   }
-}
-
-function getColorHTML(color: Color) {
-  return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
 }

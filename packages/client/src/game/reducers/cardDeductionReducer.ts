@@ -1,9 +1,8 @@
-import type { Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import { getVariant, Variant } from "@hanabi/data";
 import * as deckRules from "../rules/deck";
-import type { GameAction } from "../types/actions";
-import type { CardState } from "../types/CardState";
-import type { GameMetadata } from "../types/GameMetadata";
+import { GameAction } from "../types/actions";
+import { CardState } from "../types/CardState";
+import { GameMetadata } from "../types/GameMetadata";
 
 export function cardDeductionReducer(
   deck: readonly CardState[],
@@ -32,7 +31,7 @@ function makeDeductions(
   hands: ReadonlyArray<readonly number[]>,
   metadata: GameMetadata,
 ) {
-  const newDeck: CardState[] = [...deck];
+  const newDeck: CardState[] = Array.from(deck);
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
 
@@ -72,8 +71,8 @@ function calculatePlayerPossibilities(
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
 ) {
-  for (const hand of hands) {
-    for (const order of hand) {
+  hands.forEach((hand) => {
+    hand.forEach((order) => {
       const card = deck[order]!;
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
@@ -87,8 +86,8 @@ function calculatePlayerPossibilities(
           metadata,
         );
       }
-    }
-  }
+    });
+  });
 }
 
 function calculateCard(
@@ -158,7 +157,7 @@ function shouldCalculateCard(
 
   const oldCard = oldDeck[card.order];
 
-  if (oldCard === undefined || oldCard.location === "deck") {
+  if (typeof oldCard === "undefined" || oldCard.location === "deck") {
     // This is a newly drawn card and hasn't had any calculations yet.
     return true;
   }
@@ -176,14 +175,10 @@ function shouldCalculateCard(
 }
 
 function getCardPossibilitiesForPlayer(
-  card: CardState | undefined,
+  card: CardState,
   playerIndex: number,
   ourPlayerIndex: number,
 ): ReadonlyArray<readonly [number, number]> {
-  if (card === undefined) {
-    return [];
-  }
-
   if (card.location === playerIndex) {
     // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
@@ -291,12 +286,12 @@ function isPossibleCard(
 }
 
 function canBeUsedToDisprovePossibility(
-  card: CardState | undefined,
+  card: CardState,
   excludeCardOrder: number,
   playerIndex: number,
 ) {
   return (
-    card !== undefined &&
+    typeof card !== "undefined" &&
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
@@ -311,8 +306,9 @@ function deckPossibilitiesDifferent(
   playerIndex: number,
   ourPlayerIndex: number,
 ) {
-  for (const [order, card] of deck.entries()) {
-    const oldCard = oldDeck[order];
+  for (let order = 0; order < deck.length; order++) {
+    const oldCard = oldDeck[order]!;
+    const card = deck[order]!;
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
@@ -367,7 +363,7 @@ function filterCardPossibilities(
   // working combination. If so, then the new identity for our specific card is also valid and
   // doesn't need to be validated again (so it's removed from possibilitiesToValidate).
   let possibilitiesToValidate: Array<readonly [number, number]> = [];
-  possibilitiesToValidate = [...cardPossibilities];
+  possibilitiesToValidate = Array.from(cardPossibilities);
   return cardPossibilities.filter((possibility) => {
     // If the possibility is not in the list that still needs validation then it must mean the
     // possibility is already validated and we can exit early.
@@ -455,26 +451,26 @@ let cachedCardCountMap: number[][] = [];
 
 function getCardCountMap(variant: Variant) {
   if (variant.id === cachedVariantId) {
-    return Array.from(cachedCardCountMap, (arr) => [...arr]);
+    return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
   }
 
-  const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
-  const possibleRanks: number[] = [...variant.ranks];
+  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
+  const possibleRanks: number[] = variant.ranks.slice();
   const possibleCardMap: number[][] = [];
-  for (const suitIndex of possibleSuits) {
+  possibleSuits.forEach((suitIndex) => {
     possibleCardMap[suitIndex] = [];
     const suit = variant.suits[suitIndex]!;
-    for (const rank of possibleRanks) {
+    possibleRanks.forEach((rank) => {
       possibleCardMap[suitIndex]![rank] = deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,
       );
-    }
-  }
+    });
+  });
 
   cachedVariantId = variant.id;
-  cachedCardCountMap = Array.from(possibleCardMap, (arr) => [...arr]);
+  cachedCardCountMap = Array.from(possibleCardMap, (arr) => Array.from(arr));
 
   return possibleCardMap;
 }

@@ -1,9 +1,8 @@
-import type { Variant } from "@hanabi/data";
-import { STACK_BASE_RANK, START_CARD_RANK } from "@hanabi/data";
+import { STACK_BASE_RANK, START_CARD_RANK, Variant } from "@hanabi/data";
 import * as modals from "../../modals";
 import { canPossiblyBeFromEmpathy } from "../rules/card";
-import type { CardNote } from "../types/CardNote";
-import type { CardState } from "../types/CardState";
+import { CardNote } from "../types/CardNote";
+import { CardState } from "../types/CardState";
 import { globals } from "./globals";
 
 export function checkNoteImpossibility(
@@ -74,7 +73,7 @@ export function getSuitIndexFromNote(
   note: CardNote,
   state: CardState,
 ): number | null {
-  if (note.possibilities.length > 0) {
+  if (note.possibilities.length !== 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
     const [candidateSuitIndex] = possibilities[0]!;
     if (
@@ -90,7 +89,7 @@ export function getRankFromNote(
   note: CardNote,
   state: CardState,
 ): number | null {
-  if (note.possibilities.length > 0) {
+  if (note.possibilities.length !== 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
     const candidateRank = possibilities[0]![1];
     if (possibilities.every((card) => card[1] === candidateRank)) {

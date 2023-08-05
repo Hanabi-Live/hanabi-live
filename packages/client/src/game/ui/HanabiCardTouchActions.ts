@@ -2,11 +2,11 @@
 
 import * as cardRules from "../rules/card";
 import { DOUBLE_TAP_DELAY } from "./constants";
-import type { HanabiCard } from "./HanabiCard";
+import { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
-export function hanabiCardTap(this: HanabiCard): void {
+export function HanabiCardTap(this: HanabiCard): void {
   // We must delay the action by a bit to make sure it isn't a double tap.
   if (this.wasRecentlyTapped) {
     // We now know it was a double tap, so ignore the tap action.
@@ -22,13 +22,13 @@ export function hanabiCardTap(this: HanabiCard): void {
 
   setTimeout(() => {
     if (this.wasRecentlyTapped) {
-      hanabiCardTapAction.call(this);
+      HanabiCardTapAction.call(this);
     }
     this.wasRecentlyTapped = false;
   }, DOUBLE_TAP_DELAY);
 }
 
-function hanabiCardTapAction(this: HanabiCard) {
+function HanabiCardTapAction(this: HanabiCard) {
   // Disable all click events if the card is tweening.
   if (this.tweening) {
     return;
@@ -52,7 +52,7 @@ function hanabiCardTapAction(this: HanabiCard) {
   }
 }
 
-export function hanabiCardDblTap(this: HanabiCard): void {
+export function HanabiCardDblTap(this: HanabiCard): void {
   // Disable all click events if the card is tweening.
   if (this.tweening) {
     return;

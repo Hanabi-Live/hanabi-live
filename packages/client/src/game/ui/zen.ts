@@ -2,9 +2,11 @@ import { globals } from "./globals";
 import { onSpectatorsChanged } from "./reactive/view/spectatorsView";
 
 export function toggleZen(): void {
-  globals.lobby.zenModeEnabled = globals.state.finished
-    ? false
-    : !globals.lobby.zenModeEnabled;
+  if (globals.state.finished) {
+    globals.lobby.zenModeEnabled = false;
+  } else {
+    globals.lobby.zenModeEnabled = !globals.lobby.zenModeEnabled;
+  }
 
   if (globals.lobby.zenModeEnabled) {
     globals.game!.chat.hide();

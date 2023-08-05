@@ -1,9 +1,7 @@
 // Functions for building a state table for every turn.
 
-import type { Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
-import type { Draft } from "immer";
-import produce, { castDraft, original } from "immer";
+import { getVariant, Variant } from "@hanabi/data";
+import produce, { castDraft, Draft, original } from "immer";
 import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
@@ -12,13 +10,12 @@ import * as handRules from "../rules/hand";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
-import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
-import type { CardNote } from "../types/CardNote";
-import type { CardState } from "../types/CardState";
+import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
+import { CardNote } from "../types/CardNote";
+import { CardState } from "../types/CardState";
 import { EndCondition } from "../types/EndCondition";
-import type { GameMetadata } from "../types/GameMetadata";
-import { getPlayerName } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
+import { GameMetadata, getPlayerName } from "../types/GameMetadata";
+import { GameState } from "../types/GameState";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
@@ -270,9 +267,12 @@ function gameStateReducerFunction(
         const durationString = millisecondsToClockString(milliseconds);
         const playerName = getPlayerName(i, metadata);
 
-        const text = metadata.options.timed
-          ? `${playerName} had ${durationString} left`
-          : `${playerName} took: ${durationString}`;
+        let text: string;
+        if (metadata.options.timed) {
+          text = `${playerName} had ${durationString} left`;
+        } else {
+          text = `${playerName} took: ${durationString}`;
+        }
         state.log.push({
           turn: state.turn.turnNum + 1,
           text,
@@ -358,7 +358,7 @@ function gameStateReducerFunction(
     action.suitIndex >= 0 &&
     action.rank >= 0
   ) {
-    for (const rank of variant.ranks) {
+    variant.ranks.forEach((rank) => {
       state.cardStatus[action.suitIndex]![rank] = cardRules.status(
         action.suitIndex,
         rank,
@@ -368,7 +368,7 @@ function gameStateReducerFunction(
         state.playStackStarts,
         variant,
       );
-    }
+    });
   }
 
   // Use a sub-reducer to calculate the turn.

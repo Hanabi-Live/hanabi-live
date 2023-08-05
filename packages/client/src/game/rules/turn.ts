@@ -1,7 +1,6 @@
-import type { Variant } from "@hanabi/data";
-import { getCharacter } from "@hanabi/data";
-import type { Options } from "../../types/Options";
-import type { GameMetadata } from "../types/GameMetadata";
+import { getCharacter, Variant } from "@hanabi/data";
+import { Options } from "../../types/Options";
+import { GameMetadata } from "../types/GameMetadata";
 import * as clueTokensRules from "./clueTokens";
 
 export function shouldEndTurnAfterDraw(
@@ -50,15 +49,15 @@ export function getNextPlayerIndex(
   }
 
   let nextPlayerIndex: number;
-  if (turnsInverted) {
-    nextPlayerIndex = currentPlayerIndex - 1;
-    if (nextPlayerIndex === -1) {
-      nextPlayerIndex = numPlayers - 1;
-    }
-  } else {
+  if (!turnsInverted) {
     nextPlayerIndex = currentPlayerIndex + 1;
     if (nextPlayerIndex === numPlayers) {
       nextPlayerIndex = 0;
+    }
+  } else {
+    nextPlayerIndex = currentPlayerIndex - 1;
+    if (nextPlayerIndex === -1) {
+      nextPlayerIndex = numPlayers - 1;
     }
   }
 

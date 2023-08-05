@@ -1,7 +1,7 @@
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as variantRules from "../../../rules/variant";
 import { ClueType } from "../../../types/ClueType";
-import type { State } from "../../../types/State";
+import { State } from "../../../types/State";
 import { globals } from "../../globals";
 import { isOurTurn } from "../../isOurTurn";
 import * as ourHand from "../../ourHand";

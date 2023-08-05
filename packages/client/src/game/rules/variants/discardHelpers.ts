@@ -1,5 +1,5 @@
-import type { Variant } from "@hanabi/data";
-import type { CardState } from "../../types/CardState";
+import { Variant } from "@hanabi/data";
+import { CardState } from "../../types/CardState";
 import * as deckRules from "../deck";
 
 export function discardedHelpers(
@@ -27,7 +27,7 @@ export function createAllDiscardedMap(
 ): Map<number, boolean> {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
   const allDiscarded = new Map<number, boolean>();
-  for (const variantRank of variant.ranks) {
+  for (const variantRank of variant.ranks.slice()) {
     allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
   }
   return allDiscarded;

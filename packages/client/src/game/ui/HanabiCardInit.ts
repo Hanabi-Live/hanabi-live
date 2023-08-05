@@ -1,14 +1,13 @@
 // Initialization functions for the HanabiCard object.
 
-import type { Suit, Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
+import { START_CARD_RANK, Suit, Variant } from "@hanabi/data";
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
-import type { Arrow } from "konva/types/shapes/Arrow";
-import type { RectConfig } from "konva/types/shapes/Rect";
-import type * as KonvaUtil from "konva/types/Util";
+import * as KonvaContext from "konva/types/Context";
+import { Arrow } from "konva/types/shapes/Arrow";
+import { RectConfig } from "konva/types/shapes/Rect";
+import * as KonvaUtil from "konva/types/Util";
 import * as variantRules from "../rules/variant";
-import type { Pips } from "../types/Pips";
+import { Pips } from "../types/Pips";
 import {
   BOTTOM_LEFT_X,
   BOTTOM_LEFT_Y,
@@ -68,28 +67,26 @@ function makeBorder(color: string) {
     listening: false,
   });
 
-  const borderOutside = new Konva.Rect(
-    getBorderConfig(borderStrokeWidth, borderOutsideColor),
-  );
-  const borderInside = new Konva.Rect(
-    getBorderConfig(borderStrokeWidthInside, color),
-  );
-
-  border.add(borderOutside);
-  border.add(borderInside);
-
-  return border;
-}
-
-function getBorderConfig(strokeWidth: number, stroke: string): RectConfig {
-  return {
+  const borderConfig = (strokeWidth: number, stroke: string): RectConfig => ({
     width: CARD_W - borderOffset,
     height: CARD_H - borderOffset,
     cornerRadius: borderCornerRadius,
     strokeWidth,
     stroke,
     listening: false,
-  };
+  });
+
+  const borderOutside = new Konva.Rect(
+    borderConfig(borderStrokeWidth, borderOutsideColor),
+  );
+  const borderInside = new Konva.Rect(
+    borderConfig(borderStrokeWidthInside, color),
+  );
+
+  border.add(borderOutside);
+  border.add(borderInside);
+
+  return border;
 }
 
 export const cluedBorder = (): Konva.Group => makeBorder(CLUED_COLOR);

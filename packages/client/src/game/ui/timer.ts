@@ -2,7 +2,7 @@
 
 import * as tooltips from "../../tooltips";
 import { millisecondsToClockString } from "../../utils";
-import type { TimerDisplay } from "./controls/TimerDisplay";
+import { TimerDisplay } from "./controls/TimerDisplay";
 import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 
@@ -47,7 +47,7 @@ export function update(data: ClockData): void {
   globals.startingTurnTime = globals.playerTimes[data.activePlayerIndex]!;
 
   // Mark the time that we updated the local player times.
-  globals.lastTimerUpdateTimeMS = Date.now();
+  globals.lastTimerUpdateTimeMS = new Date().getTime();
 
   // Update onscreen time displays.
   if (globals.state.playing) {
@@ -114,7 +114,7 @@ export function stop(): void {
 
 function setTickingDownTime(timer: TimerDisplay) {
   // Calculate the elapsed time since the last timer update.
-  const now = Date.now();
+  const now = new Date().getTime();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
   globals.lastTimerUpdateTimeMS = now;
   if (elapsedTime < 0) {
@@ -149,7 +149,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     globals.options.timed &&
     globals.lobby.settings.soundTimer &&
     millisecondsLeft > 0 && // Between 0 and 10 seconds
-    millisecondsLeft <= 10_000 &&
+    millisecondsLeft <= 10000 &&
     elapsedTime > 900 &&
     elapsedTime < 1100 &&
     !globals.state.pause.active &&
@@ -175,7 +175,11 @@ function setTickingDownTimeTooltip(i: number) {
   }
 
   let content = "Time ";
-  content += globals.options.timed ? "remaining" : "taken";
+  if (globals.options.timed) {
+    content += "remaining";
+  } else {
+    content += "taken";
+  }
   content += ":<br /><strong>";
   content += millisecondsToClockString(time);
   content += "</strong>";

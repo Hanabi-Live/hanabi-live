@@ -28,11 +28,11 @@ import {
   getVariantsForSpecialRanks,
   getVeryAmbiguousVariants,
 } from "../getVariantDescriptions";
-import type { SuitJSON } from "../types/SuitJSON";
-import type { VariantDescription } from "../types/VariantDescription";
-import type { VariantJSON } from "../types/VariantJSON";
+import { SuitJSON } from "../types/SuitJSON";
+import { VariantDescription } from "../types/VariantDescription";
+import { VariantJSON } from "../types/VariantJSON";
 import { getVariantFromNewID } from "./newID";
-import { fatalError } from "./utils";
+import { error } from "./utils";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
@@ -95,7 +95,7 @@ function main() {
   /// validateNewVariantIDs(variants); // TODO uncomment
 
   if (checkForMissingVariants(variants, oldVariants)) {
-    fatalError(
+    error(
       'Skipping the creation of a new "variant.json" file since there were missing variants.',
     );
   }
@@ -120,8 +120,8 @@ function getPaths(): [string, string, string] {
   return [suitsPath, variantsPath, textPath];
 }
 
-function getJSONAndParse(jsonPath: string): unknown {
-  const data = fs.readFileSync(jsonPath, "utf8");
+function getJSONAndParse(jsonPath: string) {
+  const data = fs.readFileSync(jsonPath, "utf-8");
   return JSON.parse(data) as unknown;
 }
 
@@ -132,24 +132,22 @@ function validateSuits(suits: SuitJSON[]) {
   for (const suit of suits) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (suit.name === undefined || suit.name === "") {
-      fatalError(
-        'One of the suits in the "suits.json" file does not have a name.',
-      );
+      error('One of the suits in the "suits.json" file does not have a name.');
     }
 
     if (suitNames.has(suit.name)) {
-      fatalError(`Suit "${suit.name}" has a duplicate name.`);
+      error(`Suit "${suit.name}" has a duplicate name.`);
     }
 
     suitNames.add(suit.name);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (suit.id === undefined || suit.id === "") {
-      fatalError(`Suit "${suit.name}" does not have an ID.`);
+      error(`Suit "${suit.name}" does not have an ID.`);
     }
 
     if (suitIDs.has(suit.id)) {
-      fatalError(`Suit "${suit.name}" has a duplicate ID.`);
+      error(`Suit "${suit.name}" has a duplicate ID.`);
     }
 
     suitIDs.add(suit.id);
@@ -209,28 +207,28 @@ function validateVariants(variants: VariantJSON[]) {
   for (const variant of variants) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (variant.name === undefined || variant.name === "") {
-      fatalError(
+      error(
         'One of the variants in the "variants.json" file does not have a name.',
       );
     }
 
     if (variantNames.has(variant.name)) {
-      fatalError(`Variant "${variant.name}" has a duplicate name.`);
+      error(`Variant "${variant.name}" has a duplicate name.`);
     }
 
     variantNames.add(variant.name);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (variant.id === undefined) {
-      fatalError(`Variant "${variant.name}" does not have an ID.`);
+      error(`Variant "${variant.name}" does not have an ID.`);
     }
 
     if (variant.id < 0) {
-      fatalError(`Variant "${variant.name}" has a negative ID.`);
+      error(`Variant "${variant.name}" has a negative ID.`);
     }
 
     if (variantIDs.has(variant.id)) {
-      fatalError(`Variant "${variant.name}" has a duplicate ID.`);
+      error(`Variant "${variant.name}" has a duplicate ID.`);
     }
 
     variantIDs.add(variant.id);
@@ -244,42 +242,27 @@ function setOldVariantMaps(variants: VariantJSON[]) {
   }
 }
 
-/** The first element is undefined so that e.g. the values for "3 Suits" are at index 3. */
-export type BasicVariantSuits = [
-  undefined,
-  string[],
-  string[],
-  string[],
-  string[],
-  string[],
-  string[],
-];
-
 /**
  * Create an array containing the suits for the "3 Suits" variant, the "4 Suits" variant, and so on.
  */
-function getBasicVariantSuits(): BasicVariantSuits {
-  const oneSuit = ["Red"];
-  const twoSuits = ["Red", "Blue"];
+function getBasicVariantSuits(): string[][] {
+  const variantSuits: string[][] = [];
+
+  variantSuits[1] = ["Red"];
+  variantSuits[2] = [...variantSuits[1], "Blue"];
 
   // Green is inserted before Blue to keep the colors in "rainbow" order.
-  const threeSuits = ["Red", "Green", "Blue"];
+  variantSuits[3] = [...variantSuits[2]];
+  variantSuits[3].splice(1, 0, "Green");
 
   // Yellow is inserted before Green to keep the colors in "rainbow" order.
-  const fourSuits = ["Red", "Yellow", "Green", "Blue"];
+  variantSuits[4] = [...variantSuits[3]];
+  variantSuits[4].splice(1, 0, "Yellow");
 
-  const fiveSuits = [...fourSuits, "Purple"];
-  const sixSuits = [...fiveSuits, "Teal"];
+  variantSuits[5] = [...variantSuits[4], "Purple"];
+  variantSuits[6] = [...variantSuits[5], "Teal"];
 
-  return [
-    undefined,
-    oneSuit,
-    twoSuits,
-    threeSuits,
-    fourSuits,
-    fiveSuits,
-    sixSuits,
-  ];
+  return variantSuits;
 }
 
 function getVariantsFromVariantDescriptions(
@@ -292,7 +275,7 @@ function getVariantsFromVariantDescriptions(
   }));
 }
 
-function getNextUnusedVariantID(variantName: string): number {
+function getNextUnusedVariantID(variantName: string) {
   // First, prefer the old/existing variant ID, if present.
   const id = oldVariantsNameToIDMap.get(variantName);
   if (id !== undefined) {
@@ -316,7 +299,7 @@ function getNextUnusedVariantID(variantName: string): number {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getNewVariantID(variantDescription: VariantDescription): string {
+function getNewVariantID(variantDescription: VariantDescription) {
   const suitIDs = getSuitIDsFromSuitNames(variantDescription.suits);
   return suitIDs.join("+");
 }
@@ -338,11 +321,11 @@ function validateNewVariantIDs(variants: VariantJSON[]) {
 
   for (const variant of variants) {
     if (variant.newID === undefined || variant.newID === "") {
-      fatalError(`Variant "${variant.name}" is missing a newID.`);
+      error(`Variant "${variant.name}" is missing a newID.`);
     }
 
     if (newVariantIDs.has(variant.newID)) {
-      fatalError(`Variant "${variant.name}" has a duplicate newID.`);
+      error(`Variant "${variant.name}" has a duplicate newID.`);
     }
 
     newVariantIDs.add(variant.newID);
@@ -351,7 +334,7 @@ function validateNewVariantIDs(variants: VariantJSON[]) {
     reconstructedVariant.name = variant.name;
     reconstructedVariant.id = variant.id;
     if (!isEqual(reconstructedVariant, variant)) {
-      fatalError(
+      error(
         `Variant "${variant.name}" has a new ID that was parsed incorrectly.`,
       );
     }
@@ -379,7 +362,7 @@ function checkForMissingVariants(
 }
 
 function createVariantJSONFile(variants: VariantJSON[], jsonPath: string) {
-  const data = `${JSON.stringify(variants, undefined, 2)}\n`;
+  const data = `${JSON.stringify(variants, null, 2)}\n`;
   fs.writeFileSync(jsonPath, data);
   console.log(`Created: ${jsonPath}`);
 }
