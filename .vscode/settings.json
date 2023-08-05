@@ -23,6 +23,7 @@
   // Configure glob patterns for excluding files and folders in full text searches and quick open
   "search.exclude": {
     "**/*.min.js*": true,
+    "**/.yarn/": true,
     "**/dist/": true,
     "**/misc/keldon/": true,
     "**/node_modules/": true,
@@ -110,14 +111,9 @@
   // Python
   // ------
 
-  // Use "black" to automatically format Python files.
-  // https://github.com/psf/black
-  "python.formatting.provider": "black",
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": false,
-
   // Automatically run the formatter when a Python file is saved.
   "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
   },
