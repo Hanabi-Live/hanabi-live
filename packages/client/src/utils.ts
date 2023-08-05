@@ -30,10 +30,6 @@ export function getURLFromPath(path: string): string {
   return url;
 }
 
-export function initArray<T>(length: number, value: T): T[] {
-  return Array.from({ length }, () => value);
-}
-
 export function isDevWebpack(): boolean {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.has("dev");

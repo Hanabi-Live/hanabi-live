@@ -3,11 +3,11 @@ import {
   ALL_RESERVED_NOTES,
   MAX_RANK,
   START_CARD_RANK,
+  initArray,
   parseIntSafe,
 } from "@hanabi/data";
 import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
-import { initArray } from "../../utils";
 
 interface CardIdentities {
   readonly suitIndices: number[];

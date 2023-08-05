@@ -20,6 +20,10 @@ export function clamp(x: number, min: number, max: number): number {
   return Math.max(min, Math.min(x, max));
 }
 
+export function initArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
+}
+
 /** Initializes an array with all elements containing the specified default value. */
 export function newArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);

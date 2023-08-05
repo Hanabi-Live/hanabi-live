@@ -2,11 +2,11 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import { getVariant, parseIntSafe } from "@hanabi/data";
+import { getVariant, initArray, parseIntSafe } from "@hanabi/data";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import * as sentry from "../../sentry";
-import { initArray, setBrowserAddressBarPath } from "../../utils";
+import { setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
 import * as handRules from "../rules/hand";

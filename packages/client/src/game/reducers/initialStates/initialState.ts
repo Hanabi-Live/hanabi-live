@@ -1,5 +1,4 @@
-import { getVariant } from "@hanabi/data";
-import { initArray } from "../../../utils";
+import { getVariant, initArray } from "@hanabi/data";
 import * as deckRules from "../../rules/deck";
 import { GameMetadata } from "../../types/GameMetadata";
 import { State } from "../../types/State";

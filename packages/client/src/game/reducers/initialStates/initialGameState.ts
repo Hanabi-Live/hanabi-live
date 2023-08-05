@@ -1,10 +1,10 @@
 import {
   getVariant,
+  initArray,
   MAX_CLUE_NUM,
   newArray,
   UNKNOWN_CARD_RANK,
 } from "@hanabi/data";
-import { initArray } from "../../../utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";

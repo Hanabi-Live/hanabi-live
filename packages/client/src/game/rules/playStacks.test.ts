@@ -1,5 +1,9 @@
-import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
-import { initArray } from "../../utils";
+import {
+  getDefaultVariant,
+  getVariant,
+  initArray,
+  START_CARD_RANK,
+} from "@hanabi/data";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { StackDirection } from "../types/StackDirection";
 import { direction, nextPlayableRanks } from "./playStacks";
