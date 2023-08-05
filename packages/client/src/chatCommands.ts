@@ -12,7 +12,7 @@ export const chatCommands = new Map<string, Callback>();
 // /friend [username]
 function friend(room: string, args: string[]) {
   // Validate that the format of the command is correct.
-  if (args.length < 1) {
+  if (args.length === 0) {
     sendSelfPMFromServer(
       "The format of the /friend command is: <code>/friend Alice</code>",
       room,
@@ -36,12 +36,10 @@ chatCommands.set("addfriend", friend);
 
 // /friends
 function friends(room: string) {
-  let msg: string;
-  if (globals.friends.length === 0) {
-    msg = "Currently, you do not have any friends on your friends list.";
-  } else {
-    msg = `Current friends: ${globals.friends.join(", ")}`;
-  }
+  const msg =
+    globals.friends.length === 0
+      ? "Currently, you do not have any friends on your friends list."
+      : `Current friends: ${globals.friends.join(", ")}`;
   sendSelfPMFromServer(msg, room);
 }
 chatCommands.set("f", friends);
@@ -178,7 +176,7 @@ chatCommands.set("suggest", (room: string, args: string[]) => {
     return;
   }
 
-  if (args.length < 1) {
+  if (args.length === 0) {
     sendSelfPMFromServer(
       "The format of the /suggest command is: <code>/suggest [turn]</code>",
       room,
@@ -268,6 +266,7 @@ function playerinfo(_room: string, args: string[]) {
   let usernames: string[] = [];
   if (args.length === 0) {
     // If there are no arguments and we are at a table return stats for all the players.
+    // eslint-disable-next-line unicorn/prefer-ternary
     if (globals.tableID !== -1 && globals.ui !== null) {
       usernames = globals.ui.globals.metadata.playerNames;
     } else {
@@ -293,7 +292,7 @@ chatCommands.set("stats", playerinfo);
 // /unfriend [username]
 chatCommands.set("unfriend", (room: string, args: string[]) => {
   // Validate that the format of the command is correct.
-  if (args.length < 1) {
+  if (args.length === 0) {
     sendSelfPMFromServer(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
       room,
@@ -336,26 +335,22 @@ export function getVariantFromArgs(args: string[]): string {
     hyphen: / *- */g,
     ampersand: / *& */g,
   };
-  const capitalize = (input: string) => {
-    const pattern = /(^|[()&\- ])(\w)/g;
-    return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
-  };
 
   const variant = args
     // Remove empty elements
     .filter((arg) => arg !== "")
     // Capitalize
-    .map((arg) => capitalize(arg))
+    .map((arg) => capitalizeAllLetters(arg))
     .join(" ")
     // Remove space after opening and before closing parenthesis.
-    .replace(patterns.openingParenthesis, " (")
-    .replace(patterns.closingParenthesis, ") ")
+    .replaceAll(patterns.openingParenthesis, " (")
+    .replaceAll(patterns.closingParenthesis, ") ")
     // Remove space before and after hyphen.
-    .replace(patterns.hyphen, "-")
+    .replaceAll(patterns.hyphen, "-")
     // Add space before and after ampersand.
-    .replace(patterns.ampersand, " & ")
+    .replaceAll(patterns.ampersand, " & ")
     // Remove double spaces.
-    .replace(patterns.doubleSpaces, " ")
+    .replaceAll(patterns.doubleSpaces, " ")
     .trim();
 
   return variant;
@@ -363,9 +358,14 @@ export function getVariantFromArgs(args: string[]): string {
 
 export function getVariantFromPartial(search: string): string {
   const variantNames = getVariantNames();
-  const possibleVariants = variantNames.filter((variantName) =>
+  const possibleVariant = variantNames.find((variantName) =>
     variantName.startsWith(search),
   );
 
-  return possibleVariants[0] ?? "";
+  return possibleVariant ?? "";
+}
+
+function capitalizeAllLetters(input: string) {
+  const pattern = /(^|[ &()-])(\w)/g;
+  return input.toLowerCase().replaceAll(pattern, (x) => x.toUpperCase());
 }
