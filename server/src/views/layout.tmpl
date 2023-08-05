@@ -11,6 +11,7 @@
         {{ if eq .Title "Dev" -}}
           Test
         {{- else -}}
+          <!-- prettier-ignore Prettier removes the space before the hyphen for some reason. -->
           {{ .WebsiteName }}{{ if ne .Title "Main" }} - {{ .Title }}{{ end }}
         {{- end }}
       </title>
