@@ -1,6 +1,7 @@
 // This function draws the UI when going into a game for the first time.
 
-import { STACK_BASE_RANK, Suit } from "@hanabi/data";
+import type { Suit } from "@hanabi/data";
+import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -27,7 +28,7 @@ import { RectWithTooltip } from "./controls/RectWithTooltip";
 import { SlidableGroup } from "./controls/SlidableGroup";
 import { StrikeSquare } from "./controls/StrikeSquare";
 import { StrikeX } from "./controls/StrikeX";
-import { TextWithTooltip } from "./controls/TextWithTooltip";
+import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import { TimerDisplay } from "./controls/TimerDisplay";
 import * as cursor from "./cursor";
 import { Deck } from "./Deck";

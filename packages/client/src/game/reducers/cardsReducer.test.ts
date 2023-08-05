@@ -9,7 +9,7 @@ import {
 } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
 import * as deckRules from "../rules/deck";
-import { CardState } from "../types/CardState";
+import type { CardState } from "../types/CardState";
 import { cardsReducer } from "./cardsReducer";
 import { initialCardState } from "./initialStates/initialCardState";
 import { initialGameState } from "./initialStates/initialGameState";

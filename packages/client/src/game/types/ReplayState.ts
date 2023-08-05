@@ -1,7 +1,7 @@
-import { GameAction } from "./actions";
-import { GameState } from "./GameState";
-import { HypotheticalState } from "./HypotheticalState";
-import { SharedReplayState } from "./SharedReplayState";
+import type { GameAction } from "./actions";
+import type { GameState } from "./GameState";
+import type { HypotheticalState } from "./HypotheticalState";
+import type { SharedReplayState } from "./SharedReplayState";
 
 export interface ReplayState {
   readonly active: boolean;

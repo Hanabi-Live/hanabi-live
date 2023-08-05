@@ -1,4 +1,4 @@
-import { Suit } from "@hanabi/data";
+import type { Suit } from "@hanabi/data";
 
 type DrawFunction = (
   ctx: CanvasRenderingContext2D,

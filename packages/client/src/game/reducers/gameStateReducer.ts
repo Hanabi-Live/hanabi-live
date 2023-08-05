@@ -1,7 +1,9 @@
 // Functions for building a state table for every turn.
 
-import { getVariant, Variant } from "@hanabi/data";
-import produce, { castDraft, Draft, original } from "immer";
+import type { Variant } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
+import type { Draft } from "immer";
+import produce, { castDraft, original } from "immer";
 import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
@@ -10,12 +12,13 @@ import * as handRules from "../rules/hand";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
-import { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
-import { CardNote } from "../types/CardNote";
-import { CardState } from "../types/CardState";
+import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
+import type { CardNote } from "../types/CardNote";
+import type { CardState } from "../types/CardState";
 import { EndCondition } from "../types/EndCondition";
-import { GameMetadata, getPlayerName } from "../types/GameMetadata";
-import { GameState } from "../types/GameState";
+import type { GameMetadata } from "../types/GameMetadata";
+import { getPlayerName } from "../types/GameMetadata";
+import type { GameState } from "../types/GameState";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";

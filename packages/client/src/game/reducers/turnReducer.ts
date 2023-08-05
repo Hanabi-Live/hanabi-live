@@ -1,12 +1,13 @@
 import { getVariant } from "@hanabi/data";
-import produce, { Draft } from "immer";
+import type { Draft } from "immer";
+import produce from "immer";
 import * as deckRules from "../rules/deck";
 import * as turnRules from "../rules/turn";
-import { GameAction } from "../types/actions";
+import type { GameAction } from "../types/actions";
 import { EndCondition } from "../types/EndCondition";
-import { GameMetadata } from "../types/GameMetadata";
-import { GameState } from "../types/GameState";
-import { TurnState } from "../types/TurnState";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { GameState } from "../types/GameState";
+import type { TurnState } from "../types/TurnState";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export const turnReducer = produce(turnReducerFunction, {} as TurnState);

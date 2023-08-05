@@ -1,7 +1,7 @@
 // Functions for handling all of the keyboard shortcuts.
 
 import * as KeyCode from "keycode-js";
-import Konva from "konva";
+import type Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
 import { copyStringToClipboard } from "../../utils";

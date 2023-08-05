@@ -2,16 +2,17 @@
 // action.
 
 import { getVariant } from "@hanabi/data";
-import produce, { Draft } from "immer";
+import type { Draft } from "immer";
+import produce from "immer";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import * as variantRules from "../rules/variant";
-import { GameAction } from "../types/actions";
-import { CardNote } from "../types/CardNote";
-import { GameMetadata } from "../types/GameMetadata";
-import { GameState } from "../types/GameState";
-import { StatsState } from "../types/StatsState";
+import type { GameAction } from "../types/actions";
+import type { CardNote } from "../types/CardNote";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { GameState } from "../types/GameState";
+import type { StatsState } from "../types/StatsState";
 import { getSoundType } from "./getSoundType";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);

@@ -5,7 +5,7 @@ import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard";
 
 const KEYS_REMOVING_PIPE = new ReadonlySet([
   "ArrowLeft",

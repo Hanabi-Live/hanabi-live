@@ -1,7 +1,7 @@
 // These are helper functions that convert objects to the integers that the server expects and vice
 // versa.
 
-import { Color, Suit, Variant } from "@hanabi/data";
+import type { Color, Suit, Variant } from "@hanabi/data";
 
 export function suitIndexToSuit(
   suitIndex: number | null,

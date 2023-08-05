@@ -3,7 +3,7 @@
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";
-import { Shuttle } from "./controls/Shuttle";
+import type { Shuttle } from "./controls/Shuttle";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";

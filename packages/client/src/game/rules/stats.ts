@@ -1,10 +1,11 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import { MAX_CLUE_NUM, Variant, newArray } from "@hanabi/data";
-import { CardNote } from "../types/CardNote";
-import { CardState } from "../types/CardState";
-import { GameState, PaceRisk } from "../types/GameState";
-import { StackDirection } from "../types/StackDirection";
+import type { Variant } from "@hanabi/data";
+import { MAX_CLUE_NUM, newArray } from "@hanabi/data";
+import type { CardNote } from "../types/CardNote";
+import type { CardState } from "../types/CardState";
+import type { GameState, PaceRisk } from "../types/GameState";
+import type { StackDirection } from "../types/StackDirection";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";

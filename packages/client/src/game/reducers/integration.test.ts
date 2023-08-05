@@ -5,9 +5,9 @@ import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.jso
 import upOrDownGame from "../../../test_data/up_or_down.json";
 import upOrDownFinalCards from "../../../test_data/up_or_down_final_cards.json";
 import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
-import { CardState } from "../types/CardState";
+import type { CardState } from "../types/CardState";
 import { StackDirection } from "../types/StackDirection";
-import { State } from "../types/State";
+import type { State } from "../types/State";
 import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 
 let testState: State;

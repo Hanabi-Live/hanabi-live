@@ -6,7 +6,7 @@ import Konva from "konva";
 import * as variantRules from "../rules/variant";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
-import { LayoutChild } from "./LayoutChild";
+import type { LayoutChild } from "./LayoutChild";
 
 export class PlayStack extends Konva.Group {
   addChild(layoutChild: LayoutChild): void {

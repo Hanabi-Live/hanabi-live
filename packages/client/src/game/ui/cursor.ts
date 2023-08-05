@@ -1,7 +1,7 @@
-import Konva from "konva";
-import { Deck } from "./Deck";
+import type Konva from "konva";
+import type { Deck } from "./Deck";
 import { globals } from "./globals";
-import { LayoutChild } from "./LayoutChild";
+import type { LayoutChild } from "./LayoutChild";
 
 export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 

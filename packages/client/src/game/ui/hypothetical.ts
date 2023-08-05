@@ -3,16 +3,16 @@
 
 import { negativeOneIfNullOrUndefined } from "../../utils";
 import * as playStacksRules from "../rules/playStacks";
-import { ActionIncludingHypothetical } from "../types/actions";
+import type { ActionIncludingHypothetical } from "../types/actions";
 import { ActionType } from "../types/ActionType";
-import { ClientAction } from "../types/ClientAction";
+import type { ClientAction } from "../types/ClientAction";
 import { ClueType } from "../types/ClueType";
-import { MsgClue } from "../types/MsgClue";
+import type { MsgClue } from "../types/MsgClue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./hanabiCardMouse";
 
 export function start(): void {

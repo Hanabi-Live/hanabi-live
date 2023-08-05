@@ -1,16 +1,12 @@
-import { CardIdentity } from "../../../types/CardIdentity";
-import { CardState } from "../../../types/CardState";
-import { State } from "../../../types/State";
+import type { CardIdentity } from "../../../types/CardIdentity";
+import type { CardState } from "../../../types/CardState";
+import type { State } from "../../../types/State";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
 import { globals } from "../../globals";
 import { HanabiCard } from "../../HanabiCard";
 import { changeStartingHandVisibility } from "../../hypothetical";
-import {
-  Listener,
-  observeStore,
-  Selector,
-  Subscription,
-} from "../observeStore";
+import type { Listener, Selector, Subscription } from "../observeStore";
+import { observeStore } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {
   // Subscribe the new cards.

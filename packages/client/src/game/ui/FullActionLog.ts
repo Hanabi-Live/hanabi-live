@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { ContainerConfig } from "konva/types/Container";
+import type { ContainerConfig } from "konva/types/Container";
 import { FitText } from "./controls/FitText";
 import { globals } from "./globals";
 import { MultiFitText } from "./MultiFitText";

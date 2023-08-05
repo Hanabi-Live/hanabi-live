@@ -1,13 +1,9 @@
 // Helper methods for variants where suits may have a different direction than up. Currently used
 // for "Up Or Down" and "Reversed" variants.
 
-import {
-  DEFAULT_CARD_RANKS,
-  START_CARD_RANK,
-  Variant,
-  newArray,
-} from "@hanabi/data";
-import { CardState } from "../../types/CardState";
+import type { Variant } from "@hanabi/data";
+import { DEFAULT_CARD_RANKS, START_CARD_RANK, newArray } from "@hanabi/data";
+import type { CardState } from "../../types/CardState";
 import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
 import * as variantRules from "../variant";

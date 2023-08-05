@@ -1,13 +1,11 @@
 // The card graphics are various HTML5 canvas drawings.
 
+import type { Color, Suit, Variant } from "@hanabi/data";
 import {
-  Color,
   getSuit,
   STACK_BASE_RANK,
   START_CARD_RANK,
-  Suit,
   UNKNOWN_CARD_RANK,
-  Variant,
 } from "@hanabi/data";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as variantRules from "../rules/variant";

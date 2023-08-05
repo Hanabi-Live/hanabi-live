@@ -12,9 +12,9 @@ import * as handRules from "../../rules/hand";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
-import { CardStatus } from "../../types/CardStatus";
-import { GameMetadata } from "../../types/GameMetadata";
-import { GameState } from "../../types/GameState";
+import type { CardStatus } from "../../types/CardStatus";
+import type { GameMetadata } from "../../types/GameMetadata";
+import type { GameState } from "../../types/GameState";
 import { SoundType } from "../../types/SoundType";
 import { initialTurnState } from "./initialTurnState";
 

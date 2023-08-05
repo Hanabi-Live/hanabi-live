@@ -2,7 +2,7 @@
 
 import { getCharacter } from "@hanabi/data";
 import * as statsRules from "../rules/stats";
-import { GameState } from "../types/GameState";
+import type { GameState } from "../types/GameState";
 
 export function getEfficiency(state: GameState): number {
   return statsRules.efficiency(

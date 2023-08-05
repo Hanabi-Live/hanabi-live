@@ -1,3 +1,4 @@
+import type { Variant } from "@hanabi/data";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
@@ -9,14 +10,14 @@ import {
   NEEDS_FIX_NOTES,
   QUESTION_MARK_NOTES,
   UNCLUED_NOTES,
-  Variant,
 } from "@hanabi/data";
 import equal from "fast-deep-equal";
-import produce, { Draft } from "immer";
-import { NoteAction } from "../types/actions";
-import { CardNote } from "../types/CardNote";
-import { GameMetadata } from "../types/GameMetadata";
-import { NotesState } from "../types/NotesState";
+import type { Draft } from "immer";
+import produce from "immer";
+import type { NoteAction } from "../types/actions";
+import type { CardNote } from "../types/CardNote";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { NotesState } from "../types/NotesState";
 import * as noteIdentity from "./noteIdentity";
 
 export const notesReducer = produce(notesReducerFunction, {} as NotesState);

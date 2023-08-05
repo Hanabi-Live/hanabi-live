@@ -1,6 +1,6 @@
-import { State } from "../../../types/State";
+import type { State } from "../../../types/State";
 import * as clues from "../../clues";
-import { PlayerButton } from "../../controls/PlayerButton";
+import type { PlayerButton } from "../../controls/PlayerButton";
 import { globals } from "../../globals";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import * as turn from "../../turn";

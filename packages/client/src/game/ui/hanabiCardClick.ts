@@ -1,13 +1,13 @@
 // Click functions for the HanabiCard object.
 
 import { STACK_BASE_RANK } from "@hanabi/data";
-import Konva from "konva";
+import type Konva from "konva";
 import * as modals from "../../modals";
 import * as cardRules from "../rules/card";
-import { CardIdentity } from "../types/CardIdentity";
+import type { CardIdentity } from "../types/CardIdentity";
 import * as arrows from "./arrows";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
 import * as replay from "./replay";

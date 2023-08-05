@@ -1,4 +1,4 @@
-import { Color } from "@hanabi/data";
+import type { Color } from "@hanabi/data";
 
 type CardLocation = "deck" | "discard" | "playStack" | number;
 

@@ -1,4 +1,4 @@
-import { LogEntry } from "../../../types/GameState";
+import type { LogEntry } from "../../../types/GameState";
 import { globals } from "../../globals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {

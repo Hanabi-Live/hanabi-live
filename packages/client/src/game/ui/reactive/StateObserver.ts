@@ -1,9 +1,10 @@
-import { Store, Unsubscribe } from "redux";
-import { Action } from "../../types/actions";
-import { GameState } from "../../types/GameState";
-import { State } from "../../types/State";
+import type { Store, Unsubscribe } from "redux";
+import type { Action } from "../../types/actions";
+import type { GameState } from "../../types/GameState";
+import type { State } from "../../types/State";
 import { globals } from "../globals";
-import { Listener, observeStore, Selector, Subscription } from "./observeStore";
+import type { Listener, Selector, Subscription } from "./observeStore";
+import { observeStore } from "./observeStore";
 import * as animateFastView from "./view/animateFastView";
 import * as cardLayoutView from "./view/cardLayoutView";
 import * as cardsView from "./view/cardsView";

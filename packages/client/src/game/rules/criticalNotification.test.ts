@@ -3,7 +3,7 @@
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
-import { State } from "../types/State";
+import type { State } from "../types/State";
 import { isCritical } from "./variants/reversible";
 
 let testState: State;

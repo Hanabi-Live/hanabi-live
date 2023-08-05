@@ -1,11 +1,15 @@
 // The reducer for replays and hypotheticals.
 
-import produce, { Draft, original } from "immer";
+import type { Draft } from "immer";
+import produce, { original } from "immer";
 import { nullIfNegative } from "../../utils";
-import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
+import type {
+  ActionIncludingHypothetical,
+  ReplayAction,
+} from "../types/actions";
 import { CardIdentityType } from "../types/CardIdentityType";
-import { GameMetadata } from "../types/GameMetadata";
-import { ReplayState } from "../types/ReplayState";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { ReplayState } from "../types/ReplayState";
 import { gameStateReducer } from "./gameStateReducer";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);

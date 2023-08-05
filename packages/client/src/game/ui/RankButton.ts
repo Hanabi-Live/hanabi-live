@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { Clue } from "../types/Clue";
+import type { Clue } from "../types/Clue";
 import { drawLayer } from "./konvaHelpers";
 
 export class RankButton extends Konva.Group {

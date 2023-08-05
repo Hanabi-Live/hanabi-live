@@ -1,6 +1,6 @@
 import { draw, play } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
-import { TurnState } from "../types/TurnState";
+import type { TurnState } from "../types/TurnState";
 import { initialGameState } from "./initialStates/initialGameState";
 import { initialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";

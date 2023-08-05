@@ -1,5 +1,5 @@
 import * as cardRules from "../rules/card";
-import { CardState } from "../types/CardState";
+import type { CardState } from "../types/CardState";
 
 export function ddaReducer(
   deck: readonly CardState[],

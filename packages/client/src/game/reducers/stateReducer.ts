@@ -1,12 +1,13 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
-import produce, { castDraft, Draft, original } from "immer";
+import type { Draft } from "immer";
+import produce, { castDraft, original } from "immer";
 import * as segmentRules from "../rules/segment";
-import { Action, GameAction } from "../types/actions";
-import { CardIdentity } from "../types/CardIdentity";
-import { GameMetadata } from "../types/GameMetadata";
-import { GameState } from "../types/GameState";
-import { State } from "../types/State";
+import type { Action, GameAction } from "../types/actions";
+import type { CardIdentity } from "../types/CardIdentity";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { GameState } from "../types/GameState";
+import type { State } from "../types/State";
 import { gameStateReducer } from "./gameStateReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";

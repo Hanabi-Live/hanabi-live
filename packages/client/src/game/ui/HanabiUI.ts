@@ -1,10 +1,11 @@
 // The object that comprises the entire game UI. It is re-created every time when going into a new
 // game (and destroyed when going to the lobby).
 
-import { Globals as LobbyGlobals } from "../../globals";
-import { GameExports } from "../main";
+import type { Globals as LobbyGlobals } from "../../globals";
+import type { GameExports } from "../main";
 import * as cursor from "./cursor";
-import { globals, Globals } from "./globals";
+import type { Globals } from "./globals";
+import { globals } from "./globals";
 import * as keyboard from "./keyboard";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";

@@ -1,12 +1,13 @@
 // Calculates the state of a card after a clue.
 
-import { getVariant, newArray, Variant } from "@hanabi/data";
+import type { Variant } from "@hanabi/data";
+import { getVariant, newArray } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
 import { isOddsAndEvens } from "../rules/variant";
-import { CardState } from "../types/CardState";
-import { Clue } from "../types/Clue";
+import type { CardState } from "../types/CardState";
+import type { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
-import { GameMetadata } from "../types/GameMetadata";
+import type { GameMetadata } from "../types/GameMetadata";
 
 export function cardPossibilitiesReducer(
   state: CardState,

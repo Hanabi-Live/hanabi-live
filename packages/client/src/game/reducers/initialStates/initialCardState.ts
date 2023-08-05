@@ -1,6 +1,7 @@
-import { Variant, newArray } from "@hanabi/data";
+import type { Variant } from "@hanabi/data";
+import { newArray } from "@hanabi/data";
 import * as deck from "../../rules/deck";
-import { CardState } from "../../types/CardState";
+import type { CardState } from "../../types/CardState";
 
 export function initialCardState(order: number, variant: Variant): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately from knowledge of the

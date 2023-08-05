@@ -7,12 +7,12 @@ import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as variantRules from "../rules/variant";
 import { ActionType } from "../types/ActionType";
-import { CardLayout } from "./CardLayout";
+import type { CardLayout } from "./CardLayout";
 import * as cursor from "./cursor";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard";
 import { isOurTurn } from "./isOurTurn";
-import { PlayStack } from "./PlayStack";
+import type { PlayStack } from "./PlayStack";
 import * as turn from "./turn";
 
 export class LayoutChild extends Konva.Group {

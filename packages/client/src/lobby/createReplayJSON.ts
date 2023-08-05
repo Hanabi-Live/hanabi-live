@@ -2,11 +2,11 @@ import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
 import { CardIdentityType } from "../game/types/CardIdentityType";
-import { ClientAction } from "../game/types/ClientAction";
+import type { ClientAction } from "../game/types/ClientAction";
 import { ClueType } from "../game/types/ClueType";
-import { LogEntry } from "../game/types/GameState";
-import { JSONGame } from "../game/types/JSONGame";
-import { ReplayState } from "../game/types/ReplayState";
+import type { LogEntry } from "../game/types/GameState";
+import type { JSONGame } from "../game/types/JSONGame";
+import type { ReplayState } from "../game/types/ReplayState";
 import { globals } from "../game/ui/globals";
 import { shrink } from "./hypoCompress";
 

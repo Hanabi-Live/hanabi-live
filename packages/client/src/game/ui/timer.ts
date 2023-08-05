@@ -2,7 +2,7 @@
 
 import * as tooltips from "../../tooltips";
 import { millisecondsToClockString } from "../../utils";
-import { TimerDisplay } from "./controls/TimerDisplay";
+import type { TimerDisplay } from "./controls/TimerDisplay";
 import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 
