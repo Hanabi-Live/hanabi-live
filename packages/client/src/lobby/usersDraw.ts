@@ -106,9 +106,8 @@ function drawUser(
   nameColumn += `<span id="online-users-${userID}-zzz" class="hidden"> &nbsp;💤</span>`;
   nameColumn += "</span>";
 
-  let statusColumn: string;
   const statusText = StatusText[user.status]!;
-  statusColumn =
+  const statusColumn =
     globals.currentScreen === Screen.PreGame ||
     user.status === Status.Lobby ||
     user.status === Status.Replay

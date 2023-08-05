@@ -6,7 +6,6 @@ import { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import { MsgClue } from "../types/MsgClue";
 import * as arrows from "./arrows";
-import { ButtonGroup } from "./ButtonGroup";
 import { ColorButton } from "./ColorButton";
 import { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
@@ -16,8 +15,7 @@ import { RankButton } from "./RankButton";
 import * as turn from "./turn";
 
 export function checkLegal(): void {
-  let clueTargetButtonGroup: ButtonGroup | null;
-  clueTargetButtonGroup =
+  const clueTargetButtonGroup =
     globals.state.replay.hypothetical === null
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
@@ -132,8 +130,7 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
 }
 
 export function give(): void {
-  let clueTargetButtonGroup: ButtonGroup | null;
-  clueTargetButtonGroup =
+  const clueTargetButtonGroup =
     globals.state.replay.hypothetical === null
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
@@ -161,7 +158,7 @@ export function give(): void {
 
     case ClueType.Rank: {
       type = ActionType.RankClue;
-      value = clueButton.clue.value;
+      value = clueButton.clue.value; // eslint-disable-line prefer-destructuring
       break;
     }
   }

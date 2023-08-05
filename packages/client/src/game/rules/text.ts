@@ -64,7 +64,7 @@ export function clue(
       }
       slots.push(slot);
     }
-    slots.sort();
+    slots.sort((n1, n2) => n1 - n2);
 
     let slotWord = "slot";
     if (slots.length !== 1) {
@@ -158,14 +158,12 @@ export function play(
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let card: string;
-  card =
+  const card =
     variantRules.isThrowItInAHole(variant) && (playing || shadowing)
       ? "a card"
       : cardRules.name(action.suitIndex, action.rank, variant);
 
-  let location: string;
-  location = slot === null ? "the deck" : `slot #${slot}`;
+  const location = slot === null ? "the deck" : `slot #${slot}`;
 
   let suffix = "";
   if (!touched) {
@@ -202,8 +200,7 @@ export function discard(
       ? "a card"
       : cardRules.name(action.suitIndex, action.rank, variant);
 
-  let location: string;
-  location = slot === null ? "the deck" : `slot #${slot}`;
+  const location = slot === null ? "the deck" : `slot #${slot}`;
 
   let suffix = "";
   if (action.failed && touched && !variantRules.isThrowItInAHole(variant)) {

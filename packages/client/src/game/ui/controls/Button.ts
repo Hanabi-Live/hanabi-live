@@ -80,6 +80,7 @@ export class Button extends Konva.Group {
       }
     }
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const resetButton = () => {
       this.background.fill("black");
       drawLayer(this);
@@ -87,6 +88,7 @@ export class Button extends Konva.Group {
       this.background.off("mouseup");
       this.background.off("mouseout");
     };
+
     this.background.on("mousedown", () => {
       this.background.fill("#888888");
       drawLayer(this);

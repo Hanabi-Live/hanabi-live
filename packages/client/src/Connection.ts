@@ -21,7 +21,9 @@ export class Connection {
 
     this.ws.addEventListener("close", this.onClose.bind(this));
     this.ws.addEventListener("open", this.onOpen.bind(this));
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
     this.ws.onmessage = this.onMessage.bind(this);
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
     this.ws.onerror = this.onError.bind(this);
   }
 
@@ -84,7 +86,7 @@ export class Connection {
 const separator = " ";
 const unpack = (data: string) => {
   const name = data.split(separator)[0]!;
-  return [name, data.substring(name.length + 1, data.length)];
+  return [name, data.slice(name.length + 1, data.length)];
 };
 const unmarshal = (data: string) => JSON.parse(data) as unknown;
 const marshalAndPack = (name: string, data: unknown) =>

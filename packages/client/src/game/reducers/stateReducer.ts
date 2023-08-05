@@ -11,7 +11,7 @@ import { gameStateReducer } from "./gameStateReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
-import { UIReducer } from "./UIReducer";
+import { uiReducer } from "./uiReducer";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
@@ -179,12 +179,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "dragStart": {
-      state.UI = UIReducer(state.UI, action);
+      state.UI = uiReducer(state.UI, action);
       break;
     }
 
     case "dragReset": {
-      state.UI = UIReducer(state.UI, action);
+      state.UI = uiReducer(state.UI, action);
       break;
     }
 
@@ -317,6 +317,8 @@ function reduceGameActions(
   metadata: GameMetadata,
 ) {
   const states: GameState[] = [initialState];
+
+  // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(
       s,

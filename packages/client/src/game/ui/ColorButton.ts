@@ -85,6 +85,7 @@ export class ColorButton extends Konva.Group {
       }
     }
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const resetButton = () => {
       this.background.fill("black");
       drawLayer(this);

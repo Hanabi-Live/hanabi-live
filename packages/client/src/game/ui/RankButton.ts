@@ -44,6 +44,7 @@ export class RankButton extends Konva.Group {
     });
     this.add(text);
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const resetButton = () => {
       this.background.fill("black");
       drawLayer(this);
@@ -51,6 +52,7 @@ export class RankButton extends Konva.Group {
       this.background.off("mouseup");
       this.background.off("mouseout");
     };
+
     this.background.on("mousedown", () => {
       this.background.fill("#888888");
       drawLayer(this);

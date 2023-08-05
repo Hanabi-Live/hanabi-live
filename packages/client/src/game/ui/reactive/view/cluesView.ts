@@ -1,5 +1,5 @@
 import equal from "fast-deep-equal";
-import { Clue, colorClue, rankClue } from "../../../types/Clue";
+import { colorClue, rankClue } from "../../../types/Clue";
 import { ClueType } from "../../../types/ClueType";
 import { StateClue } from "../../../types/GameState";
 import * as arrows from "../../arrows";
@@ -30,9 +30,8 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
     return;
   }
 
-  let clue: Clue;
-
-  clue =
+  const clue =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     lastClue.type === ClueType.Rank
       ? rankClue(lastClue.value)
       : colorClue(globals.variant.clueColors[lastClue.value]!);

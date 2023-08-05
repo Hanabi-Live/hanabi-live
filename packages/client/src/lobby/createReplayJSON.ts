@@ -187,11 +187,8 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
 function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   const actions: ClientAction[] = [];
   const regexPlay =
-    // eslint-disable-next-line prefer-named-capture-group
     /^(?:\[Hypo] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
-  // eslint-disable-next-line prefer-named-capture-group
   const regexDiscard = /^(?:\[Hypo] )?(.*) discards .* slot #(\d).*$/;
-  // eslint-disable-next-line prefer-named-capture-group
   const regexClue = /^(?:\[Hypo] )?.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/;
 
   for (const [index, line] of log.entries()) {

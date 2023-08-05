@@ -27,6 +27,7 @@ export class FitText extends Konva.Text {
   }
 
   resize(): void {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const textFits = (size: number) => {
       this.fontSize(size);
       return this.measureSize(this.text()).width <= this.width();

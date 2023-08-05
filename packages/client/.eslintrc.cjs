@@ -23,6 +23,17 @@ module.exports = {
 
     /**
      * Documentation:
+     * https://typescript-eslint.io/rules/prefer-enum-initializers/
+     *
+     * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * We use number enums in this project so that the client and server match. (In Golang, enums
+     * are conventionally integers.)
+     */
+    "@typescript-eslint/prefer-enum-initializers": "off",
+
+    /**
+     * Documentation:
      * https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/no-cycle.md
      *
      * Defined at: https://isaacscript.github.io/eslint-config-isaacscript
@@ -76,6 +87,17 @@ module.exports = {
 
     /**
      * Documentation:
+     * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-plugin-isaacscript/docs/rules/no-number-enums.md
+     *
+     * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * We use number enums in this project so that the client and server match. (In Golang, enums
+     * are conventionally integers.)
+     */
+    "isaacscript/no-number-enums": "off",
+
+    /**
+     * Documentation:
      * https://eslint.org/docs/rules/no-param-reassign
      *
      * Defined in: https://isaacscript.github.io/eslint-config-isaacscript
@@ -101,8 +123,5 @@ module.exports = {
 
     // TODO REMOVE
     "@typescript-eslint/consistent-type-imports": "off",
-
-    "@typescript-eslint/prefer-enum-initializers": "off",
-    "isaacscript/no-number-enums": "off",
   },
 };

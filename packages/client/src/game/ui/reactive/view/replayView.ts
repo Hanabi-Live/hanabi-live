@@ -190,13 +190,9 @@ export function onDatabaseIDChanged(databaseID: number | null): void {
     return;
   }
 
-  let text: string;
-  if (databaseID === 0) {
-    // JSON replays are hard-coded to have a database ID of 0.
-    text = "JSON replay";
-  } else {
-    text = `ID: ${databaseID}`;
-  }
+  // JSON replays are hard-coded to have a database ID of 0.
+  const text = databaseID === 0 ? "JSON replay" : `ID: ${databaseID}`;
+
   globals.elements.gameIDLabel?.text(text);
   globals.elements.gameIDLabel?.show();
 

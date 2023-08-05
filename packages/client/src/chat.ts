@@ -655,7 +655,6 @@ function fillTwitchEmotes(message: string) {
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
-
     const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
     filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces
   }

@@ -136,10 +136,12 @@ export class Globals {
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
-    this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => {
-      u();
-    });
+
+    for (const cardSubscription of this.cardSubscriptions) {
+      cardSubscription();
+    }
     this.cardSubscriptions = [];
+
     this.store = null;
   }
 }

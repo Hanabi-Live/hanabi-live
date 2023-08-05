@@ -267,8 +267,7 @@ function gameStateReducerFunction(
         const durationString = millisecondsToClockString(milliseconds);
         const playerName = getPlayerName(i, metadata);
 
-        let text: string;
-        text = metadata.options.timed
+        const text = metadata.options.timed
           ? `${playerName} had ${durationString} left`
           : `${playerName} took: ${durationString}`;
         state.log.push({

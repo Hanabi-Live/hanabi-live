@@ -76,6 +76,7 @@ export const discardedCopies = (
   suitIndex: number,
   rank: number,
 ): number =>
+  // eslint-disable-next-line unicorn/no-array-reduce
   deck.reduce((discarded, c) => {
     if (
       c.suitIndex === suitIndex &&
@@ -84,6 +85,7 @@ export const discardedCopies = (
     ) {
       return discarded + 1;
     }
+
     return discarded;
   }, 0);
 

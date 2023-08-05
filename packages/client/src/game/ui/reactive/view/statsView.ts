@@ -39,17 +39,13 @@ export function onEfficiencyChanged(data: {
     );
   }
 
-  let shouldModifyEff: boolean;
-  if (globals.state.finished) {
-    // If we are not currently using the shared segments, the shared efficiency modifier will not be
-    // applicable.
-    shouldModifyEff =
+  const shouldModifyEff = globals.state.finished
+    ? // If we are not currently using the shared segments, the shared efficiency modifier will not be
+      // applicable.
       globals.state.replay.shared !== null &&
-      globals.state.replay.shared.useSharedSegments;
-  } else {
-    // Don't use the efficiency modifier during in-game replays.
-    shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
-  }
+      globals.state.replay.shared.useSharedSegments
+    : // Don't use the efficiency modifier during in-game replays.
+      globals.state.visibleState === globals.state.ongoingGame;
 
   let { cardsGotten, cardsGottenByNotes } = data;
   const { efficiencyModifier } = data;
@@ -118,11 +114,6 @@ export function onEfficiencyChanged(data: {
   effLabel.fill(effLabelColor);
 
   // Update the tooltip
-  function formatLine(left: string, right: number | string, usePadding = true) {
-    return `${
-      usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : ""
-    }<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
-  }
   const tooltipContent = `
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
     ${formatLine(
@@ -142,9 +133,7 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Cards remaining to get", cardsNotGotten)}
     ${formatLine(
       "Remaining possible clues",
-      data.cluesStillUsableNotRounded === null
-        ? "-"
-        : data.cluesStillUsableNotRounded,
+      data.cluesStillUsableNotRounded ?? "-",
     )}
     ${formatLine(
       "Future required efficiency",
@@ -163,6 +152,16 @@ export function onEfficiencyChanged(data: {
   konvaTooltips.init(effLabel, true, false);
 
   globals.layers.UI.batchDraw();
+}
+
+function formatLine(
+  left: string,
+  right: number | string,
+  usePadding = true,
+): string {
+  return `${
+    usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : ""
+  }<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
 }
 
 export function onPaceOrPaceRiskChanged(data: {
@@ -193,15 +192,9 @@ export function onPaceOrPaceRiskChanged(data: {
 
     // Color the pace label depending on how "risky" it would be to discard (approximately).
     switch (data.paceRisk) {
-      case "Zero": {
-        // No more discards can occur in order to get a maximum score.
-        label.fill("#df1c2d"); // Red
-        break;
-      }
-
-      case "HighRisk": {
-        // It would probably be risky to discard.
-        label.fill("#ef8c1d"); // Orange
+      case "LowRisk": {
+        // We are not even close to the "End-Game", so give it the default color.
+        label.fill(LABEL_COLOR);
         break;
       }
 
@@ -211,17 +204,22 @@ export function onPaceOrPaceRiskChanged(data: {
         break;
       }
 
+      case "HighRisk": {
+        // It would probably be risky to discard.
+        label.fill("#ef8c1d"); // Orange
+        break;
+      }
+
+      case "Zero": {
+        // No more discards can occur in order to get a maximum score.
+        label.fill("#df1c2d"); // Red
+        break;
+      }
+
       case "Null": {
         console.error(
           `An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`,
         );
-        break;
-      }
-
-      case "LowRisk":
-      default: {
-        // We are not even close to the "End-Game", so give it the default color.
-        label.fill(LABEL_COLOR);
         break;
       }
     }

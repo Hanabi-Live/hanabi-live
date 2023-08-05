@@ -11,8 +11,8 @@
 // side-effects for the same reason.
 
 import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
-import "tooltipster";
-import "../lib/tooltipster-scrollableTip.min";
+import "tooltipster"; // eslint-disable-line import/no-unassigned-import
+import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
 
 // Constants
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
@@ -36,14 +36,13 @@ const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   // Tooltipster plugin to automatically create a scroll bar for it:
   // https://github.com/louisameline/tooltipster-scrollableTip
   plugins: [
-    "sideTip", // Make it have the ability to be positioned on a specific side
-    "scrollableTip", // Make it scrollable
+    "sideTip", // Make it have the ability to be positioned on a specific side.
+    "scrollableTip", // Make it scrollable.
   ],
-  functionBefore: (): void => {},
 };
 const gameOptions: JQueryTooltipster.ITooltipsterOptions = {
   ...defaultOptions,
-  interactive: true, // So that users can update their notes
+  interactive: true, // So that users can update their notes.
   trigger: "custom",
   updateAnimation: null,
 };
@@ -175,9 +174,11 @@ function getOptionsFromType(
     case "clipboard": {
       return clipboardOptions;
     }
+
     case "nav": {
       return navOptions;
     }
+
     default: {
       return defaultOptions;
     }

@@ -33,9 +33,9 @@ cd "$DIR/client"
 npx eslint --max-warnings 0 test
 
 # Use Prettier to check formatting on the entire repository.
-# "--loglevel warn" makes it only output errors.
+# "--log-level=warn" makes it only output errors.
 echo "Running Prettier on the repository."
 cd "$DIR/.."
-npx prettier --loglevel warn --check .
+npx prettier --log-level=warn --check .
 
 echo "Successfully linted in $SECONDS seconds."

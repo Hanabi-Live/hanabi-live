@@ -37,12 +37,14 @@ export class StateObserver {
     // Clean up any existing subscribers.
     this.unregisterObservers();
 
-    const subscriptions: Subscriptions = earlyObservers
-      .concat(visibleStateObservers)
-      .concat(ongoingGameObservers)
-      .concat(replayObservers)
-      .concat(otherObservers)
-      .concat(lateObservers);
+    const subscriptions: Subscriptions = [
+      ...earlyObservers,
+      ...visibleStateObservers,
+      ...ongoingGameObservers,
+      ...replayObservers,
+      ...otherObservers,
+      ...lateObservers,
+    ];
 
     this.unsubscribe = observeStore(store, subscriptions);
   }

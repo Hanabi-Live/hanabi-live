@@ -2,7 +2,7 @@ import { UIAction } from "../types/UI";
 import { UIState } from "../types/UIState";
 import { HanabiCard } from "../ui/HanabiCard";
 
-export function UIReducer(state: UIState, action: UIAction): UIState {
+export function uiReducer(state: UIState, action: UIAction): UIState {
   switch (action.type) {
     case "dragStart": {
       if (action.card instanceof HanabiCard) {
