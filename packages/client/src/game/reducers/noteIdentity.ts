@@ -90,13 +90,13 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
     if (squishText !== null) {
       for (const letter of squishText) {
         suitIndex = parseSuit(variant, letter);
-        rank = parseRank(letter);
         if (suitIndex !== null) {
           suitIndices.push(suitIndex);
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (rank !== null) {
-          ranks.push(rank);
+          continue;
         }
+
+        rank = parseRank(letter);
+        ranks.push(rank);
       }
 
       if (suitIndices.length + ranks.length > 0) {

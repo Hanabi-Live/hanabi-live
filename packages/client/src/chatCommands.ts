@@ -1,8 +1,4 @@
-import {
-  capitalizeFirstLetter,
-  getVariantNames,
-  parseIntSafe,
-} from "@hanabi/data";
+import { getVariantNames, parseIntSafe } from "@hanabi/data";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
 import { globals } from "./globals";
 import * as createGame from "./lobby/createGame";
@@ -16,7 +12,7 @@ export const chatCommands = new Map<string, Callback>();
 // /friend [username]
 function friend(room: string, args: string[]) {
   // Validate that the format of the command is correct.
-  if (args.length === 0) {
+  if (args.length < 1) {
     sendSelfPMFromServer(
       "The format of the /friend command is: <code>/friend Alice</code>",
       room,
@@ -40,10 +36,12 @@ chatCommands.set("addfriend", friend);
 
 // /friends
 function friends(room: string) {
-  const msg =
-    globals.friends.length === 0
-      ? "Currently, you do not have any friends on your friends list."
-      : `Current friends: ${globals.friends.join(", ")}`;
+  let msg: string;
+  if (globals.friends.length === 0) {
+    msg = "Currently, you do not have any friends on your friends list.";
+  } else {
+    msg = `Current friends: ${globals.friends.join(", ")}`;
+  }
   sendSelfPMFromServer(msg, room);
 }
 chatCommands.set("f", friends);
@@ -180,7 +178,7 @@ chatCommands.set("suggest", (room: string, args: string[]) => {
     return;
   }
 
-  if (args.length === 0) {
+  if (args.length < 1) {
     sendSelfPMFromServer(
       "The format of the /suggest command is: <code>/suggest [turn]</code>",
       room,
@@ -269,9 +267,8 @@ chatCommands.set("tagsdeleteall", (room: string) => {
 function playerinfo(_room: string, args: string[]) {
   let usernames: string[] = [];
   if (args.length === 0) {
-    // eslint-disable-next-line unicorn/prefer-ternary
+    // If there are no arguments and we are at a table return stats for all the players.
     if (globals.tableID !== -1 && globals.ui !== null) {
-      // If there are no arguments and we are at a table return stats for all the players.
       usernames = globals.ui.globals.metadata.playerNames;
     } else {
       // Otherwise, return stats for the caller.
@@ -296,7 +293,7 @@ chatCommands.set("stats", playerinfo);
 // /unfriend [username]
 chatCommands.set("unfriend", (room: string, args: string[]) => {
   // Validate that the format of the command is correct.
-  if (args.length === 0) {
+  if (args.length < 1) {
     sendSelfPMFromServer(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
       room,
@@ -339,21 +336,26 @@ export function getVariantFromArgs(args: string[]): string {
     hyphen: / *- */g,
     ampersand: / *& */g,
   };
+  const capitalize = (input: string) => {
+    const pattern = /(^|[()&\- ])(\w)/g;
+    return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
+  };
 
   const variant = args
     // Remove empty elements
     .filter((arg) => arg !== "")
-    .map((arg) => capitalizeFirstLetter(arg))
+    // Capitalize
+    .map((arg) => capitalize(arg))
     .join(" ")
     // Remove space after opening and before closing parenthesis.
-    .replaceAll(patterns.openingParenthesis, " (")
-    .replaceAll(patterns.closingParenthesis, ") ")
+    .replace(patterns.openingParenthesis, " (")
+    .replace(patterns.closingParenthesis, ") ")
     // Remove space before and after hyphen.
-    .replaceAll(patterns.hyphen, "-")
+    .replace(patterns.hyphen, "-")
     // Add space before and after ampersand.
-    .replaceAll(patterns.ampersand, " & ")
+    .replace(patterns.ampersand, " & ")
     // Remove double spaces.
-    .replaceAll(patterns.doubleSpaces, " ")
+    .replace(patterns.doubleSpaces, " ")
     .trim();
 
   return variant;
@@ -361,9 +363,9 @@ export function getVariantFromArgs(args: string[]): string {
 
 export function getVariantFromPartial(search: string): string {
   const variantNames = getVariantNames();
-  const possibleVariant = variantNames.find((variantName) =>
+  const possibleVariants = variantNames.filter((variantName) =>
     variantName.startsWith(search),
   );
 
-  return possibleVariant ?? "";
+  return possibleVariants[0] ?? "";
 }
