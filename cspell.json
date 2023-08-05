@@ -7,7 +7,8 @@
   "useGitignore": true,
   "ignorePaths": [
     ".git/**",
-    // Assets which are not edited by hand
+    ".yarn/**",
+    // Assets which are not edited by hand.
     "*.cdr",
     "*.flp",
     "*.mp3",
@@ -20,7 +21,7 @@
     // Minified dependencies
     "*.min.js",
     "*.min.css",
-    // The css might have strange paths.
+    // CSS files might have strange paths.
     "hanabi.css",
     // Archived files where spelling errors will not be fixed.
     "/misc/keldon/**",
@@ -40,6 +41,7 @@
     "alessandro",
     "alexedwards",
     "Alicé",
+    "Alloc",
     "allornothing",
     "allusersprofile",
     "alphanum",
@@ -225,7 +227,6 @@
     "protobuf",
     "psql",
     "psycopg",
-    "pylint",
     "quacker",
     "qwert",
     "randomvariant",
