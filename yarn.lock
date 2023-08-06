@@ -5251,6 +5251,7 @@ __metadata:
     node-ts: ^5.1.2
     prettier: ^3.0.1
     prettier-plugin-go-template: ^0.0.15
+    prettier-plugin-organize-imports: ^3.2.3
     redux: ^4.2.1
     tooltipster: ^4.2.8
     ts-jest: ^29.0.5
@@ -7923,6 +7924,23 @@ __metadata:
     "@volar/vue-typescript":
       optional: true
   checksum: 28620ea73a0a518c93200c7ea17d38a26132db3f55a75954983dff3422d4dd2155515518422b7a68935736aa333b0406a51778053bd30133a57718090272bb5d
+  languageName: node
+  linkType: hard
+
+"prettier-plugin-organize-imports@npm:^3.2.3":
+  version: 3.2.3
+  resolution: "prettier-plugin-organize-imports@npm:3.2.3"
+  peerDependencies:
+    "@volar/vue-language-plugin-pug": ^1.0.4
+    "@volar/vue-typescript": ^1.0.4
+    prettier: ">=2.0"
+    typescript: ">=2.9"
+  peerDependenciesMeta:
+    "@volar/vue-language-plugin-pug":
+      optional: true
+    "@volar/vue-typescript":
+      optional: true
+  checksum: e97dd707ce88960885df9598c2c0b8187169ff4664e7a5083a8603eabfb457aa0a0eafdf5cb60877a1085e2da5f9cb19fa441061227aa23524e5fe1709bae0cf
   languageName: node
   linkType: hard
 

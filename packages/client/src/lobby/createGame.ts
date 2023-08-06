@@ -5,8 +5,8 @@ import {
   doesVariantExist,
   getVariantNames,
 } from "@hanabi/data";
-import * as KeyCode from "keycode-js";
 import { parseIntSafe } from "@hanabi/utils";
+import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
 import { globals } from "../globals";

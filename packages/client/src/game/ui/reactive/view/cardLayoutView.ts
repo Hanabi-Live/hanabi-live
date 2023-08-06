@@ -1,7 +1,7 @@
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import { ReadonlyMap } from "@hanabi/utils";
 import equal from "fast-deep-equal";
 import Konva from "konva";
-import { ReadonlyMap } from "@hanabi/utils";
 import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";

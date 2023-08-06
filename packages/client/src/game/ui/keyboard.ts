@@ -1,8 +1,8 @@
 // Functions for handling all of the keyboard shortcuts.
 
+import { parseIntSafe } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import Konva from "konva";
-import { parseIntSafe } from "@hanabi/utils";
 import { Screen } from "../../lobby/types/Screen";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
 import { copyStringToClipboard } from "../../utils";
