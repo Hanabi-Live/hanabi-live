@@ -45,6 +45,7 @@
     "@types/tooltipster": "^0.0.31",
     "canvas": "^2.11.0",
     "dotenv": "^16.0.3",
+    "esbuild": "^0.18.18",
     "grunt": "^1.6.1",
     "grunt-contrib-concat": "^2.1.0",
     "grunt-contrib-cssmin": "^4.0.0",

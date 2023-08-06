@@ -80,7 +80,7 @@ cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$JS_BUNDLES_DIR/"
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
 # In addition to the numerical version (e.g. the number of commits),
 # it is also handy to have the exact git commit hash for the current build
-echo $(git rev-parse HEAD) > "$JS_BUNDLES_DIR/git_revision.txt"
+git rev-parse HEAD > "$JS_BUNDLES_DIR/git_revision.txt"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
