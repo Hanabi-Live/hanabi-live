@@ -146,15 +146,15 @@ export class Globals {
 
 export const globals = new Globals();
 
-// Allow TypeScript to modify the browser's "window" object.
+// Also make the globals available to the window (so that we can access them from the JavaScript
+// console for debugging purposes).
+// https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {
     globals: Globals;
   }
 }
-
-// Make the globals available from the JavaScript console (for debugging purposes). The window is
-// undefined in Jest tests.
+// `window` is undefined in Jest tests.
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (window !== undefined) {
   window.globals = globals;

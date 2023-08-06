@@ -63,9 +63,9 @@ export class Globals {
   lastActiveElement: HTMLElement | null = null;
 
   browserIsFirefox =
-    // `global.navigator` is undefined in Jest tests.
+    // `navigator` is undefined in Jest tests.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    global.navigator === undefined
+    navigator === undefined
       ? false
       : navigator.userAgent.toLowerCase().includes("firefox");
 }
@@ -74,14 +74,15 @@ export const globals = new Globals();
 
 // Also make the globals available to the window (so that we can access them from the JavaScript
 // console for debugging purposes).
+// https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {
     globals2: Globals;
   }
 }
-
-// `global.window` is undefined in Jest tests.
+// `window` is undefined in Jest tests.
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (global.window !== undefined) {
+if (window !== undefined) {
+  // We set the UI globals to `globals`, so these globals can take `globals2`.
   window.globals2 = globals;
 }

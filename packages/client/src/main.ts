@@ -2,6 +2,7 @@
 // and bundled together with webpack.
 
 import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
+import jquery from "jquery";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
@@ -21,9 +22,6 @@ import * as sentry from "./sentry";
 import * as sounds from "./sounds";
 import * as tooltips from "./tooltips";
 
-// Initialize logging to Sentry.io.
-sentry.init();
-
 // Manually redirect users that are going to wrong URLs.
 if (
   window.location.hostname === OLD_DOMAIN ||
@@ -31,6 +29,22 @@ if (
   window.location.hostname === `www.${DOMAIN}`
 ) {
   window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
+}
+
+// Initialize logging to Sentry.io.
+sentry.init();
+
+// Initialize JQuery.
+// https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
+declare global {
+  interface Window {
+    $: JQueryStatic;
+  }
+}
+// `window` is undefined in Jest tests.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (window !== undefined) {
+  window.$ = jquery;
 }
 
 $(document).ready(() => {

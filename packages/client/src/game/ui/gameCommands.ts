@@ -562,7 +562,8 @@ function loadSpecificReplayTurn(turnString: string) {
   replay.goToSegment(turn, true); // A turn is an approximation for a segment.
 }
 
-// Allow TypeScript to modify the browser's "window" object.
+// Allow TypeScript to modify the browser's "window" object:
+// https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {
     state: State;

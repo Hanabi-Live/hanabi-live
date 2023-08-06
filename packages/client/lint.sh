@@ -14,6 +14,9 @@ cd "$DIR"
 # "--loglevel warn" makes it only output errors.
 npx prettier --loglevel warn --ignore-path="$DIR/../../.prettierignore" --check .
 
+# Ensure that the code passes the TypeScript compiler.
+npx tsc --noEmit
+
 # Use ESLint to lint the TypeScript.
 # "--max-warnings 0" makes warnings fail in CI, since we set all ESLint errors to warnings.
 npx eslint --max-warnings 0 .
