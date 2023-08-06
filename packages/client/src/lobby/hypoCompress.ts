@@ -5,7 +5,7 @@ import {
   MAX_PLAYERS,
   MIN_PLAYERS,
 } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "@hanabi/utils";
 import { isEqual } from "lodash";
 
 interface DeckCard {

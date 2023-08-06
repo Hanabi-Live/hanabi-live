@@ -4,7 +4,7 @@ import {
   START_CARD_RANK,
   Variant,
 } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "@hanabi/utils";
 import { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 

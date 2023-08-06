@@ -1,7 +1,7 @@
 // Modals (boxes that hover on top of the UI).
 
 import { Suit, Variant } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "@hanabi/utils";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
 import { HanabiCard } from "./game/ui/HanabiCard";

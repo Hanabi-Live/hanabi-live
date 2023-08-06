@@ -1,7 +1,7 @@
 // The "Watch Specific Replay" nav button.
 
-import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
+import { parseIntSafe } from "@hanabi/utils";
 import { globals } from "../globals";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
@@ -59,13 +59,6 @@ function submit() {
 
   // Error
   $("#replay-error-row").hide();
-  const error = (text: string) => {
-    $("#replay-error-row").show();
-    $("#replay-error-row-text").text(text);
-
-    // Redraw the tooltip so that the new elements will fit better.
-    tooltips.reposition("#nav-buttons-lobby-replay");
-  };
 
   // ID
   const databaseIDString = $("#replay-id").val();
@@ -76,11 +69,11 @@ function submit() {
   if (source === "id") {
     databaseID = parseIntSafe(databaseIDString);
     if (Number.isNaN(databaseID)) {
-      error("Error: The database ID must be a number.");
+      showReplayError("Error: The database ID must be a number.");
       return;
     }
     if (databaseID < 1) {
-      error("Error: The database ID must be a positive number.");
+      showReplayError("Error: The database ID must be a positive number.");
       return;
     }
     localStorage.setItem("watchReplayID", databaseIDString);
@@ -96,11 +89,11 @@ function submit() {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
     } catch (err) {
-      error("Error: That is not a valid JSON object.");
+      showReplayError("Error: That is not a valid JSON object.");
       return;
     }
     if (typeof gameJSON !== "object") {
-      error("Error: That is not a valid JSON object.");
+      showReplayError("Error: That is not a valid JSON object.");
       return;
     }
     localStorage.setItem("watchReplayJSON", gameJSONString);
@@ -137,6 +130,14 @@ function submit() {
   }
 
   closeModals();
+}
+
+function showReplayError(text: string) {
+  $("#replay-error-row").show();
+  $("#replay-error-row-text").text(text);
+
+  // Redraw the tooltip so that the new elements will fit better.
+  tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 // This function is executed every time the "Watch Specific Replay" button is clicked (after the

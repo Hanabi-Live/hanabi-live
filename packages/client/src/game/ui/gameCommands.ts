@@ -3,8 +3,7 @@
 // e.g. in-game replays.
 
 import { getVariant } from "@hanabi/data";
-import { newArray } from "@hanabi/utils";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { newArray, parseIntSafe } from "@hanabi/utils";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import * as sentry from "../../sentry";

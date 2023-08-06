@@ -1,4 +1,4 @@
-import { parseIntSafe, ReadonlySet } from "isaacscript-common-ts";
+import { parseIntSafe, ReadonlySet } from "@hanabi/utils";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,

@@ -5237,7 +5237,6 @@ __metadata:
     grunt-criticalcss: ^2.1.0
     immer: 8.0.4
     interactjs: ^1.10.17
-    isaacscript-common-ts: ^10.0.0
     isaacscript-lint: ^4.16.6
     isaacscript-tsconfig: ^4.0.0
     jest: ^29.4.3
@@ -5891,13 +5890,6 @@ __metadata:
   version: 1.0.2
   resolution: "is-windows@npm:1.0.2"
   checksum: 438b7e52656fe3b9b293b180defb4e448088e7023a523ec21a91a80b9ff8cdb3377ddb5b6e60f7c7de4fa8b63ab56e121b6705fe081b3cf1b828b0a380009ad7
-  languageName: node
-  linkType: hard
-
-"isaacscript-common-ts@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "isaacscript-common-ts@npm:10.0.0"
-  checksum: 36f71e04f101e9c7e61eaa4f86ab6126c374b633ca44eaf6545adc235de0d1ca79174d181a368915df2601d2eef21e1d1b1006705a1f3b7c5a368eaa62255a0b
   languageName: node
   linkType: hard
 

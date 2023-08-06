@@ -1,4 +1,4 @@
-import { ReadonlySet } from "isaacscript-common-ts";
+import { ReadonlySet } from "@hanabi/utils";
 import { Suit } from "./types/Suit";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;

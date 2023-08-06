@@ -1,7 +1,7 @@
 // The screens that show past games and other scores.
 
 import { getVariant } from "@hanabi/data";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "@hanabi/utils";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
