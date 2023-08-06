@@ -16,7 +16,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd "$DIR"
 
 echo "Creating variants files..."
-npx ts-node "$DIR/src/createVariants/createVariantsJSON.ts"
+npx tsx "$DIR/src/createVariants/createVariantsJSON.ts"
 echo "Applying prettier to variants.json..."
 npx prettier --write "$DIR/src/json/variants.json"
 echo "Done."
