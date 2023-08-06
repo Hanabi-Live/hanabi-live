@@ -16,6 +16,7 @@
 
     "paths": {
       "@hanabi/data": ["./packages/data/src/index.ts"],
+      "@hanabi/utils": ["./packages/utils/src/index.ts"],
     },
   },
 

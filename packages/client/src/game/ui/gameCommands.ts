@@ -3,11 +3,12 @@
 // e.g. in-game replays.
 
 import { getVariant } from "@hanabi/data";
+import { newArray } from "@hanabi/utils";
 import { parseIntSafe } from "isaacscript-common-ts";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import * as sentry from "../../sentry";
-import { initArray, setBrowserAddressBarPath } from "../../utils";
+import { setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
 import * as handRules from "../rules/hand";
@@ -490,7 +491,7 @@ function initStateStore(data: InitData) {
     }
   }
   if (data.characterAssignments.length === 0) {
-    data.characterAssignments = initArray(data.options.numPlayers, null);
+    data.characterAssignments = newArray(data.options.numPlayers, null);
   }
 
   // Create the state store (using the Redux library).

@@ -1,5 +1,5 @@
 import { getVariant } from "@hanabi/data";
-import { initArray } from "../../../utils";
+import { newArray } from "@hanabi/utils";
 import * as deckRules from "../../rules/deck";
 import { GameMetadata } from "../../types/GameMetadata";
 import { State } from "../../types/State";
@@ -36,7 +36,7 @@ export function initialState(metadata: GameMetadata): State {
     // The array needs to be longer than just the total cards in the deck because we also need to
     // account for notes on a stack base.
     notes: {
-      ourNotes: initArray(totalCards + variant.suits.length + 1, {
+      ourNotes: newArray(totalCards + variant.suits.length + 1, {
         possibilities: [],
         chopMoved: false,
         needsFix: false,
@@ -49,12 +49,12 @@ export function initialState(metadata: GameMetadata): State {
         clued: false,
         text: "",
       }),
-      allNotes: initArray(totalCards + variant.suits.length + 1, []),
+      allNotes: newArray(totalCards + variant.suits.length + 1, []),
       efficiencyModifier: 0,
     },
 
     metadata,
-    cardIdentities: initArray(totalCards, {
+    cardIdentities: newArray(totalCards, {
       suitIndex: null,
       rank: null,
     }),

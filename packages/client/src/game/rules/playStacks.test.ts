@@ -1,5 +1,5 @@
 import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
-import { initArray } from "../../utils";
+import { newArray } from "@hanabi/utils";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { StackDirection } from "../types/StackDirection";
 import { direction, nextPlayableRanks } from "./playStacks";
@@ -8,8 +8,8 @@ const noVariant = getDefaultVariant();
 const upOrDown = getVariant("Up or Down (6 Suits)");
 const reversed = getVariant("Reversed (6 Suits)");
 
-const defaultStackStarts = initArray(noVariant.suits.length, 1);
-const defaultReverseStackStarts = initArray(noVariant.suits.length, 5);
+const defaultStackStarts = newArray(noVariant.suits.length, 1);
+const defaultReverseStackStarts = newArray(noVariant.suits.length, 5);
 
 describe("direction", () => {
   test("returns Up for No Variant, not finished", () => {

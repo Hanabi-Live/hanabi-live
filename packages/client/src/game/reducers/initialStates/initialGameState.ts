@@ -1,5 +1,5 @@
 import { getVariant, MAX_CLUE_NUM, UNKNOWN_CARD_RANK } from "@hanabi/data";
-import { initArray } from "../../../utils";
+import { newArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -33,13 +33,13 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.suits.length * 5,
     endGameLength,
   );
-  const hands: number[][] = initArray(options.numPlayers, []);
+  const hands: number[][] = newArray(options.numPlayers, []);
   const playStackDirections = variant.suits.map((_, i) =>
     playStacksRules.direction(i, [], [], variant),
   );
-  const playStacks: number[][] = initArray(variant.suits.length, []);
-  const discardStacks: number[][] = initArray(variant.suits.length, []);
-  const playStackStarts: number[] = initArray(
+  const playStacks: number[][] = newArray(variant.suits.length, []);
+  const discardStacks: number[][] = newArray(variant.suits.length, []);
+  const playStackStarts: number[] = newArray(
     variant.suits.length,
     UNKNOWN_CARD_RANK,
   );
@@ -64,7 +64,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     playStacks,
     (playStack) => playStack.length,
   );
-  const maxScorePerStack: number[] = initArray(playStacks.length, 5);
+  const maxScorePerStack: number[] = newArray(playStacks.length, 5);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
   const cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(

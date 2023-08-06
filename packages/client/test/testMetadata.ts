@@ -1,11 +1,11 @@
 import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
+import { newArray } from "@hanabi/utils";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
 import { GameMetadata } from "../src/game/types/GameMetadata";
 import { Options } from "../src/types/Options";
-import { initArray } from "../src/utils";
 
 export function testMetadata(
   numPlayers: number,
@@ -16,7 +16,7 @@ export function testMetadata(
     numPlayers,
     variantName,
   };
-  const characterAssignments = initArray(numPlayers, null);
+  const characterAssignments = newArray(numPlayers, null);
   const variant = getVariant(variantName);
   const minEfficiency = statsRules.minEfficiency(
     numPlayers,

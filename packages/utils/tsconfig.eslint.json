@@ -1,0 +1,26 @@
+// A special TypeScript configuration file, used by ESLint only.
+{
+  "extends": "./tsconfig.json",
+
+  // We want to lint every file in the repository, regardless of whether it is actually bundled into
+  // the TypeScript output or not. Two entries for each file extension are needed because TypeScript
+  // will exclude files that begin with a period from an asterisk glob by default.
+  "include": [
+    "./**/*.js",
+    "./**/.*.js",
+    "./**/*.cjs",
+    "./**/.*.cjs",
+    "./**/*.mjs",
+    "./**/.*.mjs",
+    "./**/*.jsx",
+    "./**/.*.jsx",
+    "./**/*.ts",
+    "./**/.*.ts",
+    "./**/*.cts",
+    "./**/.*.cts",
+    "./**/*.mts",
+    "./**/.*.mts",
+    "./**/*.tsx",
+    "./**/.*.tsx",
+  ],
+}

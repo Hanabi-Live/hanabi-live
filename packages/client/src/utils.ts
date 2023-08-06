@@ -30,10 +30,6 @@ export function getURLFromPath(path: string): string {
   return url;
 }
 
-export function initArray<T>(length: number, value: T): T[] {
-  return Array.from({ length }, () => value);
-}
-
 export function isDevWebpack(): boolean {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.has("dev");
@@ -61,7 +57,9 @@ export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-export function negativeOneIfNull(x: number | null | undefined): number {
+export function negativeOneIfNullOrUndefined(
+  x: number | null | undefined,
+): number {
   return x === null || x === undefined ? -1 : x;
 }
 
