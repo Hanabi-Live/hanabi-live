@@ -148,7 +148,7 @@ export function tablesDraw(): void {
 
     // Column 6 - Players.
     const td = $("<td>");
-    table.players.forEach((player, index) => {
+    for (const [i, player] of table.players.entries()) {
       const span = $("<span>").html(player);
       if (player === globals.username) {
         span.addClass("name-me");
@@ -158,14 +158,14 @@ export function tablesDraw(): void {
       if (!table.joined && !table.sharedReplay) {
         span.addClass("shadow").on("click", (evt) => {
           evt.stopPropagation();
-          tableSpectate(table, index);
+          tableSpectate(table, i);
         });
       }
       if (td.html().length > 0) {
         td.append(", ");
       }
       span.appendTo(td);
-    });
+    }
     td.appendTo(row);
 
     // Column 7 - Spectators.
