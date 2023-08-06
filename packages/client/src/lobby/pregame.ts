@@ -192,8 +192,8 @@ export function getOptionIcons(
           This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
             options.timeBase,
           )} minute(s)</strong> plus <strong>${
-      options.timePerTurn
-    } second(s)</strong> per turn.
+            options.timePerTurn
+          } second(s)</strong> per turn.
         </div>
       </div>
     `;
@@ -437,8 +437,8 @@ function drawPlayerBox(i: number) {
         <i id="lobby-pregame-player-${
           i + 1
         }-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${
-    i + 1
-  }-tooltip"></i>
+          i + 1
+        }-tooltip"></i>
       </div>
     </div>
     <div class="hidden">

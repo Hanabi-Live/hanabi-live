@@ -241,9 +241,9 @@ function getTooltipContent() {
   if (globals.lobby.tableMap.get(globals.lobby.tableID)?.name !== undefined) {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-signature"></i></span>';
-    content += `&nbsp; Table name: &nbsp;${
-      globals.lobby.tableMap.get(globals.lobby.tableID)?.name
-    }</li>`;
+    const name =
+      globals.lobby.tableMap.get(globals.lobby.tableID)?.name ?? "[unknown]";
+    content += `&nbsp; Table name: &nbsp;${name}</li>`;
   }
 
   content +=
