@@ -77,6 +77,7 @@ module.exports = {
         include: [
           path.join(__dirname, "src"),
           path.join(__dirname, "..", "data", "src"),
+          path.join(__dirname, "..", "utils", "src"),
         ],
         loader: "ts-loader",
       },
