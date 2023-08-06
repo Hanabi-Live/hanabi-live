@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   client_build:
-    name: Client - Build (Compile TypeScript)
+    name: Client - Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -25,13 +25,13 @@ jobs:
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-build-cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable --immutable-cache
 
       - name: Build the TypeScript code
         run: bash ./packages/client/build_client.sh
 
   client_lint:
-    name: Client - Lint (ESLint)
+    name: Client - Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -52,7 +52,7 @@ jobs:
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-lint-cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable --immutable-cache
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
@@ -61,7 +61,7 @@ jobs:
         run: bash lint.sh
 
   client_test:
-    name: Client - Test (Jest)
+    name: Client - Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -82,7 +82,7 @@ jobs:
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.client-test-cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable --immutable-cache
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
@@ -91,7 +91,7 @@ jobs:
         run: yarn test
 
   server_build:
-    name: Server - Build (Compile Go)
+    name: Server - Build
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -105,25 +105,6 @@ jobs:
       - name: Compile the Golang code
         run: bash build_server.sh
         working-directory: ${{ env.working-directory }}
-
-  server_lint:
-    name: Server - Lint (golangci-lint)
-    runs-on: ubuntu-latest
-    env:
-      working-directory: ./server
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-
-      - name: Install Golang
-        uses: actions/setup-go@v2
-
-      # Linting of the server is disabled until it is rewritten in TypeScript.
-      #- name: Lint the Golang code
-      #  uses: golangci/golangci-lint-action@v2
-      #  with:
-      #    version: v1.33
-      #    working-directory: ${{ env.working-directory }}/src
 
   spell_check:
     name: Spell Check
@@ -147,22 +128,14 @@ jobs:
 
       - name: Install dependencies (if the cached directory was not found)
         if: steps.spell-check-cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable --immutable-cache
 
       - name: Spell check the entire repository
         run: bash spell_check.sh
 
   discord:
     name: Discord Failure Notification
-    needs:
-      [
-        client_build,
-        client_lint,
-        client_test,
-        server_build,
-        server_lint,
-        spell_check,
-      ]
+    needs: [client_build, client_lint, client_test, server_build, spell_check]
     if: always() # This is needed to always run this job, even if the other jobs fail.
     runs-on: ubuntu-latest
     steps:
