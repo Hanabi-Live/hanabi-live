@@ -67,9 +67,10 @@ npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --s
 echo
 
 # In addition to the numerical version (e.g. the number of commits), it is also handy to have the
-# exact git commit hash for the current build.
+# exact git commit hash for the current build and the time that it was created.
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
 git rev-parse HEAD > "$JS_BUNDLES_DIR/git_revision.txt"
+date > "$JS_BUNDLES_DIR/date_compiled.txt"
 
 # Create a file that informs the server that the bundled JavaScript & CSS will not be available for
 # the next few milliseconds or so.
