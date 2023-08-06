@@ -19,6 +19,7 @@ if [[ -z ${CI-} ]]; then
     echo "Failed to find the \".env\" file at: $ENV_PATH"
     exit 1
   fi
+  # shellcheck disable=SC1090
   source "$ENV_PATH"
   if [[ -z ${PORT-} ]]; then
     PORT="80"
@@ -26,6 +27,7 @@ if [[ -z ${CI-} ]]; then
 fi
 
 # Set the "VERSION" environment variable
+# shellcheck disable=SC1091
 source "$DIR/get_version.sh"
 
 # Prepare the "version.js" file
@@ -116,12 +118,14 @@ rm -rf "$GRUNT_OUTPUT_DIR"
 # (we don't use an environment variable to store the results of ls because it will cause the script
 # to stop execution in the case where there are no results)
 cd "$JS_BUNDLES_DIR"
+# shellcheck disable=SC2010,SC2143
 if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
   ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
 fi
 
 # Clean up the files in the CSS directory
 cd "$CSS_DIR"
+# shellcheck disable=SC2010,SC2143
 if [[ $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
   ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
 fi
