@@ -111,8 +111,8 @@ rm -rf "$GRUNT_OUTPUT_DIR"
 # results.)
 cd "$JS_BUNDLES_DIR"
 # shellcheck disable=SC2010,SC2143
-if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
+if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
+  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
 fi
 
 # Clean up the files in the CSS directory.
