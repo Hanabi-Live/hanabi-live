@@ -5,10 +5,6 @@
 
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
-    // "outDir" specifies the output directory. By default, it will put the compiled ".js" and
-    // ".js.map" files next to the respective ".ts" file, which will clutter the "src" directory.
-    "outDir": "./dist",
-
     // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
     // false. We import JSON files in the code base, so this is needed.
     "resolveJsonModule": true,

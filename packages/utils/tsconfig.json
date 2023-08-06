@@ -3,12 +3,5 @@
   // We extend the TypeScript config for the monorepo.
   "extends": "../../tsconfig.monorepo.json",
 
-  // https://www.typescriptlang.org/docs/handbook/compiler-options.html
-  "compilerOptions": {
-    // "outDir" specifies the output directory. By default, it will put the compiled ".js" and
-    // ".js.map" files next to the respective ".ts" file, which will clutter the "src" directory.
-    "outDir": "./dist",
-  },
-
   "include": ["./src/**/*.ts"],
 }
