@@ -1,10 +1,7 @@
-# Ignore compiled output.
-dist
-
 # Keldon files
 keldon
 
-# Golang files
+# Special Golang files
 go.mod
 
 # Images

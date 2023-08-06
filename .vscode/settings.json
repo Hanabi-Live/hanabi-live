@@ -1,5 +1,4 @@
-// These are Visual Studio Code settings that should apply to this particular repository:
-// https://code.visualstudio.com/docs/getstarted/settings
+// These are Visual Studio Code settings that should apply to this particular repository.
 {
   // ----------------
   // Vanilla settings
@@ -20,9 +19,12 @@
   // Automatically remove all trailing whitespace when saving a file.
   "files.trimTrailingWhitespace": true,
 
-  // Configure glob patterns for excluding files and folders in full text searches and quick open
+  // Configure glob patterns for excluding files and folders in full text searches and quick open.
   "search.exclude": {
     "**/*.min.js*": true,
+    "**/*.mp3": true,
+    "**/*.png": true,
+    "**/*.wav": true,
     "**/.yarn/": true,
     "**/dist/": true,
     "**/misc/keldon/": true,
@@ -36,9 +38,9 @@
   // Use Prettier to format "cspell.json".
   "cSpell.autoFormatConfigFile": true,
 
-  // -----------------------
-  // JavaScript / TypeScript
-  // -----------------------
+  // -----------------
+  // Language settings
+  // -----------------
 
   // By default, VSCode will not automatically fill-in function arguments.
   "javascript.suggest.completeFunctionCalls": true,
@@ -87,31 +89,10 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
-
-  // ------
-  // Golang
-  // ------
-
-  // The default Golang linter is golint, which is only concerned with coding style. GolangCI-Lint
-  // does a suite of different checks.
-  // Linting the server is disabled until it is rewritten in TypeScript.
-  // "go.lintTool": "golangci-lint",
-
-  // This is recommended as per the GolangCI-Lint README file:
-  // https://github.com/golangci/golangci-lint/blob/master/README.md
-  // Linting the server is disabled until it is rewritten in TypeScript.
-  // "go.lintFlags": ["--fast"],
-
   "[go]": {
     "editor.tabSize": 4,
     "editor.insertSpaces": false,
   },
-
-  // ------
-  // Python
-  // ------
-
-  // Automatically run the formatter when a Python file is saved.
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
