@@ -1,25 +1,16 @@
-// The configuration file for TypeScript
+// The configuration file for TypeScript.
 {
   // We extend the TypeScript config for the monorepo.
   "extends": "../../tsconfig.monorepo.json",
 
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
-    // "outDir" specifies the output directory
-    // By default, it will put the compiled ".js" and ".js.map" next to the respective ".ts" file,
-    // which will clutter the "src" directory
+    // "outDir" specifies the output directory. By default, it will put the compiled ".js" and
+    // ".js.map" files next to the respective ".ts" file, which will clutter the "src" directory.
     "outDir": "./dist",
 
-    // "esModuleInterop" emits "__importStar" and "__importDefault" helpers for ecosystem
-    // compatibility and enables the "--allowSyntheticDefaultImports" flag for typesystem
-    // compatibility
-    // By default, it is false
-    // Specifying this is needed for various JavaScript libraries to work with TypeScript
-    "esModuleInterop": true,
-
-    // "resolveJsonModule" includes modules imported with ".json" extensions
-    // By default, it is false
-    // We import JSON files in the code base, so this is needed
+    // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
+    // false. We import JSON files in the code base, so this is needed.
     "resolveJsonModule": true,
   },
 
