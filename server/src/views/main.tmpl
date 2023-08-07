@@ -1887,18 +1887,18 @@
   <!-- Page cover (which fades the background when a modal is showing) -->
   <div id="page-cover"></div>
 
-  <!-- Used to validate that we are connecting to the correct URL -->
+  <!-- Used to validate that we are connecting to the correct URL. -->
   <div id="domain" class="hidden">{{ .Domain }}</div>
 
   {{ if .Compiling }}
-    <!-- The server is currently in the process of compiling the TypeScript -->
+    <!-- The server is currently in the process of compiling the TypeScript. -->
     <script
       type="text/javascript"
       src="/public/js/lib/jquery-3.5.0.min.js"
     ></script>
     <script type="text/javascript" src="/public/js/compiling.js"></script>
   {{ else }}
-    <!-- All of the JavaScript is bundled into one file with webpack -->
+    <!-- All of the JavaScript is bundled into one file. -->
     <script
       type="text/javascript"
       src="/public/js/bundles/main.{{ .Version }}.min.js"
