@@ -7,9 +7,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Hanabi Client (webpack)",
+      "label": "Hanabi Client",
       "type": "shell",
-      "command": "./webpack-dev-server.sh",
+      "command": "./esbuild-dev.sh",
       "presentation": {
         "reveal": "always",
         "panel": "new",
@@ -26,7 +26,7 @@
     },
     {
       "label": "Hanabi Client + Server",
-      "dependsOn": ["Hanabi Server", "Hanabi Client (webpack)"],
+      "dependsOn": ["Hanabi Server", "Hanabi Client"],
       "problemMatcher": [],
     },
   ],
