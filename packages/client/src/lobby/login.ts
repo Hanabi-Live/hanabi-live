@@ -4,7 +4,7 @@ import { VERSION } from "@hanabi/data";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
-import { getURLFromPath, isDevWebpack, isEmpty } from "../utils";
+import { getURLFromPath, isEmpty } from "../utils";
 import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -198,7 +198,7 @@ export function hide(firstTimeUser: boolean): void {
   // Hide the login screen
   $("#login").hide();
 
-  if (firstTimeUser && !isDevWebpack()) {
+  if (firstTimeUser) {
     $("#tutorial").fadeIn(FADE_TIME);
     return;
   }

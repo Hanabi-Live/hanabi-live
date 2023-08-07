@@ -30,11 +30,6 @@ export function getURLFromPath(path: string): string {
   return url;
 }
 
-export function isDevWebpack(): boolean {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.has("dev");
-}
-
 // This is a helper to check for empty/invalid HTML elements without worrying about the linter.
 export const isEmpty = (
   value: string | string[] | number | undefined,
