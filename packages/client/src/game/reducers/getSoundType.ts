@@ -176,10 +176,12 @@ export function getSoundType(
   }
 }
 
-// https://hanabi.github.io/docs/level_2/#playing-multiple-1s---play-order-inversion-in-the-starting-hand-part-1
-// https://hanabi.github.io/docs/level_3/#playing-multiple-1s---the-fresh-1s-rule-part-2
-// https://hanabi.github.io/docs/level_3/#playing-multiple-1s---the-chop-focus-exception-part-3
-// https://hanabi.github.io/docs/level_5/#the-order-chop-move-ocm
+/**
+ * https://hanabi.github.io/docs/level_2/#playing-multiple-1s---play-order-inversion-in-the-starting-hand-part-1
+ * https://hanabi.github.io/docs/level_3/#playing-multiple-1s---the-fresh-1s-rule-part-2
+ * https://hanabi.github.io/docs/level_3/#playing-multiple-1s---the-chop-focus-exception-part-3
+ * https://hanabi.github.io/docs/level_5/#the-order-chop-move-ocm
+ */
 function isOrderChopMove(
   action: ActionPlay,
   originalState: GameState,
@@ -284,12 +286,15 @@ function isOrderChopMove(
   return lowestOrder !== action.order;
 }
 
-const isCandidateOneForOCM = (card: CardState) =>
-  // Order Chop Moves are only performed when a player plays a card that they think is a 1
-  // (e.g. a card having a positive rank 1 clue on it)
-  card.positiveRankClues.includes(1) &&
-  // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example.
-  card.positiveRankClues.length === 1 &&
-  // It is technically possible to perform an Order Chop Move with two 1s that have an equal number
-  // of positive color clues on them, but ignore this for simplicity.
-  card.positiveColorClues.length === 0;
+function isCandidateOneForOCM(card: CardState) {
+  return (
+    // Order Chop Moves are only performed when a player plays a card that they think is a 1
+    // (e.g. a card having a positive rank 1 clue on it)
+    card.positiveRankClues.includes(1) &&
+    // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example.
+    card.positiveRankClues.length === 1 &&
+    // It is technically possible to perform an Order Chop Move with two 1s that have an equal
+    // number of positive color clues on them, but ignore this for simplicity.
+    card.positiveColorClues.length === 0
+  );
+}
