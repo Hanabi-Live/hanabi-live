@@ -1,3 +1,4 @@
 TODO:
 
 - refactor soundTypeForLastAction (should probably delete the whole thing)
+- getPlayerNames comma is in wrong place for 3+ players

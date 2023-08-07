@@ -9,7 +9,6 @@ import type { Color } from "./types/Color";
 import type { Suit } from "./types/Suit";
 import type { Variant } from "./types/Variant";
 import type { VariantJSON } from "./types/VariantJSON";
-import { isNameUpOrDown } from "./variants";
 
 export function variantsInit(
   COLORS: ReadonlyMap<string, Color>,
@@ -312,7 +311,7 @@ export function variantsInit(
       suits,
       ranks,
       suitAbbreviations,
-      isNameUpOrDown(name),
+      name.startsWith("Up or Down"),
     );
 
     // Add it to the map.

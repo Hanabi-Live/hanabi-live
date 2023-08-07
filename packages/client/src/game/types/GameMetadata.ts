@@ -22,22 +22,19 @@ export interface GameMetadata {
   readonly seed: string;
 }
 
-export const getPlayerName = (
+export function getPlayerName(
   playerIndex: number,
   metadata: GameMetadata,
-): string => metadata.playerNames[playerIndex] ?? "Hanabi Live";
+): string {
+  return metadata.playerNames[playerIndex] ?? "Hanabi Live";
+}
 
-export const getPlayerNames = (
-  playerIndices: number[] | null,
+export function getPlayerNames(
+  playerIndices: number[],
   metadata: GameMetadata,
-): string => {
-  if (playerIndices === null) {
-    return "The players";
-  }
+): string {
   const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
   playerNames.sort();
-  const { length } = playerNames;
-  return `${playerNames
-    .slice(0, length - 1)
-    .join(", ")} and ${playerNames.slice(-1)}`;
-};
+
+  return `${playerNames.slice(0, -1).join(", ")} and ${playerNames.slice(-1)}`;
+}

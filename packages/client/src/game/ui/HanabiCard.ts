@@ -34,6 +34,12 @@ import {
 } from "./noteCheckImpossibility";
 import * as notes from "./notes";
 
+enum PipState {
+  Hidden,
+  Eliminated,
+  Visible,
+}
+
 const DECK_BACK_IMAGE = "deck-back";
 
 export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
@@ -595,48 +601,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // -----------
 
   updatePips(): void {
-    enum PipState {
-      Hidden,
-      Eliminated,
-      Visible,
-    }
-
-    const updatePip = (
-      pipState: PipState,
-      hasPositiveClues: boolean,
-      pip: Konva.Shape | RankPip,
-      x: Konva.Shape,
-      pipPositive?: Konva.Shape | undefined,
-    ) => {
-      if (pipState === PipState.Hidden) {
-        pip.hide();
-        x.hide();
-        pipPositive?.hide();
-      } else {
-        pip.show();
-        if (hasPositiveClues && pipPositive !== undefined) {
-          pip.hide();
-          pipPositive.show();
-        } else {
-          pipPositive?.hide();
-        }
-        if (pipState === PipState.Eliminated) {
-          x.show();
-        } else {
-          x.hide();
-        }
-      }
-
-      // TODO: Positive clues on suits should use the same API as rank pips.
-      if (pip instanceof RankPip) {
-        if (hasPositiveClues && pipState !== PipState.Hidden) {
-          pip.showPositiveClue();
-        } else {
-          pip.hidePositiveClue();
-        }
-      }
-    };
-
     const suitPipStates: PipState[] = this.variant.suits.map(
       () => PipState.Hidden,
     );
@@ -1405,5 +1369,41 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   getLayoutParent(): LayoutChild {
     return this._layout;
+  }
+}
+
+function updatePip(
+  pipState: PipState,
+  hasPositiveClues: boolean,
+  pip: Konva.Shape | RankPip,
+  x: Konva.Shape,
+  pipPositive?: Konva.Shape | undefined,
+) {
+  if (pipState === PipState.Hidden) {
+    pip.hide();
+    x.hide();
+    pipPositive?.hide();
+  } else {
+    pip.show();
+    if (hasPositiveClues && pipPositive !== undefined) {
+      pip.hide();
+      pipPositive.show();
+    } else {
+      pipPositive?.hide();
+    }
+    if (pipState === PipState.Eliminated) {
+      x.show();
+    } else {
+      x.hide();
+    }
+  }
+
+  // TODO: Positive clues on suits should use the same API as rank pips.
+  if (pip instanceof RankPip) {
+    if (hasPositiveClues && pipState !== PipState.Hidden) {
+      pip.showPositiveClue();
+    } else {
+      pip.hidePositiveClue();
+    }
   }
 }

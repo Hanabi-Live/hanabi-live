@@ -187,16 +187,6 @@ export class FullActionLog extends Konva.Group {
   }
 
   private refreshText() {
-    const appendLine = (
-      log: MultiFitText,
-      numbers: MultiFitText,
-      turn: number,
-      line: string,
-    ) => {
-      log.setMultiText(line);
-      numbers.setMultiText(turn.toString());
-    };
-
     if (this.logText === null || this.logNumbers === null) {
       this.makeLog();
     }
@@ -244,4 +234,14 @@ export class FullActionLog extends Konva.Group {
     }
     this.needsRefresh = true;
   }
+}
+
+function appendLine(
+  log: MultiFitText,
+  numbers: MultiFitText,
+  turn: number,
+  line: string,
+) {
+  log.setMultiText(line);
+  numbers.setMultiText(turn.toString());
 }

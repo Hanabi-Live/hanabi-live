@@ -9,14 +9,22 @@ export function discardedHelpers(
   isLastCopy: (s: number, r: number) => boolean;
   isAllDiscarded: (s: number, r: number) => boolean;
 } {
+  // eslint-disable-next-line func-style
   const total = (s: number, r: number) =>
     deckRules.numCopiesOfCard(variant.suits[s]!, r, variant);
+
+  // eslint-disable-next-line func-style
   const discarded = (s: number, r: number) =>
     deckRules.discardedCopies(deck, s, r);
+
+  // eslint-disable-next-line func-style
   const isLastCopy = (s: number, r: number) =>
     total(s, r) === discarded(s, r) + 1;
+
+  // eslint-disable-next-line func-style
   const isAllDiscarded = (s: number, r: number) =>
     total(s, r) === discarded(s, r);
+
   return { isLastCopy, isAllDiscarded };
 }
 

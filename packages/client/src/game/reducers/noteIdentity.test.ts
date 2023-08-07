@@ -5,34 +5,6 @@ const testVariant = getVariant("Up or Down (5 Suits)");
 
 const zeros = [0, 0, 0, 0, 0, 0];
 const ones = [1, 1, 1, 1, 1, 1];
-const rankMap = (
-  ranks: Set<number>,
-  suitLength: number = testVariant.suits.length,
-) => {
-  const cardMap: number[][] = [];
-  for (const rank of [1, 2, 3, 4, 5, 6, 7]) {
-    if (ranks.has(rank)) {
-      cardMap.push(ones.slice(0, suitLength));
-    } else {
-      cardMap.push(zeros.slice(0, suitLength));
-    }
-  }
-  return cardMap;
-};
-
-function identityArrayToMap(
-  possibles: Array<[number, number]>,
-  suitLength: number = testVariant.suits.length,
-): number[][] {
-  const cardMap: number[][] = [];
-  for (let rank = 1; rank <= 7; rank++) {
-    cardMap.push(zeros.slice(0, suitLength));
-  }
-  for (const ident of possibles) {
-    cardMap[ident[1] - 1]![ident[0]] = 1;
-  }
-  return cardMap;
-}
 
 describe("noteIdentity", () => {
   describe("getPossibilitiesFromKeyword", () => {
@@ -114,3 +86,34 @@ describe("noteIdentity", () => {
     });
   });
 });
+
+function rankMap(
+  ranks: Set<number>,
+  suitLength: number = testVariant.suits.length,
+): number[][] {
+  const cardMap: number[][] = [];
+
+  for (const rank of [1, 2, 3, 4, 5, 6, 7]) {
+    if (ranks.has(rank)) {
+      cardMap.push(ones.slice(0, suitLength));
+    } else {
+      cardMap.push(zeros.slice(0, suitLength));
+    }
+  }
+
+  return cardMap;
+}
+
+function identityArrayToMap(
+  possibles: Array<[number, number]>,
+  suitLength: number = testVariant.suits.length,
+): number[][] {
+  const cardMap: number[][] = [];
+  for (let rank = 1; rank <= 7; rank++) {
+    cardMap.push(zeros.slice(0, suitLength));
+  }
+  for (const ident of possibles) {
+    cardMap[ident[1] - 1]![ident[0]] = 1;
+  }
+  return cardMap;
+}

@@ -18,5 +18,6 @@ export function suitIndexToSuit(
   return variant.suits[suitIndex]!;
 }
 
-export const colorToColorIndex = (color: Color, variant: Variant): number =>
-  variant.clueColors.findIndex((variantColor) => variantColor === color);
+export function colorToColorIndex(color: Color, variant: Variant): number {
+  return variant.clueColors.findIndex((variantColor) => variantColor === color);
+}

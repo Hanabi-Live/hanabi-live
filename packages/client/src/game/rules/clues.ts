@@ -4,7 +4,7 @@ import type { Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue } from "../types/Clue";
-import { colorClue, rankClue } from "../types/Clue";
+import { newColorClue, newRankClue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { MsgClue } from "../types/MsgClue";
@@ -58,13 +58,13 @@ export function getClueName(
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   if (msgClue.type === ClueType.Color) {
     const clueValue = variant.clueColors[msgClue.value]!; // This is a Color object
-    return colorClue(clueValue);
+    return newColorClue(clueValue);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (msgClue.type === ClueType.Rank) {
     const clueValue = msgClue.value;
-    return rankClue(clueValue);
+    return newRankClue(clueValue);
   }
 
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');

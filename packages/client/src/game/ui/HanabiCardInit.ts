@@ -68,6 +68,7 @@ function makeBorder(color: string) {
     listening: false,
   });
 
+  // eslint-disable-next-line func-style
   const borderConfig = (strokeWidth: number, stroke: string): RectConfig => ({
     width: CARD_W - borderOffset,
     height: CARD_H - borderOffset,
@@ -90,9 +91,17 @@ function makeBorder(color: string) {
   return border;
 }
 
-export const cluedBorder = (): Konva.Group => makeBorder(CLUED_COLOR);
-export const chopMoveBorder = (): Konva.Group => makeBorder(CHOP_MOVE_COLOR);
-export const finesseBorder = (): Konva.Group => makeBorder(FINESSE_COLOR);
+export function cluedBorder(): Konva.Group {
+  return makeBorder(CLUED_COLOR);
+}
+
+export function chopMoveBorder(): Konva.Group {
+  return makeBorder(CHOP_MOVE_COLOR);
+}
+
+export function finesseBorder(): Konva.Group {
+  return makeBorder(FINESSE_COLOR);
+}
 
 export function directionArrow(
   variant: Variant,
@@ -435,8 +444,8 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
   return indicator;
 }
 
-export const questionMark = (): Konva.Image =>
-  new Konva.Image({
+export function questionMark(): Konva.Image {
+  return new Konva.Image({
     x: 0.15 * CARD_W,
     y: 0.2 * CARD_H,
     width: 0.8 * CARD_W,
@@ -444,9 +453,10 @@ export const questionMark = (): Konva.Image =>
     image: globals.imageLoader!.get("question-mark2")!,
     visible: false,
   });
+}
 
-export const exclamationMark = (): Konva.Image =>
-  new Konva.Image({
+export function exclamationMark(): Konva.Image {
+  return new Konva.Image({
     x: 0.15 * CARD_W,
     y: 0.2 * CARD_H,
     width: 0.8 * CARD_W,
@@ -454,9 +464,10 @@ export const exclamationMark = (): Konva.Image =>
     image: globals.imageLoader!.get("exclamation-mark")!,
     visible: false,
   });
+}
 
-export const trashcan = (): Konva.Image =>
-  new Konva.Image({
+export function trashcan(): Konva.Image {
+  return new Konva.Image({
     x: 0.15 * CARD_W,
     y: 0.2 * CARD_H,
     width: 0.7 * CARD_W,
@@ -464,9 +475,10 @@ export const trashcan = (): Konva.Image =>
     image: globals.imageLoader!.get("trashcan2")!,
     visible: false,
   });
+}
 
-export const wrench = (): Konva.Image =>
-  new Konva.Image({
+export function wrench(): Konva.Image {
+  return new Konva.Image({
     x: 0.1 * CARD_W,
     y: 0.33 * CARD_H,
     width: 0.8 * CARD_W,
@@ -474,9 +486,10 @@ export const wrench = (): Konva.Image =>
     visible: false,
     listening: false,
   });
+}
 
-export const ddaIndicatorTop = (): Konva.Image =>
-  new Konva.Image({
+export function ddaIndicatorTop(): Konva.Image {
+  return new Konva.Image({
     x: TOP_LEFT_X,
     y: TOP_LEFT_Y,
     width: SMALL_ICON_SIZE,
@@ -485,6 +498,7 @@ export const ddaIndicatorTop = (): Konva.Image =>
     visible: false,
     listening: false,
   });
+}
 
 export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
   const indicator = new Konva.Image({
@@ -502,8 +516,8 @@ export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
   return indicator;
 }
 
-export const trashMiniIndicatorTop = (): Konva.Image =>
-  new Konva.Image({
+export function trashMiniIndicatorTop(): Konva.Image {
+  return new Konva.Image({
     x: TOP_LEFT_X,
     y: TOP_LEFT_Y,
     width: SMALL_ICON_SIZE,
@@ -512,6 +526,7 @@ export const trashMiniIndicatorTop = (): Konva.Image =>
     visible: false,
     listening: false,
   });
+}
 
 export function trashMiniIndicatorBottom(
   offsetCornerElements: boolean,

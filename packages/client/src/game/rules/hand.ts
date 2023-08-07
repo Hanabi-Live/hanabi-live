@@ -4,10 +4,13 @@ import type { Options } from "../../types/Options";
 import type { CardState } from "../types/CardState";
 import * as cardRules from "./card";
 
-export const cardsPerHand = (options: Options): number =>
-  cardsPerHandNatural(options.numPlayers) +
-  (options.oneExtraCard ? 1 : 0) -
-  (options.oneLessCard ? 1 : 0);
+export function cardsPerHand(options: Options): number {
+  return (
+    cardsPerHandNatural(options.numPlayers) +
+    (options.oneExtraCard ? 1 : 0) -
+    (options.oneLessCard ? 1 : 0)
+  );
+}
 
 function cardsPerHandNatural(numPlayers: number): number {
   switch (numPlayers) {
@@ -32,7 +35,7 @@ function cardsPerHandNatural(numPlayers: number): number {
   }
 }
 
-// For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game).
+/** For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game). */
 export function cardSlot(targetOrder: number, hand: number[]): number | null {
   const index = hand.indexOf(targetOrder);
   return index >= 0 ? hand.length - index : null;

@@ -6,23 +6,29 @@ import { changeStartingHandVisibility } from "../../hypothetical";
 import * as turn from "../../turn";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations.
-export const shouldEnableEnterHypoButton = (state: State): boolean =>
-  (state.replay.shared === null && state.replay.active) ||
-  (state.replay.shared !== null &&
-    state.replay.shared.useSharedSegments &&
-    state.replay.shared.amLeader &&
-    // We can't start a hypothetical on a segment where the game has already ended.
-    state.visibleState !== null &&
-    state.visibleState.turn.currentPlayerIndex !== null);
+export function shouldEnableEnterHypoButton(state: State): boolean {
+  return (
+    (state.replay.shared === null && state.replay.active) ||
+    (state.replay.shared !== null &&
+      state.replay.shared.useSharedSegments &&
+      state.replay.shared.amLeader &&
+      // We can't start a hypothetical on a segment where the game has already ended.
+      state.visibleState !== null &&
+      state.visibleState.turn.currentPlayerIndex !== null)
+  );
+}
 
 export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
   globals.elements.enterHypoButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 }
 
-export const shouldShowReplayArea = (state: State): boolean =>
-  (state.replay.active || state.replay.shared !== null) &&
-  state.replay.hypothetical === null;
+export function shouldShowReplayArea(state: State): boolean {
+  return (
+    (state.replay.active || state.replay.shared !== null) &&
+    state.replay.hypothetical === null
+  );
+}
 
 export function shouldShowReplayAreaChanged(shouldShow: boolean): void {
   globals.elements.replayArea?.visible(shouldShow);
@@ -51,9 +57,12 @@ export function onActiveChanged(data: {
   globals.layers.UI.batchDraw();
 }
 
-export const shouldShowHypoControls = (state: State): boolean =>
-  state.replay.hypothetical !== null &&
-  (state.replay.shared === null || state.replay.shared.amLeader);
+export function shouldShowHypoControls(state: State): boolean {
+  return (
+    state.replay.hypothetical !== null &&
+    (state.replay.shared === null || state.replay.shared.amLeader)
+  );
+}
 
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
   globals.elements.hypoButtonsArea?.visible(shouldShow);
@@ -71,10 +80,13 @@ export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-export const shouldShowToggleDrawnCards = (state: State): boolean =>
-  state.finished &&
-  state.replay.hypothetical !== null &&
-  (state.replay.shared === null || state.replay.shared.amLeader);
+export function shouldShowToggleDrawnCards(state: State): boolean {
+  return (
+    state.finished &&
+    state.replay.hypothetical !== null &&
+    (state.replay.shared === null || state.replay.shared.amLeader)
+  );
+}
 
 export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {
   globals.elements.toggleDrawnCardsButton?.setEnabled(shouldShow);
@@ -126,10 +138,13 @@ export function onStatesLengthChanged(): void {
   globals.layers.UI.batchDraw();
 }
 
-export const shouldShowHypoBackButton = (state: State): boolean =>
-  (state.replay.shared === null || state.replay.shared.amLeader) &&
-  state.replay.hypothetical !== null &&
-  state.replay.hypothetical.states.length > 1;
+export function shouldShowHypoBackButton(state: State): boolean {
+  return (
+    (state.replay.shared === null || state.replay.shared.amLeader) &&
+    state.replay.hypothetical !== null &&
+    state.replay.hypothetical.states.length > 1
+  );
+}
 
 export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
   globals.elements.hypoBackButton?.setEnabled(enabled);

@@ -74,12 +74,12 @@ export function numCopiesOfCard(
 }
 
 // Returns how many cards of a specific suit/rank that have been already discarded.
-export const discardedCopies = (
+export function discardedCopies(
   deck: readonly CardState[],
   suitIndex: number,
   rank: number,
-): number =>
-  deck.reduce((discarded, c) => {
+): number {
+  return deck.reduce((discarded, c) => {
     if (
       c.suitIndex === suitIndex &&
       c.rank === rank &&
@@ -87,8 +87,10 @@ export const discardedCopies = (
     ) {
       return discarded + 1;
     }
+
     return discarded;
   }, 0);
+}
 
 export function isInitialDealFinished(
   currentDeckSize: number,

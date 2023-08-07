@@ -6,6 +6,7 @@ import type { StackDirection } from "../types/StackDirection";
 import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
+import { discardedHelpers } from "./variants/discardHelpers";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
@@ -22,16 +23,21 @@ export function name(
   return `${suitName} ${rankName}`;
 }
 
-export const isClued = (card: CardState): boolean => card.numPositiveClues > 0;
+export function isClued(card: CardState): boolean {
+  return card.numPositiveClues > 0;
+}
 
-export const isPlayed = (card: CardState): boolean =>
-  card.location === "playStack";
+export function isPlayed(card: CardState): boolean {
+  return card.location === "playStack";
+}
 
-export const isDiscarded = (card: CardState): boolean =>
-  card.location === "discard";
+export function isDiscarded(card: CardState): boolean {
+  return card.location === "discard";
+}
 
-export const isInPlayerHand = (card: CardState): boolean =>
-  typeof card.location === "number";
+export function isInPlayerHand(card: CardState): boolean {
+  return typeof card.location === "number";
+}
 
 /**
  * Returns true if the card is not yet played and is still needed to be played in order to get the
@@ -75,15 +81,9 @@ export function needsToBePlayed(
     );
   }
 
-  const total = (s: number, r: number) =>
-    deckRules.numCopiesOfCard(variant.suits[s]!, r, variant);
-  const discarded = (s: number, r: number) =>
-    deckRules.discardedCopies(deck, s, r);
-  const isAllDiscarded = (s: number, r: number) =>
-    total(s, r) === discarded(s, r);
-
   // Second, check to see if it is still possible to play this card. (The preceding cards in the
   // suit might have already been discarded.)
+  const { isAllDiscarded } = discardedHelpers(variant, deck);
   for (let i = 1; i < rank; i++) {
     if (isAllDiscarded(suitIndex, i)) {
       // The suit is "dead", so this card does not need to be played anymore.

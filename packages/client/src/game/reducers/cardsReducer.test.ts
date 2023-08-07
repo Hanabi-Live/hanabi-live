@@ -908,8 +908,12 @@ describe("cardsReducer", () => {
   });
 });
 
-const empathyPossible = (card: CardState, suit: number, rank: number) =>
-  card.possibleCardsForEmpathy.some(([s, r]) => s === suit && r === rank);
+function empathyPossible(card: CardState, suit: number, rank: number) {
+  return card.possibleCardsForEmpathy.some(
+    ([s, r]) => s === suit && r === rank,
+  );
+}
 
-const isPossible = (card: CardState, suit: number, rank: number) =>
-  card.possibleCards.some(([s, r]) => s === suit && r === rank);
+function isPossible(card: CardState, suit: number, rank: number) {
+  return card.possibleCards.some(([s, r]) => s === suit && r === rank);
+}

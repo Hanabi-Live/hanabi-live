@@ -7,7 +7,7 @@ import * as debug from "../../debug";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
-import { colorClue, rankClue } from "../types/Clue";
+import { newColorClue, newRankClue } from "../types/Clue";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";
@@ -1260,25 +1260,12 @@ function drawSharedReplay() {
 
       const button = document.createElement("button");
 
-      const newLeader = (player: string | null | undefined) => {
-        modals.closeModals();
-
-        if (player === null || player === undefined) {
-          return;
-        }
-
-        globals.lobby.conn!.send("tableSetLeader", {
-          tableID: globals.lobby.tableID,
-          name: player,
-        });
-      };
-
       button.innerHTML = spectator.name;
       button.classList.add("button");
       button.dataset["player"] = spectator.name;
       button.addEventListener("click", (evt) => {
         const element = evt.target as HTMLElement;
-        newLeader(element.dataset["player"]);
+        setLeader(element.dataset["player"]);
       });
       button.type = "submit";
 
@@ -1286,6 +1273,19 @@ function drawSharedReplay() {
     }
 
     modals.showPrompt("#set-leader-modal");
+  });
+}
+
+function setLeader(player: string | null | undefined) {
+  modals.closeModals();
+
+  if (player === null || player === undefined) {
+    return;
+  }
+
+  globals.lobby.conn!.send("tableSetLeader", {
+    tableID: globals.lobby.tableID,
+    name: player,
   });
 }
 
@@ -1670,41 +1670,7 @@ function drawTimers() {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer1 as unknown as Konva.Group);
-  const timerClick = () => {
-    if (
-      !globals.options.timed || // We don't need to pause if this is not a timed game
-      globals.state.pause.active // We don't need to pause if the game is already paused
-    ) {
-      return;
-    }
 
-    const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-    const { ourPlayerIndex } = globals.metadata;
-
-    let setting: string;
-    if (currentPlayerIndex === ourPlayerIndex) {
-      setting = "pause";
-    } else if (globals.state.pause.queued) {
-      setting = "pause-unqueue";
-
-      globals.store!.dispatch({
-        type: "pauseQueue",
-        queued: false,
-      });
-    } else {
-      setting = "pause-queue";
-
-      globals.store!.dispatch({
-        type: "pauseQueue",
-        queued: true,
-      });
-    }
-
-    globals.lobby.conn!.send("pause", {
-      tableID: globals.lobby.tableID,
-      setting,
-    });
-  };
   globals.elements.timer1.on(
     "click",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1736,6 +1702,42 @@ function drawTimers() {
     // (The content will be updated in the "setTickingDownTimeCPTooltip()" function.)
     konvaTooltips.init(globals.elements.timer2, true, false);
   }
+}
+
+function timerClick() {
+  if (
+    !globals.options.timed || // We don't need to pause if this is not a timed game
+    globals.state.pause.active // We don't need to pause if the game is already paused
+  ) {
+    return;
+  }
+
+  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
+  const { ourPlayerIndex } = globals.metadata;
+
+  let setting: string;
+  if (currentPlayerIndex === ourPlayerIndex) {
+    setting = "pause";
+  } else if (globals.state.pause.queued) {
+    setting = "pause-unqueue";
+
+    globals.store!.dispatch({
+      type: "pauseQueue",
+      queued: false,
+    });
+  } else {
+    setting = "pause-queue";
+
+    globals.store!.dispatch({
+      type: "pauseQueue",
+      queued: true,
+    });
+  }
+
+  globals.lobby.conn!.send("pause", {
+    tableID: globals.lobby.tableID,
+    setting,
+  });
 }
 
 function drawClueArea() {
@@ -1917,7 +1919,7 @@ function drawClueArea() {
         height: buttonH * winH,
         color: color.fill,
         text: color.abbreviation,
-        clue: colorClue(color),
+        clue: newColorClue(color),
       },
       matchingSuit,
     );
@@ -1928,16 +1930,6 @@ function drawClueArea() {
   }
 
   // Rank buttons / number buttons.
-  const rankTextFromVariant = (rank: number): string => {
-    if (!variantRules.isOddsAndEvens(globals.variant)) {
-      return rank.toString();
-    }
-    if (rank === 1) {
-      return "O";
-    }
-    return "E";
-  };
-
   globals.elements.rankClueButtons = [];
   const numRanks = globals.variant.clueRanks.length;
   let totalRankWidth = buttonW * numRanks;
@@ -1952,7 +1944,7 @@ function drawClueArea() {
       width: buttonW * winW,
       height: buttonH * winH,
       label: rankTextFromVariant(rank),
-      clue: rankClue(rank),
+      clue: newRankClue(rank),
     });
 
     globals.elements.clueTypeButtonGroup.add(button as unknown as Konva.Group);
@@ -1993,6 +1985,16 @@ function drawClueArea() {
   globals.layers.UI.add(globals.elements.clueArea);
 
   drawClueAreaDisabled(offsetX);
+}
+
+function rankTextFromVariant(rank: number): string {
+  if (!variantRules.isOddsAndEvens(globals.variant)) {
+    return rank.toString();
+  }
+  if (rank === 1) {
+    return "O";
+  }
+  return "E";
 }
 
 function drawClueAreaDisabled(offsetX: number) {

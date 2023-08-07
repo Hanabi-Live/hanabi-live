@@ -337,10 +337,6 @@ export function getVariantFromArgs(args: string[]): string {
     hyphen: / *- */g,
     ampersand: / *& */g,
   };
-  const capitalize = (input: string) => {
-    const pattern = /(^|[()&\- ])(\w)/g;
-    return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
-  };
 
   const variant = args
     // Remove empty elements
@@ -360,6 +356,11 @@ export function getVariantFromArgs(args: string[]): string {
     .trim();
 
   return variant;
+}
+
+function capitalize(input: string) {
+  const pattern = /(^|[()&\- ])(\w)/g;
+  return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
 }
 
 export function getVariantFromPartial(search: string): string {

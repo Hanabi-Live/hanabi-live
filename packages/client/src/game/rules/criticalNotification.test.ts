@@ -8,8 +8,6 @@ import { isCritical } from "./variants/reversible";
 
 let testState: State;
 
-const getStateAtTurn = (state: State, turn: number) =>
-  state.replay.states[turn];
 const variant = getVariant("Up or Down & Brown (6 Suits)");
 const redSuit = 0;
 
@@ -66,3 +64,7 @@ describe("UI", () => {
     });
   });
 });
+
+function getStateAtTurn(state: State, turn: number) {
+  return state.replay.states[turn];
+}

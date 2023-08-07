@@ -7,33 +7,43 @@ import { isOurTurn } from "../../isOurTurn";
 import * as ourHand from "../../ourHand";
 import * as turn from "../../turn";
 
-export const shouldShowYourTurnIndicator = (state: State): boolean =>
-  state.playing &&
-  state.ongoingGame.turn.currentPlayerIndex === globals.metadata.ourPlayerIndex;
+export function shouldShowYourTurnIndicator(state: State): boolean {
+  return (
+    state.playing &&
+    state.ongoingGame.turn.currentPlayerIndex ===
+      globals.metadata.ourPlayerIndex
+  );
+}
 
 export function shouldShowYourTurnIndicatorChanged(shouldShow: boolean): void {
   globals.elements.yourTurn?.visible(shouldShow);
   globals.layers.UI.batchDraw();
 }
 
-export const shouldShowTurnUI = (state: State): boolean =>
-  (state.replay.hypothetical !== null &&
-    (state.replay.shared === null || state.replay.shared.amLeader)) ||
-  (state.playing &&
-    !state.replay.active &&
-    state.ongoingGame.turn.currentPlayerIndex ===
-      state.metadata.ourPlayerIndex);
+export function shouldShowTurnUI(state: State): boolean {
+  return (
+    (state.replay.hypothetical !== null &&
+      (state.replay.shared === null || state.replay.shared.amLeader)) ||
+    (state.playing &&
+      !state.replay.active &&
+      state.ongoingGame.turn.currentPlayerIndex ===
+        state.metadata.ourPlayerIndex)
+  );
+}
 
 export function shouldShowTurnUIChanged(shouldShow: boolean): void {
   globals.elements.clueArea?.visible(shouldShow);
   globals.layers.UI.batchDraw();
 }
 
-// Fade the clue UI if there is not a clue available.
-export const shouldIndicateNoClues = (state: State): boolean =>
-  shouldShowTurnUI(state) &&
-  state.visibleState!.clueTokens <
-    clueTokensRules.getAdjusted(1, globals.variant);
+/** Fade the clue UI if there is not a clue available. */
+export function shouldIndicateNoClues(state: State): boolean {
+  return (
+    shouldShowTurnUI(state) &&
+    state.visibleState!.clueTokens <
+      clueTokensRules.getAdjusted(1, globals.variant)
+  );
+}
 
 export function shouldIndicateNoCluesChanged(shouldIndicate: boolean): void {
   globals.elements.clueAreaDisabled!.visible(shouldIndicate);
@@ -42,10 +52,13 @@ export function shouldIndicateNoCluesChanged(shouldIndicate: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-export const shouldEnableBottomDeckBlindPlay = (state: State): boolean =>
-  state.metadata.options.deckPlays &&
-  shouldShowTurnUI(state) &&
-  state.visibleState!.cardsRemainingInTheDeck === 1;
+export function shouldEnableBottomDeckBlindPlay(state: State): boolean {
+  return (
+    state.metadata.options.deckPlays &&
+    shouldShowTurnUI(state) &&
+    state.visibleState!.cardsRemainingInTheDeck === 1
+  );
+}
 
 export function shouldEnableBottomDeckBlindPlayChanged(
   shouldEnable: boolean,

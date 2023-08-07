@@ -1,6 +1,6 @@
 // Functions for progressing forward and backward through time.
 
-import { parseIntSafe } from "@hanabi/utils";
+import { clamp, parseIntSafe } from "@hanabi/utils";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import * as arrows from "./arrows";
@@ -55,8 +55,6 @@ export function goToSegment(
   const currentSegment = getCurrentReplaySegment();
 
   // Validate the target segment. The target must be between 0 and the final replay segment.
-  const clamp = (n: number, min: number, max: number) =>
-    Math.max(min, Math.min(n, max));
   const newSegment = clamp(segment, 0, finalSegment);
   if (currentSegment === newSegment) {
     if (
@@ -205,9 +203,6 @@ export function shuttleDragBound(
   this: Konva.Rect,
   pos: Konva.Vector2d,
 ): { x: number; y: number } {
-  const clamp = (n: number, min: number, max: number) =>
-    Math.max(min, Math.min(n, max));
-
   const min =
     globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
   const w = globals.elements.replayBar!.width() - this.width();
@@ -338,19 +333,6 @@ export function promptTurn(): void {
   element.max = Math.max(finalSegment, currentSegment).toString();
   element.value = currentSegment.toString();
 
-  const goTo = (turnString: string) => {
-    let targetTurn = parseIntSafe(turnString);
-    if (Number.isNaN(targetTurn)) {
-      return;
-    }
-
-    // We need to decrement the turn because the turn shown to the user is always one greater than
-    // the real turn.
-    targetTurn--;
-
-    goToSegment(targetTurn, true);
-  };
-
   button.onclick = (evt) => {
     evt.preventDefault();
     closeModals();
@@ -359,6 +341,19 @@ export function promptTurn(): void {
   };
 
   showPrompt("#set-turn-modal", null, element, button);
+}
+
+function goTo(turnString: string) {
+  const targetTurn = parseIntSafe(turnString);
+  if (Number.isNaN(targetTurn)) {
+    return;
+  }
+
+  // We need to decrement the turn because the turn shown to the user is always one greater than the
+  // real turn.
+  const segment = targetTurn - 1;
+
+  goToSegment(segment, true);
 }
 
 // --------------------------------

@@ -352,15 +352,14 @@ function sharedReplaySendSound(sound: string) {
 }
 
 function play() {
-  promptCardOrder(true);
+  promptCardOrder(ActionType.Play);
 }
 
 function discard() {
-  promptCardOrder(false);
+  promptCardOrder(ActionType.Discard);
 }
 
-// If playAction is true, it plays a card. If playAction is false, it discards a card.
-function promptCardOrder(playAction = true) {
+function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const playerIndex =
     globals.state.replay.hypothetical === null
       ? globals.metadata.ourPlayerIndex
@@ -370,7 +369,7 @@ function promptCardOrder(playAction = true) {
       ? globals.state.ongoingGame.hands[playerIndex]!
       : globals.state.replay.hypothetical.ongoing.hands[playerIndex]!;
   const maxSlotIndex = hand.length;
-  const verb = playAction ? "play" : "discard";
+  const verb = ActionType[actionType];
 
   const title = document.getElementById("play-discard-title");
   if (title !== null) {
@@ -379,7 +378,7 @@ function promptCardOrder(playAction = true) {
 
   const paragraph = document.getElementById("play-discard-message");
   if (paragraph !== null) {
-    paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
+    paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
   }
 
   const element = document.getElementById(
@@ -394,23 +393,6 @@ function promptCardOrder(playAction = true) {
   ) as HTMLButtonElement;
   button.onclick = () => {
     closeModals();
-    const performAction = (action: boolean, target: number) => {
-      const type = action ? ActionType.Play : ActionType.Discard;
-
-      if (globals.state.replay.hypothetical === null) {
-        globals.lobby.conn!.send("action", {
-          tableID: globals.lobby.tableID,
-          type,
-          target,
-        });
-      } else {
-        hypothetical.send({
-          type,
-          target,
-        });
-      }
-      turn.hideArrowsAndDisableDragging();
-    };
     const response = element.value;
 
     if (response === "") {
@@ -418,7 +400,7 @@ function promptCardOrder(playAction = true) {
     }
     if (/^deck$/i.test(response)) {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
-      performAction(playAction, deckRules.totalCards(globals.variant) - 1);
+      performAction(actionType, deckRules.totalCards(globals.variant) - 1);
       return;
     }
     const slot = parseIntSafe(response);
@@ -429,12 +411,34 @@ function promptCardOrder(playAction = true) {
       return;
     }
 
-    performAction(playAction, hand[maxSlotIndex - slot]!);
+    performAction(actionType, hand[maxSlotIndex - slot]!);
   };
 
   showPrompt("#play-discard-modal", null, element, button);
 }
 
-const click = (element: Konva.Node) => () => {
-  element.dispatchEvent(new MouseEvent("click"));
-};
+function click(element: Konva.Node) {
+  return () => {
+    element.dispatchEvent(new MouseEvent("click"));
+  };
+}
+
+function performAction(
+  actionType: ActionType.Play | ActionType.Discard,
+  target: number,
+) {
+  if (globals.state.replay.hypothetical === null) {
+    globals.lobby.conn!.send("action", {
+      tableID: globals.lobby.tableID,
+      type: actionType,
+      target,
+    });
+  } else {
+    hypothetical.send({
+      type: actionType,
+      target,
+    });
+  }
+
+  turn.hideArrowsAndDisableDragging();
+}

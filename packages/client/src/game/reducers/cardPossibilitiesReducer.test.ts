@@ -1,7 +1,7 @@
 import { getVariant } from "@hanabi/data";
 import { testMetadata } from "../../../test/testMetadata";
 import type { CardState } from "../types/CardState";
-import { colorClue, rankClue } from "../types/Clue";
+import { newColorClue, newRankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { initialCardState } from "./initialStates/initialCardState";
 
@@ -29,7 +29,7 @@ function possibilities(
 
 describe("cardPossibilitiesReducer", () => {
   test("applies a simple positive clue", () => {
-    const red = colorClue(variant.clueColors[0]!);
+    const red = newColorClue(variant.clueColors[0]!);
 
     const newCard = cardPossibilitiesReducer(
       defaultCard,
@@ -51,7 +51,7 @@ describe("cardPossibilitiesReducer", () => {
   });
 
   test("applies a simple negative clue", () => {
-    const red = colorClue(variant.clueColors[0]!);
+    const red = newColorClue(variant.clueColors[0]!);
 
     const newCard = cardPossibilitiesReducer(
       defaultCard,
@@ -76,8 +76,8 @@ describe("cardPossibilitiesReducer", () => {
     const metadata = testMetadata(numPlayers, "Rainbow-Ones & Brown (6 Suits)");
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
-    const redClue = colorClue(variant.clueColors[0]!);
-    const oneClue = rankClue(variant.clueRanks[0]!);
+    const redClue = newColorClue(variant.clueColors[0]!);
+    const oneClue = newRankClue(variant.clueRanks[0]!);
 
     let card = initialCardState(0, rainbowOnesAndBrown);
     card = cardPossibilitiesReducer(card, redClue, true, metadata);

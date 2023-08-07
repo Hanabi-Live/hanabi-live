@@ -1,8 +1,15 @@
-export const amTestUser = (username: string): boolean =>
-  username === "test" ||
-  username === "test1" ||
-  username === "test2" ||
-  username === "test3" ||
-  username === "test4" ||
-  username === "test5" ||
-  username === "test6";
+import { ReadonlySet } from "@hanabi/utils";
+
+const TEST_USERNAMES = new ReadonlySet([
+  "test",
+  "test1",
+  "test2",
+  "test3",
+  "test4",
+  "test5",
+  "test6",
+]);
+
+export function amTestUser(username: string): boolean {
+  return TEST_USERNAMES.has(username);
+}

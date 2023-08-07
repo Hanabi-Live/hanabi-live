@@ -71,6 +71,7 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
 function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
   // We do not want anything to fire if the visible state is null
   // (e.g. when the UI is still initializing)
+  // eslint-disable-next-line func-style
   const selector = (state: State) =>
     state.visibleState === null ? undefined : s(state.visibleState);
   return sub(selector, l);
@@ -79,6 +80,7 @@ function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
 // A shorthand function used to subscribe an observer to the state, but only when the visible state
 // has already been initialized.
 function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
+  // eslint-disable-next-line func-style
   const selector = (state: State) =>
     state.visibleState === null ? undefined : s(state);
   return {

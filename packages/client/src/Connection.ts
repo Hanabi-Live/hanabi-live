@@ -81,11 +81,17 @@ export class Connection {
   }
 }
 
-const separator = " ";
-const unpack = (data: string) => {
-  const name = data.split(separator)[0]!;
+const SEPARATOR = " ";
+
+function unpack(data: string) {
+  const name = data.split(SEPARATOR)[0]!;
   return [name, data.substring(name.length + 1, data.length)];
-};
-const unmarshal = (data: string) => JSON.parse(data) as unknown;
-const marshalAndPack = (name: string, data: unknown) =>
-  name + separator + JSON.stringify(data);
+}
+
+function unmarshal(data: string) {
+  return JSON.parse(data) as unknown;
+}
+
+function marshalAndPack(name: string, data: unknown) {
+  return name + SEPARATOR + JSON.stringify(data);
+}

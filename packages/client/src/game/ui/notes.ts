@@ -20,6 +20,7 @@ function escapeHtml(unsafe: string): string {
 function get(order: number, our: boolean, escape = false) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note.
+  // eslint-disable-next-line func-style
   const escapeFunc = (text: string) => (escape ? escapeHtml(text) : text);
   if (our || globals.state.playing) {
     return escapeFunc(globals.state.notes.ourNotes[order]?.text ?? "");
@@ -44,9 +45,11 @@ function get(order: number, our: boolean, escape = false) {
       content += `<strong>${name}:</strong> ${text}<br />`;
     }
   }
+
   if (content.length !== 0) {
     content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
   }
+
   return content;
 }
 

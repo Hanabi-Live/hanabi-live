@@ -7,7 +7,7 @@ import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
 import type { CardState } from "../types/CardState";
-import { colorClue, rankClue } from "../types/Clue";
+import { newColorClue, newRankClue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
@@ -77,9 +77,10 @@ export function cardsReducer(
     case "clue": {
       const clue =
         action.clue.type === ClueType.Color
-          ? colorClue(variant.clueColors[action.clue.value]!)
-          : rankClue(action.clue.value);
+          ? newColorClue(variant.clueColors[action.clue.value]!)
+          : newRankClue(action.clue.value);
 
+      // eslint-disable-next-line func-style
       const applyClue = (order: number, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
         if (!cluesRules.shouldApplyClue(action.giver, metadata, variant)) {

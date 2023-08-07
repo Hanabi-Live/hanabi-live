@@ -12,11 +12,6 @@ import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 
 let testState: State;
 
-const getStateAtTurn = (state: State, turn: number) =>
-  state.replay.states[turn]!;
-const getFinalState = (state: State) =>
-  state.replay.states[state.replay.states.length - 1]!;
-
 describe("integration", () => {
   describe("Up or Down test game", () => {
     beforeAll(() => {
@@ -152,6 +147,14 @@ describe("integration", () => {
     });
   });
 });
+
+function getStateAtTurn(state: State, turn: number) {
+  return state.replay.states[turn]!;
+}
+
+function getFinalState(state: State) {
+  return state.replay.states[state.replay.states.length - 1]!;
+}
 
 function checkPossibilitiesEliminatedByClues(
   card: CardState,

@@ -255,26 +255,32 @@ function checkHideNoteTooltip(card: HanabiCard) {
   tooltips.close(`#tooltip-${card.tooltipName}`);
 }
 
-const useSpeedrunClickHandlers = () =>
-  (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
-  globals.state.playing;
+function useSpeedrunClickHandlers() {
+  return (
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
+    globals.state.playing
+  );
+}
 
-const shouldShowEmpathy = (
+function shouldShowEmpathy(
   card: HanabiCard,
   event: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
-) =>
-  // Disable Empathy if a modifier key is pressed.
-  !event.evt.shiftKey &&
-  !event.evt.altKey &&
-  !event.evt.metaKey &&
-  // Disable Empathy if the card is tweening (e.g. moving)
-  !card.tweening &&
-  // Disable empathy for the stack bases.
-  card.state.rank !== STACK_BASE_RANK &&
-  // Clicking on a played card goes to the turn that it was played.
-  !cardRules.isPlayed(card.state) &&
-  // Clicking on a discarded card goes to the turn that it was discarded.
-  !cardRules.isDiscarded(card.state);
+) {
+  return (
+    // Disable Empathy if a modifier key is pressed.
+    !event.evt.shiftKey &&
+    !event.evt.altKey &&
+    !event.evt.metaKey &&
+    // Disable Empathy if the card is tweening (e.g. moving)
+    !card.tweening &&
+    // Disable empathy for the stack bases.
+    card.state.rank !== STACK_BASE_RANK &&
+    // Clicking on a played card goes to the turn that it was played.
+    !cardRules.isPlayed(card.state) &&
+    // Clicking on a discarded card goes to the turn that it was discarded.
+    !cardRules.isDiscarded(card.state)
+  );
+}
 
 // In a game, click and hold the left mouse button on a teammate's hand to show the cards as they
 // appear to that teammate. Or show your own hand as it should appear without any identity notes on

@@ -92,6 +92,7 @@ function subscribeToCardChanges(order: number) {
 
   // Subscribes to a set of property changes from cards.
   function sub<T>(s: Selector<CardState, T>, l: Listener<T>) {
+    // eslint-disable-next-line func-style
     const cardSelector = (state: State) => s(state.visibleState!.deck[order]!);
     subscriptions.push({
       select: checkOrderAndSelect(cardSelector),

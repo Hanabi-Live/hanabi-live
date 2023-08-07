@@ -135,6 +135,8 @@ function input(this: HTMLElement, event: JQuery.Event) {
   }
 }
 
+// This cannot be a normal function since it uses `this`.
+// eslint-disable-next-line func-style
 const keypress = (room: string) =>
   function keypressFunction(this: HTMLElement, event: JQuery.Event) {
     const element = $(this);

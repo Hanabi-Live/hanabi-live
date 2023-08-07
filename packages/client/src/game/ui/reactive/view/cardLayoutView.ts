@@ -209,9 +209,8 @@ function syncChildren(
   getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
 ) {
-  const getCard = (order: number) => globals.deck[order];
-
   collections.forEach((collection, i) => {
+    // eslint-disable-next-line func-style
     const getCurrentSorting = () =>
       (getCollectionUI(i).children.toArray() as LayoutChild[])
         .map((layoutChild) => layoutChild.card)
@@ -267,4 +266,8 @@ function syncChildren(
       throw new Error("The UI collection is out of sync with the state.");
     }
   });
+}
+
+function getCard(order: number) {
+  return globals.deck[order];
 }

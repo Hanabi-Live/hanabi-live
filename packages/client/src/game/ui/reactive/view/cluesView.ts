@@ -1,6 +1,6 @@
 import equal from "fast-deep-equal";
 import type { Clue } from "../../../types/Clue";
-import { colorClue, rankClue } from "../../../types/Clue";
+import { newColorClue, newRankClue } from "../../../types/Clue";
 import { ClueType } from "../../../types/ClueType";
 import type { StateClue } from "../../../types/GameState";
 import { ClueEntry } from "../../ClueEntry";
@@ -34,9 +34,9 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   let clue: Clue;
   // eslint-disable-next-line isaacscript/strict-enums
   if (lastClue.type === ClueType.Rank) {
-    clue = rankClue(lastClue.value);
+    clue = newRankClue(lastClue.value);
   } else {
-    clue = colorClue(globals.variant.clueColors[lastClue.value]!);
+    clue = newColorClue(globals.variant.clueColors[lastClue.value]!);
   }
 
   lastClue.list.forEach((order, i) => {

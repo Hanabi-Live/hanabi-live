@@ -240,13 +240,15 @@ export function getPossibilitiesFromKeywords(
   return possibilities;
 }
 
-const extractSuitText = (match: RegExpMatchArray) =>
-  match[1] ?? match[4] ?? match[5] ?? null;
+function extractSuitText(match: RegExpMatchArray) {
+  return match[1] ?? match[4] ?? match[5] ?? null;
+}
 
-const extractRankText = (match: RegExpMatchArray) =>
-  match[2] ?? match[3] ?? match[6] ?? null;
+function extractRankText(match: RegExpMatchArray) {
+  return match[2] ?? match[3] ?? match[6] ?? null;
+}
 
-const extractSquishText = (match: RegExpMatchArray) => {
+function extractSquishText(match: RegExpMatchArray) {
   const text = match[7]?.trim();
 
   if (text !== undefined && !ALL_RESERVED_NOTES.has(text)) {
@@ -254,4 +256,4 @@ const extractSquishText = (match: RegExpMatchArray) => {
   }
 
   return null;
-};
+}

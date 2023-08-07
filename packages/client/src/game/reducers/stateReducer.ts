@@ -400,11 +400,11 @@ function visualStateToShow(state: Draft<State>, action: Action) {
   return state.ongoingGame;
 }
 
-const rehydrateScrubbedActions = (
+function rehydrateScrubbedActions(
   state: State,
   cardIdentities: readonly CardIdentity[],
-) =>
-  state.replay.actions.map((a) => {
+): GameAction[] {
+  return state.replay.actions.map((a) => {
     if (
       (a.type === "play" || a.type === "discard" || a.type === "draw") &&
       (a.suitIndex === -1 || a.rank === -1)
@@ -415,5 +415,7 @@ const rehydrateScrubbedActions = (
         rank: cardIdentities[a.order]!.rank!,
       };
     }
+
     return a;
   });
+}

@@ -4,34 +4,50 @@ type CardLocation = "deck" | "discard" | "playStack" | number;
 
 export interface CardState {
   readonly order: number;
-  // If location is a number, it is the index of the player that holds this card.
+
+  /** If location is a number, it is the index of the player that holds this card. */
   readonly location: CardLocation;
+
   readonly suitIndex: number | null;
   readonly rank: number | null;
 
-  // A one-dimensional array of tuples. It contains a tuple for each specific card that is still
-  // possible based on the clues touching the card so far. Do not access this by the index; filter
-  // the array to find the remaining cards that you need.
+  /**
+   * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
+   * possible based on the clues touching the card so far. Do not access this by the index; filter
+   * the array to find the remaining cards that you need.
+   */
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
-  // A one-dimensional array of tuples. It contains a tuple for each specific card that is still
-  // possible based on everything we know so far. Do not access this by the index; filter the array
-  // to find the remaining cards that you need.
+  /**
+   * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
+   * possible based on everything we know so far. Do not access this by the index; filter the array
+   * to find the remaining cards that you need.
+   */
   readonly possibleCards: ReadonlyArray<readonly [number, number]>;
 
-  // A one-dimensional array of tuples. It contains a tuple for each specific card that is still
-  // possible based on everything the player holding it should know so far. Do not access this by
-  // the index; filter the array to find the remaining cards that you need.
+  /**
+   * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
+   * possible based on everything the player holding it should know so far. Do not access this by
+   * the index; filter the array to find the remaining cards that you need.
+   */
   readonly possibleCardsForEmpathy: ReadonlyArray<readonly [number, number]>;
 
-  // An array that specifies whether the card is revealed to a particular player index.
+  /** An array that specifies whether the card is revealed to a particular player index. */
   readonly revealedToPlayer: readonly boolean[];
 
-  // We need this to highlight pips (e.g. on Pink variants)
-  readonly positiveColorClues: Color[]; // The elements of this array will always be unique
-  readonly positiveRankClues: number[]; // The elements of this array will always be unique
+  /**
+   * We need this to highlight pips (e.g. in pink variants).
+   *
+   * The elements of this array will always be unique.
+   */
+  readonly positiveColorClues: Color[];
 
-  // TODO: save positive rank clues and highlight them (e.g. on Rainbow-Ones variants)
+  /**
+   * We need this to highlight pips (e.g. in pink variants).
+   *
+   * The elements of this array will always be unique.
+   */
+  readonly positiveRankClues: number[];
 
   readonly suitDetermined: boolean;
   readonly rankDetermined: boolean;
@@ -42,18 +58,22 @@ export interface CardState {
   readonly segmentDiscarded: number | null;
   readonly segmentPlayed: number | null;
 
-  // Whether the card is potentially in DDA. Since DDA status depends on the card's location and
-  // empathy rather than just the identity of the card, it's tracked as a sub-property of CardState,
-  // not CardStatus.
+  /**
+   * Whether the card is potentially in DDA. Since DDA status depends on the card's location and
+   * empathy rather than just the identity of the card, it is tracked as a sub-property of
+   * `CardState`, not `CardStatus`.
+   */
   readonly inDoubleDiscard: boolean;
 
-  // Similarly, track whether known-trash from empathy alone.
+  /** Track whether the card is known-trash from empathy alone. */
   readonly isKnownTrashFromEmpathy: boolean;
 
-  // Needed so that we can animate a misplayed card different from a discarded card.
+  /** Needed so that we can animate a misplayed card different from a discarded card. */
   readonly isMisplayed: boolean;
 
-  // Needed for special sound effects.
+  /** Needed for special sound effects. */
   readonly dealtToStartingHand: boolean;
+
+  /** Needed for special sound effects. */
   readonly firstCluedWhileOnChop: boolean | null;
 }

@@ -4,8 +4,9 @@ import type { State } from "../../../types/State";
 import { globals } from "../../globals";
 import * as ourHand from "../../ourHand";
 
-export const shouldShowCancelButton = (state: State): boolean =>
-  !state.replay.active && state.premove !== null;
+export function shouldShowCancelButton(state: State): boolean {
+  return !state.replay.active && state.premove !== null;
+}
 
 export function shouldShowCancelButtonChanged(shouldShow: boolean): void {
   globals.elements.premoveCancelButton?.visible(shouldShow);

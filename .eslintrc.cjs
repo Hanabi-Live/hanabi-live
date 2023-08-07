@@ -15,4 +15,17 @@ module.exports = {
   },
 
   ignorePatterns: ["**/lib/**", "**/version.js"],
+
+  rules: {
+    /**
+     * Documentation:
+     * https://eslint.org/docs/latest/rules/func-style
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * Enforce the "normal" function style throughout the entire project.
+     */
+    "func-style": ["error", "declaration"],
+  },
 };

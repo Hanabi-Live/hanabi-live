@@ -34,12 +34,14 @@ export function init(): void {
     history.show();
   });
 
+  // eslint-disable-next-line func-style
   const focus = () => {
     if ($("#replay-id-row").is(":visible")) {
       $("#replay-id").trigger("focus");
     } else if ($("#replay-json-row").is(":visible")) {
       $("#replay-json").trigger("focus");
     }
+
     $("#replay-id").on("keypress", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();

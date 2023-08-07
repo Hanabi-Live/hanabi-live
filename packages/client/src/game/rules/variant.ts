@@ -3,44 +3,60 @@
 import type { Variant } from "@hanabi/data";
 import { isNameUpOrDown } from "@hanabi/data";
 
-export const isDualColor = (variant: Variant): boolean =>
-  variant.name.startsWith("Dual-Color");
+export function isDualColor(variant: Variant): boolean {
+  return variant.name.startsWith("Dual-Color");
+}
 
-export const isColorMute = (variant: Variant): boolean =>
-  variant.clueColors.length === 0;
+export function isColorMute(variant: Variant): boolean {
+  return variant.clueColors.length === 0;
+}
 
-export const isNumberMute = (variant: Variant): boolean =>
-  variant.clueRanks.length === 0;
+export function isNumberMute(variant: Variant): boolean {
+  return variant.clueRanks.length === 0;
+}
 
-export const isAlternatingClues = (variant: Variant): boolean =>
-  variant.name.startsWith("Alternating Clues");
+export function isAlternatingClues(variant: Variant): boolean {
+  return variant.name.startsWith("Alternating Clues");
+}
 
-export const isClueStarved = (variant: Variant): boolean =>
-  variant.name.startsWith("Clue Starved");
+export function isClueStarved(variant: Variant): boolean {
+  return variant.name.startsWith("Clue Starved");
+}
 
-export const isCowAndPig = (variant: Variant): boolean =>
-  variant.name.startsWith("Cow & Pig");
+export function isCowAndPig(variant: Variant): boolean {
+  return variant.name.startsWith("Cow & Pig");
+}
 
-export const isDuck = (variant: Variant): boolean =>
-  variant.name.startsWith("Duck");
+export function isDuck(variant: Variant): boolean {
+  return variant.name.startsWith("Duck");
+}
 
-export const isThrowItInAHole = (variant: Variant): boolean =>
-  variant.name.startsWith("Throw It in a Hole");
+export function isThrowItInAHole(variant: Variant): boolean {
+  return variant.name.startsWith("Throw It in a Hole");
+}
 
-export const isSudoku = (variant: Variant): boolean =>
-  variant.name.startsWith("Sudoku");
+export function isSudoku(variant: Variant): boolean {
+  return variant.name.startsWith("Sudoku");
+}
 
-export const isUpOrDown = (variant: Variant): boolean =>
-  isNameUpOrDown(variant.name);
+export function isUpOrDown(variant: Variant): boolean {
+  return isNameUpOrDown(variant.name);
+}
 
-export const isSynesthesia = (variant: Variant): boolean =>
-  variant.name.startsWith("Synesthesia");
+export function isSynesthesia(variant: Variant): boolean {
+  return variant.name.startsWith("Synesthesia");
+}
 
-export const isCriticalFours = (variant: Variant): boolean =>
-  variant.name.startsWith("Critical Fours");
+export function isCriticalFours(variant: Variant): boolean {
+  return variant.name.startsWith("Critical Fours");
+}
 
-export const isOddsAndEvens = (variant: Variant): boolean =>
-  variant.name.startsWith("Odds and Evens");
+export function isOddsAndEvens(variant: Variant): boolean {
+  return variant.name.startsWith("Odds and Evens");
+}
 
-export const hasReversedSuits = (variant: Variant): boolean =>
-  isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0;
+export function hasReversedSuits(variant: Variant): boolean {
+  return (
+    isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0
+  );
+}

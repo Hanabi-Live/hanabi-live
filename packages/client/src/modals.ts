@@ -129,15 +129,18 @@ export function askForMorph(
     return;
   }
   let dragArea = draggedTo;
-  // Morph dialog button actions.
+
+  // eslint-disable-next-line func-style
   const morphFinishLayout = () => {
     // Finish drag action.
     if (card === null) {
       return;
     }
+
     card.getLayoutParent().continueDragAction(dragArea);
   };
 
+  // eslint-disable-next-line func-style
   const morphReplayOkButton = (): boolean => {
     allowCloseModal = true;
     closeModals();
@@ -146,29 +149,36 @@ export function askForMorph(
       variant,
       getMorphModalSelection(),
     );
+
     if (
       cardIdentity.suitIndex === CardIdentityType.Fail ||
       cardIdentity.rank === CardIdentityType.Fail
     ) {
-      // Morph didn't succeed
+      // The morph did not succeed.
       return false;
     }
+
     morphReplayFromModal(card!, cardIdentity);
     return true;
   };
 
+  // eslint-disable-next-line func-style
   const morphInGameOkButton = () => {
     const success = morphReplayOkButton();
     if (!success) {
       dragArea = null;
     }
+
     morphFinishLayout();
   };
 
+  // eslint-disable-next-line func-style
   const morphReplayCancelButton = () => {
     allowCloseModal = true;
     closeModals();
   };
+
+  // eslint-disable-next-line func-style
   const morphInGameCancelButton = () => {
     morphReplayCancelButton();
     dragArea = null;

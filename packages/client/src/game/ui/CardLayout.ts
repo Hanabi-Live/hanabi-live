@@ -141,6 +141,8 @@ export class CardLayout extends Konva.Group {
         // Also, animate the rest of the cards sliding over.
         layoutChild.card.startedTweening();
         layoutChild.card.setRaiseAndShadowOffset();
+
+        // eslint-disable-next-line func-style
         const animateToLayout = () => {
           animate(
             layoutChild,
