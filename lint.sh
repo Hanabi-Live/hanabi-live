@@ -11,6 +11,8 @@ SECONDS=0
 # Client
 bash "$DIR/packages/client/lint.sh"
 bash "$DIR/packages/data/lint.sh"
+bash "$DIR/packages/game/lint.sh"
+bash "$DIR/packages/server/lint.sh"
 bash "$DIR/packages/utils/lint.sh"
 
 # Server
