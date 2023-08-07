@@ -1,11 +1,11 @@
 // The reducer for replays and hypotheticals.
 
-import produce, { Draft, original } from "immer";
+import { castDraft, Draft, original, produce } from "immer";
 import { nullIfNegative } from "../../utils";
+import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import { CardIdentityType } from "../types/CardIdentityType";
 import { GameMetadata } from "../types/GameMetadata";
 import { ReplayState } from "../types/ReplayState";
-import { ActionIncludingHypothetical, ReplayAction } from "../types/actions";
 import { gameStateReducer } from "./gameStateReducer";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
@@ -300,10 +300,10 @@ function hypoAction(
     true,
     metadata,
   );
-  state.hypothetical.ongoing = newState;
+  state.hypothetical.ongoing = castDraft(newState);
 
   if (oldSegment !== newState.turn.segment) {
     // Save the new segment in case we want to go backwards.
-    state.hypothetical.states.push(newState);
+    state.hypothetical.states.push(castDraft(newState));
   }
 }

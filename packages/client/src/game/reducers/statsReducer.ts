@@ -2,7 +2,7 @@
 // action.
 
 import { getVariant } from "@hanabi/data";
-import produce, { Draft } from "immer";
+import { Draft, produce } from "immer";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";

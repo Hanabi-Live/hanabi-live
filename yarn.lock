@@ -5140,7 +5140,7 @@ __metadata:
     grunt-contrib-concat: ^2.1.0
     grunt-contrib-cssmin: ^5.0.0
     grunt-criticalcss: ^2.1.0
-    immer: 8.0.4
+    immer: ^10.0.2
     interactjs: ^1.10.18
     isaacscript-lint: 4.16.6
     isaacscript-tsconfig: ^4.0.0
@@ -5397,10 +5397,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immer@npm:8.0.4":
-  version: 8.0.4
-  resolution: "immer@npm:8.0.4"
-  checksum: 9d3b28df1ac5bf6918c611e71c15bdb136588c21a3431100448f21325fef9b055cc9a44fe8b023f0c5ecbc66a2ba38f403c9a67d581f613b49d0e4ff15564f79
+"immer@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "immer@npm:10.0.2"
+  checksum: 525a3b14210d02ae420c3b9f6ca14f7e9bcf625611d1356e773e7739f14c7c8de50dac442e6c7de3a6e24a782f7b792b6b8666bc0b3f00269d21a95f8f68ca84
   languageName: node
   linkType: hard
 

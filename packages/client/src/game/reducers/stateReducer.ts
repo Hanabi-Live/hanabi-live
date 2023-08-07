@@ -1,17 +1,17 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
-import produce, { castDraft, Draft, original } from "immer";
+import { Draft, castDraft, original, produce } from "immer";
 import * as segmentRules from "../rules/segment";
-import { Action, GameAction } from "../types/actions";
 import { CardIdentity } from "../types/CardIdentity";
 import { GameMetadata } from "../types/GameMetadata";
 import { GameState } from "../types/GameState";
 import { State } from "../types/State";
+import { Action, GameAction } from "../types/actions";
+import { UIReducer } from "./UIReducer";
 import { gameStateReducer } from "./gameStateReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
-import { UIReducer } from "./UIReducer";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
@@ -169,11 +169,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypoEnd":
     case "hypoAction":
     case "hypoShowDrawnCards": {
-      state.replay = replayReducer(
-        state.replay,
-        action,
-        state.finished,
-        state.metadata,
+      state.replay = castDraft(
+        replayReducer(state.replay, action, state.finished, state.metadata),
       );
       break;
     }
@@ -230,12 +227,14 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
     case "noteList":
     case "receiveNote": {
-      state.notes = notesReducer(
-        original(state.notes),
-        action,
-        state.metadata,
-        state.playing,
-        state.finished,
+      state.notes = castDraft(
+        notesReducer(
+          original(state.notes),
+          action,
+          state.metadata,
+          state.playing,
+          state.finished,
+        ),
       );
       break;
     }
@@ -243,25 +242,29 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "setEffMod":
     case "editNote":
     case "noteListPlayer": {
-      state.notes = notesReducer(
-        original(state.notes),
-        action,
-        state.metadata,
-        state.playing,
-        state.finished,
+      state.notes = castDraft(
+        notesReducer(
+          original(state.notes),
+          action,
+          state.metadata,
+          state.playing,
+          state.finished,
+        ),
       );
 
       if (state.playing && !state.finished) {
         // Recompute efficiency since it could change.
-        state.ongoingGame = gameStateReducer(
-          original(state.ongoingGame),
-          action,
-          state.playing,
-          state.shadowing,
-          state.finished,
-          state.replay.hypothetical !== null,
-          state.metadata,
-          state.notes.ourNotes,
+        state.ongoingGame = castDraft(
+          gameStateReducer(
+            original(state.ongoingGame),
+            action,
+            state.playing,
+            state.shadowing,
+            state.finished,
+            state.replay.hypothetical !== null,
+            state.metadata,
+            state.notes.ourNotes,
+          ),
         );
       }
       break;
@@ -270,15 +273,17 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     default: {
       // A new game action happened.
       const previousSegment = state.ongoingGame.turn.segment;
-      state.ongoingGame = gameStateReducer(
-        original(state.ongoingGame),
-        action,
-        state.playing,
-        state.shadowing,
-        state.finished,
-        false,
-        state.metadata,
-        state.notes.ourNotes,
+      state.ongoingGame = castDraft(
+        gameStateReducer(
+          original(state.ongoingGame),
+          action,
+          state.playing,
+          state.shadowing,
+          state.finished,
+          false,
+          state.metadata,
+          state.notes.ourNotes,
+        ),
       );
 
       // We copy the card identities to the global state for convenience.
