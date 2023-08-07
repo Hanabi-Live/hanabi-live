@@ -13,161 +13,171 @@ import {
   ActionInit,
   ActionPlay,
   ActionReplayEnter,
-  ActionReplayExit,
   ActionStrike,
-  ActionTurn,
 } from "../src/game/types/actions";
 import { ClueType } from "../src/game/types/ClueType";
 
-const clue = (
+function clue(
   type: ClueType,
   value: number,
   giver: number,
   list: number[],
   target: number,
   turn: number,
-): ActionClue => ({
-  type: "clue",
-  clue: {
-    type,
-    value,
-  },
-  giver,
-  list,
-  target,
-  turn,
-});
+): ActionClue {
+  return {
+    type: "clue",
+    clue: {
+      type,
+      value,
+    },
+    giver,
+    list,
+    target,
+    turn,
+  };
+}
 
-export const colorClue = (
+export function colorClue(
   value: number,
   giver: number,
   list: number[],
   target: number,
   turn: number,
-): ActionClue => clue(ClueType.Color, value, giver, list, target, turn);
+): ActionClue {
+  return clue(ClueType.Color, value, giver, list, target, turn);
+}
 
-export const rankClue = (
+export function rankClue(
   value: number,
   giver: number,
   list: number[],
   target: number,
   turn: number,
-): ActionClue => clue(ClueType.Rank, value, giver, list, target, turn);
+): ActionClue {
+  return clue(ClueType.Rank, value, giver, list, target, turn);
+}
 
-export const draw = (
+export function draw(
   playerIndex: number,
   order: number,
   suitIndex = -1,
   rank = -1,
-): ActionDraw => ({
-  type: "draw",
-  playerIndex,
-  order,
-  suitIndex,
-  rank,
-});
+): ActionDraw {
+  return {
+    type: "draw",
+    playerIndex,
+    order,
+    suitIndex,
+    rank,
+  };
+}
 
-export const discard = (
+export function discard(
   playerIndex: number,
   order: number,
   suitIndex: number,
   rank: number,
   failed: boolean,
-): ActionDiscard => ({
-  type: "discard",
-  playerIndex,
-  order,
-  suitIndex,
-  rank,
-  failed,
-});
+): ActionDiscard {
+  return {
+    type: "discard",
+    playerIndex,
+    order,
+    suitIndex,
+    rank,
+    failed,
+  };
+}
 
-export const play = (
+export function play(
   playerIndex: number,
   order: number,
   suitIndex: number,
   rank: number,
-): ActionPlay => ({
-  type: "play",
-  playerIndex,
-  order,
-  suitIndex,
-  rank,
-});
+): ActionPlay {
+  return {
+    type: "play",
+    playerIndex,
+    order,
+    suitIndex,
+    rank,
+  };
+}
 
-export const cardIdentity = (
+export function cardIdentity(
   playerIndex: number,
   order: number,
   suitIndex: number,
   rank: number,
-): ActionCardIdentity => ({
-  type: "cardIdentity",
-  playerIndex,
-  order,
-  suitIndex,
-  rank,
-});
+): ActionCardIdentity {
+  return {
+    type: "cardIdentity",
+    playerIndex,
+    order,
+    suitIndex,
+    rank,
+  };
+}
 
-export const strike = (
-  num: number,
-  order: number,
-  turn: number,
-): ActionStrike => ({
-  type: "strike",
-  num,
-  order,
-  turn,
-});
+export function strike(num: number, order: number, turn: number): ActionStrike {
+  return {
+    type: "strike",
+    num,
+    order,
+    turn,
+  };
+}
 
-// ts-prune-ignore-next
-export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
-  type: "turn",
-  num,
-  currentPlayerIndex,
-});
+export function replayEnter(): ActionReplayEnter {
+  return {
+    type: "replayEnter",
+    segment: 0,
+  };
+}
 
-export const replayEnter = (): ActionReplayEnter => ({
-  type: "replayEnter",
-  segment: 0,
-});
+export function init(): ActionInit {
+  return {
+    type: "init",
+    datetimeStarted: new Date(0).toString(),
+    datetimeFinished: new Date(0).toString(),
+    spectating: false,
+    shadowing: false,
+    replay: true,
+    sharedReplay: true,
+    databaseID: 1,
+    sharedReplaySegment: 0,
+    sharedReplayLeader: "",
+    paused: false,
+    pausePlayerIndex: 0,
+  };
+}
 
-export const init = (): ActionInit => ({
-  type: "init",
-  datetimeStarted: new Date(0).toString(),
-  datetimeFinished: new Date(0).toString(),
-  spectating: false,
-  shadowing: false,
-  replay: true,
-  sharedReplay: true,
-  databaseID: 1,
-  sharedReplaySegment: 0,
-  sharedReplayLeader: "",
-  paused: false,
-  pausePlayerIndex: 0,
-});
+export function hypoStart(): ActionHypotheticalStart {
+  return {
+    type: "hypoStart",
+    showDrawnCards: false,
+    actions: [],
+  };
+}
 
-// ts-prune-ignore-next
-export const endReplay = (): ActionReplayExit => ({
-  type: "replayExit",
-});
+export function hypoEnd(): ActionHypotheticalEnd {
+  return {
+    type: "hypoEnd",
+  };
+}
 
-export const hypoStart = (): ActionHypotheticalStart => ({
-  type: "hypoStart",
-  showDrawnCards: false,
-  actions: [],
-});
-
-export const hypoEnd = (): ActionHypotheticalEnd => ({
-  type: "hypoEnd",
-});
-
-export const hypoAction = (
+export function hypoAction(
   action: ActionIncludingHypothetical,
-): ActionHypotheticalAction => ({
-  type: "hypoAction",
-  action,
-});
+): ActionHypotheticalAction {
+  return {
+    type: "hypoAction",
+    action,
+  };
+}
 
-export const hypoBack = (): ActionHypotheticalBack => ({
-  type: "hypoBack",
-});
+export function hypoBack(): ActionHypotheticalBack {
+  return {
+    type: "hypoBack",
+  };
+}
