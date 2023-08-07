@@ -1,0 +1,7 @@
+// The configuration file for TypeScript.
+{
+  // We extend the TypeScript config for the monorepo.
+  "extends": "../../tsconfig.monorepo.json",
+
+  "include": ["./src/**/*.ts"],
+}
