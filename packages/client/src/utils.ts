@@ -17,8 +17,9 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
-export const getRandomNumber = (min: number, max: number): number =>
-  Math.floor(Math.random() * (max - min + 1) + min);
+export function getRandomNumber(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 export function getURLFromPath(path: string): string {
   let url = `${window.location.protocol}//${window.location.hostname}`;
@@ -31,15 +32,19 @@ export function getURLFromPath(path: string): string {
 }
 
 // This is a helper to check for empty/invalid HTML elements without worrying about the linter.
-export const isEmpty = (
+export function isEmpty(
   value: string | string[] | number | undefined,
-): boolean => !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
+): boolean {
+  return !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
+}
 
 // From: https://stackoverflow.com/questions/61526746
-export const isKeyOf = <T extends object>(
-  p: PropertyKey,
+export function isKeyOf<T extends object>(
+  key: PropertyKey,
   target: T,
-): p is keyof T => p in target;
+): key is keyof T {
+  return key in target;
+}
 
 export function millisecondsToClockString(milliseconds: number): string {
   // Non timed games measure time in negative values.
