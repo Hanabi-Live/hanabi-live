@@ -286,7 +286,7 @@ function isOrderChopMove(
   return lowestOrder !== action.order;
 }
 
-function isCandidateOneForOCM(card: CardState) {
+function isCandidateOneForOCM(card: CardState): boolean {
   return (
     // Order Chop Moves are only performed when a player plays a card that they think is a 1
     // (e.g. a card having a positive rank 1 clue on it)
