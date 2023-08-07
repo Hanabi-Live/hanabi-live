@@ -2,50 +2,86 @@
  * Represents the type of sound that should play, depending on what the last action of the game was.
  */
 export enum SoundType {
-  // A "normal" or "boring" game action occurred, so do not play any special sound effect.
+  /** A "normal" or "boring" game action occurred, so do not play any special sound effect. */
   Standard,
 
   // -----------
   // Play Sounds
   // -----------
 
-  Fail1, // When a misplay (bomb) happens
+  /** When a misplay (bomb) happens. */
+  Fail1,
+
+  /** When a two misplays (bombs) happen in a row. */
   Fail2,
-  Blind1, // When a blind-play happens
+
+  /** When a blind-play happens. */
+  Blind1,
+
+  /** When two blind-plays happen in a row. */
   Blind2,
+
+  /** When three blind-plays happen in a row. */
   Blind3,
+
+  /** When four blind-plays happen in a row. */
   Blind4,
+
+  /** When five blind-plays happen in a row. */
   Blind5,
+
+  /** When six blind-plays happen in a row. */
   Blind6,
-  OneOutOfOrder, // When someone performs an "Order Chop Move"
+
+  /** When someone performs an "Order Chop Move". */
+  OneOutOfOrder,
 
   // --------------
   // Discard Sounds
   // --------------
 
-  // Discard sounds
-  DiscardClued, // When a player discards a card with one or more positive clues on it
-  DoubleDiscard, // When a player discards *in* a "double discard" situation
-  DoubleDiscardCause, // When a player discards to cause a "double discard" situation
+  /** When a player discards a card with one or more positive clues on it. */
+  DiscardClued,
+
+  /** When a player discards in a "double discard" situation. */
+  DoubleDiscard,
+
+  /** When a player discards to cause a "double discard" situation. */
+  DoubleDiscardCause,
 
   // ---------------------
   // Play / Discard Sounds
   // ---------------------
 
-  Sad, // When the maximum score decreases.
-  // (This normally happens when discarding a critical card, but it can also happen from playing a
-  // card in some variants.)
+  /**
+   * When the maximum score decreases. (This normally happens when discarding a critical card, but
+   * it can also happen from playing a card in some variants.)
+   */
+  Sad,
 
-  // Clue sounds
-  Moo, // For "Cow & Pig" variants
-  Oink, // For "Cow & Pig" variants
-  Quack, // For "Duck" variants
+  // -----------
+  // Clue Sounds
+  // -----------
+
+  /** For "Cow & Pig" variants. */
+  Moo,
+
+  /** For "Cow & Pig" variants. */
+  Oink,
+
+  /** For "Duck" variants. */
+  Quack,
 
   // ---------------
   // Finished Sounds
   // ---------------
 
-  FinishedSuccess, // When the game is finished with any score other than 0 or the maximum score.
-  FinishedFail, // When the game is finished with a score of 0.
-  FinishedPerfect, // When the game is finished with the maximum score possible.
+  /** When the game is finished with any score other than 0 or the maximum score. */
+  FinishedSuccess,
+
+  /** When the game is finished with a score of 0. */
+  FinishedFail,
+
+  /** When the game is finished with the maximum score possible. */
+  FinishedPerfect,
 }
