@@ -1661,58 +1661,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/browser@npm:^7.40.0":
-  version: 7.40.0
-  resolution: "@sentry/browser@npm:7.40.0"
-  dependencies:
-    "@sentry/core": 7.40.0
-    "@sentry/replay": 7.40.0
-    "@sentry/types": 7.40.0
-    "@sentry/utils": 7.40.0
-    tslib: ^1.9.3
-  checksum: db59b2d20f6ce3cb2370990206736e40140008bef67a45f6c4e09a7dc32d9b47a134cd266c9d14d4649dc6138fbf3d2c7dd8c72227a5e00e79d07c6c859b2e40
-  languageName: node
-  linkType: hard
-
-"@sentry/core@npm:7.40.0":
-  version: 7.40.0
-  resolution: "@sentry/core@npm:7.40.0"
-  dependencies:
-    "@sentry/types": 7.40.0
-    "@sentry/utils": 7.40.0
-    tslib: ^1.9.3
-  checksum: 9950e714e4b02e73d1c09aeaff45e4af8618fae7f676e5698f7e59cc0059e3d343f8608bab27671d2d1f734e2aaac1434199e37d998588dd38105def88d5cf8a
-  languageName: node
-  linkType: hard
-
-"@sentry/replay@npm:7.40.0":
-  version: 7.40.0
-  resolution: "@sentry/replay@npm:7.40.0"
-  dependencies:
-    "@sentry/core": 7.40.0
-    "@sentry/types": 7.40.0
-    "@sentry/utils": 7.40.0
-  checksum: cc60eacd0314e172dffaa34482c8eb5cb41a3b0d23fc39704f26e69c417cc6fc830d37a7a5910a57fd54f5923bd66ba41905763f72c4bfa8fc10aaf93b4735e4
-  languageName: node
-  linkType: hard
-
-"@sentry/types@npm:7.40.0":
-  version: 7.40.0
-  resolution: "@sentry/types@npm:7.40.0"
-  checksum: 0d7922dd72196f254be9d1dc5918ad53afe699445122db0ca10b2fb3e4197d5cd334baf848b435afa3d40d17e8f8052292433c9e2d6bdeb23a30a80fc1e09d93
-  languageName: node
-  linkType: hard
-
-"@sentry/utils@npm:7.40.0":
-  version: 7.40.0
-  resolution: "@sentry/utils@npm:7.40.0"
-  dependencies:
-    "@sentry/types": 7.40.0
-    tslib: ^1.9.3
-  checksum: d92f7b5683eccb82c24a6f7f05310ca458807894cdda44be4b26806e16a6870be134011d6d7d88ca3554ba44d41c41ddc52f4241a71badf517096e82b749e881
-  languageName: node
-  linkType: hard
-
 "@sinclair/typebox@npm:^0.25.16":
   version: 0.25.24
   resolution: "@sinclair/typebox@npm:0.25.24"
@@ -5159,7 +5107,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hanabi-live@workspace:."
   dependencies:
-    "@sentry/browser": ^7.40.0
     "@types/jest": ^29.4.0
     "@types/jquery": ^3.5.16
     "@types/jsdom": ^21.1.0
@@ -9048,7 +8995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^1.8.1, tslib@npm:^1.9.3":
+"tslib@npm:^1.8.1":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: dbe628ef87f66691d5d2959b3e41b9ca0045c3ee3c7c7b906cc1e328b39f199bb1ad9e671c39025bd56122ac57dfbf7385a94843b1cc07c60a4db74795829acd
