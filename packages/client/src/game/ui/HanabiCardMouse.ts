@@ -2,17 +2,17 @@ import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import * as cardRules from "../rules/card";
-import * as arrows from "./arrows";
 import { CardLayout } from "./CardLayout";
-import { DOUBLE_TAP_DELAY } from "./constants";
-import * as cursor from "./cursor";
-import { globals } from "./globals";
 import { HanabiCard } from "./HanabiCard";
 import { HanabiCardClick } from "./HanabiCardClick";
 import { HanabiCardClickSpeedrun } from "./HanabiCardClickSpeedrun";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
-import * as konvaTooltips from "./konvaTooltips";
 import { LayoutChild } from "./LayoutChild";
+import * as arrows from "./arrows";
+import { DOUBLE_TAP_DELAY } from "./constants";
+import * as cursor from "./cursor";
+import { globals } from "./globals";
+import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
 
 export function registerMouseHandlers(this: HanabiCard): void {

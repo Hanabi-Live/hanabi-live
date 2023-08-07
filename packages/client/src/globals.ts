@@ -2,8 +2,8 @@
 
 import { VERSION } from "@hanabi/data";
 import { Connection } from "./Connection";
-import { HanabiUI } from "./game/ui/HanabiUI";
 import { Loader } from "./Loader";
+import { HanabiUI } from "./game/ui/HanabiUI";
 import { Game } from "./lobby/types/Game";
 import { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";

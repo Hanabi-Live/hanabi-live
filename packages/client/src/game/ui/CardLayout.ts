@@ -2,11 +2,11 @@
 // LayoutChild objects.
 
 import Konva from "konva";
+import { HanabiCard } from "./HanabiCard";
+import { LayoutChild } from "./LayoutChild";
 import { CARD_ANIMATION_LENGTH } from "./constants";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
 import { animate } from "./konvaHelpers";
-import { LayoutChild } from "./LayoutChild";
 
 export class CardLayout extends Konva.Group {
   private align: string;

@@ -1,6 +1,5 @@
 import { getVariant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import {
@@ -8,6 +7,7 @@ import {
   getPlayerName,
   getPlayerNames,
 } from "../types/GameMetadata";
+import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import * as cardRules from "./card";
 import * as cluesRules from "./clues";
 import * as handRules from "./hand";

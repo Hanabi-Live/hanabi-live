@@ -3,11 +3,11 @@
 
 import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
 import jquery from "jquery";
+import { Loader } from "./Loader";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
 import { globals } from "./globals";
-import { Loader } from "./Loader";
 import * as lobbyCreateGame from "./lobby/createGame";
 import * as lobbyHistory from "./lobby/history";
 import { lobbyIdleInit } from "./lobby/lobbyIdleInit";

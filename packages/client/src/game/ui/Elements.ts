@@ -4,6 +4,12 @@ import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";
 import { ClueLog } from "./ClueLog";
 import { ColorButton } from "./ColorButton";
+import { Deck } from "./Deck";
+import { FullActionLog } from "./FullActionLog";
+import { MultiFitText } from "./MultiFitText";
+import { NameFrame } from "./NameFrame";
+import { PlayStack } from "./PlayStack";
+import { RankButton } from "./RankButton";
 import { Arrow } from "./controls/Arrow";
 import { Button } from "./controls/Button";
 import { CheckButton } from "./controls/CheckButton";
@@ -17,12 +23,6 @@ import { StrikeSquare } from "./controls/StrikeSquare";
 import { StrikeX } from "./controls/StrikeX";
 import { TextWithTooltip } from "./controls/TextWithTooltip";
 import { TimerDisplay } from "./controls/TimerDisplay";
-import { Deck } from "./Deck";
-import { FullActionLog } from "./FullActionLog";
-import { MultiFitText } from "./MultiFitText";
-import { NameFrame } from "./NameFrame";
-import { PlayStack } from "./PlayStack";
-import { RankButton } from "./RankButton";
 
 export class Elements {
   // The main screen

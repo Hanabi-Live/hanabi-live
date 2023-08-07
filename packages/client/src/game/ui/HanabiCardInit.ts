@@ -3,9 +3,9 @@
 import { START_CARD_RANK, Suit, Variant } from "@hanabi/data";
 import Konva from "konva";
 import * as KonvaContext from "konva/types/Context";
+import * as KonvaUtil from "konva/types/Util";
 import { Arrow } from "konva/types/shapes/Arrow";
 import { RectConfig } from "konva/types/shapes/Rect";
-import * as KonvaUtil from "konva/types/Util";
 import * as variantRules from "../rules/variant";
 import { Pips } from "../types/Pips";
 import {

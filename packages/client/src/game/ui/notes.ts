@@ -3,9 +3,9 @@
 import { STACK_BASE_RANK } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
 import * as variantRules from "../rules/variant";
+import { HanabiCard } from "./HanabiCard";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
 
 function escapeHtml(unsafe: string): string {
   return unsafe

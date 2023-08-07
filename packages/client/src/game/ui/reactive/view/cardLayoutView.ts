@@ -6,9 +6,9 @@ import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";
 import { StackDirection } from "../../../types/StackDirection";
-import { globals } from "../../globals";
 import { HanabiCard } from "../../HanabiCard";
 import { LayoutChild } from "../../LayoutChild";
+import { globals } from "../../globals";
 import { updateCardVisuals } from "./cardsView";
 
 const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([

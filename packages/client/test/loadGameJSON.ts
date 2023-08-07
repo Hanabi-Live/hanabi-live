@@ -5,6 +5,11 @@ import * as cluesRules from "../src/game/rules/clues";
 import * as handRules from "../src/game/rules/hand";
 import * as playStacksRules from "../src/game/rules/playStacks";
 import * as segmentRules from "../src/game/rules/segment";
+import { ActionType } from "../src/game/types/ActionType";
+import { CardIdentity } from "../src/game/types/CardIdentity";
+import { ClueType } from "../src/game/types/ClueType";
+import { GameState } from "../src/game/types/GameState";
+import { State } from "../src/game/types/State";
 import {
   ActionClue,
   ActionDiscard,
@@ -12,11 +17,6 @@ import {
   ActionPlay,
   GameAction,
 } from "../src/game/types/actions";
-import { ActionType } from "../src/game/types/ActionType";
-import { CardIdentity } from "../src/game/types/CardIdentity";
-import { ClueType } from "../src/game/types/ClueType";
-import { GameState } from "../src/game/types/GameState";
-import { State } from "../src/game/types/State";
 import testGame from "../test_data/up_or_down.json";
 import { testMetadata } from "./testMetadata";
 

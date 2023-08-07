@@ -14,6 +14,7 @@ import { ClueType } from "../types/ClueType";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";
+import { HanabiCard } from "./HanabiCard";
 import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from "./constants";
 import { Arrow } from "./controls/Arrow";
 import { NodeWithTooltip } from "./controls/NodeWithTooltip";
@@ -21,7 +22,6 @@ import { StrikeSquare } from "./controls/StrikeSquare";
 import { drawPip } from "./drawPip";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
 import * as konvaHelpers from "./konvaHelpers";
 
 export function hideAll(): void {

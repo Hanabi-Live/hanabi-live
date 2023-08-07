@@ -5,9 +5,9 @@ import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import { ColorButton } from "./ColorButton";
+import { HanabiCard } from "./HanabiCard";
 import { colorToColorIndex } from "./convert";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as turn from "./turn";
 

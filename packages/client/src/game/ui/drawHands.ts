@@ -2,11 +2,11 @@ import { Character, getCharacter } from "@hanabi/data";
 import Konva from "konva";
 import * as hand from "../rules/hand";
 import { CardLayout } from "./CardLayout";
+import { NameFrame } from "./NameFrame";
 import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
 import { TextWithTooltip } from "./controls/TextWithTooltip";
 import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
-import { NameFrame } from "./NameFrame";
 
 interface HandConfig {
   x: number;

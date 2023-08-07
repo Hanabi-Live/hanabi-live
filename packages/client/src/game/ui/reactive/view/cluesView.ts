@@ -2,8 +2,8 @@ import equal from "fast-deep-equal";
 import { Clue, colorClue, rankClue } from "../../../types/Clue";
 import { ClueType } from "../../../types/ClueType";
 import { StateClue } from "../../../types/GameState";
-import * as arrows from "../../arrows";
 import { ClueEntry } from "../../ClueEntry";
+import * as arrows from "../../arrows";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
 import { globals } from "../../globals";
 
