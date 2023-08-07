@@ -39,7 +39,7 @@ const (
 	EndConditionNormal
 	EndConditionStrikeout
 	EndConditionTimeout
-	EndConditionTerminated
+	EndConditionTerminatedByPlayer
 	EndConditionSpeedrunFail
 	EndConditionIdleTimeout
 	EndConditionCharacterSoftlock

@@ -3,11 +3,11 @@ export enum EndCondition {
   Normal,
   Strikeout,
   Timeout,
-  Terminated,
+  TerminatedByPlayer,
   SpeedrunFail,
   IdleTimeout,
   CharacterSoftlock,
   AllOrNothingFail,
   AllOrNothingSoftlock,
-  VotedToKill,
+  TerminatedByVote,
 }

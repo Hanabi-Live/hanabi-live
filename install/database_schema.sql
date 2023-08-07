@@ -152,7 +152,7 @@ CREATE TABLE games (
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,
 
-    /* See the "endCondition" values in "constants.go". */
+    /* See the "EndCondition" values in "constants.go" / "EndCondition.ts". */
     end_condition           SMALLINT     NOT NULL,
 
     datetime_started        TIMESTAMPTZ  NOT NULL,

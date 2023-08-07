@@ -149,8 +149,8 @@ function turnReducerFunction(
       // "shouldStoreSegment()" function in "stateReducer.ts".
       if (
         action.endCondition === EndCondition.Timeout ||
-        action.endCondition === EndCondition.Terminated ||
-        action.endCondition === EndCondition.VotedToKill ||
+        action.endCondition === EndCondition.TerminatedByPlayer ||
+        action.endCondition === EndCondition.TerminatedByVote ||
         action.endCondition === EndCondition.IdleTimeout
       ) {
         turn.segment++;

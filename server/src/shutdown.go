@@ -148,7 +148,7 @@ func terminateAllStartedTables(ctx context.Context) {
 				TableID:      t.ID,
 				Type:         ActionTypeEndGame,
 				Target:       -1,
-				Value:        EndConditionTerminated,
+				Value:        EndConditionTerminatedByPlayer,
 				NoTableLock:  true,
 				NoTablesLock: true,
 			})

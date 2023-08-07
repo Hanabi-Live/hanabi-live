@@ -113,11 +113,11 @@ export function gameOver(
       return `${playerName} ran out of time!`;
     }
 
-    case EndCondition.Terminated: {
+    case EndCondition.TerminatedByPlayer: {
       return `${playerName} terminated the game!`;
     }
 
-    case EndCondition.VotedToKill: {
+    case EndCondition.TerminatedByVote: {
       const playerNames = getPlayerNames(votes, metadata);
       return `${playerNames} voted to terminate the game!`;
     }

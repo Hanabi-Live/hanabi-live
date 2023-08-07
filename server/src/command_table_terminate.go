@@ -9,10 +9,11 @@ import (
 // corner
 //
 // Example data:
-// {
-//   tableID: 5,
-//   server: true, // True if a server-initiated termination, otherwise omitted
-// }
+//
+//	{
+//	  tableID: 5,
+//	  server: true, // True if a server-initiated termination, otherwise omitted
+//	}
 func commandTableTerminate(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -50,7 +51,7 @@ func terminate(ctx context.Context, s *Session, d *CommandData, t *Table, player
 		TableID:     t.ID,
 		Type:        ActionTypeEndGame,
 		Target:      playerIndex,
-		Value:       EndConditionTerminated,
+		Value:       EndConditionTerminatedByPlayer,
 		NoTableLock: true,
 	})
 }

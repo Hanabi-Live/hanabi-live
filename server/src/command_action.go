@@ -26,20 +26,21 @@ func actionsFunctionsInit() {
 // commandAction is sent when the user performs an in-game action
 //
 // Example data:
-// {
-//   tableID: 5,
-//   // Corresponds to "actionType" in "constants.go"
-//   type: 0,
-//   // If a play or a discard, corresponds to the order of the the card that was played/discarded
-//   // If a clue, corresponds to the index of the player that received the clue
-//   // If a game over, corresponds to the index of the player that caused the game to end
-//   target: 1,
-//   // Optional; only present if a clue
-//   // If a color clue, then 0 if red, 1 if yellow, etc.
-//   // If a rank clue, then 1 if 1, 2 if 2, etc.
-//   // If a game over, then the value corresponds to the "endCondition" values in "constants.go"
-//   value: 0,
-// }
+//
+//	{
+//	  tableID: 5,
+//	  // Corresponds to "actionType" in "constants.go"
+//	  type: 0,
+//	  // If a play or a discard, corresponds to the order of the the card that was played/discarded
+//	  // If a clue, corresponds to the index of the player that received the clue
+//	  // If a game over, corresponds to the index of the player that caused the game to end
+//	  target: 1,
+//	  // Optional; only present if a clue
+//	  // If a color clue, then 0 if red, 1 if yellow, etc.
+//	  // If a rank clue, then 1 if 1, 2 if 2, etc.
+//	  // If a game over, then the value corresponds to the "endCondition" values in "constants.go"
+//	  value: 0,
+//	}
 func commandAction(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -389,7 +390,7 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 
 	// Validate the value
 	if d.Value != EndConditionTimeout &&
-		d.Value != EndConditionTerminated &&
+		d.Value != EndConditionTerminatedByPlayer &&
 		d.Value != EndConditionTerminatedByVote &&
 		d.Value != EndConditionIdleTimeout &&
 		d.Value != EndConditionAllOrNothingFail {
@@ -411,11 +412,11 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 			Target: g.EndPlayer,
 			Value:  EndConditionTimeout,
 		}
-	} else if g.EndCondition == EndConditionTerminated {
+	} else if g.EndCondition == EndConditionTerminatedByPlayer {
 		endGameAction = &GameAction{
 			Type:   ActionTypeEndGame,
 			Target: g.EndPlayer,
-			Value:  EndConditionTerminated,
+			Value:  EndConditionTerminatedByPlayer,
 		}
 	} else if g.EndCondition == EndConditionTerminatedByVote {
 		endGameAction = &GameAction{
