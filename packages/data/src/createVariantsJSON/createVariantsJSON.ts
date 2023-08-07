@@ -1,6 +1,9 @@
 import { isEqual } from "lodash";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { SuitJSON } from "../types/SuitJSON";
+import { VariantDescription } from "../types/VariantDescription";
+import { VariantJSON } from "../types/VariantJSON";
 import {
   getAlternatingCluesVariants,
   getAmbiguousVariants,
@@ -27,10 +30,7 @@ import {
   getVariantsForEachSuit,
   getVariantsForSpecialRanks,
   getVeryAmbiguousVariants,
-} from "../getVariantDescriptions";
-import { SuitJSON } from "../types/SuitJSON";
-import { VariantDescription } from "../types/VariantDescription";
-import { VariantJSON } from "../types/VariantJSON";
+} from "./getVariantDescriptions";
 import { getVariantFromNewID } from "./newID";
 import { error } from "./utils";
 
@@ -121,7 +121,7 @@ function getPaths(): [string, string, string] {
 }
 
 function getJSONAndParse(jsonPath: string) {
-  const data = fs.readFileSync(jsonPath, "utf-8");
+  const data = fs.readFileSync(jsonPath, "utf8");
   return JSON.parse(data) as unknown;
 }
 
@@ -362,7 +362,7 @@ function checkForMissingVariants(
 }
 
 function createVariantJSONFile(variants: VariantJSON[], jsonPath: string) {
-  const data = `${JSON.stringify(variants, null, 2)}\n`;
+  const data = `${JSON.stringify(variants, undefined, 2)}\n`;
   fs.writeFileSync(jsonPath, data);
   console.log(`Created: ${jsonPath}`);
 }

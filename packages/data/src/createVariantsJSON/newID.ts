@@ -1,10 +1,10 @@
 import { parseIntSafe, ReadonlySet } from "@hanabi/utils";
+import { SuitJSON } from "../types/SuitJSON";
+import { VariantJSON } from "../types/VariantJSON";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,
-} from "../getVariantDescriptions";
-import { SuitJSON } from "../types/SuitJSON";
-import { VariantJSON } from "../types/VariantJSON";
+} from "./getVariantDescriptions";
 import { error } from "./utils";
 
 const VARIANT_DELIMITER = ":";

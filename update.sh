@@ -11,9 +11,8 @@ cd "$DIR"
 PACKAGE_JSON="$DIR/package.json"
 OLD_HASH=$(md5sum "$PACKAGE_JSON")
 # Old versions:
-# - immer - Newer version causes problems; needs more investigation.
 # - konva - Newer versions cause weird graphic glitches. The long-term goal is to move away from
-#   konva entirely and use a new graphics library.
+#           konva entirely and use a new graphics library.
 npx npm-check-updates --upgrade --packageFile "$PACKAGE_JSON" --filterVersion "^*"
 NEW_HASH=$(md5sum "$PACKAGE_JSON")
 if [[ "$OLD_HASH" != "$NEW_HASH" ]]; then

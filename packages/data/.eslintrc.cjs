@@ -45,5 +45,18 @@ module.exports = {
      * is contingent upon the dependencies being up to date).
      */
     "n/file-extension-in-import": "off",
+
+    // TODO: Temporarily disable all new rules.
+    "prefer-destructuring": "off",
+    "prefer-object-has-own": "off",
+    "@typescript-eslint/consistent-type-imports": "off",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/no-array-push-push": "off",
+    "unicorn/no-negated-condition": "off",
+    "unicorn/prefer-module": "off",
+    "unicorn/prefer-set-has": "off",
+    "unicorn/prefer-spread": "off",
+    "unicorn/prefer-ternary": "off",
+    "unicorn/prefer-type-error": "off",
   },
 };
