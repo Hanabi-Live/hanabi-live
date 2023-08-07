@@ -186,7 +186,7 @@ export interface ActionStrike {
   readonly turn: number;
 }
 
-export interface ActionTurn {
+interface ActionTurn {
   type: "turn";
   readonly num: number;
   readonly currentPlayerIndex: number;
@@ -234,7 +234,7 @@ export interface ActionReplayEnter {
   segment: number;
 }
 
-export interface ActionReplayExit {
+interface ActionReplayExit {
   type: "replayExit";
 }
 
