@@ -1,11 +1,12 @@
 // Speedrun click functions for the HanabiCard object.
 
-import { Color, START_CARD_RANK } from "@hanabi/data";
+import type { Color } from "@hanabi/data";
+import { START_CARD_RANK } from "@hanabi/data";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
-import { ColorButton } from "./ColorButton";
-import { HanabiCard } from "./HanabiCard";
+import type { ColorButton } from "./ColorButton";
+import type { HanabiCard } from "./HanabiCard";
 import { colorToColorIndex } from "./convert";
 import { globals } from "./globals";
 import * as notes from "./notes";

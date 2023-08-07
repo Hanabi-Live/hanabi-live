@@ -1,4 +1,4 @@
-import { Variant } from "@hanabi/data";
+import type { Variant } from "@hanabi/data";
 
 export function get(suitName: string, variant: Variant): string {
   const i = variant.suits.findIndex((suit) => suit.name === suitName);

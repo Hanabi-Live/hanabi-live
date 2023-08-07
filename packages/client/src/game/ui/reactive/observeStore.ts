@@ -1,5 +1,5 @@
 import equal from "fast-deep-equal";
-import { Action, Store, Unsubscribe } from "redux";
+import type { Action, Store, Unsubscribe } from "redux";
 
 export type Selector<T, U> = (s: T) => U | undefined;
 export type Listener<U> = (

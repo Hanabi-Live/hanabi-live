@@ -1,4 +1,4 @@
-import Konva from "konva";
+import type Konva from "konva";
 
 export interface NodeWithTooltip extends Konva.Node {
   tooltipName?: string;

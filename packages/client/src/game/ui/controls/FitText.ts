@@ -1,5 +1,5 @@
 import Konva from "konva";
-import * as KonvaContext from "konva/types/Context";
+import type * as KonvaContext from "konva/types/Context";
 
 export class FitText extends Konva.Text {
   origFontSize: number;

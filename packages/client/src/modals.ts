@@ -1,10 +1,10 @@
 // Modals (boxes that hover on top of the UI).
 
-import { Suit, Variant } from "@hanabi/data";
+import type { Suit, Variant } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import { CardIdentityType } from "./game/types/CardIdentityType";
-import { HanabiCard } from "./game/ui/HanabiCard";
+import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";

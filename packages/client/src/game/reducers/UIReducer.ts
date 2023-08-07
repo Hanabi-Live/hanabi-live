@@ -1,5 +1,5 @@
-import { UIAction } from "../types/UI";
-import { UIState } from "../types/UIState";
+import type { UIAction } from "../types/UI";
+import type { UIState } from "../types/UIState";
 import { HanabiCard } from "../ui/HanabiCard";
 
 export function UIReducer(state: UIState, action: UIAction): UIState {

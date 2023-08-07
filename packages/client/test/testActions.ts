@@ -1,6 +1,6 @@
 // Helper functions to build actions with a compact syntax. For use in tests.
 
-import {
+import type {
   ActionCardIdentity,
   ActionClue,
   ActionDiscard,

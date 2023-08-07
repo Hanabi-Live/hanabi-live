@@ -1,6 +1,6 @@
 import { parseIntSafe, ReadonlySet } from "@hanabi/utils";
-import { SuitJSON } from "../types/SuitJSON";
-import { VariantJSON } from "../types/VariantJSON";
+import type { SuitJSON } from "../types/SuitJSON";
+import type { VariantJSON } from "../types/VariantJSON";
 import {
   getSpecialClueRanks,
   SUIT_REVERSED_SUFFIX,

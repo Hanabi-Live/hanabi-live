@@ -1,12 +1,12 @@
-import { CardIdentity } from "./CardIdentity";
-import { ClientAction } from "./ClientAction";
-import { GameMetadata } from "./GameMetadata";
-import { GameState } from "./GameState";
-import { NotesState } from "./NotesState";
-import { PauseState } from "./PauseState";
-import { ReplayState } from "./ReplayState";
-import { Spectator } from "./Spectator";
-import { UIState } from "./UIState";
+import type { CardIdentity } from "./CardIdentity";
+import type { ClientAction } from "./ClientAction";
+import type { GameMetadata } from "./GameMetadata";
+import type { GameState } from "./GameState";
+import type { NotesState } from "./NotesState";
+import type { PauseState } from "./PauseState";
+import type { ReplayState } from "./ReplayState";
+import type { Spectator } from "./Spectator";
+import type { UIState } from "./UIState";
 
 export interface State {
   readonly visibleState: GameState | null; // Null during initialization

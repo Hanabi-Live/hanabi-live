@@ -1,23 +1,24 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import { STACK_BASE_RANK, Suit } from "@hanabi/data";
+import type { Suit } from "@hanabi/data";
+import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
-import * as KonvaContext from "konva/types/Context";
-import { KonvaEventObject } from "konva/types/Node";
+import type * as KonvaContext from "konva/types/Context";
+import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
-import { Clue } from "../types/Clue";
+import type { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
 import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from "./constants";
-import { Arrow } from "./controls/Arrow";
-import { NodeWithTooltip } from "./controls/NodeWithTooltip";
+import type { Arrow } from "./controls/Arrow";
+import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import { StrikeSquare } from "./controls/StrikeSquare";
 import { drawPip } from "./drawPip";
 import { getCardOrStackBase } from "./getCardOrStackBase";

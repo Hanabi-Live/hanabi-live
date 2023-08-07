@@ -1,5 +1,5 @@
-import { Spectator } from "../../game/types/Spectator";
-import { Options } from "../../types/Options";
+import type { Spectator } from "../../game/types/Spectator";
+import type { Options } from "../../types/Options";
 
 export interface Table {
   id: number;

@@ -1,5 +1,5 @@
 import { ReadonlySet } from "@hanabi/utils";
-import { Suit } from "./types/Suit";
+import type { Suit } from "./types/Suit";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const QUESTION_MARK_NOTES = ["?"] as const;

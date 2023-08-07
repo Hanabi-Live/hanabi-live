@@ -4,7 +4,7 @@
 import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as variantRules from "../rules/variant";
-import { LayoutChild } from "./LayoutChild";
+import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 

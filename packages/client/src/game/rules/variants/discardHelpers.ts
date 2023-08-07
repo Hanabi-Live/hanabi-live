@@ -1,5 +1,5 @@
-import { Variant } from "@hanabi/data";
-import { CardState } from "../../types/CardState";
+import type { Variant } from "@hanabi/data";
+import type { CardState } from "../../types/CardState";
 import * as deckRules from "../deck";
 
 export function discardedHelpers(

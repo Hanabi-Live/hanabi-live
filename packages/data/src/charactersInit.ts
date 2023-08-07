@@ -1,5 +1,5 @@
 import charactersJSON from "./json/characters.json";
-import { Character } from "./types/Character";
+import type { Character } from "./types/Character";
 
 export function charactersInit(): ReadonlyMap<number, Character> {
   const characters = new Map<number, Character>();

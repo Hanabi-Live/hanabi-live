@@ -1,9 +1,9 @@
 import { isEqual } from "lodash";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { SuitJSON } from "../types/SuitJSON";
-import { VariantDescription } from "../types/VariantDescription";
-import { VariantJSON } from "../types/VariantJSON";
+import type { SuitJSON } from "../types/SuitJSON";
+import type { VariantDescription } from "../types/VariantDescription";
+import type { VariantJSON } from "../types/VariantJSON";
 import {
   getAlternatingCluesVariants,
   getAmbiguousVariants,

@@ -1,6 +1,6 @@
 import { ActionType } from "../../../types/ActionType";
-import { ClientAction } from "../../../types/ClientAction";
-import { State } from "../../../types/State";
+import type { ClientAction } from "../../../types/ClientAction";
+import type { State } from "../../../types/State";
 import { globals } from "../../globals";
 import * as ourHand from "../../ourHand";
 

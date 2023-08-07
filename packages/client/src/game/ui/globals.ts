@@ -3,19 +3,19 @@
 
 import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
-import * as Redux from "redux";
-import { Loader } from "../../Loader";
+import type * as Redux from "redux";
+import type { Loader } from "../../Loader";
 import { Globals as LobbyGlobals } from "../../globals";
-import { Options } from "../../types/Options";
-import { GameExports } from "../main";
-import { GameMetadata } from "../types/GameMetadata";
-import { State } from "../types/State";
-import { Action, GameAction } from "../types/actions";
+import type { Options } from "../../types/Options";
+import type { GameExports } from "../main";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { State } from "../types/State";
+import type { Action, GameAction } from "../types/actions";
 import { Elements } from "./Elements";
-import { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard";
 import { Layers } from "./Layers";
 import * as cursor from "./cursor";
-import { StateObserver } from "./reactive/StateObserver";
+import type { StateObserver } from "./reactive/StateObserver";
 
 export class Globals {
   // Objects sent upon UI initialization.

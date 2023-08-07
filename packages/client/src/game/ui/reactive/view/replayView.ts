@@ -2,7 +2,7 @@ import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import * as variantRules from "../../../rules/variant";
 import { ReplayActionType } from "../../../types/ReplayActionType";
-import { Spectator } from "../../../types/Spectator";
+import type { Spectator } from "../../../types/Spectator";
 import { globals } from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";

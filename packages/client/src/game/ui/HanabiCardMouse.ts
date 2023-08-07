@@ -1,13 +1,13 @@
 import { STACK_BASE_RANK } from "@hanabi/data";
-import Konva from "konva";
+import type Konva from "konva";
 import * as tooltips from "../../tooltips";
 import * as cardRules from "../rules/card";
-import { CardLayout } from "./CardLayout";
-import { HanabiCard } from "./HanabiCard";
+import type { CardLayout } from "./CardLayout";
+import type { HanabiCard } from "./HanabiCard";
 import { HanabiCardClick } from "./HanabiCardClick";
 import { HanabiCardClickSpeedrun } from "./HanabiCardClickSpeedrun";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
-import { LayoutChild } from "./LayoutChild";
+import type { LayoutChild } from "./LayoutChild";
 import * as arrows from "./arrows";
 import { DOUBLE_TAP_DELAY } from "./constants";
 import * as cursor from "./cursor";

@@ -1,4 +1,4 @@
-import { TurnState } from "../../types/TurnState";
+import type { TurnState } from "../../types/TurnState";
 
 export function initialTurnState(startingPlayer = 0): TurnState {
   return {

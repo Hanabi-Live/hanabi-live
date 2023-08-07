@@ -7,7 +7,7 @@ import { copyStringToClipboard, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
 import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
-import { Table } from "./types/Table";
+import type { Table } from "./types/Table";
 
 export function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");

@@ -1,5 +1,5 @@
 import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
-import { GameMetadata } from "../../types/GameMetadata";
+import type { GameMetadata } from "../../types/GameMetadata";
 
 export function shouldSeeSlot2CardIdentity(metadata: GameMetadata): boolean {
   if (!metadata.options.detrimentalCharacters) {

@@ -1,5 +1,5 @@
 import * as statsRules from "../../../rules/stats";
-import { PaceRisk } from "../../../types/GameState";
+import type { PaceRisk } from "../../../types/GameState";
 import { LABEL_COLOR } from "../../constants";
 import { globals } from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";

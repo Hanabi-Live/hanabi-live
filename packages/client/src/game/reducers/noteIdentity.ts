@@ -1,11 +1,7 @@
-import {
-  ALL_RESERVED_NOTES,
-  MAX_RANK,
-  START_CARD_RANK,
-  Variant,
-} from "@hanabi/data";
+import type { Variant } from "@hanabi/data";
+import { ALL_RESERVED_NOTES, MAX_RANK, START_CARD_RANK } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
-import { CardIdentity } from "../types/CardIdentity";
+import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 
 interface CardIdentities {

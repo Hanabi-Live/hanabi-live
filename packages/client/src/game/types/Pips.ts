@@ -1,5 +1,5 @@
-import Konva from "konva";
-import { RankPip } from "../ui/controls/RankPip";
+import type Konva from "konva";
+import type { RankPip } from "../ui/controls/RankPip";
 
 export interface Pips {
   suitPips: Konva.Group;

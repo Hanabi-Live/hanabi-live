@@ -1,4 +1,4 @@
-import { Settings } from "./Settings";
+import type { Settings } from "./Settings";
 
 export interface WelcomeData {
   userID: number;

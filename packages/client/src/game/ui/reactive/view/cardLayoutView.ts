@@ -1,13 +1,13 @@
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import { ReadonlyMap } from "@hanabi/utils";
 import equal from "fast-deep-equal";
-import Konva from "konva";
+import type Konva from "konva";
 import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";
 import { StackDirection } from "../../../types/StackDirection";
-import { HanabiCard } from "../../HanabiCard";
-import { LayoutChild } from "../../LayoutChild";
+import type { HanabiCard } from "../../HanabiCard";
+import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../globals";
 import { updateCardVisuals } from "./cardsView";
 

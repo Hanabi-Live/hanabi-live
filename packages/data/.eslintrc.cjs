@@ -49,7 +49,6 @@ module.exports = {
     // TODO: Temporarily disable all new rules.
     "prefer-destructuring": "off",
     "prefer-object-has-own": "off",
-    "@typescript-eslint/consistent-type-imports": "off",
     "unicorn/no-array-for-each": "off",
     "unicorn/no-array-push-push": "off",
     "unicorn/no-negated-condition": "off",

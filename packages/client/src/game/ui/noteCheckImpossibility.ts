@@ -1,8 +1,9 @@
-import { STACK_BASE_RANK, START_CARD_RANK, Variant } from "@hanabi/data";
+import type { Variant } from "@hanabi/data";
+import { STACK_BASE_RANK, START_CARD_RANK } from "@hanabi/data";
 import * as modals from "../../modals";
 import { canPossiblyBeFromEmpathy } from "../rules/card";
-import { CardNote } from "../types/CardNote";
-import { CardState } from "../types/CardState";
+import type { CardNote } from "../types/CardNote";
+import type { CardState } from "../types/CardState";
 import { globals } from "./globals";
 
 export function checkNoteImpossibility(

@@ -6,18 +6,18 @@ import * as handRules from "../src/game/rules/hand";
 import * as playStacksRules from "../src/game/rules/playStacks";
 import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
-import { CardIdentity } from "../src/game/types/CardIdentity";
+import type { CardIdentity } from "../src/game/types/CardIdentity";
 import { ClueType } from "../src/game/types/ClueType";
-import { GameState } from "../src/game/types/GameState";
-import { State } from "../src/game/types/State";
-import {
+import type { GameState } from "../src/game/types/GameState";
+import type { State } from "../src/game/types/State";
+import type {
   ActionClue,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
   GameAction,
 } from "../src/game/types/actions";
-import testGame from "../test_data/up_or_down.json";
+import type testGame from "../test_data/up_or_down.json";
 import { testMetadata } from "./testMetadata";
 
 type JSONGame = typeof testGame;

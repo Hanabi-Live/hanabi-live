@@ -1,8 +1,8 @@
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";
-import { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import { TextWithTooltip } from "./controls/TextWithTooltip";
+import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
+import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import { globals } from "./globals";
 
 export function init(

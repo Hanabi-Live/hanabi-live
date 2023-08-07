@@ -1,10 +1,11 @@
-import { DEFAULT_VARIANT_NAME, Variant } from ".";
+import type { Variant } from ".";
+import { DEFAULT_VARIANT_NAME } from ".";
 import { charactersInit } from "./charactersInit";
 import { colorsInit } from "./colorsInit";
 import { START_CARD_RANK } from "./constants";
 import { suitsInit } from "./suitsInit";
-import { Character } from "./types/Character";
-import { Suit } from "./types/Suit";
+import type { Character } from "./types/Character";
+import type { Suit } from "./types/Suit";
 import { variantsInit } from "./variantsInit";
 
 /** Indexed by character ID. */

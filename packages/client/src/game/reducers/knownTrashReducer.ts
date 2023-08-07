@@ -1,7 +1,7 @@
-import { Variant } from "@hanabi/data";
+import type { Variant } from "@hanabi/data";
 import * as cardRules from "../rules/card";
-import { CardState } from "../types/CardState";
-import { StackDirection } from "../types/StackDirection";
+import type { CardState } from "../types/CardState";
+import type { StackDirection } from "../types/StackDirection";
 
 export function knownTrashReducer(
   deck: readonly CardState[],

@@ -1,7 +1,7 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
 import * as gameMain from "../game/main";
-import { Spectator } from "../game/types/Spectator";
+import type { Spectator } from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
 import { globals } from "../globals";
 import * as sounds from "../sounds";
@@ -10,12 +10,12 @@ import * as lobbyLogin from "./login";
 import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame";
 import { tablesDraw } from "./tablesDraw";
-import { Game } from "./types/Game";
-import { GameHistory } from "./types/GameHistory";
+import type { Game } from "./types/Game";
+import type { GameHistory } from "./types/GameHistory";
 import { Screen } from "./types/Screen";
-import { Table } from "./types/Table";
-import { User } from "./types/User";
-import { WelcomeData } from "./types/WelcomeData";
+import type { Table } from "./types/Table";
+import type { User } from "./types/User";
+import type { WelcomeData } from "./types/WelcomeData";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 

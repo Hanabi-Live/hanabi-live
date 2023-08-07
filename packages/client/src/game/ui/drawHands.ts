@@ -1,4 +1,5 @@
-import { Character, getCharacter } from "@hanabi/data";
+import type { Character } from "@hanabi/data";
+import { getCharacter } from "@hanabi/data";
 import Konva from "konva";
 import * as hand from "../rules/hand";
 import { CardLayout } from "./CardLayout";

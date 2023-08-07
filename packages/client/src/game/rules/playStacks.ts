@@ -1,11 +1,11 @@
+import type { Variant } from "@hanabi/data";
 import {
   DEFAULT_CARD_RANKS,
   STACK_BASE_RANK,
   START_CARD_RANK,
   UNKNOWN_CARD_RANK,
-  Variant,
 } from "@hanabi/data";
-import { CardState } from "../types/CardState";
+import type { CardState } from "../types/CardState";
 import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
 

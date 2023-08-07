@@ -5,7 +5,7 @@ import * as chat from "../chat";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
-import { Options } from "../types/Options";
+import type { Options } from "../types/Options";
 import { setBrowserAddressBarPath, timerFormatter } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";

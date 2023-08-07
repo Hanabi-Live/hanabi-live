@@ -5,10 +5,10 @@ import {
 } from ".";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
-import { Color } from "./types/Color";
-import { Suit } from "./types/Suit";
-import { Variant } from "./types/Variant";
-import { VariantJSON } from "./types/VariantJSON";
+import type { Color } from "./types/Color";
+import type { Suit } from "./types/Suit";
+import type { Variant } from "./types/Variant";
+import type { VariantJSON } from "./types/VariantJSON";
 import { isNameUpOrDown } from "./variants";
 
 export function variantsInit(

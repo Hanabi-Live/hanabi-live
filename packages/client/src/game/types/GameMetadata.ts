@@ -1,4 +1,4 @@
-import { Options } from "../../types/Options";
+import type { Options } from "../../types/Options";
 
 /** This is for data that does not change. */
 export interface GameMetadata {

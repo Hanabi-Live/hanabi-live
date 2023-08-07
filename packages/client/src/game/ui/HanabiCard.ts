@@ -1,37 +1,31 @@
 // The `HanabiCard` object represents a single card. It has a `LayoutChild` parent.
 
-import {
-  Color,
-  getSuit,
-  STACK_BASE_RANK,
-  Suit,
-  UNKNOWN_CARD_RANK,
-  Variant,
-} from "@hanabi/data";
+import type { Color, Suit, Variant } from "@hanabi/data";
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, getSuit } from "@hanabi/data";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
-import { CardIdentity } from "../types/CardIdentity";
+import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
-import { CardNote } from "../types/CardNote";
-import { CardState } from "../types/CardState";
+import type { CardNote } from "../types/CardNote";
+import type { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
 import { StackDirection } from "../types/StackDirection";
-import { UICard } from "../types/UICard";
-import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
-import { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import { NoteIndicator } from "./controls/NoteIndicator";
-import { RankPip } from "./controls/RankPip";
-import { suitIndexToSuit } from "./convert";
-import { CursorType } from "./cursor";
-import { globals } from "./globals";
+import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
-import { animate } from "./konvaHelpers";
 import { LayoutChild } from "./LayoutChild";
+import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
+import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
+import type { NoteIndicator } from "./controls/NoteIndicator";
+import { RankPip } from "./controls/RankPip";
+import { suitIndexToSuit } from "./convert";
+import type { CursorType } from "./cursor";
+import { globals } from "./globals";
+import { animate } from "./konvaHelpers";
 import {
   checkNoteImpossibility,
   getRankFromNote,

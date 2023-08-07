@@ -8,8 +8,8 @@ import {
   rankClue,
 } from "../../../test/testActions";
 import testGame from "../../../test_data/up_or_down.json";
-import { GameMetadata } from "../types/GameMetadata";
-import { State } from "../types/State";
+import type { GameMetadata } from "../types/GameMetadata";
+import type { State } from "../types/State";
 import { replayReducer } from "./replayReducer";
 import { stateReducer } from "./stateReducer";
 

@@ -1,7 +1,8 @@
 import equal from "fast-deep-equal";
-import { Clue, colorClue, rankClue } from "../../../types/Clue";
+import type { Clue } from "../../../types/Clue";
+import { colorClue, rankClue } from "../../../types/Clue";
 import { ClueType } from "../../../types/ClueType";
-import { StateClue } from "../../../types/GameState";
+import type { StateClue } from "../../../types/GameState";
 import { ClueEntry } from "../../ClueEntry";
 import * as arrows from "../../arrows";
 import { getCardOrStackBase } from "../../getCardOrStackBase";

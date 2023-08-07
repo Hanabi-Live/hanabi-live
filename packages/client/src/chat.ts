@@ -9,7 +9,7 @@ import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import { globals } from "./globals";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
-import { ChatMessage } from "./types/ChatMessage";
+import type { ChatMessage } from "./types/ChatMessage";
 
 export enum SelfChatMessageType {
   Normal,

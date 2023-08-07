@@ -87,7 +87,6 @@ module.exports = {
 
     // TODO: Temporarily disable all new rules.
     "@typescript-eslint/class-methods-use-this": "off",
-    "@typescript-eslint/consistent-type-imports": "off",
     "@typescript-eslint/lines-around-comment": "off",
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/no-empty-function": "off",

@@ -2,17 +2,17 @@ import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
-import { Clue } from "../types/Clue";
+import type { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
-import { MsgClue } from "../types/MsgClue";
+import type { MsgClue } from "../types/MsgClue";
 import * as arrows from "./arrows";
-import { ButtonGroup } from "./ButtonGroup";
-import { ColorButton } from "./ColorButton";
-import { PlayerButton } from "./controls/PlayerButton";
+import type { ButtonGroup } from "./ButtonGroup";
+import type { ColorButton } from "./ColorButton";
+import type { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
 import { globals } from "./globals";
-import { HanabiCard } from "./HanabiCard";
-import { RankButton } from "./RankButton";
+import type { HanabiCard } from "./HanabiCard";
+import type { RankButton } from "./RankButton";
 import * as turn from "./turn";
 
 export function checkLegal(): void {
