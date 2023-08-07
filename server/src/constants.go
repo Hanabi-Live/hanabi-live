@@ -34,18 +34,20 @@ const (
 	ClueTypeRank
 )
 
+// Corresponds to values in the database. If changed, the database must also be updated.
+// Also see the enum in "EndCondition.ts".
 const (
-	EndConditionInProgress = iota
-	EndConditionNormal
-	EndConditionStrikeout
-	EndConditionTimeout
-	EndConditionTerminatedByPlayer
-	EndConditionSpeedrunFail
-	EndConditionIdleTimeout
-	EndConditionCharacterSoftlock
-	EndConditionAllOrNothingFail
-	EndConditionAllOrNothingSoftlock
-	EndConditionTerminatedByVote
+	EndConditionInProgress           = 0
+	EndConditionNormal               = 1
+	EndConditionStrikeout            = 2
+	EndConditionTimeout              = 3
+	EndConditionTerminatedByPlayer   = 4
+	EndConditionSpeedrunFail         = 5
+	EndConditionIdleTimeout          = 6
+	EndConditionCharacterSoftlock    = 7
+	EndConditionAllOrNothingFail     = 8
+	EndConditionAllOrNothingSoftlock = 9
+	EndConditionTerminatedByVote     = 10
 )
 
 // When in a shared replay, spectators can send certain types of "actions" to the server to
