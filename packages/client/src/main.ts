@@ -1,5 +1,5 @@
 // This is the main entry point for the client code. The client code is split up into multiple files
-// and bundled together with webpack.
+// and then bundled together as a single JavaScript file to serve to end-users.
 
 import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
 import jquery from "jquery";
@@ -18,7 +18,6 @@ import * as lobbyNav from "./lobby/nav";
 import * as playerSettings from "./lobby/playerSettings";
 import { Screen } from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
-import * as sentry from "./sentry";
 import * as sounds from "./sounds";
 import * as tooltips from "./tooltips";
 
@@ -30,9 +29,6 @@ if (
 ) {
   window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
 }
-
-// Initialize logging to Sentry.io.
-sentry.init();
 
 // Initialize JQuery.
 // https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window

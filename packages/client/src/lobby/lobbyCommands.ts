@@ -4,7 +4,6 @@ import * as gameMain from "../game/main";
 import { Spectator } from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
 import { globals } from "../globals";
-import * as sentry from "../sentry";
 import * as sounds from "../sounds";
 import * as history from "./history";
 import * as lobbyLogin from "./login";
@@ -311,9 +310,6 @@ lobbyCommands.set("welcome", (data: WelcomeData) => {
   globals.shuttingDown = data.shuttingDown;
   globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
   globals.maintenanceMode = data.maintenanceMode;
-
-  // Now that we know what our user ID and username are, we can attach them to the Sentry context.
-  sentry.setUserContext(globals.userID, globals.username);
 
   // Update various elements of the UI to reflect our settings.
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());

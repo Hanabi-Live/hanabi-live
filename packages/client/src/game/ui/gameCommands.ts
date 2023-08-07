@@ -6,7 +6,6 @@ import { getVariant } from "@hanabi/data";
 import { newArray, parseIntSafe } from "@hanabi/utils";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
-import * as sentry from "../../sentry";
 import { setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
@@ -161,10 +160,6 @@ gameCommands.set("hypoStart", () => {
 });
 
 gameCommands.set("init", (metadata: InitData) => {
-  // Data contains the game settings for the game we are entering; attach this to the Sentry context
-  // to make debugging easier.
-  sentry.setGameContext(metadata);
-
   setURL(metadata);
   initStateStore(metadata);
 
