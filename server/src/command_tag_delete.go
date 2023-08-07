@@ -10,10 +10,11 @@ import (
 // commandTagDelete is sent when a user types the "/tagdelete [tag]" command
 //
 // Example data:
-// {
-//   tableID: 123,
-//   msg: 'inverted priority finesse',
-// }
+//
+//	{
+//	  tableID: 123,
+//	  msg: 'inverted priority finesse',
+//	}
 func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -29,8 +30,8 @@ func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Sanitize, validate, and normalize the tag
-	if v, err := sanitizeTag(d.Msg); err != nil {
-		s.Warning(err.Error())
+	if v, err := sanitizeTag(d.Msg); err != "" {
+		s.Warning(err)
 		return
 	} else {
 		d.Msg = v

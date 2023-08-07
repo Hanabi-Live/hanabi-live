@@ -28,19 +28,10 @@ func httpMain(c *gin.Context) {
 		return
 	}
 
-	// Unlike the other pages, the main website does not directly display the title
-	// Instead, we use this value to store whether or not we will use the WebPack development
-	// JavaScript
-	title := "Main"
-	if _, ok := c.Request.URL.Query()["dev"]; ok {
-		title = "Dev"
-	}
-
 	data := &TemplateData{ // nolint: exhaustivestruct
-		Title:       title,
-		Domain:      domain,
-		Compiling:   compiling,
-		WebpackPort: webpackPort,
+		Title:     "Main",
+		Domain:    domain,
+		Compiling: compiling,
 	}
 	httpServeTemplate(w, data, "main")
 }

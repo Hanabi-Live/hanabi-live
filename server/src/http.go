@@ -23,7 +23,6 @@ type TemplateData struct {
 	Domain      string // Used to validate that the user is going to the correct URL
 	Version     int
 	Compiling   bool // True if we are currently recompiling the TypeScript client
-	WebpackPort int
 
 	// Profile
 	Name       string
@@ -85,7 +84,6 @@ var (
 	domain       string
 	useTLS       bool
 	GATrackingID string
-	webpackPort  int
 
 	// HTTPClientWithTimeout is used for sending web requests to external sites,
 	// which is used in various middleware
@@ -130,40 +128,10 @@ func httpInit() {
 		}
 	}
 	GATrackingID = os.Getenv("GA_TRACKING_ID")
-	webpackPortString := os.Getenv("WEBPACK_DEV_SERVER_PORT")
-	if len(webpackPortString) == 0 {
-		webpackPort = 8080
-	} else {
-		if v, err := strconv.Atoi(webpackPortString); err != nil {
-			logger.Fatal("Failed to convert the \"WEBPACK_DEV_SERVER_PORT\" environment variable to a number.")
-			return
-		} else {
-			webpackPort = v
-		}
-	}
 
 	// Create a new Gin HTTP router
 	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
-
-	// Attach rate-limiting middleware from Tollbooth
-	// The limiter works per path request,
-	// meaning that a user can only request one specific path every X seconds
-	// Thus, this does not impact the ability of a user to download CSS and image files all at once
-	// (However, we do not want to use the rate-limiter in development, since we might have multiple
-	// tabs open that are automatically-refreshing with webpack-dev-server)
-	//
-	// The rate limiter is commented out for now to prevent bugs with Apple browsers
-	// Apparently it sets an empty "X-Rate-Limit-Request-Forwarded-For:" header and that causes
-	// problems
-	/*
-		if !isDev {
-			limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-			limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-			limiterMiddleware := httpLimitHandler(limiter)
-			httpRouter.Use(limiterMiddleware)
-		}
-	*/
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))

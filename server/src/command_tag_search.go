@@ -11,13 +11,14 @@ import (
 // commandTagSearch is sent when a user types the "/tagsearch [tag]" command
 //
 // Example data:
-// {
-//   msg: 'inverted priority finesse',
-// }
+//
+//	{
+//	  msg: 'inverted priority finesse',
+//	}
 func commandTagSearch(ctx context.Context, s *Session, d *CommandData) {
 	// Sanitize, validate, and normalize the tag
-	if v, err := sanitizeTag(d.Msg); err != nil {
-		s.Warning(err.Error())
+	if v, err := sanitizeTag(d.Msg); err != "" {
+		s.Warning(err)
 		return
 	} else {
 		d.Msg = v

@@ -19,8 +19,8 @@ func httpTag(c *gin.Context) {
 	}
 
 	// Sanitize, validate, and normalize the tag
-	if v, err := sanitizeTag(tag); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+	if v, err := sanitizeTag(tag); err != "" {
+		http.Error(w, err, http.StatusNotFound)
 		return
 	} else {
 		tag = v

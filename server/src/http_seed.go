@@ -15,9 +15,9 @@ func httpSeed(c *gin.Context) {
 		return
 	}
 
-	seedScoreFreqs := make([]*ScoreFreq, 0)
+	var seedScoreFreqs []*ScoreFreq
 	if v, err := models.Seeds.GetScoreFreqs(seed); err != nil {
-		logger.Error("Failed to get the seed stats for " + seed  + err.Error())
+		logger.Error("Failed to get the seed stats for " + seed + err.Error())
 		http.Error(
 			c.Writer,
 			http.StatusText(http.StatusInternalServerError),

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"strings"
 	"unicode"
@@ -18,10 +17,11 @@ const (
 // commandTag is sent when a user types the "/tag [tag]" command
 //
 // Example data:
-// {
-//   tableID: 123,
-//   msg: 'inverted priority finesse',
-// }
+//
+//	{
+//	  tableID: 123,
+//	  msg: 'inverted priority finesse',
+//	}
 func commandTag(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -37,8 +37,8 @@ func commandTag(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Sanitize, validate, and normalize the tag
-	if v, err := sanitizeTag(d.Msg); err != nil {
-		s.Warning(err.Error())
+	if v, err := sanitizeTag(d.Msg); err != "" {
+		s.Warning(err)
 		return
 	} else {
 		d.Msg = v
@@ -94,15 +94,15 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
 }
 
-func sanitizeTag(tag string) (string, error) {
+func sanitizeTag(tag string) (string, string) {
 	// Validate tag length
 	if len(tag) > MaxTagLength {
-		return tag, errors.New("Tags cannot be longer than " + strconv.Itoa(MaxTagLength) + " characters.")
+		return tag, "Tags cannot be longer than " + strconv.Itoa(MaxTagLength) + " characters."
 	}
 
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(tag)) {
-		return tag, errors.New("Tags must contain valid UTF8 characters.") // nolint: golint, stylecheck
+		return tag, "Tags must contain valid UTF8 characters."
 	}
 
 	// Replace any whitespace that is not a space with a space
@@ -118,8 +118,8 @@ func sanitizeTag(tag string) (string, error) {
 
 	// Validate blank tags
 	if tag == "" {
-		return tag, errors.New("Tags cannot be blank.") // nolint: golint, stylecheck
+		return tag, "Tags cannot be blank."
 	}
 
-	return normalizeString(tag), nil
+	return normalizeString(tag), ""
 }

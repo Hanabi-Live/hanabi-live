@@ -89,11 +89,6 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		players = append(players, p.Name)
 	}
 
-	spectators := make([]string, 0)
-	for _, sp := range t.ActiveSpectators() {
-		spectators = append(spectators, sp.Name)
-	}
-
 	return &TableMessage{
 		ID:                t.ID,
 		Name:              t.Name,

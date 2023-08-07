@@ -208,7 +208,7 @@ func variantSudokuCheckAllDead(g *Game) bool {
 	possibleStackStarts := variantSudokuGetFreeStackStarts(g)
 
 	for suitIndex, stackRank := range g.Stacks {
-		possibleNextRanks := make([]int, 0)
+		var possibleNextRanks []int
 		if g.PlayStackDirections[suitIndex] == StackDirectionFinished {
 			continue
 		}

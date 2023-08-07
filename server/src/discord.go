@@ -17,7 +17,6 @@ var (
 	discordGuildID              string
 	discordChannelSyncWithLobby string
 	discordChannelWebsiteDev    string
-	discordChannelQuestions     string
 	sendMessageToWebDevChannel  bool
 	discordBotID                string
 	discordIsReady              = abool.New()
@@ -48,9 +47,6 @@ func discordInit() {
 		return
 	}
 	if discordChannelWebsiteDev, ok = discordReadEnvVar("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT"); !ok {
-		return
-	}
-	if discordChannelQuestions, ok = discordReadEnvVar("DISCORD_CHANNEL_CONVENTION_QUESTIONS"); !ok {
 		return
 	}
 	if discordPingCrew, ok = discordReadEnvVar("DISCORD_PING_CREW_ROLE_NAME"); !ok {
