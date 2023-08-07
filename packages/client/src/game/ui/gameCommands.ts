@@ -540,8 +540,10 @@ function initStateStore(data: InitData) {
   // to be a valid state.
 }
 
-// We might need to go to a specific turn
-// (e.g. we loaded a URL of "http://localhost/replay/123#5")
+/**
+ * We might need to go to a specific turn if we loaded a URL of e.g.:
+ * http://localhost/replay/123#5
+ */
 function loadSpecificReplayTurn(turnString: string) {
   let turn = parseIntSafe(turnString);
   if (Number.isNaN(turn)) {
