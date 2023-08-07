@@ -1,3 +1,0 @@
-# We don't need to include combined or minified CSS
-/main.*.min.css
-/critical.css
