@@ -1,7 +1,6 @@
 // Rules related to properties of variants.
 
 import type { Variant } from "@hanabi/data";
-import { isNameUpOrDown } from "@hanabi/data";
 
 export function isDualColor(variant: Variant): boolean {
   return variant.name.startsWith("Dual-Color");
@@ -40,7 +39,7 @@ export function isSudoku(variant: Variant): boolean {
 }
 
 export function isUpOrDown(variant: Variant): boolean {
-  return isNameUpOrDown(variant.name);
+  return variant.name.startsWith("Up or Down");
 }
 
 export function isSynesthesia(variant: Variant): boolean {
