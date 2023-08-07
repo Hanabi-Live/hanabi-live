@@ -1,7 +1,4 @@
-/**
- * Corresponds to values in the database. If changed, the database must also be updated. Also see
- * the enum in "EndCondition.ts".
- */
+/** Corresponds to values in the database. If changed, the database must also be updated. */
 export enum EndCondition {
   InProgress = 0,
   Normal = 1,
