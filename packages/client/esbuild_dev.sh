@@ -16,10 +16,4 @@ source "$DIR/get_version.sh"
 REPO_ROOT="$DIR/../.."
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
-npx esbuild \
-  "$DIR/src/main.ts" \
-  --bundle \
-  --outfile="$JS_BUNDLE_PATH" \
-  --minify \
-  --sourcemap \
-  --watch \
+npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap --watch
