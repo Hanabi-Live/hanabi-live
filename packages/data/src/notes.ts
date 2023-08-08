@@ -45,7 +45,7 @@ function createRankPattern(
 ): string {
   let rankStrings = ranks.map((r) => r.toString());
   if (isUpOrDown) {
-    rankStrings = rankStrings.concat("0", "s", "start");
+    rankStrings = [...rankStrings, "0", "s", "start"];
   }
 
   return `(${rankStrings.join("|")})`;
@@ -58,9 +58,9 @@ function createSquishPattern(
 ): string {
   let rankStrings = ranks.map((r) => r.toString());
   if (isUpOrDown) {
-    rankStrings = rankStrings.concat("0", "s");
+    rankStrings = [...rankStrings, "0", "s"];
   }
 
-  const allNoteLetters = rankStrings.concat(suitAbbreviations);
+  const allNoteLetters = [...rankStrings, ...suitAbbreviations];
   return `([${allNoteLetters.join("").toLowerCase()}]+)`;
 }

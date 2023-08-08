@@ -4,14 +4,13 @@ import type { Character } from "./types/Character";
 export function charactersInit(): ReadonlyMap<number, Character> {
   const characters = new Map<number, Character>();
 
-  const charactersJSONArray = Array.from(charactersJSON);
-  if (charactersJSONArray.length === 0) {
+  if (charactersJSON.length === 0) {
     throw new Error(
       'The "characters.json" file did not have any elements in it.',
     );
   }
 
-  for (const character of charactersJSONArray) {
+  for (const character of charactersJSON) {
     // Validate the name
     if (character.name === "") {
       throw new Error(

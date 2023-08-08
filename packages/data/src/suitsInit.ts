@@ -10,12 +10,11 @@ export function suitsInit(
 ): ReadonlyMap<string, Suit> {
   const suits = new Map<string, Suit>();
 
-  const suitsJSONArray = Array.from(suitsJSON);
-  if (suitsJSONArray.length === 0) {
+  if (suitsJSON.length === 0) {
     throw new Error('The "suits.json" file did not have any elements in it.');
   }
 
-  for (const suitJSON of suitsJSONArray) {
+  for (const suitJSON of suitsJSON) {
     // Validate the name
     const { name } = suitJSON;
     if (name === "") {

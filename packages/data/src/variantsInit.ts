@@ -1,8 +1,5 @@
-import {
-  DEFAULT_CARD_RANKS,
-  DEFAULT_CLUE_RANKS,
-  getSuitAbbreviationsForVariant,
-} from ".";
+import { getSuitAbbreviationsForVariant } from "./abbreviations";
+import { DEFAULT_CARD_RANKS, DEFAULT_CLUE_RANKS } from "./constants";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
 import type { Color } from "./types/Color";
@@ -17,14 +14,13 @@ export function variantsInit(
 ): ReadonlyMap<string, Variant> {
   const variants = new Map<string, Variant>();
 
-  const variantsJSONArray = Array.from(variantsJSON) as VariantJSON[];
-  if (variantsJSONArray.length === 0) {
+  if (variantsJSON.length === 0) {
     throw new Error(
       'The "variants.json" file did not have any elements in it.',
     );
   }
 
-  for (const variantJSON of variantsJSONArray) {
+  for (const variantJSON of variantsJSON as VariantJSON[]) {
     // Validate the name
     const { name } = variantJSON;
     if (name === "") {

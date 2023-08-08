@@ -19,16 +19,6 @@
     // Specifying "Node" here is also necessary in order for JSON files to be imported without
     // erroring.
     "moduleResolution": "Node",
-
-    // TypeScript will not remove comments by default; we want to remove them to make the source
-    // file smaller.
-    "removeComments": true,
-
-    // By default, TypeScript will remove all blank lines. This will cause the source maps to report
-    // the wrong line numbers. We must specify both of these options in order to fix the problem.
-    // By default, these flags are false.
-    "sourceMap": true,
-    "inlineSources": true,
   },
 
   "include": ["./src/**/*.ts"],
