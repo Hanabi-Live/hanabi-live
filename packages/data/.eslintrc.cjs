@@ -10,6 +10,15 @@ module.exports = {
   },
 
   rules: {
+    // TODO: Temporarily disable all new rules.
+    "prefer-destructuring": "off",
+    "prefer-object-has-own": "off",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/no-array-push-push": "off",
+    "unicorn/no-negated-condition": "off",
+    "unicorn/prefer-spread": "off",
+    "unicorn/prefer-ternary": "off",
+
     /**
      * Documentation:
      * https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-non-null-assertion.md
@@ -46,14 +55,16 @@ module.exports = {
      */
     "n/file-extension-in-import": "off",
 
-    // TODO: Temporarily disable all new rules.
-    "prefer-destructuring": "off",
-    "prefer-object-has-own": "off",
-    "unicorn/no-array-for-each": "off",
-    "unicorn/no-array-push-push": "off",
-    "unicorn/no-negated-condition": "off",
+    /**
+     * Documentation:
+     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-module.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
+     * is contingent upon the dependencies being up to date).
+     */
     "unicorn/prefer-module": "off",
-    "unicorn/prefer-spread": "off",
-    "unicorn/prefer-ternary": "off",
   },
 };
