@@ -251,7 +251,7 @@ function extractRankText(match: RegExpMatchArray) {
 function extractSquishText(match: RegExpMatchArray) {
   const text = match[7]?.trim();
 
-  if (text !== undefined && !ALL_RESERVED_NOTES.has(text)) {
+  if (text !== undefined && !ALL_RESERVED_NOTES.has(text.toLowerCase())) {
     return text;
   }
 

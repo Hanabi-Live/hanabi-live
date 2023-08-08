@@ -1,3 +1,4 @@
+import { ALL_RESERVED_NOTES } from "./abbreviations";
 import suitsJSON from "./json/suits.json";
 import type { Color } from "./types/Color";
 import type { Suit } from "./types/Suit";
@@ -25,18 +26,28 @@ export function suitsInit(
 
     // Validate the abbreviation. If it is not specified, use the abbreviation of the color with the
     // same name. Otherwise, assume that it is the first letter of the suit.
-    let abbreviation = suitJSON.abbreviation ?? "";
-    if (abbreviation.length === 0) {
+    let abbreviation = suitJSON.abbreviation;
+    if (abbreviation === undefined) {
       const color = COLORS.get(name);
-      if (color !== undefined) {
-        abbreviation = color.abbreviation;
-      } else {
+      if (color === undefined) {
         abbreviation = name.charAt(0);
+      } else {
+        abbreviation = color.abbreviation;
       }
     }
     if (abbreviation.length !== 1) {
       throw new Error(
         `The "${suitJSON.name}" suit has an abbreviation that is not one letter long.`,
+      );
+    }
+    if (abbreviation !== abbreviation.toUpperCase()) {
+      throw new Error(
+        `The "${suitJSON.name}" suit has an abbreviation that is not an uppercase letter.`,
+      );
+    }
+    if (ALL_RESERVED_NOTES.has(abbreviation.toLowerCase())) {
+      throw new Error(
+        `The "${suitJSON.name}" suit has an abbreviation that conflicts with a reserved note word.`,
       );
     }
 

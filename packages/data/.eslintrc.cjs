@@ -53,7 +53,6 @@ module.exports = {
     "unicorn/no-array-push-push": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/prefer-module": "off",
-    "unicorn/prefer-set-has": "off",
     "unicorn/prefer-spread": "off",
     "unicorn/prefer-ternary": "off",
   },

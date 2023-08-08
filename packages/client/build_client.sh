@@ -24,7 +24,7 @@ if [[ -z ${CI-} ]]; then
   fi
 fi
 
-# Set the "VERSION" environment variable.
+# Get the "VERSION" environment variable.
 # shellcheck disable=SC1091
 source "$DIR/get_version.sh"
 
