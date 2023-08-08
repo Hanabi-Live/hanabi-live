@@ -2,8 +2,8 @@ package variantslogic
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"math"
+	"os"
 	"path"
 	"strings"
 
@@ -40,7 +40,7 @@ func Init(path string) {
 func initVariants() {
 	// No validation of json file here
 	source := path.Join(jsonPath, "variants.json")
-	contents, _ := ioutil.ReadFile(source)
+	contents, _ := os.ReadFile(source)
 
 	if err := json.Unmarshal(contents, &VARIANTS); err != nil {
 		logger.Error("variantsLogic: Error during variants init.")

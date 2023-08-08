@@ -103,7 +103,7 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 
 	tablePath := path.Join(tablesPath, f.Name())
 	var tableJSON []byte
-	if v, err := ioutil.ReadFile(tablePath); err != nil {
+	if v, err := os.ReadFile(tablePath); err != nil {
 		log.Fatal("Failed to read \""+tablePath+"\":", err)
 		return false
 	} else {

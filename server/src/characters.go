@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"path"
 	"strconv"
 
@@ -46,7 +46,7 @@ func charactersInit() {
 	// Import the JSON file
 	filePath := path.Join(jsonPath, "characters.json")
 	var fileContents []byte
-	if v, err := ioutil.ReadFile(filePath); err != nil {
+	if v, err := os.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \"" + filePath + "\" file: " + err.Error())
 		return
 	} else {

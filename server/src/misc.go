@@ -5,10 +5,10 @@ package main
 import (
 	"fmt"
 	"hash/crc64"
-	"io/ioutil"
 	"math"
 	"math/rand"
 	"net/url"
+	"os"
 	"os/exec"
 	"path"
 	"regexp"
@@ -85,7 +85,7 @@ func getURLFromPath(path string) string {
 // can update the client without having to restart the entire server
 func getVersion() int {
 	var fileContents []byte
-	if v, err := ioutil.ReadFile(versionPath); err != nil {
+	if v, err := os.ReadFile(versionPath); err != nil {
 		logger.Error("Failed to read the \"" + versionPath + "\" file: " + err.Error())
 		return 0
 	} else {

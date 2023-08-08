@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -19,7 +19,7 @@ var (
 
 func wordListInit() {
 	wordListPath := path.Join(projectPath, "misc", "word_list.txt")
-	if v, err := ioutil.ReadFile(wordListPath); err != nil {
+	if v, err := os.ReadFile(wordListPath); err != nil {
 		logger.Fatal("Failed to read the \"" + wordListPath + "\" file: " + err.Error())
 		return
 	} else {

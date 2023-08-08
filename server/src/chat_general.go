@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path"
 	"sort"
 	"strconv"
@@ -38,7 +38,7 @@ func chatMapAddSimpleResponses() {
 	// Load external one-line responses
 	source := path.Join(jsonPath, ChatReplyCommands)
 	var contents []byte
-	if c, err := ioutil.ReadFile(source); err != nil {
+	if c, err := os.ReadFile(source); err != nil {
 		logger.Error("Error reading file " + ChatReplyCommands)
 		return
 	} else {

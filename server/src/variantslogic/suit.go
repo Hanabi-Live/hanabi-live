@@ -2,7 +2,7 @@ package variantslogic
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -18,7 +18,7 @@ type Suit struct {
 func initSuits() {
 	// No validation of json file here
 	source := path.Join(jsonPath, "suits.json")
-	contents, _ := ioutil.ReadFile(source)
+	contents, _ := os.ReadFile(source)
 
 	if err := json.Unmarshal(contents, &suits); err != nil {
 		logger.Error("variantslogic: Error during suits init.")

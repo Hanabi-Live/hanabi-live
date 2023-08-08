@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
 	"net"
 	"os"
 	"path"
@@ -340,7 +339,7 @@ func websocketConnectChat(s *Session) {
 		exists = false
 	}
 	if exists {
-		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
+		if fileContents, err := os.ReadFile(motdPath); err != nil {
 			logger.Error("Failed to read the \"" + motdPath + "\" file: " + err.Error())
 		} else {
 			motd := string(fileContents)
