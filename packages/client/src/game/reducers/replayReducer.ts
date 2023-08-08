@@ -41,7 +41,7 @@ function replayReducerFunction(
       state.active = true;
 
       if (typeof action.segment !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -62,7 +62,7 @@ function replayReducerFunction(
 
     case "replaySegment": {
       if (typeof action.segment !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }
@@ -81,7 +81,7 @@ function replayReducerFunction(
         );
       }
       if (typeof action.segment !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }

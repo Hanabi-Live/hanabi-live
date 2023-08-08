@@ -304,7 +304,7 @@ function submit() {
   const password = $("#createTablePassword").val();
   if (isNew) {
     if (typeof password !== "string") {
-      throw new Error(
+      throw new TypeError(
         'The value of the "createTablePassword" element was not a string.',
       );
     }
@@ -321,7 +321,7 @@ function submit() {
   // Game JSON is not saved.
   const gameJSONString = $("#createTableJSON").val();
   if (typeof gameJSONString !== "string") {
-    throw new Error(
+    throw new TypeError(
       'The value of the "createTableJSON" element is not a string.',
     );
   }
@@ -409,7 +409,7 @@ function getTextbox(setting: keyof Settings) {
     throw new Error(`Failed to get the value of element "${setting}".`);
   }
   if (typeof value !== "string") {
-    throw new Error(`The value of element "${setting}" is not a string.`);
+    throw new TypeError(`The value of element "${setting}" is not a string.`);
   }
   return value.trim(); // Remove all leading and trailing whitespace
 }

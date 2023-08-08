@@ -142,14 +142,16 @@ export function set(
           } else {
             const clueColor = clue.value;
             if (typeof clueColor === "number") {
-              throw new Error("The clue value was a number for a color clue.");
+              throw new TypeError(
+                "The clue value was a number for a color clue.",
+              );
             }
             arrow.circle.fill(clueColor.fill);
 
             // Additionally, draw the suit pip in colorblind mode.
             if (globals.lobby.settings.colorblindMode) {
               if (typeof clue.value === "number") {
-                throw new Error(
+                throw new TypeError(
                   "The clue value was a number for a color clue.",
                 );
               }
@@ -258,13 +260,13 @@ function getPos(element: Konva.Node, rot: number) {
     const textElement = element as Konva.Text;
     const width = textElement.measureSize(textElement.text()).width as number;
     if (typeof width !== "number") {
-      throw new Error("The width of the element was not a number.");
+      throw new TypeError("The width of the element was not a number.");
     }
     pos.x += width / 2;
   }
 
   if (Number.isNaN(pos.x) || Number.isNaN(pos.y)) {
-    throw new Error(
+    throw new TypeError(
       "Failed to get the position for the element when drawing an arrow.",
     );
   }

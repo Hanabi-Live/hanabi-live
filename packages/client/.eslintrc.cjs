@@ -139,7 +139,6 @@ module.exports = {
     "unicorn/prefer-string-slice": "off",
     "unicorn/prefer-switch": "off",
     "unicorn/prefer-ternary": "off",
-    "unicorn/prefer-type-error": "off",
     "unicorn/switch-case-braces": "off",
     "unicorn/throw-new-error": "off",
     "logical-assignment-operators": "off",

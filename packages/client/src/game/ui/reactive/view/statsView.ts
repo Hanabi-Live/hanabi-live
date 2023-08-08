@@ -99,7 +99,7 @@ export function onEfficiencyChanged(data: {
   // properly. The type of Konva.Text.width is "any" for some reason.
   const effLabelSize = effLabel.measureSize(effLabel.text()).width as number;
   if (typeof effLabelSize !== "number") {
-    throw new Error("The width of effLabel was not a number.");
+    throw new TypeError("The width of effLabel was not a number.");
   }
   const pipeX = effLabel.x() + effLabelSize;
   effPipeLabel.x(pipeX);
@@ -108,7 +108,7 @@ export function onEfficiencyChanged(data: {
   const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text())
     .width as number;
   if (typeof effPipeLabelSize !== "number") {
-    throw new Error("The width of effPipeLabel was not a number.");
+    throw new TypeError("The width of effPipeLabel was not a number.");
   }
   const minEffX = pipeX + effPipeLabelSize;
   effMinLabel.x(minEffX);

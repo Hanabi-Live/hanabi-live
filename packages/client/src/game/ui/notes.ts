@@ -216,7 +216,7 @@ export function openEditTooltip(
       // If Enter is pressed, get the value of the input box.
       const val = noteTextbox.val();
       if (typeof val !== "string") {
-        throw new Error(
+        throw new TypeError(
           `The value of the "#tooltip-${card.tooltipName}-input" element was not a string.`,
         );
       }

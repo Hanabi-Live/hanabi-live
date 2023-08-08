@@ -113,13 +113,13 @@ export function onScoreOrMaxScoreChanged(data: {
   const maxScoreLabelWidth = maxScoreLabel.measureSize(maxScoreLabel.text())
     .width as number;
   if (typeof maxScoreLabelWidth !== "number") {
-    throw new Error("The width of maxScoreLabel was not a number.");
+    throw new TypeError("The width of maxScoreLabel was not a number.");
   }
   maxScoreLabel.width(maxScoreLabelWidth);
   const scoreLabelWidth = scoreLabel.measureSize(scoreLabel.text())
     .width as number;
   if (typeof scoreLabelWidth !== "number") {
-    throw new Error("The width of scoreLabel was not a number.");
+    throw new TypeError("The width of scoreLabel was not a number.");
   }
   const x = scoreLabel.x() + scoreLabelWidth;
   maxScoreLabel.x(x);

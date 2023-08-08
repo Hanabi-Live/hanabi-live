@@ -68,7 +68,7 @@ function submit(event: JQuery.Event) {
     password = password.toString();
   }
   if (typeof password !== "string") {
-    throw new Error("The password is not a string.");
+    throw new TypeError("The password is not a string.");
   }
 
   let newPassword: string | null = null;
@@ -80,7 +80,7 @@ function submit(event: JQuery.Event) {
       return;
     }
     if (typeof newPassword !== "string") {
-      throw new Error("The new password is not a string.");
+      throw new TypeError("The new password is not a string.");
     }
   }
 

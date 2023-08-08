@@ -44,7 +44,7 @@ export function variantsInit(
       throw new Error(`The "${name}" variant does not have suits.`);
     }
     if (!Array.isArray(variantJSON.suits)) {
-      throw new Error(
+      throw new TypeError(
         `The suits for the variant "${name}" were not specified as an array.`,
       );
     }
@@ -56,7 +56,7 @@ export function variantsInit(
     const suits: Suit[] = [];
     for (const suitName of variantJSON.suits) {
       if (typeof suitName !== "string") {
-        throw new Error(
+        throw new TypeError(
           `One of the suits for the variant "${name}" was not specified as a string.`,
         );
       }
@@ -82,7 +82,7 @@ export function variantsInit(
     const clueColors: Color[] = [];
     if (Object.hasOwnProperty.call(variantJSON, "clueColors")) {
       if (!Array.isArray(variantJSON.clueColors)) {
-        throw new Error(
+        throw new TypeError(
           `The clue colors for the variant "${name}" were not specified as an array.`,
         );
       }
@@ -90,7 +90,7 @@ export function variantsInit(
       // The clue colors are specified as an array of strings. Convert the strings to objects.
       for (const colorString of variantJSON.clueColors) {
         if (typeof colorString !== "string") {
-          throw new Error(
+          throw new TypeError(
             `One of the clue colors for the variant "${name}" was not specified as a string.`,
           );
         }
@@ -124,14 +124,14 @@ export function variantsInit(
     // specified, assume that players can clue ranks 1 through 5.
     if (Object.hasOwnProperty.call(variantJSON, "clueRanks")) {
       if (!Array.isArray(variantJSON.clueRanks)) {
-        throw new Error(
+        throw new TypeError(
           `The clue ranks for the variant "${name}" were not specified as an array.`,
         );
       }
 
       for (const rank of variantJSON.clueRanks) {
         if (typeof rank !== "number") {
-          throw new Error(
+          throw new TypeError(
             `One of the clue ranks for the variant "${name}" was not a number.`,
           );
         }
@@ -167,7 +167,7 @@ export function variantsInit(
     // -1 (e.g. there are no special ranks).
     if (Object.hasOwnProperty.call(variantJSON, "specialRank")) {
       if (typeof variantJSON.specialRank !== "number") {
-        throw new Error(
+        throw new TypeError(
           `The "specialRank" property for the variant "${variantJSON.name}" must be a number.`,
         );
       }

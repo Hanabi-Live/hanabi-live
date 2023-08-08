@@ -93,7 +93,7 @@ export function suitsInit(
     const clueColors: Color[] = [];
     if (Object.hasOwnProperty.call(suitJSON, "clueColors")) {
       if (!Array.isArray(suitJSON.clueColors)) {
-        throw new Error(
+        throw new TypeError(
           `The clue colors for the suit "${suitJSON.name}" was not specified as an array.`,
         );
       }
@@ -101,7 +101,7 @@ export function suitsInit(
       // The clue colors are specified as an array of strings. Convert the strings to objects.
       for (const colorName of suitJSON.clueColors) {
         if (typeof colorName !== "string") {
-          throw new Error(
+          throw new TypeError(
             `One of the clue colors for the suit "${suitJSON.name}" was not specified as a string.`,
           );
         }
@@ -160,7 +160,7 @@ export function suitsInit(
     let fillColors: string[] = [];
     if (Object.hasOwnProperty.call(suitJSON, "fillColors")) {
       if (!Array.isArray(suitJSON.fillColors)) {
-        throw new Error(
+        throw new TypeError(
           `The "fillColors" property for the suit ${suitJSON.name} is not an array.`,
         );
       }
@@ -190,7 +190,7 @@ export function suitsInit(
     let pip = "";
     if (Object.hasOwnProperty.call(suitJSON, "pip")) {
       if (typeof suitJSON.pip !== "string") {
-        throw new Error(
+        throw new TypeError(
           `The "pip" property for the suit "${suitJSON.name}" must be a string.`,
         );
       }

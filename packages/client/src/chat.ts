@@ -88,7 +88,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
   const text = element.val();
   if (typeof text !== "string") {
-    throw new Error(
+    throw new TypeError(
       "The value of the element in the input function is not a string.",
     );
   }
@@ -154,7 +154,7 @@ const keypress = (room: string) =>
 function send(room: string, element: JQuery) {
   let msg = element.val();
   if (typeof msg !== "string") {
-    throw new Error("The value of the element is not a string.");
+    throw new TypeError("The value of the element is not a string.");
   }
   msg = msg.trim();
 

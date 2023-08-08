@@ -12,7 +12,7 @@ export function init(): void {
     const element = $(this);
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
-      throw new Error(
+      throw new TypeError(
         'The value of the "settings-volume-slider" element is not a string.',
       );
     }
@@ -30,7 +30,7 @@ export function init(): void {
     const element = $("#settings-volume-slider");
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
-      throw new Error(
+      throw new TypeError(
         'The value of the "settings-volume-slider" element is not a string.',
       );
     }
@@ -52,14 +52,14 @@ export function setPlayerSettings(): void {
       continue;
     } else if (setting === "volume") {
       if (typeof value !== "number") {
-        throw new Error("The volume setting is not stored as a number.");
+        throw new TypeError("The volume setting is not stored as a number.");
       }
       $("#settings-volume-slider").val(value);
       $("#settings-volume-slider-value").html(`${value}%`);
     } else {
       const element = $(`#${setting}`);
       if (typeof value !== "boolean") {
-        throw new Error("The volume setting is not stored as a string.");
+        throw new TypeError("The volume setting is not stored as a string.");
       }
       element.prop("checked", value);
       element.change(changeSetting);

@@ -56,6 +56,5 @@ module.exports = {
     "unicorn/prefer-set-has": "off",
     "unicorn/prefer-spread": "off",
     "unicorn/prefer-ternary": "off",
-    "unicorn/prefer-type-error": "off",
   },
 };
