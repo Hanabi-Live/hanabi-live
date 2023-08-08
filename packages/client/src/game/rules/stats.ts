@@ -269,14 +269,14 @@ export function cluesStillUsableNotRounded(
   currentClues: number,
 ): number | null {
   if (scorePerStack.length !== maxScorePerStack.length) {
-    throw Error(
+    throw new Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
     );
   }
   // We want to discard as many times as possible while still getting a max score as long as
   // discardValue >= suitValue (which is currently true for all variants).
   if (discardValue < suitValue) {
-    throw Error(
+    throw new Error(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
   }
