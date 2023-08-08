@@ -27,5 +27,41 @@ module.exports = {
      * Enforce the "normal" function style throughout the entire project.
      */
     "func-style": ["error", "declaration"],
+
+    /**
+     * Documentation:
+     * https://github.com/mysticatea/eslint-plugin-node/blob/master/docs/rules/file-extension-in-import.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
+     * is contingent upon the dependencies being up to date).
+     */
+    "n/file-extension-in-import": "off",
+
+    /**
+     * Documentation:
+     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-module.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
+     * is contingent upon the dependencies being up to date).
+     */
+    "unicorn/prefer-module": "off",
+
+    /**
+     * Documentation:
+     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-top-level-await.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
+     * is contingent upon the dependencies being up to date).
+     */
+    "unicorn/prefer-top-level-await": "off",
   },
 };

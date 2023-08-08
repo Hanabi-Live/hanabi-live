@@ -97,6 +97,7 @@
     "esbuild",
     "evenodd",
     "exhaustivestruct",
+    "fastify",
     "fcol",
     "findvariant",
     "florrat",
