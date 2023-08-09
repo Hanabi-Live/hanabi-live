@@ -21,50 +21,36 @@ export function variantsInit(
   }
 
   for (const variantJSON of variantsJSON as VariantJSON[]) {
-    // Validate the name
-    const { name } = variantJSON;
-    if (name === "") {
+    // Validate the name.
+    if (variantJSON.name === "") {
       throw new Error(
         'There is a variant with an empty name in the "variants.json" file.',
       );
     }
+    const { name } = variantJSON;
 
     // Validate the ID. (The first variant has an ID of 0.)
-    const { id } = variantJSON;
-    if (id < 0) {
+    if (variantJSON.id < 0) {
       throw new Error(`The "${name}" variant has an invalid ID.`);
     }
+    const { id } = variantJSON;
 
-    // Validate the suits
-    if (!Object.hasOwnProperty.call(variantJSON, "suits")) {
-      throw new Error(`The "${name}" variant does not have suits.`);
-    }
-    if (!Array.isArray(variantJSON.suits)) {
-      throw new TypeError(
-        `The suits for the variant "${name}" were not specified as an array.`,
-      );
-    }
+    // Validate the suits.
     if (variantJSON.suits.length === 0) {
-      throw new Error(`The suits for the variant "${name}" is empty.`);
+      throw new Error(`The "${name}" variant has an empty suits array.`);
     }
 
     // The suits are specified as an array of strings. Convert the strings to objects.
-    const suits: Suit[] = [];
-    for (const suitName of variantJSON.suits) {
-      if (typeof suitName !== "string") {
-        throw new TypeError(
-          `One of the suits for the variant "${name}" was not specified as a string.`,
-        );
-      }
-
+    const suits = variantJSON.suits.map((suitName) => {
       const suit = SUITS.get(suitName);
       if (suit === undefined) {
         throw new Error(
-          `The suit "${suitName}" in the variant "${name}" does not exist.`,
+          `The "${name}" variant has a "${suitName}" suit, which does not exist.`,
         );
       }
-      suits.push(suit);
-    }
+
+      return suit;
+    });
 
     // Derive the ranks that the cards of each suit will be.
     const ranks: number[] = [...DEFAULT_CARD_RANKS];
@@ -73,217 +59,127 @@ export function variantsInit(
       ranks.push(START_CARD_RANK);
     }
 
-    // Validate the clue colors (the colors available to clue in this variant).
-    const clueColors: Color[] = [];
-    if (Object.hasOwnProperty.call(variantJSON, "clueColors")) {
-      if (!Array.isArray(variantJSON.clueColors)) {
-        throw new TypeError(
-          `The clue colors for the variant "${name}" were not specified as an array.`,
-        );
-      }
-
-      // The clue colors are specified as an array of strings. Convert the strings to objects.
-      for (const colorString of variantJSON.clueColors) {
-        if (typeof colorString !== "string") {
-          throw new TypeError(
-            `One of the clue colors for the variant "${name}" was not specified as a string.`,
-          );
-        }
-
-        const colorObject = COLORS.get(colorString);
-        if (colorObject === undefined) {
-          throw new Error(
-            `The color "${colorString}" in the variant "${name}" does not exist.`,
-          );
-        }
-        clueColors.push(colorObject);
-      }
-    } else {
-      // The clue colors were not specified in the JSON, so derive them from the suits.
-      for (const suit of suits) {
-        if (suit.allClueColors) {
-          // If a suit is touched by all colors, then we don't want to add every single clue color
-          // to the variant clue list.
-          continue;
-        }
-        for (const color of suit.clueColors) {
-          if (!clueColors.includes(color)) {
-            clueColors.push(color);
-          }
-        }
-      }
-    }
+    // Validate the clue colors (the colors available to clue in this variant) and convert the
+    // string array to a color object array.
+    const clueColors = getVariantClueColors(variantJSON, COLORS, suits);
 
     // Validate the clue ranks (the ranks available to clue in this variant). If it is not
     // specified, assume that players can clue ranks 1 through 5.
-    if (Object.hasOwnProperty.call(variantJSON, "clueRanks")) {
-      if (!Array.isArray(variantJSON.clueRanks)) {
-        throw new TypeError(
-          `The clue ranks for the variant "${name}" were not specified as an array.`,
-        );
-      }
-
-      for (const rank of variantJSON.clueRanks) {
-        if (typeof rank !== "number") {
-          throw new TypeError(
-            `One of the clue ranks for the variant "${name}" was not a number.`,
-          );
-        }
-      }
-    }
     const clueRanks = variantJSON.clueRanks ?? [...DEFAULT_CLUE_RANKS];
 
     // Validate the "colorCluesTouchNothing" property. If it is not specified, assume false (e.g.
     // cluing colors in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "colorCluesTouchNothing") &&
-      variantJSON.colorCluesTouchNothing !== true
-    ) {
+    if (variantJSON.colorCluesTouchNothing === false) {
       throw new Error(
-        `The "colorCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "colorCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const colorCluesTouchNothing = variantJSON.colorCluesTouchNothing ?? false;
 
     // Validate the "rankCluesTouchNothing" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "rankCluesTouchNothing") &&
-      variantJSON.rankCluesTouchNothing !== true
-    ) {
+    if (variantJSON.rankCluesTouchNothing === false) {
       throw new Error(
-        `The "rankCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "rankCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const rankCluesTouchNothing = variantJSON.rankCluesTouchNothing ?? false;
 
     // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
     // -1 (e.g. there are no special ranks).
-    if (Object.hasOwnProperty.call(variantJSON, "specialRank")) {
-      if (typeof variantJSON.specialRank !== "number") {
-        throw new TypeError(
-          `The "specialRank" property for the variant "${variantJSON.name}" must be a number.`,
-        );
-      }
-
-      if (variantJSON.specialRank < 1 || variantJSON.specialRank > 5) {
-        throw new Error(
-          `The "specialRank" property for the variant "${variantJSON.name}" must be between 1 and 5.`,
-        );
-      }
+    if (
+      variantJSON.specialRank !== undefined &&
+      (variantJSON.specialRank < 1 || variantJSON.specialRank > 5)
+    ) {
+      throw new Error(
+        `The "specialRank" property for the variant "${variantJSON.name}" must be between 1 and 5.`,
+      );
     }
     const specialRank = variantJSON.specialRank ?? -1;
 
     // Validate the "specialAllClueColors" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "specialAllClueColors") &&
-      variantJSON.specialAllClueColors !== true
-    ) {
+    if (variantJSON.specialAllClueColors === false) {
       throw new Error(
-        `The "specialAllClueColors" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "specialAllClueColors" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const specialAllClueColors = variantJSON.specialAllClueColors ?? false;
 
     // Validate the "specialAllClueRanks" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "specialAllClueRanks") &&
-      variantJSON.specialAllClueRanks !== true
-    ) {
+    if (variantJSON.specialAllClueRanks === false) {
       throw new Error(
-        `The "specialAllClueRanks" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "specialAllClueRanks" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const specialAllClueRanks = variantJSON.specialAllClueRanks ?? false;
 
     // Validate the "specialNoClueColors" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "specialNoClueColors") &&
-      variantJSON.specialNoClueColors !== true
-    ) {
+    if (variantJSON.specialNoClueColors === false) {
       throw new Error(
-        `The "specialNoClueColors" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "specialNoClueColors" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const specialNoClueColors = variantJSON.specialNoClueColors ?? false;
 
     // Validate the "specialNoClueRanks" property. If it is not specified, assume false (e.g. cluing
     // ranks in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "specialNoClueRanks") &&
-      variantJSON.specialNoClueRanks !== true
-    ) {
+    if (variantJSON.specialNoClueRanks === false) {
       throw new Error(
-        `The "specialNoClueRanks" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "specialNoClueRanks" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const specialNoClueRanks = variantJSON.specialNoClueRanks ?? false;
 
     // Validate the "specialDeceptive" property. If it is not specified, assume false (e.g. cluing
     // ranks in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "specialDeceptive") &&
-      variantJSON.specialDeceptive !== true
-    ) {
+    if (variantJSON.specialDeceptive === false) {
       throw new Error(
-        `The "specialDeceptive" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "specialDeceptive" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const specialDeceptive = variantJSON.specialDeceptive ?? false;
 
     // Validate the "oddsAndEvens" property. If it is not specified, assume false (e.g. cluing ranks
     // in this variant works normally).
-    if (
-      Object.hasOwnProperty.call(variantJSON, "oddsAndEvens") &&
-      variantJSON.oddsAndEvens !== true
-    ) {
+    if (variantJSON.oddsAndEvens === false) {
       throw new Error(
-        `The "oddsAndEvens" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "oddsAndEvens" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const oddsAndEvens = variantJSON.oddsAndEvens ?? false;
 
-    // Validate the "funnels" property. If it is not specified, assume false
-    // (e.g. cluing ranks in this variant works normally)
-    if (
-      Object.hasOwnProperty.call(variantJSON, "funnels") &&
-      variantJSON.funnels !== true
-    ) {
+    // Validate the "funnels" property. If it is not specified, assume false (e.g. cluing ranks in
+    // this variant works normally).
+    if (variantJSON.funnels === false) {
       throw new Error(
-        `The "funnels" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "funnels" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const funnels = variantJSON.funnels ?? false;
 
-    // Validate the "chimneys" property. If it is not specified, assume false
-    // (e.g. cluing ranks in this variant works normally)
-    if (
-      Object.hasOwnProperty.call(variantJSON, "chimneys") &&
-      variantJSON.chimneys !== true
-    ) {
+    // Validate the "chimneys" property. If it is not specified, assume false (e.g. cluing ranks in
+    // this variant works normally).
+    if (variantJSON.chimneys === false) {
       throw new Error(
-        `The "chimneys" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "chimneys" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     const chimneys = variantJSON.chimneys ?? false;
 
     // Validate the "showSuitNames" property. If it is not specified, assume that we are not showing
     // the suit names.
-    if (
-      Object.hasOwnProperty.call(variantJSON, "showSuitNames") &&
-      variantJSON.showSuitNames !== true
-    ) {
+    if (variantJSON.showSuitNames === false) {
       throw new Error(
-        `The "showSuitNames" property for the variant "${variantJSON.name}" must be set to true.`,
+        `The "showSuitNames" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
     let showSuitNames = variantJSON.showSuitNames ?? false;
 
-    // Always set "showSuitNames" to true if it has one or more reversed suits.
-    if (suits.some((suit: Suit) => suit.reversed)) {
+    const variantHasReversedSuits = suits.some((suit: Suit) => suit.reversed);
+    if (variantHasReversedSuits) {
       showSuitNames = true;
     }
 
@@ -301,11 +197,12 @@ export function variantsInit(
     const suitAbbreviations = getSuitAbbreviationsForVariant(name, suits);
 
     // Create the regular expression pattern for identity notes in this variant.
+    const isUpOrDown = name.startsWith("Up or Down");
     const identityNotePattern = getIdentityNotePatternForVariant(
       suits,
       ranks,
       suitAbbreviations,
-      name.startsWith("Up or Down"),
+      isUpOrDown,
     );
 
     // Add it to the map.
@@ -337,4 +234,43 @@ export function variantsInit(
   }
 
   return variants;
+}
+
+function getVariantClueColors(
+  variantJSON: VariantJSON,
+  COLORS: ReadonlyMap<string, Color>,
+  suits: Suit[],
+): Color[] {
+  // If the clue colors were not specified in the JSON, derive them from the suits.
+  if (variantJSON.clueColors === undefined) {
+    const clueColors: Color[] = [];
+
+    for (const suit of suits) {
+      if (suit.allClueColors) {
+        // If a suit is touched by all colors, then we don't want to add every single clue color to
+        // the variant clue list.
+        continue;
+      }
+
+      for (const color of suit.clueColors) {
+        if (!clueColors.includes(color)) {
+          clueColors.push(color);
+        }
+      }
+    }
+
+    return clueColors;
+  }
+
+  // The clue colors are specified as an array of strings. Convert the strings to objects.
+  return variantJSON.clueColors.map((colorString) => {
+    const color = COLORS.get(colorString);
+    if (color === undefined) {
+      throw new Error(
+        `The "${variantJSON.name}" variant has a clue color of "${colorString}", which does not exist.`,
+      );
+    }
+
+    return color;
+  });
 }
