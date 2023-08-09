@@ -3,6 +3,16 @@ export function clamp(n: number, min: number, max: number): number {
 }
 
 /**
+ * Helper function to print out an error message and then exit the program.
+ *
+ * All of the arguments will be directly passed to the `console.error` function.
+ */
+export function fatalError(...args: unknown[]): never {
+  console.error(...args);
+  process.exit(1);
+}
+
+/**
  * This is a more reliable version of `parseInt`. By default, `parseInt('1a')` will return "1",
  * which is unexpected. This returns either an integer or NaN.
  */

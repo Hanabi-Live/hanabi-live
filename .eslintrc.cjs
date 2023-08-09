@@ -35,8 +35,8 @@ module.exports = {
      * Defined at:
      * https://isaacscript.github.io/eslint-config-isaacscript
      *
-     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
-     * is contingent upon the dependencies being up to date).
+     * Keep this rule disabled until the project can be moved to ESM (which is contingent upon the
+     * dependencies being up to date).
      */
     "n/file-extension-in-import": "off",
 
@@ -47,8 +47,8 @@ module.exports = {
      * Defined at:
      * https://isaacscript.github.io/eslint-config-isaacscript
      *
-     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
-     * is contingent upon the dependencies being up to date).
+     * Keep this rule disabled until the project can be moved to ESM (which is contingent upon the
+     * dependencies being up to date).
      */
     "unicorn/prefer-module": "off",
 
@@ -59,8 +59,8 @@ module.exports = {
      * Defined at:
      * https://isaacscript.github.io/eslint-config-isaacscript
      *
-     * Keep this rule disabled until the project can be tested to see if it can move to ESM (which
-     * is contingent upon the dependencies being up to date).
+     * Keep this rule disabled until the project can be moved to ESM (which is contingent upon the
+     * dependencies being up to date).
      */
     "unicorn/prefer-top-level-await": "off",
   },

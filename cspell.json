@@ -212,6 +212,7 @@
     "pgxpool",
     "pidfile",
     "pingable",
+    "pino",
     "playerinfo",
     "plpgsql",
     "pquestion",
