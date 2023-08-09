@@ -13,6 +13,7 @@
   },
   "license": "GPL-3.0",
   "author": "Zamiell",
+  "type": "commonjs",
   "scripts": {
     "test": "jest"
   },
@@ -61,6 +62,5 @@
     "typescript": "^5.1.6",
     "xmlserializer": "^0.6.1"
   },
-  "type": "commonjs",
   "packageManager": "yarn@3.6.1"
 }
