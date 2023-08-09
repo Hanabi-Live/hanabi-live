@@ -524,7 +524,7 @@ export function drawSpectators(tableID: number): void {
           spectator.shadowingPlayerIndex >= table.players.length || // Shadow index is out of range
           spectator.shadowingPlayerIndex < -1 || // Shadow index is out of range
           (spectator.shadowingPlayerName !== undefined &&
-            spectator.shadowingPlayerName.length > 0 &&
+            spectator.shadowingPlayerName !== "" &&
             spectator.shadowingPlayerName !== shadowingPlayer) // The player we where going to shadow, has left.
         ) {
           spectator.shadowingPlayerName = "";

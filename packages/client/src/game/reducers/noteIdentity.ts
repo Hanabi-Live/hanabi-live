@@ -48,7 +48,7 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
     // Create a blank morph.
     return { suitIndex: null, rank: null };
   }
-  if (keyword.length === 0) {
+  if (keyword === "") {
     // Return morph to original.
     return {
       suitIndex: CardIdentityType.Original,

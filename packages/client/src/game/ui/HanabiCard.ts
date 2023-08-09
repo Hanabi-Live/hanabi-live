@@ -1002,7 +1002,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return false;
     }
     for (const noteObject of note) {
-      if (noteObject.text.length > 0) {
+      if (noteObject.text !== "") {
         return true;
       }
     }

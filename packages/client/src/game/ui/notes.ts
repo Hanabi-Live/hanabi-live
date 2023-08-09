@@ -34,10 +34,10 @@ function get(order: number, our: boolean, escape = false) {
     const name = escapeFunc(noteObject.name);
     const text = escapeFunc(noteObject.text);
     const { isSpectator } = noteObject;
-    if (noteObject.text.length > 0) {
+    if (noteObject.text !== "") {
       if (!firstSpectator && Boolean(isSpectator)) {
         firstSpectator = true;
-        if (content.length > 0) {
+        if (content !== "") {
           content = `<div class='noteTitle'><span>Players</span></div>${content}`;
         }
         content += "<div class='noteTitle'><span>Spectators</span></div>";
@@ -46,7 +46,7 @@ function get(order: number, our: boolean, escape = false) {
     }
   }
 
-  if (content.length !== 0) {
+  if (content !== "") {
     content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
   }
 
@@ -87,14 +87,14 @@ export function update(card: HanabiCard, text: string): void {
   // Update the tooltip.
   const tooltip = `#tooltip-${card.tooltipName}`;
   tooltips.setInstanceContent(tooltip, text);
-  if (text.length === 0) {
+  if (text === "") {
     tooltips.close(tooltip);
     globals.editingNote = null;
   }
 
   // Update the card indicator.
   const visibleOld = card.noteIndicator.visible();
-  const visibleNew = text.length > 0;
+  const visibleNew = text !== "";
   if (visibleOld !== visibleNew) {
     card.noteIndicator.visible(visibleNew);
     globals.layers.card.batchDraw();

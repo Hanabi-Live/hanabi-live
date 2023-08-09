@@ -161,7 +161,7 @@ export function tablesDraw(): void {
           tableSpectate(table, i);
         });
       }
-      if (td.html().length > 0) {
+      if (td.html() !== "") {
         td.append(", ");
       }
       span.appendTo(td);

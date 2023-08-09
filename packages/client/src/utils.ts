@@ -1,6 +1,6 @@
-// A collection of miscellaneous functions.
-
-// From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
+/**
+ * From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
+ */
 export function copyStringToClipboard(str: string): void {
   const el = document.createElement("textarea"); // Create new element
   el.value = str; // Set the value (the string to be copied)
@@ -31,14 +31,14 @@ export function getURLFromPath(path: string): string {
   return url;
 }
 
-// This is a helper to check for empty/invalid HTML elements without worrying about the linter.
+/** Helper function to check for empty/invalid HTML elements without worrying about the linter. */
 export function isEmpty(
   value: string | string[] | number | undefined,
 ): boolean {
   return !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
 }
 
-// From: https://stackoverflow.com/questions/61526746
+/** From: https://stackoverflow.com/questions/61526746 */
 export function isKeyOf<T extends object>(
   key: PropertyKey,
   target: T,
@@ -80,7 +80,7 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
     .replace(/=$/, "");
 
   let path = newPath;
-  if (modifiedQueryParameters.length > 0) {
+  if (modifiedQueryParameters !== "") {
     path += `?${modifiedQueryParameters}`;
   }
   if (hash !== undefined) {
@@ -93,13 +93,16 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
 export function timerFormatter(totalSeconds: number): string {
   const time = new Date();
   time.setHours(0, 0, totalSeconds);
+
   const hours = time.getHours();
   const minutes = time.getMinutes();
   const seconds = time.getSeconds();
   const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
+
   if (hours > 0) {
     const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
     return `${hours}:${minutesFormatted}:${secondsFormatted}`;
   }
+
   return `${minutes}:${secondsFormatted}`;
 }
