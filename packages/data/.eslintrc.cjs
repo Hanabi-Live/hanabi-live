@@ -16,7 +16,6 @@ module.exports = {
     "unicorn/no-array-for-each": "off",
     "unicorn/no-array-push-push": "off",
     "unicorn/no-negated-condition": "off",
-    "unicorn/prefer-ternary": "off",
 
     /**
      * Documentation:

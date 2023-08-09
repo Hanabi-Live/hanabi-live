@@ -28,11 +28,7 @@ export function suitsInit(
     let abbreviation = suitJSON.abbreviation;
     if (abbreviation === undefined) {
       const color = COLORS.get(name);
-      if (color === undefined) {
-        abbreviation = name.charAt(0);
-      } else {
-        abbreviation = color.abbreviation;
-      }
+      abbreviation = color === undefined ? name.charAt(0) : color.abbreviation;
     }
     if (abbreviation.length !== 1) {
       throw new Error(
