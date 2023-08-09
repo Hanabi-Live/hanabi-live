@@ -28,13 +28,23 @@ export function colorsInit(): ReadonlyMap<string, Color> {
 
     // Validate the fill.
     const { fill } = colorJSON;
-    if (fill.length === 0) {
-      throw new Error(`The "${colorJSON.name}" color has an empty fill.`);
+    if (fill === "") {
+      throw new Error(
+        `The "${colorJSON.name}" color has an empty "fill" property.`,
+      );
     }
 
     // Validate the colorblind fill (which is an alternate fill when "Colorblind Mode" is enabled).
     // If it is not specified, assume that it is the same as the default fill.
-    const fillColorblind = colorJSON.fillColorblind ?? fill;
+    let { fillColorblind } = colorJSON;
+    if (fillColorblind === "") {
+      throw new Error(
+        `The "${colorJSON.name}" color has an empty "fillColorblind" property.`,
+      );
+    }
+    if (fillColorblind === undefined) {
+      fillColorblind = fill;
+    }
 
     // Add it to the map.
     const color: Color = {

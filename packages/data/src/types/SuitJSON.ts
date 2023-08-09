@@ -45,7 +45,7 @@ export interface SuitJSON {
   fillColors?: string[];
 
   /** The symbol that represents this suit. */
-  pip?: string;
+  pip: string;
 
   // ----------------------
   // Gameplay modifications
