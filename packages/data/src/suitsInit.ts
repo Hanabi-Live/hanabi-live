@@ -113,13 +113,12 @@ export function suitsInit(
         }
 
         const color = COLORS.get(colorName);
-        if (color !== undefined) {
-          clueColors.push(color);
-        } else {
+        if (color === undefined) {
           throw new Error(
             `The color "${colorName}" in the suit "${suitJSON.name}" does not exist.`,
           );
         }
+        clueColors.push(color);
       }
     } else if (!allClueColors && !noClueColors && !prism) {
       // The clue colors were not specified; by default, use the color of the same name.

@@ -15,7 +15,6 @@ module.exports = {
     "prefer-object-has-own": "off",
     "unicorn/no-array-for-each": "off",
     "unicorn/no-array-push-push": "off",
-    "unicorn/no-negated-condition": "off",
 
     /**
      * Documentation:

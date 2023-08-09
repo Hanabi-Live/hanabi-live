@@ -58,13 +58,12 @@ export function variantsInit(
       }
 
       const suit = SUITS.get(suitName);
-      if (suit !== undefined) {
-        suits.push(suit);
-      } else {
+      if (suit === undefined) {
         throw new Error(
           `The suit "${suitName}" in the variant "${name}" does not exist.`,
         );
       }
+      suits.push(suit);
     }
 
     // Derive the ranks that the cards of each suit will be.
@@ -92,13 +91,12 @@ export function variantsInit(
         }
 
         const colorObject = COLORS.get(colorString);
-        if (colorObject !== undefined) {
-          clueColors.push(colorObject);
-        } else {
+        if (colorObject === undefined) {
           throw new Error(
             `The color "${colorString}" in the variant "${name}" does not exist.`,
           );
         }
+        clueColors.push(colorObject);
       }
     } else {
       // The clue colors were not specified in the JSON, so derive them from the suits.
