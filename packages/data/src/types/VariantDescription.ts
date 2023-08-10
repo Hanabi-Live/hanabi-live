@@ -1,12 +1,11 @@
 /**
- * This is a basic description of a variant that will turned into a full VariantJSON object later
- * on.
+ * This is a basic description of a variant that will turned into a `VariantJSON` object later on.
  */
 export interface VariantDescription {
-  name: string;
-  suits: string[];
-  clueColors?: string[];
-  clueRanks?: number[];
+  readonly name: string;
+  readonly suits: readonly string[];
+  clueColors?: readonly string[];
+  clueRanks?: readonly number[];
 
   specialRank?: number;
   specialAllClueColors?: boolean;
@@ -16,13 +15,13 @@ export interface VariantDescription {
   specialDeceptive?: boolean;
 
   oddsAndEvens?: boolean;
-  funnels?: boolean;
-  chimneys?: boolean;
+  readonly funnels?: boolean;
+  readonly chimneys?: boolean;
   clueStarved?: boolean;
   alternatingClues?: boolean;
-  cowPig?: boolean;
+  cowAndPig?: boolean;
   duck?: boolean;
-  throwItInHole?: boolean;
+  throwItInAHole?: boolean;
   upOrDown?: boolean;
   synesthesia?: boolean;
   criticalFours?: boolean;

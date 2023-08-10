@@ -749,7 +749,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const suit = this.variant.suits[suitIndex]!;
 
     let shouldShowArrow: boolean;
-    if (variantRules.isUpOrDown(this.variant)) {
+    if (this.variant.upOrDown) {
       // In "Up or Down" variants, the arrow should be shown when the stack direction is determined.
       // (And the arrow should be cleared when the stack is finished.)
       shouldShowArrow =
@@ -881,7 +881,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       !cardRules.isDiscarded(this.state) &&
       !this.note.blank &&
       !this.note.chopMoved &&
-      !variantRules.isThrowItInAHole(this.variant) &&
+      !this.variant.throwItInAHole &&
       !globals.options.speedrun
     );
   }
@@ -1328,7 +1328,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
     if (suit.prism) {
       const cards: string[] = [];
-      if (variantRules.isUpOrDown(variant)) {
+      if (variant.upOrDown) {
         cards.push(
           `START is ${colorName(
             variant.clueColors[variant.clueColors.length - 1]!,

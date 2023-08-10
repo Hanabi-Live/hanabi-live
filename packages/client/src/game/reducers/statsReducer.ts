@@ -7,7 +7,6 @@ import { produce } from "immer";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
-import * as variantRules from "../rules/variant";
 import type { CardNote } from "../types/CardNote";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
@@ -41,7 +40,7 @@ function statsReducerFunction(
       // TODO: move this check to the play action when we have logic for knowing which cards play.
       // A strike is equivalent to losing a clue. But don't reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (!variantRules.isThrowItInAHole(variant) || (!playing && !shadowing)) {
+      if (!variant.throwItInAHole || (!playing && !shadowing)) {
         stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
@@ -50,7 +49,7 @@ function statsReducerFunction(
 
     case "play": {
       if (
-        !variantRules.isThrowItInAHole(variant) && // We don't get an extra clue in these variants
+        !variant.throwItInAHole && // We don't get an extra clue in these variants
         currentState.playStacks[action.suitIndex]!.length === 5 && // Hard code stack length to 5
         originalState.clueTokens === currentState.clueTokens
       ) {
@@ -85,7 +84,7 @@ function statsReducerFunction(
 
   // Handle pace calculation.
   const score =
-    variantRules.isThrowItInAHole(variant) && (playing || shadowing)
+    variant.throwItInAHole && (playing || shadowing)
       ? currentState.numAttemptedCardsPlayed
       : currentState.score;
   stats.pace = statsRules.pace(

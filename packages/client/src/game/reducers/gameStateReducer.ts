@@ -440,11 +440,7 @@ function throwItInAHolePlayedOrMisplayed(
   shadowing: boolean,
   finished: boolean,
 ) {
-  if (
-    !variantRules.isThrowItInAHole(variant) ||
-    (!playing && !shadowing) ||
-    finished
-  ) {
+  if (!variant.throwItInAHole || (!playing && !shadowing) || finished) {
     return false;
   }
 

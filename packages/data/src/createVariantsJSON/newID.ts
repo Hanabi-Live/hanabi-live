@@ -1,29 +1,95 @@
-import { parseIntSafe, ReadonlySet } from "@hanabi/utils";
-import type { SuitJSON } from "../types/SuitJSON";
-import type { VariantJSON } from "../types/VariantJSON";
+import { parseIntSafe, trimSuffix } from "@hanabi/utils";
 import {
-  getSpecialClueRanks,
+  REVERSE_MODIFIER,
+  SUIT_DELIMITER,
+  SUIT_MODIFIERS,
+  SUIT_MODIFIER_DELIMITER,
   SUIT_REVERSED_SUFFIX,
-} from "./getVariantDescriptions";
-import { error } from "./utils";
+  VARIANT_DELIMITER,
+} from "../constants";
+import type { SuitJSON } from "../types/SuitJSON";
+import type { VariantDescription } from "../types/VariantDescription";
+import type { VariantJSON } from "../types/VariantJSON";
+import { getSpecialClueRanks } from "./getVariantDescriptions";
 
-const VARIANT_DELIMITER = ":";
-const SUIT_DELIMITER = "+";
-const SUIT_MODIFIER_DELIMITER = "/";
-const REVERSE_MODIFIER = "R";
-const SUIT_MODIFIERS = new ReadonlySet<string>([REVERSE_MODIFIER]);
+export function getNewVariantID(
+  variantDescription: VariantDescription,
+  suitsNameMap: Map<string, SuitJSON>,
+): string {
+  const suitIDs = variantDescription.suits.map((suitName) =>
+    getNewSuitID(suitName, suitsNameMap),
+  );
 
+  const suitsID = suitIDs.join(SUIT_DELIMITER);
+
+  const specialVariantIDSuffixes =
+    getSpecialVariantIDSuffixes(variantDescription);
+  if (specialVariantIDSuffixes.length === 0) {
+    return suitsID;
+  }
+
+  const variantSuffix = specialVariantIDSuffixes.join(VARIANT_DELIMITER);
+  return `${suitsID}${VARIANT_DELIMITER}${variantSuffix}`;
+}
+
+function getNewSuitID(
+  suitName: string,
+  suitsNameMap: Map<string, SuitJSON>,
+): string {
+  // Reversed suits are a special case; they have an "R" appended to the non-reversed suit id.
+  if (suitName.endsWith(SUIT_REVERSED_SUFFIX)) {
+    const normalSuitName = trimSuffix(suitName, SUIT_REVERSED_SUFFIX);
+    const suit = suitsNameMap.get(normalSuitName);
+    if (suit === undefined) {
+      throw new Error(
+        `Failed to find the non-reversed suit ID for suit: ${suitName}`,
+      );
+    }
+
+    return `${suit.id},R`;
+  }
+
+  const suit = suitsNameMap.get(suitName);
+  if (suit === undefined) {
+    throw new Error(`Failed to find the suit ID for suit: ${suitName}`);
+  }
+
+  return suit.id;
+}
+
+function getSpecialVariantIDSuffixes(
+  variantDescription: VariantDescription,
+): string[] {
+  const variantIDSuffixes: string[] = [];
+
+  // SR is short for "special rank".
+  if (variantDescription.specialRank !== undefined) {
+    variantIDSuffixes.push(`SR${variantDescription.specialRank}:`);
+  }
+
+  return variantIDSuffixes;
+}
+
+/** This function is only used for validation. */
 export function getVariantFromNewID(
   newID: string,
+  name: string,
+  oldID: number,
   suitsIDMap: Map<string, SuitJSON>,
 ): VariantJSON {
   const [suitsString, ...variantModifiers] = newID.split(VARIANT_DELIMITER);
-  const suitIDsWithModifiers = suitsString!.split(SUIT_DELIMITER);
+  if (suitsString === undefined) {
+    throw new Error(
+      `Failed to parse the suits string from the variant ID of: ${newID}`,
+    );
+  }
+
+  const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
   const suitNames = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
 
   const variant: VariantJSON = {
-    name: "",
-    id: 0,
+    name,
+    id: oldID,
     suits: suitNames,
     newID,
   };
@@ -33,7 +99,7 @@ export function getVariantFromNewID(
 
     const suit = suitsIDMap.get(suitID!);
     if (suit === undefined) {
-      error(`Failed to find a suit with an ID of: ${suitID}`);
+      throw new Error(`Failed to find a suit with an ID of: ${suitID}`);
     }
 
     if (suit.showSuitName === true) {
@@ -177,7 +243,7 @@ export function getVariantFromNewID(
 
       // Cow & Pig
       case "CP": {
-        variant.cowPig = true;
+        variant.cowAndPig = true;
         break;
       }
 
@@ -189,7 +255,7 @@ export function getVariantFromNewID(
 
       // Throw It in a Hole.
       case "TH": {
-        variant.throwItInHole = true;
+        variant.throwItInAHole = true;
         break;
       }
 
@@ -228,7 +294,9 @@ export function getVariantFromNewID(
     }
 
     if (variant.specialRank === 0) {
-      error("Failed to parse the special rank from the variant modifier.");
+      throw new Error(
+        "Failed to parse the special rank from the variant modifier.",
+      );
     }
   }
 
@@ -244,12 +312,12 @@ function getSuitNamesFromSuitID(
 
     const suit = suitsIDMap.get(suitID!);
     if (suit === undefined) {
-      error(`Failed to find a suit with an ID of: ${suitID}`);
+      throw new Error(`Failed to find a suit with an ID of: ${suitID}`);
     }
 
     for (const modifier of modifiers) {
       if (!SUIT_MODIFIERS.has(modifier)) {
-        error(
+        throw new Error(
           `Suit "${suit.name}" has an unknown modifier of "${modifier}" in the suit ID of: ${suitIDWithModifiers}`,
         );
       }

@@ -42,7 +42,7 @@ export function onPlayStackDirectionsChanged(
 
       const suit = globals.variant.suits[i]!;
       let text = "";
-      const isUpOrDown = variantRules.isUpOrDown(globals.variant);
+      const isUpOrDown = globals.variant.upOrDown;
       if (isUpOrDown || suit.reversed) {
         const stackStrings = isUpOrDown
           ? STACK_STRINGS_UP_OR_DOWN

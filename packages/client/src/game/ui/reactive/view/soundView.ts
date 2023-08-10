@@ -1,4 +1,3 @@
-import * as variantRules from "../../../rules/variant";
 import type { GameAction } from "../../../types/actions";
 import { SoundType } from "../../../types/SoundType";
 import { globals } from "../../globals";
@@ -40,7 +39,7 @@ export function onNewSoundEffect(
       data.soundType === SoundType.DoubleDiscardCause) &&
     !globals.lobby.settings.hyphenatedConventions &&
     // Disable special sounds in "Throw It in a Hole" variants because they leak information.
-    !variantRules.isThrowItInAHole(globals.variant)
+    !globals.variant.throwItInAHole
   ) {
     data.soundType = SoundType.Standard;
   }

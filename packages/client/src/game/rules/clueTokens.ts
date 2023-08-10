@@ -3,7 +3,6 @@
 import type { Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { ActionDiscard, ActionPlay } from "../types/actions";
-import * as variantRules from "./variant";
 
 /** Gain a clue by discarding or finishing a stack. */
 export function gain(
@@ -31,7 +30,7 @@ function shouldGenerateClue(
   switch (action.type) {
     case "play": {
       // Finishing a play stack grants an extra clue (but not in certain variants).
-      return playStackComplete && !variantRules.isThrowItInAHole(variant);
+      return playStackComplete && !variant.throwItInAHole;
     }
 
     case "discard": {
@@ -51,16 +50,14 @@ function shouldGenerateClue(
  * floating point numbers).
  */
 export function getAdjusted(clueTokens: number, variant: Variant): number {
-  return variantRules.isClueStarved(variant) ? clueTokens * 2 : clueTokens;
+  return variant.clueStarved ? clueTokens * 2 : clueTokens;
 }
 
 export function getUnadjusted(
   clueTokensAdjusted: number,
   variant: Variant,
 ): number {
-  return variantRules.isClueStarved(variant)
-    ? clueTokensAdjusted / 2
-    : clueTokensAdjusted;
+  return variant.clueStarved ? clueTokensAdjusted / 2 : clueTokensAdjusted;
 }
 
 export function atMax(clueTokens: number, variant: Variant): boolean {
@@ -74,7 +71,7 @@ export function atMax(clueTokens: number, variant: Variant): boolean {
  * In "Clue Starved" variants, each discard gives only half a clue.
  */
 export function discardValue(variant: Variant): number {
-  return variantRules.isClueStarved(variant) ? 0.5 : 1;
+  return variant.clueStarved ? 0.5 : 1;
 }
 
 /**
@@ -82,9 +79,9 @@ export function discardValue(variant: Variant): number {
  * calculations.
  */
 export function suitValue(variant: Variant): number {
-  if (variantRules.isThrowItInAHole(variant)) {
+  if (variant.throwItInAHole) {
     return 0;
   }
 
-  return variantRules.isClueStarved(variant) ? 0.5 : 1;
+  return variant.clueStarved ? 0.5 : 1;
 }

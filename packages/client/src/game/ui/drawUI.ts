@@ -352,7 +352,7 @@ function drawPlayStacks() {
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
   // of the rest of the stacks).
   if (
-    variantRules.isThrowItInAHole(globals.variant) &&
+    globals.variant.throwItInAHole &&
     (globals.state.playing || globals.state.shadowing)
   ) {
     const playStackX =
@@ -411,7 +411,7 @@ function drawPlayStacks() {
         text += ` [${colorList}]`;
       }
 
-      if (variantRules.isUpOrDown(globals.variant)) {
+      if (globals.variant.upOrDown) {
         text = "";
       }
 
@@ -812,7 +812,7 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) ||
+      !globals.variant.throwItInAHole ||
       (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel);
@@ -829,7 +829,7 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) ||
+      !globals.variant.throwItInAHole ||
       (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
@@ -847,7 +847,7 @@ function drawScoreArea() {
     fontSize: 0.017 * winH,
     listening: true,
     visible:
-      !variantRules.isThrowItInAHole(globals.variant) ||
+      !globals.variant.throwItInAHole ||
       (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
@@ -859,7 +859,7 @@ function drawScoreArea() {
   );
 
   if (
-    variantRules.isThrowItInAHole(globals.variant) &&
+    globals.variant.throwItInAHole &&
     (globals.state.playing || globals.state.shadowing)
   ) {
     globals.elements.playsTextLabel = basicTextLabel.clone({
@@ -943,7 +943,7 @@ function drawScoreArea() {
     this: StrikeSquare | StrikeX,
     event: Konva.KonvaEventObject<MouseEvent>,
   ) {
-    if (variantRules.isThrowItInAHole(globals.variant)) {
+    if (globals.variant.throwItInAHole) {
       return;
     }
 
@@ -1027,7 +1027,7 @@ function drawScoreArea() {
 
     // For variants where the strikes are hidden, draw a "?".
     if (
-      variantRules.isThrowItInAHole(globals.variant) &&
+      globals.variant.throwItInAHole &&
       (globals.state.playing || globals.state.shadowing)
     ) {
       const questionMarkLabel = basicTextLabel.clone({
@@ -1988,7 +1988,7 @@ function drawClueArea() {
 }
 
 function rankTextFromVariant(rank: number): string {
-  if (!variantRules.isOddsAndEvens(globals.variant)) {
+  if (!globals.variant.oddsAndEvens) {
     return rank.toString();
   }
   if (rank === 1) {

@@ -8,7 +8,6 @@ import {
   getSuit,
 } from "@hanabi/data";
 import * as abbreviationRules from "../rules/abbreviation";
-import * as variantRules from "../rules/variant";
 import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";
 import { drawStylizedRank } from "./drawStylizedRank";
@@ -144,7 +143,7 @@ export function drawCards(
         cardImages.set(cardImagesIndex, cloneCanvas(cvs, ctx));
 
         // Draw the rank on the bottom right.
-        if (!variantRules.isUpOrDown(variant) && !suit.reversed) {
+        if (!variant.upOrDown && !suit.reversed) {
           ctx.save();
           ctx.translate(CARD_W, CARD_H);
           ctx.rotate(Math.PI);
@@ -566,7 +565,7 @@ function getSuitStyle(
   if (cardArea === "number") {
     // In Synesthesia variants, color the number itself with the color that it contributes to the
     // card.
-    if (variantRules.isSynesthesia(variant)) {
+    if (variant.synesthesia) {
       if (rank === 0) {
         return suit.fill;
       }

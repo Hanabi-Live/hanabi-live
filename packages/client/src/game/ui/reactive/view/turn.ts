@@ -1,5 +1,4 @@
 import * as clueTokensRules from "../../../rules/clueTokens";
-import * as variantRules from "../../../rules/variant";
 import { ClueType } from "../../../types/ClueType";
 import type { State } from "../../../types/State";
 import { globals } from "../../globals";
@@ -86,7 +85,7 @@ export function onLastClueTypeChanged(lastClueType: ClueType | null): void {
   }
 
   // Hide some specific clue buttons in certain variants with clue restrictions.
-  if (variantRules.isAlternatingClues(globals.variant)) {
+  if (globals.variant.alternatingClues) {
     switch (lastClueType) {
       case null: {
         setColorClueButtonsVisible(true);

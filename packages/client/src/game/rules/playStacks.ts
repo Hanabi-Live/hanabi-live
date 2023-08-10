@@ -37,7 +37,7 @@ export function nextPlayableRanks(
   switch (playStackDirection) {
     case StackDirection.Undecided: {
       // Check that we are in fact in an Up-Or-Down Variant.
-      console.assert(variantRules.isUpOrDown(variant));
+      console.assert(variant.upOrDown);
       if (currentlyPlayedRank === START_CARD_RANK) {
         return [2, 4];
       }
@@ -100,7 +100,7 @@ export function direction(
     return StackDirection.Up;
   }
 
-  if (!variantRules.isUpOrDown(variant)) {
+  if (!variant.upOrDown) {
     return variant.suits[suitIndex]!.reversed
       ? StackDirection.Down
       : StackDirection.Up;

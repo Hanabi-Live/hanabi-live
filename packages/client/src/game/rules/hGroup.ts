@@ -9,10 +9,10 @@ export function hardVariant(variant: Variant, minEfficiency: number): boolean {
   if (
     variantRules.isColorMute(variant) ||
     variantRules.isNumberMute(variant) ||
-    variantRules.isThrowItInAHole(variant) ||
-    variantRules.isCowAndPig(variant) ||
-    variantRules.isDuck(variant) ||
-    variantRules.isUpOrDown(variant)
+    variant.throwItInAHole ||
+    variant.cowAndPig ||
+    variant.duck ||
+    variant.upOrDown
   ) {
     return true;
   }

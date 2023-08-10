@@ -1,9 +1,13 @@
+import { ReadonlySet } from "@hanabi/utils";
+
 export const STACK_BASE_RANK = 0;
 export const UNKNOWN_CARD_RANK = 6;
 export const START_CARD_RANK = 7;
+
 export const MAX_RANK = 7;
 export const MAX_CLUE_NUM = 8;
 export const MAX_STRIKES = 3;
+
 export const DEFAULT_VARIANT_NAME = "No Variant";
 export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
@@ -23,6 +27,14 @@ export const HYPO_PLAYER_NAMES = [
   "Emily",
   "Frank",
 ] as const;
+
+export const SUIT_REVERSED_SUFFIX = " Reversed";
+
+export const SUIT_DELIMITER = "+";
+export const SUIT_MODIFIER_DELIMITER = ":";
+export const REVERSE_MODIFIER = "R";
+export const SUIT_MODIFIERS = new ReadonlySet(REVERSE_MODIFIER);
+export const VARIANT_DELIMITER = ",";
 
 export const PROJECT_NAME = "Hanab Live";
 export const DOMAIN = "hanab.live";

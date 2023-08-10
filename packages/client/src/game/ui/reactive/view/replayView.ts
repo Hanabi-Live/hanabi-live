@@ -1,6 +1,5 @@
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
-import * as variantRules from "../../../rules/variant";
 import { ReplayActionType } from "../../../types/ReplayActionType";
 import type { Spectator } from "../../../types/Spectator";
 import { globals } from "../../globals";
@@ -242,7 +241,7 @@ export function onFinishedChanged(
   globals.elements.deck?.initDeckTooltip();
 
   // Turn off the "Throw It in a Hole" UI.
-  if (variantRules.isThrowItInAHole(globals.variant)) {
+  if (globals.variant.throwItInAHole) {
     globals.elements.scoreTextLabel?.show();
     globals.elements.scoreNumberLabel?.show();
     globals.elements.maxScoreNumberLabel?.show();

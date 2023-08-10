@@ -1,7 +1,6 @@
 import { MAX_STRIKES } from "@hanabi/data";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import * as clueTokensRules from "../../../rules/clueTokens";
-import * as variantRules from "../../../rules/variant";
 import type { StateStrike } from "../../../types/GameState";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
 import { globals } from "../../globals";
@@ -130,10 +129,7 @@ export function onScoreOrMaxScoreChanged(data: {
 export function onNumAttemptedCardsPlayedChanged(
   numAttemptedCardsPlayed: number,
 ): void {
-  if (
-    !variantRules.isThrowItInAHole(globals.variant) ||
-    globals.state.finished
-  ) {
+  if (!globals.variant.throwItInAHole || globals.state.finished) {
     return;
   }
 
@@ -143,7 +139,7 @@ export function onNumAttemptedCardsPlayedChanged(
 
 export function onClueTokensChanged(clueTokens: number): void {
   let cluesTokensText = clueTokens.toString();
-  if (variantRules.isClueStarved(globals.variant)) {
+  if (globals.variant.clueStarved) {
     // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the
     // user.
     cluesTokensText = (clueTokens / 2).toString();
@@ -217,7 +213,7 @@ export function onOngoingOrVisibleStrikesChanged(data: {
 }): void {
   // Strikes are hidden from the players in "Throw It in a Hole" variants.
   if (
-    variantRules.isThrowItInAHole(globals.variant) &&
+    globals.variant.throwItInAHole &&
     (globals.state.playing || globals.state.shadowing)
   ) {
     return;

@@ -8,7 +8,6 @@ import type { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import * as cardRules from "./card";
 import * as cluesRules from "./clues";
 import * as handRules from "./hand";
-import * as variantRules from "./variant";
 
 const HYPO_PREFIX = "[Hypo] ";
 
@@ -30,20 +29,16 @@ export function clue(
     action.giver,
     metadata.characterAssignments,
   );
-  if (
-    variantRules.isCowAndPig(variant) ||
-    variantRules.isDuck(variant) ||
-    characterName === "Quacker"
-  ) {
+  if (variant.cowAndPig || variant.duck || characterName === "Quacker") {
     let actionName = "clues";
-    if (variantRules.isCowAndPig(variant)) {
+    if (variant.cowAndPig) {
       if (action.clue.type === ClueType.Color) {
         actionName = "moos";
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (action.clue.type === ClueType.Rank) {
         actionName = "oinks";
       }
-    } else if (variantRules.isDuck(variant) || characterName === "Quacker") {
+    } else if (variant.duck || characterName === "Quacker") {
       actionName = "quacks";
     }
 
@@ -156,7 +151,7 @@ export function play(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card: string;
-  if (variantRules.isThrowItInAHole(variant) && (playing || shadowing)) {
+  if (variant.throwItInAHole && (playing || shadowing)) {
     card = "a card";
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
@@ -193,7 +188,7 @@ export function discard(
   let verb = "discards";
   if (action.failed) {
     verb = "fails to play";
-    if (variantRules.isThrowItInAHole(variant) && (playing || shadowing)) {
+    if (variant.throwItInAHole && (playing || shadowing)) {
       verb = "plays";
     }
   }
@@ -213,7 +208,7 @@ export function discard(
   }
 
   let suffix = "";
-  if (action.failed && touched && !variantRules.isThrowItInAHole(variant)) {
+  if (action.failed && touched && !variant.throwItInAHole) {
     suffix = " (clued)";
   }
   if (action.failed && slot !== null && !touched) {

@@ -162,7 +162,7 @@ export function cardsGotten(
       card.location === "playStack" ||
       (card.location === "discard" &&
         card.isMisplayed &&
-        variantRules.isThrowItInAHole(variant) &&
+        variant.throwItInAHole &&
         (playing || shadowing))
     ) {
       // A card is considered to be gotten if it is already played (and failed discards count as

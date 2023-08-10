@@ -5,7 +5,6 @@ import * as modals from "../../modals";
 import * as sounds from "../../sounds";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
-import * as variantRules from "../rules/variant";
 import { ActionType } from "../types/ActionType";
 import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
@@ -160,7 +159,7 @@ export class LayoutChild extends Konva.Group {
     if (
       globals.state.replay.hypothetical === null &&
       !globals.options.speedrun &&
-      !variantRules.isThrowItInAHole(globals.variant) &&
+      !globals.variant.throwItInAHole &&
       // Don't use warnings for preplays unless we are at 2 strikes.
       (currentPlayerIndex === ourPlayerIndex ||
         ongoingGame.strikes.length === 2) &&

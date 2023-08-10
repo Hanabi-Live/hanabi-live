@@ -12,6 +12,14 @@ export function fatalError(...args: unknown[]): never {
   process.exit(1);
 }
 
+/** From: https://stackoverflow.com/questions/61526746 */
+export function isKeyOf<T extends object>(
+  key: PropertyKey,
+  target: T,
+): key is keyof T {
+  return key in target;
+}
+
 /**
  * This is a more reliable version of `parseInt`. By default, `parseInt('1a')` will return "1",
  * which is unexpected. This returns either an integer or NaN.
@@ -46,4 +54,14 @@ export function parseIntSafe(input: string): number {
 /** Initializes an array with all elements containing the specified default value. */
 export function newArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
+}
+
+/** Helper function to trim a suffix from a string, if it exists. Returns the trimmed string. */
+export function trimSuffix(string: string, prefix: string): string {
+  if (!string.endsWith(prefix)) {
+    return string;
+  }
+
+  const endCharacter = string.length - prefix.length;
+  return string.slice(0, endCharacter);
 }

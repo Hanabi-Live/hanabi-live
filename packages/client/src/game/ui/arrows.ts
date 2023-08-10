@@ -9,7 +9,6 @@ import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cardRules from "../rules/card";
-import * as variantRules from "../rules/variant";
 import type { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import { ReplayActionType } from "../types/ReplayActionType";
@@ -121,7 +120,7 @@ export function set(
       globals.metadata.characterAssignments,
     );
     if (
-      variantRules.isDuck(globals.variant) ||
+      globals.variant.duck ||
       (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden.
@@ -136,7 +135,7 @@ export function set(
 
           // The circle for color clues should have a black border and a fill matching the color.
           arrow.circle.stroke("black");
-          if (variantRules.isCowAndPig(globals.variant)) {
+          if (globals.variant.cowAndPig) {
             // The specific clue color is hidden in "Cow & Pig" variants.
             arrow.circle.fill("white");
           } else {
@@ -177,10 +176,10 @@ export function set(
 
         case ClueType.Rank: {
           let text = clue.value.toString();
-          if (variantRules.isCowAndPig(globals.variant)) {
+          if (globals.variant.cowAndPig) {
             text = "#";
           }
-          if (variantRules.isOddsAndEvens(globals.variant)) {
+          if (globals.variant.oddsAndEvens) {
             text = "O";
             if (clue.value === 2) {
               text = "E";

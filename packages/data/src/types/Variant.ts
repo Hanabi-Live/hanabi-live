@@ -1,29 +1,27 @@
 import type { Color } from "./Color";
 import type { Suit } from "./Suit";
+import type { VariantJSON } from "./VariantJSON";
 
-export interface Variant {
-  readonly name: string;
-  readonly id: number;
+/**
+ * - The `Variant` object has a `suits` and `clueColors` property of an object array instead of a
+ *   string array.
+ * - All optional properties are validated and read-only.
+ */
+type VariantJSONModified = Readonly<
+  Required<Omit<VariantJSON, "suits" | "clueColors">>
+>;
+
+/**
+ * This cannot extend from `VariantJSON` because:
+ * - All of the properties are non-optional.
+ * - `suits` and `clueColors` are object arrays instead of primitive arrays.
+ * - The properties are `readonly`.
+ */
+export interface Variant extends VariantJSONModified {
   readonly suits: readonly Suit[];
   readonly ranks: readonly number[];
   readonly clueColors: readonly Color[];
-  readonly clueRanks: readonly number[];
 
-  readonly specialRank: number;
-  readonly specialAllClueColors: boolean;
-  readonly specialAllClueRanks: boolean;
-  readonly specialNoClueColors: boolean;
-  readonly specialNoClueRanks: boolean;
-  readonly specialDeceptive: boolean;
-
-  readonly colorCluesTouchNothing: boolean;
-  readonly rankCluesTouchNothing: boolean;
-
-  readonly oddsAndEvens: boolean;
-  readonly funnels: boolean;
-  readonly chimneys: boolean;
-
-  readonly showSuitNames: boolean;
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
   readonly suitAbbreviations: readonly string[];

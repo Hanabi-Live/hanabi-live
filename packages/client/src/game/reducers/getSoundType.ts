@@ -24,11 +24,7 @@ export function getSoundType(
 
   // In some variants, failed plays are treated as normal plays.
   let action = originalAction;
-  if (
-    action.type === "discard" &&
-    action.failed &&
-    variantRules.isThrowItInAHole(variant)
-  ) {
+  if (action.type === "discard" && action.failed && variant.throwItInAHole) {
     action = {
       type: "play",
       playerIndex: action.playerIndex,
@@ -51,7 +47,7 @@ export function getSoundType(
         }
       }
 
-      if (variantRules.isCowAndPig(variant)) {
+      if (variant.cowAndPig) {
         if (action.clue.type === ClueType.Color) {
           return SoundType.Moo;
         }
@@ -64,7 +60,7 @@ export function getSoundType(
         throw new Error("Unknown clue type.");
       }
 
-      if (variantRules.isDuck(variant)) {
+      if (variant.duck) {
         return SoundType.Quack;
       }
 
@@ -82,7 +78,7 @@ export function getSoundType(
 
       if (
         stats.maxScore < originalState.stats.maxScore &&
-        !variantRules.isThrowItInAHole(variant)
+        !variant.throwItInAHole
       ) {
         return SoundType.Sad;
       }
@@ -136,7 +132,7 @@ export function getSoundType(
     case "play": {
       if (
         stats.maxScore < originalState.stats.maxScore &&
-        !variantRules.isThrowItInAHole(variant)
+        !variant.throwItInAHole
       ) {
         return SoundType.Sad;
       }
@@ -190,9 +186,9 @@ function isOrderChopMove(
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
 
-  // Don't bother trying to see if this is an Order Chop Move in an "Up or Down" variant, as the
-  // logic for that is more complicated.
-  if (variantRules.isUpOrDown(variant) || variantRules.isSudoku(variant)) {
+  // Don't bother trying to see if this is an Order Chop Move in certain variants, as the logic
+  // could be extremely complicated.
+  if (variant.upOrDown || variantRules.isSudoku(variant)) {
     return false;
   }
 

@@ -14,66 +14,82 @@ export function totalCards(variant: Variant): number {
     totalCardsInTheDeck += 10;
     if (suit.oneOfEach) {
       totalCardsInTheDeck -= 5;
-    } else if (
-      variantRules.isUpOrDown(variant) ||
-      variantRules.isCriticalFours(variant)
-    ) {
+    } else if (variant.upOrDown || variant.criticalFours) {
       totalCardsInTheDeck--;
     }
   }
   return totalCardsInTheDeck;
 }
 
-// Given a variant, and a card's rank and suit, returns how many copies of this card exist in the
-// deck.
+/**
+ * Returns how many copies of this card should exist in the deck.
+ *
+ * This implementation mirrors `numCopiesOfCard` in "server/src/game_deck.go".
+ */
 export function numCopiesOfCard(
   suit: Suit,
   rank: number,
   variant: Variant,
 ): number {
-  // This implementation mirrors numCopiesOfCard in "server/src/game_deck.go".
   if (suit.oneOfEach) {
     return 1;
   }
 
+  // Sudoku always has 2 cards.
   if (variantRules.isSudoku(variant)) {
-    // Sudoku always has 2 cards.
     return 2;
   }
 
-  if (rank === 1) {
-    if (variantRules.isUpOrDown(variant) || suit.reversed) {
-      return 1;
-    }
-    return 3;
-  }
+  switch (rank) {
+    case 1: {
+      if (variant.upOrDown || suit.reversed) {
+        return 1;
+      }
 
-  if (rank === 4) {
-    if (variantRules.isCriticalFours(variant)) {
-      return 1;
-    }
-  }
-
-  if (rank === 5) {
-    if (suit.reversed) {
       return 3;
     }
-    return 1;
-  }
 
-  if (rank === START_CARD_RANK) {
-    if (variantRules.isUpOrDown(variant)) {
+    case 2: {
+      return 2;
+    }
+
+    case 3: {
+      return 2;
+    }
+
+    case 4: {
+      if (variant.criticalFours) {
+        return 1;
+      }
+
+      return 2;
+    }
+
+    case 5: {
+      if (suit.reversed) {
+        return 3;
+      }
+
       return 1;
     }
-    throw new Error(
-      "Trying to add a Start card to a variant that is not Up or Down",
-    );
-  }
 
-  return 2;
+    case START_CARD_RANK: {
+      if (variant.upOrDown) {
+        return 1;
+      }
+
+      throw new Error(
+        "Attempted to add a Start card to a variant that is not Up or Down.",
+      );
+    }
+
+    default: {
+      throw new Error(`Unknown rank: ${rank}`);
+    }
+  }
 }
 
-// Returns how many cards of a specific suit/rank that have been already discarded.
+/** Returns how many cards of a specific suit/rank that have been already discarded. */
 export function discardedCopies(
   deck: readonly CardState[],
   suitIndex: number,

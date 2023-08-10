@@ -2,7 +2,6 @@
 
 import { STACK_BASE_RANK } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
-import * as variantRules from "../rules/variant";
 import type { HanabiCard } from "./HanabiCard";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
@@ -144,10 +143,7 @@ export function openEditTooltip(
   }
 
   // Disable making notes on the stack bases outside of special variants.
-  if (
-    card.state.rank === STACK_BASE_RANK &&
-    !variantRules.isThrowItInAHole(globals.variant)
-  ) {
+  if (card.state.rank === STACK_BASE_RANK && !globals.variant.throwItInAHole) {
     return;
   }
 

@@ -6,7 +6,6 @@ import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "@hanabi/data";
 import type { CardState } from "../../types/CardState";
 import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
-import * as variantRules from "../variant";
 import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
 
 /**
@@ -36,7 +35,7 @@ export function needsToBePlayed(
   }
 
   // The "Up or Down" variants have specific requirements to start the pile.
-  if (variantRules.isUpOrDown(variant)) {
+  if (variant.upOrDown) {
     // All 2's, 3's, and 4's must be played.
     if (rank === 2 || rank === 3 || rank === 4) {
       return true;
@@ -106,7 +105,7 @@ function isDead(
     // Note that in Up or Down, having impliedDirection === StackDirection also proves that one of
     // Start or 1 is still alive, since we filtered out the case where all of 1,5 and Start are dead
     // already.
-    let nextRank = variantRules.isUpOrDown(variant) ? 2 : 1;
+    let nextRank = variant.upOrDown ? 2 : 1;
     for (nextRank; nextRank < rank; nextRank++) {
       if (allDiscarded.get(nextRank) === true) {
         return true;
@@ -117,7 +116,7 @@ function isDead(
 
   if (impliedDirection === StackDirection.Down) {
     // Same for down, see above.
-    let nextRank = variantRules.isUpOrDown(variant) ? 4 : 5;
+    let nextRank = variant.upOrDown ? 4 : 5;
     for (nextRank; nextRank > rank; nextRank--) {
       if (allDiscarded.get(nextRank) === true) {
         return true;
@@ -157,7 +156,7 @@ export function getMaxScorePerStack(
 
     // Make a map that shows if all of some particular rank in this suit has been discarded.
     const ranks: number[] = [...DEFAULT_CARD_RANKS];
-    if (variantRules.isUpOrDown(variant)) {
+    if (variant.upOrDown) {
       ranks.push(START_CARD_RANK);
     }
 
@@ -189,7 +188,7 @@ function walkUp(allDiscarded: Map<number, boolean>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.
-  if (variantRules.isUpOrDown(variant)) {
+  if (variant.upOrDown) {
     if (allDiscarded.get(1)! && allDiscarded.get(START_CARD_RANK)!) {
       // In "Up or Down" variants, you can start with 1 or START when going up.
       return 0;
@@ -216,7 +215,7 @@ function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.
-  if (variantRules.isUpOrDown(variant)) {
+  if (variant.upOrDown) {
     if (allDiscarded.get(5)! && allDiscarded.get(START_CARD_RANK)!) {
       // In "Up or Down" variants, you can start with 5 or START when going down.
       return 0;
@@ -249,7 +248,7 @@ export function isCritical(
   const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
 
   const lastCopy = isLastCopy(suitIndex, rank);
-  if (!variantRules.isUpOrDown(variant)) {
+  if (!variant.upOrDown) {
     return lastCopy;
   }
 

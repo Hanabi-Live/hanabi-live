@@ -1,10 +1,9 @@
 import { ALL_RESERVED_NOTES } from "./abbreviations";
+import { SUIT_REVERSED_SUFFIX } from "./constants";
 import suitsJSON from "./json/suits.json";
 import type { Color } from "./types/Color";
 import type { Suit } from "./types/Suit";
 import type { SuitJSON } from "./types/SuitJSON";
-
-const SUIT_REVERSED_SUFFIX = " Reversed";
 
 export function suitsInit(
   COLORS: ReadonlyMap<string, Color>,
@@ -16,13 +15,24 @@ export function suitsInit(
   }
 
   for (const suitJSON of suitsJSON) {
-    // Validate the name
+    // Validate the name.
     if (suitJSON.name === "") {
       throw new Error(
         'There is a suit with an empty name in the "suits.json" file.',
       );
     }
     const { name } = suitJSON;
+
+    // Validate the id.
+    if (suitJSON.id === "") {
+      throw new Error(`The "${suitJSON.name}" suit has an empty id.`);
+    }
+    if (suitJSON.id.length > 2) {
+      throw new Error(
+        `The "${suitJSON.name}" suit has an id that is more than two letters long.`,
+      );
+    }
+    const { id } = suitJSON;
 
     // If the abbreviation for the suit is not specified, use the abbreviation of the color with the
     // same name. Otherwise, assume that it is the first letter of the suit.
@@ -136,6 +146,7 @@ export function suitsInit(
     // Construct the suit object and add it to the map.
     const suit: Suit = {
       name,
+      id,
       abbreviation,
       clueColors,
       displayName,

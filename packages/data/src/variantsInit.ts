@@ -67,24 +67,6 @@ export function variantsInit(
     // specified, assume that players can clue ranks 1 through 5.
     const clueRanks = variantJSON.clueRanks ?? [...DEFAULT_CLUE_RANKS];
 
-    // Validate the "colorCluesTouchNothing" property. If it is not specified, assume false (e.g.
-    // cluing colors in this variant works normally).
-    if (variantJSON.colorCluesTouchNothing === false) {
-      throw new Error(
-        `The "colorCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const colorCluesTouchNothing = variantJSON.colorCluesTouchNothing ?? false;
-
-    // Validate the "rankCluesTouchNothing" property. If it is not specified, assume false (e.g.
-    // cluing ranks in this variant works normally).
-    if (variantJSON.rankCluesTouchNothing === false) {
-      throw new Error(
-        `The "rankCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const rankCluesTouchNothing = variantJSON.rankCluesTouchNothing ?? false;
-
     // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
     // -1 (e.g. there are no special ranks).
     if (
@@ -169,6 +151,88 @@ export function variantsInit(
     }
     const chimneys = variantJSON.chimneys ?? false;
 
+    // Validate the "clueStarved" property. If it is not specified, assume false.
+    if (variantJSON.clueStarved === false) {
+      throw new Error(
+        `The "clueStarved" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const clueStarved = variantJSON.clueStarved ?? false;
+
+    // Validate the "alternatingClues" property. If it is not specified, assume false.
+    if (variantJSON.alternatingClues === false) {
+      throw new Error(
+        `The "alternatingClues" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const alternatingClues = variantJSON.alternatingClues ?? false;
+
+    // Validate the "cowAndPig" property. If it is not specified, assume false.
+    if (variantJSON.cowAndPig === false) {
+      throw new Error(
+        `The "cowAndPig" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const cowPig = variantJSON.cowAndPig ?? false;
+
+    // Validate the "duck" property. If it is not specified, assume false.
+    if (variantJSON.duck === false) {
+      throw new Error(
+        `The "duck" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const duck = variantJSON.duck ?? false;
+
+    // Validate the "throwItInAHole" property. If it is not specified, assume false.
+    if (variantJSON.throwItInAHole === false) {
+      throw new Error(
+        `The "throwItInAHole" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const throwItInAHole = variantJSON.throwItInAHole ?? false;
+
+    // Validate the "upOrDown" property. If it is not specified, assume false.
+    if (variantJSON.upOrDown === false) {
+      throw new Error(
+        `The "upOrDown" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const upOrDown = variantJSON.upOrDown ?? false;
+
+    // Validate the "synesthesia" property. If it is not specified, assume false.
+    if (variantJSON.synesthesia === false) {
+      throw new Error(
+        `The "synesthesia" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const synesthesia = variantJSON.synesthesia ?? false;
+
+    // Validate the "criticalFours" property. If it is not specified, assume false.
+    if (variantJSON.criticalFours === false) {
+      throw new Error(
+        `The "criticalFours" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const criticalFours = variantJSON.criticalFours ?? false;
+
+    // Validate the "colorCluesTouchNothing" property. If it is not specified, assume false (e.g.
+    // cluing colors in this variant works normally).
+    if (variantJSON.colorCluesTouchNothing === false) {
+      throw new Error(
+        `The "colorCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const colorCluesTouchNothing = variantJSON.colorCluesTouchNothing ?? false;
+
+    // Validate the "rankCluesTouchNothing" property. If it is not specified, assume false (e.g.
+    // cluing ranks in this variant works normally).
+    if (variantJSON.rankCluesTouchNothing === false) {
+      throw new Error(
+        `The "rankCluesTouchNothing" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const rankCluesTouchNothing = variantJSON.rankCluesTouchNothing ?? false;
+
     // Validate the "showSuitNames" property. If it is not specified, assume that we are not showing
     // the suit names.
     if (variantJSON.showSuitNames === false) {
@@ -209,21 +273,33 @@ export function variantsInit(
     const variant: Variant = {
       name,
       id,
+      newID: "", // TODO
       suits,
       ranks,
       clueColors,
       clueRanks,
-      colorCluesTouchNothing,
-      rankCluesTouchNothing,
+
       specialRank,
       specialAllClueColors,
       specialAllClueRanks,
       specialNoClueColors,
       specialNoClueRanks,
       specialDeceptive,
+
       oddsAndEvens,
       funnels,
       chimneys,
+      clueStarved,
+      alternatingClues,
+      cowAndPig: cowPig,
+      duck,
+      throwItInAHole,
+      upOrDown,
+      synesthesia,
+      criticalFours,
+      colorCluesTouchNothing,
+      rankCluesTouchNothing,
+
       showSuitNames,
       maxScore,
       offsetCornerElements,

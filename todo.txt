@@ -3,4 +3,12 @@ TODO:
 - refactor soundTypeForLastAction (should probably delete the whole thing)
 - getPlayerNames comma is in wrong place for 3+ players
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
-- search for "// TODO: remove the ?"
+- is it desired to put `showSuitName` prop on `Suit` object? look into dynamically calculating
+  whether or not suit names are shown in client code rather than looking at the variant prop
+
+old stuff:
+- rename colorCluesTouchNothing
+- rename rankCluesTouchNothing
+- rename all specialX properties
+- rename all variant properties based on order in VARIANTS.md
+- make VariantJSON extend from VariantDescription

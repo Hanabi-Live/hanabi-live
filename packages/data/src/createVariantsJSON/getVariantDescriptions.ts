@@ -1,10 +1,10 @@
-import { DEFAULT_CLUE_RANKS } from "../constants";
+import { ReadonlySet } from "@hanabi/utils";
+import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../types/SuitJSON";
 import type { VariantDescription } from "../types/VariantDescription";
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS = [1, 5] as const;
-export const SUIT_REVERSED_SUFFIX = " Reversed";
 
 /** These are suit properties that are transferred to special ranks. */
 const SUIT_SPECIAL_PROPERTIES = [
@@ -14,35 +14,95 @@ const SUIT_SPECIAL_PROPERTIES = [
   "noClueRanks",
 ] as const;
 
-const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS: ReadonlySet<string> =
-  new Set([
-    "Rainbow",
-    "Prism",
-    "Dark Prism", // This is the same as Dark Rainbow
-  ]);
+const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS = new ReadonlySet([
+  "Rainbow",
+  "Prism",
+  "Dark Prism", // Same as Dark Rainbow
+]);
 
-const SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS: ReadonlySet<string> = new Set([
+const SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS = new ReadonlySet([
   "Rainbow",
   "Prism",
 ]);
 
-const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA: ReadonlySet<string> =
-  new Set([
-    "Prism", // Same as White
-    "Muddy Rainbow", // Same as Rainbow
-    "Light Pink", // Same as Rainbow
-    "Pink", // Same as Rainbow
-    "Omni", // Same as Rainbow
-    "Dark Prism", // Same as White
-    "Cocoa Rainbow", // Same as Dark Rainbow
-    "Gray Pink", // Same as Dark Rainbow
-    "Dark Pink", // Same as Dark Rainbow
-    "Dark Omni", // Same as Dark Rainbow
-  ]);
+const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA = new ReadonlySet([
+  "Prism", // Same as White
+  "Muddy Rainbow", // Same as Rainbow
+  "Light Pink", // Same as Rainbow
+  "Pink", // Same as Rainbow
+  "Omni", // Same as Rainbow
+  "Dark Prism", // Same as White
+  "Cocoa Rainbow", // Same as Dark Rainbow
+  "Gray Pink", // Same as Dark Rainbow
+  "Dark Pink", // Same as Dark Rainbow
+  "Dark Omni", // Same as Dark Rainbow
+]);
 
-export function getBasicVariants(
-  basicVariantSuits: string[][],
+export function getVariantDescriptions(
+  suits: SuitJSON[],
 ): VariantDescription[] {
+  const basicVariantSuits = getBasicVariantSuits();
+
+  // We only want to create variants for certain suits. (For example, "Red" does not get its own
+  // variants because it is a basic suit.)
+  const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
+
+  return [
+    ...getBasicVariants(basicVariantSuits),
+    ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getVariantsForEachSpecialSuitCombination(
+      suitsToCreateVariantsFor,
+      basicVariantSuits,
+    ),
+    ...getVariantsForSpecialRanks(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getAmbiguousVariants(suitsToCreateVariantsFor),
+    ...getVeryAmbiguousVariants(suitsToCreateVariantsFor),
+    ...getExtremelyAmbiguousVariants(suitsToCreateVariantsFor),
+    ...getDualColorsVariants(suitsToCreateVariantsFor),
+    ...getMixVariants(),
+    ...getBlindVariants(basicVariantSuits),
+    ...getMuteVariants(basicVariantSuits),
+    ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getCowAndPigVariants(basicVariantSuits),
+    ...getDuckVariants(basicVariantSuits),
+    ...getThrowItInAHoleVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getReversedVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getUpOrDownVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getMatryoshkaVariants(suitsToCreateVariantsFor),
+    ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
+  ];
+}
+
+/**
+ * Create an array containing the suits for the "3 Suits" variant, the "4 Suits" variant, and so on.
+ */
+function getBasicVariantSuits(): string[][] {
+  const variantSuits: string[][] = [];
+
+  variantSuits[1] = ["Red"];
+  variantSuits[2] = [...variantSuits[1], "Blue"];
+
+  // Green is inserted before Blue to keep the colors in "rainbow" order.
+  variantSuits[3] = [...variantSuits[2]];
+  variantSuits[3].splice(1, 0, "Green");
+
+  // Yellow is inserted before Green to keep the colors in "rainbow" order.
+  variantSuits[4] = [...variantSuits[3]];
+  variantSuits[4].splice(1, 0, "Yellow");
+
+  variantSuits[5] = [...variantSuits[4], "Purple"];
+  variantSuits[6] = [...variantSuits[5], "Teal"];
+
+  return variantSuits;
+}
+
+function getBasicVariants(basicVariantSuits: string[][]): VariantDescription[] {
   return [
     {
       name: "No Variant",
@@ -64,7 +124,7 @@ export function getBasicVariants(
 }
 
 /** Create variants for e.g. "Rainbow (6 Suits)", "Rainbow (5 Suits)", and so on. */
-export function getVariantsForEachSuit(
+function getVariantsForEachSuit(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -92,7 +152,7 @@ export function getVariantsForEachSuit(
 }
 
 /** Create variants for e.g. "Rainbow & White (6 Suits)", "Rainbow & White (5 Suits)", and so on. */
-export function getVariantsForEachSpecialSuitCombination(
+function getVariantsForEachSpecialSuitCombination(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -171,7 +231,7 @@ export function getVariantsForEachSpecialSuitCombination(
 }
 
 /** Create variants for e.g. "Rainbow-Ones (6 Suits)", "Rainbow-Ones (5 Suits)", and so on. */
-export function getVariantsForSpecialRanks(
+function getVariantsForSpecialRanks(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -355,7 +415,7 @@ function convertSuitSpecialPropertyToVariantProperty(
   }
 }
 
-export function getAmbiguousVariants(
+function getAmbiguousVariants(
   suitsToCreateVariantsFor: SuitJSON[],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -417,7 +477,7 @@ export function getAmbiguousVariants(
   return variantDescriptions;
 }
 
-export function getVeryAmbiguousVariants(
+function getVeryAmbiguousVariants(
   suitsToCreateVariantsFor: SuitJSON[],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -469,7 +529,7 @@ export function getVeryAmbiguousVariants(
   return variantDescriptions;
 }
 
-export function getExtremelyAmbiguousVariants(
+function getExtremelyAmbiguousVariants(
   suitsToCreateVariantsFor: SuitJSON[],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -527,7 +587,7 @@ export function getExtremelyAmbiguousVariants(
   return variantDescriptions;
 }
 
-export function getDualColorsVariants(
+function getDualColorsVariants(
   suitsToCreateVariantsFor: SuitJSON[],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -591,7 +651,7 @@ export function getDualColorsVariants(
   return variantDescriptions;
 }
 
-export function getMixVariants(): VariantDescription[] {
+function getMixVariants(): VariantDescription[] {
   return [
     {
       name: "Special Mix (5 Suits)",
@@ -654,9 +714,7 @@ export function getMixVariants(): VariantDescription[] {
   ];
 }
 
-export function getBlindVariants(
-  basicVariantSuits: string[][],
-): VariantDescription[] {
+function getBlindVariants(basicVariantSuits: string[][]): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
@@ -690,9 +748,7 @@ export function getBlindVariants(
   return variantDescriptions;
 }
 
-export function getMuteVariants(
-  basicVariantSuits: string[][],
-): VariantDescription[] {
+function getMuteVariants(basicVariantSuits: string[][]): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
@@ -716,7 +772,7 @@ export function getMuteVariants(
   return variantDescriptions;
 }
 
-export function getAlternatingCluesVariants(
+function getAlternatingCluesVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -755,7 +811,7 @@ export function getAlternatingCluesVariants(
   return variantDescriptions;
 }
 
-export function getClueStarvedVariants(
+function getClueStarvedVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -794,7 +850,7 @@ export function getClueStarvedVariants(
   return variantDescriptions;
 }
 
-export function getCowAndPigVariants(
+function getCowAndPigVariants(
   basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -804,16 +860,14 @@ export function getCowAndPigVariants(
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      cowPig: true,
+      cowAndPig: true,
     });
   }
 
   return variantDescriptions;
 }
 
-export function getDuckVariants(
-  basicVariantSuits: string[][],
-): VariantDescription[] {
+function getDuckVariants(basicVariantSuits: string[][]): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
@@ -828,7 +882,7 @@ export function getDuckVariants(
   return variantDescriptions;
 }
 
-export function getThrowItInAHoleVariants(
+function getThrowItInAHoleVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -841,7 +895,7 @@ export function getThrowItInAHoleVariants(
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      throwItInHole: true,
+      throwItInAHole: true,
     });
   }
 
@@ -859,7 +913,7 @@ export function getThrowItInAHoleVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        throwItInHole: true,
+        throwItInAHole: true,
       });
     }
   }
@@ -867,7 +921,7 @@ export function getThrowItInAHoleVariants(
   return variantDescriptions;
 }
 
-export function getReversedVariants(
+function getReversedVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -916,7 +970,7 @@ export function getReversedVariants(
   return variantDescriptions;
 }
 
-export function getUpOrDownVariants(
+function getUpOrDownVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -957,7 +1011,7 @@ export function getUpOrDownVariants(
   return variantDescriptions;
 }
 
-export function getSynesthesiaVariants(
+function getSynesthesiaVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -1000,7 +1054,7 @@ export function getSynesthesiaVariants(
   return variantDescriptions;
 }
 
-export function getCriticalFoursVariants(
+function getCriticalFoursVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -1039,7 +1093,7 @@ export function getCriticalFoursVariants(
   return variantDescriptions;
 }
 
-export function getOddsAndEvensVariants(
+function getOddsAndEvensVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -1081,7 +1135,7 @@ export function getOddsAndEvensVariants(
   return variantDescriptions;
 }
 
-export function getFunnelsVariants(
+function getFunnelsVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -1120,7 +1174,7 @@ export function getFunnelsVariants(
   return variantDescriptions;
 }
 
-export function getChimneysVariants(
+function getChimneysVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -1158,7 +1212,8 @@ export function getChimneysVariants(
 
   return variantDescriptions;
 }
-export function getMatryoshkaVariants(
+
+function getMatryoshkaVariants(
   suitsToCreateVariantsFor: SuitJSON[],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
@@ -1205,7 +1260,7 @@ export function getMatryoshkaVariants(
   return variantDescriptions;
 }
 
-export function getSudokuVariants(
+function getSudokuVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {

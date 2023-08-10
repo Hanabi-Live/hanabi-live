@@ -4,35 +4,8 @@ import * as path from "node:path";
 import type { SuitJSON } from "../types/SuitJSON";
 import type { VariantDescription } from "../types/VariantDescription";
 import type { VariantJSON } from "../types/VariantJSON";
-import {
-  getAlternatingCluesVariants,
-  getAmbiguousVariants,
-  getBasicVariants,
-  getBlindVariants,
-  getChimneysVariants,
-  getClueStarvedVariants,
-  getCowAndPigVariants,
-  getCriticalFoursVariants,
-  getDualColorsVariants,
-  getDuckVariants,
-  getExtremelyAmbiguousVariants,
-  getFunnelsVariants,
-  getMatryoshkaVariants,
-  getMixVariants,
-  getMuteVariants,
-  getOddsAndEvensVariants,
-  getReversedVariants,
-  getSudokuVariants,
-  getSynesthesiaVariants,
-  getThrowItInAHoleVariants,
-  getUpOrDownVariants,
-  getVariantsForEachSpecialSuitCombination,
-  getVariantsForEachSuit,
-  getVariantsForSpecialRanks,
-  getVeryAmbiguousVariants,
-} from "./getVariantDescriptions";
-import { getVariantFromNewID } from "./newID";
-import { error } from "./utils";
+import { getVariantDescriptions } from "./getVariantDescriptions";
+import { getNewVariantID, getVariantFromNewID } from "./newID";
 
 const oldVariantsNameToIDMap = new Map<string, number>();
 const oldVariantsIDToNameMap = new Map<number, string>();
@@ -47,55 +20,20 @@ function main() {
 
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
   validateSuits(suits);
-  setSuitDefaultValues(suits);
   setSuitMaps(suits);
 
   const oldVariants = getJSONAndParse(variantsPath) as VariantJSON[];
   validateVariants(oldVariants);
   setOldVariantMaps(oldVariants);
 
-  // We only want to create variants for certain suits
-  // (e.g. "Red" does not get its own variants because it is a basic suit)
-  const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
-
   // Start to build all of the variants.
-  const basicVariantSuits = getBasicVariantSuits();
-  const variantDescriptions = [
-    ...getBasicVariants(basicVariantSuits),
-    ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getVariantsForEachSpecialSuitCombination(
-      suitsToCreateVariantsFor,
-      basicVariantSuits,
-    ),
-    ...getVariantsForSpecialRanks(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getAmbiguousVariants(suitsToCreateVariantsFor),
-    ...getVeryAmbiguousVariants(suitsToCreateVariantsFor),
-    ...getExtremelyAmbiguousVariants(suitsToCreateVariantsFor),
-    ...getDualColorsVariants(suitsToCreateVariantsFor),
-    ...getMixVariants(),
-    ...getBlindVariants(basicVariantSuits),
-    ...getMuteVariants(basicVariantSuits),
-    ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getCowAndPigVariants(basicVariantSuits),
-    ...getDuckVariants(basicVariantSuits),
-    ...getThrowItInAHoleVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getReversedVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getUpOrDownVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getMatryoshkaVariants(suitsToCreateVariantsFor),
-    ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
-  ];
+  const variantDescriptions = getVariantDescriptions(suits);
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
-  /// validateNewVariantIDs(variants); // TODO uncomment
+  // validateNewVariantIDs(variants); // TODO
 
-  if (checkForMissingVariants(variants, oldVariants)) {
-    error(
+  if (hasMissingVariants(variants, oldVariants)) {
+    throw new Error(
       'Skipping the creation of a new "variant.json" file since there were missing variants.',
     );
   }
@@ -120,7 +58,7 @@ function getPaths(): [string, string, string] {
   return [suitsPath, variantsPath, textPath];
 }
 
-function getJSONAndParse(jsonPath: string) {
+function getJSONAndParse(jsonPath: string): unknown {
   const data = fs.readFileSync(jsonPath, "utf8");
   return JSON.parse(data) as unknown;
 }
@@ -132,64 +70,27 @@ function validateSuits(suits: SuitJSON[]) {
   for (const suit of suits) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (suit.name === undefined || suit.name === "") {
-      error('One of the suits in the "suits.json" file does not have a name.');
+      throw new Error(
+        'One of the suits in the "suits.json" file does not have a name.',
+      );
     }
 
     if (suitNames.has(suit.name)) {
-      error(`Suit "${suit.name}" has a duplicate name.`);
+      throw new Error(`Suit "${suit.name}" has a duplicate name.`);
     }
 
     suitNames.add(suit.name);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (suit.id === undefined || suit.id === "") {
-      error(`Suit "${suit.name}" does not have an ID.`);
+      throw new Error(`Suit "${suit.name}" does not have an ID.`);
     }
 
     if (suitIDs.has(suit.id)) {
-      error(`Suit "${suit.name}" has a duplicate ID.`);
+      throw new Error(`Suit "${suit.name}" has a duplicate ID.`);
     }
 
     suitIDs.add(suit.id);
-  }
-}
-
-function setSuitDefaultValues(suits: SuitJSON[]) {
-  for (const suit of suits) {
-    // Main attributes
-    if (suit.createVariants === undefined) {
-      suit.createVariants = false;
-    }
-
-    // Visual appearance
-    if (suit.showSuitName === undefined) {
-      suit.showSuitName = false;
-    }
-
-    // Gameplay modifications
-    if (suit.oneOfEach === undefined) {
-      suit.oneOfEach = false;
-    }
-
-    if (suit.allClueColors === undefined) {
-      suit.allClueColors = false;
-    }
-
-    if (suit.noClueColors === undefined) {
-      suit.noClueColors = false;
-    }
-
-    if (suit.allClueRanks === undefined) {
-      suit.allClueRanks = false;
-    }
-
-    if (suit.noClueRanks === undefined) {
-      suit.noClueRanks = false;
-    }
-
-    if (suit.prism === undefined) {
-      suit.prism = false;
-    }
   }
 }
 
@@ -207,28 +108,28 @@ function validateVariants(variants: VariantJSON[]) {
   for (const variant of variants) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (variant.name === undefined || variant.name === "") {
-      error(
+      throw new Error(
         'One of the variants in the "variants.json" file does not have a name.',
       );
     }
 
     if (variantNames.has(variant.name)) {
-      error(`Variant "${variant.name}" has a duplicate name.`);
+      throw new Error(`Variant "${variant.name}" has a duplicate name.`);
     }
 
     variantNames.add(variant.name);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (variant.id === undefined) {
-      error(`Variant "${variant.name}" does not have an ID.`);
+      throw new Error(`Variant "${variant.name}" does not have an ID.`);
     }
 
     if (variant.id < 0) {
-      error(`Variant "${variant.name}" has a negative ID.`);
+      throw new Error(`Variant "${variant.name}" has a negative ID.`);
     }
 
     if (variantIDs.has(variant.id)) {
-      error(`Variant "${variant.name}" has a duplicate ID.`);
+      throw new Error(`Variant "${variant.name}" has a duplicate ID.`);
     }
 
     variantIDs.add(variant.id);
@@ -242,40 +143,17 @@ function setOldVariantMaps(variants: VariantJSON[]) {
   }
 }
 
-/**
- * Create an array containing the suits for the "3 Suits" variant, the "4 Suits" variant, and so on.
- */
-function getBasicVariantSuits(): string[][] {
-  const variantSuits: string[][] = [];
-
-  variantSuits[1] = ["Red"];
-  variantSuits[2] = [...variantSuits[1], "Blue"];
-
-  // Green is inserted before Blue to keep the colors in "rainbow" order.
-  variantSuits[3] = [...variantSuits[2]];
-  variantSuits[3].splice(1, 0, "Green");
-
-  // Yellow is inserted before Green to keep the colors in "rainbow" order.
-  variantSuits[4] = [...variantSuits[3]];
-  variantSuits[4].splice(1, 0, "Yellow");
-
-  variantSuits[5] = [...variantSuits[4], "Purple"];
-  variantSuits[6] = [...variantSuits[5], "Teal"];
-
-  return variantSuits;
-}
-
 function getVariantsFromVariantDescriptions(
   variantDescriptions: VariantDescription[],
 ): VariantJSON[] {
   return variantDescriptions.map((variantDescription) => ({
     id: getNextUnusedVariantID(variantDescription.name),
-    // newID: getNewVariantID(variantDescription),
+    newID: getNewVariantID(variantDescription, suitsNameMap),
     ...variantDescription,
   }));
 }
 
-function getNextUnusedVariantID(variantName: string) {
+function getNextUnusedVariantID(variantName: string): number {
   // First, prefer the old/existing variant ID, if present.
   const id = oldVariantsNameToIDMap.get(variantName);
   if (id !== undefined) {
@@ -299,49 +177,38 @@ function getNextUnusedVariantID(variantName: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getNewVariantID(variantDescription: VariantDescription) {
-  const suitIDs = getSuitIDsFromSuitNames(variantDescription.suits);
-  return suitIDs.join("+");
-}
-
-function getSuitIDsFromSuitNames(suitNames: string[]): string[] {
-  return suitNames.map((suitName) => {
-    const suit = suitsNameMap.get(suitName);
-    if (suit === undefined) {
-      throw new Error(`Failed to find the suit ID for suit: ${suitName}`);
-    }
-
-    return suit.id;
-  });
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function validateNewVariantIDs(variants: VariantJSON[]) {
+function validateNewVariantIDs(variantsJSON: VariantJSON[]) {
   const newVariantIDs = new Set();
 
-  for (const variant of variants) {
-    if (variant.newID === undefined || variant.newID === "") {
-      error(`Variant "${variant.name}" is missing a newID.`);
+  for (const variantJSON of variantsJSON) {
+    if (variantJSON.newID === "") {
+      throw new Error(`Variant "${variantJSON.name}" is missing a newID.`);
     }
 
-    if (newVariantIDs.has(variant.newID)) {
-      error(`Variant "${variant.name}" has a duplicate newID.`);
+    if (newVariantIDs.has(variantJSON.newID)) {
+      throw new Error(
+        `Variant "${variantJSON.name}" has a duplicate newID of: ${variantJSON.newID}`,
+      );
     }
 
-    newVariantIDs.add(variant.newID);
+    newVariantIDs.add(variantJSON.newID);
 
-    const reconstructedVariant = getVariantFromNewID(variant.newID, suitsIDMap);
-    reconstructedVariant.name = variant.name;
-    reconstructedVariant.id = variant.id;
-    if (!isEqual(reconstructedVariant, variant)) {
-      error(
-        `Variant "${variant.name}" has a new ID that was parsed incorrectly.`,
+    const reconstructedVariant = getVariantFromNewID(
+      variantJSON.newID,
+      variantJSON.name,
+      variantJSON.id,
+      suitsIDMap,
+    );
+
+    if (!isEqual(reconstructedVariant, variantJSON)) {
+      throw new Error(
+        `Variant "${variantJSON.name}" has a new ID that was parsed incorrectly.`,
       );
     }
   }
 }
 
-function checkForMissingVariants(
+function hasMissingVariants(
   variants: VariantJSON[],
   oldVariants: VariantJSON[],
 ): boolean {

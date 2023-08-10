@@ -8,7 +8,6 @@ import { newColorClue, newRankClue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { MsgClue } from "../types/MsgClue";
-import * as variantRules from "./variant";
 
 export function getClueName(
   clueType: ClueType,
@@ -16,7 +15,7 @@ export function getClueName(
   variant: Variant,
   characterName: string,
 ): string {
-  if (variantRules.isCowAndPig(variant)) {
+  if (variant.cowAndPig) {
     if (clueType === ClueType.Color) {
       return "Moo";
     }
@@ -27,11 +26,11 @@ export function getClueName(
     }
   }
 
-  if (variantRules.isDuck(variant) || characterName === "Quacker") {
+  if (variant.duck || characterName === "Quacker") {
     return "Quack";
   }
 
-  if (variantRules.isOddsAndEvens(variant) && clueType === ClueType.Rank) {
+  if (variant.oddsAndEvens && clueType === ClueType.Rank) {
     if (clueValue === 1) {
       return "Odd";
     }
@@ -92,7 +91,7 @@ export function touchesCard(
       return false;
     }
 
-    if (variantRules.isSynesthesia(variant) && !suit.noClueRanks) {
+    if (variant.synesthesia && !suit.noClueRanks) {
       // A card matches if it would match a prism card, in addition to normal color matches.
       const prismColorIndex = (rank - 1) % variant.clueColors.length;
       const prismColorName = variant.clueColors[prismColorIndex]!.name;
@@ -194,8 +193,6 @@ export function shouldApplyClue(
   );
 
   return (
-    !variantRules.isCowAndPig(variant) &&
-    !variantRules.isDuck(variant) &&
-    giverCharacterName !== "Quacker"
+    !variant.cowAndPig && !variant.duck && giverCharacterName !== "Quacker"
   );
 }

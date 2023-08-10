@@ -38,14 +38,6 @@ export function isEmpty(
   return !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
 }
 
-/** From: https://stackoverflow.com/questions/61526746 */
-export function isKeyOf<T extends object>(
-  key: PropertyKey,
-  target: T,
-): key is keyof T {
-  return key in target;
-}
-
 export function millisecondsToClockString(milliseconds: number): string {
   // Non timed games measure time in negative values.
   const time = Math.abs(milliseconds);
