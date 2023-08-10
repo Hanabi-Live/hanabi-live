@@ -2,9 +2,12 @@ name: CI
 
 on: [push, pull_request]
 
+defaults:
+  runs-on: ubuntu-latest
+
 jobs:
   client_build:
-    runs-on: ubuntu-latest
+    runs-on:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/workflows/setup
