@@ -47,6 +47,7 @@ export function getVariantDescriptions(
   // variants because it is a basic suit.)
   const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
 
+  // The variants should be listed in the order that they appear in "variants.md".
   return [
     ...getBasicVariants(basicVariantSuits),
     ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
@@ -58,23 +59,23 @@ export function getVariantDescriptions(
     ...getAmbiguousVariants(suitsToCreateVariantsFor),
     ...getVeryAmbiguousVariants(suitsToCreateVariantsFor),
     ...getExtremelyAmbiguousVariants(suitsToCreateVariantsFor),
+    ...getMatryoshkaVariants(suitsToCreateVariantsFor),
     ...getDualColorsVariants(suitsToCreateVariantsFor),
     ...getMixVariants(),
+    ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getBlindVariants(basicVariantSuits),
     ...getMuteVariants(basicVariantSuits),
     ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getCowAndPigVariants(basicVariantSuits),
     ...getDuckVariants(basicVariantSuits),
-    ...getThrowItInAHoleVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getReversedVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getUpOrDownVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getThrowItInAHoleVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getMatryoshkaVariants(suitsToCreateVariantsFor),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
 }
@@ -352,7 +353,7 @@ function getSpecialRankName(specialRank: number) {
   );
 }
 
-export function getSpecialClueRanks(specialRank: number): number[] {
+export function getSpecialClueRanks(specialRank: number | undefined): number[] {
   return DEFAULT_CLUE_RANKS.filter((clueRank) => clueRank !== specialRank);
 }
 
@@ -587,6 +588,54 @@ function getExtremelyAmbiguousVariants(
   return variantDescriptions;
 }
 
+function getMatryoshkaVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+  const matryoshkaSuits = [
+    "Red",
+    "Yam MD",
+    "Geas MD",
+    "Beatnik MD",
+    "Plum MD",
+    "Taupe MD",
+  ];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    variantDescriptions.push({
+      name: `Matryoshka (${numSuits} Suits)`,
+      suits: matryoshkaSuits.slice(0, numSuits),
+      showSuitNames: true,
+    });
+  }
+
+  // Second, create the special suit combinations, e.g. "Matryoshka & Rainbow (6 Suits)"
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
+      // suit.
+      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
+        continue;
+      }
+
+      const variantName = `Matryoshka & ${suit.name} (${numSuits} Suits)`;
+      const variantSuits = [
+        ...matryoshkaSuits.slice(0, numSuits - 1),
+        suit.name,
+      ];
+      const variantDescription: VariantDescription = {
+        name: variantName,
+        suits: variantSuits,
+        showSuitNames: true,
+      };
+      variantDescriptions.push(variantDescription);
+    }
+  }
+
+  return variantDescriptions;
+}
+
 function getDualColorsVariants(
   suitsToCreateVariantsFor: SuitJSON[],
 ): VariantDescription[] {
@@ -714,6 +763,84 @@ function getMixVariants(): VariantDescription[] {
   ];
 }
 
+function getCriticalFoursVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+  basicVariantSuits: string[][],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+  const numSuitsForCriticalFours = [6, 5]; // 4 suits and 3 suits would be too difficult
+
+  // Create the basic variants.
+  for (const numSuits of numSuitsForCriticalFours) {
+    const variantName = `Critical Fours (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits]!,
+      criticalRank: 4,
+    });
+  }
+
+  // Create combinations with special suits.
+  for (const suit of suitsToCreateVariantsFor) {
+    // A one of each suit in combination with this variant would be too difficult.
+    if (suit.oneOfEach === true) {
+      continue;
+    }
+
+    for (const numSuits of numSuitsForCriticalFours) {
+      const variantName = `Critical Fours & ${suit.name} (${numSuits} Suits)`;
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
+      const variantSuits = [...basicSuits, suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        criticalRank: 4,
+      });
+    }
+  }
+
+  return variantDescriptions;
+}
+
+function getClueStarvedVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+  basicVariantSuits: string[][],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+  const numSuitsForClueStarved = [6, 5]; // 4 suits and 3 suits would be too difficult
+
+  // Create the basic variants.
+  for (const numSuits of numSuitsForClueStarved) {
+    const variantName = `Clue Starved (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits]!,
+      clueStarved: true,
+    });
+  }
+
+  // Create combinations with special suits.
+  for (const suit of suitsToCreateVariantsFor) {
+    if (suit.oneOfEach === true) {
+      continue;
+    }
+
+    for (const numSuits of numSuitsForClueStarved) {
+      // 4 suits and 3 suits would be too difficult.
+      const variantName = `Clue Starved & ${suit.name} (${numSuits} Suits)`;
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
+      const variantSuits = [...basicSuits, suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        clueStarved: true,
+      });
+    }
+  }
+
+  return variantDescriptions;
+}
+
 function getBlindVariants(basicVariantSuits: string[][]): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
@@ -811,45 +938,6 @@ function getAlternatingCluesVariants(
   return variantDescriptions;
 }
 
-function getClueStarvedVariants(
-  suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: string[][],
-): VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForClueStarved = [6, 5]; // 4 suits and 3 suits would be too difficult
-
-  // Create the basic variants.
-  for (const numSuits of numSuitsForClueStarved) {
-    const variantName = `Clue Starved (${numSuits} Suits)`;
-    variantDescriptions.push({
-      name: variantName,
-      suits: basicVariantSuits[numSuits]!,
-      clueStarved: true,
-    });
-  }
-
-  // Create combinations with special suits.
-  for (const suit of suitsToCreateVariantsFor) {
-    if (suit.oneOfEach === true) {
-      continue;
-    }
-
-    for (const numSuits of numSuitsForClueStarved) {
-      // 4 suits and 3 suits would be too difficult.
-      const variantName = `Clue Starved & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1]!;
-      const variantSuits = [...basicSuits, suit.name];
-      variantDescriptions.push({
-        name: variantName,
-        suits: variantSuits,
-        clueStarved: true,
-      });
-    }
-  }
-
-  return variantDescriptions;
-}
-
 function getCowAndPigVariants(
   basicVariantSuits: string[][],
 ): VariantDescription[] {
@@ -882,38 +970,84 @@ function getDuckVariants(basicVariantSuits: string[][]): VariantDescription[] {
   return variantDescriptions;
 }
 
-function getThrowItInAHoleVariants(
+function getOddsAndEvensVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForTIIAH = [6, 5, 4]; // 3 suits would be too difficult
+  const clueRanksForOddsAndEvens = [1, 2]; // 1 represents odd, 2 represents even
 
   // Create the basic variants.
-  for (const numSuits of numSuitsForTIIAH) {
-    const variantName = `Throw It in a Hole (${numSuits} Suits)`;
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Odds and Evens (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      throwItInAHole: true,
+      clueRanks: clueRanksForOddsAndEvens,
+      oddsAndEvens: true,
     });
   }
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    if (suit.oneOfEach === true) {
-      // Throw It in a Hole & Black (6 Suits)" is 1.88 required efficiency in 5-player.
-      continue;
-    }
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
+      // suit.
+      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
+        continue;
+      }
 
-    for (const numSuits of numSuitsForTIIAH) {
-      const variantName = `Throw It in a Hole & ${suit.name} (${numSuits} Suits)`;
+      const variantName = `Odds and Evens & ${suit.name} (${numSuits} Suits)`;
       const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        throwItInAHole: true,
+        clueRanks: clueRanksForOddsAndEvens,
+        oddsAndEvens: true,
+      });
+    }
+  }
+
+  return variantDescriptions;
+}
+
+function getSynesthesiaVariants(
+  suitsToCreateVariantsFor: SuitJSON[],
+  basicVariantSuits: string[][],
+): VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Synesthesia (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits]!,
+      clueRanks: [],
+      synesthesia: true,
+    });
+  }
+
+  // Create combinations with special suits.
+  for (const suit of suitsToCreateVariantsFor) {
+    if (SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA.has(suit.name)) {
+      continue;
+    }
+
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      if (numSuits === 3 && suit.oneOfEach === true) {
+        continue;
+      }
+
+      const variantName = `Synesthesia & ${suit.name} (${numSuits} Suits)`;
+      const basicSuits = basicVariantSuits[numSuits - 1]!;
+      const variantSuits = [...basicSuits, suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        clueRanks: [],
+        synesthesia: true,
       });
     }
   }
@@ -1011,123 +1145,38 @@ function getUpOrDownVariants(
   return variantDescriptions;
 }
 
-function getSynesthesiaVariants(
+function getThrowItInAHoleVariants(
   suitsToCreateVariantsFor: SuitJSON[],
   basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
+  const numSuitsForTIIAH = [6, 5, 4]; // 3 suits would be too difficult
 
   // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Synesthesia (${numSuits} Suits)`;
+  for (const numSuits of numSuitsForTIIAH) {
+    const variantName = `Throw It in a Hole (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      clueRanks: [],
-      synesthesia: true,
+      throwItInAHole: true,
     });
   }
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    if (SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA.has(suit.name)) {
-      continue;
-    }
-
-    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      if (numSuits === 3 && suit.oneOfEach === true) {
-        continue;
-      }
-
-      const variantName = `Synesthesia & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1]!;
-      const variantSuits = [...basicSuits, suit.name];
-      variantDescriptions.push({
-        name: variantName,
-        suits: variantSuits,
-        clueRanks: [],
-        synesthesia: true,
-      });
-    }
-  }
-
-  return variantDescriptions;
-}
-
-function getCriticalFoursVariants(
-  suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: string[][],
-): VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForCriticalFours = [6, 5]; // 4 suits and 3 suits would be too difficult
-
-  // Create the basic variants.
-  for (const numSuits of numSuitsForCriticalFours) {
-    const variantName = `Critical Fours (${numSuits} Suits)`;
-    variantDescriptions.push({
-      name: variantName,
-      suits: basicVariantSuits[numSuits]!,
-      criticalFours: true,
-    });
-  }
-
-  // Create combinations with special suits.
-  for (const suit of suitsToCreateVariantsFor) {
-    // A one of each suit in combination with this variant would be too difficult.
     if (suit.oneOfEach === true) {
+      // Throw It in a Hole & Black (6 Suits)" is 1.88 required efficiency in 5-player.
       continue;
     }
 
-    for (const numSuits of numSuitsForCriticalFours) {
-      const variantName = `Critical Fours & ${suit.name} (${numSuits} Suits)`;
+    for (const numSuits of numSuitsForTIIAH) {
+      const variantName = `Throw It in a Hole & ${suit.name} (${numSuits} Suits)`;
       const basicSuits = basicVariantSuits[numSuits - 1]!;
       const variantSuits = [...basicSuits, suit.name];
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        criticalFours: true,
-      });
-    }
-  }
-
-  return variantDescriptions;
-}
-
-function getOddsAndEvensVariants(
-  suitsToCreateVariantsFor: SuitJSON[],
-  basicVariantSuits: string[][],
-): VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-  const clueRanksForOddsAndEvens = [1, 2]; // 1 represents odd, 2 represents even
-
-  // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Odds and Evens (${numSuits} Suits)`;
-    variantDescriptions.push({
-      name: variantName,
-      suits: basicVariantSuits[numSuits]!,
-      clueRanks: clueRanksForOddsAndEvens,
-      oddsAndEvens: true,
-    });
-  }
-
-  // Create combinations with special suits.
-  for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
-      const variantName = `Odds and Evens & ${suit.name} (${numSuits} Suits)`;
-      const basicSuits = basicVariantSuits[numSuits - 1]!;
-      const variantSuits = [...basicSuits, suit.name];
-      variantDescriptions.push({
-        name: variantName,
-        suits: variantSuits,
-        clueRanks: clueRanksForOddsAndEvens,
-        oddsAndEvens: true,
+        throwItInAHole: true,
       });
     }
   }
@@ -1210,53 +1259,6 @@ function getChimneysVariants(
     }
   }
 
-  return variantDescriptions;
-}
-
-function getMatryoshkaVariants(
-  suitsToCreateVariantsFor: SuitJSON[],
-): VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-  const matryoshkaSuits = [
-    "Red",
-    "Yam MD",
-    "Geas MD",
-    "Beatnik MD",
-    "Plum MD",
-    "Taupe MD",
-  ];
-
-  // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    variantDescriptions.push({
-      name: `Matryoshka (${numSuits} Suits)`,
-      suits: matryoshkaSuits.slice(0, numSuits),
-      showSuitNames: true,
-    });
-  }
-
-  // Second, create the special suit combinations, e.g. "Matryoshka & Rainbow (6 Suits)"
-  for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
-      const variantName = `Matryoshka & ${suit.name} (${numSuits} Suits)`;
-      const variantSuits = [
-        ...matryoshkaSuits.slice(0, numSuits - 1),
-        suit.name,
-      ];
-      const variantDescription: VariantDescription = {
-        name: variantName,
-        suits: variantSuits,
-        showSuitNames: true,
-      };
-      variantDescriptions.push(variantDescription);
-    }
-  }
   return variantDescriptions;
 }
 

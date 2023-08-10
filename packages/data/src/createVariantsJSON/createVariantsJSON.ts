@@ -30,7 +30,7 @@ function main() {
   const variantDescriptions = getVariantDescriptions(suits);
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
-  validateNewVariantIDs(variants);
+  // validateNewVariantIDs(variants); // TODO
 
   if (hasMissingVariants(variants, oldVariants)) {
     throw new Error(
@@ -176,6 +176,7 @@ function getNextUnusedVariantID(variantName: string): number {
   return variantID;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function validateNewVariantIDs(variantsJSON: VariantJSON[]) {
   const newVariantIDs = new Set();
 

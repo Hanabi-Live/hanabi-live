@@ -1,6 +1,6 @@
 # Variants
 
-[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further customize a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further customize a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options).
 
 <br />
 
@@ -177,13 +177,6 @@ One of each card per suit (e.g. 5 in total):
 - In a 5-suit game, the Taupe suit would be removed, and so on.
 - The name of the variant comes from [nested doll sets](https://en.wikipedia.org/wiki/Matryoshka_doll).
 
-### Sudoku
-
-- Stacks can be started at arbitrary ranks and will wrap around from 5 to 1 until 5 cards are played
-  - Each stack has to be started with a different rank (but it is not predetermined, which suit starts where)
-- As ranks are now completely symmetric, there are two copies of each card
-- Playing the fifth card of a suit gives back a clue
-
 ### Dual-Color
 
 - Each suit is touched by 2 separate colors.
@@ -324,6 +317,8 @@ One of each card per suit (e.g. 5 in total):
   5. Cocoa rainbow (all colors, rankless, one of each)
   6. Null (rankless and colorless)
 
+<!-- The variants are listed in order of how they appear in "VariantDescription.ts". -->
+
 ### Critical Fours
 
 - One 4 is removed from each suit.
@@ -411,6 +406,13 @@ One of each card per suit (e.g. 5 in total):
 ### Chimneys
 
 - Rank clues also touch all higher ranked cards.
+
+### Sudoku
+
+- Instead of the stacks starting with a rank of 1, the stacks can be started with any rank. They will wrap around from 5 to 1 until 5 cards are played.
+- Each stack has to be started with a different rank. However, it is not predetermined which stack has to start with a particular rank.
+- Instead of the normal card distribution, there are two copies of each card.
+- Similar to a no variant game, playing the fifth card of a suit gives back a clue.
 
 <br />
 

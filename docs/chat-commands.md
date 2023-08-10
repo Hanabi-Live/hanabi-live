@@ -1,6 +1,6 @@
 # Hanab Live Chat Commands
 
-If you need general help with the website, then read the [features page](FEATURES.md). If you need the list of chat commands, read on.
+If you need general help with the website, then read the [features page](features.md). If you need the list of chat commands, read on.
 
 <br />
 
@@ -13,17 +13,17 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
 | `/doc`                                | Get the link for the [H-Group reference document](https://hanabi.github.io/docs/reference)                                         |
 | `/efficiency`                         | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)                |
-| `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md) |
+| `/manual`                             | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md) |
 | `/new`                                | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/docs/beginner)                                            |
 | `/path`                               | Get the link for the [H-Group level summary](https://hanabi.github.io/docs/learning-path/#level-summary)                           |
-| `/variants`                           | Get the link for the [list of variant descriptions](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/VARIANTS.md)         |
+| `/variants`                           | Get the link for the [list of variant descriptions](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md)         |
 | `/github`                             | Get the link for the [GitHub repository](https://github.com/Hanabi-Live/hanabi-live)                                               |
 | `/playerinfo [username]`              | Get the number of games played for a specific player                                                                               |
 | `/playerinfo [username1] [username2]` | Get the number of games played for a list of players                                                                               |
 | `/playerinfo`                         | Get the number of games played for all the players in the current game                                                             |
 | `/random [min] [max]`                 | Get a random integer                                                                                                               |
 | `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others                                                                   |
-| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md)     |
+| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md)     |
 | `/shrug`                              | Displays a single line ASCII art                                                                                                   |
 | `/timeleft`                           | Get how much time is left before the server shuts down                                                                             |
 | `/uptime`                             | Get how long the server has been online                                                                                            |

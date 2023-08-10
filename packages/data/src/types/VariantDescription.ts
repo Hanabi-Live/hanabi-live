@@ -4,6 +4,7 @@
 export interface VariantDescription {
   readonly name: string;
   readonly suits: readonly string[];
+
   clueColors?: readonly string[];
   clueRanks?: readonly number[];
 
@@ -14,19 +15,21 @@ export interface VariantDescription {
   specialNoClueRanks?: boolean;
   specialDeceptive?: boolean;
 
-  oddsAndEvens?: boolean;
-  readonly funnels?: boolean;
-  readonly chimneys?: boolean;
+  // Listed in order of how they appear in "variants.md".
+  criticalRank?: number;
   clueStarved?: boolean;
+  colorCluesTouchNothing?: boolean;
+  rankCluesTouchNothing?: boolean;
   alternatingClues?: boolean;
   cowAndPig?: boolean;
   duck?: boolean;
-  throwItInAHole?: boolean;
-  upOrDown?: boolean;
+  oddsAndEvens?: boolean;
   synesthesia?: boolean;
-  criticalFours?: boolean;
-  colorCluesTouchNothing?: boolean;
-  rankCluesTouchNothing?: boolean;
+  upOrDown?: boolean;
+  throwItInAHole?: boolean;
+  funnels?: boolean;
+  chimneys?: boolean;
 
+  // Computed based on the suits and type of variant.
   showSuitNames?: boolean;
 }

@@ -1,7 +1,7 @@
 [
   {
     "command": "help",
-    "response": "You can find detailed explanation of commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/CHAT_COMMANDS.md",
+    "response": "You can find detailed explanation of commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/chat-commands.md",
     "alias": ["commands", "?"],
     "private": true,
     "isHelp": true
@@ -12,12 +12,12 @@
   },
   {
     "command": "manual",
-    "response": "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/FEATURES.md",
+    "response": "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md",
     "alias": ["features"]
   },
   {
     "command": "rules",
-    "response": "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/COMMUNITY_GUIDELINES.md",
+    "response": "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md",
     "alias": ["community", "guidelines"]
   },
   {
@@ -55,7 +55,7 @@
   },
   {
     "command": "variants",
-    "response": "Description of variants: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/VARIANTS.md",
+    "response": "Description of variants: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md",
     "alias": ["vars"]
   }
 ]

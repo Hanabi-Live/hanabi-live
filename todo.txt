@@ -11,5 +11,5 @@ old stuff:
 - rename colorCluesTouchNothing
 - rename rankCluesTouchNothing
 - rename all specialX properties
-- rename all variant properties based on order in VARIANTS.md
+- rename all variant properties based on order in variants.md
 - make VariantJSON extend from VariantDescription

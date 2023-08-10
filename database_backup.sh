@@ -58,7 +58,7 @@ if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
   delete_file_if_near_full_local
 fi
 
-# Detect to see if we have Google Drive backups configured (see "INSTALL.md").
+# Detect to see if we have Google Drive backups configured (see "install.md").
 if [[ -z ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME-} ]]; then
   echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME\" is not set in the \".env\" file."
   exit 0

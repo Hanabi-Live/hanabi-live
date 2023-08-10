@@ -22,19 +22,19 @@ Find teammates to play games with at [the Discord server](https://discord.gg/FAD
 
 ## List of Variants
 
-Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/VARIANTS.md), in which the rules are changed to make the game more difficult.
+Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/variants.md), in which the rules are changed to make the game more difficult.
 
 <br />
 
 ## List of Features
 
-See the [features documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/FEATURES.md).
+See the [features documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/features.md).
 
 <br />
 
 ## Installation
 
-See the [installation documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/INSTALL.md).
+See the [installation documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/install.md).
 
 <br />
 

@@ -62,6 +62,8 @@ function getSpecialVariantIDSuffixes(
 ): string[] {
   const variantIDSuffixes: string[] = [];
 
+  // Suit-Ones / Suit-Fives
+
   if (variantDescription.specialRank !== undefined) {
     if (
       variantDescription.specialAllClueColors === true &&
@@ -143,6 +145,7 @@ function getSpecialVariantIDSuffixes(
       variantIDSuffixes.push(`L${variantDescription.specialRank}`); // Light Pink
     }
 
+    // Deceptive-Ones / Deceptive-Fives
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -157,7 +160,11 @@ function getSpecialVariantIDSuffixes(
   return variantIDSuffixes;
 }
 
-/** This function is only used for validation. */
+/**
+ * This function is only used for validation.
+ *
+ * It cannot compute the name or the old ID, so those must be provided.
+ */
 export function getVariantFromNewID(
   newID: string,
   name: string,
@@ -172,19 +179,24 @@ export function getVariantFromNewID(
   }
 
   const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
-  const suitNames = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
+  const suits = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
 
   const variant: VariantJSON = {
     name,
     id: oldID,
-    suits: suitNames,
     newID,
+    suits,
   };
 
   for (const suitIDWithModifiers of suitIDsWithModifiers) {
     const [suitID] = splitSuitID(suitIDWithModifiers);
+    if (suitID === undefined) {
+      throw new Error(
+        `Failed to parse the base suit ID from the suit ID of: ${suitIDWithModifiers}`,
+      );
+    }
 
-    const suit = suitsIDMap.get(suitID!);
+    const suit = suitsIDMap.get(suitID);
     if (suit === undefined) {
       throw new Error(`Failed to find a suit with an ID of: ${suitID}`);
     }
@@ -195,10 +207,16 @@ export function getVariantFromNewID(
   }
 
   for (const variantModifier of variantModifiers) {
-    const secondCharacter = variantModifier[1]!;
+    const secondCharacter = variantModifier[1];
+    if (secondCharacter === undefined) {
+      throw new Error(
+        `Failed to get the second character of the variant modifier: ${variantModifier}`,
+      );
+    }
+
     const secondCharacterNumber = parseIntSafe(secondCharacter);
     const specialRank = Number.isNaN(secondCharacterNumber)
-      ? 0
+      ? undefined
       : secondCharacterNumber;
 
     switch (variantModifier) {
@@ -312,6 +330,22 @@ export function getVariantFromNewID(
         break;
       }
 
+      // Critical 4's
+      case "C1":
+      case "C2":
+      case "C3":
+      case "C4":
+      case "C5": {
+        variant.criticalRank = specialRank;
+        break;
+      }
+
+      // Clue Starved
+      case "CS": {
+        variant.clueStarved = true;
+        break;
+      }
+
       // Color Blind
       case "CB": {
         variant.colorCluesTouchNothing = true;
@@ -349,12 +383,6 @@ export function getVariantFromNewID(
         break;
       }
 
-      // Clue Starved
-      case "CS": {
-        variant.clueStarved = true;
-        break;
-      }
-
       // Cow & Pig
       case "CP": {
         variant.cowAndPig = true;
@@ -367,16 +395,10 @@ export function getVariantFromNewID(
         break;
       }
 
-      // Throw It in a Hole.
-      case "TH": {
-        variant.throwItInAHole = true;
-        break;
-      }
-
-      // Up or Down
-      case "UD": {
-        variant.upOrDown = true;
-        variant.showSuitNames = true;
+      // Odds and Evens
+      case "OE": {
+        variant.oddsAndEvens = true;
+        variant.clueRanks = [1, 2];
         break;
       }
 
@@ -387,16 +409,28 @@ export function getVariantFromNewID(
         break;
       }
 
-      // Critical 4's
-      case "C4": {
-        variant.criticalFours = true;
+      // Up or Down
+      case "UD": {
+        variant.upOrDown = true;
+        variant.showSuitNames = true;
         break;
       }
 
-      // Odds and Evens
-      case "OE": {
-        variant.oddsAndEvens = true;
-        variant.clueRanks = [1, 2];
+      // Throw It in a Hole.
+      case "TH": {
+        variant.throwItInAHole = true;
+        break;
+      }
+
+      // Funnels
+      case "FU": {
+        variant.funnels = true;
+        break;
+      }
+
+      // Chimneys
+      case "CH": {
+        variant.chimneys = true;
         break;
       }
 

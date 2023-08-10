@@ -25,6 +25,5 @@ export interface Variant extends VariantJSONModified {
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
   readonly suitAbbreviations: readonly string[];
-
   readonly identityNotePattern: string;
 }

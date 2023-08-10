@@ -10,15 +10,24 @@ import * as variantRules from "./variant";
 
 export function totalCards(variant: Variant): number {
   let totalCardsInTheDeck = 0;
+
   for (const suit of variant.suits) {
-    totalCardsInTheDeck += 10;
-    if (suit.oneOfEach) {
-      totalCardsInTheDeck -= 5;
-    } else if (variant.upOrDown || variant.criticalFours) {
-      totalCardsInTheDeck--;
-    }
+    totalCardsInTheDeck += totalCardsInSuit(variant, suit);
   }
+
   return totalCardsInTheDeck;
+}
+
+function totalCardsInSuit(variant: Variant, suit: Suit): number {
+  if (suit.oneOfEach) {
+    return 5;
+  }
+
+  if (variant.upOrDown || variant.criticalRank) {
+    return 9; // The normal amount minus one because there is one more critical card.
+  }
+
+  return 10; // Three 1's + Two 2's + Two 3's + Two 4's + One 5
 }
 
 /**
@@ -32,6 +41,10 @@ export function numCopiesOfCard(
   variant: Variant,
 ): number {
   if (suit.oneOfEach) {
+    return 1;
+  }
+
+  if (variant.criticalRank === rank) {
     return 1;
   }
 
@@ -58,10 +71,6 @@ export function numCopiesOfCard(
     }
 
     case 4: {
-      if (variant.criticalFours) {
-        return 1;
-      }
-
       return 2;
     }
 

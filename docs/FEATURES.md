@@ -29,7 +29,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 ## Basic How-To
 
-- If you don't know how to play the game already, read [the rules](RULES.md). For visual learners, you can also try watching [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
+- If you don't know how to play the game already, read [the rules](rules.md). For visual learners, you can also try watching [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
 - Getting a game going should be self-explanatory, but just in case:
   - Once logged in, click on the "Create Game" button on the top navigation bar and then click "Create".
   - For everyone else, the game will now appear in the list of games. To join it, they need to click on row corresponding to the game.
@@ -157,7 +157,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 ### Variants
 
-- The server implements several variants, which are listed on [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/VARIANTS.md).
+- The server implements several variants, which are listed on [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/variants.md).
 
 ### Timed Games
 
@@ -224,7 +224,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 - Each game has the option to enable "Detrimental Character Assignments". When enabled, it will restrict players in additional ways beyond the normal rules.
 - The characters are loosely based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
-- More information on the characters are listed on [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/CHARACTERS.md).
+- More information on the characters are listed on [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/characters.md).
 
 ### Password-Protected Games
 
@@ -491,11 +491,11 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 ## Chat
 
-- The website offers a public lobby chat and a private per-game chat. When chatting with other players, please follow [the community guidelines](COMMUNITY_GUIDELINES.md).
+- The website offers a public lobby chat and a private per-game chat. When chatting with other players, please follow [the community guidelines](community-guidelines.md).
 - You can also send private messages to other players with the `/pm` command.
 - You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json). For example, `:thinking:` will turn into 🤔.
 - You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
-- There are various chat commands. The full list can be found [here](CHAT_COMMANDS.md).
+- There are various chat commands. The full list can be found [here](chat-commands.md).
 - All lobby chat will be replicated to (and from) the [Discord server](https://discord.gg/FADvkJp).
 - During an ongoing game, right-clicking the chat button will mute notifications from chat and hide the spectator count ("zen mode", indicated by ☯️). Right-clicking again reverts this.
 

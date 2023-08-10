@@ -20,6 +20,7 @@ export function variantsInit(
     );
   }
 
+  // Fields are validated in the order that they appear in "VariantDescription.ts".
   for (const variantJSON of variantsJSON as VariantJSON[]) {
     // Validate the name.
     if (variantJSON.name === "") {
@@ -28,12 +29,6 @@ export function variantsInit(
       );
     }
     const { name } = variantJSON;
-
-    // Validate the ID. (The first variant has an ID of 0.)
-    if (variantJSON.id < 0) {
-      throw new Error(`The "${name}" variant has an invalid ID.`);
-    }
-    const { id } = variantJSON;
 
     // Validate the suits.
     if (variantJSON.suits.length === 0) {
@@ -124,32 +119,16 @@ export function variantsInit(
     }
     const specialDeceptive = variantJSON.specialDeceptive ?? false;
 
-    // Validate the "oddsAndEvens" property. If it is not specified, assume false (e.g. cluing ranks
-    // in this variant works normally).
-    if (variantJSON.oddsAndEvens === false) {
+    // Validate the "criticalRank" property. If it is not specified, assume 0.
+    if (
+      variantJSON.criticalRank !== undefined &&
+      (variantJSON.criticalRank < 1 || variantJSON.criticalRank > 4)
+    ) {
       throw new Error(
-        `The "oddsAndEvens" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "criticalRank" property for the variant "${variantJSON.name}" must be set between 1 and 4. If that does not make sense, then remove the property altogether.`,
       );
     }
-    const oddsAndEvens = variantJSON.oddsAndEvens ?? false;
-
-    // Validate the "funnels" property. If it is not specified, assume false (e.g. cluing ranks in
-    // this variant works normally).
-    if (variantJSON.funnels === false) {
-      throw new Error(
-        `The "funnels" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const funnels = variantJSON.funnels ?? false;
-
-    // Validate the "chimneys" property. If it is not specified, assume false (e.g. cluing ranks in
-    // this variant works normally).
-    if (variantJSON.chimneys === false) {
-      throw new Error(
-        `The "chimneys" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const chimneys = variantJSON.chimneys ?? false;
+    const criticalRank = variantJSON.criticalRank ?? 0;
 
     // Validate the "clueStarved" property. If it is not specified, assume false.
     if (variantJSON.clueStarved === false) {
@@ -158,62 +137,6 @@ export function variantsInit(
       );
     }
     const clueStarved = variantJSON.clueStarved ?? false;
-
-    // Validate the "alternatingClues" property. If it is not specified, assume false.
-    if (variantJSON.alternatingClues === false) {
-      throw new Error(
-        `The "alternatingClues" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const alternatingClues = variantJSON.alternatingClues ?? false;
-
-    // Validate the "cowAndPig" property. If it is not specified, assume false.
-    if (variantJSON.cowAndPig === false) {
-      throw new Error(
-        `The "cowAndPig" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const cowPig = variantJSON.cowAndPig ?? false;
-
-    // Validate the "duck" property. If it is not specified, assume false.
-    if (variantJSON.duck === false) {
-      throw new Error(
-        `The "duck" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const duck = variantJSON.duck ?? false;
-
-    // Validate the "throwItInAHole" property. If it is not specified, assume false.
-    if (variantJSON.throwItInAHole === false) {
-      throw new Error(
-        `The "throwItInAHole" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const throwItInAHole = variantJSON.throwItInAHole ?? false;
-
-    // Validate the "upOrDown" property. If it is not specified, assume false.
-    if (variantJSON.upOrDown === false) {
-      throw new Error(
-        `The "upOrDown" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const upOrDown = variantJSON.upOrDown ?? false;
-
-    // Validate the "synesthesia" property. If it is not specified, assume false.
-    if (variantJSON.synesthesia === false) {
-      throw new Error(
-        `The "synesthesia" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const synesthesia = variantJSON.synesthesia ?? false;
-
-    // Validate the "criticalFours" property. If it is not specified, assume false.
-    if (variantJSON.criticalFours === false) {
-      throw new Error(
-        `The "criticalFours" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const criticalFours = variantJSON.criticalFours ?? false;
 
     // Validate the "colorCluesTouchNothing" property. If it is not specified, assume false (e.g.
     // cluing colors in this variant works normally).
@@ -233,8 +156,84 @@ export function variantsInit(
     }
     const rankCluesTouchNothing = variantJSON.rankCluesTouchNothing ?? false;
 
+    // Validate the "alternatingClues" property. If it is not specified, assume false.
+    if (variantJSON.alternatingClues === false) {
+      throw new Error(
+        `The "alternatingClues" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const alternatingClues = variantJSON.alternatingClues ?? false;
+
+    // Validate the "cowAndPig" property. If it is not specified, assume false.
+    if (variantJSON.cowAndPig === false) {
+      throw new Error(
+        `The "cowAndPig" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const cowAndPig = variantJSON.cowAndPig ?? false;
+
+    // Validate the "duck" property. If it is not specified, assume false.
+    if (variantJSON.duck === false) {
+      throw new Error(
+        `The "duck" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const duck = variantJSON.duck ?? false;
+
+    // Validate the "oddsAndEvens" property. If it is not specified, assume false (e.g. cluing ranks
+    // in this variant works normally).
+    if (variantJSON.oddsAndEvens === false) {
+      throw new Error(
+        `The "oddsAndEvens" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const oddsAndEvens = variantJSON.oddsAndEvens ?? false;
+
+    // Validate the "synesthesia" property. If it is not specified, assume false.
+    if (variantJSON.synesthesia === false) {
+      throw new Error(
+        `The "synesthesia" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const synesthesia = variantJSON.synesthesia ?? false;
+
+    // Validate the "upOrDown" property. If it is not specified, assume false.
+    if (variantJSON.upOrDown === false) {
+      throw new Error(
+        `The "upOrDown" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const upOrDown = variantJSON.upOrDown ?? false;
+
+    // Validate the "throwItInAHole" property. If it is not specified, assume false.
+    if (variantJSON.throwItInAHole === false) {
+      throw new Error(
+        `The "throwItInAHole" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const throwItInAHole = variantJSON.throwItInAHole ?? false;
+
+    // Validate the "funnels" property. If it is not specified, assume false (e.g. cluing ranks in
+    // this variant works normally).
+    if (variantJSON.funnels === false) {
+      throw new Error(
+        `The "funnels" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const funnels = variantJSON.funnels ?? false;
+
+    // Validate the "chimneys" property. If it is not specified, assume false (e.g. cluing ranks in
+    // this variant works normally).
+    if (variantJSON.chimneys === false) {
+      throw new Error(
+        `The "chimneys" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const chimneys = variantJSON.chimneys ?? false;
+
     // Validate the "showSuitNames" property. If it is not specified, assume that we are not showing
-    // the suit names.
+    // the suit names (unless one of the suits in the variant explicitly says to show the suit names
+    // for any variant that contains that suit).
     if (variantJSON.showSuitNames === false) {
       throw new Error(
         `The "showSuitNames" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
@@ -246,6 +245,18 @@ export function variantsInit(
     if (variantHasReversedSuits) {
       showSuitNames = true;
     }
+
+    // Validate the ID. (The first variant has an ID of 0.)
+    if (variantJSON.id < 0) {
+      throw new Error(`The "${name}" variant has an invalid ID.`);
+    }
+    const { id } = variantJSON;
+
+    // Validate the new ID.
+    if (variantJSON.newID === "") {
+      throw new Error(`The "${name}" variant has a blank "newID" property.`);
+    }
+    const { newID } = variantJSON;
 
     // Assume 5 cards per stack.
     const maxScore = suits.length * 5;
@@ -272,10 +283,9 @@ export function variantsInit(
     // Add it to the map.
     const variant: Variant = {
       name,
-      id,
-      newID: "", // TODO
       suits,
       ranks,
+
       clueColors,
       clueRanks,
 
@@ -286,21 +296,25 @@ export function variantsInit(
       specialNoClueRanks,
       specialDeceptive,
 
-      oddsAndEvens,
-      funnels,
-      chimneys,
+      criticalRank,
       clueStarved,
-      alternatingClues,
-      cowAndPig: cowPig,
-      duck,
-      throwItInAHole,
-      upOrDown,
-      synesthesia,
-      criticalFours,
       colorCluesTouchNothing,
       rankCluesTouchNothing,
+      alternatingClues,
+      cowAndPig,
+      duck,
+      oddsAndEvens,
+      synesthesia,
+      upOrDown,
+      throwItInAHole,
+      funnels,
+      chimneys,
 
       showSuitNames,
+
+      id,
+      newID,
+
       maxScore,
       offsetCornerElements,
       suitAbbreviations,
