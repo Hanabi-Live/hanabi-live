@@ -6,7 +6,7 @@ jobs:
   client_build:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup
+      - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build_client.sh
 
   client_lint:
