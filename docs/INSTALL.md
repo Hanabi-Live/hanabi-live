@@ -8,7 +8,6 @@ The following instructions will set up the server as well as the linters. We ass
 
 <br />
 
-
 ## Table of Contents
 
 1. [Hardware Prerequisites](#hardware-prerequisites)
