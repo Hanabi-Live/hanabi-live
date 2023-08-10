@@ -3,7 +3,8 @@ name: CI
 on: [push, pull_request]
 
 defaults:
-  runs-on: ubuntu-latest
+  jobs:
+    runs-on: ubuntu-latest
 
 jobs:
   client_build:
