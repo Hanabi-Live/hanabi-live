@@ -10,34 +10,7 @@ jobs:
       - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build_client.sh
 
-  client_lint:
-    name: Client - Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/workflows/setup
-
-      - name: Create the "version.js" file
-        run: bash ./packages/client/set_version.sh
-
-      - name: Lint the TypeScript code
-        run: bash lint.sh
-
-  client_test:
-    name: Client - Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/workflows/setup
-
-      - name: Create the "version.js" file
-        run: bash ./packages/client/set_version.sh
-
-      - name: Test the TypeScript code
-        run: yarn test
-
   server_build:
-    name: Server - Build
     runs-on: ubuntu-latest
     env:
       working-directory: ./server
@@ -52,8 +25,33 @@ jobs:
         run: bash build_server.sh
         working-directory: ${{ env.working-directory }}
 
+  lint:
+    strategy:
+      matrix:
+        packageName: [client, data, game, server, utils]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
+
+      - name: Create the "version.js" file
+        run: bash ./packages/client/set_version.sh
+
+      - name: Lint the TypeScript code
+        run: bash ./packages/${{ matrix.packageName }}/lint.sh
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
+
+      - name: Create the "version.js" file
+        run: bash ./packages/client/set_version.sh
+
+      - name: Test the TypeScript code using Jest
+        run: yarn test
+
   spell_check:
-    name: Spell Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

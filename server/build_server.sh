@@ -21,4 +21,4 @@ fi
 # Compile the Golang code
 cd "$DIR/src"
 go build -o "$DIR/../$REPO_NAME"
-echo "$REPO - Go compilation succeeded."
+echo "$REPO_NAME - Go compilation succeeded."
