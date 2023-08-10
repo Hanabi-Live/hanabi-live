@@ -1,17 +1,10 @@
-import { isEqual } from "lodash";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { SuitJSON } from "../types/SuitJSON";
 import type { VariantDescription } from "../types/VariantDescription";
 import type { VariantJSON } from "../types/VariantJSON";
 import { getVariantDescriptions } from "./getVariantDescriptions";
-import { getNewVariantID, getVariantFromNewID } from "./newID";
-
-const oldVariantsNameToIDMap = new Map<string, number>();
-const oldVariantsIDToNameMap = new Map<number, string>();
-const suitsNameMap = new Map<string, SuitJSON>();
-const suitsIDMap = new Map<string, SuitJSON>();
-const lastUsedVariantID = -1;
+import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
 main();
 
@@ -20,17 +13,23 @@ function main() {
 
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
   validateSuits(suits);
-  setSuitMaps(suits);
+  const { suitsNameMap, suitsIDMap } = getSuitMaps(suits);
 
   const oldVariants = getJSONAndParse(variantsPath) as VariantJSON[];
   validateVariants(oldVariants);
-  setOldVariantMaps(oldVariants);
+  const { oldVariantsNameToIDMap, oldVariantsIDToNameMap } =
+    getOldVariantMaps(oldVariants);
 
   // Start to build all of the variants.
-  const variantDescriptions = getVariantDescriptions(suits);
-  const variants = getVariantsFromVariantDescriptions(variantDescriptions);
+  const variantDescriptions = getVariantDescriptions(suits, suitsNameMap);
+  const variants = getVariantsFromVariantDescriptions(
+    variantDescriptions,
+    suitsNameMap,
+    oldVariantsNameToIDMap,
+    oldVariantsIDToNameMap,
+  );
 
-  // validateNewVariantIDs(variants); // TODO
+  validateNewVariantIDs(variants, suitsIDMap);
 
   if (hasMissingVariants(variants, oldVariants)) {
     throw new Error(
@@ -94,11 +93,19 @@ function validateSuits(suits: SuitJSON[]) {
   }
 }
 
-function setSuitMaps(suits: SuitJSON[]) {
+function getSuitMaps(suits: SuitJSON[]) {
+  const suitsNameMap = new Map<string, SuitJSON>();
+  const suitsIDMap = new Map<string, SuitJSON>();
+
   for (const suit of suits) {
     suitsNameMap.set(suit.name, suit);
     suitsIDMap.set(suit.id, suit);
   }
+
+  return {
+    suitsNameMap,
+    suitsIDMap,
+  };
 }
 
 function validateVariants(variants: VariantJSON[]) {
@@ -136,24 +143,43 @@ function validateVariants(variants: VariantJSON[]) {
   }
 }
 
-function setOldVariantMaps(variants: VariantJSON[]) {
+function getOldVariantMaps(variants: VariantJSON[]) {
+  const oldVariantsNameToIDMap = new Map<string, number>();
+  const oldVariantsIDToNameMap = new Map<number, string>();
+
   for (const variant of variants) {
     oldVariantsNameToIDMap.set(variant.name, variant.id);
     oldVariantsIDToNameMap.set(variant.id, variant.name);
   }
+
+  return {
+    oldVariantsNameToIDMap,
+    oldVariantsIDToNameMap,
+  };
 }
 
 function getVariantsFromVariantDescriptions(
   variantDescriptions: VariantDescription[],
+  suitsNameMap: Map<string, SuitJSON>,
+  oldVariantsNameToIDMap: Map<string, number>,
+  oldVariantsIDToNameMap: Map<number, string>,
 ): VariantJSON[] {
   return variantDescriptions.map((variantDescription) => ({
-    id: getNextUnusedVariantID(variantDescription.name),
+    id: getNextUnusedVariantID(
+      variantDescription.name,
+      oldVariantsNameToIDMap,
+      oldVariantsIDToNameMap,
+    ),
     newID: getNewVariantID(variantDescription, suitsNameMap),
     ...variantDescription,
   }));
 }
 
-function getNextUnusedVariantID(variantName: string): number {
+function getNextUnusedVariantID(
+  variantName: string,
+  oldVariantsNameToIDMap: Map<string, number>,
+  oldVariantsIDToNameMap: Map<number, string>,
+): number {
   // First, prefer the old/existing variant ID, if present.
   const id = oldVariantsNameToIDMap.get(variantName);
   if (id !== undefined) {
@@ -162,7 +188,7 @@ function getNextUnusedVariantID(variantName: string): number {
 
   // Otherwise, find the lowest unused variant ID.
   let foundUnusedVariantID = false;
-  let variantID = lastUsedVariantID;
+  let variantID = -1;
   do {
     variantID++;
     const existingVariantName = oldVariantsIDToNameMap.get(variantID);
@@ -174,43 +200,6 @@ function getNextUnusedVariantID(variantName: string): number {
   } while (!foundUnusedVariantID);
 
   return variantID;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function validateNewVariantIDs(variantsJSON: VariantJSON[]) {
-  const newVariantIDs = new Set();
-
-  for (const variantJSON of variantsJSON) {
-    if (variantJSON.newID === "") {
-      throw new Error(`Variant "${variantJSON.name}" is missing a newID.`);
-    }
-
-    if (newVariantIDs.has(variantJSON.newID)) {
-      throw new Error(
-        `Variant "${variantJSON.name}" has a duplicate newID of: ${variantJSON.newID}`,
-      );
-    }
-
-    newVariantIDs.add(variantJSON.newID);
-
-    const reconstructedVariant = getVariantFromNewID(
-      variantJSON.newID,
-      variantJSON.name,
-      variantJSON.id,
-      suitsIDMap,
-    );
-
-    if (!isEqual(variantJSON, reconstructedVariant)) {
-      console.error("--------------------------------------------------------");
-      console.error("variantJSON:", variantJSON);
-      console.error("--------------------------------------------------------");
-      console.error("reconstructedVariant:", reconstructedVariant);
-      console.error("--------------------------------------------------------");
-      throw new Error(
-        `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newID}" that was parsed incorrectly. (See the previous object logs.)`,
-      );
-    }
-  }
 }
 
 function hasMissingVariants(

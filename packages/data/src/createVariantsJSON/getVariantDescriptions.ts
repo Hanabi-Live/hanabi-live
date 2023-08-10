@@ -1,4 +1,4 @@
-import { ReadonlySet } from "@hanabi/utils";
+import { ReadonlySet, trimSuffix } from "@hanabi/utils";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../types/SuitJSON";
 import type { VariantDescription } from "../types/VariantDescription";
@@ -40,6 +40,7 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA = new ReadonlySet([
 
 export function getVariantDescriptions(
   suits: SuitJSON[],
+  suitsNameMap: Map<string, SuitJSON>,
 ): VariantDescription[] {
   const basicVariantSuits = getBasicVariantSuits();
 
@@ -48,7 +49,7 @@ export function getVariantDescriptions(
   const suitsToCreateVariantsFor = suits.filter((suit) => suit.createVariants);
 
   // The variants should be listed in the order that they appear in "variants.md".
-  return [
+  const variantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
     ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
     ...getVariantsForEachSpecialSuitCombination(
@@ -78,6 +79,27 @@ export function getVariantDescriptions(
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
+
+  // Dynamically compute the "showSuitNames" property of the variant based on the suits.
+  for (const variantDescription of variantDescriptions) {
+    const variantHasConfusingSuit = variantDescription.suits.some(
+      (suitName) => {
+        const baseSuitName = trimSuffix(suitName, SUIT_REVERSED_SUFFIX);
+        const suit = suitsNameMap.get(baseSuitName);
+        if (suit === undefined) {
+          throw new Error(`Failed to find the suit: ${suitName}`);
+        }
+
+        return suit.showSuitName === true;
+      },
+    );
+
+    if (variantHasConfusingSuit) {
+      variantDescription.showSuitNames = true;
+    }
+  }
+
+  return variantDescriptions;
 }
 
 /**
@@ -372,7 +394,7 @@ function getVariantDescriptionForSpecialRankVariant(
 
   // Fill in the behavior for what the special rank will do.
   for (const specialProperty of SUIT_SPECIAL_PROPERTIES) {
-    if (suit[specialProperty as keyof SuitJSON] === true) {
+    if (suit[specialProperty] === true) {
       const specialPropertyName =
         convertSuitSpecialPropertyToVariantProperty(specialProperty);
       variantDescription[specialPropertyName] = true;
@@ -389,7 +411,7 @@ function getVariantDescriptionForSpecialRankVariant(
 }
 
 function convertSuitSpecialPropertyToVariantProperty(
-  suitSpecialProperty: string,
+  suitSpecialProperty: (typeof SUIT_SPECIAL_PROPERTIES)[number],
 ) {
   switch (suitSpecialProperty) {
     case "allClueColors": {
@@ -406,12 +428,6 @@ function convertSuitSpecialPropertyToVariantProperty(
 
     case "noClueRanks": {
       return "specialNoClueRanks";
-    }
-
-    default: {
-      throw new Error(
-        `Failed to get the variant property for the suit property of: ${suitSpecialProperty}`,
-      );
     }
   }
 }

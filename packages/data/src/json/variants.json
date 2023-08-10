@@ -13824,25 +13824,29 @@
     "id": 2016,
     "newID": "R+DRY2+Y+Wh+Br",
     "name": "Candy Corn Mix (5 Suits)",
-    "suits": ["Red", "Orange D2", "Yellow", "White", "Brown"]
+    "suits": ["Red", "Orange D2", "Yellow", "White", "Brown"],
+    "showSuitNames": true
   },
   {
     "id": 2017,
     "newID": "R+DRY2+Y+Wh+Br+DBrRa",
     "name": "Candy Corn Mix (6 Suits)",
-    "suits": ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"]
+    "suits": ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"],
+    "showSuitNames": true
   },
   {
     "id": 2018,
     "newID": "DPi+G+Wh+AB1+AB2",
     "name": "Holiday Mix (5 Suits)",
-    "suits": ["Dark Pink", "Green", "White", "Sky", "Navy"]
+    "suits": ["Dark Pink", "Green", "White", "Sky", "Navy"],
+    "showSuitNames": true
   },
   {
     "id": 2019,
     "newID": "WhPi+R+G+Wh+AB1+AB2",
     "name": "Holiday Mix (6 Suits)",
-    "suits": ["Light Pink", "Red", "Green", "White", "Sky", "Navy"]
+    "suits": ["Light Pink", "Red", "Green", "White", "Sky", "Navy"],
+    "showSuitNames": true
   },
   {
     "id": 2069,
@@ -13860,7 +13864,8 @@
     "id": 2071,
     "newID": "R+YD+G+TD+B+DRB",
     "name": "RGB Mix (6 Suits)",
-    "suits": ["Red", "Yellow D", "Green", "Teal D2", "Blue", "Purple D"]
+    "suits": ["Red", "Yellow D", "Green", "Teal D2", "Blue", "Purple D"],
+    "showSuitNames": true
   },
   {
     "id": 1821,
@@ -15524,115 +15529,115 @@
   },
   {
     "id": 1342,
-    "newID": "R+Y+G+B+P+T,R",
+    "newID": "R+Y+G+B+P+T:R",
     "name": "Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal Reversed"]
   },
   {
     "id": 1343,
-    "newID": "R+Y+G+B+P,R",
+    "newID": "R+Y+G+B+P:R",
     "name": "Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple Reversed"]
   },
   {
     "id": 1344,
-    "newID": "R+Y+G+B,R",
+    "newID": "R+Y+G+B:R",
     "name": "Reversed (4 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue Reversed"]
   },
   {
     "id": 1345,
-    "newID": "R+G+B,R",
+    "newID": "R+G+B:R",
     "name": "Reversed (3 Suits)",
     "suits": ["Red", "Green", "Blue Reversed"]
   },
   {
     "id": 1346,
-    "newID": "R+Y+G+B+P+Bk,R",
+    "newID": "R+Y+G+B+P+Bk:R",
     "name": "Black Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black Reversed"]
   },
   {
     "id": 1347,
-    "newID": "R+Y+G+B+Bk,R",
+    "newID": "R+Y+G+B+Bk:R",
     "name": "Black Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Black Reversed"]
   },
   {
     "id": 1348,
-    "newID": "R+Y+G+B+P+Ra,R",
+    "newID": "R+Y+G+B+P+Ra:R",
     "name": "Rainbow Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow Reversed"]
   },
   {
     "id": 1349,
-    "newID": "R+Y+G+B+Ra,R",
+    "newID": "R+Y+G+B+Ra:R",
     "name": "Rainbow Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow Reversed"]
   },
   {
     "id": 1350,
-    "newID": "R+G+B+Ra,R",
+    "newID": "R+G+B+Ra:R",
     "name": "Rainbow Reversed (4 Suits)",
     "suits": ["Red", "Green", "Blue", "Rainbow Reversed"]
   },
   {
     "id": 1351,
-    "newID": "R+B+Ra,R",
+    "newID": "R+B+Ra:R",
     "name": "Rainbow Reversed (3 Suits)",
     "suits": ["Red", "Blue", "Rainbow Reversed"]
   },
   {
     "id": 1356,
-    "newID": "R+Y+G+B+P+Wh,R",
+    "newID": "R+Y+G+B+P+Wh:R",
     "name": "White Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White Reversed"]
   },
   {
     "id": 1357,
-    "newID": "R+Y+G+B+Wh,R",
+    "newID": "R+Y+G+B+Wh:R",
     "name": "White Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "White Reversed"]
   },
   {
     "id": 1358,
-    "newID": "R+G+B+Wh,R",
+    "newID": "R+G+B+Wh:R",
     "name": "White Reversed (4 Suits)",
     "suits": ["Red", "Green", "Blue", "White Reversed"]
   },
   {
     "id": 1359,
-    "newID": "R+B+Wh,R",
+    "newID": "R+B+Wh:R",
     "name": "White Reversed (3 Suits)",
     "suits": ["Red", "Blue", "White Reversed"]
   },
   {
     "id": 1663,
-    "newID": "R+Y+G+B+P+Pr,R",
+    "newID": "R+Y+G+B+P+Pr:R",
     "name": "Prism Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Prism Reversed"]
   },
   {
     "id": 1664,
-    "newID": "R+Y+G+B+Pr,R",
+    "newID": "R+Y+G+B+Pr:R",
     "name": "Prism Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Prism Reversed"]
   },
   {
     "id": 1665,
-    "newID": "R+G+B+Pr,R",
+    "newID": "R+G+B+Pr:R",
     "name": "Prism Reversed (4 Suits)",
     "suits": ["Red", "Green", "Blue", "Prism Reversed"]
   },
   {
     "id": 1666,
-    "newID": "R+B+Pr,R",
+    "newID": "R+B+Pr:R",
     "name": "Prism Reversed (3 Suits)",
     "suits": ["Red", "Blue", "Prism Reversed"]
   },
   {
     "id": 1380,
-    "newID": "R+Y+G+B+P+DRa,R",
+    "newID": "R+Y+G+B+P+DRa:R",
     "name": "Dark Rainbow Reversed (6 Suits)",
     "suits": [
       "Red",
@@ -15645,31 +15650,31 @@
   },
   {
     "id": 1381,
-    "newID": "R+Y+G+B+DRa,R",
+    "newID": "R+Y+G+B+DRa:R",
     "name": "Dark Rainbow Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow Reversed"]
   },
   {
     "id": 1384,
-    "newID": "R+Y+G+B+P+DWh,R",
+    "newID": "R+Y+G+B+P+DWh:R",
     "name": "Gray Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Reversed"]
   },
   {
     "id": 1385,
-    "newID": "R+Y+G+B+DWh,R",
+    "newID": "R+Y+G+B+DWh:R",
     "name": "Gray Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Gray Reversed"]
   },
   {
     "id": 1667,
-    "newID": "R+Y+G+B+P+DPr,R",
+    "newID": "R+Y+G+B+P+DPr:R",
     "name": "Dark Prism Reversed (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism Reversed"]
   },
   {
     "id": 1668,
-    "newID": "R+Y+G+B+DPr,R",
+    "newID": "R+Y+G+B+DPr:R",
     "name": "Dark Prism Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism Reversed"]
   },

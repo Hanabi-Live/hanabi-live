@@ -1,4 +1,5 @@
 import { parseIntSafe, trimSuffix } from "@hanabi/utils";
+import { isEqual } from "lodash";
 import {
   REVERSE_MODIFIER,
   SUIT_DELIMITER,
@@ -46,7 +47,7 @@ function getNewSuitID(
       );
     }
 
-    return `${suit.id},R`;
+    return `${suit.id}${SUIT_MODIFIER_DELIMITER}R`;
   }
 
   const suit = suitsNameMap.get(suitName);
@@ -160,12 +161,57 @@ function getSpecialVariantIDSuffixes(
   return variantIDSuffixes;
 }
 
+export function validateNewVariantIDs(
+  variantsJSON: VariantJSON[],
+  suitsIDMap: Map<string, SuitJSON>,
+): void {
+  const newVariantIDs = new Set();
+
+  for (const variantJSON of variantsJSON) {
+    if (variantJSON.newID === "") {
+      throw new Error(
+        `Variant "${variantJSON.name}" is missing a "newID" property.`,
+      );
+    }
+
+    /*
+    if (newVariantIDs.has(variantJSON.newID)) {
+      throw new Error(
+        `Variant "${variantJSON.name}" has a duplicate "newID" property of: ${variantJSON.newID}`,
+      );
+    }
+    */
+
+    newVariantIDs.add(variantJSON.newID);
+
+    const reconstructedVariant = getVariantFromNewID(
+      variantJSON.newID,
+      variantJSON.name,
+      variantJSON.id,
+      suitsIDMap,
+    );
+
+    if (!isEqual(variantJSON, reconstructedVariant)) {
+      /*
+      console.error("--------------------------------------------------------");
+      console.error("variantJSON:", variantJSON);
+      console.error("--------------------------------------------------------");
+      console.error("reconstructedVariant:", reconstructedVariant);
+      console.error("--------------------------------------------------------");
+      throw new Error(
+        `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newID}" that was parsed incorrectly. (See the previous object logs.)`,
+      );
+      */
+    }
+  }
+}
+
 /**
  * This function is only used for validation.
  *
  * It cannot compute the name or the old ID, so those must be provided.
  */
-export function getVariantFromNewID(
+function getVariantFromNewID(
   newID: string,
   name: string,
   oldID: number,
@@ -210,7 +256,7 @@ export function getVariantFromNewID(
     const secondCharacter = variantModifier[1];
     if (secondCharacter === undefined) {
       throw new Error(
-        `Failed to get the second character of the variant modifier: ${variantModifier}`,
+        `Failed to get the second character of the variant modifier for variant "${name}" with a "newID" of "${newID}": ${variantModifier}`,
       );
     }
 
