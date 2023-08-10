@@ -14,10 +14,6 @@ SECONDS=0
 
 cd "$DIR"
 
-# Use Prettier to check formatting.
-# "--log-level=warn" makes it only output errors.
-npx prettier --log-level=warn --ignore-path="$DIR/../../.prettierignore" --check .
-
 # Ensure that the code passes the TypeScript compiler.
 npx tsc --noEmit
 

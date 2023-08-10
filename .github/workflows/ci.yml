@@ -52,6 +52,15 @@ jobs:
       - name: Test the TypeScript code using Jest
         run: yarn test
 
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
+
+      - name: Check that the entire repository is formatted with Prettier
+        run: npx prettier --log-level=warn --check .
+
   spell_check:
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +72,7 @@ jobs:
 
   discord:
     name: Discord Failure Notification
-    needs: [client_build, server_build, lint, test, spell_check]
+    needs: [client_build, server_build, lint, test, format, spell_check]
     if: always() # This is needed to always run this job, even if the other jobs fail.
     runs-on: ubuntu-latest
     steps:
