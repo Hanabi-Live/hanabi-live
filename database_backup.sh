@@ -12,11 +12,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Get the name of the repository:
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
-REPO="$(basename "$DIR")"
+REPO_NAME="$(basename "$DIR")"
 
 # Configuration
 BACKUPS_DIR="$DIR/backups"
-FILENAME=$REPO-$(date +%s).sql # "date +%s" returns the epoch timestamp.
+FILENAME=$REPO_NAME-$(date +%s).sql # "date +%s" returns the epoch timestamp.
 
 # Import the database information.
 ENV_PATH="$DIR/.env"
@@ -91,7 +91,7 @@ function delete_file_if_near_full_gdrive {
 
   # We need to filter out directories, so we make sure to include the file extension.
   # https://developers.google.com/drive/api/guides/search-shareddrives
-  OLDEST_FILE_ID=$($GDRIVE_PATH list --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO' and name contains '.sql.gz'" | head -n 1 | cut -f 1 -d " ")
+  OLDEST_FILE_ID=$($GDRIVE_PATH list --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO_NAME' and name contains '.sql.gz'" | head -n 1 | cut -f 1 -d " ")
   $GDRIVE_PATH delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$OLDEST_FILE_ID"
   echo "Google Drive account has under 1 gig of free space left; deleted the oldest backup: $OLDEST_FILE_ID"
   delete_file_if_near_full_gdrive

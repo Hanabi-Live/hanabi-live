@@ -6,10 +6,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Get the name of the repository:
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
-REPO="$(basename "$DIR")"
+REPO_NAME="$(basename "$DIR")"
 
 "$DIR/server/build_server.sh"
 if [[ $? -ne 0 ]]; then
   exit 1
 fi
-supervisorctl start "$REPO"
+supervisorctl start "$REPO_NAME"
