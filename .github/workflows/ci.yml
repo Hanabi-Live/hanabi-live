@@ -63,7 +63,7 @@ jobs:
 
   discord:
     name: Discord Failure Notification
-    needs: [client_build, client_lint, client_test, server_build, spell_check]
+    needs: [client_build, server_build, lint, test, spell_check]
     if: always() # This is needed to always run this job, even if the other jobs fail.
     runs-on: ubuntu-latest
     steps:
