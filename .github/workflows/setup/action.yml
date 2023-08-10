@@ -9,12 +9,12 @@ runs:
 
     - name: Retrieve the cached "node_modules" directory (if present)
       uses: actions/cache@v3
-      id: client-build-cache
+      id: node-modules-cache
       with:
         path: node_modules
         key: client-build-node-modules-${{ hashFiles('yarn.lock') }}
 
     - name: Install dependencies (if the cached directory was not found)
-      if: steps.client-build-cache.outputs.cache-hit != 'true'
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
       run: yarn install --immutable
       shell: bash

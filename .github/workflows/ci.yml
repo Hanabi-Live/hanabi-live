@@ -14,25 +14,8 @@ jobs:
     name: Client - Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-          cache: "yarn"
-
-      - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v3
-        id: client-lint-cache
-        with:
-          path: node_modules
-          key: client-lint-node-modules-${{ hashFiles('yarn.lock') }}
-
-      - name: Install dependencies (if the cached directory was not found)
-        if: steps.client-lint-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
@@ -44,25 +27,8 @@ jobs:
     name: Client - Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-          cache: "yarn"
-
-      - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v3
-        id: client-test-cache
-        with:
-          path: node_modules
-          key: client-test-node-modules-${{ hashFiles('yarn.lock') }}
-
-      - name: Install dependencies (if the cached directory was not found)
-        if: steps.client-test-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
@@ -90,25 +56,8 @@ jobs:
     name: Spell Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-          cache: "yarn"
-
-      - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v3
-        id: spell-check-cache
-        with:
-          path: ${{ env.working-directory }}/node_modules
-          key: spell-check-node-modules-${{ hashFiles('yarn.lock') }}
-
-      - name: Install dependencies (if the cached directory was not found)
-        if: steps.spell-check-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
 
       - name: Spell check the entire repository
         run: bash spell_check.sh
