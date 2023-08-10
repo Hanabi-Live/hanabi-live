@@ -20,7 +20,7 @@ if [[ -z ${HOME-} ]] && [[ -z ${CI-} ]]; then
   export HOME=/root
 fi
 
-if command -v go &> /dev/null; then
+if ! command -v go &> /dev/null; then
   export PATH="$PATH:/usr/local/go/bin"
 fi
 
