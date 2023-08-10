@@ -15,7 +15,7 @@ SECONDS=0
 cd "$DIR"
 
 # Run each linting task as a background job so that we can use parallel processing to get everything
-#done fast.
+# done fast.
 bash "$DIR/packages/client/lint.sh" &
 bash "$DIR/packages/data/lint.sh" &
 bash "$DIR/packages/game/lint.sh" &
