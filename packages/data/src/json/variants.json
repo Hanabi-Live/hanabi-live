@@ -16892,7 +16892,8 @@
     "id": 2072,
     "newID": "R+Y+G+B+P",
     "name": "Sudoku (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"]
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
+    "showSuitNames": true
   },
   {
     "id": 2073,
