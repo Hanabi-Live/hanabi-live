@@ -20,7 +20,11 @@ if [[ -z ${HOME-} ]] && [[ -z ${CI-} ]]; then
   export HOME=/root
 fi
 
+if command -v go &> /dev/null; then
+  export PATH="$PATH:/usr/local/go/bin"
+fi
+
 # Compile the Golang code
 cd "$DIR/src"
-go build -o "$DIR/../$REPO_NAME"
+go build -o "$REPO_ROOT_PATH/$REPO_NAME"
 echo "Successfully built $REPO_NAME Golang server in $SECONDS seconds."
