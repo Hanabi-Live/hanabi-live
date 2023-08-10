@@ -4,31 +4,10 @@ on: [push, pull_request]
 
 jobs:
   client_build:
-    name: Client - Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-          cache: "yarn"
-
-      - name: Retrieve the cached "node_modules" directory (if present)
-        uses: actions/cache@v3
-        id: client-build-cache
-        with:
-          path: node_modules
-          key: client-build-node-modules-${{ hashFiles('yarn.lock') }}
-
-      - name: Install dependencies (if the cached directory was not found)
-        if: steps.client-build-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
-
-      - name: Build the TypeScript code
-        run: bash ./packages/client/build_client.sh
+      - uses: ./.github/actions/setup
+      - run: bash ./packages/client/build_client.sh
 
   client_lint:
     name: Client - Lint

@@ -1,0 +1,22 @@
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+        cache: "yarn"
+
+    - name: Retrieve the cached "node_modules" directory (if present)
+      uses: actions/cache@v3
+      id: client-build-cache
+      with:
+        path: node_modules
+        key: client-build-node-modules-${{ hashFiles('yarn.lock') }}
+
+    - name: Install dependencies (if the cached directory was not found)
+      if: steps.client-build-cache.outputs.cache-hit != 'true'
+      run: yarn install --immutable
