@@ -30,7 +30,7 @@ function main() {
   const variantDescriptions = getVariantDescriptions(suits);
   const variants = getVariantsFromVariantDescriptions(variantDescriptions);
 
-  // validateNewVariantIDs(variants); // TODO
+  validateNewVariantIDs(variants);
 
   if (hasMissingVariants(variants, oldVariants)) {
     throw new Error(
@@ -176,7 +176,6 @@ function getNextUnusedVariantID(variantName: string): number {
   return variantID;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function validateNewVariantIDs(variantsJSON: VariantJSON[]) {
   const newVariantIDs = new Set();
 
@@ -200,9 +199,14 @@ function validateNewVariantIDs(variantsJSON: VariantJSON[]) {
       suitsIDMap,
     );
 
-    if (!isEqual(reconstructedVariant, variantJSON)) {
+    if (!isEqual(variantJSON, reconstructedVariant)) {
+      console.error("--------------------------------------------------------");
+      console.error("variantJSON:", variantJSON);
+      console.error("--------------------------------------------------------");
+      console.error("reconstructedVariant:", reconstructedVariant);
+      console.error("--------------------------------------------------------");
       throw new Error(
-        `Variant "${variantJSON.name}" has a new ID that was parsed incorrectly.`,
+        `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newID}" that was parsed incorrectly. (See the previous object logs.)`,
       );
     }
   }
