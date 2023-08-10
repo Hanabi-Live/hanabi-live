@@ -29,4 +29,17 @@ npx eslint --max-warnings 0 .
 # "--error" makes it return an error code of 1 if unused exports are found.
 npx ts-prune --error --ignore "index.ts"
 
+# Ensure that the "update_variant_files.sh" script does not change the files that are checked into
+# the repository.
+VARIANTS_JSON="$DIR/src/json/variants.json"
+TMP_VARIANTS_JSON="/tmp/variants.json"
+mv "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
+REPO_ROOT="$DIR/../.."
+VARIANTS_TXT="$REPO_ROOT/misc/variants.txt"
+TMP_VARIANTS_TXT="/tmp/variants.txt"
+mv "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
+bash "$DIR/packages/data/update_variant_files.sh"
+diff "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
+diff "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
+
 echo "Successfully linted package \"$PACKAGE_NAME\" in $SECONDS seconds."
