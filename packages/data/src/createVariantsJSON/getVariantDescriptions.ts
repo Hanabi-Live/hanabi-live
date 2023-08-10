@@ -454,12 +454,10 @@ function getAmbiguousVariants(
   variantDescriptions.push({
     name: "Ambiguous (6 Suits)",
     suits: ambiguousSuits[6],
-    showSuitNames: true,
   });
   variantDescriptions.push({
     name: "Ambiguous (4 Suits)",
     suits: ambiguousSuits[4],
-    showSuitNames: true,
   });
 
   // Create combinations with special suits.
@@ -486,7 +484,6 @@ function getAmbiguousVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        showSuitNames: true,
       });
     }
   }
@@ -513,12 +510,10 @@ function getVeryAmbiguousVariants(
   variantDescriptions.push({
     name: "Very Ambiguous (6 Suits)",
     suits: veryAmbiguousSuits[6],
-    showSuitNames: true,
   });
   variantDescriptions.push({
     name: "Very Ambiguous (3 Suits)",
     suits: veryAmbiguousSuits[3],
-    showSuitNames: true,
   });
 
   // Create combinations with special suits.
@@ -539,7 +534,6 @@ function getVeryAmbiguousVariants(
     variantDescriptions.push({
       name: variantName,
       suits: variantSuits,
-      showSuitNames: true,
     });
   }
 
@@ -560,17 +554,14 @@ function getExtremelyAmbiguousVariants(
   variantDescriptions.push({
     name: "Extremely Ambiguous (6 Suits)",
     suits: extremelyAmbiguousSuits[6],
-    showSuitNames: true,
   });
   variantDescriptions.push({
     name: "Extremely Ambiguous (5 Suits)",
     suits: extremelyAmbiguousSuits[5],
-    showSuitNames: true,
   });
   variantDescriptions.push({
     name: "Extremely Ambiguous (4 Suits)",
     suits: extremelyAmbiguousSuits[4],
-    showSuitNames: true,
   });
 
   // Create combinations with special suits.
@@ -596,7 +587,6 @@ function getExtremelyAmbiguousVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        showSuitNames: true,
       });
     }
   }
@@ -622,7 +612,6 @@ function getMatryoshkaVariants(
     variantDescriptions.push({
       name: `Matryoshka (${numSuits} Suits)`,
       suits: matryoshkaSuits.slice(0, numSuits),
-      showSuitNames: true,
     });
   }
 
@@ -643,7 +632,6 @@ function getMatryoshkaVariants(
       const variantDescription: VariantDescription = {
         name: variantName,
         suits: variantSuits,
-        showSuitNames: true,
       };
       variantDescriptions.push(variantDescription);
     }
@@ -679,17 +667,14 @@ function getDualColorsVariants(
   variantDescriptions.push({
     name: "Dual-Color (6 Suits)",
     suits: dualColorSuits[6],
-    showSuitNames: true,
   });
   variantDescriptions.push({
     name: "Dual-Color (5 Suits)",
     suits: dualColorSuits[5],
-    showSuitNames: true,
   });
   variantDescriptions.push({
     name: "Dual-Color (3 Suits)",
     suits: dualColorSuits[3],
-    showSuitNames: true,
   });
 
   // Create combinations with special suits.
@@ -708,7 +693,6 @@ function getDualColorsVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        showSuitNames: true,
       });
     }
   }
@@ -729,12 +713,10 @@ function getMixVariants(): VariantDescription[] {
     {
       name: "Ambiguous Mix",
       suits: ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"],
-      showSuitNames: true,
     },
     {
       name: "Dual-Color Mix",
       suits: ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White"],
-      showSuitNames: true,
     },
     {
       name: "Ambiguous & Dual-Color",
@@ -746,7 +728,6 @@ function getMixVariants(): VariantDescription[] {
         "Lime AD",
         "Forest AD",
       ],
-      showSuitNames: true,
     },
     {
       name: "Candy Corn Mix (5 Suits)",
@@ -1133,7 +1114,7 @@ function getUpOrDownVariants(
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      showSuitNames: true,
+      showSuitNames: true, // We must show the suit names so the stack direction is shown.
       upOrDown: true,
     });
   }
@@ -1152,7 +1133,7 @@ function getUpOrDownVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        showSuitNames: true,
+        showSuitNames: true, // We must show the suit names so the stack direction is shown.
         upOrDown: true,
       });
     }
@@ -1290,7 +1271,7 @@ function getSudokuVariants(
   variantDescriptions.push({
     name: `Sudoku (${numSuits} Suits)`,
     suits: basicVariantSuits[numSuits]!,
-    showSuitNames: true,
+    showSuitNames: true, // We must show the suit names so the stack status is shown.
   });
 
   // Create combinations with special suits.
@@ -1303,7 +1284,7 @@ function getSudokuVariants(
     variantDescriptions.push({
       name: variantName,
       suits: variantSuits,
-      showSuitNames: true,
+      showSuitNames: true, // We must show the suit names so the stack status is shown.
     });
   }
 

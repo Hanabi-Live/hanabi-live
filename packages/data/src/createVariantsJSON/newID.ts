@@ -256,7 +256,7 @@ function getVariantFromNewID(
     const secondCharacter = variantModifier[1];
     if (secondCharacter === undefined) {
       throw new Error(
-        `Failed to get the second character of the variant modifier for variant "${name}" with a "newID" of "${newID}": ${variantModifier}`,
+        `Failed to get the second character of the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}".`,
       );
     }
 
