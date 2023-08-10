@@ -26,6 +26,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   lint:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         packageName: [client, data, game, server, utils]
