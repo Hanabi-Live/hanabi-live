@@ -54,7 +54,6 @@ jobs:
 
   spell_check:
     name: Spell Check
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/workflows/setup
