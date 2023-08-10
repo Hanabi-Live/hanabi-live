@@ -5,6 +5,7 @@ TODO:
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
 - is it desired to put `showSuitName` prop on `Suit` object? look into dynamically calculating
   whether or not suit names are shown in client code rather than looking at the variant prop
+- get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
 
 old stuff:
 - rename colorCluesTouchNothing
