@@ -118,7 +118,7 @@ export function parseAndGoto(data: WelcomeData): void {
     let gameJSON: GameJSON;
     try {
       gameJSON = JSON.parse(gameJSONString) as GameJSON;
-    } catch (err) {
+    } catch (error) {
       setBrowserAddressBarPath("/lobby");
       return;
     }

@@ -35,8 +35,8 @@ export function init(): void {
     }
     const volume = parseIntSafe(volumeString);
     audio.volume = volume / 100;
-    audio.play().catch((err) => {
-      console.error("Failed to play the test sound:", err);
+    audio.play().catch((error) => {
+      console.error("Failed to play the test sound:", error);
     });
   });
 }

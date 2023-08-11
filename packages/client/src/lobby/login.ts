@@ -119,8 +119,8 @@ function send(username: string, password: string, newPassword: string | null) {
     .fail((jqXHR) => {
       formError(`Login failed: ${getAjaxError(jqXHR)}`);
     })
-    .catch((jqXHR) => {
-      formError(`Login failed: ${getAjaxError(jqXHR)}`);
+    .catch((error) => {
+      formError(`Login failed: ${getAjaxError(error)}`);
     });
 }
 
@@ -180,8 +180,8 @@ export function automaticLogin(): void {
       }
       show();
     })
-    .catch((err) => {
-      console.error(`Failed to fetch "${testCookiePath}":`, err);
+    .catch((error) => {
+      console.error(`Failed to fetch "${testCookiePath}":`, error);
     });
 }
 

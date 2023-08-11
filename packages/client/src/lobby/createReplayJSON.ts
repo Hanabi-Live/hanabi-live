@@ -112,9 +112,9 @@ export function createJSONFromReplay(room: string): void {
         SelfChatMessageType.Info,
       );
     })
-    .catch((err) => {
+    .catch((error) => {
       sendSelfPMFromServer(
-        `Failed to copy the URL to your clipboard: ${err}`,
+        `Failed to copy the URL to your clipboard: ${error}`,
         room,
         SelfChatMessageType.Error,
       );

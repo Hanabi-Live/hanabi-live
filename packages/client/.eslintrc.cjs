@@ -12,7 +12,6 @@ module.exports = {
   rules: {
     "no-useless-call": "off",
     "unicorn/better-regex": "off",
-    "unicorn/catch-error-name": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/explicit-length-check": "off",
     "unicorn/new-for-builtins": "off",
