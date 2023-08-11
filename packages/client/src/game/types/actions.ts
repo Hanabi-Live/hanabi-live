@@ -162,7 +162,7 @@ interface ActionGameOver {
   type: "gameOver";
   readonly endCondition: EndCondition;
   readonly playerIndex: number;
-  readonly votes: number[];
+  readonly votes: number[] | null;
 }
 
 export interface ActionPlay {

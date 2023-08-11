@@ -87,7 +87,7 @@ export function gameOver(
   playerIndex: number,
   score: number,
   metadata: GameMetadata,
-  votes: number[],
+  votes: number[] | null,
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
 
