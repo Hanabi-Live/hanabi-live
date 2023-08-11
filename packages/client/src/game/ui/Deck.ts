@@ -10,7 +10,7 @@ import * as deckRules from "../rules/deck";
 import { ActionType } from "../types/ActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
-import { CARD_ANIMATION_LENGTH } from "./constants";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import * as cursor from "./cursor";
 import { globals } from "./globals";
 import { isOurTurn } from "./isOurTurn";
@@ -77,7 +77,7 @@ export class Deck extends Konva.Group {
       // The card was dragged to an invalid location; tween it back to the hand.
       this.to({
         // Tween
-        duration: CARD_ANIMATION_LENGTH,
+        duration: CARD_ANIMATION_LENGTH_SECONDS,
         x: 0,
         y: 0,
         // eslint-disable-next-line @typescript-eslint/unbound-method

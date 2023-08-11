@@ -9,7 +9,7 @@ import { HanabiCardClickSpeedrun } from "./HanabiCardClickSpeedrun";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import type { LayoutChild } from "./LayoutChild";
 import * as arrows from "./arrows";
-import { DOUBLE_TAP_DELAY } from "./constants";
+import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as cursor from "./cursor";
 import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
@@ -89,7 +89,7 @@ function touchStart(
       globals.editingNote = null;
       tooltips.close(`#tooltip-${this.tooltipName}`);
     }
-  }, DOUBLE_TAP_DELAY);
+  }, DOUBLE_TAP_DELAY_SECONDS);
 
   // Do all of the same things that would occur if we hovered over the card.
   mouseEnter.call(this);

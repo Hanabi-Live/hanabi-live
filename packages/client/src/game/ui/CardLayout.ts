@@ -4,7 +4,7 @@
 import Konva from "konva";
 import type { HanabiCard } from "./HanabiCard";
 import type { LayoutChild } from "./LayoutChild";
-import { CARD_ANIMATION_LENGTH } from "./constants";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 
@@ -147,7 +147,7 @@ export class CardLayout extends Konva.Group {
           animate(
             layoutChild,
             {
-              duration: CARD_ANIMATION_LENGTH,
+              duration: CARD_ANIMATION_LENGTH_SECONDS,
               x: newX,
               y: 0,
               scale,
@@ -177,7 +177,7 @@ export class CardLayout extends Konva.Group {
           animate(
             layoutChild,
             {
-              duration: CARD_ANIMATION_LENGTH,
+              duration: CARD_ANIMATION_LENGTH_SECONDS,
               x: playStackPos.x - pos.x,
               y: playStackPos.y - pos.y,
               scale: (playStack.height() * scale) / handHeight,

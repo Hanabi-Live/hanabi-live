@@ -1,7 +1,7 @@
 // Touch actions for the HanabiCard object. These are a subset of the actions in HanabiCardClick.ts.
 
 import * as cardRules from "../rules/card";
-import { DOUBLE_TAP_DELAY } from "./constants";
+import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import type { HanabiCard } from "./HanabiCard";
 import * as notes from "./notes";
 import * as replay from "./replay";
@@ -25,7 +25,7 @@ export function HanabiCardTap(this: HanabiCard): void {
       HanabiCardTapAction.call(this);
     }
     this.wasRecentlyTapped = false;
-  }, DOUBLE_TAP_DELAY);
+  }, DOUBLE_TAP_DELAY_SECONDS);
 }
 
 function HanabiCardTapAction(this: HanabiCard) {

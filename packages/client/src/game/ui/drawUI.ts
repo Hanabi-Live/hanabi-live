@@ -21,7 +21,7 @@ import { RankButton } from "./RankButton";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
-import { CARD_ANIMATION_LENGTH, LABEL_COLOR } from "./constants";
+import { CARD_ANIMATION_LENGTH_SECONDS, LABEL_COLOR } from "./constants";
 import { Arrow } from "./controls/Arrow";
 import { Button } from "./controls/Button";
 import { CheckButton } from "./controls/CheckButton";
@@ -926,7 +926,7 @@ function drawScoreArea() {
     fill: "#df1c2d",
     offsetX: 0.001 * winH,
     offsetY: 0.01 * winH,
-    duration: CARD_ANIMATION_LENGTH,
+    duration: CARD_ANIMATION_LENGTH_SECONDS,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
@@ -1211,7 +1211,7 @@ function drawSharedReplay() {
     height: size * 2,
     offsetX: 0.025 * winH,
     offsetY: 0.025 * winH,
-    duration: CARD_ANIMATION_LENGTH,
+    duration: CARD_ANIMATION_LENGTH_SECONDS,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {

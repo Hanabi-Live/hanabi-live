@@ -3,7 +3,7 @@ import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
 import * as arrows from "./arrows";
-import { PREPLAY_DELAY } from "./constants";
+import { PREPLAY_DELAY_MILLISECONDS } from "./constants";
 import { globals } from "./globals";
 import * as hypothetical from "./hypothetical";
 import { isOurTurn } from "./isOurTurn";
@@ -82,7 +82,7 @@ function handlePremove() {
     });
 
     hideArrowsAndDisableDragging();
-  }, PREPLAY_DELAY);
+  }, PREPLAY_DELAY_MILLISECONDS);
 }
 
 export function resetSelectedClue(): void {

@@ -18,7 +18,12 @@ import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { LayoutChild } from "./LayoutChild";
-import { CARD_ANIMATION_LENGTH, CARD_FADE, CARD_H, CARD_W } from "./constants";
+import {
+  CARD_ANIMATION_LENGTH_SECONDS,
+  CARD_FADE,
+  CARD_H,
+  CARD_W,
+} from "./constants";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import type { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
@@ -1066,7 +1071,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       animate(
         layoutChild,
         {
-          duration: CARD_ANIMATION_LENGTH,
+          duration: CARD_ANIMATION_LENGTH_SECONDS,
           x: 0,
           y: 0,
           scale,

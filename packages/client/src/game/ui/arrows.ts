@@ -15,7 +15,7 @@ import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
-import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from "./constants";
+import { ARROW_COLOR, CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import type { Arrow } from "./controls/Arrow";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import { StrikeSquare } from "./controls/StrikeSquare";
@@ -319,7 +319,7 @@ function animate(
   const pos = getPos(card, rot);
 
   konvaHelpers.animate(arrow, {
-    duration: CARD_ANIMATION_LENGTH,
+    duration: CARD_ANIMATION_LENGTH_SECONDS,
     x: pos.x,
     y: pos.y,
     // eslint-disable-next-line @typescript-eslint/unbound-method
