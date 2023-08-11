@@ -22,7 +22,6 @@ module.exports = {
     "unicorn/no-new-array": "off",
     "unicorn/no-unused-properties": "off",
     "unicorn/prefer-add-event-listener": "off",
-    "unicorn/prefer-array-index-of": "off",
     "unicorn/prefer-dom-node-append": "off",
     "unicorn/prefer-dom-node-dataset": "off",
     "unicorn/prefer-dom-node-remove": "off",

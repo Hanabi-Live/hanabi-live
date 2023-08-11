@@ -19,5 +19,5 @@ export function suitIndexToSuit(
 }
 
 export function colorToColorIndex(color: Color, variant: Variant): number {
-  return variant.clueColors.findIndex((variantColor) => variantColor === color);
+  return variant.clueColors.indexOf(color);
 }

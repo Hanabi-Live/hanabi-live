@@ -111,8 +111,8 @@ export class FullActionLog extends Konva.Group {
   }
 
   showPlayerActions(playerName: string): void {
-    const playerIndex = globals.metadata.playerNames.findIndex(
-      (name) => name === playerName,
+    const playerIndex = globals.metadata.playerNames.indexOf(
+      playerName,
     );
     if (playerIndex === -1) {
       throw new Error(
