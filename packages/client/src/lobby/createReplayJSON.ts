@@ -199,7 +199,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
 
     let action: ClientAction | null = null;
     if (foundPlay !== null && foundPlay.length > 2) {
-      const target = parseInt(foundPlay[2]!, 10);
+      const target = Number.parseInt(foundPlay[2]!, 10);
       action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Play,
@@ -207,7 +207,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
         target,
       );
     } else if (foundDiscard !== null && foundDiscard.length > 2) {
-      const target = parseInt(foundDiscard[2]!, 10);
+      const target = Number.parseInt(foundDiscard[2]!, 10);
       action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Discard,
@@ -248,7 +248,7 @@ function getActionFromHypoClue(
   clue: string,
 ): ClientAction | null {
   const playerIndex = getPlayerIndexFromName(player);
-  let parsedClue = parseInt(clue, 10);
+  let parsedClue = Number.parseInt(clue, 10);
 
   // "Odds and Evens" give "Odd"/"Even" as rank clues.
   if (clue.startsWith("Odd")) {

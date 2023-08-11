@@ -78,7 +78,7 @@ export function onEfficiencyChanged(data: {
     Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
   const futureEfficiency =
     cluesStillUsable === null
-      ? NaN
+      ? Number.NaN
       : statsRules.efficiency(cardsNotGotten, cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
