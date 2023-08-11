@@ -444,13 +444,17 @@ function iconsFromOptions(icons: string[]): string {
   switch (icons.length) {
     case 1:
     case 2:
-    case 3:
+    case 3: {
       for (const icon of icons) {
         answer += `<i class="${icon}"></i> `;
       }
+
       return answer.trim();
-    default:
+    }
+
+    default: {
       return '<i class="fas fa-ellipsis-h"></i>';
+    }
   }
 }
 

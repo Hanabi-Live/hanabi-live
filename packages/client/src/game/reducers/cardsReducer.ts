@@ -299,19 +299,28 @@ function canPlayerSeeDrawnCard(
   if (playerIndex === drawLocation) {
     return false;
   }
+
   const characterName = getCharacterNameForPlayer(
     playerIndex,
     characterAssignments,
   );
+
   switch (characterName) {
-    case "Slow-Witted":
+    case "Slow-Witted": {
       return false;
-    case "Oblivious":
+    }
+
+    case "Oblivious": {
       return drawLocation !== (playerIndex - 1) % numPlayers;
-    case "Blind Spot":
+    }
+
+    case "Blind Spot": {
       return drawLocation !== (playerIndex + 1) % numPlayers;
-    default:
+    }
+
+    default: {
       return true;
+    }
   }
 }
 

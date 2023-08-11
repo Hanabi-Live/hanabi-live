@@ -15,6 +15,7 @@ export function uiReducer(state: UIState, action: UIAction): UIState {
       }
       return state;
     }
+
     case "dragReset": {
       if (
         state.cardDragged !== null &&
@@ -27,7 +28,5 @@ export function uiReducer(state: UIState, action: UIAction): UIState {
         cardDragged: null,
       };
     }
-    default:
-      return state;
   }
 }

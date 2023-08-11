@@ -40,7 +40,6 @@ module.exports = {
     "unicorn/prefer-string-slice": "off",
     "unicorn/prefer-switch": "off",
     "unicorn/prefer-ternary": "off",
-    "unicorn/switch-case-braces": "off",
 
     /**
      * Documentation:

@@ -167,12 +167,17 @@ function getOptionsFromType(
   type: TooltipOptionType = "default",
 ): JQueryTooltipster.ITooltipsterOptions {
   switch (type) {
-    case "clipboard":
+    case "clipboard": {
       return clipboardOptions;
-    case "nav":
+    }
+
+    case "nav": {
       return navOptions;
-    default:
+    }
+
+    case "default": {
       return defaultOptions;
+    }
   }
 }
 
