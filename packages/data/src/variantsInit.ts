@@ -403,7 +403,7 @@ function getVariantShowSuitNames(
       );
     }
     const finalIDNumber = parseIntSafe(finalIDCharacter);
-    return Number.isNaN(finalIDNumber);
+    return !Number.isNaN(finalIDNumber);
   });
   if (hasSuitIDThatEndsWithANumber) {
     return true;
