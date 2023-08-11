@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     "no-useless-call": "off",
-    "@typescript-eslint/no-redundant-type-constituents": "off",
     "@typescript-eslint/prefer-enum-initializers": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/prefer-readonly": "off",

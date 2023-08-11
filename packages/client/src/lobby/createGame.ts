@@ -325,7 +325,7 @@ function submit() {
       'The value of the "createTableJSON" element is not a string.',
     );
   }
-  let gameJSON: unknown | undefined;
+  let gameJSON: unknown;
   if (gameJSONString !== "") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
