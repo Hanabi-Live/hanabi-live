@@ -104,15 +104,11 @@ export function cardsReducer(
         newDeck[order] = {
           ...card,
           numPositiveClues: card.numPositiveClues + 1,
-          segmentFirstClued:
-            card.segmentFirstClued === null
-              ? game.turn.segment!
-              : card.segmentFirstClued,
+          segmentFirstClued: card.segmentFirstClued ?? game.turn.segment!,
           hasClueApplied: true,
           firstCluedWhileOnChop:
-            card.firstCluedWhileOnChop === null
-              ? handRules.cardIsOnChop(hand, deck, card)
-              : card.firstCluedWhileOnChop,
+            card.firstCluedWhileOnChop ??
+            handRules.cardIsOnChop(hand, deck, card),
         };
         applyClue(order, true);
       });

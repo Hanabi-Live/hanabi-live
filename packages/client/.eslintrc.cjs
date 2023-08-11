@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     "no-useless-call": "off",
-    "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/prefer-readonly": "off",
     "@typescript-eslint/require-array-sort-compare": "off",
     "@typescript-eslint/restrict-plus-operands": "off",

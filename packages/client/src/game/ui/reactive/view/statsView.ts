@@ -142,9 +142,7 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Cards remaining to get", cardsNotGotten)}
     ${formatLine(
       "Remaining possible clues",
-      data.cluesStillUsableNotRounded === null
-        ? "-"
-        : data.cluesStillUsableNotRounded,
+      data.cluesStillUsableNotRounded ?? "-",
     )}
     ${formatLine(
       "Future required efficiency",

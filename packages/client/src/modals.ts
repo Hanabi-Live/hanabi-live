@@ -191,7 +191,7 @@ export function askForMorph(
   const { ranks } = variant;
   const start =
     card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
-  const startSuit = start.suitIndex !== null ? start.suitIndex : 0;
+  const startSuit = start.suitIndex ?? 0;
   const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
   const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
 
