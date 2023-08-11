@@ -1,4 +1,5 @@
 import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
+import { parseIntSafe } from "@hanabi/utils";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
 import { CardIdentityType } from "../game/types/CardIdentityType";
@@ -199,7 +200,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
 
     let action: ClientAction | null = null;
     if (foundPlay !== null && foundPlay.length > 2) {
-      const target = Number.parseInt(foundPlay[2]!, 10);
+      const target = parseIntSafe(foundPlay[2]!);
       action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Play,
@@ -207,7 +208,7 @@ function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
         target,
       );
     } else if (foundDiscard !== null && foundDiscard.length > 2) {
-      const target = Number.parseInt(foundDiscard[2]!, 10);
+      const target = parseIntSafe(foundDiscard[2]!);
       action = getActionFromHypoPlayOrDiscard(
         index,
         ActionType.Discard,
@@ -248,12 +249,12 @@ function getActionFromHypoClue(
   clue: string,
 ): ClientAction | null {
   const playerIndex = getPlayerIndexFromName(player);
-  let parsedClue = Number.parseInt(clue, 10);
+  let parsedClue = parseIntSafe(clue);
 
-  // "Odds and Evens" give "Odd"/"Even" as rank clues.
-  if (clue.startsWith("Odd")) {
+  // "Odds and Evens" give "Odd" or "Even" as rank clues.
+  if (clue === "Odd") {
     parsedClue = 1;
-  } else if (clue.startsWith("Even")) {
+  } else if (clue === "Even") {
     parsedClue = 2;
   }
 
@@ -265,6 +266,7 @@ function getActionFromHypoClue(
       value: getColorIdFromString(clue),
     };
   }
+
   // It's a rank clue.
   return {
     type: ActionType.RankClue,

@@ -44,7 +44,7 @@ for (const [key, value] of allCardImages.entries()) {
     const type = match[1];
     const suit = match[2];
     const rankString = match[3];
-    const rank = parseInt(rankString, 10);
+    const rank = Number.parseInt(rankString, 10);
     if (rank === START_CARD_RANK) {
       continue;
     }

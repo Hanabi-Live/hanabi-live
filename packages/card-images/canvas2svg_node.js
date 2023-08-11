@@ -57,7 +57,7 @@ function createNamedToNumberedLookup(items, radix) {
   // Map from named to numbered entities.
   for (i = 0; i < items.length; i += 2) {
     entity = "&" + items[i + 1] + ";";
-    base10 = parseInt(items[i], radix);
+    base10 = Number.parseInt(items[i], radix);
     lookup[entity] = "&#" + base10 + ";";
   }
   //FF and IE need to create a regex from hex values ie &nbsp; == \xa0

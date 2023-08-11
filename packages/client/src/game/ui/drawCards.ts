@@ -7,6 +7,7 @@ import {
   UNKNOWN_CARD_RANK,
   getSuit,
 } from "@hanabi/data";
+import { parseIntSafe } from "@hanabi/utils";
 import * as abbreviationRules from "../rules/abbreviation";
 import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";
@@ -634,8 +635,8 @@ function getSuitStyle(
       prismColorIndex = variant.clueColors.length - 1;
     }
     const fillToMixHex = variant.clueColors[prismColorIndex]!.fill;
-    const fillToMixRGB = hexToRgb(fillToMixHex);
-    if (fillToMixRGB === null) {
+    const fillToMixRGB = hexToRGB(fillToMixHex);
+    if (fillToMixRGB === undefined) {
       return suit.fill;
     }
     const fillToMixArray = [fillToMixRGB.r, fillToMixRGB.g, fillToMixRGB.b];
@@ -710,13 +711,17 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
 }
 
 // From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-function hexToRgb(hex: string) {
+function hexToRGB(
+  hex: string,
+): { r: number; g: number; b: number } | undefined {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result !== null
-    ? {
-        r: Number.parseInt(result[1]!, 16),
-        g: Number.parseInt(result[2]!, 16),
-        b: Number.parseInt(result[3]!, 16),
-      }
-    : null;
+  if (result === null) {
+    return undefined;
+  }
+
+  return {
+    r: parseIntSafe(result[1]!),
+    g: parseIntSafe(result[2]!),
+    b: parseIntSafe(result[3]!),
+  };
 }
