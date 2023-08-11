@@ -1,12 +1,12 @@
 TODO:
 
-- use sessionStorage for per tab cookies
 - refactor soundTypeForLastAction (should probably delete the whole thing)
 - getPlayerNames comma is in wrong place for 3+ players
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
 - get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
 - search for "TODO: This message is unnecessary and will be removed in a future version of the code"
 - search for "TODO: remove. This is unused"
+- refactor `ignoreNegative`, I don't think it should be created inside of the reducer
 
 old stuff:
 - rename colorCluesTouchNothing
