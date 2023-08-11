@@ -24,7 +24,6 @@ module.exports = {
     "unicorn/explicit-length-check": "off",
     "unicorn/new-for-builtins": "off",
     "unicorn/no-array-for-each": "off",
-    "unicorn/no-array-reduce": "off",
     "unicorn/no-for-loop": "off",
     "unicorn/no-lonely-if": "off",
     "unicorn/no-negated-condition": "off",
@@ -130,5 +129,16 @@ module.exports = {
      * to avoid having to make changes to Golang code.)
      */
     "unicorn/no-null": "off",
+
+    /**
+     * Documentation:
+     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-array-reduce.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * We use reducers in the client for state management.
+     */
+    "unicorn/no-array-reduce": "off",
   },
 };
