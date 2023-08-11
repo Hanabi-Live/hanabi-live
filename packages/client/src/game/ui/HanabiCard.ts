@@ -1334,11 +1334,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (suit.prism) {
       const cards: string[] = [];
       if (variant.upOrDown) {
-        cards.push(
-          `START is ${colorName(
-            variant.clueColors.at(-1)!,
-          )}`,
-        );
+        cards.push(`START is ${colorName(variant.clueColors.at(-1)!)}`);
       }
       for (let rank = 1; rank <= 5; rank++) {
         const prismColorIndex = (rank - 1) % variant.clueColors.length;
