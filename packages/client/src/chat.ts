@@ -52,7 +52,7 @@ export function init(): void {
   }
 
   // Make an emote list/map and ensure that there are no overlapping emotes.
-  const emoteMap = new Map<string, boolean>(); // The map can be ephemeral
+  const emoteMap = new Map<string, boolean>(); // The map can be ephemeral.
   for (const emotesInCategory of Object.values(emotes)) {
     for (const emoteName of emotesInCategory) {
       if (emoteMap.has(emoteName)) {
@@ -342,7 +342,7 @@ function tab(element: JQuery, event: JQuery.Event) {
   element.val(messageWords.join(" "));
 }
 
-// This is the first time we are pressing tab on this particular sequence of text.
+/** This is the first time we are pressing tab on this particular sequence of text. */
 function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   // Save our current partially-completed word in case we need to cycle back to it later.
   tabCompleteOriginalText = finalWord;
@@ -540,7 +540,7 @@ export function add(data: ChatMessage, fast: boolean): void {
   });
   chatLineNum++;
 
-  // Automatically scroll down
+  // Automatically scroll down.
   if (autoScroll) {
     // From: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div?rq=1
     // This must be executable asynchronously in order to work properly

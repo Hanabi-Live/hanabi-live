@@ -444,6 +444,7 @@
     "name": "Teal D",
     "id": "DGB",
     "displayName": "Teal",
+    "fill": "#00cccc",
     "pip": "hanabiGreen",
     "clueColors": ["Green", "Blue"]
   },
