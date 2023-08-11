@@ -79,7 +79,7 @@ function parseRank(rankText: string): Rank | null {
 }
 
 /**
- * Parse a string into a CardIdentity.
+ * Parse a string into a `CardIdentity`.
  *
  * @param variant The game variant.
  * @param keyword The string to be parsed.
@@ -90,6 +90,7 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
     // Create a blank morph.
     return { suitIndex: null, rank: null };
   }
+
   if (keyword === "") {
     // Return morph to original.
     return {
@@ -197,33 +198,20 @@ function identityMapToArray(cardMap: number[][]) {
  */
 function getPossibilitiesFromKeyword(
   variant: Variant,
-  keywordPreTrim: string,
+  keyword: string,
 ): Array<[number, number]> | null {
-  const positiveIdentities: CardIdentities[] = []; // Any combination of suits and ranks
-  const negativeIdentities: CardIdentities[] = []; // Any negative cluing, e.g. `!r1` `!3`
-  for (const substring of keywordPreTrim.split(",")) {
-    const trimmed = substring.trim();
-    const negative = trimmed.startsWith("!");
-    const identity = parseIdentities(
-      variant,
-      (negative ? trimmed.substring(1) : trimmed).trim(),
-    );
-    if (negative) {
-      negativeIdentities.push(identity);
-    } else {
-      positiveIdentities.push(identity);
-    }
-  }
+  const { positiveIdentities, negativeIdentities } =
+    getCardIdentitiesFromKeyword(variant, keyword);
 
   // Start with all 1's if no positive info, else all 0's.
   const identityMap: number[][] = [];
   const positiveRanks = new Set(
     positiveIdentities.length > 0 ? [] : variant.ranks,
   );
-  for (let rank = 1; rank <= 7; rank++) {
+  for (let rank = 1; rank <= START_CARD_RANK; rank++) {
     const identityArrayValue = positiveRanks.has(rank as Rank) ? 1 : 0;
     const identityArray = newArray(variant.suits.length, identityArrayValue);
-    identityMap.push(identityArray);
+    identityMap[rank - 1] = identityArray;
   }
 
   // Then add positive items and remove all negatives.
@@ -246,8 +234,37 @@ function getPossibilitiesFromKeyword(
   return identityMapToArray(identityMap);
 }
 
-// Examines a whole note and for each keyword that declares card possibilities, merges them into one
-// list.
+function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
+  const positiveIdentities: CardIdentities[] = []; // Any combination of suits and ranks
+  const negativeIdentities: CardIdentities[] = []; // Any negative cluing, e.g. `!r1` `!3`
+
+  for (const keywordSegmentRaw of keyword.split(",")) {
+    const keywordSegment = keywordSegmentRaw.trim();
+    const isNegative = keywordSegment.startsWith("!");
+    const keywordSegmentWithoutExclamationPoint = isNegative
+      ? keywordSegment.slice(1).trim()
+      : keywordSegment;
+    const cardIdentities = parseIdentities(
+      variant,
+      keywordSegmentWithoutExclamationPoint,
+    );
+    if (isNegative) {
+      negativeIdentities.push(cardIdentities);
+    } else {
+      positiveIdentities.push(cardIdentities);
+    }
+  }
+
+  return {
+    positiveIdentities,
+    negativeIdentities,
+  };
+}
+
+/**
+ * Examines a whole note and for each keyword that declares card possibilities, merges them into one
+ * list.
+ */
 export function getPossibilitiesFromKeywords(
   variant: Variant,
   keywords: string[],

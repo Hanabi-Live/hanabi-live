@@ -199,6 +199,7 @@ describe("noteIdentity", () => {
         [0, 5],
       ]);
     });
+
     test("positive and negative in Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r,!2,!3",
