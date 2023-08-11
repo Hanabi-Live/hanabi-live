@@ -193,15 +193,9 @@ export function onPaceOrPaceRiskChanged(data: {
 
     // Color the pace label depending on how "risky" it would be to discard (approximately).
     switch (data.paceRisk) {
-      case "Zero": {
-        // No more discards can occur in order to get a maximum score.
-        label.fill("#df1c2d"); // Red
-        break;
-      }
-
-      case "HighRisk": {
-        // It would probably be risky to discard.
-        label.fill("#ef8c1d"); // Orange
+      case "LowRisk": {
+        // We are not even close to the "End-Game", so give it the default color.
+        label.fill(LABEL_COLOR);
         break;
       }
 
@@ -211,17 +205,22 @@ export function onPaceOrPaceRiskChanged(data: {
         break;
       }
 
+      case "HighRisk": {
+        // It would probably be risky to discard.
+        label.fill("#ef8c1d"); // Orange
+        break;
+      }
+
+      case "Zero": {
+        // No more discards can occur in order to get a maximum score.
+        label.fill("#df1c2d"); // Red
+        break;
+      }
+
       case "Null": {
         console.error(
           `An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`,
         );
-        break;
-      }
-
-      case "LowRisk":
-      default: {
-        // We are not even close to the "End-Game", so give it the default color.
-        label.fill(LABEL_COLOR);
         break;
       }
     }

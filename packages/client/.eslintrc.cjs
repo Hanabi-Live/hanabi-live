@@ -32,7 +32,6 @@ module.exports = {
     "unicorn/no-typeof-undefined": "off",
     "unicorn/no-unused-properties": "off",
     "unicorn/no-useless-spread": "off",
-    "unicorn/no-useless-switch-case": "off",
     "unicorn/no-zero-fractions": "off",
     "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-array-find": "off",
