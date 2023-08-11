@@ -59,7 +59,6 @@ module.exports = {
     "unicorn/prefer-switch": "off",
     "unicorn/prefer-ternary": "off",
     "unicorn/switch-case-braces": "off",
-    "logical-assignment-operators": "off",
     "new-cap": "off",
     "no-implicit-coercion": "off",
     "no-useless-call": "off",

@@ -314,9 +314,9 @@ function keydown(event: JQuery.KeyDownEvent) {
     hotkeyFunction = hotkeyClueMap.get(event.which);
   }
   if (!clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)) {
-    hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.which);
+    hotkeyFunction ||= hotkeyDiscardMap.get(event.which);
   }
-  hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.which);
+  hotkeyFunction ||= hotkeyPlayMap.get(event.which);
   if (hotkeyFunction !== undefined) {
     event.preventDefault();
     hotkeyFunction();
