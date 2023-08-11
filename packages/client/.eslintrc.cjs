@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     "no-useless-call": "off",
-    "@typescript-eslint/restrict-plus-operands": "off",
     "unicorn/better-regex": "off",
     "unicorn/catch-error-name": "off",
     "unicorn/consistent-function-scoping": "off",

@@ -245,7 +245,11 @@ export function openEditTooltip(
 
   // Automatically add a pipe to a non empty note input box when it is focused.
   noteTextbox.on("focus", function tooltipCardInputFocus(this: HTMLElement) {
-    const oldNote = $(this).val() ?? "";
+    let oldNote = $(this).val();
+    if (typeof oldNote !== "string") {
+      oldNote = "";
+    }
+
     let newNote = oldNote;
     if (oldNote !== "") {
       newNote += " | ";
