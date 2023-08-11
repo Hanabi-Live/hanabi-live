@@ -230,7 +230,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // Check if there exists a possibility from clues that the note declares impossible.
   const noteNarrowsPossibilities =
-    card.note.possibilities.length !== 0 &&
+    card.note.possibilities.length > 0 &&
     card.state.possibleCardsFromClues.some(
       ([suitIndexA, rankA]) =>
         !card.note.possibilities.some(

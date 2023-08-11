@@ -13,7 +13,6 @@ module.exports = {
     "no-useless-call": "off",
     "unicorn/better-regex": "off",
     "unicorn/consistent-function-scoping": "off",
-    "unicorn/explicit-length-check": "off",
     "unicorn/new-for-builtins": "off",
     "unicorn/no-array-for-each": "off",
     "unicorn/no-for-loop": "off",

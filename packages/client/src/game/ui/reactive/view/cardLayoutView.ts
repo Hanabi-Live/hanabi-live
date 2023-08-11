@@ -156,7 +156,7 @@ export function onPlayStacksChanged(
       let text = "";
       if (stack.length === 5) {
         text = "Finished";
-      } else if (stack.length !== 0) {
+      } else if (stack.length > 0) {
         const stackStart = globals.deck[stack[0]!]!.getCardIdentity().rank!;
         const playedRanks = Array.from(
           { length: stack.length },

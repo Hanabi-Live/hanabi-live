@@ -74,7 +74,7 @@ export function getSuitIndexFromNote(
   note: CardNote,
   state: CardState,
 ): number | null {
-  if (note.possibilities.length !== 0) {
+  if (note.possibilities.length > 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
     const [candidateSuitIndex] = possibilities[0]!;
     if (
@@ -90,7 +90,7 @@ export function getRankFromNote(
   note: CardNote,
   state: CardState,
 ): number | null {
-  if (note.possibilities.length !== 0) {
+  if (note.possibilities.length > 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
     const candidateRank = possibilities[0]![1];
     if (possibilities.every((card) => card[1] === candidateRank)) {

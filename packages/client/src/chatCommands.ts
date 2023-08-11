@@ -13,7 +13,7 @@ export const chatCommands = new Map<string, Callback>();
 // /friend [username]
 function friend(room: string, args: string[]) {
   // Validate that the format of the command is correct.
-  if (args.length < 1) {
+  if (args.length === 0) {
     sendSelfPMFromServer(
       "The format of the /friend command is: <code>/friend Alice</code>",
       room,
@@ -179,7 +179,7 @@ chatCommands.set("suggest", (room: string, args: string[]) => {
     return;
   }
 
-  if (args.length < 1) {
+  if (args.length === 0) {
     sendSelfPMFromServer(
       "The format of the /suggest command is: <code>/suggest [turn]</code>",
       room,
@@ -294,7 +294,7 @@ chatCommands.set("stats", playerinfo);
 // /unfriend [username]
 chatCommands.set("unfriend", (room: string, args: string[]) => {
   // Validate that the format of the command is correct.
-  if (args.length < 1) {
+  if (args.length === 0) {
     sendSelfPMFromServer(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
       room,
