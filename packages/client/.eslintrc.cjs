@@ -17,7 +17,6 @@ module.exports = {
     "@typescript-eslint/prefer-readonly": "off",
     "@typescript-eslint/require-array-sort-compare": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
-    "isaacscript/no-number-enums": "off",
     "unicorn/better-regex": "off",
     "unicorn/catch-error-name": "off",
     "unicorn/consistent-function-scoping": "off",
@@ -113,6 +112,18 @@ module.exports = {
      * variables object, but methods of these objects also reference/change global variables.
      */
     "import/no-cycle": "off",
+
+    /**
+     * Documentation:
+     * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-plugin-isaacscript/docs/rules/no-number-enums.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * We use number enums to save bandwidth between client and server. Number enums are almost
+     * always safe with the `isaacscript/strict-enums` rule.
+     */
+    "isaacscript/no-number-enums": "off",
 
     /**
      * Documentation:
