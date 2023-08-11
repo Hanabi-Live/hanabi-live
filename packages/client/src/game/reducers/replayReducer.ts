@@ -253,7 +253,7 @@ function hypoAction(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       action.rank === CardIdentityType.Original
     ) {
-      // unmorph the card
+      // Unmorph the card.
       state.hypothetical.morphedIdentities[action.order] = {
         suitIndex: CardIdentityType.Original,
         rank: CardIdentityType.Original,
@@ -287,17 +287,21 @@ function hypoAction(
     return;
   }
 
-  if (
+  const isClueActionThatShouldIgnoreNegative =
     action.type === "clue" &&
     !state.hypothetical.showDrawnCards &&
-    state.hypothetical.startingPlayerIndex === action.target
-  ) {
-    action.ignoreNegative = true;
-  }
+    state.hypothetical.startingPlayerIndex === action.target;
+  const newAction = isClueActionThatShouldIgnoreNegative
+    ? {
+        ...action,
+        ignoreNegative: true,
+      }
+    : action;
+
   const oldSegment = state.hypothetical.ongoing.turn.segment;
   const newState = gameStateReducer(
     state.hypothetical.ongoing,
-    action,
+    newAction,
     true,
     false,
     finished,

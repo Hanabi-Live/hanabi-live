@@ -43,8 +43,20 @@ function gameStateReducerFunction(
   const variant = getVariant(metadata.options.variantName);
 
   switch (action.type) {
-    // A player just gave a clue { type: 'clue', clue: { type: 0, value: 1 }, giver: 1, list: [11],
-    // target: 2, turn: 0 }
+    /**
+     * A player just gave a clue:
+     *
+     * ```ts
+     * {
+     *   type: "clue",
+     *   clue: { type: 0, value: 1 },
+     *   giver: 1,
+     *   list: [11],
+     *   target: 2,
+     *   turn: 0,
+     * }
+     * ```
+     */
     case "clue": {
       state.clueTokens -= clueTokensRules.getAdjusted(1, variant);
 
@@ -61,12 +73,9 @@ function gameStateReducerFunction(
         target: action.target,
         segment: state.turn.segment,
         list: action.list,
-        negativeList:
-          action.ignoreNegative !== undefined && action.ignoreNegative
-            ? []
-            : state.hands[action.target]!.filter(
-                (i) => !action.list.includes(i),
-              ),
+        negativeList: action.ignoreNegative
+          ? []
+          : state.hands[action.target]!.filter((i) => !action.list.includes(i)),
       });
 
       const targetHand = state.hands[action.target]!;
@@ -86,7 +95,16 @@ function gameStateReducerFunction(
     /**
      * A player just discarded a card.
      *
-     * { type: 'discard', playerIndex: 0, order: 4, suitIndex: 2, rank: 1, failed: false }
+     * ```ts
+     * {
+     *   type: "discard",
+     *   playerIndex: 0,
+     *   order: 4,
+     *   suitIndex: 2,
+     *   rank: 1,
+     *   failed: false,
+     * }
+     * ```
      */
     case "discard": {
       // Remove it from the hand.
@@ -147,7 +165,15 @@ function gameStateReducerFunction(
     /**
      * A player just drew a card from the deck.
      *
-     * { type: 'draw', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
+     * ```ts
+     * {
+     *   type: "draw",
+     *   playerIndex: 0,
+     *   order: 0,
+     *   rank: 1,
+     *   suitIndex: 4,
+     * }
+     * ```
      */
     case "draw": {
       state.cardsRemainingInTheDeck--;
@@ -175,7 +201,13 @@ function gameStateReducerFunction(
      * The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
      * timed game, someone terminated, etc.
      *
-     * { type: 'gameOver', endCondition: 1, playerIndex: 0 }
+     * ```ts
+     * {
+     *   type: "gameOver",
+     *   endCondition: 1,
+     *   playerIndex: 0,
+     * }
+     * ```ts
      */
     case "gameOver": {
       if (action.endCondition !== EndCondition.Normal) {
@@ -200,7 +232,15 @@ function gameStateReducerFunction(
     /**
      * A player just played a card.
      *
-     * { type: 'play', playerIndex: 0, order: 4, suitIndex: 2, rank: 1 }
+     * ```ts
+     * {
+     *   type: "play",
+     *   playerIndex: 0,
+     *   order: 4,
+     *   suitIndex: 2,
+     *   rank: 1,
+     * }
+     * ```
      */
     case "play": {
       // Remove it from the hand.
@@ -294,7 +334,14 @@ function gameStateReducerFunction(
     /**
      * A player failed to play a card.
      *
-     * { type: 'strike', num: 1, turn: 32, order: 24 }
+     * ```ts
+     * {
+     *   type: "strike",
+     *   num: 1,
+     *   turn: 32,
+     *   order: 24,
+     * }
+     * ```
      */
     // TODO: This message is unnecessary and will be removed in a future version of the code
     case "strike": {

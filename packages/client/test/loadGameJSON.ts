@@ -307,6 +307,7 @@ function parseJSONAction(
         target: a.target,
         turn,
         list: [],
+        ignoreNegative: false,
       } as ActionClue;
     }
     case JSONActionType.ActionTypeGameOver: {

@@ -35,6 +35,7 @@ function clue(
     list,
     target,
     turn,
+    ignoreNegative: false,
   };
 }
 

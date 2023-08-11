@@ -173,6 +173,7 @@ export function send(hypoAction: ClientAction): void {
         list,
         target: hypoAction.target,
         turn: gameState.turn.turnNum,
+        ignoreNegative: false,
       });
 
       break;

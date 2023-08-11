@@ -114,12 +114,9 @@ export function cardsReducer(
       });
 
       // Negative clues
-      const negativeClues =
-        action.ignoreNegative !== undefined && action.ignoreNegative
-          ? []
-          : hands[action.target]!.filter(
-              (order) => !action.list.includes(order),
-            );
+      const negativeClues = action.ignoreNegative
+        ? []
+        : hands[action.target]!.filter((order) => !action.list.includes(order));
       negativeClues.forEach((order) => {
         const card = getCard(newDeck, order);
         newDeck[order] = {
