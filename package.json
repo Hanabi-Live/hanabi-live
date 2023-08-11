@@ -26,6 +26,7 @@
     "@types/lodash": "^4.14.197",
     "@types/node": "^20.4.9",
     "@types/tooltipster": "^0.0.32",
+    "bufferutil": "^4.0.7",
     "canvas": "^2.11.2",
     "dotenv": "^16.3.1",
     "esbuild": "^0.19.0",
@@ -60,6 +61,7 @@
     "tslib": "^2.6.1",
     "tsx": "^3.12.7",
     "typescript": "^5.1.6",
+    "ws": "^8.13.0",
     "xmlserializer": "^0.6.1"
   },
   "packageManager": "yarn@3.6.1"
