@@ -26,15 +26,21 @@ function createSuitPattern(
   suitAbbreviations: readonly string[],
 ): string {
   let alternation = "";
-  suits.forEach((suit, i) => {
+
+  for (const [i, suit] of suits.entries()) {
     if (i !== 0) {
       alternation += "|";
     }
 
-    alternation += suitAbbreviations[i]!.toLowerCase();
+    const suitAbbreviation = suitAbbreviations[i];
+    if (suitAbbreviation === undefined) {
+      throw new Error(`Failed to find the suit abbreviation for index: ${i}`);
+    }
+
+    alternation += suitAbbreviation.toLowerCase();
     alternation += "|";
     alternation += suit.displayName.toLowerCase();
-  });
+  }
 
   return `(${alternation})`;
 }

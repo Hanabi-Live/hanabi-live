@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     // TODO: Temporarily disable all new rules.
-    "unicorn/no-array-for-each": "off",
     "unicorn/no-array-push-push": "off",
 
     /**
