@@ -1762,8 +1762,8 @@ shapeFunctions.set("hashtag", (ctx: CanvasRenderingContext2D) => {
 shapeFunctions.set("kanji", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(scaleFactor, scaleFactor);
-  ctx.transform(1.0, 0.0, 0.0, 1.0, -9.007_581, -241.9803);
-  ctx.moveTo(-3.0, 222.0);
+  ctx.transform(1, 0, 0, 1, -9.007_581, -241.9803);
+  ctx.moveTo(-3, 222);
   ctx.bezierCurveTo(
     -4.390_911,
     222.140_16,
@@ -2251,7 +2251,7 @@ shapeFunctions.set(
     ctx.beginPath();
     ctx.scale(scaleFactor, scaleFactor);
     ctx.translate(-91.082_135, -80.110_718);
-    ctx.transform(2.128_652, 0.0, 0.0, 2.476_848, -78.229_708, -213.117_53);
+    ctx.transform(2.128_652, 0, 0, 2.476_848, -78.229_708, -213.117_53);
     ctx.moveTo(84.443_554, 124.560_58);
     ctx.bezierCurveTo(
       86.918_78,
@@ -2359,7 +2359,7 @@ shapeFunctions.set(
       75.136_667,
       120.896_22,
     );
-    ctx.transform(1 / 2.128_652, 0.0, 0.0, 1 / 2.476_848, 0, 0);
+    ctx.transform(1 / 2.128_652, 0, 0, 1 / 2.476_848, 0, 0);
     ctx.scale(1 / scaleFactor, 1 / scaleFactor);
     ctx.closePath();
     ctx.scale(5 / 6, 5 / 6);
@@ -3345,7 +3345,7 @@ shapeFunctions.set(
 shapeFunctions.set("triangle", (ctx: CanvasRenderingContext2D) => {
   ctx.scale(150 / 42, 150 / 42);
   ctx.beginPath();
-  ctx.transform(1.0, 0.0, 0.0, 1.0, 16.9774, -22.3191);
+  ctx.transform(1, 0, 0, 1, 16.9774, -22.3191);
   ctx.moveTo(-16.977_913, 37.727_61);
   ctx.lineTo(-34.930_431, 6.631_814);
   ctx.lineTo(0.975_572, 6.632_296);
@@ -3354,7 +3354,7 @@ shapeFunctions.set("triangle", (ctx: CanvasRenderingContext2D) => {
   ctx.lineTo(-9.120_09, 12.425_835);
   ctx.lineTo(-24.875_376, 12.425_835);
   ctx.closePath();
-  ctx.transform(1.0, 0.0, 0.0, 1.0, -16.9774, 22.3191);
+  ctx.transform(1, 0, 0, 1, -16.9774, 22.3191);
   ctx.scale(42 / 150, 42 / 150);
 });
 

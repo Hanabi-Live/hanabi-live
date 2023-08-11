@@ -26,7 +26,6 @@ module.exports = {
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",
     "unicorn/no-unused-properties": "off",
-    "unicorn/no-zero-fractions": "off",
     "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-array-find": "off",
     "unicorn/prefer-array-index-of": "off",
