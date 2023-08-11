@@ -162,6 +162,12 @@ interface ActionGameOver {
   type: "gameOver";
   readonly endCondition: EndCondition;
   readonly playerIndex: number;
+
+  /**
+   * In a normal game, the `votes` array will be equal to the indices of the players who voted to
+   * terminate the game. In a replay, `votes` will be equal to `null` because the server does not
+   * store who voted to kill the game in the database.
+   */
   readonly votes: number[] | null;
 }
 
