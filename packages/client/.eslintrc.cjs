@@ -29,7 +29,6 @@ module.exports = {
     "unicorn/no-lonely-if": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",
-    "unicorn/no-typeof-undefined": "off",
     "unicorn/no-unused-properties": "off",
     "unicorn/no-zero-fractions": "off",
     "unicorn/prefer-add-event-listener": "off",

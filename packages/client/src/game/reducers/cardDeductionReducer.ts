@@ -158,7 +158,7 @@ function shouldCalculateCard(
 
   const oldCard = oldDeck[card.order];
 
-  if (typeof oldCard === "undefined" || oldCard.location === "deck") {
+  if (oldCard === undefined || oldCard.location === "deck") {
     // This is a newly drawn card and hasn't had any calculations yet.
     return true;
   }
@@ -292,7 +292,7 @@ function canBeUsedToDisprovePossibility(
   playerIndex: number,
 ) {
   return (
-    typeof card !== "undefined" &&
+    card !== undefined && // eslint-disable-line @typescript-eslint/no-unnecessary-condition
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
