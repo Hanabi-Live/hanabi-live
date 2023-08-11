@@ -10,7 +10,7 @@ module.exports = {
   },
 
   rules: {
-    "@typescript-eslint/method-signature-style": "off",
+    "no-useless-call": "off",
     "@typescript-eslint/no-redundant-type-constituents": "off",
     "@typescript-eslint/prefer-enum-initializers": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
@@ -48,7 +48,6 @@ module.exports = {
     "unicorn/prefer-switch": "off",
     "unicorn/prefer-ternary": "off",
     "unicorn/switch-case-braces": "off",
-    "no-useless-call": "off",
 
     /**
      * Documentation:
