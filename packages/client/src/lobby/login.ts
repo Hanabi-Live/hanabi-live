@@ -11,6 +11,8 @@ import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
+const FIREFOX_WARNING_COOKIE_NAME = "acceptedFirefoxWarning";
+
 export function init(): void {
   $("#login-button").on("click", () => {
     $("#login-form").trigger("submit");
@@ -26,7 +28,7 @@ export function init(): void {
   $("#login-form").on("submit", submit);
 
   $("#firefox-warning-button").on("click", () => {
-    localStorage.setItem("acceptedFirefoxWarning", "true");
+    localStorage.setItem(FIREFOX_WARNING_COOKIE_NAME, "true");
     show();
   });
 
@@ -148,10 +150,10 @@ export function automaticLogin(): void {
   const testCookiePath = "/test-cookie";
   fetch(testCookiePath)
     .then((response) => {
-      // Check to see if we have accepted the Firefox warning (cookies are strings).
+      // Check to see if we have accepted the Firefox warning.
       if (
         isBrowserFirefox() &&
-        localStorage.getItem("acceptedFirefoxWarning") !== "true"
+        localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true" // Cookies are strings.
       ) {
         $("#loading").hide();
         $("#firefox-warning").show();
