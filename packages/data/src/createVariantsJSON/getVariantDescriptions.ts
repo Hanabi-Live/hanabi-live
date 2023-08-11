@@ -433,14 +433,16 @@ function getAmbiguousVariants(
   ];
 
   // Create the basic variants.
-  variantDescriptions.push({
-    name: "Ambiguous (6 Suits)",
-    suits: ambiguousSuits[6],
-  });
-  variantDescriptions.push({
-    name: "Ambiguous (4 Suits)",
-    suits: ambiguousSuits[4],
-  });
+  variantDescriptions.push(
+    {
+      name: "Ambiguous (6 Suits)",
+      suits: ambiguousSuits[6],
+    },
+    {
+      name: "Ambiguous (4 Suits)",
+      suits: ambiguousSuits[4],
+    },
+  );
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -489,14 +491,16 @@ function getVeryAmbiguousVariants(
   veryAmbiguousSuits[6] = [...redVeryAmbiguousSuits, ...blueVeryAmbiguousSuits];
 
   // Create the basic variants.
-  variantDescriptions.push({
-    name: "Very Ambiguous (6 Suits)",
-    suits: veryAmbiguousSuits[6],
-  });
-  variantDescriptions.push({
-    name: "Very Ambiguous (3 Suits)",
-    suits: veryAmbiguousSuits[3],
-  });
+  variantDescriptions.push(
+    {
+      name: "Very Ambiguous (6 Suits)",
+      suits: veryAmbiguousSuits[6],
+    },
+    {
+      name: "Very Ambiguous (3 Suits)",
+      suits: veryAmbiguousSuits[3],
+    },
+  );
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -533,18 +537,20 @@ function getExtremelyAmbiguousVariants(
   extremelyAmbiguousSuits[6] = [...extremelyAmbiguousSuits[5], "Ocean EA"];
 
   // Create the basic variants.
-  variantDescriptions.push({
-    name: "Extremely Ambiguous (6 Suits)",
-    suits: extremelyAmbiguousSuits[6],
-  });
-  variantDescriptions.push({
-    name: "Extremely Ambiguous (5 Suits)",
-    suits: extremelyAmbiguousSuits[5],
-  });
-  variantDescriptions.push({
-    name: "Extremely Ambiguous (4 Suits)",
-    suits: extremelyAmbiguousSuits[4],
-  });
+  variantDescriptions.push(
+    {
+      name: "Extremely Ambiguous (6 Suits)",
+      suits: extremelyAmbiguousSuits[6],
+    },
+    {
+      name: "Extremely Ambiguous (5 Suits)",
+      suits: extremelyAmbiguousSuits[5],
+    },
+    {
+      name: "Extremely Ambiguous (4 Suits)",
+      suits: extremelyAmbiguousSuits[4],
+    },
+  );
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
@@ -646,18 +652,20 @@ function getDualColorsVariants(
   ];
 
   // Create the basic variants.
-  variantDescriptions.push({
-    name: "Dual-Color (6 Suits)",
-    suits: dualColorSuits[6],
-  });
-  variantDescriptions.push({
-    name: "Dual-Color (5 Suits)",
-    suits: dualColorSuits[5],
-  });
-  variantDescriptions.push({
-    name: "Dual-Color (3 Suits)",
-    suits: dualColorSuits[3],
-  });
+  variantDescriptions.push(
+    {
+      name: "Dual-Color (6 Suits)",
+      suits: dualColorSuits[6],
+    },
+    {
+      name: "Dual-Color (5 Suits)",
+      suits: dualColorSuits[5],
+    },
+    {
+      name: "Dual-Color (3 Suits)",
+      suits: dualColorSuits[3],
+    },
+  );
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {

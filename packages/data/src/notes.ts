@@ -25,6 +25,12 @@ function createSuitPattern(
   suits: readonly Suit[],
   suitAbbreviations: readonly string[],
 ): string {
+  if (suits.length !== suitAbbreviations.length) {
+    throw new Error(
+      "The amount of suits were not the same as the amount of suit abbreviations.",
+    );
+  }
+
   let alternation = "";
 
   for (const [i, suit] of suits.entries()) {

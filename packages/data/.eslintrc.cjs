@@ -10,9 +10,6 @@ module.exports = {
   },
 
   rules: {
-    // TODO: Temporarily disable all new rules.
-    "unicorn/no-array-push-push": "off",
-
     /**
      * Documentation:
      * https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-non-null-assertion.md
