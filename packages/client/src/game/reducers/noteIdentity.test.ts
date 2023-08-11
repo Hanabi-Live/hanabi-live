@@ -69,6 +69,18 @@ describe("noteIdentity", () => {
 
     test("positive conjunct with Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+        "red 3, blue 3",
+      ]);
+      expect(possibles).toEqual([
+        [0, 3],
+        [3, 3],
+      ]);
+    });
+
+    // It is not possible to represent "r3,bs" as "red 3, blue start". Thus, we only test the short
+    // version.
+    test("positive conjunct with START card short", () => {
+      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r3,bs",
       ]);
       expect(possibles).toEqual([
@@ -77,7 +89,15 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    test("negative", () => {
+    test("negative conjunct", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "!2, !3",
+      ]);
+      const identMap = rankMap(new Set([1, 4, 5]));
+      expect(identityArrayToMap(possibles)).toEqual(identMap);
+    });
+
+    test("negative conjunct with Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "!2, !3",
       ]);
@@ -85,8 +105,40 @@ describe("noteIdentity", () => {
       expect(identityArrayToMap(possibles)).toEqual(identMap);
     });
 
+    test("negative conjunct with space", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "! 2, ! 3",
+      ]);
+      const identMap = rankMap(new Set([1, 4, 5]));
+      expect(identityArrayToMap(possibles)).toEqual(identMap);
+    });
+
     // The note keyword `r,b,2,3` would return all red, blue, 2's OR 3's.
     test("positive suit and rank", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "r,3,b,2",
+      ]);
+      expect(possibles).toEqual([
+        [0, 1],
+        [3, 1],
+        [0, 2],
+        [1, 2],
+        [2, 2],
+        [3, 2],
+        [4, 2],
+        [0, 3],
+        [1, 3],
+        [2, 3],
+        [3, 3],
+        [4, 3],
+        [0, 4],
+        [3, 4],
+        [0, 5],
+        [3, 5],
+      ]);
+    });
+
+    test("positive suit and rank with Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r,3,b,2",
       ]);
@@ -112,8 +164,19 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    // The note keyword `rb23` would return all red, blue, 2's OR 3's.
+    // The note keyword `r3b2` would return all red cards, 3's, blue cards, or 2's. (A player would
+    // probably conventionally write this as `rb23`, but we test for the more complicated case.)
     test("positive squish", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, ["r3b2"]);
+      expect(possibles).toEqual([
+        [0, 2],
+        [3, 2],
+        [0, 3],
+        [3, 3],
+      ]);
+    });
+
+    test("positive squish in Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r3b2",
       ]);
@@ -127,8 +190,18 @@ describe("noteIdentity", () => {
 
     // The note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`.
     test("positive and negative", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "r,!2,!3",
+      ]);
+      expect(possibles).toEqual([
+        [0, 1],
+        [0, 4],
+        [0, 5],
+      ]);
+    });
+    test("positive and negative in Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
-        "r, ! 2, !3",
+        "r,!2,!3",
       ]);
       expect(possibles).toEqual([
         [0, 1],

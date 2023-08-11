@@ -87,7 +87,7 @@ export function numCopiesOfCard(
       }
 
       throw new Error(
-        "Attempted to add a Start card to a variant that is not Up or Down.",
+        "Attempted to add a START card to a variant that is not Up or Down.",
       );
     }
 

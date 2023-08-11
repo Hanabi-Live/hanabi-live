@@ -151,7 +151,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     card.state.location !== globals.metadata.ourPlayerIndex &&
     cardRules.isInPlayerHand(card.state) &&
     card.state.rank !== null &&
-    // It is not possible to clue a Start Card with a rank clue.
+    // It is not possible to clue a START card with a rank clue.
     card.state.rank !== START_CARD_RANK &&
     // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
