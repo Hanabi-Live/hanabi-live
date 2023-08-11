@@ -49,12 +49,6 @@ export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-export function negativeOneIfNullOrUndefined(
-  x: number | null | undefined,
-): number {
-  return x === null || x === undefined ? -1 : x;
-}
-
 function pad2(num: number) {
   if (num < 10) {
     return `0${num}`;

@@ -1,7 +1,6 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import { negativeOneIfNullOrUndefined } from "../../utils";
 import * as playStacksRules from "../rules/playStacks";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import { ActionType } from "../types/ActionType";
@@ -143,8 +142,8 @@ export function send(hypoAction: ClientAction): void {
           playerIndex: gameState.turn.currentPlayerIndex!,
           // Always send the correct suitIndex and rank if known; the blanking of the card will be
           // performed on the client.
-          suitIndex: negativeOneIfNullOrUndefined(nextCard?.suitIndex),
-          rank: negativeOneIfNullOrUndefined(nextCard?.rank),
+          suitIndex: nextCard?.suitIndex ?? -1,
+          rank: nextCard?.rank ?? -1,
         });
       }
 

@@ -62,39 +62,39 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   wasRecentlyTapped = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  private bare: Konva.Image;
+  private readonly bare: Konva.Image;
   private bareName = "";
 
-  private cluedBorder: Konva.Group;
-  private chopMoveBorder: Konva.Group;
-  private finesseBorder: Konva.Group;
+  private readonly cluedBorder: Konva.Group;
+  private readonly chopMoveBorder: Konva.Group;
+  private readonly finesseBorder: Konva.Group;
 
-  private suitPips: Konva.Group;
-  private rankPips: Konva.Group;
-  private suitPipsMap: Map<number, Konva.Shape>;
-  private suitPipsPositiveMap: Map<number, Konva.Shape>;
-  private suitPipsXMap: Map<number, Konva.Shape>;
-  private rankPipsMap: Map<number, RankPip>;
-  private rankPipsXMap: Map<number, Konva.Shape>;
-  private criticalIndicator: Konva.Image;
-  private arrow: Konva.Group | null = null;
-  private arrowBase: Konva.Arrow | null = null;
+  private readonly suitPips: Konva.Group;
+  private readonly rankPips: Konva.Group;
+  private readonly suitPipsMap: Map<number, Konva.Shape>;
+  private readonly suitPipsPositiveMap: Map<number, Konva.Shape>;
+  private readonly suitPipsXMap: Map<number, Konva.Shape>;
+  private readonly rankPipsMap: Map<number, RankPip>;
+  private readonly rankPipsXMap: Map<number, Konva.Shape>;
+  private readonly criticalIndicator: Konva.Image;
+  private readonly arrow: Konva.Group | null = null;
+  private readonly arrowBase: Konva.Arrow | null = null;
 
   noteIndicator: NoteIndicator;
-  private trashcan: Konva.Image;
-  private questionMark: Konva.Image;
-  private exclamationMark: Konva.Image;
-  private wrench: Konva.Image;
-  private ddaIndicatorTop: Konva.Image;
-  private ddaIndicatorBottom: Konva.Image;
-  private trashMiniIndicatorTop: Konva.Image;
-  private trashMiniIndicatorBottom: Konva.Image;
+  private readonly trashcan: Konva.Image;
+  private readonly questionMark: Konva.Image;
+  private readonly exclamationMark: Konva.Image;
+  private readonly wrench: Konva.Image;
+  private readonly ddaIndicatorTop: Konva.Image;
+  private readonly ddaIndicatorBottom: Konva.Image;
+  private readonly trashMiniIndicatorTop: Konva.Image;
+  private readonly trashMiniIndicatorBottom: Konva.Image;
 
   // -------------------
   // Getters and setters
   // -------------------
 
-  private _layout: LayoutChild;
+  private readonly _layout: LayoutChild;
   get layout(): LayoutChild {
     return this._layout;
   }
@@ -786,11 +786,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
   }
 
-  private setArrowMiddleRight = () => {
+  private readonly setArrowMiddleRight = () => {
     this.arrow!.y(0.5 * CARD_H);
   };
 
-  private setArrowBottomRight = () => {
+  private readonly setArrowBottomRight = () => {
     this.arrow!.y(0.79 * CARD_H);
   };
 

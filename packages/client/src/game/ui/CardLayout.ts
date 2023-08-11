@@ -9,8 +9,8 @@ import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 
 export class CardLayout extends Konva.Group {
-  private align: string;
-  private reverse: boolean;
+  private readonly align: string;
+  private readonly reverse: boolean;
   origRotation: number;
   empathy: boolean;
 

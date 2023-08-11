@@ -12,9 +12,9 @@ export class FullActionLog extends Konva.Group {
   private playerLogs: Array<MultiFitText | null> = [];
   private playerLogNumbers: Array<MultiFitText | null> = [];
   private needsRefresh = false;
-  private numbersOptions: ContainerConfig;
-  private maxLines = 38;
-  private textOptions: ContainerConfig;
+  private readonly numbersOptions: ContainerConfig;
+  private readonly maxLines = 38;
+  private readonly textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
     super({
