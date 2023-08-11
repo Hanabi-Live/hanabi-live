@@ -312,7 +312,7 @@ export function cluesStillUsableNotRounded(
         );
       }
     }
-    missingCardsPerCompletableSuit.sort();
+    missingCardsPerCompletableSuit.sort((a, b) => a - b);
     let cardsPlayed = 0;
     let suitsCompletedBeforeFinalRound = 0;
     for (const missingCardsInSuit of missingCardsPerCompletableSuit) {

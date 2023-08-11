@@ -56,7 +56,7 @@ export function clue(
       }
       slots.push(slot);
     }
-    slots.sort();
+    slots.sort((a, b) => a - b);
 
     let slotWord = "slot";
     if (slots.length !== 1) {

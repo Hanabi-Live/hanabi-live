@@ -77,7 +77,7 @@ export function tablesDraw(): void {
           tableIDsOfThisType.push(id);
         }
       }
-      tableIDsOfThisType.sort();
+      tableIDsOfThisType.sort((a, b) => a - b);
       sortedTableIDs = sortedTableIDs.concat(tableIDsOfThisType);
     }
   }

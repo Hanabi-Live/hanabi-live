@@ -183,7 +183,7 @@ export function getMaxScorePerStack(
           },
         );
         const assignmentSorted = assignment.slice(0);
-        assignmentSorted.sort();
+        assignmentSorted.sort((a, b) => a - b);
 
         // Check if we need to update the best assignment.
         if (assignmentVal > bestAssignmentSum) {
