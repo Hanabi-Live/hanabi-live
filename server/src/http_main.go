@@ -32,6 +32,7 @@ func httpMain(c *gin.Context) {
 		Title:     "Main",
 		Domain:    domain,
 		Compiling: compiling,
+		IsDev:     isDev,
 	}
 	httpServeTemplate(w, data, "main")
 }

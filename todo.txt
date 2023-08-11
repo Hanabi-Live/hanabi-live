@@ -1,5 +1,6 @@
 TODO:
 
+- use sessionStorage for per tab cookies
 - refactor soundTypeForLastAction (should probably delete the whole thing)
 - getPlayerNames comma is in wrong place for 3+ players
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory

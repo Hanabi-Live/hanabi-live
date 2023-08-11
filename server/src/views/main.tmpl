@@ -1901,7 +1901,11 @@
     <!-- All of the JavaScript is bundled into one file. -->
     <script
       type="text/javascript"
-      src="/public/js/bundles/main.{{ .Version }}.min.js"
+      {{ if .IsDev }}
+        src="/public/js/bundles/main.min.js"
+      {{ else }}
+        src="/public/js/bundles/main.{{ .Version }}.min.js"
+      {{ end }}
     ></script>
   {{ end }}
 {{ end }}

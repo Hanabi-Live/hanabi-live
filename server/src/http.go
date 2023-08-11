@@ -23,6 +23,7 @@ type TemplateData struct {
 	Domain      string // Used to validate that the user is going to the correct URL
 	Version     int
 	Compiling   bool // True if we are currently recompiling the TypeScript client
+	IsDev       bool
 
 	// Profile
 	Name       string
