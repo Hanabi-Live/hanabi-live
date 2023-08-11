@@ -21,12 +21,30 @@ module.exports = {
      * Documentation:
      * https://eslint.org/docs/latest/rules/func-style
      *
-     * Defined at:
-     * https://isaacscript.github.io/eslint-config-isaacscript
+     * Not defined in the parent configs.
      *
      * Enforce the "normal" function style throughout the entire project.
      */
     "func-style": ["error", "declaration"],
+
+    /**
+     * Documentation:
+     * https://typescript-eslint.io/rules/no-restricted-imports
+     *
+     * Not defined in the parent configs.
+     */
+    "@typescript-eslint/no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: ["packages/*"],
+            message:
+              'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
+          },
+        ],
+      },
+    ],
 
     /**
      * Documentation:

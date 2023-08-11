@@ -3,13 +3,14 @@ import emotesJSON from "./json/emotes.json";
 
 const emojis = emojisJSON;
 const emotes = emotesJSON;
+export { emojis, emotes };
 
 export * from "./abbreviations";
 export * from "./constants";
 export * from "./gameData";
-export * from "./types/Character";
-export * from "./types/Color";
-export * from "./types/Suit";
-export * from "./types/Variant";
+export * from "./interfaces/Character";
+export * from "./interfaces/Color";
+export * from "./interfaces/Suit";
+export * from "./interfaces/Variant";
+export * from "./types/Rank";
 export * from "./version";
-export { emojis, emotes };

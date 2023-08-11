@@ -3,7 +3,7 @@
 import type { Variant } from "@hanabi/data";
 
 export function isDualColor(variant: Variant): boolean {
-  return variant.name.startsWith("Dual-Color");
+  return variant.suits.some((suit) => suit.clueColors.length >= 2);
 }
 
 export function isColorMute(variant: Variant): boolean {
@@ -14,10 +14,6 @@ export function isNumberMute(variant: Variant): boolean {
   return variant.clueRanks.length === 0;
 }
 
-export function isSudoku(variant: Variant): boolean {
-  return variant.name.startsWith("Sudoku");
-}
-
 export function hasReversedSuits(variant: Variant): boolean {
-  return variant.upOrDown || variant.suits.filter((s) => s.reversed).length > 0;
+  return variant.upOrDown || variant.suits.some((suit) => suit.reversed);
 }

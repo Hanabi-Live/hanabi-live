@@ -2,7 +2,6 @@ import { getVariant } from "@hanabi/data";
 import type { Draft } from "immer";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
-import * as variantRules from "../rules/variant";
 import type { CardState } from "../types/CardState";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
@@ -188,7 +187,7 @@ function isOrderChopMove(
 
   // Don't bother trying to see if this is an Order Chop Move in certain variants, as the logic
   // could be extremely complicated.
-  if (variant.upOrDown || variantRules.isSudoku(variant)) {
+  if (variant.upOrDown || variant.sudoku) {
     return false;
   }
 

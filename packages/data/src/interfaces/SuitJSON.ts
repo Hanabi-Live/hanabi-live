@@ -35,9 +35,6 @@ export interface SuitJSON {
   /** A simplified version of the suit name to show to end-users. */
   readonly displayName?: string;
 
-  /** Whether or not to append the suit name to the bottom of the play stacks. */
-  readonly showSuitName?: boolean;
-
   /** The background color of cards of the suit. */
   readonly fill?: string;
 

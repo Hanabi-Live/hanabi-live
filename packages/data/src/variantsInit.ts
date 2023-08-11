@@ -1,16 +1,20 @@
+import { parseIntSafe } from "@hanabi/utils";
 import { getSuitAbbreviationsForVariant } from "./abbreviations";
-import { DEFAULT_CARD_RANKS, DEFAULT_CLUE_RANKS } from "./constants";
+import {
+  DEFAULT_CARD_RANKS,
+  DEFAULT_CLUE_RANKS,
+  START_CARD_RANK,
+} from "./constants";
+import type { Color } from "./interfaces/Color";
+import type { Suit } from "./interfaces/Suit";
+import type { Variant } from "./interfaces/Variant";
+import type { VariantJSON } from "./interfaces/VariantJSON";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
-import type { Color } from "./types/Color";
-import type { Suit } from "./types/Suit";
-import type { Variant } from "./types/Variant";
-import type { VariantJSON } from "./types/VariantJSON";
 
 export function variantsInit(
   COLORS: ReadonlyMap<string, Color>,
   SUITS: ReadonlyMap<string, Suit>,
-  START_CARD_RANK: number,
 ): ReadonlyMap<string, Variant> {
   const variants = new Map<string, Variant>();
 
@@ -22,6 +26,10 @@ export function variantsInit(
 
   // Fields are validated in the order that they appear in "VariantDescription.ts".
   for (const variantJSON of variantsJSON as VariantJSON[]) {
+    // ---------------
+    // Core properties
+    // ---------------
+
     // Validate the name.
     if (variantJSON.name === "") {
       throw new Error(
@@ -48,7 +56,9 @@ export function variantsInit(
     });
 
     // Derive the ranks that the cards of each suit will be.
-    const ranks: number[] = [...DEFAULT_CARD_RANKS];
+    const ranks: Array<1 | 2 | 3 | 4 | 5 | typeof START_CARD_RANK> = [
+      ...DEFAULT_CARD_RANKS,
+    ];
     if (name.startsWith("Up or Down")) {
       // The "Up or Down" variants have START cards.
       ranks.push(START_CARD_RANK);
@@ -61,6 +71,10 @@ export function variantsInit(
     // Validate the clue ranks (the ranks available to clue in this variant). If it is not
     // specified, assume that players can clue ranks 1 through 5.
     const clueRanks = variantJSON.clueRanks ?? [...DEFAULT_CLUE_RANKS];
+
+    // --------------------------------------------
+    // Special rank properties (from `VariantJSON`)
+    // --------------------------------------------
 
     // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
     // -1 (e.g. there are no special ranks).
@@ -119,16 +133,20 @@ export function variantsInit(
     }
     const specialDeceptive = variantJSON.specialDeceptive ?? false;
 
+    // -----------------------------------------------
+    // Special variant properties (from `VariantJSON`)
+    // -----------------------------------------------
+
     // Validate the "criticalRank" property. If it is not specified, assume 0.
     if (
       variantJSON.criticalRank !== undefined &&
-      (variantJSON.criticalRank < 1 || variantJSON.criticalRank > 4)
+      (variantJSON.criticalRank < 1 || variantJSON.criticalRank > 5)
     ) {
       throw new Error(
-        `The "criticalRank" property for the variant "${variantJSON.name}" must be set between 1 and 4. If that does not make sense, then remove the property altogether.`,
+        `The "criticalRank" property for the variant "${variantJSON.name}" must be set between 1 and 5.`,
       );
     }
-    const criticalRank = variantJSON.criticalRank ?? 0;
+    const criticalRank = variantJSON.criticalRank ?? -1;
 
     // Validate the "clueStarved" property. If it is not specified, assume false.
     if (variantJSON.clueStarved === false) {
@@ -231,20 +249,18 @@ export function variantsInit(
     }
     const chimneys = variantJSON.chimneys ?? false;
 
-    // Validate the "showSuitNames" property. If it is not specified, assume that we are not showing
-    // the suit names (unless one of the suits in the variant explicitly says to show the suit names
-    // for any variant that contains that suit).
-    if (variantJSON.showSuitNames === false) {
+    // Validate the "sudoku" property. If it is not specified, assume false (e.g. cluing ranks in
+    // this variant works normally).
+    if (variantJSON.sudoku === false) {
       throw new Error(
-        `The "showSuitNames" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "sudoku" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    let showSuitNames = variantJSON.showSuitNames ?? false;
+    const sudoku = variantJSON.sudoku ?? false;
 
-    const variantHasReversedSuits = suits.some((suit: Suit) => suit.reversed);
-    if (variantHasReversedSuits) {
-      showSuitNames = true;
-    }
+    // ------------------------
+    // `VariantJSON` properties
+    // ------------------------
 
     // Validate the ID. (The first variant has an ID of 0.)
     if (variantJSON.id < 0) {
@@ -257,6 +273,12 @@ export function variantsInit(
       throw new Error(`The "${name}" variant has a blank "newID" property.`);
     }
     const { newID } = variantJSON;
+
+    // -----------------------------
+    // Computed `Variant` properties
+    // -----------------------------
+
+    const showSuitNames = getVariantShowSuitNames(suits, upOrDown, sudoku);
 
     // Assume 5 cards per stack.
     const maxScore = suits.length * 5;
@@ -309,12 +331,12 @@ export function variantsInit(
       throwItInAHole,
       funnels,
       chimneys,
-
-      showSuitNames,
+      sudoku,
 
       id,
       newID,
 
+      showSuitNames,
       maxScore,
       offsetCornerElements,
       suitAbbreviations,
@@ -363,4 +385,57 @@ function getVariantClueColors(
 
     return color;
   });
+}
+
+function getVariantShowSuitNames(
+  suits: Suit[],
+  upOrDown: boolean,
+  sudoku: boolean,
+): boolean {
+  // If the suit ID ends in a number, it is an "Ambiguous" suit, which means that its identity is
+  // not easily identifiable from a glance. Thus, we want to show the suit names for the variant in
+  // this case.
+  const hasSuitIDThatEndsWithANumber = suits.some((suit) => {
+    const finalIDCharacter = suit.id.at(-1);
+    if (finalIDCharacter === undefined) {
+      throw new Error(
+        `Failed to get the final character of the ID of suit: ${suit.name}`,
+      );
+    }
+    const finalIDNumber = parseIntSafe(finalIDCharacter);
+    return Number.isNaN(finalIDNumber);
+  });
+  if (hasSuitIDThatEndsWithANumber) {
+    return true;
+  }
+
+  // Dual-color suits are not easily identifiable from a glance. Thus, we want to show the suit
+  // names for the variant in this case.
+  const hasSuitThatIsTouchedByTwoOrMoreClueColors = suits.some(
+    (suit) => suit.clueColors.length >= 2,
+  );
+  if (hasSuitThatIsTouchedByTwoOrMoreClueColors) {
+    return true;
+  }
+
+  // If a variant has a reversed suit, we want to show the suit names so that the stack direction is
+  // easily identifiable.
+  const variantHasReversedSuits = suits.some((suit: Suit) => suit.reversed);
+  if (variantHasReversedSuits) {
+    return true;
+  }
+
+  // In "Up or Down" variants, we always want to show the suit names so that the stack directions
+  // are easily identifiable.
+  if (upOrDown) {
+    return true;
+  }
+
+  // In "Sudoku" variants, we always want to show the suit names so that the stack status is easily
+  // identifiable.
+  if (sudoku) {
+    return true;
+  }
+
+  return false;
 }

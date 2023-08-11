@@ -243,7 +243,6 @@
   {
     "name": "Tomato",
     "id": "AR1",
-    "showSuitName": true,
     "fill": "#e60000",
     "pip": "hanabiRed",
     "clueColors": ["Red"]
@@ -251,7 +250,6 @@
   {
     "name": "Mahogany",
     "id": "AR2",
-    "showSuitName": true,
     "fill": "#660000",
     "pip": "hanabiWhite",
     "clueColors": ["Red"]
@@ -259,7 +257,6 @@
   {
     "name": "Lime",
     "id": "AG1",
-    "showSuitName": true,
     "fill": "#1aff1a",
     "pip": "hanabiYellow",
     "clueColors": ["Green"]
@@ -268,7 +265,6 @@
     "name": "Forest",
     "id": "AG2",
     "abbreviation": "R",
-    "showSuitName": true,
     "fill": "#008000",
     "pip": "hanabiGreen",
     "clueColors": ["Green"]
@@ -276,7 +272,6 @@
   {
     "name": "Sky",
     "id": "AB1",
-    "showSuitName": true,
     "fill": "#1a66ff",
     "pip": "hanabiBlue",
     "clueColors": ["Blue"]
@@ -284,7 +279,6 @@
   {
     "name": "Navy",
     "id": "AB2",
-    "showSuitName": true,
     "fill": "#002b80",
     "pip": "hanabiAltWhite",
     "clueColors": ["Blue"]
@@ -293,7 +287,6 @@
     "name": "Tomato VA",
     "id": "VR1",
     "displayName": "Tomato",
-    "showSuitName": true,
     "fill": "#e60000",
     "pip": "hanabiGreen",
     "clueColors": ["Red"]
@@ -302,7 +295,6 @@
     "name": "Carrot VA",
     "id": "VR2",
     "displayName": "Carrot",
-    "showSuitName": true,
     "fill": "#f96401",
     "pip": "hanabiRed",
     "clueColors": ["Red"]
@@ -311,7 +303,6 @@
     "name": "Mahogany VA",
     "id": "VR3",
     "displayName": "Mahogany",
-    "showSuitName": true,
     "fill": "#660000",
     "pip": "hanabiWhite",
     "clueColors": ["Red"]
@@ -320,7 +311,6 @@
     "name": "Sky VA",
     "id": "VB1",
     "displayName": "Sky",
-    "showSuitName": true,
     "fill": "#4d88ff",
     "pip": "hanabiBlue",
     "clueColors": ["Blue"]
@@ -329,7 +319,6 @@
     "name": "Berry VA",
     "id": "VB2",
     "displayName": "Berry",
-    "showSuitName": true,
     "pip": "hanabiAltWhite",
     "clueColors": ["Blue"]
   },
@@ -337,7 +326,6 @@
     "name": "Navy VA",
     "id": "VB3",
     "displayName": "Navy",
-    "showSuitName": true,
     "fill": "#001a4d",
     "pip": "hanabiYellow",
     "clueColors": ["Blue"]
@@ -346,7 +334,6 @@
     "name": "Ice EA",
     "id": "EB1",
     "displayName": "Ice",
-    "showSuitName": true,
     "fill": "#e6eeff",
     "pip": "hanabiBlue",
     "clueColors": ["Blue"]
@@ -356,7 +343,6 @@
     "id": "EB2",
     "abbreviation": "A",
     "displayName": "Sapphire",
-    "showSuitName": true,
     "fill": "#99bbff",
     "pip": "hanabiAltWhite",
     "clueColors": ["Blue"]
@@ -365,7 +351,6 @@
     "name": "Sky EA",
     "id": "EB3",
     "displayName": "Sky",
-    "showSuitName": true,
     "fill": "#3377ff",
     "pip": "hanabiYellow",
     "clueColors": ["Blue"]
@@ -374,7 +359,6 @@
     "name": "Berry EA",
     "id": "EB4",
     "displayName": "Berry",
-    "showSuitName": true,
     "pip": "hanabiGreen",
     "clueColors": ["Blue"]
   },
@@ -382,7 +366,6 @@
     "name": "Navy EA",
     "id": "EB5",
     "displayName": "Navy",
-    "showSuitName": true,
     "fill": "#002266",
     "pip": "hanabiRed",
     "clueColors": ["Blue"]
@@ -391,7 +374,6 @@
     "name": "Ocean EA",
     "id": "EB6",
     "displayName": "Ocean",
-    "showSuitName": true,
     "fill": "#00091a",
     "pip": "hanabiWhite",
     "clueColors": ["Blue"]
@@ -400,7 +382,6 @@
     "name": "Orange D",
     "id": "DRY",
     "displayName": "Orange",
-    "showSuitName": true,
     "fill": "#ff8800",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow"]
@@ -409,7 +390,6 @@
     "name": "Purple D",
     "id": "DRB",
     "displayName": "Purple",
-    "showSuitName": true,
     "pip": "hanabiWhite",
     "clueColors": ["Red", "Blue"]
   },
@@ -417,7 +397,6 @@
     "name": "Mahogany D",
     "id": "DRK",
     "displayName": "Mahogany",
-    "showSuitName": true,
     "fill": "#660016",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Black"]
@@ -426,7 +405,6 @@
     "name": "Green D",
     "id": "DYB",
     "displayName": "Green",
-    "showSuitName": true,
     "pip": "hanabiGreen",
     "clueColors": ["Yellow", "Blue"]
   },
@@ -434,7 +412,6 @@
     "name": "Tan D",
     "id": "DYB2",
     "displayName": "Tan",
-    "showSuitName": true,
     "fill": "#999900",
     "pip": "hanabiYellow",
     "clueColors": ["Yellow", "Black"]
@@ -443,7 +420,6 @@
     "name": "Navy D",
     "id": "DBK",
     "displayName": "Navy",
-    "showSuitName": true,
     "fill": "#000066",
     "pip": "hanabiBlue",
     "clueColors": ["Blue", "Black"]
@@ -452,7 +428,6 @@
     "name": "Orange D2",
     "id": "DRY2",
     "displayName": "Orange",
-    "showSuitName": true,
     "fill": "#ff8800",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Yellow"]
@@ -461,7 +436,6 @@
     "name": "Lime D",
     "id": "DYG",
     "displayName": "Lime",
-    "showSuitName": true,
     "fill": "#80c000",
     "pip": "hanabiYellow",
     "clueColors": ["Yellow", "Green"]
@@ -470,7 +444,6 @@
     "name": "Teal D",
     "id": "DGB",
     "displayName": "Teal",
-    "showSuitName": true,
     "pip": "hanabiGreen",
     "clueColors": ["Green", "Blue"]
   },
@@ -478,7 +451,6 @@
     "name": "Indigo D",
     "id": "DBP",
     "displayName": "Indigo",
-    "showSuitName": true,
     "fill": "#1a0082",
     "pip": "hanabiBlue",
     "clueColors": ["Blue", "Purple"]
@@ -487,7 +459,6 @@
     "name": "Cardinal D",
     "id": "DPR",
     "displayName": "Cardinal",
-    "showSuitName": true,
     "fill": "#810735",
     "pip": "hanabiWhite",
     "clueColors": ["Purple", "Red"]
@@ -496,7 +467,6 @@
     "name": "Tangelo AD",
     "id": "DRY3",
     "displayName": "Tangelo",
-    "showSuitName": true,
     "fill": "#ffac4d",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Yellow"]
@@ -505,7 +475,6 @@
     "name": "Peach AD",
     "id": "DRY4",
     "displayName": "Peach",
-    "showSuitName": true,
     "fill": "#b35f00",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow"]
@@ -514,7 +483,6 @@
     "name": "Orchid AD",
     "id": "DRB2",
     "displayName": "Orchid",
-    "showSuitName": true,
     "fill": "#8c1aff",
     "pip": "hanabiBlue",
     "clueColors": ["Red", "Blue"]
@@ -523,7 +491,6 @@
     "name": "Violet AD",
     "id": "DRB3",
     "displayName": "Violet",
-    "showSuitName": true,
     "fill": "#400080",
     "pip": "hanabiWhite",
     "clueColors": ["Red", "Blue"]
@@ -532,7 +499,6 @@
     "name": "Lime AD",
     "id": "DYB3",
     "displayName": "Lime",
-    "showSuitName": true,
     "fill": "#1aff1a",
     "pip": "hanabiYellow",
     "clueColors": ["Yellow", "Blue"]
@@ -542,7 +508,6 @@
     "id": "DYB4",
     "abbreviation": "R",
     "displayName": "Forest",
-    "showSuitName": true,
     "fill": "#008000",
     "pip": "hanabiGreen",
     "clueColors": ["Yellow", "Blue"]
@@ -552,7 +517,6 @@
     "id": "MDY",
     "abbreviation": "Y",
     "displayName": "Yam",
-    "showSuitName": true,
     "fill": "#cc9900",
     "pip": "hanabiYellow",
     "clueColors": ["Red", "Yellow"]
@@ -562,7 +526,6 @@
     "id": "MDG",
     "abbreviation": "G",
     "displayName": "Geas",
-    "showSuitName": true,
     "fill": "#68b840",
     "pip": "hanabiGreen",
     "clueColors": ["Red", "Yellow", "Green"]
@@ -572,7 +535,6 @@
     "id": "MDB",
     "abbreviation": "B",
     "displayName": "Beatnik",
-    "showSuitName": true,
     "fill": "#3f6fa4",
     "pip": "hanabiBlue",
     "clueColors": ["Red", "Yellow", "Green", "Blue"]
@@ -582,7 +544,6 @@
     "id": "MDP",
     "abbreviation": "P",
     "displayName": "Plum",
-    "showSuitName": true,
     "fill": "#281a58",
     "pip": "hanabiWhite",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
@@ -592,7 +553,6 @@
     "id": "MDT",
     "abbreviation": "T",
     "displayName": "Taupe",
-    "showSuitName": true,
     "fill": "#381c12",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
@@ -602,7 +562,6 @@
     "id": "YD",
     "abbreviation": "Y",
     "displayName": "Yellow",
-    "showSuitName": true,
     "fill": "#ffff00",
     "pip": "hanabiYellow",
     "clueColors": ["Red", "Green"]
@@ -612,7 +571,6 @@
     "id": "TD",
     "abbreviation": "T",
     "displayName": "Teal",
-    "showSuitName": true,
     "pip": "hanabiAltWhite",
     "clueColors": ["Green", "Blue"]
   }

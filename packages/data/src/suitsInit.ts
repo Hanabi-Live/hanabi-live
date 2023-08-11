@@ -1,9 +1,9 @@
 import { ALL_RESERVED_NOTES } from "./abbreviations";
 import { SUIT_REVERSED_SUFFIX } from "./constants";
+import type { Color } from "./interfaces/Color";
+import type { Suit } from "./interfaces/Suit";
+import type { SuitJSON } from "./interfaces/SuitJSON";
 import suitsJSON from "./json/suits.json";
-import type { Color } from "./types/Color";
-import type { Suit } from "./types/Suit";
-import type { SuitJSON } from "./types/SuitJSON";
 
 export function suitsInit(
   COLORS: ReadonlyMap<string, Color>,

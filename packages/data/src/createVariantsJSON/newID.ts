@@ -8,9 +8,13 @@ import {
   SUIT_REVERSED_SUFFIX,
   VARIANT_DELIMITER,
 } from "../constants";
-import type { SuitJSON } from "../types/SuitJSON";
-import type { VariantDescription } from "../types/VariantDescription";
-import type { VariantJSON } from "../types/VariantJSON";
+import {
+  VARIANT_MODIFIER_SET,
+  VariantModifier,
+} from "../enums/VariantModifier";
+import type { SuitJSON } from "../interfaces/SuitJSON";
+import type { VariantDescription } from "../interfaces/VariantDescription";
+import type { VariantJSON } from "../interfaces/VariantJSON";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
 
 export function getNewVariantID(
@@ -61,11 +65,13 @@ function getNewSuitID(
 function getSpecialVariantIDSuffixes(
   variantDescription: VariantDescription,
 ): string[] {
-  const variantIDSuffixes: string[] = [];
+  const variantIDSuffixes: VariantModifier[] = [];
 
-  // Suit-Ones / Suit-Fives
-
-  if (variantDescription.specialRank !== undefined) {
+  if (
+    variantDescription.specialRank !== undefined &&
+    variantDescription.specialRank !== -1
+  ) {
+    // Rainbow-Ones / Rainbow-Twos / etc.
     if (
       variantDescription.specialAllClueColors === true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -73,9 +79,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks !== true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`R${variantDescription.specialRank}`); // Rainbow
+      variantIDSuffixes.push(
+        `R${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // Pink-Ones / Pink-Twos / etc.
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks === true &&
@@ -83,9 +92,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks !== true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`P${variantDescription.specialRank}`); // Pink
+      variantIDSuffixes.push(
+        `P${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // White-Ones / White-Twos / etc.
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -93,9 +105,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks !== true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`W${variantDescription.specialRank}`); // White
+      variantIDSuffixes.push(
+        `W${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // Brown-Ones / Brown-Twos / etc.
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -103,9 +118,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks === true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`B${variantDescription.specialRank}`); // Brown
+      variantIDSuffixes.push(
+        `B${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // Omni-Ones / Omni-Twos / etc.
     if (
       variantDescription.specialAllClueColors === true &&
       variantDescription.specialAllClueRanks === true &&
@@ -113,9 +131,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks !== true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`O${variantDescription.specialRank}`); // Omni
+      variantIDSuffixes.push(
+        `O${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // Null-Ones / Null-Twos / etc.
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -123,9 +144,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks === true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`N${variantDescription.specialRank}`); // Null
+      variantIDSuffixes.push(
+        `N${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // Muddy-Rainbow-Ones / Muddy-Rainbow-Twos / etc.
     if (
       variantDescription.specialAllClueColors === true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -133,9 +157,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks === true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`M${variantDescription.specialRank}`); // Muddy Rainbow
+      variantIDSuffixes.push(
+        `M${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
+    // Light-Pink-Ones / Light-Pink-Twos / etc.
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks === true &&
@@ -143,10 +170,12 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks !== true &&
       variantDescription.specialDeceptive !== true
     ) {
-      variantIDSuffixes.push(`L${variantDescription.specialRank}`); // Light Pink
+      variantIDSuffixes.push(
+        `L${variantDescription.specialRank}` as VariantModifier,
+      );
     }
 
-    // Deceptive-Ones / Deceptive-Fives
+    // Deceptive-Ones / Deceptive-Twos / etc.
     if (
       variantDescription.specialAllClueColors !== true &&
       variantDescription.specialAllClueRanks !== true &&
@@ -154,8 +183,115 @@ function getSpecialVariantIDSuffixes(
       variantDescription.specialNoClueRanks !== true &&
       variantDescription.specialDeceptive === true
     ) {
-      variantIDSuffixes.push(`D${variantDescription.specialRank}`); // Deceptive
+      variantIDSuffixes.push(
+        `D${variantDescription.specialRank}` as VariantModifier,
+      );
     }
+  }
+
+  // Critical Ones / Critical Twos / etc.
+  if (
+    variantDescription.criticalRank !== undefined &&
+    variantDescription.criticalRank !== -1
+  ) {
+    variantIDSuffixes.push(
+      `C${variantDescription.criticalRank}` as VariantModifier,
+    );
+  }
+
+  // Clue Starved
+  if (variantDescription.clueStarved === true) {
+    variantIDSuffixes.push(VariantModifier.ClueStarved);
+  }
+
+  // Color Blind
+  if (
+    variantDescription.colorCluesTouchNothing === true &&
+    variantDescription.rankCluesTouchNothing !== true
+  ) {
+    variantIDSuffixes.push(VariantModifier.ColorBlind);
+  }
+
+  // Number Blind
+  if (
+    variantDescription.colorCluesTouchNothing !== true &&
+    variantDescription.rankCluesTouchNothing === true
+  ) {
+    variantIDSuffixes.push(VariantModifier.NumberBlind);
+  }
+
+  // Totally Blind
+  if (
+    variantDescription.colorCluesTouchNothing === true &&
+    variantDescription.rankCluesTouchNothing === true
+  ) {
+    variantIDSuffixes.push(VariantModifier.TotallyBlind);
+  }
+
+  // Color Mute
+  if (
+    variantDescription.clueColors !== undefined &&
+    variantDescription.clueColors.length === 0
+  ) {
+    variantIDSuffixes.push(VariantModifier.ColorMute);
+  }
+
+  // Number Mute
+  if (
+    variantDescription.clueRanks !== undefined &&
+    variantDescription.clueRanks.length === 0
+  ) {
+    variantIDSuffixes.push(VariantModifier.NumberMute);
+  }
+
+  // Alternating Clues
+  if (variantDescription.alternatingClues === true) {
+    variantIDSuffixes.push(VariantModifier.AlternatingClues);
+  }
+
+  // Cow & Pig
+  if (variantDescription.cowAndPig === true) {
+    variantIDSuffixes.push(VariantModifier.CowAndPig);
+  }
+
+  // Duck
+  if (variantDescription.duck === true) {
+    variantIDSuffixes.push(VariantModifier.Duck);
+  }
+
+  // Odds and Evens
+  if (variantDescription.oddsAndEvens === true) {
+    variantIDSuffixes.push(VariantModifier.OddsAndEvens);
+  }
+
+  // Synesthesia
+  if (variantDescription.synesthesia === true) {
+    variantIDSuffixes.push(VariantModifier.Synesthesia);
+  }
+
+  // Up or Down
+  if (variantDescription.upOrDown === true) {
+    variantIDSuffixes.push(VariantModifier.UpOrDown);
+  }
+
+  // Throw It in a Hole.
+  if (variantDescription.throwItInAHole === true) {
+    variantIDSuffixes.push(VariantModifier.ThrowItInAHole);
+  }
+
+  // Funnels
+  if (variantDescription.funnels === true) {
+    variantIDSuffixes.push(VariantModifier.Funnels);
+  }
+
+  // Chimneys
+  if (variantDescription.chimneys === true) {
+    variantIDSuffixes.push(VariantModifier.Chimneys);
+  }
+
+  // Sudoku
+  if (variantDescription.sudoku === true) {
+    variantIDSuffixes.push(VariantModifier.Sudoku);
   }
 
   return variantIDSuffixes;
@@ -174,13 +310,12 @@ export function validateNewVariantIDs(
       );
     }
 
-    /*
     if (newVariantIDs.has(variantJSON.newID)) {
+      console.error("variantJSON:", variantJSON);
       throw new Error(
-        `Variant "${variantJSON.name}" has a duplicate "newID" property of: ${variantJSON.newID}`,
+        `Variant "${variantJSON.name}" has a duplicate "newID" property of "${variantJSON.newID}". (See the previous object log.)`,
       );
     }
-    */
 
     newVariantIDs.add(variantJSON.newID);
 
@@ -192,7 +327,6 @@ export function validateNewVariantIDs(
     );
 
     if (!isEqual(variantJSON, reconstructedVariant)) {
-      /*
       console.error("--------------------------------------------------------");
       console.error("variantJSON:", variantJSON);
       console.error("--------------------------------------------------------");
@@ -201,7 +335,6 @@ export function validateNewVariantIDs(
       throw new Error(
         `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newID}" that was parsed incorrectly. (See the previous object logs.)`,
       );
-      */
     }
   }
 }
@@ -234,24 +367,6 @@ function getVariantFromNewID(
     suits,
   };
 
-  for (const suitIDWithModifiers of suitIDsWithModifiers) {
-    const [suitID] = splitSuitID(suitIDWithModifiers);
-    if (suitID === undefined) {
-      throw new Error(
-        `Failed to parse the base suit ID from the suit ID of: ${suitIDWithModifiers}`,
-      );
-    }
-
-    const suit = suitsIDMap.get(suitID);
-    if (suit === undefined) {
-      throw new Error(`Failed to find a suit with an ID of: ${suitID}`);
-    }
-
-    if (suit.showSuitName === true) {
-      variant.showSuitNames = true;
-    }
-  }
-
   for (const variantModifier of variantModifiers) {
     const secondCharacter = variantModifier[1];
     if (secondCharacter === undefined) {
@@ -265,24 +380,44 @@ function getVariantFromNewID(
       ? undefined
       : secondCharacterNumber;
 
-    switch (variantModifier) {
+    if (
+      specialRank !== undefined &&
+      specialRank !== 1 &&
+      specialRank !== 2 &&
+      specialRank !== 3 &&
+      specialRank !== 4 &&
+      specialRank !== 5
+    ) {
+      throw new Error(
+        `The number in the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, or 5.`,
+      );
+    }
+
+    if (!VARIANT_MODIFIER_SET.has(variantModifier as VariantModifier)) {
+      throw new Error(
+        `Unknown variant modifier of "${variantModifier}" in a variant ID of "${newID}".`,
+      );
+    }
+    const validatedVariantModifier = variantModifier as VariantModifier;
+
+    switch (validatedVariantModifier) {
       // Rainbow-Ones / Rainbow-Fives
-      case "R1":
-      case "R2":
-      case "R3":
-      case "R4":
-      case "R5": {
+      case VariantModifier.RainbowOnes:
+      case VariantModifier.RainbowTwos:
+      case VariantModifier.RainbowThrees:
+      case VariantModifier.RainbowFours:
+      case VariantModifier.RainbowFives: {
         variant.specialRank = specialRank;
         variant.specialAllClueColors = true;
         break;
       }
 
       // Pink-Ones / Pink-Fives
-      case "P1":
-      case "P2":
-      case "P3":
-      case "P4":
-      case "P5": {
+      case VariantModifier.PinkOnes:
+      case VariantModifier.PinkTwos:
+      case VariantModifier.PinkThrees:
+      case VariantModifier.PinkFours:
+      case VariantModifier.PinkFives: {
         variant.specialRank = specialRank;
         variant.specialAllClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
@@ -290,22 +425,22 @@ function getVariantFromNewID(
       }
 
       // White-Ones / White-Fives
-      case "W1":
-      case "W2":
-      case "W3":
-      case "W4":
-      case "W5": {
+      case VariantModifier.WhiteOnes:
+      case VariantModifier.WhiteTwos:
+      case VariantModifier.WhiteThrees:
+      case VariantModifier.WhiteFours:
+      case VariantModifier.WhiteFives: {
         variant.specialRank = specialRank;
         variant.specialNoClueColors = true;
         break;
       }
 
       // Brown-Ones / Brown-Fives
-      case "B1":
-      case "B2":
-      case "B3":
-      case "B4":
-      case "B5": {
+      case VariantModifier.BrownOnes:
+      case VariantModifier.BrownTwos:
+      case VariantModifier.BrownThrees:
+      case VariantModifier.BrownFours:
+      case VariantModifier.BrownFives: {
         variant.specialRank = specialRank;
         variant.specialNoClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
@@ -313,11 +448,11 @@ function getVariantFromNewID(
       }
 
       // Omni-Ones / Omni-Fives
-      case "O1":
-      case "O2":
-      case "O3":
-      case "O4":
-      case "O5": {
+      case VariantModifier.OmniOnes:
+      case VariantModifier.OmniTwos:
+      case VariantModifier.OmniThrees:
+      case VariantModifier.OmniFours:
+      case VariantModifier.OmniFives: {
         variant.specialRank = specialRank;
         variant.specialAllClueColors = true;
         variant.specialAllClueRanks = true;
@@ -326,11 +461,11 @@ function getVariantFromNewID(
       }
 
       // Null-Ones / Null-Fives
-      case "N1":
-      case "N2":
-      case "N3":
-      case "N4":
-      case "N5": {
+      case VariantModifier.NullOnes:
+      case VariantModifier.NullTwos:
+      case VariantModifier.NullThrees:
+      case VariantModifier.NullFours:
+      case VariantModifier.NullFives: {
         variant.specialRank = specialRank;
         variant.specialNoClueColors = true;
         variant.specialNoClueRanks = true;
@@ -339,11 +474,11 @@ function getVariantFromNewID(
       }
 
       // Muddy-Rainbow-Ones / Muddy-Rainbow-Fives
-      case "M1":
-      case "M2":
-      case "M3":
-      case "M4":
-      case "M5": {
+      case VariantModifier.MuddyRainbowOnes:
+      case VariantModifier.MuddyRainbowTwos:
+      case VariantModifier.MuddyRainbowThrees:
+      case VariantModifier.MuddyRainbowFours:
+      case VariantModifier.MuddyRainbowFives: {
         variant.specialRank = specialRank;
         variant.specialAllClueColors = true;
         variant.specialNoClueRanks = true;
@@ -352,11 +487,11 @@ function getVariantFromNewID(
       }
 
       // Light-Pink-Ones / Light-Pink-Fives
-      case "L1":
-      case "L2":
-      case "L3":
-      case "L4":
-      case "L5": {
+      case VariantModifier.LightPinkOnes:
+      case VariantModifier.LightPinkTwos:
+      case VariantModifier.LightPinkThrees:
+      case VariantModifier.LightPinkFours:
+      case VariantModifier.LightPinkFives: {
         variant.specialRank = specialRank;
         variant.specialNoClueColors = true;
         variant.specialAllClueRanks = true;
@@ -365,11 +500,11 @@ function getVariantFromNewID(
       }
 
       // Deceptive-Ones / Deceptive-Fives
-      case "D1":
-      case "D2":
-      case "D3":
-      case "D4":
-      case "D5": {
+      case VariantModifier.DeceptiveOnes:
+      case VariantModifier.DeceptiveTwos:
+      case VariantModifier.DeceptiveThrees:
+      case VariantModifier.DeceptiveFours:
+      case VariantModifier.DeceptiveFives: {
         variant.specialRank = specialRank;
         variant.specialDeceptive = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
@@ -377,120 +512,113 @@ function getVariantFromNewID(
       }
 
       // Critical 4's
-      case "C1":
-      case "C2":
-      case "C3":
-      case "C4":
-      case "C5": {
+      case VariantModifier.CriticalOnes:
+      case VariantModifier.CriticalTwos:
+      case VariantModifier.CriticalThrees:
+      case VariantModifier.CriticalFours:
+      case VariantModifier.CriticalFives: {
         variant.criticalRank = specialRank;
         break;
       }
 
       // Clue Starved
-      case "CS": {
+      case VariantModifier.ClueStarved: {
         variant.clueStarved = true;
         break;
       }
 
       // Color Blind
-      case "CB": {
+      case VariantModifier.ColorBlind: {
         variant.colorCluesTouchNothing = true;
         break;
       }
 
       // Number Blind
-      case "NB": {
+      case VariantModifier.NumberBlind: {
         variant.rankCluesTouchNothing = true;
         break;
       }
 
       // Totally Blind
-      case "TB": {
+      case VariantModifier.TotallyBlind: {
         variant.colorCluesTouchNothing = true;
         variant.rankCluesTouchNothing = true;
         break;
       }
 
       // Color Mute
-      case "CM": {
+      case VariantModifier.ColorMute: {
         variant.clueColors = [];
         break;
       }
 
       // Number Mute
-      case "NM": {
+      case VariantModifier.NumberMute: {
         variant.clueRanks = [];
         break;
       }
 
       // Alternating Clues
-      case "AC": {
+      case VariantModifier.AlternatingClues: {
         variant.alternatingClues = true;
         break;
       }
 
       // Cow & Pig
-      case "CP": {
+      case VariantModifier.CowAndPig: {
         variant.cowAndPig = true;
         break;
       }
 
       // Duck
-      case "Du": {
+      case VariantModifier.Duck: {
         variant.duck = true;
         break;
       }
 
       // Odds and Evens
-      case "OE": {
+      case VariantModifier.OddsAndEvens: {
         variant.oddsAndEvens = true;
         variant.clueRanks = [1, 2];
         break;
       }
 
       // Synesthesia
-      case "Sy": {
+      case VariantModifier.Synesthesia: {
         variant.synesthesia = true;
         variant.clueRanks = [];
         break;
       }
 
       // Up or Down
-      case "UD": {
+      case VariantModifier.UpOrDown: {
         variant.upOrDown = true;
-        variant.showSuitNames = true;
         break;
       }
 
       // Throw It in a Hole.
-      case "TH": {
+      case VariantModifier.ThrowItInAHole: {
         variant.throwItInAHole = true;
         break;
       }
 
       // Funnels
-      case "FU": {
+      case VariantModifier.Funnels: {
         variant.funnels = true;
         break;
       }
 
       // Chimneys
-      case "CH": {
+      case VariantModifier.Chimneys: {
         variant.chimneys = true;
         break;
       }
 
-      default: {
-        throw new Error(
-          `Unknown variant modifier "${variantModifier}" in variant ID: ${newID}`,
-        );
+      // Sudoku
+      case VariantModifier.Sudoku: {
+        variant.sudoku = true;
+        break;
       }
-    }
-
-    if (variant.specialRank === 0) {
-      throw new Error(
-        "Failed to parse the special rank from the variant modifier.",
-      );
     }
   }
 
@@ -502,7 +630,9 @@ function getSuitNamesFromSuitID(
   suitsIDMap: Map<string, SuitJSON>,
 ) {
   return suitIDsWithModifiers.map((suitIDWithModifiers) => {
-    const [suitID, ...modifiers] = splitSuitID(suitIDWithModifiers);
+    const [suitID, ...modifiers] = suitIDWithModifiers.split(
+      SUIT_MODIFIER_DELIMITER,
+    );
 
     const suit = suitsIDMap.get(suitID!);
     if (suit === undefined) {
@@ -520,8 +650,4 @@ function getSuitNamesFromSuitID(
     const hasReverseModifier = modifiers.includes(REVERSE_MODIFIER);
     return hasReverseModifier ? suit.name + SUIT_REVERSED_SUFFIX : suit.name;
   });
-}
-
-function splitSuitID(suitIDWithModifiers: string) {
-  return suitIDWithModifiers.split(SUIT_MODIFIER_DELIMITER);
 }

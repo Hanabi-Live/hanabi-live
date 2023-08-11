@@ -6,7 +6,6 @@ import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
 import * as deck from "../rules/deck";
-import * as variantRules from "../rules/variant";
 import { newColorClue, newRankClue } from "../types/Clue";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { ButtonGroup } from "./ButtonGroup";
@@ -415,7 +414,7 @@ function drawPlayStacks() {
         text = "";
       }
 
-      if (variantRules.isSudoku(globals.variant)) {
+      if (globals.variant.sudoku) {
         // Don't show anything here, the starting values will be written by the state observers
         // updating when the starting or the played cards value changes.
         text = "";

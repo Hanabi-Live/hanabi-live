@@ -96,7 +96,7 @@ module.exports = {
      *
      * KineticJS has functions that are prefixed with an underscore.
      */
-    "no-underscore-dangle": ["off"],
+    "no-underscore-dangle": "off",
 
     /**
      * Documentation:
@@ -108,7 +108,7 @@ module.exports = {
      * We use many variables that are only null during initialization; adding explicit type guards
      * would be superfluous.
      */
-    "@typescript-eslint/no-non-null-assertion": ["off"],
+    "@typescript-eslint/no-non-null-assertion": "off",
 
     /**
      * Documentation:
@@ -132,6 +132,6 @@ module.exports = {
      * The codebase uses cyclical dependencies because various objects are attached to the global
      * variables object, but methods of these objects also reference/change global variables.
      */
-    "import/no-cycle": ["off"],
+    "import/no-cycle": "off",
   },
 };

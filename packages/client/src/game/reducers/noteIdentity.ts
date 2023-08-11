@@ -1,12 +1,12 @@
-import type { Variant } from "@hanabi/data";
-import { ALL_RESERVED_NOTES, MAX_RANK, START_CARD_RANK } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import type { Rank, Variant } from "@hanabi/data";
+import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/data";
+import { newArray } from "@hanabi/utils";
 import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 
 interface CardIdentities {
   readonly suitIndices: number[];
-  readonly ranks: number[];
+  readonly ranks: Rank[];
 }
 
 function parseSuit(variant: Variant, suitText: string): number | null {
@@ -27,13 +27,36 @@ function parseSuit(variant: Variant, suitText: string): number | null {
   return null;
 }
 
-function parseRank(rankText: string): number {
-  const rank = parseIntSafe(rankText);
-  if (rank === 0 || Number.isNaN(rank)) {
-    return START_CARD_RANK;
-  }
+function parseRank(rankText: string): Rank | null {
+  switch (rankText) {
+    case "0": {
+      return START_CARD_RANK;
+    }
 
-  return rank;
+    case "1": {
+      return 1;
+    }
+
+    case "2": {
+      return 2;
+    }
+
+    case "3": {
+      return 3;
+    }
+
+    case "4": {
+      return 4;
+    }
+
+    case "5": {
+      return 5;
+    }
+
+    default: {
+      return null;
+    }
+  }
 }
 
 /**
@@ -77,11 +100,11 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
   let suitIndex: number | null = null;
-  let rank: number | null = null;
+  let rank: Rank | null = null;
   if (identityMatch !== null) {
     const squishText = extractSquishText(identityMatch);
     const suitIndices: number[] = [];
-    const ranks: number[] = [];
+    const ranks: Rank[] = [];
     if (squishText !== null) {
       [].map.call(squishText, (letter) => {
         suitIndex = parseSuit(variant, letter);
@@ -159,7 +182,7 @@ function getPossibilitiesFromKeyword(
   keywordPreTrim: string,
 ): Array<[number, number]> | null {
   const positiveIdentities: CardIdentities[] = []; // Any combination of suits and ranks
-  const negativeIdentities: CardIdentities[] = []; // Any negative cluing `!r1` `!3`
+  const negativeIdentities: CardIdentities[] = []; // Any negative cluing, e.g. `!r1` `!3`
   for (const substring of keywordPreTrim.split(",")) {
     const trimmed = substring.trim();
     const negative = trimmed.startsWith("!");
@@ -179,11 +202,10 @@ function getPossibilitiesFromKeyword(
   const positiveRanks = new Set(
     positiveIdentities.length > 0 ? [] : variant.ranks,
   );
-  for (let rank = 1; rank <= MAX_RANK; rank++) {
-    identityMap.push(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      Array(variant.suits.length).fill(positiveRanks.has(rank) ? 1 : 0),
-    );
+  for (const rank of variant.ranks) {
+    const identityArrayValue = positiveRanks.has(rank) ? 1 : 0;
+    const identityArray = newArray(variant.suits.length, identityArrayValue);
+    identityMap.push(identityArray);
   }
 
   // Then add positive items and remove all negatives.

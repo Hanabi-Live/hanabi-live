@@ -1,4 +1,4 @@
-import type { Suit } from "./types/Suit";
+import type { Suit } from "./interfaces/Suit";
 
 /**
  * This function generates a regular expression that is used to detect "identity notes" (notes about

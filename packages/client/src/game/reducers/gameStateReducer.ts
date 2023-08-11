@@ -330,7 +330,7 @@ function gameStateReducerFunction(
   // Resolve the stack direction.
   if (
     action.type === "play" &&
-    (variantRules.hasReversedSuits(variant) || variantRules.isSudoku(variant))
+    (variantRules.hasReversedSuits(variant) || variant.sudoku)
   ) {
     // We have to wait until the deck is updated with the information of the card that we played
     // before the "direction()" function will work.
@@ -345,7 +345,7 @@ function gameStateReducerFunction(
   }
 
   // In Sudoku variants, resolve the stack starting value.
-  if (action.type === "play" && variantRules.isSudoku(variant)) {
+  if (action.type === "play" && variant.sudoku) {
     const playStack = state.playStacks[action.suitIndex]!;
     state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
       playStack,

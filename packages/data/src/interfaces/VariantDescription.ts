@@ -6,17 +6,17 @@ export interface VariantDescription {
   readonly suits: readonly string[];
 
   clueColors?: readonly string[];
-  clueRanks?: readonly number[];
+  clueRanks?: ReadonlyArray<1 | 2 | 3 | 4 | 5>;
 
-  specialRank?: number;
+  specialRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.
   specialAllClueColors?: boolean;
   specialAllClueRanks?: boolean;
   specialNoClueColors?: boolean;
   specialNoClueRanks?: boolean;
   specialDeceptive?: boolean;
 
-  // Listed in order of how they appear in "variants.md".
-  criticalRank?: number;
+  // The following properties are listed in order of how they appear in "variants.md".
+  criticalRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.
   clueStarved?: boolean;
   colorCluesTouchNothing?: boolean;
   rankCluesTouchNothing?: boolean;
@@ -29,7 +29,5 @@ export interface VariantDescription {
   throwItInAHole?: boolean;
   funnels?: boolean;
   chimneys?: boolean;
-
-  // Computed based on the suits and type of variant.
-  showSuitNames?: boolean;
+  sudoku?: boolean;
 }

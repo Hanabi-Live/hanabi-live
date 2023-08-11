@@ -45,7 +45,7 @@ export function nextPlayableRanks(
     }
 
     case StackDirection.Up: {
-      if (!variantRules.isSudoku(variant)) {
+      if (!variant.sudoku) {
         // In non-Sudoku variants, the next playable card is just one higher, or 1 if the stack is
         // not stared yet.
         if (currentlyPlayedRank === STACK_BASE_RANK) {
@@ -135,7 +135,7 @@ export function stackStartRank(
   deck: readonly CardState[],
   variant: Variant,
 ): number {
-  if (!variantRules.isSudoku(variant)) {
+  if (!variant.sudoku) {
     return 1;
   }
 

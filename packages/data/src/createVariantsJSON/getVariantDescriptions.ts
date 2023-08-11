@@ -1,7 +1,7 @@
-import { ReadonlySet, trimSuffix } from "@hanabi/utils";
+import { ReadonlySet } from "@hanabi/utils";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
-import type { SuitJSON } from "../types/SuitJSON";
-import type { VariantDescription } from "../types/VariantDescription";
+import type { SuitJSON } from "../interfaces/SuitJSON";
+import type { VariantDescription } from "../interfaces/VariantDescription";
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS = [1, 5] as const;
@@ -40,7 +40,6 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA = new ReadonlySet([
 
 export function getVariantDescriptions(
   suits: SuitJSON[],
-  suitsNameMap: Map<string, SuitJSON>,
 ): VariantDescription[] {
   const basicVariantSuits = getBasicVariantSuits();
 
@@ -79,25 +78,6 @@ export function getVariantDescriptions(
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
-
-  // Dynamically compute the "showSuitNames" property of the variant based on the suits.
-  for (const variantDescription of variantDescriptions) {
-    const variantHasConfusingSuit = variantDescription.suits.some(
-      (suitName) => {
-        const baseSuitName = trimSuffix(suitName, SUIT_REVERSED_SUFFIX);
-        const suit = suitsNameMap.get(baseSuitName);
-        if (suit === undefined) {
-          throw new Error(`Failed to find the suit: ${suitName}`);
-        }
-
-        return suit.showSuitName === true;
-      },
-    );
-
-    if (variantHasConfusingSuit) {
-      variantDescription.showSuitNames = true;
-    }
-  }
 
   return variantDescriptions;
 }
@@ -375,16 +355,18 @@ function getSpecialRankName(specialRank: number) {
   );
 }
 
-export function getSpecialClueRanks(specialRank: number | undefined): number[] {
+export function getSpecialClueRanks(
+  specialRank: 1 | 2 | 3 | 4 | 5 | undefined,
+): Array<1 | 2 | 3 | 4 | 5> {
   return DEFAULT_CLUE_RANKS.filter((clueRank) => clueRank !== specialRank);
 }
 
 function getVariantDescriptionForSpecialRankVariant(
   name: string,
   suits: string[],
-  specialRank: number,
+  specialRank: 1 | 2 | 3 | 4 | 5,
   suit: SuitJSON,
-  specialClueRanks: number[],
+  specialClueRanks: Array<1 | 2 | 3 | 4 | 5>,
 ): VariantDescription {
   const variantDescription: VariantDescription = {
     name,
@@ -972,7 +954,7 @@ function getOddsAndEvensVariants(
   basicVariantSuits: string[][],
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const clueRanksForOddsAndEvens = [1, 2]; // 1 represents odd, 2 represents even
+  const clueRanksForOddsAndEvens = [1, 2] as const; // 1 represents odd, 2 represents even
 
   // Create the basic variants.
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
@@ -1114,7 +1096,6 @@ function getUpOrDownVariants(
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits]!,
-      showSuitNames: true, // We must show the suit names so the stack direction is shown.
       upOrDown: true,
     });
   }
@@ -1133,7 +1114,6 @@ function getUpOrDownVariants(
       variantDescriptions.push({
         name: variantName,
         suits: variantSuits,
-        showSuitNames: true, // We must show the suit names so the stack direction is shown.
         upOrDown: true,
       });
     }
@@ -1271,7 +1251,7 @@ function getSudokuVariants(
   variantDescriptions.push({
     name: `Sudoku (${numSuits} Suits)`,
     suits: basicVariantSuits[numSuits]!,
-    showSuitNames: true, // We must show the suit names so the stack status is shown.
+    sudoku: true,
   });
 
   // Create combinations with special suits.
@@ -1284,7 +1264,7 @@ function getSudokuVariants(
     variantDescriptions.push({
       name: variantName,
       suits: variantSuits,
-      showSuitNames: true, // We must show the suit names so the stack status is shown.
+      sudoku: true,
     });
   }
 

@@ -6,7 +6,6 @@ import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
 import * as cardRules from "./card";
 import * as handRules from "./hand";
-import * as variantRules from "./variant";
 
 export function totalCards(variant: Variant): number {
   let totalCardsInTheDeck = 0;
@@ -23,7 +22,7 @@ function totalCardsInSuit(variant: Variant, suit: Suit): number {
     return 5;
   }
 
-  if (variant.upOrDown || variant.criticalRank) {
+  if (variant.upOrDown || variant.criticalRank !== -1) {
     return 9; // The normal amount minus one because there is one more critical card.
   }
 
@@ -49,7 +48,7 @@ export function numCopiesOfCard(
   }
 
   // Sudoku always has 2 cards.
-  if (variantRules.isSudoku(variant)) {
+  if (variant.sudoku) {
     return 2;
   }
 

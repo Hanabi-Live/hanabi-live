@@ -9,7 +9,6 @@ import type { StackDirection } from "../types/StackDirection";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
-import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
@@ -20,7 +19,7 @@ export function getMaxScorePerStack(
   variant: Variant,
 ): number[] {
   // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
-  if (variantRules.isSudoku(variant)) {
+  if (variant.sudoku) {
     return sudokuRules.getMaxScorePerStack(deck, playStackStarts, variant);
   }
 

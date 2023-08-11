@@ -1,10 +1,10 @@
 import { charactersInit } from "./charactersInit";
 import { colorsInit } from "./colorsInit";
-import { DEFAULT_VARIANT_NAME, START_CARD_RANK } from "./constants";
+import { DEFAULT_VARIANT_NAME } from "./constants";
+import type { Character } from "./interfaces/Character";
+import type { Suit } from "./interfaces/Suit";
+import type { Variant } from "./interfaces/Variant";
 import { suitsInit } from "./suitsInit";
-import type { Character } from "./types/Character";
-import type { Suit } from "./types/Suit";
-import type { Variant } from "./types/Variant";
 import { variantsInit } from "./variantsInit";
 
 /** Indexed by character ID. */
@@ -17,7 +17,7 @@ const COLORS = colorsInit();
 const SUITS = suitsInit(COLORS);
 
 /** Indexed by variant name. */
-const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
+const VARIANTS = variantsInit(COLORS, SUITS);
 
 /** Indexed by variant ID. */
 const VARIANTS_BY_ID: ReadonlyMap<number, Variant> = (() => {

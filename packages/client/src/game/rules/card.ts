@@ -71,7 +71,7 @@ export function needsToBePlayed(
 
   // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked
   // cards, even though lower ones are dead due to the ability to start stacks anywhere.
-  if (variantRules.isSudoku(variant)) {
+  if (variant.sudoku) {
     return sudokuRules.sudokuCanStillBePlayed(
       suitIndex,
       rank,

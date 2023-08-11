@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { SuitJSON } from "../types/SuitJSON";
-import type { VariantDescription } from "../types/VariantDescription";
-import type { VariantJSON } from "../types/VariantJSON";
+import type { SuitJSON } from "../interfaces/SuitJSON";
+import type { VariantDescription } from "../interfaces/VariantDescription";
+import type { VariantJSON } from "../interfaces/VariantJSON";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
@@ -21,7 +21,7 @@ function main() {
     getOldVariantMaps(oldVariants);
 
   // Start to build all of the variants.
-  const variantDescriptions = getVariantDescriptions(suits, suitsNameMap);
+  const variantDescriptions = getVariantDescriptions(suits);
   const variants = getVariantsFromVariantDescriptions(
     variantDescriptions,
     suitsNameMap,

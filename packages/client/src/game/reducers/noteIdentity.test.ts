@@ -109,11 +109,14 @@ function identityArrayToMap(
   suitLength: number = testVariant.suits.length,
 ): number[][] {
   const cardMap: number[][] = [];
+
   for (let rank = 1; rank <= 7; rank++) {
     cardMap.push(zeros.slice(0, suitLength));
   }
+
   for (const ident of possibles) {
     cardMap[ident[1] - 1]![ident[0]] = 1;
   }
+
   return cardMap;
 }

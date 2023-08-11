@@ -1,5 +1,5 @@
+import type { Color } from "./interfaces/Color";
 import colorsJSON from "./json/colors.json";
-import type { Color } from "./types/Color";
 
 export function colorsInit(): ReadonlyMap<string, Color> {
   const colors = new Map<string, Color>();

@@ -27,4 +27,6 @@ bash "$DIR/spell_check.sh" &
 
 wait
 
+# TODO: https://stackoverflow.com/questions/49513335/bash-wait-exit-on-error-code
+
 echo "Successfully linted $REPO_NAME in $SECONDS seconds."
