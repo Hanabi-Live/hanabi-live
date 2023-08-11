@@ -150,7 +150,7 @@ export function automaticLogin(): void {
     .then((response) => {
       // Check to see if we have accepted the Firefox warning (cookies are strings).
       if (
-        browserIsFirefox() &&
+        isBrowserFirefox() &&
         localStorage.getItem("acceptedFirefoxWarning") !== "true"
       ) {
         $("#loading").hide();
@@ -183,7 +183,7 @@ export function automaticLogin(): void {
     });
 }
 
-function browserIsFirefox() {
+function isBrowserFirefox() {
   return navigator.userAgent.toLowerCase().includes("firefox");
 }
 
