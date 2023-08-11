@@ -41,9 +41,9 @@ export function createJSONFromReplay(room: string): void {
       morph !== undefined &&
       morph.suitIndex !== null &&
       morph.rank !== null &&
-      // eslint-disable-next-line isaacscript/strict-enums
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       morph.suitIndex !== CardIdentityType.Original &&
-      // eslint-disable-next-line isaacscript/strict-enums
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       morph.rank !== CardIdentityType.Original
     ) {
       game.deck.push({

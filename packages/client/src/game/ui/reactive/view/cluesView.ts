@@ -32,7 +32,7 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   }
 
   let clue: Clue;
-  // eslint-disable-next-line isaacscript/strict-enums
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (lastClue.type === ClueType.Rank) {
     clue = newRankClue(lastClue.value);
   } else {

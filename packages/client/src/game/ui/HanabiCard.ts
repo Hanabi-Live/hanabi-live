@@ -100,7 +100,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private _state: CardState;
   get state(): CardState {
     return (
-      globals.store?.getState()?.visibleState?.deck[this._state.order] || // eslint-disable-line
+      globals.store?.getState()?.visibleState?.deck[this._state.order] ||
       this._state
     );
   }

@@ -248,9 +248,9 @@ function hypoAction(
   // identities.
   if (action.type === "morph") {
     if (
-      // eslint-disable-next-line isaacscript/strict-enums
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       action.suitIndex === CardIdentityType.Original &&
-      // eslint-disable-next-line isaacscript/strict-enums
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       action.rank === CardIdentityType.Original
     ) {
       // unmorph the card

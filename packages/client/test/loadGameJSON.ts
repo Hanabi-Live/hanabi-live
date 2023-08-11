@@ -76,7 +76,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // server would do when emulating all of the database actions.
   const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1]!;
 
-  // eslint-disable-next-line isaacscript/strict-enums
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions.push({
       type: "gameOver",

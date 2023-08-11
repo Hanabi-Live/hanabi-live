@@ -430,5 +430,5 @@ const lateObservers = [
 
   // Initialization finished. (This will get called when the visible state becomes valid and after
   // all other view updates.)
-  sub((s) => !!s.visibleState, initView.onInitializationChanged), // eslint-disable-line
+  sub((s) => !!s.visibleState, initView.onInitializationChanged),
 ];

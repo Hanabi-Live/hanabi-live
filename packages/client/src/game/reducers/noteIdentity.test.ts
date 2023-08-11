@@ -10,8 +10,19 @@ const ONES = [1, 1, 1, 1, 1, 1] as const;
 describe("noteIdentity", () => {
   describe("getPossibilitiesFromKeyword", () => {
     // The note keyword `red` should return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`.
-    test("positive suit", () => {
+    test("positive suit full", () => {
       const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, ["red"]);
+      expect(possibles).toEqual([
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [0, 4],
+        [0, 5],
+      ]);
+    });
+
+    test("positive suit short", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, ["r"]);
       expect(possibles).toEqual([
         [0, 1],
         [0, 2],
@@ -35,8 +46,8 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    // The note keyword `red 3, blue 3` should return `[[0,3], [1,3]]`.
-    test("positive conjunct", () => {
+    // The note keyword `red 3, blue 3` should return `[[0,3], [3,3]]`.
+    test("positive conjunct full", () => {
       const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "red 3, blue 3",
       ]);
@@ -46,13 +57,13 @@ describe("noteIdentity", () => {
       ]);
     });
 
-    test("positive conjunct", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
-        "r3,bs",
+    test("positive conjunct short", () => {
+      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "r3,b3",
       ]);
       expect(possibles).toEqual([
         [0, 3],
-        [3, 7],
+        [3, 3],
       ]);
     });
 
