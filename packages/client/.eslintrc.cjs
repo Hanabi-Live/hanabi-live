@@ -25,7 +25,6 @@ module.exports = {
     "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-array-find": "off",
     "unicorn/prefer-array-index-of": "off",
-    "unicorn/prefer-array-some": "off",
     "unicorn/prefer-dom-node-append": "off",
     "unicorn/prefer-dom-node-dataset": "off",
     "unicorn/prefer-dom-node-remove": "off",
