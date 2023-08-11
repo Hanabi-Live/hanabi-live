@@ -54,8 +54,7 @@ export function init(): void {
   // Make an emote list/map and ensure that there are no overlapping emotes.
   const emoteMap = new Map<string, boolean>(); // The map can be ephemeral
   for (const emotesInCategory of Object.values(emotes)) {
-    const emotesArray = Array.from(emotesInCategory);
-    for (const emoteName of emotesArray) {
+    for (const emoteName of emotesInCategory) {
       if (emoteMap.has(emoteName)) {
         throw new Error(`Duplicate emote found: ${emoteName}`);
       }
