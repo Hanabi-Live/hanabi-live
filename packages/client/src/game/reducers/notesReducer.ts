@@ -123,7 +123,7 @@ function checkNoteKeywordsForMatch(
   patterns: readonly string[],
   keywords: string[],
 ) {
-  return keywords.some((k) => patterns.some((pattern) => k === pattern));
+  return keywords.some((k) => patterns.includes(k));
 }
 
 function getEmptyNote(variant: Variant): CardNote {
