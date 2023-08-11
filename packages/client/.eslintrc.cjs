@@ -12,7 +12,6 @@ module.exports = {
   rules: {
     // TODO: Temporarily disable all new rules.
     "@typescript-eslint/method-signature-style": "off",
-    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-redundant-type-constituents": "off",
     "@typescript-eslint/prefer-enum-initializers": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",

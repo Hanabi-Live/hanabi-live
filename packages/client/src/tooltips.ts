@@ -32,10 +32,9 @@ const navOptions: JQueryTooltipster.ITooltipsterOptions = {
   // Tooltipster plugin to automatically create a scroll bar for it:
   // https://github.com/louisameline/tooltipster-scrollableTip
   plugins: [
-    "sideTip", // Make it have the ability to be positioned on a specific side
-    "scrollableTip", // Make it scrollable
+    "sideTip", // Make it have the ability to be positioned on a specific side.
+    "scrollableTip", // Make it scrollable.
   ],
-  functionBefore: (): void => {},
 };
 const gameOptions: JQueryTooltipster.ITooltipsterOptions = {
   ...defaultOptions,
