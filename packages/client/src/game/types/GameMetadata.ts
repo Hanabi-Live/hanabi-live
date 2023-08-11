@@ -30,9 +30,14 @@ export function getPlayerName(
 }
 
 export function getPlayerNames(
-  playerIndices: number[],
+  playerIndices: number[] | null,
   metadata: GameMetadata,
 ): string {
+  // The codebase lies; this can be `null` in some situations that I don't understand.
+  if (playerIndices === null) {
+    return "The players";
+  }
+
   const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
   playerNames.sort();
 
