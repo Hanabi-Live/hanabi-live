@@ -22,7 +22,7 @@ const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 let lastPM = "";
-let datetimeLastChatInput = new Date().getTime();
+let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
 let typedChatHistoryIndex: number | null = null;
 let typedChatHistoryPrefix = "";
@@ -95,7 +95,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
   // If this is a pregame or game input, report to the server that we are typing. (But don't spam
   // the server with more than one message a second.)
   if (this.id !== "lobby-chat-input") {
-    const datetimeNow = new Date().getTime();
+    const datetimeNow = Date.now();
     if (datetimeNow - datetimeLastChatInput >= 1000) {
       datetimeLastChatInput = datetimeNow;
       globals.conn!.send("chatTyping", {

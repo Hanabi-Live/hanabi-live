@@ -47,7 +47,7 @@ export function update(data: ClockData): void {
   globals.startingTurnTime = globals.playerTimes[data.activePlayerIndex]!;
 
   // Mark the time that we updated the local player times.
-  globals.lastTimerUpdateTimeMS = new Date().getTime();
+  globals.lastTimerUpdateTimeMS = Date.now();
 
   // Update onscreen time displays.
   if (globals.state.playing) {
@@ -114,7 +114,7 @@ export function stop(): void {
 
 function setTickingDownTime(timer: TimerDisplay) {
   // Calculate the elapsed time since the last timer update.
-  const now = new Date().getTime();
+  const now = Date.now();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
   globals.lastTimerUpdateTimeMS = now;
   if (elapsedTime < 0) {

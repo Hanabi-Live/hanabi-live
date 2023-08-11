@@ -34,7 +34,6 @@ module.exports = {
     "unicorn/prefer-array-find": "off",
     "unicorn/prefer-array-index-of": "off",
     "unicorn/prefer-array-some": "off",
-    "unicorn/prefer-date-now": "off",
     "unicorn/prefer-dom-node-append": "off",
     "unicorn/prefer-dom-node-dataset": "off",
     "unicorn/prefer-dom-node-remove": "off",
