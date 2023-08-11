@@ -171,8 +171,9 @@ function range(
   return numbersInRange;
 }
 
-function identityMapToArray(cardMap: number[][]) {
+function identityMapToArray(cardMap: boolean[][]) {
   const possibilities: Array<[number, number]> = [];
+
   for (let rank = 1; rank <= cardMap.length; rank++) {
     for (let suitIndex = 0; suitIndex < cardMap[0]!.length; suitIndex++) {
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -200,24 +201,29 @@ function getPossibilitiesFromKeyword(
   variant: Variant,
   keyword: string,
 ): Array<[number, number]> | null {
-  const { positiveIdentities, negativeIdentities } =
+  const { positiveCardIdentities, negativeCardIdentities } =
     getCardIdentitiesFromKeyword(variant, keyword);
 
-  // Start with all 1's if no positive info, else all 0's.
-  const identityMap: number[][] = [];
+  /** The first index is the rank, the second index is the suit. */
+  const identityMap: boolean[][] = [];
+
   const positiveRanks = new Set(
-    positiveIdentities.length > 0 ? [] : variant.ranks,
+    positiveCardIdentities.length > 0 ? [] : variant.ranks,
   );
+
   for (let rank = 1; rank <= START_CARD_RANK; rank++) {
-    const identityArrayValue = positiveRanks.has(rank as Rank) ? 1 : 0;
+    const identityArrayValue = positiveRanks.has(rank as Rank);
     const identityArray = newArray(variant.suits.length, identityArrayValue);
     identityMap[rank - 1] = identityArray;
   }
 
   // Then add positive items and remove all negatives.
-  for (const identities of [positiveIdentities, negativeIdentities]) {
-    const negative = identities === negativeIdentities;
-    for (const identity of identities) {
+  for (const cardIdentities of [
+    positiveCardIdentities,
+    negativeCardIdentities,
+  ]) {
+    const negative = cardIdentities === negativeCardIdentities;
+    for (const identity of cardIdentities) {
       const ranks = identity.ranks.length > 0 ? identity.ranks : variant.ranks;
       for (const rank of ranks) {
         const suitIndices =
@@ -225,7 +231,7 @@ function getPossibilitiesFromKeyword(
             ? identity.suitIndices
             : range(variant.suits.length);
         for (const suitIndex of suitIndices) {
-          identityMap[rank - 1]![suitIndex] = negative ? 0 : 1;
+          identityMap[rank - 1]![suitIndex] = !negative;
         }
       }
     }
@@ -235,8 +241,8 @@ function getPossibilitiesFromKeyword(
 }
 
 function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
-  const positiveIdentities: CardIdentities[] = []; // Any combination of suits and ranks
-  const negativeIdentities: CardIdentities[] = []; // Any negative cluing, e.g. `!r1` `!3`
+  const positiveCardIdentities: CardIdentities[] = []; // Any combination of suits and ranks
+  const negativeCardIdentities: CardIdentities[] = []; // Any negative cluing, e.g. `!r1` `!3`
 
   for (const keywordSegmentRaw of keyword.split(",")) {
     const keywordSegment = keywordSegmentRaw.trim();
@@ -249,15 +255,15 @@ function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
       keywordSegmentWithoutExclamationPoint,
     );
     if (isNegative) {
-      negativeIdentities.push(cardIdentities);
+      negativeCardIdentities.push(cardIdentities);
     } else {
-      positiveIdentities.push(cardIdentities);
+      positiveCardIdentities.push(cardIdentities);
     }
   }
 
   return {
-    positiveIdentities,
-    negativeIdentities,
+    positiveCardIdentities,
+    negativeCardIdentities,
   };
 }
 
