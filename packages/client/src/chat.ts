@@ -310,7 +310,7 @@ function tab(element: JQuery, event: JQuery.Event) {
   }
   message = message.trim();
   const messageWords = message.split(" ");
-  const finalWord = messageWords[messageWords.length - 1]!;
+  const finalWord = messageWords.at(-1)!;
 
   // Increment the tab counter.
   if (tabCompleteWordListIndex === null) {

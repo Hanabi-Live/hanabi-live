@@ -74,7 +74,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // If the game was exported from the server and it ended in a specific way, the final action will
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
-  const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1]!;
+  const finalGameJSONAction = gameJSON.actions.at(-1)!;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (finalGameJSONAction.type !== ActionType.GameOver) {

@@ -1336,7 +1336,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       if (variant.upOrDown) {
         cards.push(
           `START is ${colorName(
-            variant.clueColors[variant.clueColors.length - 1]!,
+            variant.clueColors.at(-1)!,
           )}`,
         );
       }

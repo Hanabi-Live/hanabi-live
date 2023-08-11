@@ -153,7 +153,7 @@ function getStateAtTurn(state: State, turn: number) {
 }
 
 function getFinalState(state: State) {
-  return state.replay.states[state.replay.states.length - 1]!;
+  return state.replay.states.at(-1)!;
 }
 
 function checkPossibilitiesEliminatedByClues(

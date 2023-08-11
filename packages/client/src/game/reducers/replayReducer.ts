@@ -180,7 +180,7 @@ function replayReducerFunction(
 
       const hypoStates = state.hypothetical.states;
       hypoStates.pop();
-      const lastState = hypoStates[hypoStates.length - 1]!;
+      const lastState = hypoStates.at(-1)!;
       state.hypothetical.ongoing = lastState;
       break;
     }

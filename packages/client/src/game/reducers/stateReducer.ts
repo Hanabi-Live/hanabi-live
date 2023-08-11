@@ -393,7 +393,7 @@ function visualStateToShow(state: Draft<State>, action: Action) {
   // After an ongoing game ends, do not automatically show the final segment with the player's times
   // by default in order to avoid drowning out the reason why the game ended.
   if (action.type === "playerTimes") {
-    return state.replay.states[state.replay.states.length - 2]; // The penultimate segment
+    return state.replay.states.at(-2); // The penultimate segment
   }
 
   // Show the final segment of the current game.
