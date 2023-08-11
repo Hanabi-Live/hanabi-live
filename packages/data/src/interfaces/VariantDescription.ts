@@ -9,11 +9,11 @@ export interface VariantDescription {
   clueRanks?: ReadonlyArray<1 | 2 | 3 | 4 | 5>;
 
   specialRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.
-  specialAllClueColors?: boolean;
-  specialAllClueRanks?: boolean;
-  specialNoClueColors?: boolean;
-  specialNoClueRanks?: boolean;
-  specialDeceptive?: boolean;
+  specialRankAllClueColors?: boolean;
+  specialRankAllClueRanks?: boolean;
+  specialRankNoClueColors?: boolean;
+  specialRankNoClueRanks?: boolean;
+  specialRankDeceptive?: boolean;
 
   // The following properties are listed in order of how they appear in "variants.md".
   criticalRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.

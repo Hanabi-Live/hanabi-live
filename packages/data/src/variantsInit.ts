@@ -88,50 +88,53 @@ export function variantsInit(
     }
     const specialRank = variantJSON.specialRank ?? -1;
 
-    // Validate the "specialAllClueColors" property. If it is not specified, assume false (e.g.
+    // Validate the "specialRankAllClueColors" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (variantJSON.specialAllClueColors === false) {
+    if (variantJSON.specialRankAllClueColors === false) {
       throw new Error(
-        `The "specialAllClueColors" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "specialRankAllClueColors" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const specialAllClueColors = variantJSON.specialAllClueColors ?? false;
+    const specialRankAllClueColors =
+      variantJSON.specialRankAllClueColors ?? false;
 
-    // Validate the "specialAllClueRanks" property. If it is not specified, assume false (e.g.
+    // Validate the "specialRankAllClueRanks" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (variantJSON.specialAllClueRanks === false) {
+    if (variantJSON.specialRankAllClueRanks === false) {
       throw new Error(
-        `The "specialAllClueRanks" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "specialRankAllClueRanks" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const specialAllClueRanks = variantJSON.specialAllClueRanks ?? false;
+    const specialRankAllClueRanks =
+      variantJSON.specialRankAllClueRanks ?? false;
 
-    // Validate the "specialNoClueColors" property. If it is not specified, assume false (e.g.
+    // Validate the "specialRankNoClueColors" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
-    if (variantJSON.specialNoClueColors === false) {
+    if (variantJSON.specialRankNoClueColors === false) {
       throw new Error(
-        `The "specialNoClueColors" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "specialRankNoClueColors" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const specialNoClueColors = variantJSON.specialNoClueColors ?? false;
+    const specialRankNoClueColors =
+      variantJSON.specialRankNoClueColors ?? false;
 
-    // Validate the "specialNoClueRanks" property. If it is not specified, assume false (e.g. cluing
-    // ranks in this variant works normally).
-    if (variantJSON.specialNoClueRanks === false) {
+    // Validate the "specialRankNoClueRanks" property. If it is not specified, assume false (e.g.
+    // cluing ranks in this variant works normally).
+    if (variantJSON.specialRankNoClueRanks === false) {
       throw new Error(
-        `The "specialNoClueRanks" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "specialRankNoClueRanks" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const specialNoClueRanks = variantJSON.specialNoClueRanks ?? false;
+    const specialRankNoClueRanks = variantJSON.specialRankNoClueRanks ?? false;
 
-    // Validate the "specialDeceptive" property. If it is not specified, assume false (e.g. cluing
-    // ranks in this variant works normally).
-    if (variantJSON.specialDeceptive === false) {
+    // Validate the "specialRankDeceptive" property. If it is not specified, assume false (e.g.
+    // cluing ranks in this variant works normally).
+    if (variantJSON.specialRankDeceptive === false) {
       throw new Error(
-        `The "specialDeceptive" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "specialRankDeceptive" property for the variant "${variantJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const specialDeceptive = variantJSON.specialDeceptive ?? false;
+    const specialRankDeceptive = variantJSON.specialRankDeceptive ?? false;
 
     // -----------------------------------------------
     // Special variant properties (from `VariantJSON`)
@@ -312,11 +315,11 @@ export function variantsInit(
       clueRanks,
 
       specialRank,
-      specialAllClueColors,
-      specialAllClueRanks,
-      specialNoClueColors,
-      specialNoClueRanks,
-      specialDeceptive,
+      specialRankAllClueColors,
+      specialRankAllClueRanks,
+      specialRankNoClueColors,
+      specialRankNoClueRanks,
+      specialRankDeceptive,
 
       criticalRank,
       clueStarved,

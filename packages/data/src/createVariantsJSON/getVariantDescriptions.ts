@@ -320,7 +320,7 @@ function getVariantsForSpecialRanks(
         name: variantName,
         suits: variantSuits,
         specialRank,
-        specialDeceptive: true,
+        specialRankDeceptive: true,
         clueRanks: specialClueRanks,
       };
       variantDescriptions.push(variantDescription);
@@ -343,7 +343,7 @@ function getVariantsForSpecialRanks(
           name: variantName,
           suits: variantSuits,
           specialRank,
-          specialDeceptive: true,
+          specialRankDeceptive: true,
           clueRanks: specialClueRanks,
         };
         variantDescriptions.push(variantDescription);
@@ -410,19 +410,19 @@ function convertSuitSpecialPropertyToVariantProperty(
 ) {
   switch (suitSpecialProperty) {
     case "allClueColors": {
-      return "specialAllClueColors";
+      return "specialRankAllClueColors";
     }
 
     case "noClueColors": {
-      return "specialNoClueColors";
+      return "specialRankNoClueColors";
     }
 
     case "allClueRanks": {
-      return "specialAllClueRanks";
+      return "specialRankAllClueRanks";
     }
 
     case "noClueRanks": {
-      return "specialNoClueRanks";
+      return "specialRankNoClueRanks";
     }
   }
 }

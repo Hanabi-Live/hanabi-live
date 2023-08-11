@@ -101,11 +101,11 @@ export function touchesCard(
     }
 
     if (rank === variant.specialRank) {
-      if (variant.specialAllClueColors) {
+      if (variant.specialRankAllClueColors) {
         return true;
       }
 
-      if (variant.specialNoClueColors) {
+      if (variant.specialRankNoClueColors) {
         return false;
       }
     }
@@ -160,16 +160,16 @@ export function touchesCard(
     }
 
     if (rank === variant.specialRank) {
-      if (variant.specialAllClueRanks) {
+      if (variant.specialRankAllClueRanks) {
         return true;
       }
 
-      if (variant.specialNoClueRanks) {
+      if (variant.specialRankNoClueRanks) {
         return false;
       }
 
       // The rank that touches a deceptive card is contingent upon the card's suit.
-      if (variant.specialDeceptive) {
+      if (variant.specialRankDeceptive) {
         const deceptiveRank =
           variant.clueRanks[suitIndex % variant.clueRanks.length];
         return clue.value === deceptiveRank;

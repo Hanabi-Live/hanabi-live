@@ -8,10 +8,5 @@ TODO:
 - search for "TODO: remove. This is unused"
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer
 
-old stuff:
-- rename all specialX properties
-- rename all variant properties based on order in variants.md
-- make VariantJSON extend from VariantDescription
-
 long term:
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845

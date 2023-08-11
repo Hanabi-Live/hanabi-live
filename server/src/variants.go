@@ -26,19 +26,19 @@ type VariantJSON struct {
 	Suits []string `json:"suits"`
 	// ClueColors and ClueRanks are optional elements
 	// Thus, they must be pointers so that we can tell if the values were specified or not
-	ClueColors             *[]string `json:"clueColors"`
-	ClueRanks              *[]int    `json:"clueRanks"`
-	ColorCluesTouchNothing bool      `json:"colorCluesTouchNothing"`
-	RankCluesTouchNothing  bool      `json:"rankCluesTouchNothing"`
-	SpecialRank            int       `json:"specialRank"` // For e.g. Rainbow-Ones
-	SpecialAllClueColors   bool      `json:"specialAllClueColors"`
-	SpecialAllClueRanks    bool      `json:"specialAllClueRanks"`
-	SpecialNoClueColors    bool      `json:"specialNoClueColors"`
-	SpecialNoClueRanks     bool      `json:"specialNoClueRanks"`
-	SpecialDeceptive       bool      `json:"specialDeceptive"`
-	OddsAndEvens           bool      `json:"oddsAndEvens"`
-	Funnels                bool      `json:"funnels"`
-	Chimneys               bool      `json:"chimneys"`
+	ClueColors               *[]string `json:"clueColors"`
+	ClueRanks                *[]int    `json:"clueRanks"`
+	ColorCluesTouchNothing   bool      `json:"colorCluesTouchNothing"`
+	RankCluesTouchNothing    bool      `json:"rankCluesTouchNothing"`
+	SpecialRank              int       `json:"specialRank"` // For e.g. Rainbow-Ones
+	SpecialRankAllClueColors bool      `json:"specialRankAllClueColors"`
+	SpecialRankAllClueRanks  bool      `json:"specialRankAllClueRanks"`
+	SpecialRankNoClueColors  bool      `json:"specialRankNoClueColors"`
+	SpecialRankNoClueRanks   bool      `json:"specialRankNoClueRanks"`
+	SpecialRankDeceptive     bool      `json:"specialRankDeceptive"`
+	OddsAndEvens             bool      `json:"oddsAndEvens"`
+	Funnels                  bool      `json:"funnels"`
+	Chimneys                 bool      `json:"chimneys"`
 }
 
 func variantsInit() {
@@ -150,24 +150,24 @@ func variantsInit() {
 
 		// Convert the JSON variant into a variant object and store it in the map
 		variants[variant.Name] = &Variant{
-			Name:                   variant.Name,
-			ID:                     variant.ID,
-			Suits:                  variantSuits,
-			Ranks:                  variantRanks,
-			ClueColors:             *clueColors,
-			ClueRanks:              *clueRanks,
-			ColorCluesTouchNothing: variant.ColorCluesTouchNothing,
-			RankCluesTouchNothing:  variant.RankCluesTouchNothing,
-			SpecialRank:            specialRank,
-			SpecialAllClueColors:   variant.SpecialAllClueColors,
-			SpecialAllClueRanks:    variant.SpecialAllClueRanks,
-			SpecialNoClueColors:    variant.SpecialNoClueColors,
-			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
-			SpecialDeceptive:       variant.SpecialDeceptive,
-			OddsAndEvens:           variant.OddsAndEvens,
-			Funnels:                variant.Funnels,
-			Chimneys:               variant.Chimneys,
-			MaxScore:               len(variantSuits) * 5,
+			Name:                     variant.Name,
+			ID:                       variant.ID,
+			Suits:                    variantSuits,
+			Ranks:                    variantRanks,
+			ClueColors:               *clueColors,
+			ClueRanks:                *clueRanks,
+			ColorCluesTouchNothing:   variant.ColorCluesTouchNothing,
+			RankCluesTouchNothing:    variant.RankCluesTouchNothing,
+			SpecialRank:              specialRank,
+			SpecialRankAllClueColors: variant.SpecialRankAllClueColors,
+			SpecialRankAllClueRanks:  variant.SpecialRankAllClueRanks,
+			SpecialRankNoClueColors:  variant.SpecialRankNoClueColors,
+			SpecialRankNoClueRanks:   variant.SpecialRankNoClueRanks,
+			SpecialRankDeceptive:     variant.SpecialRankDeceptive,
+			OddsAndEvens:             variant.OddsAndEvens,
+			Funnels:                  variant.Funnels,
+			Chimneys:                 variant.Chimneys,
+			MaxScore:                 len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
 
@@ -233,10 +233,10 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		}
 
 		if variant.SpecialRank == card.Rank {
-			if variant.SpecialAllClueColors {
+			if variant.SpecialRankAllClueColors {
 				return true
 			}
-			if variant.SpecialNoClueColors {
+			if variant.SpecialRankNoClueColors {
 				return false
 			}
 		}
@@ -268,13 +268,13 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		}
 
 		if variant.SpecialRank == card.Rank {
-			if variant.SpecialAllClueRanks {
+			if variant.SpecialRankAllClueRanks {
 				return true
 			}
-			if variant.SpecialNoClueRanks {
+			if variant.SpecialRankNoClueRanks {
 				return false
 			}
-			if variant.SpecialDeceptive {
+			if variant.SpecialRankDeceptive {
 				// The rank that touches a deceptive card is contingent upon the card's suit
 				deceptiveRank := variant.ClueRanks[card.SuitIndex%len(variant.ClueRanks)]
 				return clue.Value == deceptiveRank

@@ -1356,7 +1356,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (suit.noClueRanks) {
       lines.push("Not touched by any number clue.");
     }
-    if (variant.specialDeceptive && !suit.noClueRanks) {
+    if (variant.specialRankDeceptive && !suit.noClueRanks) {
       const deceptiveRank = variant.clueRanks[index % variant.clueRanks.length];
       lines.push(
         `Deceptive: ${variant.specialRank} is touched by number ${deceptiveRank} clue.`,

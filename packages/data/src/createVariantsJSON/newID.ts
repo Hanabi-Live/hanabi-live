@@ -73,11 +73,11 @@ function getSpecialVariantIDSuffixes(
   ) {
     // Rainbow-Ones / Rainbow-Twos / etc.
     if (
-      variantDescription.specialAllClueColors === true &&
-      variantDescription.specialAllClueRanks !== true &&
-      variantDescription.specialNoClueColors !== true &&
-      variantDescription.specialNoClueRanks !== true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors === true &&
+      variantDescription.specialRankAllClueRanks !== true &&
+      variantDescription.specialRankNoClueColors !== true &&
+      variantDescription.specialRankNoClueRanks !== true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `R${variantDescription.specialRank}` as VariantModifier,
@@ -86,11 +86,11 @@ function getSpecialVariantIDSuffixes(
 
     // Pink-Ones / Pink-Twos / etc.
     if (
-      variantDescription.specialAllClueColors !== true &&
-      variantDescription.specialAllClueRanks === true &&
-      variantDescription.specialNoClueColors !== true &&
-      variantDescription.specialNoClueRanks !== true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors !== true &&
+      variantDescription.specialRankAllClueRanks === true &&
+      variantDescription.specialRankNoClueColors !== true &&
+      variantDescription.specialRankNoClueRanks !== true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `P${variantDescription.specialRank}` as VariantModifier,
@@ -99,11 +99,11 @@ function getSpecialVariantIDSuffixes(
 
     // White-Ones / White-Twos / etc.
     if (
-      variantDescription.specialAllClueColors !== true &&
-      variantDescription.specialAllClueRanks !== true &&
-      variantDescription.specialNoClueColors === true &&
-      variantDescription.specialNoClueRanks !== true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors !== true &&
+      variantDescription.specialRankAllClueRanks !== true &&
+      variantDescription.specialRankNoClueColors === true &&
+      variantDescription.specialRankNoClueRanks !== true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `W${variantDescription.specialRank}` as VariantModifier,
@@ -112,11 +112,11 @@ function getSpecialVariantIDSuffixes(
 
     // Brown-Ones / Brown-Twos / etc.
     if (
-      variantDescription.specialAllClueColors !== true &&
-      variantDescription.specialAllClueRanks !== true &&
-      variantDescription.specialNoClueColors !== true &&
-      variantDescription.specialNoClueRanks === true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors !== true &&
+      variantDescription.specialRankAllClueRanks !== true &&
+      variantDescription.specialRankNoClueColors !== true &&
+      variantDescription.specialRankNoClueRanks === true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `B${variantDescription.specialRank}` as VariantModifier,
@@ -125,11 +125,11 @@ function getSpecialVariantIDSuffixes(
 
     // Omni-Ones / Omni-Twos / etc.
     if (
-      variantDescription.specialAllClueColors === true &&
-      variantDescription.specialAllClueRanks === true &&
-      variantDescription.specialNoClueColors !== true &&
-      variantDescription.specialNoClueRanks !== true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors === true &&
+      variantDescription.specialRankAllClueRanks === true &&
+      variantDescription.specialRankNoClueColors !== true &&
+      variantDescription.specialRankNoClueRanks !== true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `O${variantDescription.specialRank}` as VariantModifier,
@@ -138,11 +138,11 @@ function getSpecialVariantIDSuffixes(
 
     // Null-Ones / Null-Twos / etc.
     if (
-      variantDescription.specialAllClueColors !== true &&
-      variantDescription.specialAllClueRanks !== true &&
-      variantDescription.specialNoClueColors === true &&
-      variantDescription.specialNoClueRanks === true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors !== true &&
+      variantDescription.specialRankAllClueRanks !== true &&
+      variantDescription.specialRankNoClueColors === true &&
+      variantDescription.specialRankNoClueRanks === true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `N${variantDescription.specialRank}` as VariantModifier,
@@ -151,11 +151,11 @@ function getSpecialVariantIDSuffixes(
 
     // Muddy-Rainbow-Ones / Muddy-Rainbow-Twos / etc.
     if (
-      variantDescription.specialAllClueColors === true &&
-      variantDescription.specialAllClueRanks !== true &&
-      variantDescription.specialNoClueColors !== true &&
-      variantDescription.specialNoClueRanks === true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors === true &&
+      variantDescription.specialRankAllClueRanks !== true &&
+      variantDescription.specialRankNoClueColors !== true &&
+      variantDescription.specialRankNoClueRanks === true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `M${variantDescription.specialRank}` as VariantModifier,
@@ -164,11 +164,11 @@ function getSpecialVariantIDSuffixes(
 
     // Light-Pink-Ones / Light-Pink-Twos / etc.
     if (
-      variantDescription.specialAllClueColors !== true &&
-      variantDescription.specialAllClueRanks === true &&
-      variantDescription.specialNoClueColors === true &&
-      variantDescription.specialNoClueRanks !== true &&
-      variantDescription.specialDeceptive !== true
+      variantDescription.specialRankAllClueColors !== true &&
+      variantDescription.specialRankAllClueRanks === true &&
+      variantDescription.specialRankNoClueColors === true &&
+      variantDescription.specialRankNoClueRanks !== true &&
+      variantDescription.specialRankDeceptive !== true
     ) {
       variantIDSuffixes.push(
         `L${variantDescription.specialRank}` as VariantModifier,
@@ -177,11 +177,11 @@ function getSpecialVariantIDSuffixes(
 
     // Deceptive-Ones / Deceptive-Twos / etc.
     if (
-      variantDescription.specialAllClueColors !== true &&
-      variantDescription.specialAllClueRanks !== true &&
-      variantDescription.specialNoClueColors !== true &&
-      variantDescription.specialNoClueRanks !== true &&
-      variantDescription.specialDeceptive === true
+      variantDescription.specialRankAllClueColors !== true &&
+      variantDescription.specialRankAllClueRanks !== true &&
+      variantDescription.specialRankNoClueColors !== true &&
+      variantDescription.specialRankNoClueRanks !== true &&
+      variantDescription.specialRankDeceptive === true
     ) {
       variantIDSuffixes.push(
         `D${variantDescription.specialRank}` as VariantModifier,
@@ -408,7 +408,7 @@ function getVariantFromNewID(
       case VariantModifier.RainbowFours:
       case VariantModifier.RainbowFives: {
         variant.specialRank = specialRank;
-        variant.specialAllClueColors = true;
+        variant.specialRankAllClueColors = true;
         break;
       }
 
@@ -419,7 +419,7 @@ function getVariantFromNewID(
       case VariantModifier.PinkFours:
       case VariantModifier.PinkFives: {
         variant.specialRank = specialRank;
-        variant.specialAllClueRanks = true;
+        variant.specialRankAllClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -431,7 +431,7 @@ function getVariantFromNewID(
       case VariantModifier.WhiteFours:
       case VariantModifier.WhiteFives: {
         variant.specialRank = specialRank;
-        variant.specialNoClueColors = true;
+        variant.specialRankNoClueColors = true;
         break;
       }
 
@@ -442,7 +442,7 @@ function getVariantFromNewID(
       case VariantModifier.BrownFours:
       case VariantModifier.BrownFives: {
         variant.specialRank = specialRank;
-        variant.specialNoClueRanks = true;
+        variant.specialRankNoClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -454,8 +454,8 @@ function getVariantFromNewID(
       case VariantModifier.OmniFours:
       case VariantModifier.OmniFives: {
         variant.specialRank = specialRank;
-        variant.specialAllClueColors = true;
-        variant.specialAllClueRanks = true;
+        variant.specialRankAllClueColors = true;
+        variant.specialRankAllClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -467,8 +467,8 @@ function getVariantFromNewID(
       case VariantModifier.NullFours:
       case VariantModifier.NullFives: {
         variant.specialRank = specialRank;
-        variant.specialNoClueColors = true;
-        variant.specialNoClueRanks = true;
+        variant.specialRankNoClueColors = true;
+        variant.specialRankNoClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -480,8 +480,8 @@ function getVariantFromNewID(
       case VariantModifier.MuddyRainbowFours:
       case VariantModifier.MuddyRainbowFives: {
         variant.specialRank = specialRank;
-        variant.specialAllClueColors = true;
-        variant.specialNoClueRanks = true;
+        variant.specialRankAllClueColors = true;
+        variant.specialRankNoClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -493,8 +493,8 @@ function getVariantFromNewID(
       case VariantModifier.LightPinkFours:
       case VariantModifier.LightPinkFives: {
         variant.specialRank = specialRank;
-        variant.specialNoClueColors = true;
-        variant.specialAllClueRanks = true;
+        variant.specialRankNoClueColors = true;
+        variant.specialRankAllClueRanks = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -506,7 +506,7 @@ function getVariantFromNewID(
       case VariantModifier.DeceptiveFours:
       case VariantModifier.DeceptiveFives: {
         variant.specialRank = specialRank;
-        variant.specialDeceptive = true;
+        variant.specialRankDeceptive = true;
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }

@@ -113,7 +113,7 @@ export function drawCards(
           drawText(ctx, textYPos, rankLabel, enableShadows);
         }
         if (
-          variant.specialDeceptive &&
+          variant.specialRankDeceptive &&
           rank === variant.specialRank &&
           suit.name !== "Unknown" &&
           !suit.noClueRanks
@@ -583,14 +583,16 @@ function getSuitStyle(
     if (rank === variant.specialRank) {
       const allClueColors =
         suit.allClueColors ||
-        (variant.specialAllClueColors && !suit.noClueColors);
+        (variant.specialRankAllClueColors && !suit.noClueColors);
       const noClueColors =
         suit.noClueColors ||
-        (variant.specialNoClueColors && !suit.allClueColors);
+        (variant.specialRankNoClueColors && !suit.allClueColors);
       const allClueRanks =
-        suit.allClueRanks || (variant.specialAllClueRanks && !suit.noClueRanks);
+        suit.allClueRanks ||
+        (variant.specialRankAllClueRanks && !suit.noClueRanks);
       const noClueRanks =
-        suit.noClueRanks || (variant.specialNoClueRanks && !suit.allClueRanks);
+        suit.noClueRanks ||
+        (variant.specialRankNoClueRanks && !suit.allClueRanks);
       const dark = suit.oneOfEach;
       if (allClueColors) {
         if (allClueRanks) {
