@@ -115,18 +115,6 @@ module.exports = {
 
     /**
      * Documentation:
-     * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-plugin-isaacscript/docs/rules/no-number-enums.md
-     *
-     * Defined at:
-     * https://isaacscript.github.io/eslint-config-isaacscript
-     *
-     * We use number enums to save bandwidth between client and server. Number enums are almost
-     * always safe with the `isaacscript/strict-enums` rule.
-     */
-    "isaacscript/no-number-enums": "off",
-
-    /**
-     * Documentation:
      * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-null.md
      *
      * Defined at:
