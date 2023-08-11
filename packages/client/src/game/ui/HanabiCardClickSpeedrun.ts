@@ -12,10 +12,7 @@ import { globals } from "./globals";
 import * as notes from "./notes";
 import * as turn from "./turn";
 
-export function HanabiCardClickSpeedrun(
-  card: HanabiCard,
-  event: MouseEvent,
-): void {
+export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
   if (
     // Do nothing if we are clicking on a card that is not in a hand. (This is likely a misclick.)
     card.layout.parent === null ||

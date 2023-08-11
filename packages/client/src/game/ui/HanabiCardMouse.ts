@@ -5,7 +5,7 @@ import * as cardRules from "../rules/card";
 import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
 import { HanabiCardClick } from "./HanabiCardClick";
-import { HanabiCardClickSpeedrun } from "./HanabiCardClickSpeedrun";
+import { mouseDownSpeedrun } from "./HanabiCardClickSpeedrun";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import type { LayoutChild } from "./LayoutChild";
 import * as arrows from "./arrows";
@@ -109,7 +109,7 @@ function mouseDown(
 ) {
   // Speedrunning overrides the normal card clicking behavior.
   if (useSpeedrunClickHandlers()) {
-    HanabiCardClickSpeedrun(this, event.evt);
+    mouseDownSpeedrun(this, event.evt);
     return;
   }
 

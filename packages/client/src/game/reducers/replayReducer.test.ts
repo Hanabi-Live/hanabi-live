@@ -13,8 +13,8 @@ import type { State } from "../types/State";
 import { replayReducer } from "./replayReducer";
 import { stateReducer } from "./stateReducer";
 
-jest.mock("./UIReducer", () => ({
-  UIReducer: jest.fn(),
+jest.mock("./uiReducer", () => ({
+  uiReducer: jest.fn(),
 }));
 
 let testState: State;

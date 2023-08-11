@@ -8,11 +8,11 @@ import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
 import type { State } from "../types/State";
 import type { Action, GameAction } from "../types/actions";
-import { UIReducer } from "./UIReducer";
 import { gameStateReducer } from "./gameStateReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
+import { uiReducer } from "./uiReducer";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
@@ -177,12 +177,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "dragStart": {
-      state.UI = UIReducer(state.UI, action);
+      state.UI = uiReducer(state.UI, action);
       break;
     }
 
     case "dragReset": {
-      state.UI = UIReducer(state.UI, action);
+      state.UI = uiReducer(state.UI, action);
       break;
     }
 
