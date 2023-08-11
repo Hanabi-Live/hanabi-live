@@ -10,7 +10,6 @@ module.exports = {
   },
 
   rules: {
-    // TODO: Temporarily disable all new rules.
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/no-redundant-type-constituents": "off",
     "@typescript-eslint/prefer-enum-initializers": "off",
@@ -30,7 +29,6 @@ module.exports = {
     "unicorn/no-lonely-if": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",
-    "unicorn/no-null": "off",
     "unicorn/no-typeof-undefined": "off",
     "unicorn/no-unused-properties": "off",
     "unicorn/no-useless-spread": "off",
@@ -118,9 +116,22 @@ module.exports = {
      * Defined at:
      * https://isaacscript.github.io/eslint-config-isaacscript
      *
-     * The codebase uses cyclical dependencies because various objects are attached to the global
+     * The client uses cyclical dependencies because various objects are attached to the global
      * variables object, but methods of these objects also reference/change global variables.
      */
     "import/no-cycle": "off",
+
+    /**
+     * Documentation:
+     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-null.md
+     *
+     * Defined at:
+     * https://isaacscript.github.io/eslint-config-isaacscript
+     *
+     * The codebase uses many cases of null. In the long term, this should be refactored to
+     * undefined where possible. (We want to wait until the server is rewritten in TypeScript first
+     * to avoid having to make changes to Golang code.)
+     */
+    "unicorn/no-null": "off",
   },
 };
