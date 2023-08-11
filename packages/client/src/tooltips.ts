@@ -7,8 +7,8 @@
 // side-effects for the same reason.
 
 import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
-import "tooltipster";
-import "../lib/tooltipster-scrollableTip.min";
+import "tooltipster"; // eslint-disable-line import/no-unassigned-import
+import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
 
 // Constants
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;

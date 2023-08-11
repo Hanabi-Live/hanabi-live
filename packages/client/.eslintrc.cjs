@@ -18,7 +18,6 @@ module.exports = {
     "@typescript-eslint/prefer-readonly": "off",
     "@typescript-eslint/require-array-sort-compare": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
-    "import/no-unassigned-import": "off",
     "isaacscript/no-number-enums": "off",
     "unicorn/better-regex": "off",
     "unicorn/catch-error-name": "off",
