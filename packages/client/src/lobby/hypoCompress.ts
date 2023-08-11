@@ -93,9 +93,7 @@ export function expand(data: string): string | null {
   const normal = data.replace(/-/g, "");
 
   // The compressed string is composed of 3 substrings separated by commas.
-  const [playersAndDeck, actionsString, variantIDString] = [
-    ...normal.split(",", 3),
-  ];
+  const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
   const numberPlayersString = playersAndDeck!.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
 

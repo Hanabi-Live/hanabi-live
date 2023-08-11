@@ -31,7 +31,6 @@ module.exports = {
     "unicorn/no-new-array": "off",
     "unicorn/no-typeof-undefined": "off",
     "unicorn/no-unused-properties": "off",
-    "unicorn/no-useless-spread": "off",
     "unicorn/no-zero-fractions": "off",
     "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-array-find": "off",
