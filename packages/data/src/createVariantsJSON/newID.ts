@@ -633,8 +633,11 @@ function getSuitNamesFromSuitID(
     const [suitID, ...modifiers] = suitIDWithModifiers.split(
       SUIT_MODIFIER_DELIMITER,
     );
+    if (suitID === undefined) {
+      throw new Error(`Failed to parse the suit ID: ${suitIDWithModifiers}`);
+    }
 
-    const suit = suitsIDMap.get(suitID!);
+    const suit = suitsIDMap.get(suitID);
     if (suit === undefined) {
       throw new Error(`Failed to find a suit with an ID of: ${suitID}`);
     }

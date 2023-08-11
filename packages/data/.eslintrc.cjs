@@ -8,18 +8,4 @@ module.exports = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.eslint.json"),
   },
-
-  rules: {
-    /**
-     * Documentation:
-     * https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-non-null-assertion.md
-     *
-     * Defined at:
-     * https://isaacscript.github.io/eslint-config-isaacscript
-     *
-     * We use many variables that are only null during initialization; adding explicit type guards
-     * would be superfluous.
-     */
-    "@typescript-eslint/no-non-null-assertion": "off",
-  },
 };
