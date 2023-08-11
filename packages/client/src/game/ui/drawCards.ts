@@ -7,7 +7,6 @@ import {
   UNKNOWN_CARD_RANK,
   getSuit,
 } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
 import * as abbreviationRules from "../rules/abbreviation";
 import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";
@@ -710,7 +709,7 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
   return `rgb(${r},${g},${b})`;
 }
 
-// From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+/** From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
 function hexToRGB(
   hex: string,
 ): { r: number; g: number; b: number } | undefined {
@@ -719,9 +718,27 @@ function hexToRGB(
     return undefined;
   }
 
+  // We must use `Number.parseInt` since we have use a radix of 16.
+  const r = Number.parseInt(result[1]!, 16);
+  if (Number.isNaN(r)) {
+    return undefined;
+  }
+
+  // We must use `Number.parseInt` since we have use a radix of 16.
+  const g = Number.parseInt(result[2]!, 16);
+  if (Number.isNaN(r)) {
+    return undefined;
+  }
+
+  // We must use `Number.parseInt` since we have use a radix of 16.
+  const b = Number.parseInt(result[3]!, 16);
+  if (Number.isNaN(r)) {
+    return undefined;
+  }
+
   return {
-    r: parseIntSafe(result[1]!),
-    g: parseIntSafe(result[2]!),
-    b: parseIntSafe(result[3]!),
+    r,
+    g,
+    b,
   };
 }
