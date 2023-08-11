@@ -2,34 +2,34 @@ import { getDefaultVariant, getVariant, MAX_CLUE_NUM } from "@hanabi/data";
 import { discard, play } from "../../../test/testActions";
 import { gain } from "./clueTokens";
 
-const discardAction = discard(0, 0, 0, 1, false);
-const defaultVariant = getDefaultVariant();
-const throwItInAHoleVariant = getVariant("Throw It in a Hole (6 Suits)");
+const DISCARD_ACTION = discard(0, 0, 0, 1, false);
+const DEFAULT_VARIANT = getDefaultVariant();
+const THROW_IT_IN_A_HOLE_VARIANT = getVariant("Throw It in a Hole (6 Suits)");
 
 describe("gain", () => {
   test.each([...Array(8).keys()])(
     "adds a clue when there are %i clues",
     (n) => {
-      const clueTokens = gain(discardAction, n, defaultVariant);
+      const clueTokens = gain(DISCARD_ACTION, n, DEFAULT_VARIANT);
       expect(clueTokens).toBe(n + 1);
     },
   );
 
   test("does not add clues when maxed out", () => {
-    const clueTokens = gain(discardAction, MAX_CLUE_NUM, defaultVariant);
+    const clueTokens = gain(DISCARD_ACTION, MAX_CLUE_NUM, DEFAULT_VARIANT);
     expect(clueTokens).toBe(MAX_CLUE_NUM);
   });
 
   test("does not add a clue when a stack is not finished", () => {
     const playAction = play(0, 0, 0, 5);
-    const clueTokens = gain(playAction, 0, defaultVariant, false);
+    const clueTokens = gain(playAction, 0, DEFAULT_VARIANT, false);
     expect(clueTokens).toBe(0);
   });
 
   test("adds a clue when a stack is finished", () => {
     const playAction = play(0, 0, 0, 5);
     const startingClueTokens = 0;
-    const clueTokens = gain(playAction, 0, defaultVariant, true);
+    const clueTokens = gain(playAction, 0, DEFAULT_VARIANT, true);
     expect(clueTokens).toBe(startingClueTokens + 1);
   });
 
@@ -39,7 +39,7 @@ describe("gain", () => {
     const clueTokens = gain(
       playAction,
       startingClueTokens,
-      throwItInAHoleVariant,
+      THROW_IT_IN_A_HOLE_VARIANT,
       true,
     );
     expect(clueTokens).toBe(startingClueTokens);

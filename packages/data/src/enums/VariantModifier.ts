@@ -2,6 +2,10 @@
 
 import { ReadonlySet } from "@hanabi/utils";
 
+/**
+ * These correspond to values in the database. We want them to be as short as possible in order to
+ * save hard drive space.
+ */
 export enum VariantModifier {
   RainbowOnes = "R1",
   RainbowTwos = "R2",

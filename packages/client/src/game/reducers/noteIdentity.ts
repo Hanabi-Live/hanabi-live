@@ -4,24 +4,41 @@ import { newArray } from "@hanabi/utils";
 import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 
+/** The maximum number of suits in a variant is 6. Thus, the valid suit indexes are 0 through 5. */
+type SuitIndex = 0 | 1 | 2 | 3 | 4 | 5;
+
+/**
+ * Represents the card identities that a card could possibly be.
+ *
+ * For example, in a "No Variant" game:
+ *
+ * ```ts
+ * {
+ *   suitIndices: [0, 1],
+ *   ranks: [1],
+ * }
+ * ```
+ *
+ * This means that the card can possibly be a red 1 or a yellow 1.
+ */
 interface CardIdentities {
-  readonly suitIndices: number[];
+  readonly suitIndices: SuitIndex[];
   readonly ranks: Rank[];
 }
 
-function parseSuit(variant: Variant, suitText: string): number | null {
+function parseSuit(variant: Variant, suitText: string): SuitIndex | null {
   const suitAbbreviationIndex = variant.suitAbbreviations.findIndex(
     (abbreviation) => abbreviation.toLowerCase() === suitText,
   );
   if (suitAbbreviationIndex !== -1) {
-    return suitAbbreviationIndex;
+    return suitAbbreviationIndex as SuitIndex;
   }
 
   const suitNameIndex = variant.suits.findIndex(
     (suit) => suit.displayName.toLowerCase() === suitText,
   );
   if (suitNameIndex !== -1) {
-    return suitNameIndex;
+    return suitNameIndex as SuitIndex;
   }
 
   return null;
@@ -29,7 +46,9 @@ function parseSuit(variant: Variant, suitText: string): number | null {
 
 function parseRank(rankText: string): Rank | null {
   switch (rankText) {
-    case "0": {
+    case "0":
+    case "s":
+    case "S": {
       return START_CARD_RANK;
     }
 
@@ -99,11 +118,11 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
 
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
-  let suitIndex: number | null = null;
+  let suitIndex: SuitIndex | null = null;
   let rank: Rank | null = null;
   if (identityMatch !== null) {
     const squishText = extractSquishText(identityMatch);
-    const suitIndices: number[] = [];
+    const suitIndices: SuitIndex[] = [];
     const ranks: Rank[] = [];
     if (squishText !== null) {
       [].map.call(squishText, (letter) => {
@@ -111,7 +130,6 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
         rank = parseRank(letter);
         if (suitIndex !== null) {
           suitIndices.push(suitIndex);
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (rank !== null) {
           ranks.push(rank);
         }
@@ -202,8 +220,8 @@ function getPossibilitiesFromKeyword(
   const positiveRanks = new Set(
     positiveIdentities.length > 0 ? [] : variant.ranks,
   );
-  for (const rank of variant.ranks) {
-    const identityArrayValue = positiveRanks.has(rank) ? 1 : 0;
+  for (let rank = 1; rank <= 7; rank++) {
+    const identityArrayValue = positiveRanks.has(rank as Rank) ? 1 : 0;
     const identityArray = newArray(variant.suits.length, identityArrayValue);
     identityMap.push(identityArray);
   }

@@ -1,11 +1,11 @@
 import { getDefaultVariant, getVariant } from "@hanabi/data";
 import { totalCards } from "./deck";
 
-const defaultVariant = getDefaultVariant();
+const DEFAULT_VARIANT = getDefaultVariant();
 
 describe("totalCards", () => {
   test("returns 50 for No Variant", () => {
-    expect(totalCards(defaultVariant)).toBe(50);
+    expect(totalCards(DEFAULT_VARIANT)).toBe(50);
   });
 
   test.each`

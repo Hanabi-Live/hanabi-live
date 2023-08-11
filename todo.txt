@@ -3,7 +3,6 @@ TODO:
 - refactor soundTypeForLastAction (should probably delete the whole thing)
 - getPlayerNames comma is in wrong place for 3+ players
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
-  whether or not suit names are shown in client code rather than looking at the variant/suit prop
 - get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
 
 old stuff:

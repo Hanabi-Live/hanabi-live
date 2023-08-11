@@ -1,11 +1,11 @@
 import { getDefaultVariant, getVariant } from "@hanabi/data";
 import * as variantRules from "./variant";
 
-const defaultVariant = getDefaultVariant();
+const DEFAULT_VARIANT = getDefaultVariant();
 
 describe("hasReversedSuits", () => {
   test("returns false for No Variant", () => {
-    expect(variantRules.hasReversedSuits(defaultVariant)).toBe(false);
+    expect(variantRules.hasReversedSuits(DEFAULT_VARIANT)).toBe(false);
   });
 
   test.each([3, 4, 5, 6])("returns true for Reversed (%i Suits)", (n) => {

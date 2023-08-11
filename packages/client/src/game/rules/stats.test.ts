@@ -9,20 +9,20 @@ import {
   startingPace,
 } from "./stats";
 
-const defaultVariant = getDefaultVariant();
-const blackVariant = getVariant("Black (6 Suits)");
-const clueStarvedVariant = getVariant("Clue Starved (6 Suits)");
-const cardsPerHand2Player = 5;
-const cardsPerHand4Player = 4;
-const cardsPerHand2PlayerOneExtra = cardsPerHand2Player + 1;
-const cardsPerHand2PlayerOneLess = cardsPerHand2Player - 1;
+const DEFAULT_VARIANT = getDefaultVariant();
+const BLACK_VARIANT = getVariant("Black (6 Suits)");
+const CLUE_STARVED_VARIANT = getVariant("Clue Starved (6 Suits)");
+const CARDS_PER_HAND_2_PLAYER = 5;
+const CARDS_PER_HAND_4_PLAYER = 4;
+const CARDS_PER_HAND_2_PLAYER_ONE_EXTRA = CARDS_PER_HAND_2_PLAYER + 1;
+const CARDS_PER_HAND_2_PLAYER_ONE_LESS = CARDS_PER_HAND_2_PLAYER - 1;
 
 describe("startingPace", () => {
   test("returns 17 for 2-player No Variant", () => {
     expect(
       startingPace(
-        startingDeckSize(2, cardsPerHand2Player, defaultVariant),
-        defaultVariant.suits.length * 5,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT),
+        DEFAULT_VARIANT.suits.length * 5,
         2,
       ),
     ).toBe(17);
@@ -31,8 +31,8 @@ describe("startingPace", () => {
   test("returns 13 for 4-player No Variant", () => {
     expect(
       startingPace(
-        startingDeckSize(4, cardsPerHand4Player, defaultVariant),
-        defaultVariant.suits.length * 5,
+        startingDeckSize(4, CARDS_PER_HAND_4_PLAYER, DEFAULT_VARIANT),
+        DEFAULT_VARIANT.suits.length * 5,
         4,
       ),
     ).toBe(13);
@@ -41,8 +41,8 @@ describe("startingPace", () => {
   test("returns 17 for 2-player Black (6 Suits)", () => {
     expect(
       startingPace(
-        startingDeckSize(2, cardsPerHand2Player, blackVariant),
-        blackVariant.suits.length * 5,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, BLACK_VARIANT),
+        BLACK_VARIANT.suits.length * 5,
         2,
       ),
     ).toBe(17);
@@ -51,8 +51,8 @@ describe("startingPace", () => {
   test("returns 13 for 4-player Black (6 Suits)", () => {
     expect(
       startingPace(
-        startingDeckSize(4, cardsPerHand4Player, blackVariant),
-        blackVariant.suits.length * 5,
+        startingDeckSize(4, CARDS_PER_HAND_4_PLAYER, BLACK_VARIANT),
+        BLACK_VARIANT.suits.length * 5,
         4,
       ),
     ).toBe(13);
@@ -61,8 +61,8 @@ describe("startingPace", () => {
   test("returns 15 for 2-player No Variant with one extra card", () => {
     expect(
       startingPace(
-        startingDeckSize(2, cardsPerHand2PlayerOneExtra, defaultVariant),
-        defaultVariant.suits.length * 5,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER_ONE_EXTRA, DEFAULT_VARIANT),
+        DEFAULT_VARIANT.suits.length * 5,
         2,
       ),
     ).toBe(15);
@@ -71,8 +71,8 @@ describe("startingPace", () => {
   test("returns 19 for 2-player No Variant with one less card", () => {
     expect(
       startingPace(
-        startingDeckSize(2, cardsPerHand2PlayerOneLess, defaultVariant),
-        defaultVariant.suits.length * 5,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER_ONE_LESS, DEFAULT_VARIANT),
+        DEFAULT_VARIANT.suits.length * 5,
         2,
       ),
     ).toBe(19);
@@ -81,8 +81,8 @@ describe("startingPace", () => {
   test("returns 7 for 5-player No Variant with a Contrarian character", () => {
     expect(
       startingPace(
-        startingDeckSize(5, cardsPerHand4Player, defaultVariant),
-        defaultVariant.suits.length * 5,
+        startingDeckSize(5, CARDS_PER_HAND_4_PLAYER, DEFAULT_VARIANT),
+        DEFAULT_VARIANT.suits.length * 5,
         2,
       ),
     ).toBe(7);
@@ -92,43 +92,43 @@ describe("startingPace", () => {
 describe("minEfficiency", () => {
   test("returns about 0.86 for 2-player No Variant", () => {
     expect(
-      minEfficiency(2, 2, defaultVariant, cardsPerHand2Player),
+      minEfficiency(2, 2, DEFAULT_VARIANT, CARDS_PER_HAND_2_PLAYER),
     ).toBeCloseTo(0.86);
   });
 
   test("returns about 1 for 4-player No Variant", () => {
     expect(
-      minEfficiency(4, 4, defaultVariant, cardsPerHand4Player),
+      minEfficiency(4, 4, DEFAULT_VARIANT, CARDS_PER_HAND_4_PLAYER),
     ).toBeCloseTo(1);
   });
 
   test("returns about 1 for 2-player Black (6 Suits)", () => {
-    expect(minEfficiency(2, 2, blackVariant, cardsPerHand2Player)).toBeCloseTo(
-      1,
-    );
+    expect(
+      minEfficiency(2, 2, BLACK_VARIANT, CARDS_PER_HAND_2_PLAYER),
+    ).toBeCloseTo(1);
   });
 
   test("returns about 1.15 for 4-player Black (6 Suits)", () => {
-    expect(minEfficiency(4, 4, blackVariant, cardsPerHand4Player)).toBeCloseTo(
-      1.15,
-    );
+    expect(
+      minEfficiency(4, 4, BLACK_VARIANT, CARDS_PER_HAND_4_PLAYER),
+    ).toBeCloseTo(1.15);
   });
 
   test("returns about 1.43 for 2-player Clue Starved (6 Suits)", () => {
     expect(
-      minEfficiency(2, 2, clueStarvedVariant, cardsPerHand2Player),
+      minEfficiency(2, 2, CLUE_STARVED_VARIANT, CARDS_PER_HAND_2_PLAYER),
     ).toBeCloseTo(1.43);
   });
 
   test("returns about 1.58 for 4-player Clue Starved (6 Suits)", () => {
     expect(
-      minEfficiency(4, 4, clueStarvedVariant, cardsPerHand4Player),
+      minEfficiency(4, 4, CLUE_STARVED_VARIANT, CARDS_PER_HAND_4_PLAYER),
     ).toBeCloseTo(1.58);
   });
 
   test("returns about 25/19 for 5-player No Variant with a Contrarian detrimental character", () => {
     expect(
-      minEfficiency(5, 2, defaultVariant, cardsPerHand4Player),
+      minEfficiency(5, 2, DEFAULT_VARIANT, CARDS_PER_HAND_4_PLAYER),
     ).toBeCloseTo(25 / 19);
   });
 });
@@ -160,7 +160,7 @@ describe("cluesStillUsable", () => {
         0,
         [0, 0, 0, 0, 0],
         [5, 5, 5, 5, 4],
-        startingDeckSize(2, cardsPerHand2Player, defaultVariant) - 1,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT) - 1,
         2,
         1,
         1,
@@ -169,8 +169,8 @@ describe("cluesStillUsable", () => {
     ).toBe(
       startingCluesUsable(
         2,
-        startingDeckSize(2, cardsPerHand2Player, defaultVariant),
-        defaultVariant,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT),
+        DEFAULT_VARIANT,
       ),
     );
   });
@@ -180,7 +180,7 @@ describe("cluesStillUsable", () => {
         0,
         [0, 0, 0, 0, 0],
         [5, 5, 5, 4, 4],
-        startingDeckSize(2, cardsPerHand2Player, defaultVariant) - 2,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT) - 2,
         2,
         1,
         1,
@@ -189,8 +189,8 @@ describe("cluesStillUsable", () => {
     ).toBe(
       startingCluesUsable(
         2,
-        startingDeckSize(2, cardsPerHand2Player, defaultVariant),
-        defaultVariant,
+        startingDeckSize(2, CARDS_PER_HAND_2_PLAYER, DEFAULT_VARIANT),
+        DEFAULT_VARIANT,
       ) - 1,
     );
   });
