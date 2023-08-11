@@ -146,12 +146,11 @@ export class NameFrame extends Konva.Group {
   }
 
   setActive(active: boolean): void {
-    this.leftLine.strokeWidth(
-      active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth,
-    );
-    this.rightLine.strokeWidth(
-      active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth,
-    );
+    const strokeWidth = active
+      ? 3 * this.defaultStrokeWidth
+      : this.defaultStrokeWidth;
+    this.leftLine.strokeWidth(strokeWidth);
+    this.rightLine.strokeWidth(strokeWidth);
 
     this.playerName.shadowOpacity(active ? 0.6 : 0);
     this.leftLine.shadowOpacity(active ? 0.6 : 0);

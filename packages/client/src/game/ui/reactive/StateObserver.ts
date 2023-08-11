@@ -430,5 +430,5 @@ const lateObservers = [
 
   // Initialization finished. (This will get called when the visible state becomes valid and after
   // all other view updates.)
-  sub((s) => !!s.visibleState, initView.onInitializationChanged),
+  sub((s) => Boolean(s.visibleState), initView.onInitializationChanged),
 ];
