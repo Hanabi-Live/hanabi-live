@@ -2,7 +2,6 @@
 // run from NodeJS
 // e.g. "node createAllCards.js"
 
-// Imports
 import fs from "fs";
 import path from "path";
 import { START_CARD_RANK, UNKNOWN_CARD_RANK } from "../../data/src/constants";

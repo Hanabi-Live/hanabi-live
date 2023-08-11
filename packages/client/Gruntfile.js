@@ -1,4 +1,3 @@
-// Imports
 const path = require("node:path");
 const { VERSION } = require("../data/src/version");
 
