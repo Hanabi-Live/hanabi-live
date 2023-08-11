@@ -1,8 +1,8 @@
 /** This is similar to `Suit`, but it only has primitive types. */
 export interface SuitJSON {
-  // ---------------
-  // Main attributes
-  // ---------------
+  // --------------------
+  // Mandatory properties
+  // --------------------
 
   readonly name: string;
 
@@ -22,15 +22,18 @@ export interface SuitJSON {
    */
   readonly id: string;
 
+  /** The symbol that represents this suit. */
+  readonly pip: string;
+
+  // -------------------
+  // Optional properties
+  // -------------------
+
   /** The one letter abbreviation to use when representing this suit as a card note. */
   readonly abbreviation?: string;
 
   /** Whether or not to create variant combinations based on this suit. */
   readonly createVariants?: boolean;
-
-  // -----------------
-  // Visual appearance
-  // -----------------
 
   /** A simplified version of the suit name to show to end-users. */
   readonly displayName?: string;
@@ -41,12 +44,9 @@ export interface SuitJSON {
   /** Allows for a gradient of different colors. */
   readonly fillColors?: readonly string[];
 
-  /** The symbol that represents this suit. */
-  readonly pip: string;
-
-  // ----------------------
-  // Gameplay modifications
-  // ----------------------
+  // -----------------------------------------
+  // Optional gameplay modification properties
+  // -----------------------------------------
 
   readonly oneOfEach?: boolean;
   readonly clueColors?: readonly string[];

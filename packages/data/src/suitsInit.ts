@@ -15,7 +15,7 @@ export function suitsInit(
   }
 
   for (const suitJSON of suitsJSON) {
-    // Validate the name.
+    // Validate the "name" property.
     if (suitJSON.name === "") {
       throw new Error(
         'There is a suit with an empty name in the "suits.json" file.',
@@ -23,11 +23,19 @@ export function suitsInit(
     }
     const { name } = suitJSON;
 
-    // Validate the id.
+    // Validate the "id" property.
     if (suitJSON.id === "") {
       throw new Error(`The "${suitJSON.name}" suit has an empty id.`);
     }
     const { id } = suitJSON;
+
+    // Validate the "pip" property.
+    if (suitJSON.pip === "" && suitJSON.name !== "Unknown") {
+      throw new Error(
+        `The "pip" property for the suit "${suitJSON.name}" is empty.`,
+      );
+    }
+    const { pip } = suitJSON;
 
     // If the abbreviation for the suit is not specified, use the abbreviation of the color with the
     // same name. Otherwise, assume that it is the first letter of the suit.
@@ -54,49 +62,15 @@ export function suitsInit(
       );
     }
 
-    // Validate the clue properties. If these are not specified, the suit functions normally. (This
-    // has to be done before validating the clue colors.)
-
-    if (suitJSON.allClueColors === false) {
+    // Validate the "createVariants" property.
+    if (suitJSON.createVariants === false) {
       throw new Error(
-        `The "allClueColors" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+        `The "createVariants" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const allClueColors = suitJSON.allClueColors ?? false;
+    const createVariants = suitJSON.createVariants ?? false;
 
-    if (suitJSON.allClueRanks === false) {
-      throw new Error(
-        `The "allClueRanks" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const allClueRanks = suitJSON.allClueRanks ?? false;
-
-    if (suitJSON.noClueColors === false) {
-      throw new Error(
-        `The "noClueColors" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const noClueColors = suitJSON.noClueColors ?? false;
-
-    if (suitJSON.noClueRanks === false) {
-      throw new Error(
-        `The "noClueRanks" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const noClueRanks = suitJSON.noClueRanks ?? false;
-
-    if (suitJSON.prism === false) {
-      throw new Error(
-        `The "prism" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-      );
-    }
-    const prism = suitJSON.prism ?? false;
-
-    // Validate the clue colors (the colors that touch this suit) and convert the string array to a
-    // color object array. If the clue colors are not specified, use the color of the same name.
-    const clueColors = getSuitClueColors(suitJSON, COLORS);
-
-    // Validate the display name.
+    // Validate the "displayName" property.
     if (suitJSON.displayName === "") {
       throw new Error(
         'There is a suit with an empty display name in the "suits.json" file.',
@@ -105,6 +79,11 @@ export function suitsInit(
 
     // The display name is optional; if not specified, then use the normal suit name.
     const displayName = suitJSON.displayName ?? suitJSON.name;
+
+    // Validate the clue colors (the colors that touch this suit) and convert the string array to a
+    // color object array. If the clue colors are not specified, use the color of the same name.
+    // (This has to be before the fill validation.)
+    const clueColors = getSuitClueColors(suitJSON, COLORS);
 
     // Validate the fill.
     const { fill, fillColorblind } = getSuitFillAndFillColorblind(
@@ -121,8 +100,8 @@ export function suitsInit(
     }
     const fillColors = suitJSON.fillColors ?? [];
 
-    // Validate the "oneOfEach" property. If it is not specified, the suit is not one of each (e.g.
-    // every card is not critical).
+    // Validate optional gameplay modification properties. If these are not specified, the suit
+    // functions normally.
     if (suitJSON.oneOfEach === false) {
       throw new Error(
         `The "oneOfEach" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
@@ -130,33 +109,66 @@ export function suitsInit(
     }
     const oneOfEach = suitJSON.oneOfEach ?? false;
 
-    // Validate the "pip" property.
-    if (suitJSON.pip === "" && suitJSON.name !== "Unknown") {
+    if (suitJSON.allClueColors === false) {
       throw new Error(
-        `The "pip" property for the suit "${suitJSON.name}" is empty.`,
+        `The "allClueColors" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
       );
     }
-    const { pip } = suitJSON;
+    const allClueColors = suitJSON.allClueColors ?? false;
+
+    if (suitJSON.noClueColors === false) {
+      throw new Error(
+        `The "noClueColors" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const noClueColors = suitJSON.noClueColors ?? false;
+
+    if (suitJSON.allClueRanks === false) {
+      throw new Error(
+        `The "allClueRanks" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const allClueRanks = suitJSON.allClueRanks ?? false;
+
+    if (suitJSON.noClueRanks === false) {
+      throw new Error(
+        `The "noClueRanks" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const noClueRanks = suitJSON.noClueRanks ?? false;
+
+    if (suitJSON.prism === false) {
+      throw new Error(
+        `The "prism" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const prism = suitJSON.prism ?? false;
 
     // Construct the suit object and add it to the map.
     const suit: Suit = {
+      // Mandatory properties
       name,
       id,
+      pip,
+
+      // Optional properties
       abbreviation,
-      clueColors,
+      createVariants,
       displayName,
       fill,
       fillColorblind,
       fillColors,
-      oneOfEach,
-      pip,
-      reversed: false,
 
+      // Optional gameplay modification properties.
+      oneOfEach,
+      clueColors,
       allClueColors,
-      allClueRanks,
       noClueColors,
+      allClueRanks,
       noClueRanks,
       prism,
+
+      reversed: false,
     };
     suits.set(suitJSON.name, suit);
 
