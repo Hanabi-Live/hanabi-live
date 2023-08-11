@@ -1,4 +1,3 @@
-import { fatalError } from "@hanabi/utils";
 import dotenv from "dotenv";
 import Fastify from "fastify";
 import fs from "node:fs";
@@ -31,7 +30,7 @@ async function main() {
 
 function loadEnvironmentVariables() {
   if (!fs.existsSync(ENV_PATH)) {
-    fatalError(
+    throw new Error(
       `The "${ENV_PATH}" file does not exist. Did you run the "install_dependencies.sh" script before running the server? This file should automatically be created when running this script.`,
     );
   }

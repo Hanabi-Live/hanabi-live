@@ -1,6 +1,6 @@
 import type { Rank, Variant } from "@hanabi/data";
 import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/data";
-import { newArray } from "@hanabi/utils";
+import { eRange, newArray } from "@hanabi/utils";
 import type { CardIdentity } from "../types/CardIdentity";
 import { CardIdentityType } from "../types/CardIdentityType";
 
@@ -155,29 +155,20 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   };
 }
 
-function range(
-  _start: number,
-  _stop: number | null = null,
-  step = 1,
-): number[] {
-  const start: number = _stop === null ? 0 : _start;
-  const stop: number = _stop === null ? _start : _stop;
-
-  const numbersInRange: number[] = [];
-  for (let i = start; i < stop; i += step) {
-    numbersInRange.push(i);
-  }
-
-  return numbersInRange;
-}
-
-function identityMapToArray(cardMap: boolean[][]) {
+function identityMapToArray(variant: Variant, cardMap: boolean[][]) {
   const possibilities: Array<[number, number]> = [];
 
-  for (let rank = 1; rank <= cardMap.length; rank++) {
-    for (let suitIndex = 0; suitIndex < cardMap[0]!.length; suitIndex++) {
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (cardMap[rank - 1]![suitIndex]) {
+  for (const rank of variant.ranks) {
+    const suitArray = cardMap[rank];
+    if (suitArray === undefined) {
+      continue;
+    }
+
+    for (const [
+      suitIndex,
+      isRankSuitCombinationPossible,
+    ] of suitArray.entries()) {
+      if (isRankSuitCombinationPossible) {
         possibilities.push([suitIndex, rank]);
       }
     }
@@ -200,44 +191,50 @@ function identityMapToArray(cardMap: boolean[][]) {
 function getPossibilitiesFromKeyword(
   variant: Variant,
   keyword: string,
-): Array<[number, number]> | null {
+): Array<[number, number]> {
   const { positiveCardIdentities, negativeCardIdentities } =
     getCardIdentitiesFromKeyword(variant, keyword);
 
-  /** The first index is the rank, the second index is the suit. */
+  /**
+   * The first index is the rank, the second index is the suit. (Unlike a standard array, there
+   * should not be an element at the 0th index, because there is no 0th rank.)
+   */
   const identityMap: boolean[][] = [];
 
   const positiveRanks = new Set(
     positiveCardIdentities.length > 0 ? [] : variant.ranks,
   );
 
-  for (let rank = 1; rank <= START_CARD_RANK; rank++) {
-    const identityArrayValue = positiveRanks.has(rank as Rank);
+  // Fill the identity map with an array for each rank.
+  for (const rank of variant.ranks) {
+    const identityArrayValue = positiveRanks.has(rank);
     const identityArray = newArray(variant.suits.length, identityArrayValue);
-    identityMap[rank - 1] = identityArray;
+    identityMap[rank] = identityArray;
   }
 
-  // Then add positive items and remove all negatives.
-  for (const cardIdentities of [
+  // Add positive items and remove negatives items.
+  for (const cardIdentitiesArray of [
     positiveCardIdentities,
     negativeCardIdentities,
   ]) {
-    const negative = cardIdentities === negativeCardIdentities;
-    for (const identity of cardIdentities) {
-      const ranks = identity.ranks.length > 0 ? identity.ranks : variant.ranks;
+    const isPositive = cardIdentitiesArray === positiveCardIdentities;
+    for (const cardIdentities of cardIdentitiesArray) {
+      const ranks =
+        cardIdentities.ranks.length > 0 ? cardIdentities.ranks : variant.ranks;
+      const suitIndices =
+        cardIdentities.suitIndices.length > 0
+          ? cardIdentities.suitIndices
+          : eRange(variant.suits.length);
+
       for (const rank of ranks) {
-        const suitIndices =
-          identity.suitIndices.length > 0
-            ? identity.suitIndices
-            : range(variant.suits.length);
         for (const suitIndex of suitIndices) {
-          identityMap[rank - 1]![suitIndex] = !negative;
+          identityMap[rank]![suitIndex] = isPositive;
         }
       }
     }
   }
 
-  return identityMapToArray(identityMap);
+  return identityMapToArray(variant, identityMap);
 }
 
 function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
@@ -283,10 +280,6 @@ export function getPossibilitiesFromKeywords(
       continue;
     }
     const newPossibilities = getPossibilitiesFromKeyword(variant, keyword);
-    if (newPossibilities === null) {
-      continue;
-    }
-
     const oldPossibilities = possibilities;
     const intersection = newPossibilities.filter(([newSuitIndex, newRank]) =>
       oldPossibilities.some(
