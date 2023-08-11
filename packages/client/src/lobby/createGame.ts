@@ -5,7 +5,7 @@ import {
   doesVariantExist,
   getVariantNames,
 } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { ReadonlySet, parseIntSafe } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
@@ -17,16 +17,15 @@ import { getRandomNumber, isEmpty } from "../utils";
 import { Screen } from "./types/Screen";
 import type { Settings } from "./types/Settings";
 
-// Constants
-const basicVariants = [
+const BASIC_VARIANT_NAMES = [
   "No Variant",
   "6 Suits",
   "Black (6 Suits)",
   "Rainbow (6 Suits)",
-];
-const variantNames = getVariantNames();
+] as const;
 
-// Local variables
+const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
+
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
 
@@ -50,6 +49,7 @@ export function init(): void {
 
   // The "dice" button will select a random variant from the list.
   $("#dice").on("click", () => {
+    const variantNames = getVariantNames();
     const randomVariantIndex = getRandomNumber(0, variantNames.length - 1);
     const randomVariant = variantNames[randomVariantIndex]!;
     $("#createTableVariant").text(randomVariant);
@@ -190,7 +190,7 @@ export function init(): void {
  */
 function firstVariantDropdownInit() {
   // Initialize the 1st variant dropdown with the basic variants.
-  for (const variantName of basicVariants) {
+  for (const variantName of BASIC_VARIANT_NAMES) {
     // As a sanity check, ensure that this variant actually exists in the variants JSON.
     if (!doesVariantExist(variantName)) {
       throw new Error(
@@ -231,6 +231,7 @@ function firstVariantDropdownInit() {
 
 function secondVariantDropdownInit() {
   // Populate the full datalist/dropdown in the "Create Game" tooltip.
+  const variantNames = getVariantNames();
   for (const variantName of variantNames) {
     const option = new Option(variantName, variantName);
     $("#create-game-variant-dropdown2-list").append($(option));
@@ -250,7 +251,7 @@ function secondVariantDropdownInit() {
     $("#createTableVariant").text(search);
 
     // If they chose a basic variant, revert back to the basic dropdown.
-    if (basicVariants.includes(search)) {
+    if (BASIC_VARIANT_NAMES_SET.has(search)) {
       dropdown1.show();
       dropdown1.val(search);
       dropdown2.hide();
@@ -632,7 +633,7 @@ function readyVariant(value: string) {
   // Update the hidden field.
   $("#createTableVariant").text(variantName);
 
-  if (basicVariants.includes(variantName)) {
+  if (BASIC_VARIANT_NAMES_SET.has(variantName)) {
     // If this is one of the basic variants, set it in the first dropdown.
     dropdown1.show();
     dropdown1.val(variantName);

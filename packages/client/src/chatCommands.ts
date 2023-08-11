@@ -365,9 +365,9 @@ function capitalize(input: string) {
 
 export function getVariantFromPartial(search: string): string {
   const variantNames = getVariantNames();
-  const possibleVariants = variantNames.filter((variantName) =>
+  const firstVariant = variantNames.find((variantName) =>
     variantName.startsWith(search),
   );
 
-  return possibleVariants[0] ?? "";
+  return firstVariant ?? "";
 }
