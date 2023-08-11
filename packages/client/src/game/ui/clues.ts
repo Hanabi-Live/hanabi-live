@@ -6,7 +6,6 @@ import type { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import type { MsgClue } from "../types/MsgClue";
 import * as arrows from "./arrows";
-import type { ButtonGroup } from "./ButtonGroup";
 import type { ColorButton } from "./ColorButton";
 import type { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
@@ -16,12 +15,11 @@ import type { RankButton } from "./RankButton";
 import * as turn from "./turn";
 
 export function checkLegal(): void {
-  let clueTargetButtonGroup: ButtonGroup | null;
-  if (globals.state.replay.hypothetical === null) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
-  } else {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  }
+  const clueTargetButtonGroup =
+    globals.state.replay.hypothetical === null
+      ? globals.elements.clueTargetButtonGroup
+      : globals.elements.clueTargetButtonGroup2;
+
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as
@@ -133,12 +131,11 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
 }
 
 export function give(): void {
-  let clueTargetButtonGroup: ButtonGroup | null;
-  if (globals.state.replay.hypothetical === null) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
-  } else {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  }
+  const clueTargetButtonGroup =
+    globals.state.replay.hypothetical === null
+      ? globals.elements.clueTargetButtonGroup
+      : globals.elements.clueTargetButtonGroup2;
+
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as
@@ -163,7 +160,7 @@ export function give(): void {
 
     case ClueType.Rank: {
       type = ActionType.RankClue;
-      value = clueButton.clue.value;
+      value = clueButton.clue.value; // eslint-disable-line prefer-destructuring
       break;
     }
   }

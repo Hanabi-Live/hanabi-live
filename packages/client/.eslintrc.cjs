@@ -60,7 +60,6 @@ module.exports = {
     "unicorn/prefer-ternary": "off",
     "unicorn/switch-case-braces": "off",
     "no-useless-call": "off",
-    "prefer-destructuring": "off",
 
     /**
      * Documentation:
