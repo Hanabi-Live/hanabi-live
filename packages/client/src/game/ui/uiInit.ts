@@ -52,7 +52,7 @@ export function uiInit(): void {
   const loadingLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: "#747278",
-    strokeWidth: 0.001056 * winH,
+    strokeWidth: 0.001_056 * winH,
     text: "Loading...",
     align: "center",
     x: 0,
@@ -69,7 +69,7 @@ export function uiInit(): void {
   const progressLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: "#747278",
-    strokeWidth: 0.001056 * winH,
+    strokeWidth: 0.001_056 * winH,
     text: "0 / 0",
     align: "center",
     x: 0,

@@ -149,7 +149,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     globals.options.timed &&
     globals.lobby.settings.soundTimer &&
     millisecondsLeft > 0 && // Between 0 and 10 seconds
-    millisecondsLeft <= 10000 &&
+    millisecondsLeft <= 10_000 &&
     elapsedTime > 900 &&
     elapsedTime < 1100 &&
     !globals.state.pause.active &&

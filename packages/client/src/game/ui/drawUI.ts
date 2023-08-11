@@ -705,7 +705,7 @@ function drawDeck() {
     height: deckValues.h! * winH,
     stroke: "yellow",
     cornerRadius: 0.01 * winH,
-    strokeWidth: 0.01056 * winH,
+    strokeWidth: 0.010_56 * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
@@ -999,7 +999,7 @@ function drawScoreArea() {
         width: 0.03 * winW,
         height: 0.053 * winH,
         stroke: "black",
-        strokeWidth: 0.00211 * winH,
+        strokeWidth: 0.002_11 * winH,
         cornerRadius: 0.005 * winW,
         listening: true,
       },
@@ -1177,7 +1177,7 @@ function drawSharedReplay() {
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
     radius: 0.028 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.00211 * winH,
+    strokeWidth: 0.002_11 * winH,
     visible: false,
     listening: false,
   });
@@ -1308,7 +1308,7 @@ function drawYourTurn() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.00422 * winH,
+    strokeWidth: 0.004_22 * winH,
     offset: {
       x: -0.0175 * winW,
       y: -0.036 * winH,
@@ -1649,7 +1649,7 @@ function drawTimers() {
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.00211 * winH,
+    strokeWidth: 0.002_11 * winH,
     visible: false,
     listening: false,
   });
@@ -2039,7 +2039,7 @@ function drawClueAreaDisabled(offsetX: number) {
       (clueAreaValues.h! - spacing.y) * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.00528 * winH,
+    strokeWidth: 0.005_28 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line1);
@@ -2053,7 +2053,7 @@ function drawClueAreaDisabled(offsetX: number) {
       spacing.y * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.00528 * winH,
+    strokeWidth: 0.005_28 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line2);
@@ -2068,7 +2068,7 @@ function drawClueAreaDisabled(offsetX: number) {
     text: "No clues",
     fill: LABEL_COLOR,
     stroke: "black",
-    strokeWidth: 0.00211 * winH,
+    strokeWidth: 0.002_11 * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
@@ -2148,7 +2148,7 @@ function drawHypotheticalArea() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.00422 * winH,
+    strokeWidth: 0.004_22 * winH,
     listening: false,
   });
   globals.elements.hypoCircle.add(circle);
