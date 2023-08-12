@@ -56,6 +56,11 @@ export function isKeyOf<T extends object>(
   return key in target;
 }
 
+/** Initializes an array with all elements containing the specified default value. */
+export function newArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
+}
+
 /**
  * This is a more reliable version of `Number.parseInt`. By default, `Number.parseInt('1a')` will
  * return "1", which is unexpected. This returns either an integer or `Number.NaN`.
@@ -87,10 +92,23 @@ export function parseIntSafe(input: string): number {
   return Number.parseInt(trimmedInput, 10);
 }
 
-/** Initializes an array with all elements containing the specified default value. */
-export function newArray<T>(length: number, value: T): T[] {
-  return Array.from({ length }, () => value);
-}
+/**
+ * Helper function to signify that the enclosing code block is not yet complete. Using this function
+ * is similar to writing a "TODO" comment, but it has the benefit of preventing ESLint errors due to
+ * unused variables or early returns.
+ *
+ * When you see this function, it simply means that the programmer intends to add in more code to
+ * this spot later.
+ *
+ * This function is variadic, meaning that you can pass as many arguments as you want. (This is
+ * useful as a means to prevent unused variables.)
+ *
+ * This function does not actually do anything. (It is an "empty" function.)
+ *
+ * @allowEmptyVariadic
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+export function todo(...args: unknown[]): void {}
 
 /** Helper function to trim a suffix from a string, if it exists. Returns the trimmed string. */
 export function trimSuffix(string: string, prefix: string): string {
