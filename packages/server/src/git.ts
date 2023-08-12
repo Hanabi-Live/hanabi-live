@@ -13,6 +13,8 @@ export function recordCurrentGitCommitSHA1(): void {
   logger.info(`Current git commit SHA1: ${gitCommitSHA1}`, 123);
 }
 
+/*
 export function getStartingGitCommitSHA1(): string {
   return gitCommitSHA1;
 }
+*/

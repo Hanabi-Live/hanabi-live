@@ -9,5 +9,16 @@
     "@tsconfig/node-lts/tsconfig.json",
   ],
 
+  // https://www.typescriptlang.org/docs/handbook/compiler-options.html
+  "compilerOptions": {
+    // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
+    // false. We import JSON files in the code base, so this is needed.
+    "resolveJsonModule": true,
+
+    // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
+    // conservative; the project targets browsers within a 2 year time-frame.
+    "target": "ES2018",
+  },
+
   "include": ["./src/**/*.ts"],
 }
