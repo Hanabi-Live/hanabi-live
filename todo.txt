@@ -8,5 +8,6 @@ TODO:
 - search for "TODO: remove. This is unused"
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer
 
-long term:
+long term once the server is rewritten in TypeScript:
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845
+- delete "metadata" table from "database_schema.sql" + "test_key" thing

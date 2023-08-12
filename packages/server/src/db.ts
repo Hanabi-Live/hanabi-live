@@ -1,16 +1,9 @@
 import { parseIntSafe } from "@hanabi/utils";
-import { Client } from "pg";
 import { logger } from "./logger";
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function databaseInit(): Promise<void> {
-  const client = new Client({});
-  await client.connect();
-
-  const res = await client.query("SELECT $1::text as message", [
-    "Hello world!",
-  ]);
-  console.log(res.rows[0].message); // Hello world!
-  await client.end();
+  const _config = getDatabaseConfig();
 }
 
 /**
@@ -52,19 +45,17 @@ function getDatabaseConfig() {
     );
   }
 
-  /*
-
-	dbName = os.Getenv("DB_NAME")
-	if len(dbPass) == 0 {
-		defaultName := "hanabi"
-		logger.Info("DB_NAME not specified; using default value of \"" + defaultName + "\".")
-		dbName = defaultName
-	}
-
-  */
+  let database = process.env["DB_NAME"];
+  if (database === undefined || database === "") {
+    database = "hanabi";
+    logger.info(`DB_NAME not specified; using a default value of: ${database}`);
+  }
 
   return {
     host,
     port,
+    user,
+    password,
+    database,
   };
 }

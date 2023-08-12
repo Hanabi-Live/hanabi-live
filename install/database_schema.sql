@@ -189,7 +189,7 @@ EXECUTE PROCEDURE delete_game_of_deleted_participant();
 DROP TABLE IF EXISTS game_participant_notes CASCADE;
 CREATE TABLE game_participant_notes (
     game_participant_id  INTEGER   NOT NULL,
-    card_order           SMALLINT  NOT NULL, /* "order" is a reserved word in PostgreSQL */
+    card_order           SMALLINT  NOT NULL, /* "order" is a reserved word in PostgreSQL. */
     note                 TEXT      NOT NULL,
     FOREIGN KEY (game_participant_id) REFERENCES game_participants (id) ON DELETE CASCADE,
     PRIMARY KEY (game_participant_id, card_order)
@@ -278,6 +278,22 @@ CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_room             ON chat_log (room);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
 
+/**
+ * We want at least one entry in the "chat_log" table so that we can verify that we have
+ * successfully connected to the database.
+ */
+INSERT INTO chat_log (
+    user_id,
+    discord_name,
+    message,
+    room
+) VALUES (
+    0,
+    'Hanab Live',
+    'The Hanab Live database has been successfully initialized.',
+    'lobby'
+);
+
 DROP TABLE IF EXISTS chat_log_pm CASCADE;
 CREATE TABLE chat_log_pm (
     id             SERIAL       PRIMARY KEY,
@@ -330,12 +346,14 @@ CREATE TABLE throttled_ips (
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+/** TODO: Delete this table once the server is rewritten in TypeScript. */
 DROP TABLE IF EXISTS metadata CASCADE;
 CREATE TABLE metadata (
     id     SERIAL  PRIMARY KEY,
     name   TEXT    NOT NULL  UNIQUE,
     value  TEXT    NOT NULL
 );
+
 /**
  * We want at least one entry in the metadata table so that the "TestDatabase()" function works
  * correctly.
