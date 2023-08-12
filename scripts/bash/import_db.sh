@@ -23,7 +23,7 @@ if [[ -z ${DB_USER-} ]]; then
   echo "Error: You must specify the database username in the \".env\" file."
   exit 1
 fi
-if [[ -z ${DB_PASS-} ]]; then
+if [[ -z ${DB_PASSWORD-} ]]; then
   echo "Error: You must specify the database password in the \".env\" file."
   exit 1
 fi
@@ -33,7 +33,7 @@ if [[ -z ${DB_NAME-} ]]; then
 fi
 
 # This assumes that "postgres" and "hanabiuser" share the same password
-PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" << EOF
+PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" << EOF
 DROP DATABASE $DB_NAME;
 CREATE DATABASE $DB_NAME;
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
@@ -41,4 +41,4 @@ GRANT USAGE ON SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
 EOF
-PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" < "$1"
+PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" < "$1"

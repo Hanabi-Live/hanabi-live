@@ -13,7 +13,7 @@ if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
 
-PGPASSWORD="$DB_PASS" psql \
+PGPASSWORD="$DB_PASSWORD" psql \
   --quiet \
   --variable=ON_ERROR_STOP=1 \
   --host="$DB_HOST" \

@@ -17,7 +17,7 @@ dotenv.load_dotenv(dotenv.find_dotenv())
 
 # Variables
 user = os.getenv("DB_USER")
-password = os.getenv("DB_PASS")
+password = os.getenv("DB_PASSWORD")
 host = os.getenv("DB_HOST")
 if host == "":
     host = "localhost"
@@ -25,6 +25,7 @@ port = os.getenv("DB_PORT")
 if port == "":
     port = "5432"
 database = os.getenv("DB_NAME")
+
 
 # Subroutines
 def is_ascii(s):

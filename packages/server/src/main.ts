@@ -1,9 +1,9 @@
 import { PROJECT_NAME } from "@hanabi/data";
-import { todo } from "@hanabi/utils";
 import dotenv from "dotenv";
 import Fastify from "fastify";
 import fs from "node:fs";
 import path from "node:path";
+import { databaseInit } from "./db";
 import { recordCurrentGitCommitSHA1 } from "./git";
 import { logger, setLoggerPretty } from "./logger";
 
@@ -18,7 +18,7 @@ const VERSION_TXT_PATH = path.join(
 );
 
 main().catch((error) => {
-  throw new Error(`The Hanabi server encountered an error: ${error}`);
+  throw new Error(`${PROJECT_NAME} server encountered an error: ${error}`);
 });
 
 async function main() {
@@ -27,7 +27,7 @@ async function main() {
   logWelcomeMessage();
   recordCurrentGitCommitSHA1();
   validateVersionTXT();
-  databaseInit();
+  await databaseInit();
 
   // eslint-disable-next-line new-cap
   const fastify = Fastify({
@@ -85,8 +85,4 @@ function validateVersionTXT() {
       `The "${VERSION_TXT_PATH}" file does not exist. Did you run the "build_client.sh" script before running the server? This file should automatically be created when running this script.`,
     );
   }
-}
-
-function databaseInit() {
-  todo(); // TODO
 }

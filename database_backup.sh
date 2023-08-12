@@ -35,7 +35,7 @@ fi
 # Back up the database and gzip it.
 mkdir -p "$BACKUPS_DIR"
 echo "Dumping the database..."
-PGPASSWORD="$DB_PASS" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
+PGPASSWORD="$DB_PASSWORD" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
 if [[ $? -ne 0 ]]; then
   exit 1
 fi

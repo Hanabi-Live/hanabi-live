@@ -16,7 +16,7 @@
     "resolveJsonModule": true,
 
     // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
-    // conservative; the project targets browsers within a 2 year time-frame.
+    // conservative; the project targets versions of Node.js within a 2 year time-frame.
     "target": "ES2018",
   },
 

@@ -24,4 +24,4 @@ if uname -a | grep MINGW64 >/dev/null 2>&1; then
 fi
 
 # Open a database shell.
-PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME"
+PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME"

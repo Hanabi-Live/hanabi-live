@@ -56,14 +56,14 @@ func modelsInit() (*Models, error) {
 		logger.Info("DB_USER not specified; using default value of \"" + defaultUser + "\".")
 		dbUser = defaultUser
 	}
-	dbPass := os.Getenv("DB_PASS")
-	if len(dbPass) == 0 {
+	dbPassword := os.Getenv("DB_PASSWORD")
+	if len(dbPassword) == 0 {
 		defaultPass := "1234567890"
-		logger.Info("DB_PASS not specified; using default value of \"" + defaultPass + "\".")
-		dbPass = defaultPass
+		logger.Info("DB_PASSWORD not specified; using default value of \"" + defaultPass + "\".")
+		dbPassword = defaultPass
 	}
 	dbName = os.Getenv("DB_NAME")
-	if len(dbPass) == 0 {
+	if len(dbPassword) == 0 {
 		defaultName := "hanabi"
 		logger.Info("DB_NAME not specified; using default value of \"" + defaultName + "\".")
 		dbName = defaultName
@@ -76,7 +76,7 @@ func modelsInit() (*Models, error) {
 		"host=" + dbHost,
 		"port=" + dbPort,
 		"user=" + dbUser,
-		"password=" + dbPass,
+		"password=" + dbPassword,
 		"dbname=" + dbName,
 	}
 	dsn := strings.Join(dsnArray, " ")
@@ -111,9 +111,10 @@ func (*Models) Close() {
 //
 // INSERT INTO notes (thing_a, thing_b)
 // VALUES
-//     ($1, $2),
-//     ($3, $4),
-//     ($5, $6)
+//
+//	($1, $2),
+//	($3, $4),
+//	($5, $6)
 //
 // Also see:
 // https://stackoverflow.com/questions/12486436/how-do-i-batch-sql-statements-with-package-database-sql

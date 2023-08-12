@@ -25,6 +25,7 @@
     "@types/linkifyjs": "^2.1.4",
     "@types/lodash": "^4.14.197",
     "@types/node": "^20.4.9",
+    "@types/pg": "^8.10.2",
     "@types/tooltipster": "^0.0.32",
     "bufferutil": "^4.0.7",
     "canvas": "^2.11.2",
