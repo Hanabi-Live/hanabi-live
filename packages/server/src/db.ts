@@ -1,9 +1,20 @@
 import { parseIntSafe } from "@hanabi/utils";
+import { eq } from "drizzle-orm";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { chatLogTable } from "./databaseSchema";
 import { logger } from "./logger";
 
-// eslint-disable-next-line @typescript-eslint/require-await
+// eslint-disable-next-line import/no-mutable-exports
+export let db: PostgresJsDatabase;
+
 export async function databaseInit(): Promise<void> {
-  const _config = getDatabaseConfig();
+  const config = getDatabaseConfig();
+  const client = postgres(config);
+  db = drizzle(client);
+
+  await testDB();
 }
 
 /**
@@ -58,4 +69,20 @@ function getDatabaseConfig() {
     password,
     database,
   };
+}
+
+async function testDB() {
+  const chatLogs = await db
+    .select({
+      message: chatLogTable.message,
+    })
+    .from(chatLogTable)
+    .where(eq(chatLogTable.id, 1));
+  const chatLog = chatLogs[0];
+
+  if (chatLog === undefined || chatLog.message === "") {
+    throw new Error(
+      'Failed to retrieve the first chat log message from the database when testing to see if the database is operational. Did you already run the "install_database_schema.sh" script to set up the database?',
+    );
+  }
 }

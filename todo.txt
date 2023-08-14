@@ -11,3 +11,4 @@ TODO:
 long term once the server is rewritten in TypeScript:
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845
 - delete "metadata" table from "database_schema.sql" + "test_key" thing
+- refactor chat_log to have foreign key for user_id + boolean for server message
