@@ -530,12 +530,11 @@ export function add(data: ChatMessage, fast: boolean): void {
   // Add the new line and fade it in.
   chat.append(line);
   $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME).css("display", "block");
-  $(`#chat-line-${chatLineNum} a.suggestion`).each((_, el) => {
-    const text = el.textContent;
+  $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
     const chatInput = $("#lobby-chat-pregame-input");
-    $(el).on("click", () => {
-      if (text !== null) {
-        chatInput.val(text);
+    $(element).on("click", () => {
+      if (element.textContent !== null) {
+        chatInput.val(element.textContent);
       }
       chatInput.trigger("focus");
     });
