@@ -1,7 +1,7 @@
 // Users can right-click cards to record information on them.
 
 import { STACK_BASE_RANK } from "@hanabi/data";
-import { ReadonlySet } from "@hanabi/utils";
+import { ReadonlySet, trimSuffix } from "@hanabi/utils";
 import * as tooltips from "../../tooltips";
 import type { HanabiCard } from "./HanabiCard";
 import { getCardOrStackBase } from "./getCardOrStackBase";
@@ -60,7 +60,7 @@ function get(order: number, our: boolean, escape = false) {
   }
 
   if (content !== "") {
-    content = content.slice(0, Math.max(0, content.length - 6)); // Trim the trailing "<br />"
+    content = trimSuffix(content, "<br />");
   }
 
   return content;
@@ -223,9 +223,7 @@ export function openEditTooltip(
       newNote = val;
 
       // Remove the last pipe.
-      if (newNote.endsWith(" | ")) {
-        newNote = newNote.slice(0, Math.max(0, newNote.length - 3));
-      }
+      newNote = trimSuffix(newNote, " | ");
       set(card.state.order, newNote);
     }
 
