@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 import Fastify from "fastify";
 import fs from "node:fs";
 import path from "node:path";
-import { databaseInit } from "./db";
 import { recordCurrentGitCommitSHA1 } from "./git";
 import { logger, setLoggerPretty } from "./logger";
+import { databaseInit } from "./models/db";
 
 const REPO_ROOT = path.join(__dirname, "..", "..", "..");
 const ENV_PATH = path.join(REPO_ROOT, ".env");

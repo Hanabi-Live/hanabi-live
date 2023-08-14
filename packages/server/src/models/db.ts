@@ -3,11 +3,10 @@ import { eq } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { chatLogTable } from "./databaseSchema";
-import { logger } from "./logger";
+import { chatLogTable } from "../databaseSchema";
+import { logger } from "../logger";
 
-// eslint-disable-next-line import/no-mutable-exports
-export let db: PostgresJsDatabase;
+let db: PostgresJsDatabase; // TODO: export this
 
 export async function databaseInit(): Promise<void> {
   const config = getDatabaseConfig();
