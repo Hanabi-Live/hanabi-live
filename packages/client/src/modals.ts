@@ -73,8 +73,8 @@ function init() {
   // Morph modal textbox.
   const morphTextbox = getInputElement("#morph-modal-textbox");
   const morphTextboxObserver = new MutationObserver(() => {
-    const suit = morphTextbox.getAttribute("data-suit");
-    const rank = morphTextbox.getAttribute("data-rank");
+    const {suit} = morphTextbox.dataset;
+    const {rank} = morphTextbox.dataset;
     morphTextbox.value = `${suit} ${rank}`;
   });
   morphTextboxObserver.observe(morphTextbox, {
@@ -511,8 +511,8 @@ function fillMorphModalWithRadios(
 
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
-        textbox.setAttribute("data-suit", suit.displayName);
-        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
+        textbox.dataset.suit = suit.displayName;
+        textbox.dataset.rank = rank === 7 ? "S" : rank.toString();
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -520,8 +520,8 @@ function fillMorphModalWithRadios(
         }
 
         // Set textbox data attribute.
-        textbox.setAttribute("data-suit", suit.displayName);
-        textbox.setAttribute("data-rank", rank === 7 ? "S" : rank.toString());
+        textbox.dataset.suit = suit.displayName;
+        textbox.dataset.rank = rank === 7 ? "S" : rank.toString();
       });
 
       row.append(cell);
