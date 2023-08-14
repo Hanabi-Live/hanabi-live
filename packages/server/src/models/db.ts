@@ -1,9 +1,9 @@
 import { parseIntSafe } from "@hanabi/utils";
-import { eq } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { chatLogTable } from "../databaseSchema";
+import { env } from "../env";
 import { logger } from "../logger";
 
 let db: PostgresJsDatabase; // TODO: export this
@@ -21,12 +21,6 @@ export async function databaseInit(): Promise<void> {
  * the ".env" file at this point.)
  */
 function getDatabaseConfig() {
-  let host = process.env["DB_HOST"];
-  if (host === undefined || host === "") {
-    host = "localhost";
-    logger.info(`DB_HOST not specified; using a default value of: ${host}`);
-  }
-
   const portString = process.env["DB_PORT"];
   let port: number;
   if (portString === undefined || portString === "") {
@@ -61,8 +55,10 @@ function getDatabaseConfig() {
     logger.info(`DB_NAME not specified; using a default value of: ${database}`);
   }
 
+  logger.info(`LOL3: ${env.DOMAIN}`);
+
   return {
-    host,
+    host: env.DB_HOST,
     port,
     user,
     password,
@@ -76,7 +72,7 @@ async function testDB() {
       message: chatLogTable.message,
     })
     .from(chatLogTable)
-    .where(eq(chatLogTable.id, 1));
+    .limit(1);
   const chatLog = chatLogs[0];
 
   if (chatLog === undefined || chatLog.message === "") {

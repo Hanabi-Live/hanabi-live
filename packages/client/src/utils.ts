@@ -2,13 +2,13 @@
  * From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
  */
 export function copyStringToClipboard(str: string): void {
-  const el = document.createElement("textarea"); // Create new element
-  el.value = str; // Set the value (the string to be copied)
-  el.setAttribute("readonly", ""); // Set non-editable to avoid focus
-  document.body.appendChild(el);
-  el.select(); // Select text inside element
-  document.execCommand("copy"); // Copy text to clipboard
-  el.remove(); // Remove temporary element
+  const element = document.createElement("textarea"); // Create new element.
+  element.value = str; // Set the value (the string to be copied).
+  element.setAttribute("readonly", ""); // Set non-editable to avoid focus.
+  document.body.appendChild(element);
+  element.select(); // Select text inside element.
+  document.execCommand("copy"); // Copy text to clipboard.
+  element.remove(); // Remove temporary element.
 }
 
 export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {

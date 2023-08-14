@@ -1,14 +1,12 @@
 import { PROJECT_NAME } from "@hanabi/data";
-import dotenv from "dotenv";
 import Fastify from "fastify";
 import fs from "node:fs";
 import path from "node:path";
+import { REPO_ROOT } from "./constants";
 import { recordCurrentGitCommitSHA1 } from "./git";
 import { logger, setLoggerPretty } from "./logger";
 import { databaseInit } from "./models/db";
 
-const REPO_ROOT = path.join(__dirname, "..", "..", "..");
-const ENV_PATH = path.join(REPO_ROOT, ".env");
 const VERSION_TXT_PATH = path.join(
   REPO_ROOT,
   "public",
@@ -22,7 +20,6 @@ main().catch((error) => {
 });
 
 async function main() {
-  loadEnvironmentVariables();
   setupLogger();
   logWelcomeMessage();
   recordCurrentGitCommitSHA1();
@@ -39,16 +36,6 @@ async function main() {
   await fastify.listen({
     port: 80,
   });
-}
-
-function loadEnvironmentVariables() {
-  if (!fs.existsSync(ENV_PATH)) {
-    throw new Error(
-      `The "${ENV_PATH}" file does not exist. Did you run the "install_dependencies.sh" script before running the server? This file should automatically be created when running this script.`,
-    );
-  }
-
-  dotenv.config();
 }
 
 function setupLogger() {

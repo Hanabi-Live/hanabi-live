@@ -1783,6 +1783,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@t3-oss/env-core@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@t3-oss/env-core@npm:0.6.0"
+  peerDependencies:
+    typescript: ">=4.7.2"
+    zod: ^3.0.0
+  checksum: 00c5b8e2d893f85e9d33099fded1e9ee1c74e642144b91d60096d31ed5bcd09986f14b275316568aa1a1f42d1b01a34b67dcf1396e11d837ff5c11b4bfb56a3a
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -5370,6 +5380,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hanabi-live@workspace:."
   dependencies:
+    "@t3-oss/env-core": ^0.6.0
     "@tsconfig/node-lts": ^18.12.3
     "@types/jest": ^29.5.3
     "@types/jquery": ^3.5.16
@@ -5417,6 +5428,7 @@ __metadata:
     typescript: ^5.1.6
     ws: ^8.13.0
     xmlserializer: ^0.6.1
+    zod: ^3.21.4
   languageName: unknown
   linkType: soft
 
@@ -10076,7 +10088,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.20.6":
+"zod@npm:^3.20.6, zod@npm:^3.21.4":
   version: 3.21.4
   resolution: "zod@npm:3.21.4"
   checksum: f185ba87342ff16f7a06686767c2b2a7af41110c7edf7c1974095d8db7a73792696bcb4a00853de0d2edeb34a5b2ea6a55871bc864227dace682a0a28de33e1f
