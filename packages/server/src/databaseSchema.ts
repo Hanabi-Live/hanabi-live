@@ -2,7 +2,8 @@
 
 import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
-export const usersTable = pgTable("users", {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   normalizedUsername: text("normalized_username").notNull().unique(),
