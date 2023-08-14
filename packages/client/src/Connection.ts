@@ -85,7 +85,7 @@ const SEPARATOR = " ";
 
 function unpack(data: string) {
   const name = data.split(SEPARATOR)[0]!;
-  return [name, data.substring(name.length + 1, data.length)];
+  return [name, data.slice(name.length + 1, data.length)];
 }
 
 function unmarshal(data: string) {

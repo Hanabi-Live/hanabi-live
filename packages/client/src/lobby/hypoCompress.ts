@@ -102,7 +102,7 @@ export function expand(data: string): string | null {
     return null;
   }
 
-  const deckString = playersAndDeck!.substring(1);
+  const deckString = playersAndDeck!.slice(1);
   const deck = decompressDeck(deckString);
   if (deck === null) {
     return null;
@@ -277,8 +277,8 @@ function compressActions(actions: Action[]): string {
 
 /**
  * Decompresses a string into an array of action. The first two characters of the string must be
- * numbers containing the min and max values of Action.type. The rest of the string must be composed
- * of series of strings two characters long, each representing an Action.
+ * numbers containing the min and max values of `Action.type`. The rest of the string must be
+ * composed of series of strings two characters long, each representing an `Action`.
  *
  * @param src The compressed string.
  */
@@ -296,7 +296,7 @@ function decompressActions(src: string): Action[] {
 
   let s = 2;
   while (s < src.length) {
-    const compressedAction = src.substring(s, s + 2);
+    const compressedAction = src.slice(s, s + 2);
     const action = stringToAction(compressedAction, typeRange);
     actions.push(action);
     s += 2;

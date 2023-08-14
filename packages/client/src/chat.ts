@@ -223,7 +223,7 @@ function sendText(room: string, msgRaw: string) {
     if (command === undefined) {
       throw new Error("Failed to parse the command from the chat message.");
     }
-    command = command.substring(1); // Remove the forward slash
+    command = command.slice(1); // Remove the forward slash
     command = command.toLowerCase();
 
     const chatCommandFunction = chatCommands.get(command);

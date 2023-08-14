@@ -216,7 +216,7 @@ export function tablesDraw(): void {
             // Copy the URL that would occur from clicking on this table row.
             let gameID = table.id.toString();
             if (table.sharedReplay) {
-              gameID = table.name.substring("Shared replay for game #".length);
+              gameID = table.name.slice("Shared replay for game #".length);
             }
             const path = table.sharedReplay
               ? `/shared-replay/${gameID}`

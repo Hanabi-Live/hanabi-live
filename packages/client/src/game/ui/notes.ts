@@ -60,7 +60,7 @@ function get(order: number, our: boolean, escape = false) {
   }
 
   if (content !== "") {
-    content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
+    content = content.slice(0, Math.max(0, content.length - 6)); // Trim the trailing "<br />"
   }
 
   return content;
@@ -224,7 +224,7 @@ export function openEditTooltip(
 
       // Remove the last pipe.
       if (newNote.endsWith(" | ")) {
-        newNote = newNote.substring(0, newNote.length - 3);
+        newNote = newNote.slice(0, Math.max(0, newNote.length - 3));
       }
       set(card.state.order, newNote);
     }

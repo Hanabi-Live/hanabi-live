@@ -26,7 +26,6 @@ module.exports = {
     "unicorn/prefer-query-selector": "off",
     "unicorn/prefer-spread": "off",
     "unicorn/prefer-string-replace-all": "off",
-    "unicorn/prefer-string-slice": "off",
     "unicorn/prefer-switch": "off",
     "unicorn/prefer-ternary": "off",
 
