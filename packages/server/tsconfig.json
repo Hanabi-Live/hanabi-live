@@ -11,13 +11,12 @@
 
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
-    // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
-    // false. We import JSON files in the code base, so this is needed.
-    "resolveJsonModule": true,
-
-    // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
-    // conservative; the project targets versions of Node.js within a 2 year time-frame.
-    "target": "ES2018",
+    // The `client` package has to be CJS because it has dependencies that do not support ESM.
+    // Subsequently, the `data` package has to be CJS, because the `client` package uses it. Since
+    // the server also uses the `data` package, the server must also be CJS. Thus, we have to
+    // manually revert the ESM options from the base config.
+    "module": "CommonJS",
+    "moduleResolution": "node",
   },
 
   "include": ["./src/**/*.ts"],

@@ -39,8 +39,6 @@ async function main() {
   await fastify.listen({
     port: 80,
   });
-
-  logger.info(Symbol("LOL"));
 }
 
 function loadEnvironmentVariables() {
