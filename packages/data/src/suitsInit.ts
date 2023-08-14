@@ -227,9 +227,10 @@ function getSuitClueColors(
 }
 
 /**
- * If the fill is not specified, use the fill of the color with the same name. Otherwise, assume the
- * fill of the first clue color. (For example, "Red" does not have any clue colors specified, so the
- * intermediate condition is necessary.)
+ * If the fill is not specified, use the fill of the color with the same name (specifically, the
+ * same display name, in the case of a dual-color suit). Otherwise, assume the fill of the first
+ * clue color. (For example, "Red" does not have any clue colors specified, so the intermediate
+ * condition is necessary.)
  *
  * We also need to compute a "fillColorblind" property for the suit.
  */
@@ -254,7 +255,12 @@ function getSuitFillAndFillColorblind(
     };
   }
 
-  const color = COLORS.get(suitJSON.name);
+  /**
+   * For example, for the "Purple D" dual-color suit, we need to check for the existence of the
+   * "Purple" color so that it can match.
+   */
+  const potentialMatchingColorName = suitJSON.displayName ?? suitJSON.name;
+  const color = COLORS.get(potentialMatchingColorName);
   if (color !== undefined) {
     // The "fill" and the "fillColorblind" properties are validated to not be empty in
     // "colorsInit.ts".
