@@ -59,9 +59,7 @@ function get(order: number, our: boolean, escape = false) {
     }
   }
 
-  if (content !== "") {
-    content = trimSuffix(content, "<br />");
-  }
+  content = trimSuffix(content, "<br />");
 
   return content;
 }
