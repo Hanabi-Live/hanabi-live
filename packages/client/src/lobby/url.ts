@@ -102,7 +102,7 @@ export function parseAndGoto(data: WelcomeData): void {
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
-  const replayJSONMatch = /\/(?:shared-)?replay-json\/([a-zA-Z0-9,-]+)$/.exec(
+  const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
     window.location.pathname,
   );
   if (replayJSONMatch !== null) {

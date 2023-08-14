@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     "no-useless-call": "off",
-    "unicorn/better-regex": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/new-for-builtins": "off",
     "unicorn/no-array-for-each": "off",

@@ -118,7 +118,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // Check for emoji substitution.
   // e.g. :100: --> 💯
-  const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
+  const matches = text.match(/:\S+:/g); // "[^\s]" is a non-whitespace character
   if (matches !== null) {
     for (const match of matches) {
       const emojiName = match.slice(1, -1); // Strip off the colons

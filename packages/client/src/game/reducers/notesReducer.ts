@@ -101,7 +101,7 @@ function getNoteKeywords(note: string) {
   //   - \|([^[|]*$)
   // - one or more non-pipe non-bracket characters between the start and end of the note
   //   - (^[^[|]+$)
-  const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
+  const regexp = /\[(.*?)]|\|([^[|]*$)|(^[^[|]+$)/g;
   const keywords: string[] = [];
 
   let match = regexp.exec(note);

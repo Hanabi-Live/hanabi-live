@@ -188,10 +188,10 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
 function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   const actions: ClientAction[] = [];
   const regexPlay =
-    /^(?:\[Hypo\] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
-  const regexDiscard = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/;
+    /^(?:\[Hypo] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
+  const regexDiscard = /^(?:\[Hypo] )?(.*) discards .* slot #(\d).*$/;
   const regexClue =
-    /^(?:\[Hypo\] )?(?:.+) tells (.*) about \w+ ([a-zA-Z]+|\d)s?$/;
+    /^(?:\[Hypo] )?.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/;
 
   log.forEach((line, index) => {
     const foundPlay = line.text.match(regexPlay);

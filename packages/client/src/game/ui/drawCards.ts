@@ -715,7 +715,7 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
 function hexToRGB(
   hex: string,
 ): { r: number; g: number; b: number } | undefined {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const result = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex);
   if (result === null) {
     return undefined;
   }

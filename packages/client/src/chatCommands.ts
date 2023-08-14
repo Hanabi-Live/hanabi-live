@@ -359,7 +359,7 @@ export function getVariantFromArgs(args: string[]): string {
 }
 
 function capitalize(input: string) {
-  const pattern = /(^|[()&\- ])(\w)/g;
+  const pattern = /(^|[ &()-])(\w)/g;
   return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
 }
 
