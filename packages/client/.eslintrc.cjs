@@ -22,7 +22,6 @@ module.exports = {
     "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-dom-node-append": "off",
     "unicorn/prefer-dom-node-dataset": "off",
-    "unicorn/prefer-dom-node-remove": "off",
     "unicorn/prefer-optional-catch-binding": "off",
     "unicorn/prefer-prototype-methods": "off",
     "unicorn/prefer-query-selector": "off",

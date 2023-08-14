@@ -8,7 +8,7 @@ export function copyStringToClipboard(str: string): void {
   document.body.appendChild(el);
   el.select(); // Select text inside element
   document.execCommand("copy"); // Copy text to clipboard
-  document.body.removeChild(el); // Remove temporary element
+  el.remove(); // Remove temporary element
 }
 
 export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {

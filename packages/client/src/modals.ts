@@ -382,7 +382,7 @@ export function closeModals(fast = false): void {
   pageCover.classList.remove("show");
   if (currentModal !== null) {
     currentModal.classList.add("hidden");
-    pageCover.removeChild(currentModal);
+    currentModal.remove();
     modalsContainer.appendChild(currentModal);
     currentModal = null;
   }
