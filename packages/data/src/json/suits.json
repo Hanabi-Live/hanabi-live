@@ -390,6 +390,7 @@
     "name": "Purple D",
     "id": "DRB",
     "displayName": "Purple",
+    "fill": "#8000ff",
     "pip": "hanabiWhite",
     "clueColors": ["Red", "Blue"]
   },
@@ -572,6 +573,7 @@
     "id": "TD",
     "abbreviation": "T",
     "displayName": "Teal",
+    "fill": "#00cccc",
     "pip": "hanabiAltWhite",
     "clueColors": ["Green", "Blue"]
   }
