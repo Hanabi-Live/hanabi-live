@@ -28,7 +28,7 @@ export const env = createEnv({
   server: {
     DOMAIN: z.string().default("localhost"),
     SESSION_SECRET: z.string(),
-    PORT: z.number().default(80),
+    PORT: z.number().default(0), // We dynamically set 80 or 443 later on.
     LOCALHOST_PORT: z.number().default(8081),
 
     TLS_CERT_FILE: z.string().default(""),

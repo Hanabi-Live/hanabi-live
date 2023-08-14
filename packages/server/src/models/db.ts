@@ -23,7 +23,7 @@ export async function testDatabase(): Promise<void> {
 
   if (chatLog === undefined || chatLog.message === "") {
     throw new Error(
-      'Failed to retrieve the first chat log message from the database when testing to see if the database is operational. Did you already run the "install_database_schema.sh" script to set up the database?',
+      'Failed to retrieve the a chat log message from the database when testing to see if the database is operational. Did you already run the "install_database_schema.sh" script to set up the database?',
     );
   }
 }

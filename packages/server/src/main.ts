@@ -1,9 +1,9 @@
 import { PROJECT_NAME } from "@hanabi/data";
-import Fastify from "fastify";
 import fs from "node:fs";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";
 import { recordCurrentGitCommitSHA1 } from "./git";
+import { httpInit } from "./http";
 import { logger } from "./logger";
 import { testDatabase } from "./models/db";
 
@@ -24,17 +24,7 @@ async function main() {
   recordCurrentGitCommitSHA1();
   validateVersionTXT();
   await testDatabase();
-
-  // eslint-disable-next-line new-cap
-  const fastify = Fastify({
-    logger,
-  });
-
-  fastify.get("/", async (_request, _reply) => "HI");
-
-  await fastify.listen({
-    port: 80,
-  });
+  await httpInit();
 }
 
 function logWelcomeMessage() {
