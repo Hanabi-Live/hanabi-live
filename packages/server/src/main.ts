@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";
 import { recordCurrentGitCommitSHA1 } from "./git";
-import { logger, setLoggerPretty } from "./logger";
+import { logger } from "./logger";
 import { testDatabase } from "./models/db";
 
 const VERSION_TXT_PATH = path.join(
@@ -20,7 +20,6 @@ main().catch((error) => {
 });
 
 async function main() {
-  setupLogger();
   logWelcomeMessage();
   recordCurrentGitCommitSHA1();
   validateVersionTXT();
@@ -36,26 +35,6 @@ async function main() {
   await fastify.listen({
     port: 80,
   });
-}
-
-function setupLogger() {
-  const isDev = getIsDev();
-  if (isDev) {
-    setLoggerPretty();
-  }
-}
-
-function getIsDev(): boolean {
-  const domain = process.env["DOMAIN"];
-
-  return (
-    domain === undefined ||
-    domain === "" ||
-    domain === "localhost" ||
-    domain === "127.0.0.1" ||
-    domain.startsWith("192.168.") ||
-    domain.startsWith("10.")
-  );
 }
 
 function logWelcomeMessage() {

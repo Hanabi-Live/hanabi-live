@@ -29,6 +29,10 @@ export const env = createEnv({
     DOMAIN: z.string().default("localhost"),
     SESSION_SECRET: z.string(),
     PORT: z.number().default(80),
+    LOCALHOST_PORT: z.number().default(8081),
+
+    TLS_CERT_FILE: z.string().default(""),
+    TLS_KEY_FILE: z.string().default(""),
 
     DB_HOST: z.string().default("localhost"),
     DB_PORT: z.number().default(5432),
@@ -39,3 +43,9 @@ export const env = createEnv({
 
   runtimeEnv: process.env,
 });
+
+export const IS_DEV =
+  env.DOMAIN === "localhost" ||
+  env.DOMAIN === "127.0.0.1" ||
+  env.DOMAIN.startsWith("192.168.") ||
+  env.DOMAIN.startsWith("10.");
