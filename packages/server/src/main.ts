@@ -5,7 +5,7 @@ import path from "node:path";
 import { REPO_ROOT } from "./constants";
 import { recordCurrentGitCommitSHA1 } from "./git";
 import { logger, setLoggerPretty } from "./logger";
-import { databaseInit } from "./models/db";
+import { testDatabase } from "./models/db";
 
 const VERSION_TXT_PATH = path.join(
   REPO_ROOT,
@@ -24,7 +24,7 @@ async function main() {
   logWelcomeMessage();
   recordCurrentGitCommitSHA1();
   validateVersionTXT();
-  await databaseInit();
+  await testDatabase();
 
   // eslint-disable-next-line new-cap
   const fastify = Fastify({

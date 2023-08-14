@@ -1,72 +1,18 @@
-import { parseIntSafe } from "@hanabi/utils";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { chatLogTable } from "../databaseSchema";
 import { env } from "../env";
-import { logger } from "../logger";
 
-let db: PostgresJsDatabase; // TODO: export this
+const client = postgres({
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
+});
+const db = drizzle(client);
 
-export async function databaseInit(): Promise<void> {
-  const config = getDatabaseConfig();
-  const client = postgres(config);
-  db = drizzle(client);
-
-  await testDB();
-}
-
-/**
- * Read the database configuration from environment variables. (They should already be loaded from
- * the ".env" file at this point.)
- */
-function getDatabaseConfig() {
-  const portString = process.env["DB_PORT"];
-  let port: number;
-  if (portString === undefined || portString === "") {
-    port = 5432; // The default port for PostgreSQL.
-    logger.info(`DB_PORT not specified; using a default value of: ${port}`);
-  } else {
-    port = parseIntSafe(portString);
-    if (Number.isNaN(port)) {
-      throw new TypeError(
-        `Failed to parse the "DB_PORT" environment variable: ${portString}`,
-      );
-    }
-  }
-
-  let user = process.env["DB_USER"];
-  if (user === undefined || user === "") {
-    user = "hanabiuser";
-    logger.info(`DB_USER not specified; using a default value of: ${user}`);
-  }
-
-  let password = process.env["DB_PASSWORD"];
-  if (password === undefined || password === "") {
-    password = "1234567890";
-    logger.info(
-      `DB_PASSWORD not specified; using a default value of: ${password}`,
-    );
-  }
-
-  let database = process.env["DB_NAME"];
-  if (database === undefined || database === "") {
-    database = "hanabi";
-    logger.info(`DB_NAME not specified; using a default value of: ${database}`);
-  }
-
-  logger.info(`LOL3: ${env.DOMAIN}`);
-
-  return {
-    host: env.DB_HOST,
-    port,
-    user,
-    password,
-    database,
-  };
-}
-
-async function testDB() {
+export async function testDatabase(): Promise<void> {
   const chatLogs = await db
     .select({
       message: chatLogTable.message,
