@@ -28,7 +28,7 @@ type FastifyInstanceWithLogger = FastifyInstance<
 
 const HTTP_SESSION_NAME = "hanabi.sid";
 
-const HTTP_SESSION_OPTIONS = {
+const COOKIE_OPTIONS_BASE = {
   /** The cookie should apply to the entire domain. */
   path: "/",
 
@@ -36,8 +36,8 @@ const HTTP_SESSION_OPTIONS = {
   maxAge: 60 * 60 * 24 * 365,
 } as const satisfies CookieOptions;
 
-const HTTP_SESSION_OPTIONS_DEV = {
-  ...HTTP_SESSION_OPTIONS,
+const COOKIE_OPTIONS_PRODUCTION = {
+  ...COOKIE_OPTIONS_BASE,
 
   /** Bind the cookie to this specific domain for security purposes. */
   domain: env.DOMAIN,
@@ -60,6 +60,8 @@ const HTTP_SESSION_OPTIONS_DEV = {
    */
   sameSite: "strict",
 } as const satisfies CookieOptions;
+
+const COOKIE_OPTIONS = IS_DEV ? COOKIE_OPTIONS_BASE : COOKIE_OPTIONS_PRODUCTION;
 
 /**
  * The Let's Encrypt certbot will request a token from this path:
@@ -84,23 +86,27 @@ export async function httpInit(): Promise<void> {
   // Initialize session management through the `@fastify/session` plugin:
   // https://github.com/fastify/session
   await fastify.register(fastifyCookie);
-  const cookie = IS_DEV ? HTTP_SESSION_OPTIONS_DEV : HTTP_SESSION_OPTIONS;
   await fastify.register(fastifySession, {
     secret: env.SESSION_SECRET,
     cookieName: HTTP_SESSION_NAME,
-    cookie,
+    cookie: COOKIE_OPTIONS,
   });
   fastify.addHook("preHandler", preHandler);
 
-  // Set up static file serving for the purposes of renewing HTTPS certificates:
+  // Initialize static file serving through the `@fastify/static` plugin:
+  // https://github.com/fastify/fastify-static
+  await fastify.register(fastifyStatic, {
+    root: path.join(REPO_ROOT, "public"),
+    prefix: "/public",
+  });
+
+  // Handle renewing HTTPS certificates through `certbot`:
   // https://letsencrypt.org/docs/challenge-types/
   if (useTLS) {
     fs.mkdirSync(LETS_ENCRYPT_PATH, {
       recursive: true,
     });
 
-    // Initialize static file serving through the `@fastify/static` plugin:
-    // https://github.com/fastify/fastify-static
     await fastify.register(fastifyStatic, {
       root: LETS_ENCRYPT_PATH,
       prefix: LETS_ENCRYPT_PATH_PREFIX,
