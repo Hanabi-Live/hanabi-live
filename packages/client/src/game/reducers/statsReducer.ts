@@ -108,14 +108,17 @@ function statsReducerFunction(
     stats.maxScore,
     variant,
   );
-  stats.cardsGottenByNotes = ourNotes !== null ? statsRules.cardsGottenByNotes(
-      currentState.deck,
-      currentState.playStacks,
-      currentState.playStackDirections,
-      currentState.playStackStarts,
-      variant,
-      ourNotes,
-    ) : null;
+  stats.cardsGottenByNotes =
+    ourNotes !== null
+      ? statsRules.cardsGottenByNotes(
+          currentState.deck,
+          currentState.playStacks,
+          currentState.playStackDirections,
+          currentState.playStackStarts,
+          variant,
+          ourNotes,
+        )
+      : null;
 
   // Handle future efficiency calculation.
   const scorePerStack: number[] = Array.from(

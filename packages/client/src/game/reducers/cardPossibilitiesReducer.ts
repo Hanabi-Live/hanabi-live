@@ -51,7 +51,10 @@ export function cardPossibilitiesReducer(
     !positiveRankClues.includes(clue.value)
   ) {
     if (variant.oddsAndEvens) {
-      positiveRankClues = clue.value === 1 ? [...positiveRankClues, 1, 3, 5] : [...positiveRankClues, 2, 4];
+      positiveRankClues =
+        clue.value === 1
+          ? [...positiveRankClues, 1, 3, 5]
+          : [...positiveRankClues, 2, 4];
     } else {
       positiveRankClues = [...positiveRankClues, clue.value];
     }
