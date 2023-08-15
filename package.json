@@ -43,6 +43,7 @@
     "grunt-criticalcss": "^2.1.0",
     "immer": "^10.0.2",
     "interactjs": "^1.10.18",
+    "isaacscript": "^3.6.57",
     "isaacscript-lint": "^5.2.2",
     "isaacscript-tsconfig": "^4.0.0",
     "jest": "^29.6.2",

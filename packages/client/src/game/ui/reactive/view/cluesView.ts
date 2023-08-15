@@ -1,5 +1,4 @@
 import equal from "fast-deep-equal";
-import type { Clue } from "../../../types/Clue";
 import { newColorClue, newRankClue } from "../../../types/Clue";
 import { ClueType } from "../../../types/ClueType";
 import type { StateClue } from "../../../types/GameState";
@@ -31,13 +30,11 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
     return;
   }
 
-  let clue: Clue;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-  if (lastClue.type === ClueType.Rank) {
-    clue = newRankClue(lastClue.value);
-  } else {
-    clue = newColorClue(globals.variant.clueColors[lastClue.value]!);
-  }
+  const clue =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    lastClue.type === ClueType.Rank
+      ? newRankClue(lastClue.value)
+      : newColorClue(globals.variant.clueColors[lastClue.value]!);
 
   lastClue.list.forEach((order, i) => {
     const card = getCardOrStackBase(order);

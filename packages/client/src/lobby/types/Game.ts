@@ -19,10 +19,10 @@ interface Player {
 
 interface Stats {
   numGames: number;
-  variant: StatsVariant;
+  variant: VariantStats;
 }
 
-interface StatsVariant {
+interface VariantStats {
   numGames: number;
   bestScores: BestScore[];
   averageScore: number;

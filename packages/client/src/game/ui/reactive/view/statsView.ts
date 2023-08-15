@@ -39,17 +39,13 @@ export function onEfficiencyChanged(data: {
     );
   }
 
-  let shouldModifyEff: boolean;
-  if (globals.state.finished) {
-    // If we are not currently using the shared segments, the shared efficiency modifier will not be
-    // applicable.
-    shouldModifyEff =
-      globals.state.replay.shared !== null &&
-      globals.state.replay.shared.useSharedSegments;
-  } else {
-    // Don't use the efficiency modifier during in-game replays.
-    shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
-  }
+  // - If we are not currently using the shared segments, the shared efficiency modifier will not be
+  //   applicable.
+  // - Don't use the efficiency modifier during in-game replays.
+  const shouldModifyEff = globals.state.finished
+    ? globals.state.replay.shared !== null &&
+      globals.state.replay.shared.useSharedSegments
+    : globals.state.visibleState === globals.state.ongoingGame;
 
   let { cardsGotten, cardsGottenByNotes } = data;
   const { efficiencyModifier } = data;

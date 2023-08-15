@@ -20,7 +20,6 @@ export class CheckButton extends Konva.Group {
     super(config);
     this.listening(true);
 
-    // Local variables
     const w = this.width();
     const h = this.height();
     const textSize = (config["fontSize"] as number | undefined) ?? 0.5 * h;

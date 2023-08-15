@@ -377,14 +377,11 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
     return;
   }
 
-  // Set the starting index, depending on whether or not we are pressing shift.
-  if (event.shiftKey === true) {
-    // Shift-tab goes backwards.
-    tabCompleteWordListIndex = tabCompleteWordList.length - 1;
-  } else {
-    // Tab goes forwards.
-    tabCompleteWordListIndex = 0;
-  }
+  // Set the starting index, depending on whether or not we are pressing shift:
+  // - Shift-tab goes backwards.
+  // - Tab goes forwards.
+  tabCompleteWordListIndex =
+    event.shiftKey === true ? tabCompleteWordList.length - 1 : 0;
 }
 
 function fixCustomEmotePriority(usersAndEmotesList: string[]) {
@@ -400,7 +397,6 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   usersAndEmotesList[kaddaIndex] = "Kappa";
   usersAndEmotesList[kappaIndex] = "Kadda";
 
-  // Local variables
   let tempEmote1: string;
 
   // Prioritize the more commonly used FrankerZ over all the other Franker emotes.
@@ -484,11 +480,10 @@ export function add(data: ChatMessage, fast: boolean): void {
   }">`;
   line += `[${datetime}]&nbsp; `;
   if (data.recipient !== "") {
-    if (data.recipient === globals.username) {
-      line += `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `;
-    } else {
-      line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
-    }
+    line +=
+      data.recipient === globals.username
+        ? `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `
+        : `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
   }
   if (data.server || data.recipient !== "") {
     line += data.msg;

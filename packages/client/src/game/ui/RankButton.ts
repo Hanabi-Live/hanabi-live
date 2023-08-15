@@ -11,10 +11,8 @@ export class RankButton extends Konva.Group {
     super(config);
     this.listening(true);
 
-    // Class variables
     this.clue = config["clue"] as Clue;
 
-    // Local variables
     const w = this.width();
     const h = this.height();
 

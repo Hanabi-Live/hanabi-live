@@ -40,7 +40,6 @@ export function uiInit(): void {
   };
   globals.imageLoader.finishedCallback = finishedDownloadingImages;
 
-  // Local variables
   const winW = globals.stage.width();
   const winH = globals.stage.height();
 

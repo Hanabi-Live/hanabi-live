@@ -364,14 +364,9 @@ function drawPlayerBox(i: number) {
 
   // Calculate some stats
   const variantStats = player.stats.variant;
+  // Round it to 1 decimal place.
   const averageScore = Math.round(variantStats.averageScore * 10) / 10;
-  // (Round it to 1 decimal place.)
-  let averageScoreString: string;
-  if (averageScore === 0) {
-    averageScoreString = "-";
-  } else {
-    averageScoreString = averageScore.toString();
-  }
+  const averageScoreString = averageScore === 0 ? "-" : averageScore.toString();
   let strikeoutRateString: string;
   if (variantStats.numGames > 0) {
     let strikeoutRate =
@@ -461,11 +456,10 @@ function drawPlayerBox(i: number) {
     html += ` ${bestScore} / ${maxScore}`;
     if (bestScore === maxScore) {
       html += "</strong> &nbsp; ";
-      if (bestScoreMod === 0) {
-        html += '<i class="fas fa-check score-modifier green"></i>';
-      } else {
-        html += '<i class="fas fa-times score-modifier red"></i>';
-      }
+      html +=
+        bestScoreMod === 0
+          ? '<i class="fas fa-check score-modifier green"></i>'
+          : '<i class="fas fa-times score-modifier red"></i>';
     }
     html += "</div></div>";
   }

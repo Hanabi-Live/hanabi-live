@@ -32,7 +32,6 @@ export function onChanged(
       }
     | undefined,
 ): void {
-  // Local variables
   const { currentPlayerArea } = globals.elements;
   if (currentPlayerArea === null) {
     return;
@@ -46,7 +45,6 @@ export function onChanged(
     return;
   }
 
-  // Local variables
   const winW = globals.stage.width();
   const winH = globals.stage.height();
   const { clueTokens } = globals.state.ongoingGame;

@@ -66,7 +66,6 @@ export class CardLayout extends Konva.Group {
   }
 
   doLayout(): void {
-    // Local variables
     const handWidth = this.width();
     const handHeight = this.height();
     const numCards = this.children.length;

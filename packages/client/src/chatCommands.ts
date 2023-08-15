@@ -37,12 +37,10 @@ chatCommands.set("addfriend", friend);
 
 // /friends
 function friends(room: string) {
-  let msg: string;
-  if (globals.friends.length === 0) {
-    msg = "Currently, you do not have any friends on your friends list.";
-  } else {
-    msg = `Current friends: ${globals.friends.join(", ")}`;
-  }
+  const msg =
+    globals.friends.length === 0
+      ? "Currently, you do not have any friends on your friends list."
+      : `Current friends: ${globals.friends.join(", ")}`;
   sendSelfPMFromServer(msg, room);
 }
 chatCommands.set("f", friends);
@@ -268,13 +266,12 @@ chatCommands.set("tagsdeleteall", (room: string) => {
 function playerinfo(_room: string, args: string[]) {
   let usernames: string[] = [];
   if (args.length === 0) {
-    // If there are no arguments and we are at a table return stats for all the players.
-    if (globals.tableID !== -1 && globals.ui !== null) {
-      usernames = globals.ui.globals.metadata.playerNames;
-    } else {
-      // Otherwise, return stats for the caller.
-      usernames = [globals.username];
-    }
+    // - If there are no arguments and we are at a table, return stats for all the players.
+    // - Otherwise, return stats for the caller.
+    usernames =
+      globals.tableID !== -1 && globals.ui !== null
+        ? globals.ui.globals.metadata.playerNames
+        : [globals.username];
   } else {
     // We can return the stats for a list of provided users separated by spaces since usernames
     // cannot contain spaces.

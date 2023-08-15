@@ -310,16 +310,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.layout.checkSetDraggable();
 
     // Set the visible state. (This must be after the morphed blank check.)
-    if (suitToShow === unknownSuit) {
-      this._visibleSuitIndex = null;
-    } else {
-      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
-    }
-    if (rankToShow === UNKNOWN_CARD_RANK) {
-      this._visibleRank = null;
-    } else {
-      this._visibleRank = rankToShow;
-    }
+    this._visibleSuitIndex =
+      suitToShow === unknownSuit
+        ? null
+        : this.variant.suits.indexOf(suitToShow);
+    this._visibleRank = rankToShow === UNKNOWN_CARD_RANK ? null : rankToShow;
 
     // Setting "this.bareName" will automatically update how the card appears the next time that the
     // "card" layer is drawn.
@@ -805,17 +800,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return;
     }
 
-    let status: CardStatus;
-    if (
+    const status =
       this.visibleSuitIndex === null ||
       this.visibleRank === null ||
       this.visibleRank === STACK_BASE_RANK
-    ) {
-      status = CardStatus.NeedsToBePlayed; // Default status; not faded and not critical.
-    } else {
-      status =
-        visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
-    }
+        ? CardStatus.NeedsToBePlayed // Default status; not faded and not critical.
+        : visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);

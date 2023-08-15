@@ -106,17 +106,13 @@ function drawUser(
   nameColumn += `<span id="online-users-${userID}-zzz" class="hidden"> &nbsp;💤</span>`;
   nameColumn += "</span>";
 
-  let statusColumn: string;
   const statusText = StatusText[user.status]!;
-  if (
+  const statusColumn =
     globals.currentScreen === Screen.PreGame ||
     user.status === Status.Lobby ||
     user.status === Status.Replay
-  ) {
-    statusColumn = statusText;
-  } else {
-    statusColumn = `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
-  }
+      ? statusText
+      : `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
 
   const row = $("<tr>");
   $("<td>").html(nameColumn).appendTo(row);

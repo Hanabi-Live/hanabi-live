@@ -9,9 +9,8 @@
     // next to the respective ".ts" file, which will clutter the "src" directory.
     "outDir": "./dist",
 
-    // "resolveJsonModule" includes modules imported with ".json" extensions
-    // By default, it is false
-    // We import JSON files in the code base, so this is needed
+    // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
+    // false. We import JSON files in the code base, so this is needed.
     "resolveJsonModule": true,
 
     // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping

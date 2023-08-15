@@ -15,12 +15,10 @@ export function sudokuCanStillBePlayed(
     createAllDiscardedMap(variant, deck, suitIndex),
   );
 
-  let possibleStarts: number[];
-  if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
-    possibleStarts = [playStackStarts[suitIndex]!];
-  } else {
-    possibleStarts = sudokuGetFreeStackStarts(playStackStarts);
-  }
+  const possibleStarts =
+    playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK
+      ? [playStackStarts[suitIndex]!]
+      : sudokuGetFreeStackStarts(playStackStarts);
 
   for (const stackStart of possibleStarts) {
     // Here, we check if we can play the specified card if we start the stack at 'stackStart'. For

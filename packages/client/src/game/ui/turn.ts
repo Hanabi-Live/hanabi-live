@@ -26,7 +26,6 @@ export function begin(): void {
 
 // Handle pre-playing / pre-discarding / pre-cluing.
 function handlePremove() {
-  // Local variables
   const { premove } = globals.state;
   const { clueTokens } = globals.state.ongoingGame;
 

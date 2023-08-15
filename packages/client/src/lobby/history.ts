@@ -80,12 +80,9 @@ export function draw(friends: boolean): void {
   tbody.html("");
 
   // JavaScript keys come as strings, so we need to convert them to integers.
-  let ids: number[];
-  if (!friends) {
-    ids = Object.keys(globals.history).map((i) => parseIntSafe(i));
-  } else {
-    ids = Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
-  }
+  const ids = !friends
+    ? Object.keys(globals.history).map((i) => parseIntSafe(i))
+    : Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
 
   // Handle if the user has no history.
   if (ids.length === 0) {
@@ -112,12 +109,9 @@ export function draw(friends: boolean): void {
 
   // Add all of the history.
   for (let i = 0; i < ids.length; i++) {
-    let gameData: GameHistory;
-    if (!friends) {
-      gameData = globals.history[ids[i]!]!;
-    } else {
-      gameData = globals.historyFriends[ids[i]!]!;
-    }
+    const gameData = !friends
+      ? globals.history[ids[i]!]!
+      : globals.historyFriends[ids[i]!]!;
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
@@ -324,11 +318,8 @@ export function drawOtherScores(
     // Column 6 - Seed. Chop off the prefix.
     const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
     let seedNumberSuffix: string;
-    if (match === null || match.length < 2) {
-      seedNumberSuffix = "Unknown";
-    } else {
-      seedNumberSuffix = match[1]!;
-    }
+    seedNumberSuffix =
+      match === null || match.length < 2 ? "Unknown" : match[1]!;
     if (ourGame) {
       seedNumberSuffix = `<strong>${seedNumberSuffix}</strong>`;
     }

@@ -1,4 +1,3 @@
-import type { Character } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import Konva from "konva";
 import * as hand from "../rules/hand";
@@ -17,7 +16,6 @@ interface HandConfig {
   rot?: number;
 }
 
-// Local variables
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
@@ -451,18 +449,16 @@ function drawDetrimentalCharacters(
   }
 
   const characterID = globals.metadata.characterAssignments[i];
-  let character: Character | undefined;
-  if (characterID === null || characterID === undefined) {
-    // A character with an ID of null may be assigned when debugging.
-    character = {
-      id: -1,
-      name: "n/a",
-      description: "",
-      emoji: "",
-    };
-  } else {
-    character = getCharacter(characterID);
-  }
+  // A character with an ID of null may be assigned when debugging.
+  const character =
+    characterID === null || characterID === undefined
+      ? {
+          id: -1,
+          name: "n/a",
+          description: "",
+          emoji: "",
+        }
+      : getCharacter(characterID);
 
   const width2 = 0.03 * winW;
   const height2 = 0.03 * winH;

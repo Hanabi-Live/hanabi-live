@@ -175,11 +175,7 @@ function setTickingDownTimeTooltip(i: number) {
   }
 
   let content = "Time ";
-  if (globals.options.timed) {
-    content += "remaining";
-  } else {
-    content += "taken";
-  }
+  content += globals.options.timed ? "remaining" : "taken";
   content += ":<br /><strong>";
   content += millisecondsToClockString(time);
   content += "</strong>";

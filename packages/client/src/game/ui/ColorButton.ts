@@ -19,7 +19,6 @@ export class ColorButton extends Konva.Group {
 
     this.clue = config["clue"] as Clue;
 
-    // Local variables
     const w = this.width();
     const h = this.height();
 

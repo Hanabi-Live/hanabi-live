@@ -195,21 +195,19 @@ function initReusableObjects() {
 }
 
 function drawActionLog() {
-  if (!globals.lobby.settings.keldonMode) {
-    actionLogValues = {
-      x: 0.01,
-      y: 0.01,
-      w: 0.4,
-      h: 0.25,
-    };
-  } else {
-    actionLogValues = {
-      x: 0.2,
-      y: 0.235,
-      w: 0.4,
-      h: 0.098,
-    };
-  }
+  actionLogValues = !globals.lobby.settings.keldonMode
+    ? {
+        x: 0.01,
+        y: 0.01,
+        w: 0.4,
+        h: 0.25,
+      }
+    : {
+        x: 0.2,
+        y: 0.235,
+        w: 0.4,
+        h: 0.098,
+      };
 
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
@@ -463,13 +461,8 @@ function drawPlayStacks() {
 }
 
 function drawDiscardStacks() {
-  let discardStackSpacing: number;
-  if (globals.variant.suits.length === 6) {
-    discardStackSpacing = 0.038;
-  } else {
-    // 3, 4, or 5 stacks.
-    discardStackSpacing = 0.047;
-  }
+  const discardStackSpacing =
+    globals.variant.suits.length === 6 ? 0.038 : 0.047;
 
   for (let i = 0; i < globals.variant.suits.length; i++) {
     const suit = globals.variant.suits[i]!;
