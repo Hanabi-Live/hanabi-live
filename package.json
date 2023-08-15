@@ -18,6 +18,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "@fastify/cookie": "^9.0.4",
+    "@fastify/session": "^10.4.0",
+    "@fastify/static": "^6.10.2",
     "@t3-oss/env-core": "^0.6.0",
     "@tsconfig/node-lts": "^18.12.3",
     "@types/jest": "^29.5.3",
