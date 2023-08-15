@@ -34,7 +34,7 @@ export function drawCards(
   // Add the "Unknown" suit to the list of suits for this variant. The unknown suit has blank white
   // cards, representing cards of known rank but unknown suit.
   const unknownSuit = getSuit("Unknown");
-  const suits = variant.suits.concat(unknownSuit);
+  const suits = [...variant.suits, unknownSuit];
   const pipTypes = new Set<string>();
 
   let suitIndex = -1;

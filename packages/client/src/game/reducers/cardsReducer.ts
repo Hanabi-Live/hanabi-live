@@ -24,8 +24,8 @@ export function cardsReducer(
   metadata: GameMetadata,
 ): readonly CardState[] {
   const variant = getVariant(metadata.options.variantName);
-  const newDeck = Array.from(deck);
-  const hands = Array.from(game.hands, (arr) => Array.from(arr));
+  const newDeck = [...deck];
+  const hands = Array.from(game.hands, (arr) => [...arr]);
 
   switch (action.type) {
     /**

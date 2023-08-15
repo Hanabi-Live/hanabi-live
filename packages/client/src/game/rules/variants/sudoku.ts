@@ -180,7 +180,7 @@ export function getMaxScorePerStack(
             assignment[assignedLocalSuitIndex] = value;
           },
         );
-        const assignmentSorted = assignment.slice(0);
+        const assignmentSorted = [...assignment];
         assignmentSorted.sort((a, b) => a - b);
 
         // Check if we need to update the best assignment.

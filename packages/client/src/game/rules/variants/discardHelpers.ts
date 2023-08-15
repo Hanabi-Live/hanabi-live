@@ -35,7 +35,7 @@ export function createAllDiscardedMap(
 ): Map<number, boolean> {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
   const allDiscarded = new Map<number, boolean>();
-  for (const variantRank of variant.ranks.slice()) {
+  for (const variantRank of variant.ranks) {
     allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
   }
   return allDiscarded;

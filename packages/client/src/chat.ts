@@ -354,9 +354,7 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   }
 
   // Combine it with the list of emotes and the list of emoji.
-  const usersAndEmojisAndEmotesList = userList
-    .concat(emojiList)
-    .concat(emoteList);
+  const usersAndEmojisAndEmotesList = [...userList, ...emojiList, ...emoteList];
   usersAndEmojisAndEmotesList.sort(
     // We want to do a case-insensitive sort, which will not occur by default.
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
@@ -613,7 +611,7 @@ function fillTwitchEmotes(message: string) {
 
   // Search through the text for each emote.
   for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
-    const emoteArray = Array.from(emotesInCategory);
+    const emoteArray = [...emotesInCategory];
     for (const emote of emoteArray) {
       // We don't want to replace the emote if it is followed by a quote, because we don't want to
       // replace Discord emotes.

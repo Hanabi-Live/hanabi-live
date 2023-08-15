@@ -24,7 +24,6 @@ module.exports = {
     "unicorn/prefer-optional-catch-binding": "off",
     "unicorn/prefer-prototype-methods": "off",
     "unicorn/prefer-query-selector": "off",
-    "unicorn/prefer-spread": "off",
     "unicorn/prefer-string-replace-all": "off",
     "unicorn/prefer-switch": "off",
 

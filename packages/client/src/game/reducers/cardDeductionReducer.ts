@@ -32,7 +32,7 @@ function makeDeductions(
   hands: ReadonlyArray<readonly number[]>,
   metadata: GameMetadata,
 ) {
-  const newDeck: CardState[] = Array.from(deck);
+  const newDeck: CardState[] = [...deck];
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
 
@@ -364,7 +364,7 @@ function filterCardPossibilities(
   // working combination. If so, then the new identity for our specific card is also valid and
   // doesn't need to be validated again (so it's removed from possibilitiesToValidate).
   let possibilitiesToValidate: Array<readonly [number, number]> = [];
-  possibilitiesToValidate = Array.from(cardPossibilities);
+  possibilitiesToValidate = [...cardPossibilities];
   return cardPossibilities.filter((possibility) => {
     // If the possibility is not in the list that still needs validation then it must mean the
     // possibility is already validated and we can exit early.
@@ -452,11 +452,11 @@ let cachedCardCountMap: number[][] = [];
 
 function getCardCountMap(variant: Variant) {
   if (variant.id === cachedVariantId) {
-    return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
+    return Array.from(cachedCardCountMap, (arr) => [...arr]);
   }
 
-  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
-  const possibleRanks: number[] = variant.ranks.slice();
+  const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
+  const possibleRanks: number[] = [...variant.ranks];
   const possibleCardMap: number[][] = [];
   possibleSuits.forEach((suitIndex) => {
     possibleCardMap[suitIndex] = [];
@@ -471,7 +471,7 @@ function getCardCountMap(variant: Variant) {
   });
 
   cachedVariantId = variant.id;
-  cachedCardCountMap = Array.from(possibleCardMap, (arr) => Array.from(arr));
+  cachedCardCountMap = Array.from(possibleCardMap, (arr) => [...arr]);
 
   return possibleCardMap;
 }

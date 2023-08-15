@@ -5,8 +5,8 @@ import type { CardState } from "../../types/CardState";
 export function initialCardState(order: number, variant: Variant): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately from knowledge of the
   // true suit and rank.
-  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
-  const possibleRanks: number[] = variant.ranks.slice();
+  const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
+  const possibleRanks: number[] = [...variant.ranks];
 
   const possibleCards: Array<[number, number]> = [];
   possibleSuits.forEach((s) => {

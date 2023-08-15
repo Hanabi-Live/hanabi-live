@@ -134,7 +134,7 @@ export function draw(friends: boolean): void {
     $("<td>").html(options).appendTo(row);
 
     // Column 6 - Other Players / Players (depending on if we are in the "Friends" view or not).
-    const playerNames = gameData.playerNames.slice();
+    const playerNames = [...gameData.playerNames];
     let playerNamesString = playerNames.join(", ");
     if (!friends) {
       // Remove our name from the list of players.

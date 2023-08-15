@@ -31,7 +31,7 @@ export function draw(): void {
   }
 
   // Make an alphabetical list of all of the usernames.
-  const alphabeticalUsernames = Array.from(usernameMapping.keys());
+  const alphabeticalUsernames = [...usernameMapping.keys()];
   alphabeticalUsernames.sort(
     // We want to do a case-insensitive sort, which will not occur by default.
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
