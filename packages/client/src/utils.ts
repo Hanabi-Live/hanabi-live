@@ -5,7 +5,7 @@ export function copyStringToClipboard(str: string): void {
   const element = document.createElement("textarea"); // Create new element.
   element.value = str; // Set the value (the string to be copied).
   element.setAttribute("readonly", ""); // Set non-editable to avoid focus.
-  document.body.appendChild(element);
+  document.body.append(element);
   element.select(); // Select text inside element.
   document.execCommand("copy"); // Copy text to clipboard.
   element.remove(); // Remove temporary element.

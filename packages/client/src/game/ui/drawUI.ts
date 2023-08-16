@@ -1261,7 +1261,7 @@ function drawSharedReplay() {
       });
       button.type = "submit";
 
-      placeholder.appendChild(button);
+      placeholder.append(button);
     }
 
     modals.showPrompt("#set-leader-modal");

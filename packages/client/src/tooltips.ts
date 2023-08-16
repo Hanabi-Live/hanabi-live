@@ -184,7 +184,7 @@ function getOptionsFromType(
 function appendDiv(selector: string, id: string) {
   const element = document.createElement("div");
   element.setAttribute("id", id);
-  document.querySelector(selector)?.appendChild(element);
+  document.querySelector(selector)?.append(element);
 }
 
 function createGameTooltips() {

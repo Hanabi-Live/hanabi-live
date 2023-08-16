@@ -383,7 +383,7 @@ export function closeModals(fast = false): void {
   if (currentModal !== null) {
     currentModal.classList.add("hidden");
     currentModal.remove();
-    modalsContainer.appendChild(currentModal);
+    modalsContainer.append(currentModal);
     currentModal = null;
   }
 
@@ -450,12 +450,12 @@ function showModal(
     }
   }
 
-  pageCover.appendChild(element);
+  pageCover.append(element);
 
   pageCover.style.display = "flex";
   pageCover.classList.add("show");
   setTimeout(() => {
-    pageCover.appendChild(element);
+    pageCover.append(element);
     element.classList.remove("hidden");
     if (typeof param3 === "function") {
       param3.call(null);
