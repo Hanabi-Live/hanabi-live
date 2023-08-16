@@ -189,7 +189,7 @@ export class FullActionLog extends Konva.Group {
       this.makeLog();
     }
 
-    this.buffer.forEach((logEntry) => {
+    for (const logEntry of this.buffer) {
       appendLine(
         this.logText!,
         this.logNumbers!,
@@ -210,7 +210,7 @@ export class FullActionLog extends Konva.Group {
           break;
         }
       }
-    });
+    }
 
     this.logText!.refreshText();
     this.logNumbers!.refreshText();

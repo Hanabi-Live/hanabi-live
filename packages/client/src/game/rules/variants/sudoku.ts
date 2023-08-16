@@ -104,21 +104,21 @@ export function getMaxScorePerStack(
   const unassignedSuits: number[] = [];
 
   // Find the suits for which we need to solve the assignment problem.
-  playStackStarts.forEach((stackStart, suitIndex) => {
+  for (const [suitIndex, stackStart] of playStackStarts.entries()) {
     const [allMax, suitMaxScores] = sudokuWalkUpAll(
       createAllDiscardedMap(variant, deck, suitIndex),
     );
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = 5;
-      return;
+      continue;
     }
     if (stackStart !== UNKNOWN_CARD_RANK) {
       independentPartOfMaxScore[suitIndex] = suitMaxScores[stackStart - 1]!;
-      return;
+      continue;
     }
     maxPartialScores[suitIndex] = suitMaxScores;
     unassignedSuits.push(suitIndex);
-  });
+  }
 
   if (unassignedSuits.length === 0) {
     return independentPartOfMaxScore;
@@ -170,16 +170,15 @@ export function getMaxScorePerStack(
         // Evaluate the current assignment.
         let assignmentVal = 0;
         const assignment = new Array<number>(unassignedSuits.length);
-        curAssignment.forEach(
-          (assignedStackStartIndex, assignedLocalSuitIndex) => {
+        for (const [assignedLocalSuitIndex, assignedStackStartIndex] of curAssignment.entries()) {
             const value =
               maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
                 possibleStackStarts[assignedStackStartIndex]! - 1
               ]!;
             assignmentVal += value;
             assignment[assignedLocalSuitIndex] = value;
-          },
-        );
+          }
+        
         const assignmentSorted = [...assignment];
         assignmentSorted.sort((a, b) => a - b);
 
@@ -223,12 +222,12 @@ export function getMaxScorePerStack(
   // Now, we just need to put the found assignment together with the independent parts found
   // already.
   const maxScorePerStack = independentPartOfMaxScore;
-  unassignedSuits.forEach((unassignedSuit, unassignedLocalSuitIndex) => {
+  for (const [unassignedLocalSuitIndex, unassignedSuit] of unassignedSuits.entries()) {
     // Note the '??' here, since it can be that there is actually no feasible assignment. In this
     // case, these values are still undefined at this point, so we replace them by 0.
     maxScorePerStack[unassignedSuit] =
       bestAssignment[unassignedLocalSuitIndex] ?? 0;
-  });
+  }
 
   return maxScorePerStack;
 }

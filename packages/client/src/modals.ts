@@ -482,9 +482,9 @@ function fillMorphModalWithRadios(
   table.classList.add("slim-table");
   const textbox = getElement("#morph-modal-textbox");
 
-  ranks.forEach((rank) => {
+  for (const rank of ranks) {
     const row = document.createElement("tr");
-    suits.forEach((suit, i) => {
+    for (const [i, suit] of suits.entries()) {
       const cell = document.createElement("td");
       const possibleCardIdentity = possibilities.some(
         (possibility) => possibility[0] === i && possibility[1] === rank,
@@ -525,8 +525,8 @@ function fillMorphModalWithRadios(
       });
 
       row.append(cell);
-    });
+    }
     table.append(row);
-  });
+  }
   placeHolder.append(table);
 }

@@ -45,9 +45,9 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
 
   const cardStatus: CardStatus[][] = [];
-  variant.suits.forEach((_, suitIndex) => {
+  for (const [suitIndex, _] of variant.suits.entries()) {
     cardStatus[suitIndex] = [];
-    variant.ranks.forEach((rank) => {
+    for (const rank of variant.ranks) {
       cardStatus[suitIndex]![rank] = cardRules.status(
         suitIndex,
         rank,
@@ -57,8 +57,8 @@ export function initialGameState(metadata: GameMetadata): GameState {
         playStackStarts,
         variant,
       );
-    });
-  });
+    }
+  }
 
   const scorePerStack: number[] = Array.from(
     playStacks,

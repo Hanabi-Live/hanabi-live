@@ -72,8 +72,8 @@ function calculatePlayerPossibilities(
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
 ) {
-  hands.forEach((hand) => {
-    hand.forEach((order) => {
+  for (const hand of hands) {
+    for (const order of hand) {
       const card = deck[order]!;
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
@@ -87,8 +87,8 @@ function calculatePlayerPossibilities(
           metadata,
         );
       }
-    });
-  });
+    }
+  }
 }
 
 function calculateCard(
@@ -457,17 +457,17 @@ function getCardCountMap(variant: Variant) {
   const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
   const possibleRanks: number[] = [...variant.ranks];
   const possibleCardMap: number[][] = [];
-  possibleSuits.forEach((suitIndex) => {
+  for (const suitIndex of possibleSuits) {
     possibleCardMap[suitIndex] = [];
     const suit = variant.suits[suitIndex]!;
-    possibleRanks.forEach((rank) => {
+    for (const rank of possibleRanks) {
       possibleCardMap[suitIndex]![rank] = deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,
       );
-    });
-  });
+    }
+  }
 
   cachedVariantId = variant.id;
   cachedCardCountMap = Array.from(possibleCardMap, (arr) => [...arr]);

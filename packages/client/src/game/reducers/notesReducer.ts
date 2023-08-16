@@ -53,9 +53,9 @@ function notesReducerFunction(
     }
 
     case "noteListPlayer": {
-      action.texts.forEach((text, i) => {
+      for (const [i, text] of action.texts.entries()) {
         notes.ourNotes[i] = parseNote(variant, text);
-      });
+      }
       break;
     }
 
@@ -72,22 +72,22 @@ function notesReducerFunction(
       }
 
       // Set the new notes.
-      action.noteTextLists.forEach((noteTextList, i) => {
+      for (const [i, noteTextList] of action.noteTextLists.entries()) {
         // If we are a spectator, copy our notes from combined list.
         if (action.names[i] === metadata.ourUsername && !playing && !finished) {
-          noteTextList.forEach((text, order) => {
+          for (const [order, text] of noteTextList.entries()) {
             notes.ourNotes[order] = parseNote(variant, text);
-          });
+          }
         }
 
-        noteTextList.forEach((text, order) => {
+        for (const [order, text] of noteTextList.entries()) {
           notes.allNotes[order]!.push({
             name: action.names[i]!,
             text,
             isSpectator: action.isSpectators[i]!,
           });
-        });
-      });
+        }
+      }
       break;
     }
   }

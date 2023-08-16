@@ -348,7 +348,7 @@ function reduceGameActions(
 // identities). We cannot just replace the array every time because we need to keep the "full" deck
 // that the server sends us.
 function updateCardIdentities(state: Draft<State>) {
-  state.ongoingGame.deck.forEach((newCardIdentity, i) => {
+  for (const [i, newCardIdentity] of state.ongoingGame.deck.entries()) {
     if (i >= state.cardIdentities.length) {
       // Add the new card identity.
       state.cardIdentities[i] = {
@@ -365,7 +365,7 @@ function updateCardIdentities(state: Draft<State>) {
         existingCardIdentity.rank = newCardIdentity.rank;
       }
     }
-  });
+  }
 }
 
 function visualStateToShow(state: Draft<State>, action: Action) {

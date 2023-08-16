@@ -76,7 +76,6 @@ export class Globals {
   store: Redux.Store<State, Action> | null = null;
   stateObserver: StateObserver | null = null;
   cardSubscriptions: Redux.Unsubscribe[] = [];
-  cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
 
   get state(): State {
     return this.store!.getState();
@@ -136,9 +135,11 @@ export class Globals {
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
-    this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => {
-      u();
-    });
+
+    for (const unsubscribeFunc of this.cardSubscriptions) {
+      unsubscribeFunc();
+    }
+
     this.cardSubscriptions = [];
     this.store = null;
   }

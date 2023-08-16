@@ -272,9 +272,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       this.bare.listening(true);
     }
 
-    this.tweenCallbacks.forEach((callback) => {
+    for (const callback of this.tweenCallbacks) {
       callback();
-    });
+    }
     this.tweenCallbacks = [];
   }
 

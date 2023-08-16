@@ -34,9 +34,9 @@ export function set(cursorType: CursorType): void {
     return;
   }
 
-  cursorTypes.forEach((type) => {
+  for (const type of cursorTypes) {
     element.classList.remove(`game-cursor-${type}`);
-  });
+  }
 
   element.classList.add(`game-cursor-${cursorType}`);
 

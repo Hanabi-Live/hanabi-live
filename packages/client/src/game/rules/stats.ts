@@ -203,7 +203,7 @@ export function cardsGottenByNotes(
 ): number {
   let currentCardsGottenByNotes = 0;
 
-  deck.forEach((card, order) => {
+  for (const [order, card] of deck.entries()) {
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -218,10 +218,11 @@ export function cardsGottenByNotes(
     ) {
       // Original contribution
       const a = cardRules.isClued(card) ? 1 : 0;
-      const note = notes[order]!;
 
       // Contribution desired based on notes.
+      const note = notes[order];
       const b =
+        note &&
         !note.knownTrash &&
         (note.finessed ||
           note.clued ||
@@ -231,7 +232,8 @@ export function cardsGottenByNotes(
 
       currentCardsGottenByNotes += b - a;
     }
-  });
+  }
+
   return currentCardsGottenByNotes;
 }
 

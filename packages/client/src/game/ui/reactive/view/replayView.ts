@@ -242,9 +242,9 @@ export function onFinishedChanged(
     globals.elements.maxScoreNumberLabel?.show();
     globals.elements.playsTextLabel?.hide();
     globals.elements.playsNumberLabel?.hide();
-    globals.elements.questionMarkLabels.forEach((label) => {
+    for (const label of globals.elements.questionMarkLabels) {
       label.hide();
-    });
+    }
   }
 
   // Disable zen mode

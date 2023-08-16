@@ -196,9 +196,9 @@ function compressDeck(deck: DeckCard[]): string | undefined {
   }
 
   let out = `${rankRange.min}${rankRange.max}`;
-  deck.forEach((card) => {
+  for (const card of deck) {
     out += deckCardToString(card, rankRange);
-  });
+  }
 
   return out;
 }

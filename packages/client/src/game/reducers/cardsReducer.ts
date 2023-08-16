@@ -98,7 +98,7 @@ export function cardsReducer(
       };
 
       // Positive clues
-      action.list.forEach((order) => {
+      for (const order of action.list) {
         const card = getCard(newDeck, order);
         const hand = game.hands[action.target]!;
         newDeck[order] = {
@@ -111,20 +111,20 @@ export function cardsReducer(
             handRules.cardIsOnChop(hand, deck, card),
         };
         applyClue(order, true);
-      });
+      }
 
       // Negative clues
       const negativeClues = action.ignoreNegative
         ? []
         : hands[action.target]!.filter((order) => !action.list.includes(order));
-      negativeClues.forEach((order) => {
+      for (const order of negativeClues) {
         const card = getCard(newDeck, order);
         newDeck[order] = {
           ...card,
           hasClueApplied: true,
         };
         applyClue(order, false);
-      });
+      }
 
       break;
     }

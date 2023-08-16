@@ -26,26 +26,27 @@ export function observeStore<S, A extends Action<unknown>, T>(
     }
 
     // If the path changed, call the function.
-    subscriptions
-      .filter((s) => {
-        const nextValue = s.select(nextState);
-        if (nextValue === undefined) {
-          // The selector wants to skip this one.
-          return false;
-        }
-        if (currentState === undefined) {
-          // Initializing, always fire all.
-          return true;
-        }
-        // Fire if any part of it changed.
-        return !equal(nextValue, s.select(currentState));
-      })
-      .forEach((s) => {
-        // `currentState` is undefined during initialization.
-        const currentValue =
-          currentState !== undefined ? s.select(currentState) : undefined;
-        s.onChange(s.select(nextState)!, currentValue);
-      });
+    const filteredSubscriptions = subscriptions.filter((subscription) => {
+      const nextValue = subscription.select(nextState);
+      if (nextValue === undefined) {
+        // The selector wants to skip this one.
+        return false;
+      }
+      if (currentState === undefined) {
+        // Initializing, always fire all.
+        return true;
+      }
+      // Fire if any part of it changed.
+      return !equal(nextValue, subscription.select(currentState));
+    });
+    for (const subscription of filteredSubscriptions) {
+      // `currentState` is undefined during initialization.
+      const currentValue =
+        currentState !== undefined
+          ? subscription.select(currentState)
+          : undefined;
+      subscription.onChange(subscription.select(nextState)!, currentValue);
+    }
 
     currentState = nextState;
   }

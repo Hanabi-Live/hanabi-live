@@ -405,7 +405,7 @@ function gameStateReducerFunction(
     action.suitIndex >= 0 &&
     action.rank >= 0
   ) {
-    variant.ranks.forEach((rank) => {
+    for (const rank of variant.ranks) {
       state.cardStatus[action.suitIndex]![rank] = cardRules.status(
         action.suitIndex,
         rank,
@@ -415,7 +415,7 @@ function gameStateReducerFunction(
         state.playStackStarts,
         variant,
       );
-    });
+    }
   }
 
   // Use a sub-reducer to calculate the turn.

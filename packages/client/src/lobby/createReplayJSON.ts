@@ -41,7 +41,7 @@ export function createJSONFromReplay(room: string): void {
   };
 
   // Copy the entire deck.
-  globals.state.cardIdentities.forEach((el, i) => {
+  for (const [i, el] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
       morph !== undefined &&
@@ -62,7 +62,7 @@ export function createJSONFromReplay(room: string): void {
         rank: el.rank,
       });
     }
-  });
+  }
 
   // Copy actions up to current segment.
   const { replay } = globals.state;
@@ -314,11 +314,11 @@ function getCardFromHypoState(
 
 function getColorIdFromString(clue: string): number {
   let suitIndex = 0;
-  globals.variant.clueColors.forEach((color, index) => {
+  for (const [index, color] of globals.variant.clueColors.entries()) {
     if (clue.startsWith(color.name)) {
       suitIndex = index;
     }
-  });
+  }
   return suitIndex;
 }
 
