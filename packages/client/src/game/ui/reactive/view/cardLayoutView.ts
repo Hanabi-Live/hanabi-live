@@ -163,7 +163,7 @@ export function onPlayStacksChanged(
           { length: stack.length },
           (_, rankOffset) => ((rankOffset + stackStart - 1) % 5) + 1,
         );
-        text = `[ ${playedRanks.join(" ")}${Array(6 - stack.length).join(
+        text = `[ ${playedRanks.join(" ")}${new Array(6 - stack.length).join(
           " _",
         )} ]`;
       } else {
