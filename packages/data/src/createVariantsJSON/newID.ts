@@ -375,11 +375,7 @@ function getVariantFromNewID(
       );
     }
 
-    const secondCharacterNumber = parseIntSafe(secondCharacter);
-    const specialRank = Number.isNaN(secondCharacterNumber)
-      ? undefined
-      : secondCharacterNumber;
-
+    const specialRank = parseIntSafe(secondCharacter);
     if (
       specialRank !== undefined &&
       specialRank !== 1 &&

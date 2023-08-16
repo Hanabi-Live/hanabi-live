@@ -83,7 +83,7 @@ export function askForEfficiency(): void {
     ) as HTMLInputElement | null;
     const effModString = inputElement?.value ?? "";
     const effMod = parseIntSafe(effModString);
-    if (Number.isNaN(effMod)) {
+    if (effMod === undefined) {
       // Don't do anything if they entered something that is not a number.
       return;
     }

@@ -3,7 +3,7 @@
 // e.g. in-game replays.
 
 import { getVariant } from "@hanabi/data";
-import { newArray, parseIntSafe } from "@hanabi/utils";
+import { newArray } from "@hanabi/utils";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";
@@ -257,7 +257,7 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
   // Users can load a specific turn in a replay by using a URL hash
   // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
   // with "#1", corresponding to the first turn).
-  let specificTurnString: string | null = null;
+  let specificTurnString: string | undefined;
   if (window.location.hash !== "") {
     specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#".
   }
@@ -269,8 +269,10 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
     actions: data.list,
   });
 
-  if (specificTurnString !== null) {
-    loadSpecificReplayTurn(specificTurnString);
+  // We might need to go to a specific turn if we loaded a URL of e.g.:
+  // http://localhost/replay/123#5
+  if (specificTurnString !== undefined) {
+    replay.goTo(specificTurnString);
   }
 });
 
@@ -538,24 +540,6 @@ function initStateStore(data: InitData) {
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We
   // must wait until the game is initialized first, because the "hypoEnter" handler requires there
   // to be a valid state.
-}
-
-/**
- * We might need to go to a specific turn if we loaded a URL of e.g.:
- * http://localhost/replay/123#5
- */
-function loadSpecificReplayTurn(turnString: string) {
-  let turn = parseIntSafe(turnString);
-  if (Number.isNaN(turn)) {
-    // The turn is not a number, so ignore it.
-    return;
-  }
-
-  // We minus one from the turn since turns are represented to the user as starting from 1 (instead
-  // of from 0).
-  turn--;
-
-  replay.goToSegment(turn, true); // A turn is an approximation for a segment.
 }
 
 // Allow TypeScript to modify the browser's "window" object:

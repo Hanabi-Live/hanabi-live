@@ -111,7 +111,7 @@ export function parseAndGoto(data: WelcomeData): void {
       : "shared";
     // The server expects the uncompressed JSON.
     const gameJSONString = expand(replayJSONMatch[1]!);
-    if (gameJSONString === null) {
+    if (gameJSONString === undefined) {
       setBrowserAddressBarPath("/lobby");
       return;
     }

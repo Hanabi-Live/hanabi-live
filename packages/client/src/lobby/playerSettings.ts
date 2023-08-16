@@ -12,10 +12,17 @@ export function init(): void {
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
       throw new TypeError(
-        'The value of the "settings-volume-slider" element is not a string.',
+        `The value of the "#settings-volume-slider" element is not a string: ${volumeString}`,
       );
     }
+
     const volume = parseIntSafe(volumeString);
+    if (volume === undefined) {
+      throw new TypeError(
+        `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
+      );
+    }
+
     globals.settings.volume = volume;
     $("#settings-volume-slider-value").html(`${volume}%`);
     globals.conn!.send("setting", {
@@ -30,10 +37,17 @@ export function init(): void {
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
       throw new TypeError(
-        'The value of the "settings-volume-slider" element is not a string.',
+        `The value of the "#settings-volume-slider" element is not a string: ${volumeString}`,
       );
     }
+
     const volume = parseIntSafe(volumeString);
+    if (volume === undefined) {
+      throw new TypeError(
+        `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
+      );
+    }
+
     audio.volume = volume / 100;
     audio.play().catch((error) => {
       console.error("Failed to play the test sound:", error);

@@ -42,7 +42,7 @@ export interface GameJSON {
 const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /**
- * Compresses a string representing a GameJSON object. Returns null if the compression fails.
+ * Compresses a string representing a GameJSON object. Returns undefined if the compression fails.
  *
  * The resulting string is composed of three substrings separated by commas:
  * - The first substring represents the number of players and the deck.
@@ -53,42 +53,42 @@ const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  *
  * @param JSONString A string representing a hypothetical JSON.
  */
-export function shrink(JSONString: string): string | null {
+export function shrink(JSONString: string): string | undefined {
   let gameDataJSON: GameJSON;
   try {
     gameDataJSON = JSON.parse(JSONString) as GameJSON;
   } catch {
-    return null;
+    return undefined;
   }
 
   const compressed = gameJSONCompress(gameDataJSON);
-  if (compressed === null) {
-    return null;
+  if (compressed === undefined) {
+    return undefined;
   }
 
   // Check if compression succeeded.
   const decompressed = expand(compressed);
-  if (decompressed === null) {
-    return null;
+  if (decompressed === undefined) {
+    return undefined;
   }
   try {
     const decompressedJSON = JSON.parse(decompressed) as GameJSON;
     if (!isEqual(gameDataJSON, decompressedJSON)) {
-      return null;
+      return undefined;
     }
   } catch {
-    return null;
+    return undefined;
   }
 
   return compressed;
 }
 
 /**
- * Decompresses a string into a GameJSON object. Returns null if decompression fails.
+ * Decompresses a string into a GameJSON object. Returns undefined if decompression fails.
  *
  * @param data The compressed string.
  */
-export function expand(data: string): string | null {
+export function expand(data: string): string | undefined {
   // Remove all hyphens from URL.
   const normal = data.replace(/-/g, "");
 
@@ -96,23 +96,29 @@ export function expand(data: string): string | null {
   const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
   const numberPlayersString = playersAndDeck!.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
+  if (numPlayers === undefined) {
+    return undefined;
+  }
 
   const players = getPlayers(numPlayers);
   if (players.length === 0) {
-    return null;
+    return undefined;
   }
 
   const deckString = playersAndDeck!.slice(1);
   const deck = decompressDeck(deckString);
-  if (deck === null) {
-    return null;
+  if (deck === undefined) {
+    return undefined;
   }
 
   const actions = decompressActions(actionsString!);
+  if (actions === undefined) {
+    return undefined;
+  }
 
   const variantID = parseIntSafe(variantIDString!);
-  if (Number.isNaN(variantID)) {
-    return null;
+  if (variantID === undefined) {
+    return undefined;
   }
   const variant = getVariantByID(variantID);
 
@@ -133,24 +139,24 @@ export function expand(data: string): string | null {
 }
 
 /**
- * Compresses a GameJSON object into a string. Returns null if decompression fails.
+ * Compresses a GameJSON object into a string. Returns undefined if decompression fails.
  *
  * @param data The GameJSON object.
  */
-function gameJSONCompress(data: GameJSON): string | null {
+function gameJSONCompress(data: GameJSON): string | undefined {
   let out = "";
 
   // Number of players
   const numberOfPlayers = data.players.length;
   if (numberOfPlayers < MIN_PLAYERS || numberOfPlayers > MAX_PLAYERS) {
-    return null;
+    return undefined;
   }
   out += `${data.players.length}`;
 
   // Deck
   const deck = compressDeck(data.deck);
-  if (deck === null) {
-    return null;
+  if (deck === undefined) {
+    return undefined;
   }
   out += `${deck},`;
 
@@ -160,14 +166,14 @@ function gameJSONCompress(data: GameJSON): string | null {
 
   // Variant ID
   if (data.options.variant === undefined) {
-    return null;
+    return undefined;
   }
 
   try {
     const variant = getVariant(data.options.variant);
     out += `${variant.id}`;
   } catch {
-    return null;
+    return undefined;
   }
 
   // Add hyphens every 20 characters for URL posting (hyphens make the text wrap).
@@ -183,10 +189,10 @@ function gameJSONCompress(data: GameJSON): string | null {
  *
  * @param deck The array of DeckCard.
  */
-function compressDeck(deck: DeckCard[]): string | null {
+function compressDeck(deck: DeckCard[]): string | undefined {
   const rankRange = getRankMinMax(deck);
   if (isMinMaxInvalid(rankRange)) {
-    return null;
+    return undefined;
   }
 
   let out = `${rankRange.min}${rankRange.max}`;
@@ -204,16 +210,27 @@ function compressDeck(deck: DeckCard[]): string | null {
  *
  * @param src The compressed string.
  */
-function decompressDeck(src: string): DeckCard[] | null {
+function decompressDeck(src: string): DeckCard[] | undefined {
   const deck: DeckCard[] = [];
+
   const minVal = src.charAt(0);
+  const min = parseIntSafe(minVal);
+  if (min === undefined) {
+    return undefined;
+  }
+
   const maxVal = src.charAt(1);
+  const max = parseIntSafe(maxVal);
+  if (max === undefined) {
+    return undefined;
+  }
+
   const rankRange: MinMax = {
-    min: parseIntSafe(minVal),
-    max: parseIntSafe(maxVal),
+    min,
+    max,
   };
   if (isMinMaxInvalid(rankRange)) {
-    return null;
+    return undefined;
   }
 
   let s = 2;
@@ -282,13 +299,24 @@ function compressActions(actions: Action[]): string {
  *
  * @param src The compressed string.
  */
-function decompressActions(src: string): Action[] {
+function decompressActions(src: string): Action[] | undefined {
   const actions: Action[] = [];
+
   const minVal = src.charAt(0);
+  const min = parseIntSafe(minVal);
+  if (min === undefined) {
+    return undefined;
+  }
+
   const maxVal = src.charAt(1);
+  const max = parseIntSafe(maxVal);
+  if (max === undefined) {
+    return undefined;
+  }
+
   const typeRange: MinMax = {
-    min: parseIntSafe(minVal),
-    max: parseIntSafe(maxVal),
+    min,
+    max,
   };
   if (isMinMaxInvalid(typeRange)) {
     return [];

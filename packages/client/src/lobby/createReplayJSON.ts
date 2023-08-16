@@ -11,6 +11,11 @@ import type { ReplayState } from "../game/types/ReplayState";
 import { globals } from "../game/ui/globals";
 import { shrink } from "./hypoCompress";
 
+const PLAY_REGEX =
+  /^(?:\[Hypo] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
+const DISCARD_REGEX = /^(?:\[Hypo] )?(.*) discards .* slot #(\d).*$/;
+const CLUE_REGEX = /^(?:\[Hypo] )?.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/;
+
 export function createJSONFromReplay(room: string): void {
   if (globals.store === null || !globals.state.finished) {
     sendSelfPMFromServer(
@@ -86,7 +91,7 @@ export function createJSONFromReplay(room: string): void {
 
   const json = JSON.stringify(game);
   const URLData = shrink(json);
-  if (URLData === null || URLData === "") {
+  if (URLData === undefined || URLData === "") {
     sendSelfPMFromServer(
       "Failed to compress the JSON data.",
       room,
@@ -187,42 +192,59 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
 
 function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
   const actions: ClientAction[] = [];
-  const regexPlay =
-    /^(?:\[Hypo] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
-  const regexDiscard = /^(?:\[Hypo] )?(.*) discards .* slot #(\d).*$/;
-  const regexClue = /^(?:\[Hypo] )?.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/;
 
-  log.forEach((line, index) => {
-    const foundPlay = line.text.match(regexPlay);
-    const foundDiscard = line.text.match(regexDiscard);
-    const foundClue = line.text.match(regexClue);
+  for (const [i, logEntry] of log.entries()) {
+    const action = getActionFromLogEntry(i, logEntry);
 
-    let action: ClientAction | null = null;
-    if (foundPlay !== null && foundPlay.length > 2) {
-      const target = parseIntSafe(foundPlay[2]!);
-      action = getActionFromHypoPlayOrDiscard(
-        index,
-        ActionType.Play,
-        foundPlay[1]!,
-        target,
-      );
-    } else if (foundDiscard !== null && foundDiscard.length > 2) {
-      const target = parseIntSafe(foundDiscard[2]!);
-      action = getActionFromHypoPlayOrDiscard(
-        index,
-        ActionType.Discard,
-        foundDiscard[1]!,
-        target,
-      );
-    } else if (foundClue !== null && foundClue.length > 2) {
-      action = getActionFromHypoClue(foundClue[1]!, foundClue[2]!);
-    }
-
-    if (action !== null) {
+    if (action !== undefined) {
       actions.push(action);
     }
-  });
+  }
+
   return actions;
+}
+
+function getActionFromLogEntry(
+  i: number,
+  logEntry: LogEntry,
+): ClientAction | undefined {
+  const foundPlay = logEntry.text.match(PLAY_REGEX);
+  const foundDiscard = logEntry.text.match(DISCARD_REGEX);
+  const foundClue = logEntry.text.match(CLUE_REGEX);
+
+  if (foundPlay !== null && foundPlay.length > 2) {
+    const target = parseIntSafe(foundPlay[2]!);
+    if (target === undefined) {
+      throw new Error(`Failed to parse the play target: ${foundPlay[2]}`);
+    }
+
+    return getActionFromHypoPlayOrDiscard(
+      i,
+      ActionType.Play,
+      foundPlay[1]!,
+      target,
+    );
+  }
+
+  if (foundDiscard !== null && foundDiscard.length > 2) {
+    const target = parseIntSafe(foundDiscard[2]!);
+    if (target === undefined) {
+      throw new Error(`Failed to parse the discard target: ${foundDiscard[2]}`);
+    }
+
+    return getActionFromHypoPlayOrDiscard(
+      i,
+      ActionType.Discard,
+      foundDiscard[1]!,
+      target,
+    );
+  }
+
+  if (foundClue !== null && foundClue.length > 2) {
+    return getActionFromHypoClue(foundClue[1]!, foundClue[2]!);
+  }
+
+  return undefined;
 }
 
 function getActionFromHypoPlayOrDiscard(
@@ -230,7 +252,7 @@ function getActionFromHypoPlayOrDiscard(
   action_type: number,
   player: string,
   slot: number,
-): ClientAction | null {
+): ClientAction {
   const playerIndex = getPlayerIndexFromName(player);
   // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
   // perceived.
@@ -243,10 +265,7 @@ function getActionFromHypoPlayOrDiscard(
   };
 }
 
-function getActionFromHypoClue(
-  player: string,
-  clue: string,
-): ClientAction | null {
+function getActionFromHypoClue(player: string, clue: string): ClientAction {
   const playerIndex = getPlayerIndexFromName(player);
   let parsedClue = parseIntSafe(clue);
 
@@ -257,7 +276,7 @@ function getActionFromHypoClue(
     parsedClue = 2;
   }
 
-  if (Number.isNaN(parsedClue)) {
+  if (parsedClue === undefined) {
     // It's a color clue.
     return {
       type: ActionType.ColorClue,
@@ -286,6 +305,7 @@ function getCardFromHypoState(
   if (globals.state.replay.hypothetical === null) {
     return 0;
   }
+
   const stateIndex = Math.max(previousStateIndex, 0);
   const stateOnHypoTurn = globals.state.replay.hypothetical.states[stateIndex]!;
   const playerHand = stateOnHypoTurn.hands[playerIndex]!;

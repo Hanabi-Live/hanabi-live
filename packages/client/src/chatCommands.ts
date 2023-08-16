@@ -186,14 +186,21 @@ chatCommands.set("suggest", (room: string, args: string[]) => {
     return;
   }
 
-  const segment = parseIntSafe(args[0]!);
-  if (Number.isNaN(segment)) {
+  const firstArg = args[0];
+  if (firstArg === undefined) {
+    return;
+  }
+
+  const segment = parseIntSafe(firstArg);
+  if (segment === undefined) {
     sendSelfPMFromServer(
       "The [turn] argument must be a valid number",
       room,
       SelfChatMessageType.Info,
     );
+    return;
   }
+
   globals.conn!.send("tableSuggest", {
     tableID: globals.tableID,
     segment,

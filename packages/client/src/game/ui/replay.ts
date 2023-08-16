@@ -343,15 +343,15 @@ export function promptTurn(): void {
   showPrompt("#set-turn-modal", null, element, button);
 }
 
-function goTo(turnString: string) {
-  const targetTurn = parseIntSafe(turnString);
-  if (Number.isNaN(targetTurn)) {
+export function goTo(turnString: string): void {
+  const turn = parseIntSafe(turnString);
+  if (turn === undefined) {
     return;
   }
 
-  // We need to decrement the turn because the turn shown to the user is always one greater than the
-  // real turn.
-  const segment = targetTurn - 1;
+  // A turn is an approximation for a segment. We minus one from the turn since turns are
+  // represented to the user as starting from 1 (instead of from 0).
+  const segment = turn - 1;
 
   goToSegment(segment, true);
 }

@@ -319,7 +319,7 @@
     let numPlayers = 0;
     if (urlSegments.length >= 4) {
       numPlayers = parseIntSafe(urlSegments[3]);
-      if (numPlayers === NaN) {
+      if (numPlayers === undefined) {
         numPlayers = 0;
       }
     }
@@ -350,23 +350,21 @@
     }
   }
 
-  // Subroutines
-  // The "parseIntSafe()" function is copied from "misc.ts"
-  const parseIntSafe = (input) => {
-    let trimmedInput = input.trim(); // Remove all leading and trailing whitespace
-    const isNegativeNumber = trimmedInput.startsWith('-');
-    if (isNegativeNumber) {
-      // Remove the leading minus sign before we match the regular expression
-      trimmedInput = trimmedInput.substring(1);
+  // Copied from "utils.ts".
+  function parseIntSafe(string, radix = 10) {
+    if (typeof string !== "string") {
+      return undefined;
     }
-    if (!trimmedInput.match(/^\d+$/)) { // "\d" matches any digit (same as "[0-9]")
-      return NaN;
+
+    const trimmedString = string.trim();
+
+    // If the string does not entirely consist of numbers, return undefined.
+    if (/^\d+$/.exec(trimmedString) === null) {
+      return undefined;
     }
-    if (isNegativeNumber) {
-      // Add the leading minus sign back
-      trimmedInput = `-${trimmedInput}`;
-    }
-    return Number.parseInt(trimmedInput, 10);
-  };
+
+    const number = Number.parseInt(trimmedString, radix);
+    return Number.isNaN(number) ? undefined : number;
+  }
 </script>
 {{ end }}

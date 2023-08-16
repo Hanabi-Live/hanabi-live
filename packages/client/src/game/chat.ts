@@ -140,25 +140,28 @@ export function show(): void {
   const height = localStorage.getItem("chatWindowHeight");
   const x = localStorage.getItem("chatWindowX");
   const y = localStorage.getItem("chatWindowY");
-  if (
-    width !== null &&
-    width !== "" &&
-    height !== null &&
-    height !== "" &&
-    x !== null &&
-    x !== "" &&
-    y !== null &&
-    y !== ""
-  ) {
-    resetPosition = false;
-    modal.css("width", width);
-    modal.css("height", height);
-    moveElement(modal, parseIntSafe(x), parseIntSafe(y));
+  if (width !== null && height !== null && x !== null && y !== null) {
+    const widthNumber = parseIntSafe(width);
+    const heightNumber = parseIntSafe(height);
+    const xNumber = parseIntSafe(x);
+    const yNumber = parseIntSafe(y);
 
-    // Just in case, reset the size and position if the stored location puts the chat box offscreen.
-    // (This is possible if the window size has changed since the last time.)
-    if (isOffscreen(modal)) {
-      resetPosition = true;
+    if (
+      widthNumber !== undefined &&
+      heightNumber !== undefined &&
+      xNumber !== undefined &&
+      yNumber !== undefined
+    ) {
+      resetPosition = false;
+      modal.css("width", width);
+      modal.css("height", height);
+      moveElement(modal, xNumber, yNumber);
+
+      // Just in case, reset the size and position if the stored location puts the chat box
+      // offscreen. (This is possible if the window size has changed since the last time.)
+      if (isOffscreen(modal)) {
+        resetPosition = true;
+      }
     }
   }
 

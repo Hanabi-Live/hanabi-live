@@ -1,3 +1,6 @@
+const INTEGER_REGEX = /^\d+$/;
+const FLOAT_REGEX = /^-?\d*\.?\d+$/;
+
 export function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(n, max));
 }
@@ -62,34 +65,59 @@ export function newArray<T>(length: number, value: T): T[] {
 }
 
 /**
- * This is a more reliable version of `Number.parseInt`. By default, `Number.parseInt('1a')` will
- * return "1", which is unexpected. This returns either an integer or `Number.NaN`.
+ * This is a more reliable version of `Number.parseFloat`:
+ *
+ * - `undefined` is returned instead of `Number.NaN`, which is helpful in conjunction with
+ *   TypeScript type narrowing patterns.
+ * - Strings that are a mixture of numbers and letters will result in undefined instead of the part
+ *   of the string that is the number. (e.g. "1a" --> undefined instead of "1a" --> 1)
+ * - Non-strings will result in undefined instead of being coerced to a number.
+ *
+ * @param string A string to convert to an integer.
  */
-export function parseIntSafe(input: string): number {
-  if (typeof input !== "string") {
-    return Number.NaN;
+export function parseFloatSafe(string: string): number | undefined {
+  if (typeof string !== "string") {
+    return undefined;
   }
 
-  // Remove all leading and trailing whitespace.
-  let trimmedInput = input.trim();
+  const trimmedString = string.trim();
 
-  const isNegativeNumber = trimmedInput.startsWith("-");
-  if (isNegativeNumber) {
-    // Remove the leading minus sign before we match the regular expression.
-    trimmedInput = trimmedInput.slice(1);
+  // If the string does not entirely consist of numbers, return undefined.
+  if (FLOAT_REGEX.exec(trimmedString) === null) {
+    return undefined;
   }
 
-  if (/^\d+$/.exec(trimmedInput) === null) {
-    // "\d" matches any digit (same as "[0-9]").
-    return Number.NaN;
+  const number = Number.parseFloat(trimmedString);
+  return Number.isNaN(number) ? undefined : number;
+}
+
+/**
+ * This is a more reliable version of `Number.parseInt`:
+ *
+ * - `undefined` is returned instead of `Number.NaN`, which is helpful in conjunction with
+ *   TypeScript type narrowing patterns.
+ * - Strings that are a mixture of numbers and letters will result in undefined instead of the part
+ *   of the string that is the number. (e.g. "1a" --> undefined instead of "1a" --> 1)
+ * - Non-strings will result in undefined instead of being coerced to a number.
+ *
+ * @param string A string to convert to an integer.
+ * @param radix Optional. A value between 2 and 36 that specifies the base of the number in
+ *              `string`. Default is 10 (which corresponds to a normal decimal number).
+ */
+export function parseIntSafe(string: string, radix = 10): number | undefined {
+  if (typeof string !== "string") {
+    return undefined;
   }
 
-  if (isNegativeNumber) {
-    // Add the leading minus sign back.
-    trimmedInput = `-${trimmedInput}`;
+  const trimmedString = string.trim();
+
+  // If the string does not entirely consist of numbers, return undefined.
+  if (INTEGER_REGEX.exec(trimmedString) === null) {
+    return undefined;
   }
 
-  return Number.parseInt(trimmedInput, 10);
+  const number = Number.parseInt(trimmedString, radix);
+  return Number.isNaN(number) ? undefined : number;
 }
 
 /**

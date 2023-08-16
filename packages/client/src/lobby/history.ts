@@ -1,7 +1,6 @@
 // The screens that show past games and other scores.
 
 import { getVariant } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
 import { globals } from "../globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";
@@ -81,8 +80,8 @@ export function draw(friends: boolean): void {
 
   // JavaScript keys come as strings, so we need to convert them to integers.
   const ids = !friends
-    ? Object.keys(globals.history).map((i) => parseIntSafe(i))
-    : Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
+    ? [...globals.history.keys()]
+    : [...globals.historyFriends.keys()];
 
   // Handle if the user has no history.
   if (ids.length === 0) {

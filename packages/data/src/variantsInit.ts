@@ -405,8 +405,9 @@ function getVariantShowSuitNames(
         `Failed to get the final character of the ID of suit: ${suit.name}`,
       );
     }
+
     const finalIDNumber = parseIntSafe(finalIDCharacter);
-    return !Number.isNaN(finalIDNumber);
+    return finalIDNumber !== undefined;
   });
   if (hasSuitIDThatEndsWithANumber) {
     return true;

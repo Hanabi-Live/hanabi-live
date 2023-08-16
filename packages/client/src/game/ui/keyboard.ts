@@ -404,7 +404,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
       return;
     }
     const slot = parseIntSafe(response);
-    if (Number.isNaN(slot)) {
+    if (slot === undefined) {
       return;
     }
     if (slot < 1 || slot > maxSlotIndex) {

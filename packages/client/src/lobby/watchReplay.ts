@@ -70,7 +70,7 @@ function submit() {
   let databaseID: number | undefined;
   if (source === "id") {
     databaseID = parseIntSafe(databaseIDString);
-    if (Number.isNaN(databaseID)) {
+    if (databaseID === undefined) {
       showReplayError("Error: The database ID must be a number.");
       return;
     }

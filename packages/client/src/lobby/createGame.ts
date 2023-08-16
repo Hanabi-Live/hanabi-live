@@ -5,7 +5,7 @@ import {
   doesVariantExist,
   getVariantNames,
 } from "@hanabi/data";
-import { ReadonlySet, parseIntSafe } from "@hanabi/utils";
+import { ReadonlySet, parseFloatSafe, parseIntSafe } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
@@ -419,7 +419,7 @@ function getTextboxForTimePerTurn(setting: keyof Settings) {
   const element = $(`#${setting}`);
   const valueString = getTextbox(setting);
   let value = parseIntSafe(valueString);
-  if (Number.isNaN(value)) {
+  if (value === undefined) {
     // They have entered an invalid amount of seconds, so revert to using the default value.
     value = 20;
 
@@ -434,8 +434,8 @@ function getTextboxForTimePerTurn(setting: keyof Settings) {
 function getTextboxForTimeBase(setting: keyof Settings) {
   const element = $(`#${setting}`);
   const valueString = getTextbox(setting);
-  let value = Number(valueString); // This can be a float
-  if (Number.isNaN(value)) {
+  let value = parseFloatSafe(valueString);
+  if (value === undefined) {
     // They have entered an invalid amount of minutes, so revert to using the default value.
     value = 2;
 
