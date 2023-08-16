@@ -496,6 +496,7 @@ function fillMorphModalWithRadios(
 
   for (const rank of ranks) {
     const row = document.createElement("tr");
+
     for (const [i, suit] of suits.entries()) {
       const cell = document.createElement("td");
       const possibleCardIdentity = possibilities.some(
@@ -538,7 +539,9 @@ function fillMorphModalWithRadios(
 
       row.append(cell);
     }
+
     table.append(row);
   }
+
   placeHolder.append(table);
 }
