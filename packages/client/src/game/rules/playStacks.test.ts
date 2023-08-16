@@ -1,5 +1,5 @@
 import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
-import { newArray } from "@hanabi/utils";
+import { iRange, newArray } from "@hanabi/utils";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { StackDirection } from "../types/StackDirection";
 import { direction, nextPlayableRanks } from "./playStacks";
@@ -170,7 +170,7 @@ describe("nextRanks", () => {
     expect(nextRanksArray).toStrictEqual([1]);
   });
 
-  test.each([...new Array(5).keys()])(
+  test.each(iRange(5))(
     "returns the next rank for a play stack going up",
     (n) => {
       if (n === 0) {
@@ -205,7 +205,7 @@ describe("nextRanks", () => {
     expect(nextRanksArray).toStrictEqual([5]);
   });
 
-  test.each([...new Array(6).keys()])(
+  test.each(iRange(6))(
     "returns the next rank for a play stack going down",
     (n) => {
       if (n === 0 || n === 1) {

@@ -1,4 +1,5 @@
 import { getDefaultVariant, getVariant, MAX_CLUE_NUM } from "@hanabi/data";
+import { iRange } from "@hanabi/utils";
 import { discard, play } from "../../../test/testActions";
 import { gain } from "./clueTokens";
 
@@ -7,13 +8,10 @@ const DEFAULT_VARIANT = getDefaultVariant();
 const THROW_IT_IN_A_HOLE_VARIANT = getVariant("Throw It in a Hole (6 Suits)");
 
 describe("gain", () => {
-  test.each([...new Array(8).keys()])(
-    "adds a clue when there are %i clues",
-    (n) => {
-      const clueTokens = gain(DISCARD_ACTION, n, DEFAULT_VARIANT);
-      expect(clueTokens).toBe(n + 1);
-    },
-  );
+  test.each(iRange(8))("adds a clue when there are %i clues", (n) => {
+    const clueTokens = gain(DISCARD_ACTION, n, DEFAULT_VARIANT);
+    expect(clueTokens).toBe(n + 1);
+  });
 
   test("does not add clues when maxed out", () => {
     const clueTokens = gain(DISCARD_ACTION, MAX_CLUE_NUM, DEFAULT_VARIANT);

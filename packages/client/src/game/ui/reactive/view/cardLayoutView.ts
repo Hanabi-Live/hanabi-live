@@ -163,9 +163,8 @@ export function onPlayStacksChanged(
           { length: stack.length },
           (_, rankOffset) => ((rankOffset + stackStart - 1) % 5) + 1,
         );
-        text = `[ ${playedRanks.join(" ")}${new Array(6 - stack.length).join(
-          " _",
-        )} ]`;
+        const ranksText = playedRanks.join(" ") + " _".repeat(6 - stack.length);
+        text = `[ ${ranksText} ]`;
       } else {
         const bracketText =
           availableStackStarts.length === 5
