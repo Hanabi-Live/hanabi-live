@@ -170,15 +170,18 @@ export function getMaxScorePerStack(
         // Evaluate the current assignment.
         let assignmentVal = 0;
         const assignment = new Array<number>(unassignedSuits.length);
-        for (const [assignedLocalSuitIndex, assignedStackStartIndex] of curAssignment.entries()) {
-            const value =
-              maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
-                possibleStackStarts[assignedStackStartIndex]! - 1
-              ]!;
-            assignmentVal += value;
-            assignment[assignedLocalSuitIndex] = value;
-          }
-        
+        for (const [
+          assignedLocalSuitIndex,
+          assignedStackStartIndex,
+        ] of curAssignment.entries()) {
+          const value =
+            maxPartialScores[unassignedSuits[assignedLocalSuitIndex]!]![
+              possibleStackStarts[assignedStackStartIndex]! - 1
+            ]!;
+          assignmentVal += value;
+          assignment[assignedLocalSuitIndex] = value;
+        }
+
         const assignmentSorted = [...assignment];
         assignmentSorted.sort((a, b) => a - b);
 
@@ -222,7 +225,10 @@ export function getMaxScorePerStack(
   // Now, we just need to put the found assignment together with the independent parts found
   // already.
   const maxScorePerStack = independentPartOfMaxScore;
-  for (const [unassignedLocalSuitIndex, unassignedSuit] of unassignedSuits.entries()) {
+  for (const [
+    unassignedLocalSuitIndex,
+    unassignedSuit,
+  ] of unassignedSuits.entries()) {
     // Note the '??' here, since it can be that there is actually no feasible assignment. In this
     // case, these values are still undefined at this point, so we replace them by 0.
     maxScorePerStack[unassignedSuit] =

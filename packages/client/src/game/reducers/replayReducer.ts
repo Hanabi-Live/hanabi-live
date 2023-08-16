@@ -196,22 +196,24 @@ function replayReducerFunction(
       if (action.showDrawnCards) {
         // Filter out all identities morphed to blank.
 
-        for (const order of original(state.hypothetical.drawnCardsInHypothetical)!) {
-            state.hypothetical.morphedIdentities[order] = {
-              rank: CardIdentityType.Original,
-              suitIndex: CardIdentityType.Original,
-            };
-          }
-        
+        for (const order of original(
+          state.hypothetical.drawnCardsInHypothetical,
+        )!) {
+          state.hypothetical.morphedIdentities[order] = {
+            rank: CardIdentityType.Original,
+            suitIndex: CardIdentityType.Original,
+          };
+        }
       } else {
         // Hide all cards drawn since the beginning of the hypothetical.
-        for (const order of original(state.hypothetical.drawnCardsInHypothetical)!) {
-            state.hypothetical.morphedIdentities[order] = {
-              rank: null,
-              suitIndex: null,
-            };
-          }
-        
+        for (const order of original(
+          state.hypothetical.drawnCardsInHypothetical,
+        )!) {
+          state.hypothetical.morphedIdentities[order] = {
+            rank: null,
+            suitIndex: null,
+          };
+        }
       }
 
       break;

@@ -261,15 +261,15 @@ export function minEfficiency(
 // given game state onward (not accounting for the locations of playable cards).
 export function cluesStillUsableNotRounded(
   score: number,
-  stackScores: readonly number[],
-  stackMaxScores: readonly number[],
+  scorePerStack: readonly number[],
+  maxScorePerStack: readonly number[],
   deckSize: number,
   endGameLength: number,
   discardValue: number,
   suitValue: number,
   currentClues: number,
 ): number | null {
-  if (stackScores.length !== stackMaxScores.length) {
+  if (scorePerStack.length !== maxScorePerStack.length) {
     throw new Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
     );
@@ -285,7 +285,7 @@ export function cluesStillUsableNotRounded(
     return null;
   }
 
-  const maxScore = stackMaxScores.reduce((a, b) => a + b, 0);
+  const maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
 
   const missingScore = maxScore - score;
 
@@ -307,10 +307,10 @@ export function cluesStillUsableNotRounded(
     const minPlaysBeforeFinalRound =
       maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
-    for (const [suitIndex, stackScore] of stackScores.entries()) {
-      if (stackMaxScores[suitIndex] === 5 && stackScore < 5) {
+    for (const [suitIndex, stackScore] of scorePerStack.entries()) {
+      if (maxScorePerStack[suitIndex] === 5 && stackScore < 5) {
         missingCardsPerCompletableSuit.push(
-          stackMaxScores[suitIndex]! - stackScore,
+          maxScorePerStack[suitIndex]! - stackScore,
         );
       }
     }
