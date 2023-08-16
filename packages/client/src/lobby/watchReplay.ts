@@ -92,7 +92,7 @@ function submit() {
   if (source === "json") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
-    } catch (error) {
+    } catch {
       showReplayError("Error: That is not a valid JSON object.");
       return;
     }

@@ -73,7 +73,7 @@ export function init(): void {
     let potentialArray: unknown;
     try {
       potentialArray = JSON.parse(typedChatHistoryString) as unknown;
-    } catch (error) {
+    } catch {
       return;
     }
 

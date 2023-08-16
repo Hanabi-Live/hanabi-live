@@ -279,7 +279,7 @@ function submit() {
     try {
       timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
       timeBaseSeconds = Math.round(timeValue * 60);
-    } catch (error) {
+    } catch {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimeBaseMinutes").addClass("wrongInput");
       foundErrors = true;
@@ -287,7 +287,7 @@ function submit() {
 
     try {
       timePerTurn = getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
-    } catch (error) {
+    } catch {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimePerTurnSeconds").addClass("wrongInput");
       foundErrors = true;
@@ -330,7 +330,7 @@ function submit() {
   if (gameJSONString !== "") {
     try {
       gameJSON = JSON.parse(gameJSONString) as unknown;
-    } catch (error) {
+    } catch {
       modals.showError("That is not a valid JSON object.");
       return;
     }
