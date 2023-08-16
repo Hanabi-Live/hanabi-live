@@ -14,7 +14,6 @@ module.exports = {
     "unicorn/consistent-function-scoping": "off",
     "unicorn/new-for-builtins": "off",
     "unicorn/no-array-for-each": "off",
-    "unicorn/no-for-loop": "off",
     "unicorn/no-lonely-if": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",

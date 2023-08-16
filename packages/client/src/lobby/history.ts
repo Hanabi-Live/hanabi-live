@@ -79,9 +79,9 @@ export function draw(friends: boolean): void {
   tbody.html("");
 
   // JavaScript keys come as strings, so we need to convert them to integers.
-  const ids = !friends
-    ? [...globals.history.keys()]
-    : [...globals.historyFriends.keys()];
+  const ids = friends
+    ? [...globals.historyFriends.keys()]
+    : [...globals.history.keys()];
 
   // Handle if the user has no history.
   if (ids.length === 0) {
@@ -107,17 +107,17 @@ export function draw(friends: boolean): void {
   ids.reverse();
 
   // Add all of the history.
-  for (let i = 0; i < ids.length; i++) {
-    const gameData = !friends
-      ? globals.history[ids[i]!]!
-      : globals.historyFriends[ids[i]!]!;
+  for (const [i, id] of ids.entries()) {
+    const gameData = friends
+      ? globals.historyFriends[id]!
+      : globals.history[id]!;
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
     const row = $("<tr>");
 
     // Column 1 - Game ID.
-    $("<td>").html(`#${ids[i]}`).appendTo(row);
+    $("<td>").html(`#${id}`).appendTo(row);
 
     // Column 2 - # of Players.
     $("<td>").html(gameData.options.numPlayers.toString()).appendTo(row);
@@ -150,16 +150,16 @@ export function draw(friends: boolean): void {
     $("<td>").html(datePlayed).appendTo(row);
 
     // Column 8 - Watch Replay.
-    const watchReplayButton = makeReplayButton(ids[i]!, "solo");
+    const watchReplayButton = makeReplayButton(id, "solo");
     $("<td>").html(watchReplayButton[0]!).appendTo(row);
 
     // Column 9 - Share Replay.
-    const shareReplayButton = makeReplayButton(ids[i]!, "shared");
+    const shareReplayButton = makeReplayButton(id, "shared");
     $("<td>").html(shareReplayButton[0]!).appendTo(row);
 
     // Column 10 - Other Scores.
     const otherScoresButton = makeOtherScoresButton(
-      ids[i]!,
+      id,
       gameData.seed,
       gameData.numGamesOnThisSeed,
     );
@@ -272,50 +272,46 @@ export function drawOtherScores(
   const variant = getVariant(variantName);
 
   // Add all of the games for this particular seed.
-  for (let i = 0; i < games.length; i++) {
-    const gameData = games[i]!;
-
+  for (const [i, game] of games.entries()) {
     // Find out if this game was played by us.
-    const ourGame = gameData.playerNames.includes(globals.username);
+    const ourGame = game.playerNames.includes(globals.username);
 
     const row = $("<tr>");
 
     // Column 1 - Game ID.
-    let id = `#${gameData.id}`;
+    let id = `#${game.id}`;
     if (ourGame) {
       id = `<strong>${id}</strong>`;
     }
     $("<td>").html(id).appendTo(row);
 
     // Column 2 - Score.
-    let score = `${gameData.score}/${variant.maxScore}`;
+    let score = `${game.score}/${variant.maxScore}`;
     if (ourGame) {
       score = `<strong>${score}</strong>`;
     }
     $("<td>").html(score).appendTo(row);
 
     // Column 3 - Options.
-    const options = makeOptions(i, gameData.options, true);
+    const options = makeOptions(i, game.options, true);
     $("<td>").html(options).appendTo(row);
 
     // Column 4 - Players.
-    let playerNamesString = gameData.playerNames.join(", ");
+    let playerNamesString = game.playerNames.join(", ");
     if (ourGame) {
       playerNamesString = `<strong>${playerNamesString}</strong>`;
     }
     $("<td>").html(playerNamesString).appendTo(row);
 
     // Column 5 - Date Played.
-    let datePlayed = dateTimeFormatter.format(
-      new Date(gameData.datetimeFinished),
-    );
+    let datePlayed = dateTimeFormatter.format(new Date(game.datetimeFinished));
     if (ourGame) {
       datePlayed = `<strong>${datePlayed}</strong>`;
     }
     $("<td>").html(datePlayed).appendTo(row);
 
     // Column 6 - Seed. Chop off the prefix.
-    const match = /p\dv\d+s(\d+)/.exec(gameData.seed);
+    const match = /p\dv\d+s(\d+)/.exec(game.seed);
     let seedNumberSuffix: string;
     seedNumberSuffix =
       match === null || match.length < 2 ? "Unknown" : match[1]!;
@@ -325,11 +321,11 @@ export function drawOtherScores(
     $("<td>").html(seedNumberSuffix).appendTo(row);
 
     // Column 7 - Watch Replay.
-    const watchReplayButton = makeReplayButton(gameData.id, "solo");
+    const watchReplayButton = makeReplayButton(game.id, "solo");
     $("<td>").html(watchReplayButton[0]!).appendTo(row);
 
     // Column 8 - Share Replay.
-    const shareReplayButton = makeReplayButton(gameData.id, "shared");
+    const shareReplayButton = makeReplayButton(game.id, "shared");
     $("<td>").html(shareReplayButton[0]!).appendTo(row);
 
     row.appendTo(tbody);

@@ -307,9 +307,8 @@ function deckPossibilitiesDifferent(
   playerIndex: number,
   ourPlayerIndex: number,
 ) {
-  for (let order = 0; order < deck.length; order++) {
+  for (const [order, card] of deck.entries()) {
     const oldCard = oldDeck[order]!;
-    const card = deck[order]!;
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
