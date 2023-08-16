@@ -219,10 +219,16 @@ export function askForMorph(
       "Select the card you want to morph it into:";
 
     // Morph modal OK button.
-    getElement("#morph-modal-button-ok").addEventListener("click", morphReplayOkButton);
+    getElement("#morph-modal-button-ok").addEventListener(
+      "click",
+      morphReplayOkButton,
+    );
 
     // Morph modal Cancel button.
-    getElement("#morph-modal-button-cancel").addEventListener("click", morphReplayCancelButton);
+    getElement("#morph-modal-button-cancel").addEventListener(
+      "click",
+      morphReplayCancelButton,
+    );
   } else {
     // The function was called from LayoutChild.ts during in-game hypo.
 
@@ -231,10 +237,16 @@ export function askForMorph(
       "What the card will be for the purposes of this hypothetical?";
 
     // Morph modal OK button.
-    getElement("#morph-modal-button-ok").addEventListener("click", morphInGameOkButton);
+    getElement("#morph-modal-button-ok").addEventListener(
+      "click",
+      morphInGameOkButton,
+    );
 
     // Morph modal Cancel button.
-    getElement("#morph-modal-button-cancel").addEventListener("click", morphInGameCancelButton);
+    getElement("#morph-modal-button-cancel").addEventListener(
+      "click",
+      morphInGameCancelButton,
+    );
   }
 }
 

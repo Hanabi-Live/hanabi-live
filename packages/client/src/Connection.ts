@@ -1,9 +1,9 @@
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
 type WebSocketCallbacks = WebSocketCallbackCommands & {
-  open?: (evt: Event) => void;
-  close?: (evt: Event) => void;
-  socketError?: (evt: Event) => void;
+  open?: (event: Event) => void;
+  close?: (event: Event) => void;
+  socketError?: (event: Event) => void;
 };
 
 /**
@@ -30,20 +30,20 @@ export class Connection {
     this.ws.addEventListener("error", this.onError.bind(this));
   }
 
-  onOpen(evt: Event): void {
+  onOpen(event: Event): void {
     if (this.callbacks.open !== undefined) {
-      this.callbacks.open(evt);
+      this.callbacks.open(event);
     }
   }
 
-  onClose(evt: CloseEvent): void {
+  onClose(event: CloseEvent): void {
     if (this.callbacks.close !== undefined) {
-      this.callbacks.close(evt);
+      this.callbacks.close(event);
     }
   }
 
-  onMessage(evt: MessageEvent): void {
-    const data = unpack(evt.data as string);
+  onMessage(event: MessageEvent): void {
+    const data = unpack(event.data as string);
     const command = data[0]!;
     if (this.callbacks[command] !== undefined) {
       const obj = unmarshal(data[1]!);
@@ -61,13 +61,13 @@ export class Connection {
     }
   }
 
-  onError(evt: Event): void {
+  onError(event: Event): void {
     if (this.callbacks.socketError !== undefined) {
-      this.callbacks.socketError(evt);
+      this.callbacks.socketError(event);
     }
   }
 
-  on(name: string, callback: (evt: unknown) => void): void {
+  on(name: string, callback: (data: unknown) => void): void {
     this.callbacks[name] = callback;
   }
 
