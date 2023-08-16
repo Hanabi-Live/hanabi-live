@@ -6,10 +6,15 @@ type WebSocketCallbacks = WebSocketCallbackCommands & {
   socketError?: (evt: Event) => void;
 };
 
-// Connection is a class that manages a WebSocket connection to the server. On top of the WebSocket
-// protocol, the client and the server communicate using a specific format based on the protocol
-// that the Golem WebSocket framework uses. For more information, see "websocketMessage.go".
-// Based on: https://github.com/trevex/golem_client/blob/master/golem.js
+/**
+ * Manages a WebSocket connection to the server.
+ *
+ * On top of the WebSocket protocol, the client and the server communicate using a specific format
+ * based on the protocol that the Golem WebSocket framework uses. For more information, see
+ * "websocketMessage.go".
+ *
+ * Based on: https://github.com/trevex/golem_client/blob/master/golem.js
+ */
 export class Connection {
   ws: WebSocket;
   callbacks: WebSocketCallbacks = {};
@@ -19,10 +24,10 @@ export class Connection {
     this.ws = new WebSocket(addr);
     this.debug = debug;
 
-    this.ws.onclose = this.onClose.bind(this);
-    this.ws.onopen = this.onOpen.bind(this);
-    this.ws.onmessage = this.onMessage.bind(this);
-    this.ws.onerror = this.onError.bind(this);
+    this.ws.addEventListener("close", this.onClose.bind(this));
+    this.ws.addEventListener("open", this.onOpen.bind(this));
+    this.ws.addEventListener("message", this.onMessage.bind(this));
+    this.ws.addEventListener("error", this.onError.bind(this));
   }
 
   onOpen(evt: Event): void {
@@ -62,8 +67,7 @@ export class Connection {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(name: string, callback: (evt: any) => void): void {
+  on(name: string, callback: (evt: unknown) => void): void {
     this.callbacks[name] = callback;
   }
 

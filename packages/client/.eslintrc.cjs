@@ -15,7 +15,6 @@ module.exports = {
     "unicorn/no-lonely-if": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",
-    "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-prototype-methods": "off",
     "unicorn/prefer-query-selector": "off",
     "unicorn/prefer-string-replace-all": "off",

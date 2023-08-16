@@ -75,7 +75,7 @@ export function askForEfficiency(): void {
   const button = document.getElementById(
     "set-modifier-button",
   ) as HTMLButtonElement;
-  button.onclick = () => {
+  button.addEventListener("click", () => {
     modals.closeModals();
 
     const inputElement = document.getElementById(
@@ -88,7 +88,7 @@ export function askForEfficiency(): void {
       return;
     }
     setEfficiencyMod(effMod);
-  };
+  });
 
   modals.showPrompt("#set-modifier-modal", null, element, button);
 }

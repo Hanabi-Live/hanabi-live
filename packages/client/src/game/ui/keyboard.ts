@@ -391,7 +391,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const button = document.getElementById(
     "play-discard-button",
   ) as HTMLButtonElement;
-  button.onclick = () => {
+  button.addEventListener("click", () => {
     closeModals();
     const response = element.value;
 
@@ -412,7 +412,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
 
     performAction(actionType, hand[maxSlotIndex - slot]!);
-  };
+  });
 
   showPrompt("#play-discard-modal", null, element, button);
 }

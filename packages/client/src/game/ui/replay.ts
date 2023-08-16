@@ -333,12 +333,12 @@ export function promptTurn(): void {
   element.max = Math.max(finalSegment, currentSegment).toString();
   element.value = currentSegment.toString();
 
-  button.onclick = (evt) => {
+  button.addEventListener("click", (evt) => {
     evt.preventDefault();
     closeModals();
 
     goTo(element.value);
-  };
+  });
 
   showPrompt("#set-turn-modal", null, element, button);
 }
