@@ -1,6 +1,6 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
-import { iRange } from "@hanabi/utils";
+import { eRange } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";
@@ -53,7 +53,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each(iRange(18))(
+      test.each(eRange(18))(
         "card %i has the correct pips and possibilities",
         (order) => {
           const turn5State = getStateAtTurn(testState, 4);
@@ -101,7 +101,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each(iRange(45))(
+      test.each(eRange(45))(
         "card %i has the correct pips and possibilities",
         (order) => {
           const finalState = getFinalState(testState);
