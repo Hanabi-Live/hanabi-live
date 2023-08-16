@@ -100,11 +100,12 @@ export function parseFloatSafe(string: string): number | undefined {
  *   of the string that is the number. (e.g. "1a" --> undefined instead of "1a" --> 1)
  * - Non-strings will result in undefined instead of being coerced to a number.
  *
+ * If you have to use a radix other than 10, use the vanilla `Number.parseInt` function instead,
+ * because this function ensures that the string contains no letters.
+ *
  * @param string A string to convert to an integer.
- * @param radix Optional. A value between 2 and 36 that specifies the base of the number in
- *              `string`. Default is 10 (which corresponds to a normal decimal number).
  */
-export function parseIntSafe(string: string, radix = 10): number | undefined {
+export function parseIntSafe(string: string): number | undefined {
   if (typeof string !== "string") {
     return undefined;
   }
@@ -116,7 +117,7 @@ export function parseIntSafe(string: string, radix = 10): number | undefined {
     return undefined;
   }
 
-  const number = Number.parseInt(trimmedString, radix);
+  const number = Number.parseInt(trimmedString, 10);
   return Number.isNaN(number) ? undefined : number;
 }
 

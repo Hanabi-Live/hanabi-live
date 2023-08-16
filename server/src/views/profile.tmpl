@@ -351,7 +351,7 @@
   }
 
   // Copied from "utils.ts".
-  function parseIntSafe(string, radix = 10) {
+  function parseIntSafe(string) {
     if (typeof string !== "string") {
       return undefined;
     }
@@ -363,7 +363,7 @@
       return undefined;
     }
 
-    const number = Number.parseInt(trimmedString, radix);
+    const number = Number.parseInt(trimmedString, 10);
     return Number.isNaN(number) ? undefined : number;
   }
 </script>
