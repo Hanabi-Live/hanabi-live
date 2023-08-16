@@ -4901,6 +4901,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eta@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "eta@npm:3.1.0"
+  checksum: b84193b9685c60924fc500ac99534494edcf7baa6c0430d1307f45c545a8a61fd30679be31348f484ba5a720e6778b72e3ebab818ff6abb0972ce029f8b7c572
+  languageName: node
+  linkType: hard
+
 "event-target-shim@npm:^5.0.0":
   version: 5.0.1
   resolution: "event-target-shim@npm:5.0.1"
@@ -5138,7 +5145,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-plugin@npm:^4.0.0":
+"fastify-favicon@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "fastify-favicon@npm:4.3.0"
+  dependencies:
+    fastify-plugin: ^4.5.0
+  checksum: c24c24c0e1d8bf5903eb3cb10ed0a36dfb26772a0f3d00a09038595990b73c999117d8aa93d44affbfc8fbe6e63d6949fc19c9437c86ffdd2f980db7ac7cf36e
+  languageName: node
+  linkType: hard
+
+"fastify-plugin@npm:^4.0.0, fastify-plugin@npm:^4.5.0":
   version: 4.5.1
   resolution: "fastify-plugin@npm:4.5.1"
   checksum: ddd1b2d470c3acd9397c2617b5842dcf71a6f9a32f05d02be1c12e8d37b8fc03af656900cec38e2afef5e9a3dfe5f994317810f4c5e9960b127b1ca179b56f73
@@ -5955,8 +5971,10 @@ __metadata:
     dotenv: ^16.3.1
     drizzle-orm: ^0.28.2
     esbuild: ^0.19.0
+    eta: ^3.1.0
     fast-deep-equal: ^3.1.3
     fastify: ^4.21.0
+    fastify-favicon: ^4.3.0
     grunt: ^1.6.1
     grunt-contrib-concat: ^2.1.0
     grunt-contrib-cssmin: ^5.0.0

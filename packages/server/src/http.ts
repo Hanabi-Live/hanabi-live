@@ -6,12 +6,12 @@ import type {
   FastifyInstance,
   FastifyReply,
   FastifyRequest,
-  HookHandlerDoneFunction,
   RawReplyDefaultExpression,
   RawRequestDefaultExpression,
   RawServerDefault,
 } from "fastify";
 import Fastify from "fastify";
+import fastifyFavicon from "fastify-favicon";
 import fs from "node:fs";
 import path from "node:path";
 import type { Logger } from "pino";
@@ -25,6 +25,18 @@ type FastifyInstanceWithLogger = FastifyInstance<
   RawReplyDefaultExpression,
   Logger
 >;
+
+/**
+ * We have to override the Fastify `Session` interface as documented here:
+ * https://github.com/fastify/session#typescript-support
+ */
+declare module "fastify" {
+  interface Session {
+    user: {
+      name: string;
+    };
+  }
+}
 
 const HTTP_SESSION_NAME = "hanabi.sid";
 
@@ -100,6 +112,13 @@ export async function httpInit(): Promise<void> {
     prefix: "/public",
   });
 
+  // Initialize favicon serving through the `fastify-favicon` plugin:
+  // https://github.com/smartiniOnGitHub/fastify-favicon
+  await fastify.register(fastifyFavicon, {
+    // The plugin appends "favicon.ico" to the provided path.
+    path: path.join(REPO_ROOT, "public", "img"),
+  });
+
   // Handle renewing HTTPS certificates through `certbot`:
   // https://letsencrypt.org/docs/challenge-types/
   if (useTLS) {
@@ -120,14 +139,11 @@ export async function httpInit(): Promise<void> {
   });
 }
 
-function preHandler(
-  _request: FastifyRequest,
-  _reply: FastifyReply,
-  done: HookHandlerDoneFunction,
-) {
+async function preHandler(request: FastifyRequest, _reply: FastifyReply) {
   // TODO: authentication
-  /// request.session.user = { name: "max" };
-  done();
+  logger.info(request.session);
+  request.session.user = { name: "max" };
+  await request.session.save();
 }
 
 function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
@@ -200,10 +216,6 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)
 	httpRouter.GET("/export/:databaseID", httpExport)
-
-	// Other
-	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.ico"))
 
   */
 }
