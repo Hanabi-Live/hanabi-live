@@ -187,6 +187,7 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
       version: getVersion(),
 
       // Main variables
+      domain: env.DOMAIN,
     }),
   );
 

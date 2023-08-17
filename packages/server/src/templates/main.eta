@@ -211,7 +211,7 @@
         <div class="col-8 off-2 login-box">
           <section id="loading" class="box align-center">
             <h3>Loading...</h3>
-            <p>{{ .WebsiteName }} is loading. Please wait!</p>
+            <p>{{= it.projectName }} is loading. Please wait!</p>
             <img src="/public/img/ajax.gif" />
           </section>
 
@@ -367,7 +367,7 @@
             <h3>Welcome!</h3>
             <p>
               It looks like you are logging on to
-              <em>{{ .WebsiteName }}</em> for the first time. There are some
+              <em>{{= it.projectName }}</em> for the first time. There are some
               things you should know.
             </p>
             <div class="row">
@@ -1460,7 +1460,7 @@
         >
           Make the World a Better Place </a
         ><br />
-        {{ .WebsiteName }} is hosted free of charge and does not have any
+        {{= it.projectName }} is hosted free of charge and does not have any
         advertisements.<br />
         If you enjoy the website and want to help out, consider donating a
         portion of your income to the<br />
@@ -1879,7 +1879,7 @@
 <div id="page-cover"></div>
 
 <!-- Used to validate that we are connecting to the correct URL. -->
-<div id="domain" class="hidden">{{ .Domain }}</div>
+<div id="domain" class="hidden">{{= it.domain }}</div>
 
 {{ if (it.isDev) { }}
   <script
@@ -1889,6 +1889,6 @@
 {{ } else { }}
   <script
     type="text/javascript"
-    src="/public/js/bundles/main.{{ .Version }}.min.js"
+    src="/public/js/bundles/main.{{= it.version }}.min.js"
   ></script>
 {{ } }}
