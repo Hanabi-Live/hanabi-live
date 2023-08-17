@@ -16,3 +16,8 @@ build({
   external: ["sodium-native"],
   plugins: [esbuildPluginPino({ transports: ["pino-pretty"] })],
 }).catch(() => process.exit(1));
+
+// Copy the template files, which are not included in the bundle.
+fs.cpSync("packages/server/src/templates", `${outdir}/templates`, {
+  recursive: true,
+});

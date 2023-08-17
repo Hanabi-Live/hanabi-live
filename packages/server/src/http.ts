@@ -172,16 +172,13 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
       .send(`<pre>${error.stack ?? error.message}</pre>`);
   });
 
-  fastify.get("/", (request, reply) => {
-    logger.info(`ID IS: ${request.session.get("id")}`);
-    // request.session.set("id", 123);
-
-    return reply.view("main", {
+  fastify.get("/", (_request, reply) =>
+    reply.view("main", {
       ...getTemplateVariables(),
       title: "Main",
       domain: env.DOMAIN,
-    } satisfies TemplateVariables);
-  });
+    } satisfies TemplateVariables),
+  );
 
   /*
 
