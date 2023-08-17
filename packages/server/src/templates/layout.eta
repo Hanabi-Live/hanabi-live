@@ -32,7 +32,7 @@
     <link
       rel="stylesheet"
       type="text/css"
-      href="/public/css/critical.min.css?{{ .Version }}"
+      href="/public/css/critical.min.css?{{= it.version }}"
     />
     {{ } }}
     <!-- Preload fonts. -->
@@ -76,13 +76,13 @@
     <link
       rel="preload"
       type="text/css"
-      href="/public/css/main.{{ .Version }}.min.css"
+      href="/public/css/main.{{= it.version }}.min.css"
       as="style"
     />
     <link
       rel="stylesheet"
       type="text/css"
-      href="/public/css/main.{{ .Version }}.min.css"
+      href="/public/css/main.{{= it.version }}.min.css"
     />
     {{ } }}
     <link
@@ -100,6 +100,6 @@
   </head>
 
     <body>
-
+      {{~ it.body }}
     </body>
 </html>

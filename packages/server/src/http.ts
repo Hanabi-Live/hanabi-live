@@ -21,6 +21,7 @@ import type { Logger } from "pino";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
 import { logger } from "./logger";
+import { getVersion } from "./version";
 
 type FastifyInstanceWithLogger = FastifyInstance<
   RawServerDefault,
@@ -178,10 +179,14 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
   });
 
   fastify.get("/", (_request, reply) =>
-    reply.view("layout", {
+    reply.view("main", {
+      // Shared variables
       projectName: PROJECT_NAME,
       isDev: !IS_DEV,
       title: "Main",
+      version: getVersion(),
+
+      // Main variables
     }),
   );
 

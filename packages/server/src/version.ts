@@ -22,8 +22,7 @@ if (!fs.existsSync(VERSION_TXT_PATH)) {
  * We want to read this file every time (as opposed to just reading it on server start) so that we
  * can update the client without having to restart the entire server.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getVersion(): number | undefined {
+export function getVersion(): number | undefined {
   let version: string;
   try {
     version = fs.readFileSync(VERSION_TXT_PATH, "utf8");

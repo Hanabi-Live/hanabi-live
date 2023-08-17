@@ -1,11 +1,6 @@
 package main
 
 import (
-	"net/http"
-	"os"
-	"path"
-
-	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,26 +8,10 @@ func httpMain(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Check to see if we are currently recompiling the client
-	compiling := true
-	compilingPath := path.Join(projectPath, "compiling_client")
-	if _, err := os.Stat(compilingPath); os.IsNotExist(err) {
-		compiling = false
-	} else if err != nil {
-		logger.Error("Failed to check if the \"" + compilingPath + "\" file exists: " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
 	data := &TemplateData{ // nolint: exhaustivestruct
-		Title:     "Main",
-		Domain:    domain,
-		Compiling: compiling,
-		IsDev:     isDev,
+		Title:  "Main",
+		Domain: domain,
+		IsDev:  isDev,
 	}
 	httpServeTemplate(w, data, "main")
 }

@@ -66,17 +66,6 @@ JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
 npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap
 echo
 
-# In addition to the numerical version (e.g. the number of commits), it is also handy to have the
-# exact git commit hash for the current build and the time that it was created.
-echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
-git rev-parse HEAD > "$JS_BUNDLES_DIR/git_revision.txt"
-date > "$JS_BUNDLES_DIR/date_compiled.txt"
-
-# Create a file that informs the server that the bundled JavaScript & CSS will not be available for
-# the next few milliseconds or so.
-COMPILING_FILE="$REPO_ROOT/compiling_client"
-touch "$COMPILING_FILE"
-
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
 if [[ ${1-} == "crit" ]]; then
@@ -100,8 +89,11 @@ GRUNT_OUTPUT_DIR="$DIR/grunt_output"
 CSS_DIR="$REPO_ROOT/public/css"
 cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_DIR/"
 
-# The JavaScript & CSS files are now ready to be requested from users.
-rm -f "$COMPILING_FILE"
+# In addition to the numerical version (e.g. the number of commits), it is also handy to have the
+# exact git commit hash for the current build and the time that it was created.
+echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
+git rev-parse HEAD > "$JS_BUNDLES_DIR/git_revision.txt"
+date > "$JS_BUNDLES_DIR/date_compiled.txt"
 
 # Clean up the output directories.
 rm -rf "$GRUNT_OUTPUT_DIR"

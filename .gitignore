@@ -14,9 +14,6 @@ hanabi-live-temp
 hanabi-live-temp~
 hanabi-live-temp.exe
 
-# Temporary files
-compiling_client
-
 # The message of the day
 motd.txt*
 

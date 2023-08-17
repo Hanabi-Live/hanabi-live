@@ -309,16 +309,6 @@
                 </div>
               </form>
             </section>
-
-            <section id="compiling-warning" class="box align-center hidden">
-              <h3><i class="fas fa-tools"></i>&nbsp; Maintenance</h3>
-              <p>
-                A new version of {{ .WebsiteName }} has been released and the
-                server is in the process of loading the new client, which should
-                only take a second or two. Please wait.
-              </p>
-              <img src="/public/img/ajax.gif" />
-            </section>
           </div>
         </div>
 
@@ -1890,22 +1880,16 @@
   <!-- Used to validate that we are connecting to the correct URL. -->
   <div id="domain" class="hidden">{{ .Domain }}</div>
 
-  {{ if .Compiling }}
-    <!-- The server is currently in the process of compiling the TypeScript. -->
+  <!-- All of the JavaScript is bundled into one file. -->
+  {{ if .IsDev }}
     <script
       type="text/javascript"
-      src="/public/js/lib/jquery-3.5.0.min.js"
+      src="/public/js/bundles/main.min.js"
     ></script>
-    <script type="text/javascript" src="/public/js/compiling.js"></script>
   {{ else }}
-    <!-- All of the JavaScript is bundled into one file. -->
     <script
       type="text/javascript"
-      {{ if .IsDev }}
-        src="/public/js/bundles/main.min.js"
-      {{ else }}
-        src="/public/js/bundles/main.{{ .Version }}.min.js"
-      {{ end }}
+      src="/public/js/bundles/main.{{ .Version }}.min.js"
     ></script>
   {{ end }}
 {{ end }}
