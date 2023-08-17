@@ -1,5 +1,5 @@
 import { PROJECT_NAME } from "@hanabi/data";
-import { recordCurrentGitCommitSHA1 } from "./git";
+import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { httpInit } from "./http";
 import { logger } from "./logger";
 import { testDatabase } from "./models/db";
@@ -10,7 +10,8 @@ main().catch((error) => {
 
 async function main() {
   logWelcomeMessage();
-  recordCurrentGitCommitSHA1();
+  logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`, 123);
+
   await testDatabase();
   await httpInit();
 }

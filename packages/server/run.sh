@@ -7,4 +7,6 @@ set -euo pipefail # Exit on errors and undefined variables.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd "$DIR" # Required so that `tsx` can resolve the correct "tsconfig.json" file.
+
+# Run the TypeScript code without pre-compiling by using `tsx`. (This is useful for development.)
 npx tsx watch "$DIR/src/main.ts"

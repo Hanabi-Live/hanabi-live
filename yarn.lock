@@ -4381,6 +4381,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-plugin-pino@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "esbuild-plugin-pino@npm:2.0.0"
+  peerDependencies:
+    esbuild: ^0.17.1
+  checksum: bf5cc2be88a5feef8f650e759f1797568a60ef957c6febd9b7cdc8e26a37827d25b101975fa1225c7ba14d596d2dbf7fc59b9de847df3182e26a11ccb2eea982
+  languageName: node
+  linkType: hard
+
 "esbuild@npm:^0.19.0":
   version: 0.19.2
   resolution: "esbuild@npm:0.19.2"
@@ -5984,6 +5993,7 @@ __metadata:
     dotenv: ^16.3.1
     drizzle-orm: ^0.28.2
     esbuild: ^0.19.0
+    esbuild-plugin-pino: ^2.0.0
     eta: ^3.1.0
     fast-deep-equal: ^3.1.3
     fastify: ^4.21.0
@@ -6015,7 +6025,6 @@ __metadata:
     tooltipster: ^4.2.8
     ts-jest: ^29.1.1
     tsconfig: ^7.0.0
-    tsconfig-paths: ^4.2.0
     tslib: ^2.6.1
     tsx: ^3.12.7
     typescript: ^5.1.6
@@ -10781,17 +10790,6 @@ __metadata:
   bin:
     ts-prune: lib/index.js
   checksum: 87a730d07cd5fb21beb561b221eb43cd5e3f04aa889c9d624dedac89e49683d0b3d4b3dd2dd31285adfc5682213f801927552650feff743bd4e62f10c6f88713
-  languageName: node
-  linkType: hard
-
-"tsconfig-paths@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "tsconfig-paths@npm:4.2.0"
-  dependencies:
-    json5: ^2.2.2
-    minimist: ^1.2.6
-    strip-bom: ^3.0.0
-  checksum: 28c5f7bbbcabc9dabd4117e8fdc61483f6872a1c6b02a4b1c4d68c5b79d06896c3cc9547610c4c3ba64658531caa2de13ead1ea1bf321c7b53e969c4752b98c7
   languageName: node
   linkType: hard
 
