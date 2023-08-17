@@ -40,25 +40,6 @@ interface TemplateVariables {
   domain?: string;
 }
 
-interface HanabiSession {
-  readonly id: number;
-  readonly foo: string;
-}
-
-/**
- * We have to override the Fastify `Session` interface as documented here:
- * https://github.com/fastify/session#typescript-support
- */
-declare module "fastify" {
-  interface Session {
-    /**
-     * We scope all of our application-specific values in a dedicated object to separate them from
-     * the built-in properties.
-     */
-    hanabi: HanabiSession;
-  }
-}
-
 const COOKIE_NAME = "hanabi.sid";
 
 const COOKIE_OPTIONS_BASE = {
