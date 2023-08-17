@@ -4,7 +4,7 @@ export const HTTPLoginDataSchema = z
   .object({
     username: z.string().nonempty(),
     password: z.string().nonempty(),
-    newPassword: z.string(),
+    newPassword: z.string().optional(),
     version: z.string().nonempty(),
   })
   .readonly();

@@ -76,7 +76,7 @@ function submit(event: JQuery.Event) {
   const changePasswordInputIsShowing =
     changePasswordContainer.classList.contains("hidden");
 
-  let newPassword: string;
+  let newPassword: string | undefined;
   if (changePasswordInputIsShowing) {
     if (changePassword.value === "") {
       formError("You must provide a new password.");
@@ -84,14 +84,16 @@ function submit(event: JQuery.Event) {
     }
 
     newPassword = changePassword.value;
-  } else {
-    newPassword = "";
   }
 
   send(username, password, newPassword);
 }
 
-function send(username: string, password: string, newPassword: string) {
+function send(
+  username: string,
+  password: string,
+  newPassword: string | undefined,
+) {
   $("#login-button").addClass("disabled");
   $("#login-explanation").hide();
   $("#login-ajax").show();
