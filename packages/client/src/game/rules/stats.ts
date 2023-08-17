@@ -193,6 +193,7 @@ export function cardsGotten(
   return currentCardsGotten;
 }
 
+/** @returns The number of cards that are only gotten by notes and are not gotten by real clues. */
 export function cardsGottenByNotes(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
@@ -201,7 +202,7 @@ export function cardsGottenByNotes(
   variant: Variant,
   notes: CardNote[],
 ): number {
-  let currentCardsGottenByNotes = 0;
+  let numCardsGottenByNotes = 0;
 
   for (const [order, card] of deck.entries()) {
     if (
@@ -216,25 +217,43 @@ export function cardsGottenByNotes(
         false,
       )
     ) {
-      // Original contribution
-      const a = cardRules.isClued(card) ? 1 : 0;
-
-      // Contribution desired based on notes.
-      const note = notes[order];
-      const b =
-        note &&
-        !note.knownTrash &&
-        (note.finessed ||
-          note.clued ||
-          (cardRules.isClued(card) && !note.unclued))
-          ? 1
-          : 0;
-
-      currentCardsGottenByNotes += b - a;
+      const adjustmentFromThisCard = getCardsGottenByNotesAdjustment(
+        notes,
+        order,
+        card,
+      );
+      numCardsGottenByNotes += adjustmentFromThisCard;
     }
   }
 
-  return currentCardsGottenByNotes;
+  return numCardsGottenByNotes;
+}
+
+function getCardsGottenByNotesAdjustment(
+  notes: CardNote[],
+  order: number,
+  card: CardState,
+): number {
+  const note = notes[order];
+  if (!note) {
+    return 0;
+  }
+
+  const isCluedForReal = cardRules.isClued(card);
+  if (isCluedForReal && note.unclued) {
+    return -1;
+  }
+
+  if (isCluedForReal) {
+    return 0;
+  }
+
+  const isCluedByNotes = (note.clued || note.finessed) && !note.unclued;
+  if (isCluedByNotes) {
+    return 1;
+  }
+
+  return 0;
 }
 
 // Calculate the minimum amount of efficiency needed in order to win this variant.
