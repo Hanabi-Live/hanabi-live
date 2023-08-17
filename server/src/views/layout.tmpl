@@ -75,12 +75,6 @@
       {{ else }}
         <!-- Delay loading non-critical CSS. -->
         <link
-          rel="preload"
-          type="text/css"
-          href="/public/css/main.{{ .Version }}.min.css"
-          as="style"
-        />
-        <link
           rel="stylesheet"
           type="text/css"
           href="/public/css/main.{{ .Version }}.min.css"
