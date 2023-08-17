@@ -34,7 +34,9 @@ window.$ = jquery;
 // Initialize a global error handler that will show errors to the end-user.
 window.addEventListener("error", (errorEvent) => {
   const message = getErrorStackTrace(errorEvent) ?? errorEvent.message;
-  showError(`<pre>${message}</pre>`);
+  showError(
+    `<pre>${message}</pre>Please report this error in:<ul><li>the lobby chat</li><li>or in <a href="https://discord.gg/FADvkJp">the Hanab Discord server</a></li><li>or <a href="https://github.com/Hanabi-Live/hanabi-live">on the GitHub repository</a></li></ul>`,
+  );
 });
 
 function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
