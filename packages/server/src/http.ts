@@ -1,14 +1,11 @@
-import fastifyCookie from "@fastify/cookie";
-import type { CookieOptions } from "@fastify/session";
-import fastifySession from "@fastify/session";
+import type { SecureSessionPluginOptions } from "@fastify/secure-session";
+import fastifySecureSession from "@fastify/secure-session";
 import fastifyStatic from "@fastify/static";
 import fastifyView from "@fastify/view";
 import { PROJECT_NAME } from "@hanabi/data";
 import { Eta } from "eta";
 import type {
   FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
   RawReplyDefaultExpression,
   RawRequestDefaultExpression,
   RawServerDefault,
@@ -43,19 +40,26 @@ interface TemplateVariables {
   domain?: string;
 }
 
+interface HanabiSession {
+  readonly id: number;
+  readonly foo: string;
+}
+
 /**
  * We have to override the Fastify `Session` interface as documented here:
  * https://github.com/fastify/session#typescript-support
  */
 declare module "fastify" {
   interface Session {
-    user: {
-      name: string;
-    };
+    /**
+     * We scope all of our application-specific values in a dedicated object to separate them from
+     * the built-in properties.
+     */
+    hanabi: HanabiSession;
   }
 }
 
-const HTTP_SESSION_NAME = "hanabi.sid";
+const COOKIE_NAME = "hanabi.sid";
 
 const COOKIE_OPTIONS_BASE = {
   /** The cookie should apply to the entire domain. */
@@ -63,7 +67,7 @@ const COOKIE_OPTIONS_BASE = {
 
   /** 1 year in seconds. */
   maxAge: 60 * 60 * 24 * 365,
-} as const satisfies CookieOptions;
+} as const satisfies SecureSessionPluginOptions["cookie"];
 
 const COOKIE_OPTIONS_PRODUCTION = {
   ...COOKIE_OPTIONS_BASE,
@@ -88,7 +92,7 @@ const COOKIE_OPTIONS_PRODUCTION = {
    * https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
    */
   sameSite: "strict",
-} as const satisfies CookieOptions;
+} as const satisfies SecureSessionPluginOptions["cookie"];
 
 const COOKIE_OPTIONS = IS_DEV ? COOKIE_OPTIONS_BASE : COOKIE_OPTIONS_PRODUCTION;
 
@@ -115,6 +119,9 @@ export async function httpInit(): Promise<void> {
   // eslint-disable-next-line new-cap
   const fastify = Fastify({
     logger,
+
+    // The "incoming request" and "request completed" logs are too noisy when developing.
+    disableRequestLogging: IS_DEV,
   });
 
   // Initialize the template library through the `@fastify/view` plugin:
@@ -126,15 +133,15 @@ export async function httpInit(): Promise<void> {
     templates: path.join(__dirname, "templates"),
   });
 
-  // Initialize session management through the `@fastify/session` plugin:
-  // https://github.com/fastify/session
-  await fastify.register(fastifyCookie);
-  await fastify.register(fastifySession, {
+  // Initialize session management through the `@fastify/secure-session` plugin:
+  // https://github.com/fastify/fastify-secure-session/tree/master
+  // (The `@fastify/session` plugin is used for server-side data storage.)
+  await fastify.register(fastifySecureSession, {
+    cookieName: COOKIE_NAME,
     secret: env.SESSION_SECRET,
-    cookieName: HTTP_SESSION_NAME,
+    salt: "hanabiSalt123456", // Must be 16 characters long.
     cookie: COOKIE_OPTIONS,
   });
-  fastify.addHook("preHandler", preHandler);
 
   // Initialize static file serving through the `@fastify/static` plugin:
   // https://github.com/fastify/fastify-static
@@ -170,13 +177,6 @@ export async function httpInit(): Promise<void> {
   });
 }
 
-async function preHandler(request: FastifyRequest, _reply: FastifyReply) {
-  // TODO: authentication
-  logger.info(request.session);
-  request.session.user = { name: "max" };
-  await request.session.save();
-}
-
 function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
   fastify.setNotFoundHandler(async (_request, reply) => {
     // TODO: custom 404 page
@@ -191,13 +191,16 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
       .send(`<pre>${error.stack ?? error.message}</pre>`);
   });
 
-  fastify.get("/", (_request, reply) =>
-    reply.view("main", {
+  fastify.get("/", (request, reply) => {
+    logger.info(`ID IS: ${request.session.get("id")}`);
+    // request.session.set("id", 123);
+
+    return reply.view("main", {
       ...getTemplateVariables(),
       title: "Main",
       domain: env.DOMAIN,
-    } satisfies TemplateVariables),
-  );
+    } satisfies TemplateVariables);
+  });
 
   /*
 

@@ -18,8 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@fastify/cookie": "^9.0.4",
-    "@fastify/session": "^10.4.0",
+    "@fastify/secure-session": "^6.2.0",
     "@fastify/static": "^6.10.2",
     "@fastify/view": "^8.0.0",
     "@t3-oss/env-core": "^0.6.0",

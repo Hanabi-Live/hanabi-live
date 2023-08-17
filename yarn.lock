@@ -1306,13 +1306,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cookie@npm:^9.0.4":
-  version: 9.0.4
-  resolution: "@fastify/cookie@npm:9.0.4"
+"@fastify/cookie@npm:^8.0.0":
+  version: 8.3.0
+  resolution: "@fastify/cookie@npm:8.3.0"
   dependencies:
     cookie: ^0.5.0
     fastify-plugin: ^4.0.0
-  checksum: 55c19e58b138acc567595e9e307151acadca4d1ee88dc4f2d076fc48760d24767fc150835b715ee41b9b10d0204f9a8db341dc37eab322a0e6609536a747b951
+  checksum: d5dfb5c85d4ae02188aad63c8cf055d3b904287bc2750964ee0b8589c5b5ae32850e8fc9456a8830e9f4e9f24d5059e54dac084835d6ef4cbba7fa4b9c4673b3
   languageName: node
   linkType: hard
 
@@ -1339,6 +1339,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/secure-session@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "@fastify/secure-session@npm:6.2.0"
+  dependencies:
+    "@fastify/cookie": ^8.0.0
+    fastify-plugin: ^4.0.0
+    sodium-native: ^4.0.0
+  bin:
+    secure-session: genkey.js
+  checksum: 237aecbec92207f0f0d614a5b36d836bd55df4fee1ea28c08eef9057c7471a73ccb0529550e6dcd35f7927df6474e6b6c4ec0be3258ddfe4abf15c16edac0578
+  languageName: node
+  linkType: hard
+
 "@fastify/send@npm:^2.0.0":
   version: 2.1.0
   resolution: "@fastify/send@npm:2.1.0"
@@ -1349,16 +1362,6 @@ __metadata:
     http-errors: 2.0.0
     mime: ^3.0.0
   checksum: c0eeddd35c53167e41ee7c25ccbb964e5a1e4a17c827da6486db656581f83f162237d6f8104b698a4a136d8ea054f2d028bfa4c7d1c4126db51584680f43e1f1
-  languageName: node
-  linkType: hard
-
-"@fastify/session@npm:^10.4.0":
-  version: 10.4.0
-  resolution: "@fastify/session@npm:10.4.0"
-  dependencies:
-    fastify-plugin: ^4.0.0
-    safe-stable-stringify: ^2.3.1
-  checksum: 4475ce4254dc2cb53ba019272752a5405205aca6f469dd3c3a84c56e684406327245e34df2a41dddc279ea045e2d2441678aeffcc1ef4492da6fb6067b7210ea
   languageName: node
   linkType: hard
 
@@ -5964,8 +5967,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hanabi-live@workspace:."
   dependencies:
-    "@fastify/cookie": ^9.0.4
-    "@fastify/session": ^10.4.0
+    "@fastify/secure-session": ^6.2.0
     "@fastify/static": ^6.10.2
     "@fastify/view": ^8.0.0
     "@t3-oss/env-core": ^0.6.0
@@ -8270,7 +8272,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp-build@npm:^4.3.0":
+"node-gyp-build@npm:^4.3.0, node-gyp-build@npm:^4.6.0":
   version: 4.6.0
   resolution: "node-gyp-build@npm:4.6.0"
   bin:
@@ -10117,6 +10119,16 @@ __metadata:
     ip: ^2.0.0
     smart-buffer: ^4.2.0
   checksum: 259d9e3e8e1c9809a7f5c32238c3d4d2a36b39b83851d0f573bfde5f21c4b1288417ce1af06af1452569cd1eb0841169afd4998f0e04ba04656f6b7f0e46d748
+  languageName: node
+  linkType: hard
+
+"sodium-native@npm:^4.0.0":
+  version: 4.0.4
+  resolution: "sodium-native@npm:4.0.4"
+  dependencies:
+    node-gyp: latest
+    node-gyp-build: ^4.6.0
+  checksum: 5697e7d8fa49b0ccde9b15beda2664c09ccc55450304b78287a6522e3e5db02c7fc3de415df5b2273bbc45e3f5e17966bf487c8a8bff7a84c8cbbee8fcd5e7b2
   languageName: node
   linkType: hard
 
