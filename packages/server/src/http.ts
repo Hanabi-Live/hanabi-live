@@ -2,6 +2,9 @@ import fastifyCookie from "@fastify/cookie";
 import type { CookieOptions } from "@fastify/session";
 import fastifySession from "@fastify/session";
 import fastifyStatic from "@fastify/static";
+import fastifyView from "@fastify/view";
+import { PROJECT_NAME } from "@hanabi/data";
+import { Eta } from "eta";
 import type {
   FastifyInstance,
   FastifyReply,
@@ -83,6 +86,11 @@ const LETS_ENCRYPT_PATH_PREFIX = "/letsencrypt/.well-known/acme-challenge";
 
 const LETS_ENCRYPT_PATH = path.join(REPO_ROOT, LETS_ENCRYPT_PATH_PREFIX);
 
+const eta = new Eta({
+  // Prefer the Golang template syntax, which is not the default.
+  tags: ["{{", "}}"],
+});
+
 export async function httpInit(): Promise<void> {
   const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
   const defaultPort = useTLS ? 443 : 80;
@@ -93,6 +101,15 @@ export async function httpInit(): Promise<void> {
   // eslint-disable-next-line new-cap
   const fastify = Fastify({
     logger,
+  });
+
+  // Initialize the template library through the `@fastify/view` plugin:
+  // https://github.com/fastify/point-of-view
+  await fastify.register(fastifyView, {
+    engine: {
+      eta,
+    },
+    templates: path.join(__dirname, "templates"),
   });
 
   // Initialize session management through the `@fastify/session` plugin:
@@ -147,7 +164,26 @@ async function preHandler(request: FastifyRequest, _reply: FastifyReply) {
 }
 
 function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
-  fastify.get("/", async (_request, _reply) => "HI");
+  fastify.setNotFoundHandler(async (_request, reply) => {
+    // TODO: custom 404 page
+    await reply.code(404).type("text/html").send("404 not found");
+  });
+
+  fastify.setErrorHandler(async (error, _request, reply) => {
+    // TODO: custom 500 page
+    await reply
+      .code(500)
+      .type("text/html")
+      .send(`<pre>${error.stack ?? error.message}</pre>`);
+  });
+
+  fastify.get("/", (_request, reply) =>
+    reply.view("layout", {
+      projectName: PROJECT_NAME,
+      isDev: !IS_DEV,
+      title: "Main",
+    }),
+  );
 
   /*
 

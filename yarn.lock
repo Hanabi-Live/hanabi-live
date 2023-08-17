@@ -1377,6 +1377,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/view@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "@fastify/view@npm:8.0.0"
+  dependencies:
+    fastify-plugin: ^4.0.0
+    hashlru: ^2.3.0
+  checksum: e9f6db6cf089ae3bd7f31c8cbfc61029f03a2b7cca8ef1c270fe599794ece125cd772d8a7bb3cc3c789cd26a23ceeac17c3a47f4c293e94d00ae1b9d025b252c
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.11.10":
   version: 0.11.10
   resolution: "@humanwhocodes/config-array@npm:0.11.10"
@@ -5957,6 +5967,7 @@ __metadata:
     "@fastify/cookie": ^9.0.4
     "@fastify/session": ^10.4.0
     "@fastify/static": ^6.10.2
+    "@fastify/view": ^8.0.0
     "@t3-oss/env-core": ^0.6.0
     "@tsconfig/node-lts": ^18.12.3
     "@types/jest": ^29.5.3
@@ -6103,6 +6114,13 @@ __metadata:
     is-stream: ^1.0.1
     pinkie-promise: ^2.0.0
   checksum: 1855680c0e8a1b92686f816f2f224e184e5f2422f2ddef4f05184ea57bf954cecc017598af08b84c6aa723ccc38353469d4f143869ecfafedf1c50aec0e7ed4e
+  languageName: node
+  linkType: hard
+
+"hashlru@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "hashlru@npm:2.3.0"
+  checksum: 38b3559e6fb9d19fa731edc52d8d7e72cd378f708dcb01cecd4a6ba0c52f06d7d06d6277249f5c43d9915d8dda9be31adad768a379eef188db213c3f2b09278d
   languageName: node
   linkType: hard
 

@@ -240,7 +240,7 @@ function getCardsGottenByNotesAdjustment(
   }
 
   const isCluedForReal = cardRules.isClued(card);
-  if (isCluedForReal && note.unclued) {
+  if (isCluedForReal && (note.unclued || note.knownTrash)) {
     return -1;
   }
 
@@ -248,7 +248,8 @@ function getCardsGottenByNotesAdjustment(
     return 0;
   }
 
-  const isCluedByNotes = (note.clued || note.finessed) && !note.unclued;
+  const isCluedByNotes =
+    (note.clued || note.finessed) && !note.unclued && !note.knownTrash;
   if (isCluedByNotes) {
     return 1;
   }
