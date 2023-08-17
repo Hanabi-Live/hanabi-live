@@ -18,17 +18,9 @@ import * as lobbyNav from "./lobby/nav";
 import * as playerSettings from "./lobby/playerSettings";
 import { Screen } from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
+import { showError } from "./modals";
 import * as sounds from "./sounds";
 import * as tooltips from "./tooltips";
-
-// Manually redirect users that are going to wrong URLs.
-if (
-  window.location.hostname === OLD_DOMAIN ||
-  window.location.hostname === `www.${OLD_DOMAIN}` ||
-  window.location.hostname === `www.${DOMAIN}`
-) {
-  window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
-}
 
 // Initialize JQuery.
 // https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
@@ -37,10 +29,31 @@ declare global {
     $: JQueryStatic;
   }
 }
-// `window` is undefined in Jest tests.
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (window !== undefined) {
-  window.$ = jquery;
+window.$ = jquery;
+
+// Initialize a global error handler that will show errors to the end-user.
+window.addEventListener("error", (errorEvent) => {
+  const message = getErrorStackTrace(errorEvent) ?? errorEvent.message;
+  showError(`<pre>${message}</pre>`);
+});
+
+function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
+  const error = errorEvent.error as unknown; // Cast from `any` to `unknown`.
+  return typeof error === "object" &&
+    error !== null &&
+    "stack" in error &&
+    typeof error.stack === "string"
+    ? error.stack
+    : undefined;
+}
+
+// Manually redirect users that are going to wrong URLs.
+if (
+  window.location.hostname === OLD_DOMAIN ||
+  window.location.hostname === `www.${OLD_DOMAIN}` ||
+  window.location.hostname === `www.${DOMAIN}`
+) {
+  window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
 }
 
 $(document).ready(() => {

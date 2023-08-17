@@ -303,9 +303,7 @@ export function showError(msg: string): void {
   showModal("#error-modal", false);
 
   // Play a sound if the server has shut down.
-  if (
-    /The server is going down for scheduled maintenance./.exec(msg) !== null
-  ) {
+  if (msg.includes("The server is going down for scheduled maintenance.")) {
     sounds.play("turn_double_discard");
   }
 }
