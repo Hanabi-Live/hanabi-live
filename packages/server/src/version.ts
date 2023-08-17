@@ -3,6 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";
 
+/** This is used when getting the version fails in some way. */
+const DEFAULT_VERSION = 0;
+
 const VERSION_TXT_PATH = path.join(
   REPO_ROOT,
   "public",
@@ -22,13 +25,13 @@ if (!fs.existsSync(VERSION_TXT_PATH)) {
  * We want to read this file every time (as opposed to just reading it on server start) so that we
  * can update the client without having to restart the entire server.
  */
-export function getVersion(): number | undefined {
+export function getVersion(): number {
   let version: string;
   try {
     version = fs.readFileSync(VERSION_TXT_PATH, "utf8");
   } catch {
-    return undefined;
+    return DEFAULT_VERSION;
   }
 
-  return parseIntSafe(version);
+  return parseIntSafe(version) ?? DEFAULT_VERSION;
 }

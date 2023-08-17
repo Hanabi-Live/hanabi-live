@@ -30,6 +30,19 @@ type FastifyInstanceWithLogger = FastifyInstance<
   Logger
 >;
 
+interface TemplateVariables {
+  // From the `getTemplateVariables` function.
+  projectName: string;
+  isDev: boolean;
+  version: number;
+
+  // Needed by all templates.
+  title: string;
+
+  // Needed by the "main" template.
+  domain?: string;
+}
+
 /**
  * We have to override the Fastify `Session` interface as documented here:
  * https://github.com/fastify/session#typescript-support
@@ -180,15 +193,10 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
 
   fastify.get("/", (_request, reply) =>
     reply.view("main", {
-      // Shared variables
-      projectName: PROJECT_NAME,
-      isDev: !IS_DEV,
+      ...getTemplateVariables(),
       title: "Main",
-      version: getVersion(),
-
-      // Main variables
       domain: env.DOMAIN,
-    }),
+    } satisfies TemplateVariables),
   );
 
   /*
@@ -260,4 +268,19 @@ function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
 	httpRouter.GET("/export/:databaseID", httpExport)
 
   */
+}
+
+/**
+ * Some variables are used by the "layout.eta" file, meaning that they are needed for every page
+ * across the website.
+ *
+ * This cannot be a constant object because we want the version of the client to be updatable
+ * without restarting the server.
+ */
+function getTemplateVariables() {
+  return {
+    projectName: PROJECT_NAME,
+    isDev: IS_DEV,
+    version: getVersion(),
+  };
 }
