@@ -16,6 +16,9 @@ import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
+const lobbyChatText = getHTMLElement("#lobby-chat-text");
+const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
+
 export function show(): void {
   globals.currentScreen = Screen.PreGame;
   usersDraw.draw();
@@ -45,10 +48,8 @@ export function show(): void {
 
   // Scroll to the bottom of both the lobby chat and the pregame chat. (Even if the lobby chat is
   // already at the bottom, it will change size and cause it to not be scrolled all the way down.)
-  const chat1 = getHTMLElement("#lobby-chat-text");
-  chat1.scrollTop = chat1.scrollHeight;
-  const chat2 = getHTMLElement("#lobby-chat-pregame-text");
-  chat2.scrollTop = chat2.scrollHeight;
+  lobbyChatText.scrollTop = lobbyChatText.scrollHeight;
+  lobbyChatPregameText.scrollTop = lobbyChatPregameText.scrollHeight;
 
   // Focus the pregame chat.
   $("#lobby-chat-pregame-input").trigger("focus");

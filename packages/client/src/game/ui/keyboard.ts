@@ -30,6 +30,9 @@ const hotkeyPlayMap = new Map<number, Callback>();
 const hotkeyDiscardMap = new Map<number, Callback>();
 
 const playDiscardButton = getHTMLElement("#play-discard-button");
+const playDiscardCard = getHTMLInputElement("#play-discard-card");
+const playDiscardMessage = getHTMLElement("#play-discard-message");
+const playDiscardTitle = getHTMLElement("#play-discard-title");
 
 // Build a mapping of hotkeys to functions.
 export function init(): void {
@@ -378,24 +381,16 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const maxSlotIndex = hand.length;
   const verb = ActionType[actionType];
 
-  const title = document.querySelector("#play-discard-title");
-  if (title !== null) {
-    title.innerHTML = `${verb} Card`;
-  }
+  playDiscardTitle.innerHTML = `${verb} Card`;
+  playDiscardMessage.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
 
-  const paragraph = document.querySelector("#play-discard-message");
-  if (paragraph !== null) {
-    paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
-  }
-
-  const element = getHTMLInputElement("#play-discard-card");
-  element.min = "1";
-  element.max = maxSlotIndex.toString();
-  element.value = "1";
+  playDiscardCard.min = "1";
+  playDiscardCard.max = maxSlotIndex.toString();
+  playDiscardCard.value = "1";
 
   playDiscardButton.addEventListener("click", () => {
     closeModals();
-    const response = element.value;
+    const response = playDiscardCard.value;
 
     if (response === "") {
       return;
@@ -416,7 +411,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     performAction(actionType, hand[maxSlotIndex - slot]!);
   });
 
-  showPrompt("#play-discard-modal", null, element, playDiscardButton);
+  showPrompt("#play-discard-modal", null, playDiscardCard, playDiscardButton);
 }
 
 function click(element: Konva.Node) {

@@ -401,7 +401,9 @@ function getCheckbox(setting: keyof Settings) {
 }
 
 function getTextboxValue(setting: keyof Settings): string {
-  return getHTMLInputElement(`#${setting}`).value.trim();
+  const selector = `#${setting}`;
+  const element = getHTMLInputElement(selector);
+  return element.value.trim();
 }
 
 function getTextboxForTimePerTurn(setting: keyof Settings) {

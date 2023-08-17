@@ -17,8 +17,6 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
-// TODO: refactor all into getHTMLElement
-// TODO: refactor all to top of file
 export function getHTMLElement(selectors: string): HTMLElement {
   const element = document.querySelector(selectors);
 

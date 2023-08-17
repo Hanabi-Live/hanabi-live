@@ -4,6 +4,9 @@ import { parseIntSafe } from "@hanabi/utils";
 import interact from "interactjs";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
+import { getHTMLElement } from "../utils";
+
+const gameChatText = getHTMLElement("#game-chat-text");
 
 export function init(): void {
   // Make the chat modal draggable (using the InteractJS library).
@@ -175,12 +178,7 @@ export function show(): void {
   }
 
   // Scroll to the bottom of the chat.
-  const chat = document.querySelector("#game-chat-text");
-  if (chat !== null) {
-    chat.scrollTop = chat.scrollHeight;
-  } else {
-    throw new Error('Failed to get the "game-chat-text" element.');
-  }
+  gameChatText.scrollTop = gameChatText.scrollHeight;
 
   $("#game-chat-input").trigger("focus");
 }

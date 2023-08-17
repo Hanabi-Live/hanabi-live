@@ -1,4 +1,5 @@
 import type Konva from "konva";
+import { getHTMLElement } from "../../utils";
 import type { Deck } from "./Deck";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./globals";
@@ -8,6 +9,8 @@ export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 // Module variables. (This does not have to be on the globals because it is explicitly reset in
 // HanabiUI constructor.)
 let currentCursorType = "default";
+
+const gameDiv = getHTMLElement("#game");
 
 export function set(cursorType: CursorType): void {
   // It is possible to receive cursor events before the UI has initialized.
@@ -29,16 +32,12 @@ export function set(cursorType: CursorType): void {
 
   currentCursorType = cursorType;
   const cursorTypes = ["default", "hand", "dragging", "look", "edit"];
-  const element = document.querySelector("#game");
-  if (element === null) {
-    return;
-  }
 
   for (const type of cursorTypes) {
-    element.classList.remove(`game-cursor-${type}`);
+    gameDiv.classList.remove(`game-cursor-${type}`);
   }
 
-  element.classList.add(`game-cursor-${cursorType}`);
+  gameDiv.classList.add(`game-cursor-${cursorType}`);
 
   // If the Chrome development tools are open, then the cursor may not update properly:
   // https://stackoverflow.com/questions/37462132/update-mouse-cursor-without-moving-mouse-with-changed-css-cursor-property

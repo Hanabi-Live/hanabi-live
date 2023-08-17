@@ -9,6 +9,7 @@
 import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
 import "tooltipster"; // eslint-disable-line import/no-unassigned-import
 import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
+import { getHTMLElement } from "./utils";
 
 // Constants
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
@@ -182,9 +183,11 @@ function getOptionsFromType(
 }
 
 function appendDiv(selector: string, id: string) {
-  const element = document.createElement("div");
-  element.setAttribute("id", id);
-  document.querySelector(selector)?.append(element);
+  const newElement = document.createElement("div");
+  newElement.setAttribute("id", id);
+
+  const parentElement = getHTMLElement(selector);
+  parentElement.append(newElement);
 }
 
 function createGameTooltips() {

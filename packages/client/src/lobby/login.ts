@@ -14,6 +14,11 @@ import * as usersDraw from "./usersDraw";
 
 const FIREFOX_WARNING_COOKIE_NAME = "acceptedFirefoxWarning";
 
+const changePassword = getHTMLInputElement("#change-password");
+const changePasswordContainer = getHTMLElement("#change-password-container");
+const loginUsername = getHTMLInputElement("#login-username");
+const loginPassword = getHTMLInputElement("#login-password");
+
 export function init(): void {
   $("#login-button").on("click", () => {
     $("#login-form").trigger("submit");
@@ -56,31 +61,29 @@ function submit(event: JQuery.Event) {
   // By default, the form will reload the page, so stop this from happening.
   event.preventDefault();
 
-  const username = getHTMLInputElement("#login-username").value;
+  const username = loginUsername.value;
   if (username === "") {
     formError("You must provide a username.");
     return;
   }
 
-  const password = getHTMLInputElement("#login-password").value;
+  const password = loginPassword.value;
   if (password === "") {
     formError("You must provide a password.");
     return;
   }
 
-  const changePasswordContainer = getHTMLElement("#change-password-container");
   const changePasswordInputIsShowing =
     changePasswordContainer.classList.contains("hidden");
 
   let newPassword: string;
   if (changePasswordInputIsShowing) {
-    const changePassword = getHTMLInputElement("#change-password").value;
-    if (changePassword === "") {
+    if (changePassword.value === "") {
       formError("You must provide a new password.");
       return;
     }
 
-    newPassword = changePassword;
+    newPassword = changePassword.value;
   } else {
     newPassword = "";
   }

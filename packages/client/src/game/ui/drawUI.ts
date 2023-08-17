@@ -5,6 +5,7 @@ import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
+import { getHTMLElement } from "../../utils";
 import * as deck from "../rules/deck";
 import { newColorClue, newRankClue } from "../types/Clue";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
@@ -70,6 +71,8 @@ let lowerClueAreaValues: Values;
 let clueLogValues: Values;
 let giveClueValues: Values;
 let spectatorsLabelValues: Values;
+
+const leaderPlaceholder = getHTMLElement("#leader-placeholder");
 
 export function drawUI(): void {
   // Constants
@@ -1237,13 +1240,7 @@ function drawSharedReplay() {
       return;
     }
 
-    const placeholder = document.querySelector("#leader-placeholder");
-
-    if (placeholder === null) {
-      return;
-    }
-
-    placeholder.innerHTML = "";
+    leaderPlaceholder.innerHTML = "";
 
     for (const spectator of globals.state.spectators) {
       if (spectator.name === globals.state.replay.shared.leader) {
@@ -1261,7 +1258,7 @@ function drawSharedReplay() {
       });
       button.type = "submit";
 
-      placeholder.append(button);
+      leaderPlaceholder.append(button);
     }
 
     modals.showPrompt("#set-leader-modal");

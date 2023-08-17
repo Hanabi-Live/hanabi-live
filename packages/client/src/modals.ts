@@ -21,6 +21,7 @@ type DragAreaType = "playArea" | "discardArea" | null;
 const createGameSubmit = getHTMLElement("#create-game-submit");
 const createTablePassword = getHTMLInputElement("#createTablePassword");
 const errorModalButton = getHTMLElement("#error-modal-button");
+const errorModalDescription = getHTMLElement("#error-modal-description");
 const pageCover = getHTMLElement("#page-cover");
 const modalsContainer = getHTMLElement("#modals-container");
 const morphModalButtonCancel = getHTMLElement("#morph-modal-button-cancel");
@@ -298,7 +299,7 @@ export function showError(msg: string): void {
   // Clear out the top navigation buttons.
   lobbyNav.show("nothing");
 
-  getHTMLElement("#error-modal-description").innerHTML = msg;
+  errorModalDescription.innerHTML = msg;
   showModal("#error-modal", false);
 
   // Play a sound if the server has shut down.

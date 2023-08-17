@@ -7,8 +7,11 @@ import { Screen } from "../lobby/types/Screen";
 import * as usersDraw from "../lobby/usersDraw";
 import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
+import { getHTMLElement } from "../utils";
 import * as chat from "./chat";
 import { HanabiUI } from "./ui/HanabiUI";
+
+const lobbyChatText = getHTMLElement("#lobby-chat-text");
 
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
@@ -66,11 +69,7 @@ function hide() {
   tooltips.closeAllTooltips();
 
   // Scroll to the bottom of the chat.
-  const chatElement = document.querySelector("#lobby-chat-text");
-  if (chatElement === null) {
-    throw new Error('Failed to get the "lobby-chat-text" element.');
-  }
-  chatElement.scrollTop = chatElement.scrollHeight;
+  lobbyChatText.scrollTop = lobbyChatText.scrollHeight;
 }
 
 // These are references to some functions and submodules that need to be interacted with in the UI
