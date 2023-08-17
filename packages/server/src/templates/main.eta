@@ -269,7 +269,7 @@
                 </div>
               </div>
               <div class="padding0p75"></div>
-              <div class="change-password hidden">
+              <div class="change-password-container hidden">
                 <div class="row">
                   <div class="col-1 off-2">
                     <i class="fas fa-sync fa-2x login-icon"></i>

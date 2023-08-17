@@ -42,6 +42,11 @@ module.exports = {
             message:
               'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
           },
+          {
+            group: ["*/models/*"],
+            message:
+              'You cannot import model functions directly. Use the "models" object instead.',
+          },
         ],
       },
     ],

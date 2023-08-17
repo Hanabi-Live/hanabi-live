@@ -13,7 +13,6 @@ short term:
 
 medium term:
 - custom 404 page
-- custom 500 page
 
 long term once the server is rewritten in TypeScript:
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845

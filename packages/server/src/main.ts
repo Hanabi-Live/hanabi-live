@@ -2,7 +2,7 @@ import { PROJECT_NAME } from "@hanabi/data";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { httpInit } from "./http";
 import { logger } from "./logger";
-import { testDatabase } from "./models/db";
+import { models } from "./models";
 
 main().catch((error) => {
   throw new Error(`${PROJECT_NAME} server encountered an error: ${error}`);
@@ -12,7 +12,7 @@ async function main() {
   logWelcomeMessage();
   logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`, 123);
 
-  await testDatabase();
+  await models.chatLog.testDatabase();
   await httpInit();
 }
 

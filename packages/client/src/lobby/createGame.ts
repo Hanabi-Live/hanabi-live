@@ -13,7 +13,7 @@ import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import type { Options } from "../types/Options";
-import { getRandomNumber, isEmpty } from "../utils";
+import { getRandomNumber } from "../utils";
 import { Screen } from "./types/Screen";
 import type { Settings } from "./types/Settings";
 
@@ -406,9 +406,6 @@ function getCheckbox(setting: keyof Settings) {
 function getTextbox(setting: keyof Settings) {
   const element = $(`#${setting}`);
   const value = element.val();
-  if (isEmpty(value)) {
-    throw new Error(`Failed to get the value of element "${setting}".`);
-  }
   if (typeof value !== "string") {
     throw new TypeError(`The value of element "${setting}" is not a string.`);
   }

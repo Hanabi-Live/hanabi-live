@@ -1339,6 +1339,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/formbody@npm:^7.4.0":
+  version: 7.4.0
+  resolution: "@fastify/formbody@npm:7.4.0"
+  dependencies:
+    fast-querystring: ^1.0.0
+    fastify-plugin: ^4.0.0
+  checksum: 5bff8180b71343179e3e5bd8b2f88b17459062cf55035c60fbda8db1e8d9682645b2f47ce8b898190814ae241631fee0345edd4e4f396e34fab6fb7eb681381d
+  languageName: node
+  linkType: hard
+
 "@fastify/secure-session@npm:^6.2.0":
   version: 6.2.0
   resolution: "@fastify/secure-session@npm:6.2.0"
@@ -5976,6 +5986,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hanabi-live@workspace:."
   dependencies:
+    "@fastify/formbody": ^7.4.0
     "@fastify/secure-session": ^6.2.0
     "@fastify/static": ^6.10.2
     "@fastify/view": ^8.0.0
@@ -6002,6 +6013,7 @@ __metadata:
     grunt-contrib-concat: ^2.1.0
     grunt-contrib-cssmin: ^5.0.0
     grunt-criticalcss: ^2.1.0
+    http-status-codes: ^2.2.0
     immer: ^10.0.2
     interactjs: ^1.10.18
     isaacscript: ^3.6.57
@@ -6241,6 +6253,13 @@ __metadata:
     jsprim: ^1.2.2
     sshpk: ^1.7.0
   checksum: 3324598712266a9683585bb84a75dec4fd550567d5e0dd4a0fff6ff3f74348793404d3eeac4918fa0902c810eeee1a86419e4a2e92a164132dfe6b26743fb47c
+  languageName: node
+  linkType: hard
+
+"http-status-codes@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "http-status-codes@npm:2.2.0"
+  checksum: 31e1d730856210445da0907d9b484629e69e4fe92ac032478a7aa4d89e5b215e2b4e75d7ebce40d0537b6850bd281b2f65c7cc36cc2677e5de056d6cea1045ce
   languageName: node
   linkType: hard
 

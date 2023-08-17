@@ -18,6 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@fastify/formbody": "^7.4.0",
     "@fastify/secure-session": "^6.2.0",
     "@fastify/static": "^6.10.2",
     "@fastify/view": "^8.0.0",
@@ -44,6 +45,7 @@
     "grunt-contrib-concat": "^2.1.0",
     "grunt-contrib-cssmin": "^5.0.0",
     "grunt-criticalcss": "^2.1.0",
+    "http-status-codes": "^2.2.0",
     "immer": "^10.0.2",
     "interactjs": "^1.10.18",
     "isaacscript": "^3.6.57",

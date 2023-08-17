@@ -303,9 +303,9 @@ CREATE TABLE chat_log_pm (
     datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
-CREATE INDEX chat_log_pm_index_user_id       ON chat_log_pm (user_id);
-CREATE INDEX chat_log_pm_index_recipient_id  ON chat_log_pm (recipient_id);
-CREATE INDEX chat_log_pm_index_datetime_sent ON chat_log_pm (datetime_sent);
+CREATE INDEX chat_log_pm_index_user_id          ON chat_log_pm (user_id);
+CREATE INDEX chat_log_pm_index_recipient_id     ON chat_log_pm (recipient_id);
+CREATE INDEX chat_log_pm_index_datetime_sent_id ON chat_log_pm (datetime_sent, id);
 
 DROP TABLE IF EXISTS banned_ips CASCADE;
 CREATE TABLE banned_ips (
@@ -330,19 +330,6 @@ CREATE TABLE muted_ips (
 
     reason           TEXT         NULL      DEFAULT NULL,
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-DROP TABLE IF EXISTS throttled_ips CASCADE;
-CREATE TABLE throttled_ips (
-    id                  SERIAL       PRIMARY KEY,
-    ip                  TEXT         NOT NULL,
-
-    /* An entry for a throttled IP can optionally be associated with a user. */
-    user_id             INTEGER      NULL      DEFAULT NULL,
-
-    reason              TEXT         NULL      DEFAULT NULL,
-    datetime_throttled  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

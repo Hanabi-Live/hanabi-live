@@ -1,8 +1,8 @@
+import fastifyFormBody from "@fastify/formbody";
 import type { SecureSessionPluginOptions } from "@fastify/secure-session";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyStatic from "@fastify/static";
 import fastifyView from "@fastify/view";
-import { PROJECT_NAME } from "@hanabi/data";
 import { Eta } from "eta";
 import type {
   FastifyInstance,
@@ -12,13 +12,16 @@ import type {
 } from "fastify";
 import Fastify from "fastify";
 import fastifyFavicon from "fastify-favicon";
+import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";
 import type { Logger } from "pino";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
+import { httpLogin } from "./http/login";
+import { httpMain } from "./http/main";
 import { logger } from "./logger";
-import { getVersion } from "./version";
+import { models } from "./models";
 
 type FastifyInstanceWithLogger = FastifyInstance<
   RawServerDefault,
@@ -26,19 +29,6 @@ type FastifyInstanceWithLogger = FastifyInstance<
   RawReplyDefaultExpression,
   Logger
 >;
-
-interface TemplateVariables {
-  // From the `getTemplateVariables` function.
-  projectName: string;
-  isDev: boolean;
-  version: number;
-
-  // Needed by all templates.
-  title: string;
-
-  // Needed by the "main" template.
-  domain?: string;
-}
 
 const COOKIE_NAME = "hanabi.sid";
 
@@ -105,6 +95,9 @@ export async function httpInit(): Promise<void> {
     disableRequestLogging: IS_DEV,
   });
 
+  // Initialize "application/x-www-form-urlencoded" POST data with the `@fastify/formbody` plugin:
+  await fastify.register(fastifyFormBody);
+
   // Initialize the template library through the `@fastify/view` plugin:
   // https://github.com/fastify/point-of-view
   await fastify.register(fastifyView, {
@@ -151,6 +144,38 @@ export async function httpInit(): Promise<void> {
     });
   }
 
+  fastify.setNotFoundHandler(async (_request, reply) => {
+    // TODO: custom 404 page
+    await reply
+      .code(StatusCodes.NOT_FOUND)
+      .type("text/html")
+      .send("404 not found");
+  });
+
+  fastify.setErrorHandler(async (error, _request, reply) => {
+    // Use "||" to handle undefined and an empty string at the same time.
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
+    const text = error.stack || error.message || "unknown error";
+
+    await reply
+      .code(StatusCodes.INTERNAL_SERVER_ERROR)
+      .type("text/html")
+      .send(`<pre>${text}</pre>`);
+  });
+
+  fastify.addHook("preHandler", async (request, reply) => {
+    // Check to see if their IP is banned.
+    const isBanned = await models.bannedIPs.check(request.ip);
+    if (isBanned) {
+      logger.info(`IP "${request.ip}" tried to log in, but they are banned.`);
+      return reply
+        .code(StatusCodes.UNAUTHORIZED)
+        .send(
+          "Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
+        );
+    }
+  });
+
   registerPathHandlers(fastify);
 
   await fastify.listen({
@@ -159,109 +184,71 @@ export async function httpInit(): Promise<void> {
 }
 
 function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
-  fastify.setNotFoundHandler(async (_request, reply) => {
-    // TODO: custom 404 page
-    await reply.code(404).type("text/html").send("404 not found");
-  });
+  // For cookies and logging in.
+  fastify.post("/login", httpLogin);
+  /// fastify.get("/logout", httpLogout)
+  /// fastify.get("/test-cookie", httpTestCookie)
+  /// fastify.get("/ws", httpWS)
 
-  fastify.setErrorHandler(async (error, _request, reply) => {
-    // TODO: custom 500 page
-    await reply
-      .code(500)
-      .type("text/html")
-      .send(`<pre>${error.stack ?? error.message}</pre>`);
-  });
-
-  fastify.get("/", (_request, reply) =>
-    reply.view("main", {
-      ...getTemplateVariables(),
-      title: "Main",
-      domain: env.DOMAIN,
-    } satisfies TemplateVariables),
-  );
+  // For the main website.
+  fastify.get("/", httpMain);
+  fastify.get("/lobby", httpMain);
+  fastify.get("/pre-game", httpMain);
+  fastify.get("/pre-game/:tableID", httpMain);
+  fastify.get("/game", httpMain);
+  fastify.get("/game/:tableID", httpMain);
+  fastify.get("/game/:tableID/shadow/:seat", httpMain);
+  fastify.get("/replay", httpMain);
+  fastify.get("/replay/:databaseID", httpMain);
+  fastify.get("/shared-replay", httpMain);
+  fastify.get("/shared-replay/:databaseID", httpMain);
+  fastify.get("/replay-json/:string", httpMain);
+  fastify.get("/shared-replay-json/:string", httpMain);
+  fastify.get("/create-table", httpMain);
 
   /*
 
- 	// Path handlers (for cookies and logging in)
-	httpRouter.POST("/login", httpLogin)
-	httpRouter.GET("/logout", httpLogout)
-	httpRouter.GET("/test-cookie", httpTestCookie)
-	httpRouter.GET("/ws", httpWS)
-
-	// Path handlers (for the main website)
-	httpRouter.GET("/", httpMain)
-	httpRouter.GET("/lobby", httpMain)
-	httpRouter.GET("/pre-game", httpMain)
-	httpRouter.GET("/pre-game/:tableID", httpMain)
-	httpRouter.GET("/game", httpMain)
-	httpRouter.GET("/game/:tableID", httpMain)
-	httpRouter.GET("/game/:tableID/shadow/:seat", httpMain)
-	httpRouter.GET("/replay", httpMain)
-	httpRouter.GET("/replay/:databaseID", httpMain)
-	httpRouter.GET("/replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
-	httpRouter.GET("/shared-replay", httpMain)
-	httpRouter.GET("/shared-replay/:databaseID", httpMain)
-	httpRouter.GET("/shared-replay/:databaseID/:turnID", httpMain) // Deprecated; needed for older links to work
-	httpRouter.GET("/replay-json/:string", httpMain)
-	httpRouter.GET("/shared-replay-json/:string", httpMain)
-	httpRouter.GET("/create-table", httpMain)
-
 	// Path handlers for other URLs
-	httpRouter.GET("/scores", httpScores)
-	httpRouter.GET("/scores/:player1", httpScores)
-	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
-	httpRouter.GET("/profile/:player1", httpScores)
-	httpRouter.GET("/history", httpHistory)
-	httpRouter.GET("/history/:player1", httpHistory)
-	httpRouter.GET("/history/:player1/:player2", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3/:player4", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
-	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
-	httpRouter.GET("/missing-scores", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player1/:numPlayers", httpMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
-	httpRouter.GET("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
-	httpRouter.GET("/tags", httpTags)
-	httpRouter.GET("/tags/:player1", httpTags)
-	httpRouter.GET("/seed", httpSeed)
-	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
-	httpRouter.GET("/stats", httpStats)
-	httpRouter.GET("/variant", httpVariant)
-	httpRouter.GET("/variant/:id", httpVariant)
-	httpRouter.GET("/tag", httpTag)
-	httpRouter.GET("/tag/:tag", httpTag)
-	httpRouter.GET("/videos", httpVideos)
-	httpRouter.GET("/password-reset", httpPasswordReset)
+	fastify.get("/scores", httpScores)
+	fastify.get("/scores/:player1", httpScores)
+	fastify.get("/profile", httpScores) // "/profile" is an alias for "/scores"
+	fastify.get("/profile/:player1", httpScores)
+	fastify.get("/history", httpHistory)
+	fastify.get("/history/:player1", httpHistory)
+	fastify.get("/history/:player1/:player2", httpHistory)
+	fastify.get("/history/:player1/:player2/:player3", httpHistory)
+	fastify.get("/history/:player1/:player2/:player3/:player4", httpHistory)
+	fastify.get("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
+	fastify.get("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
+	fastify.get("/missing-scores", httpMissingScores)
+	fastify.get("/missing-scores/:player1", httpMissingScores)
+	fastify.get("/missing-scores/:player1/:numPlayers", httpMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers", httpSharedMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers/:player1", httpSharedMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2", httpSharedMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3", httpSharedMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4", httpSharedMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
+	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
+	fastify.get("/tags", httpTags)
+	fastify.get("/tags/:player1", httpTags)
+	fastify.get("/seed", httpSeed)
+	fastify.get("/seed/:seed", httpSeed) // Display all games played on a given seed
+	fastify.get("/stats", httpStats)
+	fastify.get("/variant", httpVariant)
+	fastify.get("/variant/:id", httpVariant)
+	fastify.get("/tag", httpTag)
+	fastify.get("/tag/:tag", httpTag)
+	fastify.get("/videos", httpVideos)
+	fastify.get("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
 
 	// API V1 routes
 	apiSetRoutes(httpRouter)
 
 	// Path handlers for bots, developers, researchers, etc.
-	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:databaseID", httpExport)
+	fastify.get("/export", httpExport)
+	fastify.get("/export/:databaseID", httpExport)
 
   */
-}
-
-/**
- * Some variables are used by the "layout.eta" file, meaning that they are needed for every page
- * across the website.
- *
- * This cannot be a constant object because we want the version of the client to be updatable
- * without restarting the server.
- */
-function getTemplateVariables() {
-  return {
-    projectName: PROJECT_NAME,
-    isDev: IS_DEV,
-    version: getVersion(),
-  };
 }

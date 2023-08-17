@@ -17,6 +17,16 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
+export function getHTMLInputElement(selectors: string): HTMLInputElement {
+  const element = document.querySelector(selectors);
+
+  if (!(element instanceof HTMLInputElement)) {
+    throw new TypeError(`Failed to find the HTML input element: ${selectors}`);
+  }
+
+  return element;
+}
+
 export function getRandomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -29,13 +39,6 @@ export function getURLFromPath(path: string): string {
   url += path;
 
   return url;
-}
-
-/** Helper function to check for empty/invalid HTML elements without worrying about the linter. */
-export function isEmpty(
-  value: string | string[] | number | undefined,
-): boolean {
-  return !value; // eslint-disable-line @typescript-eslint/strict-boolean-expressions
 }
 
 export function millisecondsToClockString(milliseconds: number): string {

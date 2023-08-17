@@ -1,10 +1,11 @@
 // The initial login page.
 
 import { VERSION } from "@hanabi/data";
+import type { HTTPLoginData } from "@hanabi/server";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
-import { getURLFromPath, isEmpty } from "../utils";
+import { getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -34,14 +35,17 @@ export function init(): void {
 
   $("#change-password-link").on("click", (e) => {
     e.preventDefault();
-    const div = $(".change-password");
+    const div = $(".change-password-container");
     if (div.hasClass("hidden")) {
       $("#login-password").attr("placeholder", "Old Password");
-      $(".change-password").slideDown().delay(500).removeClass("hidden");
+      $(".change-password-container")
+        .slideDown()
+        .delay(500)
+        .removeClass("hidden");
       $("#login-button").html("Sign In & Change Password");
     } else {
       $("#login-password").attr("placeholder", "Password");
-      $(".change-password").slideUp().delay(500).addClass("hidden");
+      $(".change-password-container").slideUp().delay(500).addClass("hidden");
       $("#login-button").html("Sign In");
     }
     $("#login-username").trigger("focus");
@@ -52,62 +56,54 @@ function submit(event: JQuery.Event) {
   // By default, the form will reload the page, so stop this from happening.
   event.preventDefault();
 
-  let username = $("#login-username").val();
-  if (isEmpty(username)) {
+  const username = getHTMLInputElement("#login-username").value;
+  if (username === "") {
     formError("You must provide a username.");
     return;
   }
-  if (typeof username !== "string") {
-    username = username!.toString();
-  }
 
-  let password = $("#login-password").val();
-  if (isEmpty(password)) {
+  const password = getHTMLInputElement("#login-password").value;
+  if (password === "") {
     formError("You must provide a password.");
     return;
   }
-  if (typeof password === "number") {
-    password = password.toString();
-  }
-  if (typeof password !== "string") {
-    throw new TypeError("The password is not a string.");
-  }
 
-  let newPassword: string | null = null;
-  if (!$(".change-password").hasClass("hidden")) {
-    // Change password was requested.
-    newPassword = $("#change-password").val() as string;
-    if (isEmpty(newPassword)) {
+  const changePasswordInputIsShowing = !$(
+    ".change-password-container",
+  ).hasClass("hidden");
+  let newPassword: string;
+  if (changePasswordInputIsShowing) {
+    newPassword = getHTMLInputElement("#change-password").value;
+    if (newPassword === "") {
       formError("You must provide a new password.");
       return;
     }
-    if (typeof newPassword !== "string") {
-      throw new TypeError("The new password is not a string.");
-    }
+  } else {
+    newPassword = "";
   }
 
   send(username, password, newPassword);
 }
 
-function send(username: string, password: string, newPassword: string | null) {
+function send(username: string, password: string, newPassword: string) {
   $("#login-button").addClass("disabled");
   $("#login-explanation").hide();
   $("#login-ajax").show();
 
   // Send a login request to the server; if successful, we will get a cookie back.
   const url = getURLFromPath("/login");
-  const postData = {
+  const data = {
     username,
     password,
     newPassword,
     version: VERSION,
-  };
+  } satisfies HTTPLoginData;
 
   // eslint-disable-next-line isaacscript/no-object-any
   const request = $.ajax({
     url,
     type: "POST",
-    data: postData,
+    data,
   });
   console.log(`Sent a login request to: ${url}`);
 
@@ -141,7 +137,7 @@ export function automaticLogin(): void {
   const username = urlParams.get("login");
   if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);
-    send(username, username, null); // For test accounts, we use the username as the password
+    send(username, username, ""); // For test accounts, we use the username as the password.
     return;
   }
 
