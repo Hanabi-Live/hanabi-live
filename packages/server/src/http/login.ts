@@ -2,13 +2,6 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { logger } from "../logger";
 
-export interface HTTPLoginData {
-  username: string;
-  password: string;
-  newPassword: string;
-  version: string;
-}
-
 /**
  * This handles part 1 of 2 for login authentication. The user must POST to "/login" with the values
  * of "username", "password", and "version". If successful, they will receive a cookie from the

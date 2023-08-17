@@ -13,7 +13,7 @@ import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import type { Options } from "../types/Options";
-import { getRandomNumber } from "../utils";
+import { getHTMLInputElement, getRandomNumber } from "../utils";
 import { Screen } from "./types/Screen";
 import type { Settings } from "./types/Settings";
 
@@ -403,18 +403,13 @@ function getCheckbox(setting: keyof Settings) {
   return value;
 }
 
-function getTextbox(setting: keyof Settings) {
-  const element = $(`#${setting}`);
-  const value = element.val();
-  if (typeof value !== "string") {
-    throw new TypeError(`The value of element "${setting}" is not a string.`);
-  }
-  return value.trim(); // Remove all leading and trailing whitespace
+function getTextboxValue(setting: keyof Settings): string {
+  return getHTMLInputElement(`#${setting}`).value.trim();
 }
 
 function getTextboxForTimePerTurn(setting: keyof Settings) {
   const element = $(`#${setting}`);
-  const valueString = getTextbox(setting);
+  const valueString = getTextboxValue(setting);
   let value = parseIntSafe(valueString);
   if (value === undefined) {
     // They have entered an invalid amount of seconds, so revert to using the default value.
@@ -430,7 +425,7 @@ function getTextboxForTimePerTurn(setting: keyof Settings) {
 
 function getTextboxForTimeBase(setting: keyof Settings) {
   const element = $(`#${setting}`);
-  const valueString = getTextbox(setting);
+  const valueString = getTextboxValue(setting);
   let value = parseFloatSafe(valueString);
   if (value === undefined) {
     // They have entered an invalid amount of minutes, so revert to using the default value.

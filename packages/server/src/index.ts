@@ -1,1 +1,1 @@
-export type { HTTPLoginData } from "./http/login";
+export type * from "./interfaces/HTTPLoginData";

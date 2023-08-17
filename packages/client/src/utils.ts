@@ -17,6 +17,16 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
+export function getElement(selectors: string): Element {
+  const element = document.querySelector(selectors);
+
+  if (!(element instanceof Element)) {
+    throw new TypeError(`Failed to find the element: ${selectors}`);
+  }
+
+  return element;
+}
+
 export function getHTMLInputElement(selectors: string): HTMLInputElement {
   const element = document.querySelector(selectors);
 

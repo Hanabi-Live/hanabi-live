@@ -5,7 +5,7 @@ import type { HTTPLoginData } from "@hanabi/server";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
-import { getHTMLInputElement, getURLFromPath } from "../utils";
+import { getElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -33,19 +33,19 @@ export function init(): void {
     show();
   });
 
-  $("#change-password-link").on("click", (e) => {
-    e.preventDefault();
-    const div = $(".change-password-container");
+  $("#change-password-link").on("click", (event) => {
+    event.preventDefault();
+    const div = $("#change-password-container");
     if (div.hasClass("hidden")) {
       $("#login-password").attr("placeholder", "Old Password");
-      $(".change-password-container")
+      $("#change-password-container")
         .slideDown()
         .delay(500)
         .removeClass("hidden");
       $("#login-button").html("Sign In & Change Password");
     } else {
       $("#login-password").attr("placeholder", "Password");
-      $(".change-password-container").slideUp().delay(500).addClass("hidden");
+      $("#change-password-container").slideUp().delay(500).addClass("hidden");
       $("#login-button").html("Sign In");
     }
     $("#login-username").trigger("focus");
@@ -68,16 +68,19 @@ function submit(event: JQuery.Event) {
     return;
   }
 
-  const changePasswordInputIsShowing = !$(
-    ".change-password-container",
-  ).hasClass("hidden");
+  const changePasswordContainer = getElement("#change-password-container");
+  const changePasswordInputIsShowing =
+    changePasswordContainer.classList.contains("hidden");
+
   let newPassword: string;
   if (changePasswordInputIsShowing) {
-    newPassword = getHTMLInputElement("#change-password").value;
-    if (newPassword === "") {
+    const changePassword = getHTMLInputElement("#change-password").value;
+    if (changePassword === "") {
       formError("You must provide a new password.");
       return;
     }
+
+    newPassword = changePassword;
   } else {
     newPassword = "";
   }
