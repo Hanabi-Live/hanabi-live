@@ -69,7 +69,8 @@ export const chatLogTable = pgTable(
   }),
 );
 
-export const chatLogPMTable = pgTable(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const chatLogPMTable = pgTable(
   "chat_log_pm",
   {
     id: serial("id").primaryKey(),
@@ -108,7 +109,8 @@ export const bannedIPsTable = pgTable("banned_ips", {
     .defaultNow(),
 });
 
-export const mutedIPsTable = pgTable("muted_ips", {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mutedIPsTable = pgTable("muted_ips", {
   id: serial("id").primaryKey(),
   ip: text("ip").notNull(),
 
