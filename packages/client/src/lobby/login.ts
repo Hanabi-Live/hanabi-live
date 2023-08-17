@@ -74,7 +74,7 @@ function submit(event: JQuery.Event) {
   }
 
   const changePasswordInputIsShowing =
-    changePasswordContainer.classList.contains("hidden");
+    !changePasswordContainer.classList.contains("hidden");
 
   let newPassword: string | undefined;
   if (changePasswordInputIsShowing) {
