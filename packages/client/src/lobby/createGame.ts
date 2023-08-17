@@ -394,10 +394,7 @@ function acceptOptionsFromGuest(options: Options) {
 }
 
 function getCheckbox(setting: keyof Settings) {
-  const element = document.getElementById(setting) as HTMLInputElement | null;
-  if (element === null) {
-    throw new Error(`Failed to get the element of "${setting}".`);
-  }
+  const element = getHTMLInputElement(setting);
   const value = element.checked;
   checkChanged(setting, value);
   return value;

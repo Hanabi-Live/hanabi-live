@@ -14,7 +14,7 @@ module.exports = {
     project: ["./tsconfig.eslint.json"],
   },
 
-  ignorePatterns: ["**/lib/**", "**/version.js"],
+  ignorePatterns: ["**/dist/**", "**/lib/**", "**/version.js"],
 
   rules: {
     /**

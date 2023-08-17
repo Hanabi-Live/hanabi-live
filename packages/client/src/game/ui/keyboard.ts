@@ -5,7 +5,11 @@ import * as KeyCode from "keycode-js";
 import type Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import { closeModals, isModalVisible, showPrompt } from "../../modals";
-import { copyStringToClipboard } from "../../utils";
+import {
+  copyStringToClipboard,
+  getHTMLElement,
+  getHTMLInputElement,
+} from "../../utils";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
 import { ActionType } from "../types/ActionType";
@@ -20,9 +24,12 @@ import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as turn from "./turn";
 
 type Callback = () => void;
+
 const hotkeyClueMap = new Map<number, Callback>();
 const hotkeyPlayMap = new Map<number, Callback>();
 const hotkeyDiscardMap = new Map<number, Callback>();
+
+const playDiscardButton = getHTMLElement("#play-discard-button");
 
 // Build a mapping of hotkeys to functions.
 export function init(): void {
@@ -371,27 +378,22 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const maxSlotIndex = hand.length;
   const verb = ActionType[actionType];
 
-  const title = document.getElementById("play-discard-title");
+  const title = document.querySelector("#play-discard-title");
   if (title !== null) {
     title.innerHTML = `${verb} Card`;
   }
 
-  const paragraph = document.getElementById("play-discard-message");
+  const paragraph = document.querySelector("#play-discard-message");
   if (paragraph !== null) {
     paragraph.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
   }
 
-  const element = document.getElementById(
-    "play-discard-card",
-  ) as HTMLInputElement;
+  const element = getHTMLInputElement("#play-discard-card");
   element.min = "1";
   element.max = maxSlotIndex.toString();
   element.value = "1";
 
-  const button = document.getElementById(
-    "play-discard-button",
-  ) as HTMLButtonElement;
-  button.addEventListener("click", () => {
+  playDiscardButton.addEventListener("click", () => {
     closeModals();
     const response = element.value;
 
@@ -414,7 +416,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     performAction(actionType, hand[maxSlotIndex - slot]!);
   });
 
-  showPrompt("#play-discard-modal", null, element, button);
+  showPrompt("#play-discard-modal", null, element, playDiscardButton);
 }
 
 function click(element: Konva.Node) {

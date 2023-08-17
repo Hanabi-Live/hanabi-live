@@ -66,7 +66,7 @@ function hide() {
   tooltips.closeAllTooltips();
 
   // Scroll to the bottom of the chat.
-  const chatElement = document.getElementById("lobby-chat-text");
+  const chatElement = document.querySelector("#lobby-chat-text");
   if (chatElement === null) {
     throw new Error('Failed to get the "lobby-chat-text" element.');
   }

@@ -3,11 +3,15 @@
 import { clamp, parseIntSafe } from "@hanabi/utils";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
+import { getHTMLElement, getHTMLInputElement } from "../../utils";
 import * as arrows from "./arrows";
 import type { Shuttle } from "./controls/Shuttle";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
+
+const setTurnButton = getHTMLElement("#set-turn-button");
+const setTurnInput = getHTMLInputElement("#set-turn-input");
 
 // ---------------------
 // Main replay functions
@@ -315,32 +319,21 @@ export function adjustShuttles(fast: boolean): void {
 // -----------------------------
 
 export function promptTurn(): void {
-  const element = document.getElementById(
-    "set-turn-input",
-  ) as HTMLInputElement | null;
-  const button = document.getElementById(
-    "set-turn-button",
-  ) as HTMLButtonElement | null;
-
-  if (element === null || button === null) {
-    return;
-  }
-
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
 
-  element.min = "1";
-  element.max = Math.max(finalSegment, currentSegment).toString();
-  element.value = currentSegment.toString();
+  setTurnInput.min = "1";
+  setTurnInput.max = Math.max(finalSegment, currentSegment).toString();
+  setTurnInput.value = currentSegment.toString();
 
-  button.addEventListener("click", (evt) => {
+  setTurnButton.addEventListener("click", (evt) => {
     evt.preventDefault();
     closeModals();
 
-    goTo(element.value);
+    goTo(setTurnInput.value);
   });
 
-  showPrompt("#set-turn-modal", null, element, button);
+  showPrompt("#set-turn-modal", null, setTurnInput, setTurnButton);
 }
 
 export function goTo(turnString: string): void {

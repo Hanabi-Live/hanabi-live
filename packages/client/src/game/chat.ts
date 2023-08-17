@@ -175,7 +175,7 @@ export function show(): void {
   }
 
   // Scroll to the bottom of the chat.
-  const chat = document.getElementById("game-chat-text");
+  const chat = document.querySelector("#game-chat-text");
   if (chat !== null) {
     chat.scrollTop = chat.scrollHeight;
   } else {

@@ -5,7 +5,7 @@ import type { HTTPLoginData } from "@hanabi/server";
 import * as KeyCode from "keycode-js";
 import { FADE_TIME } from "../constants";
 import { globals } from "../globals";
-import { getElement, getHTMLInputElement, getURLFromPath } from "../utils";
+import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -68,7 +68,7 @@ function submit(event: JQuery.Event) {
     return;
   }
 
-  const changePasswordContainer = getElement("#change-password-container");
+  const changePasswordContainer = getHTMLElement("#change-password-container");
   const changePasswordInputIsShowing =
     changePasswordContainer.classList.contains("hidden");
 

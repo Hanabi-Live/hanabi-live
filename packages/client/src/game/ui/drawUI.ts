@@ -1237,7 +1237,7 @@ function drawSharedReplay() {
       return;
     }
 
-    const placeholder = document.getElementById("leader-placeholder");
+    const placeholder = document.querySelector("#leader-placeholder");
 
     if (placeholder === null) {
       return;

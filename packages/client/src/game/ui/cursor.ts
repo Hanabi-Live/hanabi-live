@@ -29,7 +29,7 @@ export function set(cursorType: CursorType): void {
 
   currentCursorType = cursorType;
   const cursorTypes = ["default", "hand", "dragging", "look", "edit"];
-  const element = document.getElementById("game");
+  const element = document.querySelector("#game");
   if (element === null) {
     return;
   }

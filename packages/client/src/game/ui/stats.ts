@@ -1,11 +1,16 @@
 import { parseIntSafe } from "@hanabi/utils";
 import type Konva from "konva";
 import * as modals from "../../modals";
+import { getHTMLElement, getHTMLInputElement } from "../../utils";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import { globals } from "./globals";
+
+const setModifierButton = getHTMLElement("#set-modifier-button");
+const setModifierCurrent = getHTMLElement("#set-modifier-current");
+const setModifierNew = getHTMLInputElement("#set-modifier-new");
 
 export function setEfficiencyMod(mod: number): void {
   globals.store!.dispatch({
@@ -63,25 +68,13 @@ export function askForEfficiency(): void {
 
   const currentModifier = globals.state.notes.efficiencyModifier;
 
-  const current = document.getElementById("set-modifier-current");
-  if (current !== null) {
-    current.innerHTML = currentModifier.toString();
-  }
-  const element = document.getElementById(
-    "set-modifier-new",
-  ) as HTMLInputElement;
-  element.value = currentModifier.toString();
+  setModifierCurrent.innerHTML = currentModifier.toString();
+  setModifierNew.value = currentModifier.toString();
 
-  const button = document.getElementById(
-    "set-modifier-button",
-  ) as HTMLButtonElement;
-  button.addEventListener("click", () => {
+  setModifierButton.addEventListener("click", () => {
     modals.closeModals();
 
-    const inputElement = document.getElementById(
-      "set-modifier-new",
-    ) as HTMLInputElement | null;
-    const effModString = inputElement?.value ?? "";
+    const effModString = setModifierNew.value;
     const effMod = parseIntSafe(effModString);
     if (effMod === undefined) {
       // Don't do anything if they entered something that is not a number.
@@ -90,5 +83,10 @@ export function askForEfficiency(): void {
     setEfficiencyMod(effMod);
   });
 
-  modals.showPrompt("#set-modifier-modal", null, element, button);
+  modals.showPrompt(
+    "#set-modifier-modal",
+    null,
+    setModifierNew,
+    setModifierButton,
+  );
 }

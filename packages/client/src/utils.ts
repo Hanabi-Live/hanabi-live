@@ -17,11 +17,13 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
-export function getElement(selectors: string): Element {
+// TODO: refactor all into getHTMLElement
+// TODO: refactor all to top of file
+export function getHTMLElement(selectors: string): HTMLElement {
   const element = document.querySelector(selectors);
 
-  if (!(element instanceof Element)) {
-    throw new TypeError(`Failed to find the element: ${selectors}`);
+  if (!(element instanceof HTMLElement)) {
+    throw new TypeError(`Failed to find the HTMLElement: ${selectors}`);
   }
 
   return element;
@@ -31,7 +33,7 @@ export function getHTMLInputElement(selectors: string): HTMLInputElement {
   const element = document.querySelector(selectors);
 
   if (!(element instanceof HTMLInputElement)) {
-    throw new TypeError(`Failed to find the HTML input element: ${selectors}`);
+    throw new TypeError(`Failed to find the HTMLInputElement: ${selectors}`);
   }
 
   return element;
