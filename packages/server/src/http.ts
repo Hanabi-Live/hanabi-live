@@ -164,9 +164,8 @@ export async function httpInit(): Promise<void> {
   });
 
   fastify.addHook("preHandler", async (request, reply) => {
-    // Check to see if their IP is banned.
-    const isBanned = await models.bannedIPs.check(request.ip);
-    if (isBanned) {
+    const ipIsBanned = await models.bannedIPs.check(request.ip);
+    if (ipIsBanned) {
       logger.info(`IP "${request.ip}" tried to log in, but they are banned.`);
       return reply
         .code(StatusCodes.UNAUTHORIZED)

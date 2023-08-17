@@ -1,24 +1,30 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
+import { HTTPLoginDataSchema } from "../interfaces/HTTPLoginData";
 import { logger } from "../logger";
 
+const WHITESPACE_REGEX = /\s/;
+
 /**
- * This handles part 1 of 2 for login authentication. The user must POST to "/login" with the values
- * of "username", "password", and "version". If successful, they will receive a cookie from the
- * server with an expiry of N seconds.
+ * Handles the first part of login authentication. The user must POST to "/login" with the values
+ * from the `HTTPLoginData` interface. If successful, they will receive a cookie from the server
+ * that is used to establish a WebSocket connection.
  *
- * Part 2 is found in "ws.ts".
+ * The next step is found in "ws.ts".
  *
  * By allowing this function to run concurrently with no locking, there is a race condition where a
- * new user can login twice at the same time and "models.Users.Insert()" will be called twice.
- * However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row will
- * prevent the 2nd insertion from completing, and the second goroutine will return at that point.
+ * new user can login twice at the same time and a new user will be inserted into the database
+ * twice. However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row
+ * will prevent the 2nd insertion from completing.
  */
 export function httpLogin(
   request: FastifyRequest,
   reply: FastifyReply,
 ): FastifyReply {
-  validate(request);
+  const errorReply = validate(request, reply);
+  if (errorReply) {
+    return errorReply;
+  }
 
   const user = {
     username: "alice",
@@ -32,67 +38,29 @@ export function httpLogin(
   return reply.code(StatusCodes.OK).send();
 }
 
-function validate(_request: FastifyRequest) {
+function validate(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): FastifyReply | undefined {
+  const data = HTTPLoginDataSchema.parse(request.body);
+  logger.info(data);
+
+  const usernameHasWhitespace = WHITESPACE_REGEX.test(data.username);
+  if (usernameHasWhitespace) {
+    logger.info(`IP "${request.ip}" tried to log in, but they are banned.`);
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send("Usernames cannot contain any whitespace characters.");
+  }
+
   // TODO
-  logger.info(_request.body);
+
+  return undefined;
 }
 
 /*
 
 func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
-	// Validate that the user sent the required POST values
-	username := c.PostForm("username")
-	if username == "" {
-		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
-			"but they did not provide the \"username\" parameter.")
-		http.Error(
-			w,
-			"You must provide the \"username\" parameter to log in.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-	password := c.PostForm("password")
-	if password == "" {
-		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
-			"but they did not provide the \"password\" parameter.")
-		http.Error(
-			w,
-			"You must provide the \"password\" parameter to log in.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-	newPassword := c.PostForm("newPassword")
-	version := c.PostForm("version")
-	if version == "" {
-		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
-			"but they did not provide the \"version\" parameter.")
-		http.Error(
-			w,
-			"You must provide the \"version\" parameter to log in.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-
-	// Trim whitespace from both sides
-	username = strings.TrimSpace(username)
-
-	// Validate that the username does not contain any whitespace
-	for _, letter := range username {
-		if unicode.IsSpace(letter) {
-			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-				"\"" + username + "\", but it contained whitespace.")
-			http.Error(
-				w,
-				"Usernames cannot contain any whitespace characters.",
-				http.StatusUnauthorized,
-			)
-			return nil, false
-		}
-	}
-
 	// Validate that the username is not excessively short
 	if len(username) < MinUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
