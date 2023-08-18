@@ -11,12 +11,13 @@ import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";
 import { getHTMLElement, getHTMLInputElement } from "./utils";
 
+/** Used by the morph dialog. */
+type DragAreaType = "playArea" | "discardArea" | null;
+
 let initialized = false;
 let allowCloseModal = true;
 let currentModal: HTMLElement | null = null;
-
-/** Used by the morph dialog. */
-type DragAreaType = "playArea" | "discardArea" | null;
+let morphDragArea: DragAreaType = null;
 
 const createGameSubmit = getHTMLElement("#create-game-submit");
 const createTablePassword = getHTMLInputElement("#createTablePassword");
@@ -137,63 +138,8 @@ export function askForMorph(
   if (!init()) {
     return;
   }
-  let dragArea = draggedTo;
 
-  // eslint-disable-next-line func-style
-  const morphFinishLayout = () => {
-    // Finish drag action.
-    if (card === null) {
-      return;
-    }
-
-    card.getLayoutParent().continueDragAction(dragArea);
-  };
-
-  // eslint-disable-next-line func-style
-  const morphReplayOkButton = (): boolean => {
-    allowCloseModal = true;
-    closeModals();
-
-    const cardIdentity = noteIdentity.parseIdentity(
-      variant,
-      morphModalTextbox.value,
-    );
-
-    if (
-      cardIdentity.suitIndex === CardIdentityType.Fail ||
-      cardIdentity.rank === CardIdentityType.Fail
-    ) {
-      // The morph did not succeed.
-      return false;
-    }
-
-    morphReplayFromModal(card!, cardIdentity);
-    return true;
-  };
-
-  // eslint-disable-next-line func-style
-  const morphInGameOkButton = () => {
-    const success = morphReplayOkButton();
-    if (!success) {
-      dragArea = null;
-    }
-
-    morphFinishLayout();
-  };
-
-  // eslint-disable-next-line func-style
-  const morphReplayCancelButton = () => {
-    allowCloseModal = true;
-    closeModals();
-  };
-
-  // eslint-disable-next-line func-style
-  const morphInGameCancelButton = () => {
-    morphReplayCancelButton();
-    dragArea = null;
-    morphFinishLayout();
-  };
-
+  morphDragArea = draggedTo;
   allowCloseModal = false;
 
   const { suits } = variant;
@@ -220,30 +166,89 @@ export function askForMorph(
   }, 100);
 
   if (draggedTo === null) {
-    // If action is null, the function was called from HanabiCardClick.ts during replay hypo.
-
-    // Set the dialog text.
+    // If action is null, the function was called from "HanabiCardClick.ts" during replay hypo.
     morphModalDescription.innerHTML =
       "Select the card you want to morph it into:";
 
-    // Morph modal OK button.
-    morphModalButtonOK.addEventListener("click", morphReplayOkButton);
+    // We can't use "addEventListener" because we can't easily remove the previous listener.
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    morphModalButtonOK.onclick = () => {
+      morphReplayOkButton(card, variant);
+    };
 
-    // Morph modal Cancel button.
-    morphModalButtonCancel.addEventListener("click", morphReplayCancelButton);
+    // We can't use "addEventListener" because we can't easily remove the previous listener.
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    morphModalButtonCancel.onclick = morphReplayCancelButton;
   } else {
-    // The function was called from LayoutChild.ts during in-game hypo.
-
-    // Set the dialog text.
+    // The function was called from "LayoutChild.ts" during in-game hypo.
     morphModalDescription.innerHTML =
       "What the card will be for the purposes of this hypothetical?";
 
-    // Morph modal OK button.
-    morphModalButtonOK.addEventListener("click", morphInGameOkButton);
+    // We can't use "addEventListener" because we can't easily remove the previous listener.
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    morphModalButtonOK.onclick = () => {
+      morphInGameOkButton(card, variant);
+    };
 
-    // Morph modal Cancel button.
-    morphModalButtonCancel.addEventListener("click", morphInGameCancelButton);
+    // We can't use "addEventListener" because we can't easily remove the previous listener.
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    morphModalButtonCancel.onclick = () => {
+      morphInGameCancelButton(card);
+    };
   }
+}
+
+function morphFinishLayout(card: HanabiCard | null) {
+  // Finish drag action.
+  if (card === null) {
+    return;
+  }
+
+  card.getLayoutParent().continueDragAction(morphDragArea);
+}
+
+function morphReplayOkButton(
+  card: HanabiCard | null,
+  variant: Variant,
+): boolean {
+  allowCloseModal = true;
+  closeModals();
+
+  const cardIdentity = noteIdentity.parseIdentity(
+    variant,
+    morphModalTextbox.value,
+  );
+
+  if (
+    cardIdentity.suitIndex === CardIdentityType.Fail ||
+    cardIdentity.rank === CardIdentityType.Fail
+  ) {
+    // The morph did not succeed.
+    return false;
+  }
+
+  morphReplayFromModal(card!, cardIdentity);
+  return true;
+}
+
+function morphInGameOkButton(card: HanabiCard | null, variant: Variant) {
+  const success = morphReplayOkButton(card, variant);
+  if (!success) {
+    morphDragArea = null;
+  }
+
+  morphFinishLayout(card);
+}
+
+function morphReplayCancelButton() {
+  allowCloseModal = true;
+  closeModals();
+}
+
+function morphInGameCancelButton(card: HanabiCard | null) {
+  morphReplayCancelButton();
+  morphDragArea = null;
+  morphFinishLayout(card);
 }
 
 function passwordSubmit() {
@@ -326,10 +331,13 @@ export function setModal(
     if (!(test?.call(null) ?? true)) {
       return;
     }
+
     showModal(selector, before);
+
     if (focus === null) {
       return;
     }
+
     setTimeout(() => {
       if (typeof focus === "string") {
         getHTMLElement(focus).focus();

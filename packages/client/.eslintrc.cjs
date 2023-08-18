@@ -10,6 +10,7 @@ module.exports = {
   },
 
   rules: {
+    // TODO: remove these lines
     "no-useless-call": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/no-lonely-if": "off",

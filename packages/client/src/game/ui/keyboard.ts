@@ -388,7 +388,9 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   playDiscardCard.max = maxSlotIndex.toString();
   playDiscardCard.value = "1";
 
-  playDiscardButton.addEventListener("click", () => {
+  // We can't use "addEventListener" because we can't easily remove the previous listener.
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
+  playDiscardButton.onclick = () => {
     closeModals();
     const response = playDiscardCard.value;
 
@@ -409,7 +411,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
 
     performAction(actionType, hand[maxSlotIndex - slot]!);
-  });
+  };
 
   showPrompt("#play-discard-modal", null, playDiscardCard, playDiscardButton);
 }

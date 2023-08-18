@@ -71,7 +71,9 @@ export function askForEfficiency(): void {
   setModifierCurrent.innerHTML = currentModifier.toString();
   setModifierNew.value = currentModifier.toString();
 
-  setModifierButton.addEventListener("click", () => {
+  // We can't use "addEventListener" because we can't easily remove the previous listener.
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
+  setModifierButton.onclick = () => {
     modals.closeModals();
 
     const effModString = setModifierNew.value;
@@ -81,7 +83,7 @@ export function askForEfficiency(): void {
       return;
     }
     setEfficiencyMod(effMod);
-  });
+  };
 
   modals.showPrompt(
     "#set-modifier-modal",

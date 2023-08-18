@@ -328,12 +328,14 @@ export function promptTurn(): void {
   setTurnInput.max = Math.max(finalSegment, currentSegment).toString();
   setTurnInput.value = currentSegment.toString();
 
-  setTurnButton.addEventListener("click", (event) => {
+  // We can't use "addEventListener" because we can't easily remove the previous listener.
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
+  setTurnButton.onclick = (event) => {
     event.preventDefault();
     closeModals();
 
     goTo(setTurnInput.value);
-  });
+  };
 
   showPrompt("#set-turn-modal", null, setTurnInput, setTurnButton);
 }

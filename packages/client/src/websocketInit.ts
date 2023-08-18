@@ -47,10 +47,10 @@ export function websocketInit(): void {
       "Disconnected from the server. Either your Internet hiccuped or the server restarted.",
     );
   });
-  conn.on("socketError", (data: unknown) => {
+  conn.on("socketError", (event: unknown) => {
     // "socketError" is defined in the `Connection` object as mapping to the WebSocket "onerror"
     // event.
-    console.error("WebSocket error:", data);
+    console.error("WebSocket error:", event);
   });
 
   initCommands(conn);
