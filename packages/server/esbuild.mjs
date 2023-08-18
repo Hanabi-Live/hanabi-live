@@ -11,9 +11,24 @@ build({
   entryPoints: ["packages/server/src/main.ts"],
   bundle: true,
   outdir,
-  sourcemap: true,
   platform: "node",
+
+  /**
+   * The default is "linked", but we want to enable full stack traces so that users can report more
+   * useful error messages.
+   *
+   * @see https://esbuild.github.io/api/#sourcemap
+   */
+  sourcemap: "inline",
+
+  /** Needed to prevent a runtime error caused by the `@fastify/secure-session` plugin. */
   external: ["sodium-native"],
+
+  /**
+   * Needed so that Pino will work properly.
+   *
+   * @see https://github.com/davipon/esbuild-plugin-pino
+   */
   plugins: [esbuildPluginPino({ transports: ["pino-pretty"] })],
 }).catch(() => process.exit(1));
 
