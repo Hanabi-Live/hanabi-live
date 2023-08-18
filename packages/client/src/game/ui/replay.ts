@@ -328,8 +328,8 @@ export function promptTurn(): void {
   setTurnInput.max = Math.max(finalSegment, currentSegment).toString();
   setTurnInput.value = currentSegment.toString();
 
-  setTurnButton.addEventListener("click", (evt) => {
-    evt.preventDefault();
+  setTurnButton.addEventListener("click", (event) => {
+    event.preventDefault();
     closeModals();
 
     goTo(setTurnInput.value);

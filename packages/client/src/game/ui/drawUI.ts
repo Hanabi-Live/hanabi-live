@@ -1254,8 +1254,8 @@ function drawSharedReplay() {
       button.innerHTML = spectator.name;
       button.classList.add("button");
       button.dataset["player"] = spectator.name;
-      button.addEventListener("click", (evt) => {
-        const element = evt.target as HTMLElement;
+      button.addEventListener("click", (event) => {
+        const element = event.target as HTMLElement;
         setLeader(element.dataset["player"]);
       });
       button.type = "submit";

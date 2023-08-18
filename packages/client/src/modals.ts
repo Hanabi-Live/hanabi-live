@@ -45,8 +45,8 @@ function init(): boolean {
   pageCover.addEventListener("pointerdown", () => {
     closeModals();
   });
-  document.addEventListener("keydown", (evt) => {
-    if (evt.key === "Escape" && currentModal !== null) {
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && currentModal !== null) {
       closeModals();
     }
   });

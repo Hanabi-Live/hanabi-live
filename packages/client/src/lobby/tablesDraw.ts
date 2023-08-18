@@ -156,8 +156,8 @@ export function tablesDraw(): void {
         span.addClass("friend");
       }
       if (!table.joined && !table.sharedReplay) {
-        span.addClass("shadow").on("click", (evt) => {
-          evt.stopPropagation();
+        span.addClass("shadow").on("click", (event) => {
+          event.stopPropagation();
           tableSpectate(table, i);
         });
       }
@@ -187,8 +187,8 @@ export function tablesDraw(): void {
       $("<td>")
         .html(spectatorsString)
         .addClass("lobbySpectators")
-        .on("click", (evt) => {
-          evt.stopPropagation();
+        .on("click", (event) => {
+          event.stopPropagation();
           tableSpectate(table);
         })
         .appendTo(row);

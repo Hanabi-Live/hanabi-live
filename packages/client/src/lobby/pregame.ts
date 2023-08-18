@@ -349,8 +349,8 @@ function drawPlayerBox(i: number) {
 
   const span = getNameSpan(player.name);
   if (isSpectator()) {
-    span.addClass("shadow").on("click", (evt) => {
-      evt.stopPropagation();
+    span.addClass("shadow").on("click", (event) => {
+      event.stopPropagation();
       reattend(i);
     });
   }
@@ -525,8 +525,8 @@ export function drawSpectators(tableID: number): void {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")
           .addClass("unShadow")
-          .on("click", (evt) => {
-            evt.stopPropagation();
+          .on("click", (event) => {
+            event.stopPropagation();
             reattend(-1);
           })
           .append(" 🕵️");
