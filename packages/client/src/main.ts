@@ -5,6 +5,7 @@ import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
 import jquery from "jquery";
 import { Loader } from "./Loader";
 import * as chat from "./chat";
+import { initErrorListener } from "./errors";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
 import { globals } from "./globals";
@@ -19,7 +20,6 @@ import * as playerSettings from "./lobby/playerSettings";
 import { Screen } from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
 import * as modals from "./modals";
-import { showError } from "./modals";
 import * as sounds from "./sounds";
 import * as tooltips from "./tooltips";
 
@@ -32,32 +32,6 @@ declare global {
 }
 window.$ = jquery;
 
-// Initialize a global error handler that will show errors to the end-user.
-window.addEventListener("error", (errorEvent) => {
-  const stackTrace = getErrorStackTrace(errorEvent) ?? errorEvent.message;
-  const formattedStackTrace = `<pre>${stackTrace}</pre>`;
-  const reportInstructions = `
-    In order to make the website better, please report this error along with steps that you did to
-    cause it. You can report it:
-    <ul>
-      <li>in the lobby chat (worst option)</li>
-      <li>or in <a href="https://discord.gg/FADvkJp">the Hanab Discord server</a> (better option)</li>
-      <li>or <a href="https://github.com/Hanabi-Live/hanabi-live">on the GitHub repository</a> (best option)</li>
-    </ul>
-  `;
-  showError(formattedStackTrace + reportInstructions);
-});
-
-function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
-  const error = errorEvent.error as unknown; // Cast from `any` to `unknown`.
-  return typeof error === "object" &&
-    error !== null &&
-    "stack" in error &&
-    typeof error.stack === "string"
-    ? error.stack
-    : undefined;
-}
-
 // Manually redirect users that are going to wrong URLs.
 if (
   window.location.hostname === OLD_DOMAIN ||
@@ -66,6 +40,8 @@ if (
 ) {
   window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
 }
+
+initErrorListener();
 
 $(document).ready(() => {
   // Set an event handler for when the entire window loses focus.
