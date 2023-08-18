@@ -63,7 +63,7 @@ echo "Packing the TypeScript using esbuild..."
 echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
-npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="inline"
+npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
 echo
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
