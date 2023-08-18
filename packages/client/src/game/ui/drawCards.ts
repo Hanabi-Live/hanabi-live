@@ -19,7 +19,7 @@ export function drawCards(
   colorblindMode: boolean,
   styleNumbers: boolean,
   enableShadows: boolean,
-  initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+  initCanvas: () => { cvs: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
   cloneCanvas: (
     oldCvs: HTMLCanvasElement,
     oldCtx: CanvasRenderingContext2D,
@@ -56,7 +56,7 @@ export function drawCards(
         continue;
       }
 
-      const [cvs, ctx] = initCanvas();
+      const { cvs, ctx } = initCanvas();
 
       // We don't need the background on the stack base.
       if (rank !== STACK_BASE_RANK) {
@@ -180,7 +180,7 @@ export function drawCards(
   // Unknown 6 is a card that is completely unknown. This is a special case; we want to render
   // completely unknown cards as a blank gray card (instead of a blank white card).
   {
-    const [cvs, ctx] = makeUnknownCard(initCanvas, enableShadows);
+    const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
     const cardUnknown = saveCanvas(cvs, ctx);
     cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, cardUnknown);
   }
@@ -188,7 +188,7 @@ export function drawCards(
   // Additionally, create an image for the deck back. This is similar to the Unknown 6 card, except
   // it has pips for each suit.
   {
-    const [cvs, ctx] = makeDeckBack(variant, initCanvas, enableShadows);
+    const { cvs, ctx } = makeDeckBack(variant, initCanvas, enableShadows);
     const deckBack = saveCanvas(cvs, ctx);
     cardImages.set("deck-back", deckBack);
   }
@@ -309,10 +309,13 @@ function drawSuitPips(
 }
 
 function makeUnknownCard(
-  initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+  initCanvas: () => { cvs: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
   enableShadows: boolean,
-) {
-  const [cvs, ctx] = initCanvas();
+): {
+  cvs: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+} {
+  const { cvs, ctx } = initCanvas();
 
   drawCardBackground(ctx, enableShadows);
   ctx.fillStyle = "black";
@@ -332,19 +335,21 @@ function makeUnknownCard(
 
   ctx.translate(CARD_W / 2, CARD_H / 2);
 
-  const namedTuple: [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D] = [
+  return {
     cvs,
     ctx,
-  ];
-  return namedTuple;
+  };
 }
 
 function makeDeckBack(
   variant: Variant,
-  initCanvas: () => [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D],
+  initCanvas: () => { cvs: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
   enableShadows: boolean,
-) {
-  const [cvs, ctx] = makeUnknownCard(initCanvas, enableShadows);
+): {
+  cvs: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+} {
+  const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
   const pipTypes = new Set<string>();
 
   const sf = 0.4; // Scale factor
@@ -370,11 +375,10 @@ function makeDeckBack(
   }
   ctx.scale(1 / sf, 1 / sf);
 
-  const namedTuple: [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D] = [
+  return {
     cvs,
     ctx,
-  ];
-  return namedTuple;
+  };
 }
 
 function drawCardBase(

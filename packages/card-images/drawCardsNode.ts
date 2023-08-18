@@ -2,10 +2,10 @@ import jsdom from "jsdom";
 import { CARD_H, CARD_W } from "../src/game/ui/constants";
 import Canvas2svg from "./canvas2svg_node";
 
-export function initCanvas(): [
-  cvs: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-] {
+export function initCanvas(): {
+  cvs: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+} {
   const { document } = new jsdom.JSDOM("").window;
   const cvs = document.createElement("canvas");
   cvs.width = CARD_W;
@@ -17,11 +17,10 @@ export function initCanvas(): [
     height: CARD_H,
   }) as unknown as CanvasRenderingContext2D;
 
-  const namedTuple: [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D] = [
+  return {
     cvs,
     ctx,
-  ];
-  return namedTuple;
+  };
 }
 
 export function cloneCanvas(

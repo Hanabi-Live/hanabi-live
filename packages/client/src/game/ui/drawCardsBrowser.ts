@@ -1,9 +1,9 @@
 import { CARD_H, CARD_W } from "./constants";
 
-export function initCanvas(): [
-  cvs: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-] {
+export function initCanvas(): {
+  cvs: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+} {
   const cvs = document.createElement("canvas");
   cvs.width = CARD_W;
   cvs.height = CARD_H;
@@ -13,11 +13,10 @@ export function initCanvas(): [
     throw new Error("Failed to get the context for a new canvas element.");
   }
 
-  const namedTuple: [cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D] = [
+  return {
     cvs,
     ctx,
-  ];
-  return namedTuple;
+  };
 }
 
 export function cloneCanvas(

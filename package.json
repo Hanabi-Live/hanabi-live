@@ -67,6 +67,7 @@
     "prettier-plugin-go-template": "^0.0.15",
     "prettier-plugin-organize-imports": "^3.2.3",
     "redux": "^4.2.1",
+    "stacktracify": "^1.0.3",
     "tooltipster": "^4.2.8",
     "ts-jest": "^29.1.1",
     "tsconfig": "^7.0.0",
