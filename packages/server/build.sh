@@ -14,11 +14,11 @@ echo "Building: $PACKAGE_NAME"
 
 SECONDS=0
 
-# We have to run the compiled JavaScript from whichever directory that we compile it in, so we
-# choose to compile it at the root of the repository.
+cd "$DIR"
+
+# See the comment in "esbuild.mjs".
 REPO_ROOT="$DIR/../.."
 cd "$REPO_ROOT"
-
 node "$DIR/esbuild.mjs"
 
 echo "Successfully built $PACKAGE_NAME in $SECONDS seconds."

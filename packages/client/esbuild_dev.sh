@@ -15,4 +15,4 @@ JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 # latest Git commit will vary during development and we do not want to have to be forced to restart
 # the server in order to update it.
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.min.js"
-npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap --watch
+npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify  --sourcemap="inline" --watch

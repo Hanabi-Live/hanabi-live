@@ -1,25 +1,58 @@
 import { build } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
 import fs from "node:fs";
+import path from "node:path";
+import url from "node:url";
 
-/** See the comment in "build.sh". */
-const outdir = "packages/server/dist";
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+const PACKAGE_NAME = path.basename(__dirname);
+const CWD = process.cwd();
 
-fs.rmSync(outdir, { recursive: true, force: true });
+/**
+ * If we don't compile the project from the root of the repository, we will get the following
+ * run-time error:
+ *
+ * ```text
+ * Error: Cannot find module 'D:\Repositories\hanabi-live\D:Repositorieshanabi-livepackagesserverdist\thread-stream-worker.js' // cspell:disable-line
+ * ```
+ *
+ * This is because Pino splits the output into several files and they lose reference to each other.
+ * Thus, we must compile and run the resulting JavaScript file from the same directory.
+ *
+ * The directory must be changed before this script is invoked because `process.chdir` does not seem
+ * to affect esbuild.
+ */
+if (CWD.endsWith(PACKAGE_NAME)) {
+  throw new Error(
+    `esbuild for package "${PACKAGE_NAME}" must be invoked from the root of the repository.`,
+  );
+}
+
+/** We cannot use `path.join` here or we will get a runtime error. */
+const OUT_DIR = "packages/server/dist";
+
+/** We cannot use `path.join` here or we will get a runtime error. */
+const MAIN_TS = "packages/server/src/main.ts";
+
+fs.rmSync(OUT_DIR, {
+  recursive: true,
+  force: true,
+});
 
 build({
-  entryPoints: ["packages/server/src/main.ts"],
+  entryPoints: [MAIN_TS],
   bundle: true,
-  outdir,
-  platform: "node",
+  outdir: OUT_DIR,
 
   /**
-   * The default is "linked", but we want to enable full stack traces so that users can report more
-   * useful error messages.
+   * Required for the bundled output to work properly.
    *
-   * @see https://esbuild.github.io/api/#sourcemap
+   * @see https://esbuild.github.io/api/#platform
    */
-  sourcemap: "inline",
+  platform: "node",
+
+  /** @see https://esbuild.github.io/api/#sourcemap */
+  sourcemap: "linked",
 
   /** Needed to prevent a runtime error caused by the `@fastify/secure-session` plugin. */
   external: ["sodium-native"],
@@ -33,6 +66,8 @@ build({
 }).catch(() => process.exit(1));
 
 // Copy the template files, which are not included in the bundle.
-fs.cpSync("packages/server/src/templates", `${outdir}/templates`, {
+const TEMPLATES_DIR_SRC = path.join(__dirname, "src", "templates");
+const TEMPLATES_DIR_DST = path.join(__dirname, "dist", "templates");
+fs.cpSync(TEMPLATES_DIR_SRC, TEMPLATES_DIR_DST, {
   recursive: true,
 });
