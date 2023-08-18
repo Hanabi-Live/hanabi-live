@@ -108,9 +108,6 @@ export function draw(friends: boolean): void {
 
   // Add all of the history.
   for (const [i, id] of ids.entries()) {
-    console.log("i:", i);
-    console.log("id:", id);
-
     const gameData = friends
       ? globals.historyFriends.get(id)
       : globals.history.get(id);
