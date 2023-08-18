@@ -1,7 +1,7 @@
 // The navigation bar at the top of the lobby.
 
 import { globals } from "../globals";
-import { setModal } from "../modals";
+import { initModal } from "../modals";
 import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -13,7 +13,7 @@ export function init(): void {
   $("#logo-link").removeAttr("href");
 
   // The "Create Game" and "Change Options" buttons.
-  setModal(
+  initModal(
     "#nav-buttons-lobby-create-game",
     "#create-game-modal",
     createGame.ready,
@@ -21,7 +21,7 @@ export function init(): void {
     "#create-game-variant-dropdown1",
   );
 
-  setModal(
+  initModal(
     "#nav-buttons-pregame-change-options",
     "#create-game-modal",
     createGame.ready,
@@ -51,7 +51,7 @@ export function init(): void {
   };
 
   // The "Watch Specific Replay" button.
-  setModal(
+  initModal(
     "#nav-buttons-lobby-replay",
     "#replay-modal",
     watchReplay.ready,
@@ -62,10 +62,10 @@ export function init(): void {
   // The "Help" button. (This is just a simple link.)
 
   // The "Resources" button
-  setModal("#nav-buttons-lobby-resources", "#resources-modal");
+  initModal("#nav-buttons-lobby-resources", "#resources-modal");
 
   // The "Settings" button
-  setModal("#nav-buttons-lobby-settings", "#settings-modal");
+  initModal("#nav-buttons-lobby-settings", "#settings-modal");
 
   // The "Sign Out" button.
   $(".signout").on("click", () => {

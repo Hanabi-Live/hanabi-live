@@ -14,7 +14,6 @@ import { getHTMLElement, getHTMLInputElement } from "./utils";
 /** Used by the morph dialog. */
 type DragAreaType = "playArea" | "discardArea" | null;
 
-let initialized = false;
 let allowCloseModal = true;
 let currentModal: HTMLElement | null = null;
 let morphDragArea: DragAreaType = null;
@@ -36,12 +35,7 @@ const passwordModalSubmit = getHTMLElement("#password-modal-submit");
 const warningModalButton = getHTMLElement("#warning-modal-button");
 const warningModalDescription = getHTMLElement("#warning-modal-description");
 
-// Initialize various element behavior within the modals.
-function init(): boolean {
-  if (initialized) {
-    return true;
-  }
-
+export function init(): void {
   // Close modal on escape press or by clicking outside.
   pageCover.addEventListener("pointerdown", () => {
     closeModals();
@@ -103,16 +97,26 @@ function init(): boolean {
       morphModalButtonCancel.click();
     }
   });
+}
 
-  initialized = true;
-  return true;
+function passwordSubmit() {
+  const tableIDString = passwordModalID.value;
+  const tableID = parseIntSafe(tableIDString); // The server expects this as a number
+
+  const password = passwordModalPassword.value;
+
+  globals.conn!.send("tableJoin", {
+    tableID,
+    password,
+  });
+
+  // Record the password in local storage (cookie).
+  localStorage.setItem("joinTablePassword", password);
+
+  closeModals();
 }
 
 export function askForPassword(tableID: number): void {
-  if (!init()) {
-    return;
-  }
-
   allowCloseModal = true;
 
   passwordModalID.setAttribute("value", tableID.toString());
@@ -135,10 +139,6 @@ export function askForMorph(
   variant: Variant,
   draggedTo: DragAreaType = null,
 ): void {
-  if (!init()) {
-    return;
-  }
-
   morphDragArea = draggedTo;
   allowCloseModal = false;
 
@@ -251,32 +251,7 @@ function morphInGameCancelButton(card: HanabiCard | null) {
   morphFinishLayout(card);
 }
 
-function passwordSubmit() {
-  if (!init()) {
-    return;
-  }
-
-  const tableIDString = passwordModalID.value;
-  const tableID = parseIntSafe(tableIDString); // The server expects this as a number
-
-  const password = passwordModalPassword.value;
-
-  globals.conn!.send("tableJoin", {
-    tableID,
-    password,
-  });
-
-  // Record the password in local storage (cookie).
-  localStorage.setItem("joinTablePassword", password);
-
-  closeModals();
-}
-
 export function showWarning(msg: string): void {
-  if (!init()) {
-    return;
-  }
-
   allowCloseModal = true;
 
   warningModalDescription.innerHTML = msg;
@@ -291,10 +266,6 @@ export function showWarning(msg: string): void {
 }
 
 export function showError(msg: string): void {
-  if (!init()) {
-    return;
-  }
-
   // Do nothing if we are already showing the error modal.
   if (globals.errorOccurred) {
     return;
@@ -313,17 +284,14 @@ export function showError(msg: string): void {
   }
 }
 
-export function setModal(
+/** Initializes a modal for a specific element. */
+export function initModal(
   buttonSelector: string,
   selector: string,
   before?: () => unknown,
   test?: () => unknown,
   focus: (() => unknown) | string | null = null,
 ): void {
-  if (!init()) {
-    return;
-  }
-
   const button = getHTMLElement(buttonSelector);
 
   button.addEventListener("click", () => {
@@ -354,21 +322,19 @@ export function showPrompt(
   focusElement: HTMLInputElement | null = null,
   clickButtonElement: HTMLElement | null = null,
 ): void {
-  if (!init()) {
-    return;
-  }
-
   // eslint-disable-next-line
   if (!(test?.call(null) ?? true)) {
     return;
   }
 
   if (focusElement !== null && clickButtonElement !== null) {
-    focusElement.addEventListener("keydown", (event) => {
+    // We can't use "addEventListener" because we can't easily remove the previous listener.
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    focusElement.onkeydown = (event) => {
       if (event.key === "Enter") {
         clickButtonElement.click();
       }
-    });
+    };
   }
 
   showModal(selector);
@@ -425,7 +391,6 @@ function showModal(
   before: (() => unknown) | null,
   ready: (() => unknown) | null,
 ): void;
-
 function showModal(
   selector: string,
   param2?: (() => unknown) | boolean | null,
@@ -443,10 +408,13 @@ function showModal(
   }
 
   element.classList.add("modal");
-  element.addEventListener("pointerdown", (event) => {
+
+  // We can't use "addEventListener" because we can't easily remove the previous listener.
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
+  element.onpointerdown = (event) => {
     // Do not bubble clicks to pageCover.
     event.stopPropagation();
-  });
+  };
 
   if (typeof param2 === "function") {
     const result = param2.call(null);

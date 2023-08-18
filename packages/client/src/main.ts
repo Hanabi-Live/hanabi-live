@@ -18,6 +18,7 @@ import * as lobbyNav from "./lobby/nav";
 import * as playerSettings from "./lobby/playerSettings";
 import { Screen } from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
+import * as modals from "./modals";
 import { showError } from "./modals";
 import * as sounds from "./sounds";
 import * as tooltips from "./tooltips";
@@ -75,6 +76,7 @@ $(document).ready(() => {
   });
 
   // Now that the page has loaded, initialize and define the functionality of various UI elements.
+  modals.init();
   chat.init();
   game.init();
   gameChat.init();
