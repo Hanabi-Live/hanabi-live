@@ -163,7 +163,7 @@ export function onPlayStacksChanged(
           { length: stack.length },
           (_, rankOffset) => ((rankOffset + stackStart - 1) % 5) + 1,
         );
-        const ranksText = playedRanks.join(" ") + " _".repeat(6 - stack.length);
+        const ranksText = playedRanks.join(" ") + " _".repeat(5 - stack.length);
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =
