@@ -186,7 +186,9 @@ gameCommands.set("note", (data: NoteData) => {
 
   // Set the note indicator.
   const card = getCardOrStackBase(data.order);
-  card.setNoteIndicator();
+  if (card) {
+    card.setNoteIndicator();
+  }
 });
 
 /**
@@ -424,8 +426,10 @@ function setNoteIndicatorAndCheckForSpecialNote() {
   const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
   for (let i = 0; i <= indexOfLastDrawnCard; i++) {
     const card = getCardOrStackBase(i);
-    card.checkSpecialNote();
-    card.setRaiseAndShadowOffset();
+    if (card) {
+      card.checkSpecialNote();
+      card.setRaiseAndShadowOffset();
+    }
   }
 
   // Check for special notes on the stack bases.

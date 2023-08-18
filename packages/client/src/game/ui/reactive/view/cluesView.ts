@@ -38,7 +38,9 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
 
   for (const [i, order] of lastClue.list.entries()) {
     const card = getCardOrStackBase(order);
-    arrows.set(i, card, lastClue.giver, clue);
+    if (card) {
+      arrows.set(i, card, lastClue.giver, clue);
+    }
   }
 
   globals.layers.arrow.batchDraw();

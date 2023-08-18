@@ -957,7 +957,9 @@ function drawScoreArea() {
 
         // Highlight the card
         const card = getCardOrStackBase(strike.order);
-        arrows.toggle(card.state.order, true);
+        if (card) {
+          arrows.toggle(card.state.order, true);
+        }
 
         break;
       }

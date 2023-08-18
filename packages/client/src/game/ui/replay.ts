@@ -121,7 +121,9 @@ export function goToSegmentAndIndicateCard(
   // We indicate the card to make it easier to see.
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
   const card = getCardOrStackBase(order);
-  arrows.toggle(card.state.order);
+  if (card) {
+    arrows.toggle(card.state.order);
+  }
 }
 
 // ---------------------------

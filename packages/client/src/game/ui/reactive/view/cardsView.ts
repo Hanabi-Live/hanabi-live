@@ -197,6 +197,9 @@ function subscribeToCardChanges(order: number) {
 
 function updateBorder(order: number) {
   const card = getCardOrStackBase(order);
+  if (!card) {
+    return;
+  }
 
   // When cards have one or more positive clues, they get a special border.
   card.setBorder();
@@ -209,24 +212,40 @@ function updateBorder(order: number) {
 
 function updatePips(order: number) {
   const card = getCardOrStackBase(order);
+  if (!card) {
+    return;
+  }
+
   card.updatePips();
   globals.layers.card.batchDraw();
 }
 
 export function updateCardVisuals(order: number): void {
   const card = getCardOrStackBase(order);
+  if (!card) {
+    return;
+  }
+
   card.setBareImage();
   globals.layers.card.batchDraw();
 }
 
 function checkNoteDisproved(order: number) {
   const card = getCardOrStackBase(order);
+  if (!card) {
+    return;
+  }
+
   card.checkNoteDisproved();
   globals.layers.card.batchDraw();
 }
 
 function updateCardStatus(order: number) {
   const card = getCardOrStackBase(order);
+  if (!card) {
+    return;
+  }
+
   card.setStatus();
   globals.layers.card.batchDraw();
 }

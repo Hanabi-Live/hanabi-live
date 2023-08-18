@@ -88,6 +88,10 @@ export function send(hypoAction: ClientAction): void {
     case "play":
     case "discard": {
       const card = getCardOrStackBase(hypoAction.target);
+      if (!card) {
+        return;
+      }
+
       const { suitIndex, rank } = card.getMorphedIdentity();
       if (suitIndex === null || rank === null) {
         // Play or discard action could have been initiated from the keyboard.

@@ -357,6 +357,9 @@ export function click(
 export function toggle(order: number, alwaysShow = false): void {
   // Get the element corresponding to the "order" number.
   const element = getElementFromOrder(order);
+  if (!element) {
+    return;
+  }
 
   // If we are showing an arrow on a card that is currently tweening, delay showing it until the
   // tween is finished.
@@ -397,7 +400,7 @@ export function toggle(order: number, alwaysShow = false): void {
   }
 }
 
-function getElementFromOrder(order: number): NodeWithTooltip {
+function getElementFromOrder(order: number): NodeWithTooltip | undefined {
   if (order >= 0) {
     // This is an arrow for a card. The order corresponds to the card's order in the deck.
     return getCardOrStackBase(order);
@@ -407,12 +410,12 @@ function getElementFromOrder(order: number): NodeWithTooltip {
   return getElementFromNegativeOrder(order);
 }
 
-function getElementFromNegativeOrder(order: ReplayArrowOrder): NodeWithTooltip {
+function getElementFromNegativeOrder(
+  order: ReplayArrowOrder,
+): NodeWithTooltip | undefined {
   switch (order) {
     case ReplayArrowOrder.Nothing: {
-      throw new Error(
-        `An order of ${ReplayArrowOrder.Nothing} does not correspond to an element.`,
-      );
+      return undefined;
     }
 
     case ReplayArrowOrder.Deck: {
