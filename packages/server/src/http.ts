@@ -78,6 +78,19 @@ const LETS_ENCRYPT_PATH = path.join(REPO_ROOT, LETS_ENCRYPT_PATH_PREFIX);
 const eta = new Eta({
   // Prefer the Golang template syntax, which is not the default.
   tags: ["{{", "}}"],
+
+  // By default, Eta will allow undefined values to bubble through to the template. We want to
+  // explicitly throw an error in this case.
+  autoFilter: true,
+  filterFunction: (value: unknown) => {
+    if (typeof value !== "string") {
+      throw new TypeError(
+        `One of the template values has a type of: ${typeof value}`,
+      );
+    }
+
+    return value;
+  },
 });
 
 export async function httpInit(): Promise<void> {
