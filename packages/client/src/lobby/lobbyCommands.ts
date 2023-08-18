@@ -75,7 +75,7 @@ lobbyCommands.set("game", (data: Game) => {
 lobbyCommands.set("gameHistory", (dataArray: GameHistory[]) => {
   // `data` will be an array of all of the games that we have previously played.
   for (const data of dataArray) {
-    globals.history[data.id] = data;
+    globals.history.set(data.id, data);
 
     if (data.incrementNumGames) {
       globals.totalGames++;
@@ -88,7 +88,7 @@ lobbyCommands.set("gameHistory", (dataArray: GameHistory[]) => {
     history.draw(false);
   }
 
-  const shownGames = Object.keys(globals.history).length;
+  const shownGames = globals.history.size;
   $("#nav-buttons-history-shown-games").html(shownGames.toString());
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
   if (shownGames === globals.totalGames) {
@@ -99,7 +99,7 @@ lobbyCommands.set("gameHistory", (dataArray: GameHistory[]) => {
 lobbyCommands.set("gameHistoryFriends", (dataArray: GameHistory[]) => {
   // `data` will be an array of all of the games that our friends have previously played.
   for (const data of dataArray) {
-    globals.historyFriends[data.id] = data;
+    globals.historyFriends.set(data.id, data);
   }
 
   // The server sent us more games because we clicked on the "Show More History" button.

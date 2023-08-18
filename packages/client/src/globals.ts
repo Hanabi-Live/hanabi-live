@@ -46,8 +46,12 @@ export class Globals {
   /** Keys are IDs. */
   tableMap = new Map<number, Table>();
 
-  history: GameHistory[] = [];
-  historyFriends: GameHistory[] = [];
+  /** Keys are IDs. */
+  history = new Map<number, GameHistory>();
+
+  /** Keys are IDs. */
+  historyFriends = new Map<number, GameHistory>();
+
   totalGamesFriends = 0;
 
   peopleTyping: string[] = [];

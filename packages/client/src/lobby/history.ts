@@ -19,10 +19,10 @@ export function init(): void {
     let offset: number;
     if (globals.currentScreen === Screen.History) {
       command = "historyGet";
-      offset = Object.keys(globals.history).length;
+      offset = globals.history.size;
     } else if (globals.currentScreen === Screen.HistoryFriends) {
       command = "historyFriendsGet";
-      offset = Object.keys(globals.historyFriends).length;
+      offset = globals.historyFriends.size;
     } else {
       return;
     }
@@ -108,9 +108,16 @@ export function draw(friends: boolean): void {
 
   // Add all of the history.
   for (const [i, id] of ids.entries()) {
+    console.log("i:", i);
+    console.log("id:", id);
+
     const gameData = friends
-      ? globals.historyFriends[id]!
-      : globals.history[id]!;
+      ? globals.historyFriends.get(id)
+      : globals.history.get(id);
+    if (gameData === undefined) {
+      continue;
+    }
+
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
