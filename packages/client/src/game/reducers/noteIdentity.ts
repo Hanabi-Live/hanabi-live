@@ -106,7 +106,7 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
   if (identityMatch !== null) {
     const suitText = extractSuitText(identityMatch);
     const rankText = extractRankText(identityMatch);
-    if (suitText !== null && rankText !== null) {
+    if (suitText !== undefined && rankText !== undefined) {
       return {
         suitIndex: parseSuit(variant, suitText),
         rank: parseRank(rankText),
@@ -125,7 +125,7 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
     const squishText = extractSquishText(identityMatch);
     const suitIndices: SuitIndex[] = [];
     const ranks: Rank[] = [];
-    if (squishText !== null) {
+    if (squishText !== undefined) {
       for (const letter of squishText) {
         suitIndex = parseSuit(variant, letter);
         rank = parseRank(letter);
@@ -141,11 +141,11 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
       }
     }
     const suitText = extractSuitText(identityMatch);
-    if (suitText !== null) {
+    if (suitText !== undefined) {
       suitIndex = parseSuit(variant, suitText);
     }
     const rankText = extractRankText(identityMatch);
-    if (rankText !== null) {
+    if (rankText !== undefined) {
       rank = parseRank(rankText);
     }
   }
@@ -297,20 +297,20 @@ export function getPossibilitiesFromKeywords(
   return possibilities;
 }
 
-function extractSuitText(match: RegExpMatchArray): string | null {
-  return match[1] ?? match[4] ?? match[5] ?? null;
+function extractSuitText(match: RegExpMatchArray): string | undefined {
+  return match[1] ?? match[4] ?? match[5] ?? undefined;
 }
 
-function extractRankText(match: RegExpMatchArray): string | null {
-  return match[2] ?? match[3] ?? match[6] ?? null;
+function extractRankText(match: RegExpMatchArray): string | undefined {
+  return match[2] ?? match[3] ?? match[6] ?? undefined;
 }
 
-function extractSquishText(match: RegExpMatchArray): string | null {
+function extractSquishText(match: RegExpMatchArray): string | undefined {
   const text = match[7]?.trim();
 
   if (text !== undefined && !ALL_RESERVED_NOTES.has(text.toLowerCase())) {
     return text;
   }
 
-  return null;
+  return undefined;
 }
