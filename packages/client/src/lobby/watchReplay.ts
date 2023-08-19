@@ -146,7 +146,7 @@ function showReplayError(text: string) {
 
 // This function is executed every time the "Watch Specific Replay" button is clicked (after the
 // tooltip is added to the DOM).
-export function ready(): void {
+export function ready(): boolean {
   // Set the "Source" radio button.
   const source = localStorage.getItem("watchReplaySource");
   let sourceBox: string;
@@ -194,4 +194,6 @@ export function ready(): void {
 
   // Redraw the tooltip so that the new elements will fit better.
   tooltips.reposition("#nav-buttons-lobby-replay");
+
+  return true;
 }

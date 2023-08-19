@@ -129,9 +129,12 @@ export function askForPassword(tableID: number): void {
     passwordModalPassword.select();
   }
 
-  showModal("#password-modal", null, () => {
+  // eslint-disable-next-line func-style
+  const before = () => {
     passwordModalPassword.select();
-  });
+    return true;
+  };
+  showModal("#password-modal", true, before);
 }
 
 export function askForMorph(
@@ -260,9 +263,12 @@ export function showWarning(msg: string): void {
   globals.lastActiveElement = document.activeElement as HTMLElement;
 
   // Show the modal and focus the close button.
-  showModal("#warning-modal", () => {
+  // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
+  const before = () => {
     warningModalButton.focus();
-  });
+    return true;
+  };
+  showModal("#warning-modal", true, before);
 }
 
 export function showError(msg: string): void {
@@ -288,21 +294,23 @@ export function showError(msg: string): void {
 export function initModal(
   buttonSelector: string,
   selector: string,
-  before?: () => unknown,
-  test?: () => unknown,
-  focus: (() => unknown) | string | null = null,
+  before?: () => boolean,
+  test?: () => boolean,
+  focus?: (() => unknown) | string,
 ): void {
   const button = getHTMLElement(buttonSelector);
 
   button.addEventListener("click", () => {
-    // eslint-disable-next-line
-    if (!(test?.call(null) ?? true)) {
-      return;
+    if (test !== undefined) {
+      const result = test();
+      if (!result) {
+        return;
+      }
     }
 
-    showModal(selector, before);
+    showModal(selector, true, before);
 
-    if (focus === null) {
+    if (focus === undefined) {
       return;
     }
 
@@ -310,7 +318,7 @@ export function initModal(
       if (typeof focus === "string") {
         getHTMLElement(focus).focus();
       } else {
-        focus.call(null);
+        focus();
       }
     }, 100);
   });
@@ -337,7 +345,7 @@ export function showPrompt(
     };
   }
 
-  showModal(selector);
+  showModal(selector, true);
 
   if (focusElement !== null) {
     setTimeout(() => {
@@ -384,28 +392,18 @@ export function isModalVisible(): boolean {
   return currentModal !== null;
 }
 
-function showModal(selector: string, allowClose: boolean): void;
-function showModal(selector: string, before?: () => unknown): void;
 function showModal(
   selector: string,
-  before: (() => unknown) | null,
-  ready: (() => unknown) | null,
-): void;
-function showModal(
-  selector: string,
-  param2?: (() => unknown) | boolean | null,
-  param3?: (() => unknown) | boolean | null,
+  allowClose: boolean,
+  before?: () => boolean,
+  ready?: () => void,
 ) {
-  const element = getHTMLElement(selector);
-
   closeModals(true);
 
-  currentModal = element;
+  const element = getHTMLElement(selector);
 
-  allowCloseModal = true;
-  if (typeof param2 === "boolean") {
-    allowCloseModal = param2;
-  }
+  currentModal = element;
+  allowCloseModal = allowClose;
 
   element.classList.add("modal");
 
@@ -416,23 +414,22 @@ function showModal(
     event.stopPropagation();
   };
 
-  if (typeof param2 === "function") {
-    const result = param2.call(null);
-    // eslint-disable-next-line
-    if (result ?? false) {
+  if (before !== undefined) {
+    const result = before();
+    if (!result) {
       return;
     }
   }
 
   pageCover.append(element);
-
   pageCover.style.display = "flex";
   pageCover.classList.add("show");
+
   setTimeout(() => {
     pageCover.append(element);
     element.classList.remove("hidden");
-    if (typeof param3 === "function") {
-      param3.call(null);
+    if (ready !== undefined) {
+      ready();
     }
   }, 100);
 }

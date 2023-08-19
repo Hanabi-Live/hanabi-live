@@ -504,7 +504,7 @@ export function before(): boolean {
 
 // This function is executed every time the "Create Game" button is clicked (after the tooltip is
 // added to the DOM).
-export function ready(): void {
+export function ready(): boolean {
   // Change the UI if we are in a pre-game screen.
   let dialogTitle = "Create a New Game";
   let buttonTitle = "Create";
@@ -610,6 +610,8 @@ export function ready(): void {
   if (window.location.hostname !== "localhost") {
     $("#create-game-json-row").hide();
   }
+
+  return true;
 }
 
 function readyVariant(value: string) {
