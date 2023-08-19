@@ -1,5 +1,3 @@
-// The `HanabiCard` object represents a single card. It has a `LayoutChild` parent.
-
 import type { Color, Suit, Variant } from "@hanabi/data";
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, getSuit } from "@hanabi/data";
 import Konva from "konva";
@@ -47,6 +45,7 @@ enum PipState {
 
 const DECK_BACK_IMAGE = "deck-back";
 
+/** Represents a single card. It has a `LayoutChild` parent. */
 export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // ---------------
   // Class variables

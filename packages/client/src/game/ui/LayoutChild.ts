@@ -1,5 +1,3 @@
-// This is the parent of a HanabiCard. It has a CardLayout or PlayStack parent.
-
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
@@ -14,6 +12,7 @@ import { globals } from "./globals";
 import { isOurTurn } from "./isOurTurn";
 import * as turn from "./turn";
 
+/** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
 export class LayoutChild extends Konva.Group {
   tween: Konva.Tween | null = null;
   doMisplayAnimation = false;

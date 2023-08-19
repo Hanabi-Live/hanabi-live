@@ -1,6 +1,3 @@
-// CardLayout is an object that represents a player's hand (or a discard pile). It is composed of
-// LayoutChild objects.
-
 import Konva from "konva";
 import type { HanabiCard } from "./HanabiCard";
 import type { LayoutChild } from "./LayoutChild";
@@ -8,6 +5,7 @@ import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 
+/** Represents a player's hand (or a discard pile). It is composed of `LayoutChild` objects. */
 export class CardLayout extends Konva.Group {
   private readonly align: string;
   private readonly reverse: boolean;

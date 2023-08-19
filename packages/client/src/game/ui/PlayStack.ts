@@ -1,12 +1,13 @@
-// PlayStack represents the stack in the middle of the table for each suit. It is composed of
-// LayoutChild objects.
-
 import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 
+/**
+ * Represents the stack in the middle of the table for each suit. It is composed of `LayoutChild`
+ * objects.
+ */
 export class PlayStack extends Konva.Group {
   addChild(layoutChild: LayoutChild): void {
     const pos = layoutChild.getAbsolutePosition();
