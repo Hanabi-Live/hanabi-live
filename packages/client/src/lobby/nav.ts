@@ -34,32 +34,16 @@ export function init(): void {
     history.show();
   });
 
-  // eslint-disable-next-line func-style
-  const focus = () => {
-    if ($("#replay-id-row").is(":visible")) {
-      $("#replay-id").trigger("focus");
-    } else if ($("#replay-json-row").is(":visible")) {
-      $("#replay-json").trigger("focus");
-    }
-
-    $("#replay-id").on("keypress", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        $("#replay-submit").trigger("click");
-      }
-    });
-  };
-
   // The "Watch Specific Replay" button.
   initModal(
     "#nav-buttons-lobby-replay",
     "#replay-modal",
     watchReplay.ready,
     undefined,
-    focus,
+    watchSpecificReplayFocus,
   );
 
-  // The "Help" button. (This is just a simple link.)
+  // The "Help" button. (This is just a simple link, so it does not need any code.)
 
   // The "Resources" button
   initModal("#nav-buttons-lobby-resources", "#resources-modal");
@@ -216,6 +200,21 @@ export function init(): void {
 
   // The "Return to History" button from the "History Details" screen. This is initialized in the
   // "history.drawOtherScores()" function.
+}
+
+function watchSpecificReplayFocus() {
+  if ($("#replay-id-row").is(":visible")) {
+    $("#replay-id").trigger("focus");
+  } else if ($("#replay-json-row").is(":visible")) {
+    $("#replay-json").trigger("focus");
+  }
+
+  $("#replay-id").on("keypress", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      $("#replay-submit").trigger("click");
+    }
+  });
 }
 
 export function show(target: string): void {

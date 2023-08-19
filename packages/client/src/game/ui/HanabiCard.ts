@@ -1307,9 +1307,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const index = this.state.suitIndex ?? 0;
     const { variant } = this;
     const suit = variant.suits[index]!;
-    function colorName(color: Color) {
-      return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
-    }
     const lines: string[] = [];
     if (suit.oneOfEach) {
       lines.push("Every card is unique.");
@@ -1317,19 +1314,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (suit.clueColors.length > 1) {
       const colors: string[] = [];
       for (const color of suit.clueColors) {
-        colors.push(colorName(color));
+        colors.push(getColorHTML(color));
       }
       lines.push(`Touched by ${colors.join(", ")} color clues`);
     }
     if (suit.prism) {
       const cards: string[] = [];
       if (variant.upOrDown) {
-        cards.push(`START is ${colorName(variant.clueColors.at(-1)!)}`);
+        cards.push(`START is ${getColorHTML(variant.clueColors.at(-1)!)}`);
       }
       for (let rank = 1; rank <= 5; rank++) {
         const prismColorIndex = (rank - 1) % variant.clueColors.length;
         cards.push(
-          `${rank} is ${colorName(variant.clueColors[prismColorIndex]!)}`,
+          `${rank} is ${getColorHTML(variant.clueColors[prismColorIndex]!)}`,
         );
       }
       lines.push(`Colors: ${cards.join(", ")}`);
@@ -1397,4 +1394,8 @@ function updatePip(
       pip.hidePositiveClue();
     }
   }
+}
+
+function getColorHTML(color: Color) {
+  return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
 }

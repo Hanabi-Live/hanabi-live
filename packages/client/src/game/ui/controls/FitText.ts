@@ -27,21 +27,19 @@ export class FitText extends Konva.Text {
   }
 
   resize(): void {
-    const textFits = (size: number) => {
-      this.fontSize(size);
-      return this.measureSize(this.text()).width <= this.width();
-    };
-
     const minimumFontSize = 5;
 
-    if (!textFits(this.origFontSize) && this.origFontSize > minimumFontSize) {
+    if (
+      !this.textFits(this.origFontSize) &&
+      this.origFontSize > minimumFontSize
+    ) {
       // Binary search the maximum font size that fits within a tolerance.
       let low = minimumFontSize;
       let high = this.origFontSize;
       const tolerance = 0.5;
       while (high - low > tolerance) {
         const mid = low + (high - low) / 2;
-        if (textFits(mid)) {
+        if (this.textFits(mid)) {
           low = mid;
         } else {
           high = mid;
@@ -51,6 +49,11 @@ export class FitText extends Konva.Text {
     }
 
     this.needsResize = false;
+  }
+
+  textFits(size: number): boolean {
+    this.fontSize(size);
+    return this.measureSize(this.text()).width <= this.width();
   }
 
   fitText(text: string): void {

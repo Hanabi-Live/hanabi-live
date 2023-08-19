@@ -114,11 +114,6 @@ export function onEfficiencyChanged(data: {
   effLabel.fill(effLabelColor);
 
   // Update the tooltip
-  function formatLine(left: string, right: number | string, usePadding = true) {
-    return `${
-      usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : ""
-    }<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
-  }
   const tooltipContent = `
     ${formatLine("Current cards gotten", data.cardsGotten, false)}
     ${formatLine(
@@ -157,6 +152,11 @@ export function onEfficiencyChanged(data: {
   konvaTooltips.init(effLabel, true, false);
 
   globals.layers.UI.batchDraw();
+}
+
+function formatLine(left: string, right: number | string, usePadding = true) {
+  const padding = usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : "";
+  return `${padding}<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
 }
 
 export function onPaceOrPaceRiskChanged(data: {

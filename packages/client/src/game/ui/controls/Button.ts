@@ -79,24 +79,25 @@ export class Button extends Konva.Group {
       }
     }
 
-    const resetButton = () => {
-      this.background.fill("black");
-      drawLayer(this);
-
-      this.background.off("mouseup");
-      this.background.off("mouseout");
-    };
     this.background.on("mousedown", () => {
       this.background.fill("#888888");
       drawLayer(this);
 
       this.background.on("mouseout", () => {
-        resetButton();
+        this.resetButton();
       });
       this.background.on("mouseup", () => {
-        resetButton();
+        this.resetButton();
       });
     });
+  }
+
+  resetButton(): void {
+    this.background.fill("black");
+    drawLayer(this);
+
+    this.background.off("mouseup");
+    this.background.off("mouseout");
   }
 
   setEnabled(enabled: boolean): void {
