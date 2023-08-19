@@ -36,6 +36,7 @@ export class LayoutChild extends Konva.Group {
     this.width(child.width());
     this.height(child.height());
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const change = (event: unknown) => {
       const changeEvent = event as { oldVal: number; newVal: number };
       if (changeEvent.oldVal === changeEvent.newVal) {
