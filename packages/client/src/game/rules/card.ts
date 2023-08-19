@@ -1,5 +1,6 @@
-import type { Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
 import type { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
 import type { StackDirection } from "../types/StackDirection";
@@ -11,16 +12,17 @@ import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
 export function name(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   variant: Variant,
 ): string {
-  const suitName = variant.suits[suitIndex]!.displayName;
-  let rankName = rank.toString();
-  if (rank === START_CARD_RANK) {
-    rankName = "START";
+  const suit = variant.suits[suitIndex];
+  if (suit === undefined) {
+    return "unknown";
   }
-  return `${suitName} ${rankName}`;
+
+  const rankName = rank === START_CARD_RANK ? "START" : rank.toString();
+  return `${suit.displayName} ${rankName}`;
 }
 
 export function isClued(card: CardState): boolean {
@@ -44,10 +46,10 @@ export function isInPlayerHand(card: CardState): boolean {
  * maximum score. This mirrors the server function "Card.NeedsToBePlayed()".
  */
 export function needsToBePlayed(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   variant: Variant,
@@ -85,7 +87,8 @@ export function needsToBePlayed(
   // suit might have already been discarded.)
   const { isAllDiscarded } = discardedHelpers(variant, deck);
   for (let i = 1; i < rank; i++) {
-    if (isAllDiscarded(suitIndex, i)) {
+    const precedingRank = i as Rank;
+    if (isAllDiscarded(suitIndex, precedingRank)) {
       // The suit is "dead", so this card does not need to be played anymore.
       return false;
     }
@@ -96,10 +99,10 @@ export function needsToBePlayed(
 }
 
 export function status(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   variant: Variant,
@@ -125,8 +128,8 @@ export function status(
 
 // This does not mirror any function on the server.
 function isCritical(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
@@ -155,7 +158,7 @@ function isCritical(
 export function isPotentiallyPlayable(
   card: CardState,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   variant: Variant,
@@ -179,8 +182,8 @@ export function isPotentiallyPlayable(
 
 export function canPossiblyBeFromCluesOnly(
   card: CardState,
-  suitIndex: number | null,
-  rank: number | null,
+  suitIndex: SuitIndex | null,
+  rank: Rank | null,
 ): boolean {
   if (suitIndex === null && rank === null) {
     // We have nothing to check.
@@ -194,8 +197,8 @@ export function canPossiblyBeFromCluesOnly(
 
 export function canPossiblyBeFromEmpathy(
   card: CardState,
-  suitIndex: number | null,
-  rank: number | null,
+  suitIndex: SuitIndex | null,
+  rank: Rank | null,
 ): boolean {
   if (suitIndex === null && rank === null) {
     // We have nothing to check.
@@ -210,7 +213,7 @@ export function canPossiblyBeFromEmpathy(
 export function allPossibilitiesTrash(
   card: CardState,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   variant: Variant,

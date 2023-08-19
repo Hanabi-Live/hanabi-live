@@ -1,3 +1,4 @@
+import type { Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import {
   cardIdentity,
@@ -479,7 +480,7 @@ describe("cardsReducer", () => {
       nextGameState = { ...gameState, hands: [[], [0, 1]] };
 
       // Discard a red 5.
-      const discardCardOne = discard(1, 1, -1, -1, false);
+      const discardCardOne = discard(1, 1, 0, 5, false);
       deck = cardsReducer(
         deck,
         discardCardOne,
@@ -908,12 +909,12 @@ describe("cardsReducer", () => {
   });
 });
 
-function empathyPossible(card: CardState, suit: number, rank: number) {
+function empathyPossible(card: CardState, suitIndex: SuitIndex, rank: Rank) {
   return card.possibleCardsForEmpathy.some(
-    ([s, r]) => s === suit && r === rank,
+    ([s, r]) => s === suitIndex && r === rank,
   );
 }
 
-function isPossible(card: CardState, suit: number, rank: number) {
-  return card.possibleCards.some(([s, r]) => s === suit && r === rank);
+function isPossible(card: CardState, suitIndex: SuitIndex, rank: Rank) {
+  return card.possibleCards.some(([s, r]) => s === suitIndex && r === rank);
 }

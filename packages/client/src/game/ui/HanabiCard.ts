@@ -1,4 +1,12 @@
-import type { Color, Suit, Variant } from "@hanabi/data";
+import type {
+  Color,
+  Rank,
+  RankClueNumber,
+  Suit,
+  SuitIndex,
+  SuitRankTuple,
+  Variant,
+} from "@hanabi/data";
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, getSuit } from "@hanabi/data";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
@@ -7,7 +15,6 @@ import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
 import type { CardIdentity } from "../types/CardIdentity";
-import { CardIdentityType } from "../types/CardIdentityType";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
@@ -60,6 +67,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   dragging = false;
   wasRecentlyTapped = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  isStackBase: boolean;
 
   private readonly bare: Konva.Image;
   private bareName = "";
@@ -126,13 +135,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return `card-${this.state.order}`;
   }
 
-  private _visibleSuitIndex: number | null = null;
-  get visibleSuitIndex(): number | null {
+  private _visibleSuitIndex: SuitIndex | null = null;
+  get visibleSuitIndex(): SuitIndex | null {
     return this._visibleSuitIndex;
   }
 
-  private _visibleRank: number | null = null;
-  get visibleRank(): number | null {
+  private _visibleRank: Rank | null = null;
+  get visibleRank(): Rank | null {
     return this._visibleRank;
   }
 
@@ -142,8 +151,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   constructor(
     order: number,
-    suitIndex: number | null,
-    rank: number | null,
+    suitIndex: SuitIndex | null,
+    rank: Rank | typeof STACK_BASE_RANK | null,
     variant: Variant,
   ) {
     super();
@@ -163,11 +172,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Order is defined upon first initialization
     // TODO: move stack bases to be a separate class that shares code with HanabiCard
     const initialState = initialCardState(order, this.variant);
+    const cardStateRank = rank === STACK_BASE_RANK ? null : rank;
     this._state = {
       ...initialState,
       suitIndex, // suitIndex and rank are only initially specified for stack bases
-      rank,
+      rank: cardStateRank,
     };
+
+    this.isStackBase = rank === STACK_BASE_RANK;
 
     // ---------------------------------------
     // Initialize various elements of the card
@@ -312,7 +324,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this._visibleSuitIndex =
       suitToShow === unknownSuit
         ? null
-        : this.variant.suits.indexOf(suitToShow);
+        : (this.variant.suits.indexOf(suitToShow) as SuitIndex);
     this._visibleRank = rankToShow === UNKNOWN_CARD_RANK ? null : rankToShow;
 
     // Setting "this.bareName" will automatically update how the card appears the next time that the
@@ -346,7 +358,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // We do not track the card identities for the stack bases. (For stack bases, the suit and rank
     // is always baked into the state from the get-go.)
-    if (this.state.rank === STACK_BASE_RANK) {
+    if (this.isStackBase) {
       return {
         suitIndex: this.state.suitIndex,
         rank: this.state.rank,
@@ -400,7 +412,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return unknownSuit;
   }
 
-  getRankToShow(cardIdentity: CardIdentity): number {
+  getRankToShow(cardIdentity: CardIdentity): Rank | typeof UNKNOWN_CARD_RANK {
     // If we are in Empathy mode, only show the rank if there is only one possibility left.
     if (this.empathy) {
       if (this.state.rankDetermined && this.state.rank !== null) {
@@ -421,16 +433,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     // If we have a note on the card and it only provides possibilities of the same rank, show that
-    // rank. (This is specifically for stack bases in ongoing games; we want notes to have
-    // precedence in this case so that players can make notes in "Throw It in a Hole" variants.)
-    const noteRank = getRankFromNote(this.note, this.state);
+    // rank.
+    const rankFromNote = getRankFromNote(this.note, this.state);
 
+    // For stack bases in ongoing games, we want notes to have precedence over the real identity so
+    // that players can morph the stack in "Throw It in a Hole" variants.
     if (
-      noteRank !== null &&
-      this.state.rank === STACK_BASE_RANK &&
+      rankFromNote !== undefined &&
+      this.isStackBase &&
       !globals.state.finished
     ) {
-      return noteRank;
+      return rankFromNote;
     }
 
     // Show the rank if it is known.
@@ -439,8 +452,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     // If we have a note identity on the card, show the rank corresponding to the note.
-    if (noteRank !== null) {
-      return noteRank;
+    if (rankFromNote !== undefined) {
+      return rankFromNote;
     }
 
     return UNKNOWN_CARD_RANK;
@@ -452,17 +465,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     const morphedIdentity = this.getMorph();
-    return (
-      morphedIdentity !== undefined &&
-      morphedIdentity.rank !== CardIdentityType.Original &&
-      morphedIdentity.suitIndex !== CardIdentityType.Original
-    );
+    return morphedIdentity !== undefined;
   }
 
   getMorph(): CardIdentity | undefined {
-    return globals.state.replay.hypothetical!.morphedIdentities[
+    return globals.state.replay.hypothetical?.morphedIdentities[
       this.state.order
-    ]!;
+    ];
   }
 
   getMorphedIdentity(): CardIdentity {
@@ -485,14 +494,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // We do not track the card identities for the stack bases. (For stack bases, the suit and rank
     // is always baked into the state from the get-go.)
-    if (this.state.rank === STACK_BASE_RANK) {
+    if (this.isStackBase) {
       return this.state;
     }
 
     return globals.state.cardIdentities[this.state.order]!;
   }
 
-  getMorphedPossibilities(): Array<readonly [number, number]> {
+  getMorphedPossibilities(): readonly SuitRankTuple[] {
     const { suitIndex, rank } = this.getMorphedIdentity();
     if (suitIndex !== null && rank !== null) {
       return [[suitIndex, rank]];
@@ -603,7 +612,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const suitPipStates: PipState[] = this.variant.suits.map(
       () => PipState.Hidden,
     );
+
+    /** This is a sparse array indexed by rank. */
     const rankPipStates: PipState[] = [];
+
+    // Default all rank pips to hidden.
     for (const rank of this.variant.ranks) {
       rankPipStates[rank] = PipState.Hidden;
     }
@@ -649,11 +662,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       }
     }
 
-    for (const [rank, pipState] of rankPipStates.entries()) {
+    for (const [i, pipState] of rankPipStates.entries()) {
+      const rank = i as Rank;
       const pip = this.rankPipsMap.get(rank);
       const x = this.rankPipsXMap.get(rank);
-      const hasPositiveRankClue = this.state.positiveRankClues.includes(rank);
       if (pip !== undefined && x !== undefined) {
+        const hasPositiveRankClue = this.state.positiveRankClues.includes(
+          // This should be a safe type assertion since `RankClueNumber` is a subset of `Rank`.
+          rank as RankClueNumber,
+        );
         updatePip(pipState, hasPositiveRankClue, pip, x);
       }
     }
@@ -718,10 +735,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // Show or hide the direction arrows.
     if (this.arrow !== null && globals.state.visibleState !== null) {
-      if (
-        this.visibleSuitIndex === null ||
-        this.visibleRank === STACK_BASE_RANK
-      ) {
+      if (this.visibleSuitIndex === null || this.isStackBase) {
         this.arrow.hide();
       } else {
         this.setDirectionArrow(
@@ -734,13 +748,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     // Show or hide the shadow on the card.
-    this.bare.shadowEnabled(
-      this.visibleRank !== STACK_BASE_RANK && !globals.options.speedrun,
-    );
+    this.bare.shadowEnabled(!this.isStackBase && !globals.options.speedrun);
   }
 
   // Show or hide the direction arrow (for specific variants).
-  setDirectionArrow(suitIndex: number, direction: StackDirection): void {
+  setDirectionArrow(suitIndex: SuitIndex, direction: StackDirection): void {
     if (!variantRules.hasReversedSuits(this.variant)) {
       return;
     }
@@ -800,9 +812,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     const status =
-      this.visibleSuitIndex === null ||
-      this.visibleRank === null ||
-      this.visibleRank === STACK_BASE_RANK
+      this.visibleSuitIndex === null || this.visibleRank === null
         ? CardStatus.NeedsToBePlayed // Default status; not faded and not critical.
         : visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
 
@@ -1261,7 +1271,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   checkSpecialNote(): void {
     const note = globals.state.notes.ourNotes[this.state.order]!;
-    checkNoteImpossibility(this.variant, this.state, note);
+    checkNoteImpossibility(this.variant, this.state, note, this.isStackBase);
 
     // Morph the card if it has an "exact" card note. (Or clear the bare image if the note was
     // deleted/changed.)

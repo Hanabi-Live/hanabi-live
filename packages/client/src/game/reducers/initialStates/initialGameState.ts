@@ -1,5 +1,6 @@
+import type { SuitIndex } from "@hanabi/data";
 import { getVariant, MAX_CLUE_NUM, UNKNOWN_CARD_RANK } from "@hanabi/data";
-import { newArray } from "@hanabi/utils";
+import { eRange, newArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -34,8 +35,9 @@ export function initialGameState(metadata: GameMetadata): GameState {
     endGameLength,
   );
   const hands: number[][] = newArray(options.numPlayers, []);
-  const playStackDirections = variant.suits.map((_, i) =>
-    playStacksRules.direction(i, [], [], variant),
+  const suitIndexes = eRange(variant.suits.length) as SuitIndex[];
+  const playStackDirections = suitIndexes.map((suitIndex) =>
+    playStacksRules.direction(suitIndex, [], [], variant),
   );
   const playStacks: number[][] = newArray(variant.suits.length, []);
   const discardStacks: number[][] = newArray(variant.suits.length, []);
@@ -45,7 +47,8 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
 
   const cardStatus: CardStatus[][] = [];
-  for (const [suitIndex, _] of variant.suits.entries()) {
+  for (const i of variant.suits.keys()) {
+    const suitIndex = i as SuitIndex;
     cardStatus[suitIndex] = [];
     for (const rank of variant.ranks) {
       cardStatus[suitIndex]![rank] = cardRules.status(

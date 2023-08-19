@@ -1,21 +1,17 @@
 // These are helper functions that convert objects to the integers that the server expects and vice
 // versa.
 
-import type { Color, Suit, Variant } from "@hanabi/data";
+import type { Color, Suit, SuitIndex, Variant } from "@hanabi/data";
 
 export function suitIndexToSuit(
-  suitIndex: number | null,
+  suitIndex: SuitIndex | null,
   variant: Variant,
 ): Suit | null {
-  if (
-    suitIndex === null ||
-    suitIndex < 0 ||
-    suitIndex >= variant.suits.length
-  ) {
+  if (suitIndex === null) {
     return null;
   }
 
-  return variant.suits[suitIndex]!;
+  return variant.suits[suitIndex] ?? null;
 }
 
 export function colorToColorIndex(color: Color, variant: Variant): number {

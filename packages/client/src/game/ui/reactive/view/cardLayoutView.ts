@@ -1,4 +1,6 @@
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import type { SuitIndex } from "@hanabi/data";
+import { UNKNOWN_CARD_RANK } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
 import { ReadonlyMap } from "@hanabi/utils";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
@@ -62,14 +64,15 @@ export function onPlayStackDirectionsChanged(
         (card) => card.visibleSuitIndex === i,
       );
       for (const card of visibleCardsOfThisSuit) {
-        card.setDirectionArrow(i, direction);
+        const suitIndex = i as SuitIndex;
+        card.setDirectionArrow(suitIndex, direction);
       }
     }
     globals.layers.UI.batchDraw();
   }
 }
 
-export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
+export function onHandsChanged(hands: DeepReadonly<number[][]>): void {
   syncChildren(
     hands,
     (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
@@ -82,7 +85,7 @@ export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
 }
 
 export function onDiscardStacksChanged(
-  discardStacks: ReadonlyArray<readonly number[]>,
+  discardStacks: DeepReadonly<number[][]>,
 ): void {
   syncChildren(
     discardStacks,
@@ -104,8 +107,8 @@ export function onDiscardStacksChanged(
 }
 
 export function onPlayStacksChanged(
-  playStacks: ReadonlyArray<readonly number[]>,
-  previousPlayStacks: ReadonlyArray<readonly number[]> | undefined,
+  playStacks: DeepReadonly<number[][]>,
+  previousPlayStacks: DeepReadonly<number[][]> | undefined,
 ): void {
   syncChildren(
     playStacks,
@@ -205,7 +208,7 @@ export function updatePlayStackVisuals(): void {
 }
 
 function syncChildren(
-  collections: ReadonlyArray<readonly number[]>,
+  collections: DeepReadonly<number[][]>,
   getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
 ) {
@@ -214,7 +217,7 @@ function syncChildren(
     const getCurrentSorting = () =>
       (getCollectionUI(i).children.toArray() as LayoutChild[])
         .map((layoutChild) => layoutChild.card)
-        .filter((card) => card.state.rank !== STACK_BASE_RANK)
+        .filter((card) => !card.isStackBase)
         .map((card) => card.state.order);
 
     let current = getCurrentSorting();

@@ -1,6 +1,6 @@
 // The card graphics are various HTML5 canvas drawings.
 
-import type { Color, Suit, Variant } from "@hanabi/data";
+import type { Color, Rank, Suit, Variant } from "@hanabi/data";
 import {
   STACK_BASE_RANK,
   START_CARD_RANK,
@@ -43,11 +43,16 @@ export function drawCards(
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
-    // - Rank 0 is the stack base.
-    // - Rank 1-5 are the normal cards.
-    // - Rank 6 is a card of unknown rank.
-    // - Rank 7 is a "START" card (in the "Up or Down" variants).
-    for (let rank = 0; rank <= 7; rank++) {
+    for (const rank of [
+      STACK_BASE_RANK,
+      1,
+      2,
+      3,
+      4,
+      5,
+      UNKNOWN_CARD_RANK,
+      START_CARD_RANK,
+    ] as const) {
       // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card.
       if (
         suit.name === "Unknown" &&
@@ -198,7 +203,7 @@ export function drawCards(
 
 function drawSuitPips(
   ctx: CanvasRenderingContext2D,
-  rank: number,
+  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
   suit: Suit,
   secondaryPip: boolean,
   colorblindMode: boolean,
@@ -384,7 +389,7 @@ function makeDeckBack(
 function drawCardBase(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
-  rank: number,
+  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
   variant: Variant,
   colorblindMode: boolean,
   enableShadows: boolean,
@@ -560,7 +565,7 @@ function drawCardBackground(
 
 function getSuitStyle(
   suit: Suit,
-  rank: number,
+  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
   ctx: CanvasRenderingContext2D,
   cardArea: string,
   variant: Variant,
@@ -570,7 +575,7 @@ function getSuitStyle(
     // In Synesthesia variants, color the number itself with the color that it contributes to the
     // card.
     if (variant.synesthesia) {
-      if (rank === 0) {
+      if (rank === STACK_BASE_RANK) {
         return suit.fill;
       }
 
@@ -598,30 +603,38 @@ function getSuitStyle(
         suit.noClueRanks ||
         (variant.specialRankNoClueRanks && !suit.allClueRanks);
       const dark = suit.oneOfEach;
+
       if (allClueColors) {
         if (allClueRanks) {
           const rainbow = getSuit(dark ? "Dark Omni" : "Omni");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
+
         if (noClueRanks) {
           const rainbow = getSuit(dark ? "Cocoa Rainbow" : "Muddy Rainbow");
           return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
         }
+
         const rainbow = getSuit(dark ? "Dark Rainbow" : "Rainbow");
         return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
       }
+
       if (noClueColors) {
         if (allClueRanks) {
           return getSuit(dark ? "Gray Pink" : "Light Pink").fill;
         }
+
         if (noClueRanks) {
           return getSuit(dark ? "Dark Null" : "Null").fill;
         }
+
         return getSuit(dark ? "Gray" : "White").fill;
       }
+
       if (allClueRanks) {
         return getSuit(dark ? "Dark Pink" : "Pink").fill;
       }
+
       if (noClueRanks) {
         return getSuit(dark ? "Dark Brown" : "Brown").fill;
       }
@@ -639,11 +652,13 @@ function getSuitStyle(
       // "START" cards count as rank 0, so they are touched by the final color.
       prismColorIndex = variant.clueColors.length - 1;
     }
+
     const fillToMixHex = variant.clueColors[prismColorIndex]!.fill;
     const fillToMixRGB = hexToRGB(fillToMixHex);
     if (fillToMixRGB === undefined) {
       return suit.fill;
     }
+
     const fillToMixArray = [fillToMixRGB.r, fillToMixRGB.g, fillToMixRGB.b];
     let fillToMixArray2 = [255, 255, 255]; // White
     if (suit.oneOfEach) {
@@ -663,12 +678,15 @@ function getSuitStyle(
   if (cardArea === "number") {
     return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
   }
+
   if (cardArea === "background") {
     if (suit.name === "Omni" || suit.name === "Dark Omni") {
       return evenLinearGradient(ctx, suit.fillColors, [0, -30, 0, CARD_H + 30]);
     }
+
     return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
   }
+
   throw new Error(
     `The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`,
   );
@@ -681,6 +699,7 @@ function evenLinearGradient(
   args: readonly number[],
 ) {
   const grad = ctx.createLinearGradient(args[0]!, args[1]!, args[2]!, args[3]!);
+
   for (let i = 0; i < colors.length; i++) {
     grad.addColorStop(i / (colors.length - 1), colors[i]!);
   }
@@ -698,6 +717,7 @@ function colorChannelMixer(
 ) {
   const channelA = colorChannelA * amountToMix;
   const channelB = colorChannelB * (1 - amountToMix);
+
   return channelA + channelB;
 }
 
@@ -712,6 +732,7 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
   const r = colorChannelMixer(rgbA[0]!, rgbB[0]!, amountToMix);
   const g = colorChannelMixer(rgbA[1]!, rgbB[1]!, amountToMix);
   const b = colorChannelMixer(rgbA[2]!, rgbB[2]!, amountToMix);
+
   return `rgb(${r},${g},${b})`;
 }
 

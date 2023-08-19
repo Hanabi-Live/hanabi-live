@@ -1,6 +1,5 @@
 // Users can right-click cards to record information on them.
 
-import { STACK_BASE_RANK } from "@hanabi/data";
 import { ReadonlySet, trimSuffix } from "@hanabi/utils";
 import * as tooltips from "../../tooltips";
 import type { HanabiCard } from "./HanabiCard";
@@ -157,7 +156,7 @@ export function openEditTooltip(
   }
 
   // Disable making notes on the stack bases outside of special variants.
-  if (card.state.rank === STACK_BASE_RANK && !globals.variant.throwItInAHole) {
+  if (card.isStackBase && !globals.variant.throwItInAHole) {
     return;
   }
 

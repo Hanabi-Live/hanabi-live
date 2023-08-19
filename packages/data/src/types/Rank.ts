@@ -1,3 +1,4 @@
-import type { START_CARD_RANK } from "../constants";
+import type { DEFAULT_CARD_RANKS, START_CARD_RANK } from "../constants";
 
-export type Rank = 1 | 2 | 3 | 4 | 5 | typeof START_CARD_RANK;
+/** The normal ranks of 1 through 5 and the rank of `START_CARD_RANK`. */
+export type Rank = (typeof DEFAULT_CARD_RANKS)[number] | typeof START_CARD_RANK;

@@ -1,5 +1,5 @@
+import type { Rank, SuitIndex } from "@hanabi/data";
 import type { CardIdentity } from "./CardIdentity";
-import type { CardIdentityType } from "./CardIdentityType";
 import type { ClientAction } from "./ClientAction";
 import type { EndCondition } from "./EndCondition";
 import type { MsgClue } from "./MsgClue";
@@ -39,7 +39,10 @@ export type NoteAction =
   | ActionReceiveNote
   | ActionSetEffMod;
 
-export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
+export type ActionIncludingHypothetical =
+  | GameAction
+  | ActionHypotheticalMorph
+  | ActionHypotheticalUnmorph;
 
 export type ReplayAction =
   | ActionReplayEnter
@@ -125,13 +128,17 @@ interface ActionFinishOngoingGame {
 // Game actions
 // ------------
 
-// Used to implement the "Slow-Witted" detrimental character
+/** Used to implement the "Slow-Witted" detrimental character. */
 export interface ActionCardIdentity {
   readonly type: "cardIdentity";
   readonly playerIndex: number;
   readonly order: number;
-  readonly suitIndex: number;
-  readonly rank: number;
+
+  /** The server scrubs the identity under certain circumstances, which is represented by -1. */
+  readonly suitIndex: SuitIndex | -1;
+
+  /** The server scrubs the identity under certain circumstances, which is represented by -1. */
+  readonly rank: Rank | -1;
 }
 
 export interface ActionClue {
@@ -140,25 +147,40 @@ export interface ActionClue {
   readonly giver: number;
   readonly list: number[];
   readonly target: number;
-  readonly turn: number; // TODO: remove. This is unused
+  readonly turn: number; // TODO: remove. This is unused.
   readonly ignoreNegative: boolean;
 }
 
 export interface ActionDiscard {
   readonly type: "discard";
-  readonly failed: boolean;
   readonly playerIndex: number;
   readonly order: number;
-  readonly suitIndex: number;
-  readonly rank: number;
+
+  /**
+   * -1 represents a card of an unknown suit. This will only be -1 in special variants where the
+   * identity of discarded cards is not revealed.
+   */
+  readonly suitIndex: SuitIndex | -1;
+
+  /**
+   * -1 represents a card of an unknown rank. This will only be -1 in special variants where the
+   * identity of discarded cards is not revealed.
+   */
+  readonly rank: Rank | -1;
+
+  readonly failed: boolean;
 }
 
 export interface ActionDraw {
   readonly type: "draw";
   readonly playerIndex: number;
   readonly order: number;
-  readonly suitIndex: number;
-  readonly rank: number;
+
+  /** -1 represents a card of an unknown suit (e.g. it was drawn to our own hand). */
+  readonly suitIndex: SuitIndex | -1;
+
+  /** -1 represents a card of an unknown rank (e.g. it was drawn to our own hand). */
+  readonly rank: Rank | -1;
 }
 
 interface ActionGameOver {
@@ -178,8 +200,18 @@ export interface ActionPlay {
   readonly type: "play";
   readonly playerIndex: number;
   readonly order: number;
-  readonly suitIndex: number;
-  readonly rank: number;
+
+  /**
+   * -1 represents a card of an unknown suit. This will only be -1 in special variants where the
+   * identity of played cards is not revealed.
+   */
+  readonly suitIndex: SuitIndex | -1;
+
+  /**
+   * -1 represents a card of an unknown rank. This will only be -1 in special variants where the
+   * identity of played cards is not revealed.
+   */
+  readonly rank: Rank | -1;
 }
 
 interface ActionPlayerTimes {
@@ -190,8 +222,11 @@ interface ActionPlayerTimes {
 
 export interface ActionStrike {
   readonly type: "strike";
-  readonly num: number; // 1 for the first strike, 2 for the second strike, etc.
-  readonly order: number; // The order of the card that was misplayed
+  readonly num: 1 | 2 | 3;
+
+  /** The order of the card that was misplayed. */
+  readonly order: number;
+
   readonly turn: number;
 }
 
@@ -292,8 +327,18 @@ export interface ActionHypotheticalBack {
 
 interface ActionHypotheticalMorph {
   readonly type: "morph"; // This is not "hypoMorph" because it is a game action.
-  readonly suitIndex: number | CardIdentityType;
-  readonly rank: number | CardIdentityType;
+
+  /** -1 represents a card of an unknown card. */
+  readonly suitIndex: SuitIndex | -1;
+
+  /** -1 represents a card of an unknown rank. */
+  readonly rank: Rank | -1;
+
+  readonly order: number;
+}
+
+interface ActionHypotheticalUnmorph {
+  readonly type: "unmorph"; // This is not "hypoUnmorph" because it is a game action.
   readonly order: number;
 }
 

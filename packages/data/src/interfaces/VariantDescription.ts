@@ -1,3 +1,5 @@
+import type { RankClueNumber } from "../types/RankClueNumber";
+
 /**
  * This is a basic description of a variant that will turned into a `VariantJSON` object later on.
  */
@@ -6,7 +8,7 @@ export interface VariantDescription {
   readonly suits: readonly string[];
 
   clueColors?: readonly string[];
-  clueRanks?: ReadonlyArray<1 | 2 | 3 | 4 | 5>;
+  clueRanks?: readonly RankClueNumber[];
 
   specialRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.
   specialRankAllClueColors?: boolean;

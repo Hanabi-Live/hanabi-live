@@ -1,5 +1,8 @@
+import type { ColorIndex, RankClueNumber } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
 import type { CardState } from "./CardState";
 import type { CardStatus } from "./CardStatus";
+import type { ClueType } from "./ClueType";
 import type { StackDirection } from "./StackDirection";
 import type { StatsState } from "./StatsState";
 import type { TurnState } from "./TurnState";
@@ -11,10 +14,12 @@ export interface GameState {
   readonly cardsRemainingInTheDeck: number;
 
   /**
+   * Card statues are indexed by suit index and rank.
+   *
    * This only depends on a card's identity, not the card itself, so it is stored here rather than
    * as a sub-property of `CardState`.
    */
-  readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
+  readonly cardStatus: DeepReadonly<CardStatus[][]>;
 
   readonly score: number;
 
@@ -23,8 +28,13 @@ export interface GameState {
 
   readonly clueTokens: number;
   readonly strikes: readonly StateStrike[];
-  readonly hands: ReadonlyArray<readonly number[]>;
-  readonly playStacks: ReadonlyArray<readonly number[]>;
+
+  /** Indexed by player index. Each player has an array of card orders. */
+  readonly hands: DeepReadonly<number[][]>;
+
+  /** Indexed by suit index. Each suit has an array of card orders. */
+  readonly playStacks: DeepReadonly<number[][]>;
+
   readonly playStackDirections: readonly StackDirection[];
 
   /**
@@ -36,7 +46,9 @@ export interface GameState {
   /** For "Throw It in a Hole" variants. */
   readonly hole: readonly number[];
 
-  readonly discardStacks: ReadonlyArray<readonly number[]>;
+  /** Suit index --> card order */
+  readonly discardStacks: DeepReadonly<number[][]>;
+
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;
 }
@@ -51,9 +63,7 @@ export interface StateStrike {
   readonly order: number;
 }
 
-export interface StateClue {
-  readonly type: number;
-  readonly value: number;
+interface StateClueBase {
   readonly giver: number;
   readonly target: number;
   readonly segment: number;
@@ -64,5 +74,17 @@ export interface StateClue {
   /** The list of cards in the same hand that the clue does not touch. */
   readonly negativeList: readonly number[];
 }
+
+interface StateColorClue extends StateClueBase {
+  readonly type: ClueType.Color;
+  readonly value: ColorIndex;
+}
+
+interface StateRankClue extends StateClueBase {
+  readonly type: ClueType.Rank;
+  readonly value: RankClueNumber;
+}
+
+export type StateClue = StateColorClue | StateRankClue;
 
 export type PaceRisk = "LowRisk" | "MediumRisk" | "HighRisk" | "Zero" | "Null";

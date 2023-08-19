@@ -1,6 +1,6 @@
 // This function draws the UI when going into a game for the first time.
 
-import type { Suit } from "@hanabi/data";
+import type { RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
 import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
@@ -368,8 +368,8 @@ function drawPlayStacks() {
     globals.layers.card.add(playStack as unknown as Konva.Group);
   }
 
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i]!;
+  for (const [i, suit] of globals.variant.suits.entries()) {
+    const suitIndex = i as SuitIndex;
 
     // Make the play stack for this suit.
     const playStackX =
@@ -389,7 +389,7 @@ function drawPlayStacks() {
     // Stack bases use card orders after the final card in the deck.
     const stackBase = new HanabiCard(
       order,
-      i,
+      suitIndex,
       STACK_BASE_RANK,
       globals.variant,
     );
@@ -943,9 +943,10 @@ function drawScoreArea() {
     }
 
     switch (event.evt.button) {
+      // Left-click
       case 0: {
-        // Left-click. Left-clicking a strike X or a strike square takes us to the turn that the
-        // strike happened.
+        // Left-clicking a strike X or a strike square takes us to the turn that the strike
+        // happened.
         const { strikes } = globals.state.ongoingGame;
         const strike = strikes[this.num];
         if (strike === undefined) {
@@ -964,31 +965,35 @@ function drawScoreArea() {
         break;
       }
 
+      // Right-click
       case 2: {
-        // Right-click. Right-clicking a strike X or a strike square shows an arrow over the strike
-        // square.
+        // Right-clicking a strike X or a strike square shows an arrow over the strike square.
         let order: ReplayArrowOrder;
-        if (this.num === 0) {
-          order = ReplayArrowOrder.Strike1;
-        } else if (this.num === 1) {
-          order = ReplayArrowOrder.Strike2;
-        } else if (this.num === 2) {
-          order = ReplayArrowOrder.Strike3;
-        } else {
-          throw new Error(`Unknown strike number of ${this.num}".`);
+        switch (this.num) {
+          case 0: {
+            order = ReplayArrowOrder.Strike1;
+            break;
+          }
+
+          case 1: {
+            order = ReplayArrowOrder.Strike2;
+            break;
+          }
+
+          case 2: {
+            order = ReplayArrowOrder.Strike3;
+            break;
+          }
         }
 
         arrows.click(event, order);
 
         break;
       }
-
-      default: {
-        break;
-      }
     }
   }
-  for (let i = 0; i < 3; i++) {
+
+  for (const i of [0, 1, 2] as const) {
     // Draw the background square.
     const strikeSquare = new StrikeSquare(
       {
@@ -1978,14 +1983,12 @@ function drawClueArea() {
   drawClueAreaDisabled(offsetX);
 }
 
-function rankTextFromVariant(rank: number): string {
-  if (!globals.variant.oddsAndEvens) {
-    return rank.toString();
+function rankTextFromVariant(rank: RankClueNumber): string {
+  if (globals.variant.oddsAndEvens) {
+    return rank === 1 ? "O" : "E";
   }
-  if (rank === 1) {
-    return "O";
-  }
-  return "E";
+
+  return rank.toString();
 }
 
 function drawClueAreaDisabled(offsetX: number) {

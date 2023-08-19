@@ -1,3 +1,4 @@
+import type { Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
@@ -38,31 +39,43 @@ interface JSONAction {
 
 export function loadGameJSON(gameJSON: JSONGame): State {
   const numPlayers = gameJSON.players.length;
+  if (
+    numPlayers !== 2 &&
+    numPlayers !== 3 &&
+    numPlayers !== 4 &&
+    numPlayers !== 5 &&
+    numPlayers !== 6
+  ) {
+    throw new Error("The game JSON does not have a valid amount of players.");
+  }
+
   const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = handRules.cardsPerHand(metadata.options);
-  const actions: GameAction[] = [];
-  let topOfDeck = dealInitialCards(
-    numPlayers,
-    cardsPerHand,
-    actions,
-    gameJSON.deck,
-  );
 
-  // Parse all plays/discards/clues
-  let turn = 0; // Start on the 0th turn
-  let currentPlayerIndex = 0; // The player at index 0 goes first
+  /**
+   * The type of `number` in the JSON is too loose for the types of `SuitIndex` and `Rank`, so we
+   * must use a type assertion.
+   */
+  const deck = gameJSON as unknown as CardIdentity[];
+
+  const actions: GameAction[] = [];
+  let topOfDeck = dealInitialCards(numPlayers, cardsPerHand, actions, deck);
+
+  // Parse all plays/discards/clues.
+  let turn = 0; // Start on the 0th turn.
+  let currentPlayerIndex = 0; // The player at index 0 goes first.
 
   for (const a of gameJSON.actions) {
-    const action = parseJSONAction(currentPlayerIndex, turn, gameJSON.deck, a);
+    const action = parseJSONAction(currentPlayerIndex, turn, deck, a);
     if (action !== null) {
       actions.push(action);
       if (
         topOfDeck < gameJSON.deck.length &&
         (action.type === "discard" || action.type === "play")
       ) {
-        actions.push(drawCard(currentPlayerIndex, topOfDeck, gameJSON.deck));
+        actions.push(drawCard(currentPlayerIndex, topOfDeck, deck));
         topOfDeck++;
       }
     }
@@ -88,7 +101,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     });
   }
 
-  // Run the list of states through the state reducer We need to fix the list of cards touched in a
+  // Run the list of states through the state reducer. We need to fix the list of cards touched in a
   // clue, since that is not saved in the JSON. We also need to figure out if plays are successful
   // or not, since they both show up as plays in the JSON.
   const state = initialState(metadata);
@@ -108,8 +121,8 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           return cluesRules.touchesCard(
             variant,
             cluesRules.msgClueToClue(a.clue, variant),
-            jsonCard.suitIndex,
-            jsonCard.rank,
+            jsonCard.suitIndex as SuitIndex,
+            jsonCard.rank as Rank,
           );
         });
         action = { ...a, list };
@@ -118,7 +131,13 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
       case "play": {
         // Check if this is actually a play or a misplay.
-        const jsonCard: CardIdentity = gameJSON.deck[a.order]!;
+        const jsonCard = gameJSON.deck[a.order] as CardIdentity | undefined;
+        if (jsonCard === undefined) {
+          throw new Error(
+            `Failed to get the card at order ${a.order} in the JSON deck.`,
+          );
+        }
+
         if (jsonCard.suitIndex === null || jsonCard.rank === null) {
           throw new Error(
             `Failed to get the rank or the suit for card ${a.order} in the JSON deck.`,
@@ -165,7 +184,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
           action = {
             type: "strike",
-            num: nextState.strikes.length,
+            num: nextState.strikes.length as 1 | 2 | 3,
             order: a.order,
             turn,
           };
@@ -264,12 +283,14 @@ function dealInitialCards(
   deck: CardIdentity[],
 ) {
   let topOfDeck = 0;
+
   for (let player = 0; player < numPlayers; player++) {
     for (let card = 0; card < cardsPerHand; card++) {
       actions.push(drawCard(player, topOfDeck, deck));
       topOfDeck++;
     }
   }
+
   return topOfDeck;
 }
 
@@ -290,8 +311,10 @@ function parseJSONAction(
         suitIndex: deck[a.target]!.suitIndex,
         rank: deck[a.target]!.rank,
       };
+
       return isPlay ? (action as ActionPlay) : (action as ActionDiscard);
     }
+
     case JSONActionType.ActionTypeColorClue:
     case JSONActionType.ActionTypeRankClue: {
       return {
@@ -310,6 +333,7 @@ function parseJSONAction(
         ignoreNegative: false,
       } as ActionClue;
     }
+
     case JSONActionType.ActionTypeGameOver: {
       return {
         type: "gameOver",
@@ -318,6 +342,7 @@ function parseJSONAction(
         votes: [],
       };
     }
+
     default: {
       return null;
     }

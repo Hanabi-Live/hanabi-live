@@ -2,6 +2,7 @@
 
 import type { Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import type { GameState, PaceRisk } from "../types/GameState";
@@ -145,7 +146,7 @@ export function startingPace(
 
 export function cardsGotten(
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   playing: boolean,
@@ -196,7 +197,7 @@ export function cardsGotten(
 /** @returns The number of cards that are only gotten by notes and are not gotten by real clues. */
 export function cardsGottenByNotes(
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   variant: Variant,

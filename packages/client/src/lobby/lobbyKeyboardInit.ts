@@ -85,11 +85,24 @@ export function lobbyKeyboardInit(): void {
 function clickReturnToLobby() {
   // Click on the "Return to Lobby" button. (Either at the "game" screen or the "history" screen or
   // the "scores" screen.)
-  if (globals.currentScreen === Screen.PreGame) {
-    $("#nav-buttons-pregame-unattend").trigger("click");
-  } else if (globals.currentScreen === Screen.History) {
-    $("#nav-buttons-history-return").trigger("click");
-  } else if (globals.currentScreen === Screen.HistoryOtherScores) {
-    $("#nav-buttons-history-other-scores-return").trigger("click");
+  switch (globals.currentScreen) {
+    case Screen.PreGame: {
+      $("#nav-buttons-pregame-unattend").trigger("click");
+      break;
+    }
+
+    case Screen.History: {
+      $("#nav-buttons-history-return").trigger("click");
+      break;
+    }
+
+    case Screen.HistoryOtherScores: {
+      $("#nav-buttons-history-other-scores-return").trigger("click");
+      break;
+    }
+
+    default: {
+      break;
+    }
   }
 }

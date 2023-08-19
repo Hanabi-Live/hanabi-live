@@ -1,3 +1,4 @@
+import type { SuitRankTuple } from "@hanabi/data";
 import { getDefaultVariant, getVariant } from "@hanabi/data";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
@@ -93,24 +94,24 @@ describe("noteIdentity", () => {
       const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "!2, !3",
       ]);
-      const identMap = rankMap(new Set([1, 4, 5]));
-      expect(identityArrayToMap(possibles)).toEqual(identMap);
+      const identityMap = rankMap(new Set([1, 4, 5]));
+      expect(identityArrayToMap(possibles)).toEqual(identityMap);
     });
 
     test("negative conjunct with Up or Down", () => {
       const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "!2, !3",
       ]);
-      const identMap = rankMap(new Set([1, 4, 5, 7]));
-      expect(identityArrayToMap(possibles)).toEqual(identMap);
+      const identityMap = rankMap(new Set([1, 4, 5, 7]));
+      expect(identityArrayToMap(possibles)).toEqual(identityMap);
     });
 
     test("negative conjunct with space", () => {
       const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "! 2, ! 3",
       ]);
-      const identMap = rankMap(new Set([1, 4, 5]));
-      expect(identityArrayToMap(possibles)).toEqual(identMap);
+      const identityMap = rankMap(new Set([1, 4, 5]));
+      expect(identityArrayToMap(possibles)).toEqual(identityMap);
     });
 
     // The note keyword `r,b,2,3` would return all red, blue, 2's OR 3's.
@@ -232,7 +233,7 @@ function rankMap(
 }
 
 function identityArrayToMap(
-  possibles: Array<[number, number]>,
+  possibles: SuitRankTuple[],
   suitLength: number = UP_OR_DOWN_VARIANT.suits.length,
 ): number[][] {
   const cardMap: number[][] = [];
@@ -241,8 +242,8 @@ function identityArrayToMap(
     cardMap.push(ZEROES.slice(0, suitLength));
   }
 
-  for (const ident of possibles) {
-    cardMap[ident[1] - 1]![ident[0]] = 1;
+  for (const [suitIndex, rank] of possibles) {
+    cardMap[rank - 1]![suitIndex] = 1;
   }
 
   return cardMap;

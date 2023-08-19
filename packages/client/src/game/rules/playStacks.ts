@@ -1,4 +1,4 @@
-import type { Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import {
   DEFAULT_CARD_RANKS,
   STACK_BASE_RANK,
@@ -12,17 +12,26 @@ import * as variantRules from "./variant";
 function lastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): number {
+): Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK {
   if (playStack.length === 0) {
     return STACK_BASE_RANK;
   }
 
-  const orderOfTopCard = playStack.at(-1)!;
-  return deck[orderOfTopCard]!.rank ?? UNKNOWN_CARD_RANK;
+  const orderOfTopCard = playStack.at(-1);
+  if (orderOfTopCard === undefined) {
+    return UNKNOWN_CARD_RANK;
+  }
+
+  const card = deck[orderOfTopCard];
+  if (card === undefined) {
+    return UNKNOWN_CARD_RANK;
+  }
+
+  return card.rank ?? UNKNOWN_CARD_RANK;
 }
 
 export function nextPlayableRanks(
-  suitIndex: number,
+  suitIndex: SuitIndex,
   playStack: readonly number[],
   playStackDirection: StackDirection,
   playStackStarts: readonly number[],
@@ -87,7 +96,7 @@ export function nextPlayableRanks(
 }
 
 export function direction(
-  suitIndex: number,
+  suitIndex: SuitIndex,
   playStack: readonly number[],
   deck: readonly CardState[],
   variant: Variant,

@@ -1,6 +1,9 @@
-import type { CardIdentityType } from "./CardIdentityType";
+import type { Rank, SuitIndex } from "@hanabi/data";
 
 export interface CardIdentity {
-  readonly suitIndex: number | null | CardIdentityType;
-  readonly rank: number | null | CardIdentityType;
+  /** `null` represents an unknown suit index. */
+  readonly suitIndex: SuitIndex | null;
+
+  /** `null` represents an unknown rank. */
+  readonly rank: Rank | null;
 }

@@ -1,4 +1,3 @@
-import { STACK_BASE_RANK } from "@hanabi/data";
 import type Konva from "konva";
 import * as tooltips from "../../tooltips";
 import * as cardRules from "../rules/card";
@@ -208,7 +207,7 @@ function getCursorType(card: HanabiCard) {
 // The look cursor should show if Empathy can be used on the card.
 function shouldShowLookCursor(card: HanabiCard) {
   // It is not possible to use Empathy on a stack base.
-  if (card.state.rank === STACK_BASE_RANK) {
+  if (card.isStackBase) {
     return false;
   }
 
@@ -272,7 +271,7 @@ function shouldShowEmpathy(
     // Disable Empathy if the card is tweening (e.g. moving)
     !card.tweening &&
     // Disable empathy for the stack bases.
-    card.state.rank !== STACK_BASE_RANK &&
+    !card.isStackBase &&
     // Clicking on a played card goes to the turn that it was played.
     !cardRules.isPlayed(card.state) &&
     // Clicking on a discarded card goes to the turn that it was discarded.

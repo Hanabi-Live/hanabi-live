@@ -1,8 +1,9 @@
 // Helper methods for variants where suits may have a different direction than up. Currently used
 // for "Up Or Down" and "Reversed" variants.
 
-import type { Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
@@ -15,10 +16,10 @@ import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
  * "variantReversibleNeedsToBePlayed()".
  */
 export function needsToBePlayed(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): boolean {
@@ -36,26 +37,32 @@ export function needsToBePlayed(
 
   // The "Up or Down" variants have specific requirements to start the pile.
   if (variant.upOrDown) {
-    // All 2's, 3's, and 4's must be played.
-    if (rank === 2 || rank === 3 || rank === 4) {
-      return true;
-    }
+    switch (rank) {
+      case 1: {
+        // 1's do not need to be played if the stack is going up.
+        return direction !== StackDirection.Up;
+      }
 
-    if (rank === 1) {
-      // 1's do not need to be played if the stack is going up.
-      if (direction === StackDirection.Up) {
-        return false;
+      case 2:
+      case 3:
+      case 4: {
+        // All 2's, 3's, and 4's must be played.
+        return true;
       }
-    } else if (rank === 5) {
-      // 5's do not need to be played if the stack is going down.
-      if (direction === StackDirection.Down) {
-        return false;
+
+      case 5: {
+        // 5's do not need to be played if the stack is going down.
+        return direction !== StackDirection.Down;
       }
-    } else if (rank === START_CARD_RANK) {
-      // START cards do not need to be played if there are any cards played on the stack.
-      const playStack = playStacks[suitIndex]!;
-      if (playStack.length > 0) {
-        return false;
+
+      case START_CARD_RANK: {
+        // START cards only need to be played if there 0 cards the stack.
+        const playStack = playStacks[suitIndex];
+        if (playStack === undefined) {
+          return false;
+        }
+
+        return playStack.length === 0;
       }
     }
   }
@@ -69,8 +76,8 @@ export function needsToBePlayed(
  * function mirrors the server function "variantReversibleIsDeadIsDead()".
  */
 function isDead(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
@@ -151,11 +158,11 @@ export function getMaxScorePerStack(
     0,
   ) as number[];
 
-  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-    const suit = variant.suits[suitIndex]!;
+  for (const [i, suit] of variant.suits.entries()) {
+    const suitIndex = i as SuitIndex;
 
     // Make a map that shows if all of some particular rank in this suit has been discarded.
-    const ranks: number[] = [...DEFAULT_CARD_RANKS];
+    const ranks: Rank[] = [...DEFAULT_CARD_RANKS];
     if (variant.upOrDown) {
       ranks.push(START_CARD_RANK);
     }
@@ -167,16 +174,37 @@ export function getMaxScorePerStack(
       allDiscarded.set(rank, total === discarded);
     }
 
-    if (playStackDirections[suitIndex] === StackDirection.Undecided) {
-      const upWalk = walkUp(allDiscarded, variant);
-      const downWalk = walkDown(allDiscarded, variant);
-      maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
-    } else if (playStackDirections[suitIndex] === StackDirection.Up) {
-      maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
-    } else if (playStackDirections[suitIndex] === StackDirection.Down) {
-      maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
-    } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
-      maxScorePerStack[suitIndex] += 5;
+    const stackDirection = playStackDirections[suitIndex];
+    if (stackDirection === undefined) {
+      continue;
+    }
+
+    switch (stackDirection) {
+      case StackDirection.Undecided: {
+        const upWalk = walkUp(allDiscarded, variant);
+        const downWalk = walkDown(allDiscarded, variant);
+        maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
+
+        break;
+      }
+
+      case StackDirection.Up: {
+        maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
+
+        break;
+      }
+
+      case StackDirection.Down: {
+        maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
+
+        break;
+      }
+
+      case StackDirection.Finished: {
+        maxScorePerStack[suitIndex] += 5;
+
+        break;
+      }
     }
   }
 
@@ -239,8 +267,8 @@ function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
 
 // This does not mirror any function on the server.
 export function isCritical(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,

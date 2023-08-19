@@ -1,6 +1,6 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import type { Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue } from "../types/Clue";
@@ -73,8 +73,8 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
 export function touchesCard(
   variant: Variant,
   clue: Clue,
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
 ): boolean {
   const suit = variant.suits[suitIndex]!;
 

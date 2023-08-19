@@ -1,12 +1,13 @@
 // Calculates the state of the deck after an action.
 
-import { getVariant } from "@hanabi/data";
-import { nullIfNegative } from "../../utils";
+import type { Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
+import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
 import type { CardState } from "../types/CardState";
+import type { Clue } from "../types/Clue";
 import { newColorClue, newRankClue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -75,10 +76,18 @@ export function cardsReducer(
     }
 
     case "clue": {
-      const clue =
-        action.clue.type === ClueType.Color
-          ? newColorClue(variant.clueColors[action.clue.value]!)
-          : newRankClue(action.clue.value);
+      let clue: Clue;
+      switch (action.clue.type) {
+        case ClueType.Color: {
+          clue = newColorClue(variant.clueColors[action.clue.value]!);
+          break;
+        }
+
+        case ClueType.Rank: {
+          clue = newRankClue(action.clue.value);
+          break;
+        }
+      }
 
       // eslint-disable-next-line func-style
       const applyClue = (order: number, positive: boolean) => {
@@ -135,15 +144,12 @@ export function cardsReducer(
       const card = getCard(deck, order);
 
       // If the rank or suit coming from the action is null, prefer what we already had inferred.
-      const suitIndex = nullIfNegative(action.suitIndex) ?? card.suitIndex;
-      const rank = nullIfNegative(action.rank) ?? card.rank;
+      const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
+      const rank = action.rank === -1 ? null : action.rank;
 
       const identityDetermined = revealCard(suitIndex, rank, card);
 
-      let { segmentPlayed } = card;
-      let { segmentDiscarded } = card;
-      let { location } = card;
-      let { isMisplayed } = card;
+      let { segmentPlayed, segmentDiscarded, location, isMisplayed } = card;
 
       if (action.type === "play") {
         location = "playStack";
@@ -156,6 +162,16 @@ export function cardsReducer(
         }
       }
 
+      const revealedToPlayer =
+        action.suitIndex !== -1 && action.rank !== -1
+          ? new Array(MAX_PLAYERS).fill(true)
+          : card.revealedToPlayer;
+
+      const possibleCards =
+        action.suitIndex !== -1 && action.rank !== -1
+          ? ([[action.suitIndex, action.rank]] as readonly SuitRankTuple[])
+          : card.possibleCards;
+
       newDeck[order] = {
         ...card,
         suitIndex,
@@ -166,14 +182,8 @@ export function cardsReducer(
         isMisplayed,
         suitDetermined: card.suitDetermined || identityDetermined,
         rankDetermined: card.rankDetermined || identityDetermined,
-        revealedToPlayer:
-          action.suitIndex >= 0 && action.rank >= 0
-            ? new Array(6).fill(true)
-            : card.revealedToPlayer,
-        possibleCards:
-          action.suitIndex >= 0 && action.rank >= 0
-            ? [[action.suitIndex, action.rank]]
-            : card.possibleCards,
+        revealedToPlayer,
+        possibleCards,
       };
       break;
     }
@@ -198,15 +208,20 @@ export function cardsReducer(
 
       let { possibleCards } = initial;
 
-      if (action.suitIndex >= 0 && action.rank >= 0) {
-        possibleCards = [[action.suitIndex, action.rank]];
+      if (action.suitIndex !== -1 && action.rank !== -1) {
+        possibleCards = [
+          [action.suitIndex, action.rank],
+        ] as readonly SuitRankTuple[];
       }
+
+      const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
+      const rank = action.rank === -1 ? null : action.rank;
 
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
-        suitIndex: nullIfNegative(action.suitIndex),
-        rank: nullIfNegative(action.rank),
+        suitIndex,
+        rank,
         segmentDrawn: game.turn.segment,
         revealedToPlayer: drawnCardRevealedToPlayer(
           action.playerIndex,
@@ -330,8 +345,8 @@ function getCard(deck: readonly CardState[], order: number) {
 }
 
 function revealCard(
-  suitIndex: number | null,
-  rank: number | null,
+  suitIndex: SuitIndex | null,
+  rank: Rank | null,
   card: CardState,
 ) {
   // The action from the server did not specify the identity of the card, so we cannot reveal it

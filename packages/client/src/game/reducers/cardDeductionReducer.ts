@@ -1,5 +1,7 @@
-import type { Variant } from "@hanabi/data";
+import type { SuitRankTuple, Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
+import { arrayCopyTwoDimensional } from "@hanabi/utils";
 import * as deckRules from "../rules/deck";
 import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -9,7 +11,7 @@ export function cardDeductionReducer(
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
   action: GameAction,
-  hands: ReadonlyArray<readonly number[]>,
+  hands: DeepReadonly<number[][]>,
   metadata: GameMetadata,
 ): readonly CardState[] {
   switch (action.type) {
@@ -29,7 +31,7 @@ export function cardDeductionReducer(
 function makeDeductions(
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
-  hands: ReadonlyArray<readonly number[]>,
+  hands: DeepReadonly<number[][]>,
   metadata: GameMetadata,
 ) {
   const newDeck: CardState[] = [...deck];
@@ -66,10 +68,10 @@ function makeDeductions(
 function calculatePlayerPossibilities(
   playerIndex: number,
   ourPlayerIndex: number,
-  hands: ReadonlyArray<readonly number[]>,
+  hands: DeepReadonly<number[][]>,
   deck: CardState[],
   oldDeck: readonly CardState[],
-  cardCountMap: readonly number[][],
+  cardCountMap: number[][],
   metadata: GameMetadata,
 ) {
   for (const hand of hands) {
@@ -96,7 +98,7 @@ function calculateCard(
   playerIndex: number,
   ourPlayerIndex: number,
   deck: CardState[],
-  cardCountMap: readonly number[][],
+  cardCountMap: number[][],
   metadata: GameMetadata,
 ) {
   const deckPossibilities = generateDeckPossibilities(
@@ -179,7 +181,7 @@ function getCardPossibilitiesForPlayer(
   card: CardState,
   playerIndex: number,
   ourPlayerIndex: number,
-): ReadonlyArray<readonly [number, number]> {
+): readonly SuitRankTuple[] {
   if (card.location === playerIndex) {
     // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
@@ -213,20 +215,23 @@ function generateDeckPossibilities(
   playerIndex: number,
   ourPlayerIndex: number,
   metadata: GameMetadata,
-): Array<ReadonlyArray<readonly [number, number]>> {
-  const deckPossibilities: Array<ReadonlyArray<readonly [number, number]>> = [];
+): DeepReadonly<SuitRankTuple[][]> {
+  const deckPossibilities: Array<readonly SuitRankTuple[]> = [];
   for (const card of deck) {
     if (canBeUsedToDisprovePossibility(card, excludeCardOrder, playerIndex)) {
-      deckPossibilities.push(
-        getCardPossibilitiesForPlayer(card, playerIndex, ourPlayerIndex),
+      const cardPossibilities = getCardPossibilitiesForPlayer(
+        card,
+        playerIndex,
+        ourPlayerIndex,
       );
+      deckPossibilities.push(cardPossibilities);
     }
   }
 
   /**
    * Start with the more stable possibilities. This is for performance. It seemed to have a
-   * measurable difference. The possibilityValid method will short-circuit if it finds a branch
-   * that's impossible or if it finds a possibility that's valid. Here's an example:
+   * measurable difference. The `possibilityValid` method will short-circuit if it finds a branch
+   * that is impossible or if it finds a possibility that is valid. Here's an example:
    *
    * ```ts
    * deckPossibilities = [
@@ -238,7 +243,7 @@ function generateDeckPossibilities(
    * ]
    * ```
    *
-   * possibilityValid would initially start with the first card being red 5. It would then check
+   * `possibilityValid` would initially start with the first card being red 5. It would then check
    * about 1000 combinations of the next three cards before finding each one is impossible at the
    * very end of each combination. If we reorder that to:
    *
@@ -260,9 +265,8 @@ function generateDeckPossibilities(
    * applies to more than just cards that have one possibility (such as red 5 in the example).
    */
   deckPossibilities.sort((a, b) => a.length - b.length);
-  const cardCountMap = getCardCountMap(
-    getVariant(metadata.options.variantName),
-  );
+  const variant = getVariant(metadata.options.variantName);
+  const cardCountMap = getCardCountMap(variant);
   return deckPossibilities.filter((a) => isPossibleCard(a, cardCountMap));
 }
 
@@ -272,17 +276,19 @@ function generateDeckPossibilities(
  * Remove cards from possibilities that we know are from an impossible deck.
  */
 function isPossibleCard(
-  possibilities: ReadonlyArray<readonly [number, number]>,
-  cardCountMap: readonly number[][],
+  possibilities: readonly SuitRankTuple[],
+  cardCountMap: number[][],
 ) {
   // We know the card.
   if (possibilities.length === 1) {
     const [suit, rank] = possibilities[0]!;
     cardCountMap[suit]![rank]!--;
+
     if (cardCountMap[suit]![rank]! < 0) {
       return false;
     }
   }
+
   return true;
 }
 
@@ -352,18 +358,20 @@ function deckPossibilitiesDifferent(
 }
 
 function filterCardPossibilities(
-  cardPossibilities: ReadonlyArray<readonly [number, number]>,
-  deckPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
-  cardCountMap: readonly number[][],
-) {
-  // `possibilitiesToValidate` tracks what possibilities have yet to be validated for a specific
-  // card from a specific perspective. When a specific possibility/identity for that card is
-  // validated in the possibilityValid method (by finding a working combination of card identities),
-  // it will check if it's possible to swap the identity for our specific card and still have a
-  // working combination. If so, then the new identity for our specific card is also valid and
-  // doesn't need to be validated again (so it's removed from possibilitiesToValidate).
-  let possibilitiesToValidate: Array<readonly [number, number]> = [];
-  possibilitiesToValidate = [...cardPossibilities];
+  cardPossibilities: readonly SuitRankTuple[],
+  deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
+  cardCountMap: number[][],
+): readonly SuitRankTuple[] {
+  /**
+   * Tracks what possibilities have yet to be validated for a specific card from a specific
+   * perspective. When a specific possibility/identity for that card is validated in the
+   * `possibilityValid` function (by finding a working combination of card identities), it will
+   * check if it is possible to swap the identity for our specific card and still have a working
+   * combination. If so, then the new identity for our specific card is also valid and does not need
+   * to be validated again (so it is removed from the array).
+   */
+  const possibilitiesToValidate = [...cardPossibilities];
+
   return cardPossibilities.filter((possibility) => {
     // If the possibility is not in the list that still needs validation then it must mean the
     // possibility is already validated and we can exit early.
@@ -381,8 +389,8 @@ function filterCardPossibilities(
 }
 
 function hasPossibility(
-  possibilitiesToValidate: ReadonlyArray<readonly [number, number]>,
-  [suit, rank]: readonly [number, number],
+  possibilitiesToValidate: DeepReadonly<number[][]>,
+  [suit, rank]: SuitRankTuple,
 ) {
   return possibilitiesToValidate.some(
     ([suitCandidate, rankCandidate]) =>
@@ -392,10 +400,10 @@ function hasPossibility(
 
 function possibilityValid(
   [suit, rank]: readonly [number, number],
-  deckPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
   index: number,
-  cardCountMap: readonly number[][],
-  possibilitiesToValidate: Array<readonly [number, number]>,
+  cardCountMap: number[][],
+  possibilitiesToValidate: SuitRankTuple[],
 ) {
   if (deckPossibilities.length === index) {
     if (cardCountMap[suit]![rank]! > 0) {
@@ -431,8 +439,8 @@ function possibilityValid(
 }
 
 function updatePossibilitiesToValidate(
-  cardCountMap: readonly number[][],
-  possibilitiesToValidate: Array<readonly [number, number]>,
+  cardCountMap: number[][],
+  possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -449,18 +457,16 @@ function updatePossibilitiesToValidate(
 let cachedVariantId: number | null = null;
 let cachedCardCountMap: number[][] = [];
 
-function getCardCountMap(variant: Variant) {
+/** @returns A two-dimensional array which is indexed by suit index, then rank. */
+function getCardCountMap(variant: Variant): number[][] {
   if (variant.id === cachedVariantId) {
     return Array.from(cachedCardCountMap, (arr) => [...arr]);
   }
 
-  const possibleSuits: number[] = [...variant.suits].map((_, i) => i);
-  const possibleRanks: number[] = [...variant.ranks];
   const possibleCardMap: number[][] = [];
-  for (const suitIndex of possibleSuits) {
+  for (const [suitIndex, suit] of variant.suits.entries()) {
     possibleCardMap[suitIndex] = [];
-    const suit = variant.suits[suitIndex]!;
-    for (const rank of possibleRanks) {
+    for (const rank of variant.ranks) {
       possibleCardMap[suitIndex]![rank] = deckRules.numCopiesOfCard(
         suit,
         rank,
@@ -470,7 +476,7 @@ function getCardCountMap(variant: Variant) {
   }
 
   cachedVariantId = variant.id;
-  cachedCardCountMap = Array.from(possibleCardMap, (arr) => [...arr]);
+  cachedCardCountMap = arrayCopyTwoDimensional(possibleCardMap);
 
   return possibleCardMap;
 }

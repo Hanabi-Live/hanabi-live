@@ -1,4 +1,4 @@
-import type { Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import type { CardState } from "../../types/CardState";
 import * as deckRules from "../deck";
 
@@ -6,24 +6,24 @@ export function discardedHelpers(
   variant: Variant,
   deck: readonly CardState[],
 ): {
-  isLastCopy: (s: number, r: number) => boolean;
-  isAllDiscarded: (s: number, r: number) => boolean;
+  isLastCopy: (suitIndex: SuitIndex, rank: Rank) => boolean;
+  isAllDiscarded: (suitIndex: SuitIndex, rank: Rank) => boolean;
 } {
   // eslint-disable-next-line func-style
-  const total = (s: number, r: number) =>
-    deckRules.numCopiesOfCard(variant.suits[s]!, r, variant);
+  const total = (suitIndex: SuitIndex, rank: Rank) =>
+    deckRules.numCopiesOfCard(variant.suits[suitIndex]!, rank, variant);
 
   // eslint-disable-next-line func-style
-  const discarded = (s: number, r: number) =>
-    deckRules.discardedCopies(deck, s, r);
+  const discarded = (suitIndex: SuitIndex, rank: Rank) =>
+    deckRules.discardedCopies(deck, suitIndex, rank);
 
   // eslint-disable-next-line func-style
-  const isLastCopy = (s: number, r: number) =>
-    total(s, r) === discarded(s, r) + 1;
+  const isLastCopy = (suitIndex: SuitIndex, rank: Rank) =>
+    total(suitIndex, rank) === discarded(suitIndex, rank) + 1;
 
   // eslint-disable-next-line func-style
-  const isAllDiscarded = (s: number, r: number) =>
-    total(s, r) === discarded(s, r);
+  const isAllDiscarded = (suitIndex: SuitIndex, rank: Rank) =>
+    total(suitIndex, rank) === discarded(suitIndex, rank);
 
   return { isLastCopy, isAllDiscarded };
 }
@@ -31,12 +31,14 @@ export function discardedHelpers(
 export function createAllDiscardedMap(
   variant: Variant,
   deck: readonly CardState[],
-  suitIndex: number,
+  suitIndex: SuitIndex,
 ): Map<number, boolean> {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
+
   const allDiscarded = new Map<number, boolean>();
   for (const variantRank of variant.ranks) {
     allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
   }
+
   return allDiscarded;
 }

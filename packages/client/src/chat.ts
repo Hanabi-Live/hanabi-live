@@ -246,19 +246,38 @@ function keydown(this: HTMLElement, event: JQuery.Event) {
   // The up and down arrows are only caught in the "keydown" event:
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus.
-  if (event.which === KeyCode.KEY_UP) {
-    event.preventDefault();
-    arrowUp(element);
-  } else if (event.which === KeyCode.KEY_DOWN) {
-    event.preventDefault();
-    arrowDown(element);
-  } else if (event.which === KeyCode.KEY_TAB) {
-    event.preventDefault();
-    tab(element, event);
-  } else if (
-    [KeyCode.KEY_BACK_SPACE, KeyCode.KEY_DELETE].includes(event.which ?? 0)
-  ) {
-    typedChatHistoryIndex = null;
+  switch (event.which) {
+    // 8, 46
+    case KeyCode.KEY_BACK_SPACE:
+    case KeyCode.KEY_DELETE: {
+      typedChatHistoryIndex = null;
+      break;
+    }
+
+    // 9
+    case KeyCode.KEY_TAB: {
+      event.preventDefault();
+      tab(element, event);
+      break;
+    }
+
+    // 38
+    case KeyCode.KEY_UP: {
+      event.preventDefault();
+      arrowUp(element);
+      break;
+    }
+
+    // 40
+    case KeyCode.KEY_DOWN: {
+      event.preventDefault();
+      arrowDown(element);
+      break;
+    }
+
+    default: {
+      break;
+    }
   }
 }
 
@@ -645,30 +664,37 @@ function fillTwitchEmotes(message: string) {
 }
 
 export function updatePeopleTyping(): void {
+  const typingMessage = getTypingMessage();
+
   const chat1 = $("#lobby-chat-pregame-istyping");
+  chat1.html(typingMessage);
+
   const chat2 = $("#game-chat-istyping");
+  chat2.html(typingMessage);
+}
 
-  if (globals.peopleTyping.length === 0) {
-    chat1.html("");
-    chat2.html("");
-    return;
-  }
+function getTypingMessage(): string {
+  switch (globals.peopleTyping.length) {
+    case 0: {
+      return "";
+    }
 
-  let msg: string;
-  if (globals.peopleTyping.length === 1) {
-    msg = `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
-  } else if (globals.peopleTyping.length === 2) {
-    msg = `<strong>${globals.peopleTyping[0]}</strong> and `;
-    msg += `<strong>${globals.peopleTyping[1]}</strong> are typing...`;
-  } else if (globals.peopleTyping.length === 3) {
-    msg = `<strong>${globals.peopleTyping[0]}</strong>, `;
-    msg += `<strong>${globals.peopleTyping[1]}</strong>, `;
-    msg += `and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
-  } else {
-    msg = "Several people are typing...";
+    case 1: {
+      return `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
+    }
+
+    case 2: {
+      return `<strong>${globals.peopleTyping[0]}</strong> and <strong>${globals.peopleTyping[1]}</strong> are typing...`;
+    }
+
+    case 3: {
+      return `<strong>${globals.peopleTyping[0]}</strong>, <strong>${globals.peopleTyping[1]}</strong>, and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
+    }
+
+    default: {
+      return "Several people are typing...";
+    }
   }
-  chat1.html(msg);
-  chat2.html(msg);
 }
 
 function formatChatMessage(msg: string, type: SelfChatMessageType): string {

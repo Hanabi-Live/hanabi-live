@@ -1,16 +1,18 @@
 import type { Variant } from "@hanabi/data";
+import type { DeepReadonly } from "@hanabi/utils";
 import * as cardRules from "../rules/card";
 import type { CardState } from "../types/CardState";
 import type { StackDirection } from "../types/StackDirection";
 
 export function knownTrashReducer(
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
+  playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
   playStackStarts: readonly number[],
   variant: Variant,
 ): readonly CardState[] {
   const newDeck = [...deck];
+
   for (let order = 0; order < newDeck.length; order++) {
     const card = deck[order]!;
     newDeck[order] = {
@@ -26,5 +28,6 @@ export function knownTrashReducer(
       ),
     };
   }
+
   return newDeck;
 }

@@ -1,36 +1,40 @@
-import type { Color } from "@hanabi/data";
-
-type CardLocation = "deck" | "discard" | "playStack" | number;
+import type {
+  Color,
+  Rank,
+  RankClueNumber,
+  SuitIndex,
+  SuitRankTuple,
+} from "@hanabi/data";
 
 export interface CardState {
   readonly order: number;
 
-  /** If location is a number, it is the index of the player that holds this card. */
-  readonly location: CardLocation;
+  /** If this is a number, it is the index of the player that holds this card. */
+  readonly location: "deck" | "discard" | "playStack" | number;
 
-  readonly suitIndex: number | null;
-  readonly rank: number | null;
+  readonly suitIndex: SuitIndex | null;
+  readonly rank: Rank | null;
 
   /**
    * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
    * possible based on the clues touching the card so far. Do not access this by the index; filter
    * the array to find the remaining cards that you need.
    */
-  readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
+  readonly possibleCardsFromClues: readonly SuitRankTuple[];
 
   /**
    * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
    * possible based on everything we know so far. Do not access this by the index; filter the array
    * to find the remaining cards that you need.
    */
-  readonly possibleCards: ReadonlyArray<readonly [number, number]>;
+  readonly possibleCards: readonly SuitRankTuple[];
 
   /**
    * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
    * possible based on everything the player holding it should know so far. Do not access this by
    * the index; filter the array to find the remaining cards that you need.
    */
-  readonly possibleCardsForEmpathy: ReadonlyArray<readonly [number, number]>;
+  readonly possibleCardsForEmpathy: readonly SuitRankTuple[];
 
   /** An array that specifies whether the card is revealed to a particular player index. */
   readonly revealedToPlayer: readonly boolean[];
@@ -47,7 +51,7 @@ export interface CardState {
    *
    * The elements of this array will always be unique.
    */
-  readonly positiveRankClues: number[];
+  readonly positiveRankClues: RankClueNumber[];
 
   readonly suitDetermined: boolean;
   readonly rankDetermined: boolean;

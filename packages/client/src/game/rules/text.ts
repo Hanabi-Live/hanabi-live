@@ -151,7 +151,9 @@ export function play(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const card =
-    variant.throwItInAHole && (playing || shadowing)
+    action.suitIndex === -1 ||
+    action.rank === -1 ||
+    (variant.throwItInAHole && (playing || shadowing))
       ? "a card"
       : cardRules.name(action.suitIndex, action.rank, variant);
 

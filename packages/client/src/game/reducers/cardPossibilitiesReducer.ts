@@ -1,7 +1,7 @@
 // Calculates the state of a card after a clue.
 
-import type { Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import type { SuitRankTuple, Variant } from "@hanabi/data";
+import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import * as cluesRules from "../rules/clues";
 import type { CardState } from "../types/CardState";
 import type { Clue } from "../types/Clue";
@@ -83,7 +83,7 @@ export function cardPossibilitiesReducer(
 // Based on the current possibilities, updates the known identity of this card.
 function updateIdentity(
   state: CardState,
-  possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
+  possibleCardsFromClues: readonly SuitRankTuple[],
 ) {
   let { suitIndex, rank } = state;
 
@@ -112,7 +112,7 @@ function updateIdentity(
     rankDetermined,
     revealedToPlayer:
       suitDetermined && rankDetermined
-        ? new Array(6).fill(true)
+        ? new Array(MAX_PLAYERS).fill(true)
         : state.revealedToPlayer,
   };
 }

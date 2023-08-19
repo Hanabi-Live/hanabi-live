@@ -1,6 +1,6 @@
 // Functions related to deck information: total cards, drawing cards
 
-import type { Suit, Variant } from "@hanabi/data";
+import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK, getVariant } from "@hanabi/data";
 import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -36,7 +36,7 @@ function totalCardsInSuit(variant: Variant, suit: Suit): number {
  */
 export function numCopiesOfCard(
   suit: Suit,
-  rank: number,
+  rank: Rank,
   variant: Variant,
 ): number {
   if (suit.oneOfEach) {
@@ -100,8 +100,8 @@ export function numCopiesOfCard(
 /** Returns how many cards of a specific suit/rank that have been already discarded. */
 export function discardedCopies(
   deck: readonly CardState[],
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
 ): number {
   return deck.reduce((discarded, c) => {
     if (

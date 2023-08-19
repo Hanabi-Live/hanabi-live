@@ -3,6 +3,7 @@ import { ReadonlySet } from "@hanabi/utils";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
+import type { Rank } from "../types/Rank";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
@@ -354,7 +355,7 @@ function getVariantsForSpecialRanks(
   return variantDescriptions;
 }
 
-function getSpecialRankName(specialRank: number) {
+function getSpecialRankName(specialRank: Rank) {
   if (specialRank === 1) {
     return "Ones";
   }

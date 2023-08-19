@@ -1,3 +1,5 @@
+import type { Rank } from "@hanabi/data";
+
 type DrawFunction = (ctx: CanvasRenderingContext2D) => void;
 const shapeFunctions = new Map<number, DrawFunction>();
 const sf = 2.2; // Scale factor
@@ -1302,7 +1304,7 @@ shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
 
 export function drawStylizedRank(
   ctx: CanvasRenderingContext2D,
-  rank: number,
+  rank: Rank,
 ): void {
   // Each rank has a shape.
   const shapeFunction = shapeFunctions.get(rank);

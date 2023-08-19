@@ -2,8 +2,6 @@
 
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import { nullIfNegative } from "../../utils";
-import { CardIdentityType } from "../types/CardIdentityType";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { ReplayState } from "../types/ReplayState";
 import type {
@@ -193,22 +191,18 @@ function replayReducerFunction(
       }
 
       state.hypothetical.showDrawnCards = action.showDrawnCards;
-      if (action.showDrawnCards) {
-        // Filter out all identities morphed to blank.
 
-        for (const order of original(
-          state.hypothetical.drawnCardsInHypothetical,
-        )!) {
-          state.hypothetical.morphedIdentities[order] = {
-            rank: CardIdentityType.Original,
-            suitIndex: CardIdentityType.Original,
-          };
-        }
-      } else {
-        // Hide all cards drawn since the beginning of the hypothetical.
-        for (const order of original(
-          state.hypothetical.drawnCardsInHypothetical,
-        )!) {
+      for (const order of original(
+        state.hypothetical.drawnCardsInHypothetical,
+      )!) {
+        if (action.showDrawnCards) {
+          // This is a sparse array, so we must delete it with the `delete` operator. (We are not
+          // using a map because Immer state objects must be composed of primitives for performance
+          // reasons.)
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete state.hypothetical.morphedIdentities[order];
+        } else {
+          // Hide all cards drawn since the beginning of the hypothetical.
           state.hypothetical.morphedIdentities[order] = {
             rank: null,
             suitIndex: null,
@@ -247,27 +241,18 @@ function hypoAction(
   // The morph action is handled here. Also take note of any draws that conflict with the known card
   // identities.
   if (action.type === "morph") {
-    if (
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      action.suitIndex === CardIdentityType.Original &&
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      action.rank === CardIdentityType.Original
-    ) {
-      // Unmorph the card.
-      state.hypothetical.morphedIdentities[action.order] = {
-        suitIndex: CardIdentityType.Original,
-        rank: CardIdentityType.Original,
-      };
-    } else {
-      const suitIndex = nullIfNegative(action.suitIndex);
-      const rank = nullIfNegative(action.rank);
+    const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
+    const rank = action.rank === -1 ? null : action.rank;
 
-      // This card has been morphed or blanked.
-      state.hypothetical.morphedIdentities[action.order] = {
-        suitIndex,
-        rank,
-      };
-    }
+    state.hypothetical.morphedIdentities[action.order] = {
+      suitIndex,
+      rank,
+    };
+  } else if (action.type === "unmorph") {
+    // This is a sparse array, so we must delete it with the `delete` operator. (We are not using a
+    // map because Immer state objects must be composed of primitives for performance reasons.)
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete state.hypothetical.morphedIdentities[action.order];
   }
 
   if (action.type === "draw") {
@@ -283,7 +268,7 @@ function hypoAction(
   }
 
   // The game state doesn't care about morphed cards.
-  if (action.type === "morph") {
+  if (action.type === "morph" || action.type === "unmorph") {
     return;
   }
 

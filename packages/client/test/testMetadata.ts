@@ -5,10 +5,11 @@ import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
 import type { GameMetadata } from "../src/game/types/GameMetadata";
+import type { NumPlayers } from "../src/types/NumPlayers";
 import { Options } from "../src/types/Options";
 
 export function testMetadata(
-  numPlayers: number,
+  numPlayers: NumPlayers,
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {
   const options = {

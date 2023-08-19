@@ -1,3 +1,4 @@
+import type { Rank } from "@hanabi/data";
 import { getDefaultVariant, getVariant, START_CARD_RANK } from "@hanabi/data";
 import { eRange, newArray } from "@hanabi/utils";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
@@ -43,32 +44,32 @@ describe("direction", () => {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: START_CARD_RANK,
       suitIndex: 0,
-    };
+    } as const;
     const redOne = {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 1,
       suitIndex: 0,
-    };
+    } as const;
     const redTwo = {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 2,
       suitIndex: 0,
-    };
+    } as const;
     const redThree = {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 3,
       suitIndex: 0,
-    };
+    } as const;
     const redFour = {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 4,
       suitIndex: 0,
-    };
+    } as const;
     const redFive = {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 5,
       suitIndex: 0,
-    };
+    } as const;
 
     test("returns Finished for Up or Down, 5 cards played", () => {
       const playStackDirection = direction(
@@ -178,9 +179,9 @@ describe("nextRanks", () => {
       }
       const redCard = {
         ...initialCardState(0, DEFAULT_VARIANT),
-        rank: n,
+        rank: n as Rank,
         suitIndex: 0,
-      };
+      } as const;
       const nextRanksArray = nextPlayableRanks(
         0,
         [0],
@@ -213,9 +214,9 @@ describe("nextRanks", () => {
       }
       const redCard = {
         ...initialCardState(0, DEFAULT_VARIANT),
-        rank: n,
+        rank: n as Rank,
         suitIndex: 0,
-      };
+      } as const;
       const nextRanksArray = nextPlayableRanks(
         0,
         [0],
@@ -233,7 +234,7 @@ describe("nextRanks", () => {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 5,
       suitIndex: 0,
-    };
+    } as const;
     const nextRanksArray = nextPlayableRanks(
       0,
       [0],
@@ -250,7 +251,7 @@ describe("nextRanks", () => {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: 1,
       suitIndex: 0,
-    };
+    } as const;
     const nextRanksArray = nextPlayableRanks(
       0,
       [0],
@@ -279,7 +280,7 @@ describe("nextRanks", () => {
       ...initialCardState(0, UP_OR_DOWN_VARIANT),
       rank: START_CARD_RANK,
       suitIndex: 0,
-    };
+    } as const;
     const nextRanksArray = nextPlayableRanks(
       0,
       [0],

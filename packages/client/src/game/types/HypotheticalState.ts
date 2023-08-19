@@ -14,6 +14,8 @@ export interface HypotheticalState {
   readonly drawnCardsInHypothetical: readonly number[];
 
   /**
+   * A sparse array indexed by card order.
+   *
    * If a card is in this array, it is being shown with an alternate identity. If the alternate
    * identity is null/null, it is shown as blank.
    */

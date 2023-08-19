@@ -34,7 +34,7 @@ REPO_ROOT="$DIR/../.."
 VARIANTS_TXT="$REPO_ROOT/misc/variants.txt"
 TMP_VARIANTS_TXT="/tmp/variants.txt"
 cp "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
-bash "$DIR/update_variant_files.sh"
+bash "$DIR/update_variant_files.sh" > /dev/null
 diff "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
 diff "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
 rm -f "$TMP_VARIANTS_JSON"

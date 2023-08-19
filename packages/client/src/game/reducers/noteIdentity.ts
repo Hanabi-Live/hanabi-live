@@ -1,11 +1,7 @@
-import type { Rank, Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, SuitRankTuple, Variant } from "@hanabi/data";
 import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/data";
 import { eRange, newArray } from "@hanabi/utils";
 import type { CardIdentity } from "../types/CardIdentity";
-import { CardIdentityType } from "../types/CardIdentityType";
-
-/** The maximum number of suits in a variant is 6. Thus, the valid suit indexes are 0 through 5. */
-type SuitIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
 /**
  * Represents the card identities that a card could possibly be.
@@ -85,18 +81,21 @@ function parseRank(rankText: string): Rank | null {
  * @param keyword The string to be parsed.
  * @returns Return {suitIndex, rank}.
  */
-export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
+export function parseIdentity(
+  variant: Variant,
+  keyword: string,
+): CardIdentity | "original" | undefined {
   if (keyword.toLowerCase() === "blank") {
     // Create a blank morph.
-    return { suitIndex: null, rank: null };
+    return {
+      suitIndex: null,
+      rank: null,
+    };
   }
 
   if (keyword === "") {
     // Return morph to original.
-    return {
-      suitIndex: CardIdentityType.Original,
-      rank: CardIdentityType.Original,
-    };
+    return "original";
   }
 
   const identityMatch = new RegExp(
@@ -114,7 +113,7 @@ export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
     }
   }
 
-  return { suitIndex: CardIdentityType.Fail, rank: CardIdentityType.Fail };
+  return undefined;
 }
 
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {
@@ -156,19 +155,20 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   };
 }
 
-function identityMapToArray(variant: Variant, cardMap: boolean[][]) {
-  const possibilities: Array<[number, number]> = [];
+function identityMapToArray(
+  variant: Variant,
+  identityMap: boolean[][],
+): SuitRankTuple[] {
+  const possibilities: SuitRankTuple[] = [];
 
   for (const rank of variant.ranks) {
-    const suitArray = cardMap[rank];
+    const suitArray = identityMap[rank];
     if (suitArray === undefined) {
       continue;
     }
 
-    for (const [
-      suitIndex,
-      isRankSuitCombinationPossible,
-    ] of suitArray.entries()) {
+    for (const [i, isRankSuitCombinationPossible] of suitArray.entries()) {
+      const suitIndex = i as SuitIndex;
       if (isRankSuitCombinationPossible) {
         possibilities.push([suitIndex, rank]);
       }
@@ -192,7 +192,7 @@ function identityMapToArray(variant: Variant, cardMap: boolean[][]) {
 function getPossibilitiesFromKeyword(
   variant: Variant,
   keyword: string,
-): Array<[number, number]> {
+): SuitRankTuple[] {
   const { positiveCardIdentities, negativeCardIdentities } =
     getCardIdentitiesFromKeyword(variant, keyword);
 
@@ -272,8 +272,8 @@ function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
 export function getPossibilitiesFromKeywords(
   variant: Variant,
   keywords: string[],
-): Array<[number, number]> {
-  let possibilities: Array<[number, number]> = [];
+): SuitRankTuple[] {
+  let possibilities: SuitRankTuple[] = [];
 
   // Empty keyword list returns all possibilities.
   for (const keyword of keywords.length > 0 ? keywords : [""]) {

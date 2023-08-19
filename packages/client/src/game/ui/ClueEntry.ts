@@ -83,7 +83,6 @@ export class ClueEntry extends Konva.Group {
       fontFamily: "Verdana",
       fill: "white",
       text: cluesRules.getClueName(
-        // eslint-disable-next-line isaacscript/strict-enums
         clue.type,
         clue.value,
         globals.variant,

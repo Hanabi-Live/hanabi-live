@@ -332,31 +332,52 @@ export function drawHands(winW: number, winH: number): void {
 
       // The beginning of the hand is at 0 We want it a little to the left of the first card.
       let blackLineX: number;
-      if (numPlayers === 2) {
-        blackLineX = -0.0075;
-      } else if (numPlayers === 3) {
-        blackLineX = -0.0125;
-      } else if (numPlayers === 4) {
-        blackLineX = -0.005;
-      } else if (numPlayers === 5 && (j === 1 || j === 4)) {
-        blackLineX = -0.01;
-      } else if (numPlayers === 5) {
-        blackLineX = -0.001;
-      } else if (numPlayers === 6) {
-        blackLineX = -0.0025;
-      } else {
-        blackLineX = 0;
+      switch (numPlayers) {
+        case 2: {
+          blackLineX = -0.0075;
+          break;
+        }
+
+        case 3: {
+          blackLineX = -0.0125;
+          break;
+        }
+
+        case 4: {
+          blackLineX = -0.005;
+          break;
+        }
+
+        case 5: {
+          blackLineX = j === 1 || j === 4 ? -0.01 : -0.001;
+          break;
+        }
+
+        case 6: {
+          blackLineX = -0.0025;
+          break;
+        }
       }
+
       const blackLineY = 0;
       if (isHandReversed(j)) {
-        if (numPlayers === 2 || numPlayers === 3) {
-          blackLineX = handValues.w + 0.002;
-        } else if (numPlayers === 5) {
-          blackLineX = handValues.w - 0.005;
-        } else if (numPlayers === 6) {
-          blackLineX = handValues.w - 0.005;
-        } else {
-          blackLineX = handValues.w;
+        switch (numPlayers) {
+          case 2:
+          case 3: {
+            blackLineX = handValues.w + 0.002;
+            break;
+          }
+
+          case 4: {
+            blackLineX = handValues.w;
+            break;
+          }
+
+          case 5:
+          case 6: {
+            blackLineX = handValues.w - 0.005;
+            break;
+          }
         }
       }
       const blackLine = new Konva.Rect({

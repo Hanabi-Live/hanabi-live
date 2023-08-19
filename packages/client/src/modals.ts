@@ -1,9 +1,8 @@
 // Modals (boxes that hover on top of the UI).
 
-import type { Suit, Variant } from "@hanabi/data";
+import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import * as noteIdentity from "./game/reducers/noteIdentity";
-import { CardIdentityType } from "./game/types/CardIdentityType";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import { globals } from "./globals";
@@ -145,19 +144,23 @@ export function askForMorph(
   morphDragArea = draggedTo;
   allowCloseModal = false;
 
-  const { suits } = variant;
-  const { ranks } = variant;
+  const { suits, ranks } = variant;
   const start =
     card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
-  const startSuit = start.suitIndex ?? 0;
-  const startRank = start.rank !== null && start.rank !== 0 ? start.rank : 1;
+  const startSuitIndex = start.suitIndex ?? 0;
+  const startRank = start.rank ?? 1;
+
   const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
+  const startSuit = suits[startSuitIndex];
+  if (startSuit === undefined) {
+    throw new Error(`Failed to get the suit at index: ${startSuitIndex}`);
+  }
 
   fillMorphModalWithRadios(
     "#morph-modal-cards",
     suits,
     ranks,
-    suits[startSuit]!,
+    startSuit,
     startRank,
     possibilities,
   );
@@ -171,7 +174,7 @@ export function askForMorph(
   if (draggedTo === null) {
     // If action is null, the function was called from "HanabiCardClick.ts" during replay hypo.
     morphModalDescription.innerHTML =
-      "Select the card you want to morph it into:";
+      "Select the card you want to morph it into.";
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
@@ -185,7 +188,7 @@ export function askForMorph(
   } else {
     // The function was called from "LayoutChild.ts" during in-game hypo.
     morphModalDescription.innerHTML =
-      "What the card will be for the purposes of this hypothetical?";
+      "What will the card will be for the purposes of this hypothetical?";
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
@@ -222,11 +225,8 @@ function morphReplayOkButton(
     morphModalTextbox.value,
   );
 
-  if (
-    cardIdentity.suitIndex === CardIdentityType.Fail ||
-    cardIdentity.rank === CardIdentityType.Fail
-  ) {
-    // The morph did not succeed.
+  if (cardIdentity === undefined) {
+    // The text that they entered does not correspond to a card.
     return false;
   }
 
@@ -437,10 +437,10 @@ function showModal(
 function fillMorphModalWithRadios(
   element: string,
   suits: readonly Suit[],
-  ranks: readonly number[],
+  ranks: readonly Rank[],
   startSuit: Suit,
-  startRank: number,
-  possibilities: ReadonlyArray<readonly [number, number]>,
+  startRank: Rank,
+  possibilities: readonly SuitRankTuple[],
 ) {
   const placeHolder = getHTMLElement(element);
   placeHolder.innerHTML = "";

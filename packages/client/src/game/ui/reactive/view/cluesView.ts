@@ -1,4 +1,5 @@
 import equal from "fast-deep-equal";
+import type { Clue } from "../../../types/Clue";
 import { newColorClue, newRankClue } from "../../../types/Clue";
 import { ClueType } from "../../../types/ClueType";
 import type { StateClue } from "../../../types/GameState";
@@ -30,11 +31,7 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
     return;
   }
 
-  const clue =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    lastClue.type === ClueType.Rank
-      ? newRankClue(lastClue.value)
-      : newColorClue(globals.variant.clueColors[lastClue.value]!);
+  const clue = stateClueToClue(lastClue);
 
   for (const [i, order] of lastClue.list.entries()) {
     const card = getCardOrStackBase(order);
@@ -44,6 +41,25 @@ function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
   }
 
   globals.layers.arrow.batchDraw();
+}
+
+function stateClueToClue(stateClue: StateClue): Clue {
+  switch (stateClue.type) {
+    case ClueType.Color: {
+      const color = globals.variant.clueColors[stateClue.value];
+      if (color === undefined) {
+        throw new Error(
+          `Failed to get the color corresponding to color index: ${stateClue.value}`,
+        );
+      }
+
+      return newColorClue(color);
+    }
+
+    case ClueType.Rank: {
+      return newRankClue(stateClue.value);
+    }
+  }
 }
 
 function updateLog(clues: readonly StateClue[]) {

@@ -13,7 +13,7 @@ import {
 } from "@hanabi/data";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
-import { produce } from "immer";
+import { castDraft, produce } from "immer";
 import type { NoteAction } from "../types/actions";
 import type { CardNote } from "../types/CardNote";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -39,7 +39,7 @@ function notesReducerFunction(
     }
 
     case "editNote": {
-      notes.ourNotes[action.order] = parseNote(variant, action.text);
+      notes.ourNotes[action.order] = castDraft(parseNote(variant, action.text));
 
       if (!playing) {
         for (const specNote of notes.allNotes[action.order]!) {
@@ -54,7 +54,7 @@ function notesReducerFunction(
 
     case "noteListPlayer": {
       for (const [i, text] of action.texts.entries()) {
-        notes.ourNotes[i] = parseNote(variant, text);
+        notes.ourNotes[i] = castDraft(parseNote(variant, text));
       }
       break;
     }
@@ -76,7 +76,7 @@ function notesReducerFunction(
         // If we are a spectator, copy our notes from combined list.
         if (action.names[i] === metadata.ourUsername && !playing && !finished) {
           for (const [order, text] of noteTextList.entries()) {
-            notes.ourNotes[order] = parseNote(variant, text);
+            notes.ourNotes[order] = castDraft(parseNote(variant, text));
           }
         }
 
@@ -133,22 +133,10 @@ function getEmptyNote(variant: Variant): CardNote {
 }
 
 function noteWithoutText(note: CardNote): CardNote {
-  interface CardNoteModifiable {
-    possibilities: Array<[number, number]>;
-    knownTrash: boolean;
-    needsFix: boolean;
-    questionMark: boolean;
-    exclamationMark: boolean;
-    chopMoved: boolean;
-    finessed: boolean;
-    blank: boolean;
-    unclued: boolean;
-    clued: boolean;
-    text: string;
-  }
-  const newNote: CardNoteModifiable = note;
-  newNote.text = "";
-  return newNote;
+  return {
+    ...note,
+    text: "",
+  };
 }
 
 export function noteEqual(note1: CardNote, note2: CardNote): boolean {
@@ -162,9 +150,11 @@ export function noteHasMeaning(variant: Variant, note: CardNote): boolean {
 export function parseNote(variant: Variant, text: string): CardNote {
   // Make all letters lowercase to simply the matching logic below and remove all leading and
   // trailing whitespace.
-  const pipeIdx = text.lastIndexOf("|");
-  const lastPipe = text.slice(pipeIdx >= 0 ? pipeIdx + 1 : 0);
-  const fullNote = lastPipe.toLowerCase().trim();
+  const lastPipeIndex = text.lastIndexOf("|");
+  const textAfterLastPipe = text.slice(
+    lastPipeIndex === -1 ? 0 : lastPipeIndex + 1,
+  );
+  const fullNote = textAfterLastPipe.toLowerCase().trim();
   const keywords = getNoteKeywords(fullNote);
   const possibilities = noteIdentity.getPossibilitiesFromKeywords(
     variant,

@@ -1,18 +1,19 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
+import type { ColorIndex, RankClueNumber } from "@hanabi/data";
 import * as playStacksRules from "../rules/playStacks";
-import type { ActionIncludingHypothetical } from "../types/actions";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
 import { ClueType } from "../types/ClueType";
 import type { MsgClue } from "../types/MsgClue";
 import { ReplayActionType } from "../types/ReplayActionType";
+import type { ActionIncludingHypothetical } from "../types/actions";
+import type { HanabiCard } from "./HanabiCard";
+import { setEmpathyOnHand } from "./HanabiCardMouse";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { globals } from "./globals";
-import type { HanabiCard } from "./HanabiCard";
-import { setEmpathyOnHand } from "./HanabiCardMouse";
 
 export function start(): void {
   if (globals.state.replay.hypothetical !== null) {
@@ -116,20 +117,37 @@ export function send(hypoAction: ClientAction): void {
         }
       }
 
-      // Play / Discard
-      sendHypoAction({
-        type: newType,
-        playerIndex: gameState.turn.currentPlayerIndex!,
-        order: hypoAction.target,
-        suitIndex,
-        rank,
-        failed,
-      });
+      switch (newType) {
+        case "play": {
+          sendHypoAction({
+            type: newType,
+            playerIndex: gameState.turn.currentPlayerIndex!,
+            order: hypoAction.target,
+            suitIndex,
+            rank,
+          });
+
+          break;
+        }
+
+        case "discard": {
+          sendHypoAction({
+            type: newType,
+            playerIndex: gameState.turn.currentPlayerIndex!,
+            order: hypoAction.target,
+            suitIndex,
+            rank,
+            failed,
+          });
+
+          break;
+        }
+      }
 
       if (failed) {
         sendHypoAction({
           type: "strike",
-          num: gameState.strikes.length + 1,
+          num: (gameState.strikes.length + 1) as 1 | 2 | 3,
           turn: gameState.turn.segment!,
           order: hypoAction.target,
         });
@@ -161,14 +179,7 @@ export function send(hypoAction: ClientAction): void {
         );
       }
 
-      const clue: MsgClue = {
-        type:
-          hypoAction.type === ActionType.ColorClue
-            ? ClueType.Color
-            : ClueType.Rank,
-        value: hypoAction.value,
-      };
-
+      const clue = hypoActionToMsgClue(hypoAction);
       const list = getTouchedCardsFromClue(hypoAction.target, clue);
       sendHypoAction({
         type,
@@ -200,6 +211,28 @@ export function send(hypoAction: ClientAction): void {
     num: gameState.turn.turnNum + 1,
     currentPlayerIndex: nextPlayerIndex,
   });
+}
+
+function hypoActionToMsgClue(hypoAction: ClientAction): MsgClue {
+  switch (hypoAction.type) {
+    case ActionType.ColorClue: {
+      return {
+        type: ClueType.Color,
+        value: hypoAction.value as ColorIndex,
+      };
+    }
+
+    case ActionType.RankClue: {
+      return {
+        type: ClueType.Rank,
+        value: hypoAction.value as RankClueNumber,
+      };
+    }
+
+    default: {
+      throw new Error(`Unknown hypothetical clue action: ${hypoAction.type}`);
+    }
+  }
 }
 
 export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {

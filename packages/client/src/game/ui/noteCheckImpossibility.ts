@@ -1,5 +1,5 @@
-import type { Variant } from "@hanabi/data";
-import { STACK_BASE_RANK, START_CARD_RANK } from "@hanabi/data";
+import type { Rank, SuitRankTuple, Variant } from "@hanabi/data";
+import { START_CARD_RANK } from "@hanabi/data";
 import * as modals from "../../modals";
 import { canPossiblyBeFromEmpathy } from "../rules/card";
 import type { CardNote } from "../types/CardNote";
@@ -10,6 +10,7 @@ export function checkNoteImpossibility(
   variant: Variant,
   cardState: CardState,
   note: CardNote,
+  cardIsStackBase: boolean,
 ): void {
   const { possibilities } = note;
   if (possibilities.length === 0) {
@@ -18,7 +19,7 @@ export function checkNoteImpossibility(
 
   // Prevent players from accidentally mixing up which stack base is which.
   if (
-    cardState.rank === STACK_BASE_RANK &&
+    cardIsStackBase &&
     possibilities.every((possibility) => possibility[0] !== cardState.suitIndex)
   ) {
     modals.showWarning(
@@ -56,7 +57,7 @@ export function checkNoteImpossibility(
 export function possibleCardsFromNoteAndClues(
   note: CardNote,
   state: CardState,
-): ReadonlyArray<readonly [number, number]> {
+): readonly SuitRankTuple[] {
   const possibilitiesWithNotes = note.possibilities.filter(
     ([suitIndexA, rankA]) =>
       state.possibleCardsFromClues.some(
@@ -67,6 +68,7 @@ export function possibleCardsFromNoteAndClues(
   if (possibilitiesWithNotes.length === 0) {
     return state.possibleCardsFromClues;
   }
+
   return possibilitiesWithNotes;
 }
 
@@ -89,14 +91,16 @@ export function getSuitIndexFromNote(
 export function getRankFromNote(
   note: CardNote,
   state: CardState,
-): number | null {
-  if (note.possibilities.length > 0) {
-    const possibilities = possibleCardsFromNoteAndClues(note, state);
-    const candidateRank = possibilities[0]![1];
-    if (possibilities.every((card) => card[1] === candidateRank)) {
-      return candidateRank;
-    }
+): Rank | undefined {
+  const possibilities = possibleCardsFromNoteAndClues(note, state);
+  const possibleRanks = possibilities.map((possibility) => possibility[1]);
+  const firstPossibleRank = possibleRanks[0];
+  if (firstPossibleRank === undefined) {
+    return undefined;
   }
 
-  return null;
+  const allPossibilitiesHaveTheSameRank = possibleRanks.every(
+    (rank) => rank === firstPossibleRank,
+  );
+  return allPossibilitiesHaveTheSameRank ? firstPossibleRank : undefined;
 }

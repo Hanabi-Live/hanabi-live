@@ -1,12 +1,12 @@
-import type { Variant } from "@hanabi/data";
+import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS, UNKNOWN_CARD_RANK } from "@hanabi/data";
 import type { CardState } from "../../types/CardState";
 import { createAllDiscardedMap } from "./discardHelpers";
 
 // Assuming that we're dealing with a Sudoku variant, checks if the card still can be played.
 export function sudokuCanStillBePlayed(
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   deck: readonly CardState[],
   playStackStarts: readonly number[],
   variant: Variant,
@@ -104,7 +104,8 @@ export function getMaxScorePerStack(
   const unassignedSuits: number[] = [];
 
   // Find the suits for which we need to solve the assignment problem.
-  for (const [suitIndex, stackStart] of playStackStarts.entries()) {
+  for (const [i, stackStart] of playStackStarts.entries()) {
+    const suitIndex = i as SuitIndex;
     const [allMax, suitMaxScores] = sudokuWalkUpAll(
       createAllDiscardedMap(variant, deck, suitIndex),
     );

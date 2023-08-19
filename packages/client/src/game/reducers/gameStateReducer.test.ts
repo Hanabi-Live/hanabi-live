@@ -1,3 +1,4 @@
+import type { Rank } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
 import {
   colorClue,
@@ -111,7 +112,7 @@ describe("gameStateReducer", () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 1.
-      const drawAction = draw(0, 0, 1, 0);
+      const drawAction = draw(0, 0, 0, 1);
       state = gameStateReducer(
         state,
         drawAction,
@@ -123,7 +124,7 @@ describe("gameStateReducer", () => {
       );
 
       // Misplay the red 1.
-      const discardAction = discard(0, 0, 1, 0, true);
+      const discardAction = discard(0, 0, 0, 1, true);
       state = gameStateReducer(
         state,
         discardAction,
@@ -156,7 +157,8 @@ describe("gameStateReducer", () => {
 
       // Draw a red 1, a red 2, and a red 3.
       for (let i = 0; i < 3; i++) {
-        const drawAction = draw(0, i, 0, i + 1);
+        const rank = (i + 1) as Rank;
+        const drawAction = draw(0, i, 0, rank);
         state = gameStateReducer(
           state,
           drawAction,
@@ -637,7 +639,9 @@ describe("gameStateReducer", () => {
 
       // Draw 5 cards (red 1-3, yellow 4-5).
       for (let i = 0; i <= 4; i++) {
-        const drawAction = draw(1, i, i <= 2 ? 0 : 1, i + 1);
+        const suitIndex = i <= 2 ? 0 : 1;
+        const rank = (i + 1) as Rank;
+        const drawAction = draw(1, i, suitIndex, rank);
         state = gameStateReducer(
           state,
           drawAction,

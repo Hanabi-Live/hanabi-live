@@ -1,4 +1,3 @@
-import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./globals";
@@ -22,7 +21,7 @@ export class PlayStack extends Konva.Group {
     const layoutChildren = this.children.toArray() as LayoutChild[];
     const layoutChild = layoutChildren.at(-1)!;
     const scale = lh / layoutChild.height();
-    const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
+    const stackBase = layoutChild.card.isStackBase;
 
     // Hide cards in "Throw It in a Hole" variants.
     const opacity =

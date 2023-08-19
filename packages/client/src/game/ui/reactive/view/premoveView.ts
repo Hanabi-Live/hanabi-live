@@ -38,18 +38,29 @@ export function onChanged(
     ourHand.checkSetDraggableAll();
 
     let text = "Cancel Pre-";
-    if (action.type === ActionType.Play) {
-      text += "Play";
-    } else if (action.type === ActionType.Discard) {
-      text += "Discard";
-    } else if (
-      action.type === ActionType.ColorClue ||
-      action.type === ActionType.RankClue
-    ) {
-      text += "Clue";
-    }
-    globals.elements.premoveCancelButton?.text(text);
+    switch (action.type) {
+      case ActionType.Play: {
+        text += "Play";
+        break;
+      }
 
+      case ActionType.Discard: {
+        text += "Discard";
+        break;
+      }
+
+      case ActionType.ColorClue:
+      case ActionType.RankClue: {
+        text += "Clue";
+        break;
+      }
+
+      case ActionType.GameOver: {
+        break;
+      }
+    }
+
+    globals.elements.premoveCancelButton?.text(text);
     globals.layers.UI.batchDraw();
   }
 }

@@ -2,7 +2,6 @@ import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
-import { CardIdentityType } from "../game/types/CardIdentityType";
 import type { ClientAction } from "../game/types/ClientAction";
 import { ClueType } from "../game/types/ClueType";
 import type { LogEntry } from "../game/types/GameState";
@@ -41,16 +40,12 @@ export function createJSONFromReplay(room: string): void {
   };
 
   // Copy the entire deck.
-  for (const [i, el] of globals.state.cardIdentities.entries()) {
+  for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
       morph !== undefined &&
       morph.suitIndex !== null &&
-      morph.rank !== null &&
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      morph.suitIndex !== CardIdentityType.Original &&
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      morph.rank !== CardIdentityType.Original
+      morph.rank !== null
     ) {
       game.deck.push({
         suitIndex: morph.suitIndex,
@@ -58,8 +53,8 @@ export function createJSONFromReplay(room: string): void {
       });
     } else {
       game.deck.push({
-        suitIndex: el.suitIndex,
-        rank: el.rank,
+        suitIndex: cardIdentity.suitIndex,
+        rank: cardIdentity.rank,
       });
     }
   }

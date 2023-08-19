@@ -1,5 +1,7 @@
 // Helper functions to build actions with a compact syntax. For use in tests.
 
+import type { ColorIndex, Rank, RankClueNumber, SuitIndex } from "@hanabi/data";
+import { ClueType } from "../src/game/types/ClueType";
 import type {
   ActionCardIdentity,
   ActionClue,
@@ -15,11 +17,9 @@ import type {
   ActionReplayEnter,
   ActionStrike,
 } from "../src/game/types/actions";
-import { ClueType } from "../src/game/types/ClueType";
 
-function clue(
-  type: ClueType,
-  value: number,
+export function colorClue(
+  value: ColorIndex,
   giver: number,
   list: number[],
   target: number,
@@ -28,7 +28,7 @@ function clue(
   return {
     type: "clue",
     clue: {
-      type,
+      type: ClueType.Color,
       value,
     },
     giver,
@@ -39,31 +39,32 @@ function clue(
   };
 }
 
-export function colorClue(
-  value: number,
-  giver: number,
-  list: number[],
-  target: number,
-  turn: number,
-): ActionClue {
-  return clue(ClueType.Color, value, giver, list, target, turn);
-}
-
 export function rankClue(
-  value: number,
+  value: RankClueNumber,
   giver: number,
   list: number[],
   target: number,
   turn: number,
 ): ActionClue {
-  return clue(ClueType.Rank, value, giver, list, target, turn);
+  return {
+    type: "clue",
+    clue: {
+      type: ClueType.Rank,
+      value,
+    },
+    giver,
+    list,
+    target,
+    turn,
+    ignoreNegative: false,
+  };
 }
 
 export function draw(
   playerIndex: number,
   order: number,
-  suitIndex = -1,
-  rank = -1,
+  suitIndex: SuitIndex | -1 = -1,
+  rank: Rank | -1 = -1,
 ): ActionDraw {
   return {
     type: "draw",
@@ -77,8 +78,8 @@ export function draw(
 export function discard(
   playerIndex: number,
   order: number,
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
   failed: boolean,
 ): ActionDiscard {
   return {
@@ -94,8 +95,8 @@ export function discard(
 export function play(
   playerIndex: number,
   order: number,
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
 ): ActionPlay {
   return {
     type: "play",
@@ -109,8 +110,8 @@ export function play(
 export function cardIdentity(
   playerIndex: number,
   order: number,
-  suitIndex: number,
-  rank: number,
+  suitIndex: SuitIndex,
+  rank: Rank,
 ): ActionCardIdentity {
   return {
     type: "cardIdentity",
@@ -121,7 +122,11 @@ export function cardIdentity(
   };
 }
 
-export function strike(num: number, order: number, turn: number): ActionStrike {
+export function strike(
+  num: 1 | 2 | 3,
+  order: number,
+  turn: number,
+): ActionStrike {
   return {
     type: "strike",
     num,

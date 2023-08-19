@@ -58,10 +58,6 @@ export function millisecondsToClockString(milliseconds: number): string {
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 }
 
-export function nullIfNegative(x: number): number | null {
-  return x >= 0 ? x : null;
-}
-
 function pad2(num: number) {
   if (num < 10) {
     return `0${num}`;

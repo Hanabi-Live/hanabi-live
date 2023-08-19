@@ -404,18 +404,20 @@ function rehydrateScrubbedActions(
   state: State,
   cardIdentities: readonly CardIdentity[],
 ): GameAction[] {
-  return state.replay.actions.map((a) => {
+  return state.replay.actions.map((action) => {
     if (
-      (a.type === "play" || a.type === "discard" || a.type === "draw") &&
-      (a.suitIndex === -1 || a.rank === -1)
+      (action.type === "play" ||
+        action.type === "discard" ||
+        action.type === "draw") &&
+      (action.suitIndex === -1 || action.rank === -1)
     ) {
       return {
-        ...a,
-        suitIndex: cardIdentities[a.order]!.suitIndex!,
-        rank: cardIdentities[a.order]!.rank!,
+        ...action,
+        suitIndex: cardIdentities[action.order]!.suitIndex!,
+        rank: cardIdentities[action.order]!.rank!,
       };
     }
 
-    return a;
+    return action;
   });
 }

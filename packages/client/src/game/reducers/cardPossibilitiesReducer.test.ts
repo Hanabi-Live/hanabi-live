@@ -1,3 +1,4 @@
+import type { SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { testMetadata } from "../../../test/testMetadata";
 import type { CardState } from "../types/CardState";
@@ -15,9 +16,7 @@ function countPossibleCards(state: CardState) {
   return state.possibleCardsForEmpathy.length;
 }
 
-function possibilities(
-  possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
-) {
+function possibilities(possibleCardsFromClues: readonly SuitRankTuple[]) {
   const possibleSuits = new Set<number>();
   const possibleRanks = new Set<number>();
   for (const [suit, rank] of possibleCardsFromClues) {

@@ -14,6 +14,7 @@ import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
+import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import { getPlayerName } from "../types/GameMetadata";
@@ -66,17 +67,39 @@ function gameStateReducerFunction(
         );
       }
 
-      state.clues.push({
-        type: action.clue.type,
-        value: action.clue.value,
-        giver: action.giver,
-        target: action.target,
-        segment: state.turn.segment,
-        list: action.list,
-        negativeList: action.ignoreNegative
-          ? []
-          : state.hands[action.target]!.filter((i) => !action.list.includes(i)),
-      });
+      const negativeList = action.ignoreNegative
+        ? []
+        : state.hands[action.target]!.filter((i) => !action.list.includes(i));
+
+      // Even though the objects for each clue type are the exact same, a switch statement is needed
+      // to satisfy the TypeScript compiler.
+      switch (action.clue.type) {
+        case ClueType.Color: {
+          state.clues.push({
+            type: action.clue.type,
+            value: action.clue.value,
+            giver: action.giver,
+            target: action.target,
+            segment: state.turn.segment,
+            list: action.list,
+            negativeList,
+          });
+          break;
+        }
+
+        case ClueType.Rank: {
+          state.clues.push({
+            type: action.clue.type,
+            value: action.clue.value,
+            giver: action.giver,
+            target: action.target,
+            segment: state.turn.segment,
+            list: action.list,
+            negativeList,
+          });
+          break;
+        }
+      }
 
       const targetHand = state.hands[action.target]!;
       const text = textRules.clue(action, targetHand, hypothetical, metadata);
@@ -374,10 +397,11 @@ function gameStateReducerFunction(
   // Resolve the stack direction.
   if (
     action.type === "play" &&
-    (variantRules.hasReversedSuits(variant) || variant.sudoku)
+    (variantRules.hasReversedSuits(variant) || variant.sudoku) &&
+    action.suitIndex !== -1
   ) {
     // We have to wait until the deck is updated with the information of the card that we played
-    // before the "direction()" function will work.
+    // before the `direction` function will work.
     const playStack = state.playStacks[action.suitIndex]!;
     const direction = playStacksRules.direction(
       action.suitIndex,
@@ -402,8 +426,8 @@ function gameStateReducerFunction(
   // make other cards critical.
   if (
     (action.type === "play" || action.type === "discard") &&
-    action.suitIndex >= 0 &&
-    action.rank >= 0
+    action.suitIndex !== -1 &&
+    action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
       state.cardStatus[action.suitIndex]![rank] = cardRules.status(

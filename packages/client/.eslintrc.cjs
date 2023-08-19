@@ -15,7 +15,6 @@ module.exports = {
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",
     "unicorn/prefer-string-replace-all": "off",
-    "unicorn/prefer-switch": "off",
 
     /**
      * Documentation:

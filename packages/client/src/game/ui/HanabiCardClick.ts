@@ -1,6 +1,5 @@
 // Click functions for the HanabiCard object.
 
-import { STACK_BASE_RANK } from "@hanabi/data";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import * as cardRules from "../rules/card";
@@ -31,15 +30,25 @@ export function HanabiCardClick(
   }
 
   const mouseEvent = event.evt;
-  if (mouseEvent.button === 0) {
+
+  switch (mouseEvent.button) {
     // Left-click
-    clickLeft(this, mouseEvent);
-  } else if (mouseEvent.button === 1) {
+    case 0: {
+      clickLeft(this, mouseEvent);
+      break;
+    }
+
     // Middle-click
-    clickMiddle(this, mouseEvent);
-  } else if (mouseEvent.button === 2) {
+    case 1: {
+      clickMiddle(this, mouseEvent);
+      break;
+    }
+
     // Right-click
-    clickRight(this, mouseEvent);
+    case 2: {
+      clickRight(this, mouseEvent);
+      break;
+    }
   }
 }
 
@@ -73,7 +82,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     event.ctrlKey || // No actions in this function use modifiers other than Alt
     event.shiftKey ||
     event.metaKey ||
-    card.state.rank === STACK_BASE_RANK || // Disable clicking on the stack base
+    card.isStackBase || // Disable clicking on the stack base
     // No replay actions should happen in a hypothetical.
     globals.state.replay.hypothetical !== null
   ) {
@@ -124,7 +133,7 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
   // Middle clicking on a card goes to the turn it was first clued.
   if (
     card.state.segmentFirstClued !== null &&
-    card.state.rank !== STACK_BASE_RANK // Disable this functionality for the stack base
+    !card.isStackBase // Disable this functionality for the stack base
   ) {
     // We add one to the segment so that the clue is visible. (If we go to the turn that the card
     // was clued, then the actual clue has not happened yet.)
@@ -260,20 +269,26 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   }
 }
 
-// Morphing cards allows for creation of hypothetical situations.
+/** Morphing cards allows for creation of hypothetical situations. */
 function clickMorph(card: HanabiCard) {
   modals.askForMorph(card, globals.variant);
 }
 
-// Used by the Morph modal.
 export function morphReplayFromModal(
   card: HanabiCard,
-  cardIdentity: CardIdentity,
+  cardIdentity: CardIdentity | "original",
 ): void {
-  hypothetical.sendHypoAction({
-    type: "morph",
-    order: card.state.order,
-    suitIndex: cardIdentity.suitIndex!,
-    rank: cardIdentity.rank!,
-  });
+  if (cardIdentity === "original") {
+    hypothetical.sendHypoAction({
+      type: "unmorph",
+      order: card.state.order,
+    });
+  } else {
+    hypothetical.sendHypoAction({
+      type: "morph",
+      order: card.state.order,
+      suitIndex: cardIdentity.suitIndex ?? -1,
+      rank: cardIdentity.rank ?? -1,
+    });
+  }
 }
