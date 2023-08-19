@@ -126,7 +126,7 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
     const suitIndices: SuitIndex[] = [];
     const ranks: Rank[] = [];
     if (squishText !== null) {
-      [].map.call(squishText, (letter) => {
+      for (const letter of squishText) {
         suitIndex = parseSuit(variant, letter);
         rank = parseRank(letter);
         if (suitIndex !== null) {
@@ -134,7 +134,8 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
         } else if (rank !== null) {
           ranks.push(rank);
         }
-      });
+      }
+
       if (suitIndices.length + ranks.length > 0) {
         return { suitIndices, ranks };
       }
@@ -296,15 +297,15 @@ export function getPossibilitiesFromKeywords(
   return possibilities;
 }
 
-function extractSuitText(match: RegExpMatchArray) {
+function extractSuitText(match: RegExpMatchArray): string | null {
   return match[1] ?? match[4] ?? match[5] ?? null;
 }
 
-function extractRankText(match: RegExpMatchArray) {
+function extractRankText(match: RegExpMatchArray): string | null {
   return match[2] ?? match[3] ?? match[6] ?? null;
 }
 
-function extractSquishText(match: RegExpMatchArray) {
+function extractSquishText(match: RegExpMatchArray): string | null {
   const text = match[7]?.trim();
 
   if (text !== undefined && !ALL_RESERVED_NOTES.has(text.toLowerCase())) {
