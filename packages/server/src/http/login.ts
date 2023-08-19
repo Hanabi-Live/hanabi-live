@@ -5,6 +5,9 @@ import { logger } from "../logger";
 
 const WHITESPACE_REGEX = /\s/;
 
+const MIN_USERNAME_LENGTH = 2;
+const MAX_USERNAME_LENGTH = 15;
+
 /**
  * Handles the first part of login authentication. The user must POST to "/login" with the values
  * from the `HTTPLoginData` interface. If successful, they will receive a cookie from the server
@@ -43,7 +46,6 @@ function validate(
   reply: FastifyReply,
 ): FastifyReply | undefined {
   const data = HTTPLoginDataSchema.parse(request.body);
-  logger.info(data);
 
   const usernameHasWhitespace = WHITESPACE_REGEX.test(data.username);
   if (usernameHasWhitespace) {
@@ -53,56 +55,43 @@ function validate(
       .send("Usernames cannot contain any whitespace characters.");
   }
 
-  // TODO
+  // Validate that the username is not excessively short.
+  if (data.username.length < MIN_USERNAME_LENGTH) {
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send(`Usernames must be ${MIN_USERNAME_LENGTH} characters or more.`);
+  }
+
+  // Validate that the username is not excessively long.
+  if (data.username.length < MAX_USERNAME_LENGTH) {
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send(`Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`);
+  }
+
+  // Validate that the username does not have any special characters in it (other than hyphens,
+  // underscores, and periods).
+  if (data.username.includes("`~!@#$%^&*()=+[{]}\\|;:'\",<>/?")) {
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send(
+        "Usernames cannot contain any special characters other than hyphens, underscores, and periods.",
+      );
+  }
 
   return undefined;
 }
 
 /*
 
+// TODO
+
 func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
-	// Validate that the username is not excessively short
-	if len(username) < MinUsernameLength {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it is shorter than " + str.IToA(MinUsernameLength) +
-			" characters.")
-		http.Error(
-			w,
-			"Usernames must be "+str.IToA(MinUsernameLength)+" characters or more.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
 
-	// Validate that the username is not excessively long
-	if len(username) > MaxUsernameLength {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it is longer than " + str.IToA(MaxUsernameLength) +
-			" characters.")
-		http.Error(
-			w,
-			"Usernames must be "+str.IToA(MaxUsernameLength)+" characters or less.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-
-	// Validate that the username does not have any special characters in it
-	// (other than underscores, hyphens, and periods)
-	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it has illegal special characters in it.")
-		http.Error(
-			w,
-			"Usernames cannot contain any special characters other than underscores, hyphens, and periods.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
 
 	// Validate that the username does not have any emojis in it
 	if match := emojiRegExp.FindStringSubMatch(username); match != nil {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+		logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but it has emojis in it.")
 		http.Error(
 			w,
@@ -115,7 +104,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	// Validate that the username does not contain an unreasonable amount of consecutive diacritics
 	// (accents)
 	if numConsecutiveDiacritics(username) > ConsecutiveDiacriticsAllowed {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+		logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but it has " + str.IToA(ConsecutiveDiacriticsAllowed) +
 			" or more consecutive diacritics in it.")
 		http.Error(
@@ -137,7 +126,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		normalizedUsername == "hanabilive" ||
 		normalizedUsername == "nabilive" {
 
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+		logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but that username is reserved.")
 		http.Error(
 			w,
@@ -153,7 +142,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	if version != "bot" {
 		var versionNum int
 		if v, err := str.AtoI(version); err != nil {
-			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
 				"\"" + username + "\", but the submitted version is not an integer.")
 			http.Error(
 				w,
@@ -166,7 +155,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 		}
 		currentVersion := getVersion()
 		if versionNum != currentVersion {
-			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
 				"\"" + username + "\" and a version of \"" + version + "\", " +
 				"but this is an old version. " +
 				"(The current version is " + str.IToA(currentVersion) + ".)")
