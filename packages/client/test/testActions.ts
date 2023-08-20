@@ -78,8 +78,8 @@ export function draw(
 export function discard(
   playerIndex: number,
   order: number,
-  suitIndex: SuitIndex,
-  rank: Rank,
+  suitIndex: SuitIndex | -1,
+  rank: Rank | -1,
   failed: boolean,
 ): ActionDiscard {
   return {

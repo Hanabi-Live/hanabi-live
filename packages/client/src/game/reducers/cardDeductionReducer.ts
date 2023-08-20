@@ -22,6 +22,7 @@ export function cardDeductionReducer(
     case "draw": {
       return makeDeductions(deck, oldDeck, hands, metadata);
     }
+
     default: {
       return deck;
     }
@@ -49,6 +50,7 @@ function makeDeductions(
     cardCountMap,
     metadata,
   );
+
   for (let playerIndex = 0; playerIndex < hands.length; playerIndex++) {
     if (playerIndex !== metadata.ourPlayerIndex) {
       calculatePlayerPossibilities(
@@ -62,6 +64,7 @@ function makeDeductions(
       );
     }
   }
+
   return newDeck;
 }
 
@@ -76,7 +79,11 @@ function calculatePlayerPossibilities(
 ) {
   for (const hand of hands) {
     for (const order of hand) {
-      const card = deck[order]!;
+      const card = deck[order];
+      if (card === undefined) {
+        continue;
+      }
+
       if (
         shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
       ) {
@@ -108,7 +115,9 @@ function calculateCard(
     ourPlayerIndex,
     metadata,
   );
+
   let { possibleCards, possibleCardsForEmpathy } = card;
+
   if (playerIndex === ourPlayerIndex) {
     possibleCards = filterCardPossibilities(
       card.possibleCards,
@@ -116,6 +125,7 @@ function calculateCard(
       cardCountMap,
     );
   }
+
   if (playerIndex === card.location) {
     possibleCardsForEmpathy = filterCardPossibilities(
       card.possibleCardsForEmpathy,
@@ -123,6 +133,7 @@ function calculateCard(
       cardCountMap,
     );
   }
+
   deck[card.order] = {
     ...card,
     possibleCards,
@@ -142,7 +153,8 @@ function shouldCalculateCard(
     // playerIndex.
     return false;
   }
-  if (card.revealedToPlayer[playerIndex]!) {
+
+  if (card.revealedToPlayer[playerIndex] === true) {
     // The player already knows what this card is.
     return false;
   }
@@ -187,25 +199,22 @@ function getCardPossibilitiesForPlayer(
     return card.possibleCardsForEmpathy;
   }
 
-  if (
-    card.revealedToPlayer[playerIndex]! &&
-    card.suitIndex !== null &&
-    card.rank !== null
-  ) {
-    // If we know the suit and rank, maybe because it's morphed, we should use that first.
+  const revealedToThisPlayer = card.revealedToPlayer[playerIndex] ?? false;
+  if (revealedToThisPlayer && card.suitIndex !== null && card.rank !== null) {
+    // If we know the suit and rank, it might be because it is morphed.
     return [[card.suitIndex, card.rank]];
   }
 
-  if (playerIndex === ourPlayerIndex || card.revealedToPlayer[playerIndex]!) {
+  if (playerIndex === ourPlayerIndex || revealedToThisPlayer) {
     // This is revealed to the player or we are the requested player => just use our best knowledge.
     return card.possibleCards;
   }
 
   // This is an unrevealed card outside of the players hand but not revealed to them. That can
-  // happen with something like a detrimental character (such as 'Slow-Witted') or 'Throw It in a
-  // Hole'. We can't use our best (empathy) guess, because it might be in our own hand and we might
-  // know more about the card then the other player does. We know the other player at least knows
-  // about the clues for it, so we'll use that set of possibilities.
+  // happen with something like a detrimental character (such as Slow-Witted) or a variant (such as
+  // Throw It in a Hole). We can't use our best (empathy) guess, because it might be in our own hand
+  // and we might know more about the card then the other player does. We know the other player at
+  // least knows about the clues for it, so we will use that set of possibilities.
   return card.possibleCardsFromClues;
 }
 
@@ -267,6 +276,7 @@ function generateDeckPossibilities(
   deckPossibilities.sort((a, b) => a.length - b.length);
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
+
   return deckPossibilities.filter((a) => isPossibleCard(a, cardCountMap));
 }
 
@@ -302,7 +312,7 @@ function canBeUsedToDisprovePossibility(
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
-    (card.revealedToPlayer[playerIndex]! || card.hasClueApplied)
+    (card.revealedToPlayer[playerIndex] === true || card.hasClueApplied)
   );
 }
 
@@ -314,31 +324,40 @@ function deckPossibilitiesDifferent(
   ourPlayerIndex: number,
 ) {
   for (const [order, card] of deck.entries()) {
-    const oldCard = oldDeck[order]!;
+    const oldCard = oldDeck[order];
+    if (oldCard === undefined) {
+      continue;
+    }
+
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
       playerIndex,
     );
+
     const currentlyUsed = canBeUsedToDisprovePossibility(
       card,
       excludeCardOrder,
       playerIndex,
     );
+
     if (previouslyUsed !== currentlyUsed) {
       return true;
     }
+
     if (currentlyUsed) {
       const previousPossibilities = getCardPossibilitiesForPlayer(
         oldCard,
         playerIndex,
         ourPlayerIndex,
       );
+
       const currentPossibilities = getCardPossibilitiesForPlayer(
         card,
         playerIndex,
         ourPlayerIndex,
       );
+
       if (previousPossibilities.length !== currentPossibilities.length) {
         return true;
       }
@@ -412,14 +431,27 @@ function possibilityValid(
       cardCountMap[suit]![rank]!++;
       return true;
     }
+
     return false;
   }
+
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit.
   cardCountMap[suit]![rank]!--;
   if (cardCountMap[suit]![rank]! >= 0) {
-    const { length } = deckPossibilities[index]!;
-    for (let i = 0; i < length; i++) {
-      const possibility = deckPossibilities[index]![(i + index) % length]!;
+    const suitRankTuples = deckPossibilities[index];
+    if (suitRankTuples === undefined) {
+      throw new Error(
+        `Failed to find the the deck possibility at index: ${index}`,
+      );
+    }
+
+    for (let i = 0; i < suitRankTuples.length; i++) {
+      const possibilityIndex = (i + index) % suitRankTuples.length;
+      const possibility = suitRankTuples[possibilityIndex];
+      if (possibility === undefined) {
+        continue;
+      }
+
       if (
         possibilityValid(
           possibility,
@@ -434,6 +466,7 @@ function possibilityValid(
       }
     }
   }
+
   cardCountMap[suit]![rank]!++;
   return false;
 }
@@ -443,14 +476,16 @@ function updatePossibilitiesToValidate(
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < possibilitiesToValidate.length; i++) {
-    const [suit, rank] = possibilitiesToValidate[i]!;
+
+  for (const suitRankTuple of possibilitiesToValidate) {
+    const [suit, rank] = suitRankTuple;
+
     if (cardCountMap[suit]![rank]! <= 0) {
       possibilitiesToValidate[j] = [suit, rank];
       j++;
     }
   }
+
   possibilitiesToValidate.length = j;
 }
 

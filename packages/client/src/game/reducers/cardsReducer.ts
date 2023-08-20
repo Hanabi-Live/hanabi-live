@@ -2,7 +2,7 @@
 
 import type { Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import { newArray } from "@hanabi/utils";
+import { eRange, newArray } from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
@@ -264,8 +264,9 @@ export function cardsReducer(
 function cardIdentityRevealedToPlayer(
   card: CardState,
   characterAssignments: Readonly<Array<number | null>>,
-) {
+): boolean[] {
   const revealedToPlayer: boolean[] = [];
+
   for (let i = 0; i < characterAssignments.length; i++) {
     const characterName = getCharacterNameForPlayer(i, characterAssignments);
     if (i !== card.location && characterName === "Slow-Witted") {
@@ -274,16 +275,18 @@ function cardIdentityRevealedToPlayer(
       revealedToPlayer.push(card.revealedToPlayer[i]!);
     }
   }
+
   return revealedToPlayer;
 }
 
 function drawnCardRevealedToPlayer(
   drawLocation: number,
   characterAssignments: Readonly<Array<number | null>>,
-) {
+): boolean[] {
   const revealedToPlayer: boolean[] = [];
   const numPlayers = characterAssignments.length;
-  for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
+
+  for (const playerIndex of eRange(numPlayers)) {
     revealedToPlayer.push(
       canPlayerSeeDrawnCard(
         playerIndex,
@@ -301,7 +304,7 @@ function canPlayerSeeDrawnCard(
   drawLocation: number,
   numPlayers: number,
   characterAssignments: Readonly<Array<number | null>>,
-) {
+): boolean {
   if (playerIndex === drawLocation) {
     return false;
   }
@@ -330,7 +333,7 @@ function canPlayerSeeDrawnCard(
   }
 }
 
-function getCard(deck: readonly CardState[], order: number) {
+function getCard(deck: readonly CardState[], order: number): CardState {
   const card = deck[order];
   if (card === undefined) {
     throw new Error(`Failed to get the card in the deck at index: ${order}`);
@@ -343,7 +346,7 @@ function revealCard(
   suitIndex: SuitIndex | null,
   rank: Rank | null,
   card: CardState,
-) {
+): boolean {
   // The action from the server did not specify the identity of the card, so we cannot reveal it
   // (e.g. we are playing a special variant where cards are not revealed when they are played)
   if (suitIndex === null || rank === null) {

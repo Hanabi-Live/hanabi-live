@@ -23,6 +23,7 @@ const throwItInAHoleMetadata = testMetadata(
 );
 const variant = getVariant(defaultMetadata.options.variantName);
 const gameState = initialGameState(defaultMetadata);
+const throwItInAHoleGameState = initialGameState(throwItInAHoleMetadata);
 const defaultCard = initialCardState(0, variant);
 const secondCard = initialCardState(1, variant);
 const thirdCard = initialCardState(2, variant);
@@ -270,8 +271,8 @@ describe("cardsReducer", () => {
 
       // The two fives in our hand must be blue/purple in some order. The other person will know
       // their card is not one of those fives.
-      expect(empathyPossible(deck[2]!, 3, 5)).toBe(false);
-      expect(empathyPossible(deck[2]!, 4, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[2]!, 3, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[2]!, 4, 5)).toBe(false);
     });
 
     test("can remove just one copy of a card from inference to other hand, if necessary", () => {
@@ -322,10 +323,10 @@ describe("cardsReducer", () => {
       // The two fours in our hand must be red/yellow in some order. The other person will know
       // their cards are not one of those fours, but they obviously do not rule out both copies of
       // each four.
-      expect(empathyPossible(deck[2]!, 0, 4)).toBe(true);
-      expect(empathyPossible(deck[2]!, 1, 4)).toBe(true);
-      expect(empathyPossible(deck[3]!, 0, 4)).toBe(true);
-      expect(empathyPossible(deck[3]!, 1, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[2]!, 0, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[2]!, 1, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[3]!, 0, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[3]!, 1, 4)).toBe(true);
     });
 
     test("inferences within other hands stay within those hands (we know their cards)", () => {
@@ -418,16 +419,16 @@ describe("cardsReducer", () => {
 
       // The other player has inferred their first two fours are red/yellow in some order. Therefore
       // they know their other four is not red/yellow.
-      expect(empathyPossible(deck[4]!, 0, 4)).toBe(false);
-      expect(empathyPossible(deck[4]!, 1, 4)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[4]!, 0, 4)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[4]!, 1, 4)).toBe(false);
 
       // We already know that the two fours in our hand are the other red/yellow fours. We do not
       // want the projected inference in the other hand to cause us to remove the remaining
       // copy/possibility of red/yellow on our fours.
-      expect(empathyPossible(deck[0]!, 0, 4)).toBe(true);
-      expect(empathyPossible(deck[0]!, 1, 4)).toBe(true);
-      expect(empathyPossible(deck[1]!, 0, 4)).toBe(true);
-      expect(empathyPossible(deck[1]!, 1, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 1, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[1]!, 0, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[1]!, 1, 4)).toBe(true);
     });
   });
 
@@ -448,7 +449,7 @@ describe("cardsReducer", () => {
       );
 
       // Expect the remaining card to remove a possibility for a red 5.
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
 
     test("does not eliminate a possibility if there are other copies still available", () => {
@@ -467,14 +468,14 @@ describe("cardsReducer", () => {
       );
 
       // There are 2 red ones remaining in the deck.
-      expect(empathyPossible(deck[0]!, 0, 1)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 1)).toBe(true);
     });
 
     test("does not eliminate a possibility on other cards if we are playing Throw It in a Hole", () => {
       let deck: readonly CardState[] = [];
-      let nextGameState = gameState;
+      let nextGameState = throwItInAHoleGameState;
 
-      // Draw a red 1 to the second player (and reveal it).
+      // Draw a red 1 to the second player (and reveal it to us).
       deck = cardsReducer(
         deck,
         draw(1, 0, 0, 1),
@@ -483,7 +484,7 @@ describe("cardsReducer", () => {
       );
       nextGameState = { ...gameState, hands: [[], [0]] };
 
-      // Draw a red 5 to the second player (and reveal it).
+      // Draw a red 5 to the second player (and reveal it to us).
       deck = cardsReducer(
         deck,
         draw(1, 1, 0, 5),
@@ -492,17 +493,17 @@ describe("cardsReducer", () => {
       );
       nextGameState = { ...gameState, hands: [[], [0, 1]] };
 
-      // Discard a red 5.
+      // Discard the red 5.
       deck = cardsReducer(
         deck,
-        discard(1, 1, 0, 5, false),
+        discard(1, 1, -1, -1, false),
         nextGameState,
         throwItInAHoleMetadata,
       );
 
       // The remaining card (the red 1) cannot be a red 5 but the other player doesn't know that.
       expect(isPossible(deck[0]!, 0, 5)).toBe(false);
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
     });
 
     test("only eliminates possibility on card inferred with it", () => {
@@ -560,12 +561,12 @@ describe("cardsReducer", () => {
       );
 
       // The other red/yellow 4 in the inferred pair from our hand is now known to not be red.
-      expect(empathyPossible(deck[1]!, 0, 4)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[1]!, 0, 4)).toBe(false);
 
       // We already removed red 4 when we inferred our two fours. We shouldn't remove it a second
       // time.
-      expect(empathyPossible(deck[2]!, 0, 4)).toBe(true);
-      expect(empathyPossible(deck[3]!, 0, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[2]!, 0, 4)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[3]!, 0, 4)).toBe(true);
     });
   });
 
@@ -585,7 +586,7 @@ describe("cardsReducer", () => {
       );
 
       // Expect the remaining card to remove a possibility for a red 5.
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
 
     test("does not eliminate that possibility on Slow-Witted cards", () => {
@@ -604,7 +605,7 @@ describe("cardsReducer", () => {
 
       // The remaining card cannot be a red 5 but the other player doesn't know that.
       expect(isPossible(deck[0]!, 0, 5)).toBe(false);
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
     });
 
     test("does not eliminate that possibility on Oblivious cards for next player", () => {
@@ -623,7 +624,7 @@ describe("cardsReducer", () => {
 
       // The remaining card cannot be a red 5 but the other player doesn't know that.
       expect(isPossible(deck[0]!, 0, 5)).toBe(false);
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
     });
 
     test("does eliminate that possibility on Oblivious cards for previous player", () => {
@@ -641,7 +642,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
 
       // Expect the remaining card to not have a possibility for a red 5.
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
 
     test("does not eliminate that possibility on Blind Spot cards for previous player", () => {
@@ -660,7 +661,7 @@ describe("cardsReducer", () => {
 
       // The remaining card cannot be a red 5 but the other player doesn't know that.
       expect(isPossible(deck[0]!, 0, 5)).toBe(false);
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(true);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
     });
 
     test("does eliminate that possibility on Blind Spot cards for next player", () => {
@@ -678,7 +679,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
       // Expect the remaining card to not a possibility for a red 5.
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
 
     test("eliminates possibilities from previously drawn cards", () => {
@@ -701,7 +702,7 @@ describe("cardsReducer", () => {
       );
 
       // Expect the newly drawn card to remove a possibility for a red 5.
-      expect(empathyPossible(deck[1]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[1]!, 0, 5)).toBe(false);
     });
 
     test("removes inferred negative possibilities on newly drawn card in own hand", () => {
@@ -729,8 +730,8 @@ describe("cardsReducer", () => {
       nextGameState = { ...gameState, hands: [[0, 1, 2]] };
       deck = cardsReducer(deck, draw(0, 2), nextGameState, defaultMetadata);
 
-      expect(empathyPossible(deck[2]!, 3, 5)).toBe(false);
-      expect(empathyPossible(deck[2]!, 4, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[2]!, 3, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[2]!, 4, 5)).toBe(false);
     });
 
     test("removes inferred negative possibilities on newly drawn card in other hand", () => {
@@ -763,8 +764,8 @@ describe("cardsReducer", () => {
         defaultMetadata,
       );
 
-      expect(empathyPossible(deck[2]!, 3, 5)).toBe(false);
-      expect(empathyPossible(deck[2]!, 4, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[2]!, 3, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[2]!, 4, 5)).toBe(false);
     });
 
     describe("from other hand allows new inferences in own hand", () => {
@@ -804,13 +805,13 @@ describe("cardsReducer", () => {
 
         // Now the two fives in our hand must be blue/purple in some order. The other card in our
         // hand can't be one of those fives.
-        expect(empathyPossible(deck[2]!, 3, 5)).toBe(false);
-        expect(empathyPossible(deck[2]!, 4, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[2]!, 3, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[2]!, 4, 5)).toBe(false);
 
         // In addition, we know that Bob knows that his newly drawn card can't be one of those fives
         // either.
-        expect(empathyPossible(deck[3]!, 3, 5)).toBe(false);
-        expect(empathyPossible(deck[3]!, 4, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[3]!, 3, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[3]!, 4, 5)).toBe(false);
       });
 
       test("as Bob", () => {
@@ -849,13 +850,13 @@ describe("cardsReducer", () => {
 
         // Now the two fives in our hand must be blue/purple in some order. The other card in our
         // hand can't be one of those fives.
-        expect(empathyPossible(deck[2]!, 3, 5)).toBe(false);
-        expect(empathyPossible(deck[2]!, 4, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[2]!, 3, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[2]!, 4, 5)).toBe(false);
 
         // In addition, we know that Alice knows that her newly drawn card can't be one of those
         // fives either.
-        expect(empathyPossible(deck[3]!, 3, 5)).toBe(false);
-        expect(empathyPossible(deck[3]!, 4, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[3]!, 3, 5)).toBe(false);
+        expect(isPossibleViaEmpathy(deck[3]!, 4, 5)).toBe(false);
       });
     });
   });
@@ -887,7 +888,7 @@ describe("cardsReducer", () => {
       );
 
       // Expect the Slow-Witted card to remove a possibility for a red 5.
-      expect(empathyPossible(deck[0]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
   });
 
@@ -917,7 +918,7 @@ describe("cardsReducer", () => {
 
       // Expect the red 2 to remove red 5 possibility.
       expect(isPossible(deck[1]!, 0, 5)).toBe(false);
-      expect(empathyPossible(deck[1]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[1]!, 0, 5)).toBe(false);
     });
 
     test("eliminates a possibility on our own hand2", () => {
@@ -945,7 +946,7 @@ describe("cardsReducer", () => {
 
       // Expect the red 2 to remove red 5 possibility.
       expect(isPossible(deck[1]!, 0, 5)).toBe(false);
-      expect(empathyPossible(deck[1]!, 0, 5)).toBe(false);
+      expect(isPossibleViaEmpathy(deck[1]!, 0, 5)).toBe(false);
     });
   });
 });
@@ -954,7 +955,11 @@ function isPossible(card: CardState, suitIndex: SuitIndex, rank: Rank) {
   return card.possibleCards.some(([s, r]) => s === suitIndex && r === rank);
 }
 
-function empathyPossible(card: CardState, suitIndex: SuitIndex, rank: Rank) {
+function isPossibleViaEmpathy(
+  card: CardState,
+  suitIndex: SuitIndex,
+  rank: Rank,
+) {
   return card.possibleCardsForEmpathy.some(
     ([s, r]) => s === suitIndex && r === rank,
   );

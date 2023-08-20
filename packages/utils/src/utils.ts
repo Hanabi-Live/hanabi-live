@@ -17,7 +17,7 @@ export function clamp(n: number, min: number, max: number): number {
 
 /**
  * Helper function to return an array of integers with the specified range, inclusive on the lower
- * end and exclusive on the high end. (The "e" stands for exclusive.)
+ * end and exclusive on the high end. (The "e" in the function name stands for exclusive.)
  *
  * - For example, `eRange(1, 3)` will return `[1, 2]`.
  * - For example, `eRange(2)` will return `[0, 1]`.
