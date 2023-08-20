@@ -130,9 +130,11 @@ export function cardsReducer(
       const { order } = action;
       const card = getCard(deck, order);
 
-      // If the rank or suit coming from the action is null, prefer what we already had inferred.
-      const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
-      const rank = action.rank === -1 ? null : action.rank;
+      // If the rank or suit coming from the action is -1 (i.e. unknown), prefer what we already had
+      // inferred.
+      const suitIndex =
+        action.suitIndex === -1 ? card.suitIndex : action.suitIndex;
+      const rank = action.rank === -1 ? card.rank : action.rank;
 
       const identityDetermined = revealCard(suitIndex, rank, card);
 
