@@ -105,7 +105,7 @@ func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	// Don't do anything if we are not yet connected
+	// Do not do anything if we are not yet connected
 	if discordIsReady.IsNotSet() {
 		return
 	}
@@ -115,7 +115,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
-		// This can occasionally fail, so we don't want to report the error to Sentry
+		// This can occasionally fail, so we do not want to report the error to Sentry
 		logger.Info("Failed to get the Discord channel of \"" + m.ChannelID + "\": " + err.Error())
 		return
 	} else {
@@ -202,7 +202,7 @@ func discordSend(to string, username string, msg string) {
 
 func discordGetNickname(discordID string) string {
 	if member, err := discord.GuildMember(discordGuildID, discordID); err != nil {
-		// This can occasionally fail, so we don't want to report the error to Sentry
+		// This can occasionally fail, so we do not want to report the error to Sentry
 		logger.Info("Failed to get the Discord guild member: " + err.Error())
 		return "[error]"
 	} else {
@@ -216,7 +216,7 @@ func discordGetNickname(discordID string) string {
 
 func discordGetChannel(discordID string) string {
 	if channel, err := discord.Channel(discordID); err != nil {
-		// This can occasionally fail, so we don't want to report the error to Sentry
+		// This can occasionally fail, so we do not want to report the error to Sentry
 		logger.Info("Failed to get the Discord channel: " + err.Error())
 		return "[error]"
 	} else {

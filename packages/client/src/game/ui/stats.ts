@@ -79,7 +79,7 @@ export function askForEfficiency(): void {
     const effModString = setModifierNew.value;
     const effMod = parseIntSafe(effModString);
     if (effMod === undefined) {
-      // Don't do anything if they entered something that is not a number.
+      // Do not do anything if they entered something that is not a number.
       return;
     }
     setEfficiencyMod(effMod);

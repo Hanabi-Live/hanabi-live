@@ -14,7 +14,7 @@ export function draw(): void {
   // Clear all of the existing rows.
   tbody.html("");
 
-  // Don't do anything if there are no users. (This will be the case when first logging in and not
+  // Do not do anything if there are no users. (This will be the case when first logging in and not
   // doing the tutorial.)
   if (globals.userMap.size === 0) {
     return;

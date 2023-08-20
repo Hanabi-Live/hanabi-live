@@ -29,7 +29,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 ## Basic How-To
 
-- If you don't know how to play the game already, read [the rules](rules.md). For visual learners, you can also try watching [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
+- If you do not know how to play the game already, read [the rules](rules.md). For visual learners, you can also try watching [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
 - Getting a game going should be self-explanatory, but just in case:
   - Once logged in, click on the "Create Game" button on the top navigation bar and then click "Create".
   - For everyone else, the game will now appear in the list of games. To join it, they need to click on row corresponding to the game.
@@ -313,7 +313,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 
 ### Card Partial Identity Notes
 
-- If you don't know the exact identity of a card, but you do have it narrowed it down to a few possibilities, then you can also express that as a note on the card.
+- If you do not know the exact identity of a card, but you do have it narrowed it down to a few possibilities, then you can also express that as a note on the card.
 - List all the possibilities separated by commas.
 - For example, a note of "r2, r3" on a red card will tell the game that "even though this card only has a red clue and nothing else, represent it as having a negative 1 clue, a negative 4 clue, and a negative 5 clue".
 - You can also remove card possibilities with an exclamation point.

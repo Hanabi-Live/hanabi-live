@@ -117,29 +117,26 @@ export function send(hypoAction: ClientAction): void {
         }
       }
 
+      const playHypoAction = {
+        type: "play",
+        playerIndex: gameState.turn.currentPlayerIndex!,
+        order: hypoAction.target,
+        suitIndex,
+        rank,
+      } as const;
+
       switch (newType) {
         case "play": {
-          sendHypoAction({
-            type: newType,
-            playerIndex: gameState.turn.currentPlayerIndex!,
-            order: hypoAction.target,
-            suitIndex,
-            rank,
-          });
-
+          sendHypoAction(playHypoAction);
           break;
         }
 
         case "discard": {
           sendHypoAction({
-            type: newType,
-            playerIndex: gameState.turn.currentPlayerIndex!,
-            order: hypoAction.target,
-            suitIndex,
-            rank,
+            ...playHypoAction,
+            type: "discard",
             failed,
           });
-
           break;
         }
       }

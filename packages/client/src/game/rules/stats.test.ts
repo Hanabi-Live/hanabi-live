@@ -234,7 +234,7 @@ describe("cluesStillUsable", () => {
       cluesStillUsable(16, [3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 15, 3, 1, 1, 4),
     ).toBe(16);
   });
-  test("discards during the final round don't count", () => {
+  test("discards during the final round do not count", () => {
     expect(
       cluesStillUsable(24, [5, 5, 5, 5, 4], [5, 5, 5, 5, 5], 1, 2, 1, 1, 4),
     ).toBe(4);

@@ -87,7 +87,7 @@ var (
 
 	// HTTPClientWithTimeout is used for sending web requests to external sites,
 	// which is used in various middleware
-	// We don't want to use the default http.Client because it has no default timeout set
+	// We do not want to use the default http.Client because it has no default timeout set
 	HTTPClientWithTimeout = &http.Client{ // nolint: exhaustivestruct
 		Timeout: HTTPWriteTimeout,
 	}

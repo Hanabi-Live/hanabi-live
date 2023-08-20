@@ -8,7 +8,7 @@ const defaultLayerSettings = {
   listening: false,
 };
 
-// We don't want to add too many layers; the Konva documentation states that 3-5 is max:
+// We do not want to add too many layers; the Konva documentation states that 3-5 is max:
 // https://konvajs.org/docs/performance/Layer_Management.html
 export class Layers {
   UI: Konva.Layer = new Konva.Layer(defaultLayerSettings);

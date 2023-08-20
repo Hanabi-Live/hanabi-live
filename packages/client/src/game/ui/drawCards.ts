@@ -12,6 +12,11 @@ import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";
 import { drawStylizedRank } from "./drawStylizedRank";
 
+enum CardArea {
+  Number,
+  Background,
+}
+
 // This function returns an object containing all of the drawn cards images (on individual
 // canvases).
 export function drawCards(
@@ -63,12 +68,12 @@ export function drawCards(
 
       const { cvs, ctx } = initCanvas();
 
-      // We don't need the background on the stack base.
+      // We do not need the background on the stack base.
       if (rank !== STACK_BASE_RANK) {
         drawCardBackground(ctx, enableShadows);
       }
 
-      // Make the special corners on the cards for dual-color suits. Don't do this for Matryoshka
+      // Make the special corners on the cards for dual-color suits. Do not do this for Matryoshka
       // suits which have names ending in MD.
       if (suit.clueColors.length === 2 && !suit.name.endsWith("MD")) {
         drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
@@ -82,7 +87,7 @@ export function drawCards(
         suit,
         rank,
         ctx,
-        "number",
+        CardArea.Number,
         variant,
         colorblindMode,
       );
@@ -400,7 +405,7 @@ function drawCardBase(
     suit,
     rank,
     ctx,
-    "background",
+    CardArea.Background,
     variant,
     colorblindMode,
   );
@@ -408,7 +413,7 @@ function drawCardBase(
     suit,
     rank,
     ctx,
-    "background",
+    CardArea.Background,
     variant,
     colorblindMode,
   );
@@ -567,11 +572,11 @@ function getSuitStyle(
   suit: Suit,
   rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
   ctx: CanvasRenderingContext2D,
-  cardArea: string,
+  cardArea: CardArea,
   variant: Variant,
   colorblindMode: boolean,
 ) {
-  if (cardArea === "number") {
+  if (cardArea === CardArea.Number) {
     // In Synesthesia variants, color the number itself with the color that it contributes to the
     // card.
     if (variant.synesthesia) {
@@ -675,21 +680,24 @@ function getSuitStyle(
 
   // Rainbow suits use a gradient fill, but the specific type of gradient will depend on the
   // specific element of the card that we are filling in.
-  if (cardArea === "number") {
-    return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
-  }
-
-  if (cardArea === "background") {
-    if (suit.name === "Omni" || suit.name === "Dark Omni") {
-      return evenLinearGradient(ctx, suit.fillColors, [0, -30, 0, CARD_H + 30]);
+  switch (cardArea) {
+    case CardArea.Number: {
+      return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
     }
 
-    return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
-  }
+    case CardArea.Background: {
+      if (suit.name === "Omni" || suit.name === "Dark Omni") {
+        return evenLinearGradient(ctx, suit.fillColors, [
+          0,
+          -30,
+          0,
+          CARD_H + 30,
+        ]);
+      }
 
-  throw new Error(
-    `The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`,
-  );
+      return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
+    }
+  }
 }
 
 // Generates a vertical gradient that is evenly distributed between its component colors.

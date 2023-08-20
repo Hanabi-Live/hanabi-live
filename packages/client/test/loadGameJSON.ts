@@ -58,7 +58,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
    * The type of `number` in the JSON is too loose for the types of `SuitIndex` and `Rank`, so we
    * must use a type assertion.
    */
-  const deck = gameJSON as unknown as CardIdentity[];
+  const deck = gameJSON.deck as unknown as CardIdentity[];
 
   const actions: GameAction[] = [];
   let topOfDeck = dealInitialCards(numPlayers, cardsPerHand, actions, deck);
@@ -258,12 +258,13 @@ function drawCard(
   const cardIdentity = deck[order];
   if (cardIdentity === undefined) {
     throw new Error(
-      `Failed to find the ${order} card in the deck in the "drawCard()" function.`,
+      `Failed to draw a card with order "${order}" since the card identity was not found in the deck.`,
     );
   }
+
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     throw new Error(
-      'Failed to find the suit or rank of the card in the "drawCard()" function.',
+      `Failed to draw a card with order "${order}" since the suit index or rank of the card identity was null.`,
     );
   }
 

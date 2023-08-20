@@ -143,7 +143,6 @@ export function init(): void {
 
   // The "Change Options" button. (Also initialized in the "initTooltips()" function.)
   $("#nav-buttons-pregame-change-options").unbind("click");
-
   $("#nav-buttons-pregame-change-options").on("click", () => {
     if (!$("#nav-buttons-pregame-change-options").hasClass("disabled")) {
       tooltips.open("#nav-buttons-pregame-change-options");

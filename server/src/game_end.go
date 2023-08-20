@@ -19,7 +19,7 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 	}
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
-	// There will be no times associated with a replay, so don't bother with the rest of the code
+	// There will be no times associated with a replay, so do not bother with the rest of the code
 	if g.ExtraOptions.NoWriteToDatabase {
 		return
 	}
@@ -359,7 +359,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
 			if p.UserID == t.OwnerID && (p.Session == nil || p.Session.ms.IsClosed()) {
-				// We don't want to pass the replay leader away if they are still in the lobby
+				// We do not want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)
 				ownerOffline = true
 				logger.Info(p.Name + " was the owner of the game and they are offline; " +
@@ -432,7 +432,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		}
 	}
 
-	// In a shared replay, we don't want any of the player names to be red,
+	// In a shared replay, we do not want any of the player names to be red,
 	// because it does not matter if they are present or not
 	// So manually make everyone present and then send out an update
 	for _, p := range t.Players {

@@ -93,7 +93,7 @@ export function set(
     arrow.base.stroke(color);
     arrow.base.fill(color);
 
-    // Don't draw the circle.
+    // Do not draw the circle.
     arrow.circle.hide();
     arrow.text.hide();
   } else {
@@ -117,7 +117,7 @@ export function set(
       globals.variant.duck ||
       (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
-      // Don't show the circle in variants where the clue types are supposed to be hidden.
+      // Do not show the circle in variants where the clue types are supposed to be hidden.
       arrow.circle.hide();
       arrow.text.hide();
     } else {
@@ -261,6 +261,8 @@ function getPos(element: Konva.Node, rot: number) {
           throw new TypeError("The width of the element was not a number.");
         }
         pos.x += width / 2;
+
+        break;
       }
     }
   }
@@ -289,13 +291,13 @@ function animate(
     return;
   }
 
-  // Don't bother doing the animation if the card is no longer part of a hand (which can happen when
-  // jumping quickly through a replay).
+  // Do not bother doing the animation if the card is no longer part of a hand (which can happen
+  // when jumping quickly through a replay).
   if (card.parent === null || card.parent.parent === null) {
     return;
   }
 
-  // Don't bother doing the animation if we have hidden the arrow in the meantime (which can happen
+  // Do not bother doing the animation if we have hidden the arrow in the meantime (which can happen
   // when jumping quickly through a replay).
   if (arrow.pointingTo === null) {
     return;
@@ -338,7 +340,7 @@ export function click(
     return;
   }
 
-  // Don't allow followers in a shared replay to summon arrows because it could be misleading as to
+  // Do not allow followers in a shared replay to summon arrows because it could be misleading as to
   // who the real replay leader is.
   if (
     globals.state.replay.shared !== null &&
@@ -347,8 +349,8 @@ export function click(
     return;
   }
 
-  // Don't allow shared replay leaders to summon arrows when they are not in shared turns because it
-  // could be misleading as to whether or not the arrows are being shown to the other players.
+  // Do not allow shared replay leaders to summon arrows when they are not in shared turns because
+  // it could be misleading as to whether or not the arrows are being shown to the other players.
   if (
     globals.state.replay.shared !== null &&
     !globals.state.replay.shared.useSharedSegments

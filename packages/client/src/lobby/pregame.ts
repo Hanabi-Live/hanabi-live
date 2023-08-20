@@ -553,7 +553,7 @@ export function toggleStartGameButton(): void {
     globals.game.owner === globals.userID &&
     globals.game.players.length >= 2 &&
     globals.game.players.length <= 6 &&
-    // If this field is not equal to null it means that we're waiting a short time to re-enable the
+    // If this field is not equal to null it means that we are waiting a short time to re-enable the
     // button after a player joined.
     globals.enableStartGameButtonTimeout === null
   ) {

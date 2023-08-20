@@ -251,7 +251,7 @@ func (p *GamePlayer) DrawCard() {
 	g := p.Game
 	t := g.Table
 
-	// Don't draw any more cards if the deck is empty
+	// Do not draw any more cards if the deck is empty
 	if g.DeckIndex >= len(g.Deck) {
 		return
 	}

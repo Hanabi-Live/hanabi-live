@@ -87,15 +87,15 @@ export class Connection {
 
 const SEPARATOR = " ";
 
-function unpack(data: string) {
+function unpack(data: string): string[] {
   const name = data.split(SEPARATOR)[0]!;
   return [name, data.slice(name.length + 1, data.length)];
 }
 
-function unmarshal(data: string) {
-  return JSON.parse(data) as unknown;
+function unmarshal(data: string): unknown {
+  return JSON.parse(data);
 }
 
-function marshalAndPack(name: string, data: unknown) {
+function marshalAndPack(name: string, data: unknown): string {
   return name + SEPARATOR + JSON.stringify(data);
 }

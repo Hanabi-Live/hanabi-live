@@ -2,6 +2,7 @@
 // and then bundled together as a single JavaScript file to serve to end-users.
 
 import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
+import "@total-typescript/ts-reset"; // eslint-disable-line import/no-unassigned-import
 import jquery from "jquery";
 import { Loader } from "./Loader";
 import * as chat from "./chat";

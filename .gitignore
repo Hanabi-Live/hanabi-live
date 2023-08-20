@@ -44,7 +44,7 @@ GitHub_private_key.pem
 # Dependency graph output
 /packages/client/graph.html
 
-# We don't need to include combined or minified CSS
+# We do not need to include combined or minified CSS
 /public/css/main.*.min.css
 /public/css/critical.css
 

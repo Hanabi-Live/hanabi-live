@@ -117,7 +117,7 @@ func (p *GamePlayer) CycleHand() {
 	// Find the chop card
 	chopIndex := p.GetChopIndex()
 
-	// We don't need to reorder anything if the chop is slot 1 (the left-most card)
+	// We do not need to reorder anything if the chop is slot 1 (the left-most card)
 	if chopIndex == len(p.Hand)-1 {
 		return
 	}

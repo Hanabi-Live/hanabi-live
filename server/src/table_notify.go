@@ -175,7 +175,7 @@ func (t *Table) NotifyGameAction() {
 
 	if !t.Running {
 		// We might be doing the initial actions;
-		// don't send any messages to players if this is the case
+		// do not send any messages to players if this is the case
 		return
 	}
 
@@ -342,12 +342,12 @@ func (t *Table) NotifySpectatorsNote(order int) {
 func (t *Table) NotifyProgress() {
 	if !t.Running {
 		// We might be doing the initial actions;
-		// don't send any messages to players if this is the case
+		// do not send any messages to players if this is the case
 		return
 	}
 
 	if !t.Visible {
-		// Don't send progress for solo replays
+		// Do not send progress for solo replays
 		return
 	}
 

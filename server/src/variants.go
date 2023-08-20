@@ -113,7 +113,7 @@ func variantsInit() {
 			for _, suit := range variantSuits {
 				if suit.AllClueColors {
 					// If a suit is touched by all colors,
-					// then we don't want to add every single clue color to the variant clue list
+					// then we do not want to add every single clue color to the variant clue list
 					continue
 				}
 				for _, color := range suit.ClueColors {

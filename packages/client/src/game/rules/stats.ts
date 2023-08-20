@@ -1,6 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import type { Variant } from "@hanabi/data";
+import type { Rank, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
@@ -16,7 +16,7 @@ import * as sudokuRules from "./variants/sudoku";
 export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): number[] {
   // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
@@ -148,7 +148,7 @@ export function cardsGotten(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   playing: boolean,
   shadowing: boolean,
   maxScore: number,
@@ -199,7 +199,7 @@ export function cardsGottenByNotes(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
   notes: CardNote[],
 ): number {

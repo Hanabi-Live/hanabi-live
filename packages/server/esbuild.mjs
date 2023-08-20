@@ -9,7 +9,7 @@ const PACKAGE_NAME = path.basename(__dirname);
 const CWD = process.cwd();
 
 /**
- * If we don't compile the project from the root of the repository, we will get the following
+ * If we do not compile the project from the root of the repository, we will get the following
  * run-time error:
  *
  * ```text

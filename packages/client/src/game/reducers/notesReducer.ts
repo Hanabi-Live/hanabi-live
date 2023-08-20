@@ -148,13 +148,14 @@ export function noteHasMeaning(variant: Variant, note: CardNote): boolean {
 }
 
 export function parseNote(variant: Variant, text: string): CardNote {
-  // Make all letters lowercase to simply the matching logic below and remove all leading and
-  // trailing whitespace.
   const lastPipeIndex = text.lastIndexOf("|");
-  const textAfterLastPipe = text.slice(
-    lastPipeIndex === -1 ? 0 : lastPipeIndex + 1,
-  );
+
+  // No special handling is needed for the -1 case.
+  const textAfterLastPipe = text.slice(lastPipeIndex + 1);
+
+  // We make all letters lowercase to simply the matching logic below.
   const fullNote = textAfterLastPipe.toLowerCase().trim();
+
   const keywords = getNoteKeywords(fullNote);
   const possibilities = noteIdentity.getPossibilitiesFromKeywords(
     variant,

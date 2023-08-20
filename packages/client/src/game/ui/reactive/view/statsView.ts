@@ -19,29 +19,13 @@ export function onEfficiencyChanged(data: {
       ? null
       : Math.floor(data.cluesStillUsableNotRounded);
 
-  // Ensure that the labels exist.
-  const effLabel = globals.elements.efficiencyNumberLabel;
-  if (effLabel === null) {
-    throw new Error(
-      'efficiencyNumberLabel is not initialized in the "onEfficiencyChanged()" function.',
-    );
-  }
-  const effPipeLabel = globals.elements.efficiencyPipeLabel;
-  if (effPipeLabel === null) {
-    throw new Error(
-      'efficiencyPipeLabel is not initialized in the "onEfficiencyChanged()" function.',
-    );
-  }
-  const effMinLabel = globals.elements.efficiencyMinNeededLabel;
-  if (effMinLabel === null) {
-    throw new Error(
-      'efficiencyNumberLabelMinNeeded is not initialized in the "onEfficiencyChanged()" function.',
-    );
-  }
+  const effLabel = globals.elements.efficiencyNumberLabel!;
+  const effPipeLabel = globals.elements.efficiencyPipeLabel!;
+  const effMinLabel = globals.elements.efficiencyMinNeededLabel!;
 
   // - If we are not currently using the shared segments, the shared efficiency modifier will not be
   //   applicable.
-  // - Don't use the efficiency modifier during in-game replays.
+  // - Do not use the efficiency modifier during in-game replays.
   const shouldModifyEff = globals.state.finished
     ? globals.state.replay.shared !== null &&
       globals.state.replay.shared.useSharedSegments

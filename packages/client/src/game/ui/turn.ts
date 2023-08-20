@@ -66,7 +66,7 @@ function handlePremove() {
     }
   }
 
-  // We don't want to send the action right away, or else it introduces bugs.
+  // We do not want to send the action right away, or else it introduces bugs.
   setTimeout(() => {
     // As a sanity check, ensure that it is still our turn.
     if (!isOurTurn()) {

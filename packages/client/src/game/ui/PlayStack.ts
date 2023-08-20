@@ -67,7 +67,7 @@ export class PlayStack extends Konva.Group {
     for (let i = 0; i < stackLength; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
       if (layoutChild.tween !== null) {
-        // Don't hide anything if one of the cards on the stack is still tweening.
+        // Do not hide anything if one of the cards on the stack is still tweening.
         return;
       }
     }

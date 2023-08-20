@@ -8,9 +8,10 @@ import (
 // commandLoaded is sent when the user has finished loading the game UI
 //
 // Example data:
-// {
-//   tableID: 5,
-// }
+//
+//	{
+//	  tableID: 5,
+//	}
 func commandLoaded(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -30,7 +31,7 @@ func commandLoaded(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they are a player
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
 	if playerIndex == -1 {
-		// Don't show a warning message,
+		// Do not show a warning message,
 		// since the client is programmed to also send a "loaded" command
 		return
 	}

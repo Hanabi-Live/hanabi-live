@@ -295,10 +295,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.ongoingGame.turn.segment,
           previousSegment,
           action,
-        )
+        ) &&
+        state.ongoingGame.turn.segment !== null
       ) {
-        state.replay.states[state.ongoingGame.turn.segment!] =
-          state.ongoingGame;
+        state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
       }
 
       // Save the action so that we can recompute the state at the end of the game.
@@ -309,7 +309,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
   }
 
   // Show the appropriate state depending on the situation.
-  state.visibleState = visualStateToShow(state, action)!;
+  state.visibleState = visualStateToShow(state, action);
 }
 
 // Runs through a list of actions from an initial state, and returns the final state and all
@@ -334,8 +334,11 @@ function reduceGameActions(
       metadata,
     );
 
-    if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, a)) {
-      states[nextState.turn.segment!] = nextState;
+    if (
+      segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, a) &&
+      nextState.turn.segment !== null
+    ) {
+      states[nextState.turn.segment] = nextState;
     }
 
     return nextState;
@@ -357,7 +360,13 @@ function updateCardIdentities(state: Draft<State>) {
       };
     } else {
       // Update the existing card identity.
-      const existingCardIdentity = state.cardIdentities[i]!;
+      const existingCardIdentity = state.cardIdentities[i];
+      if (existingCardIdentity === undefined) {
+        throw new Error(
+          `Failed to find the existing card identity at index: ${i}`,
+        );
+      }
+
       if (existingCardIdentity.suitIndex === null) {
         existingCardIdentity.suitIndex = newCardIdentity.suitIndex;
       }
@@ -368,7 +377,10 @@ function updateCardIdentities(state: Draft<State>) {
   }
 }
 
-function visualStateToShow(state: Draft<State>, action: Action) {
+function visualStateToShow(
+  state: Draft<State>,
+  action: Action,
+): Draft<GameState> | null {
   if (state.visibleState === null) {
     // The state is still initializing, so do not show anything.
     return null;
@@ -393,7 +405,7 @@ function visualStateToShow(state: Draft<State>, action: Action) {
   // After an ongoing game ends, do not automatically show the final segment with the player's times
   // by default in order to avoid drowning out the reason why the game ended.
   if (action.type === "playerTimes") {
-    return state.replay.states.at(-2); // The penultimate segment
+    return state.replay.states.at(-2) ?? null; // The penultimate segment
   }
 
   // Show the final segment of the current game.
@@ -411,10 +423,24 @@ function rehydrateScrubbedActions(
         action.type === "draw") &&
       (action.suitIndex === -1 || action.rank === -1)
     ) {
+      const cardIdentity = cardIdentities[action.order];
+      if (cardIdentity === undefined) {
+        throw new Error(
+          "Failed to find the card identity for an action while rehydrating the scrubbed actions.",
+        );
+      }
+
+      const { suitIndex, rank } = cardIdentity;
+      if (suitIndex === null || rank === null) {
+        throw new Error(
+          "Failed to find the suit index or rank of a card identity for an action while rehydrating the scrubbed actions.",
+        );
+      }
+
       return {
         ...action,
-        suitIndex: cardIdentities[action.order]!.suitIndex!,
-        rank: cardIdentities[action.order]!.rank!,
+        suitIndex,
+        rank,
       };
     }
 

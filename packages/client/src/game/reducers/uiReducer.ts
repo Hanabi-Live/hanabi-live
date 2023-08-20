@@ -6,11 +6,11 @@ export function uiReducer(state: UIState, action: UIAction): UIState {
   switch (action.type) {
     case "dragStart": {
       if (action.card instanceof HanabiCard) {
+        const cardText = JSON.stringify(action.card);
         return {
           ...state,
-          // This is required due to Konva bug.
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          cardDragged: JSON.parse(JSON.stringify(action.card)),
+          // This is required due to a Konva bug.
+          cardDragged: JSON.parse(cardText) as HanabiCard,
         };
       }
       return state;

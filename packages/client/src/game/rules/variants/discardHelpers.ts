@@ -10,8 +10,14 @@ export function discardedHelpers(
   isAllDiscarded: (suitIndex: SuitIndex, rank: Rank) => boolean;
 } {
   // eslint-disable-next-line func-style
-  const total = (suitIndex: SuitIndex, rank: Rank) =>
-    deckRules.numCopiesOfCard(variant.suits[suitIndex]!, rank, variant);
+  const total = (suitIndex: SuitIndex, rank: Rank) => {
+    const suit = variant.suits[suitIndex];
+    if (suit === undefined) {
+      return 0;
+    }
+
+    return deckRules.numCopiesOfCard(suit, rank, variant);
+  };
 
   // eslint-disable-next-line func-style
   const discarded = (suitIndex: SuitIndex, rank: Rank) =>

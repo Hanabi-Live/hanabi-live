@@ -153,7 +153,7 @@ func (*UserStats) Update(userID int, variantID int, stats *UserStatsRow) error {
 	}
 
 	// First, check to see if they have a row in the stats table for this variant already
-	// If they don't, then we need to insert a new row
+	// If they do not, then we need to insert a new row
 	var numRows int
 	if err := db.QueryRow(context.Background(), `
 		SELECT COUNT(user_id)
@@ -333,7 +333,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			}
 
 			if stats.NumGames == 0 {
-				// We don't need to insert a new row for this variant
+				// We do not need to insert a new row for this variant
 				continue
 			}
 

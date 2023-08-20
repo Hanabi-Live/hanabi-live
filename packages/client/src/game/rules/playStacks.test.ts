@@ -9,8 +9,8 @@ const DEFAULT_VARIANT = getDefaultVariant();
 const UP_OR_DOWN_VARIANT = getVariant("Up or Down (6 Suits)");
 const REVERSED_VARIANT = getVariant("Reversed (6 Suits)");
 
-const defaultStackStarts = newArray(DEFAULT_VARIANT.suits.length, 1);
-const defaultReverseStackStarts = newArray(DEFAULT_VARIANT.suits.length, 5);
+const defaultStackStarts = newArray(DEFAULT_VARIANT.suits.length, null);
+const defaultReverseStackStarts = newArray(REVERSED_VARIANT.suits.length, null);
 
 describe("direction", () => {
   test("returns Up for No Variant, not finished", () => {

@@ -185,7 +185,7 @@ function isOrderChopMove(
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
 
-  // Don't bother trying to see if this is an Order Chop Move in certain variants, as the logic
+  // Do not bother trying to see if this is an Order Chop Move in certain variants, as the logic
   // could be extremely complicated.
   if (variant.upOrDown || variant.sudoku) {
     return false;

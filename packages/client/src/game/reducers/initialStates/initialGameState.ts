@@ -1,5 +1,5 @@
 import type { SuitIndex } from "@hanabi/data";
-import { getVariant, MAX_CLUE_NUM, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
 import { eRange, newArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
@@ -34,17 +34,14 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.suits.length * 5,
     endGameLength,
   );
-  const hands: number[][] = newArray(options.numPlayers, []);
+  const hands = newArray(options.numPlayers, []);
   const suitIndexes = eRange(variant.suits.length) as SuitIndex[];
   const playStackDirections = suitIndexes.map((suitIndex) =>
     playStacksRules.direction(suitIndex, [], [], variant),
   );
-  const playStacks: number[][] = newArray(variant.suits.length, []);
-  const discardStacks: number[][] = newArray(variant.suits.length, []);
-  const playStackStarts: number[] = newArray(
-    variant.suits.length,
-    UNKNOWN_CARD_RANK,
-  );
+  const playStacks = newArray(variant.suits.length, []);
+  const discardStacks = newArray(variant.suits.length, []);
+  const playStackStarts = newArray(variant.suits.length, null);
 
   const cardStatus: CardStatus[][] = [];
   for (const i of variant.suits.keys()) {
@@ -63,11 +60,8 @@ export function initialGameState(metadata: GameMetadata): GameState {
     }
   }
 
-  const scorePerStack: number[] = Array.from(
-    playStacks,
-    (playStack) => playStack.length,
-  );
-  const maxScorePerStack: number[] = newArray(playStacks.length, 5);
+  const scorePerStack = Array.from(playStacks, (playStack) => playStack.length);
+  const maxScorePerStack = newArray(playStacks.length, 5);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
   const cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
@@ -104,7 +98,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     clues: [],
     stats: {
       maxScore: variant.maxScore,
-      maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
+      maxScorePerStack: newArray(variant.suits.length, 5),
 
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),

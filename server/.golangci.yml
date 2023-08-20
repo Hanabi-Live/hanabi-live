@@ -36,7 +36,7 @@ linters:
     - noctx
     # We use some unused parameters for command function uniformity
     - unparam
-    # We don't need to wrap all error messages
+    # We do not need to wrap all error messages
     - wrapcheck
     # wsl requires excessive newlines around if statements
     - wsl
@@ -46,7 +46,7 @@ linters:
     - unused
 
 issues:
-  # We want to use golint but we don't care about some of the things that it complains about
+  # We want to use golint but we do not care about some of the things that it complains about
   exclude:
     # We have many exported functions without comments
     - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"

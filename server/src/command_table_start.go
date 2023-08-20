@@ -195,7 +195,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Additionally, we need to shuffle the order of the players so that the order that the players
 	// joined the game in does not correspond to the order of the players in the actual game
 	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	// For this step, we don't care about explicitly seeding the random number generator,
+	// For this step, we do not care about explicitly seeding the random number generator,
 	// since any random shuffling will do
 	if shufflePlayers {
 		for i := range t.Players {
@@ -232,7 +232,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	charactersGenerate(g)
 
 	// Initialize all of the players to not being present
-	// This is so that we don't send them unnecessary messages during the game initialization
+	// This is so that we do not send them unnecessary messages during the game initialization
 	// (we will set them back to present once they send the "getGameInfo2" message)
 	listOfAwayPlayers := make([]int, 0)
 	for _, p := range t.Players {
@@ -267,7 +267,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	// Send a "tableStart" message to everyone in the game
 	for _, p := range t.Players {
-		// If a player is back in the lobby, then don't automatically force them into the game
+		// If a player is back in the lobby, then do not automatically force them into the game
 		if !intInSlice(p.UserID, listOfAwayPlayers) {
 			p.Session.NotifyTableStart(t)
 		}

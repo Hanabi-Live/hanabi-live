@@ -33,7 +33,6 @@ export function getPlayerNames(
   playerIndices: number[] | null,
   metadata: GameMetadata,
 ): string {
-  // The codebase lies; this can be `null` in some situations that I don't understand.
   if (playerIndices === null) {
     return "The players";
   }

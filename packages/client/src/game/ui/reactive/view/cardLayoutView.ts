@@ -1,5 +1,4 @@
 import type { SuitIndex } from "@hanabi/data";
-import { UNKNOWN_CARD_RANK } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
 import { ReadonlyMap } from "@hanabi/utils";
 import equal from "fast-deep-equal";
@@ -141,9 +140,8 @@ export function onPlayStacksChanged(
       const stackStart = stackStartRank(
         playStack,
         globals.state.visibleState!.deck,
-        globals.variant,
       );
-      if (stackStart !== UNKNOWN_CARD_RANK) {
+      if (stackStart !== null) {
         availableStackStartsFlags[stackStart - 1] = false;
       }
     }

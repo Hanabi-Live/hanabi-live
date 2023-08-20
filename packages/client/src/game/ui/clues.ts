@@ -153,8 +153,18 @@ export function give(): void {
 
   switch (clueButton.clue.type) {
     case ClueType.Color: {
+      const colorIndex = colorToColorIndex(
+        clueButton.clue.value,
+        globals.variant,
+      );
+      if (colorIndex === undefined) {
+        throw new Error(
+          `Failed to get the color index for color: ${clueButton.clue.value.name}`,
+        );
+      }
+
       type = ActionType.ColorClue;
-      value = colorToColorIndex(clueButton.clue.value, globals.variant);
+      value = colorIndex;
       break;
     }
 

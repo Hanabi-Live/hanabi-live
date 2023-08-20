@@ -126,7 +126,7 @@ export function drawHands(winW: number, winH: number): void {
     }
 
     if (numCardsPerHand <= 4) {
-      // We don't need to keep the cards so close to each other.
+      // We do not need to keep the cards so close to each other.
       cardSpacing = 0.2;
     }
 

@@ -165,7 +165,7 @@ function shouldCalculateCard(
     return true;
   }
 
-  // If the possibilities on the other cards in the deck don't change, then the result of our
+  // If the possibilities on the other cards in the deck do not change, then the result of our
   // calculation won't change. We only need to recalculate the card if the input (possibilities)
   // changed.
   return deckPossibilitiesDifferent(

@@ -416,7 +416,7 @@ function drawPlayStacks() {
       }
 
       if (globals.variant.sudoku) {
-        // Don't show anything here, the starting values will be written by the state observers
+        // Do not show anything here, the starting values will be written by the state observers
         // updating when the starting or the played cards value changes.
         text = "";
       }
@@ -1611,7 +1611,7 @@ function drawTimers() {
   // Just in case, stop the previous timer, if any.
   timer.stop();
 
-  // We don't want the timer to show in replays or untimed games (unless they have the optional
+  // We do not want the timer to show in replays or untimed games (unless they have the optional
   // setting turned on).
   if (
     globals.state.finished ||
@@ -1702,8 +1702,8 @@ function drawTimers() {
 
 function timerClick() {
   if (
-    !globals.options.timed || // We don't need to pause if this is not a timed game
-    globals.state.pause.active // We don't need to pause if the game is already paused
+    !globals.options.timed || // We do not need to pause if this is not a timed game.
+    globals.state.pause.active // We do not need to pause if the game is already paused.
   ) {
     return;
   }

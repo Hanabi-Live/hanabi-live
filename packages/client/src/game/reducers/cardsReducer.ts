@@ -2,14 +2,12 @@
 
 import type { Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
+import { newArray } from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
 import type { CardState } from "../types/CardState";
-import type { Clue } from "../types/Clue";
-import { newColorClue, newRankClue } from "../types/Clue";
-import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
 import type { GameAction } from "../types/actions";
@@ -76,18 +74,7 @@ export function cardsReducer(
     }
 
     case "clue": {
-      let clue: Clue;
-      switch (action.clue.type) {
-        case ClueType.Color: {
-          clue = newColorClue(variant.clueColors[action.clue.value]!);
-          break;
-        }
-
-        case ClueType.Rank: {
-          clue = newRankClue(action.clue.value);
-          break;
-        }
-      }
+      const clue = cluesRules.msgClueToClue(action.clue, variant);
 
       // eslint-disable-next-line func-style
       const applyClue = (order: number, positive: boolean) => {
@@ -151,20 +138,26 @@ export function cardsReducer(
 
       let { segmentPlayed, segmentDiscarded, location, isMisplayed } = card;
 
-      if (action.type === "play") {
-        location = "playStack";
-        segmentPlayed = game.turn.segment;
-      } else {
-        location = "discard";
-        segmentDiscarded = game.turn.segment;
-        if (action.failed) {
-          isMisplayed = true;
+      switch (action.type) {
+        case "play": {
+          location = "playStack";
+          segmentPlayed = game.turn.segment;
+          break;
+        }
+
+        case "discard": {
+          location = "discard";
+          segmentDiscarded = game.turn.segment;
+          if (action.failed) {
+            isMisplayed = true;
+          }
+          break;
         }
       }
 
       const revealedToPlayer =
         action.suitIndex !== -1 && action.rank !== -1
-          ? new Array(MAX_PLAYERS).fill(true)
+          ? newArray(MAX_PLAYERS, true)
           : card.revealedToPlayer;
 
       const possibleCards =
@@ -185,6 +178,7 @@ export function cardsReducer(
         revealedToPlayer,
         possibleCards,
       };
+
       break;
     }
 
@@ -209,9 +203,7 @@ export function cardsReducer(
       let { possibleCards } = initial;
 
       if (action.suitIndex !== -1 && action.rank !== -1) {
-        possibleCards = [
-          [action.suitIndex, action.rank],
-        ] as readonly SuitRankTuple[];
+        possibleCards = [[action.suitIndex, action.rank]] as const;
       }
 
       const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
@@ -339,8 +331,9 @@ function canPlayerSeeDrawnCard(
 function getCard(deck: readonly CardState[], order: number) {
   const card = deck[order];
   if (card === undefined) {
-    throw new Error(`Failed to get the card for index: ${order}`);
+    throw new Error(`Failed to get the card in the deck at index: ${order}`);
   }
+
   return card;
 }
 

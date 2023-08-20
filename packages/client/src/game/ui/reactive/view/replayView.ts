@@ -149,7 +149,7 @@ export function enterHypoButtonLocationChanged(data: {
 
 // In shared replays, it can be confusing as to what the shared replay leader is doing, so play an
 // appropriate animations to indicate what is going on (and cancel the other tween if it is going).
-// Don't play it though if we are resuming shared segments
+// Do not play it though if we are resuming shared segments
 // (e.g. going back to where the shared replay leader is).
 function playSharedReplayTween(
   sharedSegment: number,
@@ -262,7 +262,7 @@ export function onSharedLeaderChanged(
   _leader: string,
   previousLeader: string | undefined,
 ): void {
-  // Make the crown play an animation to indicate there is a new replay leader. (But don't play the
+  // Make the crown play an animation to indicate there is a new replay leader. (But do not play the
   // animation if the game just ended or we are first loading the page.)
   if (previousLeader !== undefined) {
     globals.elements.sharedReplayLeaderLabelPulse!.play();

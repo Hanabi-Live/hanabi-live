@@ -3,7 +3,6 @@ import {
   DEFAULT_CARD_RANKS,
   STACK_BASE_RANK,
   START_CARD_RANK,
-  UNKNOWN_CARD_RANK,
 } from "@hanabi/data";
 import type { CardState } from "../types/CardState";
 import { StackDirection } from "../types/StackDirection";
@@ -12,44 +11,43 @@ import * as variantRules from "./variant";
 function lastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK {
+): Rank | typeof STACK_BASE_RANK | undefined {
   if (playStack.length === 0) {
     return STACK_BASE_RANK;
   }
 
   const orderOfTopCard = playStack.at(-1);
   if (orderOfTopCard === undefined) {
-    return UNKNOWN_CARD_RANK;
+    return undefined;
   }
 
   const card = deck[orderOfTopCard];
   if (card === undefined) {
-    return UNKNOWN_CARD_RANK;
+    return undefined;
   }
 
-  return card.rank ?? UNKNOWN_CARD_RANK;
+  return card.rank ?? undefined;
 }
 
 export function nextPlayableRanks(
   suitIndex: SuitIndex,
   playStack: readonly number[],
   playStackDirection: StackDirection,
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
   deck: readonly CardState[],
 ): number[] {
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
-  if (currentlyPlayedRank === UNKNOWN_CARD_RANK) {
+  if (currentlyPlayedRank === undefined) {
     return [];
   }
 
   switch (playStackDirection) {
     case StackDirection.Undecided: {
-      // Check that we are in fact in an Up-Or-Down Variant.
-      console.assert(variant.upOrDown);
       if (currentlyPlayedRank === START_CARD_RANK) {
         return [2, 4];
       }
+
       return [1, 5, START_CARD_RANK];
     }
 
@@ -60,6 +58,7 @@ export function nextPlayableRanks(
         if (currentlyPlayedRank === STACK_BASE_RANK) {
           return [1];
         }
+
         return [currentlyPlayedRank + 1];
       }
 
@@ -71,12 +70,14 @@ export function nextPlayableRanks(
         // Note that we first mod by 5 and then add, to obtain values 1 through 5.
         return [(currentlyPlayedRank % 5) + 1];
       }
+
       // As a special case, we might already know the start of the play stack, even when no cards
       // have been played when this is the last suit. In that case, only the (known) stack start can
       // be played.
-      if (playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK) {
+      if (playStackStarts[suitIndex] !== null) {
         return [playStackStarts[suitIndex]!];
       }
+
       return DEFAULT_CARD_RANKS.filter(
         (rank) => !playStackStarts.includes(rank),
       );
@@ -86,6 +87,7 @@ export function nextPlayableRanks(
       if (currentlyPlayedRank === STACK_BASE_RANK) {
         return [5];
       }
+
       return [currentlyPlayedRank - 1];
     }
 
@@ -110,15 +112,18 @@ export function direction(
   }
 
   if (!variant.upOrDown) {
-    return variant.suits[suitIndex]!.reversed
-      ? StackDirection.Down
-      : StackDirection.Up;
+    const suit = variant.suits[suitIndex];
+    if (suit === undefined) {
+      return StackDirection.Up;
+    }
+
+    return suit.reversed ? StackDirection.Down : StackDirection.Up;
   }
 
   const top = lastPlayedRank(playStack, deck);
-  if (top === UNKNOWN_CARD_RANK) {
+  if (top === undefined) {
     throw new Error(
-      `The last played rank for suit index ${suitIndex} was unknown.`,
+      `Failed to find the last played rank for suit index: ${suitIndex}`,
     );
   }
   if (top === STACK_BASE_RANK || top === START_CARD_RANK) {
@@ -142,21 +147,16 @@ export function direction(
 export function stackStartRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-  variant: Variant,
-): number {
-  if (!variant.sudoku) {
-    return 1;
-  }
-
+): Rank | null {
   const bottomCardOrder = playStack[0];
   if (bottomCardOrder === undefined) {
-    return UNKNOWN_CARD_RANK;
+    return null;
   }
 
   const bottomCard = deck[bottomCardOrder];
   if (bottomCard === undefined) {
-    return UNKNOWN_CARD_RANK;
+    return null;
   }
 
-  return bottomCard.rank ?? UNKNOWN_CARD_RANK;
+  return bottomCard.rank;
 }

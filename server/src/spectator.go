@@ -28,7 +28,7 @@ type Spectator struct {
 }
 
 // The default value is conceptually an empty string for each card in the deck,
-// but we don't know the size of the deck until the game starts,
+// but we do not know the size of the deck until the game starts,
 // so we provide this accessor method so that you can only access the notes after the game starts.
 func (sp *Spectator) Notes(g *Game) []string {
 	if sp.notes == nil {

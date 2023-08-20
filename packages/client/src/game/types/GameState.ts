@@ -1,4 +1,4 @@
-import type { ColorIndex, RankClueNumber } from "@hanabi/data";
+import type { ColorIndex, Rank, RankClueNumber } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
 import type { CardState } from "./CardState";
 import type { CardStatus } from "./CardStatus";
@@ -39,9 +39,9 @@ export interface GameState {
 
   /**
    * For Sudoku variants, this denotes the first rank played of this stack. If the stack is not
-   * started yet, then the value stored is `UNKNOWN_CARD_RANK`.
+   * started yet, then the value stored is null.
    */
-  readonly playStackStarts: readonly number[];
+  readonly playStackStarts: ReadonlyArray<Rank | null>;
 
   /** For "Throw It in a Hole" variants. */
   readonly hole: readonly number[];

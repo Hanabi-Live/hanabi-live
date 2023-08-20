@@ -11,7 +11,7 @@ import * as keyboard from "./keyboard";
 export function uiInit(): void {
   if (globals.lobby.imageLoader === null) {
     throw new Error(
-      'The "globals.lobby.imageLoader" object was never instantiated upon reaching the "uiInit()" function.',
+      "Failed to find the image loader when initializing the user interface.",
     );
   }
 

@@ -72,7 +72,7 @@ func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table, cmd str
 		return
 	}
 
-	// We don't have to worry about doing a case-insensitive sort since all the tags should be
+	// We do not have to worry about doing a case-insensitive sort since all the tags should be
 	// lowercase
 	sort.Strings(tags)
 

@@ -362,7 +362,7 @@ function getVariantClueColors(
 
     for (const suit of suits) {
       if (suit.allClueColors) {
-        // If a suit is touched by all colors, then we don't want to add every single clue color to
+        // If a suit is touched by all colors, then we do not want to add every single clue color to
         // the variant clue list.
         continue;
       }

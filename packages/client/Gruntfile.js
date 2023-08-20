@@ -47,7 +47,7 @@ module.exports = (grunt) => {
       },
       critical: {
         src: path.join(cssDir, "critical.css"),
-        // We don't bother baking the version into the critical CSS filename like we do for the
+        // We do not bother baking the version into the critical CSS filename like we do for the
         // normal CSS bundle because we do not typically re-create the critical CSS after every
         // single client change.
         dest: path.join(cssDir, "critical.min.css"),

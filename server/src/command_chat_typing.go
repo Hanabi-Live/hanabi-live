@@ -90,7 +90,7 @@ func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	if !t.IsPlayerOrSpectating(userID) {
 		// They left the game shortly after they started typing
 		// The "typing" message is automatically removed when a player leaves a table,
-		// so we don't have to do anything
+		// so we do not have to do anything
 		return
 	}
 	if !t.IsActivelySpectating(userID) && t.Replay {

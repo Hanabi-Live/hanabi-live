@@ -55,18 +55,23 @@ export function getClueName(
 // Convert a clue from the format used by the server to the format used by the client. On the
 // client, the color is a rich object. On the server, the color is a simple integer mapping.
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
-  if (msgClue.type === ClueType.Color) {
-    const clueValue = variant.clueColors[msgClue.value]!; // This is a Color object
-    return newColorClue(clueValue);
-  }
+  switch (msgClue.type) {
+    case ClueType.Color: {
+      const color = variant.clueColors[msgClue.value];
+      if (color === undefined) {
+        throw new Error(
+          `Failed to get the variant clue color at index: ${msgClue.value}`,
+        );
+      }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (msgClue.type === ClueType.Rank) {
-    const clueValue = msgClue.value;
-    return newRankClue(clueValue);
-  }
+      return newColorClue(color);
+    }
 
-  throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
+    case ClueType.Rank: {
+      const clueValue = msgClue.value;
+      return newRankClue(clueValue);
+    }
+  }
 }
 
 // This mirrors the function "variantIsCardTouched()" in "variants.go".
@@ -76,7 +81,10 @@ export function touchesCard(
   suitIndex: SuitIndex,
   rank: Rank,
 ): boolean {
-  const suit = variant.suits[suitIndex]!;
+  const suit = variant.suits[suitIndex];
+  if (suit === undefined) {
+    return false;
+  }
 
   if (clue.type === ClueType.Color) {
     if (variant.colorCluesTouchNothing) {

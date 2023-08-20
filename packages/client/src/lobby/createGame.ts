@@ -329,7 +329,7 @@ function submit() {
   let gameJSON: unknown;
   if (gameJSONString !== "") {
     try {
-      gameJSON = JSON.parse(gameJSONString) as unknown;
+      gameJSON = JSON.parse(gameJSONString);
     } catch {
       modals.showError("That is not a valid JSON object.");
       return;

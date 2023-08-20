@@ -51,7 +51,7 @@ export function needsToBePlayed(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): boolean {
   // First, check to see if a copy of this card has already been played.
@@ -104,7 +104,7 @@ export function status(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): CardStatus {
   const cardNeedsToBePlayed = needsToBePlayed(
@@ -145,11 +145,12 @@ function isCritical(
     );
   }
 
-  const total = deckRules.numCopiesOfCard(
-    variant.suits[suitIndex]!,
-    rank,
-    variant,
-  );
+  const suit = variant.suits[suitIndex];
+  if (suit === undefined) {
+    return false;
+  }
+
+  const total = deckRules.numCopiesOfCard(suit, rank, variant);
   const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
   return total === discarded + 1;
 }
@@ -160,7 +161,7 @@ export function isPotentiallyPlayable(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): boolean {
   for (const [suitIndex, rank] of card.possibleCards) {
@@ -215,7 +216,7 @@ export function allPossibilitiesTrash(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
   empathy: boolean,
 ): boolean {

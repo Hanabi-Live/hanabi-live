@@ -142,7 +142,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   if (event.which === KeyCode.KEY_SPACE) {
-    // Space bar. Don't activate global empathy if we are typing in the in-game chat.
+    // Space bar. Do not activate global empathy if we are typing in the in-game chat.
     if ($("#game-chat-input").is(":focus")) {
       return;
     }

@@ -160,7 +160,7 @@ export class LayoutChild extends Konva.Group {
       globals.state.replay.hypothetical === null &&
       !globals.options.speedrun &&
       !globals.variant.throwItInAHole &&
-      // Don't use warnings for preplays unless we are at 2 strikes.
+      // Do not use warnings for preplays unless we are at 2 strikes.
       (currentPlayerIndex === ourPlayerIndex ||
         ongoingGame.strikes.length === 2) &&
       !cardRules.isPotentiallyPlayable(

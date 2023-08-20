@@ -6,14 +6,18 @@ import type { Color, Suit, SuitIndex, Variant } from "@hanabi/data";
 export function suitIndexToSuit(
   suitIndex: SuitIndex | null,
   variant: Variant,
-): Suit | null {
+): Suit | undefined {
   if (suitIndex === null) {
-    return null;
+    return undefined;
   }
 
-  return variant.suits[suitIndex] ?? null;
+  return variant.suits[suitIndex];
 }
 
-export function colorToColorIndex(color: Color, variant: Variant): number {
-  return variant.clueColors.indexOf(color);
+export function colorToColorIndex(
+  color: Color,
+  variant: Variant,
+): number | undefined {
+  const colorIndex = variant.clueColors.indexOf(color);
+  return colorIndex === -1 ? undefined : colorIndex;
 }

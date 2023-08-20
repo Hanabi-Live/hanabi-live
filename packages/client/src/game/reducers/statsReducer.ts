@@ -38,7 +38,7 @@ function statsReducerFunction(
 
     case "strike": {
       // TODO: move this check to the play action when we have logic for knowing which cards play.
-      // A strike is equivalent to losing a clue. But don't reveal that a strike has happened to
+      // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
       if (!variant.throwItInAHole || (!playing && !shadowing)) {
         stats.potentialCluesLost += clueTokensRules.discardValue(variant);
@@ -49,8 +49,9 @@ function statsReducerFunction(
 
     case "play": {
       if (
-        !variant.throwItInAHole && // We don't get an extra clue in these variants
-        currentState.playStacks[action.suitIndex]!.length === 5 && // Hard code stack length to 5
+        !variant.throwItInAHole && // We do not get an extra clue in some variants.
+        // Hard code the stack length to 5.
+        currentState.playStacks[action.suitIndex]!.length === 5 &&
         originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted", similar to

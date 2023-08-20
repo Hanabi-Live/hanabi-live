@@ -79,7 +79,7 @@ function touchStart(
   // Make sure to not register this as a single tap if the user long presses the card.
   this.touchstartTimeout = setTimeout(() => {
     // A tap will trigger when the "touchend" event occurs. The next tap action will not run because
-    // it will appear like the second tap of a double tap. Don't worry about this if we actually
+    // it will appear like the second tap of a double tap. Do not worry about this if we actually
     // double-tapped.
     this.wasRecentlyTapped = true;
     if (globals.editingNote !== null) {
@@ -153,7 +153,7 @@ function mouseUp(this: HanabiCard) {
 
 function checkShowNoteTooltip(card: HanabiCard) {
   if (globals.editingNote !== null) {
-    // Don't open any more note tooltips if the user is currently editing a note
+    // Do not open any more note tooltips if the user is currently editing a note
     return;
   }
 
@@ -161,7 +161,7 @@ function checkShowNoteTooltip(card: HanabiCard) {
     card.noteIndicator.isVisible() === false &&
     card.state.location !== "playStack"
   ) {
-    // Don't do anything if there is not a note on this card in hand.
+    // Do not do anything if there is not a note on this card in hand.
     return;
   }
 
@@ -244,7 +244,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 }
 
 function checkHideNoteTooltip(card: HanabiCard) {
-  // Don't close the tooltip if we are currently editing a note.
+  // Do not close the tooltip if we are currently editing a note.
   if (globals.editingNote === card.state.order) {
     return;
   }

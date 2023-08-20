@@ -1,4 +1,4 @@
-import type { Variant } from "@hanabi/data";
+import type { Rank, Variant } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
 import * as cardRules from "../rules/card";
 import type { CardState } from "../types/CardState";
@@ -8,7 +8,7 @@ export function knownTrashReducer(
   deck: readonly CardState[],
   playStacks: DeepReadonly<number[][]>,
   playStackDirections: readonly StackDirection[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): readonly CardState[] {
   const newDeck = [...deck];

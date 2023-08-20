@@ -121,13 +121,13 @@ export class NameFrame extends Konva.Group {
     });
     this.add(this.rightLine);
 
-    // Draw the tooltips on the player names that show the time. (We don't use the "tooltip.init()"
+    // Draw the tooltips on the player names that show the time. (We do not use the "tooltip.init()"
     // function because we need the extra condition in the "mouseover" and "mouseout" event.)
     this.on("mouseover touchstart", function mouseOver(this: NameFrame) {
       konvaTooltips.resetActiveHover();
       globals.activeHover = this;
 
-      // Don't do anything if we are in a solo/shared replay.
+      // Do not do anything if we are in a solo/shared replay.
       if (globals.state.finished) {
         return;
       }
@@ -137,7 +137,7 @@ export class NameFrame extends Konva.Group {
     this.on("mouseout touchend", () => {
       globals.activeHover = null;
 
-      // Don't do anything if we are in a solo/shared replay.
+      // Do not do anything if we are in a solo/shared replay.
       if (globals.state.finished) {
         return;
       }

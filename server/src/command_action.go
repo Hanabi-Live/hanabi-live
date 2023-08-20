@@ -107,7 +107,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	g := t.Game
 
 	// Start the idle timeout
-	// (but don't update the idle variable if we are ending the game)
+	// (but do not update the idle variable if we are ending the game)
 	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
 		go t.CheckIdle(ctx)
 	}
@@ -130,7 +130,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	t.NotifyStatus()
 
 	// Adjust the timer for the player that just took their turn
-	// (if the game is over now due to a player running out of time, we don't need to adjust the
+	// (if the game is over now due to a player running out of time, we do not need to adjust the
 	// timer because we already set it to 0 in the "checkTimer" function)
 	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
 		p.Time -= time.Since(g.DatetimeTurnBegin)
@@ -147,7 +147,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 
 	// If a player has just taken their final turn,
 	// mark all of the cards in their hand as not able to be played
-	// (but don't do this if we are in an end game that has a custom amount of turns)
+	// (but do not do this if we are in an end game that has a custom amount of turns)
 	if g.Options.DetrimentalCharacters {
 		if characterHasTakenLastTurn(g) {
 			for _, c := range p.Hand {
@@ -163,7 +163,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	}
 
 	// Increment the turn
-	// (but don't increment it if we are on a characters that take two turns in a row)
+	// (but do not increment it if we are on a characters that take two turns in a row)
 	if !characterNeedsToTakeSecondTurn(d, g, p) {
 		g.Turn++
 		if g.TurnsInverted {

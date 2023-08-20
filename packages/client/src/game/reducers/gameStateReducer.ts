@@ -385,7 +385,7 @@ function gameStateReducerFunction(
   }
 
   if (action.type === "noteList" || action.type === "receiveNote") {
-    // This has no effect, so don't bother computing anything.
+    // This has no effect, so do not bother computing anything.
     return;
   }
 
@@ -418,7 +418,6 @@ function gameStateReducerFunction(
     state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
       playStack,
       state.deck,
-      variant,
     );
   }
 
@@ -487,7 +486,7 @@ function cardCycle(
     return;
   }
 
-  // We don't need to reorder anything if the chop is slot 1 (the left-most card).
+  // We do not need to reorder anything if the chop is slot 1 (the left-most card).
   const chopIndex = handRules.chopIndex(hand, deck);
   if (chopIndex === hand.length - 1) {
     return;

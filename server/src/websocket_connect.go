@@ -72,7 +72,7 @@ func websocketConnect(ms *melody.Session) {
 		logger.Info("Closing existing connection for user: " + s.Username)
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
 		if err := s2.ms.Close(); err != nil {
-			// This can occasionally fail and we don't want to report the error to Sentry
+			// This can occasionally fail and we do not want to report the error to Sentry
 			logger.Info("Failed to manually close a WebSocket connection.")
 		} else {
 			logger.Info("Successfully terminated a WebSocket connection.")

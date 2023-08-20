@@ -1,14 +1,14 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS, UNKNOWN_CARD_RANK } from "@hanabi/data";
+import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { CardState } from "../../types/CardState";
 import { createAllDiscardedMap } from "./discardHelpers";
 
-// Assuming that we're dealing with a Sudoku variant, checks if the card still can be played.
+/** Assuming that we are dealing with a Sudoku variant, check if the card still can be played. */
 export function sudokuCanStillBePlayed(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): boolean {
   const [_, maxScoresFromStarts] = sudokuWalkUpAll(
@@ -16,12 +16,12 @@ export function sudokuCanStillBePlayed(
   );
 
   const possibleStarts =
-    playStackStarts[suitIndex] !== UNKNOWN_CARD_RANK
-      ? [playStackStarts[suitIndex]!]
-      : sudokuGetFreeStackStarts(playStackStarts);
+    playStackStarts[suitIndex] === undefined
+      ? sudokuGetFreeStackStarts(playStackStarts)
+      : [playStackStarts[suitIndex]!];
 
   for (const stackStart of possibleStarts) {
-    // Here, we check if we can play the specified card if we start the stack at 'stackStart'. For
+    // Here, we check if we can play the specified card if we start the stack at `stackStart`. For
     // this, note that we can compare the difference of our card and the start with the longest play
     // sequence starting at the start, thereby checking if the specified rank is included.
     if (maxScoresFromStarts[stackStart - 1]! > (rank - stackStart + 5) % 5) {
@@ -32,11 +32,13 @@ export function sudokuCanStillBePlayed(
   return false;
 }
 
-// For Sudoku variants, given a boolean map for which ranks (of the default ranks 1,...,5) are all
-// discarded, returns an array for these ranks of the longest play sequences starting at these maps
-// (indexed 0,...,4), and a boolean stating whether all ranks are still available, i.e. whether the
-// returned array is [5,5,5,5,5]. This functions mimics the method sudokuWalkUpAll from the server
-// file variants_sudoku.go.
+/**
+ * For Sudoku variants, given a boolean map for which ranks [1, 2, 3, 4, 5] are all discarded,
+ * returns an array for these ranks of the longest play sequences starting at these maps (indexed 0
+ * through 4), and a boolean stating whether all ranks are still available, i.e. whether the
+ * returned array is [5, 5, 5, 5, 5]. This functions mimics the method `sudokuWalkUpAll` from the
+ * server file "variants_sudoku.go".
+ */
 function sudokuWalkUpAll(
   allDiscardedMap: Map<number, boolean>,
 ): [boolean, number[]] {
@@ -59,7 +61,7 @@ function sudokuWalkUpAll(
     return [true, maxScores];
   }
 
-  // Here, we still need to write all 'higher' values, adding the longest sequence starting at 1 to
+  // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
   // them.
   for (let writeRank = lastDead + 1; writeRank <= 5; writeRank++) {
     maxScores[writeRank - 1] = Math.min(
@@ -72,13 +74,15 @@ function sudokuWalkUpAll(
 }
 
 /**
- * This functions mimics 'variantSudokuGetFreeStackStarts' from 'variants_sudoku.go' in the server.
+ * This functions mimics `variantSudokuGetFreeStackStarts` from "variants_sudoku.go" in the server.
  */
-function sudokuGetFreeStackStarts(stackStarts: readonly number[]): number[] {
+function sudokuGetFreeStackStarts(
+  playStackStarts: ReadonlyArray<Rank | null>,
+): number[] {
   const possibleStackStarts: number[] = [];
 
   for (const rank of DEFAULT_CARD_RANKS) {
-    if (!stackStarts.includes(rank)) {
+    if (!playStackStarts.includes(rank)) {
       possibleStackStarts.push(rank);
     }
   }
@@ -86,17 +90,19 @@ function sudokuGetFreeStackStarts(stackStarts: readonly number[]): number[] {
   return possibleStackStarts;
 }
 
-// This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
-// See there for corresponding documentation on how the score is calculated. Additionally, since
-// here, we want to return the maximum score per stack (this is needed for endgame calculations,
-// since the distribution of playable cards to the stacks matters for how many clues we can get back
-// before the extra round starts), we will find an optimum solution (in terms of score) such that
-// the distribution of the played cards to the stacks is lexicographically minimal (after sorting
-// the values) as well, since this allows for the most amount of clues to be gotten back before the
-// extra-round.
+/**
+ * This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
+ * See there for corresponding documentation on how the score is calculated. Additionally, since
+ * here, we want to return the maximum score per stack (this is needed for endgame calculations,
+ * since the distribution of playable cards to the stacks matters for how many clues we can get back
+ * before the extra round starts), we will find an optimum solution (in terms of score) such that
+ * the distribution of the played cards to the stacks is lexicographically minimal (after sorting
+ * the values) as well, since this allows for the most amount of clues to be gotten back before the
+ * extra-round.
+ */
 export function getMaxScorePerStack(
   deck: readonly CardState[],
-  playStackStarts: readonly number[],
+  playStackStarts: ReadonlyArray<Rank | null>,
   variant: Variant,
 ): number[] {
   const independentPartOfMaxScore = new Array<number>(playStackStarts.length);
@@ -113,7 +119,7 @@ export function getMaxScorePerStack(
       independentPartOfMaxScore[suitIndex] = 5;
       continue;
     }
-    if (stackStart !== UNKNOWN_CARD_RANK) {
+    if (stackStart !== null) {
       independentPartOfMaxScore[suitIndex] = suitMaxScores[stackStart - 1]!;
       continue;
     }
@@ -230,7 +236,7 @@ export function getMaxScorePerStack(
     unassignedLocalSuitIndex,
     unassignedSuit,
   ] of unassignedSuits.entries()) {
-    // Note the '??' here, since it can be that there is actually no feasible assignment. In this
+    // Note the "??" here, since it can be that there is actually no feasible assignment. In this
     // case, these values are still undefined at this point, so we replace them by 0.
     maxScorePerStack[unassignedSuit] =
       bestAssignment[unassignedLocalSuitIndex] ?? 0;

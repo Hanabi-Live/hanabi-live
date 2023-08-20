@@ -219,7 +219,7 @@ func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 			return err
 		}
 		if numGames == 0 {
-			// We don't need to insert a new row for this variant
+			// We do not need to insert a new row for this variant
 			continue
 		}
 

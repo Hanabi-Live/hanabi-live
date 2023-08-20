@@ -98,8 +98,8 @@ date > "$JS_BUNDLES_DIR/date_compiled.txt"
 # Clean up the output directories.
 rm -rf "$GRUNT_OUTPUT_DIR"
 
-# Clean up old files in the "bundles" directory. (We don't use an environment variable to store the
-# results of ls because it will cause the script to stop execution in the case where there are no
+# Clean up old files in the "bundles" directory. (We do not use an environment variable to store the
+# results of `ls` because it will cause the script to stop execution in the case where there are no
 # results.)
 cd "$JS_BUNDLES_DIR"
 # shellcheck disable=SC2010,SC2143

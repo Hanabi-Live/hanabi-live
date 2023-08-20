@@ -72,7 +72,7 @@ export function init(): void {
   ) {
     let potentialArray: unknown;
     try {
-      potentialArray = JSON.parse(typedChatHistoryString) as unknown;
+      potentialArray = JSON.parse(typedChatHistoryString);
     } catch {
       return;
     }
@@ -92,7 +92,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
     );
   }
 
-  // If this is a pregame or game input, report to the server that we are typing. (But don't spam
+  // If this is a pregame or game input, report to the server that we are typing. (But do not spam
   // the server with more than one message a second.)
   if (this.id !== "lobby-chat-input") {
     const datetimeNow = Date.now();
@@ -632,7 +632,7 @@ function fillTwitchEmotes(message: string) {
   for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
     const emoteArray = [...emotesInCategory];
     for (const emote of emoteArray) {
-      // We don't want to replace the emote if it is followed by a quote, because we don't want to
+      // We do not want to replace the emote if it is followed by a quote, because we do not want to
       // replace Discord emotes.
       const index = message.indexOf(emote);
       if (index !== -1 && message[index + emote.length] !== '"') {

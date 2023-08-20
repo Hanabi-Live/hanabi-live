@@ -147,7 +147,7 @@ func charactersGenerate(g *Game) {
 		} else {
 			for {
 				// Get a random character assignment
-				// We don't have to seed the PRNG,
+				// We do not have to seed the PRNG,
 				// since that was done just a moment ago when the deck was shuffled
 				randomIndex := rand.Intn(len(characterNames)) // nolint: gosec
 				p.Character = characterNames[randomIndex]
@@ -526,7 +526,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 	if p.Character == "Mood Swings" { // 12
 		p.CharacterMetadata = clue.Type
 	} else if p.Character == "Insistent" { // 13
-		// Don't do anything if they are already in their "Insistent" state
+		// Do not do anything if they are already in their "Insistent" state
 		if p.CharacterMetadata == -1 {
 			// Mark that the cards that they clued must be continue to be clued
 			cardsTouched := p2.FindCardsTouchedByClue(clue)

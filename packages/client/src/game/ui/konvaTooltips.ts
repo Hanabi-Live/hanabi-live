@@ -51,12 +51,12 @@ export function init(
 }
 
 export function show(element: NodeWithTooltip): void {
-  // Don't do anything if we are no longer in the game.
+  // Do not do anything if we are no longer in the game.
   if (globals.lobby.currentScreen !== Screen.Game) {
     return;
   }
 
-  // Don't do anything if the user has moved the mouse away in the meantime.
+  // Do not do anything if the user has moved the mouse away in the meantime.
   if (globals.activeHover !== element) {
     return;
   }

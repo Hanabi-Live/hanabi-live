@@ -37,8 +37,8 @@ export function init(): void {
     .resizable({
       // Resize from all edges and corners.
       edges: {
-        // We don't want it to be resizable from the top since it interferes with the area dedicated
-        // to moving the div.
+        // We do not want it to be resizable from the top since it interferes with the area
+        // dedicated to moving the div.
         left: true,
         right: true,
         bottom: true,

@@ -103,11 +103,11 @@ export function discardedCopies(
   suitIndex: SuitIndex,
   rank: Rank,
 ): number {
-  return deck.reduce((discarded, c) => {
+  return deck.reduce((discarded, card) => {
     if (
-      c.suitIndex === suitIndex &&
-      c.rank === rank &&
-      cardRules.isDiscarded(c)
+      card.suitIndex === suitIndex &&
+      card.rank === rank &&
+      cardRules.isDiscarded(card)
     ) {
       return discarded + 1;
     }

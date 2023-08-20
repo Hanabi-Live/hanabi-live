@@ -40,7 +40,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `git config --global pull.rebase true` <br />
     (so that Git automatically rebases when pulling)
 - Install [PostgreSQL](https://www.postgresql.org/):
-  - Manually download it and install it. (Don't use `choco`, because the package is bugged.)
+  - Manually download it and install it. (Do not use `choco`, because the package is bugged.)
   - Check to see if `psql` works. If not, you'll have to [manually add it to your PATH variable](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
 - Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
   - `notepad "C:\Program Files\PostgreSQL\13\data\postgresql.conf"`
@@ -318,7 +318,7 @@ Adjust the "certbot" command below according to what domain names you want to re
 - The "run.sh" script in the root of the repository will build and run the server.
   - If you are on Windows, you should run this script from a Git Bash window.
   - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
-  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you don't want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restarting the server.
+  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restarting the server.
 - Once the server is running, you can go to "http://localhost/" to view the site.
   - By default, the server runs on port 80 (the default HTTP port).
   - Viewing the page will only work if the prerequisites were installed properly, which is covered previously in this document.

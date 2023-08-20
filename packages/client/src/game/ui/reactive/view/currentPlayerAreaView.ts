@@ -7,7 +7,7 @@ import { globals } from "../../globals";
 
 export function isVisible(state: State): boolean {
   return (
-    // Don't show it we happen to have the in-game replay open.
+    // Do not show it we happen to have the in-game replay open.
     !state.replay.active &&
     // The clue UI should take precedence over the "Current Player" area.
     (state.ongoingGame.turn.currentPlayerIndex !==
@@ -15,7 +15,7 @@ export function isVisible(state: State): boolean {
       !state.playing) &&
     // The premove cancel button should take precedence over the "Current Player" area.
     state.premove === null &&
-    // Don't show it if the game is over.
+    // Do not show it if the game is over.
     state.ongoingGame.turn.currentPlayerIndex !== null
   );
 }

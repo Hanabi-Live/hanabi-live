@@ -162,7 +162,7 @@ func (t *Table) CheckIdle(ctx context.Context) {
 	t.Lock(ctx)
 	defer t.Unlock(ctx)
 
-	// Don't do anything if there has been an action in the meantime
+	// Do not do anything if there has been an action in the meantime
 	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {
 		return
 	}

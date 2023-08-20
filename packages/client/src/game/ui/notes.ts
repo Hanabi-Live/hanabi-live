@@ -150,7 +150,7 @@ export function openEditTooltip(
   isDesktop = true,
   addText = "",
 ): void {
-  // Don't edit any notes in dedicated replays.
+  // Do not edit any notes in dedicated replays.
   if (globals.state.finished) {
     return;
   }

@@ -66,7 +66,7 @@ export function atMax(clueTokens: number, variant: Variant): boolean {
 
 /**
  * The value of clues gained when discarding. This function is only used in efficiency calculations
- * (because we don't want to use floating point numbers for the general case).
+ * (because we do not want to use floating point numbers for the general case).
  *
  * In "Clue Starved" variants, each discard gives only half a clue.
  */

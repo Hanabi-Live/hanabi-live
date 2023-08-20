@@ -27,13 +27,13 @@ export interface ClockData {
 export function update(data: ClockData): void {
   stop();
 
-  // We don't need to update the timers if they are not showing.
+  // We do not need to update the timers if they are not showing.
   if (globals.elements.timer1 === null || globals.elements.timer2 === null) {
     return;
   }
 
-  // We don't need to update the timers if the game is paused. (The server will send another "clock"
-  // message when the game becomes unpaused.)
+  // We do not need to update the timers if the game is paused. (The server will send another
+  // "clock" message when the game becomes unpaused.)
   if (globals.state.pause.active) {
     return;
   }
@@ -127,7 +127,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     globals.options.timed &&
     globals.playerTimes[globals.activePlayerIndex]! < 0
   ) {
-    // Don't let the timer go into negative values, or else it will mess up the display. (But in
+    // Do not let the timer go into negative values, or else it will mess up the display. (But in
     // non-timed games, we want this to happen.)
     globals.playerTimes[globals.activePlayerIndex] = 0;
   }

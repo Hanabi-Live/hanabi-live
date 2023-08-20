@@ -53,9 +53,9 @@ export function HanabiCardClick(
 }
 
 function clickLeft(card: HanabiCard, event: MouseEvent) {
-  // The "Empathy" feature is handled elsewhere, so we don't have to worry about it here.
+  // The "Empathy" feature is handled elsewhere, so we do not have to worry about it here.
 
-  // If we're in "edit cards" mode, left clicking a card morphs it.
+  // If we are in "edit cards" mode, left clicking a card morphs it.
   if (
     globals.elements.editCardsButton !== null &&
     globals.elements.editCardsButton.pressed &&
@@ -229,7 +229,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   }
 
   // Ctrl + right-click is a local arrow. Even if they are not a leader in a shared replay, a user
-  // might still want to draw an arrow on a card for demonstration purposes. However, we don't want
+  // might still want to draw an arrow on a card for demonstration purposes. However, we do not want
   // to enable this functionality in shared replays because it could be misleading as to who the
   // real replay leader is.
   if (

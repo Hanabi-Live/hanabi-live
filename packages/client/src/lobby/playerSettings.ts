@@ -85,7 +85,7 @@ function changeSetting(this: HTMLElement) {
   const settingName = element.attr("id");
   if (settingName === undefined || settingName === "") {
     throw new Error(
-      'Failed to get the ID of the element in the "changeSetting()" function.',
+      "Failed to get the ID of the element when changing a setting.",
     );
   }
   if (!isKeyOf(settingName, globals.settings)) {

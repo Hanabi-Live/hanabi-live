@@ -29,7 +29,7 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 				deleteTable(t)
 				logger.Info("Successfully cleared replay table #" + strconv.FormatUint(t.ID, 10) + ".")
 			}
-			// (don't do anything for ongoing games)
+			// (do not do anything for ongoing games)
 		}
 		t.Unlock(c)
 	}

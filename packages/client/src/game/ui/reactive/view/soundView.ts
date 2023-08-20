@@ -19,13 +19,13 @@ export function onNewSoundEffect(
     | undefined,
 ): void {
   if (
-    // Don't play sounds on the initial load (unless it is the first turn).
+    // Do not play sounds on the initial load (unless it is the first turn).
     (previousData === undefined && data.turn !== 0) ||
     // Only make a sound when the game starts or when it is a new player's turn.
     data.currentPlayerIndex === previousData?.currentPlayerIndex ||
-    // Don't play sounds in replays or hypotheticals.
+    // Do not play sounds in replays or hypotheticals.
     globals.state.finished ||
-    // Don't play sounds if the user does not have sound effects enabled.
+    // Do not play sounds if the user does not have sound effects enabled.
     !globals.lobby.settings.soundMove
   ) {
     return;
