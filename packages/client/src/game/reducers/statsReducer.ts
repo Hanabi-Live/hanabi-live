@@ -48,10 +48,11 @@ function statsReducerFunction(
     }
 
     case "play": {
+      const playStack = currentState.playStacks[action.suitIndex];
       if (
         !variant.throwItInAHole && // We do not get an extra clue in some variants.
-        // Hard code the stack length to 5.
-        currentState.playStacks[action.suitIndex]!.length === 5 &&
+        playStack !== undefined && // Hard code the stack length to 5.
+        playStack.length === 5 &&
         originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
