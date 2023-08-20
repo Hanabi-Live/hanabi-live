@@ -190,10 +190,14 @@ function shouldCalculateCard(
 }
 
 function getCardPossibilitiesForPlayer(
-  card: CardState,
+  card: CardState | undefined,
   playerIndex: number,
   ourPlayerIndex: number,
 ): readonly SuitRankTuple[] {
+  if (card === undefined) {
+    return [];
+  }
+
   if (card.location === playerIndex) {
     // If this card is in the players hand, then use our best (empathy) guess.
     return card.possibleCardsForEmpathy;
@@ -303,12 +307,12 @@ function isPossibleCard(
 }
 
 function canBeUsedToDisprovePossibility(
-  card: CardState,
+  card: CardState | undefined,
   excludeCardOrder: number,
   playerIndex: number,
 ) {
   return (
-    card !== undefined && // eslint-disable-line @typescript-eslint/no-unnecessary-condition
+    card !== undefined &&
     card.order !== excludeCardOrder &&
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
@@ -325,10 +329,6 @@ function deckPossibilitiesDifferent(
 ) {
   for (const [order, card] of deck.entries()) {
     const oldCard = oldDeck[order];
-    if (oldCard === undefined) {
-      continue;
-    }
-
     const previouslyUsed = canBeUsedToDisprovePossibility(
       oldCard,
       excludeCardOrder,
