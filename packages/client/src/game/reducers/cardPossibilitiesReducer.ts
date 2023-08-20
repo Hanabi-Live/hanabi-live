@@ -87,21 +87,25 @@ function updateIdentity(
 ) {
   let { suitIndex, rank } = state;
 
-  const possibleSuits = new Set(possibleCardsFromClues.map((x) => x[0]));
-  const possibleRanks = new Set(possibleCardsFromClues.map((x) => x[1]));
-
-  const suitDetermined = possibleSuits.size === 1;
-  const rankDetermined = possibleRanks.size === 1;
+  const possibleSuits = possibleCardsFromClues.map(
+    (suitRankTuple) => suitRankTuple[0],
+  );
+  const possibleSuitsSet = new Set(possibleSuits);
+  const suitDetermined = possibleSuitsSet.size === 1;
 
   if (suitDetermined) {
-    // We have discovered the true suit of the card.
-    const [firstPossibleSuit] = possibleSuits;
+    const [firstPossibleSuit] = possibleSuitsSet;
     suitIndex = firstPossibleSuit!;
   }
 
+  const possibleRanks = possibleCardsFromClues.map(
+    (suitRankTuple) => suitRankTuple[1],
+  );
+  const possibleRanksSet = new Set(possibleRanks);
+  const rankDetermined = possibleRanksSet.size === 1;
+
   if (rankDetermined) {
-    // We have discovered the true rank of the card.
-    const [firstPossibleRank] = possibleRanks;
+    const [firstPossibleRank] = possibleRanksSet;
     rank = firstPossibleRank!;
   }
 
