@@ -7,6 +7,7 @@
 - CardOrder type (branded)
 - redo install instructions without choco
 - https://github.com/azz/eslint-plugin-monorepo
+- refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 
 search for all:
 - "for (let"

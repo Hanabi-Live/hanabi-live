@@ -1,7 +1,7 @@
 // Functions for building a state table for every turn.
 
 import type { Variant } from "@hanabi/data";
-import { MAX_STRIKES, getVariant } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { millisecondsToClockString } from "../../utils";
@@ -18,7 +18,7 @@ import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import { getPlayerName } from "../types/GameMetadata";
-import type { GameState, StateStrike } from "../types/GameState";
+import type { GameState } from "../types/GameState";
 import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
@@ -365,14 +365,9 @@ function gameStateReducerFunction(
      */
     // TODO: This message is unnecessary and will be removed in a future version of the code
     case "strike": {
-      if (state.strikes.length >= MAX_STRIKES) {
-        throw new Error(
-          `Failed to add a strike since there are already ${state.strikes.length} strikes.`,
-        );
-      }
-
-      const strikes = state.strikes as StateStrike[];
-      strikes.push({
+      // We intentionally do not valid the size of the strikes array because we allow more than 3
+      // strikes in hypotheticals.
+      state.strikes.push({
         order: action.order,
         segment: state.turn.segment!,
       });
