@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
+
 // Helper functions to build actions with a compact syntax. For use in tests.
 
 import type { ColorIndex, Rank, RankClueNumber, SuitIndex } from "@hanabi/data";

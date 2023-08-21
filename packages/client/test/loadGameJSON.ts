@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
+
 import type { NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";

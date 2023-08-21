@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
+
 import type { NumPlayers } from "@hanabi/data";
 import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
 import { newArray } from "@hanabi/utils";
