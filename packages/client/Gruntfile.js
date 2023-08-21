@@ -1,6 +1,4 @@
 const path = require("node:path");
-
-// eslint-disable-next-line import/no-internal-modules
 const { VERSION } = require("../data/src/version");
 
 // Define the name of the final CSS file. We want to include the version inside of the filename (as

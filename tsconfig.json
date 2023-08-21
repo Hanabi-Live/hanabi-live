@@ -14,8 +14,6 @@
     // Performance optimization; see: https://www.npmjs.com/package/tslib
     "importHelpers": true,
 
-    // The paths must be kept in sync with the `import/no-internal-modules` ESLint rule in
-    // ".eslintrc.cjs".
     "paths": {
       "@hanabi/data": ["./packages/data/src/index.ts"],
       "@hanabi/utils": ["./packages/utils/src/index.ts"],

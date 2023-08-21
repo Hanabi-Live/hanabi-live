@@ -38,12 +38,15 @@ module.exports = {
       {
         patterns: [
           {
-            group: ["packages/*"],
+            group: ["src/"],
             message:
               'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
           },
+
+          // This only applies to the server, but we put it here to avoid having to duplicate the
+          // above rule.
           {
-            group: ["*/models/*"],
+            group: ["models/"],
             message:
               'You cannot import model functions directly. Use the "models" object instead.',
           },
@@ -110,21 +113,5 @@ module.exports = {
      * dependencies being up to date).
      */
     "unicorn/prefer-top-level-await": "off",
-
-    /**
-     * Documentation:
-     * https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-internal-modules.md
-     *
-     * Not defined in the parent configs.
-     *
-     * Prevent packages from directly importing files from other packages. Note that this rule must
-     * be kept in sync with the paths defined in the monorepo "tsconfig.json" file.
-     */
-    "import/no-internal-modules": [
-      "error",
-      {
-        forbid: ["**/data/src/**", "**/utils/src/**"],
-      },
-    ],
   },
 };

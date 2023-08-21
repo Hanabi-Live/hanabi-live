@@ -9,9 +9,7 @@
 - PlayerIndex type (maybe, look to see if it is useful first)
 - CardOrder type (branded)
 - redo install instructions without choco
-- https://github.com/azz/eslint-plugin-monorepo
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
-- fork ESLint rule for package boundary since `import/no-internal-modules` sucks
 
 search for all:
 - "for (let"
