@@ -10,6 +10,7 @@ import type { GameState, PaceRisk } from "../types/GameState";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
+import * as handRules from "./hand";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
@@ -451,6 +452,11 @@ export function doubleDiscard(
   state: GameState,
   variant: Variant,
 ): number | null {
+  const cardDiscarded = state.deck[orderOfDiscardedCard];
+  if (cardDiscarded === undefined) {
+    return null;
+  }
+
   // It is never a double discard situation if the game is over.
   if (state.turn.currentPlayerIndex === null) {
     return null;
@@ -461,25 +467,15 @@ export function doubleDiscard(
   const nextPlayerIndex =
     (state.turn.currentPlayerIndex + 1) % state.hands.length;
   const hand = state.hands[nextPlayerIndex];
-  if (hand === undefined) {
-    return null;
-  }
-
-  let allClued = true;
-  for (const orderOfCardInHand of hand) {
-    const cardInHand = state.deck[orderOfCardInHand]!;
-    if (!cardRules.isClued(cardInHand)) {
-      allClued = false;
-      break;
+  if (hand !== undefined) {
+    const nextPlayerLocked = handRules.isLocked(hand, state.deck);
+    if (nextPlayerLocked) {
+      return null;
     }
-  }
-  if (allClued) {
-    return null;
   }
 
   // It is never a double discard situation if we do not know the identity of the discarded card
   // (which can happen in certain variants).
-  const cardDiscarded = state.deck[orderOfDiscardedCard]!;
   if (cardDiscarded.suitIndex === null || cardDiscarded.rank === null) {
     return null;
   }
@@ -513,7 +509,10 @@ export function doubleDiscard(
   }
 
   // Otherwise, it is a double discard situation if there is only one copy of the card left.
-  const suit = variant.suits[cardDiscarded.suitIndex]!;
+  const suit = variant.suits[cardDiscarded.suitIndex];
+  if (suit === undefined) {
+    return null;
+  }
   const numCopiesTotal = deckRules.numCopiesOfCard(
     suit,
     cardDiscarded.rank,
