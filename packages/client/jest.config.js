@@ -4,12 +4,13 @@ const jsoncParser = require("jsonc-parser");
 const { pathsToModuleNameMapper } = require("ts-jest");
 
 // Read and parse the compiler options from the "tsconfig.json" file.
-const repoRootPath = path.join(__dirname, "..", "..");
-const monorepoTSConfigPath = path.join(repoRootPath, "tsconfig.monorepo.json");
-if (!fs.existsSync(monorepoTSConfigPath)) {
-  throw new Error(`The "${monorepoTSConfigPath}" file does not exist.`);
+const REPO_ROOT = path.join(__dirname, "..", "..");
+const MONOREPO_TS_CONFIG = path.join(REPO_ROOT, "tsconfig.json");
+if (!fs.existsSync(MONOREPO_TS_CONFIG)) {
+  throw new Error(`The "${MONOREPO_TS_CONFIG}" file does not exist.`);
 }
-const tsconfigString = fs.readFileSync(monorepoTSConfigPath).toString().trim();
+
+const tsconfigString = fs.readFileSync(MONOREPO_TS_CONFIG).toString().trim();
 const tsconfig = jsoncParser.parse(tsconfigString);
 
 module.exports = {

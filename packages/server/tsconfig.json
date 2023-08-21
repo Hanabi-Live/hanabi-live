@@ -2,7 +2,7 @@
 {
   // We extend the TypeScript config for the monorepo.
   "extends": [
-    "../../tsconfig.monorepo.json",
+    "../../tsconfig.json",
 
     // We also extend the recommended Node config:
     // https://github.com/tsconfig/bases/blob/main/bases/node-lts.json
