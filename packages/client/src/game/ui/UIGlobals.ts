@@ -156,8 +156,4 @@ declare global {
     globals: UIGlobals;
   }
 }
-// `window` is undefined in Jest tests.
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (window !== undefined) {
-  window.globals = globals;
-}
+window.globals = globals;

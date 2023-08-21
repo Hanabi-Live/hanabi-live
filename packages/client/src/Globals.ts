@@ -101,9 +101,5 @@ declare global {
     globals2: Globals;
   }
 }
-// `window` is undefined in Jest tests.
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (window !== undefined) {
-  // We set the UI globals to `globals`, so the lobby globals can take `globals2`.
-  window.globals2 = globals;
-}
+// We set the UI globals to `globals`, so the lobby globals take `globals2`.
+window.globals2 = globals;

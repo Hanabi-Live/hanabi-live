@@ -599,6 +599,7 @@ export function sendSelfPMFromServer(
 // Discord emotes are in the form of: <:PogChamp:254683883033853954>
 function fillDiscordEmotes(message: string) {
   let filledMessed = message;
+
   // eslint-disable-next-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
   while (true) {
     const match = /&lt;:(.+?):(\d+?)&gt;/.exec(filledMessed);
@@ -608,6 +609,7 @@ function fillDiscordEmotes(message: string) {
     const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match[2]}.png" title="${match[1]}" height="28">`;
     filledMessed = filledMessed.replace(match[0]!, emoteTag);
   }
+
   return filledMessed;
 }
 
