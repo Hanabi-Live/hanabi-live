@@ -172,21 +172,29 @@ export function isPotentiallyPlayable(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
-  for (const [suitIndex, rank] of card.possibleCards) {
+  return card.possibleCards.some((possibleCard) => {
+    const [suitIndex, rank] = possibleCard;
+
+    const playStack = playStacks[suitIndex];
+    if (playStack === undefined) {
+      return false;
+    }
+
+    const playStackDirection = playStackDirections[suitIndex];
+    if (playStackDirection === undefined) {
+      return false;
+    }
+
     const nextRanksArray = playStacksRules.nextPlayableRanks(
       suitIndex,
-      playStacks[suitIndex]!,
-      playStackDirections[suitIndex]!,
+      playStack,
+      playStackDirection,
       playStackStarts,
       variant,
       deck,
     );
-    if (nextRanksArray.includes(rank)) {
-      return true;
-    }
-  }
-
-  return false;
+    return nextRanksArray.includes(rank);
+  });
 }
 
 export function canPossiblyBeFromCluesOnly(
