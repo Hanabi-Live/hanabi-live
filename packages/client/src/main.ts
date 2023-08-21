@@ -4,7 +4,7 @@
 import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
 import "@total-typescript/ts-reset"; // eslint-disable-line import/no-unassigned-import
 import jquery from "jquery";
-import { globals } from "./GlobalsA";
+import { globals } from "./Globals";
 import { Loader } from "./Loader";
 import * as chat from "./chat";
 import { initErrorListener } from "./errors";

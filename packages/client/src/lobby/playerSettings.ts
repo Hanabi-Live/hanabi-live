@@ -1,7 +1,7 @@
 // The "Settings" nav button.
 
 import { isKeyOf, parseIntSafe } from "@hanabi/utils";
-import { globals } from "../GlobalsA";
+import { globals } from "../Globals";
 import * as notifications from "../notifications";
 
 export function init(): void {

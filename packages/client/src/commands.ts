@@ -2,7 +2,7 @@
 
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
-import { globals } from "./GlobalsA";
+import { globals } from "./Globals";
 import * as pregame from "./lobby/pregame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";

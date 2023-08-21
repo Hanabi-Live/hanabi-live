@@ -4,7 +4,7 @@
 import { commands } from "./commands";
 import { Connection } from "./Connection";
 import { gameCommands } from "./game/ui/gameCommands";
-import { globals } from "./GlobalsA";
+import { globals } from "./Globals";
 import { lobbyCommands } from "./lobby/lobbyCommands";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";

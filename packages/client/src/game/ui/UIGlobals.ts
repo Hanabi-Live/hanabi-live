@@ -1,7 +1,7 @@
 import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
 import type * as Redux from "redux";
-import { Globals as LobbyGlobals } from "../../GlobalsA";
+import { Globals as LobbyGlobals } from "../../Globals";
 import type { Loader } from "../../Loader";
 import type { Options } from "../../types/Options";
 import type { GameExports } from "../main";

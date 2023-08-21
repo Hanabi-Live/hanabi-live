@@ -2,7 +2,7 @@
 
 import { parseIntSafe } from "@hanabi/utils";
 import interact from "interactjs";
-import { globals } from "../GlobalsA";
+import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";
 import { getHTMLElement } from "../utils";
 
