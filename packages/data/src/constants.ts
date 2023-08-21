@@ -9,6 +9,12 @@ export const DEFAULT_VARIANT_NAME = "No Variant";
 export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
 
+/**
+ * The amount of cards that need to be played on a play stack in order for it to be considered
+ * finished. In a no variant game, this is 5 because we need to play 1, 2, 3, 4, and 5.
+ */
+export const DEFAULT_FINISHED_STACK_LENGTH = 5;
+
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
 

@@ -2,8 +2,13 @@
 // for "Up Or Down" and "Reversed" variants.
 
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "@hanabi/data";
+import {
+  DEFAULT_CARD_RANKS,
+  DEFAULT_FINISHED_STACK_LENGTH,
+  START_CARD_RANK,
+} from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
+import { newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { StackDirection } from "../../types/StackDirection";
@@ -110,26 +115,26 @@ function isDead(
 
   // Now we can handle both the regular / reversed and the easy "Up or Down" cases.
   if (impliedDirection === StackDirection.Up) {
-    // Note that in Up or Down, having impliedDirection === StackDirection also proves that one of
-    // Start or 1 is still alive, since we filtered out the case where all of 1,5 and Start are dead
-    // already.
-    let nextRank = variant.upOrDown ? 2 : 1;
-    for (nextRank; nextRank < rank; nextRank++) {
+    // Note that in Up or Down, having `impliedDirection === StackDirection.Up` also proves that one
+    // of Start or 1 is still alive, since we filtered out the case where all of 1, 5, and Start are
+    // dead already.
+    for (let nextRank = variant.upOrDown ? 2 : 1; nextRank < rank; nextRank++) {
       if (allDiscarded.get(nextRank) === true) {
         return true;
       }
     }
+
     return false;
   }
 
   if (impliedDirection === StackDirection.Down) {
-    // Same for down, see above.
-    let nextRank = variant.upOrDown ? 4 : 5;
-    for (nextRank; nextRank > rank; nextRank--) {
+    // The above comment also applies for `StackDirection.Down`.
+    for (let nextRank = variant.upOrDown ? 4 : 5; nextRank > rank; nextRank--) {
       if (allDiscarded.get(nextRank) === true) {
         return true;
       }
     }
+
     return false;
   }
 
@@ -155,9 +160,7 @@ export function getMaxScorePerStack(
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): Tuple<number, NumSuits> {
-  const maxScorePerStack: number[] = new Array(variant.suits.length).fill(
-    0,
-  ) as number[];
+  const maxScorePerStack = newArray(variant.suits.length, 0);
 
   for (const [i, suit] of variant.suits.entries()) {
     const suitIndex = i as SuitIndex;
@@ -202,7 +205,7 @@ export function getMaxScorePerStack(
       }
 
       case StackDirection.Finished: {
-        maxScorePerStack[suitIndex] += 5;
+        maxScorePerStack[suitIndex] += DEFAULT_FINISHED_STACK_LENGTH;
 
         break;
       }
@@ -250,12 +253,12 @@ function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
       return 0;
     }
   } else if (allDiscarded.get(5)!) {
-    // Otherwise, only 5
+    // Otherwise, only 5.
     return 0;
   }
   cardsThatCanStillBePlayed++;
 
-  // Second, walk downwards
+  // Second, walk downwards.
   for (let rank = 4; rank >= 1; rank--) {
     if (allDiscarded.get(rank)!) {
       break;

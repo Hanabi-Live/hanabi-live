@@ -1296,7 +1296,7 @@ function getSudokuVariants(
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  // Create the basic variant. Note that for sudoku, we only want 5-suit variants, so that each
+  // Create the basic variant. Note that for Sudoku, we only want 5-suit variants, so that each
   // starting stack will be used exactly once.
   const numSuits = 5;
   variantDescriptions.push({

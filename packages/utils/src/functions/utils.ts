@@ -1,18 +1,14 @@
 const INTEGER_REGEX = /^\d+$/;
 const FLOAT_REGEX = /^-?\d*\.?\d+$/;
 
-export function arrayCopyTwoDimensional<T>(array: T[][]): T[][] {
-  const copiedArray: T[][] = [];
-
-  for (const element of array) {
-    copiedArray.push([...element]);
-  }
-
-  return copiedArray;
-}
-
-export function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(n, max));
+/**
+ * Helper function to normalize a number, ensuring that it is within a certain range.
+ *
+ * - If `num` is less than `min`, then it will be clamped to `min`.
+ * - If `num` is greater than `max`, then it will be clamped to `max`.
+ */
+export function clamp(num: number, min: number, max: number): number {
+  return Math.max(min, Math.min(num, max));
 }
 
 /**
@@ -38,33 +34,6 @@ export function eRange(start: number, end?: number, increment = 1): number[] {
   }
 
   return array;
-}
-
-/**
- * Helper function to perform a map and a filter at the same time. Similar to `Array.map`, provide a
- * function that transforms a value, but return `undefined` if the value should be skipped. (Thus,
- * this function cannot be used in situations where `undefined` can be a valid array element.)
- *
- * This function is useful because the `Array.map` method will always produce an array with the same
- * amount of elements as the original array.
- *
- * This is named `filterMap` after the Rust function:
- * https://doc.rust-lang.org/std/iter/struct.FilterMap.html
- */
-export function filterMap<OldT, NewT>(
-  array: OldT[] | readonly OldT[],
-  func: (element: OldT) => NewT | undefined,
-): NewT[] {
-  const filteredArray: NewT[] = [];
-
-  for (const element of array) {
-    const newElement = func(element);
-    if (newElement !== undefined) {
-      filteredArray.push(newElement);
-    }
-  }
-
-  return filteredArray;
 }
 
 /**
@@ -94,11 +63,6 @@ export function isKeyOf<T extends object>(
   target: T,
 ): key is keyof T {
   return key in target;
-}
-
-/** Initializes an array with all elements containing the specified default value. */
-export function newArray<T>(length: number, value: T): T[] {
-  return Array.from({ length }, () => value);
 }
 
 /**
@@ -175,22 +139,3 @@ export function parseIntSafe(string: string): number | undefined {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
 export function todo(...args: unknown[]): void {}
-
-/** Helper function to trim a prefix from a string, if it exists. Returns the trimmed string. */
-export function trimPrefix(string: string, prefix: string): string {
-  if (!string.startsWith(prefix)) {
-    return string;
-  }
-
-  return string.slice(prefix.length);
-}
-
-/** Helper function to trim a suffix from a string, if it exists. Returns the trimmed string. */
-export function trimSuffix(string: string, prefix: string): string {
-  if (!string.endsWith(prefix)) {
-    return string;
-  }
-
-  const endCharacter = string.length - prefix.length;
-  return string.slice(0, endCharacter);
-}

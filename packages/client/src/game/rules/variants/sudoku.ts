@@ -1,5 +1,8 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS } from "@hanabi/data";
+import {
+  DEFAULT_CARD_RANKS,
+  DEFAULT_FINISHED_STACK_LENGTH,
+} from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
@@ -26,7 +29,11 @@ export function sudokuCanStillBePlayed(
     // Here, we check if we can play the specified card if we start the stack at `stackStart`. For
     // this, note that we can compare the difference of our card and the start with the longest play
     // sequence starting at the start, thereby checking if the specified rank is included.
-    if (maxScoresFromStarts[stackStart - 1]! > (rank - stackStart + 5) % 5) {
+    if (
+      maxScoresFromStarts[stackStart - 1]! >
+      (rank - stackStart + DEFAULT_FINISHED_STACK_LENGTH) %
+        DEFAULT_FINISHED_STACK_LENGTH
+    ) {
       return true;
     }
   }
@@ -44,17 +51,24 @@ export function sudokuCanStillBePlayed(
 function sudokuWalkUpAll(
   allDiscardedMap: Map<number, boolean>,
 ): [boolean, number[]] {
-  const maxScores: number[] = [5, 5, 5, 5, 5];
+  const maxScores = [
+    DEFAULT_FINISHED_STACK_LENGTH,
+    DEFAULT_FINISHED_STACK_LENGTH,
+    DEFAULT_FINISHED_STACK_LENGTH,
+    DEFAULT_FINISHED_STACK_LENGTH,
+    DEFAULT_FINISHED_STACK_LENGTH,
+  ];
   let lastDead = 0;
 
-  for (const curRank of DEFAULT_CARD_RANKS) {
-    if (allDiscardedMap.get(curRank)!) {
+  for (const currentRank of DEFAULT_CARD_RANKS) {
+    if (allDiscardedMap.get(currentRank)!) {
       // We hit a new dead rank.
-      for (let writeRank = lastDead + 1; writeRank < curRank; writeRank++) {
-        maxScores[writeRank - 1] = curRank - writeRank;
+      for (let writeRank = lastDead + 1; writeRank < currentRank; writeRank++) {
+        maxScores[writeRank - 1] = currentRank - writeRank;
       }
-      maxScores[curRank - 1] = 0;
-      lastDead = curRank;
+
+      maxScores[currentRank - 1] = 0;
+      lastDead = currentRank;
     }
   }
 
@@ -107,8 +121,8 @@ export function getMaxScorePerStack(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): Tuple<number, NumSuits> {
-  const independentPartOfMaxScore = new Array<number>(playStackStarts.length);
-  const maxPartialScores = new Array<number[]>(5);
+  const independentPartOfMaxScore: number[] = [];
+  const maxPartialScores: number[][] = [];
   const unassignedSuits: number[] = [];
 
   // Find the suits for which we need to solve the assignment problem.
@@ -120,7 +134,7 @@ export function getMaxScorePerStack(
     );
 
     if (allMax) {
-      independentPartOfMaxScore[suitIndex] = 5;
+      independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
       continue;
     }
 

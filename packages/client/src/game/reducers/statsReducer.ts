@@ -1,7 +1,7 @@
 // Functions for calculating running statistics such as efficiency and pace as a result of each
 // action.
 
-import { getVariant } from "@hanabi/data";
+import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import * as clueTokensRules from "../rules/clueTokens";
@@ -53,7 +53,7 @@ function statsReducerFunction(
 
         if (
           playStack !== undefined &&
-          playStack.length === 5 && // Hard-code the stack length to 5.
+          playStack.length === DEFAULT_FINISHED_STACK_LENGTH &&
           originalState.clueTokens === currentState.clueTokens &&
           !variant.throwItInAHole // We do not get an extra clue in some variants.
         ) {

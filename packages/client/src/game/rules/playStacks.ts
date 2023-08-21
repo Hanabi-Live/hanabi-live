@@ -1,5 +1,9 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "@hanabi/data";
+import {
+  DEFAULT_CARD_RANKS,
+  DEFAULT_FINISHED_STACK_LENGTH,
+  START_CARD_RANK,
+} from "@hanabi/data";
 import type { CardState } from "../types/CardState";
 import type { GameState } from "../types/GameState";
 import { StackDirection } from "../types/StackDirection";
@@ -92,7 +96,7 @@ export function direction(
   deck: readonly CardState[],
   variant: Variant,
 ): StackDirection {
-  if (playStack.length === 5) {
+  if (playStack.length === DEFAULT_FINISHED_STACK_LENGTH) {
     return StackDirection.Finished;
   }
 

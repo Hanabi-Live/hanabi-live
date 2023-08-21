@@ -1,9 +1,9 @@
 // Functions to calculate game stats such as pace and efficiency.
 
 import type { NumPlayers, NumSuits, Variant } from "@hanabi/data";
-import { MAX_CLUE_NUM } from "@hanabi/data";
+import { DEFAULT_FINISHED_STACK_LENGTH, MAX_CLUE_NUM } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { newArray } from "@hanabi/utils";
+import { newArray, sumArray } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import type { GameState, PaceRisk } from "../types/GameState";
@@ -130,16 +130,18 @@ export function startingDeckSize(
   return totalCards - initialCardsDrawn;
 }
 
-// Calculate the starting pace with the following formula:
-
-// ```
-//   total cards in the deck
-//   + number of turns in the final round
-//   - (number of cards in a player's hand * number of players)
-//   - (5 * number of suits)
-// ```
-
-// See: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
+/**
+ * Calculate the starting pace with the following formula:
+ *
+ *  ```text
+ *  total cards in the deck
+ *  + number of turns in the final round
+ *  - (number of cards in a player's hand * number of players)
+ *  - (5 * number of suits)
+ *  ```
+ *
+ * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
+ */
 export function startingPace(
   deckSize: number,
   maxScore: number,
@@ -312,8 +314,7 @@ export function cluesStillUsableNotRounded(
     return null;
   }
 
-  const maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
-
+  const maxScore = sumArray(maxScorePerStack);
   const missingScore = maxScore - score;
 
   const maxDiscardsBeforeFinalRound = discardsBeforeFinalRound(
@@ -336,14 +337,17 @@ export function cluesStillUsableNotRounded(
     const missingCardsPerCompletableSuit: number[] = [];
 
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
-      if (maxScorePerStack[suitIndex] === 5 && stackScore < 5) {
-        missingCardsPerCompletableSuit.push(
-          maxScorePerStack[suitIndex]! - stackScore,
-        );
+      const stackMaxScore = maxScorePerStack[suitIndex];
+      if (
+        stackMaxScore === DEFAULT_FINISHED_STACK_LENGTH &&
+        stackScore < DEFAULT_FINISHED_STACK_LENGTH
+      ) {
+        missingCardsPerCompletableSuit.push(stackMaxScore - stackScore);
       }
     }
 
     missingCardsPerCompletableSuit.sort((a, b) => a - b);
+
     let cardsPlayed = 0;
     let suitsCompletedBeforeFinalRound = 0;
 
@@ -400,7 +404,10 @@ export function startingCluesUsable(
 ): number {
   const score = 0;
   const scorePerStack = newArray(variant.suits.length, 0);
-  const maxScorePerStack = newArray(variant.suits.length, 5);
+  const maxScorePerStack = newArray(
+    variant.suits.length,
+    DEFAULT_FINISHED_STACK_LENGTH,
+  );
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
 

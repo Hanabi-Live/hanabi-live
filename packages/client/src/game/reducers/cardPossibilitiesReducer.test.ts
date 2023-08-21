@@ -40,9 +40,9 @@ describe("cardPossibilitiesReducer", () => {
     const { possibleSuits, possibleRanks } = possibilities(
       newCard.possibleCardsFromClues,
     );
+
     expect(possibleSuits.has(0)).toBe(true);
     expect(possibleSuits.size).toBe(1);
-
     expect(possibleRanks.size).toBe(5);
 
     // This card can only be red.
@@ -62,9 +62,9 @@ describe("cardPossibilitiesReducer", () => {
     const { possibleSuits, possibleRanks } = possibilities(
       newCard.possibleCardsFromClues,
     );
+
     expect(possibleSuits.has(0)).toBe(false);
     expect(possibleSuits.size).toBe(4);
-
     expect(possibleRanks.size).toBe(5);
 
     // This card can be any color except red.

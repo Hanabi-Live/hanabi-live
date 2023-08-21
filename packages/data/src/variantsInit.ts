@@ -3,6 +3,7 @@ import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
 import {
   DEFAULT_CARD_RANKS,
   DEFAULT_CLUE_RANKS,
+  DEFAULT_FINISHED_STACK_LENGTH,
   START_CARD_RANK,
 } from "./constants";
 import type { Color } from "./interfaces/Color";
@@ -69,7 +70,7 @@ export function variantsInit(
     const clueColors = getVariantClueColors(variantJSON, COLORS, suits);
 
     // Validate the clue ranks (the ranks available to clue in this variant). If it is not
-    // specified, assume that players can clue ranks 1 through 5.
+    // specified, assume that players can clue the normal ranks.
     const clueRanks = variantJSON.clueRanks ?? [...DEFAULT_CLUE_RANKS];
 
     // --------------------------------------------
@@ -282,9 +283,7 @@ export function variantsInit(
     // -----------------------------
 
     const showSuitNames = getVariantShowSuitNames(suits, upOrDown, sudoku);
-
-    // Assume 5 cards per stack.
-    const maxScore = suits.length * 5;
+    const maxScore = suits.length * DEFAULT_FINISHED_STACK_LENGTH;
 
     // Variants with dual-color suits need to adjust the positions of elements in the corner of the
     // card (e.g. the note indicator) because it will overlap with the triangle that shows the color

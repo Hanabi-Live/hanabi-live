@@ -1,7 +1,7 @@
 // Functions for building a state table for every turn.
 
 import type { Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { millisecondsToClockString } from "../../utils";
@@ -300,7 +300,7 @@ function gameStateReducerFunction(
           action,
           state.clueTokens,
           variant,
-          playStack.length === 5,
+          playStack.length === DEFAULT_FINISHED_STACK_LENGTH,
         );
       }
 

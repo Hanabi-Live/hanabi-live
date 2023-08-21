@@ -2,6 +2,8 @@
 | TODO |
 +------+
 
+- refactor -1 from specialRank type and convert to undefined or null
+- Search for "See:" and convert to JSDoc see tag
 - brand all types in "@hanabi/data/types"
 - PlayerIndex type (maybe, look to see if it is useful first)
 - CardOrder type (branded)
