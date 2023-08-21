@@ -2,6 +2,7 @@
 // located separately in "game/chat.ts".
 
 import { emojis, emotes, PROJECT_NAME } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { chatCommands } from "./chatCommands";
@@ -421,7 +422,7 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   const frankerBIndex = usersAndEmotesList.indexOf("FrankerB");
   tempEmote1 = usersAndEmotesList[frankerBIndex]!;
   usersAndEmotesList[frankerBIndex] = "FrankerZ";
-  for (let i = frankerBIndex; i < frankerZIndex; i++) {
+  for (const i of eRange(frankerBIndex, frankerZIndex)) {
     const tempEmote2 = usersAndEmotesList[i + 1]!;
     usersAndEmotesList[i + 1] = tempEmote1;
     tempEmote1 = tempEmote2;
@@ -432,7 +433,7 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   const monkaEyesIndex = usersAndEmotesList.indexOf("monkaEyes");
   tempEmote1 = usersAndEmotesList[monkaEyesIndex]!;
   usersAndEmotesList[monkaEyesIndex] = "monkaS";
-  for (let i = monkaEyesIndex; i < monkaSIndex; i++) {
+  for (const i of eRange(monkaEyesIndex, monkaSIndex)) {
     const tempEmote2 = usersAndEmotesList[i + 1]!;
     usersAndEmotesList[i + 1] = tempEmote1;
     tempEmote1 = tempEmote2;

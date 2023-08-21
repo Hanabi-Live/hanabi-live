@@ -1,6 +1,8 @@
-import type { Rank, SuitIndex, Variant } from "@hanabi/data";
+import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
+import type { Tuple } from "../../../../../utils/src";
 import type { CardState } from "../../types/CardState";
+import type { GameState } from "../../types/GameState";
 import { createAllDiscardedMap } from "./discardHelpers";
 
 /** Assuming that we are dealing with a Sudoku variant, check if the card still can be played. */
@@ -8,7 +10,7 @@ export function sudokuCanStillBePlayed(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
   const [_, maxScoresFromStarts] = sudokuWalkUpAll(
@@ -77,7 +79,7 @@ function sudokuWalkUpAll(
  * This functions mimics `variantSudokuGetFreeStackStarts` from "variants_sudoku.go" in the server.
  */
 function sudokuGetFreeStackStarts(
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStackStarts: GameState["playStackStarts"],
 ): number[] {
   const possibleStackStarts: number[] = [];
 
@@ -102,9 +104,9 @@ function sudokuGetFreeStackStarts(
  */
 export function getMaxScorePerStack(
   deck: readonly CardState[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
-): number[] {
+): Tuple<number, NumSuits> {
   const independentPartOfMaxScore = new Array<number>(playStackStarts.length);
   const maxPartialScores = new Array<number[]>(5);
   const unassignedSuits: number[] = [];
@@ -112,23 +114,27 @@ export function getMaxScorePerStack(
   // Find the suits for which we need to solve the assignment problem.
   for (const [i, stackStart] of playStackStarts.entries()) {
     const suitIndex = i as SuitIndex;
+
     const [allMax, suitMaxScores] = sudokuWalkUpAll(
       createAllDiscardedMap(variant, deck, suitIndex),
     );
+
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = 5;
       continue;
     }
+
     if (stackStart !== null) {
       independentPartOfMaxScore[suitIndex] = suitMaxScores[stackStart - 1]!;
       continue;
     }
+
     maxPartialScores[suitIndex] = suitMaxScores;
     unassignedSuits.push(suitIndex);
   }
 
   if (unassignedSuits.length === 0) {
-    return independentPartOfMaxScore;
+    return independentPartOfMaxScore as Tuple<number, NumSuits>;
   }
 
   // Solve the assignment problem.
@@ -242,5 +248,5 @@ export function getMaxScorePerStack(
       bestAssignment[unassignedLocalSuitIndex] ?? 0;
   }
 
-  return maxScorePerStack;
+  return maxScorePerStack as Tuple<number, NumSuits>;
 }

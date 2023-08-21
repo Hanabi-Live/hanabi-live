@@ -1,7 +1,7 @@
 // Functions for building a state table for every turn.
 
 import type { Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import { MAX_STRIKES, getVariant } from "@hanabi/data";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { millisecondsToClockString } from "../../utils";
@@ -18,7 +18,7 @@ import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import { getPlayerName } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
+import type { GameState, StateStrike } from "../types/GameState";
 import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
@@ -150,9 +150,9 @@ function gameStateReducerFunction(
           finished,
         )
       ) {
-        if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
+        if (action.suitIndex === -1) {
           throw new Error(
-            `The suit index for the discarded card was: ${action.suitIndex}`,
+            `The suit index for a discarded card was: ${action.suitIndex}`,
           );
         }
 
@@ -286,9 +286,9 @@ function gameStateReducerFunction(
           finished,
         )
       ) {
-        if (typeof action.suitIndex !== "number" || action.suitIndex < 0) {
+        if (action.suitIndex === -1) {
           throw new Error(
-            `The suit index for the played card was: ${action.suitIndex}`,
+            `The suit index for a played card was: ${action.suitIndex}`,
           );
         }
 
@@ -365,10 +365,18 @@ function gameStateReducerFunction(
      */
     // TODO: This message is unnecessary and will be removed in a future version of the code
     case "strike": {
-      state.strikes.push({
+      if (state.strikes.length >= MAX_STRIKES) {
+        throw new Error(
+          `Failed to add a strike since there are already ${state.strikes.length} strikes.`,
+        );
+      }
+
+      const strikes = state.strikes as StateStrike[];
+      strikes.push({
         order: action.order,
         segment: state.turn.segment!,
       });
+
       break;
     }
 
@@ -413,7 +421,7 @@ function gameStateReducerFunction(
   }
 
   // In Sudoku variants, resolve the stack starting value.
-  if (action.type === "play" && variant.sudoku) {
+  if (action.type === "play" && variant.sudoku && action.suitIndex !== -1) {
     const playStack = state.playStacks[action.suitIndex]!;
     state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
       playStack,
@@ -429,7 +437,7 @@ function gameStateReducerFunction(
     action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
-      state.cardStatus[action.suitIndex]![rank] = cardRules.status(
+      state.cardStatus[action.suitIndex][rank] = cardRules.status(
         action.suitIndex,
         rank,
         state.deck,
@@ -445,15 +453,17 @@ function gameStateReducerFunction(
   state.turn = turnReducer(original(state.turn), action, state, metadata);
 
   // Use a sub-reducer to calculate some game statistics.
-  state.stats = statsReducer(
-    original(state.stats),
-    action,
-    original(state)!,
-    state,
-    playing,
-    shadowing,
-    metadata,
-    ourNotes ?? null,
+  state.stats = castDraft(
+    statsReducer(
+      original(state.stats),
+      action,
+      original(state)!,
+      state,
+      playing,
+      shadowing,
+      metadata,
+      ourNotes ?? null,
+    ),
   );
 
   // After stats calculated, compute DDA property on all card states.

@@ -1,6 +1,6 @@
 import Konva from "konva";
+import { globals } from "../UIGlobals";
 import { LABEL_COLOR } from "../constants";
-import { globals } from "../globals";
 import { FitText } from "./FitText";
 
 interface ElementValues {

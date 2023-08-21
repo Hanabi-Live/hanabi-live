@@ -2,7 +2,7 @@ import type { Store, Unsubscribe } from "redux";
 import type { GameState } from "../../types/GameState";
 import type { State } from "../../types/State";
 import type { Action } from "../../types/actions";
-import { globals } from "../globals";
+import { globals } from "../UIGlobals";
 import type { Listener, Selector, Subscription } from "./observeStore";
 import { observeStore } from "./observeStore";
 import * as animateFastView from "./view/animateFastView";

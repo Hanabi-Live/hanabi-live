@@ -1,3 +1,4 @@
+import type { NumPlayers } from "@hanabi/data";
 import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
 import { newArray } from "@hanabi/utils";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
@@ -5,7 +6,6 @@ import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
 import type { GameMetadata } from "../src/game/types/GameMetadata";
-import type { NumPlayers } from "../src/types/NumPlayers";
 import { Options } from "../src/types/Options";
 
 export function testMetadata(

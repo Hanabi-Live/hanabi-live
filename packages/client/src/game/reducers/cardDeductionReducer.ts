@@ -5,13 +5,14 @@ import { arrayCopyTwoDimensional } from "@hanabi/utils";
 import * as deckRules from "../rules/deck";
 import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
+import type { GameState } from "../types/GameState";
 import type { GameAction } from "../types/actions";
 
 export function cardDeductionReducer(
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
   action: GameAction,
-  hands: DeepReadonly<number[][]>,
+  hands: GameState["hands"],
   metadata: GameMetadata,
 ): readonly CardState[] {
   switch (action.type) {
@@ -32,7 +33,7 @@ export function cardDeductionReducer(
 function makeDeductions(
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
-  hands: DeepReadonly<number[][]>,
+  hands: GameState["hands"],
   metadata: GameMetadata,
 ) {
   const newDeck: CardState[] = [...deck];
@@ -51,7 +52,7 @@ function makeDeductions(
     metadata,
   );
 
-  for (let playerIndex = 0; playerIndex < hands.length; playerIndex++) {
+  for (const playerIndex of hands.keys()) {
     if (playerIndex !== metadata.ourPlayerIndex) {
       calculatePlayerPossibilities(
         playerIndex,
@@ -71,7 +72,7 @@ function makeDeductions(
 function calculatePlayerPossibilities(
   playerIndex: number,
   ourPlayerIndex: number,
-  hands: DeepReadonly<number[][]>,
+  hands: GameState["hands"],
   deck: CardState[],
   oldDeck: readonly CardState[],
   cardCountMap: number[][],
@@ -445,7 +446,7 @@ function possibilityValid(
       );
     }
 
-    for (let i = 0; i < suitRankTuples.length; i++) {
+    for (const i of suitRankTuples.keys()) {
       const possibilityIndex = (i + index) % suitRankTuples.length;
       const possibility = suitRankTuples[possibilityIndex];
       if (possibility === undefined) {

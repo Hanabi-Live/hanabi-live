@@ -1,5 +1,6 @@
 // The lobby area that shows all of the current tables.
 
+import { iRange } from "@hanabi/utils";
 import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -26,15 +27,14 @@ export function tablesDraw(): void {
   $("#lobby-games-table-container").show();
 
   // We want the tables to be drawn in a certain order:
-  // 1) Tables that we are currently in
-  // 2) Tables our friends are currently in
-  // 3) Unstarted tables
-  // 4) Unstarted & password-protected tables
-  // 5) Ongoing tables
-  // 6) Shared replays
+  // 1) Tables that we are currently in + tables our friends are currently in
+  // 2) Unstarted tables
+  // 3) Unstarted & password-protected tables
+  // 4) Ongoing tables
+  // 5) Shared replays
   let sortedTableIDs: number[] = [];
   for (const friends of [true, false]) {
-    for (let i = 1; i <= 5; i++) {
+    for (const i of iRange(1, 5)) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
         // Tables that we are currently in.

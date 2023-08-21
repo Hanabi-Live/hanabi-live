@@ -1,4 +1,4 @@
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 
 export function setGlobalEmpathy(enabled: boolean): void {
   if (enabled === globals.globalEmpathyEnabled) {

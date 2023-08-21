@@ -1,5 +1,6 @@
 import type {
   Color,
+  NumPlayers,
   Rank,
   Suit,
   SuitIndex,
@@ -22,6 +23,7 @@ import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { LayoutChild } from "./LayoutChild";
+import { globals } from "./UIGlobals";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   CARD_FADE,
@@ -33,7 +35,6 @@ import type { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { suitIndexToSuit } from "./convert";
 import type { CursorType } from "./cursor";
-import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 import {
   checkNoteImpossibility,
@@ -153,6 +154,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     suitIndex: SuitIndex | null,
     rank: Rank | typeof STACK_BASE_RANK | null,
     variant: Variant,
+    numPlayers: NumPlayers,
   ) {
     super();
     this.listening(true);
@@ -170,7 +172,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // Order is defined upon first initialization
     // TODO: move stack bases to be a separate class that shares code with HanabiCard
-    const initialState = initialCardState(order, this.variant);
+    const initialState = initialCardState(order, this.variant, numPlayers);
     const cardStateRank = rank === STACK_BASE_RANK ? null : rank;
     this._state = {
       ...initialState,
@@ -806,7 +808,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const status =
       this.visibleSuitIndex === null || this.visibleRank === null
         ? CardStatus.NeedsToBePlayed // Default status; not faded and not critical.
-        : visibleState.cardStatus[this.visibleSuitIndex]![this.visibleRank]!;
+        : visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
@@ -816,6 +818,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       !cardRules.isDiscarded(this.state) &&
       this.state.isKnownTrashFromEmpathy;
     this.setTrashMiniIndicator(isKnownTrash);
+
     this.setDDA(
       this.state.inDoubleDiscard &&
         status !== CardStatus.Critical &&

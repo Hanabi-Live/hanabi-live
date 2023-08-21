@@ -7,8 +7,8 @@ import { ActionType } from "../types/ActionType";
 import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
 import type { PlayStack } from "./PlayStack";
+import { globals } from "./UIGlobals";
 import * as cursor from "./cursor";
-import { globals } from "./globals";
 import { isOurTurn } from "./isOurTurn";
 import * as turn from "./turn";
 

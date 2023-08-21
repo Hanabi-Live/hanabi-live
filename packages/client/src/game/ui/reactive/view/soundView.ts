@@ -1,6 +1,6 @@
 import type { GameAction } from "../../../types/actions";
 import { SoundType } from "../../../types/SoundType";
-import { globals } from "../../globals";
+import { globals } from "../../UIGlobals";
 
 export function onNewSoundEffect(
   data: {

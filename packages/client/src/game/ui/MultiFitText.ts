@@ -1,6 +1,6 @@
 import Konva from "konva";
+import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
-import { globals } from "./globals";
 
 export class MultiFitText extends Konva.Group {
   maxLines: number;

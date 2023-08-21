@@ -1,8 +1,8 @@
 // Calculates the state of the deck after an action.
 
-import type { Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
+import type { NumPlayers, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import { eRange, newArray } from "@hanabi/utils";
+import { arrayCopyTwoDimensional, eRange, newArray } from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
@@ -24,7 +24,9 @@ export function cardsReducer(
 ): readonly CardState[] {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = [...deck];
-  const hands = Array.from(game.hands, (arr) => [...arr]);
+  const hands = arrayCopyTwoDimensional(
+    game.hands as unknown as number[][],
+  ) as unknown as typeof game.hands;
 
   switch (action.type) {
     /**
@@ -200,7 +202,11 @@ export function cardsReducer(
         );
       }
 
-      const initial = initialCardState(action.order, variant);
+      const initial = initialCardState(
+        action.order,
+        variant,
+        metadata.options.numPlayers,
+      );
 
       let { possibleCards } = initial;
 
@@ -219,6 +225,7 @@ export function cardsReducer(
         segmentDrawn: game.turn.segment,
         revealedToPlayer: drawnCardRevealedToPlayer(
           action.playerIndex,
+          game.hands.length,
           metadata.characterAssignments,
         ),
         possibleCards,
@@ -281,10 +288,10 @@ function cardIdentityRevealedToPlayer(
 
 function drawnCardRevealedToPlayer(
   drawLocation: number,
+  numPlayers: NumPlayers,
   characterAssignments: Readonly<Array<number | null>>,
 ): boolean[] {
   const revealedToPlayer: boolean[] = [];
-  const numPlayers = characterAssignments.length;
 
   for (const playerIndex of eRange(numPlayers)) {
     revealedToPlayer.push(
@@ -296,6 +303,7 @@ function drawnCardRevealedToPlayer(
       ),
     );
   }
+
   return revealedToPlayer;
 }
 

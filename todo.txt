@@ -2,16 +2,14 @@
 | TODO |
 +------+
 
+- PlayerIndex type (maybe, look to see if it is useful first)
+- CardOrder type (branded)
 - redo install instructions without choco
+- https://github.com/azz/eslint-plugin-monorepo
 
 search for all:
 - "for (let"
-
-type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
-type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N ? R : _TupleOf<T, N, [T, ...R]>;
-
-implement tuple:
-- playStackDirections: readonly StackDirection[],
+- brand card order type
 
 short term:
 - refactor soundTypeForLastAction (should probably delete the whole thing)

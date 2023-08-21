@@ -48,16 +48,19 @@ function statsReducerFunction(
     }
 
     case "play": {
-      const playStack = currentState.playStacks[action.suitIndex];
-      if (
-        !variant.throwItInAHole && // We do not get an extra clue in some variants.
-        playStack !== undefined && // Hard code the stack length to 5.
-        playStack.length === 5 &&
-        originalState.clueTokens === currentState.clueTokens
-      ) {
-        // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
-        // what happens when the team gets a strike.
-        stats.potentialCluesLost += clueTokensRules.discardValue(variant);
+      if (action.suitIndex !== -1) {
+        const playStack = currentState.playStacks[action.suitIndex];
+
+        if (
+          playStack !== undefined &&
+          playStack.length === 5 && // Hard-code the stack length to 5.
+          originalState.clueTokens === currentState.clueTokens &&
+          !variant.throwItInAHole // We do not get an extra clue in some variants.
+        ) {
+          // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
+          // what happens when the team gets a strike.
+          stats.potentialCluesLost += clueTokensRules.discardValue(variant);
+        }
       }
 
       break;
@@ -81,6 +84,7 @@ function statsReducerFunction(
       currentState.playStackStarts,
       variant,
     );
+
     stats.maxScore = stats.maxScorePerStack.reduce((a, b) => a + b, 0);
   }
 

@@ -1,7 +1,7 @@
 import * as statsRules from "../../../rules/stats";
 import type { PaceRisk } from "../../../types/GameState";
+import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";
-import { globals } from "../../globals";
 import * as konvaTooltips from "../../konvaTooltips";
 
 /** Updates the labels on the right-hand side of the screen. */

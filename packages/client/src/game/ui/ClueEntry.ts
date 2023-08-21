@@ -3,9 +3,9 @@
 import Konva from "konva";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
-import type { StateClue } from "../types/GameState";
+import type { StateClue } from "../types/StateClue";
+import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
-import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 import * as replay from "./replay";
 

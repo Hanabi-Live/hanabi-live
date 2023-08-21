@@ -1,6 +1,6 @@
 import * as deckRules from "../rules/deck";
-import { globals } from "./globals";
 import type { HanabiCard } from "./HanabiCard";
+import { globals } from "./UIGlobals";
 
 export function getCardOrStackBase(order: number): HanabiCard | undefined {
   const card = globals.deck[order];

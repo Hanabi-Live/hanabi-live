@@ -1,8 +1,8 @@
 import Konva from "konva";
 import type { HanabiCard } from "./HanabiCard";
 import type { LayoutChild } from "./LayoutChild";
+import { globals } from "./UIGlobals";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
-import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 
 /** Represents a player's hand (or a discard pile). It is composed of `LayoutChild` objects. */

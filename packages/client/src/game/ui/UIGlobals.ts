@@ -1,6 +1,3 @@
-// This object contains global variables for the game UI. Every class variable must also be reset in
-// the "reset()" function.
-
 import { getDefaultVariant } from "@hanabi/data";
 import Konva from "konva";
 import type * as Redux from "redux";
@@ -17,7 +14,11 @@ import { Layers } from "./Layers";
 import * as cursor from "./cursor";
 import type { StateObserver } from "./reactive/StateObserver";
 
-export class Globals {
+/**
+ * This object contains global variables for the game UI. Every class variable must also be reset in
+ * the "reset()" function.
+ */
+export class UIGlobals {
   // Objects sent upon UI initialization.
   lobby: LobbyGlobals = new LobbyGlobals();
   game: GameExports | null = null;
@@ -145,14 +146,14 @@ export class Globals {
   }
 }
 
-export const globals = new Globals();
+export const globals = new UIGlobals();
 
 // Also make the globals available to the window (so that we can access them from the JavaScript
 // console for debugging purposes).
 // https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {
-    globals: Globals;
+    globals: UIGlobals;
   }
 }
 // `window` is undefined in Jest tests.

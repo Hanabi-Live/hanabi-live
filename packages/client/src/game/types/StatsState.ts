@@ -1,11 +1,13 @@
-import type { GameAction } from "./actions";
+import type { NumSuits } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import type { PaceRisk } from "./GameState";
 import type { SoundType } from "./SoundType";
+import type { GameAction } from "./actions";
 
 export interface StatsState {
   // For max score
   readonly maxScore: number;
-  readonly maxScorePerStack: number[];
+  readonly maxScorePerStack: Readonly<Tuple<number, NumSuits>>;
 
   // For pace
   readonly pace: number | null;
@@ -24,8 +26,10 @@ export interface StatsState {
   // - `cardsNotGotten` is simply "maxScore - cardsGotten".
   // - Future efficiency is simply "cardsNotGotten / cluesStillUsable".
 
-  // Other. Store the order of the double-discard candidate, or null if not in DDA.
+  /** Store the order of the double-discard candidate card, or null if not in DDA. */
   readonly doubleDiscard: number | null;
-  readonly lastAction: GameAction | null; // Used for determining sound effects
+
+  // For determining sound effects.
+  readonly lastAction: GameAction | null;
   readonly soundTypeForLastAction: SoundType;
 }

@@ -4,10 +4,10 @@ import { clamp, parseIntSafe } from "@hanabi/utils";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
+import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import type { Shuttle } from "./controls/Shuttle";
 import { getCardOrStackBase } from "./getCardOrStackBase";
-import { globals } from "./globals";
 import { animate } from "./konvaHelpers";
 
 const setTurnButton = getHTMLElement("#set-turn-button");

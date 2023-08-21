@@ -5,6 +5,7 @@ import {
   START_CARD_RANK,
 } from "@hanabi/data";
 import type { CardState } from "../types/CardState";
+import type { GameState } from "../types/GameState";
 import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
 
@@ -33,7 +34,7 @@ export function nextPlayableRanks(
   suitIndex: SuitIndex,
   playStack: readonly number[],
   playStackDirection: StackDirection,
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
   deck: readonly CardState[],
 ): number[] {

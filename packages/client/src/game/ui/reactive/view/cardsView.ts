@@ -1,9 +1,9 @@
 import type { CardIdentity } from "../../../types/CardIdentity";
 import type { CardState } from "../../../types/CardState";
 import type { State } from "../../../types/State";
-import { getCardOrStackBase } from "../../getCardOrStackBase";
-import { globals } from "../../globals";
 import { HanabiCard } from "../../HanabiCard";
+import { globals } from "../../UIGlobals";
+import { getCardOrStackBase } from "../../getCardOrStackBase";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import type { Listener, Selector, Subscription } from "../observeStore";
 import { observeStore } from "../observeStore";
@@ -13,7 +13,13 @@ export function onCardsPossiblyAdded(length: number): void {
   for (let i = globals.cardSubscriptions.length; i < length; i++) {
     if (globals.deck.length <= i) {
       // Construct the card object.
-      const newCard = new HanabiCard(i, null, null, globals.variant);
+      const newCard = new HanabiCard(
+        i,
+        null,
+        null,
+        globals.variant,
+        globals.options.numPlayers,
+      );
       globals.deck.push(newCard);
     }
     const subscription = subscribeToCardChanges(i);
@@ -122,8 +128,9 @@ function subscribeToCardChanges(order: number) {
       const card = s.visibleState!.deck[order]!;
       const status =
         card.suitIndex !== null && card.rank !== null
-          ? s.visibleState!.cardStatus[card.suitIndex]![card.rank]
+          ? s.visibleState!.cardStatus[card.suitIndex][card.rank]
           : null;
+
       return {
         status,
         clued: card.numPositiveClues >= 1,

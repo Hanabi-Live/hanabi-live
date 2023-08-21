@@ -3,8 +3,8 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import * as variantRules from "../rules/variant";
 import type { Clue } from "../types/Clue";
+import { globals } from "./UIGlobals";
 import { drawPip } from "./drawPip";
-import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 
 export class ColorButton extends Konva.Group {

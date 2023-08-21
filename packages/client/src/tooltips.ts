@@ -7,6 +7,7 @@
 // side-effects for the same reason.
 
 import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import "tooltipster"; // eslint-disable-line import/no-unassigned-import
 import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
 import { getHTMLElement } from "./utils";
@@ -225,7 +226,7 @@ function createGameTooltips() {
 
 function createPlayerTooltips() {
   // Dynamically create the player tooltips.
-  for (let i = 0; i < MAX_PLAYERS; i++) {
+  for (const i of eRange(MAX_PLAYERS)) {
     let id = `tooltip-player-${i}`;
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);
@@ -240,7 +241,7 @@ function createPlayerTooltips() {
 
 function createCardTooltips() {
   // Dynamically create the card note tooltips.
-  for (let i = 0; i < MAX_CARDS_IN_A_DECK + 6; i++) {
+  for (const i of eRange(MAX_CARDS_IN_A_DECK + 6)) {
     // The number in the id matches the order of the card in the deck. We add 6 because we also need
     // note tooltips for the stack bases.
     const id = `tooltip-card-${i}`;

@@ -1,9 +1,18 @@
-import type { SuitIndex, SuitRankTuple, Variant } from "@hanabi/data";
-import { MAX_PLAYERS } from "@hanabi/data";
+import type {
+  NumPlayers,
+  SuitIndex,
+  SuitRankTuple,
+  Variant,
+} from "@hanabi/data";
+import { newArray } from "@hanabi/utils";
 import * as deck from "../../rules/deck";
 import type { CardState } from "../../types/CardState";
 
-export function initialCardState(order: number, variant: Variant): CardState {
+export function initialCardState(
+  order: number,
+  variant: Variant,
+  numPlayers: NumPlayers,
+): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately from knowledge of the
   // true suit and rank.
   const possibleCards: SuitRankTuple[] = [];
@@ -24,7 +33,7 @@ export function initialCardState(order: number, variant: Variant): CardState {
     possibleCardsFromClues: possibleCards,
     possibleCards,
     possibleCardsForEmpathy: possibleCards,
-    revealedToPlayer: new Array(MAX_PLAYERS).fill(false),
+    revealedToPlayer: newArray(numPlayers, false),
     positiveColorClues: [],
     positiveRankClues: [],
     suitDetermined: false,

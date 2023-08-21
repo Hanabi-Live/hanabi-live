@@ -2,8 +2,8 @@
 
 import * as tooltips from "../../tooltips";
 import { millisecondsToClockString } from "../../utils";
+import { globals } from "./UIGlobals";
 import type { TimerDisplay } from "./controls/TimerDisplay";
-import { globals } from "./globals";
 import { drawLayer } from "./konvaHelpers";
 
 export interface ClockData {

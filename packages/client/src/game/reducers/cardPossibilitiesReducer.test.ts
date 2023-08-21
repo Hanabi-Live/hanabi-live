@@ -6,10 +6,10 @@ import { newColorClue, newRankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { initialCardState } from "./initialStates/initialCardState";
 
-const numPlayers = 3;
-const defaultMetadata = testMetadata(numPlayers);
-const variant = getVariant(defaultMetadata.options.variantName);
-const defaultCard = initialCardState(0, variant);
+const NUM_PLAYERS = 3;
+const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);
+const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
+const DEFAULT_CARD = initialCardState(0, VARIANT, NUM_PLAYERS);
 
 // Count possible cards, respecting both clues and observations.
 function countPossibleCards(state: CardState) {
@@ -28,13 +28,13 @@ function possibilities(possibleCardsFromClues: readonly SuitRankTuple[]) {
 
 describe("cardPossibilitiesReducer", () => {
   test("applies a simple positive clue", () => {
-    const red = newColorClue(variant.clueColors[0]!);
+    const red = newColorClue(VARIANT.clueColors[0]!);
 
     const newCard = cardPossibilitiesReducer(
-      defaultCard,
+      DEFAULT_CARD,
       red,
       true,
-      defaultMetadata,
+      DEFAULT_METADATA,
     );
 
     const { possibleSuits, possibleRanks } = possibilities(
@@ -50,13 +50,13 @@ describe("cardPossibilitiesReducer", () => {
   });
 
   test("applies a simple negative clue", () => {
-    const red = newColorClue(variant.clueColors[0]!);
+    const red = newColorClue(VARIANT.clueColors[0]!);
 
     const newCard = cardPossibilitiesReducer(
-      defaultCard,
+      DEFAULT_CARD,
       red,
       false,
-      defaultMetadata,
+      DEFAULT_METADATA,
     );
 
     const { possibleSuits, possibleRanks } = possibilities(
@@ -72,13 +72,16 @@ describe("cardPossibilitiesReducer", () => {
   });
 
   test("removes possibilities based on previous rank and color clues", () => {
-    const metadata = testMetadata(numPlayers, "Rainbow-Ones & Brown (6 Suits)");
+    const metadata = testMetadata(
+      NUM_PLAYERS,
+      "Rainbow-Ones & Brown (6 Suits)",
+    );
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
-    const redClue = newColorClue(variant.clueColors[0]!);
-    const oneClue = newRankClue(variant.clueRanks[0]!);
+    const redClue = newColorClue(VARIANT.clueColors[0]!);
+    const oneClue = newRankClue(VARIANT.clueRanks[0]!);
 
-    let card = initialCardState(0, rainbowOnesAndBrown);
+    let card = initialCardState(0, rainbowOnesAndBrown, NUM_PLAYERS);
     card = cardPossibilitiesReducer(card, redClue, true, metadata);
     card = cardPossibilitiesReducer(card, oneClue, false, metadata);
 

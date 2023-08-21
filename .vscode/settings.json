@@ -46,6 +46,14 @@
   "javascript.suggest.completeFunctionCalls": true,
   "typescript.suggest.completeFunctionCalls": true,
 
+  // By default, VSCode will prefer non-relative paths for deeply nested files.
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.importModuleSpecifier": "relative",
+
+  // Show TypeScript errors for files that don't happen to be currently open, which makes TypeScript
+  // work similar to other compiled languages like Golang or Rust.
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+
   // Automatically run the formatter when certain files are saved.
   "[javascript]": {
     "editor.codeActionsOnSave": ["source.fixAll.eslint"],

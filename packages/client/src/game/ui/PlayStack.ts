@@ -1,6 +1,6 @@
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 import { animate } from "./konvaHelpers";
 
 /**

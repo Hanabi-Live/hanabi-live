@@ -2,7 +2,7 @@ import type Konva from "konva";
 import { getHTMLElement } from "../../utils";
 import type { Deck } from "./Deck";
 import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 
 export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 

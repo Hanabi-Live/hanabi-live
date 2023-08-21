@@ -1,9 +1,8 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import type { DeepReadonly } from "@hanabi/utils";
 import type { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
-import type { StackDirection } from "../types/StackDirection";
+import type { GameState } from "../types/GameState";
 import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
@@ -49,9 +48,9 @@ export function needsToBePlayed(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
   // First, check to see if a copy of this card has already been played.
@@ -102,9 +101,9 @@ export function status(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): CardStatus {
   const cardNeedsToBePlayed = needsToBePlayed(
@@ -131,7 +130,7 @@ function isCritical(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
+  playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
   // "Up or Down" has some special cases for critical cards.
@@ -159,9 +158,9 @@ function isCritical(
 export function isPotentiallyPlayable(
   card: CardState,
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
   for (const [suitIndex, rank] of card.possibleCards) {
@@ -214,9 +213,9 @@ export function canPossiblyBeFromEmpathy(
 export function allPossibilitiesTrash(
   card: CardState,
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
   empathy: boolean,
 ): boolean {

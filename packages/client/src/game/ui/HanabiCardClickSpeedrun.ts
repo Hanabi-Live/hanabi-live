@@ -7,8 +7,8 @@ import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
+import { globals } from "./UIGlobals";
 import { colorToColorIndex } from "./convert";
-import { globals } from "./globals";
 import * as notes from "./notes";
 import * as turn from "./turn";
 

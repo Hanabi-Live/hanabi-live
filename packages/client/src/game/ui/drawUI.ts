@@ -19,6 +19,7 @@ import { HanabiCard } from "./HanabiCard";
 import { MultiFitText } from "./MultiFitText";
 import { PlayStack } from "./PlayStack";
 import { RankButton } from "./RankButton";
+import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
@@ -40,7 +41,6 @@ import * as cursor from "./cursor";
 import { drawHands } from "./drawHands";
 import { drawReplayArea } from "./drawReplayArea";
 import { getCardOrStackBase } from "./getCardOrStackBase";
-import { globals } from "./globals";
 import * as hypothetical from "./hypothetical";
 import * as konvaTooltips from "./konvaTooltips";
 import * as replay from "./replay";
@@ -392,6 +392,7 @@ function drawPlayStacks() {
       suitIndex,
       STACK_BASE_RANK,
       globals.variant,
+      globals.options.numPlayers,
     );
     globals.stackBases.push(stackBase);
 

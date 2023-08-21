@@ -1,5 +1,5 @@
 import type { LogEntry } from "../../../types/GameState";
-import { globals } from "../../globals";
+import { globals } from "../../UIGlobals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {
   updateActionLog(log);

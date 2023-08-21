@@ -21,5 +21,10 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts"],
+  "include": [
+    "./src/**/*.ts",
+    "../utils/src/types/Range.ts",
+    "../utils/src/types/NaturalNumbersLessThan.ts",
+    "../utils/src/types/NaturalNumbersLessThanOrEqualTo.ts",
+  ],
 }

@@ -1,4 +1,4 @@
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 
 /**
  * Used to determine if it is our turn in the present. (For example, it can be our turn in the

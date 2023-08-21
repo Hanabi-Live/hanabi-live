@@ -7,7 +7,7 @@ import { ClueType } from "../game/types/ClueType";
 import type { LogEntry } from "../game/types/GameState";
 import type { JSONGame } from "../game/types/JSONGame";
 import type { ReplayState } from "../game/types/ReplayState";
-import { globals } from "../game/ui/globals";
+import { globals } from "../game/ui/UIGlobals";
 import { shrink } from "./hypoCompress";
 
 const PLAY_REGEX =

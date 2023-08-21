@@ -3,9 +3,9 @@ import Konva from "konva";
 import * as hand from "../rules/hand";
 import { CardLayout } from "./CardLayout";
 import { NameFrame } from "./NameFrame";
+import { globals } from "./UIGlobals";
 import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
 import { TextWithTooltip } from "./controls/TextWithTooltip";
-import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
 
 interface HandConfig {
@@ -26,7 +26,7 @@ export function drawHands(winW: number, winH: number): void {
   const numCardsPerHand = hand.cardsPerHand(globals.options);
 
   // In Keldon mode, the hand positions are different depending on the amount of players, so they
-  // have to be hard coded.
+  // have to be hard-coded.
   const handPos6H = 0.165; // 5-player is 0.189
   const handPos6Ratio = 0.34 / 0.189;
   const handPos6W = handPos6H * handPos6Ratio * 0.75;
@@ -105,7 +105,7 @@ export function drawHands(winW: number, winH: number): void {
     handPos[6][4]!.y += adjustedYOther;
   }
 
-  // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard coded.
+  // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard-coded.
   const handPosBGA: HandConfig[][] = [];
   if (!globals.lobby.settings.keldonMode) {
     let leftX = 0.43; // This is 0.020 away from the action log

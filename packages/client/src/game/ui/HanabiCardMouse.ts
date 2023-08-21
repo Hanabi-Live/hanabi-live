@@ -7,10 +7,10 @@ import { HanabiCardClick } from "./HanabiCardClick";
 import { mouseDownSpeedrun } from "./HanabiCardClickSpeedrun";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import type { LayoutChild } from "./LayoutChild";
+import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as cursor from "./cursor";
-import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
 

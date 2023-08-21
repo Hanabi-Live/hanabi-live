@@ -1,10 +1,10 @@
 import equal from "fast-deep-equal";
 import { msgClueToClue } from "../../../rules/clues";
-import type { StateClue } from "../../../types/GameState";
+import type { StateClue } from "../../../types/StateClue";
 import { ClueEntry } from "../../ClueEntry";
+import { globals } from "../../UIGlobals";
 import * as arrows from "../../arrows";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
-import { globals } from "../../globals";
 
 export function onCluesChanged(clues: readonly StateClue[]): void {
   updateLog(clues);

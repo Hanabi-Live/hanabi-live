@@ -1,9 +1,9 @@
 import Konva from "konva";
+import { globals } from "./UIGlobals";
 import { LABEL_COLOR } from "./constants";
 import { drawCards } from "./drawCards";
 import * as drawCardsBrowser from "./drawCardsBrowser";
 import { drawUI } from "./drawUI";
-import { globals } from "./globals";
 import * as keyboard from "./keyboard";
 
 // When the HanabiUI object is instantiated, we do not know how many players are in the game or what

@@ -3,8 +3,8 @@
 import { ReadonlySet, trimSuffix } from "@hanabi/utils";
 import * as tooltips from "../../tooltips";
 import type { HanabiCard } from "./HanabiCard";
+import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
-import { globals } from "./globals";
 
 const REMOVE_PIPE_KEYS = new ReadonlySet([
   "ArrowLeft",

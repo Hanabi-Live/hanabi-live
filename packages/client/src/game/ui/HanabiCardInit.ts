@@ -9,6 +9,7 @@ import type { Arrow } from "konva/types/shapes/Arrow";
 import type { RectConfig } from "konva/types/shapes/Rect";
 import * as variantRules from "../rules/variant";
 import type { Pips } from "../types/Pips";
+import { globals } from "./UIGlobals";
 import {
   BOTTOM_LEFT_X,
   BOTTOM_LEFT_Y,
@@ -25,7 +26,6 @@ import {
 import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { drawPip } from "./drawPip";
-import { globals } from "./globals";
 
 export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it

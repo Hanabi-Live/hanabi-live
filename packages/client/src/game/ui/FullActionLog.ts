@@ -1,8 +1,8 @@
 import Konva from "konva";
 import type { ContainerConfig } from "konva/types/Container";
 import { MultiFitText } from "./MultiFitText";
+import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
-import { globals } from "./globals";
 
 export class FullActionLog extends Konva.Group {
   buffer: Array<{ turnNum: number; text: string }> = [];

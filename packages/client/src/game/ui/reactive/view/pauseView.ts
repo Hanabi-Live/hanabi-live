@@ -1,5 +1,5 @@
 import type { PauseState } from "../../../types/PauseState";
-import { globals } from "../../globals";
+import { globals } from "../../UIGlobals";
 import { isOurTurn } from "../../isOurTurn";
 
 export function onChanged(pause: PauseState): void {

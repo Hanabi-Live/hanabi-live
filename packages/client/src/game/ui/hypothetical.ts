@@ -11,9 +11,9 @@ import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import type { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
+import { globals } from "./UIGlobals";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
-import { globals } from "./globals";
 
 export function start(): void {
   if (globals.state.replay.hypothetical !== null) {

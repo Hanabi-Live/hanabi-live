@@ -1,5 +1,6 @@
 import type { Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
@@ -285,9 +286,10 @@ function dealInitialCards(
 ) {
   let topOfDeck = 0;
 
-  for (let player = 0; player < numPlayers; player++) {
-    for (let card = 0; card < cardsPerHand; card++) {
-      actions.push(drawCard(player, topOfDeck, deck));
+  for (const playerIndex of eRange(numPlayers)) {
+    for (const _i of eRange(cardsPerHand)) {
+      const actionDraw = drawCard(playerIndex, topOfDeck, deck);
+      actions.push(actionDraw);
       topOfDeck++;
     }
   }

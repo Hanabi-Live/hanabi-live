@@ -3,15 +3,15 @@
 
 import type { Globals as LobbyGlobals } from "../../globals";
 import type { GameExports } from "../main";
+import type { UIGlobals } from "./UIGlobals";
+import { globals } from "./UIGlobals";
 import * as cursor from "./cursor";
-import type { Globals } from "./globals";
-import { globals } from "./globals";
 import * as keyboard from "./keyboard";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
 
 export class HanabiUI {
-  globals: Globals;
+  globals: UIGlobals;
 
   constructor(lobby: LobbyGlobals, game: GameExports) {
     // Since the "HanabiUI" object is being reinstantiated, we need to explicitly reinitialize all

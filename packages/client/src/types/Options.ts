@@ -1,9 +1,12 @@
+import type { NumPlayers } from "@hanabi/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
-import type { NumPlayers } from "./NumPlayers";
 
 export class Options {
   readonly numPlayers: NumPlayers = 2;
-  readonly startingPlayer: number = 0; // Legacy field for games prior to April 2020.
+
+  /** Legacy field for games prior to April 2020. */
+  readonly startingPlayer: number = 0;
+
   readonly variantName: string = DEFAULT_VARIANT_NAME;
   readonly timed: boolean = false;
   readonly timeBase: number = 0;

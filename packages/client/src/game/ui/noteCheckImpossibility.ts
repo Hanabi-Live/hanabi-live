@@ -4,7 +4,7 @@ import * as modals from "../../modals";
 import { canPossiblyBeFromEmpathy } from "../rules/card";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 
 export function checkNoteImpossibility(
   variant: Variant,

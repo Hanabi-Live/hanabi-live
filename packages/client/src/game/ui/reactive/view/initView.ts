@@ -1,4 +1,4 @@
-import { globals } from "../../globals";
+import { globals } from "../../UIGlobals";
 
 export function onInitializationChanged(initialized: boolean): void {
   if (!initialized) {

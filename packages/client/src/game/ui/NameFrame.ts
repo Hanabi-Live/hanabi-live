@@ -1,9 +1,9 @@
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";
+import { globals } from "./UIGlobals";
 import { backToLobby } from "./backToLobby";
 import { LABEL_COLOR } from "./constants";
-import { globals } from "./globals";
 import * as konvaTooltips from "./konvaTooltips";
 
 export class NameFrame extends Konva.Group {

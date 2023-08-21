@@ -2,7 +2,7 @@
 
 import Konva from "konva";
 import type { ClueEntry } from "./ClueEntry";
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 
 export class ClueLog extends Konva.Group {
   readonly maxLength = 27; // Just enough to fill the parent rectangle

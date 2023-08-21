@@ -4,9 +4,9 @@ import * as modals from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
+import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
-import { globals } from "./globals";
 
 const setModifierButton = getHTMLElement("#set-modifier-button");
 const setModifierCurrent = getHTMLElement("#set-modifier-current");

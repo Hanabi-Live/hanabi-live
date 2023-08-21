@@ -1,7 +1,7 @@
 // Helper functions for doing actions to our own hand.
 
 import type { CardLayout } from "./CardLayout";
-import { globals } from "./globals";
+import { globals } from "./UIGlobals";
 
 export function get(): CardLayout {
   if (!globals.state.playing) {

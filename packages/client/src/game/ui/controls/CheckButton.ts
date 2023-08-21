@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { globals } from "../globals";
+import { globals } from "../UIGlobals";
 import { drawLayer } from "../konvaHelpers";
 
 export class CheckButton extends Konva.Group {

@@ -1,10 +1,11 @@
 // Helper methods for variants where suits may have a different direction than up. Currently used
 // for "Up Or Down" and "Reversed" variants.
 
-import type { Rank, SuitIndex, Variant } from "@hanabi/data";
+import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "@hanabi/data";
-import type { DeepReadonly } from "@hanabi/utils";
+import type { Tuple } from "../../../../../utils/src";
 import type { CardState } from "../../types/CardState";
+import type { GameState } from "../../types/GameState";
 import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
 import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
@@ -19,8 +20,8 @@ export function needsToBePlayed(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
   const direction = playStackDirections[suitIndex];
@@ -79,7 +80,7 @@ function isDead(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
+  playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ) {
   const allDiscarded = createAllDiscardedMap(variant, deck, suitIndex);
@@ -151,9 +152,9 @@ function isDead(
  */
 export function getMaxScorePerStack(
   deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
+  playStackDirections: GameState["playStackDirections"],
   variant: Variant,
-): number[] {
+): Tuple<number, NumSuits> {
   const maxScorePerStack: number[] = new Array(variant.suits.length).fill(
     0,
   ) as number[];
@@ -208,7 +209,7 @@ export function getMaxScorePerStack(
     }
   }
 
-  return maxScorePerStack;
+  return maxScorePerStack as Tuple<number, NumSuits>;
 }
 
 // A helper function for "getMaxScore()".
@@ -270,7 +271,7 @@ export function isCritical(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
+  playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
   const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);

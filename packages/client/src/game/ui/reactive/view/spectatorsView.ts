@@ -1,6 +1,6 @@
 import * as tooltips from "../../../../tooltips";
 import type { Spectator } from "../../../types/Spectator";
-import { globals } from "../../globals";
+import { globals } from "../../UIGlobals";
 
 export function onSpectatorsChanged(data: {
   spectators: Spectator[];

@@ -6,10 +6,11 @@ import type Konva from "konva";
 import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";
+import type { GameState } from "../../../types/GameState";
 import { StackDirection } from "../../../types/StackDirection";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
-import { globals } from "../../globals";
+import { globals } from "../../UIGlobals";
 import { updateCardVisuals } from "./cardsView";
 
 const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([
@@ -71,7 +72,7 @@ export function onPlayStackDirectionsChanged(
   }
 }
 
-export function onHandsChanged(hands: DeepReadonly<number[][]>): void {
+export function onHandsChanged(hands: GameState["hands"]): void {
   syncChildren(
     hands,
     (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
@@ -84,7 +85,7 @@ export function onHandsChanged(hands: DeepReadonly<number[][]>): void {
 }
 
 export function onDiscardStacksChanged(
-  discardStacks: DeepReadonly<number[][]>,
+  discardStacks: GameState["discardStacks"],
 ): void {
   syncChildren(
     discardStacks,
@@ -106,8 +107,8 @@ export function onDiscardStacksChanged(
 }
 
 export function onPlayStacksChanged(
-  playStacks: DeepReadonly<number[][]>,
-  previousPlayStacks: DeepReadonly<number[][]> | undefined,
+  playStacks: GameState["playStacks"],
+  previousPlayStacks: GameState["playStacks"] | undefined,
 ): void {
   syncChildren(
     playStacks,

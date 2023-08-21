@@ -1,9 +1,9 @@
 import Konva from "konva";
+import { globals } from "./UIGlobals";
 import { Button } from "./controls/Button";
 import { EnterHypoButton } from "./controls/EnterHypoButton";
 import { SharedTurnsButton } from "./controls/SharedTurnsButton";
 import { Shuttle } from "./controls/Shuttle";
-import { globals } from "./globals";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 

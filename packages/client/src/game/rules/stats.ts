@@ -1,12 +1,12 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import type { Rank, Variant } from "@hanabi/data";
+import type { NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { DeepReadonly } from "@hanabi/utils";
+import type { Tuple } from "../../../../utils/src";
+import { newArray } from "../../../../utils/src";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import type { GameState, PaceRisk } from "../types/GameState";
-import type { StackDirection } from "../types/StackDirection";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
@@ -15,10 +15,10 @@ import * as sudokuRules from "./variants/sudoku";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
-): number[] {
+): Tuple<number, NumSuits> {
   // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
   if (variant.sudoku) {
     return sudokuRules.getMaxScorePerStack(deck, playStackStarts, variant);
@@ -40,9 +40,11 @@ function discardsBeforeFinalRound(
   if (cardsToPlay <= endGameLength + 1) {
     return deckSize - 1;
   }
+
   if (cardsToPlay <= endGameLength + deckSize) {
     return endGameLength + deckSize - cardsToPlay;
   }
+
   return 0;
 }
 
@@ -53,6 +55,7 @@ function maxPlaysDuringFinalRound(
   if (cardsToPlay < endGameLength + 1) {
     return cardsToPlay;
   }
+
   return endGameLength + 1;
 }
 
@@ -64,6 +67,7 @@ function maxPlays(
   if (cardsToPlay <= endGameLength + deckSize) {
     return cardsToPlay;
   }
+
   return endGameLength + deckSize;
 }
 
@@ -146,9 +150,9 @@ export function startingPace(
 
 export function cardsGotten(
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   playing: boolean,
   shadowing: boolean,
   maxScore: number,
@@ -197,9 +201,9 @@ export function cardsGotten(
 /** @returns The number of cards that are only gotten by notes and are not gotten by real clues. */
 export function cardsGottenByNotes(
   deck: readonly CardState[],
-  playStacks: DeepReadonly<number[][]>,
-  playStackDirections: readonly StackDirection[],
-  playStackStarts: ReadonlyArray<Rank | null>,
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
   variant: Variant,
   notes: CardNote[],
 ): number {
@@ -295,6 +299,7 @@ export function cluesStillUsableNotRounded(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
     );
   }
+
   // We want to discard as many times as possible while still getting a max score as long as
   // discardValue >= suitValue (which is currently true for all variants).
   if (discardValue < suitValue) {
@@ -302,6 +307,7 @@ export function cluesStillUsableNotRounded(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
   }
+
   if (deckSize <= 0) {
     return null;
   }
@@ -328,6 +334,7 @@ export function cluesStillUsableNotRounded(
     const minPlaysBeforeFinalRound =
       maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
+
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
       if (maxScorePerStack[suitIndex] === 5 && stackScore < 5) {
         missingCardsPerCompletableSuit.push(
@@ -335,18 +342,23 @@ export function cluesStillUsableNotRounded(
         );
       }
     }
+
     missingCardsPerCompletableSuit.sort((a, b) => a - b);
     let cardsPlayed = 0;
     let suitsCompletedBeforeFinalRound = 0;
+
     for (const missingCardsInSuit of missingCardsPerCompletableSuit) {
       if (cardsPlayed + missingCardsInSuit > minPlaysBeforeFinalRound) {
         break;
       }
+
       cardsPlayed += missingCardsInSuit;
       suitsCompletedBeforeFinalRound++;
     }
+
     cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
   }
+
   return cluesFromDiscards + cluesFromSuits + currentClues;
 }
 export function cluesStillUsable(
@@ -387,12 +399,11 @@ export function startingCluesUsable(
   variant: Variant,
 ): number {
   const score = 0;
-  // eslint-disable-next-line isaacscript/no-object-any
-  const scorePerStack = new Array(variant.suits.length).fill(0);
-  // eslint-disable-next-line isaacscript/no-object-any
-  const maxScorePerStack = new Array(variant.suits.length).fill(5);
+  const scorePerStack = newArray(variant.suits.length, 0);
+  const maxScorePerStack = newArray(variant.suits.length, 5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
+
   const startingClues = cluesStillUsable(
     score,
     scorePerStack,
@@ -406,6 +417,7 @@ export function startingCluesUsable(
   if (startingClues === null) {
     throw new Error("The starting clues usable was null.");
   }
+
   return startingClues;
 }
 
@@ -439,8 +451,13 @@ export function doubleDiscard(
 
   // It is never a double discard situation if the next player has one or more positive clues on
   // every card in their hand.
-  const hand =
-    state.hands[(state.turn.currentPlayerIndex + 1) % state.hands.length]!;
+  const nextPlayerIndex =
+    (state.turn.currentPlayerIndex + 1) % state.hands.length;
+  const hand = state.hands[nextPlayerIndex];
+  if (hand === undefined) {
+    return null;
+  }
+
   let allClued = true;
   for (const orderOfCardInHand of hand) {
     const cardInHand = state.deck[orderOfCardInHand]!;
@@ -500,5 +517,6 @@ export function doubleDiscard(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
   );
+
   return numCopiesTotal === numDiscarded + 1 ? orderOfDiscardedCard : null;
 }
