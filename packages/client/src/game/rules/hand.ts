@@ -46,14 +46,10 @@ export function isLocked(
   hand: readonly number[],
   deck: readonly CardState[],
 ): boolean {
-  for (const cardOrder of hand) {
-    const card = deck[cardOrder]!;
-    if (!cardRules.isClued(card)) {
-      return false;
-    }
-  }
-
-  return true;
+  return hand.every((order) => {
+    const card = deck[order];
+    return card !== undefined && cardRules.isClued(card);
+  });
 }
 
 export function chopIndex(
