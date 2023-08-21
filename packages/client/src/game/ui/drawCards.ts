@@ -1,12 +1,7 @@
 // The card graphics are various HTML5 canvas drawings.
 
 import type { Color, Rank, Suit, Variant } from "@hanabi/data";
-import {
-  STACK_BASE_RANK,
-  START_CARD_RANK,
-  UNKNOWN_CARD_RANK,
-  getSuit,
-} from "@hanabi/data";
+import { START_CARD_RANK, getSuit } from "@hanabi/data";
 import * as abbreviationRules from "../rules/abbreviation";
 import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";
@@ -16,6 +11,18 @@ enum CardArea {
   Number,
   Background,
 }
+
+/** Represents a stack base. Only used in this file for image drawing purposes. */
+const STACK_BASE_RANK = 0;
+
+/**
+ * Represents an unknown card (e.g. the gray card with pips on it). Only used in this file for image
+ * drawing purposes.
+ */
+const UNKNOWN_CARD_RANK = 6;
+
+export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
+export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
 
 // This function returns an object containing all of the drawn cards images (on individual
 // canvases).
@@ -181,7 +188,8 @@ export function drawCards(
         );
       }
 
-      const cardImagesIndex = `card-${suit.name}-${rank}`;
+      const cardImageRankName = getCardImageRankName(rank);
+      const cardImagesIndex = `card-${suit.name}-${cardImageRankName}`;
       const cardImage = saveCanvas(cvs, ctx);
       cardImages.set(cardImagesIndex, cardImage);
     }
@@ -192,7 +200,10 @@ export function drawCards(
   {
     const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
     const cardUnknown = saveCanvas(cvs, ctx);
-    cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, cardUnknown);
+    cardImages.set(
+      `card-Unknown-${CARD_IMAGE_UNKNOWN_CARD_RANK_NAME}`,
+      cardUnknown,
+    );
   }
 
   // Additionally, create an image for the deck back. This is similar to the Unknown 6 card, except
@@ -204,6 +215,24 @@ export function drawCards(
   }
 
   return cardImages;
+}
+
+function getCardImageRankName(
+  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
+): string {
+  switch (rank) {
+    case STACK_BASE_RANK: {
+      return CARD_IMAGE_STACK_BASE_RANK_NAME;
+    }
+
+    case UNKNOWN_CARD_RANK: {
+      return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
+    }
+
+    default: {
+      return rank.toString();
+    }
+  }
 }
 
 function drawSuitPips(

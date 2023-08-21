@@ -17,6 +17,7 @@ export function onCardsPossiblyAdded(length: number): void {
         i,
         null,
         null,
+        false,
         globals.variant,
         globals.options.numPlayers,
       );

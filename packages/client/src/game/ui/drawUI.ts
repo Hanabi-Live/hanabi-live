@@ -1,7 +1,6 @@
 // This function draws the UI when going into a game for the first time.
 
 import type { RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
-import { STACK_BASE_RANK } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -390,7 +389,8 @@ function drawPlayStacks() {
     const stackBase = new HanabiCard(
       order,
       suitIndex,
-      STACK_BASE_RANK,
+      null,
+      true,
       globals.variant,
       globals.options.numPlayers,
     );

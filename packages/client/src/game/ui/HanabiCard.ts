@@ -7,7 +7,7 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi/data";
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, getSuit } from "@hanabi/data";
+import { getSuit } from "@hanabi/data";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -35,6 +35,10 @@ import type { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { suitIndexToSuit } from "./convert";
 import type { CursorType } from "./cursor";
+import {
+  CARD_IMAGE_STACK_BASE_RANK_NAME,
+  CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
+} from "./drawCards";
 import { animate } from "./konvaHelpers";
 import {
   checkNoteImpossibility,
@@ -153,7 +157,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   constructor(
     order: number,
     suitIndex: SuitIndex | null,
-    rank: Rank | typeof STACK_BASE_RANK | null,
+    rank: Rank | null,
+    isStackBase: boolean,
     variant: Variant,
     numPlayers: NumPlayers,
   ) {
@@ -174,14 +179,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Order is defined upon first initialization
     // TODO: move stack bases to be a separate class that shares code with HanabiCard
     const initialState = initialCardState(order, this.variant, numPlayers);
-    const cardStateRank = rank === STACK_BASE_RANK ? null : rank;
     this._state = {
       ...initialState,
-      suitIndex, // suitIndex and rank are only initially specified for stack bases
-      rank: cardStateRank,
+      suitIndex, // Only initially specified for stack bases.
     };
 
-    this.isStackBase = rank === STACK_BASE_RANK;
+    this.isStackBase = isStackBase;
 
     // ---------------------------------------
     // Initialize various elements of the card
@@ -554,11 +557,21 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     const bareNameSuit = suitToShow?.name ?? UNKNOWN_SUIT.name;
-    const bareNameRank = this.isStackBase
-      ? STACK_BASE_RANK
-      : rankToShow ?? UNKNOWN_CARD_RANK;
+    const bareNameRank = this.getBareNameRank(rankToShow);
 
     return `card-${bareNameSuit}-${bareNameRank}`;
+  }
+
+  getBareNameRank(rankToShow: Rank | null): string {
+    if (this.isStackBase) {
+      return CARD_IMAGE_STACK_BASE_RANK_NAME;
+    }
+
+    if (rankToShow === null) {
+      return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
+    }
+
+    return rankToShow.toString();
   }
 
   // --------------
