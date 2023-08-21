@@ -11,7 +11,7 @@ import { getAllDiscardedSet } from "./discardHelpers";
 
 const NUM_SUITS_SUDOKU = 5;
 
-/** Assuming that we are dealing with a Sudoku variant, check if the card still can be played. */
+/** Check if the card can still be played in a Sudoku variant. */
 export function sudokuCanStillBePlayed(
   suitIndex: SuitIndex,
   rank: Rank,
@@ -34,20 +34,15 @@ export function sudokuCanStillBePlayed(
       ? sudokuGetUnusedStackStartRanks(playStackStarts)
       : [playStackStart];
 
-  for (const possibleStartRank of possibleStackStartRanks) {
-    // Here, we check if we can play the specified card if we start the stack at `stackStart`. For
-    // this, note that we can compare the difference of our card and the start with the longest play
-    // sequence starting at the start, thereby checking if the specified rank is included.
-    if (
-      suitMaxScores[possibleStartRank - 1]! >
-      (rank - possibleStartRank + DEFAULT_FINISHED_STACK_LENGTH) %
-        DEFAULT_FINISHED_STACK_LENGTH
-    ) {
-      return true;
-    }
-  }
-
-  return false;
+  // Here, we check if we can play the specified card if we start the stack at `playStackStart`. For
+  // this, note that we can compare the difference of our card and the start with the longest play
+  // sequence starting at the start, thereby checking if the specified rank is included.
+  return possibleStackStartRanks.some((possibleStackStartRank) => {
+    const longestSequence =
+      (rank - possibleStackStartRank + DEFAULT_FINISHED_STACK_LENGTH) %
+      DEFAULT_FINISHED_STACK_LENGTH;
+    return suitMaxScores[possibleStackStartRank - 1]! > longestSequence;
+  });
 }
 
 /**
@@ -59,19 +54,22 @@ export function sudokuCanStillBePlayed(
  */
 function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   allMax: boolean;
-  suitMaxScores: number[];
+  suitMaxScores: Tuple<number, NumSuits>;
 } {
-  const maxScores = newArray(NUM_SUITS_SUDOKU, DEFAULT_FINISHED_STACK_LENGTH);
+  const suitMaxScores = newArray(
+    NUM_SUITS_SUDOKU,
+    DEFAULT_FINISHED_STACK_LENGTH,
+  ) as Tuple<number, NumSuits>;
   let lastDead = 0;
 
   for (const currentRank of DEFAULT_CARD_RANKS) {
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (let writeRank = lastDead + 1; writeRank < currentRank; writeRank++) {
-        maxScores[writeRank - 1] = currentRank - writeRank;
+        suitMaxScores[writeRank - 1] = currentRank - writeRank;
       }
 
-      maxScores[currentRank - 1] = 0;
+      suitMaxScores[currentRank - 1] = 0;
       lastDead = currentRank;
     }
   }
@@ -80,22 +78,22 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   if (lastDead === 0) {
     return {
       allMax: true,
-      suitMaxScores: maxScores,
+      suitMaxScores,
     };
   }
 
   // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
   // them.
   for (let writeRank = lastDead + 1; writeRank <= 5; writeRank++) {
-    maxScores[writeRank - 1] = Math.min(
-      maxScores[0]! + 6 - writeRank,
+    suitMaxScores[writeRank - 1] = Math.min(
+      suitMaxScores[0]! + 6 - writeRank,
       DEFAULT_CARD_RANKS.length,
     );
   }
 
   return {
     allMax: false,
-    suitMaxScores: maxScores,
+    suitMaxScores,
   };
 }
 

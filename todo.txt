@@ -9,6 +9,7 @@
 - CardOrder type (branded)
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
+- remove all type assertions from src/game/reducers + src/game/rules (use eslint rule to find)
 
 search for all:
 - "for (let"
