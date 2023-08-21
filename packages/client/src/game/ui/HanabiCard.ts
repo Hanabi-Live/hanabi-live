@@ -527,7 +527,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   getBareName(
     morphedBlank: boolean,
     suitToShow: Suit | null,
-    rankToShow: number | null,
+    rankToShow: Rank | null,
   ): string {
     // If a card is morphed to a null identity, the card should appear blank no matter what.
     if (morphedBlank) {
