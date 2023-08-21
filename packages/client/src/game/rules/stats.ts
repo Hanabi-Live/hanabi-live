@@ -2,8 +2,8 @@
 
 import type { NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { Tuple } from "../../../../utils/src";
-import { newArray } from "../../../../utils/src";
+import type { Tuple } from "@hanabi/utils";
+import { newArray } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import type { GameState, PaceRisk } from "../types/GameState";

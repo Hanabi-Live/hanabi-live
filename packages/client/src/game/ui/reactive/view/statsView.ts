@@ -1,4 +1,4 @@
-import type { NumPlayers } from "../../../../../../data/src";
+import type { NumPlayers } from "@hanabi/data";
 import * as statsRules from "../../../rules/stats";
 import type { PaceRisk } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";

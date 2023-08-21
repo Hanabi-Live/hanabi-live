@@ -1,4 +1,4 @@
-import type { NumPlayers } from "../../../../data/src";
+import type { NumPlayers } from "@hanabi/data";
 import type { Spectator } from "../../game/types/Spectator";
 import type { Options } from "../../types/Options";
 

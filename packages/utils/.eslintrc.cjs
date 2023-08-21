@@ -8,4 +8,10 @@ module.exports = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.eslint.json"),
   },
+
+  rules: {
+    // We need to update the `import/no-internal-modules` rule to allow this package to import from
+    // itself.
+    "import/no-internal-modules": "off",
+  },
 };

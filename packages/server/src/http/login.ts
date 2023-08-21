@@ -1,6 +1,6 @@
+import { HTTPLoginDataSchema } from "@hanabi/data";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { HTTPLoginDataSchema } from "../interfaces/HTTPLoginData";
 import { logger } from "../logger";
 
 const WHITESPACE_REGEX = /\s/;

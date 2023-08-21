@@ -110,5 +110,21 @@ module.exports = {
      * dependencies being up to date).
      */
     "unicorn/prefer-top-level-await": "off",
+
+    /**
+     * Documentation:
+     * https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-internal-modules.md
+     *
+     * Not defined in the parent configs.
+     *
+     * Prevent packages from directly importing files from other packages. Note that this rule must
+     * be kept in sync with the paths defined in the monorepo "tsconfig.json" file.
+     */
+    "import/no-internal-modules": [
+      "error",
+      {
+        forbid: ["**/data/src/**", "**/utils/src/**"],
+      },
+    ],
   },
 };

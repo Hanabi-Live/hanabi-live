@@ -1,6 +1,6 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
-import type { Tuple } from "../../../../../utils/src";
+import type { Tuple } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { createAllDiscardedMap } from "./discardHelpers";

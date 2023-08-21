@@ -1,7 +1,7 @@
 // The initial login page.
 
+import type { HTTPLoginData } from "@hanabi/data";
 import { VERSION } from "@hanabi/data";
-import type { HTTPLoginData } from "@hanabi/server";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";

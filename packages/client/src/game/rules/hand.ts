@@ -1,6 +1,6 @@
 // Functions related to hand management.
 
-import type { NumPlayers } from "../../../../data/src";
+import type { NumPlayers } from "@hanabi/data";
 import type { Options } from "../../types/Options";
 import type { CardState } from "../types/CardState";
 import * as cardRules from "./card";
