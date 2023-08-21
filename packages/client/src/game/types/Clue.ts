@@ -1,12 +1,12 @@
 import type { Color, RankClueNumber } from "@hanabi/data";
 import { ClueType } from "./ClueType";
 
-interface ColorClue {
+export interface ColorClue {
   readonly type: ClueType.Color;
   readonly value: Color;
 }
 
-interface RankClue {
+export interface RankClue {
   readonly type: ClueType.Rank;
   readonly value: RankClueNumber;
 }
