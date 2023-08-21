@@ -7,7 +7,7 @@ import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { chatCommands } from "./chatCommands";
 import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
-import { globals } from "./globals";
+import { globals } from "./GlobalsA";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import type { ChatMessage } from "./types/ChatMessage";

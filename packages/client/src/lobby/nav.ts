@@ -1,6 +1,6 @@
 // The navigation bar at the top of the lobby.
 
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 import { initModal } from "../modals";
 import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";

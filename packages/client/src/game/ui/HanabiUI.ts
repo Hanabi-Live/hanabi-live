@@ -1,7 +1,7 @@
 // The object that comprises the entire game UI. It is re-created every time when going into a new
 // game (and destroyed when going to the lobby).
 
-import type { Globals as LobbyGlobals } from "../../globals";
+import type { Globals as LobbyGlobals } from "../../GlobalsA";
 import type { GameExports } from "../main";
 import type { UIGlobals } from "./UIGlobals";
 import { globals } from "./UIGlobals";

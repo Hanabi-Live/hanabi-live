@@ -3,7 +3,7 @@
 import * as gameMain from "../game/main";
 import type { Spectator } from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 import * as sounds from "../sounds";
 import * as history from "./history";
 import * as lobbyLogin from "./login";

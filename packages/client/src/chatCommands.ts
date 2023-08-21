@@ -1,7 +1,7 @@
 import { getVariantNames } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
+import { globals } from "./GlobalsA";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
-import { globals } from "./globals";
 import * as createGame from "./lobby/createGame";
 import { createJSONFromReplay } from "./lobby/createReplayJSON";
 

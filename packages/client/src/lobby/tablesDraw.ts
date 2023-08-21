@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables.
 
 import { iRange } from "@hanabi/utils";
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import { copyStringToClipboard, getURLFromPath } from "../utils";

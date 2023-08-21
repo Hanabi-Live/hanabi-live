@@ -2,10 +2,10 @@
 
 import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
+import { globals } from "./GlobalsA";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
-import { globals } from "./globals";
 import * as lobbyNav from "./lobby/nav";
 import * as sounds from "./sounds";
 import { getHTMLElement, getHTMLInputElement } from "./utils";

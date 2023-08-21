@@ -1,7 +1,7 @@
 // Lobby keyboard shortcuts
 
 import * as KeyCode from "keycode-js";
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 import { isModalVisible } from "../modals";
 import { Screen } from "./types/Screen";
 

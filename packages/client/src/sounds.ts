@@ -1,6 +1,6 @@
 // In-game sounds.
 
-import { globals } from "./globals";
+import { globals } from "./GlobalsA";
 
 let soundEffect: HTMLAudioElement | null = null;
 

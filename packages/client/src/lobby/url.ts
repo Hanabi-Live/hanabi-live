@@ -1,6 +1,6 @@
 import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 import { setBrowserAddressBarPath } from "../utils";
 import type { GameJSON } from "./hypoCompress";
 import { expand } from "./hypoCompress";

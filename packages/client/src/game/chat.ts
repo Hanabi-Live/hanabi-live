@@ -2,8 +2,8 @@
 
 import { parseIntSafe } from "@hanabi/utils";
 import interact from "interactjs";
+import { globals } from "../GlobalsA";
 import { FADE_TIME } from "../constants";
-import { globals } from "../globals";
 import { getHTMLElement } from "../utils";
 
 const gameChatText = getHTMLElement("#game-chat-text");

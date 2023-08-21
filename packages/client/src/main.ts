@@ -4,12 +4,12 @@
 import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
 import "@total-typescript/ts-reset"; // eslint-disable-line import/no-unassigned-import
 import jquery from "jquery";
+import { globals } from "./GlobalsA";
 import { Loader } from "./Loader";
 import * as chat from "./chat";
 import { initErrorListener } from "./errors";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
-import { globals } from "./globals";
 import * as lobbyCreateGame from "./lobby/createGame";
 import * as lobbyHistory from "./lobby/history";
 import { lobbyIdleInit } from "./lobby/lobbyIdleInit";

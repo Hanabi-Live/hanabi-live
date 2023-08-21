@@ -1,6 +1,6 @@
 // The lobby area that shows all of the current logged-in users.
 
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
 import { Screen } from "./types/Screen";

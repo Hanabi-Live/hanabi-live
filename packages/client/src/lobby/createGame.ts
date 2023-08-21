@@ -7,9 +7,9 @@ import {
 } from "@hanabi/data";
 import { ReadonlySet, parseFloatSafe, parseIntSafe } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
+import { globals } from "../GlobalsA";
 import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
-import { globals } from "../globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import type { Options } from "../types/Options";

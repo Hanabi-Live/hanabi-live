@@ -3,8 +3,8 @@
 import { VERSION } from "@hanabi/data";
 import type { HTTPLoginData } from "@hanabi/server";
 import * as KeyCode from "keycode-js";
+import { globals } from "../GlobalsA";
 import { FADE_TIME } from "../constants";
-import { globals } from "../globals";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";

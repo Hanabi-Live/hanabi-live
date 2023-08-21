@@ -1,4 +1,4 @@
-import { globals } from "../globals";
+import { globals } from "../GlobalsA";
 
 // Constants
 const minutesToTriggerIdle = 15;
