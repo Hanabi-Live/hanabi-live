@@ -20,7 +20,7 @@ export function clue(
 ): string {
   const giver = metadata.playerNames[action.giver] ?? "unknown";
   const target = metadata.playerNames[action.target] ?? "unknown";
-  const word = WORDS[action.list.length];
+  const word = WORDS[action.list.length] ?? "unknown";
   const variant = getVariant(metadata.options.variantName);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
