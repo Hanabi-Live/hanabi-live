@@ -67,45 +67,44 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   ) {
     // A card may be clueable by more than one color, so we need to figure out which color to use.
     // First, find out if they have a clue color button selected.
-    const clueButton =
-      globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
-    let clueColor: Color;
-    const suit = globals.variant.suits[card.state.suitIndex]!;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (clueButton === null) {
+    const clueButton = globals.elements.clueTypeButtonGroup?.getPressed() as
+      | ColorButton
+      | null
+      | undefined;
+    let clueColor: Color | undefined;
+    const suit = globals.variant.suits[card.state.suitIndex];
+    if (suit === undefined) {
+      throw new Error(
+        `Failed to find the suit at index: ${card.state.suitIndex}`,
+      );
+    }
+
+    if (clueButton === null || clueButton === undefined) {
       // They have not clicked on a clue color button yet, so assume that they want to use the first
       // possible color of the card.
-      clueColor = suit.clueColors[0]!;
+      clueColor = suit.clueColors[0];
     } else if (typeof clueButton.clue.value === "number") {
       // They have clicked on a number clue button, so assume that they want to use the first
       // possible color of the card.
-      clueColor = suit.clueColors[0]!;
+      clueColor = suit.clueColors[0];
     } else {
       // They have clicked on a color button, so assume that they want to use that color.
       clueColor = clueButton.clue.value;
 
       // See if this is a valid color for the clicked card.
       const clueColorIndex = suit.clueColors.indexOf(clueColor);
-      // Ignore clue validation if suit has no clueColors.
+      // Ignore clue validation if the suit has no clue colors.
       if (suit.clueColors.length > 0 && clueColorIndex === -1) {
         // It is not possible to clue this color to this card, so default to using the first valid
         // color.
-        clueColor = suit.clueColors[0]!;
+        clueColor = suit.clueColors[0];
       }
     }
 
-    let colorIndex = colorToColorIndex(clueColor, globals.variant);
-    if (suit.clueColors.length === 0) {
-      if (suit.fillColors.length === 0) {
-        // Send invalid action to server since we tried to color clue a card that truly has no
-        // color.
-        colorIndex = -1;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (clueColor === undefined) {
-        // Use whatever color is index 0, since the suit had no defined clueColors but has colors.
-        colorIndex = 0;
-      }
-    }
+    const colorIndex =
+      clueColor === undefined
+        ? 0 // Use the color at index 0 as a default.
+        : colorToColorIndex(clueColor, globals.variant);
 
     turn.end({
       type: ActionType.ColorClue,

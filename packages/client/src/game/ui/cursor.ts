@@ -71,10 +71,10 @@ export function elementOverlaps(element: LayoutChild): boolean {
     return false;
   }
 
+  // This method will return undefined if the cursor is not inside of the stage.
   const pos = globals.stage.getPointerPosition();
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (pos === undefined) {
-    // This method will return undefined if the cursor is not inside of the stage.
     return false;
   }
 

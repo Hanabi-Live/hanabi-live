@@ -20,22 +20,24 @@ export function checkLegal(): void {
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
 
-  const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
+  const target = clueTargetButtonGroup?.getPressed() as
+    | PlayerButton
+    | null
+    | undefined;
   const { clueTypeButtonGroup } = globals.elements;
-  const clueButton = clueTypeButtonGroup!.getPressed() as
+  const clueButton = clueTypeButtonGroup?.getPressed() as
     | ColorButton
-    | RankButton;
+    | RankButton
+    | null
+    | undefined;
 
   if (
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     target === undefined ||
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    target === null || // They have not selected a target player
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    target === null ||
     clueButton === undefined ||
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    clueButton === null // They have not selected a clue type
+    clueButton === null
   ) {
+    // They have not selected a player or a clue type.
     globals.elements.giveClueButton!.setEnabled(false);
     return;
   }
@@ -136,13 +138,29 @@ export function give(): void {
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
 
-  const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
+  const target = clueTargetButtonGroup?.getPressed() as
+    | PlayerButton
+    | null
+    | undefined;
   const { clueTypeButtonGroup } = globals.elements;
-  const clueButton = clueTypeButtonGroup!.getPressed() as
+  const clueButton = clueTypeButtonGroup?.getPressed() as
     | ColorButton
-    | RankButton;
+    | RankButton
+    | null
+    | undefined;
 
-  if (!shouldGiveClue(target, clueButton)) {
+  if (
+    target === undefined ||
+    target === null ||
+    clueButton === undefined ||
+    clueButton === null
+  ) {
+    // They have not selected a player or a clue type.
+    globals.elements.giveClueButton!.setEnabled(false);
+    return;
+  }
+
+  if (!shouldGiveClue()) {
     return;
   }
 
@@ -183,10 +201,7 @@ export function give(): void {
   });
 }
 
-function shouldGiveClue(
-  target: PlayerButton,
-  clueButton: ColorButton | RankButton,
-) {
+function shouldGiveClue() {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const { ourPlayerIndex } = globals.metadata;
   const ongoingGameState =
@@ -201,14 +216,6 @@ function shouldGiveClue(
     // We can only give a clue if there is a clue token available.
     ongoingGameState.clueTokens >=
       clueTokensRules.getAdjusted(1, globals.variant) &&
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    target !== undefined && // We might have not selected a clue recipient.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    target !== null && // We might have not selected a clue recipient.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    clueButton !== undefined && // We might have not selected a type of clue.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    clueButton !== null && // We might have not selected a type of clue.
     // We might be trying to give an invalid clue (e.g. an Empty Clue)
     globals.elements.giveClueButton!.enabled &&
     Date.now() - globals.UIClickTime > 1000 // Prevent the user from accidentally giving a clue.
