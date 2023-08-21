@@ -1,4 +1,4 @@
-import { ReadonlySet } from "@hanabi/utils";
+import { ReadonlySet, trimPrefix } from "@hanabi/utils";
 import type { Suit } from "./interfaces/Suit";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
@@ -60,9 +60,6 @@ export const ALL_RESERVED_NOTES = new ReadonlySet<string>([
   ...UNCLUED_NOTES,
 ]);
 
-/** Some suits have a "Dark" prefix and we want to skip over those letters. */
-const SUIT_ABBREVIATION_BLACKLIST = new ReadonlySet(["d", "a", "r", "k"]);
-
 /**
  * Suit abbreviations are hard-coded in the "suits.json" file. In some variants, two or more suits
  * can have overlapping letter abbreviations. If this is the case, we dynamically find a new
@@ -71,49 +68,64 @@ const SUIT_ABBREVIATION_BLACKLIST = new ReadonlySet(["d", "a", "r", "k"]);
  * Note that we cannot simply hard-code an alternate abbreviation in the "suits.json" file because
  * there are too many overlapping possibilities.
  */
-export function getSuitAbbreviationsForVariant(
+export function getUppercaseSuitAbbreviationsForVariant(
   variantName: string,
   suits: Suit[],
 ): readonly string[] {
-  const abbreviations: string[] = [];
+  const lowercaseAbbreviations: string[] = [];
 
   for (const suit of suits) {
-    const abbreviationToUse = getSuitAbbreviationToUse(
+    const lowercaseAbbreviationToUse = getLowercaseSuitAbbreviationToUse(
       variantName,
       suit,
-      abbreviations,
+      lowercaseAbbreviations,
     );
-    abbreviations.push(abbreviationToUse);
+    lowercaseAbbreviations.push(lowercaseAbbreviationToUse);
+  }
+
+  // Validate that each suit has a valid abbreviation.
+  for (const abbreviation of lowercaseAbbreviations) {
+    if (abbreviation.trim() === "") {
+      throw new Error(
+        `The variant "${variantName}" has an invalid suit abbreviation.`,
+      );
+    }
   }
 
   // Validate that each suit has a unique abbreviation.
-  const abbreviationSet = new Set(abbreviations);
-  if (abbreviationSet.size !== abbreviations.length) {
+  const abbreviationSet = new Set(lowercaseAbbreviations);
+  if (abbreviationSet.size !== lowercaseAbbreviations.length) {
     throw new Error(
-      `The variant "${variantName}" has two suits with the same abbreviation: ${abbreviations}`,
+      `The variant "${variantName}" has two suits with the same abbreviation: ${lowercaseAbbreviations}`,
     );
   }
 
-  return abbreviations.map((abbreviation) => abbreviation.toUpperCase());
+  return lowercaseAbbreviations.map((abbreviation) =>
+    abbreviation.toUpperCase(),
+  );
 }
 
-function getSuitAbbreviationToUse(
+function getLowercaseSuitAbbreviationToUse(
   variantName: string,
   suit: Suit,
-  abbreviationsUsedSoFar: string[],
+  lowercaseAbbreviationsUsedSoFar: string[],
 ): string {
   const lowercaseAbbreviation = suit.abbreviation.toLowerCase();
-  if (!abbreviationsUsedSoFar.includes(lowercaseAbbreviation)) {
+  if (!lowercaseAbbreviationsUsedSoFar.includes(lowercaseAbbreviation)) {
     return lowercaseAbbreviation;
   }
 
   // There is an overlap with the normal abbreviation.
-  for (const suitLetterUppercase of suit.displayName) {
-    const suitLetterLowercase = suitLetterUppercase.toLowerCase();
+  const suitCharactersToConsider = trimPrefix(suit.displayName, "Dark ");
+  for (const suitCharacter of suitCharactersToConsider) {
+    if (suitCharacter === " ") {
+      continue;
+    }
+
+    const suitLetterLowercase = suitCharacter.toLowerCase();
     if (
-      !abbreviationsUsedSoFar.includes(suitLetterLowercase) &&
-      !ALL_RESERVED_NOTES.has(suitLetterLowercase) && // e.g. Ban "f"
-      !SUIT_ABBREVIATION_BLACKLIST.has(suitLetterLowercase) // e.g. Ban "d"
+      !lowercaseAbbreviationsUsedSoFar.includes(suitLetterLowercase) &&
+      !ALL_RESERVED_NOTES.has(suitLetterLowercase) // e.g. Ban "f"
     ) {
       return suitLetterLowercase;
     }

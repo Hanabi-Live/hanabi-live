@@ -1,5 +1,5 @@
 import { parseIntSafe } from "@hanabi/utils";
-import { getSuitAbbreviationsForVariant } from "./abbreviations";
+import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
 import {
   DEFAULT_CARD_RANKS,
   DEFAULT_CLUE_RANKS,
@@ -294,7 +294,10 @@ export function variantsInit(
     );
 
     // Prepare the abbreviations for each suit.
-    const suitAbbreviations = getSuitAbbreviationsForVariant(name, suits);
+    const suitAbbreviations = getUppercaseSuitAbbreviationsForVariant(
+      name,
+      suits,
+    );
 
     // Create the regular expression pattern for identity notes in this variant.
     const isUpOrDown = name.startsWith("Up or Down");

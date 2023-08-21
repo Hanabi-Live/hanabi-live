@@ -365,7 +365,7 @@ function gameStateReducerFunction(
      */
     // TODO: This message is unnecessary and will be removed in a future version of the code
     case "strike": {
-      // We intentionally do not valid the size of the strikes array because we allow more than 3
+      // We intentionally do not validate the size of the strikes array because we allow more than 3
       // strikes in hypotheticals.
       state.strikes.push({
         order: action.order,

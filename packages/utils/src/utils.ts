@@ -149,6 +149,15 @@ export function parseIntSafe(string: string): number | undefined {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
 export function todo(...args: unknown[]): void {}
 
+/** Helper function to trim a prefix from a string, if it exists. Returns the trimmed string. */
+export function trimPrefix(string: string, prefix: string): string {
+  if (!string.startsWith(prefix)) {
+    return string;
+  }
+
+  return string.slice(prefix.length);
+}
+
 /** Helper function to trim a suffix from a string, if it exists. Returns the trimmed string. */
 export function trimSuffix(string: string, prefix: string): string {
   if (!string.endsWith(prefix)) {
