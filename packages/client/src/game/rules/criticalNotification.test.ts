@@ -3,6 +3,7 @@
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
+import type { GameState } from "../types/GameState";
 import type { State } from "../types/State";
 import { isCritical } from "./variants/reversible";
 
@@ -20,7 +21,7 @@ describe("UI", () => {
 
     describe("at turn 3", () => {
       test("red S is not critical", () => {
-        const turnState = getStateAtTurn(testState, 2)!;
+        const turnState = getGameStateAtTurn(testState, 2);
         expect(
           isCritical(
             redSuit,
@@ -35,7 +36,7 @@ describe("UI", () => {
 
     describe("at turn 6", () => {
       test("red 1 is not critical", () => {
-        const turnState = getStateAtTurn(testState, 5)!;
+        const turnState = getGameStateAtTurn(testState, 5);
         expect(
           isCritical(
             redSuit,
@@ -50,7 +51,7 @@ describe("UI", () => {
 
     describe("at turn 22", () => {
       test("red 5 is critical", () => {
-        const turnState = getStateAtTurn(testState, 21)!;
+        const turnState = getGameStateAtTurn(testState, 21);
         expect(
           isCritical(
             redSuit,
@@ -65,6 +66,11 @@ describe("UI", () => {
   });
 });
 
-function getStateAtTurn(state: State, turn: number) {
-  return state.replay.states[turn];
+function getGameStateAtTurn(state: State, turn: number): GameState {
+  const gameState = state.replay.states[turn];
+  if (gameState === undefined) {
+    throw new Error(`Failed to get the game state at turn: ${turn}`);
+  }
+
+  return gameState;
 }
