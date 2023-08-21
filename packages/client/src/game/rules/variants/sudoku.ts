@@ -7,7 +7,7 @@ import type { Tuple } from "@hanabi/utils";
 import { newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
-import { createAllDiscardedMap } from "./discardHelpers";
+import { getAllDiscardedSet } from "./discardHelpers";
 
 const NUM_SUITS_SUDOKU = 5;
 
@@ -19,9 +19,8 @@ export function sudokuCanStillBePlayed(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
-  const { suitMaxScores } = sudokuWalkUpAll(
-    createAllDiscardedMap(variant, deck, suitIndex),
-  );
+  const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
+  const { suitMaxScores } = sudokuWalkUpAll(allDiscardedSet);
 
   const playStackStart = playStackStarts[suitIndex];
   if (playStackStart === undefined) {
@@ -30,18 +29,18 @@ export function sudokuCanStillBePlayed(
     );
   }
 
-  const possibleStarts =
+  const possibleStackStartRanks =
     playStackStart === null
-      ? sudokuGetFreeStackStarts(playStackStarts)
+      ? sudokuGetUnusedStackStartRanks(playStackStarts)
       : [playStackStart];
 
-  for (const stackStart of possibleStarts) {
+  for (const possibleStartRank of possibleStackStartRanks) {
     // Here, we check if we can play the specified card if we start the stack at `stackStart`. For
     // this, note that we can compare the difference of our card and the start with the longest play
     // sequence starting at the start, thereby checking if the specified rank is included.
     if (
-      suitMaxScores[stackStart - 1]! >
-      (rank - stackStart + DEFAULT_FINISHED_STACK_LENGTH) %
+      suitMaxScores[possibleStartRank - 1]! >
+      (rank - possibleStartRank + DEFAULT_FINISHED_STACK_LENGTH) %
         DEFAULT_FINISHED_STACK_LENGTH
     ) {
       return true;
@@ -58,7 +57,7 @@ export function sudokuCanStillBePlayed(
  * returned array is [5, 5, 5, 5, 5]. This functions mimics the method `sudokuWalkUpAll` from the
  * server file "variants_sudoku.go".
  */
-function sudokuWalkUpAll(allDiscardedMap: Map<number, boolean>): {
+function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   allMax: boolean;
   suitMaxScores: number[];
 } {
@@ -66,7 +65,7 @@ function sudokuWalkUpAll(allDiscardedMap: Map<number, boolean>): {
   let lastDead = 0;
 
   for (const currentRank of DEFAULT_CARD_RANKS) {
-    if (allDiscardedMap.get(currentRank)!) {
+    if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (let writeRank = lastDead + 1; writeRank < currentRank; writeRank++) {
         maxScores[writeRank - 1] = currentRank - writeRank;
@@ -103,18 +102,10 @@ function sudokuWalkUpAll(allDiscardedMap: Map<number, boolean>): {
 /**
  * This functions mimics `variantSudokuGetFreeStackStarts` from "variants_sudoku.go" in the server.
  */
-function sudokuGetFreeStackStarts(
+function sudokuGetUnusedStackStartRanks(
   playStackStarts: GameState["playStackStarts"],
-): number[] {
-  const possibleStackStarts: number[] = [];
-
-  for (const rank of DEFAULT_CARD_RANKS) {
-    if (!playStackStarts.includes(rank)) {
-      possibleStackStarts.push(rank);
-    }
-  }
-
-  return possibleStackStarts;
+): Rank[] {
+  return DEFAULT_CARD_RANKS.filter((rank) => !playStackStarts.includes(rank));
 }
 
 /**
@@ -140,9 +131,8 @@ export function getMaxScorePerStack(
   for (const [i, stackStart] of playStackStarts.entries()) {
     const suitIndex = i as SuitIndex;
 
-    const { allMax, suitMaxScores } = sudokuWalkUpAll(
-      createAllDiscardedMap(variant, deck, suitIndex),
-    );
+    const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
+    const { allMax, suitMaxScores } = sudokuWalkUpAll(allDiscardedSet);
 
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
@@ -165,7 +155,7 @@ export function getMaxScorePerStack(
   // Solve the assignment problem.
   const unassigned = -1;
 
-  const possibleStackStarts = sudokuGetFreeStackStarts(playStackStarts);
+  const possibleStackStarts = sudokuGetUnusedStackStartRanks(playStackStarts);
 
   // Value of the best assignment found so far.
   let bestAssignmentSum = 0;

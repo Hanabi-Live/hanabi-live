@@ -45,7 +45,7 @@ module.exports = {
 
     /**
      * Documentation:
-     * https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-non-null-assertion.md
+     * https://typescript-eslint.io/rules/no-non-null-assertion/
      *
      * Defined at:
      * https://isaacscript.github.io/eslint-config-isaacscript
@@ -103,4 +103,13 @@ module.exports = {
      */
     "unicorn/no-array-reduce": "off",
   },
+
+  overrides: [
+    {
+      files: ["src/game/rules/**/*.ts"],
+      rules: {
+        "@typescript-eslint/no-non-null-assertion": "off", // TODO: enable
+      },
+    },
+  ],
 };

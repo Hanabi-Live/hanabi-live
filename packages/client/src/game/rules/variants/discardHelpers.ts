@@ -34,17 +34,19 @@ export function discardedHelpers(
   return { isLastCopy, isAllDiscarded };
 }
 
-export function createAllDiscardedMap(
+export function getAllDiscardedSet(
   variant: Variant,
   deck: readonly CardState[],
   suitIndex: SuitIndex,
-): Map<number, boolean> {
+): Set<Rank> {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
 
-  const allDiscarded = new Map<number, boolean>();
+  const allDiscardedSet = new Set<Rank>();
   for (const variantRank of variant.ranks) {
-    allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
+    if (isAllDiscarded(suitIndex, variantRank)) {
+      allDiscardedSet.add(variantRank);
+    }
   }
 
-  return allDiscarded;
+  return allDiscardedSet;
 }

@@ -13,7 +13,7 @@ import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { StackDirection } from "../../types/StackDirection";
 import * as deckRules from "../deck";
-import { createAllDiscardedMap, discardedHelpers } from "./discardHelpers";
+import { discardedHelpers, getAllDiscardedSet } from "./discardHelpers";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -88,7 +88,7 @@ function isDead(
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ) {
-  const allDiscarded = createAllDiscardedMap(variant, deck, suitIndex);
+  const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
 
   // We denote by this either the true direction or the only remaining direction in case we already
   // lost the necessary cards for the other direction in "Up or Down".
@@ -96,19 +96,19 @@ function isDead(
 
   if (
     impliedDirection === StackDirection.Undecided &&
-    allDiscarded.get(START_CARD_RANK) === true
+    allDiscardedSet.has(START_CARD_RANK)
   ) {
     // Get rid of the trivial case where the whole suit is dead.
     if (
-      allDiscarded.get(START_CARD_RANK) === true &&
-      allDiscarded.get(1) === true &&
-      allDiscarded.get(5) === true
+      allDiscardedSet.has(START_CARD_RANK) &&
+      allDiscardedSet.has(1) &&
+      allDiscardedSet.has(5)
     ) {
       return true;
     }
-    if (allDiscarded.get(5) === true) {
+    if (allDiscardedSet.has(5)) {
       impliedDirection = StackDirection.Up;
-    } else if (allDiscarded.get(1) === true) {
+    } else if (allDiscardedSet.has(1)) {
       impliedDirection = StackDirection.Down;
     }
   }
@@ -119,7 +119,7 @@ function isDead(
     // of Start or 1 is still alive, since we filtered out the case where all of 1, 5, and Start are
     // dead already.
     for (let nextRank = variant.upOrDown ? 2 : 1; nextRank < rank; nextRank++) {
-      if (allDiscarded.get(nextRank) === true) {
+      if (allDiscardedSet.has(nextRank)) {
         return true;
       }
     }
@@ -130,7 +130,7 @@ function isDead(
   if (impliedDirection === StackDirection.Down) {
     // The above comment also applies for `StackDirection.Down`.
     for (let nextRank = variant.upOrDown ? 4 : 5; nextRank > rank; nextRank--) {
-      if (allDiscarded.get(nextRank) === true) {
+      if (allDiscardedSet.has(nextRank)) {
         return true;
       }
     }
@@ -143,9 +143,7 @@ function isDead(
   // Therefore, 2's and 4's can both be played by starting the stack in the corresponding direction.
   // The only possible card that could still be dead is a 3, which only happens if we lost all 2's
   // and 4's.
-  return (
-    allDiscarded.get(2) === true && allDiscarded.get(4) === true && rank === 3
-  );
+  return allDiscardedSet.has(2) && allDiscardedSet.has(4) && rank === 3;
 }
 
 /**
