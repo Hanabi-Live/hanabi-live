@@ -7,7 +7,7 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi/data";
-import { STACK_BASE_RANK, getSuit } from "@hanabi/data";
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, getSuit } from "@hanabi/data";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -51,6 +51,7 @@ enum PipState {
 }
 
 const DECK_BACK_IMAGE = "deck-back";
+const UNKNOWN_SUIT = getSuit("Unknown");
 
 /** Represents a single card. It has a `LayoutChild` parent. */
 export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
@@ -526,7 +527,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   getBareName(
     morphedBlank: boolean,
     suitToShow: Suit | null,
-    rankToShow: Rank | null,
+    rankToShow: number | null,
   ): string {
     // If a card is morphed to a null identity, the card should appear blank no matter what.
     if (morphedBlank) {
@@ -546,15 +547,18 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // In Real-Life mode, always show the vanilla card back if the card is not fully revealed.
     if (
       globals.lobby.settings.realLifeMode &&
-      (suitToShow === null || rankToShow === null)
+      (suitToShow === null || rankToShow === null) &&
+      !this.isStackBase
     ) {
       return DECK_BACK_IMAGE;
     }
 
-    /** The unknown suit is the colorless suit used for unclued cards. */
-    const unknownSuit = getSuit("Unknown");
-    const suitName = suitToShow === null ? unknownSuit.name : suitToShow.name;
-    return `card-${suitName}-${rankToShow}`;
+    const bareNameSuit = suitToShow?.name ?? UNKNOWN_SUIT.name;
+    const bareNameRank = this.isStackBase
+      ? STACK_BASE_RANK
+      : rankToShow ?? UNKNOWN_CARD_RANK;
+
+    return `card-${bareNameSuit}-${bareNameRank}`;
   }
 
   // --------------
@@ -687,8 +691,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     } else {
       const suitUnknown = suitToShow === null;
       const rankUnknown = rankToShow === null;
-      this.suitPips.visible(suitUnknown);
-      this.rankPips.visible(rankUnknown);
+      this.suitPips.visible(suitUnknown && !this.isStackBase);
+      this.rankPips.visible(rankUnknown && !this.isStackBase);
     }
 
     // Show or hide the "question mark" image.

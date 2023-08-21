@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- brand all types in "@hanabi/data/types"
 - PlayerIndex type (maybe, look to see if it is useful first)
 - CardOrder type (branded)
 - redo install instructions without choco
