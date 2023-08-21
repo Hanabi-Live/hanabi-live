@@ -2,17 +2,12 @@
 // for "Up Or Down" and "Reversed" variants.
 
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import {
-  DEFAULT_CARD_RANKS,
-  DEFAULT_FINISHED_STACK_LENGTH,
-  START_CARD_RANK,
-} from "@hanabi/data";
+import { DEFAULT_FINISHED_STACK_LENGTH, START_CARD_RANK } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { StackDirection } from "../../types/StackDirection";
-import * as deckRules from "../deck";
 import { discardedHelpers, getAllDiscardedSet } from "./discardHelpers";
 
 /**
@@ -160,21 +155,10 @@ export function getMaxScorePerStack(
 ): Tuple<number, NumSuits> {
   const maxScorePerStack = newArray(variant.suits.length, 0);
 
-  for (const [i, suit] of variant.suits.entries()) {
+  for (const i of variant.suits.keys()) {
     const suitIndex = i as SuitIndex;
 
-    // Make a map that shows if all of some particular rank in this suit has been discarded.
-    const ranks: Rank[] = [...DEFAULT_CARD_RANKS];
-    if (variant.upOrDown) {
-      ranks.push(START_CARD_RANK);
-    }
-
-    const allDiscarded = new Map<number, boolean>();
-    for (const rank of ranks) {
-      const total = deckRules.numCopiesOfCard(suit, rank, variant);
-      const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
-      allDiscarded.set(rank, total === discarded);
-    }
+    const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
 
     const stackDirection = playStackDirections[suitIndex];
     if (stackDirection === undefined) {
@@ -183,21 +167,21 @@ export function getMaxScorePerStack(
 
     switch (stackDirection) {
       case StackDirection.Undecided: {
-        const upWalk = walkUp(allDiscarded, variant);
-        const downWalk = walkDown(allDiscarded, variant);
+        const upWalk = walkUp(allDiscardedSet, variant);
+        const downWalk = walkDown(allDiscardedSet, variant);
         maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
 
         break;
       }
 
       case StackDirection.Up: {
-        maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
+        maxScorePerStack[suitIndex] += walkUp(allDiscardedSet, variant);
 
         break;
       }
 
       case StackDirection.Down: {
-        maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
+        maxScorePerStack[suitIndex] += walkDown(allDiscardedSet, variant);
 
         break;
       }
@@ -214,16 +198,16 @@ export function getMaxScorePerStack(
 }
 
 /** A helper function for `getMaxScore`. */
-function walkUp(allDiscarded: Map<number, boolean>, variant: Variant): number {
+function walkUp(allDiscardedSet: Set<Rank>, variant: Variant): number {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.
   if (variant.upOrDown) {
-    if (allDiscarded.get(1)! && allDiscarded.get(START_CARD_RANK)!) {
+    if (allDiscardedSet.has(1) && allDiscardedSet.has(START_CARD_RANK)) {
       // In "Up or Down" variants, you can start with 1 or START when going up.
       return 0;
     }
-  } else if (allDiscarded.get(1)!) {
+  } else if (allDiscardedSet.has(1)) {
     // Otherwise, only 1
     return 0;
   }
@@ -231,7 +215,7 @@ function walkUp(allDiscarded: Map<number, boolean>, variant: Variant): number {
 
   // Second, walk upwards
   for (let rank = 2; rank <= 5; rank++) {
-    if (allDiscarded.get(rank)!) {
+    if (allDiscardedSet.has(rank)) {
       break;
     }
     cardsThatCanStillBePlayed++;
@@ -241,16 +225,16 @@ function walkUp(allDiscarded: Map<number, boolean>, variant: Variant): number {
 }
 
 /** A helper function for `getMaxScore`. */
-function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
+function walkDown(allDiscardedSet: Set<Rank>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.
   if (variant.upOrDown) {
-    if (allDiscarded.get(5)! && allDiscarded.get(START_CARD_RANK)!) {
+    if (allDiscardedSet.has(5) && allDiscardedSet.has(START_CARD_RANK)) {
       // In "Up or Down" variants, you can start with 5 or START when going down.
       return 0;
     }
-  } else if (allDiscarded.get(5)!) {
+  } else if (allDiscardedSet.has(5)) {
     // Otherwise, only 5.
     return 0;
   }
@@ -258,7 +242,7 @@ function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
 
   // Second, walk downwards.
   for (let rank = 4; rank >= 1; rank--) {
-    if (allDiscarded.get(rank)!) {
+    if (allDiscardedSet.has(rank)) {
       break;
     }
     cardsThatCanStillBePlayed++;
