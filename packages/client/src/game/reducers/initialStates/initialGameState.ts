@@ -64,6 +64,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   >;
 
   // Stats properties
+  const { maxScore } = variant;
   const maxScorePerStack = newArray(
     variant.suits.length,
     DEFAULT_FINISHED_STACK_LENGTH,
@@ -80,7 +81,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
   const pace = statsRules.startingPace(
     startingDeckSize,
-    variant.suits.length * DEFAULT_FINISHED_STACK_LENGTH,
+    maxScore,
     endGameLength,
   );
   const paceRisk = statsRules.paceRisk(pace, options.numPlayers);
@@ -120,7 +121,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     discardStacks,
     clues: [],
     stats: {
-      maxScore: variant.maxScore,
+      maxScore,
       maxScorePerStack,
 
       pace,

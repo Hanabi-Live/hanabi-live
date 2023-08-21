@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- remove type assertions from sudoku.ts
 - refactor -1 from specialRank type and convert to undefined or null
 - Search for "See:" and convert to JSDoc see tag
 - brand all types in "@hanabi/data/types"
