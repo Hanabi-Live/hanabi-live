@@ -1,9 +1,11 @@
+import type { Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import { getPlayerName, getPlayerNames } from "../types/GameMetadata";
+import type { MsgClue } from "../types/MsgClue";
 import type { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import * as cardRules from "./card";
 import * as cluesRules from "./clues";
@@ -30,18 +32,7 @@ export function clue(
     metadata.characterAssignments,
   );
   if (variant.cowAndPig || variant.duck || characterName === "Quacker") {
-    let actionName = "clues";
-    if (variant.cowAndPig) {
-      if (action.clue.type === ClueType.Color) {
-        actionName = "moos";
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (action.clue.type === ClueType.Rank) {
-        actionName = "oinks";
-      }
-    } else if (variant.duck || characterName === "Quacker") {
-      actionName = "quacks";
-    }
-
+    const actionName = getClueActionName(action.clue, variant, characterName);
     const targetSuffix = target.endsWith("s") ? "'" : "'s";
 
     // Create a list of slot numbers that correspond to the cards touched.
@@ -73,6 +64,30 @@ export function clue(
   }
 
   return `${hypoPrefix}${giver} tells ${target} about ${word} ${clueName}`;
+}
+
+function getClueActionName(
+  msgClue: MsgClue,
+  variant: Variant,
+  characterName: string,
+): string {
+  if (variant.cowAndPig) {
+    switch (msgClue.type) {
+      case ClueType.Color: {
+        return "moos";
+      }
+
+      case ClueType.Rank: {
+        return "oinks";
+      }
+    }
+  }
+
+  if (variant.duck || characterName === "Quacker") {
+    return "quacks";
+  }
+
+  return "clues";
 }
 
 export function gameOver(

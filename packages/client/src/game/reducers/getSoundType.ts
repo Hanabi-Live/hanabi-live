@@ -47,16 +47,15 @@ export function getSoundType(
       }
 
       if (variant.cowAndPig) {
-        if (action.clue.type === ClueType.Color) {
-          return SoundType.Moo;
-        }
+        switch (action.clue.type) {
+          case ClueType.Color: {
+            return SoundType.Moo;
+          }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (action.clue.type === ClueType.Rank) {
-          return SoundType.Oink;
+          case ClueType.Rank: {
+            return SoundType.Oink;
+          }
         }
-
-        throw new Error("Unknown clue type.");
       }
 
       if (variant.duck) {

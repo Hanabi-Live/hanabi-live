@@ -16,13 +16,14 @@ export function getClueName(
   characterName: string,
 ): string {
   if (variant.cowAndPig) {
-    if (clueType === ClueType.Color) {
-      return "Moo";
-    }
+    switch (clueType) {
+      case ClueType.Color: {
+        return "Moo";
+      }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (clueType === ClueType.Rank) {
-      return "Oink";
+      case ClueType.Rank: {
+        return "Oink";
+      }
     }
   }
 
@@ -40,17 +41,16 @@ export function getClueName(
     }
   }
 
-  if (clueType === ClueType.Color) {
-    const color = variant.clueColors[clueValue];
-    return color === undefined ? "Unknown" : color.name;
-  }
+  switch (clueType) {
+    case ClueType.Color: {
+      const color = variant.clueColors[clueValue];
+      return color === undefined ? "Unknown" : color.name;
+    }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (clueType === ClueType.Rank) {
-    return clueValue.toString();
+    case ClueType.Rank: {
+      return clueValue.toString();
+    }
   }
-
-  throw new Error("Invalid clue type.");
 }
 
 /**
