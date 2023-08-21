@@ -23,10 +23,17 @@ export function sudokuCanStillBePlayed(
     createAllDiscardedMap(variant, deck, suitIndex),
   );
 
+  const playStackStart = playStackStarts[suitIndex];
+  if (playStackStart === undefined) {
+    throw new Error(
+      `Failed to find the play stack start for suit index: ${suitIndex}`,
+    );
+  }
+
   const possibleStarts =
-    playStackStarts[suitIndex] === undefined
+    playStackStart === null
       ? sudokuGetFreeStackStarts(playStackStarts)
-      : [playStackStarts[suitIndex]!];
+      : [playStackStart];
 
   for (const stackStart of possibleStarts) {
     // Here, we check if we can play the specified card if we start the stack at `stackStart`. For
