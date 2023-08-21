@@ -3,6 +3,7 @@ import type {
   NumSuits,
   Rank,
   SuitIndex,
+  SuitRankMap,
   Variant,
 } from "@hanabi/data";
 import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
@@ -42,7 +43,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   // Game state properties
   const turn = initialTurnState(options.startingPlayer);
   const cardsRemainingInTheDeck = deckRules.totalCards(variant);
-  const cardStatus = getInitialCardStatus(
+  const cardStatus = getInitialCardStatusMap(
     variant,
     playStacks,
     playStackDirections,
@@ -136,12 +137,12 @@ export function initialGameState(metadata: GameMetadata): GameState {
   };
 }
 
-function getInitialCardStatus(
+function getInitialCardStatusMap(
   variant: Variant,
   playStacks: GameState["playStacks"],
   playStackDirections: GameState["playStackDirections"],
   playStackStarts: GameState["playStackStarts"],
-) {
+): SuitRankMap<CardStatus> {
   const cardStatus: Partial<
     Record<SuitIndex, Partial<Record<Rank, CardStatus>>>
   > = {};
@@ -162,5 +163,5 @@ function getInitialCardStatus(
     }
   }
 
-  return cardStatus as GameState["cardStatus"];
+  return cardStatus as SuitRankMap<CardStatus>;
 }

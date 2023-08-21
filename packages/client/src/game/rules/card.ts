@@ -1,5 +1,6 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { filterMap } from "@hanabi/utils";
 import type { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
 import type { GameState } from "../types/GameState";
@@ -54,7 +55,13 @@ export function needsToBePlayed(
   variant: Variant,
 ): boolean {
   // First, check to see if a copy of this card has already been played.
-  if (playStacks[suitIndex]!.some((order) => deck[order]!.rank === rank)) {
+  const playStack = playStacks[suitIndex];
+  if (playStack === undefined) {
+    return false;
+  }
+
+  const playStackCards = filterMap(playStack, (order) => deck[order]);
+  if (playStackCards.some((card) => card.rank === rank)) {
     return false;
   }
 
@@ -120,8 +127,10 @@ export function status(
     if (isCritical(suitIndex, rank, deck, playStackDirections, variant)) {
       return CardStatus.Critical;
     }
+
     return CardStatus.NeedsToBePlayed;
   }
+
   return CardStatus.Trash;
 }
 
