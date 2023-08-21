@@ -1,3 +1,4 @@
+import type { NumPlayers } from "../../../../data/src";
 import type { Options } from "../../types/Options";
 
 export interface Game {
@@ -30,7 +31,7 @@ interface VariantStats {
 }
 
 interface BestScore {
-  numPlayers: number;
+  numPlayers: NumPlayers;
   score: number;
   modifier: number;
 }

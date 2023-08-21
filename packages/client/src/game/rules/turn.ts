@@ -1,4 +1,4 @@
-import type { Variant } from "@hanabi/data";
+import type { NumPlayers, Variant } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import type { Options } from "../../types/Options";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -41,7 +41,7 @@ export function shouldPlayOrderInvert(characterName: string): boolean {
 
 export function getNextPlayerIndex(
   currentPlayerIndex: number | null,
-  numPlayers: number,
+  numPlayers: NumPlayers,
   turnsInverted: boolean,
 ): number | null {
   if (currentPlayerIndex === null) {

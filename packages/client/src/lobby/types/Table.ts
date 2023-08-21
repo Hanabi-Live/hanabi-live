@@ -1,3 +1,4 @@
+import type { NumPlayers } from "../../../../data/src";
 import type { Spectator } from "../../game/types/Spectator";
 import type { Options } from "../../types/Options";
 
@@ -6,7 +7,7 @@ export interface Table {
   name: string;
   passwordProtected: boolean;
   joined: boolean;
-  numPlayers: number;
+  numPlayers: NumPlayers;
   owned: boolean;
   options: Options;
   running: boolean;

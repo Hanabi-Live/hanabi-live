@@ -1,7 +1,7 @@
 import { getVariantFromArgs, getVariantFromPartial } from "./chatCommands";
 
 jest.mock("./chat", () => ({}));
-jest.mock("./globals", () => ({}));
+jest.mock("./Globals", () => ({}));
 jest.mock("./lobby/createGame", () => ({}));
 jest.mock("./modals", () => ({}));
 jest.mock("./lobby/createReplayJSON.ts", () => ({}));

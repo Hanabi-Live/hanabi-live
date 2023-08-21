@@ -78,7 +78,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.suits.length * 5,
     endGameLength,
   );
-  const paceRisk = statsRules.paceRisk(options.numPlayers, pace);
+  const paceRisk = statsRules.paceRisk(pace, options.numPlayers);
   const scorePerStack = Array.from(playStacks, (playStack) => playStack.length);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);

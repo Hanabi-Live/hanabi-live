@@ -310,7 +310,7 @@ function drawnCardRevealedToPlayer(
 function canPlayerSeeDrawnCard(
   playerIndex: number,
   drawLocation: number,
-  numPlayers: number,
+  numPlayers: NumPlayers,
   characterAssignments: Readonly<Array<number | null>>,
 ): boolean {
   if (playerIndex === drawLocation) {

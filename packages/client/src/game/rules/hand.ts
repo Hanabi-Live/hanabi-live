@@ -1,5 +1,6 @@
 // Functions related to hand management.
 
+import type { NumPlayers } from "../../../../data/src";
 import type { Options } from "../../types/Options";
 import type { CardState } from "../types/CardState";
 import * as cardRules from "./card";
@@ -12,7 +13,7 @@ export function cardsPerHand(options: Options): number {
   );
 }
 
-function cardsPerHandNatural(numPlayers: number): number {
+function cardsPerHandNatural(numPlayers: NumPlayers): number {
   switch (numPlayers) {
     case 2:
     case 3: {

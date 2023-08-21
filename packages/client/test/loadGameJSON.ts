@@ -1,4 +1,4 @@
-import type { Rank, SuitIndex } from "@hanabi/data";
+import type { NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
@@ -279,7 +279,7 @@ function drawCard(
 }
 
 function dealInitialCards(
-  numPlayers: number,
+  numPlayers: NumPlayers,
   cardsPerHand: number,
   actions: GameAction[],
   deck: CardIdentity[],

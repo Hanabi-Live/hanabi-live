@@ -1,6 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import type { NumSuits, Variant } from "@hanabi/data";
+import type { NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { Tuple } from "../../../../utils/src";
 import { newArray } from "../../../../utils/src";
@@ -95,7 +95,7 @@ export function pace(
 // A measure of how risky a discard would be right now, using different heuristics.
 export function paceRisk(
   currentPace: number | null,
-  numPlayers: number,
+  numPlayers: NumPlayers,
 ): PaceRisk {
   if (currentPace === null) {
     return "Null";
@@ -121,7 +121,7 @@ export function paceRisk(
 }
 
 export function startingDeckSize(
-  numPlayers: number,
+  numPlayers: NumPlayers,
   cardsPerHand: number,
   variant: Variant,
 ): number {
@@ -264,7 +264,7 @@ function getCardsGottenByNotesAdjustment(
 
 // Calculate the minimum amount of efficiency needed in order to win this variant.
 export function minEfficiency(
-  numPlayers: number,
+  numPlayers: NumPlayers,
   endGameLength: number,
   variant: Variant,
   cardsPerHand: number,

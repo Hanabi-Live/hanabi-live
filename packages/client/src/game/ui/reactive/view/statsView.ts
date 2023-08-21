@@ -1,3 +1,4 @@
+import type { NumPlayers } from "../../../../../../data/src";
 import * as statsRules from "../../../rules/stats";
 import type { PaceRisk } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";
@@ -214,7 +215,7 @@ export function onMaxTurnsChanged(data: {
   maxScore: number;
   turnNum: number;
   endTurnNum: number | null;
-  numPlayers: number;
+  numPlayers: NumPlayers;
 }): void {
   const {
     pace,

@@ -1,3 +1,4 @@
+import type { NumPlayers } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import Konva from "konva";
 import * as hand from "../rules/hand";
@@ -456,7 +457,7 @@ export function drawHands(winW: number, winH: number): void {
 function drawDetrimentalCharacters(
   winW: number,
   winH: number,
-  numPlayers: number,
+  numPlayers: NumPlayers,
   i: number,
   j: number,
 ) {
