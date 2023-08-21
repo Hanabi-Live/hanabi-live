@@ -9,7 +9,7 @@ import type { GameState } from "../types/GameState";
 import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
 
-/** @returns Undefined if there are no cards played on the stack. */
+/** @returns `undefined` if there are no cards played on the stack. */
 function lastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
