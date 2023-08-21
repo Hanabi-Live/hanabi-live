@@ -4,9 +4,12 @@ import {
   DEFAULT_FINISHED_STACK_LENGTH,
 } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
+import { newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { createAllDiscardedMap } from "./discardHelpers";
+
+const NUM_SUITS_SUDOKU = 5;
 
 /** Assuming that we are dealing with a Sudoku variant, check if the card still can be played. */
 export function sudokuCanStillBePlayed(
@@ -16,7 +19,7 @@ export function sudokuCanStillBePlayed(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
-  const [_, maxScoresFromStarts] = sudokuWalkUpAll(
+  const { suitMaxScores } = sudokuWalkUpAll(
     createAllDiscardedMap(variant, deck, suitIndex),
   );
 
@@ -30,7 +33,7 @@ export function sudokuCanStillBePlayed(
     // this, note that we can compare the difference of our card and the start with the longest play
     // sequence starting at the start, thereby checking if the specified rank is included.
     if (
-      maxScoresFromStarts[stackStart - 1]! >
+      suitMaxScores[stackStart - 1]! >
       (rank - stackStart + DEFAULT_FINISHED_STACK_LENGTH) %
         DEFAULT_FINISHED_STACK_LENGTH
     ) {
@@ -48,16 +51,11 @@ export function sudokuCanStillBePlayed(
  * returned array is [5, 5, 5, 5, 5]. This functions mimics the method `sudokuWalkUpAll` from the
  * server file "variants_sudoku.go".
  */
-function sudokuWalkUpAll(
-  allDiscardedMap: Map<number, boolean>,
-): [boolean, number[]] {
-  const maxScores = [
-    DEFAULT_FINISHED_STACK_LENGTH,
-    DEFAULT_FINISHED_STACK_LENGTH,
-    DEFAULT_FINISHED_STACK_LENGTH,
-    DEFAULT_FINISHED_STACK_LENGTH,
-    DEFAULT_FINISHED_STACK_LENGTH,
-  ];
+function sudokuWalkUpAll(allDiscardedMap: Map<number, boolean>): {
+  allMax: boolean;
+  suitMaxScores: number[];
+} {
+  const maxScores = newArray(NUM_SUITS_SUDOKU, DEFAULT_FINISHED_STACK_LENGTH);
   let lastDead = 0;
 
   for (const currentRank of DEFAULT_CARD_RANKS) {
@@ -74,7 +72,10 @@ function sudokuWalkUpAll(
 
   // If no value was dead, we did not write anything so far, so we can just return.
   if (lastDead === 0) {
-    return [true, maxScores];
+    return {
+      allMax: true,
+      suitMaxScores: maxScores,
+    };
   }
 
   // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
@@ -86,7 +87,10 @@ function sudokuWalkUpAll(
     );
   }
 
-  return [false, maxScores];
+  return {
+    allMax: false,
+    suitMaxScores: maxScores,
+  };
 }
 
 /**
@@ -129,7 +133,7 @@ export function getMaxScorePerStack(
   for (const [i, stackStart] of playStackStarts.entries()) {
     const suitIndex = i as SuitIndex;
 
-    const [allMax, suitMaxScores] = sudokuWalkUpAll(
+    const { allMax, suitMaxScores } = sudokuWalkUpAll(
       createAllDiscardedMap(variant, deck, suitIndex),
     );
 

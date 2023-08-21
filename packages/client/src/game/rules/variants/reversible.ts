@@ -215,8 +215,8 @@ export function getMaxScorePerStack(
   return maxScorePerStack as Tuple<number, NumSuits>;
 }
 
-// A helper function for "getMaxScore()".
-function walkUp(allDiscarded: Map<number, boolean>, variant: Variant) {
+/** A helper function for `getMaxScore`. */
+function walkUp(allDiscarded: Map<number, boolean>, variant: Variant): number {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.
@@ -242,7 +242,7 @@ function walkUp(allDiscarded: Map<number, boolean>, variant: Variant) {
   return cardsThatCanStillBePlayed;
 }
 
-// A helper function for "getMaxScore()".
+/** A helper function for `getMaxScore`. */
 function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
@@ -269,7 +269,7 @@ function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
   return cardsThatCanStillBePlayed;
 }
 
-// This does not mirror any function on the server.
+/** This does not mirror any function on the server. */
 export function isCritical(
   suitIndex: SuitIndex,
   rank: Rank,
