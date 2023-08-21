@@ -10,6 +10,7 @@ import * as cluesRules from "./clues";
 import * as handRules from "./hand";
 
 const HYPO_PREFIX = "[Hypo] ";
+const WORDS = ["zero", "one", "two", "three", "four", "five", "six"] as const;
 
 export function clue(
   action: ActionClue,
@@ -17,10 +18,9 @@ export function clue(
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
-  const giver = metadata.playerNames[action.giver];
-  let target = metadata.playerNames[action.target]!;
-  const words = ["zero", "one", "two", "three", "four", "five", "six"];
-  const word = words[action.list.length];
+  const giver = metadata.playerNames[action.giver] ?? "unknown";
+  const target = metadata.playerNames[action.target] ?? "unknown";
+  const word = WORDS[action.list.length];
   const variant = getVariant(metadata.options.variantName);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
@@ -42,10 +42,7 @@ export function clue(
       actionName = "quacks";
     }
 
-    target += "'";
-    if (!target.endsWith("s")) {
-      target += "s";
-    }
+    const targetSuffix = target.endsWith("s") ? "'" : "'s";
 
     // Create a list of slot numbers that correspond to the cards touched.
     const slots: number[] = [];
@@ -58,14 +55,10 @@ export function clue(
     }
     slots.sort((a, b) => a - b);
 
-    let slotWord = "slot";
-    if (slots.length !== 1) {
-      slotWord += "s";
-    }
-
+    const slotWord = slots.length !== 1 ? "slots" : "slot";
     const slotsText = slots.join("/");
 
-    return `${hypoPrefix}${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
+    return `${hypoPrefix}${giver} ${actionName} at ${targetSuffix} ${slotWord} ${slotsText}`;
   }
 
   // Handle the default case of a normal clue.
