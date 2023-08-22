@@ -29,11 +29,16 @@ function countPossibleCards(state: CardState) {
 function possibilities(possibleCardsFromClues: readonly SuitRankTuple[]) {
   const possibleSuitIndexes = new Set<SuitIndex>();
   const possibleRanks = new Set<Rank>();
+
   for (const [suitIndex, rank] of possibleCardsFromClues) {
     possibleSuitIndexes.add(suitIndex);
     possibleRanks.add(rank);
   }
-  return { possibleSuitIndexes, possibleRanks };
+
+  return {
+    possibleSuitIndexes,
+    possibleRanks,
+  };
 }
 
 describe("cardPossibilitiesReducer", () => {

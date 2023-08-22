@@ -90,7 +90,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // If the game was exported from the server and it ended in a specific way, the final action will
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
-  const finalGameJSONAction = gameJSON.actions.at(-1)!;
+  const finalGameJSONAction = gameJSON.actions.at(-1);
+  if (finalGameJSONAction === undefined) {
+    throw new Error("Failed to get the final action of the JSON.");
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (finalGameJSONAction.type !== ActionType.GameOver) {
@@ -124,7 +127,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           throw new Error(`Failed to find the hand at index: ${a.target}`);
         }
         const list: CardOrder[] = hand.filter((order) => {
-          const jsonCard = gameJSON.deck[order]!;
+          const jsonCard = gameJSON.deck[order];
+          if (jsonCard === undefined) {
+            throw new Error(`Failed to find the JSON card at index: ${order}`);
+          }
 
           return cluesRules.touchesCard(
             variant,
@@ -152,10 +158,24 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           );
         }
 
+        const playStack = s.playStacks[jsonCard.suitIndex];
+        if (playStack === undefined) {
+          throw new Error(
+            `Failed to get the play stack at suit index: ${jsonCard.suitIndex}`,
+          );
+        }
+
+        const playStackDirection = s.playStackDirections[jsonCard.suitIndex];
+        if (playStackDirection === undefined) {
+          throw new Error(
+            `Failed to get the play stack direction at suit index: ${jsonCard.suitIndex}`,
+          );
+        }
+
         const nextRanks = playStacksRules.nextPlayableRanks(
           jsonCard.suitIndex,
-          s.playStacks[jsonCard.suitIndex]!,
-          s.playStackDirections[jsonCard.suitIndex]!,
+          playStack,
+          playStackDirection,
           s.playStackStarts,
           variant,
           s.deck,
@@ -185,9 +205,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
               nextState.turn.segment,
               s.turn.segment,
               action,
-            )
+            ) &&
+            nextState.turn.segment !== null
           ) {
-            states[nextState.turn.segment!] = nextState;
+            states[nextState.turn.segment] = nextState;
           }
 
           action = {
@@ -218,9 +239,14 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     );
 
     if (
-      segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)
+      segmentRules.shouldStore(
+        nextState.turn.segment,
+        previousSegment,
+        action,
+      ) &&
+      nextState.turn.segment !== null
     ) {
-      states[nextState.turn.segment!] = nextState;
+      states[nextState.turn.segment] = nextState;
     }
 
     return nextState;
@@ -315,12 +341,20 @@ function parseJSONAction(
     case JSONActionType.ActionTypePlay:
     case JSONActionType.ActionTypeDiscard: {
       const isPlay = a.type === JSONActionType.ActionTypePlay;
+
+      const cardIdentity = deck[a.target];
+      if (cardIdentity === undefined) {
+        throw new Error(
+          `Failed to find the card in the deck at index: ${a.target}`,
+        );
+      }
+
       const action = {
         type: isPlay ? "play" : "discard",
         playerIndex: currentPlayer,
         order: a.target,
-        suitIndex: deck[a.target]!.suitIndex,
-        rank: deck[a.target]!.rank,
+        suitIndex: cardIdentity.suitIndex,
+        rank: cardIdentity.rank,
       };
 
       return isPlay ? (action as ActionPlay) : (action as ActionDiscard);
