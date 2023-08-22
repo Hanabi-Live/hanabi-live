@@ -103,13 +103,4 @@ module.exports = {
      */
     "unicorn/no-array-reduce": "off",
   },
-
-  overrides: [
-    {
-      files: ["src/game/reducers/**/*.ts"],
-      rules: {
-        "@typescript-eslint/no-non-null-assertion": "off", // TODO: enable
-      },
-    },
-  ],
 };
