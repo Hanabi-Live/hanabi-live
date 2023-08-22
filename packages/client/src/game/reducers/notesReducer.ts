@@ -39,12 +39,16 @@ function notesReducerFunction(
     }
 
     case "editNote": {
-      notes.ourNotes[action.order] = castDraft(parseNote(variant, action.text));
+      const newNote = parseNote(variant, action.text);
+      notes.ourNotes[action.order] = castDraft(newNote);
 
       if (!playing) {
-        for (const specNote of notes.allNotes[action.order]!) {
-          if (specNote.name === metadata.ourUsername) {
-            specNote.text = action.text;
+        const spectatorNotes = notes.allNotes[action.order];
+        if (spectatorNotes !== undefined) {
+          for (const spectatorNote of spectatorNotes) {
+            if (spectatorNote.name === metadata.ourUsername) {
+              spectatorNote.text = action.text;
+            }
           }
         }
       }
@@ -54,7 +58,8 @@ function notesReducerFunction(
 
     case "noteListPlayer": {
       for (const [i, text] of action.texts.entries()) {
-        notes.ourNotes[i] = castDraft(parseNote(variant, text));
+        const newNote = parseNote(variant, text);
+        notes.ourNotes[i] = castDraft(newNote);
       }
       break;
     }
@@ -74,20 +79,35 @@ function notesReducerFunction(
       // Set the new notes.
       for (const [i, noteTextList] of action.noteTextLists.entries()) {
         // If we are a spectator, copy our notes from combined list.
-        if (action.names[i] === metadata.ourUsername && !playing && !finished) {
+        const name = action.names[i];
+        if (name === undefined) {
+          continue;
+        }
+
+        const isSpectator = action.isSpectators[i];
+        if (isSpectator === undefined) {
+          continue;
+        }
+
+        if (name === metadata.ourUsername && !playing && !finished) {
           for (const [order, text] of noteTextList.entries()) {
-            notes.ourNotes[order] = castDraft(parseNote(variant, text));
+            const newNote = parseNote(variant, text);
+            notes.ourNotes[order] = castDraft(newNote);
           }
         }
 
         for (const [order, text] of noteTextList.entries()) {
-          notes.allNotes[order]!.push({
-            name: action.names[i]!,
-            text,
-            isSpectator: action.isSpectators[i]!,
-          });
+          const spectatorNotes = notes.allNotes[order];
+          if (spectatorNotes !== undefined) {
+            spectatorNotes.push({
+              name,
+              text,
+              isSpectator,
+            });
+          }
         }
       }
+
       break;
     }
   }
@@ -110,9 +130,10 @@ function getNoteKeywords(note: string) {
       keywords.push(match[1].trim());
     } else if (match[2] !== undefined) {
       keywords.push(match[2].trim());
-    } else {
-      keywords.push(match[3]!.trim());
+    } else if (match[3] !== undefined) {
+      keywords.push(match[3].trim());
     }
+
     match = regexp.exec(note);
   }
 

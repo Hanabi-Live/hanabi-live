@@ -33,3 +33,4 @@ long term once the server is rewritten in TypeScript:
   - will also have to generate argon2 hash on client side so that the hash can be stored in local storage
 - delete "metadata" table from "database_schema.sql" + "test_key" thing
 - refactor chat_log to have foreign key for user_id + boolean for server message
+- refactor ActionNoteList to be one array of objects instead of multiple arrays (and the other various note things)
