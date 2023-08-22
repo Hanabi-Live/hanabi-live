@@ -144,7 +144,8 @@ export function variantsInit(
     // Special variant properties (from `VariantJSON`)
     // -----------------------------------------------
 
-    // Validate the "criticalRank" property. If it is not specified, assume 0.
+    // Validate the "criticalRank" property. If it is not specified, assume `undefined` (e.g. there
+    // are no critical ranks).
     if (
       variantJSON.criticalRank !== undefined &&
       !isValidRank(variantJSON.criticalRank)
