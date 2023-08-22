@@ -139,7 +139,13 @@ function replayReducerFunction(
         state.shared.useSharedSegments = true;
       }
 
-      const ongoing = state.states[state.segment]!;
+      const ongoing = state.states[state.segment];
+      if (ongoing === undefined) {
+        throw new Error(
+          `Failed to get the game state for segment: ${state.segment}`,
+        );
+      }
+
       const startingPlayerIndex = ongoing.turn.currentPlayerIndex;
 
       state.hypothetical = {
@@ -178,8 +184,11 @@ function replayReducerFunction(
 
       const hypoStates = state.hypothetical.states;
       hypoStates.pop();
-      const lastState = hypoStates.at(-1)!;
-      state.hypothetical.ongoing = lastState;
+      const lastState = hypoStates.at(-1);
+      if (lastState !== undefined) {
+        state.hypothetical.ongoing = lastState;
+      }
+
       break;
     }
 
@@ -192,21 +201,24 @@ function replayReducerFunction(
 
       state.hypothetical.showDrawnCards = action.showDrawnCards;
 
-      for (const order of original(
+      const drawnCardsInHypothetical = original(
         state.hypothetical.drawnCardsInHypothetical,
-      )!) {
-        if (action.showDrawnCards) {
-          // This is a sparse array, so we must delete it with the `delete` operator. (We are not
-          // using a map because Immer state objects must be composed of primitives for performance
-          // reasons.)
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete state.hypothetical.morphedIdentities[order];
-        } else {
-          // Hide all cards drawn since the beginning of the hypothetical.
-          state.hypothetical.morphedIdentities[order] = {
-            rank: null,
-            suitIndex: null,
-          };
+      );
+      if (drawnCardsInHypothetical !== undefined) {
+        for (const order of drawnCardsInHypothetical) {
+          if (action.showDrawnCards) {
+            // This is a sparse array, so we must delete it with the `delete` operator. (We are not
+            // using a map because Immer state objects must be composed of primitives for
+            // performance reasons.)
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete state.hypothetical.morphedIdentities[order];
+          } else {
+            // Hide all cards drawn since the beginning of the hypothetical.
+            state.hypothetical.morphedIdentities[order] = {
+              rank: null,
+              suitIndex: null,
+            };
+          }
         }
       }
 
