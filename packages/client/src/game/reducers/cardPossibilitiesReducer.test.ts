@@ -11,6 +11,16 @@ const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);
 const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
 const DEFAULT_CARD = initialCardState(0, VARIANT, NUM_PLAYERS);
 
+const FIRST_CLUE_COLOR = VARIANT.clueColors[0];
+if (FIRST_CLUE_COLOR === undefined) {
+  throw new Error("Failed to get the first clue color of the default variant.");
+}
+
+const FIRST_CLUE_RANK = VARIANT.clueRanks[0];
+if (FIRST_CLUE_RANK === undefined) {
+  throw new Error("Failed to get the first clue rank of the default variant.");
+}
+
 // Count possible cards, respecting both clues and observations.
 function countPossibleCards(state: CardState) {
   return state.possibleCardsForEmpathy.length;
@@ -28,7 +38,7 @@ function possibilities(possibleCardsFromClues: readonly SuitRankTuple[]) {
 
 describe("cardPossibilitiesReducer", () => {
   test("applies a simple positive clue", () => {
-    const red = newColorClue(VARIANT.clueColors[0]!);
+    const red = newColorClue(FIRST_CLUE_COLOR);
 
     const newCard = cardPossibilitiesReducer(
       DEFAULT_CARD,
@@ -50,7 +60,7 @@ describe("cardPossibilitiesReducer", () => {
   });
 
   test("applies a simple negative clue", () => {
-    const red = newColorClue(VARIANT.clueColors[0]!);
+    const red = newColorClue(FIRST_CLUE_COLOR);
 
     const newCard = cardPossibilitiesReducer(
       DEFAULT_CARD,
@@ -78,8 +88,8 @@ describe("cardPossibilitiesReducer", () => {
     );
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
-    const redClue = newColorClue(VARIANT.clueColors[0]!);
-    const oneClue = newRankClue(VARIANT.clueRanks[0]!);
+    const redClue = newColorClue(FIRST_CLUE_COLOR);
+    const oneClue = newRankClue(FIRST_CLUE_RANK);
 
     let card = initialCardState(0, rainbowOnesAndBrown, NUM_PLAYERS);
     card = cardPossibilitiesReducer(card, redClue, true, metadata);

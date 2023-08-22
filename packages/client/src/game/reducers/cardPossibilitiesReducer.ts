@@ -94,8 +94,7 @@ function updateIdentity(
   const suitDetermined = possibleSuitsSet.size === 1;
 
   if (suitDetermined) {
-    const [firstPossibleSuit] = possibleSuitsSet;
-    suitIndex = firstPossibleSuit!;
+    suitIndex = possibleSuits[0] ?? null;
   }
 
   const possibleRanks = possibleCardsFromClues.map(
@@ -105,8 +104,7 @@ function updateIdentity(
   const rankDetermined = possibleRanksSet.size === 1;
 
   if (rankDetermined) {
-    const [firstPossibleRank] = possibleRanksSet;
-    rank = firstPossibleRank!;
+    rank = possibleRanks[0] ?? null;
   }
 
   return {

@@ -37,7 +37,7 @@ jest.spyOn(deckRules, "isInitialDealFinished").mockReturnValue(true);
 describe("cardsReducer", () => {
   describe("location", () => {
     test("is equal to the player index when drawn", () => {
-      const deck: CardState[] = [FIRST_CARD, SECOND_CARD];
+      const deck = [FIRST_CARD, SECOND_CARD];
       expect(deck[0]!.location).toBe("deck");
 
       let newDeck = cardsReducer(
