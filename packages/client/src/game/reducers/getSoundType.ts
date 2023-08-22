@@ -81,21 +81,25 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const discardedCard = originalState.deck[action.order]!;
-      const touched = cardRules.isClued(discardedCard);
+      const discardedCard = originalState.deck[action.order];
+      const touched =
+        discardedCard !== undefined && cardRules.isClued(discardedCard);
       if (touched) {
         return SoundType.DiscardClued;
       }
 
-      const nextPlayerHand = currentState.hands[action.playerIndex]!;
+      const nextPlayerHand = currentState.hands[action.playerIndex];
       if (
         originalState.stats.doubleDiscard !== null &&
         !metadata.hardVariant &&
+        nextPlayerHand !== undefined &&
         !handRules.isLocked(nextPlayerHand, currentState.deck)
       ) {
         const previouslyDiscardedCard =
-          originalState.deck[originalState.stats.doubleDiscard]!;
+          originalState.deck[originalState.stats.doubleDiscard];
         if (
+          discardedCard !== undefined &&
+          previouslyDiscardedCard !== undefined &&
           cardRules.canPossiblyBeFromCluesOnly(
             discardedCard,
             previouslyDiscardedCard.suitIndex,
@@ -135,20 +139,25 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const touched = cardRules.isClued(currentState.deck[action.order]!);
+      const card = currentState.deck[action.order];
+      const touched = card !== undefined && cardRules.isClued(card);
       if (!touched) {
         if (stats.soundTypeForLastAction === SoundType.Blind1) {
           return SoundType.Blind2;
         }
+
         if (stats.soundTypeForLastAction === SoundType.Blind2) {
           return SoundType.Blind3;
         }
+
         if (stats.soundTypeForLastAction === SoundType.Blind3) {
           return SoundType.Blind4;
         }
+
         if (stats.soundTypeForLastAction === SoundType.Blind4) {
           return SoundType.Blind5;
         }
+
         if (stats.soundTypeForLastAction === SoundType.Blind5) {
           return SoundType.Blind6;
         }
@@ -190,7 +199,11 @@ function isOrderChopMove(
     return false;
   }
 
-  const playedCard = originalState.deck[action.order]!;
+  const playedCard = originalState.deck[action.order];
+  if (playedCard === undefined) {
+    return false;
+  }
+
   if (!isCandidateOneForOCM(playedCard)) {
     return false;
   }
@@ -198,13 +211,13 @@ function isOrderChopMove(
   // Get the number of 1's left to play on the stacks.
   let numOnesLeftToPlay = 0;
   for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i]!;
-    if (suit.reversed) {
+    const suit = variant.suits[i];
+    if (suit !== undefined && suit.reversed) {
       continue;
     }
 
-    const playStack = currentState.playStacks[i]!;
-    if (playStack.length === 0) {
+    const playStack = currentState.playStacks[i];
+    if (playStack !== undefined && playStack.length === 0) {
       numOnesLeftToPlay++;
     }
   }
@@ -215,7 +228,11 @@ function isOrderChopMove(
   }
 
   // Find out if there are any other candidate 1s in the hand.
-  const playerHand = originalState.hands[action.playerIndex]!;
+  const playerHand = originalState.hands[action.playerIndex];
+  if (playerHand === undefined) {
+    return false;
+  }
+
   const candidateCards: CardState[] = [];
   for (const order of playerHand) {
     if (order === action.order) {
@@ -223,8 +240,8 @@ function isOrderChopMove(
       continue;
     }
 
-    const card = originalState.deck[order]!;
-    if (isCandidateOneForOCM(card)) {
+    const card = originalState.deck[order];
+    if (card !== undefined && isCandidateOneForOCM(card)) {
       candidateCards.push(card);
     }
   }
@@ -251,7 +268,11 @@ function isOrderChopMove(
 
     // Find out if the clue that touched the newest 1 also touched a 1 that was on chop at the same
     // time.
-    const newestOne = originalState.deck[newestOneOrder]!;
+    const newestOne = originalState.deck[newestOneOrder];
+    if (newestOne === undefined) {
+      return false;
+    }
+
     const startingHandCards = candidateCards.filter(
       (card) => card.dealtToStartingHand,
     );
@@ -271,13 +292,9 @@ function isOrderChopMove(
   }
 
   // All of the 1s were dealt to the starting hand, so the oldest 1 has precedence.
-  let lowestOrder = 999;
-  for (const card of candidateCards) {
-    if (card.order < lowestOrder) {
-      lowestOrder = card.order;
-    }
-  }
-  return lowestOrder !== action.order;
+  const candidateOrders = candidateCards.map((card) => card.order);
+  const minCandidateOrder = Math.min(...candidateOrders);
+  return minCandidateOrder !== action.order;
 }
 
 function isCandidateOneForOCM(card: CardState): boolean {
