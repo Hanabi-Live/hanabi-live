@@ -33,10 +33,15 @@ export function onCardsPossiblyRemoved(length: number): void {
   while (globals.cardSubscriptions.length > length) {
     // The card was removed from the visible state. Ensure the position of the card is correctly
     // reset.
-    globals.deck[globals.cardSubscriptions.length - 1]!.moveToDeckPosition();
+    const card = globals.deck[globals.cardSubscriptions.length - 1];
+    if (card !== undefined) {
+      card.moveToDeckPosition();
+    }
 
-    const unsubscribe = globals.cardSubscriptions.pop()!;
-    unsubscribe();
+    const unsubscribe = globals.cardSubscriptions.pop();
+    if (unsubscribe !== undefined) {
+      unsubscribe();
+    }
   }
 }
 
