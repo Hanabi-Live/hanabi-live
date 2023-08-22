@@ -29,7 +29,10 @@ function turnReducerFunction(
       turn.cardsPlayedOrDiscardedThisTurn++;
 
       if (currentState.cardsRemainingInTheDeck === 0) {
-        turn.segment!++;
+        if (turn.segment !== null) {
+          turn.segment++;
+        }
+
         nextTurn(
           turn,
           currentState.cardsRemainingInTheDeck,
@@ -48,7 +51,10 @@ function turnReducerFunction(
       }
 
       if (currentState.cardsRemainingInTheDeck === 0) {
-        turn.segment!++;
+        if (turn.segment !== null) {
+          turn.segment++;
+        }
+
         if (
           turnRules.shouldEndTurnAfterDraw(
             turn.cardsPlayedOrDiscardedThisTurn,

@@ -12,8 +12,7 @@ export function knownTrashReducer(
 ): readonly CardState[] {
   const newDeck = [...deck];
 
-  for (let order = 0; order < newDeck.length; order++) {
-    const card = deck[order]!;
+  for (const [order, card] of newDeck.entries()) {
     newDeck[order] = {
       ...card,
       isKnownTrashFromEmpathy: cardRules.allPossibilitiesTrash(
