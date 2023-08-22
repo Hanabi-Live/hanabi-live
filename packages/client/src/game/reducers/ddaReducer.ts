@@ -7,25 +7,33 @@ export function ddaReducer(
   currentPlayerIndex: number | null,
 ): readonly CardState[] {
   const newDeck = [...deck];
+
   if (dda === null || currentPlayerIndex === null) {
-    for (let order = 0; order < newDeck.length; order++) {
-      const card = deck[order]!;
+    for (const [order, card] of newDeck.entries()) {
       newDeck[order] = {
         ...card,
         inDoubleDiscard: false,
       };
     }
-  } else {
-    const { suitIndex, rank } = deck[dda]!;
-    for (let order = 0; order < newDeck.length; order++) {
-      const card = deck[order]!;
-      newDeck[order] = {
-        ...card,
-        inDoubleDiscard:
-          card.location === currentPlayerIndex &&
-          cardRules.canPossiblyBeFromCluesOnly(card, suitIndex, rank),
-      };
-    }
+
+    return newDeck;
   }
+
+  const ddaCard = deck[dda];
+  if (ddaCard === undefined) {
+    throw new Error(`Failed to find the card at order: ${dda}`);
+  }
+
+  const { suitIndex, rank } = ddaCard;
+
+  for (const [order, card] of newDeck.entries()) {
+    newDeck[order] = {
+      ...card,
+      inDoubleDiscard:
+        card.location === currentPlayerIndex &&
+        cardRules.canPossiblyBeFromCluesOnly(card, suitIndex, rank),
+    };
+  }
+
   return newDeck;
 }
