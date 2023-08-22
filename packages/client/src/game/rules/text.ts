@@ -14,6 +14,16 @@ import * as handRules from "./hand";
 const HYPO_PREFIX = "[Hypo] ";
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six"] as const;
 
+export function goesFirst(
+  playerIndex: number | null,
+  playerNames: string[],
+): string {
+  const playerIndexToUse = playerIndex ?? -1;
+  const playerName = playerNames[playerIndexToUse] ?? "[unknown]";
+
+  return `${playerName} goes first`;
+}
+
 export function clue(
   action: ActionClue,
   targetHand: number[],

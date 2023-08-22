@@ -67,9 +67,14 @@ function gameStateReducerFunction(
         );
       }
 
+      const targetHand = state.hands[action.target];
+      if (targetHand === undefined) {
+        throw new Error(`Failed to find the hand at index: ${action.target}`);
+      }
+
       const negativeList = action.ignoreNegative
         ? []
-        : state.hands[action.target]!.filter((i) => !action.list.includes(i));
+        : targetHand.filter((i) => !action.list.includes(i));
 
       // Even though the objects for each clue type are the exact same, a switch statement is needed
       // to satisfy the TypeScript compiler.
@@ -101,7 +106,6 @@ function gameStateReducerFunction(
         }
       }
 
-      const targetHand = state.hands[action.target]!;
       const text = textRules.clue(action, targetHand, hypothetical, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
@@ -109,7 +113,11 @@ function gameStateReducerFunction(
       });
 
       // Handle the "Card Cycling" game option.
-      const giverHand = state.hands[action.giver]!;
+      const giverHand = state.hands[action.giver];
+      if (giverHand === undefined) {
+        throw new Error(`Failed to find the hand at index: ${action.giver}`);
+      }
+
       cardCycle(giverHand, castDraft(state.deck), metadata);
 
       break;
@@ -131,7 +139,13 @@ function gameStateReducerFunction(
      */
     case "discard": {
       // Remove it from the hand.
-      const hand = state.hands[action.playerIndex]!;
+      const hand = state.hands[action.playerIndex];
+      if (hand === undefined) {
+        throw new Error(
+          `Failed to find the hand at index: ${action.playerIndex}`,
+        );
+      }
+
       const handIndex = hand.indexOf(action.order);
       let slot: number | null = null;
       if (handIndex !== -1) {
@@ -157,7 +171,14 @@ function gameStateReducerFunction(
         }
 
         // Add it to the discard stacks.
-        state.discardStacks[action.suitIndex]!.push(action.order);
+        const discardStack = state.discardStacks[action.suitIndex];
+        if (discardStack === undefined) {
+          throw new Error(
+            `Failed to find the discard stack at index: ${action.suitIndex}`,
+          );
+        }
+
+        discardStack.push(action.order);
 
         // Discarding cards grants clue tokens under certain circumstances.
         state.clueTokens = clueTokensRules.gain(
@@ -167,7 +188,12 @@ function gameStateReducerFunction(
         );
       }
 
-      const touched = cardRules.isClued(state.deck[action.order]!);
+      const card = state.deck[action.order];
+      if (card === undefined) {
+        throw new Error(`Failed to find the card at order: ${action.order}`);
+      }
+
+      const touched = cardRules.isClued(card);
       const text = textRules.discard(
         action,
         slot,
@@ -208,9 +234,10 @@ function gameStateReducerFunction(
       if (
         deckRules.isInitialDealFinished(state.cardsRemainingInTheDeck, metadata)
       ) {
-        const text = `${
-          metadata.playerNames[state.turn.currentPlayerIndex!]
-        } goes first`;
+        const text = textRules.goesFirst(
+          state.turn.currentPlayerIndex,
+          metadata.playerNames,
+        );
         state.log.push({
           turn: state.turn.turnNum + 1,
           text,
@@ -267,7 +294,13 @@ function gameStateReducerFunction(
      */
     case "play": {
       // Remove it from the hand.
-      const hand = state.hands[action.playerIndex]!;
+      const hand = state.hands[action.playerIndex];
+      if (hand === undefined) {
+        throw new Error(
+          `Failed to find the hand at index: ${action.playerIndex}`,
+        );
+      }
+
       const handIndex = hand.indexOf(action.order);
       let slot: number | null = null;
       if (handIndex !== -1) {
@@ -292,7 +325,13 @@ function gameStateReducerFunction(
           );
         }
 
-        const playStack = state.playStacks[action.suitIndex]!;
+        const playStack = state.playStacks[action.suitIndex];
+        if (playStack === undefined) {
+          throw new Error(
+            `Failed to find the play stack at index: ${action.suitIndex}`,
+          );
+        }
+
         playStack.push(action.order);
 
         // Playing cards grants clue tokens under certain circumstances.
@@ -307,7 +346,12 @@ function gameStateReducerFunction(
       // Gain a point.
       state.score++;
 
-      const touched = cardRules.isClued(state.deck[action.order]!);
+      const card = state.deck[action.order];
+      if (card === undefined) {
+        throw new Error(`Failed to find the card at order: ${action.order}`);
+      }
+
+      const touched = cardRules.isClued(card);
       const text = textRules.play(
         action,
         slot,
@@ -326,10 +370,10 @@ function gameStateReducerFunction(
     }
 
     case "playerTimes": {
-      for (let i = 0; i < action.playerTimes.length; i++) {
+      for (const [i, playerTime] of action.playerTimes.entries()) {
         // Player times are negative in untimed games.
         const modifier = metadata.options.timed ? 1 : -1;
-        const milliseconds = action.playerTimes[i]! * modifier;
+        const milliseconds = playerTime * modifier;
         const durationString = millisecondsToClockString(milliseconds);
         const playerName = getPlayerName(i, metadata);
 
@@ -348,6 +392,7 @@ function gameStateReducerFunction(
         turn: state.turn.turnNum + 1,
         text,
       });
+
       break;
     }
 
@@ -369,7 +414,7 @@ function gameStateReducerFunction(
       // strikes in hypotheticals.
       state.strikes.push({
         order: action.order,
-        segment: state.turn.segment!,
+        segment: state.turn.segment ?? 1,
       });
 
       break;
@@ -393,9 +438,11 @@ function gameStateReducerFunction(
   }
 
   // Use a sub-reducer to calculate changes on cards.
-  state.deck = castDraft(
-    cardsReducer(original(state.deck)!, action, state, metadata),
-  );
+  const originalDeck = original(state.deck);
+  if (originalDeck === undefined) {
+    throw new Error("Failed to find the original deck.");
+  }
+  state.deck = castDraft(cardsReducer(originalDeck, action, state, metadata));
 
   // Resolve the stack direction.
   if (
@@ -405,7 +452,13 @@ function gameStateReducerFunction(
   ) {
     // We have to wait until the deck is updated with the information of the card that we played
     // before the `direction` function will work.
-    const playStack = state.playStacks[action.suitIndex]!;
+    const playStack = state.playStacks[action.suitIndex];
+    if (playStack === undefined) {
+      throw new Error(
+        `Failed to find the play stack at index: ${action.suitIndex}`,
+      );
+    }
+
     const direction = playStacksRules.direction(
       action.suitIndex,
       playStack,
@@ -417,7 +470,13 @@ function gameStateReducerFunction(
 
   // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variant.sudoku && action.suitIndex !== -1) {
-    const playStack = state.playStacks[action.suitIndex]!;
+    const playStack = state.playStacks[action.suitIndex];
+    if (playStack === undefined) {
+      throw new Error(
+        `Failed to find the play stack at index: ${action.suitIndex}`,
+      );
+    }
+
     state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
       playStack,
       state.deck,
@@ -448,11 +507,15 @@ function gameStateReducerFunction(
   state.turn = turnReducer(original(state.turn), action, state, metadata);
 
   // Use a sub-reducer to calculate some game statistics.
+  const originalState = original(state);
+  if (originalState === undefined) {
+    throw new Error("Failed to get the original state.");
+  }
   state.stats = castDraft(
     statsReducer(
       original(state.stats),
       action,
-      original(state)!,
+      originalState,
       state,
       playing,
       shadowing,
@@ -498,10 +561,12 @@ function cardCycle(
   }
 
   // Remove the chop card from their hand.
-  const removedCardOrder = hand.splice(chopIndex, 1)[0]!;
-
-  // Add it to the end (the left-most position).
-  hand.push(removedCardOrder);
+  const newHand = hand.splice(chopIndex, 1);
+  const removedCardOrder = newHand[0];
+  if (removedCardOrder !== undefined) {
+    // Add it to the end (the left-most position).
+    hand.push(removedCardOrder);
+  }
 }
 
 function throwItInAHolePlayedOrMisplayed(
