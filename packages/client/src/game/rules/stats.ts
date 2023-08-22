@@ -72,7 +72,7 @@ function maxPlays(
   return endGameLength + deckSize;
 }
 
-// Pace is the number of discards that can happen while still getting the maximum score.
+/** @returns The number of discards that can happen while still getting the maximum score. */
 export function pace(
   score: number,
   deckSize: number,
@@ -93,7 +93,7 @@ export function pace(
   return adjustedScorePlusDeck + endGameLength;
 }
 
-// A measure of how risky a discard would be right now, using different heuristics.
+/** @returns A measure of how risky a discard would be right now, using different heuristics. */
 export function paceRisk(
   currentPace: number | null,
   numPlayers: NumPlayers,
@@ -265,7 +265,7 @@ function getCardsGottenByNotesAdjustment(
   return 0;
 }
 
-// Calculate the minimum amount of efficiency needed in order to win this variant.
+/** @returns The minimum amount of efficiency needed in order to win this variant. */
 export function minEfficiency(
   numPlayers: NumPlayers,
   endGameLength: number,
@@ -285,8 +285,10 @@ export function minEfficiency(
   return maxScore / totalClues;
 }
 
-// Returns the max number of clues that can be spent while getting the max possible score from a
-// given game state onward (not accounting for the locations of playable cards).
+/**
+ * @returns The max number of clues that can be spent while getting the max possible score from a
+ *          given game state onward (not accounting for the locations of playable cards).
+ */
 export function cluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
@@ -366,6 +368,7 @@ export function cluesStillUsableNotRounded(
 
   return cluesFromDiscards + cluesFromSuits + currentClues;
 }
+
 export function cluesStillUsable(
   score: number,
   scorePerStack: readonly number[],
@@ -386,18 +389,21 @@ export function cluesStillUsable(
     suitValue,
     currentClues,
   );
+
   // Since we can't use up a fractional clue, we round it down for most purposes. This only matters
-  // in clue starved variants.
+  // in Clue Starved variants.
   return result === null ? null : Math.floor(result);
 }
 
-// This is used as the denominator of an efficiency calculation:
-
-// ```
-// (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
-// ```
-
-// See: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
+/**
+ * This is used as the denominator of an efficiency calculation:
+ *
+ * ```text
+ * (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
+ * ```
+ *
+ * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
+ */
 export function startingCluesUsable(
   endGameLength: number,
   deckSize: number,
@@ -445,8 +451,10 @@ export function futureEfficiency(state: GameState): number | null {
   return cardsNotGotten / state.stats.cluesStillUsable;
 }
 
-// After a discard, it is a "double discard" situation if there is only one other copy of this card
-// and it needs to be played.
+/**
+ * After a discard, it is a "double discard" situation if there is only one other copy of this card
+ * and it needs to be played.
+ */
 export function doubleDiscard(
   orderOfDiscardedCard: number,
   state: GameState,
