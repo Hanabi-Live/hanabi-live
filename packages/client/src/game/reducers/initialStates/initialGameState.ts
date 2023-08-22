@@ -148,15 +148,15 @@ function getInitialCardStatusMap(
   playStackDirections: GameState["playStackDirections"],
   playStackStarts: GameState["playStackStarts"],
 ): SuitRankMap<CardStatus> {
-  const cardStatus: Partial<
-    Record<SuitIndex, Partial<Record<Rank, CardStatus>>>
-  > = {};
+  const cardStatusMap: Partial<Record<SuitIndex, Record<Rank, CardStatus>>> =
+    {};
 
   for (const i of variant.suits.keys()) {
     const suitIndex = i as SuitIndex;
-    cardStatus[suitIndex] = {};
+
+    const suitStatuses: Partial<Record<Rank, CardStatus>> = {};
     for (const rank of variant.ranks) {
-      cardStatus[suitIndex]![rank] = cardRules.status(
+      suitStatuses[rank] = cardRules.status(
         suitIndex,
         rank,
         [],
@@ -166,7 +166,9 @@ function getInitialCardStatusMap(
         variant,
       );
     }
+
+    cardStatusMap[suitIndex] = suitStatuses as Record<Rank, CardStatus>;
   }
 
-  return cardStatus as SuitRankMap<CardStatus>;
+  return cardStatusMap as SuitRankMap<CardStatus>;
 }
