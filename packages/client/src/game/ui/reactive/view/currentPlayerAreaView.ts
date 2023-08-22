@@ -1,3 +1,4 @@
+import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as handRules from "../../../rules/hand";
@@ -103,7 +104,7 @@ export function onChanged(
     // We need to adjust the font size of the player name, depending on how long the name is.
     // Continue to shrink the text until it reaches the maximum size. Run at most 100 times; in most
     // cases, it will take around 15.
-    for (let i = 0; i < 100; i++) {
+    for (const _i of eRange(100)) {
       if (text2.measureSize(text2.text()).height <= maxSize) {
         break;
       }

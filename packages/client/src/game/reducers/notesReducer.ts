@@ -72,7 +72,7 @@ function notesReducerFunction(
 
     case "noteList": {
       // Reset any existing notes.
-      for (let i = 0; i < notes.allNotes.length; i++) {
+      for (const i of notes.allNotes.keys()) {
         notes.allNotes[i] = [];
       }
 

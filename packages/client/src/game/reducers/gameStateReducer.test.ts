@@ -1,5 +1,6 @@
 import type { Rank } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
+import { eRange, iRange } from "@hanabi/utils";
 import {
   colorClue,
   discard,
@@ -156,9 +157,10 @@ describe("gameStateReducer", () => {
       let state = initialGameStateTest(defaultMetadata);
 
       // Draw a red 1, a red 2, and a red 3.
-      for (let i = 0; i < 3; i++) {
-        const rank = (i + 1) as Rank;
-        const drawAction = draw(0, i, 0, rank);
+      for (const i of iRange(1, 3)) {
+        const order = i - 1;
+        const rank = i as Rank;
+        const drawAction = draw(0, order, 0, rank);
         state = gameStateReducer(
           state,
           drawAction,
@@ -643,7 +645,7 @@ describe("gameStateReducer", () => {
       let state = initialGameStateTest(defaultMetadata);
 
       // Draw 5 cards (red 1-3, yellow 4-5).
-      for (let i = 0; i <= 4; i++) {
+      for (const i of eRange(5)) {
         const suitIndex = i <= 2 ? 0 : 1;
         const rank = (i + 1) as Rank;
         const drawAction = draw(1, i, suitIndex, rank);

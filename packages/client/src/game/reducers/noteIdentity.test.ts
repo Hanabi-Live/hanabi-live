@@ -1,5 +1,6 @@
 import type { SuitRankTuple } from "@hanabi/data";
 import { getDefaultVariant, getVariant } from "@hanabi/data";
+import { iRange } from "@hanabi/utils";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 const DEFAULT_VARIANT = getDefaultVariant();
@@ -256,7 +257,7 @@ function identityArrayToMap(
 ): number[][] {
   const cardMap: number[][] = [];
 
-  for (let rank = 1; rank <= 7; rank++) {
+  for (const _rank of iRange(1, 7)) {
     cardMap.push(ZEROES.slice(0, numSuits));
   }
 

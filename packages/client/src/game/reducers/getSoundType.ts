@@ -210,9 +210,8 @@ function isOrderChopMove(
 
   // Get the number of 1's left to play on the stacks.
   let numOnesLeftToPlay = 0;
-  for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i];
-    if (suit !== undefined && suit.reversed) {
+  for (const [i, suit] of variant.suits.entries()) {
+    if (suit.reversed) {
       continue;
     }
 

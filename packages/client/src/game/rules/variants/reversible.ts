@@ -4,7 +4,7 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_FINISHED_STACK_LENGTH, START_CARD_RANK } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { newArray } from "@hanabi/utils";
+import { iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { StackDirection } from "../../types/StackDirection";
@@ -113,7 +113,8 @@ function isDead(
     // Note that in Up or Down, having `impliedDirection === StackDirection.Up` also proves that one
     // of Start or 1 is still alive, since we filtered out the case where all of 1, 5, and Start are
     // dead already.
-    for (let nextRank = variant.upOrDown ? 2 : 1; nextRank < rank; nextRank++) {
+    const lowestNextRank = variant.upOrDown ? 2 : 1;
+    for (let nextRank = lowestNextRank; nextRank < rank; nextRank++) {
       if (allDiscardedSet.has(nextRank)) {
         return true;
       }
@@ -124,7 +125,8 @@ function isDead(
 
   if (impliedDirection === StackDirection.Down) {
     // The above comment also applies for `StackDirection.Down`.
-    for (let nextRank = variant.upOrDown ? 4 : 5; nextRank > rank; nextRank--) {
+    const highestNextRank = variant.upOrDown ? 4 : 5;
+    for (let nextRank = highestNextRank; nextRank > rank; nextRank--) {
       if (allDiscardedSet.has(nextRank)) {
         return true;
       }
@@ -203,18 +205,18 @@ function walkUp(allDiscardedSet: Set<Rank>, variant: Variant): number {
 
   // First, check to see if the stack can still be started.
   if (variant.upOrDown) {
+    // In "Up or Down" variants, you can start with 1 or START when going up.
     if (allDiscardedSet.has(1) && allDiscardedSet.has(START_CARD_RANK)) {
-      // In "Up or Down" variants, you can start with 1 or START when going up.
       return 0;
     }
   } else if (allDiscardedSet.has(1)) {
-    // Otherwise, only 1
+    // Otherwise, only 1.
     return 0;
   }
   cardsThatCanStillBePlayed++;
 
-  // Second, walk upwards
-  for (let rank = 2; rank <= 5; rank++) {
+  // Second, walk upwards.
+  for (const rank of iRange(2, 5)) {
     if (allDiscardedSet.has(rank)) {
       break;
     }
@@ -241,7 +243,7 @@ function walkDown(allDiscardedSet: Set<Rank>, variant: Variant) {
   cardsThatCanStillBePlayed++;
 
   // Second, walk downwards.
-  for (let rank = 4; rank >= 1; rank--) {
+  for (const rank of iRange(1, 4).reverse()) {
     if (allDiscardedSet.has(rank)) {
       break;
     }

@@ -2,15 +2,12 @@
 | TODO |
 +------+
 
+- search for "for (let"
 - remove type assertions from sudoku.ts (need feedback from Ram)
+- remove type assertions from lobby + views
 - PlayerIndex type (maybe, look to see if it is useful first)
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
-- remove all type assertions from src/game/reducers + src/game/rules (use eslint rule to find)
-
-search for all:
-- "for (let"
-- brand card order type
 
 short term:
 - refactor soundTypeForLastAction (should probably delete the whole thing)

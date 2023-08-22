@@ -1,3 +1,4 @@
+import { eRange } from "@hanabi/utils";
 import type { LogEntry } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";
 
@@ -13,9 +14,11 @@ function updateActionLog(log: readonly LogEntry[]) {
   }
 
   const startingIndex = Math.max(0, log.length - actionLog.maxLines);
-  for (let i = 0; i < actionLog.maxLines; i++) {
+  for (const i of eRange(actionLog.maxLines)) {
     const line =
-      startingIndex + i > log.length - 1 ? "" : log[startingIndex + i]!.text;
+      startingIndex + i > log.length - 1
+        ? ""
+        : log[startingIndex + i]?.text ?? "";
     if (line !== actionLog.smallHistory[i]) {
       actionLog.smallHistory[i] = line;
     }

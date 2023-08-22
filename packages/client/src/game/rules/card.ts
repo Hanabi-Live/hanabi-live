@@ -1,6 +1,6 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import { filterMap } from "@hanabi/utils";
+import { eRange, filterMap } from "@hanabi/utils";
 import type { CardState } from "../types/CardState";
 import { CardStatus } from "../types/CardStatus";
 import type { GameState } from "../types/GameState";
@@ -92,9 +92,8 @@ export function needsToBePlayed(
   // Second, check to see if it is still possible to play this card. (The preceding cards in the
   // suit might have already been discarded.)
   const { isAllDiscarded } = discardedHelpers(variant, deck);
-  for (let i = 1; i < rank; i++) {
-    const precedingRank = i as Rank;
-    if (isAllDiscarded(suitIndex, precedingRank)) {
+  for (const precedingRank of eRange(1, rank)) {
+    if (isAllDiscarded(suitIndex, precedingRank as Rank)) {
       // The suit is "dead", so this card does not need to be played anymore.
       return false;
     }

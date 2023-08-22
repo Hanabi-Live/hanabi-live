@@ -1,4 +1,5 @@
 import type { CardOrder } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import type { CardIdentity } from "../../../types/CardIdentity";
 import type { CardState } from "../../../types/CardState";
 import type { State } from "../../../types/State";
@@ -85,7 +86,7 @@ export function onMorphedIdentitiesChanged(
     data.morphedIdentities !== undefined &&
     previousData.morphedIdentities !== undefined
   ) {
-    for (let i = 0; i < maxLength; i++) {
+    for (const i of eRange(maxLength)) {
       if (data.morphedIdentities[i] !== previousData.morphedIdentities[i]) {
         updateCardVisuals(i as CardOrder);
       }

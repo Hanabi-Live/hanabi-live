@@ -1,3 +1,4 @@
+import { eRange } from "@hanabi/utils";
 import { draw, play } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
 import type { TurnState } from "../types/TurnState";
@@ -17,18 +18,22 @@ describe("turnReducer", () => {
         segment: 0,
       };
 
-      const drawAction = draw(0, 0, 0, 1); // Draw a red 1
+      // Draw a red 1.
+      const drawAction = draw(0, 0, 0, 1);
       state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
 
-      for (let i = 0; i < 3; i++) {
-        const playAction = play(0, i, 0, 1); // Play the last red 1 that was drawn
+      for (const i of eRange(3)) {
+        // Play the last red 1 that was drawn.
+        const playAction = play(0, i, 0, 1);
         state = turnReducer(
           state,
           playAction,
           defaultGameState,
           defaultMetadata,
         );
-        const drawAction2 = draw(0, i + 1, 0, 1); // Draw another red 1
+
+        // Draw another red 1.
+        const drawAction2 = draw(0, i + 1, 0, 1);
         state = turnReducer(
           state,
           drawAction2,
@@ -48,7 +53,8 @@ describe("turnReducer", () => {
         segment: 0,
       };
 
-      const drawAction = draw(0, 0, 0, 1); // Draw a red 1
+      // Draw a red 1.
+      const drawAction = draw(0, 0, 0, 1);
       state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
 
       expect(state.currentPlayerIndex).toBe(0);
@@ -65,7 +71,9 @@ describe("turnReducer", () => {
         ...initialTurnState(1),
         segment: 0,
       };
-      const drawAction = draw(0, 0, 0, 1); // Draw a red 1
+
+      // Draw a red 1.
+      const drawAction = draw(0, 0, 0, 1);
       state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
 
       expect(state.currentPlayerIndex).toBe(1);
@@ -82,9 +90,12 @@ describe("turnReducer", () => {
 function playRed1AndDraw(oldState: TurnState, i: number) {
   let state = oldState;
 
-  const playAction = play(0, i, 0, 1); // Play that red 1
+  // Play that red 1.
+  const playAction = play(0, i, 0, 1);
   state = turnReducer(state, playAction, defaultGameState, defaultMetadata);
-  const drawAction2 = draw(0, i + 1, 0, 1); // Draw another red 1
+
+  // Draw another red 1.
+  const drawAction2 = draw(0, i + 1, 0, 1);
   state = turnReducer(state, drawAction2, defaultGameState, defaultMetadata);
 
   return state;

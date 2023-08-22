@@ -1,6 +1,7 @@
 // The lobby area that shows all of the players in the current unstarted game.
 
-import { getVariant } from "@hanabi/data";
+import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
+import { eRange, iRange } from "@hanabi/utils";
 import { globals } from "../Globals";
 import * as chat from "../chat";
 import * as tooltips from "../tooltips";
@@ -122,8 +123,8 @@ export function draw(): void {
   drawOptions();
 
   // Draw the player boxes.
-  for (let i = 0; i <= 5; i++) {
-    drawPlayerBox(i);
+  for (const playerIndex of eRange(MAX_PLAYERS)) {
+    drawPlayerBox(playerIndex);
   }
 
   toggleStartGameButton();
@@ -329,17 +330,17 @@ export function initializeOptionTooltips(
   }
 }
 
-function drawPlayerBox(i: number) {
+function drawPlayerBox(playerIndex: number) {
   if (globals.game === null) {
     return;
   }
 
-  const numPlayers = globals.game.players.length; // The "numPlayers" in the options is not set yet
-  const div = $(`#lobby-pregame-player-${i + 1}`);
+  const numPlayers = globals.game.players.length; // The "numPlayers" in the options is not set yet.
+  const div = $(`#lobby-pregame-player-${playerIndex + 1}`);
 
   div.html("");
 
-  const player = globals.game.players[i];
+  const player = globals.game.players[playerIndex];
   if (player === undefined) {
     div.hide();
     return;
@@ -351,7 +352,7 @@ function drawPlayerBox(i: number) {
   if (isSpectator()) {
     span.addClass("shadow").on("click", (event) => {
       event.stopPropagation();
-      reattend(i);
+      reattend(playerIndex);
     });
   }
   const strong = $("<strong>");
@@ -427,34 +428,37 @@ function drawPlayerBox(i: number) {
       </div>
       <div class="col-2 align-right padding0">
         <i id="lobby-pregame-player-${
-          i + 1
+          playerIndex + 1
         }-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${
-          i + 1
+          playerIndex + 1
         }-tooltip"></i>
       </div>
     </div>
     <div class="hidden">
       <div id="lobby-pregame-player-${
-        i + 1
+        playerIndex + 1
       }-tooltip" class="lobby-pregame-tooltip">
   `;
   const variant = getVariant(globals.game.options.variantName);
   const { maxScore } = variant;
-  for (let j = 2; j <= 6; j++) {
+  for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
+    const bestScoreObject = variantStats.bestScores[bestScorePlayer - 2];
+    if (bestScoreObject === undefined) {
+      continue;
+    }
+    const { score, modifier } = bestScoreObject;
+
     html += '<div class="row">';
-    html += `<div class="col-6">${j}-player:</div>`;
-    const bestScoreObject = variantStats.bestScores[j - 2]!;
-    const bestScore = bestScoreObject.score;
-    const bestScoreMod = bestScoreObject.modifier;
+    html += `<div class="col-6">${bestScorePlayer}-player:</div>`;
     html += '<div class="col-6">';
-    if (bestScore === maxScore) {
+    if (score === maxScore) {
       html += "<strong>";
     }
-    html += ` ${bestScore} / ${maxScore}`;
-    if (bestScore === maxScore) {
+    html += ` ${score} / ${maxScore}`;
+    if (score === maxScore) {
       html += "</strong> &nbsp; ";
       html +=
-        bestScoreMod === 0
+        modifier === 0
           ? '<i class="fas fa-check score-modifier green"></i>'
           : '<i class="fas fa-times score-modifier red"></i>';
     }
@@ -471,7 +475,7 @@ function drawPlayerBox(i: number) {
   div.append($(html));
 
   // Initialize the tooltip
-  tooltips.create(`#lobby-pregame-player-${i + 1}-scores-icon`);
+  tooltips.create(`#lobby-pregame-player-${playerIndex + 1}-scores-icon`);
 }
 
 function getNameSpan(name: string) {

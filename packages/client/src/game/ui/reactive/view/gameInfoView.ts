@@ -1,4 +1,5 @@
 import { MAX_STRIKES } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import type { StateStrike } from "../../../types/GameState";
@@ -41,8 +42,11 @@ export function onCurrentPlayerIndexChanged(
   currentPlayerIndex: number | null,
 ): void {
   // Bold the name frame of the current player to signify that it is their turn.
-  for (let i = 0; i < globals.elements.nameFrames.length; i++) {
-    globals.elements.nameFrames[i]!.setActive(currentPlayerIndex === i);
+  for (const [
+    playerIndex,
+    nameFrame,
+  ] of globals.elements.nameFrames.entries()) {
+    nameFrame.setActive(currentPlayerIndex === playerIndex);
   }
 
   if (currentPlayerIndex === null) {
@@ -219,7 +223,7 @@ export function onOngoingOrVisibleStrikesChanged(data: {
     return;
   }
 
-  for (let i = 0; i < MAX_STRIKES; i++) {
+  for (const i of eRange(MAX_STRIKES)) {
     const strikeX = globals.elements.strikeXs[i];
     if (strikeX === undefined) {
       continue;
