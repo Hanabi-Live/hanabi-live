@@ -12,5 +12,5 @@ const DEV_OPTIONS = {
 
 const OPTIONS = IS_DEV ? DEV_OPTIONS : undefined;
 
-/** See: https://github.com/pinojs/pino/issues/1782 */
+/** @see https://github.com/pinojs/pino/issues/1782 */
 export const logger = pino(OPTIONS);

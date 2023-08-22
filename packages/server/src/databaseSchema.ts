@@ -1,4 +1,4 @@
-// See: database_schema.sql
+// The schema in this file corresponds to "database_schema.sql".
 
 import {
   index,
