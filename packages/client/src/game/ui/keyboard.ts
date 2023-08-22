@@ -392,8 +392,8 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   // eslint-disable-next-line unicorn/prefer-add-event-listener
   playDiscardButton.onclick = () => {
     closeModals();
-    const response = playDiscardCard.value;
 
+    const response = playDiscardCard.value;
     if (response === "") {
       return;
     }
@@ -402,6 +402,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
       performAction(actionType, deckRules.totalCards(globals.variant) - 1);
       return;
     }
+
     const slot = parseIntSafe(response);
     if (slot === undefined) {
       return;
