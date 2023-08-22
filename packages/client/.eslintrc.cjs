@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     // TODO: remove these lines
-    "unicorn/no-lonely-if": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/no-new-array": "off",
     "unicorn/prefer-string-replace-all": "off",

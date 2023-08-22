@@ -477,17 +477,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (this.isMorphed()) {
       return this.getMorph()!;
     }
-    if (globals.state.replay.hypothetical !== null) {
-      if (globals.state.playing) {
-        const possibilities = possibleCardsFromNoteAndClues(
-          this.note,
-          this.state,
-        );
-        if (possibilities.length === 1) {
-          const possibility = possibilities[0]!;
-          const [suitIndex, rank] = possibility;
-          return { suitIndex, rank };
-        }
+    if (globals.state.replay.hypothetical !== null && globals.state.playing) {
+      const possibilities = possibleCardsFromNoteAndClues(
+        this.note,
+        this.state,
+      );
+      if (possibilities.length === 1) {
+        const possibility = possibilities[0]!;
+        const [suitIndex, rank] = possibility;
+        return { suitIndex, rank };
       }
     }
 
