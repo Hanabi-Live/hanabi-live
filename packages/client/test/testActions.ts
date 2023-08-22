@@ -2,7 +2,13 @@
 
 // Helper functions to build actions with a compact syntax. For use in tests.
 
-import type { ColorIndex, Rank, RankClueNumber, SuitIndex } from "@hanabi/data";
+import type {
+  CardOrder,
+  ColorIndex,
+  Rank,
+  RankClueNumber,
+  SuitIndex,
+} from "@hanabi/data";
 import { ClueType } from "../src/game/types/ClueType";
 import type {
   ActionCardIdentity,
@@ -34,7 +40,7 @@ export function colorClue(
       value,
     },
     giver,
-    list,
+    list: list as CardOrder[],
     target,
     turn,
     ignoreNegative: false,
@@ -55,7 +61,7 @@ export function rankClue(
       value,
     },
     giver,
-    list,
+    list: list as CardOrder[],
     target,
     turn,
     ignoreNegative: false,
@@ -71,7 +77,7 @@ export function draw(
   return {
     type: "draw",
     playerIndex,
-    order,
+    order: order as CardOrder,
     suitIndex,
     rank,
   };
@@ -87,7 +93,7 @@ export function discard(
   return {
     type: "discard",
     playerIndex,
-    order,
+    order: order as CardOrder,
     suitIndex,
     rank,
     failed,
@@ -103,7 +109,7 @@ export function play(
   return {
     type: "play",
     playerIndex,
-    order,
+    order: order as CardOrder,
     suitIndex,
     rank,
   };
@@ -118,7 +124,7 @@ export function cardIdentity(
   return {
     type: "cardIdentity",
     playerIndex,
-    order,
+    order: order as CardOrder,
     suitIndex,
     rank,
   };
@@ -132,7 +138,7 @@ export function strike(
   return {
     type: "strike",
     num,
-    order,
+    order: order as CardOrder,
     turn,
   };
 }

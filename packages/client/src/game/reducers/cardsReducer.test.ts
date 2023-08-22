@@ -1,5 +1,6 @@
-import type { Rank, SuitIndex } from "@hanabi/data";
+import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import {
   cardIdentity,
   colorClue,
@@ -11,6 +12,7 @@ import {
 import { testMetadata } from "../../../test/testMetadata";
 import * as deckRules from "../rules/deck";
 import type { CardState } from "../types/CardState";
+import type { GameState } from "../types/GameState";
 import { cardsReducer } from "./cardsReducer";
 import { initialCardState } from "./initialStates/initialCardState";
 import { initialGameState } from "./initialStates/initialGameState";
@@ -26,11 +28,11 @@ const GAME_STATE = initialGameState(DEFAULT_METADATA);
 const THROW_IT_IN_A_HOLE_GAME_STATE = initialGameState(
   THROW_IT_IN_A_HOLE_METADATA,
 );
-const FIRST_CARD = initialCardState(0, VARIANT, NUM_PLAYERS);
-const SECOND_CARD = initialCardState(1, VARIANT, NUM_PLAYERS);
-const THIRD_CARD = initialCardState(2, VARIANT, NUM_PLAYERS);
-const FOURTH_CARD = initialCardState(3, VARIANT, NUM_PLAYERS);
-const FIFTH_CARD = initialCardState(4, VARIANT, NUM_PLAYERS);
+const FIRST_CARD = initialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
+const SECOND_CARD = initialCardState(1 as CardOrder, VARIANT, NUM_PLAYERS);
+const THIRD_CARD = initialCardState(2 as CardOrder, VARIANT, NUM_PLAYERS);
+const FOURTH_CARD = initialCardState(3 as CardOrder, VARIANT, NUM_PLAYERS);
+const FIFTH_CARD = initialCardState(4 as CardOrder, VARIANT, NUM_PLAYERS);
 
 jest.spyOn(deckRules, "isInitialDealFinished").mockReturnValue(true);
 
@@ -258,11 +260,13 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
       let nextGameState = GAME_STATE;
 
-      nextGameState = { ...GAME_STATE, hands: [[0], []] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], [2]] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], [2]]);
       deck = cardsReducer(
         deck,
         draw(1, 2, 0, 5),
@@ -296,24 +300,24 @@ describe("cardsReducer", () => {
       ];
       let nextGameState = GAME_STATE;
 
-      nextGameState = { ...GAME_STATE, hands: [[0], []] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], [2]] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], [2]]);
       deck = cardsReducer(
         deck,
         draw(1, 2, 0, 4),
         nextGameState,
         DEFAULT_METADATA,
       );
-      nextGameState = {
-        ...GAME_STATE,
-        hands: [
-          [0, 1],
-          [2, 3],
-        ],
-      };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [2, 3],
+      ]);
       deck = cardsReducer(
         deck,
         draw(1, 3, 1, 4),
@@ -351,24 +355,24 @@ describe("cardsReducer", () => {
       ];
       let nextGameState = GAME_STATE;
 
-      nextGameState = { ...GAME_STATE, hands: [[0], []] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], [2]] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], [2]]);
       deck = cardsReducer(
         deck,
         draw(1, 2, 0, 4),
         nextGameState,
         DEFAULT_METADATA,
       );
-      nextGameState = {
-        ...GAME_STATE,
-        hands: [
-          [0, 1],
-          [2, 3],
-        ],
-      };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [2, 3],
+      ]);
       deck = cardsReducer(
         deck,
         draw(1, 3, 1, 4),
@@ -410,13 +414,10 @@ describe("cardsReducer", () => {
         DEFAULT_METADATA,
       );
 
-      nextGameState = {
-        ...GAME_STATE,
-        hands: [
-          [0, 1],
-          [2, 3, 4],
-        ],
-      };
+      nextGameState = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [2, 3, 4],
+      ]);
       deck = cardsReducer(
         deck,
         draw(1, 4, 2, 4),
@@ -455,11 +456,10 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
       deck = cardsReducer(deck, draw(0, 1), GAME_STATE, DEFAULT_METADATA);
 
-      const gameStateWithCorrectHands = {
-        ...GAME_STATE,
-        hands: [[0, 1], []],
-      } as const;
-
+      const gameStateWithCorrectHands = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [],
+      ]);
       const discardRed5 = discard(0, 1, 0, 5, false);
       deck = cardsReducer(
         deck,
@@ -477,11 +477,10 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
       deck = cardsReducer(deck, draw(0, 1), GAME_STATE, DEFAULT_METADATA);
 
-      const gameStateWithCorrectHands = {
-        ...GAME_STATE,
-        hands: [[0, 1], []],
-      } as const;
-
+      const gameStateWithCorrectHands = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [],
+      ]);
       const discardRedOne = discard(0, 1, 0, 1, false);
       deck = cardsReducer(
         deck,
@@ -505,18 +504,18 @@ describe("cardsReducer", () => {
         nextGameState,
         THROW_IT_IN_A_HOLE_METADATA,
       );
-      nextGameState = { ...GAME_STATE, hands: [[], [0]] };
 
       // Draw a red 5 to the second player (and reveal it to us).
+      nextGameState = getGameStateWithHands(GAME_STATE, [[], [0]]);
       deck = cardsReducer(
         deck,
         draw(1, 1, 0, 5),
         nextGameState,
         THROW_IT_IN_A_HOLE_METADATA,
       );
-      nextGameState = { ...GAME_STATE, hands: [[], [0, 1]] };
 
       // Discard the red 5.
+      nextGameState = getGameStateWithHands(GAME_STATE, [[], [0, 1]]);
       deck = cardsReducer(
         deck,
         discard(1, 1, -1, -1, false),
@@ -539,29 +538,30 @@ describe("cardsReducer", () => {
       let nextGameState = GAME_STATE;
 
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(
         deck,
         draw(1, 2, 0, 4),
         nextGameState,
         DEFAULT_METADATA,
       );
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], [2]] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], [2]]);
       deck = cardsReducer(
         deck,
         draw(1, 3, 1, 4),
         nextGameState,
         DEFAULT_METADATA,
       );
-      nextGameState = {
-        ...GAME_STATE,
-        hands: [
-          [0, 1],
-          [2, 3],
-        ],
-      };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [2, 3],
+      ]);
 
       // Load up the negative clues so inferences can be made.
       const greenClue = colorClue(2, 1, [], 0, 0);
@@ -573,7 +573,7 @@ describe("cardsReducer", () => {
 
       const foursClue = rankClue(4, 2, [0, 1], 0, 0);
       deck = cardsReducer(deck, foursClue, nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[1], [2, 3]] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[1], [2, 3]]);
 
       // Discard red 4.
       deck = cardsReducer(
@@ -596,11 +596,11 @@ describe("cardsReducer", () => {
   describe("draw", () => {
     test("eliminates a possibility on other players' cards", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
-      const gameStateDrawP0 = { ...GAME_STATE, hands: [[0], []] } as const;
+      const gameStateDrawP0 = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), gameStateDrawP0, DEFAULT_METADATA);
 
       // P1 draws a red 5.
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[0], [1]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[0], [1]]);
       deck = cardsReducer(
         deck,
         draw(1, 1, 0, 5),
@@ -619,11 +619,11 @@ describe("cardsReducer", () => {
       };
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P2 draws a yellow 1.
-      const gameStateDrawP2 = { ...GAME_STATE, hands: [[], [], [0]] } as const;
+      const gameStateDrawP2 = getGameStateWithHands(GAME_STATE, [[], [], [0]]);
       deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
 
       // P1 draws a red 5.
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[], [1], [0]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[], [1], [0]]);
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
       // The remaining card cannot be a red 5 but the other player doesn't know that.
@@ -638,11 +638,11 @@ describe("cardsReducer", () => {
       };
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P2 draws a yellow 1.
-      const gameStateDrawP2 = { ...GAME_STATE, hands: [[], [], [0]] } as const;
+      const gameStateDrawP2 = getGameStateWithHands(GAME_STATE, [[], [], [0]]);
       deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
 
       // P1 draws a red 5.
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[], [1], [0]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[], [1], [0]]);
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
       // The remaining card cannot be a red 5 but the other player doesn't know that.
@@ -657,11 +657,11 @@ describe("cardsReducer", () => {
       };
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P1 draws a yellow 1.
-      const gameStateDrawP2 = { ...GAME_STATE, hands: [[], [0], []] } as const;
+      const gameStateDrawP2 = getGameStateWithHands(GAME_STATE, [[], [0], []]);
       deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metaData);
 
       // P2 draws a red 5.
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[], [0], [1]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[], [0], [1]]);
       deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
 
       // Expect the remaining card to not have a possibility for a red 5.
@@ -675,11 +675,11 @@ describe("cardsReducer", () => {
       };
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P1 draws a yellow 1.
-      const gameStateDrawP2 = { ...GAME_STATE, hands: [[], [0], []] } as const;
+      const gameStateDrawP2 = getGameStateWithHands(GAME_STATE, [[], [0], []]);
       deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metaData);
 
       // P2 draws a red 5.
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[], [0], [1]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[], [0], [1]]);
       deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metaData);
 
       // The remaining card cannot be a red 5 but the other player doesn't know that.
@@ -694,11 +694,11 @@ describe("cardsReducer", () => {
       };
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P2 draws a yellow 1.
-      const gameStateDrawP2 = { ...GAME_STATE, hands: [[], [], [0]] } as const;
+      const gameStateDrawP2 = getGameStateWithHands(GAME_STATE, [[], [], [0]]);
       deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metaData);
 
       // P1 draws a red 5.
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[], [1], [0]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[], [1], [0]]);
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metaData);
 
       // Expect the remaining card to not a possibility for a red 5.
@@ -708,7 +708,7 @@ describe("cardsReducer", () => {
     test("eliminates possibilities from previously drawn cards", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P0 draws a red 5.
-      const gameStateDrawP0 = { ...GAME_STATE, hands: [[0], []] } as const;
+      const gameStateDrawP0 = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(
         deck,
         draw(0, 0, 0, 5),
@@ -716,7 +716,7 @@ describe("cardsReducer", () => {
         DEFAULT_METADATA,
       );
 
-      const gameStateDrawP1 = { ...GAME_STATE, hands: [[0], [1]] } as const;
+      const gameStateDrawP1 = getGameStateWithHands(GAME_STATE, [[0], [1]]);
       deck = cardsReducer(
         deck,
         draw(1, 1, 0, 1),
@@ -732,9 +732,10 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
       let nextGameState = GAME_STATE;
 
-      nextGameState = { ...GAME_STATE, hands: [[0], []] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
 
       const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
@@ -750,7 +751,7 @@ describe("cardsReducer", () => {
 
       // The two fives must be blue/purple in some order. The newly drawn card can't be one of those
       // fives.
-      nextGameState = { ...GAME_STATE, hands: [[0, 1, 2], []] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1, 2], []]);
       deck = cardsReducer(deck, draw(0, 2), nextGameState, DEFAULT_METADATA);
 
       expect(isPossibleViaEmpathy(deck[2]!, 3, 5)).toBe(false);
@@ -761,9 +762,10 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
       let nextGameState = GAME_STATE;
 
-      nextGameState = { ...GAME_STATE, hands: [[0], []] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
 
       const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
@@ -779,7 +781,7 @@ describe("cardsReducer", () => {
 
       // The two fives must be blue/purple in some order. The newly drawn card can't be one of those
       // fives.
-      nextGameState = { ...GAME_STATE, hands: [[0, 1], [2]] };
+      nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], [2]]);
       deck = cardsReducer(
         deck,
         draw(1, 2, 0, 5),
@@ -801,11 +803,13 @@ describe("cardsReducer", () => {
         ];
         let nextGameState = GAME_STATE;
 
-        nextGameState = { ...GAME_STATE, hands: [[0], []] };
+        nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
         deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
-        nextGameState = { ...GAME_STATE, hands: [[0, 1], []] };
+
+        nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
         deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
-        nextGameState = { ...GAME_STATE, hands: [[0, 1, 2], []] };
+
+        nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1, 2], []]);
         deck = cardsReducer(deck, draw(0, 2), nextGameState, DEFAULT_METADATA);
 
         const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
@@ -818,7 +822,7 @@ describe("cardsReducer", () => {
         deck = cardsReducer(deck, yellowClue, nextGameState, DEFAULT_METADATA);
 
         // Bob draws green 5.
-        nextGameState = { ...GAME_STATE, hands: [[0, 1, 2], [3]] };
+        nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1, 2], [3]]);
         deck = cardsReducer(
           deck,
           draw(1, 3, 2, 5),
@@ -851,11 +855,13 @@ describe("cardsReducer", () => {
         ];
         let nextGameState = GAME_STATE;
 
-        nextGameState = { ...GAME_STATE, hands: [[], [0]] };
+        nextGameState = getGameStateWithHands(GAME_STATE, [[], [0]]);
         deck = cardsReducer(deck, draw(1, 0), nextGameState, bobMetadata);
-        nextGameState = { ...GAME_STATE, hands: [[], [0, 1]] };
+
+        nextGameState = getGameStateWithHands(GAME_STATE, [[], [0, 1]]);
         deck = cardsReducer(deck, draw(1, 1), nextGameState, bobMetadata);
-        nextGameState = { ...GAME_STATE, hands: [[], [0, 1, 2]] };
+
+        nextGameState = getGameStateWithHands(GAME_STATE, [[], [0, 1, 2]]);
         deck = cardsReducer(deck, draw(1, 2), nextGameState, bobMetadata);
 
         const fivesClue = rankClue(5, 0, [0, 1], 1, 0);
@@ -868,7 +874,7 @@ describe("cardsReducer", () => {
         deck = cardsReducer(deck, yellowClue, nextGameState, bobMetadata);
 
         // Alice draws green 5.
-        nextGameState = { ...GAME_STATE, hands: [[3], [0, 1, 2]] };
+        nextGameState = getGameStateWithHands(GAME_STATE, [[3], [0, 1, 2]]);
         deck = cardsReducer(deck, draw(0, 3, 2, 5), nextGameState, bobMetadata);
 
         // Now the two fives in our hand must be blue/purple in some order. The other card in our
@@ -893,24 +899,19 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
 
       // P2 draws a yellow 1.
-      const gameStateDrawY1 = {
-        ...GAME_STATE,
-        hands: [[], [], [0]],
-      } as const;
+      const gameStateDrawY1 = getGameStateWithHands(GAME_STATE, [[], [], [0]]);
       deck = cardsReducer(deck, draw(2, 0, 1, 5), gameStateDrawY1, metaData);
 
       // P1 draws a red 5.
-      const gameStateDrawR5 = {
-        ...GAME_STATE,
-        hands: [[], [1], [0]],
-      } as const;
+      const gameStateDrawR5 = getGameStateWithHands(GAME_STATE, [[], [1], [0]]);
       deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawR5, metaData);
 
       // P1 draws a yellow 2.
-      const gameStateDrawY2 = {
-        ...GAME_STATE,
-        hands: [[], [2, 1], [0]],
-      } as const;
+      const gameStateDrawY2 = getGameStateWithHands(GAME_STATE, [
+        [],
+        [2, 1],
+        [0],
+      ]);
       deck = cardsReducer(deck, draw(1, 2, 1, 1), gameStateDrawY2, metaData);
 
       deck = cardsReducer(
@@ -931,17 +932,15 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
 
       // P0 draws an unknown red 5.
-      const gameStateDrawR5 = {
-        ...GAME_STATE,
-        hands: [[0], [], []],
-      } as const;
+      const gameStateDrawR5 = getGameStateWithHands(GAME_STATE, [[0], [], []]);
       deck = cardsReducer(deck, draw(0, 0, -1, -1), gameStateDrawR5, metaData);
 
       // P0 draws an unknown red 2.
-      const gameStateDrawR2 = {
-        ...GAME_STATE,
-        hands: [[0, 1], [], []],
-      } as const;
+      const gameStateDrawR2 = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [],
+        [],
+      ]);
       deck = cardsReducer(deck, draw(0, 1, -1, -1), gameStateDrawR2, metaData);
 
       // P0 clued that both cards are red.
@@ -953,7 +952,7 @@ describe("cardsReducer", () => {
       );
 
       // P0 plays red 5.
-      const gameStatePlayR5 = { ...GAME_STATE, hands: [[1], [], []] } as const;
+      const gameStatePlayR5 = getGameStateWithHands(GAME_STATE, [[1], [], []]);
       deck = cardsReducer(deck, play(0, 0, 0, 5), gameStatePlayR5, metaData);
 
       // Expect the red 2 to remove red 5 possibility.
@@ -966,17 +965,15 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
 
       // P0 draws an unknown red 5.
-      const gameStateDrawR5 = {
-        ...GAME_STATE,
-        hands: [[0], [], []],
-      } as const;
+      const gameStateDrawR5 = getGameStateWithHands(GAME_STATE, [[0], [], []]);
       deck = cardsReducer(deck, draw(0, 0, 0, 5), gameStateDrawR5, metaData);
 
       // P0 draws an unknown red 2.
-      const gameStateDrawR2 = {
-        ...GAME_STATE,
-        hands: [[0, 1], [], []],
-      } as const;
+      const gameStateDrawR2 = getGameStateWithHands(GAME_STATE, [
+        [0, 1],
+        [],
+        [],
+      ]);
       deck = cardsReducer(deck, draw(0, 1, 0, 2), gameStateDrawR2, metaData);
 
       // P0 clued that both cards are red.
@@ -988,10 +985,7 @@ describe("cardsReducer", () => {
       );
 
       // P0 plays red 5.
-      const gameStatePlayR5 = {
-        ...GAME_STATE,
-        hands: [[1], [], []],
-      } as const;
+      const gameStatePlayR5 = getGameStateWithHands(GAME_STATE, [[1], [], []]);
       deck = cardsReducer(deck, play(0, 0, 0, 5), gameStatePlayR5, metaData);
 
       // Expect the red 2 to remove red 5 possibility.
@@ -1000,6 +994,17 @@ describe("cardsReducer", () => {
     });
   });
 });
+
+/** Helper function to cast `number[][]` to the correct type for a game state hand. */
+function getGameStateWithHands(
+  gameState: GameState,
+  hands: number[][],
+): GameState {
+  return {
+    ...gameState,
+    hands: hands as Tuple<CardOrder[], NumPlayers>,
+  };
+}
 
 function isPossible(card: CardState, suitIndex: SuitIndex, rank: Rank) {
   return card.possibleCards.some(([s, r]) => s === suitIndex && r === rank);

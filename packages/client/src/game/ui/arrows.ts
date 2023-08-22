@@ -1,7 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import type { Suit } from "@hanabi/data";
+import type { CardOrder, Suit } from "@hanabi/data";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
@@ -276,7 +276,7 @@ function getPos(element: Konva.Node, rot: number) {
   return pos;
 }
 
-// Animate the arrow to fly from the player who gave the clue to the card.
+/** Animate the arrow to fly from the player who gave the clue to the card. */
 function animate(
   arrow: Arrow,
   card: HanabiCard,
@@ -332,7 +332,7 @@ function animate(
 
 export function click(
   event: KonvaEventObject<MouseEvent>,
-  order: number,
+  order: CardOrder | ReplayArrowOrder,
 ): void {
   // "event.evt.buttons" is always 0 here.
   if (event.evt.button !== 2) {
@@ -361,8 +361,11 @@ export function click(
   toggle(order);
 }
 
-// This toggles the "highlight" arrow on a particular element.
-export function toggle(order: number, alwaysShow = false): void {
+/** Toggles the "highlight" arrow on a particular element. */
+export function toggle(
+  order: CardOrder | ReplayArrowOrder,
+  alwaysShow = false,
+): void {
   // Get the element corresponding to the "order" number.
   const element = getElementFromOrder(order);
   if (!element) {
@@ -408,13 +411,15 @@ export function toggle(order: number, alwaysShow = false): void {
   }
 }
 
-function getElementFromOrder(order: number): NodeWithTooltip | undefined {
+function getElementFromOrder(
+  order: CardOrder | ReplayArrowOrder,
+): NodeWithTooltip | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (order >= 0) {
     // This is an arrow for a card. The order corresponds to the card's order in the deck.
-    return getCardOrStackBase(order);
+    return getCardOrStackBase(order as CardOrder);
   }
 
-  // eslint-disable-next-line isaacscript/strict-enums
   return getElementFromNegativeOrder(order);
 }
 

@@ -1,5 +1,6 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI).
 
+import type { CardOrder } from "@hanabi/data";
 import Konva from "konva";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
@@ -124,9 +125,11 @@ export class ClueEntry extends Konva.Group {
     });
   }
 
-  // If this clue entry is related to the card that we are currently mousing over, then highlight
-  // it.
-  showMatch(targetCardOrder: number | null): void {
+  /**
+   * If this clue entry is related to the card that we are currently mousing over, then highlight
+   * it.
+   */
+  showMatch(targetCardOrder: CardOrder | null): void {
     this.background.opacity(0.1);
     this.background.fill("white");
     this.negativeMarker.hide();

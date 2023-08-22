@@ -1,5 +1,6 @@
 // Users can right-click cards to record information on them.
 
+import type { CardOrder } from "@hanabi/data";
 import { ReadonlySet, trimSuffix } from "@hanabi/utils";
 import * as tooltips from "../../tooltips";
 import type { HanabiCard } from "./HanabiCard";
@@ -28,8 +29,8 @@ function escapeHtml(unsafe: string): string {
     .replace(/'/g, "&#039;");
 }
 
-// Get the contents of the note tooltip.
-function get(order: number, our: boolean, escape = false) {
+/** Get the contents of the note tooltip. */
+function get(order: CardOrder, our: boolean, escape = false) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note.
   // eslint-disable-next-line func-style
@@ -69,7 +70,7 @@ function get(order: number, our: boolean, escape = false) {
  * 2) Dispatch an event with the updated note.
  * 3) Check for new card identities.
  */
-export function set(order: number, text: string): void {
+export function set(order: CardOrder, text: string): void {
   const oldNote = globals.state.notes.ourNotes[order]!.text;
   globals.lastNote = text;
 
@@ -113,7 +114,7 @@ export function update(card: HanabiCard, text: string): void {
   }
 }
 
-// Open the tooltip for this card.
+/** Open the tooltip for this card. */
 export function show(card: HanabiCard): void {
   const tooltip = `#tooltip-${card.tooltipName}`;
 
@@ -273,7 +274,9 @@ export function openEditTooltip(
   }, 1);
 }
 
-// We just got a list of a bunch of notes, so show the note indicator for currently-visible cards.
+/**
+ * We just got a list of a bunch of notes, so show the note indicator for currently-visible cards.
+ */
 export function setAllCardIndicators(): void {
   // We iterate through the whole deck instead of using the index of the last drawn card to avoid
   // race conditions where we can get the "noteList" before the "actionList" is finished processing.

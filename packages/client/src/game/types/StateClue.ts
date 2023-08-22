@@ -1,4 +1,4 @@
-import type { ColorIndex, RankClueNumber } from "@hanabi/data";
+import type { CardOrder, ColorIndex, RankClueNumber } from "@hanabi/data";
 import type { ClueType } from "./ClueType";
 
 interface StateClueBase {
@@ -6,11 +6,11 @@ interface StateClueBase {
   readonly target: number;
   readonly segment: number;
 
-  /** The list of cards that the clue touches. */
-  readonly list: readonly number[];
+  /** The cards in the hand that the clue touches. */
+  readonly list: readonly CardOrder[];
 
-  /** The list of cards in the same hand that the clue does not touch. */
-  readonly negativeList: readonly number[];
+  /** The cards in the hand that the clue does not touch. */
+  readonly negativeList: readonly CardOrder[];
 }
 
 interface StateColorClue extends StateClueBase {

@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- try refactoring to unknown: const subscriptions: Array<Subscription<State, any>> = [];
 - remove type assertions from sudoku.ts (need feedback from Ram)
 - PlayerIndex type (maybe, look to see if it is useful first)
 - CardOrder type (branded)

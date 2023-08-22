@@ -1,4 +1,4 @@
-import type { SuitRankTuple } from "@hanabi/data";
+import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { testMetadata } from "../../../test/testMetadata";
 import type { CardState } from "../types/CardState";
@@ -9,7 +9,7 @@ import { initialCardState } from "./initialStates/initialCardState";
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);
 const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
-const DEFAULT_CARD = initialCardState(0, VARIANT, NUM_PLAYERS);
+const DEFAULT_CARD = initialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
 
 const FIRST_CLUE_COLOR = VARIANT.clueColors[0];
 if (FIRST_CLUE_COLOR === undefined) {
@@ -27,13 +27,13 @@ function countPossibleCards(state: CardState) {
 }
 
 function possibilities(possibleCardsFromClues: readonly SuitRankTuple[]) {
-  const possibleSuits = new Set<number>();
-  const possibleRanks = new Set<number>();
-  for (const [suit, rank] of possibleCardsFromClues) {
-    possibleSuits.add(suit);
+  const possibleSuitIndexes = new Set<SuitIndex>();
+  const possibleRanks = new Set<Rank>();
+  for (const [suitIndex, rank] of possibleCardsFromClues) {
+    possibleSuitIndexes.add(suitIndex);
     possibleRanks.add(rank);
   }
-  return { possibleSuits, possibleRanks };
+  return { possibleSuitIndexes, possibleRanks };
 }
 
 describe("cardPossibilitiesReducer", () => {
@@ -47,12 +47,12 @@ describe("cardPossibilitiesReducer", () => {
       DEFAULT_METADATA,
     );
 
-    const { possibleSuits, possibleRanks } = possibilities(
+    const { possibleSuitIndexes, possibleRanks } = possibilities(
       newCard.possibleCardsFromClues,
     );
 
-    expect(possibleSuits.has(0)).toBe(true);
-    expect(possibleSuits.size).toBe(1);
+    expect(possibleSuitIndexes.has(0)).toBe(true);
+    expect(possibleSuitIndexes.size).toBe(1);
     expect(possibleRanks.size).toBe(5);
 
     // This card can only be red.
@@ -69,12 +69,12 @@ describe("cardPossibilitiesReducer", () => {
       DEFAULT_METADATA,
     );
 
-    const { possibleSuits, possibleRanks } = possibilities(
+    const { possibleSuitIndexes, possibleRanks } = possibilities(
       newCard.possibleCardsFromClues,
     );
 
-    expect(possibleSuits.has(0)).toBe(false);
-    expect(possibleSuits.size).toBe(4);
+    expect(possibleSuitIndexes.has(0)).toBe(false);
+    expect(possibleSuitIndexes.size).toBe(4);
     expect(possibleRanks.size).toBe(5);
 
     // This card can be any color except red.
@@ -91,12 +91,16 @@ describe("cardPossibilitiesReducer", () => {
     const redClue = newColorClue(FIRST_CLUE_COLOR);
     const oneClue = newRankClue(FIRST_CLUE_RANK);
 
-    let card = initialCardState(0, rainbowOnesAndBrown, NUM_PLAYERS);
+    let card = initialCardState(
+      0 as CardOrder,
+      rainbowOnesAndBrown,
+      NUM_PLAYERS,
+    );
     card = cardPossibilitiesReducer(card, redClue, true, metadata);
     card = cardPossibilitiesReducer(card, oneClue, false, metadata);
 
-    const { possibleSuits } = possibilities(card.possibleCardsFromClues);
+    const { possibleSuitIndexes } = possibilities(card.possibleCardsFromClues);
     // A card with positive red and negative one cannot be yellow.
-    expect(possibleSuits.has(1)).toBe(false);
+    expect(possibleSuitIndexes.has(1)).toBe(false);
   });
 });

@@ -38,7 +38,8 @@ module.exports = {
       {
         patterns: [
           {
-            group: ["src/"],
+            // We don't use a suffix or a prefix since the "src" folder has an "index.ts" file.
+            group: ["src"],
             message:
               'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
           },
@@ -46,6 +47,7 @@ module.exports = {
           // This only applies to the server, but we put it here to avoid having to duplicate the
           // above rule.
           {
+            // We want to allow: `import { models } from "./models"`
             group: ["models/"],
             message:
               'You cannot import model functions directly. Use the "models" object instead.',

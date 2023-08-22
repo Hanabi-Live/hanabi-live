@@ -1,4 +1,10 @@
-import type { SuitRankTuple, Variant } from "@hanabi/data";
+import type {
+  CardOrder,
+  Rank,
+  SuitIndex,
+  SuitRankTuple,
+  Variant,
+} from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
 import { arrayCopyTwoDimensional } from "@hanabi/utils";
@@ -146,7 +152,7 @@ function shouldCalculateCard(
   card: CardState,
   playerIndex: number,
   ourPlayerIndex: number,
-  deck: CardState[],
+  deck: readonly CardState[],
   oldDeck: readonly CardState[],
 ) {
   if (playerIndex !== ourPlayerIndex && playerIndex !== card.location) {
@@ -224,7 +230,7 @@ function getCardPossibilitiesForPlayer(
 }
 
 function generateDeckPossibilities(
-  excludeCardOrder: number,
+  excludeCardOrder: CardOrder,
   deck: readonly CardState[],
   playerIndex: number,
   ourPlayerIndex: number,
@@ -296,10 +302,10 @@ function isPossibleCard(
 ) {
   // We know the card.
   if (possibilities.length === 1) {
-    const [suit, rank] = possibilities[0]!;
-    cardCountMap[suit]![rank]!--;
+    const [suitIndex, rank] = possibilities[0]!;
+    cardCountMap[suitIndex]![rank]!--;
 
-    if (cardCountMap[suit]![rank]! < 0) {
+    if (cardCountMap[suitIndex]![rank]! < 0) {
       return false;
     }
   }
@@ -309,7 +315,7 @@ function isPossibleCard(
 
 function canBeUsedToDisprovePossibility(
   card: CardState | undefined,
-  excludeCardOrder: number,
+  excludeCardOrder: CardOrder,
   playerIndex: number,
 ) {
   return (
@@ -322,7 +328,7 @@ function canBeUsedToDisprovePossibility(
 }
 
 function deckPossibilitiesDifferent(
-  excludeCardOrder: number,
+  excludeCardOrder: CardOrder,
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
   playerIndex: number,
@@ -409,27 +415,27 @@ function filterCardPossibilities(
 }
 
 function hasPossibility(
-  possibilitiesToValidate: DeepReadonly<number[][]>,
-  [suit, rank]: SuitRankTuple,
+  possibilitiesToValidate: readonly SuitRankTuple[],
+  [suitIndex, rank]: SuitRankTuple,
 ) {
   return possibilitiesToValidate.some(
-    ([suitCandidate, rankCandidate]) =>
-      suitCandidate === suit && rankCandidate === rank,
+    ([suitIndexCandidate, rankCandidate]) =>
+      suitIndexCandidate === suitIndex && rankCandidate === rank,
   );
 }
 
 function possibilityValid(
-  [suit, rank]: readonly [number, number],
+  [suitIndex, rank]: readonly [SuitIndex, Rank],
   deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
   index: number,
   cardCountMap: number[][],
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   if (deckPossibilities.length === index) {
-    if (cardCountMap[suit]![rank]! > 0) {
-      cardCountMap[suit]![rank]!--;
+    if (cardCountMap[suitIndex]![rank]! > 0) {
+      cardCountMap[suitIndex]![rank]!--;
       updatePossibilitiesToValidate(cardCountMap, possibilitiesToValidate);
-      cardCountMap[suit]![rank]!++;
+      cardCountMap[suitIndex]![rank]!++;
       return true;
     }
 
@@ -437,8 +443,8 @@ function possibilityValid(
   }
 
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit.
-  cardCountMap[suit]![rank]!--;
-  if (cardCountMap[suit]![rank]! >= 0) {
+  cardCountMap[suitIndex]![rank]!--;
+  if (cardCountMap[suitIndex]![rank]! >= 0) {
     const suitRankTuples = deckPossibilities[index];
     if (suitRankTuples === undefined) {
       throw new Error(
@@ -462,13 +468,13 @@ function possibilityValid(
           possibilitiesToValidate,
         )
       ) {
-        cardCountMap[suit]![rank]!++;
+        cardCountMap[suitIndex]![rank]!++;
         return true;
       }
     }
   }
 
-  cardCountMap[suit]![rank]!++;
+  cardCountMap[suitIndex]![rank]!++;
   return false;
 }
 
@@ -479,10 +485,10 @@ function updatePossibilitiesToValidate(
   let j = 0;
 
   for (const suitRankTuple of possibilitiesToValidate) {
-    const [suit, rank] = suitRankTuple;
+    const [suitIndex, rank] = suitRankTuple;
 
-    if (cardCountMap[suit]![rank]! <= 0) {
-      possibilitiesToValidate[j] = [suit, rank];
+    if (cardCountMap[suitIndex]![rank]! <= 0) {
+      possibilitiesToValidate[j] = [suitIndex, rank];
       j++;
     }
   }
@@ -490,12 +496,12 @@ function updatePossibilitiesToValidate(
   possibilitiesToValidate.length = j;
 }
 
-let cachedVariantId: number | null = null;
+let cachedVariantID: number | null = null;
 let cachedCardCountMap: number[][] = [];
 
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
 function getCardCountMap(variant: Variant): number[][] {
-  if (variant.id === cachedVariantId) {
+  if (variant.id === cachedVariantID) {
     return Array.from(cachedCardCountMap, (arr) => [...arr]);
   }
 
@@ -511,7 +517,7 @@ function getCardCountMap(variant: Variant): number[][] {
     }
   }
 
-  cachedVariantId = variant.id;
+  cachedVariantID = variant.id;
   cachedCardCountMap = arrayCopyTwoDimensional(possibleCardMap);
 
   return possibleCardMap;

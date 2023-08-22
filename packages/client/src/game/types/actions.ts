@@ -1,4 +1,7 @@
-import type { Rank, SuitIndex } from "@hanabi/data";
+// These represent actions that can modify the state store. (They cause a state duplication to occur
+// and the state reducers to fire.)
+
+import type { CardOrder, Rank, SuitIndex } from "@hanabi/data";
 import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
 import type { EndCondition } from "./EndCondition";
@@ -132,7 +135,7 @@ interface ActionFinishOngoingGame {
 export interface ActionCardIdentity {
   readonly type: "cardIdentity";
   readonly playerIndex: number;
-  readonly order: number;
+  readonly order: CardOrder;
 
   /** The server scrubs the identity under certain circumstances, which is represented by -1. */
   readonly suitIndex: SuitIndex | -1;
@@ -144,9 +147,16 @@ export interface ActionCardIdentity {
 export interface ActionClue {
   readonly type: "clue";
   readonly clue: MsgClue;
+
+  /** The player index of the person giving the clue. */
   readonly giver: number;
-  readonly list: number[];
+
+  /** The card orders that were touched by this clue. */
+  readonly list: CardOrder[];
+
+  /** The player index of the person being clued. */
   readonly target: number;
+
   readonly turn: number; // TODO: remove. This is unused.
   readonly ignoreNegative: boolean;
 }
@@ -154,7 +164,7 @@ export interface ActionClue {
 export interface ActionDiscard {
   readonly type: "discard";
   readonly playerIndex: number;
-  readonly order: number;
+  readonly order: CardOrder;
 
   /**
    * -1 represents a card of an unknown suit. This will only be -1 in special variants where the
@@ -174,7 +184,7 @@ export interface ActionDiscard {
 export interface ActionDraw {
   readonly type: "draw";
   readonly playerIndex: number;
-  readonly order: number;
+  readonly order: CardOrder;
 
   /** -1 represents a card of an unknown suit (e.g. it was drawn to our own hand). */
   readonly suitIndex: SuitIndex | -1;
@@ -199,7 +209,7 @@ interface ActionGameOver {
 export interface ActionPlay {
   readonly type: "play";
   readonly playerIndex: number;
-  readonly order: number;
+  readonly order: CardOrder;
 
   /**
    * -1 represents a card of an unknown suit. This will only be -1 in special variants where the
@@ -225,7 +235,7 @@ export interface ActionStrike {
   readonly num: 1 | 2 | 3;
 
   /** The order of the card that was misplayed. */
-  readonly order: number;
+  readonly order: CardOrder;
 
   readonly turn: number;
 }
@@ -242,13 +252,13 @@ interface ActionTurn {
 
 interface ActionEditNote {
   readonly type: "editNote";
-  readonly order: number;
+  readonly order: CardOrder;
   readonly text: string;
 }
 
 interface ActionReceiveNote {
   readonly type: "receiveNote";
-  readonly order: number;
+  readonly order: CardOrder;
   readonly notes: SpectatorNote[];
 }
 
@@ -334,12 +344,12 @@ interface ActionHypotheticalMorph {
   /** -1 represents a card of an unknown rank. */
   readonly rank: Rank | -1;
 
-  readonly order: number;
+  readonly order: CardOrder;
 }
 
 interface ActionHypotheticalUnmorph {
   readonly type: "unmorph"; // This is not "hypoUnmorph" because it is a game action.
-  readonly order: number;
+  readonly order: CardOrder;
 }
 
 interface ActionHypotheticalShowDrawnCards {

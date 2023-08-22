@@ -1,4 +1,10 @@
-import type { NumPlayers, NumSuits, Rank, SuitRankMap } from "@hanabi/data";
+import type {
+  CardOrder,
+  NumPlayers,
+  NumSuits,
+  Rank,
+  SuitRankMap,
+} from "@hanabi/data";
 import type { DeepReadonly, Tuple } from "@hanabi/utils";
 import type { CardState } from "./CardState";
 import type { CardStatus } from "./CardStatus";
@@ -32,10 +38,10 @@ export interface GameState {
   readonly strikes: readonly StateStrike[];
 
   /** Indexed by player index. Each player has an array of card orders. */
-  readonly hands: Readonly<Tuple<readonly number[], NumPlayers>>;
+  readonly hands: Readonly<Tuple<readonly CardOrder[], NumPlayers>>;
 
   /** Indexed by suit index. Each suit has an array of card orders. */
-  readonly playStacks: Readonly<Tuple<readonly number[], NumSuits>>;
+  readonly playStacks: Readonly<Tuple<readonly CardOrder[], NumSuits>>;
 
   readonly playStackDirections: Readonly<Tuple<StackDirection, NumSuits>>;
 
@@ -48,10 +54,10 @@ export interface GameState {
   /**
    * For "Throw It in a Hole" variants. All played cards go into the hole. It contains card orders.
    */
-  readonly hole: readonly number[];
+  readonly hole: readonly CardOrder[];
 
-  /** Suit index --> card order */
-  readonly discardStacks: Readonly<Tuple<readonly number[], NumSuits>>;
+  /** Indexed by suit index. Each suit has an array of card orders. */
+  readonly discardStacks: Readonly<Tuple<readonly CardOrder[], NumSuits>>;
 
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;
@@ -64,7 +70,7 @@ export interface LogEntry {
 
 export interface StateStrike {
   readonly segment: number;
-  readonly order: number;
+  readonly order: CardOrder;
 }
 
 export type PaceRisk = "LowRisk" | "MediumRisk" | "HighRisk" | "Zero" | "Null";

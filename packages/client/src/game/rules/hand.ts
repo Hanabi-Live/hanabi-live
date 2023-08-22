@@ -1,6 +1,6 @@
 // Functions related to hand management.
 
-import type { NumPlayers } from "@hanabi/data";
+import type { CardOrder, NumPlayers } from "@hanabi/data";
 import type { Options } from "../../types/Options";
 import type { CardState } from "../types/CardState";
 import * as cardRules from "./card";
@@ -37,9 +37,9 @@ function cardsPerHandNatural(numPlayers: NumPlayers): number {
 }
 
 /** For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game). */
-export function cardSlot(targetOrder: number, hand: number[]): number | null {
-  const index = hand.indexOf(targetOrder);
-  return index === -1 ? null : hand.length;
+export function cardSlot(order: CardOrder, hand: number[]): number | null {
+  const index = hand.indexOf(order);
+  return index === -1 ? null : hand.length - index;
 }
 
 export function isLocked(

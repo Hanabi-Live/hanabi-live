@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import type { NumPlayers, Rank, SuitIndex } from "@hanabi/data";
+import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
@@ -119,8 +119,13 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     switch (a.type) {
       case "clue": {
         // Fix the list of touched cards.
-        const list: number[] = s.hands[a.target]!.filter((order) => {
+        const hand = s.hands[a.target];
+        if (hand === undefined) {
+          throw new Error(`Failed to find the hand at index: ${a.target}`);
+        }
+        const list: CardOrder[] = hand.filter((order) => {
           const jsonCard = gameJSON.deck[order]!;
+
           return cluesRules.touchesCard(
             variant,
             cluesRules.msgClueToClue(a.clue, variant),
@@ -255,7 +260,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
 function drawCard(
   playerIndex: number,
-  order: number,
+  order: CardOrder,
   deck: CardIdentity[],
 ): ActionDraw {
   const cardIdentity = deck[order];
@@ -280,13 +285,14 @@ function drawCard(
   };
 }
 
+/** @returns The order of the top of the deck. */
 function dealInitialCards(
   numPlayers: NumPlayers,
   cardsPerHand: number,
   actions: GameAction[],
   deck: CardIdentity[],
-) {
-  let topOfDeck = 0;
+): CardOrder {
+  let topOfDeck = 0 as CardOrder;
 
   for (const playerIndex of eRange(numPlayers)) {
     for (const _i of eRange(cardsPerHand)) {

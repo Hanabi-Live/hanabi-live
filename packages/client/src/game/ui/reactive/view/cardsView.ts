@@ -1,3 +1,4 @@
+import type { CardOrder } from "@hanabi/data";
 import type { CardIdentity } from "../../../types/CardIdentity";
 import type { CardState } from "../../../types/CardState";
 import type { State } from "../../../types/State";
@@ -12,9 +13,8 @@ export function onCardsPossiblyAdded(length: number): void {
   // Subscribe the new cards.
   for (let i = globals.cardSubscriptions.length; i < length; i++) {
     if (globals.deck.length <= i) {
-      // Construct the card object.
       const newCard = new HanabiCard(
-        i,
+        i as CardOrder,
         null,
         null,
         false,
@@ -23,7 +23,8 @@ export function onCardsPossiblyAdded(length: number): void {
       );
       globals.deck.push(newCard);
     }
-    const subscription = subscribeToCardChanges(i);
+
+    const subscription = subscribeToCardChanges(i as CardOrder);
     globals.cardSubscriptions.push(subscription);
   }
 }
@@ -65,9 +66,11 @@ export function onMorphedIdentitiesChanged(
 
   if (!data.hypotheticalActive) {
     // Exiting hypothetical, update all morphed.
-    for (let i = 0; i < previousData.morphedIdentities!.length; i++) {
-      if (previousData.morphedIdentities![i] !== undefined) {
-        updateCardVisuals(i);
+    if (previousData.morphedIdentities !== undefined) {
+      for (let i = 0; i < previousData.morphedIdentities.length; i++) {
+        if (previousData.morphedIdentities[i] !== undefined) {
+          updateCardVisuals(i as CardOrder);
+        }
       }
     }
 
@@ -78,14 +81,19 @@ export function onMorphedIdentitiesChanged(
   const currentLength = data.morphedIdentities!.length;
   const previousLength = previousData.morphedIdentities!.length;
   const maxLength = Math.max(currentLength, previousLength);
-  for (let i = 0; i < maxLength; i++) {
-    if (data.morphedIdentities![i] !== previousData.morphedIdentities![i]) {
-      updateCardVisuals(i);
+  if (
+    data.morphedIdentities !== undefined &&
+    previousData.morphedIdentities !== undefined
+  ) {
+    for (let i = 0; i < maxLength; i++) {
+      if (data.morphedIdentities[i] !== previousData.morphedIdentities[i]) {
+        updateCardVisuals(i as CardOrder);
+      }
     }
   }
 }
 
-function subscribeToCardChanges(order: number) {
+function subscribeToCardChanges(order: CardOrder) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subscriptions: Array<Subscription<State, any>> = [];
 
@@ -208,7 +216,7 @@ function subscribeToCardChanges(order: number) {
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
 
-function updateBorder(order: number) {
+function updateBorder(order: CardOrder) {
   const card = getCardOrStackBase(order);
   if (!card) {
     return;
@@ -223,7 +231,7 @@ function updateBorder(order: number) {
   globals.layers.card.batchDraw();
 }
 
-function updatePips(order: number) {
+function updatePips(order: CardOrder) {
   const card = getCardOrStackBase(order);
   if (!card) {
     return;
@@ -233,7 +241,7 @@ function updatePips(order: number) {
   globals.layers.card.batchDraw();
 }
 
-export function updateCardVisuals(order: number): void {
+export function updateCardVisuals(order: CardOrder): void {
   const card = getCardOrStackBase(order);
   if (!card) {
     return;
@@ -243,7 +251,7 @@ export function updateCardVisuals(order: number): void {
   globals.layers.card.batchDraw();
 }
 
-function checkNoteDisproved(order: number) {
+function checkNoteDisproved(order: CardOrder) {
   const card = getCardOrStackBase(order);
   if (!card) {
     return;
@@ -253,7 +261,7 @@ function checkNoteDisproved(order: number) {
   globals.layers.card.batchDraw();
 }
 
-function updateCardStatus(order: number) {
+function updateCardStatus(order: CardOrder) {
   const card = getCardOrStackBase(order);
   if (!card) {
     return;

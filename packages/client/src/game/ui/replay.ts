@@ -1,5 +1,6 @@
 // Functions for progressing forward and backward through time.
 
+import type { CardOrder } from "@hanabi/data";
 import { clamp, parseIntSafe } from "@hanabi/utils";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
@@ -114,7 +115,7 @@ export function goToSegment(
 
 export function goToSegmentAndIndicateCard(
   segment: number,
-  order: number,
+  order: CardOrder,
 ): void {
   goToSegment(segment, true);
 

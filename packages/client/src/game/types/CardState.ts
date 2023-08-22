@@ -1,4 +1,5 @@
 import type {
+  CardOrder,
   Color,
   Rank,
   RankClueNumber,
@@ -7,7 +8,7 @@ import type {
 } from "@hanabi/data";
 
 export interface CardState {
-  readonly order: number;
+  readonly order: CardOrder;
 
   /** If this is a number, it is the index of the player that holds this card. */
   readonly location: "deck" | "discard" | "playStack" | number;

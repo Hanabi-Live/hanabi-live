@@ -1,4 +1,5 @@
 import type {
+  CardOrder,
   Color,
   NumPlayers,
   Rank,
@@ -155,7 +156,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // -----------
 
   constructor(
-    order: number,
+    order: CardOrder,
     suitIndex: SuitIndex | null,
     rank: Rank | null,
     isStackBase: boolean,

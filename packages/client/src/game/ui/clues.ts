@@ -1,3 +1,4 @@
+import type { CardOrder } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";
@@ -103,9 +104,9 @@ function showClueMatch(target: number, clue: Clue) {
 export function getTouchedCardsFromClue(
   target: number,
   clue: MsgClue,
-): number[] {
+): CardOrder[] {
   const hand = globals.elements.playerHands[target]!;
-  const cardsTouched: number[] = []; // An array of the card orders.
+  const cardsTouched: CardOrder[] = [];
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
     const identity = card.getMorphedIdentity();

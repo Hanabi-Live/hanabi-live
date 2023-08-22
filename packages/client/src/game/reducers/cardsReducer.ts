@@ -1,6 +1,12 @@
 // Calculates the state of the deck after an action.
 
-import type { NumPlayers, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
+import type {
+  CardOrder,
+  NumPlayers,
+  Rank,
+  SuitIndex,
+  SuitRankTuple,
+} from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import { arrayCopyTwoDimensional, eRange, newArray } from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
@@ -84,7 +90,7 @@ export function cardsReducer(
       }
 
       // eslint-disable-next-line func-style
-      const applyClue = (order: number, positive: boolean) => {
+      const applyClue = (order: CardOrder, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
         if (!cluesRules.shouldApplyClue(action.giver, metadata, variant)) {
           return;
@@ -349,7 +355,7 @@ function canPlayerSeeDrawnCard(
   }
 }
 
-function getCard(deck: readonly CardState[], order: number): CardState {
+function getCard(deck: readonly CardState[], order: CardOrder): CardState {
   const card = deck[order];
   if (card === undefined) {
     throw new Error(`Failed to get the card in the deck at index: ${order}`);

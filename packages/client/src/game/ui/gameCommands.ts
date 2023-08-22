@@ -2,8 +2,9 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
+import type { CardOrder } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import { newArray } from "@hanabi/utils";
+import { iRange, newArray } from "@hanabi/utils";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";
@@ -169,7 +170,7 @@ gameCommands.set("init", (metadata: InitData) => {
 
 // Received when spectating a game.
 interface NoteData {
-  order: number;
+  order: CardOrder;
   notes: SpectatorNote[];
 }
 gameCommands.set("note", (data: NoteData) => {
@@ -424,8 +425,8 @@ function setNoteIndicatorAndCheckForSpecialNote() {
 
   // Check for special notes.
   const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
-  for (let i = 0; i <= indexOfLastDrawnCard; i++) {
-    const card = getCardOrStackBase(i);
+  for (const order of iRange(indexOfLastDrawnCard)) {
+    const card = getCardOrStackBase(order as CardOrder);
     if (card) {
       card.checkSpecialNote();
       card.setRaiseAndShadowOffset();

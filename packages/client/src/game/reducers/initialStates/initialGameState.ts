@@ -1,4 +1,5 @@
 import type {
+  CardOrder,
   NumPlayers,
   NumSuits,
   Rank,
@@ -31,8 +32,8 @@ export function initialGameState(metadata: GameMetadata): GameState {
   // Calculate some things before we get the game state properties.
   const { options } = metadata;
   const variant = getVariant(options.variantName);
-  const playStacks = newArray<number[]>(variant.suits.length, []) as Tuple<
-    number[],
+  const playStacks = newArray<CardOrder[]>(variant.suits.length, []) as Tuple<
+    CardOrder[],
     NumSuits
   >;
   const suitIndexes = eRange(variant.suits.length) as SuitIndex[];
@@ -55,13 +56,13 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
   const clueTokens = clueTokensRules.getAdjusted(MAX_CLUE_NUM, variant);
   const hands = newArray<number[]>(options.numPlayers, []) as Tuple<
-    number[],
+    CardOrder[],
     NumPlayers
   >;
-  const discardStacks = newArray<number[]>(variant.suits.length, []) as Tuple<
-    number[],
-    NumSuits
-  >;
+  const discardStacks = newArray<CardOrder[]>(
+    variant.suits.length,
+    [],
+  ) as Tuple<CardOrder[], NumSuits>;
 
   // Stats properties
   const { maxScore } = variant;

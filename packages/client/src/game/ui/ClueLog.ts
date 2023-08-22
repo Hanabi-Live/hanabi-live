@@ -1,5 +1,6 @@
 // This is the list of clues in the top-right-hand corner of the UI.
 
+import type { CardOrder } from "@hanabi/data";
 import Konva from "konva";
 import type { ClueEntry } from "./ClueEntry";
 import { globals } from "./UIGlobals";
@@ -46,7 +47,7 @@ export class ClueLog extends Konva.Group {
 
   // We have moused over a card (or stopped mousing over a card), so update the highlighting for all
   // of the clue log entries.
-  showMatches(targetCardOrder: number | null): void {
+  showMatches(targetCardOrder: CardOrder | null): void {
     for (const child of this.children.toArray() as ClueEntry[]) {
       child.showMatch(targetCardOrder);
     }

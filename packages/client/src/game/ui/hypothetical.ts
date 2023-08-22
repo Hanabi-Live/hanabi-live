@@ -1,7 +1,7 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import type { ColorIndex, RankClueNumber } from "@hanabi/data";
+import type { CardOrder, ColorIndex, RankClueNumber } from "@hanabi/data";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
@@ -88,7 +88,7 @@ export function send(hypoAction: ClientAction): void {
   switch (type) {
     case "play":
     case "discard": {
-      const card = getCardOrStackBase(hypoAction.target);
+      const card = getCardOrStackBase(hypoAction.target as CardOrder);
       if (!card) {
         return;
       }
@@ -117,24 +117,25 @@ export function send(hypoAction: ClientAction): void {
         }
       }
 
-      const playHypoAction = {
-        type: "play",
-        playerIndex: gameState.turn.currentPlayerIndex!,
-        order: hypoAction.target,
-        suitIndex,
-        rank,
-      } as const;
-
       switch (newType) {
         case "play": {
-          sendHypoAction(playHypoAction);
+          sendHypoAction({
+            type: "play",
+            playerIndex: gameState.turn.currentPlayerIndex!,
+            order: hypoAction.target as CardOrder,
+            suitIndex,
+            rank,
+          });
           break;
         }
 
         case "discard": {
           sendHypoAction({
-            ...playHypoAction,
             type: "discard",
+            playerIndex: gameState.turn.currentPlayerIndex!,
+            order: hypoAction.target as CardOrder,
+            suitIndex,
+            rank,
             failed,
           });
           break;
@@ -146,14 +147,14 @@ export function send(hypoAction: ClientAction): void {
           type: "strike",
           num: (gameState.strikes.length + 1) as 1 | 2 | 3,
           turn: gameState.turn.segment!,
-          order: hypoAction.target,
+          order: hypoAction.target as CardOrder,
         });
       }
 
-      // Draw
+      // Check if all the cards have already been drawn.
       if (gameState.deck.length < globals.state.cardIdentities.length) {
-        // All the cards might have already been drawn.
-        const nextCardOrder = gameState.deck.length;
+        // Draw
+        const nextCardOrder = gameState.deck.length as CardOrder;
         const nextCard = globals.state.cardIdentities[nextCardOrder];
         sendHypoAction({
           type: "draw",

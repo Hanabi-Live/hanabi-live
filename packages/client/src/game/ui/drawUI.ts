@@ -1,6 +1,6 @@
 // This function draws the UI when going into a game for the first time.
 
-import type { RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
+import type { CardOrder, RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -387,7 +387,7 @@ function drawPlayStacks() {
     const order = deck.totalCards(globals.variant) + i;
     // Stack bases use card orders after the final card in the deck.
     const stackBase = new HanabiCard(
-      order,
+      order as CardOrder,
       suitIndex,
       null,
       true,

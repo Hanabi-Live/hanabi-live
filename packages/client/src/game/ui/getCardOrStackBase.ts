@@ -1,8 +1,9 @@
+import type { CardOrder } from "@hanabi/data";
 import * as deckRules from "../rules/deck";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 
-export function getCardOrStackBase(order: number): HanabiCard | undefined {
+export function getCardOrStackBase(order: CardOrder): HanabiCard | undefined {
   const card = globals.deck[order];
   if (card !== undefined) {
     return card;

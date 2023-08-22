@@ -1,6 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import type { NumPlayers, NumSuits, Variant } from "@hanabi/data";
+import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { DEFAULT_FINISHED_STACK_LENGTH, MAX_CLUE_NUM } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { newArray, sumArray } from "@hanabi/utils";
@@ -212,7 +212,9 @@ export function cardsGottenByNotes(
 ): number {
   let numCardsGottenByNotes = 0;
 
-  for (const [order, card] of deck.entries()) {
+  for (const [i, card] of deck.entries()) {
+    const order = i as CardOrder;
+
     if (
       cardRules.isInPlayerHand(card) &&
       !cardRules.allPossibilitiesTrash(
@@ -239,7 +241,7 @@ export function cardsGottenByNotes(
 
 function getCardsGottenByNotesAdjustment(
   notes: CardNote[],
-  order: number,
+  order: CardOrder,
   card: CardState,
 ): number {
   const note = notes[order];

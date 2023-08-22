@@ -1,4 +1,4 @@
-import type { NumSuits, Rank } from "@hanabi/data";
+import type { CardOrder, NumSuits, Rank } from "@hanabi/data";
 import { START_CARD_RANK, getDefaultVariant, getVariant } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { eRange, newArray } from "@hanabi/utils";
@@ -49,32 +49,32 @@ describe("direction", () => {
   describe("Up or Down", () => {
     // Cards for Up or Down tests.
     const redStart = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: START_CARD_RANK,
       suitIndex: 0,
     } as const;
     const redOne = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 1,
       suitIndex: 0,
     } as const;
     const redTwo = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 2,
       suitIndex: 0,
     } as const;
     const redThree = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 3,
       suitIndex: 0,
     } as const;
     const redFour = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 4,
       suitIndex: 0,
     } as const;
     const redFive = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 5,
       suitIndex: 0,
     } as const;
@@ -186,7 +186,7 @@ describe("nextRanks", () => {
         return;
       }
       const redCard = {
-        ...initialCardState(0, DEFAULT_VARIANT, NUM_PLAYERS),
+        ...initialCardState(0 as CardOrder, DEFAULT_VARIANT, NUM_PLAYERS),
         rank: n as Rank,
         suitIndex: 0,
       } as const;
@@ -221,7 +221,7 @@ describe("nextRanks", () => {
         return;
       }
       const redCard = {
-        ...initialCardState(0, DEFAULT_VARIANT, NUM_PLAYERS),
+        ...initialCardState(0 as CardOrder, DEFAULT_VARIANT, NUM_PLAYERS),
         rank: n as Rank,
         suitIndex: 0,
       } as const;
@@ -239,7 +239,7 @@ describe("nextRanks", () => {
 
   test("returns [] for a finished play stack (with a red 5)", () => {
     const redFive = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 5,
       suitIndex: 0,
     } as const;
@@ -256,7 +256,7 @@ describe("nextRanks", () => {
 
   test("returns [] for a finished play stack (with a red 1)", () => {
     const redOne = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: 1,
       suitIndex: 0,
     } as const;
@@ -285,7 +285,7 @@ describe("nextRanks", () => {
 
   test("returns [2, 4] for an Up or Down play stack with a START card", () => {
     const redStart = {
-      ...initialCardState(0, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
+      ...initialCardState(0 as CardOrder, UP_OR_DOWN_VARIANT, NUM_PLAYERS),
       rank: START_CARD_RANK,
       suitIndex: 0,
     } as const;

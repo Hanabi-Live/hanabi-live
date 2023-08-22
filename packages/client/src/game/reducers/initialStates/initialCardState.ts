@@ -1,4 +1,5 @@
 import type {
+  CardOrder,
   NumPlayers,
   SuitIndex,
   SuitRankTuple,
@@ -9,7 +10,7 @@ import * as deck from "../../rules/deck";
 import type { CardState } from "../../types/CardState";
 
 export function initialCardState(
-  order: number,
+  order: CardOrder,
   variant: Variant,
   numPlayers: NumPlayers,
 ): CardState {
