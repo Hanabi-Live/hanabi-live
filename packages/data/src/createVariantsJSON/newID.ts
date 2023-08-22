@@ -2,6 +2,7 @@ import { parseIntSafe, trimSuffix } from "@hanabi/utils";
 import { isEqual } from "lodash";
 import {
   REVERSE_MODIFIER,
+  START_CARD_RANK,
   SUIT_DELIMITER,
   SUIT_MODIFIERS,
   SUIT_MODIFIER_DELIMITER,
@@ -67,10 +68,7 @@ function getSpecialVariantIDSuffixes(
 ): string[] {
   const variantIDSuffixes: VariantModifier[] = [];
 
-  if (
-    variantDescription.specialRank !== undefined &&
-    variantDescription.specialRank !== -1
-  ) {
+  if (variantDescription.specialRank !== undefined) {
     // Rainbow-Ones / Rainbow-Twos / etc.
     if (
       variantDescription.specialRankAllClueColors === true &&
@@ -190,10 +188,7 @@ function getSpecialVariantIDSuffixes(
   }
 
   // Critical Ones / Critical Twos / etc.
-  if (
-    variantDescription.criticalRank !== undefined &&
-    variantDescription.criticalRank !== -1
-  ) {
+  if (variantDescription.criticalRank !== undefined) {
     variantIDSuffixes.push(
       `C${variantDescription.criticalRank}` as VariantModifier,
     );
@@ -375,17 +370,18 @@ function getVariantFromNewID(
       );
     }
 
-    const specialRank = parseIntSafe(secondCharacter);
+    const variantModifierRank = parseIntSafe(secondCharacter);
     if (
-      specialRank !== undefined &&
-      specialRank !== 1 &&
-      specialRank !== 2 &&
-      specialRank !== 3 &&
-      specialRank !== 4 &&
-      specialRank !== 5
+      variantModifierRank !== undefined &&
+      variantModifierRank !== 1 &&
+      variantModifierRank !== 2 &&
+      variantModifierRank !== 3 &&
+      variantModifierRank !== 4 &&
+      variantModifierRank !== 5 &&
+      variantModifierRank !== START_CARD_RANK
     ) {
       throw new Error(
-        `The number in the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, or 5.`,
+        `The number in the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, 5, or ${START_CARD_RANK}.`,
       );
     }
 
@@ -403,8 +399,15 @@ function getVariantFromNewID(
       case VariantModifier.RainbowThrees:
       case VariantModifier.RainbowFours:
       case VariantModifier.RainbowFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error(
+            "Failed to parse the rank for a Rainbow-Rank variant.",
+          );
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankAllClueColors = true;
+        // We do not restrict the ranks for rainbow.
         break;
       }
 
@@ -414,8 +417,14 @@ function getVariantFromNewID(
       case VariantModifier.PinkThrees:
       case VariantModifier.PinkFours:
       case VariantModifier.PinkFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error("Failed to parse the rank for a Pink-Rank variant.");
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankAllClueRanks = true;
+        // Since the pink rank can be touched by other rank clues, we arbitrarily remove the clue
+        // rank corresponding to the pink rank in order to make the variant harder.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -426,8 +435,14 @@ function getVariantFromNewID(
       case VariantModifier.WhiteThrees:
       case VariantModifier.WhiteFours:
       case VariantModifier.WhiteFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error("Failed to parse the rank for a White-Rank variant.");
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankNoClueColors = true;
+        // We do not restrict the ranks for white. (Otherwise, it would not be possible to positive
+        // clue the rank.)
         break;
       }
 
@@ -437,8 +452,14 @@ function getVariantFromNewID(
       case VariantModifier.BrownThrees:
       case VariantModifier.BrownFours:
       case VariantModifier.BrownFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error("Failed to parse the rank for a Brown-Rank variant.");
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankNoClueRanks = true;
+        // Since the brown rank cannot be touched by rank clues, having that rank clue available
+        // would be pointless.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -449,9 +470,15 @@ function getVariantFromNewID(
       case VariantModifier.OmniThrees:
       case VariantModifier.OmniFours:
       case VariantModifier.OmniFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error("Failed to parse the rank for a Omni-Rank variant.");
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankAllClueColors = true;
         variant.specialRankAllClueRanks = true;
+        // Since the omni rank can be touched by other clues, we arbitrarily remove the clue rank
+        // corresponding to the omni rank in order to make the variant harder.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -462,9 +489,15 @@ function getVariantFromNewID(
       case VariantModifier.NullThrees:
       case VariantModifier.NullFours:
       case VariantModifier.NullFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error("Failed to parse the rank for a Null-Rank variant.");
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankNoClueColors = true;
         variant.specialRankNoClueRanks = true;
+        // Since the null rank cannot be touched by rank clues, having that rank clue available
+        // would be pointless.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -475,9 +508,17 @@ function getVariantFromNewID(
       case VariantModifier.MuddyRainbowThrees:
       case VariantModifier.MuddyRainbowFours:
       case VariantModifier.MuddyRainbowFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error(
+            "Failed to parse the rank for a Muddy-Rainbow-Rank variant.",
+          );
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankAllClueColors = true;
         variant.specialRankNoClueRanks = true;
+        // Since the muddy rainbow rank cannot be touched by rank clues, having that rank clue
+        // available would be pointless.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -488,9 +529,17 @@ function getVariantFromNewID(
       case VariantModifier.LightPinkThrees:
       case VariantModifier.LightPinkFours:
       case VariantModifier.LightPinkFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error(
+            "Failed to parse the rank for a Light-Pink-Rank variant.",
+          );
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankNoClueColors = true;
         variant.specialRankAllClueRanks = true;
+        // Since the light pink rank can be touched by other rank clues, we arbitrarily remove the
+        // clue rank corresponding to the pink rank in order to make the variant harder.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -501,8 +550,16 @@ function getVariantFromNewID(
       case VariantModifier.DeceptiveThrees:
       case VariantModifier.DeceptiveFours:
       case VariantModifier.DeceptiveFives: {
-        variant.specialRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error(
+            "Failed to parse the rank for a Deceptive-Rank variant.",
+          );
+        }
+
+        variant.specialRank = variantModifierRank;
         variant.specialRankDeceptive = true;
+        // Since the deceptive rank cannot be touched by rank clues equal to itself, having that
+        // rank clue available would be pointless.
         variant.clueRanks = getSpecialClueRanks(variant.specialRank);
         break;
       }
@@ -513,7 +570,13 @@ function getVariantFromNewID(
       case VariantModifier.CriticalThrees:
       case VariantModifier.CriticalFours:
       case VariantModifier.CriticalFives: {
-        variant.criticalRank = specialRank;
+        if (variantModifierRank === undefined) {
+          throw new Error(
+            "Failed to parse the rank for a Critical Rank variant.",
+          );
+        }
+
+        variant.criticalRank = variantModifierRank;
         break;
       }
 

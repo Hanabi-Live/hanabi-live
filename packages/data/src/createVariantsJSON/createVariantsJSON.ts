@@ -59,7 +59,7 @@ function getPaths(): [string, string, string] {
 
 function getJSONAndParse(jsonPath: string): unknown {
   const data = fs.readFileSync(jsonPath, "utf8");
-  return JSON.parse(data) as unknown;
+  return JSON.parse(data);
 }
 
 function validateSuits(suits: SuitJSON[]) {

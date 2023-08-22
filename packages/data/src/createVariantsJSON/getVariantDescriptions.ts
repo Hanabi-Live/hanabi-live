@@ -4,11 +4,12 @@ import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
 import type { Rank } from "../types/Rank";
+import type { RankClueNumber } from "../types/RankClueNumber";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
-const SPECIAL_RANKS = [1, 5] as const;
+const SPECIAL_RANKS_TO_USE = [1, 5] as const;
 
 /** These are suit properties that are transferred to special ranks. */
 const SUIT_SPECIAL_PROPERTIES = [
@@ -41,6 +42,15 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA = new ReadonlySet([
   "Dark Pink", // Same as Dark Rainbow
   "Dark Omni", // Same as Dark Rainbow
 ]);
+
+const NUMBER_WORDS = [
+  "Zeroes",
+  "Ones",
+  "Twos",
+  "Threes",
+  "Fours",
+  "Fives",
+] as const;
 
 export function getVariantDescriptions(
   suits: SuitJSON[],
@@ -252,8 +262,8 @@ function getVariantsForSpecialRanks(
 ): VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  for (const specialRank of SPECIAL_RANKS) {
-    const specialRankName = getSpecialRankName(specialRank);
+  for (const specialRank of SPECIAL_RANKS_TO_USE) {
+    const specialRankName = NUMBER_WORDS[specialRank];
     const specialClueRanks = getSpecialClueRanks(specialRank);
 
     for (const suit of suitsToCreateVariantsFor) {
@@ -355,32 +365,16 @@ function getVariantsForSpecialRanks(
   return variantDescriptions;
 }
 
-function getSpecialRankName(specialRank: Rank) {
-  if (specialRank === 1) {
-    return "Ones";
-  }
-
-  if (specialRank === 5) {
-    return "Fives";
-  }
-
-  throw new Error(
-    `Failed to get the name for the special rank of: ${specialRank}`,
-  );
-}
-
-export function getSpecialClueRanks(
-  specialRank: 1 | 2 | 3 | 4 | 5 | undefined,
-): Array<1 | 2 | 3 | 4 | 5> {
+export function getSpecialClueRanks(specialRank: Rank): RankClueNumber[] {
   return DEFAULT_CLUE_RANKS.filter((clueRank) => clueRank !== specialRank);
 }
 
 function getVariantDescriptionForSpecialRankVariant(
   name: string,
   suits: string[],
-  specialRank: 1 | 2 | 3 | 4 | 5,
+  specialRank: Rank,
   suit: SuitJSON,
-  specialClueRanks: Array<1 | 2 | 3 | 4 | 5>,
+  specialClueRanks: readonly RankClueNumber[],
 ): VariantDescription {
   const variantDescription: VariantDescription = {
     name,

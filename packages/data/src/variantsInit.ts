@@ -12,6 +12,9 @@ import type { Variant } from "./interfaces/Variant";
 import type { VariantJSON } from "./interfaces/VariantJSON";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
+import type { Rank } from "./types/Rank";
+import { isValidRank } from "./types/Rank";
+import { isValidRankClueNumber } from "./types/RankClueNumber";
 
 export function variantsInit(
   COLORS: ReadonlyMap<string, Color>,
@@ -56,21 +59,21 @@ export function variantsInit(
       return suit;
     });
 
-    // Derive the ranks that the cards of each suit will be.
-    const ranks: Array<1 | 2 | 3 | 4 | 5 | typeof START_CARD_RANK> = [
-      ...DEFAULT_CARD_RANKS,
-    ];
-    if (name.startsWith("Up or Down")) {
-      // The "Up or Down" variants have START cards.
-      ranks.push(START_CARD_RANK);
-    }
-
     // Validate the clue colors (the colors available to clue in this variant) and convert the
     // string array to a color object array.
     const clueColors = getVariantClueColors(variantJSON, COLORS, suits);
 
     // Validate the clue ranks (the ranks available to clue in this variant). If it is not
     // specified, assume that players can clue the normal ranks.
+    if (variantJSON.clueRanks !== undefined) {
+      for (const clueRank of variantJSON.clueRanks) {
+        if (!isValidRankClueNumber(clueRank)) {
+          throw new Error(
+            `The "clueRanks" property for the variant "${name}" has an invalid value of: ${clueRank}`,
+          );
+        }
+      }
+    }
     const clueRanks = variantJSON.clueRanks ?? [...DEFAULT_CLUE_RANKS];
 
     // --------------------------------------------
@@ -78,16 +81,16 @@ export function variantsInit(
     // --------------------------------------------
 
     // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
-    // -1 (e.g. there are no special ranks).
+    // `undefined` (e.g. there are no special ranks).
     if (
       variantJSON.specialRank !== undefined &&
-      (variantJSON.specialRank < 1 || variantJSON.specialRank > 5)
+      !isValidRank(variantJSON.specialRank)
     ) {
       throw new Error(
-        `The "specialRank" property for the variant "${variantJSON.name}" must be between 1 and 5.`,
+        `The "specialRank" property for the variant "${variantJSON.name}" is invalid: ${variantJSON.specialRank}`,
       );
     }
-    const specialRank = variantJSON.specialRank ?? -1;
+    const { specialRank } = variantJSON;
 
     // Validate the "specialRankAllClueColors" property. If it is not specified, assume false (e.g.
     // cluing ranks in this variant works normally).
@@ -144,13 +147,13 @@ export function variantsInit(
     // Validate the "criticalRank" property. If it is not specified, assume 0.
     if (
       variantJSON.criticalRank !== undefined &&
-      (variantJSON.criticalRank < 1 || variantJSON.criticalRank > 5)
+      !isValidRank(variantJSON.criticalRank)
     ) {
       throw new Error(
-        `The "criticalRank" property for the variant "${variantJSON.name}" must be set between 1 and 5.`,
+        `The "criticalRank" property for the variant "${variantJSON.name}" is invalid: ${variantJSON.criticalRank}`,
       );
     }
-    const criticalRank = variantJSON.criticalRank ?? -1;
+    const { criticalRank } = variantJSON;
 
     // Validate the "clueStarved" property. If it is not specified, assume false.
     if (variantJSON.clueStarved === false) {
@@ -282,7 +285,13 @@ export function variantsInit(
     // Computed `Variant` properties
     // -----------------------------
 
-    const showSuitNames = getVariantShowSuitNames(suits, upOrDown, sudoku);
+    // Derive the ranks that the cards of each suit will be.
+    const ranks: Rank[] = [...DEFAULT_CARD_RANKS];
+    if (upOrDown) {
+      // The "Up or Down" variants have START cards.
+      ranks.push(START_CARD_RANK);
+    }
+
     const maxScore = suits.length * DEFAULT_FINISHED_STACK_LENGTH;
 
     // Variants with dual-color suits need to adjust the positions of elements in the corner of the
@@ -292,11 +301,12 @@ export function variantsInit(
       (suit: Suit) => suit.clueColors.length > 1,
     );
 
-    // Prepare the abbreviations for each suit.
     const suitAbbreviations = getUppercaseSuitAbbreviationsForVariant(
       name,
       suits,
     );
+
+    const showSuitNames = getVariantShowSuitNames(suits, upOrDown, sudoku);
 
     // Create the regular expression pattern for identity notes in this variant.
     const isUpOrDown = name.startsWith("Up or Down");
@@ -341,10 +351,10 @@ export function variantsInit(
       id,
       newID,
 
-      showSuitNames,
       maxScore,
       offsetCornerElements,
       suitAbbreviations,
+      showSuitNames,
       identityNotePattern,
     };
     variants.set(variantJSON.name, variant);

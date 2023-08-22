@@ -1,3 +1,4 @@
+import type { Rank } from "../types/Rank";
 import type { RankClueNumber } from "../types/RankClueNumber";
 
 /**
@@ -10,7 +11,7 @@ export interface VariantDescription {
   clueColors?: readonly string[];
   clueRanks?: readonly RankClueNumber[];
 
-  specialRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.
+  specialRank?: Rank;
   specialRankAllClueColors?: boolean;
   specialRankAllClueRanks?: boolean;
   specialRankNoClueColors?: boolean;
@@ -18,7 +19,7 @@ export interface VariantDescription {
   specialRankDeceptive?: boolean;
 
   // The following properties are listed in order of how they appear in "variants.md".
-  criticalRank?: 1 | 2 | 3 | 4 | 5 | -1; // -1 is the "falsely" value in a `Variant`.
+  criticalRank?: Rank;
   clueStarved?: boolean;
   colorCluesTouchNothing?: boolean;
   rankCluesTouchNothing?: boolean;

@@ -2,8 +2,7 @@
 | TODO |
 +------+
 
-- remove type assertions from sudoku.ts
-- refactor -1 from specialRank type and convert to undefined or null
+- remove type assertions from sudoku.ts (need feedback from Ram)
 - Search for "See:" and convert to JSDoc see tag
 - PlayerIndex type (maybe, look to see if it is useful first)
 - CardOrder type (branded)
