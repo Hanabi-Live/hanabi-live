@@ -5,6 +5,7 @@ import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";
 import upOrDownFinalCards from "../../../test_data/up_or_down_final_cards.json";
+import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
 import type { CardState } from "../types/CardState";
 import type { GameState } from "../types/GameState";
 import { StackDirection } from "../types/StackDirection";
@@ -57,17 +58,18 @@ describe("integration", () => {
         "card %i has the correct pips and possibilities",
         (order) => {
           const turn5State = getGameStateAtTurn(testState, 4);
+
           const card = turn5State.deck[order];
           if (card === undefined) {
             throw new Error(`Failed to find the card at order: ${order}`);
           }
 
-          const upOrDownFinalCard = upOrDownFinalCards[order];
-          if (upOrDownFinalCard === undefined) {
+          const upOrDownTurn5Card = upOrDownTurn5Cards[order];
+          if (upOrDownTurn5Card === undefined) {
             throw new Error(`Failed to get the card at order: ${order}`);
           }
 
-          const expected = upOrDownFinalCard as unknown as CardState;
+          const expected = upOrDownTurn5Card as unknown as CardState;
 
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibleCardsForEmpathy(card, expected);
