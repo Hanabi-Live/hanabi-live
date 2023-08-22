@@ -625,13 +625,18 @@ describe("gameStateReducer", () => {
         defaultMetadata,
       );
 
+      const clue = state.clues[0];
+      if (clue === undefined) {
+        throw new Error("Failed to get the clue.");
+      }
+
       expect(state.clues.length).toBe(initialState.clues.length + 1);
-      expect(state.clues[0]!.giver).toBe(testClue.giver);
-      expect(state.clues[0]!.target).toBe(testClue.target);
-      expect(state.clues[0]!.type).toBe(testClue.clue.type);
-      expect(state.clues[0]!.value).toBe(testClue.clue.value);
-      expect(state.clues[0]!.list).toEqual([]);
-      expect(state.clues[0]!.negativeList).toEqual([]);
+      expect(clue.giver).toBe(testClue.giver);
+      expect(clue.target).toBe(testClue.target);
+      expect(clue.type).toBe(testClue.clue.type);
+      expect(clue.value).toBe(testClue.clue.value);
+      expect(clue.list).toEqual([]);
+      expect(clue.negativeList).toEqual([]);
     });
 
     test("are remembered with the correct positive and negative cards", () => {
@@ -665,8 +670,13 @@ describe("gameStateReducer", () => {
         defaultMetadata,
       );
 
-      expect(state.clues[0]!.list).toEqual([0, 1, 2]);
-      expect(state.clues[0]!.negativeList).toEqual([3, 4]);
+      const clue = state.clues[0];
+      if (clue === undefined) {
+        throw new Error("Failed to get the clue.");
+      }
+
+      expect(clue.list).toEqual([0, 1, 2]);
+      expect(clue.negativeList).toEqual([3, 4]);
     });
 
     test("decrement clueTokens", () => {

@@ -12,8 +12,10 @@ describe("noteIdentity", () => {
   describe("getPossibilitiesFromKeyword", () => {
     // The note keyword `red` should return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`.
     test("positive suit full", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, ["red"]);
-      expect(possibles).toEqual([
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "red",
+      ]);
+      expect(possibilities).toEqual([
         [0, 1],
         [0, 2],
         [0, 3],
@@ -23,8 +25,10 @@ describe("noteIdentity", () => {
     });
 
     test("positive suit short", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, ["r"]);
-      expect(possibles).toEqual([
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "r",
+      ]);
+      expect(possibilities).toEqual([
         [0, 1],
         [0, 2],
         [0, 3],
@@ -34,10 +38,10 @@ describe("noteIdentity", () => {
     });
 
     test("positive suit with Up or Down", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "red",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 1],
         [0, 2],
         [0, 3],
@@ -49,30 +53,30 @@ describe("noteIdentity", () => {
 
     // The note keyword `red 3, blue 3` should return `[[0,3], [3,3]]`.
     test("positive conjunct full", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "red 3, blue 3",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 3],
         [3, 3],
       ]);
     });
 
     test("positive conjunct short", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "r3,b3",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 3],
         [3, 3],
       ]);
     });
 
     test("positive conjunct with Up or Down", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "red 3, blue 3",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 3],
         [3, 3],
       ]);
@@ -81,45 +85,60 @@ describe("noteIdentity", () => {
     // It is not possible to represent "r3,bs" as "red 3, blue start". Thus, we only test the short
     // version.
     test("positive conjunct with START card short", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r3,bs",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 3],
         [3, 7],
       ]);
     });
 
     test("negative conjunct", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "!2, !3",
       ]);
-      const identityMap = rankMap(new Set([1, 4, 5]));
-      expect(identityArrayToMap(possibles)).toEqual(identityMap);
+      const identityMap = getRankMap(
+        new Set([1, 4, 5]),
+        UP_OR_DOWN_VARIANT.suits.length,
+      );
+      expect(
+        identityArrayToMap(possibilities, UP_OR_DOWN_VARIANT.suits.length),
+      ).toEqual(identityMap);
     });
 
     test("negative conjunct with Up or Down", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "!2, !3",
       ]);
-      const identityMap = rankMap(new Set([1, 4, 5, 7]));
-      expect(identityArrayToMap(possibles)).toEqual(identityMap);
+      const identityMap = getRankMap(
+        new Set([1, 4, 5, 7]),
+        UP_OR_DOWN_VARIANT.suits.length,
+      );
+      expect(
+        identityArrayToMap(possibilities, UP_OR_DOWN_VARIANT.suits.length),
+      ).toEqual(identityMap);
     });
 
     test("negative conjunct with space", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "! 2, ! 3",
       ]);
-      const identityMap = rankMap(new Set([1, 4, 5]));
-      expect(identityArrayToMap(possibles)).toEqual(identityMap);
+      const identityMap = getRankMap(
+        new Set([1, 4, 5]),
+        UP_OR_DOWN_VARIANT.suits.length,
+      );
+      expect(
+        identityArrayToMap(possibilities, UP_OR_DOWN_VARIANT.suits.length),
+      ).toEqual(identityMap);
     });
 
     // The note keyword `r,b,2,3` would return all red, blue, 2's OR 3's.
     test("positive suit and rank", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "r,3,b,2",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 1],
         [3, 1],
         [0, 2],
@@ -140,10 +159,10 @@ describe("noteIdentity", () => {
     });
 
     test("positive suit and rank with Up or Down", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r,3,b,2",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 1],
         [3, 1],
         [0, 2],
@@ -168,8 +187,10 @@ describe("noteIdentity", () => {
     // The note keyword `r3b2` would return all red cards, 3's, blue cards, or 2's. (A player would
     // probably conventionally write this as `rb23`, but we test for the more complicated case.)
     test("positive squish", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, ["r3b2"]);
-      expect(possibles).toEqual([
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+        "r3b2",
+      ]);
+      expect(possibilities).toEqual([
         [0, 2],
         [3, 2],
         [0, 3],
@@ -178,10 +199,10 @@ describe("noteIdentity", () => {
     });
 
     test("positive squish in Up or Down", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r3b2",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 2],
         [3, 2],
         [0, 3],
@@ -191,10 +212,10 @@ describe("noteIdentity", () => {
 
     // The note keyword `r,!2,!3` would return `[[0,1], [0,4], [0,5]`.
     test("positive and negative", () => {
-      const possibles = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(DEFAULT_VARIANT, [
         "r,!2,!3",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 1],
         [0, 4],
         [0, 5],
@@ -202,10 +223,10 @@ describe("noteIdentity", () => {
     });
 
     test("positive and negative in Up or Down", () => {
-      const possibles = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
+      const possibilities = getPossibilitiesFromKeywords(UP_OR_DOWN_VARIANT, [
         "r,!2,!3",
       ]);
-      expect(possibles).toEqual([
+      expect(possibilities).toEqual([
         [0, 1],
         [0, 4],
         [0, 5],
@@ -215,17 +236,14 @@ describe("noteIdentity", () => {
   });
 });
 
-function rankMap(
-  ranks: Set<number>,
-  suitLength: number = UP_OR_DOWN_VARIANT.suits.length,
-): number[][] {
+function getRankMap(ranks: Set<number>, numSuits: number): number[][] {
   const cardMap: number[][] = [];
 
   for (const rank of [1, 2, 3, 4, 5, 6, 7]) {
     if (ranks.has(rank)) {
-      cardMap.push(ONES.slice(0, suitLength));
+      cardMap.push(ONES.slice(0, numSuits));
     } else {
-      cardMap.push(ZEROES.slice(0, suitLength));
+      cardMap.push(ZEROES.slice(0, numSuits));
     }
   }
 
@@ -233,16 +251,16 @@ function rankMap(
 }
 
 function identityArrayToMap(
-  possibles: SuitRankTuple[],
-  suitLength: number = UP_OR_DOWN_VARIANT.suits.length,
+  possibilities: SuitRankTuple[],
+  numSuits: number,
 ): number[][] {
   const cardMap: number[][] = [];
 
   for (let rank = 1; rank <= 7; rank++) {
-    cardMap.push(ZEROES.slice(0, suitLength));
+    cardMap.push(ZEROES.slice(0, numSuits));
   }
 
-  for (const [suitIndex, rank] of possibles) {
+  for (const [suitIndex, rank] of possibilities) {
     cardMap[rank - 1]![suitIndex] = 1;
   }
 

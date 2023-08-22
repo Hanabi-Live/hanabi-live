@@ -106,7 +106,7 @@ module.exports = {
 
   overrides: [
     {
-      files: ["src/game/rules/**/*.ts"],
+      files: ["src/game/reducers/**/*.ts"],
       rules: {
         "@typescript-eslint/no-non-null-assertion": "off", // TODO: enable
       },

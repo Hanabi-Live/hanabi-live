@@ -166,7 +166,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.listening(true);
     this.variant = variant;
 
-    // Cards should start off with a constant width and height
+    // Cards should start off with a constant width and height.
     this.width(CARD_W);
     this.height(CARD_H);
     this.x(CARD_W / 2);
@@ -176,8 +176,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       y: 0.5 * CARD_H,
     });
 
-    // Order is defined upon first initialization
-    // TODO: move stack bases to be a separate class that shares code with HanabiCard
+    // Order is defined upon first initialization.
     const initialState = initialCardState(order, this.variant, numPlayers);
     this._state = {
       ...initialState,

@@ -38,11 +38,15 @@ describe("replayReducer", () => {
         metadata,
       );
 
-      expect(state.hypothetical?.ongoing).toBe(
+      if (state.hypothetical === null) {
+        throw new Error("Failed to start the hypothetical.");
+      }
+
+      expect(state.hypothetical.ongoing).toBe(
         testState.replay.states[testState.replay.segment],
       );
-      expect(state.hypothetical?.states.length).toBe(1);
-      expect(state.hypothetical?.states[0]).toBe(state.hypothetical!.ongoing);
+      expect(state.hypothetical.states.length).toBe(1);
+      expect(state.hypothetical.states[0]).toBe(state.hypothetical.ongoing);
     });
 
     test("can give a clue", () => {
@@ -52,8 +56,14 @@ describe("replayReducer", () => {
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, false, testState.metadata);
 
-      const expectedClues =
-        testState.replay.states[testState.replay.segment]!.clueTokens - 1;
+      const gameState = testState.replay.states[testState.replay.segment];
+      if (gameState === undefined) {
+        throw new Error(
+          `Failed to get the game state at segment: ${testState.replay.segment}`,
+        );
+      }
+
+      const expectedClues = gameState.clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);
     });
 
