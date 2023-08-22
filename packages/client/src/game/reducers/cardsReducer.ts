@@ -78,6 +78,11 @@ export function cardsReducer(
     case "clue": {
       const clue = cluesRules.msgClueToClue(action.clue, variant);
 
+      const hand = game.hands[action.target];
+      if (hand === undefined) {
+        throw new Error(`Failed to find the hand at index: ${action.target}`);
+      }
+
       // eslint-disable-next-line func-style
       const applyClue = (order: number, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
@@ -98,11 +103,10 @@ export function cardsReducer(
       // Positive clues
       for (const order of action.list) {
         const card = getCard(newDeck, order);
-        const hand = game.hands[action.target]!;
         newDeck[order] = {
           ...card,
           numPositiveClues: card.numPositiveClues + 1,
-          segmentFirstClued: card.segmentFirstClued ?? game.turn.segment!,
+          segmentFirstClued: card.segmentFirstClued ?? game.turn.segment ?? 1,
           hasClueApplied: true,
           firstCluedWhileOnChop:
             card.firstCluedWhileOnChop ??
@@ -114,7 +118,7 @@ export function cardsReducer(
       // Negative clues
       const negativeClues = action.ignoreNegative
         ? []
-        : hands[action.target]!.filter((order) => !action.list.includes(order));
+        : hand.filter((order) => !action.list.includes(order));
       for (const order of negativeClues) {
         const card = getCard(newDeck, order);
         newDeck[order] = {
@@ -274,12 +278,16 @@ function cardIdentityRevealedToPlayer(
 ): boolean[] {
   const revealedToPlayer: boolean[] = [];
 
-  for (let i = 0; i < characterAssignments.length; i++) {
-    const characterName = getCharacterNameForPlayer(i, characterAssignments);
-    if (i !== card.location && characterName === "Slow-Witted") {
+  for (const playerIndex of characterAssignments.keys()) {
+    const characterName = getCharacterNameForPlayer(
+      playerIndex,
+      characterAssignments,
+    );
+    if (playerIndex !== card.location && characterName === "Slow-Witted") {
       revealedToPlayer.push(true);
     } else {
-      revealedToPlayer.push(card.revealedToPlayer[i]!);
+      const previouslyRevealed = card.revealedToPlayer[playerIndex] ?? false;
+      revealedToPlayer.push(previouslyRevealed);
     }
   }
 
