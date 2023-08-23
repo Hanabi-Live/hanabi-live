@@ -194,7 +194,7 @@ export function hide(): void {
   $("#game-chat-modal").fadeOut(FADE_TIME);
 }
 
-// Subroutine to move an element (using the "transform" CSS property).
+/** Subroutine to move an element (using the "transform" CSS property). */
 function moveElement(element: JQuery, x: number, y: number) {
   // Update the element's style.
   const transform = `translate(${x}px, ${y}px)`;
@@ -206,7 +206,7 @@ function moveElement(element: JQuery, x: number, y: number) {
   element.attr("data-y", y);
 }
 
-// From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
+/** From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen */
 function isOffscreen(element: JQuery) {
   const domElement = element[0]!;
   const rect = domElement.getBoundingClientRect();
