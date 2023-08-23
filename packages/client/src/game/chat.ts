@@ -1,6 +1,6 @@
 // In-game chat
 
-import { parseIntSafe } from "@hanabi/utils";
+import { parseFloatSafe, parseIntSafe } from "@hanabi/utils";
 import interact from "interactjs";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";
@@ -23,16 +23,17 @@ export function init(): void {
 
       // Define the drag behavior.
       onmove: (event: Interact.InteractEvent) => {
-        // Get the new position based on the delta between the event and the old position (which is
-        // conveniently stored in the "data-x" and "data-y" attributes).
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        const x = (Number(event.target.dataset["x"]) || 0) + event.dx;
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        const y = (Number(event.target.dataset["y"]) || 0) + event.dy;
+        // The old position is stored in the "data-x" and "data-y" attributes.
+        const oldXString = event.target.dataset["x"] ?? "";
+        const oldYString = event.target.dataset["y"] ?? "";
+        const oldX = parseFloatSafe(oldXString) ?? 0;
+        const oldY = parseFloatSafe(oldYString) ?? 0;
 
-        // Move it
+        // Move it,
+        const newX = oldX + event.dx;
+        const newY = oldY + event.dy;
         const element = $(`#${event.target.id}`);
-        moveElement(element, x, y);
+        moveElement(element, newX, newY);
       },
     })
 
@@ -65,22 +66,25 @@ export function init(): void {
     })
 
     .on("resizemove", (event: Interact.ResizeEvent) => {
-      // Get the new position based on the delta between the event and the old position (which is
-      // conveniently stored in the "data-x" and "data-y" attributes).
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      let x = Number(event.target.dataset["x"]) || 0;
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      let y = Number(event.target.dataset["y"]) || 0;
+      if (event.deltaRect === undefined) {
+        return;
+      }
+
+      // The old position is stored in the "data-x" and "data-y" attributes.
+      const oldXString = event.target.dataset["x"] ?? "";
+      const oldYString = event.target.dataset["y"] ?? "";
+      const oldX = parseFloatSafe(oldXString) ?? 0;
+      const oldY = parseFloatSafe(oldYString) ?? 0;
 
       // Translate when resizing from top or left edges.
-      x += event.deltaRect!.left;
-      y += event.deltaRect!.top;
+      const newX = oldX + event.deltaRect.left;
+      const newY = oldY + event.deltaRect.top;
 
-      // Move it
+      // Move it.
       const element = $(`#${event.target.id}`);
-      moveElement(element, x, y);
+      moveElement(element, newX, newY);
 
-      // Resize it
+      // Resize it.
       event.target.style.width = `${event.rect.width}px`;
       event.target.style.height = `${event.rect.height}px`;
     })
@@ -90,9 +94,8 @@ export function init(): void {
       // persist between refreshes.
       localStorage.setItem("chatWindowWidth", event.target.style.width);
       localStorage.setItem("chatWindowHeight", event.target.style.height);
-      const chatElement = $(`#${event.target.id}`);
-      localStorage.setItem("chatWindowX", chatElement.attr("data-x") ?? "0");
-      localStorage.setItem("chatWindowY", chatElement.attr("data-y") ?? "0");
+      localStorage.setItem("chatWindowX", event.target.dataset["x"] ?? "0");
+      localStorage.setItem("chatWindowY", event.target.dataset["y"] ?? "0");
     });
 
   $("#game-chat-modal-header-close").click(() => {
