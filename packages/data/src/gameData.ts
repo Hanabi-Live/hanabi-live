@@ -19,7 +19,7 @@ const SUITS = suitsInit(COLORS);
 /** Indexed by variant name. */
 const VARIANTS = variantsInit(COLORS, SUITS);
 
-const VARIANT_NAMES = [...VARIANTS.keys()] as const;
+export const VARIANT_NAMES = [...VARIANTS.keys()] as const;
 
 /** Indexed by variant ID. */
 const VARIANTS_BY_ID: ReadonlyMap<number, Variant> = (() => {
@@ -67,10 +67,6 @@ export function getVariantByID(variantID: number): Variant {
 
 export function getDefaultVariant(): Variant {
   return getVariant(DEFAULT_VARIANT_NAME);
-}
-
-export function getVariantNames(): readonly string[] {
-  return VARIANT_NAMES;
 }
 
 export function doesVariantExist(variantName: string): boolean {

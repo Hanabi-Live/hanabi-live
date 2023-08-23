@@ -1,4 +1,4 @@
-import { getVariantNames } from "@hanabi/data";
+import { VARIANT_NAMES } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import { globals } from "./Globals";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
@@ -368,8 +368,7 @@ function capitalize(input: string) {
 }
 
 export function getVariantFromPartial(search: string): string {
-  const variantNames = getVariantNames();
-  const firstVariant = variantNames.find((variantName) =>
+  const firstVariant = VARIANT_NAMES.find((variantName) =>
     variantName.startsWith(search),
   );
 

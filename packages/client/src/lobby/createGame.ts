@@ -4,10 +4,15 @@ import {
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
   MIN_PLAYERS,
+  VARIANT_NAMES,
   doesVariantExist,
-  getVariantNames,
 } from "@hanabi/data";
-import { ReadonlySet, parseFloatSafe, parseIntSafe } from "@hanabi/utils";
+import {
+  ReadonlySet,
+  getRandomArrayElement,
+  parseFloatSafe,
+  parseIntSafe,
+} from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { SHUTDOWN_TIMEOUT } from "../constants";
@@ -15,7 +20,7 @@ import * as debug from "../debug";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import type { Options } from "../types/Options";
-import { getHTMLInputElement, getRandomNumber } from "../utils";
+import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
 import type { Settings } from "./types/Settings";
 
@@ -51,9 +56,7 @@ export function init(): void {
 
   // The "dice" button will select a random variant from the list.
   $("#dice").on("click", () => {
-    const variantNames = getVariantNames();
-    const randomVariantIndex = getRandomNumber(0, variantNames.length - 1);
-    const randomVariant = variantNames[randomVariantIndex]!;
+    const randomVariant = getRandomArrayElement(VARIANT_NAMES);
     $("#createTableVariant").text(randomVariant);
     dropdown2.val(randomVariant);
   });
@@ -233,8 +236,7 @@ function firstVariantDropdownInit() {
 
 function secondVariantDropdownInit() {
   // Populate the full datalist/dropdown in the "Create Game" tooltip.
-  const variantNames = getVariantNames();
-  for (const variantName of variantNames) {
+  for (const variantName of VARIANT_NAMES) {
     const option = new Option(variantName, variantName);
     $("#create-game-variant-dropdown2-list").append($(option));
   }

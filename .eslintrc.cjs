@@ -51,6 +51,12 @@ const config = {
               'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
           },
 
+          {
+            group: ["index"],
+            message:
+              "You cannot import directly from a package index. Instead, import directly from the file where the code is located.",
+          },
+
           // This only applies to the server, but we put it here to avoid having to duplicate the
           // above rule.
           {

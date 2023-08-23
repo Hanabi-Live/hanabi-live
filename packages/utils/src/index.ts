@@ -1,4 +1,5 @@
 export * from "./functions/array";
+export * from "./functions/random";
 export * from "./functions/string";
 export * from "./functions/utils";
 export * from "./types/DeepReadonly";
