@@ -9,8 +9,10 @@
   "editor.tabSize": 2,
 
   "files.associations": {
-    "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files.
     ".env*": "shellscript", // e.g. ".env.example" is the same as ".env".
+    // @template-customization-start
+    "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files.
+    // @template-customization-end
   },
 
   // We want to always use "lf" to be consistent with all platforms.
@@ -21,17 +23,19 @@
 
   // Configure glob patterns for excluding files and folders in full text searches and quick open.
   "search.exclude": {
-    "**/*.min.js*": true,
     "**/*.mp3": true,
     "**/*.png": true,
     "**/*.svg": true,
     "**/*.wav": true,
     "**/.yarn/": true,
     "**/dist/": true,
-    "**/misc/keldon/": true,
     "**/node_modules/": true,
+    // @template-customization-start
+    "**/*.min.js*": true,
+    "**/misc/keldon/": true,
     "**/server_old/": true,
     "**/card-images/": true,
+    // @template-customization-end
   },
 
   // ------------------
@@ -49,6 +53,18 @@
   "javascript.suggest.completeFunctionCalls": true,
   "typescript.suggest.completeFunctionCalls": true,
 
+  // By default, VSCode will prefer non-relative paths for deeply nested files.
+  // @template-ignore-block-start
+  // "javascript.preferences.importModuleSpecifier": "relative",
+  // "typescript.preferences.importModuleSpecifier": "relative",
+  // @template-ignore-block-end
+
+  // @template-customization-start
+  // Using a value of "relative" prevents "@hanabi"-style imports.
+  "javascript.preferences.importModuleSpecifier": "project-relative",
+  "typescript.preferences.importModuleSpecifier": "project-relative",
+  // @template-customization-end
+
   // Show TypeScript errors for files that don't happen to be currently open, which makes TypeScript
   // work similar to other compiled languages like Golang or Rust.
   "typescript.tsserver.experimental.enableProjectDiagnostics": true,
@@ -61,6 +77,18 @@
     "editor.tabSize": 2,
   },
   "[typescript]": {
+    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[javascriptreact]": {
+    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "[typescriptreact]": {
     "editor.codeActionsOnSave": ["source.fixAll.eslint"],
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -96,6 +124,12 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
+  "[postcss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  // @template-customization-start
   "[go]": {
     "editor.tabSize": 4,
     "editor.insertSpaces": false,
@@ -105,4 +139,5 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
   },
+  // @template-customization-end
 }

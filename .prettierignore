@@ -1,16 +1,28 @@
-# Keldon files
-keldon
+# Compiled output
+dist
 
-# Special Golang files
-go.mod
-
-# Images
-*.svg
+# Package manager lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Minified files
 *.min.js
 *.min.css
 
+# @template-customization-start
+
+# Images
+*.svg
+
+# Special Golang files
+go.mod
+
 # Temporary files
 critical.css
 grunt_output
+
+# Keldon files
+keldon
+
+# @template-customization-end

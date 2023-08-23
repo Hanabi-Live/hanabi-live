@@ -3,6 +3,7 @@
 
 /** @type {import("prettier").Config} */
 const config = {
+  // @template-ignore-next-line
   plugins: ["prettier-plugin-organize-imports", "prettier-plugin-go-template"],
 
   overrides: [

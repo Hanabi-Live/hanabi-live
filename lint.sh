@@ -31,4 +31,6 @@ wait
 
 # TODO: https://stackoverflow.com/questions/49513335/bash-wait-exit-on-error-code
 
+npx isaacscript check-ts --ignore "build.sh,ci.yml,cspell.json,lint.sh,publish.sh,run.sh,tsconfig.json"
+
 echo "Successfully linted $REPO_NAME in $SECONDS seconds."

@@ -4,9 +4,12 @@
   "recommendations": [
     "esbenp.prettier-vscode", // The TypeScript formatter
     "dbaeumer.vscode-eslint", // The TypeScript linter
+    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on CSpell
+
+    // @template-customization-start
     "orta.vscode-jest", // The TypeScript tester
     "golang.go", // Golang language server
     "ms-python.python", // Python language server
-    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on CSpell
+    // @template-customization-end
   ],
 }

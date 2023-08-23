@@ -3,14 +3,15 @@
 +------+
 
 - search for "Number("
-- search for all 6 constants (to replace with MAX_SUITS_IN_A_VARIANT)
 - search for "for (let"
 - fix eta undefined passing through to template (use Discord advice)
-- remove type assertions from sudoku.ts (need feedback from Ram)
 - remove type assertions from lobby + views
 - PlayerIndex type (maybe, look to see if it is useful first)
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
+
+waiting to hear back:
+- remove type assertions from sudoku.ts (need feedback from Ram)
 
 short term:
 - refactor soundTypeForLastAction (should probably delete the whole thing)

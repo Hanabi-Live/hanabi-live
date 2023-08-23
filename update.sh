@@ -10,9 +10,14 @@ cd "$DIR"
 
 PACKAGE_JSON="$DIR/package.json"
 OLD_HASH=$(md5sum "$PACKAGE_JSON")
+if [[ -f "$DIR/yarn.lock" ]]; then
+  yarn set version latest
+fi
+# @template-customization-start
 # Old versions:
 # - konva - Newer versions cause weird graphic glitches. The long-term goal is to move away from
 #           konva entirely and use a new graphics library.
+# @template-customization-end
 npx npm-check-updates --upgrade --packageFile "$PACKAGE_JSON" --filterVersion "^*"
 NEW_HASH=$(md5sum "$PACKAGE_JSON")
 if [[ "$OLD_HASH" != "$NEW_HASH" ]]; then
