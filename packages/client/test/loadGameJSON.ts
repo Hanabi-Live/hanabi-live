@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
 import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
@@ -41,16 +41,11 @@ interface JSONAction {
 }
 
 export function loadGameJSON(gameJSON: JSONGame): State {
-  const numPlayers = gameJSON.players.length;
-  if (
-    numPlayers !== 2 &&
-    numPlayers !== 3 &&
-    numPlayers !== 4 &&
-    numPlayers !== 5 &&
-    numPlayers !== 6
-  ) {
+  const potentialNumPlayers = gameJSON.players.length;
+  if (potentialNumPlayers < MIN_PLAYERS || potentialNumPlayers > MAX_PLAYERS) {
     throw new Error("The game JSON does not have a valid amount of players.");
   }
+  const numPlayers = potentialNumPlayers as NumPlayers;
 
   const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);

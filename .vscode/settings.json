@@ -24,11 +24,14 @@
     "**/*.min.js*": true,
     "**/*.mp3": true,
     "**/*.png": true,
+    "**/*.svg": true,
     "**/*.wav": true,
     "**/.yarn/": true,
     "**/dist/": true,
     "**/misc/keldon/": true,
     "**/node_modules/": true,
+    "**/server_old/": true,
+    "**/card-images/": true,
   },
 
   // ------------------

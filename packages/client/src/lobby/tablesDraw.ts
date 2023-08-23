@@ -1,5 +1,6 @@
 // The lobby area that shows all of the current tables.
 
+import { MAX_PLAYERS } from "@hanabi/data";
 import { iRange } from "@hanabi/utils";
 import { globals } from "../Globals";
 import * as modals from "../modals";
@@ -199,7 +200,7 @@ export function tablesDraw(): void {
     if (
       !table.running &&
       !table.joined &&
-      table.numPlayers < 6 &&
+      table.numPlayers < MAX_PLAYERS &&
       !addedJoinFirstTableButton
     ) {
       addedJoinFirstTableButton = true;
@@ -229,7 +230,7 @@ export function tablesDraw(): void {
     } else if (!table.joined) {
       const rowId = `join-${table.id}`;
       row.attr("id", rowId);
-      if (table.numPlayers >= 6) {
+      if (table.numPlayers >= MAX_PLAYERS) {
         row.addClass("full");
       } else {
         row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {

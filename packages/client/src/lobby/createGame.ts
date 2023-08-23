@@ -2,6 +2,8 @@
 
 import {
   DEFAULT_VARIANT_NAME,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
   doesVariantExist,
   getVariantNames,
 } from "@hanabi/data";
@@ -40,7 +42,7 @@ export function init(): void {
   $("#createTableMaxPlayers").on("blur", () => {
     const element = $("#createTableMaxPlayers");
     const value = Number(element.val());
-    if (value < 2 || value > 6) {
+    if (value < MIN_PLAYERS || value > MAX_PLAYERS) {
       element.val(element.attr("data-value")!);
     }
     // Store the new value.
@@ -312,9 +314,9 @@ function submit() {
     localStorage.setItem("createTablePassword", password);
   }
 
-  // Max players must be a number between 2 and 6. Default to 5 if validation fails.
+  // Max players must be a valid number. Default to 5 if validation fails.
   let maxPlayers = Number($("#createTableMaxPlayers").val());
-  if (maxPlayers < 2 || maxPlayers > 6) {
+  if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
     maxPlayers = 5;
   }
   checkChanged("createTableMaxPlayers", maxPlayers);
@@ -581,7 +583,7 @@ export function ready(): boolean {
   }
 
   let maxPlayers = globals.settings.createTableMaxPlayers;
-  if (maxPlayers < 2 || maxPlayers > 6) {
+  if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
     maxPlayers = 5;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
