@@ -33,7 +33,7 @@
     // @template-customization-start
     "**/*.min.js*": true,
     "**/misc/keldon/": true,
-    "**/server_old/": true,
+    "**/server-old/": true,
     "**/card-images/": true,
     // @template-customization-end
   },
