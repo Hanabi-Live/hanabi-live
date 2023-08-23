@@ -23,6 +23,7 @@ import type { Options } from "../types/Options";
 import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
 import type { Settings } from "./types/Settings";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "./types/Settings";
 
 const BASIC_VARIANT_NAMES = [
   "No Variant",
@@ -43,15 +44,24 @@ export function init(): void {
   firstVariantDropdownInit();
   secondVariantDropdownInit();
 
-  // Max players is restored to default value on blur.
+  // If max players was set to an invalid value, restore it to the default when the element is
+  // deselected.
   $("#createTableMaxPlayers").on("blur", () => {
     const element = $("#createTableMaxPlayers");
-    const value = Number(element.val());
-    if (value < MIN_PLAYERS || value > MAX_PLAYERS) {
-      element.val(element.attr("data-value")!);
+
+    const value = element.val();
+    if (typeof value !== "string") {
+      return;
     }
-    // Store the new value.
-    element.attr("data-value", element.val() as string);
+
+    const maxPlayers = parseIntSafe(value);
+    if (
+      maxPlayers === undefined ||
+      maxPlayers < MIN_PLAYERS ||
+      maxPlayers > MAX_PLAYERS
+    ) {
+      element.val(DEFAULT_CREATE_TABLE_MAX_PLAYERS);
+    }
   });
 
   // The "dice" button will select a random variant from the list.
@@ -589,8 +599,6 @@ export function ready(): boolean {
     maxPlayers = 5;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
-  // Store the original max players attribute, used on blur.
-  $("#createTableMaxPlayers").attr("data-value", maxPlayers);
 
   // Hide the extra options if we do not have any selected.
   if (

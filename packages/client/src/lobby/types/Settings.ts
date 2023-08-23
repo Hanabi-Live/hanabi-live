@@ -1,5 +1,9 @@
-// These are per-user settings that are changed from the main lobby screen (in the "Settings" button
-// tooltip).
+export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
+
+/**
+ * These are per-user settings that are changed from the main lobby screen (in the "Settings" button
+ * tooltip).
+ */
 export class Settings {
   desktopNotification = false;
   soundMove = true;
@@ -26,5 +30,5 @@ export class Settings {
   createTableOneLessCard = false;
   createTableAllOrNothing = false;
   createTableDetrimentalCharacters = false;
-  createTableMaxPlayers = 5;
+  createTableMaxPlayers = DEFAULT_CREATE_TABLE_MAX_PLAYERS;
 }

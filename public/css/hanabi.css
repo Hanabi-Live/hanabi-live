@@ -1635,6 +1635,7 @@ input[type="text"].wrongInput {
 
 #set-turn-range {
   -webkit-appearance: none;
+  appearance: none;
   width: 90%;
   height: 2px;
   border-radius: 5px;
@@ -1701,9 +1702,6 @@ table.history {
 .history th.center .tablesorter-header-inner,
 .history td.center .tablesorter-header-inner {
   text-align: center;
-}
-
-.history td.normal {
 }
 
 .history td.hard {
