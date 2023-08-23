@@ -3,6 +3,7 @@
 +------+
 
 - search for "for (let"
+- fix eta undefined passing through to template (use Discord advice)
 - remove type assertions from sudoku.ts (need feedback from Ram)
 - remove type assertions from lobby + views
 - PlayerIndex type (maybe, look to see if it is useful first)
