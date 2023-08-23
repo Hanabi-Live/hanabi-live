@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- search for "Number("
 - search for "for (let"
 - remove type assertions from lobby + views
 - PlayerIndex type (maybe, look to see if it is useful first)
