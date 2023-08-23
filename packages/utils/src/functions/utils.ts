@@ -166,6 +166,31 @@ export function parseIntSafe(string: string): number | undefined {
 }
 
 /**
+ * Helper function to repeat code N times. This is faster to type and cleaner than using a for loop.
+ *
+ * For example:
+ *
+ * ```ts
+ * repeat(10, () => {
+ *   foo();
+ * });
+ * ```
+ *
+ * The repeated function is passed the index of the iteration, if needed:
+ *
+ * ```ts
+ * repeat(3, (i) => {
+ *   console.log(i); // Prints "0", "1", "2"
+ * });
+ * ```
+ */
+export function repeat(n: number, func: (i: number) => void): void {
+  for (let i = 0; i < n; i++) {
+    func(i);
+  }
+}
+
+/**
  * Helper function to signify that the enclosing code block is not yet complete. Using this function
  * is similar to writing a "TODO" comment, but it has the benefit of preventing ESLint errors due to
  * unused variables or early returns.

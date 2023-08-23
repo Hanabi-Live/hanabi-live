@@ -1,6 +1,7 @@
 // This function draws the UI when going into a game for the first time.
 
 import type { CardOrder, RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
+import { repeat } from "@hanabi/utils";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -1601,11 +1602,11 @@ function drawDiscardArea() {
 }
 
 function drawArrows() {
-  for (let i = 0; i < 6; i++) {
+  repeat(6, () => {
     const arrow = new Arrow(winW, winH, globals.lobby.settings.colorblindMode);
     globals.layers.arrow.add(arrow as unknown as Konva.Group);
     globals.elements.arrows.push(arrow);
-  }
+  });
 }
 
 function drawTimers() {
