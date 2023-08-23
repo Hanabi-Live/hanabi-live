@@ -4,7 +4,7 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_FINISHED_STACK_LENGTH, START_CARD_RANK } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { iRange, newArray } from "@hanabi/utils";
+import { eRange, iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { StackDirection } from "../../types/StackDirection";
@@ -114,7 +114,7 @@ function isDead(
     // of Start or 1 is still alive, since we filtered out the case where all of 1, 5, and Start are
     // dead already.
     const lowestNextRank = variant.upOrDown ? 2 : 1;
-    for (let nextRank = lowestNextRank; nextRank < rank; nextRank++) {
+    for (const nextRank of eRange(lowestNextRank, rank)) {
       if (allDiscardedSet.has(nextRank)) {
         return true;
       }
@@ -126,7 +126,7 @@ function isDead(
   if (impliedDirection === StackDirection.Down) {
     // The above comment also applies for `StackDirection.Down`.
     const highestNextRank = variant.upOrDown ? 4 : 5;
-    for (let nextRank = highestNextRank; nextRank > rank; nextRank--) {
+    for (const nextRank of eRange(highestNextRank, rank)) {
       if (allDiscardedSet.has(nextRank)) {
         return true;
       }
