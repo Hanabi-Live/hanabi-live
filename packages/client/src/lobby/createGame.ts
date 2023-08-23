@@ -317,21 +317,31 @@ function submit() {
 
   // Passwords are not stored on the server; instead, they are stored locally as cookies.
   const password = $("#createTablePassword").val();
+  if (typeof password !== "string") {
+    throw new TypeError(
+      'The value of the "createTablePassword" element was not a string.',
+    );
+  }
   if (isNew) {
-    if (typeof password !== "string") {
-      throw new TypeError(
-        'The value of the "createTablePassword" element was not a string.',
-      );
-    }
     localStorage.setItem("createTablePassword", password);
   }
 
-  // Max players must be a valid number. Default to 5 if validation fails.
-  let maxPlayers = Number($("#createTableMaxPlayers").val());
-  if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
+  // Max players must be a valid number.
+  const maxPlayersString = $("#createTableMaxPlayers").val();
+  if (typeof maxPlayersString !== "string") {
+    throw new TypeError(
+      'The value of the "createTableMaxPlayers" element was not a string.',
+    );
+  }
+  let maxPlayers = parseIntSafe(maxPlayersString);
+  if (
+    maxPlayers === undefined ||
+    maxPlayers < MIN_PLAYERS ||
+    maxPlayers > MAX_PLAYERS
+  ) {
     maxPlayers = 5;
   }
-  checkChanged("createTableMaxPlayers", maxPlayers);
+  checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
   // Game JSON is not saved.
   const gameJSONString = $("#createTableJSON").val();
@@ -411,7 +421,7 @@ function getCheckbox(setting: keyof Settings) {
   const selector = `#${setting}`;
   const element = getHTMLInputElement(selector);
   const value = element.checked;
-  checkChanged(setting, value);
+  checkSettingChanged(setting, value);
   return value;
 }
 
@@ -433,7 +443,7 @@ function getTextboxForTimePerTurn(setting: keyof Settings) {
     element.val(value.toString());
   }
 
-  checkChanged(setting, value);
+  checkSettingChanged(setting, value);
   return value;
 }
 
@@ -449,7 +459,7 @@ function getTextboxForTimeBase(setting: keyof Settings) {
     element.val(value.toString());
   }
 
-  checkChanged(setting, value);
+  checkSettingChanged(setting, value);
   return value;
 }
 
@@ -460,21 +470,19 @@ function getVariant(setting: keyof Settings) {
   if (value === "") {
     value = "No Variant";
   }
-  checkChanged(setting, value);
+  checkSettingChanged(setting, value);
   return value;
 }
 
-export function checkChanged(
-  settingName: keyof Settings,
-  value: boolean | string | number,
+export function checkSettingChanged<T extends keyof Settings>(
+  settingName: T,
+  value: Settings[T],
 ): void {
   if (value !== globals.settings[settingName]) {
-    // We must cast the settings to any since this assignment violates type safety.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globals.settings[settingName] as any) = value;
+    globals.settings[settingName] = value;
     globals.conn!.send("setting", {
       name: settingName,
-      setting: value.toString(), // The server expects the value of all settings as strings
+      setting: value.toString(), // The server expects the value of all settings as strings.
     });
   }
 }

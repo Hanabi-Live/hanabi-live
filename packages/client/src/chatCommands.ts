@@ -159,7 +159,7 @@ function setVariant(room: string, args: string[]) {
   });
 
   // Update our stored create table setting to be equal to this variant.
-  createGame.checkChanged("createTableVariant", variantName);
+  createGame.checkSettingChanged("createTableVariant", variantName);
 }
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
