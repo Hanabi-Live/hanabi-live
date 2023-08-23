@@ -25,8 +25,10 @@ export function init(): void {
       onmove: (event: Interact.InteractEvent) => {
         // Get the new position based on the delta between the event and the old position (which is
         // conveniently stored in the "data-x" and "data-y" attributes).
-        const x = (Number(event.target.getAttribute("data-x")) || 0) + event.dx; // eslint-disable-line
-        const y = (Number(event.target.getAttribute("data-y")) || 0) + event.dy; // eslint-disable-line
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        const x = (Number(event.target.dataset["x"]) || 0) + event.dx;
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        const y = (Number(event.target.dataset["y"]) || 0) + event.dy;
 
         // Move it
         const element = $(`#${event.target.id}`);
@@ -65,8 +67,10 @@ export function init(): void {
     .on("resizemove", (event: Interact.ResizeEvent) => {
       // Get the new position based on the delta between the event and the old position (which is
       // conveniently stored in the "data-x" and "data-y" attributes).
-      let x = Number(event.target.getAttribute("data-x")) || 0; // eslint-disable-line
-      let y = Number(event.target.getAttribute("data-y")) || 0; // eslint-disable-line
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      let x = Number(event.target.dataset["x"]) || 0;
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      let y = Number(event.target.dataset["y"]) || 0;
 
       // Translate when resizing from top or left edges.
       x += event.deltaRect!.left;
