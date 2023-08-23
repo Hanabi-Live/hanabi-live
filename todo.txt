@@ -4,7 +4,6 @@
 
 - search for "Number("
 - search for "for (let"
-- fix eta undefined passing through to template (use Discord advice)
 - remove type assertions from lobby + views
 - PlayerIndex type (maybe, look to see if it is useful first)
 - redo install instructions without choco

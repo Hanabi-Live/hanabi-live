@@ -80,17 +80,21 @@ const eta = new Eta({
   tags: ["{{", "}}"],
 
   // By default, Eta will allow undefined values to bubble through to the template. We want to
-  // explicitly throw an error in this case.
-  autoFilter: true,
-  filterFunction: (value: unknown) => {
-    if (typeof value !== "string") {
-      throw new TypeError(
-        `One of the template values has a type of: ${typeof value}`,
-      );
-    }
+  // explicitly throw an error in this case. This solution was recommended by Ben Gubler in the
+  // Discord server.
+  functionHeader: `
+    if (it !== undefined) {
+      for (const [key, value] of Object.entries(it)) {
+        if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
+          throw new Error('The template value of "' + key + '" has a type of: ' + typeof value);
+        }
 
-    return value;
-  },
+        if (typeof value === "string" && value.trim() === "") {
+          throw new Error('The template value of "' + key + '" is empty.');
+        }
+      }
+    }
+  `,
 });
 
 export async function httpInit(): Promise<void> {
