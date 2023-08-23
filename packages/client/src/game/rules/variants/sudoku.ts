@@ -4,7 +4,7 @@ import {
   DEFAULT_FINISHED_STACK_LENGTH,
 } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { newArray } from "@hanabi/utils";
+import { eRange, iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { getAllDiscardedSet } from "./discardHelpers";
@@ -65,7 +65,7 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   for (const currentRank of DEFAULT_CARD_RANKS) {
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
-      for (let writeRank = lastDead + 1; writeRank < currentRank; writeRank++) {
+      for (const writeRank of eRange(lastDead + 1, currentRank)) {
         suitMaxScores[writeRank - 1] = currentRank - writeRank;
       }
 
@@ -84,7 +84,7 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
 
   // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
   // them.
-  for (let writeRank = lastDead + 1; writeRank <= 5; writeRank++) {
+  for (const writeRank of iRange(lastDead + 1, 5)) {
     suitMaxScores[writeRank - 1] = Math.min(
       suitMaxScores[0]! + 6 - writeRank,
       DEFAULT_CARD_RANKS.length,
@@ -167,7 +167,7 @@ export function getMaxScorePerStack(
   let localSuitIndex = 0;
 
   const curAssignment = new Array<number>(unassignedSuits.length);
-  for (let i = 0; i < curAssignment.length; i++) {
+  for (const i of eRange(curAssignment.length)) {
     curAssignment[i] = unassigned;
   }
   const assigned = new Array<boolean>(possibleStackStarts.length);
@@ -219,7 +219,7 @@ export function getMaxScorePerStack(
         } else if (assignmentVal === bestAssignmentSum) {
           // If the values are the same, we want to update if the assignment is lexicographically
           // smaller.
-          for (let i = 0; i < assignmentSorted.length; i++) {
+          for (const i of eRange(assignmentSorted.length)) {
             if (assignmentSorted[i]! < bestAssignmentSorted[i]!) {
               bestAssignment = assignment;
               bestAssignmentSorted = assignmentSorted;
