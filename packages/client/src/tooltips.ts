@@ -244,10 +244,9 @@ function createPlayerTooltips() {
 }
 
 function createCardTooltips() {
-  // Dynamically create the card note tooltips.
+  // Dynamically create the card note tooltips. (We add the number of suits because we also need
+  // note tooltips for the stack bases.)
   for (const order of eRange(MAX_CARDS_IN_A_DECK + MAX_SUITS_IN_A_VARIANT)) {
-    // The number in the id matches the order of the card in the deck. We add 6 because we also need
-    // note tooltips for the stack bases.
     const id = `tooltip-card-${order}`;
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);
