@@ -25,10 +25,9 @@ export class ButtonGroup extends Konva.Group {
       function buttonClick(this: Konva.Node) {
         (this as ClueButton).setPressed(true);
 
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of
-        for (let i = 0; i < self.list.length; i++) {
-          if (self.list[i] !== this && self.list[i]!.pressed) {
-            self.list[i]!.setPressed(false);
+        for (const clueButton of self.list) {
+          if (clueButton !== this && clueButton.pressed) {
+            clueButton.setPressed(false);
           }
         }
 
