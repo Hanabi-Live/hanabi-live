@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- search for all 6 constants (to replace with MAX_SUITS_IN_A_VARIANT)
 - search for "for (let"
 - fix eta undefined passing through to template (use Discord advice)
 - remove type assertions from sudoku.ts (need feedback from Ram)

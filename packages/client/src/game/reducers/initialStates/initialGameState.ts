@@ -13,7 +13,7 @@ import {
   getVariant,
 } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { eRange, newArray } from "@hanabi/utils";
+import { newArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -36,7 +36,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     CardOrder[],
     NumSuits
   >;
-  const suitIndexes = [...eRange(variant.suits.length)] as SuitIndex[];
+  const suitIndexes = [...variant.suits.keys()] as SuitIndex[];
   const playStackDirections = suitIndexes.map((suitIndex) =>
     playStacksRules.direction(suitIndex, [], [], variant),
   ) as Tuple<StackDirection, NumSuits>;

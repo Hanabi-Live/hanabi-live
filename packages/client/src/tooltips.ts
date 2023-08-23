@@ -6,7 +6,11 @@
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip. We import it for the
 // side-effects for the same reason.
 
-import { MAX_CARDS_IN_A_DECK, MAX_PLAYERS } from "@hanabi/data";
+import {
+  MAX_CARDS_IN_A_DECK,
+  MAX_PLAYERS,
+  MAX_SUITS_IN_A_VARIANT,
+} from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import "tooltipster"; // eslint-disable-line import/no-unassigned-import
 import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
@@ -241,10 +245,10 @@ function createPlayerTooltips() {
 
 function createCardTooltips() {
   // Dynamically create the card note tooltips.
-  for (const i of eRange(MAX_CARDS_IN_A_DECK + 6)) {
+  for (const order of eRange(MAX_CARDS_IN_A_DECK + MAX_SUITS_IN_A_VARIANT)) {
     // The number in the id matches the order of the card in the deck. We add 6 because we also need
     // note tooltips for the stack bases.
-    const id = `tooltip-card-${i}`;
+    const id = `tooltip-card-${order}`;
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);
   }

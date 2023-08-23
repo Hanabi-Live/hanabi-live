@@ -225,7 +225,7 @@ function getPossibilitiesFromKeyword(
       const suitIndices =
         cardIdentities.suitIndices.length > 0
           ? cardIdentities.suitIndices
-          : eRange(variant.suits.length);
+          : [...eRange(variant.suits.length)];
 
       for (const rank of ranks) {
         for (const suitIndex of suitIndices) {
