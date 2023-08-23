@@ -604,7 +604,7 @@ export function ready(): boolean {
 
   let maxPlayers = globals.settings.createTableMaxPlayers;
   if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
-    maxPlayers = 5;
+    maxPlayers = DEFAULT_CREATE_TABLE_MAX_PLAYERS;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
 
