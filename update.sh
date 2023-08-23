@@ -15,6 +15,7 @@ if [[ -f "$DIR/yarn.lock" ]]; then
 fi
 # @template-customization-start
 # Old versions:
+# - drizzle-orm - The latest version is bugged; a new release should be coming within a day or two.
 # - konva - Newer versions cause weird graphic glitches. The long-term goal is to move away from
 #           konva entirely and use a new graphics library.
 # @template-customization-end
