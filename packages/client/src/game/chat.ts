@@ -1,6 +1,6 @@
 // In-game chat
 
-import { parseFloatSafe, parseIntSafe } from "@hanabi/utils";
+import { parseFloatSafe } from "@hanabi/utils";
 import interact from "interactjs";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";
@@ -146,32 +146,28 @@ export function show(): void {
 
   // If there is a stored size + position for the chat box, set that.
   let resetPosition = true;
-  const width = localStorage.getItem("chatWindowWidth");
-  const height = localStorage.getItem("chatWindowHeight");
-  const x = localStorage.getItem("chatWindowX");
-  const y = localStorage.getItem("chatWindowY");
-  if (width !== null && height !== null && x !== null && y !== null) {
-    const widthNumber = parseIntSafe(width);
-    const heightNumber = parseIntSafe(height);
-    const xNumber = parseIntSafe(x);
-    const yNumber = parseIntSafe(y);
+  const width = localStorage.getItem("chatWindowWidth") ?? "";
+  const height = localStorage.getItem("chatWindowHeight") ?? "";
+  const xString = localStorage.getItem("chatWindowX") ?? "";
+  const yString = localStorage.getItem("chatWindowY") ?? "";
 
-    if (
-      widthNumber !== undefined &&
-      heightNumber !== undefined &&
-      xNumber !== undefined &&
-      yNumber !== undefined
-    ) {
-      resetPosition = false;
-      modal.css("width", width);
-      modal.css("height", height);
-      moveElement(modal, xNumber, yNumber);
+  if (width !== "" && height !== "" && xString !== "" && yString !== "") {
+    resetPosition = false;
 
-      // Just in case, reset the size and position if the stored location puts the chat box
-      // offscreen. (This is possible if the window size has changed since the last time.)
-      if (isOffscreen(modal)) {
-        resetPosition = true;
-      }
+    modal.css("width", width);
+    modal.css("height", height);
+
+    const x = parseFloatSafe(xString);
+    const y = parseFloatSafe(yString);
+
+    if (x !== undefined && y !== undefined) {
+      moveElement(modal, x, y);
+    }
+
+    // Just in case, reset the size and position if the stored location puts the chat box offscreen.
+    // (This is possible if the window size has changed since the last time.)
+    if (isOffscreen(modal)) {
+      resetPosition = true;
     }
   }
 
