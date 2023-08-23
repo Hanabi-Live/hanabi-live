@@ -54,7 +54,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each(eRange(18))(
+      test.each([...eRange(18)])(
         "card %i has the correct pips and possibilities",
         (order) => {
           const turn5State = getGameStateAtTurn(testState, 4);
@@ -110,7 +110,7 @@ describe("integration", () => {
         ]);
       });
 
-      test.each(eRange(45))(
+      test.each([...eRange(45)])(
         "card %i has the correct pips and possibilities",
         (order) => {
           const finalState = getFinalState(testState);

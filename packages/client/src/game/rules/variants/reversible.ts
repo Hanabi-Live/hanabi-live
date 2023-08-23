@@ -243,7 +243,7 @@ function walkDown(allDiscardedSet: Set<Rank>, variant: Variant) {
   cardsThatCanStillBePlayed++;
 
   // Second, walk downwards.
-  for (const rank of iRange(1, 4).reverse()) {
+  for (const rank of iRange(4, 1)) {
     if (allDiscardedSet.has(rank)) {
       break;
     }

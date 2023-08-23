@@ -36,7 +36,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     CardOrder[],
     NumSuits
   >;
-  const suitIndexes = eRange(variant.suits.length) as SuitIndex[];
+  const suitIndexes = [...eRange(variant.suits.length)] as SuitIndex[];
   const playStackDirections = suitIndexes.map((suitIndex) =>
     playStacksRules.direction(suitIndex, [], [], variant),
   ) as Tuple<StackDirection, NumSuits>;

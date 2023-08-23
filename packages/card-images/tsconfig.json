@@ -16,7 +16,6 @@
     // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
     "lib": ["ES2018", "dom"],
     "module": "commonjs",
-    "target": "ES2018",
   },
 
   "include": ["./canvas2svg_node.js", "./*.ts"],

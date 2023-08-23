@@ -1,6 +1,4 @@
-// This is a tsconfig.json intended to be used by packages in this monorepo. It is separate from the
-// root "tsconfig.json" file so that individual packages can extend the root settings without
-// inheriting the Node environment.
+// This is a tsconfig.json intended to be used by packages in this monorepo.
 {
   // We extend the base IsaacScript config:
   // https://github.com/IsaacScript/isaacscript/blob/main/packages/isaacscript-tsconfig/configs/tsconfig.base.json
@@ -13,6 +11,10 @@
 
     // Performance optimization; see: https://www.npmjs.com/package/tslib
     "importHelpers": true,
+
+    // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
+    // conservative; the project targets browsers / Node.js within a 5 year time-frame.
+    "target": "ES2018",
 
     "paths": {
       "@hanabi/data": ["./packages/data/src/index.ts"],
