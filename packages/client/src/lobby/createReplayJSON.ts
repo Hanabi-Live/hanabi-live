@@ -1,3 +1,4 @@
+import type { PlayerIndex } from "@hanabi/data";
 import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
@@ -243,25 +244,37 @@ function getActionFromLogEntry(
 }
 
 function getActionFromHypoPlayOrDiscard(
-  entry_number: number,
-  action_type: number,
-  player: string,
+  entryNumber: number,
+  actionType: ActionType,
+  playerName: string,
   slot: number,
 ): ClientAction {
-  const playerIndex = getPlayerIndexFromName(player);
+  const playerIndex = getPlayerIndexFromName(playerName);
+  if (playerIndex === undefined) {
+    throw new Error(
+      `Failed to find the player index corresponding to: ${playerName}`,
+    );
+  }
+
   // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
   // perceived.
   const cardsPerPlayer = getCardsPerPlayer();
   const slotIndex = cardsPerPlayer - slot;
-  const cardID = getCardFromHypoState(entry_number - 1, playerIndex, slotIndex);
+  const cardID = getCardFromHypoState(entryNumber - 1, playerIndex, slotIndex);
   return {
-    type: action_type,
+    type: actionType,
     target: cardID,
   };
 }
 
-function getActionFromHypoClue(player: string, clue: string): ClientAction {
-  const playerIndex = getPlayerIndexFromName(player);
+function getActionFromHypoClue(playerName: string, clue: string): ClientAction {
+  const playerIndex = getPlayerIndexFromName(playerName);
+  if (playerIndex === undefined) {
+    throw new Error(
+      `Failed to find the player index corresponding to: ${playerName}`,
+    );
+  }
+
   let parsedClue = parseIntSafe(clue);
 
   // "Odds and Evens" give "Odd" or "Even" as rank clues.
@@ -288,13 +301,14 @@ function getActionFromHypoClue(player: string, clue: string): ClientAction {
   };
 }
 
-function getPlayerIndexFromName(name: string): number {
-  return globals.metadata.playerNames.indexOf(name);
+function getPlayerIndexFromName(name: string): PlayerIndex | undefined {
+  const playerIndex = globals.metadata.playerNames.indexOf(name);
+  return playerIndex === -1 ? undefined : (playerIndex as PlayerIndex);
 }
 
 function getCardFromHypoState(
   previousStateIndex: number,
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   slotIndex: number,
 ): number {
   if (globals.state.replay.hypothetical === null) {

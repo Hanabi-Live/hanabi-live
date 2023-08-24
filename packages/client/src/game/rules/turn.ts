@@ -1,4 +1,4 @@
-import type { NumPlayers, Variant } from "@hanabi/data";
+import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import type { Options } from "../../types/Options";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -40,29 +40,30 @@ export function shouldPlayOrderInvert(characterName: string): boolean {
 }
 
 export function getNextPlayerIndex(
-  currentPlayerIndex: number | null,
+  currentPlayerIndex: PlayerIndex | null,
   numPlayers: NumPlayers,
   turnsInverted: boolean,
-): number | null {
+): PlayerIndex | null {
+  // If the game is already over, then there is no next player.
   if (currentPlayerIndex === null) {
-    // If the game is already over, then there is no next player.
     return null;
   }
 
-  let nextPlayerIndex: number;
-  if (!turnsInverted) {
-    nextPlayerIndex = currentPlayerIndex + 1;
-    if (nextPlayerIndex === numPlayers) {
-      nextPlayerIndex = 0;
+  if (turnsInverted) {
+    let previousPlayerIndex = currentPlayerIndex - 1;
+    if (previousPlayerIndex === -1) {
+      previousPlayerIndex = numPlayers - 1;
     }
-  } else {
-    nextPlayerIndex = currentPlayerIndex - 1;
-    if (nextPlayerIndex === -1) {
-      nextPlayerIndex = numPlayers - 1;
-    }
+
+    return previousPlayerIndex as PlayerIndex;
   }
 
-  return nextPlayerIndex;
+  let nextPlayerIndex = currentPlayerIndex + 1;
+  if (nextPlayerIndex === numPlayers) {
+    nextPlayerIndex = 0;
+  }
+
+  return nextPlayerIndex as PlayerIndex;
 }
 
 export function endGameLength(

@@ -19,6 +19,7 @@ export * from "./types/CardOrder";
 export * from "./types/ColorIndex";
 export * from "./types/NumPlayers";
 export * from "./types/NumSuits";
+export * from "./types/PlayerIndex";
 export * from "./types/Rank";
 export * from "./types/RankClueNumber";
 export * from "./types/SuitIndex";

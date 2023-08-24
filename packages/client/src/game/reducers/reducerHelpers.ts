@@ -1,5 +1,6 @@
 // Miscellaneous helpers used by several reducers.
 
+import type { PlayerIndex } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import * as statsRules from "../rules/stats";
 import type { GameState } from "../types/GameState";
@@ -16,7 +17,7 @@ export function getFutureEfficiency(state: GameState): number | null {
 }
 
 export function getCharacterNameForPlayer(
-  playerIndex: number | null,
+  playerIndex: PlayerIndex | null,
   characterAssignments: Readonly<Array<number | null>>,
 ): string {
   const characterID = getCharacterIDForPlayer(
@@ -28,7 +29,7 @@ export function getCharacterNameForPlayer(
 }
 
 function getCharacterIDForPlayer(
-  playerIndex: number | null,
+  playerIndex: PlayerIndex | null,
   characterAssignments: Readonly<Array<number | null>>,
 ) {
   if (playerIndex === null) {

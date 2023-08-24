@@ -271,19 +271,21 @@ chatCommands.set("tagsdeleteall", (room: string) => {
 
 // /playerinfo (username)
 function playerinfo(_room: string, args: string[]) {
-  let usernames: string[] = [];
+  let usernames: string[];
+
   if (args.length === 0) {
     // - If there are no arguments and we are at a table, return stats for all the players.
     // - Otherwise, return stats for the caller.
     usernames =
       globals.tableID !== -1 && globals.ui !== null
-        ? globals.ui.globals.metadata.playerNames
+        ? [...globals.ui.globals.metadata.playerNames]
         : [globals.username];
   } else {
     // We can return the stats for a list of provided users separated by spaces since usernames
     // cannot contain spaces.
     usernames = args;
   }
+
   for (const name of usernames) {
     globals.conn!.send("chatPlayerInfo", {
       name,

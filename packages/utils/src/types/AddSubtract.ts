@@ -1,4 +1,9 @@
 /** From: https://gist.github.com/ryandabler/8b4ff4f36aed47bc09acc03174638468 */
+export type Add<A extends number, B extends number> = Length<
+  [...BuildTuple<A>, ...BuildTuple<B>]
+>;
+
+/** From: https://gist.github.com/ryandabler/8b4ff4f36aed47bc09acc03174638468 */
 export type Subtract<A extends number, B extends number> = A extends A
   ? BuildTuple<A> extends [...infer U, ...BuildTuple<B>]
     ? Length<U>

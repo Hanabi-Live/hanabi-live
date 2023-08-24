@@ -1,10 +1,11 @@
+import type { PlayerIndex } from "@hanabi/data";
 import * as cardRules from "../rules/card";
 import type { CardState } from "../types/CardState";
 
 export function ddaReducer(
   deck: readonly CardState[],
   dda: number | null,
-  currentPlayerIndex: number | null,
+  currentPlayerIndex: PlayerIndex | null,
 ): readonly CardState[] {
   const newDeck = [...deck];
 

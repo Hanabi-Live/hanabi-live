@@ -1,9 +1,14 @@
-import type { CardOrder, ColorIndex, RankClueNumber } from "@hanabi/data";
+import type {
+  CardOrder,
+  ColorIndex,
+  PlayerIndex,
+  RankClueNumber,
+} from "@hanabi/data";
 import type { ClueType } from "./ClueType";
 
 interface StateClueBase {
-  readonly giver: number;
-  readonly target: number;
+  readonly giver: PlayerIndex;
+  readonly target: PlayerIndex;
   readonly segment: number;
 
   /** The cards in the hand that the clue touches. */

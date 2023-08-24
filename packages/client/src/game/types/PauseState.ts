@@ -1,5 +1,7 @@
+import type { PlayerIndex } from "@hanabi/data";
+
 export interface PauseState {
   readonly active: boolean;
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
   readonly queued: boolean;
 }

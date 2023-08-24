@@ -1,5 +1,6 @@
-import type { NumPlayers } from "@hanabi/data";
+import type { NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import * as hand from "../rules/hand";
 import { CardLayout } from "./CardLayout";
@@ -281,7 +282,7 @@ export function drawHands(winW: number, winH: number): void {
   }
 
   // Draw the hands
-  for (let i = 0; i < numPlayers; i++) {
+  for (const i of eRange(numPlayers)) {
     let j = i - globals.metadata.ourPlayerIndex;
 
     if (j < 0) {
@@ -437,14 +438,16 @@ export function drawHands(winW: number, winH: number): void {
       globals.elements.playerHandTurnRects.push(turnRect);
     }
 
-    globals.elements.nameFrames[i] = new NameFrame({
-      x: playerNamePos[numPlayers]![j]!.x * winW,
-      y: playerNamePos[numPlayers]![j]!.y * winH,
-      width: playerNamePos[numPlayers]![j]!.w * winW,
-      height: playerNamePos[numPlayers]![j]!.h * winH,
-      name: globals.metadata.playerNames[i],
-      playerIndex: i,
-    });
+    globals.elements.nameFrames[i] = new NameFrame(
+      {
+        x: playerNamePos[numPlayers]![j]!.x * winW,
+        y: playerNamePos[numPlayers]![j]!.y * winH,
+        width: playerNamePos[numPlayers]![j]!.w * winW,
+        height: playerNamePos[numPlayers]![j]!.h * winH,
+        name: globals.metadata.playerNames[i],
+      },
+      i as PlayerIndex,
+    );
     globals.layers.UI.add(
       globals.elements.nameFrames[i] as unknown as Konva.Group,
     );

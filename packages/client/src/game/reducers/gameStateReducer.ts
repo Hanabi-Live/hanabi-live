@@ -2,6 +2,7 @@
 
 import type { Variant } from "@hanabi/data";
 import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
+import { tupleEntries } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { millisecondsToClockString } from "../../utils";
@@ -370,12 +371,14 @@ function gameStateReducerFunction(
     }
 
     case "playerTimes": {
-      for (const [i, playerTime] of action.playerTimes.entries()) {
+      for (const [playerIndex, playerTime] of tupleEntries(
+        action.playerTimes,
+      )) {
         // Player times are negative in untimed games.
         const modifier = metadata.options.timed ? 1 : -1;
         const milliseconds = playerTime * modifier;
         const durationString = millisecondsToClockString(milliseconds);
-        const playerName = getPlayerName(i, metadata);
+        const playerName = getPlayerName(playerIndex, metadata);
 
         const text = metadata.options.timed
           ? `${playerName} had ${durationString} left`

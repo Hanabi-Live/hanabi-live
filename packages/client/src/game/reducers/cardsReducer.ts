@@ -3,12 +3,18 @@
 import type {
   CardOrder,
   NumPlayers,
+  PlayerIndex,
   Rank,
   SuitIndex,
   SuitRankTuple,
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import { arrayCopyTwoDimensional, eRange, newArray } from "@hanabi/utils";
+import {
+  arrayCopyTwoDimensional,
+  eRange,
+  newArray,
+  tupleKeys,
+} from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
@@ -280,11 +286,11 @@ export function cardsReducer(
 
 function cardIdentityRevealedToPlayer(
   card: CardState,
-  characterAssignments: Readonly<Array<number | null>>,
+  characterAssignments: GameMetadata["characterAssignments"],
 ): boolean[] {
   const revealedToPlayer: boolean[] = [];
 
-  for (const playerIndex of characterAssignments.keys()) {
+  for (const playerIndex of tupleKeys(characterAssignments)) {
     const characterName = getCharacterNameForPlayer(
       playerIndex,
       characterAssignments,
@@ -307,7 +313,8 @@ function drawnCardRevealedToPlayer(
 ): boolean[] {
   const revealedToPlayer: boolean[] = [];
 
-  for (const playerIndex of eRange(numPlayers)) {
+  for (const i of eRange(numPlayers)) {
+    const playerIndex = i as PlayerIndex;
     revealedToPlayer.push(
       canPlayerSeeDrawnCard(
         playerIndex,
@@ -322,7 +329,7 @@ function drawnCardRevealedToPlayer(
 }
 
 function canPlayerSeeDrawnCard(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   drawLocation: number,
   numPlayers: NumPlayers,
   characterAssignments: Readonly<Array<number | null>>,

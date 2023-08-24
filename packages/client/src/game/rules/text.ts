@@ -1,5 +1,6 @@
-import type { Variant } from "@hanabi/data";
+import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
@@ -15,11 +16,13 @@ const HYPO_PREFIX = "[Hypo] ";
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six"] as const;
 
 export function goesFirst(
-  playerIndex: number | null,
-  playerNames: string[],
+  playerIndex: PlayerIndex | null,
+  playerNames: Readonly<Tuple<string, NumPlayers>>,
 ): string {
-  const playerIndexToUse = playerIndex ?? -1;
-  const playerName = playerNames[playerIndexToUse] ?? "[unknown]";
+  const playerName =
+    playerIndex === null
+      ? "[unknown]"
+      : playerNames[playerIndex] ?? "[unknown]";
 
   return `${playerName} goes first`;
 }
@@ -102,10 +105,10 @@ function getClueActionName(
 
 export function gameOver(
   endCondition: EndCondition,
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   score: number,
   metadata: GameMetadata,
-  votes: number[] | null,
+  votes: PlayerIndex[] | null,
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
 

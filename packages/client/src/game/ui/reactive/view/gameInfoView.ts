@@ -1,3 +1,4 @@
+import type { PlayerIndex } from "@hanabi/data";
 import { MAX_STRIKES } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import { setBrowserAddressBarPath } from "../../../../utils";
@@ -39,7 +40,7 @@ export function onTurnChanged(data: {
 }
 
 export function onCurrentPlayerIndexChanged(
-  currentPlayerIndex: number | null,
+  currentPlayerIndex: PlayerIndex | null,
 ): void {
   // Bold the name frame of the current player to signify that it is their turn.
   for (const [

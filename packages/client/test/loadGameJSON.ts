@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
+import type {
+  CardOrder,
+  NumPlayers,
+  PlayerIndex,
+  Rank,
+  SuitIndex,
+} from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
@@ -63,10 +69,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
   // Parse all plays/discards/clues.
   let turn = 0; // Start on the 0th turn.
-  let currentPlayerIndex = 0; // The player at index 0 goes first.
+  let currentPlayerIndex: PlayerIndex = 0; // The player at index 0 goes first.
 
-  for (const a of gameJSON.actions) {
-    const action = parseJSONAction(currentPlayerIndex, turn, deck, a);
+  for (const actionJSON of gameJSON.actions) {
+    const action = parseJSONAction(currentPlayerIndex, turn, deck, actionJSON);
     if (action !== null) {
       actions.push(action);
       if (
@@ -79,7 +85,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     }
 
     turn++;
-    currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+    currentPlayerIndex = ((currentPlayerIndex + 1) % numPlayers) as PlayerIndex;
   }
 
   // If the game was exported from the server and it ended in a specific way, the final action will
@@ -280,7 +286,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 }
 
 function drawCard(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   order: CardOrder,
   deck: CardIdentity[],
 ): ActionDraw {
@@ -315,7 +321,8 @@ function dealInitialCards(
 ): CardOrder {
   let topOfDeck = 0 as CardOrder;
 
-  for (const playerIndex of eRange(numPlayers)) {
+  for (const i of eRange(numPlayers)) {
+    const playerIndex = i as PlayerIndex;
     for (const _i of eRange(cardsPerHand)) {
       const actionDraw = drawCard(playerIndex, topOfDeck, deck);
       actions.push(actionDraw);
@@ -378,7 +385,7 @@ function parseJSONAction(
       return {
         type: "gameOver",
         endCondition: a.value,
-        playerIndex: a.target,
+        playerIndex: a.target as PlayerIndex,
         votes: [],
       };
     }

@@ -1,6 +1,6 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
+import type { PlayerIndex, Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue, ColorClue, RankClue } from "../types/Clue";
@@ -213,12 +213,12 @@ function touchesCardRank(
 }
 
 export function shouldApplyClue(
-  giverIndex: number,
+  giverPlayerIndex: PlayerIndex,
   metadata: GameMetadata,
   variant: Variant,
 ): boolean {
   const giverCharacterName = getCharacterNameForPlayer(
-    giverIndex,
+    giverPlayerIndex,
     metadata.characterAssignments,
   );
 

@@ -1,7 +1,13 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import type { CardOrder, ColorIndex, RankClueNumber } from "@hanabi/data";
+import type {
+  CardOrder,
+  ColorIndex,
+  PlayerIndex,
+  RankClueNumber,
+} from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
@@ -184,7 +190,7 @@ export function send(hypoAction: ClientAction): void {
         clue,
         giver: gameState.turn.currentPlayerIndex!,
         list,
-        target: hypoAction.target,
+        target: hypoAction.target as PlayerIndex,
         turn: gameState.turn.turnNum,
         ignoreNegative: false,
       });
@@ -198,7 +204,7 @@ export function send(hypoAction: ClientAction): void {
   }
 
   // Finally, send a turn action. Even though this action is unnecessary from the point of the
-  // client, for now we MUST send it to the server so that it can correctly shave off the last
+  // client, for now we must send it to the server so that it can correctly shave off the last
   // action during a "hypoBack".
   let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
   if (nextPlayerIndex === globals.options.numPlayers) {
@@ -207,7 +213,7 @@ export function send(hypoAction: ClientAction): void {
   sendHypoAction({
     type: "turn",
     num: gameState.turn.turnNum + 1,
-    currentPlayerIndex: nextPlayerIndex,
+    currentPlayerIndex: nextPlayerIndex as PlayerIndex,
   });
 }
 
@@ -338,15 +344,18 @@ export function checkToggleRevealedButton(
 export function changeStartingHandVisibility(): void {
   const startingPlayerIndex =
     globals.state.replay.hypothetical?.startingPlayerIndex;
+
   if (
     startingPlayerIndex === undefined ||
     startingPlayerIndex === null ||
     globals.elements.playerHands[startingPlayerIndex] === undefined
   ) {
     // Remove all empathy visibility, no longer in hypo.
-    for (let i = 0; i < globals.elements.playerHands.length; i++) {
-      forceHandEmpathy(i, false);
+    for (const i of eRange(globals.options.numPlayers)) {
+      const playerIndex = i as PlayerIndex;
+      forceHandEmpathy(playerIndex, false);
     }
+
     return;
   }
 
@@ -356,7 +365,7 @@ export function changeStartingHandVisibility(): void {
   );
 }
 
-function forceHandEmpathy(playerIndex: number, force: boolean) {
+function forceHandEmpathy(playerIndex: PlayerIndex, force: boolean) {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
     return;

@@ -33,8 +33,6 @@ export interface GameState {
   readonly numAttemptedCardsPlayed: number;
 
   readonly clueTokens: number;
-
-  /** Should have a maximum length equal to `MAX_STRIKES`. */
   readonly strikes: readonly StateStrike[];
 
   /** Indexed by player index. Each player has an array of card orders. */
@@ -51,9 +49,7 @@ export interface GameState {
    */
   readonly playStackStarts: Readonly<Tuple<Rank | null, NumSuits>>;
 
-  /**
-   * For "Throw It in a Hole" variants. All played cards go into the hole. It contains card orders.
-   */
+  /** For "Throw It in a Hole" variants. All played cards go into the hole. */
   readonly hole: readonly CardOrder[];
 
   /** Indexed by suit index. Each suit has an array of card orders. */

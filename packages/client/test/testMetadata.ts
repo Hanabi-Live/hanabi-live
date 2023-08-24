@@ -2,6 +2,7 @@
 
 import type { NumPlayers } from "@hanabi/data";
 import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import { newArray } from "@hanabi/utils";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as handRules from "../src/game/rules/hand";
@@ -19,7 +20,22 @@ export function testMetadata(
     numPlayers,
     variantName,
   };
-  const characterAssignments = newArray(numPlayers, null);
+  const playerNames = [
+    "Alice",
+    "Bob",
+    "Cathy",
+    "Donald",
+    "Emily",
+    "Frank",
+  ].slice(0, numPlayers) as Tuple<string, NumPlayers>;
+  const characterAssignments = newArray(numPlayers, null) as Tuple<
+    number | null,
+    NumPlayers
+  >;
+  const characterMetadata = newArray(numPlayers, -1) as Tuple<
+    number,
+    NumPlayers
+  >;
   const variant = getVariant(variantName);
   const minEfficiency = statsRules.minEfficiency(
     numPlayers,
@@ -27,16 +43,14 @@ export function testMetadata(
     variant,
     handRules.cardsPerHand(options),
   );
+
   return {
     ourUsername: "Alice",
     options,
-    playerNames: ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"].slice(
-      0,
-      numPlayers,
-    ),
+    playerNames,
     ourPlayerIndex: 0,
     characterAssignments,
-    characterMetadata: [],
+    characterMetadata,
 
     minEfficiency,
     hardVariant: minEfficiency >= HARD_VARIANT_EFFICIENCY_THRESHOLD,

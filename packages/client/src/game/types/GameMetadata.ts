@@ -1,19 +1,21 @@
+import type { NumPlayers, PlayerIndex } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import type { Options } from "../../types/Options";
 
 /** This is for data that does not change. */
 export interface GameMetadata {
   readonly ourUsername: string;
   readonly options: Options;
-  readonly playerNames: string[];
+  readonly playerNames: Readonly<Tuple<string, NumPlayers>>;
 
   /**
    * If in a game, equal to the player index that we correspond to. If spectating an ongoing game or
    * a replay, equal to the player index that we are observing from.
    */
-  readonly ourPlayerIndex: number;
+  readonly ourPlayerIndex: PlayerIndex;
 
-  readonly characterAssignments: Readonly<Array<number | null>>;
-  readonly characterMetadata: number[];
+  readonly characterAssignments: Readonly<Tuple<number | null, NumPlayers>>;
+  readonly characterMetadata: Readonly<Tuple<number, NumPlayers>>;
 
   readonly minEfficiency: number;
   readonly hardVariant: boolean;
@@ -23,14 +25,14 @@ export interface GameMetadata {
 }
 
 export function getPlayerName(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   metadata: GameMetadata,
 ): string {
   return metadata.playerNames[playerIndex] ?? "Hanabi Live";
 }
 
 export function getPlayerNames(
-  playerIndices: number[] | null,
+  playerIndices: PlayerIndex[] | null,
   metadata: GameMetadata,
 ): string {
   if (playerIndices === null) {

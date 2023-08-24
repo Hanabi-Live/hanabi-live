@@ -5,6 +5,7 @@
 import type {
   CardOrder,
   ColorIndex,
+  PlayerIndex,
   Rank,
   RankClueNumber,
   SuitIndex,
@@ -28,9 +29,9 @@ import type {
 
 export function colorClue(
   value: ColorIndex,
-  giver: number,
+  giver: PlayerIndex,
   list: number[],
-  target: number,
+  target: PlayerIndex,
   turn: number,
 ): ActionClue {
   return {
@@ -49,9 +50,9 @@ export function colorClue(
 
 export function rankClue(
   value: RankClueNumber,
-  giver: number,
+  giver: PlayerIndex,
   list: number[],
-  target: number,
+  target: PlayerIndex,
   turn: number,
 ): ActionClue {
   return {
@@ -69,7 +70,7 @@ export function rankClue(
 }
 
 export function draw(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   order: number,
   suitIndex: SuitIndex | -1 = -1,
   rank: Rank | -1 = -1,
@@ -84,7 +85,7 @@ export function draw(
 }
 
 export function discard(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   order: number,
   suitIndex: SuitIndex | -1,
   rank: Rank | -1,
@@ -101,7 +102,7 @@ export function discard(
 }
 
 export function play(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   order: number,
   suitIndex: SuitIndex,
   rank: Rank,
@@ -116,7 +117,7 @@ export function play(
 }
 
 export function cardIdentity(
-  playerIndex: number,
+  playerIndex: PlayerIndex,
   order: number,
   suitIndex: SuitIndex,
   rank: Rank,

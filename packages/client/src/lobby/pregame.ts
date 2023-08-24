@@ -1,5 +1,6 @@
 // The lobby area that shows all of the players in the current unstarted game.
 
+import type { PlayerIndex } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import { eRange, iRange } from "@hanabi/utils";
 import { globals } from "../Globals";
@@ -123,7 +124,8 @@ export function draw(): void {
   drawOptions();
 
   // Draw the player boxes.
-  for (const playerIndex of eRange(MAX_PLAYERS)) {
+  for (const i of eRange(MAX_PLAYERS)) {
+    const playerIndex = i as PlayerIndex;
     drawPlayerBox(playerIndex);
   }
 
@@ -330,7 +332,7 @@ export function initializeOptionTooltips(
   }
 }
 
-function drawPlayerBox(playerIndex: number) {
+function drawPlayerBox(playerIndex: PlayerIndex) {
   if (globals.game === null) {
     return;
   }
@@ -571,7 +573,7 @@ export function toggleStartGameButton(): void {
   }
 }
 
-function reattend(shadowingPlayerIndex: number) {
+function reattend(shadowingPlayerIndex: PlayerIndex | -1) {
   setTimeout(() => {
     globals.conn!.send("tableUnattend", {
       tableID: globals.tableID,

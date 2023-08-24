@@ -1,3 +1,4 @@
+import type { PlayerIndex } from "@hanabi/data";
 import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import * as clueTokensRules from "../../../rules/clueTokens";
@@ -24,12 +25,12 @@ export function isVisible(state: State): boolean {
 export function onChanged(
   data: {
     visible: boolean;
-    currentPlayerIndex: number | null;
+    currentPlayerIndex: PlayerIndex | null;
   },
   previousData:
     | {
         visible: boolean;
-        currentPlayerIndex: number | null;
+        currentPlayerIndex: PlayerIndex | null;
       }
     | undefined,
 ): void {
@@ -163,8 +164,9 @@ export function onChanged(
     if (previousPlayerIndex === -1) {
       previousPlayerIndex = numPlayers - 1;
     }
-    const previousRotation =
-      getArrowRotationCorrespondingToPlayer(previousPlayerIndex);
+    const previousRotation = getArrowRotationCorrespondingToPlayer(
+      previousPlayerIndex as PlayerIndex,
+    );
     currentPlayerArea.arrow.rotation(previousRotation);
 
     // We want the arrow to always be moving clockwise.
@@ -195,7 +197,7 @@ export function onChanged(
   globals.layers.UI.batchDraw();
 }
 
-function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
+function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
     throw new Error(

@@ -1,3 +1,5 @@
+import type { PlayerIndex } from "@hanabi/data";
+
 export interface TurnState {
   /**
    * "segment" mostly corresponds to the turn, with some exceptions:
@@ -13,7 +15,7 @@ export interface TurnState {
   readonly segment: number | null;
 
   readonly turnNum: number;
-  readonly currentPlayerIndex: number | null;
+  readonly currentPlayerIndex: PlayerIndex | null;
   readonly playOrderInverted: boolean;
   readonly endTurnNum: number | null;
   readonly cardsPlayedOrDiscardedThisTurn: number;

@@ -1,7 +1,14 @@
 // These represent actions that can modify the state store. (They cause a state duplication to occur
 // and the state reducers to fire.)
 
-import type { CardOrder, Rank, SuitIndex } from "@hanabi/data";
+import type {
+  CardOrder,
+  NumPlayers,
+  PlayerIndex,
+  Rank,
+  SuitIndex,
+} from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
 import type { EndCondition } from "./EndCondition";
@@ -82,7 +89,7 @@ export interface ActionInit {
   readonly sharedReplaySegment: number;
   readonly sharedReplayLeader: string;
   readonly paused: boolean;
-  readonly pausePlayerIndex: number;
+  readonly pausePlayerIndex: PlayerIndex;
 }
 
 interface ActionListReceived {
@@ -107,7 +114,7 @@ interface ActionPremove {
 interface ActionPause {
   readonly type: "pause";
   readonly active: boolean;
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
 }
 
 interface ActionPauseQueue {
@@ -134,7 +141,7 @@ interface ActionFinishOngoingGame {
 /** Used to implement the "Slow-Witted" detrimental character. */
 export interface ActionCardIdentity {
   readonly type: "cardIdentity";
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
   readonly order: CardOrder;
 
   /** The server scrubs the identity under certain circumstances, which is represented by -1. */
@@ -149,13 +156,13 @@ export interface ActionClue {
   readonly clue: MsgClue;
 
   /** The player index of the person giving the clue. */
-  readonly giver: number;
+  readonly giver: PlayerIndex;
 
   /** The card orders that were touched by this clue. */
   readonly list: CardOrder[];
 
   /** The player index of the person being clued. */
-  readonly target: number;
+  readonly target: PlayerIndex;
 
   readonly turn: number; // TODO: remove. This is unused.
   readonly ignoreNegative: boolean;
@@ -163,7 +170,7 @@ export interface ActionClue {
 
 export interface ActionDiscard {
   readonly type: "discard";
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
   readonly order: CardOrder;
 
   /**
@@ -183,7 +190,7 @@ export interface ActionDiscard {
 
 export interface ActionDraw {
   readonly type: "draw";
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
   readonly order: CardOrder;
 
   /** -1 represents a card of an unknown suit (e.g. it was drawn to our own hand). */
@@ -196,19 +203,19 @@ export interface ActionDraw {
 interface ActionGameOver {
   readonly type: "gameOver";
   readonly endCondition: EndCondition;
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
 
   /**
-   * In a normal game, the `votes` array will be equal to the indices of the players who voted to
+   * In a normal game, the `votes` array will be filled with the indices of the players who voted to
    * terminate the game. In a replay, `votes` will be equal to `null` because the server does not
    * store who voted to kill the game in the database.
    */
-  readonly votes: number[] | null;
+  readonly votes: PlayerIndex[] | null;
 }
 
 export interface ActionPlay {
   readonly type: "play";
-  readonly playerIndex: number;
+  readonly playerIndex: PlayerIndex;
   readonly order: CardOrder;
 
   /**
@@ -226,7 +233,7 @@ export interface ActionPlay {
 
 interface ActionPlayerTimes {
   readonly type: "playerTimes";
-  readonly playerTimes: number[];
+  readonly playerTimes: Tuple<number, NumPlayers>;
   readonly duration: number;
 }
 
@@ -243,7 +250,7 @@ export interface ActionStrike {
 interface ActionTurn {
   readonly type: "turn";
   readonly num: number;
-  readonly currentPlayerIndex: number;
+  readonly currentPlayerIndex: PlayerIndex;
 }
 
 // ------------

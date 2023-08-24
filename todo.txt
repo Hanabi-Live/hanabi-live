@@ -2,9 +2,12 @@
 | TODO |
 +------+
 
+- annotate -1 to type of shadowingPlayerIndex for "replayCreate" command
+
+- try making `goesFirst(` generic, do not bubble rest of codebase
+- PlayerIndex type (maybe, look to see if it is useful first)
 - search for "for (let"
 - remove type assertions from lobby + views
-- PlayerIndex type (maybe, look to see if it is useful first)
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 
@@ -31,3 +34,5 @@ long term once the server is rewritten in TypeScript:
 - refactor chat_log to have foreign key for user_id + boolean for server message
 - refactor ActionNoteList to be one array of objects instead of multiple arrays (and the other various note things)
 - refactor `order` --> `cardOrder`
+- stronger typing for `disconShadowingSeat` field
+- remove -1 type from activePlayerIndex (prefer undefined)

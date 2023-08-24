@@ -1,5 +1,6 @@
 // Functions for timed games (and the timer that ticks up in untimed games).
 
+import type { PlayerIndex } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
 import { millisecondsToClockString } from "../../utils";
 import { globals } from "./UIGlobals";
@@ -8,7 +9,10 @@ import { drawLayer } from "./konvaHelpers";
 
 export interface ClockData {
   times: number[];
-  activePlayerIndex: number;
+
+  /** -1 if the game just ended. */
+  activePlayerIndex: PlayerIndex | -1;
+
   timeTaken: number;
 }
 
@@ -71,9 +75,14 @@ export function update(data: ClockData): void {
       time *= -1;
     }
     globals.elements.timer2.setTimerText(millisecondsToClockString(time));
-    const activePlayerName =
-      globals.metadata.playerNames[data.activePlayerIndex]!;
-    globals.elements.timer2.setLabelText(activePlayerName);
+
+    if (data.activePlayerIndex !== -1) {
+      const activePlayerName =
+        globals.metadata.playerNames[data.activePlayerIndex];
+      if (activePlayerName !== undefined) {
+        globals.elements.timer2.setLabelText(activePlayerName);
+      }
+    }
   }
 
   globals.elements.timer2.visible(!ourTurn && data.activePlayerIndex !== -1);
@@ -85,7 +94,7 @@ export function update(data: ClockData): void {
   }
   setTickingDownTimeCPTooltip();
 
-  // The server will send an active value of -1 when the game is over.
+  // The server will send an active player index of -1 when the game is over.
   if (data.activePlayerIndex === -1) {
     return;
   }

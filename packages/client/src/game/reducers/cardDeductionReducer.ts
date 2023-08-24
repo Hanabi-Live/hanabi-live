@@ -1,5 +1,6 @@
 import type {
   CardOrder,
+  PlayerIndex,
   Rank,
   SuitIndex,
   SuitRankTuple,
@@ -7,7 +8,7 @@ import type {
 } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
-import { arrayCopyTwoDimensional } from "@hanabi/utils";
+import { arrayCopyTwoDimensional, tupleKeys } from "@hanabi/utils";
 import * as deckRules from "../rules/deck";
 import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -58,7 +59,7 @@ function makeDeductions(
     metadata,
   );
 
-  for (const playerIndex of hands.keys()) {
+  for (const playerIndex of tupleKeys(hands)) {
     if (playerIndex !== metadata.ourPlayerIndex) {
       calculatePlayerPossibilities(
         playerIndex,
@@ -76,8 +77,8 @@ function makeDeductions(
 }
 
 function calculatePlayerPossibilities(
-  playerIndex: number,
-  ourPlayerIndex: number,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
   hands: GameState["hands"],
   deck: CardState[],
   oldDeck: readonly CardState[],
@@ -109,8 +110,8 @@ function calculatePlayerPossibilities(
 
 function calculateCard(
   card: CardState,
-  playerIndex: number,
-  ourPlayerIndex: number,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
   deck: CardState[],
   cardCountMap: number[][],
   metadata: GameMetadata,
@@ -150,8 +151,8 @@ function calculateCard(
 
 function shouldCalculateCard(
   card: CardState,
-  playerIndex: number,
-  ourPlayerIndex: number,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
 ) {
@@ -198,8 +199,8 @@ function shouldCalculateCard(
 
 function getCardPossibilitiesForPlayer(
   card: CardState | undefined,
-  playerIndex: number,
-  ourPlayerIndex: number,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
 ): readonly SuitRankTuple[] {
   if (card === undefined) {
     return [];
@@ -232,8 +233,8 @@ function getCardPossibilitiesForPlayer(
 function generateDeckPossibilities(
   excludeCardOrder: CardOrder,
   deck: readonly CardState[],
-  playerIndex: number,
-  ourPlayerIndex: number,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
   metadata: GameMetadata,
 ): DeepReadonly<SuitRankTuple[][]> {
   const deckPossibilities: Array<readonly SuitRankTuple[]> = [];
@@ -316,7 +317,7 @@ function isPossibleCard(
 function canBeUsedToDisprovePossibility(
   card: CardState | undefined,
   excludeCardOrder: CardOrder,
-  playerIndex: number,
+  playerIndex: PlayerIndex,
 ) {
   return (
     card !== undefined &&
@@ -331,8 +332,8 @@ function deckPossibilitiesDifferent(
   excludeCardOrder: CardOrder,
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
-  playerIndex: number,
-  ourPlayerIndex: number,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
 ) {
   for (const [order, card] of deck.entries()) {
     const oldCard = oldDeck[order];

@@ -1,3 +1,4 @@
+import type { PlayerIndex } from "@hanabi/data";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";
@@ -7,7 +8,7 @@ import { LABEL_COLOR } from "./constants";
 import * as konvaTooltips from "./konvaTooltips";
 
 export class NameFrame extends Konva.Group {
-  playerIndex: number;
+  playerIndex: PlayerIndex;
   tooltipName: string;
 
   playerName: Konva.Text;
@@ -16,7 +17,7 @@ export class NameFrame extends Konva.Group {
 
   defaultStrokeWidth: number;
 
-  constructor(config: Konva.ContainerConfig) {
+  constructor(config: Konva.ContainerConfig, playerIndex: PlayerIndex) {
     super(config);
     this.listening(true); // Needed for the hover events
 
@@ -28,7 +29,7 @@ export class NameFrame extends Konva.Group {
     }
 
     // Class variables
-    this.playerIndex = config["playerIndex"] as number;
+    this.playerIndex = playerIndex;
     this.tooltipName = `player-${this.playerIndex}`;
 
     this.playerName = new Konva.Text({
@@ -179,12 +180,12 @@ export class NameFrame extends Konva.Group {
   // execute the "backToLobby()" function.)
   rightClick(): void {
     // Find the index corresponding to this player.
-    const shadowingPlayerIndex = globals.metadata.playerNames.indexOf(
-      this.playerName.text(),
-    );
+    const playerName = this.playerName.text();
+    const shadowingPlayerIndex =
+      globals.metadata.playerNames.indexOf(playerName);
     if (shadowingPlayerIndex === -1) {
       throw new Error(
-        `Failed to find the index corresponding to player "${this.playerName.text()}".`,
+        `Failed to find the index corresponding to player: ${playerName}`,
       );
     }
 
@@ -194,7 +195,7 @@ export class NameFrame extends Konva.Group {
       // specific player's perspective).
 
       // Validate that we are not shifting to the perspective that we are already at.
-      let oldShadowingPlayerIndex: number | null = null;
+      let oldShadowingPlayerIndex: PlayerIndex | null = null;
       for (const spectator of globals.state.spectators) {
         if (spectator.name === globals.metadata.ourUsername) {
           if (spectator.shadowingPlayerIndex !== -1) {

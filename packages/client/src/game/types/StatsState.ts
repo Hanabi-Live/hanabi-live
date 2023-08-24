@@ -1,4 +1,4 @@
-import type { NumSuits } from "@hanabi/data";
+import type { CardOrder, NumSuits } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import type { PaceRisk } from "./GameState";
 import type { SoundType } from "./SoundType";
@@ -27,7 +27,7 @@ export interface StatsState {
   // - Future efficiency is simply "cardsNotGotten / cluesStillUsable".
 
   /** Store the order of the double-discard candidate card, or null if not in DDA. */
-  readonly doubleDiscard: number | null;
+  readonly doubleDiscard: CardOrder | null;
 
   // For determining sound effects.
   readonly lastAction: GameAction | null;

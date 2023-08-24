@@ -1,33 +1,35 @@
+import type { NumPlayers, PlayerIndex } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import type { Options } from "../../types/Options";
 
 export interface InitData {
   // Game settings
-  tableID: number; // Equal to the table ID on the server
-  playerNames: string[];
-  ourPlayerIndex: number; // 0 if a spectator or a replay of a game that we were not in
-  spectating: boolean;
-  shadowing: boolean;
-  replay: boolean;
-  databaseID: number; // 0 if this is an ongoing game
-  hasCustomSeed: boolean; // If playing a table started with the "!seed" prefix
-  seed: string;
-  datetimeStarted: string;
-  datetimeFinished: string;
-  options: Options;
+  readonly tableID: number; // Equal to the table ID on the server.
+  readonly playerNames: Readonly<Tuple<string, NumPlayers>>;
+  readonly ourPlayerIndex: PlayerIndex; // 0 if a spectator or a replay of a game that we were not in.
+  readonly spectating: boolean;
+  readonly shadowing: boolean;
+  readonly replay: boolean;
+  readonly databaseID: number; // 0 if this is an ongoing game.
+  readonly hasCustomSeed: boolean; // If playing a table started with the "!seed" prefix.
+  readonly seed: string;
+  readonly datetimeStarted: string;
+  readonly datetimeFinished: string;
+  readonly options: Options;
 
   // Character settings
   /** Comes from the server as only numbers, but we want to convert -1 to null in place. */
-  characterAssignments: Array<number | null>;
-  characterMetadata: number[];
+  readonly characterAssignments: Readonly<Tuple<number | null, NumPlayers>>;
+  readonly characterMetadata: Readonly<Tuple<number, NumPlayers>>;
 
   // Shared replay settings
-  sharedReplay: boolean;
-  sharedReplayLeader: string;
-  sharedReplaySegment: number;
-  sharedReplayEffMod: number;
+  readonly sharedReplay: boolean;
+  readonly sharedReplayLeader: string;
+  readonly sharedReplaySegment: number;
+  readonly sharedReplayEffMod: number;
 
   // Pause settings
-  paused: boolean;
-  pausePlayerIndex: number;
-  pauseQueued: boolean;
+  readonly paused: boolean;
+  readonly pausePlayerIndex: PlayerIndex;
+  readonly pauseQueued: boolean;
 }

@@ -1,5 +1,17 @@
+import type { Expand } from "../types/Expand";
 import { ReadonlySet } from "../types/ReadonlySet";
+import type { Tuple } from "../types/Tuple";
 import { getRandomInt } from "./random";
+
+type TupleKey<T extends readonly unknown[]> = Expand<
+  {
+    [L in T["length"]]: Exclude<Partial<Tuple<unknown, L>>["length"], L>;
+  }[T["length"]]
+>;
+type TupleValue<T extends readonly unknown[]> = Expand<T[0]>;
+type TupleEntry<T extends readonly unknown[]> = Expand<
+  [TupleKey<T>, TupleValue<T>]
+>;
 
 export function arrayCopyTwoDimensional<T>(array: T[][]): T[][] {
   const copiedArray: T[][] = [];
@@ -118,4 +130,28 @@ export function newArray<T>(length: number, value: T): T[] {
 /** Helper function to sum every value in an array together. */
 export function sumArray(array: number[] | readonly number[]): number {
   return array.reduce((accumulator, element) => accumulator + element, 0);
+}
+
+/**
+ * Helper function to get the entries (i.e. indexes and values) of a tuple in a type-safe way.
+ *
+ * This is useful because the vanilla `Array.entries` method will always have the keys be of type
+ * `number`.
+ */
+export function* tupleEntries<T extends readonly unknown[]>(
+  tuple: T,
+): Generator<TupleEntry<T>> {
+  yield* tuple.entries() as Generator<TupleEntry<T>>;
+}
+
+/**
+ * Helper function to get the keys (i.e. indexes) of a tuple in a type-safe way.
+ *
+ * This is useful because the vanilla `Array.keys` method will always have the keys be of type
+ * `number`.
+ */
+export function* tupleKeys<T extends readonly unknown[]>(
+  tuple: T,
+): Generator<TupleKey<T>> {
+  yield* tuple.keys() as Generator<TupleKey<T>>;
 }

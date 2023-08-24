@@ -1,18 +1,19 @@
-import type { GameAction } from "../../../types/actions";
+import type { PlayerIndex } from "@hanabi/data";
 import { SoundType } from "../../../types/SoundType";
+import type { GameAction } from "../../../types/actions";
 import { globals } from "../../UIGlobals";
 
 export function onNewSoundEffect(
   data: {
     soundType: SoundType;
-    currentPlayerIndex: number | null;
+    currentPlayerIndex: PlayerIndex | null;
     turn: number;
     lastAction: GameAction | null;
   },
   previousData:
     | {
         soundType: SoundType;
-        currentPlayerIndex: number | null;
+        currentPlayerIndex: PlayerIndex | null;
         turn: number;
         lastAction: GameAction | null;
       }

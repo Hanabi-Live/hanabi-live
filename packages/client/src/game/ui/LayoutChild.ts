@@ -1,3 +1,4 @@
+import type { PlayerIndex } from "@hanabi/data";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
@@ -74,7 +75,7 @@ export class LayoutChild extends Konva.Group {
     }
   }
 
-  shouldBeDraggable(currentPlayerIndex: number | null): boolean {
+  shouldBeDraggable(currentPlayerIndex: PlayerIndex | null): boolean {
     // Rarely, if the game is restarted when a tween is happening, we can get here without the card
     // being defined.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

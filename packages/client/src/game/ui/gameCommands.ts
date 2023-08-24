@@ -2,8 +2,9 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { CardOrder } from "@hanabi/data";
+import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
 import { iRange, newArray } from "@hanabi/utils";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
@@ -281,7 +282,7 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
 
 interface PauseData {
   active: boolean;
-  playerIndex: number;
+  playerIndex: PlayerIndex;
 }
 gameCommands.set("pause", (data: PauseData) => {
   globals.game!.sounds.play(data.active ? "game_paused" : "game_unpaused");
@@ -486,19 +487,22 @@ function initStateStore(data: InitData) {
 
   // Handle the special case of when players can be given assignments of "-1" during debugging
   // (which corresponds to a null character).
-  for (let i = 0; i < data.characterAssignments.length; i++) {
-    if (data.characterAssignments[i] === -1) {
-      data.characterAssignments[i] = null;
-    }
-  }
-  if (data.characterAssignments.length === 0) {
-    data.characterAssignments = newArray(data.options.numPlayers, null);
+  let characterAssignments = data.characterAssignments.map(
+    (characterAssignment) =>
+      characterAssignment === -1 ? null : characterAssignment,
+  ) as Tuple<number | null, NumPlayers> | [];
+
+  if (characterAssignments.length === 0) {
+    characterAssignments = newArray(data.options.numPlayers, null) as Tuple<
+      number | null,
+      NumPlayers
+    >;
   }
 
   // Create the state store (using the Redux library).
   const minEfficiency = statsRules.minEfficiency(
     data.options.numPlayers,
-    turnRules.endGameLength(data.options, data.characterAssignments),
+    turnRules.endGameLength(data.options, characterAssignments),
     globals.variant,
     handRules.cardsPerHand(data.options),
   );
@@ -507,7 +511,7 @@ function initStateStore(data: InitData) {
     options: data.options,
     playerNames: data.playerNames,
     ourPlayerIndex: data.ourPlayerIndex,
-    characterAssignments: data.characterAssignments,
+    characterAssignments,
     characterMetadata: data.characterMetadata,
 
     minEfficiency,

@@ -1,7 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import type { CardOrder, Suit } from "@hanabi/data";
+import type { CardOrder, PlayerIndex, Suit } from "@hanabi/data";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
@@ -44,7 +44,7 @@ export function hideAll(): void {
 export function set(
   i: number,
   element: Konva.Node | null,
-  giver: number | null,
+  giverPlayerIndex: PlayerIndex | null,
   clue: Clue | null,
   preview = false,
 ): void {
@@ -110,7 +110,7 @@ export function set(
 
     // Clue arrows have a circle that shows the type of clue given.
     const giverCharacterName = getCharacterNameForPlayer(
-      giver,
+      giverPlayerIndex,
       globals.metadata.characterAssignments,
     );
     if (
@@ -200,12 +200,18 @@ export function set(
     arrow.tween.destroy();
     arrow.tween = null;
   }
-  if (globals.animateFast || giver === null) {
+  if (globals.animateFast || giverPlayerIndex === null) {
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
     const visibleSegment = globals.state.visibleState!.turn.segment!;
-    animate(arrow, element as HanabiCard, rot, giver, visibleSegment);
+    animate(
+      arrow,
+      element as HanabiCard,
+      rot,
+      giverPlayerIndex,
+      visibleSegment,
+    );
   }
   if (!globals.animateFast) {
     globals.layers.arrow.batchDraw();

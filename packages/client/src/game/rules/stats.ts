@@ -458,10 +458,10 @@ export function futureEfficiency(state: GameState): number | null {
  * and it needs to be played.
  */
 export function doubleDiscard(
-  orderOfDiscardedCard: number,
+  orderOfDiscardedCard: CardOrder,
   state: GameState,
   variant: Variant,
-): number | null {
+): CardOrder | null {
   const cardDiscarded = state.deck[orderOfDiscardedCard];
   if (cardDiscarded === undefined) {
     return null;
