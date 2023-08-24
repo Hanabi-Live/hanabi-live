@@ -2,10 +2,6 @@
 | TODO |
 +------+
 
-- annotate -1 to type of shadowingPlayerIndex for "replayCreate" command
-
-- try making `goesFirst(` generic, do not bubble rest of codebase
-- PlayerIndex type (maybe, look to see if it is useful first)
 - search for "for (let"
 - remove type assertions from lobby + views
 - redo install instructions without choco
