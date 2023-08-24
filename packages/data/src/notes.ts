@@ -33,14 +33,16 @@ function createSuitPattern(
 
   let alternation = "";
 
-  for (const [i, suit] of suits.entries()) {
-    if (i !== 0) {
+  for (const [suitIndex, suit] of suits.entries()) {
+    if (suitIndex !== 0) {
       alternation += "|";
     }
 
-    const suitAbbreviation = suitAbbreviations[i];
+    const suitAbbreviation = suitAbbreviations[suitIndex];
     if (suitAbbreviation === undefined) {
-      throw new Error(`Failed to find the suit abbreviation for index: ${i}`);
+      throw new Error(
+        `Failed to find the suit abbreviation for index: ${suitIndex}`,
+      );
     }
 
     alternation += suitAbbreviation.toLowerCase();

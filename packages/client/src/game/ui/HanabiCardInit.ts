@@ -178,7 +178,7 @@ function makeCachedPips(variant: Variant) {
   const suitPipsPositiveMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
   const pipTypes = new Set<string>();
-  for (const [i, suit] of variant.suits.entries()) {
+  for (const [suitIndex, suit] of variant.suits.entries()) {
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
@@ -194,7 +194,7 @@ function makeCachedPips(variant: Variant) {
 
     // Transform polar to Cartesian coordinates.
     const offsetBase = CARD_W * 0.7;
-    const offsetTrig = (-i / variant.suits.length + 0.25) * Math.PI * 2;
+    const offsetTrig = (-suitIndex / variant.suits.length + 0.25) * Math.PI * 2;
     const offset = {
       x: Math.floor(offsetBase * Math.cos(offsetTrig)),
       y: Math.floor(offsetBase * Math.sin(offsetTrig)),
@@ -224,8 +224,8 @@ function makeCachedPips(variant: Variant) {
       secondaryPip,
       true,
     );
-    suitPipsMap.set(i, suitPip);
-    suitPipsPositiveMap.set(i, suitPipPositive);
+    suitPipsMap.set(suitIndex, suitPip);
+    suitPipsPositiveMap.set(suitIndex, suitPipPositive);
 
     /** The X that will show when a certain suit can be ruled out. */
     const suitPipX = new Konva.Shape({
@@ -247,7 +247,7 @@ function makeCachedPips(variant: Variant) {
       },
       listening: false,
     });
-    suitPipsXMap.set(i, suitPipX);
+    suitPipsXMap.set(suitIndex, suitPipX);
   }
 
   // Initialize the rank pips (along the bottom of the card).

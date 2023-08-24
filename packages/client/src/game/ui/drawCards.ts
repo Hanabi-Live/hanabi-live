@@ -394,17 +394,21 @@ function makeDeckBack(
   const nSuits = variant.suits.length;
   ctx.scale(sf, sf);
 
-  for (const [i, suit] of variant.suits.entries()) {
+  for (const [suitIndex, suit] of variant.suits.entries()) {
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
     // Transform polar to cartesian coordinates.
     const x =
       -1.05 *
-      Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2));
+      Math.floor(
+        CARD_W * 0.7 * Math.cos((-suitIndex / nSuits + 0.25) * Math.PI * 2),
+      );
     const y =
       -1.05 *
-      Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2));
+      Math.floor(
+        CARD_W * 0.7 * Math.sin((-suitIndex / nSuits + 0.25) * Math.PI * 2),
+      );
 
     ctx.save();
     ctx.translate(x, y);

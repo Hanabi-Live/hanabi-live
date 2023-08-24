@@ -469,11 +469,11 @@ function drawDiscardStacks() {
   const discardStackSpacing =
     globals.variant.suits.length === 6 ? 0.038 : 0.047;
 
-  for (const [i, suit] of globals.variant.suits.entries()) {
+  for (const [suitIndex, suit] of globals.variant.suits.entries()) {
     // Make the discard stack for this suit.
     const discardStack = new CardLayout({
       x: 0.81 * winW,
-      y: (0.64 + discardStackSpacing * i) * winH,
+      y: (0.64 + discardStackSpacing * suitIndex) * winH,
       width: 0.17 * winW,
       height: 0.15 * winH,
       listening: false,

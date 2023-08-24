@@ -450,10 +450,11 @@ function fillMorphModalWithRadios(
   for (const rank of ranks) {
     const row = document.createElement("tr");
 
-    for (const [i, suit] of suits.entries()) {
+    for (const [suitIndex, suit] of suits.entries()) {
       const cell = document.createElement("td");
       const possibleCardIdentity = possibilities.some(
-        (possibility) => possibility[0] === i && possibility[1] === rank,
+        (possibility) =>
+          possibility[0] === suitIndex && possibility[1] === rank,
       );
       if (!possibleCardIdentity) {
         cell.classList.add("faded");

@@ -2,9 +2,7 @@
 | TODO |
 +------+
 
-- change [i, suit] --> [suitIndex, suit]
 - try making getPlayerNames in Rust
-- search for "for (let"
 - remove type assertions from lobby + views
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)

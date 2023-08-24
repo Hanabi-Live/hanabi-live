@@ -122,12 +122,12 @@ export function onPlayStacksChanged(
     },
   );
 
-  for (const [i, stack] of playStacks.entries()) {
+  for (const [suitIndex, stack] of playStacks.entries()) {
     if (
       previousPlayStacks === undefined ||
-      !equal(stack, previousPlayStacks[i])
+      !equal(stack, previousPlayStacks[suitIndex])
     ) {
-      const suit = globals.variant.suits[i]!;
+      const suit = globals.variant.suits[suitIndex]!;
       const playStack = globals.elements.playStacks.get(suit)!;
       playStack.hideCardsUnderneathTheTopCard();
     }
@@ -154,7 +154,7 @@ export function onPlayStacksChanged(
 
     // Now, add the suit label texts, showing current progress or the possible remaining starting
     // values.
-    for (const [i, stack] of playStacks.entries()) {
+    for (const [suitIndex, stack] of playStacks.entries()) {
       let text = "";
       if (stack.length === 5) {
         text = "Finished";
@@ -173,7 +173,7 @@ export function onPlayStacksChanged(
             : availableStackStarts.join("");
         text = `Start: [${bracketText}]`;
       }
-      globals.elements.suitLabelTexts[i]!.fitText(text);
+      globals.elements.suitLabelTexts[suitIndex]!.fitText(text);
     }
   }
 

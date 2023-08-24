@@ -149,7 +149,7 @@ export function tablesDraw(): void {
 
     // Column 6 - Players.
     const td = $("<td>");
-    for (const [i, player] of table.players.entries()) {
+    for (const [playerIndex, player] of table.players.entries()) {
       const span = $("<span>").html(player);
       if (player === globals.username) {
         span.addClass("name-me");
@@ -159,7 +159,7 @@ export function tablesDraw(): void {
       if (!table.joined && !table.sharedReplay) {
         span.addClass("shadow").on("click", (event) => {
           event.stopPropagation();
-          tableSpectate(table, i);
+          tableSpectate(table, playerIndex);
         });
       }
       if (td.html() !== "") {
