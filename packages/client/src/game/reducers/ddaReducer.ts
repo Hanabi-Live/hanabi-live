@@ -1,4 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import * as cardRules from "../rules/card";
 import type { CardState } from "../types/CardState";
 
@@ -21,9 +22,7 @@ export function ddaReducer(
   }
 
   const ddaCard = deck[dda];
-  if (ddaCard === undefined) {
-    throw new Error(`Failed to find the card at order: ${dda}`);
-  }
+  assertDefined(ddaCard, `Failed to find the card at order: ${dda}`);
 
   const { suitIndex, rank } = ddaCard;
 

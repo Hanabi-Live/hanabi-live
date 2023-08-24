@@ -1,5 +1,6 @@
 import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import { testMetadata } from "../../../test/testMetadata";
 import type { CardState } from "../types/CardState";
 import { newColorClue, newRankClue } from "../types/Clue";
@@ -12,14 +13,16 @@ const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
 const DEFAULT_CARD = initialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
 
 const FIRST_CLUE_COLOR = VARIANT.clueColors[0];
-if (FIRST_CLUE_COLOR === undefined) {
-  throw new Error("Failed to get the first clue color of the default variant.");
-}
+assertDefined(
+  FIRST_CLUE_COLOR,
+  "Failed to get the first clue color of the default variant.",
+);
 
 const FIRST_CLUE_RANK = VARIANT.clueRanks[0];
-if (FIRST_CLUE_RANK === undefined) {
-  throw new Error("Failed to get the first clue rank of the default variant.");
-}
+assertDefined(
+  FIRST_CLUE_RANK,
+  "Failed to get the first clue rank of the default variant.",
+);
 
 // Count possible cards, respecting both clues and observations.
 function countPossibleCards(state: CardState) {

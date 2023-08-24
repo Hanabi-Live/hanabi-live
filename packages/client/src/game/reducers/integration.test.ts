@@ -1,6 +1,6 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";
@@ -60,14 +60,13 @@ describe("integration", () => {
           const turn5State = getGameStateAtTurn(testState, 4);
 
           const card = turn5State.deck[order];
-          if (card === undefined) {
-            throw new Error(`Failed to find the card at order: ${order}`);
-          }
+          assertDefined(card, `Failed to find the card at order: ${order}`);
 
           const upOrDownTurn5Card = upOrDownTurn5Cards[order];
-          if (upOrDownTurn5Card === undefined) {
-            throw new Error(`Failed to get the card at order: ${order}`);
-          }
+          assertDefined(
+            upOrDownTurn5Card,
+            `Failed to get the card at order: ${order}`,
+          );
 
           const expected = upOrDownTurn5Card as unknown as CardState;
 
@@ -115,14 +114,13 @@ describe("integration", () => {
         (order) => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
-          if (card === undefined) {
-            throw new Error(`Failed to find the card at order: ${order}`);
-          }
+          assertDefined(card, `Failed to find the card at order: ${order}`);
 
           const upOrDownFinalCard = upOrDownFinalCards[order];
-          if (upOrDownFinalCard === undefined) {
-            throw new Error(`Failed to get the card at order: ${order}`);
-          }
+          assertDefined(
+            upOrDownFinalCard,
+            `Failed to get the card at order: ${order}`,
+          );
 
           const expected = upOrDownFinalCard as unknown as CardState;
 
@@ -168,18 +166,14 @@ describe("integration", () => {
 
 function getGameStateAtTurn(state: State, turn: number): GameState {
   const gameState = state.replay.states[turn];
-  if (gameState === undefined) {
-    throw new Error(`Failed to get the game state at turn: ${turn}`);
-  }
+  assertDefined(gameState, `Failed to get the game state at turn: ${turn}`);
 
   return gameState;
 }
 
 function getFinalState(state: State): GameState {
   const gameState = state.replay.states.at(-1);
-  if (gameState === undefined) {
-    throw new Error("Failed to get the final game state.");
-  }
+  assertDefined(gameState, "Failed to get the final game state.");
 
   return gameState;
 }

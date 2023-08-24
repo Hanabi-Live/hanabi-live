@@ -1,3 +1,5 @@
+import { assertDefined } from "@hanabi/utils";
+
 type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;
 
@@ -85,9 +87,7 @@ export class Loader {
 
   get(name: string): HTMLImageElement {
     const element = this.imageMap.get(name);
-    if (element === undefined) {
-      throw new Error(`The image of ${name} was not found in the loader.`);
-    }
+    assertDefined(element, `The image of ${name} was not found in the loader.`);
     return element;
   }
 }

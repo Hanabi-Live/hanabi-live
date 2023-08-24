@@ -2,7 +2,7 @@
 // located separately in "game/chat.ts".
 
 import { emojis, emotes, PROJECT_NAME } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { eRange, trimPrefix } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { chatCommands } from "./chatCommands";
@@ -219,13 +219,10 @@ function sendText(room: string, msgRaw: string) {
   // Check for chat commands. Each chat command should also have an error handler in
   // "chat_command.go" (in case someone tries to use the command from Discord).
   const args = msg.split(" ");
-  if (args[0]!.startsWith("/")) {
-    let command = args.shift();
-    if (command === undefined) {
-      throw new Error("Failed to parse the command from the chat message.");
-    }
-    command = command.slice(1); // Remove the leading forward slash.
-    command = command.toLowerCase();
+  const firstArg = args[0];
+  if (firstArg !== undefined && firstArg.startsWith("/")) {
+    const command = trimPrefix(firstArg, "/").toLowerCase();
+    args.shift(); // Remove the command from the rest of the arguments.
 
     const chatCommandFunction = chatCommands.get(command);
     if (chatCommandFunction !== undefined) {

@@ -1,7 +1,7 @@
 // Modals (boxes that hover on top of the UI).
 
 import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import { globals } from "./Globals";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import type { HanabiCard } from "./game/ui/HanabiCard";
@@ -152,9 +152,10 @@ export function askForMorph(
 
   const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
   const startSuit = suits[startSuitIndex];
-  if (startSuit === undefined) {
-    throw new Error(`Failed to get the suit at index: ${startSuitIndex}`);
-  }
+  assertDefined(
+    startSuit,
+    `Failed to get the suit at index: ${startSuitIndex}`,
+  );
 
   fillMorphModalWithRadios(
     "#morph-modal-cards",

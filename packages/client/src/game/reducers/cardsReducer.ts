@@ -11,6 +11,7 @@ import type {
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import {
   arrayCopyTwoDimensional,
+  assertDefined,
   eRange,
   newArray,
   tupleKeys,
@@ -91,9 +92,7 @@ export function cardsReducer(
       const clue = cluesRules.msgClueToClue(action.clue, variant);
 
       const hand = game.hands[action.target];
-      if (hand === undefined) {
-        throw new Error(`Failed to find the hand at index: ${action.target}`);
-      }
+      assertDefined(hand, `Failed to find the hand at index: ${action.target}`);
 
       // eslint-disable-next-line func-style
       const applyClue = (order: CardOrder, positive: boolean) => {
@@ -364,9 +363,7 @@ function canPlayerSeeDrawnCard(
 
 function getCard(deck: readonly CardState[], order: CardOrder): CardState {
   const card = deck[order];
-  if (card === undefined) {
-    throw new Error(`Failed to get the card in the deck at index: ${order}`);
-  }
+  assertDefined(card, `Failed to get the card in the deck at index: ${order}`);
 
   return card;
 }

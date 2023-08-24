@@ -2,6 +2,7 @@
 
 import type { PlayerIndex } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import * as statsRules from "../rules/stats";
 import type { GameState } from "../types/GameState";
 
@@ -37,11 +38,10 @@ function getCharacterIDForPlayer(
   }
 
   const characterID = characterAssignments[playerIndex];
-  if (characterID === undefined) {
-    throw new Error(
-      `The character ID for player ${playerIndex} was undefined.`,
-    );
-  }
+  assertDefined(
+    characterID,
+    `The character ID for player ${playerIndex} was undefined.`,
+  );
 
   return characterID;
 }

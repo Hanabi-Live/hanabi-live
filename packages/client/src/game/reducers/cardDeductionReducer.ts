@@ -8,7 +8,11 @@ import type {
 } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { DeepReadonly } from "@hanabi/utils";
-import { arrayCopyTwoDimensional, tupleKeys } from "@hanabi/utils";
+import {
+  arrayCopyTwoDimensional,
+  assertDefined,
+  tupleKeys,
+} from "@hanabi/utils";
 import * as deckRules from "../rules/deck";
 import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -447,11 +451,10 @@ function possibilityValid(
   cardCountMap[suitIndex]![rank]!--;
   if (cardCountMap[suitIndex]![rank]! >= 0) {
     const suitRankTuples = deckPossibilities[index];
-    if (suitRankTuples === undefined) {
-      throw new Error(
-        `Failed to find the the deck possibility at index: ${index}`,
-      );
-    }
+    assertDefined(
+      suitRankTuples,
+      `Failed to find the the deck possibility at index: ${index}`,
+    );
 
     for (const i of suitRankTuples.keys()) {
       const possibilityIndex = (i + index) % suitRankTuples.length;

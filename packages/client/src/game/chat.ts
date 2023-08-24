@@ -1,6 +1,6 @@
 // In-game chat
 
-import { parseFloatSafe } from "@hanabi/utils";
+import { assertNotNull, parseFloatSafe } from "@hanabi/utils";
 import interact from "interactjs";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";
@@ -122,20 +122,17 @@ export function show(): void {
     globals.chatUnread = 0;
 
     // We need to notify the server that we have read everything.
-    if (globals.conn !== null) {
-      globals.conn.send("chatRead", {
-        tableID: globals.tableID,
-      });
-    } else {
-      throw new Error('The "globals.conn" object is not initialized.');
-    }
+    assertNotNull(
+      globals.conn,
+      'The "globals.conn" object is not initialized.',
+    );
+    globals.conn.send("chatRead", {
+      tableID: globals.tableID,
+    });
 
     // Reset the "Chat" UI button back to normal.
-    if (globals.ui !== null) {
-      globals.ui.updateChatLabel();
-    } else {
-      throw new Error('The "globals.ui" object is not initialized.');
-    }
+    assertNotNull(globals.ui, 'The "globals.ui" object is not initialized.');
+    globals.ui.updateChatLabel();
   }
 
   // Set the modal to the default position.

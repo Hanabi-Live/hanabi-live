@@ -1,6 +1,6 @@
 import type { Rank } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import { eRange, iRange } from "@hanabi/utils";
+import { assertDefined, eRange, iRange } from "@hanabi/utils";
 import {
   colorClue,
   discard,
@@ -628,9 +628,7 @@ describe("gameStateReducer", () => {
       );
 
       const clue = state.clues[0];
-      if (clue === undefined) {
-        throw new Error("Failed to get the clue.");
-      }
+      assertDefined(clue, "Failed to get the clue.");
 
       expect(state.clues.length).toBe(initialState.clues.length + 1);
       expect(clue.giver).toBe(testClue.giver);
@@ -673,9 +671,7 @@ describe("gameStateReducer", () => {
       );
 
       const clue = state.clues[0];
-      if (clue === undefined) {
-        throw new Error("Failed to get the clue.");
-      }
+      assertDefined(clue, "Failed to get the clue.");
 
       expect(clue.list).toEqual([0, 1, 2]);
       expect(clue.negativeList).toEqual([3, 4]);

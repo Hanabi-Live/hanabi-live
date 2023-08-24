@@ -2,7 +2,7 @@
 
 import type { Variant } from "@hanabi/data";
 import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
-import { tupleEntries } from "@hanabi/utils";
+import { assertDefined, assertNotNull, tupleEntries } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { millisecondsToClockString } from "../../utils";
@@ -62,16 +62,16 @@ function gameStateReducerFunction(
     case "clue": {
       state.clueTokens -= clueTokensRules.getAdjusted(1, variant);
 
-      if (state.turn.segment === null) {
-        throw new Error(
-          `A "${action.type}" action happened before all of the initial cards were dealt.`,
-        );
-      }
+      assertNotNull(
+        state.turn.segment,
+        `A "${action.type}" action happened before all of the initial cards were dealt.`,
+      );
 
       const targetHand = state.hands[action.target];
-      if (targetHand === undefined) {
-        throw new Error(`Failed to find the hand at index: ${action.target}`);
-      }
+      assertDefined(
+        targetHand,
+        `Failed to find the hand at index: ${action.target}`,
+      );
 
       const negativeList = action.ignoreNegative
         ? []
@@ -115,9 +115,10 @@ function gameStateReducerFunction(
 
       // Handle the "Card Cycling" game option.
       const giverHand = state.hands[action.giver];
-      if (giverHand === undefined) {
-        throw new Error(`Failed to find the hand at index: ${action.giver}`);
-      }
+      assertDefined(
+        giverHand,
+        `Failed to find the hand at index: ${action.giver}`,
+      );
 
       cardCycle(giverHand, castDraft(state.deck), metadata);
 
@@ -141,11 +142,10 @@ function gameStateReducerFunction(
     case "discard": {
       // Remove it from the hand.
       const hand = state.hands[action.playerIndex];
-      if (hand === undefined) {
-        throw new Error(
-          `Failed to find the hand at index: ${action.playerIndex}`,
-        );
-      }
+      assertDefined(
+        hand,
+        `Failed to find the hand at index: ${action.playerIndex}`,
+      );
 
       const handIndex = hand.indexOf(action.order);
       let slot: number | null = null;
@@ -173,11 +173,10 @@ function gameStateReducerFunction(
 
         // Add it to the discard stacks.
         const discardStack = state.discardStacks[action.suitIndex];
-        if (discardStack === undefined) {
-          throw new Error(
-            `Failed to find the discard stack at index: ${action.suitIndex}`,
-          );
-        }
+        assertDefined(
+          discardStack,
+          `Failed to find the discard stack at index: ${action.suitIndex}`,
+        );
 
         discardStack.push(action.order);
 
@@ -190,9 +189,7 @@ function gameStateReducerFunction(
       }
 
       const card = state.deck[action.order];
-      if (card === undefined) {
-        throw new Error(`Failed to find the card at order: ${action.order}`);
-      }
+      assertDefined(card, `Failed to find the card at order: ${action.order}`);
 
       const touched = cardRules.isClued(card);
       const text = textRules.discard(
@@ -296,11 +293,10 @@ function gameStateReducerFunction(
     case "play": {
       // Remove it from the hand.
       const hand = state.hands[action.playerIndex];
-      if (hand === undefined) {
-        throw new Error(
-          `Failed to find the hand at index: ${action.playerIndex}`,
-        );
-      }
+      assertDefined(
+        hand,
+        `Failed to find the hand at index: ${action.playerIndex}`,
+      );
 
       const handIndex = hand.indexOf(action.order);
       let slot: number | null = null;
@@ -327,11 +323,10 @@ function gameStateReducerFunction(
         }
 
         const playStack = state.playStacks[action.suitIndex];
-        if (playStack === undefined) {
-          throw new Error(
-            `Failed to find the play stack at index: ${action.suitIndex}`,
-          );
-        }
+        assertDefined(
+          playStack,
+          `Failed to find the play stack at index: ${action.suitIndex}`,
+        );
 
         playStack.push(action.order);
 
@@ -348,9 +343,7 @@ function gameStateReducerFunction(
       state.score++;
 
       const card = state.deck[action.order];
-      if (card === undefined) {
-        throw new Error(`Failed to find the card at order: ${action.order}`);
-      }
+      assertDefined(card, `Failed to find the card at order: ${action.order}`);
 
       const touched = cardRules.isClued(card);
       const text = textRules.play(
@@ -442,9 +435,7 @@ function gameStateReducerFunction(
 
   // Use a sub-reducer to calculate changes on cards.
   const originalDeck = original(state.deck);
-  if (originalDeck === undefined) {
-    throw new Error("Failed to find the original deck.");
-  }
+  assertDefined(originalDeck, "Failed to find the original deck.");
   state.deck = castDraft(cardsReducer(originalDeck, action, state, metadata));
 
   // Resolve the stack direction.
@@ -456,11 +447,10 @@ function gameStateReducerFunction(
     // We have to wait until the deck is updated with the information of the card that we played
     // before the `direction` function will work.
     const playStack = state.playStacks[action.suitIndex];
-    if (playStack === undefined) {
-      throw new Error(
-        `Failed to find the play stack at index: ${action.suitIndex}`,
-      );
-    }
+    assertDefined(
+      playStack,
+      `Failed to find the play stack at index: ${action.suitIndex}`,
+    );
 
     const direction = playStacksRules.direction(
       action.suitIndex,
@@ -474,11 +464,10 @@ function gameStateReducerFunction(
   // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variant.sudoku && action.suitIndex !== -1) {
     const playStack = state.playStacks[action.suitIndex];
-    if (playStack === undefined) {
-      throw new Error(
-        `Failed to find the play stack at index: ${action.suitIndex}`,
-      );
-    }
+    assertDefined(
+      playStack,
+      `Failed to find the play stack at index: ${action.suitIndex}`,
+    );
 
     state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
       playStack,
@@ -511,9 +500,7 @@ function gameStateReducerFunction(
 
   // Use a sub-reducer to calculate some game statistics.
   const originalState = original(state);
-  if (originalState === undefined) {
-    throw new Error("Failed to get the original state.");
-  }
+  assertDefined(originalState, "Failed to get the original state.");
   state.stats = castDraft(
     statsReducer(
       original(state.stats),
