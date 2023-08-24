@@ -212,7 +212,8 @@ CREATE TABLE game_actions (
     /**
      * - If a play or a discard, corresponds to the order of the the card that was played/discarded.
      * - If a clue, corresponds to the index of the player that received the clue.
-     * - If a game over, corresponds to the index of the player that caused the game to end.
+     * - If a game over, corresponds to the index of the player that caused the game to end or -1 if
+     *   the game was terminated by the server.
      */
     target   SMALLINT  NOT NULL,
 

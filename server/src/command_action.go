@@ -33,7 +33,7 @@ func actionsFunctionsInit() {
 //	  type: 0,
 //	  // If a play or a discard, corresponds to the order of the the card that was played/discarded
 //	  // If a clue, corresponds to the index of the player that received the clue
-//	  // If a game over, corresponds to the index of the player that caused the game to end
+//	  // If a game over, corresponds to the index of the player that caused the game to end or -1 if the server caused the game to end
 //	  target: 1,
 //	  // Optional; only present if a clue
 //	  // If a color clue, then 0 if red, 1 if yellow, etc.
