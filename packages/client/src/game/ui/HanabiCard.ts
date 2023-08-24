@@ -9,6 +9,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getSuit } from "@hanabi/data";
+import { iRange } from "@hanabi/utils";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -1329,9 +1330,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const { variant } = this;
     const suit = variant.suits[index]!;
     const lines: string[] = [];
+
     if (suit.oneOfEach) {
       lines.push("Every card is unique.");
     }
+
     if (suit.clueColors.length > 1) {
       const colors: string[] = [];
       for (const color of suit.clueColors) {
@@ -1339,37 +1342,53 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       }
       lines.push(`Touched by ${colors.join(", ")} color clues`);
     }
+
     if (suit.prism) {
       const cards: string[] = [];
+
       if (variant.upOrDown) {
-        cards.push(`START is ${getColorHTML(variant.clueColors.at(-1)!)}`);
+        const finalClueColor = variant.clueColors.at(-1);
+        if (finalClueColor !== undefined) {
+          const colorHTML = getColorHTML(finalClueColor);
+          cards.push(`START is ${colorHTML}`);
+        }
       }
-      for (let rank = 1; rank <= 5; rank++) {
-        const prismColorIndex = (rank - 1) % variant.clueColors.length;
-        cards.push(
-          `${rank} is ${getColorHTML(variant.clueColors[prismColorIndex]!)}`,
-        );
+
+      for (const rank of iRange(1, 5)) {
+        const prismClueColorIndex = (rank - 1) % variant.clueColors.length;
+        const prismClueColor = variant.clueColors[prismClueColorIndex];
+        if (prismClueColor !== undefined) {
+          const colorHTML = getColorHTML(prismClueColor);
+          cards.push(`${rank} is ${colorHTML}`);
+        }
       }
+
       lines.push(`Colors: ${cards.join(", ")}`);
     }
+
     if (suit.allClueColors) {
       lines.push("Touched by every color clue.");
     }
+
     if (suit.noClueColors) {
       lines.push("Not touched by any color clue.");
     }
+
     if (suit.allClueRanks) {
       lines.push("Touched by every number clue.");
     }
+
     if (suit.noClueRanks) {
       lines.push("Not touched by any number clue.");
     }
+
     if (variant.specialRankDeceptive && !suit.noClueRanks) {
       const deceptiveRank = variant.clueRanks[index % variant.clueRanks.length];
       lines.push(
         `Deceptive: ${variant.specialRank} is touched by number ${deceptiveRank} clue.`,
       );
     }
+
     const abbreviation = abbreviationRules.get(suit.name, variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${
       suit.displayName

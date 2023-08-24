@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- change [i, suit] --> [suitIndex, suit]
 - try making getPlayerNames in Rust
 - search for "for (let"
 - remove type assertions from lobby + views
