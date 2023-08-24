@@ -50,17 +50,12 @@ export function init(): void {
   });
 
   // Add "1", "2", "3", "4", and "5" (for rank clues).
-  for (let i = 0; i < globals.elements.rankClueButtons.length; i++) {
-    // Normal keyboard
-    hotkeyClueMap.set(
-      i + KeyCode.KEY_1,
-      click(globals.elements.rankClueButtons[i]!),
-    );
-    // Numpad
-    hotkeyClueMap.set(
-      i + KeyCode.KEY_NUMPAD1,
-      click(globals.elements.rankClueButtons[i]!),
-    );
+  for (const [
+    i,
+    rankClueButton,
+  ] of globals.elements.rankClueButtons.entries()) {
+    hotkeyClueMap.set(i + KeyCode.KEY_1, click(rankClueButton)); // Normal keyboard
+    hotkeyClueMap.set(i + KeyCode.KEY_NUMPAD1, click(rankClueButton)); // Numpad
   }
 
   // Add "q", "w", "e", "r", "t", and "y" (for color clues). (We use qwert since they are

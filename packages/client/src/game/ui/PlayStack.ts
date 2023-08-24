@@ -1,3 +1,4 @@
+import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
@@ -62,10 +63,14 @@ export class PlayStack extends Konva.Group {
   }
 
   hideCardsUnderneathTheTopCard(): void {
-    const stackLength = this.children.length;
+    for (const i of eRange(this.children.length)) {
+      const layoutChild = this.children[i] as unknown as
+        | LayoutChild
+        | undefined;
+      if (layoutChild === undefined) {
+        continue;
+      }
 
-    for (let i = 0; i < stackLength; i++) {
-      const layoutChild = this.children[i] as unknown as LayoutChild;
       if (layoutChild.tween !== null) {
         // Do not hide anything if one of the cards on the stack is still tweening.
         return;
@@ -73,13 +78,22 @@ export class PlayStack extends Konva.Group {
     }
 
     // Hide all of the cards.
-    for (let i = 0; i < stackLength - 1; i++) {
-      this.children[i]!.hide();
+    for (const i of eRange(this.children.length)) {
+      const layoutChild = this.children[i] as unknown as
+        | LayoutChild
+        | undefined;
+      if (layoutChild === undefined) {
+        continue;
+      }
+
+      layoutChild.hide();
     }
 
     // Show the top card.
-    if (stackLength > 0) {
-      this.children[stackLength - 1]!.show();
+    // eslint-disable-next-line unicorn/prefer-at
+    const lastLayoutChild = this.children[this.children.length - 1];
+    if (lastLayoutChild !== undefined) {
+      lastLayoutChild.show();
     }
 
     globals.layers.card.batchDraw();

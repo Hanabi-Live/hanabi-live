@@ -8,6 +8,7 @@
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 - search for "This message is unnecessary"
 - search for "TODO: remove. This is unused"
+- delete UIGlobals.activePlayerIndex
 
 waiting to hear back:
 - remove type assertions from sudoku.ts (need feedback from Ram)

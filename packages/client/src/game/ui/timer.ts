@@ -89,8 +89,9 @@ export function update(data: ClockData): void {
   globals.layers.timer.batchDraw();
 
   // Update the timer tooltips for each player.
-  for (let i = 0; i < globals.playerTimes.length; i++) {
-    setTickingDownTimeTooltip(i);
+  for (const i of globals.playerTimes.keys()) {
+    const playerIndex = i as PlayerIndex;
+    setTickingDownTimeTooltip(playerIndex);
   }
   setTickingDownTimeCPTooltip();
 
@@ -170,25 +171,31 @@ function setTickingDownTime(timer: TimerDisplay) {
   }
 }
 
-function setTickingDownTimeTooltip(i: number) {
+/** Update the tooltip that appears when you hover over a player's name. */
+function setTickingDownTimeTooltip(playerIndex: PlayerIndex | -1) {
+  if (playerIndex === -1) {
+    return;
+  }
+
   // This tooltip is disabled in speedrun mode.
   if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
     return;
   }
 
-  // Update the tooltip that appears when you hover over a player's name.
-  let time = globals.playerTimes[i]!;
-  if (!globals.options.timed) {
-    // Invert it to show how much time each player is taking.
-    time *= -1;
+  const playerTime = globals.playerTimes[playerIndex];
+  if (playerTime === undefined) {
+    return;
   }
+
+  // Invert it to show how much time each player is taking.
+  const milliseconds = globals.options.timed ? playerTime : playerTime * -1;
 
   let content = "Time ";
   content += globals.options.timed ? "remaining" : "taken";
   content += ":<br /><strong>";
-  content += millisecondsToClockString(time);
+  content += millisecondsToClockString(milliseconds);
   content += "</strong>";
-  tooltips.setInstanceContent(`#tooltip-player-${i}`, content);
+  tooltips.setInstanceContent(`#tooltip-player-${playerIndex}`, content);
 }
 
 function setTickingDownTimeCPTooltip() {

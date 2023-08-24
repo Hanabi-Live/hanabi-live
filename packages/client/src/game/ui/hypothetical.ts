@@ -371,10 +371,17 @@ function forceHandEmpathy(playerIndex: PlayerIndex, force: boolean) {
     return;
   }
 
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < hand.children.length; i++) {
-    const layoutChild = hand.children[i]!;
-    const card = layoutChild.children[0] as HanabiCard;
+  for (const i of eRange(hand.children.length)) {
+    const layoutChild = hand.children[i];
+    if (layoutChild === undefined) {
+      continue;
+    }
+
+    const card = layoutChild.children[0] as HanabiCard | undefined;
+    if (card === undefined) {
+      continue;
+    }
+
     setEmpathyOnHand(card, force);
   }
 }
