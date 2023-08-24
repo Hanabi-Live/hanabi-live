@@ -59,12 +59,13 @@ interface ConnectedData {
   list: boolean[];
 }
 gameCommands.set("connected", (data: ConnectedData) => {
-  for (let i = 0; i < data.list.length; i++) {
+  for (const [i, connected] of data.list.entries()) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
-      nameFrame.setConnected(data.list[i]!);
+      nameFrame.setConnected(connected);
     }
   }
+
   globals.layers.UI.batchDraw();
 });
 
