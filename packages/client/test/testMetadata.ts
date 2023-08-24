@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
 import type { NumPlayers } from "@hanabi/data";
-import { DEFAULT_VARIANT_NAME, getVariant } from "@hanabi/data";
+import {
+  DEFAULT_PLAYER_NAMES,
+  DEFAULT_VARIANT_NAME,
+  getVariant,
+} from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { newArray } from "@hanabi/utils";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
@@ -20,14 +24,10 @@ export function testMetadata(
     numPlayers,
     variantName,
   };
-  const playerNames = [
-    "Alice",
-    "Bob",
-    "Cathy",
-    "Donald",
-    "Emily",
-    "Frank",
-  ].slice(0, numPlayers) as Tuple<string, NumPlayers>;
+  const playerNames = DEFAULT_PLAYER_NAMES.slice(0, numPlayers) as Tuple<
+    string,
+    NumPlayers
+  >;
   const characterAssignments = newArray(numPlayers, null) as Tuple<
     number | null,
     NumPlayers

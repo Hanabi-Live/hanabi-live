@@ -23,7 +23,7 @@ const MAX_CARDS_IN_A_SUIT = 10;
 export const MAX_SUITS_IN_A_VARIANT = 6;
 export const MAX_CARDS_IN_A_DECK = MAX_CARDS_IN_A_SUIT * MAX_SUITS_IN_A_VARIANT;
 
-export const HYPO_PLAYER_NAMES = [
+export const DEFAULT_PLAYER_NAMES = [
   "Alice",
   "Bob",
   "Cathy",

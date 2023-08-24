@@ -1,5 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { HYPO_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
+import { DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
@@ -28,7 +28,7 @@ export function createJSONFromReplay(room: string): void {
 
   // Anonymize the players
   const game: JSONGame = {
-    players: HYPO_PLAYER_NAMES.slice(0, globals.metadata.playerNames.length),
+    players: DEFAULT_PLAYER_NAMES.slice(0, globals.metadata.playerNames.length),
     deck: [],
     actions: [],
     options: {

@@ -1,6 +1,6 @@
 import type { Rank, SuitIndex } from "@hanabi/data";
 import {
-  HYPO_PLAYER_NAMES,
+  DEFAULT_PLAYER_NAMES,
   MAX_PLAYERS,
   MIN_PLAYERS,
   getVariant,
@@ -351,7 +351,7 @@ function getPlayers(size: number): string[] {
   if (size < MIN_PLAYERS || size > MAX_PLAYERS) {
     return [];
   }
-  return HYPO_PLAYER_NAMES.slice(0, size);
+  return DEFAULT_PLAYER_NAMES.slice(0, size);
 }
 
 /**
