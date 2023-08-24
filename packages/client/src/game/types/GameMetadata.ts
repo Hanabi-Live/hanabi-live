@@ -46,5 +46,6 @@ export function getPlayerNames(
     return `${playerNames[0]} and ${playerNames[1]}`;
   }
 
-  return `${playerNames.slice(0, -1).join(", ")}, and ${playerNames.slice(-1)}`;
+  const playerNamesExceptLast = playerNames.slice(0, -1);
+  return `${playerNamesExceptLast.join(", ")}, and ${playerNames.at(-1)}`;
 }
