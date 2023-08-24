@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- try making getPlayerNames in Rust
 - search for "for (let"
 - remove type assertions from lobby + views
 - redo install instructions without choco
