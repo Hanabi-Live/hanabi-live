@@ -6,17 +6,16 @@
 - remove type assertions from lobby + views
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
+- search for "This message is unnecessary"
+- search for "TODO: remove. This is unused"
 
 waiting to hear back:
 - remove type assertions from sudoku.ts (need feedback from Ram)
 
 short term:
 - refactor soundTypeForLastAction (should probably delete the whole thing)
-- getPlayerNames comma is in wrong place for 3+ players
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
 - get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
-- search for "This message is unnecessary"
-- search for "TODO: remove. This is unused"
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer
 
 medium term:
