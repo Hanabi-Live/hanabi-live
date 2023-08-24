@@ -1,3 +1,6 @@
+import type { NumPlayers } from "@hanabi/data";
+import type { Tuple } from "@hanabi/utils";
+import { eRange, newArray } from "@hanabi/utils";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/types/Container";
 import { MultiFitText } from "./MultiFitText";
@@ -9,8 +12,8 @@ export class FullActionLog extends Konva.Group {
   logText: MultiFitText | null = null;
   logNumbers: MultiFitText | null = null;
   playerLogEmptyMessage: FitText;
-  private playerLogs: Array<MultiFitText | null> = [];
-  private playerLogNumbers: Array<MultiFitText | null> = [];
+  private playerLogs: Tuple<MultiFitText | null, NumPlayers>;
+  private playerLogNumbers: Tuple<MultiFitText | null, NumPlayers>;
   private needsRefresh = false;
   private readonly numbersOptions: ContainerConfig;
   private readonly maxLines = 38;
@@ -85,10 +88,14 @@ export class FullActionLog extends Konva.Group {
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage as unknown as Konva.Text);
 
-    for (let i = 0; i < globals.options.numPlayers; i++) {
-      this.playerLogs.push(null);
-      this.playerLogNumbers.push(null);
-    }
+    this.playerLogs = newArray(globals.options.numPlayers, null) as Tuple<
+      null,
+      NumPlayers
+    >;
+    this.playerLogNumbers = newArray(globals.options.numPlayers, null) as Tuple<
+      null,
+      NumPlayers
+    >;
   }
 
   addMessage(turn: number, msg: string): void {
@@ -196,14 +203,16 @@ export class FullActionLog extends Konva.Group {
         logEntry.turnNum,
         logEntry.text,
       );
-      for (let i = 0; i < globals.options.numPlayers; i++) {
-        if (logEntry.text.startsWith(globals.metadata.playerNames[i]!)) {
-          if (this.playerLogs[i] === null) {
-            this.makePlayerLog(i);
+      for (const playerIndex of eRange(globals.options.numPlayers)) {
+        if (
+          logEntry.text.startsWith(globals.metadata.playerNames[playerIndex]!)
+        ) {
+          if (this.playerLogs[playerIndex] === null) {
+            this.makePlayerLog(playerIndex);
           }
           appendLine(
-            this.playerLogs[i]!,
-            this.playerLogNumbers[i]!,
+            this.playerLogs[playerIndex]!,
+            this.playerLogNumbers[playerIndex]!,
             logEntry.turnNum,
             logEntry.text,
           );
@@ -214,9 +223,9 @@ export class FullActionLog extends Konva.Group {
 
     this.logText!.refreshText();
     this.logNumbers!.refreshText();
-    for (let i = 0; i < globals.options.numPlayers; i++) {
-      this.playerLogs[i]?.refreshText();
-      this.playerLogNumbers[i]?.refreshText();
+    for (const playerIndex of eRange(globals.options.numPlayers)) {
+      this.playerLogs[playerIndex]?.refreshText();
+      this.playerLogNumbers[playerIndex]?.refreshText();
     }
     this.buffer = [];
     this.needsRefresh = false;
@@ -226,9 +235,9 @@ export class FullActionLog extends Konva.Group {
     this.buffer = [];
     this.logText?.reset();
     this.logNumbers?.reset();
-    for (let i = 0; i < globals.options.numPlayers; i++) {
-      this.playerLogs[i]?.reset();
-      this.playerLogNumbers[i]?.reset();
+    for (const playerIndex of eRange(globals.options.numPlayers)) {
+      this.playerLogs[playerIndex]?.reset();
+      this.playerLogNumbers[playerIndex]?.reset();
     }
     this.needsRefresh = true;
   }
