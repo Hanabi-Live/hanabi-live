@@ -1,7 +1,4 @@
-import type { Add, Range, Subtract } from "@hanabi/utils";
-import type { MAX_PLAYERS, MIN_PLAYERS } from "../constants";
+import type { ERange } from "@hanabi/utils";
+import type { MAX_PLAYERS } from "../constants";
 
-export type PlayerIndex = Range<
-  0,
-  Add<Subtract<typeof MAX_PLAYERS, typeof MIN_PLAYERS>, 1>
->;
+export type PlayerIndex = ERange<0, typeof MAX_PLAYERS>;
