@@ -47,19 +47,16 @@ export class ButtonGroup extends Konva.Group {
   }
 
   clearPressed(): void {
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < this.list.length; i++) {
-      if (this.list[i]!.pressed) {
-        this.list[i]!.setPressed(false);
-      }
+    for (const clueButton of this.list) {
+      clueButton.setPressed(false);
     }
   }
 
   /** This is only used for groups of "PlayerButton". */
   selectNextTarget(): void {
     let buttonIndex: number | undefined;
-    for (let i = 0; i < this.list.length; i++) {
-      if (this.list[i]!.pressed) {
+    for (const [i, clueButton] of this.list.entries()) {
+      if (clueButton.pressed) {
         buttonIndex = i;
         break;
       }
@@ -72,22 +69,21 @@ export class ButtonGroup extends Konva.Group {
 
     // Find the next button in the group. As a guard against an infinite loop, only loop as many
     // times as needed to go through every button.
-    let button: PlayerButton | undefined;
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < this.list.length; i++) {
+    let nextButton: ClueButton | undefined;
+    for (const clueButton of this.list) {
       buttonIndex++;
       if (buttonIndex > this.list.length - 1) {
         buttonIndex = 0;
       }
 
-      button = this.list[buttonIndex] as PlayerButton;
-      if (button.enabled) {
+      nextButton = clueButton;
+      if ("enabled" in nextButton && nextButton.enabled) {
         break;
       }
     }
 
-    if (button !== undefined) {
-      button.dispatchEvent(new MouseEvent("click"));
+    if (nextButton !== undefined) {
+      nextButton.dispatchEvent(new MouseEvent("click"));
     }
   }
 }
