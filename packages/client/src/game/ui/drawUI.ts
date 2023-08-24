@@ -1,7 +1,7 @@
 // This function draws the UI when going into a game for the first time.
 
 import type { CardOrder, RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
-import { repeat } from "@hanabi/utils";
+import { eRange, repeat } from "@hanabi/utils";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -469,9 +469,7 @@ function drawDiscardStacks() {
   const discardStackSpacing =
     globals.variant.suits.length === 6 ? 0.038 : 0.047;
 
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i]!;
-
+  for (const [i, suit] of globals.variant.suits.entries()) {
     // Make the discard stack for this suit.
     const discardStack = new CardLayout({
       x: 0.81 * winW,
@@ -1780,7 +1778,7 @@ function drawClueArea() {
       clueAreaValues.w! - playerButtonSpacing * (totalPlayerButtons - 1);
     const playerButtonW = totalPlayerW / totalPlayerButtons;
 
-    for (let i = 0; i < totalPlayerButtons; i++) {
+    for (const i of eRange(totalPlayerButtons)) {
       const j = (globals.metadata.ourPlayerIndex + i + 1) % numPlayers;
       const button = new PlayerButton(
         {
@@ -1819,7 +1817,7 @@ function drawClueArea() {
       clueAreaValues.w! - playerButtonSpacing * (totalPlayerButtons - 1);
     const playerButtonW = totalPlayerW / totalPlayerButtons;
 
-    for (let i = 0; i < totalPlayerButtons; i++) {
+    for (const i of eRange(totalPlayerButtons)) {
       // We change the calculation of j from the above code block because we want the buttons to
       // follow the order of players from top to bottom (in BGA mode).
       const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
@@ -1892,20 +1890,18 @@ function drawClueArea() {
   totalColorWidth += buttonXSpacing * (globals.variant.clueColors.length - 1);
   const colorX = clueAreaValues.w! * 0.5 - totalColorWidth * 0.5;
   const colorY = buttonYSpacing - playerButtonAdjustment;
-  for (let i = 0; i < globals.variant.clueColors.length; i++) {
-    const color = globals.variant.clueColors[i]!;
-
+  for (const [i, clueColor] of globals.variant.clueColors.entries()) {
     // Find the first suit that matches this color.
     let matchingSuit: Suit | undefined;
     for (const suit of globals.variant.suits) {
-      if (suit.clueColors.includes(color)) {
+      if (suit.clueColors.includes(clueColor)) {
         matchingSuit = suit;
         break;
       }
     }
     if (matchingSuit === undefined) {
       throw new Error(
-        `Failed to find the suit for the color of "${color.name}".`,
+        `Failed to find the suit for the clue color of "${clueColor.name}".`,
       );
     }
 
@@ -1915,9 +1911,9 @@ function drawClueArea() {
         y: colorY * winH,
         width: buttonW * winW,
         height: buttonH * winH,
-        color: color.fill,
-        text: color.abbreviation,
-        clue: newColorClue(color),
+        color: clueColor.fill,
+        text: clueColor.abbreviation,
+        clue: newColorClue(clueColor),
       },
       matchingSuit,
     );
@@ -1934,8 +1930,7 @@ function drawClueArea() {
   totalRankWidth += buttonXSpacing * (numRanks - 1);
   const rankX = clueAreaValues.w! * 0.5 - totalRankWidth * 0.5;
   const rankY = colorY + buttonH + buttonYSpacing;
-  for (let i = 0; i < globals.variant.clueRanks.length; i++) {
-    const rank = globals.variant.clueRanks[i]!;
+  for (const [i, rank] of globals.variant.clueRanks.entries()) {
     const button = new RankButton({
       x: (rankX + i * (buttonW + buttonXSpacing)) * winW,
       y: rankY * winH,

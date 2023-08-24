@@ -1,3 +1,4 @@
+import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
@@ -17,7 +18,7 @@ export class MultiFitText extends Konva.Group {
 
     this.maxLines = maxLines;
 
-    for (let i = 0; i < this.maxLines; i++) {
+    for (const i of eRange(this.maxLines)) {
       const newConfig = $.extend({}, config);
 
       newConfig.listening = false;
@@ -45,21 +46,26 @@ export class MultiFitText extends Konva.Group {
   }
 
   refreshText(): void {
-    for (let i = 0; i < this.children.length; i++) {
-      let msg = this.smallHistory[i];
-      if (msg === undefined) {
-        msg = "";
+    for (const i of eRange(this.children.length)) {
+      const fitText = this.children[i] as FitText | undefined;
+      if (fitText === undefined) {
+        continue;
       }
-      (this.children[i] as FitText).fitText(msg);
+
+      const msg = this.smallHistory[i] ?? "";
+      fitText.fitText(msg);
     }
   }
 
   reset(): void {
     this.smallHistory = [];
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < this.children.length; i++) {
-      const child = this.children[i];
-      (child as FitText).fitText("");
+    for (const i of eRange(this.children.length)) {
+      const fitText = this.children[i] as FitText | undefined;
+      if (fitText === undefined) {
+        continue;
+      }
+
+      fitText.fitText("");
     }
   }
 
