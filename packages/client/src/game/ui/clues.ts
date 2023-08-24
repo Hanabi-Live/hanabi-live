@@ -1,4 +1,5 @@
 import type { CardOrder } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";
@@ -85,13 +86,27 @@ export function checkLegal(): void {
   globals.elements.giveClueButton!.setEnabled(enabled);
 }
 
-function showClueMatch(target: number, clue: Clue) {
+function showClueMatch(target: number, clue: Clue): boolean {
   arrows.hideAll();
+
+  const cardLayout = globals.elements.playerHands[target];
+  if (cardLayout === undefined) {
+    return false;
+  }
+
+  const hand = cardLayout.children;
   let touchedAtLeastOneCard = false;
-  const hand = globals.elements.playerHands[target]!.children;
-  for (let i = 0; i < hand.length; i++) {
-    const child = globals.elements.playerHands[target]!.children[i]!;
-    const card: HanabiCard = child.children[0] as HanabiCard;
+  for (const i of eRange(hand.length)) {
+    const child = hand[i];
+    if (child === undefined) {
+      continue;
+    }
+
+    const card = child.children[0] as HanabiCard | undefined;
+    if (card === undefined) {
+      continue;
+    }
+
     if (isTouched(card, clue)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue, true);

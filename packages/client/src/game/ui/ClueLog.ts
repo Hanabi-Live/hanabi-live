@@ -1,6 +1,7 @@
 // This is the list of clues in the top-right-hand corner of the UI.
 
 import type { CardOrder } from "@hanabi/data";
+import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import type { ClueEntry } from "./ClueEntry";
 import { globals } from "./UIGlobals";
@@ -28,8 +29,7 @@ export class ClueLog extends Konva.Group {
 
   private doLayout() {
     let y = 0;
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < this.children.length; i++) {
+    for (const i of eRange(this.children.length)) {
       const node = this.children[i]!;
       node.y(y);
       y += node.height() + 0.001 * globals.stage.height();

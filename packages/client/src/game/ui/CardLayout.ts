@@ -1,3 +1,4 @@
+import { eRange } from "@hanabi/utils";
 import Konva from "konva";
 import type { HanabiCard } from "./HanabiCard";
 import type { LayoutChild } from "./LayoutChild";
@@ -69,7 +70,7 @@ export class CardLayout extends Konva.Group {
     const numCards = this.children.length;
 
     let uw = 0;
-    for (let i = 0; i < numCards; i++) {
+    for (const i of eRange(numCards)) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
       if (layoutChild.height() <= 0) {
@@ -101,7 +102,7 @@ export class CardLayout extends Konva.Group {
       x = handWidth - x;
     }
 
-    for (let i = 0; i < numCards; i++) {
+    for (const i of eRange(numCards)) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
       // Ensure this card is not hidden at the bottom of a play stack.

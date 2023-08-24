@@ -24,8 +24,7 @@ const UNKNOWN_CARD_RANK = 6;
 export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
 export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
 
-// This function returns an object containing all of the drawn cards images (on individual
-// canvases).
+/** Returns an object containing all of the drawn cards images (on individual canvases). */
 export function drawCards(
   variant: Variant,
   colorblindMode: boolean,
@@ -394,8 +393,8 @@ function makeDeckBack(
   const sf = 0.4; // Scale factor
   const nSuits = variant.suits.length;
   ctx.scale(sf, sf);
-  for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i]!;
+
+  for (const [i, suit] of variant.suits.entries()) {
     const secondaryPip = pipTypes.has(suit.pip);
     pipTypes.add(suit.pip);
 
@@ -412,6 +411,7 @@ function makeDeckBack(
     drawPip(ctx, suit, secondaryPip, true, "#444444"); // Pips on the back of the deck should be gray
     ctx.restore();
   }
+
   ctx.scale(1 / sf, 1 / sf);
 
   return {
@@ -729,7 +729,7 @@ function getSuitStyle(
   }
 }
 
-// Generates a vertical gradient that is evenly distributed between its component colors.
+/** Generates a vertical gradient that is evenly distributed between its component colors. */
 function evenLinearGradient(
   ctx: CanvasRenderingContext2D,
   colors: readonly string[],
@@ -737,16 +737,20 @@ function evenLinearGradient(
 ) {
   const grad = ctx.createLinearGradient(args[0]!, args[1]!, args[2]!, args[3]!);
 
-  for (let i = 0; i < colors.length; i++) {
-    grad.addColorStop(i / (colors.length - 1), colors[i]!);
+  for (const [i, color] of colors.entries()) {
+    grad.addColorStop(i / (colors.length - 1), color);
   }
 
   return grad;
 }
 
-// From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
-// - `colorChannelA` and `colorChannelB` are integers ranging from 0 to 255
-// - `amountToMix` ranges from 0.0 to 1.0
+/**
+ * From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
+ *
+ * @param colorChannelA Integer ranging from 0 to 255.
+ * @param colorChannelB Integer ranging from 0 to 255.
+ * @param amountToMix Float ranging from 0.0 to 1.0.
+ */
 function colorChannelMixer(
   colorChannelA: number,
   colorChannelB: number,

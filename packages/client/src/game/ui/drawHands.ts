@@ -110,12 +110,12 @@ export function drawHands(winW: number, winH: number): void {
   // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard-coded.
   const handPosBGA: HandConfig[][] = [];
   if (!globals.lobby.settings.keldonMode) {
-    let leftX = 0.43; // This is 0.020 away from the action log
-    const rightX = 0.78; // This is 0.020 away from the clue log
+    let leftX = 0.43; // This is 0.020 away from the action log.
+    const rightX = 0.78; // This is 0.020 away from the clue log.
     let topY = 0.03;
     const bottomY = 0.96;
-    let cardSpacing = 0.1; // The amount of card widths between adjacent cards
-    const handSpacing = 0.45; // The amount of hand heights between adjacent hands
+    let cardSpacing = 0.1; // The amount of card widths between adjacent cards.
+    const handSpacing = 0.45; // The amount of hand heights between adjacent hands.
 
     if (numPlayers >= 4) {
       // The hands would overlap with the timer for spectators or the hypothetical controls during a
@@ -156,13 +156,13 @@ export function drawHands(winW: number, winH: number): void {
       handH = maxCardWidth / relativeCardRatio;
     } else {
       handW = maxCardHeight * relativeCardRatio * widthRatio;
-      handH = maxCardHeight; // The height of cards and hands are the same
+      handH = maxCardHeight; // The height of cards and hands are the same.
       handX = (rightX + leftX - handW) / 2;
       handY = topY;
     }
 
     handPosBGA[numPlayers] = [];
-    for (let j = 0; j < numPlayers; j++) {
+    for (const j of eRange(numPlayers)) {
       handPosBGA[numPlayers]!.push({
         x: handX,
         y: handY + handH * (1 + handSpacing) * j,
@@ -271,7 +271,7 @@ export function drawHands(winW: number, winH: number): void {
       y: 0.01,
     };
     namePosBGA[i] = [];
-    for (let j = 0; j < i; j++) {
+    for (const j of eRange(i)) {
       namePosBGA[i]!.push({
         x: handPosBGA[i]![j]!.x - namePosBGAMod.x,
         y: handPosBGA[i]![j]!.y + handPosBGA[i]![j]!.h + namePosBGAMod.y,
