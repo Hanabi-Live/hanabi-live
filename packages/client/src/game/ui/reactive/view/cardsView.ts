@@ -12,7 +12,7 @@ import { observeStore } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {
   // Subscribe the new cards.
-  for (let i = globals.cardSubscriptions.length; i < length; i++) {
+  for (const i of eRange(globals.cardSubscriptions.length, length)) {
     if (globals.deck.length <= i) {
       const newCard = new HanabiCard(
         i as CardOrder,
@@ -68,7 +68,8 @@ export function onMorphedIdentitiesChanged(
   if (!data.hypotheticalActive) {
     // Exiting hypothetical, update all morphed.
     if (previousData.morphedIdentities !== undefined) {
-      for (let i = 0; i < previousData.morphedIdentities.length; i++) {
+      for (const i of previousData.morphedIdentities.keys()) {
+        // Since `morphedIdentities` is a sparse array, we need to check for undefined.
         if (previousData.morphedIdentities[i] !== undefined) {
           updateCardVisuals(i as CardOrder);
         }
