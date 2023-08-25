@@ -1,3 +1,4 @@
+import { assertDefined } from "@hanabi/utils";
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";
@@ -10,16 +11,14 @@ export function init(
   delayed: boolean,
   customContent: boolean,
 ): void {
-  if (element.tooltipName === undefined) {
-    throw new Error(
-      'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
-    );
-  }
-  if (element.tooltipContent === undefined) {
-    throw new Error(
-      'An element that is supposed to have a tooltip does not have a "tooltipContent" property.',
-    );
-  }
+  assertDefined(
+    element.tooltipName,
+    'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+  );
+  assertDefined(
+    element.tooltipContent,
+    'An element that is supposed to have a tooltip does not have a "tooltipContent" property.',
+  );
 
   element.on("mouseover touchstart", function mouseOver(this: Konva.Node) {
     resetActiveHover();
@@ -32,15 +31,16 @@ export function init(
       }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
     }
   });
+
   element.on("mouseout touchend", () => {
-    if (element.tooltipName === undefined) {
-      throw new Error(
-        'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
-      );
-    }
+    assertDefined(
+      element.tooltipName,
+      'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+    );
     globals.activeHover = null;
     tooltips.close(`#tooltip-${element.tooltipName}`);
   });
+
   let content = element.tooltipContent;
   if (!customContent) {
     content = '<span style="font-size: 0.75em;">';
@@ -61,11 +61,11 @@ export function show(element: NodeWithTooltip): void {
     return;
   }
 
-  if (element.tooltipName === undefined) {
-    throw new Error(
-      'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
-    );
-  }
+  assertDefined(
+    element.tooltipName,
+    'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+  );
+
   const pos = element.getAbsolutePosition();
   let width = element.width();
   if (element instanceof Konva.Text) {

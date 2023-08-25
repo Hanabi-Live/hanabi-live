@@ -1,4 +1,4 @@
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import Konva from "konva";
 import type { HanabiCard } from "./HanabiCard";
 import type { LayoutChild } from "./LayoutChild";
@@ -24,12 +24,8 @@ export class CardLayout extends Konva.Group {
     this.origRotation = config.rotation ?? 0;
     this.empathy = false;
 
-    if (config.width === undefined) {
-      throw new Error("A width was not defined for a CardLayout.");
-    }
-    if (config.height === undefined) {
-      throw new Error("A height was not defined for a CardLayout.");
-    }
+    assertDefined(config.width, "A width was not defined for a CardLayout.");
+    assertDefined(config.height, "A height was not defined for a CardLayout.");
 
     // Debug rectangle (uncomment to show the size of the hand).
     /*

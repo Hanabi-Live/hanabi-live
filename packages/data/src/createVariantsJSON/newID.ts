@@ -1,4 +1,4 @@
-import { parseIntSafe, trimSuffix } from "@hanabi/utils";
+import { assertDefined, parseIntSafe, trimSuffix } from "@hanabi/utils";
 import { isEqual } from "lodash";
 import {
   REVERSE_MODIFIER,
@@ -46,19 +46,16 @@ function getNewSuitID(
   if (suitName.endsWith(SUIT_REVERSED_SUFFIX)) {
     const normalSuitName = trimSuffix(suitName, SUIT_REVERSED_SUFFIX);
     const suit = suitsNameMap.get(normalSuitName);
-    if (suit === undefined) {
-      throw new Error(
-        `Failed to find the non-reversed suit ID for suit: ${suitName}`,
-      );
-    }
+    assertDefined(
+      suit,
+      `Failed to find the non-reversed suit ID for suit: ${suitName}`,
+    );
 
     return `${suit.id}${SUIT_MODIFIER_DELIMITER}R`;
   }
 
   const suit = suitsNameMap.get(suitName);
-  if (suit === undefined) {
-    throw new Error(`Failed to find the suit ID for suit: ${suitName}`);
-  }
+  assertDefined(suit, `Failed to find the suit ID for suit: ${suitName}`);
 
   return suit.id;
 }
@@ -346,11 +343,10 @@ function getVariantFromNewID(
   suitsIDMap: Map<string, SuitJSON>,
 ): VariantJSON {
   const [suitsString, ...variantModifiers] = newID.split(VARIANT_DELIMITER);
-  if (suitsString === undefined) {
-    throw new Error(
-      `Failed to parse the suits string from the variant ID of: ${newID}`,
-    );
-  }
+  assertDefined(
+    suitsString,
+    `Failed to parse the suits string from the variant ID of: ${newID}`,
+  );
 
   const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
   const suits = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
@@ -364,11 +360,10 @@ function getVariantFromNewID(
 
   for (const variantModifier of variantModifiers) {
     const secondCharacter = variantModifier[1];
-    if (secondCharacter === undefined) {
-      throw new Error(
-        `Failed to get the second character of the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}".`,
-      );
-    }
+    assertDefined(
+      secondCharacter,
+      `Failed to get the second character of the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}".`,
+    );
 
     const variantModifierRank = parseIntSafe(secondCharacter);
     if (
@@ -399,11 +394,10 @@ function getVariantFromNewID(
       case VariantModifier.RainbowThrees:
       case VariantModifier.RainbowFours:
       case VariantModifier.RainbowFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error(
-            "Failed to parse the rank for a Rainbow-Rank variant.",
-          );
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Rainbow-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankAllClueColors = true;
@@ -417,9 +411,10 @@ function getVariantFromNewID(
       case VariantModifier.PinkThrees:
       case VariantModifier.PinkFours:
       case VariantModifier.PinkFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error("Failed to parse the rank for a Pink-Rank variant.");
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Pink-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankAllClueRanks = true;
@@ -435,9 +430,10 @@ function getVariantFromNewID(
       case VariantModifier.WhiteThrees:
       case VariantModifier.WhiteFours:
       case VariantModifier.WhiteFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error("Failed to parse the rank for a White-Rank variant.");
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a White-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankNoClueColors = true;
@@ -452,9 +448,10 @@ function getVariantFromNewID(
       case VariantModifier.BrownThrees:
       case VariantModifier.BrownFours:
       case VariantModifier.BrownFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error("Failed to parse the rank for a Brown-Rank variant.");
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Brown-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankNoClueRanks = true;
@@ -470,9 +467,10 @@ function getVariantFromNewID(
       case VariantModifier.OmniThrees:
       case VariantModifier.OmniFours:
       case VariantModifier.OmniFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error("Failed to parse the rank for a Omni-Rank variant.");
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Omni-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankAllClueColors = true;
@@ -489,9 +487,10 @@ function getVariantFromNewID(
       case VariantModifier.NullThrees:
       case VariantModifier.NullFours:
       case VariantModifier.NullFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error("Failed to parse the rank for a Null-Rank variant.");
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Null-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankNoClueColors = true;
@@ -508,11 +507,10 @@ function getVariantFromNewID(
       case VariantModifier.MuddyRainbowThrees:
       case VariantModifier.MuddyRainbowFours:
       case VariantModifier.MuddyRainbowFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error(
-            "Failed to parse the rank for a Muddy-Rainbow-Rank variant.",
-          );
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Muddy-Rainbow-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankAllClueColors = true;
@@ -529,11 +527,10 @@ function getVariantFromNewID(
       case VariantModifier.LightPinkThrees:
       case VariantModifier.LightPinkFours:
       case VariantModifier.LightPinkFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error(
-            "Failed to parse the rank for a Light-Pink-Rank variant.",
-          );
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Light-Pink-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankNoClueColors = true;
@@ -550,11 +547,10 @@ function getVariantFromNewID(
       case VariantModifier.DeceptiveThrees:
       case VariantModifier.DeceptiveFours:
       case VariantModifier.DeceptiveFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error(
-            "Failed to parse the rank for a Deceptive-Rank variant.",
-          );
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Deceptive-Rank variant.",
+        );
 
         variant.specialRank = variantModifierRank;
         variant.specialRankDeceptive = true;
@@ -570,11 +566,10 @@ function getVariantFromNewID(
       case VariantModifier.CriticalThrees:
       case VariantModifier.CriticalFours:
       case VariantModifier.CriticalFives: {
-        if (variantModifierRank === undefined) {
-          throw new Error(
-            "Failed to parse the rank for a Critical Rank variant.",
-          );
-        }
+        assertDefined(
+          variantModifierRank,
+          "Failed to parse the rank for a Critical Rank variant.",
+        );
 
         variant.criticalRank = variantModifierRank;
         break;
@@ -692,14 +687,13 @@ function getSuitNamesFromSuitID(
     const [suitID, ...modifiers] = suitIDWithModifiers.split(
       SUIT_MODIFIER_DELIMITER,
     );
-    if (suitID === undefined) {
-      throw new Error(`Failed to parse the suit ID: ${suitIDWithModifiers}`);
-    }
+    assertDefined(
+      suitID,
+      `Failed to parse the suit ID: ${suitIDWithModifiers}`,
+    );
 
     const suit = suitsIDMap.get(suitID);
-    if (suit === undefined) {
-      throw new Error(`Failed to find a suit with an ID of: ${suitID}`);
-    }
+    assertDefined(suit, `Failed to find a suit with an ID of: ${suitID}`);
 
     for (const modifier of modifiers) {
       if (!SUIT_MODIFIERS.has(modifier)) {

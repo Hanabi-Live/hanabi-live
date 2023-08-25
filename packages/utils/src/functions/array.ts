@@ -2,6 +2,7 @@ import type { Expand } from "../types/Expand";
 import { ReadonlySet } from "../types/ReadonlySet";
 import type { Tuple } from "../types/Tuple";
 import { getRandomInt } from "./random";
+import { assertDefined } from "./utils";
 
 type TupleKey<T extends readonly unknown[]> = Expand<
   {
@@ -93,11 +94,10 @@ export function getRandomArrayElement<T>(
     exceptions.length > 0 ? arrayRemove(array, ...exceptions) : array;
   const randomIndex = getRandomArrayIndex(arrayToUse);
   const randomElement = arrayToUse[randomIndex];
-  if (randomElement === undefined) {
-    throw new Error(
-      `Failed to get a random array element since the random index of ${randomIndex} was not valid.`,
-    );
-  }
+  assertDefined(
+    randomElement,
+    `Failed to get a random array element since the random index of ${randomIndex} was not valid.`,
+  );
 
   return randomElement;
 }

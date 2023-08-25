@@ -1,5 +1,5 @@
 import type { CardOrder, SuitIndex } from "@hanabi/data";
-import { ReadonlyMap } from "@hanabi/utils";
+import { ReadonlyMap, assertDefined } from "@hanabi/utils";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
 import * as deck from "../../../rules/deck";
@@ -48,12 +48,13 @@ export function onPlayStackDirectionsChanged(
         const stackStrings = isUpOrDown
           ? STACK_STRINGS_UP_OR_DOWN
           : STACK_STRINGS_REVERSED;
+
         const stackText = stackStrings.get(direction);
-        if (stackText === undefined) {
-          throw new Error(
-            `Failed to find the stack string for the stack direction of: ${direction}`,
-          );
-        }
+        assertDefined(
+          stackText,
+          `Failed to find the stack string for the stack direction of: ${direction}`,
+        );
+
         text = stackText;
       }
 

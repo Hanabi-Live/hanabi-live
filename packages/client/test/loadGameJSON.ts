@@ -8,7 +8,7 @@ import type {
   SuitIndex,
 } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
@@ -92,9 +92,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
   const finalGameJSONAction = gameJSON.actions.at(-1);
-  if (finalGameJSONAction === undefined) {
-    throw new Error("Failed to get the final action of the JSON.");
-  }
+  assertDefined(
+    finalGameJSONAction,
+    "Failed to get the final action of the JSON.",
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   if (finalGameJSONAction.type !== ActionType.GameOver) {
@@ -124,14 +125,14 @@ export function loadGameJSON(gameJSON: JSONGame): State {
       case "clue": {
         // Fix the list of touched cards.
         const hand = s.hands[a.target];
-        if (hand === undefined) {
-          throw new Error(`Failed to find the hand at index: ${a.target}`);
-        }
+        assertDefined(hand, `Failed to find the hand at index: ${a.target}`);
+
         const list: CardOrder[] = hand.filter((order) => {
           const jsonCard = gameJSON.deck[order];
-          if (jsonCard === undefined) {
-            throw new Error(`Failed to find the JSON card at index: ${order}`);
-          }
+          assertDefined(
+            jsonCard,
+            `Failed to find the JSON card at index: ${order}`,
+          );
 
           return cluesRules.touchesCard(
             variant,
@@ -147,11 +148,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
       case "play": {
         // Check if this is actually a play or a misplay.
         const jsonCard = gameJSON.deck[a.order] as CardIdentity | undefined;
-        if (jsonCard === undefined) {
-          throw new Error(
-            `Failed to get the card at order ${a.order} in the JSON deck.`,
-          );
-        }
+        assertDefined(
+          jsonCard,
+          `Failed to get the card at order ${a.order} in the JSON deck.`,
+        );
 
         if (jsonCard.suitIndex === null || jsonCard.rank === null) {
           throw new Error(
@@ -160,18 +160,16 @@ export function loadGameJSON(gameJSON: JSONGame): State {
         }
 
         const playStack = s.playStacks[jsonCard.suitIndex];
-        if (playStack === undefined) {
-          throw new Error(
-            `Failed to get the play stack at suit index: ${jsonCard.suitIndex}`,
-          );
-        }
+        assertDefined(
+          playStack,
+          `Failed to get the play stack at suit index: ${jsonCard.suitIndex}`,
+        );
 
         const playStackDirection = s.playStackDirections[jsonCard.suitIndex];
-        if (playStackDirection === undefined) {
-          throw new Error(
-            `Failed to get the play stack direction at suit index: ${jsonCard.suitIndex}`,
-          );
-        }
+        assertDefined(
+          playStackDirection,
+          `Failed to get the play stack direction at suit index: ${jsonCard.suitIndex}`,
+        );
 
         const nextRanks = playStacksRules.nextPlayableRanks(
           jsonCard.suitIndex,
@@ -291,11 +289,10 @@ function drawCard(
   deck: CardIdentity[],
 ): ActionDraw {
   const cardIdentity = deck[order];
-  if (cardIdentity === undefined) {
-    throw new Error(
-      `Failed to draw a card with order "${order}" since the card identity was not found in the deck.`,
-    );
-  }
+  assertDefined(
+    cardIdentity,
+    `Failed to draw a card with order "${order}" since the card identity was not found in the deck.`,
+  );
 
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     throw new Error(
@@ -345,11 +342,10 @@ function parseJSONAction(
       const isPlay = a.type === JSONActionType.ActionTypePlay;
 
       const cardIdentity = deck[a.target];
-      if (cardIdentity === undefined) {
-        throw new Error(
-          `Failed to find the card in the deck at index: ${a.target}`,
-        );
-      }
+      assertDefined(
+        cardIdentity,
+        `Failed to find the card in the deck at index: ${a.target}`,
+      );
 
       const action = {
         type: isPlay ? "play" : "discard",

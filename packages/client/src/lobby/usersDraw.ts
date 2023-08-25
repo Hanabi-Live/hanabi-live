@@ -1,5 +1,6 @@
 // The lobby area that shows all of the current logged-in users.
 
+import { assertDefined } from "@hanabi/utils";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
@@ -70,13 +71,13 @@ function drawUser(
 ) {
   // Find the status of this user from the "userList" map.
   const userID = usernameMapping.get(username);
-  if (userID === undefined) {
-    throw new Error(`Failed to get the ID for the username of "${username}".`);
-  }
+  assertDefined(
+    userID,
+    `Failed to get the ID for the username of: ${username}`,
+  );
+
   const user = globals.userMap.get(userID);
-  if (user === undefined) {
-    throw new Error(`Failed to get the user for the ID of "${userID}".`);
-  }
+  assertDefined(user, `Failed to get the user with the ID: ${userID}`);
 
   let nameColumn = "";
   if (user.hyphenated) {

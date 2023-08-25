@@ -2,6 +2,7 @@
 
 import type { Color } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
@@ -72,12 +73,12 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       | null
       | undefined;
     let clueColor: Color | undefined;
+
     const suit = globals.variant.suits[card.state.suitIndex];
-    if (suit === undefined) {
-      throw new Error(
-        `Failed to find the suit at index: ${card.state.suitIndex}`,
-      );
-    }
+    assertDefined(
+      suit,
+      `Failed to find the suit at index: ${card.state.suitIndex}`,
+    );
 
     if (clueButton === null || clueButton === undefined) {
       // They have not clicked on a clue color button yet, so assume that they want to use the first

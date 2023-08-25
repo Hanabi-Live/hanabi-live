@@ -1,7 +1,7 @@
 // This function draws the UI when going into a game for the first time.
 
 import type { CardOrder, RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
-import { eRange, repeat } from "@hanabi/utils";
+import { assertDefined, eRange, repeat } from "@hanabi/utils";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
@@ -1899,11 +1899,10 @@ function drawClueArea() {
         break;
       }
     }
-    if (matchingSuit === undefined) {
-      throw new Error(
-        `Failed to find the suit for the clue color of "${clueColor.name}".`,
-      );
-    }
+    assertDefined(
+      matchingSuit,
+      `Failed to find the suit for the clue color of: ${clueColor.name}`,
+    );
 
     const button = new ColorButton(
       {

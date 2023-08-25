@@ -1,5 +1,6 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
+import { assertDefined } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import * as segmentRules from "../rules/segment";
@@ -361,11 +362,10 @@ function updateCardIdentities(state: Draft<State>) {
     } else {
       // Update the existing card identity.
       const existingCardIdentity = state.cardIdentities[i];
-      if (existingCardIdentity === undefined) {
-        throw new Error(
-          `Failed to find the existing card identity at index: ${i}`,
-        );
-      }
+      assertDefined(
+        existingCardIdentity,
+        `Failed to find the existing card identity at index: ${i}`,
+      );
 
       if (existingCardIdentity.suitIndex === null) {
         existingCardIdentity.suitIndex = newCardIdentity.suitIndex;
@@ -390,11 +390,11 @@ function visualStateToShow(
     if (state.replay.hypothetical === null) {
       // Show the current replay segment.
       const currentReplayState = state.replay.states[state.replay.segment];
-      if (currentReplayState === undefined) {
-        throw new Error(
-          `Failed to find the replay state for segment: ${state.replay.segment}`,
-        );
-      }
+      assertDefined(
+        currentReplayState,
+        `Failed to find the replay state for segment: ${state.replay.segment}`,
+      );
+
       return currentReplayState;
     }
 
@@ -424,11 +424,10 @@ function rehydrateScrubbedActions(
       (action.suitIndex === -1 || action.rank === -1)
     ) {
       const cardIdentity = cardIdentities[action.order];
-      if (cardIdentity === undefined) {
-        throw new Error(
-          "Failed to find the card identity for an action while rehydrating the scrubbed actions.",
-        );
-      }
+      assertDefined(
+        cardIdentity,
+        "Failed to find the card identity for an action while rehydrating the scrubbed actions.",
+      );
 
       const { suitIndex, rank } = cardIdentity;
       if (suitIndex === null || rank === null) {

@@ -1,5 +1,5 @@
 import type { CardOrder } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";
@@ -191,11 +191,10 @@ export function give(): void {
         clueButton.clue.value,
         globals.variant,
       );
-      if (colorIndex === undefined) {
-        throw new Error(
-          `Failed to get the color index for color: ${clueButton.clue.value.name}`,
-        );
-      }
+      assertDefined(
+        colorIndex,
+        `Failed to get the color index for color: ${clueButton.clue.value.name}`,
+      );
 
       type = ActionType.ColorClue;
       value = colorIndex;

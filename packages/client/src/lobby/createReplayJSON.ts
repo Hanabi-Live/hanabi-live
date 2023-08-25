@@ -1,6 +1,6 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
 import type { ClientAction } from "../game/types/ClientAction";
@@ -210,9 +210,7 @@ function getActionFromLogEntry(
 
   if (foundPlay !== null && foundPlay.length > 2) {
     const target = parseIntSafe(foundPlay[2]!);
-    if (target === undefined) {
-      throw new Error(`Failed to parse the play target: ${foundPlay[2]}`);
-    }
+    assertDefined(target, `Failed to parse the play target: ${foundPlay[2]}`);
 
     return getActionFromHypoPlayOrDiscard(
       i,
@@ -224,9 +222,10 @@ function getActionFromLogEntry(
 
   if (foundDiscard !== null && foundDiscard.length > 2) {
     const target = parseIntSafe(foundDiscard[2]!);
-    if (target === undefined) {
-      throw new Error(`Failed to parse the discard target: ${foundDiscard[2]}`);
-    }
+    assertDefined(
+      target,
+      `Failed to parse the discard target: ${foundDiscard[2]}`,
+    );
 
     return getActionFromHypoPlayOrDiscard(
       i,
@@ -250,11 +249,10 @@ function getActionFromHypoPlayOrDiscard(
   slot: number,
 ): ClientAction {
   const playerIndex = getPlayerIndexFromName(playerName);
-  if (playerIndex === undefined) {
-    throw new Error(
-      `Failed to find the player index corresponding to: ${playerName}`,
-    );
-  }
+  assertDefined(
+    playerIndex,
+    `Failed to find the player index corresponding to: ${playerName}`,
+  );
 
   // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
   // perceived.
@@ -269,11 +267,10 @@ function getActionFromHypoPlayOrDiscard(
 
 function getActionFromHypoClue(playerName: string, clue: string): ClientAction {
   const playerIndex = getPlayerIndexFromName(playerName);
-  if (playerIndex === undefined) {
-    throw new Error(
-      `Failed to find the player index corresponding to: ${playerName}`,
-    );
-  }
+  assertDefined(
+    playerIndex,
+    `Failed to find the player index corresponding to: ${playerName}`,
+  );
 
   let parsedClue = parseIntSafe(clue);
 
@@ -285,7 +282,7 @@ function getActionFromHypoClue(playerName: string, clue: string): ClientAction {
   }
 
   if (parsedClue === undefined) {
-    // It's a color clue.
+    // It is a color clue.
     return {
       type: ActionType.ColorClue,
       target: playerIndex,
@@ -293,7 +290,7 @@ function getActionFromHypoClue(playerName: string, clue: string): ClientAction {
     };
   }
 
-  // It's a rank clue.
+  // It is a rank clue.
   return {
     type: ActionType.RankClue,
     target: playerIndex,

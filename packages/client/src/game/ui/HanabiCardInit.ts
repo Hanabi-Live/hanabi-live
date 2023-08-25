@@ -2,6 +2,7 @@
 
 import type { Suit, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type * as KonvaUtil from "konva/types/Util";
@@ -561,9 +562,7 @@ function scaleCardImage(
   tf: KonvaUtil.Transform,
 ) {
   let src = globals.cardImages.get(name);
-  if (src === undefined) {
-    throw new Error(`The image "${name}" was not generated.`);
-  }
+  assertDefined(src, `The image "${name}" was not generated.`);
 
   const dw = Math.sqrt(tf.m[0]! * tf.m[0]! + tf.m[1]! * tf.m[1]!) * width;
   const dh = Math.sqrt(tf.m[2]! * tf.m[2]! + tf.m[3]! * tf.m[3]!) * height;

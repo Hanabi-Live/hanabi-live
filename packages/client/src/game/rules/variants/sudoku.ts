@@ -4,7 +4,7 @@ import {
   DEFAULT_FINISHED_STACK_LENGTH,
 } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { eRange, iRange, newArray } from "@hanabi/utils";
+import { assertDefined, eRange, iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { getAllDiscardedSet } from "./discardHelpers";
@@ -23,11 +23,10 @@ export function sudokuCanStillBePlayed(
   const { suitMaxScores } = sudokuWalkUpAll(allDiscardedSet);
 
   const playStackStart = playStackStarts[suitIndex];
-  if (playStackStart === undefined) {
-    throw new Error(
-      `Failed to find the play stack start for suit index: ${suitIndex}`,
-    );
-  }
+  assertDefined(
+    playStackStart,
+    `Failed to find the play stack start for suit index: ${suitIndex}`,
+  );
 
   const possibleStackStartRanks =
     playStackStart === null

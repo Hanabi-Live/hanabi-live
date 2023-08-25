@@ -1,3 +1,4 @@
+import { assertDefined } from "@hanabi/utils";
 import type { Suit } from "./interfaces/Suit";
 
 /**
@@ -39,11 +40,10 @@ function createSuitPattern(
     }
 
     const suitAbbreviation = suitAbbreviations[suitIndex];
-    if (suitAbbreviation === undefined) {
-      throw new Error(
-        `Failed to find the suit abbreviation for index: ${suitIndex}`,
-      );
-    }
+    assertDefined(
+      suitAbbreviation,
+      `Failed to find the suit abbreviation for index: ${suitIndex}`,
+    );
 
     alternation += suitAbbreviation.toLowerCase();
     alternation += "|";

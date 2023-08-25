@@ -7,7 +7,7 @@ import type {
   PlayerIndex,
   RankClueNumber,
 } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
@@ -177,12 +177,6 @@ export function send(hypoAction: ClientAction): void {
     }
 
     case "clue": {
-      if (hypoAction.value === undefined) {
-        throw new Error(
-          "The hypothetical action was a clue but it did not include a value.",
-        );
-      }
-
       const clue = hypoActionToMsgClue(hypoAction);
       const list = getTouchedCardsFromClue(hypoAction.target, clue);
       sendHypoAction({
@@ -218,6 +212,11 @@ export function send(hypoAction: ClientAction): void {
 }
 
 function hypoActionToMsgClue(hypoAction: ClientAction): MsgClue {
+  assertDefined(
+    hypoAction.value,
+    "The hypothetical action was a clue but it did not include a value.",
+  );
+
   switch (hypoAction.type) {
     case ActionType.ColorClue: {
       return {

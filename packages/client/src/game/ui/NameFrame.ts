@@ -1,4 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";
@@ -21,12 +22,11 @@ export class NameFrame extends Konva.Group {
     super(config);
     this.listening(true); // Needed for the hover events
 
-    if (config.width === undefined) {
-      throw new Error("A NameFrame was initialized without a width.");
-    }
-    if (config.height === undefined) {
-      throw new Error("A NameFrame was initialized without a height.");
-    }
+    assertDefined(config.width, "A NameFrame was initialized without a width.");
+    assertDefined(
+      config.height,
+      "A NameFrame was initialized without a height.",
+    );
 
     // Class variables
     this.playerIndex = playerIndex;

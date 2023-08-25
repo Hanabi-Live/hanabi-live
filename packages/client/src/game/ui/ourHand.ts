@@ -1,5 +1,6 @@
 // Helper functions for doing actions to our own hand.
 
+import { assertDefined } from "@hanabi/utils";
 import type { CardLayout } from "./CardLayout";
 import { globals } from "./UIGlobals";
 
@@ -12,11 +13,11 @@ export function get(): CardLayout {
 
   const { ourPlayerIndex } = globals.metadata;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
-  if (ourHand === undefined) {
-    throw new Error(
-      `Failed to get our hand with an index of: ${ourPlayerIndex}`,
-    );
-  }
+  assertDefined(
+    ourHand,
+    `Failed to get our hand with an index of: ${ourPlayerIndex}`,
+  );
+
   return ourHand;
 }
 
@@ -27,10 +28,10 @@ export function checkSetDraggableAll(): void {
 
   const { ourPlayerIndex } = globals.metadata;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
-  if (ourHand === undefined) {
-    throw new Error(
-      `Failed to get our hand with an index of: ${ourPlayerIndex}`,
-    );
-  }
+  assertDefined(
+    ourHand,
+    `Failed to get our hand with an index of: ${ourPlayerIndex}`,
+  );
+
   ourHand.checkSetDraggableAll();
 }

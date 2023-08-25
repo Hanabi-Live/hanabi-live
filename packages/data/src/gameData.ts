@@ -1,3 +1,4 @@
+import { assertDefined } from "@hanabi/utils";
 import { charactersInit } from "./charactersInit";
 import { colorsInit } from "./colorsInit";
 import { DEFAULT_VARIANT_NAME } from "./constants";
@@ -34,33 +35,30 @@ const VARIANTS_BY_ID: ReadonlyMap<number, Variant> = (() => {
 
 export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);
-  if (suit === undefined) {
-    throw new Error(
-      `Failed to find the "${suitName}" suit in the "SUITS" map.`,
-    );
-  }
+  assertDefined(
+    suit,
+    `Failed to find the "${suitName}" suit in the "SUITS" map.`,
+  );
 
   return suit;
 }
 
 export function getVariant(variantName: string): Variant {
   const variant = VARIANTS.get(variantName);
-  if (variant === undefined) {
-    throw new Error(
-      `Failed to find the "${variantName}" variant in the "VARIANTS" map.`,
-    );
-  }
+  assertDefined(
+    variant,
+    `Failed to find the "${variantName}" variant in the "VARIANTS" map.`,
+  );
 
   return variant;
 }
 
 export function getVariantByID(variantID: number): Variant {
   const variant = VARIANTS_BY_ID.get(variantID);
-  if (variant === undefined) {
-    throw new Error(
-      `Failed to find the #"${variantID}" variant in the "VARIANTS" map.`,
-    );
-  }
+  assertDefined(
+    variant,
+    `Failed to find the "${variantID}" variant in the "VARIANTS_BY_ID" map.`,
+  );
 
   return variant;
 }
@@ -75,11 +73,10 @@ export function doesVariantExist(variantName: string): boolean {
 
 export function getCharacter(characterID: number): Character {
   const character = CHARACTERS.get(characterID);
-  if (character === undefined) {
-    throw new Error(
-      `Failed to find the character corresponding to ID ${characterID} in the "CHARACTERS" map.`,
-    );
-  }
+  assertDefined(
+    character,
+    `Failed to find the character corresponding to ID ${characterID} in the "CHARACTERS" map.`,
+  );
 
   return character;
 }

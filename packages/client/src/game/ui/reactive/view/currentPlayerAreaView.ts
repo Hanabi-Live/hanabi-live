@@ -1,5 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import Konva from "konva";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as handRules from "../../../rules/hand";
@@ -199,11 +199,11 @@ export function onChanged(
 
 function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
   const hand = globals.elements.playerHands[playerIndex];
-  if (hand === undefined) {
-    throw new Error(
-      `Failed to get the hand corresponding to the player at index: ${playerIndex}`,
-    );
-  }
+  assertDefined(
+    hand,
+    `Failed to get the hand corresponding to the player at index: ${playerIndex}`,
+  );
+
   const centerPos = hand.getAbsoluteCenterPos();
 
   if (globals.lobby.settings.keldonMode) {

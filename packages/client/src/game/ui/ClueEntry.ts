@@ -1,6 +1,7 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI).
 
 import type { CardOrder } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import Konva from "konva";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "../rules/clues";
@@ -23,13 +24,9 @@ export class ClueEntry extends Konva.Group {
 
     // Object variables
     const w = config.width;
-    if (w === undefined) {
-      throw new Error('ClueEntry was not provided with a "w" value.');
-    }
+    assertDefined(w, 'ClueEntry was not provided with a "width" value.');
     const h = config.height;
-    if (h === undefined) {
-      throw new Error('ClueEntry was not provided with a "h" value.');
-    }
+    assertDefined(h, 'ClueEntry was not provided with a "height" value.');
 
     this.background = new Konva.Rect({
       x: 0,

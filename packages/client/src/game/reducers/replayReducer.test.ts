@@ -1,3 +1,4 @@
+import { assertDefined } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {
   hypoAction,
@@ -57,11 +58,10 @@ describe("replayReducer", () => {
       state = replayReducer(state, hypoClue, false, testState.metadata);
 
       const gameState = testState.replay.states[testState.replay.segment];
-      if (gameState === undefined) {
-        throw new Error(
-          `Failed to get the game state at segment: ${testState.replay.segment}`,
-        );
-      }
+      assertDefined(
+        gameState,
+        `Failed to get the game state at segment: ${testState.replay.segment}`,
+      );
 
       const expectedClues = gameState.clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);

@@ -1,3 +1,4 @@
+import { assertDefined } from "@hanabi/utils";
 import { ALL_RESERVED_NOTES } from "./abbreviations";
 import { SUIT_REVERSED_SUFFIX } from "./constants";
 import type { Color } from "./interfaces/Color";
@@ -191,11 +192,10 @@ function getSuitClueColors(
     // Convert the color name strings to color objects.
     return suitJSON.clueColors.map((colorName) => {
       const color = COLORS.get(colorName);
-      if (color === undefined) {
-        throw new Error(
-          `The clue color "${colorName}" for the suit "${suitJSON.name}" does not exist.`,
-        );
-      }
+      assertDefined(
+        color,
+        `The clue color "${colorName}" for the suit "${suitJSON.name}" does not exist.`,
+      );
 
       return color;
     });

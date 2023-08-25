@@ -1,4 +1,5 @@
 import type { Rank } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 
 type DrawFunction = (ctx: CanvasRenderingContext2D) => void;
 const shapeFunctions = new Map<number, DrawFunction>();
@@ -1308,9 +1309,10 @@ export function drawStylizedRank(
 ): void {
   // Each rank has a shape.
   const shapeFunction = shapeFunctions.get(rank);
-  if (shapeFunction === undefined) {
-    throw new Error(`Failed to find the shape function for rank "${rank}".`);
-  }
+  assertDefined(
+    shapeFunction,
+    `Failed to find the shape function for rank: ${rank}`,
+  );
 
   ctx.save();
   // Move the cursor to the top-left hand corner.

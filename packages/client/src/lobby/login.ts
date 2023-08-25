@@ -2,6 +2,7 @@
 
 import type { HTTPLoginData } from "@hanabi/data";
 import { VERSION } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";
@@ -254,11 +255,11 @@ function formError(msg: string) {
     $("#login-alert").fadeIn(FADE_TIME);
 
     const offset = $("#login-alert").offset();
-    if (offset === undefined) {
-      throw new Error(
-        'Failed to get the coordinates for the "#login-alert" element.',
-      );
-    }
+    assertDefined(
+      offset,
+      'Failed to get the coordinates for the "#login-alert" element.',
+    );
+
     $("html, body").animate(
       {
         scrollTop: offset.top,

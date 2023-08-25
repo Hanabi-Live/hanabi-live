@@ -1,4 +1,4 @@
-import { parseIntSafe } from "@hanabi/utils";
+import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
 import {
   DEFAULT_CARD_RANKS,
@@ -50,11 +50,10 @@ export function variantsInit(
     // The suits are specified as an array of strings. Convert the strings to objects.
     const suits = variantJSON.suits.map((suitName) => {
       const suit = SUITS.get(suitName);
-      if (suit === undefined) {
-        throw new Error(
-          `The "${name}" variant has a "${suitName}" suit, which does not exist.`,
-        );
-      }
+      assertDefined(
+        suit,
+        `The "${name}" variant has a "${suitName}" suit, which does not exist.`,
+      );
 
       return suit;
     });
@@ -393,11 +392,10 @@ function getVariantClueColors(
   // The clue colors are specified as an array of strings. Convert the strings to objects.
   return variantJSON.clueColors.map((colorString) => {
     const color = COLORS.get(colorString);
-    if (color === undefined) {
-      throw new Error(
-        `The "${variantJSON.name}" variant has a clue color of "${colorString}", which does not exist.`,
-      );
-    }
+    assertDefined(
+      color,
+      `The "${variantJSON.name}" variant has a clue color of "${colorString}", which does not exist.`,
+    );
 
     return color;
   });
@@ -413,11 +411,10 @@ function getVariantShowSuitNames(
   // this case.
   const hasSuitIDThatEndsWithANumber = suits.some((suit) => {
     const finalIDCharacter = suit.id.at(-1);
-    if (finalIDCharacter === undefined) {
-      throw new Error(
-        `Failed to get the final character of the ID of suit: ${suit.name}`,
-      );
-    }
+    assertDefined(
+      finalIDCharacter,
+      `Failed to get the final character of the ID of suit: ${suit.name}`,
+    );
 
     const finalIDNumber = parseIntSafe(finalIDCharacter);
     return finalIDNumber !== undefined;

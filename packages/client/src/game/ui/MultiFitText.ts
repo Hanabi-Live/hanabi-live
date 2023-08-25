@@ -1,4 +1,4 @@
-import { eRange } from "@hanabi/utils";
+import { assertDefined, eRange } from "@hanabi/utils";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
@@ -10,11 +10,10 @@ export class MultiFitText extends Konva.Group {
   constructor(config: Konva.ContainerConfig, maxLines: number) {
     super(config);
 
-    if (config.height === undefined) {
-      throw new Error(
-        'The "height" property is not defined on a new MultiFitText.',
-      );
-    }
+    assertDefined(
+      config.height,
+      'The "height" property is not defined on a new MultiFitText.',
+    );
 
     this.maxLines = maxLines;
 

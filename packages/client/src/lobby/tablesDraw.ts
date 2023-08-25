@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables.
 
 import { MAX_PLAYERS } from "@hanabi/data";
-import { iRange } from "@hanabi/utils";
+import { assertDefined, iRange } from "@hanabi/utils";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -87,9 +87,7 @@ export function tablesDraw(): void {
   let addedJoinFirstTableButton = false;
   for (const id of sortedTableIDs) {
     const table = globals.tableMap.get(id);
-    if (table === undefined) {
-      throw new Error(`Failed to get the table for the ID of "${id}".`);
-    }
+    assertDefined(table, `Failed to get the table for the ID of: ${id}`);
 
     // Set the background color of the row, depending on what kind of game it is.
     let htmlClass: string;

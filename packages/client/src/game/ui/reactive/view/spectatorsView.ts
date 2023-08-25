@@ -1,3 +1,4 @@
+import { assertDefined } from "@hanabi/utils";
 import * as tooltips from "../../../../tooltips";
 import type { Spectator } from "../../../types/Spectator";
 import { globals } from "../../UIGlobals";
@@ -38,11 +39,11 @@ export function onSpectatorsChanged(data: {
       if (spectator.shadowingPlayerIndex !== -1 && !data.finished) {
         const playerName =
           globals.metadata.playerNames[spectator.shadowingPlayerIndex];
-        if (playerName === undefined) {
-          throw new Error(
-            `Failed to find the player name at index: ${spectator.shadowingPlayerIndex}`,
-          );
-        }
+        assertDefined(
+          playerName,
+          `Failed to find the player name at index: ${spectator.shadowingPlayerIndex}`,
+        );
+
         if (playerName !== spectator.name) {
           nameEntry += ` (🕵️ <em>${playerName}</em>)`;
         }

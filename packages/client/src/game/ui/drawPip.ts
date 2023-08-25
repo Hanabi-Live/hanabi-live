@@ -1,4 +1,5 @@
 import type { Suit } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 
 type DrawFunction = (
   ctx: CanvasRenderingContext2D,
@@ -3380,9 +3381,10 @@ export function drawPip(
 
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property).
   const shapeFunction = shapeFunctions.get(suit.pip);
-  if (shapeFunction === undefined) {
-    throw new Error(`Failed to find the shape function for pip "${suit.pip}".`);
-  }
+  assertDefined(
+    shapeFunction,
+    `Failed to find the shape function for pip "${suit.pip}".`,
+  );
 
   // Handle the shadow
   if (shadow === true) {

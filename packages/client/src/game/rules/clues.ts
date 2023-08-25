@@ -2,6 +2,7 @@
 
 import type { PlayerIndex, Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue, ColorClue, RankClue } from "../types/Clue";
 import { newColorClue, newRankClue } from "../types/Clue";
@@ -61,11 +62,10 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   switch (msgClue.type) {
     case ClueType.Color: {
       const color = variant.clueColors[msgClue.value];
-      if (color === undefined) {
-        throw new Error(
-          `Failed to get the variant clue color at index: ${msgClue.value}`,
-        );
-      }
+      assertDefined(
+        color,
+        `Failed to get the variant clue color at index: ${msgClue.value}`,
+      );
 
       return newColorClue(color);
     }

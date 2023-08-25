@@ -1,6 +1,7 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
 import type { GameState } from "../types/GameState";
@@ -68,9 +69,7 @@ describe("UI", () => {
 
 function getGameStateAtTurn(state: State, turn: number): GameState {
   const gameState = state.replay.states[turn];
-  if (gameState === undefined) {
-    throw new Error(`Failed to get the game state at turn: ${turn}`);
-  }
+  assertDefined(gameState, `Failed to get the game state at turn: ${turn}`);
 
   return gameState;
 }

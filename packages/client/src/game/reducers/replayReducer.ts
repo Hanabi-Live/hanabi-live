@@ -1,5 +1,6 @@
 // The reducer for replays and hypotheticals.
 
+import { assertDefined } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -140,11 +141,10 @@ function replayReducerFunction(
       }
 
       const ongoing = state.states[state.segment];
-      if (ongoing === undefined) {
-        throw new Error(
-          `Failed to get the game state for segment: ${state.segment}`,
-        );
-      }
+      assertDefined(
+        ongoing,
+        `Failed to get the game state for segment: ${state.segment}`,
+      );
 
       const startingPlayerIndex = ongoing.turn.currentPlayerIndex;
 

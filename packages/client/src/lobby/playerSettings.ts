@@ -1,6 +1,6 @@
 // The "Settings" nav button.
 
-import { isKeyOf, parseIntSafe } from "@hanabi/utils";
+import { assertDefined, isKeyOf, parseIntSafe } from "@hanabi/utils";
 import { globals } from "../Globals";
 import * as notifications from "../notifications";
 
@@ -17,11 +17,10 @@ export function init(): void {
     }
 
     const volume = parseIntSafe(volumeString);
-    if (volume === undefined) {
-      throw new TypeError(
-        `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
-      );
-    }
+    assertDefined(
+      volume,
+      `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
+    );
 
     globals.settings.volume = volume;
     $("#settings-volume-slider-value").html(`${volume}%`);
@@ -42,11 +41,10 @@ export function init(): void {
     }
 
     const volume = parseIntSafe(volumeString);
-    if (volume === undefined) {
-      throw new TypeError(
-        `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
-      );
-    }
+    assertDefined(
+      volume,
+      `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
+    );
 
     audio.volume = volume / 100;
     audio.play().catch((error) => {

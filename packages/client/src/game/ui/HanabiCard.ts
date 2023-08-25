@@ -9,7 +9,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getSuit } from "@hanabi/data";
-import { iRange } from "@hanabi/utils";
+import { assertDefined, iRange } from "@hanabi/utils";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -369,11 +369,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // Card identities are stored on the global state for convenience.
     const cardIdentity = globals.state.cardIdentities[this.state.order];
-    if (cardIdentity === undefined) {
-      throw new Error(
-        `Failed to get the previously known card identity for card: ${this.state.order}`,
-      );
-    }
+    assertDefined(
+      cardIdentity,
+      `Failed to get the previously known card identity for card: ${this.state.order}`,
+    );
+
     return cardIdentity;
   }
 
@@ -1111,13 +1111,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         `Failed to animate card ${this.state.order} to the play stacks since it has a null suit index.`,
       );
     }
-    const suit = this.variant.suits[this.state.suitIndex]!;
+
+    const suit = this.variant.suits[this.state.suitIndex];
+    assertDefined(
+      suit,
+      `Failed to animate card ${this.state.order} to the play stacks since the suit was not found at index: ${this.state.suitIndex}`,
+    );
+
     const playStack = globals.elements.playStacks.get(suit);
-    if (playStack === undefined) {
-      throw new Error(
-        `Failed to get animate card ${this.state.order} to the play stacks since the play stack for suit index ${this.state.suitIndex} is undefined.`,
-      );
-    }
+    assertDefined(
+      playStack,
+      `Failed to animate card ${this.state.order} to the play stacks since the play stack was not found for suit: ${suit.name}`,
+    );
+
     playStack.addChild(this.layout);
 
     // We also want to move this stack to the top so that cards do not tween behind the other play
@@ -1148,13 +1154,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         `Failed to animate card ${this.state.order} to the discard pile since it has a null suit index.`,
       );
     }
-    const suit = this.variant.suits[this.state.suitIndex]!;
+
+    const suit = this.variant.suits[this.state.suitIndex];
+    assertDefined(
+      suit,
+      `Failed to animate card ${this.state.order} to the discard pile since the suit was not found at index: ${this.state.suitIndex}`,
+    );
+
     const discardStack = globals.elements.discardStacks.get(suit);
-    if (discardStack === undefined) {
-      throw new Error(
-        `Failed to get animate card ${this.state.order} to the discard pile since the discard stack for suit index ${this.state.suitIndex} is undefined.`,
-      );
-    }
+    assertDefined(
+      discardStack,
+      `Failed to animate card ${this.state.order} to the discard pile since the discard stack was not found for suit: ${suit.name}`,
+    );
+
     discardStack.addChild(this.layout);
 
     // We need to bring the discarded card to the top so that when it tweens to the discard pile, it
