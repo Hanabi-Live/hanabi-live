@@ -1,6 +1,6 @@
 import type { NumPlayers } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { eRange, newArray } from "@hanabi/utils";
+import { assertNotNull, eRange, newArray } from "@hanabi/utils";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/types/Container";
 import { MultiFitText } from "./MultiFitText";
@@ -141,16 +141,18 @@ export class FullActionLog extends Konva.Group {
 
     this.show();
 
-    if (globals.elements.stageFade === null) {
-      throw new Error('The "stageFade" element was not initialized.');
-    }
+    assertNotNull(
+      globals.elements.stageFade,
+      'The "stageFade" element was not initialized.',
+    );
     globals.elements.stageFade.show();
     globals.layers.UI2.batchDraw();
 
     globals.elements.stageFade.on("click tap", () => {
-      if (globals.elements.stageFade === null) {
-        throw new Error('The "stageFade" element was not initialized.');
-      }
+      assertNotNull(
+        globals.elements.stageFade,
+        'The "stageFade" element was not initialized.',
+      );
       globals.elements.stageFade.off("click tap");
       this.playerLogEmptyMessage.hide();
       this.playerLogs[playerIndex]?.hide();

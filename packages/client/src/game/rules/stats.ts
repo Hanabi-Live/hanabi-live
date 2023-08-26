@@ -3,7 +3,7 @@
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { DEFAULT_FINISHED_STACK_LENGTH, MAX_CLUE_NUM } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { newArray, sumArray } from "@hanabi/utils";
+import { assertNotNull, newArray, sumArray } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import type { GameState, PaceRisk } from "../types/GameState";
@@ -430,9 +430,7 @@ export function startingCluesUsable(
     suitValue,
     MAX_CLUE_NUM,
   );
-  if (startingClues === null) {
-    throw new Error("The starting clues usable was null.");
-  }
+  assertNotNull(startingClues, "The starting clues usable was null.");
 
   return startingClues;
 }

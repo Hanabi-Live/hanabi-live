@@ -1,4 +1,5 @@
 import { getVariant } from "@hanabi/data";
+import { assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import * as deckRules from "../rules/deck";
@@ -79,11 +80,11 @@ function turnReducerFunction(
     case "clue": {
       turn.cluesGivenThisTurn++;
 
-      if (turn.segment === null) {
-        throw new Error(
-          `A "${action.type}" action happened before all of the initial cards were dealt.`,
-        );
-      }
+      assertNotNull(
+        turn.segment,
+        `A "${action.type}" action happened before all of the initial cards were dealt.`,
+      );
+
       turn.segment++;
 
       if (
@@ -139,11 +140,10 @@ function turnReducerFunction(
     }
 
     case "gameOver": {
-      if (turn.segment === null) {
-        throw new Error(
-          `A "${action.type}" action happened before all of the initial cards were dealt.`,
-        );
-      }
+      assertNotNull(
+        turn.segment,
+        `A "${action.type}" action happened before all of the initial cards were dealt.`,
+      );
 
       // Setting the current player index to null signifies that the game is over and will prevent
       // any name frames from being highlighted on subsequent segments.
@@ -167,11 +167,10 @@ function turnReducerFunction(
     }
 
     case "playerTimes": {
-      if (turn.segment === null) {
-        throw new Error(
-          `A "${action.type}" action happened before all of the initial cards were dealt.`,
-        );
-      }
+      assertNotNull(
+        turn.segment,
+        `A "${action.type}" action happened before all of the initial cards were dealt.`,
+      );
 
       // At the end of the game, the server will send us how much time each player finished with as
       // well as the total game duration; we want all of this text on its own replay segment to

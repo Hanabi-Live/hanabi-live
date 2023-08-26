@@ -1,3 +1,4 @@
+import { assertNotNull } from "@hanabi/utils";
 import Konva from "konva";
 import { globals } from "../UIGlobals";
 import { drawLayer } from "../konvaHelpers";
@@ -155,18 +156,20 @@ export class CheckButton extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement !== null) {
-      this.textElement.text(newText);
-    } else {
-      throw new Error('The "text()" method was called on a non-text Button.');
-    }
+    assertNotNull(
+      this.textElement,
+      'The "text()" method was called on a non-text Button.',
+    );
+
+    this.textElement.text(newText);
   }
 
   fill(newFill: string): void {
-    if (this.textElement !== null) {
-      this.textElement.fill(newFill);
-    } else {
-      throw new Error('The "fill()" method was called on a non-text Button.');
-    }
+    assertNotNull(
+      this.textElement,
+      'The "fill()" method was called on a non-text Button.',
+    );
+
+    this.textElement.fill(newFill);
   }
 }

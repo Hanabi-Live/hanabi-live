@@ -1,4 +1,5 @@
 import type { NumPlayers } from "@hanabi/data";
+import { assertNotNull } from "@hanabi/utils";
 import * as statsRules from "../../../rules/stats";
 import type { PaceRisk } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";
@@ -150,9 +151,7 @@ export function onPaceOrPaceRiskChanged(data: {
   finalRoundEffectivelyStarted: boolean;
 }): void {
   const label = globals.elements.paceNumberLabel;
-  if (label === null) {
-    throw new Error("paceNumberLabel is not initialized.");
-  }
+  assertNotNull(label, "paceNumberLabel is not initialized.");
 
   // Update the pace. (Part of the efficiency statistics on the right-hand side of the screen.) If
   // there are no cards left in the deck, pace is meaningless.
@@ -242,9 +241,8 @@ export function onMaxTurnsChanged(data: {
   const maxTotalTurns = turnNum + maxTurnsLeft;
 
   const label = globals.elements.turnNumberLabel;
-  if (label === null) {
-    throw new Error("turnNumberLabel is not initialized.");
-  }
+  assertNotNull(label, "turnNumberLabel is not initialized.");
+
   label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
 &nbsp; &nbsp; &nbsp; &nbsp;<span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />
 &nbsp; &nbsp; &nbsp; &nbsp;<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;

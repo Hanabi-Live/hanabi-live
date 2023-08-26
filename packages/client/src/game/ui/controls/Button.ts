@@ -1,3 +1,4 @@
+import { assertNotNull } from "@hanabi/utils";
 import Konva from "konva";
 import { drawLayer } from "../konvaHelpers";
 import { FitText } from "./FitText";
@@ -127,24 +128,26 @@ export class Button extends Konva.Group {
   }
 
   text(newText: string): void {
-    if (this.textElement !== null) {
-      if (this.assignedTextSize) {
-        this.textElement.text(newText);
-      } else {
-        // Resize to fit the new text if we haven't been specifically given a size.
-        this.textElement.fitText(newText);
-      }
+    assertNotNull(
+      this.textElement,
+      'The "text()" method was called on a non-text Button.',
+    );
+
+    if (this.assignedTextSize) {
+      this.textElement.text(newText);
     } else {
-      throw new Error('The "text()" method was called on a non-text Button.');
+      // Resize to fit the new text if we haven't been specifically given a size.
+      this.textElement.fitText(newText);
     }
   }
 
   fill(newFill: string): void {
-    if (this.textElement !== null) {
-      this.textElement.fill(newFill);
-    } else {
-      throw new Error('The "fill()" method was called on a non-text Button.');
-    }
+    assertNotNull(
+      this.textElement,
+      'The "fill()" method was called on a non-text Button.',
+    );
+
+    this.textElement.fill(newFill);
   }
 
   setImage(image: HTMLImageElement): void {

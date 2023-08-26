@@ -1,6 +1,6 @@
 // The "Watch Specific Replay" nav button.
 
-import { parseIntSafe } from "@hanabi/utils";
+import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";
@@ -47,14 +47,24 @@ function replaySourceChange() {
 function submit() {
   // Source
   const sourceID = $("input[type=radio][name=replay-source]:checked")[0]!.id;
+
   let source: string;
-  if (sourceID === "replay-source-id") {
-    source = "id";
-  } else if (sourceID === "replay-source-json") {
-    source = "json";
-  } else {
-    throw new Error('Invalid value for "replay-source".');
+  switch (sourceID) {
+    case "replay-source-id": {
+      source = "id";
+      break;
+    }
+
+    case "replay-source-json": {
+      source = "json";
+      break;
+    }
+
+    default: {
+      throw new Error('Invalid value for "replay-source".');
+    }
   }
+
   localStorage.setItem("watchReplaySource", source);
 
   // Error
@@ -104,17 +114,32 @@ function submit() {
   }
 
   // Visibility
-  const visibilityID = $(
+  const visibilityIDElement = $(
     "input[type=radio][name=replay-visibility]:checked",
-  )[0]!.id;
+  )[0];
+  assertDefined(
+    visibilityIDElement,
+    "Failed to get the replay visibility element.",
+  );
+  const visibilityID = visibilityIDElement.id;
+
   let visibility: string;
-  if (visibilityID === "replay-visibility-solo") {
-    visibility = "solo";
-  } else if (visibilityID === "replay-visibility-shared") {
-    visibility = "shared";
-  } else {
-    throw new Error('Invalid value for "replay-visibility".');
+  switch (visibilityID) {
+    case "replay-visibility-solo": {
+      visibility = "solo";
+      break;
+    }
+
+    case "replay-visibility-shared": {
+      visibility = "shared";
+      break;
+    }
+
+    default: {
+      throw new Error('Invalid value for "replay-visibility".');
+    }
   }
+
   localStorage.setItem("watchReplayVisibility", visibility);
 
   if (source === "id") {

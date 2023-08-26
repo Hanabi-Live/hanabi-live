@@ -9,7 +9,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getSuit } from "@hanabi/data";
-import { assertDefined, iRange } from "@hanabi/utils";
+import { assertDefined, assertNotNull, iRange } from "@hanabi/utils";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -1106,11 +1106,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.removeLayoutChildFromParent();
 
     // Adding the card to the play stack will automatically tween the card.
-    if (this.state.suitIndex === null) {
-      throw new Error(
-        `Failed to animate card ${this.state.order} to the play stacks since it has a null suit index.`,
-      );
-    }
+    assertNotNull(
+      this.state.suitIndex,
+      `Failed to animate card ${this.state.order} to the play stacks since it has a null suit index.`,
+    );
 
     const suit = this.variant.suits[this.state.suitIndex];
     assertDefined(
@@ -1149,11 +1148,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.removeLayoutChildFromParent();
 
     // Adding the card to the discard pile will automatically tween the card.
-    if (this.state.suitIndex === null) {
-      throw new Error(
-        `Failed to animate card ${this.state.order} to the discard pile since it has a null suit index.`,
-      );
-    }
+    assertNotNull(
+      this.state.suitIndex,
+      `Failed to animate card ${this.state.order} to the discard pile since it has a null suit index.`,
+    );
 
     const suit = this.variant.suits[this.state.suitIndex];
     assertDefined(

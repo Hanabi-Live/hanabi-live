@@ -1,4 +1,4 @@
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined, assertNotNull } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {
   hypoAction,
@@ -39,9 +39,7 @@ describe("replayReducer", () => {
         metadata,
       );
 
-      if (state.hypothetical === null) {
-        throw new Error("Failed to start the hypothetical.");
-      }
+      assertNotNull(state.hypothetical, "Failed to start the hypothetical.");
 
       expect(state.hypothetical.ongoing).toBe(
         testState.replay.states[testState.replay.segment],

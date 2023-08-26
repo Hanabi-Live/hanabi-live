@@ -1,6 +1,7 @@
 import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
+import { assertDefined } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
@@ -52,9 +53,8 @@ export function clue(
     const slots: number[] = [];
     for (const order of action.list) {
       const slot = handRules.cardSlot(order, targetHand);
-      if (slot === null) {
-        throw new Error(`Failed to get the slot for card: ${order}`);
-      }
+      assertDefined(slot, `Failed to get the slot for card: ${order}`);
+
       slots.push(slot);
     }
     slots.sort((a, b) => a - b);

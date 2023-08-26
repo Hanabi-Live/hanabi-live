@@ -448,20 +448,24 @@ function iconsFromOptions(icons: string[]): string {
   }
 }
 
-function makeReplayButton(databaseID: number, visibility: string) {
+function makeReplayButton(databaseID: number, visibility: "solo" | "shared") {
   const button = $("<button>")
     .attr("type", "button")
     .addClass("button fit margin0");
+
   let text: string;
-  if (visibility === "solo") {
-    text = '<i class="fas fa-eye lobby-button-icon"></i>';
-  } else if (visibility === "shared") {
-    text = '<i class="fas fa-users lobby-button-icon"></i>';
-  } else {
-    throw new Error(
-      'The "makeReplayButton()" function was provided an invalid visibility argument.',
-    );
+  switch (visibility) {
+    case "solo": {
+      text = '<i class="fas fa-eye lobby-button-icon"></i>';
+      break;
+    }
+
+    case "shared": {
+      text = '<i class="fas fa-users lobby-button-icon"></i>';
+      break;
+    }
   }
+
   button.html(text);
   button.addClass("history-table");
   button.addClass("enter-history-game");

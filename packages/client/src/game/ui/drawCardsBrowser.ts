@@ -1,3 +1,4 @@
+import { assertNotNull } from "@hanabi/utils";
 import { CARD_H, CARD_W } from "./constants";
 
 export function initCanvas(): {
@@ -9,9 +10,7 @@ export function initCanvas(): {
   cvs.height = CARD_H;
 
   const ctx = cvs.getContext("2d");
-  if (ctx === null) {
-    throw new Error("Failed to get the context for a new canvas element.");
-  }
+  assertNotNull(ctx, "Failed to get the context for a new canvas element.");
 
   return {
     cvs,
@@ -28,9 +27,8 @@ export function cloneCanvas(
   newCvs.height = oldCvs.height;
 
   const ctx = newCvs.getContext("2d");
-  if (ctx === null) {
-    throw new Error("Failed to get the context for a new canvas element.");
-  }
+  assertNotNull(ctx, "Failed to get the context for a new canvas element.");
+
   ctx.drawImage(oldCvs, 0, 0);
 
   return newCvs;

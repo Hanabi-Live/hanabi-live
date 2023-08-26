@@ -1,6 +1,6 @@
 // The reducer for replays and hypotheticals.
 
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined, assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import type { GameMetadata } from "../types/GameMetadata";
@@ -74,19 +74,21 @@ function replayReducerFunction(
     }
 
     case "replaySharedSegment": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
+      assertNotNull(
+        state.shared,
+        `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
+      );
+
       if (typeof action.segment !== "number") {
         throw new TypeError(
           `The "${action.type}" action segment was not a number.`,
         );
       }
+
       if (action.segment < 0) {
         throw new Error(`The "${action.type}" action segment was less than 0.`);
       }
+
       state.shared.segment = action.segment;
 
       if (state.shared.useSharedSegments) {
@@ -97,11 +99,11 @@ function replayReducerFunction(
     }
 
     case "replayUseSharedSegments": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
+      assertNotNull(
+        state.shared,
+        `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
+      );
+
       state.shared.useSharedSegments = action.useSharedSegments;
 
       // If we are the replay leader and we are re-enabling shared segments, we also want to update
@@ -114,11 +116,11 @@ function replayReducerFunction(
     }
 
     case "replayLeader": {
-      if (state.shared === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-        );
-      }
+      assertNotNull(
+        state.shared,
+        `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
+      );
+
       state.shared.leader = action.name;
       state.shared.amLeader = action.name === metadata.ourUsername;
       break;
@@ -165,22 +167,20 @@ function replayReducerFunction(
     }
 
     case "hypoEnd": {
-      if (state.hypothetical === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched with a null hypothetical state.`,
-        );
-      }
+      assertNotNull(
+        state.hypothetical,
+        `A "${action.type}" action was dispatched with a null hypothetical state.`,
+      );
 
       state.hypothetical = null;
       break;
     }
 
     case "hypoBack": {
-      if (state.hypothetical === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched with a null hypothetical state.`,
-        );
-      }
+      assertNotNull(
+        state.hypothetical,
+        `A "${action.type}" action was dispatched with a null hypothetical state.`,
+      );
 
       const hypoStates = state.hypothetical.states;
       hypoStates.pop();
@@ -193,11 +193,10 @@ function replayReducerFunction(
     }
 
     case "hypoShowDrawnCards": {
-      if (state.hypothetical === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched with a null hypothetical state.`,
-        );
-      }
+      assertNotNull(
+        state.hypothetical,
+        `A "${action.type}" action was dispatched with a null hypothetical state.`,
+      );
 
       state.hypothetical.showDrawnCards = action.showDrawnCards;
 
@@ -226,11 +225,10 @@ function replayReducerFunction(
     }
 
     case "hypoAction": {
-      if (state.hypothetical === null) {
-        throw new Error(
-          `A "${action.type}" action was dispatched with a null hypothetical state.`,
-        );
-      }
+      assertNotNull(
+        state.hypothetical,
+        `A "${action.type}" action was dispatched with a null hypothetical state.`,
+      );
 
       hypoAction(state, action.action, finished, metadata);
       break;
@@ -244,11 +242,10 @@ function hypoAction(
   finished: boolean,
   metadata: GameMetadata,
 ) {
-  if (state.hypothetical === null) {
-    throw new Error(
-      'A "hypoAction" action was dispatched with a null hypothetical state.',
-    );
-  }
+  assertNotNull(
+    state.hypothetical,
+    `A "${action.type}" action was dispatched with a null hypothetical state.`,
+  );
 
   // The morph action is handled here. Also take note of any draws that conflict with the known card
   // identities.

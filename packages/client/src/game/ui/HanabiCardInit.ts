@@ -600,6 +600,7 @@ function scaleCardImage(
           "Failed to get the context for a new scaled card image.",
         );
       }
+
       scaleContext.drawImage(src, 0, 0, sw, sh);
 
       scaledCardImages[steps] = scaledCardImage;

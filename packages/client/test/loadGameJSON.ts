@@ -8,7 +8,7 @@ import type {
   SuitIndex,
 } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
-import { assertDefined, eRange } from "@hanabi/utils";
+import { assertDefined, assertNotNull, eRange } from "@hanabi/utils";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
@@ -152,12 +152,14 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           jsonCard,
           `Failed to get the card at order ${a.order} in the JSON deck.`,
         );
-
-        if (jsonCard.suitIndex === null || jsonCard.rank === null) {
-          throw new Error(
-            `Failed to get the rank or the suit for card ${a.order} in the JSON deck.`,
-          );
-        }
+        assertNotNull(
+          jsonCard.suitIndex,
+          `Failed to get the suit for card ${a.order} in the JSON deck.`,
+        );
+        assertNotNull(
+          jsonCard.rank,
+          `Failed to get the rank for card ${a.order} in the JSON deck.`,
+        );
 
         const playStack = s.playStacks[jsonCard.suitIndex];
         assertDefined(
@@ -293,12 +295,14 @@ function drawCard(
     cardIdentity,
     `Failed to draw a card with order "${order}" since the card identity was not found in the deck.`,
   );
-
-  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-    throw new Error(
-      `Failed to draw a card with order "${order}" since the suit index or rank of the card identity was null.`,
-    );
-  }
+  assertNotNull(
+    cardIdentity.suitIndex,
+    `Failed to draw a card with order "${order}" since the suit index of the card identity was null.`,
+  );
+  assertNotNull(
+    cardIdentity.rank,
+    `Failed to draw a card with order "${order}" since the rank of the card identity was null.`,
+  );
 
   return {
     type: "draw",

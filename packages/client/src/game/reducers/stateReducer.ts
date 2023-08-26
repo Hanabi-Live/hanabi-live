@@ -1,6 +1,6 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined, assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import * as segmentRules from "../rules/segment";
@@ -94,17 +94,20 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // segment will contain the times for all of the players, and this will drown out the reason
       // that the game ended.
       const inInGameReplay = state.replay.active;
-      if (state.ongoingGame.turn.segment === null) {
-        throw new Error(
-          "The segment for the ongoing game was null when it finished.",
-        );
-      }
+
+      assertNotNull(
+        state.ongoingGame.turn.segment,
+        "The segment for the ongoing game was null when it finished.",
+      );
+
       if (state.ongoingGame.turn.segment < 1) {
         throw new Error(
           "The segment for the ongoing game was less than 1 when it finished.",
         );
       }
+
       const penultimateSegment = state.ongoingGame.turn.segment - 1;
+
       if (!inInGameReplay) {
         state.replay.active = true;
         state.replay.segment = penultimateSegment;

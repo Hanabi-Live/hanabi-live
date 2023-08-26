@@ -1,3 +1,4 @@
+import { assertNotNull } from "@hanabi/utils";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
 import { LABEL_COLOR } from "./constants";
@@ -9,11 +10,10 @@ import * as keyboard from "./keyboard";
 // When the HanabiUI object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(): void {
-  if (globals.lobby.imageLoader === null) {
-    throw new Error(
-      "Failed to find the image loader when initializing the user interface.",
-    );
-  }
+  assertNotNull(
+    globals.lobby.imageLoader,
+    "Failed to find the image loader when initializing the user interface.",
+  );
 
   // Once the initial page (e.g. the login screen / lobby) is finished loading and ready, all of the
   // images relating to the game screen start to get pre-loaded by the "Loader" class. Copy the

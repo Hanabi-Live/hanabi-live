@@ -90,10 +90,6 @@ export function numCopiesOfCard(
         "Attempted to add a START card to a variant that is not Up or Down.",
       );
     }
-
-    default: {
-      throw new Error(`Unknown rank: ${rank}`);
-    }
   }
 }
 

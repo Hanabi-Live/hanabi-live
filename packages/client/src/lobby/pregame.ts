@@ -2,7 +2,7 @@
 
 import type { PlayerIndex } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
-import { eRange, iRange } from "@hanabi/utils";
+import { assertNotNull, eRange, iRange } from "@hanabi/utils";
 import { globals } from "../Globals";
 import * as chat from "../chat";
 import * as tooltips from "../tooltips";
@@ -108,11 +108,10 @@ export function hide(): void {
 }
 
 export function draw(): void {
-  if (globals.game === null) {
-    throw new Error(
-      'Attempted to draw the pre-game screen without having first received a "game" message from the server.',
-    );
-  }
+  assertNotNull(
+    globals.game,
+    'Attempted to draw the pre-game screen without having first received a "game" message from the server.',
+  );
 
   // Update the information on the left-hand side of the screen.
   $("#lobby-pregame-name").text(globals.game.name);
