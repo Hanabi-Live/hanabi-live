@@ -162,7 +162,6 @@ export async function httpInit(): Promise<void> {
   }
 
   fastify.setNotFoundHandler(async (_request, reply) => {
-    // TODO: custom 404 page
     await reply
       .code(StatusCodes.NOT_FOUND)
       .type("text/html")

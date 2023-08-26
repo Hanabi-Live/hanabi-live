@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- remove all `Array.from`
 - remove type assertions from lobby + views
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
@@ -17,9 +18,6 @@ short term:
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
 - get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer
-
-medium term:
-- custom 404 page
 
 long term once the server is rewritten in TypeScript:
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845

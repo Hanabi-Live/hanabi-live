@@ -23,3 +23,17 @@ function logWelcomeMessage() {
   logger.info(startText);
   logger.info(borderText);
 }
+
+const a = 123;
+switch (a) {
+  case 1:
+  case 2:
+  case 3: {
+    console.log("lol1");
+    break;
+  }
+  case 4: {
+    console.log("lol2");
+    break;
+  }
+}

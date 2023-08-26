@@ -30,7 +30,7 @@
     "@types/jsdom": "^21.1.2",
     "@types/linkifyjs": "^2.1.4",
     "@types/lodash": "^4.14.197",
-    "@types/node": "^20.5.3",
+    "@types/node": "^20.5.6",
     "@types/tooltipster": "^0.0.32",
     "bufferutil": "^4.0.7",
     "canvas": "^2.11.2",
@@ -49,10 +49,10 @@
     "http-status-codes": "^2.2.0",
     "immer": "^10.0.2",
     "interactjs": "^1.10.18",
-    "isaacscript": "^3.9.1",
-    "isaacscript-lint": "^5.4.1",
+    "isaacscript": "^3.9.2",
+    "isaacscript-lint": "^5.5.0",
     "isaacscript-tsconfig": "^4.0.0",
-    "jest": "^29.6.3",
+    "jest": "^29.6.4",
     "jquery": "^3.7.0",
     "jsdom": "^22.1.0",
     "jsonc-parser": "^3.2.0",
@@ -74,10 +74,10 @@
     "tsconfig": "^7.0.0",
     "tslib": "^2.6.2",
     "tsx": "^3.12.7",
-    "typescript": "^5.1.6",
+    "typescript": "^5.2.2",
     "ws": "^8.13.0",
     "xmlserializer": "^0.6.1",
     "zod": "^3.22.2"
   },
-  "packageManager": "yarn@3.6.2"
+  "packageManager": "yarn@3.6.3"
 }
