@@ -286,10 +286,10 @@ function keydown(event: JQuery.KeyDownEvent) {
       }
     }
   } else if (event.which === KeyCode.KEY_LEFT) {
-      globals.store!.dispatch({ type: "dragReset" });
-      hypothetical.sendBack();
-      return;
-    }
+    globals.store!.dispatch({ type: "dragReset" });
+    hypothetical.sendBack();
+    return;
+  }
 
   // Check for other keyboard hotkeys.
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;

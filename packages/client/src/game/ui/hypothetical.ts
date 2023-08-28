@@ -266,11 +266,11 @@ export function sendBack(): void {
       type: "hypoBack",
     });
   } else if (globals.state.replay.shared.amLeader) {
-      globals.lobby.conn!.send("replayAction", {
-        tableID: globals.lobby.tableID,
-        type: ReplayActionType.HypoBack,
-      });
-    }
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.HypoBack,
+    });
+  }
 }
 
 export function toggleRevealed(): void {
@@ -284,11 +284,11 @@ export function toggleRevealed(): void {
       showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
     });
   } else if (globals.state.replay.shared.amLeader) {
-      globals.lobby.conn!.send("replayAction", {
-        tableID: globals.lobby.tableID,
-        type: ReplayActionType.HypoToggleRevealed,
-      });
-    }
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: ReplayActionType.HypoToggleRevealed,
+    });
+  }
 }
 
 // Check if we need to disable the toggleRevealedButton. This happens when a newly drawn card is
