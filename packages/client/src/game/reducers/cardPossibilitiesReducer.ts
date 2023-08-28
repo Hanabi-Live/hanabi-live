@@ -81,7 +81,7 @@ export function cardPossibilitiesReducer(
   return newState;
 }
 
-// Based on the current possibilities, updates the known identity of this card.
+/** Based on the current possibilities, updates the known identity of this card. */
 function updateIdentity(
   state: CardState,
   possibleCardsFromClues: readonly SuitRankTuple[],
