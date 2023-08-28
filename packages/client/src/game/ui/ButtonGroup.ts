@@ -16,7 +16,7 @@ export class ButtonGroup extends Konva.Group {
   }
 
   addList(button: ClueButton): void {
-    const self = this; // eslint-disable-line @typescript-eslint/no-this-alias
+    const that = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
     this.list.push(button);
 
@@ -25,13 +25,13 @@ export class ButtonGroup extends Konva.Group {
       function buttonClick(this: Konva.Node) {
         (this as ClueButton).setPressed(true);
 
-        for (const clueButton of self.list) {
+        for (const clueButton of that.list) {
           if (clueButton !== this && clueButton.pressed) {
             clueButton.setPressed(false);
           }
         }
 
-        self.fire("change", null);
+        that.fire("change", null);
       },
     );
   }
