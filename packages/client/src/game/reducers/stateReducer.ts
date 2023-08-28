@@ -327,6 +327,8 @@ function reduceGameActions(
   metadata: GameMetadata,
 ) {
   const states: GameState[] = [initialState];
+
+  // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(
       s,
@@ -347,6 +349,7 @@ function reduceGameActions(
 
     return nextState;
   }, initialState);
+
   return { game, states };
 }
 

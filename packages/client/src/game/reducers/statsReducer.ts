@@ -2,6 +2,7 @@
 // action.
 
 import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
+import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import * as clueTokensRules from "../rules/clueTokens";
@@ -85,7 +86,7 @@ function statsReducerFunction(
       variant,
     );
 
-    stats.maxScore = stats.maxScorePerStack.reduce((a, b) => a + b, 0);
+    stats.maxScore = sumArray(stats.maxScorePerStack);
   }
 
   // Handle pace calculation.

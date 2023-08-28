@@ -99,17 +99,19 @@ export function discardedCopies(
   suitIndex: SuitIndex,
   rank: Rank,
 ): number {
-  return deck.reduce((discarded, card) => {
+  let numDiscardedCopies = 0;
+
+  for (const card of deck) {
     if (
       card.suitIndex === suitIndex &&
       card.rank === rank &&
       cardRules.isDiscarded(card)
     ) {
-      return discarded + 1;
+      numDiscardedCopies++;
     }
+  }
 
-    return discarded;
-  }, 0);
+  return numDiscardedCopies;
 }
 
 export function isInitialDealFinished(

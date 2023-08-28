@@ -90,16 +90,5 @@ module.exports = {
      * to avoid having to make changes to Golang code.)
      */
     "unicorn/no-null": "off",
-
-    /**
-     * Documentation:
-     * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-array-reduce.md
-     *
-     * Defined at:
-     * https://isaacscript.github.io/eslint-config-isaacscript
-     *
-     * We use reducers in the client for state management.
-     */
-    "unicorn/no-array-reduce": "off",
   },
 };

@@ -117,6 +117,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // Calculate all the intermediate states.
   const states: GameState[] = [state.ongoingGame];
 
+  // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
     let action = a;
     let nextState = s;
