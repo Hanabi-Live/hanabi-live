@@ -59,7 +59,7 @@ export function clue(
     }
     slots.sort((a, b) => a - b);
 
-    const slotWord = slots.length !== 1 ? "slots" : "slot";
+    const slotWord = slots.length === 1 ? "slot" : "slots";
     const slotsText = slots.join("/");
 
     return `${hypoPrefix}${giver} ${actionName} at ${targetSuffix} ${slotWord} ${slotsText}`;

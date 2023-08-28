@@ -198,18 +198,18 @@ function initReusableObjects() {
 }
 
 function drawActionLog() {
-  actionLogValues = !globals.lobby.settings.keldonMode
+  actionLogValues = globals.lobby.settings.keldonMode
     ? {
-        x: 0.01,
-        y: 0.01,
-        w: 0.4,
-        h: 0.25,
-      }
-    : {
         x: 0.2,
         y: 0.235,
         w: 0.4,
         h: 0.098,
+      }
+    : {
+        x: 0.01,
+        y: 0.01,
+        w: 0.4,
+        h: 0.25,
       };
 
   const actionLogGroup = new Konva.Group({

@@ -23,12 +23,12 @@ export function init(
   element.on("mouseover touchstart", function mouseOver(this: Konva.Node) {
     resetActiveHover();
     globals.activeHover = this;
-    if (!delayed) {
-      show(this);
-    } else {
+    if (delayed) {
       setTimeout(() => {
         show(this);
       }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
+    } else {
+      show(this);
     }
   });
 

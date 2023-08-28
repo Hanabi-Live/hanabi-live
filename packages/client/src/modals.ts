@@ -146,11 +146,11 @@ export function askForMorph(
 
   const { suits, ranks } = variant;
   const start =
-    card !== null ? card.getMorphedIdentity() : { suitIndex: null, rank: null };
+    card === null ? { suitIndex: null, rank: null } : card.getMorphedIdentity();
   const startSuitIndex = start.suitIndex ?? 0;
   const startRank = start.rank ?? 1;
 
-  const possibilities = card !== null ? card.state.possibleCardsForEmpathy : [];
+  const possibilities = card === null ? [] : card.state.possibleCardsForEmpathy;
   const startSuit = suits[startSuitIndex];
   assertDefined(
     startSuit,

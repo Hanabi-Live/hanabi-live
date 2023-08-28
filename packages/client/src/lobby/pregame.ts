@@ -565,10 +565,10 @@ export function toggleStartGameButton(): void {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
 
-  if (globals.game.owner !== globals.userID) {
-    $("#nav-buttons-pregame-change-variant").addClass("disabled");
-  } else {
+  if (globals.game.owner === globals.userID) {
     $("#nav-buttons-pregame-change-variant").removeClass("disabled");
+  } else {
+    $("#nav-buttons-pregame-change-variant").addClass("disabled");
   }
 }
 

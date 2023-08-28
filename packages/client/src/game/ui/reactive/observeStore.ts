@@ -42,9 +42,9 @@ export function observeStore<S, A extends Action<unknown>, T>(
     for (const subscription of filteredSubscriptions) {
       // `currentState` is undefined during initialization.
       const currentValue =
-        currentState !== undefined
-          ? subscription.select(currentState)
-          : undefined;
+        currentState === undefined
+          ? undefined
+          : subscription.select(currentState);
       subscription.onChange(subscription.select(nextState)!, currentValue);
     }
 

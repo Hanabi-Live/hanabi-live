@@ -234,13 +234,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   // Replay hotkeys
-  if (globals.state.replay.hypothetical !== null) {
-    if (event.which === KeyCode.KEY_LEFT) {
-      globals.store!.dispatch({ type: "dragReset" });
-      hypothetical.sendBack();
-      return;
-    }
-  } else {
+  if (globals.state.replay.hypothetical === null) {
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
         globals.store!.dispatch({ type: "dragReset" });
@@ -291,7 +285,11 @@ function keydown(event: JQuery.KeyDownEvent) {
         break;
       }
     }
-  }
+  } else if (event.which === KeyCode.KEY_LEFT) {
+      globals.store!.dispatch({ type: "dragReset" });
+      hypothetical.sendBack();
+      return;
+    }
 
   // Check for other keyboard hotkeys.
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;

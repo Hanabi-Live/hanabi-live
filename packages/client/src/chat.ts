@@ -502,10 +502,10 @@ export function add(data: ChatMessage, fast: boolean): void {
   }
   if (data.server || data.recipient !== "") {
     line += data.msg;
-  } else if (data.who !== "") {
-    line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
+  } else if (data.who === "") {
     line += data.msg;
   } else {
+    line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
     line += data.msg;
   }
   if (data.server && line.includes("[Server Notice]")) {

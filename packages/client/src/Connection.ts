@@ -45,19 +45,19 @@ export class Connection {
   onMessage(event: MessageEvent): void {
     const data = unpack(event.data as string);
     const command = data[0]!;
-    if (this.callbacks[command] !== undefined) {
+    if (this.callbacks[command] === undefined) {
+      console.error(
+        "Received WebSocket message with no callback:",
+        command,
+        JSON.parse(data[1]!),
+      );
+    } else {
       const obj = unmarshal(data[1]!);
       if (this.debug) {
         console.log(`%cReceived ${command}:`, "color: blue;");
         console.log(obj);
       }
       this.callbacks[command]!(obj);
-    } else {
-      console.error(
-        "Received WebSocket message with no callback:",
-        command,
-        JSON.parse(data[1]!),
-      );
     }
   }
 

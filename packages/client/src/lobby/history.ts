@@ -86,12 +86,12 @@ export function draw(friends: boolean): void {
   // Handle if the user has no history.
   if (ids.length === 0) {
     $("#lobby-history-no").show();
-    if (!friends) {
-      $("#lobby-history-no").html("No game history. Play some games!");
-    } else {
+    if (friends) {
       $("#lobby-history-no").html(
         "None of your friends have played any games yet.",
       );
+    } else {
+      $("#lobby-history-no").html("No game history. Play some games!");
     }
     $("#lobby-history").addClass("align-center-v");
     $("#lobby-history-table-container").hide();
@@ -254,13 +254,13 @@ export function drawOtherScores(
   }
 
   // Define the functionality of the "Return to History" button.
-  if (!friends) {
+  if (friends) {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
-      hideOtherScores();
+      hideOtherScoresToFriends();
     });
   } else {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
-      hideOtherScoresToFriends();
+      hideOtherScores();
     });
   }
 

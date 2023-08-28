@@ -11,7 +11,6 @@ module.exports = {
 
   rules: {
     // TODO: remove these lines
-    "unicorn/no-negated-condition": "off",
     "unicorn/prefer-string-replace-all": "off",
 
     /**

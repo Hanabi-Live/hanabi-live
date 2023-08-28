@@ -225,7 +225,19 @@ export function tablesDraw(): void {
             tableSpectate(table);
           }
         });
-    } else if (!table.joined) {
+    } else if (table.joined) {
+      const rowId = `resume-${table.id}`;
+      row
+        .attr("id", rowId)
+        .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+          if (event.ctrlKey) {
+            // Copy the URL that would occur from clicking on this table row.
+            copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
+          } else {
+            tableReattend(table);
+          }
+        });
+    } else {
       const rowId = `join-${table.id}`;
       row.attr("id", rowId);
       if (table.numPlayers >= MAX_PLAYERS) {
@@ -240,18 +252,6 @@ export function tablesDraw(): void {
           }
         });
       }
-    } else {
-      const rowId = `resume-${table.id}`;
-      row
-        .attr("id", rowId)
-        .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
-          if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row.
-            copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
-          } else {
-            tableReattend(table);
-          }
-        });
     }
 
     row.appendTo(tbody);

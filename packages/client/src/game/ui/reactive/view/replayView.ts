@@ -140,10 +140,10 @@ export function enterHypoButtonLocationChanged(data: {
 }): void {
   if (!data.finished) {
     globals.elements.enterHypoButton?.setLeft();
-  } else if (!data.shared) {
-    globals.elements.enterHypoButton?.setCenter();
-  } else {
+  } else if (data.shared) {
     globals.elements.enterHypoButton?.setRight();
+  } else {
+    globals.elements.enterHypoButton?.setCenter();
   }
 }
 

@@ -73,7 +73,7 @@ export function parseAndGoto(data: WelcomeData): void {
   if (gameMatch !== null) {
     const tableID = parseIntSafe(gameMatch[1]!); // The server expects the game ID as an integer.
     const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
-    const shadowID = shadowMatch !== null ? parseIntSafe(shadowMatch[1]!) : -1; // The server expects the game ID as an integer.
+    const shadowID = shadowMatch === null ? -1 : parseIntSafe(shadowMatch[1]!); // The server expects the game ID as an integer.
     globals.conn!.send("tableSpectate", {
       tableID,
       shadowingPlayerIndex: shadowID,

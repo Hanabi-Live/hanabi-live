@@ -3423,10 +3423,10 @@ export function drawPip(
 
     const canvasFillRule = "evenodd";
     const context = konvaCanvas._context;
-    if (context !== undefined) {
-      context.fill(canvasFillRule);
-    } else {
+    if (context === undefined) {
       ctx.fill(canvasFillRule);
+    } else {
+      context.fill(canvasFillRule);
     }
 
     ctx.lineWidth = 1;

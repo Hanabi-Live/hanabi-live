@@ -235,17 +235,7 @@ export function onOngoingOrVisibleStrikesChanged(data: {
     }
 
     const duration = 0.5; // The duration for the strike animation
-    if (data.visibleStrikes[i] !== undefined) {
-      // There is a strike on the visible state. Animate the strike X fading in.
-      animate(
-        strikeX,
-        {
-          duration,
-          opacity: 1,
-        },
-        true,
-      );
-    } else {
+    if (data.visibleStrikes[i] === undefined) {
       // Either this strike has never happened, or we are moving backwards in a replay. If this
       // strike never happened, it should be invisible. If this strike happened in the future, then
       // it should be slightly faded.
@@ -259,6 +249,16 @@ export function onOngoingOrVisibleStrikesChanged(data: {
         {
           duration,
           opacity,
+        },
+        true,
+      );
+    } else {
+      // There is a strike on the visible state. Animate the strike X fading in.
+      animate(
+        strikeX,
+        {
+          duration,
+          opacity: 1,
         },
         true,
       );
