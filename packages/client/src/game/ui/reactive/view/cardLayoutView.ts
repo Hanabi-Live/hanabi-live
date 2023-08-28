@@ -1,5 +1,5 @@
 import type { CardOrder, SuitIndex } from "@hanabi/data";
-import { ReadonlyMap, assertDefined } from "@hanabi/utils";
+import { ReadonlyMap, assertDefined, assertNotNull } from "@hanabi/utils";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
 import * as deck from "../../../rules/deck";
@@ -155,17 +155,31 @@ export function onPlayStacksChanged(
 
     // Now, add the suit label texts, showing current progress or the possible remaining starting
     // values.
-    for (const [suitIndex, stack] of playStacks.entries()) {
+    for (const [suitIndex, playStack] of playStacks.entries()) {
       let text = "";
-      if (stack.length === 5) {
+      if (playStack.length === 5) {
         text = "Finished";
-      } else if (stack.length > 0) {
-        const stackStart = globals.deck[stack[0]!]!.getCardIdentity().rank!;
-        const playedRanks = Array.from(
-          { length: stack.length },
-          (_, rankOffset) => ((rankOffset + stackStart - 1) % 5) + 1,
+      } else if (playStack.length > 0) {
+        const firstPlayedCardOrder = playStack[0];
+        assertDefined(
+          firstPlayedCardOrder,
+          `Failed to get the first card order from the play stack at suit index: ${suitIndex}`,
         );
-        const ranksText = playedRanks.join(" ") + " _".repeat(5 - stack.length);
+        const firstPlayedCard = globals.deck[firstPlayedCardOrder];
+        assertDefined(
+          firstPlayedCard,
+          `Failed to get the first played card at index: ${firstPlayedCardOrder}`,
+        );
+        const firstPlayedRank = firstPlayedCard.getCardIdentity().rank;
+        assertNotNull(
+          firstPlayedRank,
+          `Failed to get the rank of the first played card at index: ${firstPlayedCardOrder}`,
+        );
+        const playedRanks = playStack.map(
+          (_stack, rankOffset) => ((rankOffset + firstPlayedRank - 1) % 5) + 1,
+        );
+        const ranksText =
+          playedRanks.join(" ") + " _".repeat(5 - playStack.length);
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =
@@ -174,7 +188,12 @@ export function onPlayStacksChanged(
             : availableStackStarts.join("");
         text = `Start: [${bracketText}]`;
       }
-      globals.elements.suitLabelTexts[suitIndex]!.fitText(text);
+      const fitText = globals.elements.suitLabelTexts[suitIndex];
+      assertDefined(
+        fitText,
+        `Failed to get the fit text at suit index: ${suitIndex}`,
+      );
+      fitText.fitText(text);
     }
   }
 

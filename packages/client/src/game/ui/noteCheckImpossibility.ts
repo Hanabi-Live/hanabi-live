@@ -39,10 +39,12 @@ export function checkNoteImpossibility(
   }
 
   // We have specified a list of identities where none are possible.
-  const impossibilities = Array.from(possibilities, ([suitIndex, rank]) => {
-    const suitName = variant.suits[suitIndex]!.displayName;
+  const impossibilities = possibilities.map(([suitIndex, rank]) => {
+    const suit = variant.suits[suitIndex];
+    const suitName = suit?.displayName ?? "Unknown";
     const impossibleSuit = suitName.toLowerCase();
     const impossibleRank = rank === START_CARD_RANK ? "START" : rank.toString();
+
     return `${impossibleSuit} ${impossibleRank}`;
   });
   if (impossibilities.length === 1) {

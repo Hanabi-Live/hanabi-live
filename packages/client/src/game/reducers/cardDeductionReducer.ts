@@ -506,7 +506,7 @@ let cachedCardCountMap: number[][] = [];
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
 function getCardCountMap(variant: Variant): number[][] {
   if (variant.id === cachedVariantID) {
-    return Array.from(cachedCardCountMap, (arr) => [...arr]);
+    return arrayCopyTwoDimensional(cachedCardCountMap);
   }
 
   const possibleCardMap: number[][] = [];

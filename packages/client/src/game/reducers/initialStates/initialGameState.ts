@@ -13,7 +13,7 @@ import {
   getVariant,
 } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
-import { newArray } from "@hanabi/utils";
+import { newArray, sumArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
@@ -86,11 +86,12 @@ export function initialGameState(metadata: GameMetadata): GameState {
     endGameLength,
   );
   const paceRisk = statsRules.paceRisk(pace, options.numPlayers);
-  const scorePerStack = Array.from(playStacks, (playStack) => playStack.length);
+  const scorePerStack = playStacks.map((playStack) => playStack.length);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
+  const score = sumArray(scorePerStack);
   const cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
-    scorePerStack.reduce((a, b) => a + b, 0),
+    score,
     scorePerStack,
     maxScorePerStack,
     startingDeckSize,

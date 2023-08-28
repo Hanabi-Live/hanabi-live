@@ -347,12 +347,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     globals.layers.card.batchDraw();
   }
 
+  /**
+   * We may know the identity through normal means (e.g. it is a card that is currently in someone
+   * else's hand). We may also know the identity from a future game state (e.g. it is a card in our
+   * hand that we have learned about in the future).
+   */
   getCardIdentity(): CardIdentity {
-    // We may know the identity through normal means
-    // (e.g. it is a card that is currently in someone else's hand). We may also know the identity
-    // from a future game state
-    // (e.g. it is a card in our hand that we have learned about in the future).
-
     // First, check if we have an alternate identity (e.g. blank or morphed) for this card.
     if (this.isMorphed()) {
       return this.getMorph()!;

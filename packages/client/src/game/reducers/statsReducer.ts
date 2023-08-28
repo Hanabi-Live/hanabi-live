@@ -127,8 +127,7 @@ function statsReducerFunction(
       : null;
 
   // Handle future efficiency calculation.
-  const scorePerStack: number[] = Array.from(
-    currentState.playStacks,
+  const scorePerStack = currentState.playStacks.map(
     (playStack) => playStack.length,
   );
   stats.cluesStillUsable = statsRules.cluesStillUsable(
