@@ -158,18 +158,18 @@ export function getMaxScorePerStack(
   let bestAssignmentSum = 0;
 
   // This denotes the actual values of the best assignment found.
-  let bestAssignment = new Array<number>(unassignedSuits.length);
+  let bestAssignment: number[] = [];
 
   // Same, but sorted in ascending order.
-  let bestAssignmentSorted = new Array<number>(unassignedSuits.length);
+  let bestAssignmentSorted: number[] = [];
 
   let localSuitIndex = 0;
 
-  const curAssignment = new Array<number>(unassignedSuits.length);
+  const curAssignment: number[] = [];
   for (const i of eRange(curAssignment.length)) {
     curAssignment[i] = unassigned;
   }
-  const assigned = new Array<boolean>(possibleStackStarts.length);
+  const assigned: boolean[] = [];
 
   while (localSuitIndex >= 0) {
     if (curAssignment[localSuitIndex] !== unassigned) {
@@ -194,7 +194,7 @@ export function getMaxScorePerStack(
       if (localSuitIndex === unassignedSuits.length - 1) {
         // Evaluate the current assignment.
         let assignmentVal = 0;
-        const assignment = new Array<number>(unassignedSuits.length);
+        const assignment: number[] = [];
         for (const [
           assignedLocalSuitIndex,
           assignedStackStartIndex,

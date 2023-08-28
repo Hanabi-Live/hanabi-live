@@ -2,6 +2,7 @@
 
 import type { SuitRankTuple, Variant } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
+import { newArray } from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
 import type { CardState } from "../types/CardState";
 import type { Clue } from "../types/Clue";
@@ -114,7 +115,7 @@ function updateIdentity(
     rankDetermined,
     revealedToPlayer:
       suitDetermined && rankDetermined
-        ? new Array(MAX_PLAYERS).fill(true)
+        ? newArray(MAX_PLAYERS, true)
         : state.revealedToPlayer,
   };
 }

@@ -1315,13 +1315,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cookie@npm:^8.0.0":
-  version: 8.3.0
-  resolution: "@fastify/cookie@npm:8.3.0"
+"@fastify/cookie@npm:^9.0.4":
+  version: 9.0.4
+  resolution: "@fastify/cookie@npm:9.0.4"
   dependencies:
     cookie: ^0.5.0
     fastify-plugin: ^4.0.0
-  checksum: d5dfb5c85d4ae02188aad63c8cf055d3b904287bc2750964ee0b8589c5b5ae32850e8fc9456a8830e9f4e9f24d5059e54dac084835d6ef4cbba7fa4b9c4673b3
+  checksum: 55c19e58b138acc567595e9e307151acadca4d1ee88dc4f2d076fc48760d24767fc150835b715ee41b9b10d0204f9a8db341dc37eab322a0e6609536a747b951
   languageName: node
   linkType: hard
 
@@ -1358,16 +1358,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/secure-session@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "@fastify/secure-session@npm:6.2.0"
+"@fastify/secure-session@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@fastify/secure-session@npm:7.0.0"
   dependencies:
-    "@fastify/cookie": ^8.0.0
+    "@fastify/cookie": ^9.0.4
     fastify-plugin: ^4.0.0
     sodium-native: ^4.0.0
   bin:
     secure-session: genkey.js
-  checksum: 237aecbec92207f0f0d614a5b36d836bd55df4fee1ea28c08eef9057c7471a73ccb0529550e6dcd35f7927df6474e6b6c4ec0be3258ddfe4abf15c16edac0578
+  checksum: 72d7cd28ee10b708d7f83fc406000ff8df52f5e83d254d9bc5877f60577603ef53345679913b63d81612cd36992962ce4fd6b13a23a3e72377ee8ab82a439b42
   languageName: node
   linkType: hard
 
@@ -2278,10 +2278,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.5.6":
-  version: 20.5.6
-  resolution: "@types/node@npm:20.5.6"
-  checksum: d2ce44f1cfa3fd00fe7426f7cf9a46d680cd57802b874ed5618e7d9101a9c6b8de37f08c0e7185ee06fb363ad492549c3ea69665c7e8e31c7813210ed8e89005
+"@types/node@npm:^20.5.7":
+  version: 20.5.7
+  resolution: "@types/node@npm:20.5.7"
+  checksum: fc284c8e16ddc04569730d58e87eae349eb1c3dd9020cb79a1862d9d9add6f04e7367a236f3252db8db2572f90278e250f4cd43d27d264972b54394eaba1ed76
   languageName: node
   linkType: hard
 
@@ -3896,15 +3896,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cspell-check-unused-words@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "cspell-check-unused-words@npm:1.0.4"
+"cspell-check-unused-words@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "cspell-check-unused-words@npm:1.0.6"
   dependencies:
+    isaacscript-common-ts: ^11.2.0
     jsonc-parser: ^3.2.0
     source-map-support: ^0.5.21
+    tsx: ^3.12.7
   bin:
     cspell-check-unused-words: dist/main.js
-  checksum: 421089effd2c273bed46218f813072e224e86310c7e911038c3ee0dab12896b4c7a82061b83da42f8e687bc235ab9f15327257ebd0e62ca6da03bae3c9287eb2
+  checksum: f9be5c01f8dbae02a1bf5c0e11b88879f7a4adf640039037251782caf0e7f24c4dcf1430fe75df9fe00751bc9642cbf0c3bed425d96d4b20cb6cca7ea4b7a674
   languageName: node
   linkType: hard
 
@@ -5364,9 +5366,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:^4.21.0":
-  version: 4.21.0
-  resolution: "fastify@npm:4.21.0"
+"fastify@npm:^4.22.0":
+  version: 4.22.0
+  resolution: "fastify@npm:4.22.0"
   dependencies:
     "@fastify/ajv-compiler": ^3.5.0
     "@fastify/error": ^3.2.0
@@ -5384,7 +5386,7 @@ __metadata:
     secure-json-parse: ^2.5.0
     semver: ^7.5.0
     tiny-lru: ^11.0.1
-  checksum: 25af01ac4cf899a1158f64fb8fd8296240dfe84eeb999b3f5ac40ff84221b0962dd5f729e499a89078e8416bcf54cf56ada028f61f9f97c4001dc7301ab740ea
+  checksum: 0a0bbdd0b46246486f20c2b6b00dc37e35a5ce535cd1576e3de773960d7830fc3a31eac96094ae39b06c8683e4c8fb60e418ae8d6c3cb44dee70df0759de2ec1
   languageName: node
   linkType: hard
 
@@ -6169,7 +6171,7 @@ __metadata:
   resolution: "hanabi-live@workspace:."
   dependencies:
     "@fastify/formbody": ^7.4.0
-    "@fastify/secure-session": ^6.2.0
+    "@fastify/secure-session": ^7.0.0
     "@fastify/static": ^6.10.2
     "@fastify/view": ^8.0.0
     "@t3-oss/env-core": ^0.6.1
@@ -6180,7 +6182,7 @@ __metadata:
     "@types/jsdom": ^21.1.2
     "@types/linkifyjs": ^2.1.4
     "@types/lodash": ^4.14.197
-    "@types/node": ^20.5.6
+    "@types/node": ^20.5.7
     "@types/tooltipster": ^0.0.32
     bufferutil: ^4.0.7
     canvas: ^2.11.2
@@ -6190,7 +6192,7 @@ __metadata:
     esbuild-plugin-pino: ^2.0.1
     eta: ^3.1.1
     fast-deep-equal: ^3.1.3
-    fastify: ^4.21.0
+    fastify: ^4.22.0
     fastify-favicon: ^4.3.0
     grunt: ^1.6.1
     grunt-contrib-concat: ^2.1.0
@@ -6199,8 +6201,8 @@ __metadata:
     http-status-codes: ^2.2.0
     immer: ^10.0.2
     interactjs: ^1.10.18
-    isaacscript: ^3.9.2
-    isaacscript-lint: ^5.5.0
+    isaacscript: ^3.10.0
+    isaacscript-lint: ^5.5.1
     isaacscript-tsconfig: ^4.0.0
     jest: ^29.6.4
     jquery: ^3.7.0
@@ -6909,15 +6911,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-lint@npm:^5.5.0":
-  version: 5.5.0
-  resolution: "isaacscript-lint@npm:5.5.0"
+"isaacscript-common-ts@npm:^11.2.0":
+  version: 11.2.0
+  resolution: "isaacscript-common-ts@npm:11.2.0"
+  checksum: 19a2069423814e622b4b5087f44b87a339e4b7ece59a4116f0a133dd95b19a930a6d1996d4a68068c276677f8e2ce183d0387758e6b66e71ca823ca5eef07980
+  languageName: node
+  linkType: hard
+
+"isaacscript-lint@npm:^5.5.1":
+  version: 5.5.1
+  resolution: "isaacscript-lint@npm:5.5.1"
   dependencies:
     "@prettier/plugin-xml": ^3.2.0
     "@typescript-eslint/eslint-plugin": ^6.4.1
     "@typescript-eslint/parser": ^6.4.1
     cspell: ^7.0.1
-    cspell-check-unused-words: ^1.0.4
+    cspell-check-unused-words: ^1.0.6
     eslint: ^8.48.0
     eslint-config-isaacscript: ^4.0.9
     eslint-config-prettier: ^9.0.0
@@ -6930,13 +6939,13 @@ __metadata:
     eslint-plugin-no-autofix: ^1.2.3
     eslint-plugin-only-warn: ^1.1.0
     eslint-plugin-unicorn: ^48.0.1
-    knip: ^2.20.0
+    knip: ^2.20.1
     prettier: ^3.0.2
     prettier-plugin-organize-imports: ^3.2.3
     ts-prune-2: ^0.10.7
   peerDependencies:
     typescript: ">= 4.0.0"
-  checksum: 67c227ace086ac68aedf675c2752571b52a142184171fc16d9d76cd466dad93ed4540e94ba7ae033f4fddd3d9c2def8cf04ec71f8aeede63c3d9dba1b9521f12
+  checksum: 88ffd8907b1412a37b95b86813db424b6ee3df9ee70790fd87185011cbd2f8b06d38aa475b9c9248bbee7d592bad8ed2e6fe4ed6e859f9adcf4736cdf5980bf9
   languageName: node
   linkType: hard
 
@@ -6949,9 +6958,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript@npm:^3.9.2":
-  version: 3.9.2
-  resolution: "isaacscript@npm:3.9.2"
+"isaacscript@npm:^3.10.0":
+  version: 3.10.0
+  resolution: "isaacscript@npm:3.10.0"
   dependencies:
     ajv: ^8.12.0
     chalk: 4.1.2
@@ -6974,7 +6983,7 @@ __metadata:
     typescript: ">= 4.0.0"
   bin:
     isaacscript: src/main.js
-  checksum: 28fec4461a900ea7b7d8f7b7447d6d36b5739b3c787b304f6a830e11692e4c9332a6f56a231cebd18929086e2279e6107d839d44e1cb62eee0e2f0c419e213e0
+  checksum: 156805350254ee3c7336ab361bc6a2fb310874814a8483fc6c160fb2ef4f99e678c59bf71777479b0be23d317c64a500857b77871075234143b290f43fa9991b
   languageName: node
   linkType: hard
 
@@ -7946,9 +7955,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:^2.20.0":
-  version: 2.20.0
-  resolution: "knip@npm:2.20.0"
+"knip@npm:^2.20.1":
+  version: 2.20.2
+  resolution: "knip@npm:2.20.2"
   dependencies:
     "@ericcornelissen/bash-parser": ^0.5.2
     "@npmcli/map-workspaces": ^3.0.4
@@ -7969,7 +7978,7 @@ __metadata:
     zod-validation-error: ^1.5.0
   bin:
     knip: dist/cli.js
-  checksum: 819afe22625ff5254a00ff9932f3bff624cebcb0f10598b96d4979144a6cee7954e1e48d76475315878cbe76426943460c27a6f08d43e0a10acef71d2bea09a2
+  checksum: e9170e32840556981a12e546727e2ba27db9648902c7637a255466f2934d0902f973847f5e9aa3b03cd37e61e2e1fe15628e963e64a90670c403c25f0e644be6
   languageName: node
   linkType: hard
 
