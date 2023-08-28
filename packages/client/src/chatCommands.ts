@@ -351,14 +351,14 @@ export function getVariantFromArgs(args: string[]): string {
     .map((arg) => capitalize(arg))
     .join(" ")
     // Remove space after opening and before closing parenthesis.
-    .replace(patterns.openingParenthesis, " (")
-    .replace(patterns.closingParenthesis, ") ")
+    .replaceAll(patterns.openingParenthesis, " (")
+    .replaceAll(patterns.closingParenthesis, ") ")
     // Remove space before and after hyphen.
-    .replace(patterns.hyphen, "-")
+    .replaceAll(patterns.hyphen, "-")
     // Add space before and after ampersand.
-    .replace(patterns.ampersand, " & ")
+    .replaceAll(patterns.ampersand, " & ")
     // Remove double spaces.
-    .replace(patterns.doubleSpaces, " ")
+    .replaceAll(patterns.doubleSpaces, " ")
     .trim();
 
   return variant;
@@ -366,7 +366,7 @@ export function getVariantFromArgs(args: string[]): string {
 
 function capitalize(input: string) {
   const pattern = /(^|[ &()-])(\w)/g;
-  return input.toLowerCase().replace(pattern, (x) => x.toUpperCase());
+  return input.toLowerCase().replaceAll(pattern, (x) => x.toUpperCase());
 }
 
 export function getVariantFromPartial(search: string): string {

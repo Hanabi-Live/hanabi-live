@@ -6,7 +6,7 @@ import {
   getVariant,
   getVariantByID,
 } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import { isEqual } from "lodash";
 
 interface DeckCard {
@@ -85,11 +85,24 @@ export function shrink(JSONString: string): string | undefined {
 /** Decompresses a string into a `GameJSON` object. Returns undefined if decompression fails. */
 export function expand(data: string): string | undefined {
   // Remove all hyphens from URL.
-  const normal = data.replace(/-/g, "");
+  const normal = data.replaceAll("-", "");
 
   // The compressed string is composed of 3 substrings separated by commas.
   const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
-  const numberPlayersString = playersAndDeck!.charAt(0);
+  assertDefined(
+    playersAndDeck,
+    "Failed to parse the players and deck from the compress hypothetical string.",
+  );
+  assertDefined(
+    actionsString,
+    "Failed to parse the actions from the compress hypothetical string.",
+  );
+  assertDefined(
+    variantIDString,
+    "Failed to parse the variant ID from the compress hypothetical string.",
+  );
+
+  const numberPlayersString = playersAndDeck.charAt(0);
   const numPlayers = parseIntSafe(numberPlayersString);
   if (numPlayers === undefined) {
     return undefined;
@@ -100,18 +113,18 @@ export function expand(data: string): string | undefined {
     return undefined;
   }
 
-  const deckString = playersAndDeck!.slice(1);
+  const deckString = playersAndDeck.slice(1);
   const deck = decompressDeck(deckString);
   if (deck === undefined) {
     return undefined;
   }
 
-  const actions = decompressActions(actionsString!);
+  const actions = decompressActions(actionsString);
   if (actions === undefined) {
     return undefined;
   }
 
-  const variantID = parseIntSafe(variantIDString!);
+  const variantID = parseIntSafe(variantIDString);
   if (variantID === undefined) {
     return undefined;
   }

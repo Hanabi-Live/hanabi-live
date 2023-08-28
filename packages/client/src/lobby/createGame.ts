@@ -187,7 +187,7 @@ export function init(): void {
   $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
     const regExp = /'/g;
-    const textWithDoubleQuotes = data.replace(regExp, '"');
+    const textWithDoubleQuotes = data.replaceAll(regExp, '"');
     const options = JSON.parse(textWithDoubleQuotes) as Options;
     acceptOptionsFromGuest(options);
     $(e.target).text("sent").prop("disabled", true);

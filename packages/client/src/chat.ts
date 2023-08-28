@@ -636,7 +636,7 @@ function fillTwitchEmotes(message: string) {
       // replace Discord emotes.
       const index = message.indexOf(emote);
       if (index !== -1 && message[index + emote.length] !== '"') {
-        const re = new RegExp(`\\b${emote}\\b`, "g"); // "\b" is a word boundary in regex
+        const re = new RegExp(`\\b${emote}\\b`, "g"); // "\b" is a word boundary in regex.
         const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${categoryName}/${emote}.png" title="${emote}" />`;
         filledMessage = filledMessage.replace(re, emoteTag);
       }
@@ -648,8 +648,8 @@ function fillTwitchEmotes(message: string) {
     // The Twitch heart emote.
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
-    const re = /&lt;3/g; // "\b" won't work with a semicolon
-    filledMessage = filledMessage.replace(re, emoteTag);
+    const re = /&lt;3/g; // "\b" won't work with a semicolon.
+    filledMessage = filledMessage.replaceAll(re, emoteTag);
   }
   if (filledMessage.includes("D:")) {
     // A BetterTwitchTV emote.
@@ -657,7 +657,7 @@ function fillTwitchEmotes(message: string) {
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
     const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
-    filledMessage = filledMessage.replace(re, ` ${emoteTag} `); // We have to re-add the spaces
+    filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces.
   }
 
   return filledMessage;

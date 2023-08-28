@@ -10,9 +10,6 @@ module.exports = {
   },
 
   rules: {
-    // TODO: remove these lines
-    "unicorn/prefer-string-replace-all": "off",
-
     /**
      * Documentation:
      * https://eslint.org/docs/rules/no-param-reassign
