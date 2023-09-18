@@ -793,12 +793,12 @@ function getCriticalFoursVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    // A one of each suit in combination with this variant would be too difficult.
-    if (suit.oneOfEach === true) {
-      continue;
-    }
-
     for (const numSuits of numSuitsForCriticalFours) {
+      // 5 suits with a one of each suit in combination with this variant would be too difficult.
+      if (suit.oneOfEach === true && numSuits === 5) {
+        continue;
+      }
+
       const variantName = `Critical Fours & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
