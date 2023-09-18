@@ -322,6 +322,7 @@ One of each card per suit (e.g. 5 in total):
 ### Critical Fours
 
 - One 4 is removed from each suit.
+- This is also available in combination with a dark suit in 6-suit games.
 
 ### Clue Starved
 
