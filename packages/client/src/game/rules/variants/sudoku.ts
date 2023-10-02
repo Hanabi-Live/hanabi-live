@@ -20,7 +20,7 @@ export function sudokuCanStillBePlayed(
   variant: Variant,
 ): boolean {
   const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-  const { suitMaxScores } = sudokuWalkUpAll(allDiscardedSet);
+  const { maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(allDiscardedSet);
 
   const playStackStart = playStackStarts[suitIndex];
   assertDefined(
@@ -40,7 +40,7 @@ export function sudokuCanStillBePlayed(
     const longestSequence =
       (rank - possibleStackStartRank + DEFAULT_FINISHED_STACK_LENGTH) %
       DEFAULT_FINISHED_STACK_LENGTH;
-    return suitMaxScores[possibleStackStartRank - 1]! > longestSequence;
+    return maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1]! > longestSequence;
   });
 }
 
@@ -53,9 +53,9 @@ export function sudokuCanStillBePlayed(
  */
 function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   allMax: boolean;
-  suitMaxScores: Tuple<number, NumSuits>;
+  maxScoresForEachStartingValueOfSuit: Tuple<number, NumSuits>;
 } {
-  const suitMaxScores = newArray(
+  const maxScoresForEachStartingValueOfSuit = newArray(
     NUM_SUITS_SUDOKU,
     DEFAULT_FINISHED_STACK_LENGTH,
   ) as Tuple<number, NumSuits>;
@@ -65,10 +65,10 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (const writeRank of eRange(lastDead + 1, currentRank)) {
-        suitMaxScores[writeRank - 1] = currentRank - writeRank;
+        maxScoresForEachStartingValueOfSuit[writeRank - 1] = currentRank - writeRank;
       }
 
-      suitMaxScores[currentRank - 1] = 0;
+      maxScoresForEachStartingValueOfSuit[currentRank - 1] = 0;
       lastDead = currentRank;
     }
   }
@@ -77,22 +77,22 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   if (lastDead === 0) {
     return {
       allMax: true,
-      suitMaxScores,
+      maxScoresForEachStartingValueOfSuit: maxScoresForEachStartingValueOfSuit,
     };
   }
 
   // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
   // them.
   for (const writeRank of iRange(lastDead + 1, 5)) {
-    suitMaxScores[writeRank - 1] = Math.min(
-      suitMaxScores[0]! + 6 - writeRank,
+    maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
+      maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
       DEFAULT_CARD_RANKS.length,
     );
   }
 
   return {
     allMax: false,
-    suitMaxScores,
+    maxScoresForEachStartingValueOfSuit: maxScoresForEachStartingValueOfSuit,
   };
 }
 
@@ -129,7 +129,7 @@ export function getMaxScorePerStack(
     const suitIndex = i as SuitIndex;
 
     const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-    const { allMax, suitMaxScores } = sudokuWalkUpAll(allDiscardedSet);
+    const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(allDiscardedSet);
 
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
@@ -137,11 +137,11 @@ export function getMaxScorePerStack(
     }
 
     if (stackStart !== null) {
-      independentPartOfMaxScore[suitIndex] = suitMaxScores[stackStart - 1]!;
+      independentPartOfMaxScore[suitIndex] = maxScoresForEachStartingValueOfSuit[stackStart - 1]!;
       continue;
     }
 
-    maxPartialScores[suitIndex] = suitMaxScores;
+    maxPartialScores[suitIndex] = maxScoresForEachStartingValueOfSuit;
     unassignedSuits.push(suitIndex);
   }
 
