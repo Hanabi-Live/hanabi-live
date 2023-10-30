@@ -45,14 +45,14 @@ const config = {
       {
         patterns: [
           {
-            // We don't use a suffix or a prefix since the "src" folder has an "index.ts" file.
-            group: ["src"],
+            // We don't use a suffix or a prefix since some "src" folders have an "index.ts" file.
+            group: ["*src*"],
             message:
               'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
           },
 
           {
-            group: ["index"],
+            group: ["*/index*"],
             message:
               "You cannot import directly from a package index. Instead, import directly from the file where the code is located.",
           },
@@ -61,7 +61,7 @@ const config = {
           // above rule.
           {
             // We want to allow: `import { models } from "./models"`
-            group: ["models/"],
+            group: ["*/models/*"],
             message:
               'You cannot import model functions directly. Use the "models" object instead.',
           },
