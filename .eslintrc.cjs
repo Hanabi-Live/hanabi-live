@@ -52,6 +52,12 @@ const config = {
           },
 
           {
+            group: ["*dist*"],
+            message:
+              "You cannot import from compiled output. Instead, import using the package name like you would in a non-monorepo project.",
+          },
+
+          {
             group: ["*/index*"],
             message:
               "You cannot import directly from a package index. Instead, import directly from the file where the code is located.",

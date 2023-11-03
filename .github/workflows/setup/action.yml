@@ -13,7 +13,7 @@ runs:
       id: node-modules-cache
       with:
         path: node_modules
-        key: client-build-node-modules-${{ hashFiles('yarn.lock') }}
+        key: node-modules-${{ hashFiles('yarn.lock') }}
 
     - name: Install dependencies (if the cached directory was not found)
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
