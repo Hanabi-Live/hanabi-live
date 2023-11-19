@@ -27,7 +27,7 @@ describe("replayReducer", () => {
     // Load the game and start a replay.
     testState = loadGameJSON(testGame);
     testState = stateReducer(testState, init());
-    metadata = testState.metadata; // eslint-disable-line prefer-destructuring
+    metadata = testState.metadata; // eslint-disable-line @typescript-eslint/prefer-destructuring
   });
 
   describe("hypothetical", () => {

@@ -56,6 +56,7 @@ export class CardLayout extends Konva.Group {
   }
 
   override _setChildrenIndices(): void {
+    // eslint-disable-next-line isaacscript/require-variadic-function-argument
     Konva.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
   }

@@ -8,4 +8,10 @@ module.exports = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.eslint.json"),
   },
+
+  rules: {
+    // Temporarily disable this rule until the Pino TypeScript definitions are updated:
+    // https://github.com/pinojs/pino/issues/1782
+    "isaacscript/require-variadic-function-argument": "off",
+  },
 };

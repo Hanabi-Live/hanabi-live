@@ -3,19 +3,11 @@ runs:
 
   steps:
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: lts/*
         cache: yarn
 
-    - name: Retrieve the cached "node_modules" directory (if present)
-      uses: actions/cache@v3
-      id: node-modules-cache
-      with:
-        path: node_modules
-        key: node-modules-${{ hashFiles('yarn.lock') }}
-
-    - name: Install dependencies (if the cached directory was not found)
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+    - name: Install dependencies
       run: yarn install --immutable
       shell: bash # Composite jobs must specify the shell.

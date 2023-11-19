@@ -203,7 +203,7 @@ export function give(): void {
 
     case ClueType.Rank: {
       type = ActionType.RankClue;
-      value = clueButton.clue.value; // eslint-disable-line prefer-destructuring
+      value = clueButton.clue.value; // eslint-disable-line @typescript-eslint/prefer-destructuring
       break;
     }
   }

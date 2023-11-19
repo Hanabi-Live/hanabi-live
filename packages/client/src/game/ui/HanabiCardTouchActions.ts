@@ -22,6 +22,7 @@ export function HanabiCardTap(this: HanabiCard): void {
 
   setTimeout(() => {
     if (this.wasRecentlyTapped) {
+      // eslint-disable-next-line isaacscript/require-variadic-function-argument
       HanabiCardTapAction.call(this);
     }
     this.wasRecentlyTapped = false;

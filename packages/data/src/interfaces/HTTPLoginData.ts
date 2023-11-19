@@ -2,10 +2,10 @@ import { z } from "zod";
 
 export const HTTPLoginDataSchema = z
   .object({
-    username: z.string().nonempty(),
-    password: z.string().nonempty(),
-    newPassword: z.string().nonempty().optional(),
-    version: z.string().nonempty(),
+    username: z.string().min(1),
+    password: z.string().min(1),
+    newPassword: z.string().min(1).optional(),
+    version: z.string().min(1),
   })
   .readonly();
 

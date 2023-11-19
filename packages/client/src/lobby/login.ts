@@ -116,6 +116,7 @@ function send(
   });
   console.log(`Sent a login request to: ${url}`);
 
+  // eslint-disable-next-line isaacscript/require-variadic-function-argument
   request
     .done(() => {
       // We successfully got a cookie; attempt to establish a WebSocket connection.

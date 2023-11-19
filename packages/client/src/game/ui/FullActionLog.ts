@@ -44,6 +44,7 @@ export class FullActionLog extends Konva.Group {
       cornerRadius: 0.01 * winW,
       listening: false,
     });
+    // eslint-disable-next-line isaacscript/require-variadic-function-argument
     Konva.Group.prototype.add.call(this, rect);
 
     // The text for each action.

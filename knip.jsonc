@@ -1,0 +1,5 @@
+{
+  "$schema": "https://unpkg.com/knip/schema.json",
+  "ignore": [".eslintrc.cjs", "prettier.config.mjs"],
+  "ignoreDependencies": ["isaacscript-lint"],
+}

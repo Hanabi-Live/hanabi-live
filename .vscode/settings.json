@@ -30,6 +30,7 @@
     "**/.yarn/": true,
     "**/dist/": true,
     "**/node_modules/": true,
+    "LICENSE": true,
     // @template-customization-start
     "**/*.min.js*": true,
     "**/misc/keldon/": true,
@@ -42,7 +43,7 @@
   // Extension settings
   // ------------------
 
-  // Use Prettier to format "cspell.json".
+  // Use Prettier to format "cspell.jsonc".
   "cSpell.autoFormatConfigFile": true,
 
   // -----------------
@@ -71,25 +72,33 @@
 
   // Automatically run the formatter when certain files are saved.
   "[javascript]": {
-    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
   "[typescript]": {
-    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
   "[javascriptreact]": {
-    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
   "[typescriptreact]": {
-    "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
