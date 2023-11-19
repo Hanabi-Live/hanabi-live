@@ -2,7 +2,7 @@
 
 If you just want to install the website without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
 
-Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
+Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that all pull requests pass our linting rules.
 
 The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. Some adjustments will be needed if you are using a different editor.
 
@@ -27,34 +27,38 @@ Building the client code can be memory intensive. Make sure that your system has
 ## Installation for Development (Windows)
 
 - Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
-- Install the [Chocolatey](https://chocolatey.org/) package manager:
-  - `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-- Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
-  - `choco install git golang nodejs vscode -y`
-- Configure Git:
-  - `refreshenv`
-  - `git config --global user.name "Your_Username"`
+- Install [Git](https://git-scm.com/) (if you do not already have it installed):
+  - `winget install --accept-source-agreements --silent --exact --id "Git.Git"`
+- Install [Golang](https://golang.org/) (if you do not already have it installed):
+  - `winget install --accept-source-agreements --silent --exact --id "GoLang.Go"`
+- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed):
+  - `winget install --accept-source-agreements --silent --exact --id "PostgreSQL.PostgreSQL"`
+- Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
+  - `winget install --accept-source-agreements --silent --exact --id "OpenJS.NodeJS.LTS"`
+- Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
+  - `winget install --accept-source-agreements --silent --exact --id "Microsoft.VisualStudioCode"`
+- By default, the `winget` installer for PostgreSQL will not automatically add the exe files to the PATH variable, so we must add "C:\Program Files\PostgreSQL\16\bin" to the PATH variable manually. If you don't know how to do that, [follow this guide](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
+- Exit your Command Prompt and reopen another one as an administrator (in order to load the new PATH variable).
+- Configure Git (if you do not already have it configured):
+  - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
   - `git config --global core.autocrlf false` <br />
     (so that Git does not convert LF to CRLF when cloning repositories)
   - `git config --global pull.rebase true` <br />
     (so that Git automatically rebases when pulling)
-- Install [PostgreSQL](https://www.postgresql.org/):
-  - Manually download it and install it. (Do not use `choco`, because the package is bugged.)
-  - Check to see if `psql` works. If not, you'll have to [manually add it to your PATH variable](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
 - Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
-  - `notepad "C:\Program Files\PostgreSQL\13\data\postgresql.conf"`
+  - `notepad "C:\Program Files\PostgreSQL\16\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
-  - `net stop postgresql-x64-13`
-  - `net start postgresql-x64-13`
+    - Save the file.
+  - `net stop postgresql-x64-16`
+  - `net start postgresql-x64-16`
 - Create a new database and set up a database user:
-  - `refreshenv`
   - `psql -U postgres`
-  - Enter the password for the "postgres" user that you created during the installation wizard.
+  - Enter the password of "postgres".
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-    (replace "1234567890" with a secure password)
+    (replace "1234567890" with a more secure password if you want)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
@@ -67,17 +71,16 @@ Building the client code can be memory intensive. Make sure that your system has
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
-    - `git clone https://github.com/[Your_Username]/hanabi-live.git`
+    - `git clone https://github.com/[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
 - Change from the Windows Command Prompt to Git Bash
   - `"%PROGRAMFILES%\Git\bin\sh.exe"`
-- Install [Yarn](https://yarnpkg.com/) v2:
-  - `npm install yarn --global`
+- Install [Yarn](https://yarnpkg.com/):
+  - `corepack enable`
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`
-  - `exit`
 - Set up environment variables (optional):
   - `notepad .env` <br />
     (the two important ones to verify are "DOMAIN" and "DB_PASSWORD")
@@ -106,7 +109,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `brew install git golang node`
   - `brew cask install visual-studio-code`
 - Configure Git:
-  - `git config --global user.name "Your_Username"`
+  - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
   - `git config --global pull.rebase true` <br />
     (so that Git automatically rebases when pulling)
@@ -121,7 +124,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-    (replace "1234567890" with a secure password)
+    (replace "1234567890" with a more secure password if you want)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
@@ -134,7 +137,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
-    - `git clone https://github.com/[Your_Username]/hanabi-live.git`
+    - `git clone https://github.com/[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
 - Install some dependencies:
@@ -181,7 +184,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `sudo apt upgrade -y`
 - Install and configure [Git](https://git-scm.com/):
   - `sudo apt install git -y`
-  - `git config --global user.name "Your_Username"`
+  - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
   - `git config --global pull.rebase true` <br />
     (so that Git automatically rebases when pulling)
