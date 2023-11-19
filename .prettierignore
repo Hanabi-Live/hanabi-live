@@ -25,4 +25,7 @@ grunt_output
 # Keldon files
 keldon
 
+# Specially formatted JSON files
+example_game_with_comments.jsonc
+
 # @template-customization-end
