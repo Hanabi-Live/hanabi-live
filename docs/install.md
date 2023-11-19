@@ -79,9 +79,9 @@ Building the client code can be memory intensive. Make sure that your system has
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`
-- Set up environment variables (optional):
+- Set up environment variables:
   - `notepad .env` <br />
-    (the two important ones to verify are "DOMAIN" and "DB_PASSWORD")
+    (enter a random 128 character alphanumeric string for "SESSION_SECRET", and then verify "DOMAIN" and "DB_PASSWORD")
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
@@ -141,7 +141,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `./install/install_development_dependencies.sh`
 - Set up environment variables (optional):
   - `open -t .env` <br />
-    (the two important ones to verify are "DOMAIN" and "DB_PASSWORD")
+    (enter a random 128 character alphanumeric string for "SESSION_SECRET", and then verify "DOMAIN" and "DB_PASSWORD")
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
@@ -218,7 +218,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `./install/install_development_dependencies.sh`
 - Set up environment variables:
   - `nano .env`
-    (the two important ones to verify are "DOMAIN" and "DB_PASSWORD")
+    (enter a random 128 character alphanumeric string for "SESSION_SECRET", and then verify "DOMAIN" and "DB_PASSWORD")
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - See [Running the Server](#running-the-server).
