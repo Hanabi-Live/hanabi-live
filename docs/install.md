@@ -54,15 +54,13 @@ Building the client code can be memory intensive. Make sure that your system has
   - `net start postgresql-x64-16`
 - Create a new database and set up a database user:
   - `psql -U postgres`
-  - Enter the password of "postgres".
+  - Enter the password of "postgres". (The default password for the "postgres" user installed by the `winget` installer is "postgres".)
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
     (replace "1234567890" with a more secure password if you want)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
-  - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
-  - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
-  - `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
+  - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
@@ -126,9 +124,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
     (replace "1234567890" with a more secure password if you want)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
-  - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
-  - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
-  - `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
+  - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
@@ -199,9 +195,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
     (replace "1234567890" with a secure password)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
-  - `GRANT USAGE ON SCHEMA public TO hanabiuser;`
-  - `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
-  - `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
+  - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
 - Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   - `sudo apt install curl -y`
