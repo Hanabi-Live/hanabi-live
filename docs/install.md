@@ -316,7 +316,7 @@ Adjust the "certbot" command below according to what domain names you want to re
   - If you are on Windows, you should run this script from a Git Bash window.
   - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
   - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restart the server.
-- If you are running the server in development, then you also have to run the `esbuild_dev.sh` script. This will automatically create a new version of `main.min.js` whenever you change a file. (You will still have to manually refresh the page though in order to pick up the new changes.)
+- If you are running the server in development, then you also have to run the `packages/client/esbuild_dev.sh` script. This will automatically create a new version of `main.min.js` whenever you change a file. (You will still have to manually refresh the page though in order to pick up the new changes.)
 - Once the server is running, you can go to "http://localhost/" to view the site.
   - By default, the server runs on port 80 (the default HTTP port).
   - Viewing the page will only work if the prerequisites were installed properly, which is covered previously in this document.
