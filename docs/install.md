@@ -315,13 +315,12 @@ Adjust the "certbot" command below according to what domain names you want to re
 - The "run.sh" script in the root of the repository will build and run the server.
   - If you are on Windows, you should run this script from a Git Bash window.
   - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
-  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restarting the server.
+  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restart the server.
+- If you are running the server in development, then you also have to run the `esbuild_dev.sh` script. This will automatically create a new version of `main.min.js` whenever you change a file. (You will still have to manually refresh the page though in order to pick up the new changes.)
 - Once the server is running, you can go to "http://localhost/" to view the site.
   - By default, the server runs on port 80 (the default HTTP port).
   - Viewing the page will only work if the prerequisites were installed properly, which is covered previously in this document.
   - If it does not work or is stuck loading, look at the JavaScript console for hints as to what went wrong.
 - If you change any of the Golang code, then you must restart the server for the changes to take effect.
-- If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
-  - Alternatively, if you are actively changing or developing TypeScript code, run the `esbuild_dev.sh` script. This will automatically create a new version of `main.min.js` whenever you change a file. (You will still have to manually refresh the page though in order to pick up the new changes.)
-  - You can also go to "http://localhost/?dev&login=test1" to automatically log in as "test1", "http://localhost/?dev&login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
+- You can also go to "http://localhost/login=test1" to automatically log in as "test1", "http://localhost/login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
 - If you change any CSS, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes longer than `build_client.sh`, so you only need to run it once before committing your changes.
