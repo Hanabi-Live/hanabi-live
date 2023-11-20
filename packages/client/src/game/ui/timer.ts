@@ -108,7 +108,6 @@ export function update(data: ClockData): void {
   const activeTimer = ourTurn
     ? globals.elements.timer1
     : globals.elements.timer2;
-  // eslint-disable-next-line isaacscript/require-variadic-function-argument
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
     setTickingDownTimeTooltip(data.activePlayerIndex);
