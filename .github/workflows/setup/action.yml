@@ -2,6 +2,11 @@ runs:
   using: composite
 
   steps:
+    # https://github.com/actions/setup-node/issues/899
+    - name: Enable corepack to workaround a setup-node bug
+      run: corepack enable
+      shell: bash # Composite jobs must specify the shell.
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:

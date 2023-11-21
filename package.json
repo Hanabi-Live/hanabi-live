@@ -15,7 +15,10 @@
   "author": "Zamiell",
   "type": "commonjs",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "tsx ./scripts/lint.ts",
+    "nuke": "isaacscript nuke",
+    "update": "isaacscript update"
   },
   "dependencies": {
     "@fastify/formbody": "^7.4.0",
@@ -35,7 +38,7 @@
     "bufferutil": "^4.0.8",
     "canvas": "^2.11.2",
     "dotenv": "^16.3.1",
-    "drizzle-orm": "0.28.2",
+    "drizzle-orm": "^0.29.0",
     "esbuild": "^0.19.7",
     "esbuild-plugin-pino": "^2.1.0",
     "eta": "^3.1.1",
@@ -49,7 +52,7 @@
     "http-status-codes": "^2.3.0",
     "immer": "^10.0.3",
     "interactjs": "^1.10.21",
-    "isaacscript": "^3.20.0",
+    "isaacscript": "^3.21.1",
     "isaacscript-lint": "^6.4.1",
     "isaacscript-tsconfig": "^5.0.0",
     "jest": "^29.7.0",
