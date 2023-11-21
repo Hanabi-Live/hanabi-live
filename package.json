@@ -16,7 +16,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "jest",
-    "lint": "tsx ./scripts/lint.ts",
+    "lint": "bash ./lint.sh",
     "nuke": "isaacscript nuke",
     "update": "isaacscript update"
   },

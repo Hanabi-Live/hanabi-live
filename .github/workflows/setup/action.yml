@@ -3,7 +3,7 @@ runs:
 
   steps:
     # https://github.com/actions/setup-node/issues/899
-    - name: Enable corepack to workaround a setup-node bug
+    - name: Enable corepack to work around a setup-node bug
       run: corepack enable
       shell: bash # Composite jobs must specify the shell.
 

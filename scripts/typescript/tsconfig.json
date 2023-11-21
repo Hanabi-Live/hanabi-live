@@ -1,0 +1,30 @@
+// A TypeScript configuration file, used by project scripts.
+{
+  "$schema": "https://raw.githubusercontent.com/IsaacScript/isaacscript/main/packages/isaacscript-cli/schemas/tsconfig-strict-schema.json",
+
+  // We extend the IsaacScript config for Node.js:
+  // https://github.com/IsaacScript/isaacscript/blob/main/packages/isaacscript-tsconfig/tsconfig.node.json
+  "extends": "isaacscript-tsconfig/tsconfig.node.json",
+
+  // We want to lint every file in this directory. Two entries for each file extension are needed
+  // because TypeScript will exclude files that begin with a period from an asterisk glob by
+  // default.
+  "include": [
+    "./**/*.js",
+    "./**/.*.js",
+    "./**/*.cjs",
+    "./**/.*.cjs",
+    "./**/*.mjs",
+    "./**/.*.mjs",
+    "./**/*.jsx",
+    "./**/.*.jsx",
+    "./**/*.ts",
+    "./**/.*.ts",
+    "./**/*.cts",
+    "./**/.*.cts",
+    "./**/*.mts",
+    "./**/.*.mts",
+    "./**/*.tsx",
+    "./**/.*.tsx",
+  ],
+}
