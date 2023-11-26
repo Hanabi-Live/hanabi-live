@@ -2532,6 +2532,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/unidecode@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "@types/unidecode@npm:0.1.3"
+  checksum: f450b919c2a300bfd7e11d3df95066d0e0424cf9758133d2929aca6bc359fc59511a9243357830f4657426830744ee8e0e28741b98b0767a4e1fcd45fb60e7da
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 21.0.2
   resolution: "@types/yargs-parser@npm:21.0.2"
@@ -6604,6 +6611,7 @@ __metadata:
     "@types/lodash": "npm:^4.14.202"
     "@types/node": "npm:^20.9.3"
     "@types/tooltipster": "npm:^0.0.35"
+    "@types/unidecode": "npm:^0.1.3"
     bufferutil: "npm:^4.0.8"
     canvas: "npm:^2.11.2"
     dotenv: "npm:^16.3.1"
@@ -6647,6 +6655,7 @@ __metadata:
     tslib: "npm:^2.6.2"
     tsx: "npm:^4.2.0"
     typescript: "npm:^5.3.2"
+    unidecode: "npm:^0.1.8"
     ws: "npm:^8.14.2"
     xmlserializer: "npm:^0.6.1"
     zod: "npm:^3.22.4"
@@ -12389,6 +12398,13 @@ __metadata:
   dependencies:
     string.fromcodepoint: "npm:^0.2.1"
   checksum: 4f7cda5c524cb4392d482eba11762dbc43ff8cd0d0d88c4deecdacb7ec04d9162595406f66c5fbe9a6a565aabf7f2f1cc1889d44d805b1e8326deb7b3b279484
+  languageName: node
+  linkType: hard
+
+"unidecode@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "unidecode@npm:0.1.8"
+  checksum: 0c4ab8cdc8bdae17dc766ae95bb95d612178f765db64da7ced617b7a55dcf5b758d8789429eecbd93fc3fa3883a7e1765c7f94164e1c081754679621ad734028
   languageName: node
   linkType: hard
 

@@ -1,12 +1,29 @@
-import { HTTPLoginDataSchema } from "@hanabi/data";
+import { HTTPLoginDataSchema, PROJECT_NAME } from "@hanabi/data";
+import {
+  ReadonlySet,
+  getNumConsecutiveDiacritics,
+  hasEmoji,
+  normalizeString,
+} from "@hanabi/utils";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { logger } from "../logger";
 
-const WHITESPACE_REGEX = /\s/;
-
 const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 15;
+
+const NUM_CONSECUTIVE_DIACRITICS_ALLOWED = 3;
+
+const RESERVED_USERNAMES = new ReadonlySet([
+  normalizeString(PROJECT_NAME),
+  "hanab",
+  "hanabi",
+  "live",
+  "hlive",
+  "hanablive",
+  "hanabilive",
+  "nabilive",
+]);
 
 /**
  * Handles the first part of login authentication. The user must POST to "/login" with the values
@@ -46,8 +63,9 @@ function validate(
   reply: FastifyReply,
 ): FastifyReply | undefined {
   const data = HTTPLoginDataSchema.parse(request.body);
+  const { username } = data;
 
-  const usernameHasWhitespace = WHITESPACE_REGEX.test(data.username);
+  const usernameHasWhitespace = /\s/.test(username);
   if (usernameHasWhitespace) {
     logger.info(`IP "${request.ip}" tried to log in, but they are banned.`);
     return reply
@@ -56,14 +74,14 @@ function validate(
   }
 
   // Validate that the username is not excessively short.
-  if (data.username.length < MIN_USERNAME_LENGTH) {
+  if (username.length < MIN_USERNAME_LENGTH) {
     return reply
       .code(StatusCodes.UNAUTHORIZED)
       .send(`Usernames must be ${MIN_USERNAME_LENGTH} characters or more.`);
   }
 
   // Validate that the username is not excessively long.
-  if (data.username.length < MAX_USERNAME_LENGTH) {
+  if (username.length < MAX_USERNAME_LENGTH) {
     return reply
       .code(StatusCodes.UNAUTHORIZED)
       .send(`Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`);
@@ -71,12 +89,39 @@ function validate(
 
   // Validate that the username does not have any special characters in it (other than hyphens,
   // underscores, and periods).
-  if (data.username.includes("`~!@#$%^&*()=+[{]}\\|;:'\",<>/?")) {
+  if (username.includes("`~!@#$%^&*()=+[{]}\\|;:'\",<>/?")) {
     return reply
       .code(StatusCodes.UNAUTHORIZED)
       .send(
         "Usernames cannot contain any special characters other than hyphens, underscores, and periods.",
       );
+  }
+
+  // Validate that the username does not have any emojis in it.
+  if (hasEmoji(username)) {
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send("Usernames cannot contain any emojis.");
+  }
+
+  // Validate that the username does not contain an unreasonable amount of consecutive diacritics
+  // (accents).
+  if (
+    getNumConsecutiveDiacritics(username) > NUM_CONSECUTIVE_DIACRITICS_ALLOWED
+  ) {
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send(
+        `Usernames cannot contain ${NUM_CONSECUTIVE_DIACRITICS_ALLOWED} or more consecutive diacritics.`,
+      );
+  }
+
+  // Validate that the username is not reserved.
+  const normalizedUsername = normalizeString(username);
+  if (RESERVED_USERNAMES.has(normalizedUsername)) {
+    return reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send("That username is reserved. Please choose a different one.");
   }
 
   return undefined;
@@ -87,55 +132,6 @@ function validate(
 // TODO
 
 func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
-
-
-	// Validate that the username does not have any emojis in it
-	if match := emojiRegExp.FindStringSubMatch(username); match != nil {
-		logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it has emojis in it.")
-		http.Error(
-			w,
-			"Usernames cannot contain any emojis.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-
-	// Validate that the username does not contain an unreasonable amount of consecutive diacritics
-	// (accents)
-	if numConsecutiveDiacritics(username) > ConsecutiveDiacriticsAllowed {
-		logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it has " + str.IToA(ConsecutiveDiacriticsAllowed) +
-			" or more consecutive diacritics in it.")
-		http.Error(
-			w,
-			"Usernames cannot contain two or more consecutive diacritics.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-
-	// Validate that the username is not reserved
-	normalizedUsername := normalizeString(username)
-	if normalizedUsername == normalizeString(WebsiteName) ||
-		normalizedUsername == "hanab" ||
-		normalizedUsername == "hanabi" ||
-		normalizedUsername == "live" ||
-		normalizedUsername == "hlive" ||
-		normalizedUsername == "hanablive" ||
-		normalizedUsername == "hanabilive" ||
-		normalizedUsername == "nabilive" {
-
-		logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but that username is reserved.")
-		http.Error(
-			w,
-			"That username is reserved. Please choose a different one.",
-			http.StatusUnauthorized,
-		)
-		return nil, false
-	}
-
 	// Validate that the version is correct
 	// We want to explicitly disallow clients who are running old versions of the code
 	// But make an exception for bots, who can just use the string of "bot"
