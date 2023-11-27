@@ -1,4 +1,4 @@
-import { hasDiacritic, hasEmoji } from "./string";
+import { hasDiacritic, hasEmoji, normalizeString } from "./string";
 
 describe("hasEmoji", () => {
   test("should return true for string with emoji", () => {
@@ -36,5 +36,28 @@ describe("hasDiacritic", () => {
 
   test("should handle empty string", () => {
     expect(hasDiacritic("")).toBe(false);
+  });
+});
+
+describe("normalizeString function", () => {
+  test("it should transliterate and lowercase a string with ASCII characters", () => {
+    const result = normalizeString("Hello World");
+    expect(result).toBe("hello world");
+  });
+
+  test("it should handle special characters and non-ASCII characters", () => {
+    const result = normalizeString("Thérè àrè spéciål çhàràctèrs"); // cspell:disable-line
+    expect(result).toBe("there are special characters");
+  });
+
+  test("it should handle an empty string", () => {
+    const result = normalizeString("");
+    expect(result).toBe("");
+  });
+
+  test("it should handle a string with only non-ASCII characters", () => {
+    const result = normalizeString("こんにちは，世界！");
+    console.log(result);
+    expect(result).toBe("konnitiha,shi jie !"); // cspell:disable-line
   });
 });

@@ -4,14 +4,17 @@ import {
   getNumConsecutiveDiacritics,
   hasEmoji,
   normalizeString,
+  parseIntSafe,
 } from "@hanabi/utils";
+import * as argon2 from "argon2";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { logger } from "../logger";
+import { models } from "../models";
+import { getClientVersion } from "../version";
 
 const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 15;
-
 const NUM_CONSECUTIVE_DIACRITICS_ALLOWED = 3;
 
 const RESERVED_USERNAMES = new ReadonlySet([
@@ -37,149 +40,185 @@ const RESERVED_USERNAMES = new ReadonlySet([
  * twice. However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row
  * will prevent the 2nd insertion from completing.
  */
-export function httpLogin(
+export async function httpLogin(
   request: FastifyRequest,
   reply: FastifyReply,
-): FastifyReply {
-  const errorReply = validate(request, reply);
-  if (errorReply) {
-    return errorReply;
+): Promise<FastifyReply> {
+  const result = HTTPLoginDataSchema.safeParse(request.body);
+  if (!result.success) {
+    return reply.code(StatusCodes.UNAUTHORIZED).send(result.error);
   }
 
-  const user = {
-    username: "alice",
-  };
+  const { username, password, version, newPassword } = result.data;
+
+  const versionError = validateVersion(version);
+  if (versionError !== undefined) {
+    return reply.code(StatusCodes.UNAUTHORIZED).send(versionError);
+  }
+
+  const passwordHash = await argon2.hash(password);
+
+  let user = await models.users.get(username);
+  if (user === undefined) {
+    const normalizedUsername = normalizeString(username);
+    const newUserError = await validateNewUser(
+      username,
+      normalizedUsername,
+      password,
+      newPassword,
+    );
+    if (newUserError !== undefined) {
+      return reply.code(StatusCodes.UNAUTHORIZED).send(newUserError);
+    }
+
+    const newUser = await models.users.create(
+      username,
+      normalizedUsername,
+      passwordHash,
+      request.ip,
+    );
+    if (newUser === undefined) {
+      return reply
+        .code(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          `Failed to create a new user with a username of "${username}". Please try again.`,
+        );
+    }
+
+    user = newUser;
+  }
 
   logger.info(`User "${user.username}" logged in from: ${request.ip}`);
 
   // Return a "200 OK" HTTP code. (Returning a code is not actually necessary but Firefox will
   // complain otherwise.)
-  request.session.set("LOGGED IN", true);
+  request.session.set("LOGGED IN", true); // TODO
   return reply.code(StatusCodes.OK).send();
 }
 
-function validate(
-  request: FastifyRequest,
-  reply: FastifyReply,
-): FastifyReply | undefined {
-  const data = HTTPLoginDataSchema.parse(request.body);
-  const { username } = data;
+/**
+ * We want to explicitly disallow clients who are running old versions of the code. But we make an
+ * exception for bots, who can just use the string of "bot".
+ */
+function validateVersion(version: string): string | undefined {
+  if (version === "bot") {
+    return;
+  }
 
+  const versionInt = parseIntSafe(version);
+  if (versionInt === undefined) {
+    return "The submitted version must be an integer.";
+  }
+
+  const clientVersion = getClientVersion();
+  if (clientVersion !== versionInt) {
+    return `You are running an outdated version of the client code.<br>(You are on <strong>v${version}</strong> and the latest is <strong>v${clientVersion}</strong>.)<br>Please perform a <a href="https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/">hard-refresh</a> to get the latest version.<br>(Note that a hard-refresh is different from a normal refresh.)<br>On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br>On MacOS, the hotkey for this is: <code>Command + Shift + R</code>`;
+  }
+
+  return undefined;
+}
+
+async function validateNewUser(
+  username: string,
+  normalizedUsername: string,
+  password: string,
+  newPassword: string | undefined,
+): Promise<string | undefined> {
   const usernameHasWhitespace = /\s/.test(username);
   if (usernameHasWhitespace) {
-    logger.info(`IP "${request.ip}" tried to log in, but they are banned.`);
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send("Usernames cannot contain any whitespace characters.");
+    return "Usernames cannot contain any whitespace characters.";
   }
 
-  // Validate that the username is not excessively short.
   if (username.length < MIN_USERNAME_LENGTH) {
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send(`Usernames must be ${MIN_USERNAME_LENGTH} characters or more.`);
+    return `Usernames must be ${MIN_USERNAME_LENGTH} characters or more.`;
   }
 
-  // Validate that the username is not excessively long.
-  if (username.length < MAX_USERNAME_LENGTH) {
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send(`Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`);
+  if (username.length > MAX_USERNAME_LENGTH) {
+    return `Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`;
   }
 
-  // Validate that the username does not have any special characters in it (other than hyphens,
-  // underscores, and periods).
   if (username.includes("`~!@#$%^&*()=+[{]}\\|;:'\",<>/?")) {
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send(
-        "Usernames cannot contain any special characters other than hyphens, underscores, and periods.",
-      );
+    return "Usernames cannot contain any special characters other than hyphens, underscores, and periods.";
   }
 
-  // Validate that the username does not have any emojis in it.
   if (hasEmoji(username)) {
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send("Usernames cannot contain any emojis.");
+    return "Usernames cannot contain any emojis.";
   }
 
-  // Validate that the username does not contain an unreasonable amount of consecutive diacritics
-  // (accents).
   if (
     getNumConsecutiveDiacritics(username) > NUM_CONSECUTIVE_DIACRITICS_ALLOWED
   ) {
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send(
-        `Usernames cannot contain ${NUM_CONSECUTIVE_DIACRITICS_ALLOWED} or more consecutive diacritics.`,
-      );
+    return `Usernames cannot contain ${NUM_CONSECUTIVE_DIACRITICS_ALLOWED} or more consecutive diacritics (i.e. accents).`;
   }
 
-  // Validate that the username is not reserved.
-  const normalizedUsername = normalizeString(username);
   if (RESERVED_USERNAMES.has(normalizedUsername)) {
-    return reply
-      .code(StatusCodes.UNAUTHORIZED)
-      .send("That username is reserved. Please choose a different one.");
+    return "That username is reserved. Please choose a different one.";
+  }
+
+  if (normalizedUsername === "") {
+    return "That username cannot be transliterated to ASCII. Please try using a simpler username or try using less special characters.";
+  }
+
+  const similarUsername =
+    await models.users.getSimilarUsername(normalizedUsername);
+  if (similarUsername !== undefined) {
+    return `That username is too similar to the existing user of "${similarUsername}". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging in for the first time, then please choose a different username.`;
+  }
+
+  // Validate that the password is non-empty.
+  if (password === "") {
+    return "You cannot create an account with an empty password.";
+  }
+
+  // Validate that they are not changing their password.
+  if (newPassword !== undefined) {
+    return "You cannot create an account and change a password at the same time.";
   }
 
   return undefined;
 }
 
 /*
-
-// TODO
-
-func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
-	// Validate that the version is correct
-	// We want to explicitly disallow clients who are running old versions of the code
-	// But make an exception for bots, who can just use the string of "bot"
-	if version != "bot" {
-		var versionNum int
-		if v, err := str.AtoI(version); err != nil {
-			logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
-				"\"" + username + "\", but the submitted version is not an integer.")
-			http.Error(
-				w,
-				"The submitted version must be an integer.",
-				http.StatusUnauthorized,
-			)
-			return nil, false
+	if exists {
+		// First, check to see if they have a a legacy password hash stored in the database
+		if user.OldPasswordHash.Valid {
+			if ok := httpCheckAndChangeCredentials(w, user, data); !ok {
+				return
+			}
 		} else {
-			versionNum = v
+			if ok := httpCheckCredentials(w, user, data); !ok {
+				return
+			}
 		}
-		currentVersion := getVersion()
-		if versionNum != currentVersion {
-			logger.info("User from IP \"" + ip + "\" tried to log in with a username of " +
-				"\"" + username + "\" and a version of \"" + version + "\", " +
-				"but this is an old version. " +
-				"(The current version is " + str.IToA(currentVersion) + ".)")
-			http.Error(
-				w,
-				"You are running an outdated version of the client code.<br />"+
-					"(You are on <strong>v"+version+"</strong> and "+
-					"the latest is <strong>v"+str.IToA(currentVersion)+"</strong>.)<br />"+
-					"Please perform a "+
-					"<a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">"+
-					"hard-refresh</a> to get the latest version.<br />"+
-					"(Note that a hard-refresh is different from a normal refresh.)<br />"+
-					"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
-					"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
-				http.StatusUnauthorized,
-			)
-			return nil, false
+
+		// If they have provided a new password, replace the old one
+		if ok := httpCheckPasswordChange(w, user, data); !ok {
+			return
 		}
+	} else {
+
 	}
 
-	data := &HTTPLoginData{
-		IP:                 ip,
-		Username:           username,
-		Password:           password,
-		NewPassword:        newPassword,
-		NormalizedUsername: normalizedUsername,
+	// Save the information to the session cookie
+	session := gsessions.Default(c)
+	session.Set("userID", user.ID)
+	if err := session.Save(); err != nil {
+		logger.Error("Failed to write to the login cookie for user \"" + user.Username + "\": " +
+			err.Error())
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
 	}
-	return data, true
-}
+
+	// Log the login request and give a "200 OK" HTTP code
+	// (returning a code is not actually necessary but Firefox will complain otherwise)
+	logger.Info("User \"" + user.Username + "\" logged in from: " + data.IP)
+	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
+
+	// Next, the client will attempt to establish a WebSocket connection,
+	// which is handled in "httpWS.go"
 
 */

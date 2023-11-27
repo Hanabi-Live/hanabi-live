@@ -9,7 +9,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
-const usersTable = pgTable("users", {
+export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   normalizedUsername: text("normalized_username").notNull().unique(),

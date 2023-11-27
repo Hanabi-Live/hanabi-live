@@ -25,7 +25,7 @@ if (!fs.existsSync(VERSION_TXT_PATH)) {
  * We want to read this file every time (as opposed to just reading it on server start) so that we
  * can update the client without having to restart the entire server.
  */
-export function getVersion(): number {
+export function getClientVersion(): number {
   let version: string;
   try {
     version = fs.readFileSync(VERSION_TXT_PATH, "utf8");

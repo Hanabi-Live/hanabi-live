@@ -1,6 +1,6 @@
 import { PROJECT_NAME } from "@hanabi/data";
 import { IS_DEV } from "./env";
-import { getVersion } from "./version";
+import { getClientVersion } from "./version";
 
 /**
  * Some variables are used by the "layout.eta" file, meaning that they are needed for every page
@@ -14,6 +14,6 @@ export function getTemplateVariables() {
   return {
     projectName: PROJECT_NAME,
     isDev: IS_DEV,
-    version: getVersion(),
+    version: getClientVersion(),
   } as const;
 }

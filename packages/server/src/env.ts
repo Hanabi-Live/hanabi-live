@@ -17,13 +17,6 @@ dotenv.config({
   path: ENV_PATH,
 });
 
-// TODO: https://github.com/t3-oss/t3-env/issues/109
-for (const [key, value] of Object.entries(process.env)) {
-  if (value === "") {
-    delete process.env[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
-  }
-}
-
 export const env = createEnv({
   server: {
     DOMAIN: z.string().default("localhost"),
@@ -42,6 +35,7 @@ export const env = createEnv({
   },
 
   runtimeEnv: process.env,
+  emptyStringAsUndefined: true,
 });
 
 export const IS_DEV =

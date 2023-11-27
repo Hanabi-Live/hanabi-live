@@ -175,6 +175,7 @@ CREATE TABLE game_participants (
     CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)
 );
 
+DROP FUNCTION IF EXISTS delete_game_of_deleted_participant;
 CREATE FUNCTION delete_game_of_deleted_participant() RETURNS TRIGGER AS $_$
 BEGIN
 DELETE FROM games WHERE games.id = OLD.game_id;
