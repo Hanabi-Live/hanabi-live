@@ -679,7 +679,7 @@ func (*Games) GetGamesForVariantFromGameIDs(gameIDs []int, orderBy string) ([]AP
 
 func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
 	SQLString := `
-		SELECT COUNT(games.id)
+		SELECT COUNT_BIG(games.id)
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
@@ -939,7 +939,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				WHERE id = $1
 			) AS date_joined,
 			(
-				SELECT COUNT(games.id)
+				SELECT COUNT_BIG(games.id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -947,7 +947,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					AND games.end_condition = 1
 			) AS num_games_normal,
 			(
-				SELECT COUNT(games.id)
+				SELECT COUNT_BIG(games.id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -969,7 +969,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					AND games.speedrun = FALSE
 			) AS time_played,
 			(
-				SELECT COUNT(games.id)
+				SELECT COUNT_BIG(games.id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -1009,13 +1009,13 @@ func (*Games) GetGlobalStats() (Stats, error) {
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			(
-				SELECT COUNT(id)
+				SELECT COUNT_BIG(id)
 				FROM games
 				WHERE games.speedrun = FALSE
 					AND games.end_condition = 1
 			) AS num_games_normal,
 			(
-				SELECT COUNT(id)
+				SELECT COUNT_BIG(id)
 				FROM games
 				WHERE games.speedrun = FALSE
 				AND games.end_condition != 1
@@ -1034,7 +1034,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = FALSE
 			) AS time_played,
 			(
-				SELECT COUNT(id)
+				SELECT COUNT_BIG(id)
 				FROM games
 				WHERE games.speedrun = TRUE
 			) AS num_games_speedrun,
@@ -1070,14 +1070,14 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			(
-				SELECT COUNT(id)
+				SELECT COUNT_BIG(id)
 				FROM games
 				WHERE variant_id = $1
 					AND speedrun = FALSE
 					AND games.end_condition = 1
 			) AS num_games_normal,
 			(
-				SELECT COUNT(id)
+				SELECT COUNT_BIG(id)
 				FROM games
 				WHERE variant_id = $1
 					AND speedrun = FALSE
@@ -1098,7 +1098,7 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 					AND games.speedrun = FALSE
 			) AS time_played,
 			(
-				SELECT COUNT(id)
+				SELECT COUNT_BIG(id)
 				FROM games
 				WHERE games.variant_id = $1
 					AND games.speedrun = TRUE
