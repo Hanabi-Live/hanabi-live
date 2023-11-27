@@ -53,4 +53,13 @@ export const users = {
 
     return rows[0]?.username;
   },
+
+  setPassword: async (id: number, passwordHash: string): Promise<void> => {
+    await db
+      .update(usersTable)
+      .set({
+        passwordHash,
+      })
+      .where(eq(usersTable.id, id));
+  },
 };

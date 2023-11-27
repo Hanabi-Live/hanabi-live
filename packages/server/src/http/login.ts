@@ -88,6 +88,17 @@ export async function httpLogin(
     }
 
     user = newUser;
+  } else {
+    if (passwordHash !== user.passwordHash) {
+      return reply
+        .code(StatusCodes.UNAUTHORIZED)
+        .send("That is not the correct password.");
+    }
+
+    if (newPassword !== undefined && newPassword !== "") {
+      const newPasswordHash = await argon2.hash(password);
+      await models.users.setPassword(user.id, newPasswordHash);
+    }
   }
 
   logger.info(`User "${user.username}" logged in from: ${request.ip}`);
