@@ -28,6 +28,8 @@ const RESERVED_USERNAMES = new ReadonlySet([
   "nabilive",
 ]);
 
+const WHITESPACE_REGEX = /\s/;
+
 /**
  * Handles the first part of login authentication. The user must POST to "/login" with the values
  * from the `HTTPLoginData` interface. If successful, they will receive a cookie from the server
@@ -90,10 +92,15 @@ export async function httpLogin(
 
   logger.info(`User "${user.username}" logged in from: ${request.ip}`);
 
+  // Save the information to the session cookie.
+  request.session.set("userID", user.id);
+
   // Return a "200 OK" HTTP code. (Returning a code is not actually necessary but Firefox will
   // complain otherwise.)
-  request.session.set("LOGGED IN", true); // TODO
   return reply.code(StatusCodes.OK).send();
+
+  // Next, the client will attempt to establish a WebSocket connection, which is handled in
+  // "websocket.ts".
 }
 
 /**
@@ -124,7 +131,7 @@ async function validateNewUser(
   password: string,
   newPassword: string | undefined,
 ): Promise<string | undefined> {
-  const usernameHasWhitespace = /\s/.test(username);
+  const usernameHasWhitespace = WHITESPACE_REGEX.test(username);
   if (usernameHasWhitespace) {
     return "Usernames cannot contain any whitespace characters.";
   }
@@ -177,48 +184,3 @@ async function validateNewUser(
 
   return undefined;
 }
-
-/*
-	if exists {
-		// First, check to see if they have a a legacy password hash stored in the database
-		if user.OldPasswordHash.Valid {
-			if ok := httpCheckAndChangeCredentials(w, user, data); !ok {
-				return
-			}
-		} else {
-			if ok := httpCheckCredentials(w, user, data); !ok {
-				return
-			}
-		}
-
-		// If they have provided a new password, replace the old one
-		if ok := httpCheckPasswordChange(w, user, data); !ok {
-			return
-		}
-	} else {
-
-	}
-
-	// Save the information to the session cookie
-	session := gsessions.Default(c)
-	session.Set("userID", user.ID)
-	if err := session.Save(); err != nil {
-		logger.Error("Failed to write to the login cookie for user \"" + user.Username + "\": " +
-			err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Log the login request and give a "200 OK" HTTP code
-	// (returning a code is not actually necessary but Firefox will complain otherwise)
-	logger.Info("User \"" + user.Username + "\" logged in from: " + data.IP)
-	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
-
-	// Next, the client will attempt to establish a WebSocket connection,
-	// which is handled in "httpWS.go"
-
-*/
