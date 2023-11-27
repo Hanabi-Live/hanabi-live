@@ -2,7 +2,9 @@ import { eq } from "drizzle-orm";
 import { usersTable } from "../databaseSchema";
 import { db } from "../db";
 
-export type User = NonNullable<Awaited<ReturnType<typeof users.get>>>;
+// TODO: use this?
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type User = NonNullable<Awaited<ReturnType<typeof users.get>>>;
 
 export const users = {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
