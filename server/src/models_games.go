@@ -962,7 +962,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER), 0)
+				) AS BIGINT), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -983,7 +983,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER), 0)
+				) AS BIGINT), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -1028,7 +1028,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER), 0)
+				) AS BIGINT), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = FALSE
@@ -1046,7 +1046,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER), 0)
+				) AS BIGINT), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = TRUE
@@ -1091,7 +1091,7 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER), 0)
+				) AS BIGINT), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.variant_id = $1
@@ -1111,7 +1111,7 @@ func (*Games) GetVariantStats(variantID int) (Stats, error) {
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER), 0)
+				) AS BIGINT), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.variant_id = $1
