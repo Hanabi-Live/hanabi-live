@@ -1,4 +1,4 @@
-import pino from "pino";
+import { pino } from "pino";
 import { IS_DEV } from "./env";
 
 const DEV_OPTIONS = {
