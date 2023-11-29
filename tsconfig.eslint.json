@@ -1,5 +1,7 @@
 // A special TypeScript configuration file, used by ESLint only.
 {
+  "$schema": "https://raw.githubusercontent.com/IsaacScript/isaacscript/main/packages/isaacscript-cli/schemas/tsconfig-strict-schema.json",
+
   "extends": "./tsconfig.json",
 
   // We want to lint every file in the repository, regardless of whether it is actually bundled into

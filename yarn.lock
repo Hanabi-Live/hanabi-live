@@ -4672,9 +4672,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"drizzle-orm@npm:^0.29.0":
-  version: 0.29.0
-  resolution: "drizzle-orm@npm:0.29.0"
+"drizzle-orm@npm:^0.29.1":
+  version: 0.29.1
+  resolution: "drizzle-orm@npm:0.29.1"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=3"
@@ -4734,7 +4734,7 @@ __metadata:
       optional: true
     sqlite3:
       optional: true
-  checksum: 8c4a3d05f98cff8ec8b1e65a04baced3d826df3b6ac029779c3fbf78c47b8ec277162f971b5217ee2c6b75d401bb2c392d2dc50fb93f5c017f11f734047e1261
+  checksum: 890b8a336325414b708476e111f50d229ac0137ad9aba929cdbfb9338720770f9a8d192a71682b3d207305820d0f362195fcc619ab65973d409ec0ca95eeee0e
   languageName: node
   linkType: hard
 
@@ -6571,7 +6571,7 @@ __metadata:
     argon2: "npm:^0.31.2"
     bufferutil: "npm:^4.0.8"
     dotenv: "npm:^16.3.1"
-    drizzle-orm: "npm:^0.29.0"
+    drizzle-orm: "npm:^0.29.1"
     esbuild: "npm:^0.19.8"
     esbuild-plugin-pino: "npm:^2.1.0"
     eta: "npm:^3.1.1"
@@ -6585,7 +6585,7 @@ __metadata:
     http-status-codes: "npm:^2.3.0"
     immer: "npm:^10.0.3"
     interactjs: "npm:^1.10.23"
-    isaacscript: "npm:^3.24.0"
+    isaacscript: "npm:^3.25.0"
     isaacscript-lint: "npm:^6.4.1"
     isaacscript-tsconfig: "npm:^5.0.0"
     jest: "npm:^29.7.0"
@@ -7403,19 +7403,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-node@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "isaacscript-common-node@npm:1.3.0"
+"isaacscript-common-node@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "isaacscript-common-node@npm:1.4.0"
   dependencies:
     "@arktype/fs": "npm:^0.0.4"
     chalk: "npm:^5.3.0"
     command-exists: "npm:^1.2.9"
     diff: "npm:^5.1.0"
+    dotenv: "npm:^16.3.1"
     execa: "npm:^8.0.1"
     isaacscript-common-ts: "npm:^11.6.0"
     jsonc-parser: "npm:^3.2.0"
     npm-check-updates: "npm:^16.14.11"
-  checksum: fbddcf0906c2c86950f30aec2a4a0ae322054184c87a2b7174fc127fd7cf408d4527d871b9efd2381eeacead870d4bf0f4af8d3e4d6c21073d6992d052a7dc77
+    zod: "npm:^3.22.4"
+  checksum: 23dae47d9fd97c9eb63ab946306b23151cc47610b2817b9b86d1d896da2ede97b22de4865bbd89884b5aa0cd57ee7abf5f2927c360fe0f4aeec58d6f53cfe82c
   languageName: node
   linkType: hard
 
@@ -7475,18 +7477,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript@npm:^3.24.0":
-  version: 3.24.0
-  resolution: "isaacscript@npm:3.24.0"
+"isaacscript@npm:^3.25.0":
+  version: 3.25.0
+  resolution: "isaacscript@npm:3.25.0"
   dependencies:
     "@commander-js/extra-typings": "npm:^11.1.0"
     "@zamiell/sync-directory": "npm:^6.0.5"
     ajv: "npm:^8.12.0"
     chalk: "npm:^5.3.0"
-    command-exists: "npm:^1.2.9"
     commander: "npm:^11.1.0"
     figlet: "npm:^1.7.0"
-    isaacscript-common-node: "npm:^1.3.0"
+    isaacscript-common-node: "npm:^1.4.0"
     isaacscript-common-ts: "npm:^11.6.0"
     jsonc-parser: "npm:^3.2.0"
     klaw-sync: "npm:^6.0.0"
@@ -7503,7 +7504,7 @@ __metadata:
       optional: true
   bin:
     isaacscript: dist/main.js
-  checksum: cc6e9796322341ee510032b329da1ffa322257e5855c7a71ee414e439ee1de23e8439535042fa0a219941457433cb3b837f9adc5ea2fe887bd7205c1b0745a27
+  checksum: cd15160a7e48b7cf7db85b7bbfd41ffdd5426844477906a2a2c870d4ff7387babe62dd5abf53bcfb4cbc749956806615122f80c3f57efae7be17e2ca68a84b61
   languageName: node
   linkType: hard
 
