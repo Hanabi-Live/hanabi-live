@@ -1,4 +1,3 @@
-import { createEnv } from "@t3-oss/env-core";
 import dotenv from "dotenv";
 import fs from "node:fs";
 import path from "node:path";
@@ -17,26 +16,23 @@ dotenv.config({
   path: ENV_PATH,
 });
 
-export const env = createEnv({
-  server: {
-    DOMAIN: z.string().default("localhost"),
-    SESSION_SECRET: z.string(),
-    PORT: z.number().default(0), // We dynamically set 80 or 443 later on.
-    LOCALHOST_PORT: z.number().default(8081),
+const envSchema = z.object({
+  DOMAIN: z.string().default("localhost"),
+  SESSION_SECRET: z.string(),
+  PORT: z.coerce.number().default(0), // We dynamically set 80 or 443 later on.
+  LOCALHOST_PORT: z.coerce.number().default(8081),
 
-    TLS_CERT_FILE: z.string().default(""),
-    TLS_KEY_FILE: z.string().default(""),
+  TLS_CERT_FILE: z.string().default(""),
+  TLS_KEY_FILE: z.string().default(""),
 
-    DB_HOST: z.string().default("localhost"),
-    DB_PORT: z.number().default(5432),
-    DB_USER: z.string().default("hanabiuser"),
-    DB_PASSWORD: z.string().default("1234567890"),
-    DB_NAME: z.string().default("hanabi"),
-  },
-
-  runtimeEnv: process.env,
-  emptyStringAsUndefined: true,
+  DB_HOST: z.string().default("localhost"),
+  DB_PORT: z.coerce.number().default(5432),
+  DB_USER: z.string().default("hanabiuser"),
+  DB_PASSWORD: z.string().default("1234567890"),
+  DB_NAME: z.string().default("hanabi"),
 });
+
+export const env = envSchema.parse(process.env);
 
 export const IS_DEV =
   env.DOMAIN === "localhost" ||
