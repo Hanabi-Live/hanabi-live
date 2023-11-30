@@ -14,7 +14,7 @@ func discordCommand2P(ctx context.Context, m *discordgo.MessageCreate, args []st
 
 // /badquestion
 func discordCommandBadQuestion(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://hanabi.github.io/docs/level_2/#the-reverse-finesse>)"
+	msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://hanabi.github.io/level_2/#the-reverse-finesse>)"
 	discordSend(m.ChannelID, "", msg)
 }
 
