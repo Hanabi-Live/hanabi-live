@@ -134,7 +134,7 @@ function decrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
 }
 
 /**
- * Helper function for an iterator to range [start, end), typesafe for FiveStackIndex.
+ * Helper function for an iterator to range [start, end), type-safe for `FiveStackIndex`.
  *
  * @param start First value in range.
  * @param end First value not in range.
@@ -276,8 +276,8 @@ export function getMaxScorePerStack(
             const assignedStackStart =
               possibleStackStarts[assignedStackStartIndex];
 
-            // This hould be redundant, because we already checked that assignedLocalSuitIndex is
-            // not too big in the if condition, but the compiler cannot automatically deduce thas.
+            // This should be redundant, because we already checked that assignedLocalSuitIndex is
+            // not too big in the if condition, but the compiler cannot automatically deduce this.
             assertDefined(
               assignedSuit,
               "Implementation error: Array access undefined after range check.",
