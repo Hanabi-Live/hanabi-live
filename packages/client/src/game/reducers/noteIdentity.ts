@@ -157,7 +157,7 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
 
 function identityMapToArray(
   variant: Variant,
-  identityMap: readonly boolean[][],
+  identityMap: ReadonlyArray<readonly boolean[]>,
 ): readonly SuitRankTuple[] {
   const possibilities: SuitRankTuple[] = [];
 

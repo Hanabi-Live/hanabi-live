@@ -278,7 +278,7 @@ interface ActionNoteListPlayer {
 interface ActionNoteList {
   readonly type: "noteList";
   readonly names: readonly string[];
-  readonly noteTextLists: readonly string[][];
+  readonly noteTextLists: ReadonlyArray<readonly string[]>;
   readonly isSpectators: readonly boolean[];
 }
 

@@ -15,7 +15,9 @@ type TupleEntry<T extends readonly unknown[]> = Expand<
 >;
 
 // eslint-disable-next-line isaacscript/no-mutable-return
-export function arrayCopyTwoDimensional<T>(array: readonly T[][]): T[][] {
+export function arrayCopyTwoDimensional<T>(
+  array: ReadonlyArray<readonly T[]>,
+): T[][] {
   const copiedArray: T[][] = [];
 
   for (const element of array) {

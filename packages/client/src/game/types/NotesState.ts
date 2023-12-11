@@ -6,7 +6,7 @@ export interface NotesState {
   readonly ourNotes: readonly CardNote[];
 
   /** A sparse array indexed by card order. */
-  readonly allNotes: readonly SpectatorNote[][];
+  readonly allNotes: ReadonlyArray<readonly SpectatorNote[]>;
 
   readonly efficiencyModifier: number;
 }

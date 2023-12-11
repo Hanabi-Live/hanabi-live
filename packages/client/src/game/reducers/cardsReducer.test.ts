@@ -998,7 +998,7 @@ describe("cardsReducer", () => {
 /** Helper function to cast `number[][]` to the correct type for a game state hand. */
 function getGameStateWithHands(
   gameState: GameState,
-  hands: readonly number[][],
+  hands: ReadonlyArray<readonly number[]>,
 ): GameState {
   return {
     ...gameState,

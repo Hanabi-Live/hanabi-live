@@ -158,7 +158,7 @@ function evaluateAssignment(
   curAssignment: Tuple<FiveStackIndex | undefined, 5>,
   unassignedSuits: readonly number[],
   possibleStackStarts: readonly number[],
-  maxPartialScores: readonly number[][],
+  maxPartialScores: ReadonlyArray<readonly number[]>,
 ): {
   assignmentValue: number;
   assignment: number[];
