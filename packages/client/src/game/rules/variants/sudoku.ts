@@ -170,42 +170,40 @@ function evaluateAssignment(
     assignedLocalSuitIndex,
     assignedStackStartIndex,
   ] of curAssignment.entries()) {
-    if (assignedLocalSuitIndex < unassignedSuits.length) {
-      assertDefined(
-        assignedStackStartIndex,
-        "Unexpected undefined assignment when trying to evaluate the full assignment.",
-      );
+    assertDefined(
+      assignedStackStartIndex,
+      "Unexpected undefined assignment when trying to evaluate the full assignment.",
+    );
 
-      const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
-      const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
-
-      // This should be redundant, because we already checked that assignedLocalSuitIndex is not too
-      // big in the if condition, but the compiler cannot automatically deduce this.
-      assertDefined(
-        assignedSuit,
-        "Implementation error: Array access undefined after range check.",
-      );
-      assertDefined(
-        assignedStackStart,
-        "Failed to retrieve the stack start while solving the assignment problem since the index access was out of range.",
-      );
-
-      const maxPartialScoresForThisSuit = maxPartialScores[assignedSuit];
-      assertDefined(
-        maxPartialScoresForThisSuit,
-        `Failed to retrieve the max partial scores for suit: ${assignedSuit}`,
-      );
-
-      // Note the '-1' here, since the array access starts at 0, while the assigned ranks start at
-      // 1.
-      const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
-      assertDefined(
-        value,
-        `Failed to retrieve the max score for starting suit ${assignedSuit} at rank ${assignedStackStart}.`,
-      );
-      assignmentValue += value;
-      assignment[assignedLocalSuitIndex] = value;
+    const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
+    // Note that since the 'curAssignment' always has length 5, but potentially we are dealing with
+    // fewer suits, it is expected that this can be undefined (because we never assigned the other
+    // suits), so we don't throw an error here but just stop the loop.
+    if (assignedSuit === undefined) {
+      break;
     }
+
+    const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
+
+    assertDefined(
+      assignedStackStart,
+      "Failed to retrieve the stack start while solving the assignment problem since the index access was out of range.",
+    );
+
+    const maxPartialScoresForThisSuit = maxPartialScores[assignedSuit];
+    assertDefined(
+      maxPartialScoresForThisSuit,
+      `Failed to retrieve the max partial scores for suit: ${assignedSuit}`,
+    );
+
+    // Note the '-1' here, since the array access starts at 0, while the assigned ranks start at 1.
+    const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
+    assertDefined(
+      value,
+      `Failed to retrieve the max score for starting suit ${assignedSuit} at rank ${assignedStackStart}.`,
+    );
+    assignmentValue += value;
+    assignment[assignedLocalSuitIndex] = value;
   }
 
   return { assignmentValue, assignment };
