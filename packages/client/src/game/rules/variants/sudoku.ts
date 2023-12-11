@@ -161,6 +161,7 @@ function evaluateAssignment(
 } {
   let assignmentValue = 0;
   const assignment: number[] = [];
+
   for (const [
     assignedLocalSuitIndex,
     assignedStackStartIndex,
@@ -202,6 +203,7 @@ function evaluateAssignment(
       assignment[assignedLocalSuitIndex] = value;
     }
   }
+
   return { assignmentValue, assignment };
 }
 
@@ -223,6 +225,7 @@ function isAssignmentBetter(
   if (assignmentValue > bestAssignmentSum) {
     return true;
   }
+
   if (assignmentValue === bestAssignmentSum) {
     // If the values are the same, we want to update if the assignment is lexicographically smaller.
     for (const [i, val] of assignmentSorted.entries()) {
@@ -236,6 +239,7 @@ function isAssignmentBetter(
       }
     }
   }
+
   return false;
 }
 
@@ -260,6 +264,7 @@ function findNextAssignment(
       }
     }
   }
+
   return undefined;
 }
 
@@ -346,7 +351,8 @@ export function getMaxScorePerStack(
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
   while (true) {
     // The goal of each iteration is to increase the assignment of 'localSuitIndex' to the next free
-    // stack start (= available and not yet assigned to some other suit).
+    // stack start. (Specifically, the next number available and not yet assigned to some other
+    // suit.)
 
     // Thus, we will first un-assign the current suit.
     const curAssignedStackStartIndex = curAssignment[localSuitIndex];
