@@ -7,7 +7,7 @@ import {
   SUIT_MODIFIERS,
   SUIT_MODIFIER_DELIMITER,
   SUIT_REVERSED_SUFFIX,
-  VARIANT_DELIMITER,
+  VARIANT_DELIMITER, DEFAULT_CLUE_RANKS,
 } from "../constants";
 import {
   VARIANT_MODIFIER_SET,
@@ -673,7 +673,8 @@ function getVariantFromNewID(
       case VariantModifier.Sudoku: {
         variant.sudoku = true;
         if (variant.suits.length !== 5) {
-          variant.stackSize = variant.suits.length as BasicRank
+          variant.stackSize = variant.suits.length as BasicRank;
+          variant.clueRanks = DEFAULT_CLUE_RANKS.slice(0, variant.suits.length);
         }
         break;
       }

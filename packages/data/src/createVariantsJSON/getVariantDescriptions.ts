@@ -1310,7 +1310,8 @@ function getSudokuVariants(
         name: `Sudoku (${numSuits} Suits)`,
         suits: basicVariantSuits[numSuits].slice(0, numSuits),
         sudoku: true,
-        stackSize: numSuits
+        stackSize: numSuits,
+        clueRanks: DEFAULT_CLUE_RANKS.slice(0, numSuits),
       });
     }
   }
@@ -1337,7 +1338,8 @@ function getSudokuVariants(
           name: variantName,
           suits: variantSuits,
           sudoku: true,
-          stackSize: numSuits
+          stackSize: numSuits,
+          clueRanks: DEFAULT_CLUE_RANKS.slice(0, numSuits),
         });
       }
     }
