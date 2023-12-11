@@ -53,8 +53,8 @@ export function nextPlayableRanks(
       // is already started, then we go up, wrapping around from 5 to 1 (unless the stack was
       // started at 1, in which case 5 will be the last card of this suit).
       if (currentlyPlayedRank !== undefined) {
-        // We mod by 5 and then add to obtain values 1 through 5.
-        return [(currentlyPlayedRank % variant.ranks.length) + 1];
+        // We mod by the stack size and then add to obtain values [1, ..., stackSize].
+        return [(currentlyPlayedRank % variant.stackSize) + 1];
       }
 
       // The stack is not started yet. As a special case, we might already know the start of the
