@@ -68,7 +68,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   const { maxScore } = variant;
   const maxScorePerStack = newArray(
     variant.suits.length,
-    DEFAULT_FINISHED_STACK_LENGTH,
+    variant.stackSize
   ) as Tuple<number, NumSuits>;
   const cardsPerHand = handRules.cardsPerHand(options);
   const startingDeckSize = statsRules.startingDeckSize(

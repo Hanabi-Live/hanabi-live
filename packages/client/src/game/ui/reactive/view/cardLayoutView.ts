@@ -136,7 +136,10 @@ export function onPlayStacksChanged(
 
   if (globals.variant.sudoku) {
     // First, we will find out all available stack starts.
-    const availableStackStartsFlags: boolean[] = [true, true, true, true, true];
+    const availableStackStartsFlags: boolean[] = [false, false, false, false, false];
+    for (const rank of globals.variant.ranks) {
+      availableStackStartsFlags[rank - 1] = true;
+    }
     for (const playStack of playStacks) {
       const stackStart = stackStartRank(
         playStack,
@@ -176,10 +179,10 @@ export function onPlayStacksChanged(
           `Failed to get the rank of the first played card at index: ${firstPlayedCardOrder}`,
         );
         const playedRanks = playStack.map(
-          (_stack, rankOffset) => ((rankOffset + firstPlayedRank - 1) % 5) + 1,
+          (_stack, rankOffset) => ((rankOffset + firstPlayedRank - 1) % globals.variant.stackSize) + 1,
         );
         const ranksText =
-          playedRanks.join(" ") + " _".repeat(5 - playStack.length);
+          playedRanks.join(" ") + " _".repeat(globals.variant.stackSize - playStack.length);
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =

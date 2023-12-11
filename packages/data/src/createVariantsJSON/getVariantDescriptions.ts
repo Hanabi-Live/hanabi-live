@@ -1300,11 +1300,20 @@ export function getSudokuVariants(
 
   // Create the basic variant. Note that for sudoku, we only want 4 or 5-suit variants.
   for (const numSuits of sudokuSuitNumbers) {
-    variantDescriptions.push({
-      name: `Sudoku (${numSuits} Suits)`,
-      suits: basicVariantSuits[numSuits]!.slice(0, numSuits),
-      sudoku: true,
-    });
+    if (numSuits !== 5) {
+      variantDescriptions.push({
+        name: `Sudoku (${numSuits} Suits)`,
+        suits: basicVariantSuits[numSuits]!.slice(0, numSuits),
+        sudoku: true,
+        stackSize: numSuits
+      });
+    } else {
+      variantDescriptions.push({
+        name: `Sudoku (${numSuits} Suits)`,
+        suits: basicVariantSuits[numSuits]!.slice(0, numSuits),
+        sudoku: true,
+      });
+    }
   }
 
   // Create combinations with special suits.
@@ -1318,11 +1327,20 @@ export function getSudokuVariants(
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
       const variantSuits = [...basicSuits.slice(0, numSuits - 1), suit.name];
-      variantDescriptions.push({
-        name: variantName,
-        suits: variantSuits,
-        sudoku: true,
-      });
+      if (numSuits !== 5) {
+        variantDescriptions.push({
+          name: variantName,
+          suits: variantSuits,
+          sudoku: true,
+          stackSize: numSuits
+        });
+      } else {
+        variantDescriptions.push({
+          name: variantName,
+          suits: variantSuits,
+          sudoku: true,
+        });
+      }
     }
   }
 

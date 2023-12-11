@@ -17,6 +17,7 @@ import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
 import type { VariantJSON } from "../interfaces/VariantJSON";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
+import {BasicRank} from "@hanabi/data";
 
 export function getNewVariantID(
   variantDescription: VariantDescription,
@@ -671,11 +672,13 @@ function getVariantFromNewID(
       // Sudoku
       case VariantModifier.Sudoku: {
         variant.sudoku = true;
+        if (variant.suits.length !== 5) {
+          variant.stackSize = variant.suits.length as BasicRank
+        }
         break;
       }
     }
   }
-
   return variant;
 }
 

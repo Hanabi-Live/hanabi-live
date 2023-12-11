@@ -96,10 +96,10 @@ export function sudokuWalkUpAll(
     // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
     // tothem.
   for (
-    const writeRank of iRange(lastDead + 1, 5)
+    const writeRank of iRange(lastDead + 1, variant.stackSize)
   ) {
     maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
-        maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
+        maxScoresForEachStartingValueOfSuit[0]! + variant.stackSize + 1 - writeRank,
         DEFAULT_CARD_RANKS.length,
       );
     }
@@ -176,18 +176,15 @@ function evaluateAssignment(
     assignedLocalSuitIndex,
     assignedStackStartIndex,
   ] of curAssignment.entries()) {
-    assertDefined(
-      assignedStackStartIndex,
-      "Unexpected undefined assignment when trying to evaluate the full assignment.",
-    );
-
-    const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
     // Note that since the 'curAssignment' always has length 5, but potentially we are dealing with
     // fewer suits, it is expected that this can be undefined (because we never assigned the other
     // suits), so we don't throw an error here but just stop the loop.
-    if (assignedSuit === undefined) {
-      break;
+    if (assignedStackStartIndex === undefined) {
+      continue;
     }
+
+    const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
+    assertDefined(assignedSuit, `Unexpected assigned local suit index ${assignedLocalSuitIndex} encountered while evaluating assignment.`);
 
     const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
 
@@ -230,7 +227,7 @@ function isAssignmentBetter(
   bestAssignmentSum: number,
   bestAssignmentSorted: readonly number[],
 ): boolean {
-  if (assignmentValue > bestAssignmentSum) {
+  if (assignmentValue > bestAssignmentSum || bestAssignmentSorted.length === 0) {
     return true;
   }
 
@@ -302,7 +299,7 @@ export function getMaxScorePerStack(
       sudokuWalkUpAll(allDiscardedSet, variant);
 
     if (allMax) {
-      independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
+      independentPartOfMaxScore[suitIndex] = variant.stackSize;
       continue;
     }
 
