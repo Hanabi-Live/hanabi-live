@@ -90,7 +90,7 @@ export function sudokuWalkUpAll(
 
   if (lastDead !== 5) {
     // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
-    // tothem.
+    // to them.
     for (const writeRank of iRange(lastDead + 1, variant.stackSize)) {
       maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
         maxScoresForEachStartingValueOfSuit[0]! +
