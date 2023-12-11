@@ -89,13 +89,18 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
     };
   }
 
-  // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
-  // them.
-  for (const writeRank of iRange(lastDead + 1, 5)) {
-    maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
-      maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
-      DEFAULT_CARD_RANKS.length,
-    );
+  if (lastDead != 5) {
+    // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
+    // them.
+    for (const writeRank of iRange(lastDead + 1, 5)) {
+      maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
+        maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
+        DEFAULT_CARD_RANKS.length,
+      );
+    }
+  }
+
+  if (maxScoresForEachStartingValueOfSuit.length != 5) {
   }
 
   return {
@@ -125,7 +130,7 @@ function incrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
 
 function decrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i - 1;
-  if (val < 5) {
+  if (val < 0) {
     throw new TypeError("Decrementing FiveStackIndex out of range");
   }
   return val as FiveStackIndex;
@@ -230,7 +235,7 @@ export function getMaxScorePerStack(
   // stack start.
   const assigned: Tuple<boolean, 5> = [false, false, false, false, false];
 
-  while (localSuitIndex >= 0) {
+  while (true) {
     const curAssignedStackStartIndex = curAssignment[localSuitIndex];
     if (curAssignedStackStartIndex !== undefined) {
       assigned[curAssignedStackStartIndex] = false;
@@ -344,7 +349,11 @@ export function getMaxScorePerStack(
         localSuitIndex = incrementFiveStackIndex(localSuitIndex);
       }
     } else {
-      localSuitIndex = decrementFiveStackIndex(localSuitIndex);
+      if (localSuitIndex > 0) {
+        localSuitIndex = decrementFiveStackIndex(localSuitIndex);
+      } else {
+        break;
+      }
     }
   }
 
