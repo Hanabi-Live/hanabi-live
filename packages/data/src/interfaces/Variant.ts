@@ -2,7 +2,6 @@ import type {BasicRank, Rank} from "../types/Rank";
 import type { Color } from "./Color";
 import type { Suit } from "./Suit";
 import type { VariantJSON } from "./VariantJSON";
-import {DEFAULT_CARD_RANKS} from "../constants";
 
 /**
  * - `suits` and `clueColors` are object arrays instead of string arrays.

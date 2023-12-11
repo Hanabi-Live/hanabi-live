@@ -17,7 +17,7 @@ import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
 import type { VariantJSON } from "../interfaces/VariantJSON";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
-import {BasicRank} from "@hanabi/data";
+import type { BasicRank } from "@hanabi/data";
 
 export function getNewVariantID(
   variantDescription: VariantDescription,

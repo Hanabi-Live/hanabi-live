@@ -12,8 +12,8 @@ import type { Variant } from "./interfaces/Variant";
 import type { VariantJSON } from "./interfaces/VariantJSON";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
-import {isValidBasicRank, Rank} from "./types/Rank";
-import { isValidRank } from "./types/Rank";
+import type { Rank } from "./types/Rank";
+import { isValidRank, isValidBasicRank } from "./types/Rank";
 import { isValidRankClueNumber } from "./types/RankClueNumber";
 
 export function variantsInit(
@@ -270,9 +270,6 @@ export function variantsInit(
       throw new Error(
           `The "stackSize" property for the variant "${variantJSON.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
       );
-    }
-    if (variantJSON.stackSize !== undefined && !isValidBasicRank(variantJSON.stackSize)) {
-
     }
     const stackSize = variantJSON.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;
 

@@ -3,8 +3,7 @@ import { ReadonlySet } from "@hanabi/utils";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
-import type { Rank } from "../types/Rank";
-import type { RankClueNumber } from "../types/RankClueNumber";
+import type { Rank, RankClueNumber } from "@hanabi/data";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
@@ -1288,10 +1287,10 @@ function getChimneysVariants(
   return variantDescriptions;
 }
 
-export function getSudokuVariants(
-    suitsToCreateVariantsFor: SuitJSON[],
+function getSudokuVariants(
+    suitsToCreateVariantsFor: readonly SuitJSON[],
     basicVariantSuits: BasicVariantSuits,
-): VariantDescription[] {
+): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   // We use a custom type here so that the compiler can prove below that array access is defined.
@@ -1300,18 +1299,18 @@ export function getSudokuVariants(
 
   // Create the basic variant. Note that for sudoku, we only want 4 or 5-suit variants.
   for (const numSuits of sudokuSuitNumbers) {
-    if (numSuits !== 5) {
+    if (numSuits === 5) {
       variantDescriptions.push({
         name: `Sudoku (${numSuits} Suits)`,
-        suits: basicVariantSuits[numSuits]!.slice(0, numSuits),
+        suits: basicVariantSuits[numSuits].slice(0, numSuits),
         sudoku: true,
-        stackSize: numSuits
       });
     } else {
       variantDescriptions.push({
         name: `Sudoku (${numSuits} Suits)`,
-        suits: basicVariantSuits[numSuits]!.slice(0, numSuits),
+        suits: basicVariantSuits[numSuits].slice(0, numSuits),
         sudoku: true,
+        stackSize: numSuits
       });
     }
   }
@@ -1327,18 +1326,18 @@ export function getSudokuVariants(
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
       const variantSuits = [...basicSuits.slice(0, numSuits - 1), suit.name];
-      if (numSuits !== 5) {
+      if (numSuits === 5) {
         variantDescriptions.push({
           name: variantName,
           suits: variantSuits,
           sudoku: true,
-          stackSize: numSuits
         });
       } else {
         variantDescriptions.push({
           name: variantName,
           suits: variantSuits,
           sudoku: true,
+          stackSize: numSuits
         });
       }
     }
