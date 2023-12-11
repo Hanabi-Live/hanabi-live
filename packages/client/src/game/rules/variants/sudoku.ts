@@ -89,18 +89,15 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
     };
   }
 
-  if (lastDead != 5) {
-    // Here, we still need to write all "higher" values, adding the longest sequence starting at 1 to
-    // them.
+  if (lastDead !== 5) {
+    // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
+    // to them.
     for (const writeRank of iRange(lastDead + 1, 5)) {
       maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
         maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
         DEFAULT_CARD_RANKS.length,
       );
     }
-  }
-
-  if (maxScoresForEachStartingValueOfSuit.length != 5) {
   }
 
   return {
@@ -348,12 +345,10 @@ export function getMaxScorePerStack(
         }
         localSuitIndex = incrementFiveStackIndex(localSuitIndex);
       }
+    } else if (localSuitIndex > 0) {
+      localSuitIndex = decrementFiveStackIndex(localSuitIndex);
     } else {
-      if (localSuitIndex > 0) {
-        localSuitIndex = decrementFiveStackIndex(localSuitIndex);
-      } else {
-        break;
-      }
+      break;
     }
   }
 
