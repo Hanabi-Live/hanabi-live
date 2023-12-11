@@ -419,7 +419,7 @@ export function startingCluesUsable(
   const scorePerStack = newArray(variant.suits.length, 0);
   const maxScorePerStack = newArray(
     variant.suits.length,
-    variant.singleStackSize,
+    variant.stackSize,
   );
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
@@ -428,7 +428,7 @@ export function startingCluesUsable(
     score,
     scorePerStack,
     maxScorePerStack,
-    variant.singleStackSize,
+    variant.stackSize,
     deckSize,
     endGameLength,
     discardValue,

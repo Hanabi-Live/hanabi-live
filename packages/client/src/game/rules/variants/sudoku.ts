@@ -20,7 +20,7 @@ export function sudokuCanStillBePlayed(
   variant: Variant,
 ): boolean {
   const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-  const [ _, maxScoresForEachStartingValueOfSuit ] =
+  const { maxScoresForEachStartingValueOfSuit } =
     sudokuWalkUpAll(allDiscardedSet, variant);
 
   const playStackStart = playStackStarts[suitIndex];
@@ -39,7 +39,7 @@ export function sudokuCanStillBePlayed(
   // sequence starting at the start, thereby checking if the specified rank is included.
   return possibleStackStartRanks.some((possibleStackStartRank) => {
     const longestSequence =
-      (rank - possibleStackStartRank + variant.singleStackSize) % variant.singleStackSize
+      (rank - possibleStackStartRank + variant.stackSize) % variant.stackSize
     ;
     const score =
       maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1];
@@ -67,7 +67,7 @@ export function sudokuWalkUpAll(
 } {
   const maxScoresForEachStartingValueOfSuit = newArray(
     variant.suits.length,
-    variant.singleStackStack,
+    variant.stackSize,
   ) as Tuple<number, Rank>;
   let lastDead = 0;
 
@@ -258,17 +258,22 @@ function findNextAssignment(
   if (curAssignedStackStartIndex !== 4) {
     // If the assignment was undefined before, we start at 0, otherwise start at the next value.
     const firstStackStartToTry =
-      curAssignedStackStartIndex === undefined
-        ? 0
-        : incrementFiveStackIndex(curAssignedStackStartIndex);
+        curAssignedStackStartIndex === undefined
+            ? 0
+            : incrementFiveStackIndex(curAssignedStackStartIndex);
 
     for (const nextAssignment of eRange5(
-      firstStackStartToTry,
-      possibleStackStarts.length as FiveStackIndex,
+        firstStackStartToTry,
+        possibleStackStarts.length as FiveStackIndex,
     )) {
       if (!assignedStackStarts[nextAssignment]) {
         return nextAssignment;
       }
+    }
+  }
+  return undefined;
+}
+
 /**
  * This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
  * See there for corresponding documentation on how the score is calculated. Additionally, since
