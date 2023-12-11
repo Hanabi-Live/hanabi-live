@@ -152,6 +152,119 @@ function* eRange5(
   }
 }
 
+function evaluateAssignment(
+  curAssignment: Tuple<FiveStackIndex | undefined, 5>,
+  unassignedSuits: number[],
+  possibleStackStarts: number[],
+  maxPartialScores: number[][],
+): {
+  assignmentValue: number;
+  assignment: number[];
+} {
+  let assignmentValue = 0;
+  let assignment: number[] = [];
+  for (const [
+    assignedLocalSuitIndex,
+    assignedStackStartIndex,
+  ] of curAssignment.entries()) {
+    if (assignedLocalSuitIndex < unassignedSuits.length) {
+      assertDefined(
+        assignedStackStartIndex,
+        "Unexpected undefined assignment when trying to evaluate full assignment",
+      );
+
+      const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
+      const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
+
+      // This should be redundant, because we already checked that assignedLocalSuitIndex is
+      // not too big in the if condition, but the compiler cannot automatically deduce this.
+      assertDefined(
+        assignedSuit,
+        "Implementation error: Array access undefined after range check.",
+      );
+      assertDefined(
+        assignedStackStart,
+        "Failed to retrieve stack start while solving assignment Problem: Index access out of range",
+      );
+
+      const maxPartialScoresForThisSuit = maxPartialScores[assignedSuit];
+      assertDefined(
+        maxPartialScoresForThisSuit,
+        `Failed to retrieve max partial scores for suit ${assignedSuit}`,
+      );
+
+      // Note the '-1' here, since the array access starts at 0, while the assigned ranks
+      // start at 1.
+      const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
+      assertDefined(
+        value,
+        `Failed to retrieve max score if starting suit ${assignedSuit} at rank ${assignedStackStart}`,
+      );
+      assignmentValue += value;
+      assignment[assignedLocalSuitIndex] = value;
+    }
+  }
+  return { assignmentValue, assignment };
+}
+
+/**
+ * Whether the assignment is better than the previously known best, i.e. either
+ * - Has a higher maximum score
+ * - Has the same score, but is lexicographically smaller
+ * @param assignmentValue Value of new assignment
+ * @param assignmentSorted New assignment, sorted in ascending order
+ * @param bestAssignmentSum Value of the currently best-known assignment
+ * @param bestAssignmentSorted Currently best-known assignment, sorted in ascending order
+ */
+function isAssignmentBetter(
+  assignmentValue: number,
+  assignmentSorted: number[],
+  bestAssignmentSum: number,
+  bestAssignmentSorted: number[],
+): boolean {
+  if (assignmentValue > bestAssignmentSum) {
+    return true;
+  } else if (assignmentValue === bestAssignmentSum) {
+    // If the values are the same, we want to update if the assignment is lexicographically
+    // smaller.
+    for (const [i, val] of assignmentSorted.entries()) {
+      const valBestAssignment = bestAssignmentSorted[i];
+      assertDefined(
+        valBestAssignment,
+        "Failed to retrieve currently best stored assignment entry.",
+      );
+      if (val < valBestAssignment) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function findNextAssignment(
+  curAssignedStackStartIndex: FiveStackIndex | undefined,
+  possibleStackStarts: number[],
+  assignedStackStarts: Tuple<boolean, 5>,
+): FiveStackIndex | undefined {
+  if (curAssignedStackStartIndex !== 4) {
+    // If the assignment was undefined before, we start at 0, otherwise start at the next value.
+    const firstStackStartToTry =
+      curAssignedStackStartIndex === undefined
+        ? 0
+        : incrementFiveStackIndex(curAssignedStackStartIndex);
+
+    for (const nextAssignment of eRange5(
+      firstStackStartToTry,
+      possibleStackStarts.length as FiveStackIndex,
+    )) {
+      if (!assignedStackStarts[nextAssignment]) {
+        return nextAssignment;
+      }
+    }
+  }
+  return undefined;
+}
+
 /**
  * This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
  * See there for corresponding documentation on how the score is calculated. Additionally, since
@@ -233,101 +346,49 @@ export function getMaxScorePerStack(
   const assigned: Tuple<boolean, 5> = [false, false, false, false, false];
 
   while (true) {
+    // The goal of each iteration is to increase the assignment of 'localSuitIndex' to the next free
+    // stack start (= available and not yet assigned to some other suit).
+
+    // Thus, we will first un-assign the current suit.
     const curAssignedStackStartIndex = curAssignment[localSuitIndex];
     if (curAssignedStackStartIndex !== undefined) {
       assigned[curAssignedStackStartIndex] = false;
     }
 
-    let couldIncrement = false;
-    if (curAssignedStackStartIndex !== 4) {
-      const firstTry =
-        curAssignedStackStartIndex === undefined
-          ? 0
-          : incrementFiveStackIndex(curAssignedStackStartIndex);
-      for (const nextAssignment of eRange5(
-        firstTry,
-        possibleStackStarts.length as FiveStackIndex,
-      )) {
-        if (!assigned[nextAssignment]) {
-          curAssignment[localSuitIndex] = nextAssignment;
-          assigned[nextAssignment] = true;
-          couldIncrement = true;
-          break;
-        }
-      }
-    }
+    let nextAssignment = findNextAssignment(
+      curAssignedStackStartIndex,
+      possibleStackStarts,
+      assigned,
+    );
 
-    if (couldIncrement) {
+    if (nextAssignment !== undefined) {
+      // Update the assignment
+      curAssignment[localSuitIndex] = nextAssignment;
+      assigned[nextAssignment] = true;
+
+      // If this was a full assignment, we need to check wether it was better
       if (localSuitIndex === unassignedSuits.length - 1) {
-        // Evaluate the current assignment.
-        let assignmentVal = 0;
-        const assignment: number[] = [];
-        for (const [
-          assignedLocalSuitIndex,
-          assignedStackStartIndex,
-        ] of curAssignment.entries()) {
-          if (assignedLocalSuitIndex < unassignedSuits.length) {
-            assertDefined(
-              assignedStackStartIndex,
-              "Unexpected undefined assignment when trying to evaluate full assignment",
-            );
-
-            const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
-            const assignedStackStart =
-              possibleStackStarts[assignedStackStartIndex];
-
-            // This should be redundant, because we already checked that assignedLocalSuitIndex is
-            // not too big in the if condition, but the compiler cannot automatically deduce this.
-            assertDefined(
-              assignedSuit,
-              "Implementation error: Array access undefined after range check.",
-            );
-            assertDefined(
-              assignedStackStart,
-              "Failed to retrieve stack start while solving assignment Problem: Index access out of range",
-            );
-
-            const maxPartialScoresForThisSuit = maxPartialScores[assignedSuit];
-            assertDefined(
-              maxPartialScoresForThisSuit,
-              `Failed to retrieve max partial scores for suit ${assignedSuit}`,
-            );
-
-            // Note the '-1' here, since the array access starts at 0, while the assigned ranks
-            // start at 1.
-            const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
-            assertDefined(
-              value,
-              `Failed to retrieve max score if starting suit ${assignedSuit} at rank ${assignedStackStart}`,
-            );
-            assignmentVal += value;
-            assignment[assignedLocalSuitIndex] = value;
-          }
-        }
+        let { assignmentValue, assignment } = evaluateAssignment(
+          curAssignment,
+          unassignedSuits,
+          possibleStackStarts,
+          maxPartialScores,
+        );
 
         const assignmentSorted = [...assignment];
         assignmentSorted.sort((a, b) => a - b);
 
-        // Check if we need to update the best assignment.
-        if (assignmentVal > bestAssignmentSum) {
-          bestAssignmentSum = assignmentVal;
+        if (
+          isAssignmentBetter(
+            assignmentValue,
+            assignmentSorted,
+            bestAssignmentSum,
+            bestAssignmentSorted,
+          )
+        ) {
+          bestAssignmentSum = assignmentValue;
           bestAssignment = assignment;
           bestAssignmentSorted = assignmentSorted;
-        } else if (assignmentVal === bestAssignmentSum) {
-          // If the values are the same, we want to update if the assignment is lexicographically
-          // smaller.
-          for (const [i, val] of assignmentSorted.entries()) {
-            const valBestAssignment = bestAssignmentSorted[i];
-            assertDefined(
-              valBestAssignment,
-              "Failed to retrieve currently best stored assignment entry.",
-            );
-            if (val < valBestAssignment) {
-              bestAssignment = assignment;
-              bestAssignmentSorted = assignmentSorted;
-              break;
-            }
-          }
         }
       }
 
