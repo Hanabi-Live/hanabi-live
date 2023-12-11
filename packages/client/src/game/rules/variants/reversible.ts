@@ -115,7 +115,7 @@ function isDead(
     // dead already.
     const lowestNextRank = variant.upOrDown ? 2 : 1;
     for (const nextRank of eRange(lowestNextRank, rank)) {
-      if (allDiscardedSet.has(nextRank)) {
+      if (allDiscardedSet.has(nextRank as Rank)) {
         return true;
       }
     }
@@ -127,7 +127,7 @@ function isDead(
     // The above comment also applies for `StackDirection.Down`.
     const highestNextRank = variant.upOrDown ? 4 : 5;
     for (const nextRank of eRange(highestNextRank, rank)) {
-      if (allDiscardedSet.has(nextRank)) {
+      if (allDiscardedSet.has(nextRank as Rank)) {
         return true;
       }
     }
@@ -217,7 +217,7 @@ function walkUp(allDiscardedSet: Set<Rank>, variant: Variant): number {
 
   // Second, walk upwards.
   for (const rank of iRange(2, 5)) {
-    if (allDiscardedSet.has(rank)) {
+    if (allDiscardedSet.has(rank as Rank)) {
       break;
     }
     cardsThatCanStillBePlayed++;
@@ -244,7 +244,7 @@ function walkDown(allDiscardedSet: Set<Rank>, variant: Variant) {
 
   // Second, walk downwards.
   for (const rank of iRange(4, 1)) {
-    if (allDiscardedSet.has(rank)) {
+    if (allDiscardedSet.has(rank as Rank)) {
       break;
     }
     cardsThatCanStillBePlayed++;
