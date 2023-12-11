@@ -7,10 +7,7 @@ import type {
   SuitRankMap,
   Variant,
 } from "@hanabi/data";
-import {
-  MAX_CLUE_NUM,
-  getVariant,
-} from "@hanabi/data";
+import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { newArray, sumArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
@@ -67,7 +64,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   const { maxScore } = variant;
   const maxScorePerStack = newArray(
     variant.suits.length,
-    variant.stackSize
+    variant.stackSize,
   ) as Tuple<number, NumSuits>;
   const cardsPerHand = handRules.cardsPerHand(options);
   const startingDeckSize = statsRules.startingDeckSize(

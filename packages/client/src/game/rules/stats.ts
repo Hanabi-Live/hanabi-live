@@ -344,12 +344,8 @@ export function cluesStillUsableNotRounded(
 
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
       const stackMaxScore = maxScorePerStack[suitIndex];
-      if (
-        stackMaxScore === stackSize &&
-        stackScore < stackSize
-      ) {
-        missingCardsPerCompletableSuit.push(
-          stackMaxScore - stackScore);
+      if (stackMaxScore === stackSize && stackScore < stackSize) {
+        missingCardsPerCompletableSuit.push(stackMaxScore - stackScore);
       }
     }
 
@@ -417,10 +413,7 @@ export function startingCluesUsable(
 ): number {
   const score = 0;
   const scorePerStack = newArray(variant.suits.length, 0);
-  const maxScorePerStack = newArray(
-    variant.suits.length,
-    variant.stackSize,
-  );
+  const maxScorePerStack = newArray(variant.suits.length, variant.stackSize);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
 
