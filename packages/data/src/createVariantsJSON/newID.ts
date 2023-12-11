@@ -20,7 +20,7 @@ import { getSpecialClueRanks } from "./getVariantDescriptions";
 
 export function getNewVariantID(
   variantDescription: VariantDescription,
-  suitsNameMap: Map<string, SuitJSON>,
+  suitsNameMap: ReadonlyMap<string, SuitJSON>,
 ): string {
   const suitIDs = variantDescription.suits.map((suitName) =>
     getNewSuitID(suitName, suitsNameMap),
@@ -40,7 +40,7 @@ export function getNewVariantID(
 
 function getNewSuitID(
   suitName: string,
-  suitsNameMap: Map<string, SuitJSON>,
+  suitsNameMap: ReadonlyMap<string, SuitJSON>,
 ): string {
   // Reversed suits are a special case; they have an "R" appended to the non-reversed suit id.
   if (suitName.endsWith(SUIT_REVERSED_SUFFIX)) {
@@ -62,7 +62,7 @@ function getNewSuitID(
 
 function getSpecialVariantIDSuffixes(
   variantDescription: VariantDescription,
-): string[] {
+): readonly string[] {
   const variantIDSuffixes: VariantModifier[] = [];
 
   if (variantDescription.specialRank !== undefined) {
@@ -290,8 +290,8 @@ function getSpecialVariantIDSuffixes(
 }
 
 export function validateNewVariantIDs(
-  variantsJSON: VariantJSON[],
-  suitsIDMap: Map<string, SuitJSON>,
+  variantsJSON: readonly VariantJSON[],
+  suitsIDMap: ReadonlyMap<string, SuitJSON>,
 ): void {
   const newVariantIDs = new Set();
 
@@ -340,7 +340,7 @@ function getVariantFromNewID(
   newID: string,
   name: string,
   oldID: number,
-  suitsIDMap: Map<string, SuitJSON>,
+  suitsIDMap: ReadonlyMap<string, SuitJSON>,
 ): VariantJSON {
   const [suitsString, ...variantModifiers] = newID.split(VARIANT_DELIMITER);
   assertDefined(
@@ -680,9 +680,9 @@ function getVariantFromNewID(
 }
 
 function getSuitNamesFromSuitID(
-  suitIDsWithModifiers: string[],
-  suitsIDMap: Map<string, SuitJSON>,
-) {
+  suitIDsWithModifiers: readonly string[],
+  suitsIDMap: ReadonlyMap<string, SuitJSON>,
+): readonly string[] {
   return suitIDsWithModifiers.map((suitIDWithModifiers) => {
     const [suitID, ...modifiers] = suitIDWithModifiers.split(
       SUIT_MODIFIER_DELIMITER,

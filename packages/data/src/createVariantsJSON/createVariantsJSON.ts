@@ -62,7 +62,7 @@ function getJSONAndParse(jsonPath: string): unknown {
   return JSON.parse(data);
 }
 
-function validateSuits(suits: SuitJSON[]) {
+function validateSuits(suits: readonly SuitJSON[]) {
   const suitNames = new Set<string>();
   const suitIDs = new Set<string>();
 
@@ -93,7 +93,7 @@ function validateSuits(suits: SuitJSON[]) {
   }
 }
 
-function getSuitMaps(suits: SuitJSON[]) {
+function getSuitMaps(suits: readonly SuitJSON[]) {
   const suitsNameMap = new Map<string, SuitJSON>();
   const suitsIDMap = new Map<string, SuitJSON>();
 
@@ -108,7 +108,7 @@ function getSuitMaps(suits: SuitJSON[]) {
   };
 }
 
-function validateVariants(variants: VariantJSON[]) {
+function validateVariants(variants: readonly VariantJSON[]) {
   const variantNames = new Set<string>();
   const variantIDs = new Set<number>();
 
@@ -143,7 +143,7 @@ function validateVariants(variants: VariantJSON[]) {
   }
 }
 
-function getOldVariantMaps(variants: VariantJSON[]) {
+function getOldVariantMaps(variants: readonly VariantJSON[]) {
   const oldVariantsNameToIDMap = new Map<string, number>();
   const oldVariantsIDToNameMap = new Map<number, string>();
 
@@ -159,11 +159,13 @@ function getOldVariantMaps(variants: VariantJSON[]) {
 }
 
 function getVariantsFromVariantDescriptions(
-  variantDescriptions: VariantDescription[],
-  suitsNameMap: Map<string, SuitJSON>,
+  variantDescriptions: readonly VariantDescription[],
+  suitsNameMap: ReadonlyMap<string, SuitJSON>,
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsNameToIDMap: Map<string, number>,
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsIDToNameMap: Map<number, string>,
-): VariantJSON[] {
+): readonly VariantJSON[] {
   return variantDescriptions.map((variantDescription) => ({
     id: getNextUnusedVariantID(
       variantDescription.name,
@@ -177,7 +179,9 @@ function getVariantsFromVariantDescriptions(
 
 function getNextUnusedVariantID(
   variantName: string,
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsNameToIDMap: Map<string, number>,
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsIDToNameMap: Map<number, string>,
 ): number {
   // First, prefer the old/existing variant ID, if present.
@@ -203,8 +207,8 @@ function getNextUnusedVariantID(
 }
 
 function hasMissingVariants(
-  variants: VariantJSON[],
-  oldVariants: VariantJSON[],
+  variants: readonly VariantJSON[],
+  oldVariants: readonly VariantJSON[],
 ): boolean {
   const newVariantNames = new Set<string>();
   for (const variant of variants) {
@@ -222,13 +226,19 @@ function hasMissingVariants(
   return oneOrMoreVariantsIsMissing;
 }
 
-function createVariantJSONFile(variants: VariantJSON[], jsonPath: string) {
+function createVariantJSONFile(
+  variants: readonly VariantJSON[],
+  jsonPath: string,
+) {
   const data = `${JSON.stringify(variants, undefined, 2)}\n`;
   fs.writeFileSync(jsonPath, data);
   console.log(`Created: ${jsonPath}`);
 }
 
-function createVariantsTextFile(variants: VariantJSON[], textPath: string) {
+function createVariantsTextFile(
+  variants: readonly VariantJSON[],
+  textPath: string,
+) {
   const lines: string[] = [];
   for (const variant of variants) {
     lines.push(`${variant.name} (#${variant.id})`);

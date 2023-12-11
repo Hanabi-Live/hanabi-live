@@ -19,7 +19,7 @@ import { ReadonlySet } from "../types/ReadonlySet";
 export function getRandomInt(
   min: number,
   max: number,
-  exceptions: number[] | readonly number[] = [],
+  exceptions: readonly number[] = [],
 ): number {
   min = Math.ceil(min); // eslint-disable-line no-param-reassign
   max = Math.floor(max); // eslint-disable-line no-param-reassign

@@ -14,7 +14,8 @@ type TupleEntry<T extends readonly unknown[]> = Expand<
   [TupleKey<T>, TupleValue<T>]
 >;
 
-export function arrayCopyTwoDimensional<T>(array: T[][]): T[][] {
+// eslint-disable-next-line isaacscript/no-mutable-return
+export function arrayCopyTwoDimensional<T>(array: readonly T[][]): T[][] {
   const copiedArray: T[][] = [];
 
   for (const element of array) {
@@ -31,9 +32,10 @@ export function arrayCopyTwoDimensional<T>(array: T[][]): T[][] {
  *
  * This function is variadic, meaning that you can specify N arguments to remove N elements.
  */
+// eslint-disable-next-line isaacscript/no-mutable-return
 export function arrayRemove<T>(
-  originalArray: T[] | readonly T[],
-  ...elementsToRemove: T[]
+  originalArray: readonly T[],
+  ...elementsToRemove: readonly T[]
 ): T[] {
   const elementsToRemoveSet = new ReadonlySet(elementsToRemove);
 
@@ -58,8 +60,9 @@ export function arrayRemove<T>(
  * This is named `filterMap` after the Rust function:
  * https://doc.rust-lang.org/std/iter/struct.FilterMap.html
  */
+// eslint-disable-next-line isaacscript/no-mutable-return
 export function filterMap<OldT, NewT>(
-  array: OldT[] | readonly OldT[],
+  array: readonly OldT[],
   func: (element: OldT) => NewT | undefined,
 ): NewT[] {
   const filteredArray: NewT[] = [];
@@ -81,8 +84,8 @@ export function filterMap<OldT, NewT>(
  * @param exceptions Optional. An array of elements to skip over if selected.
  */
 export function getRandomArrayElement<T>(
-  array: T[] | readonly T[],
-  exceptions: T[] | readonly T[] = [],
+  array: readonly T[],
+  exceptions: readonly T[] = [],
 ): T {
   if (array.length === 0) {
     throw new Error(
@@ -110,8 +113,8 @@ export function getRandomArrayElement<T>(
  *                   index. Default is an empty array.
  */
 export function getRandomArrayIndex<T>(
-  array: T[] | readonly T[],
-  exceptions: number[] | readonly number[] = [],
+  array: readonly T[],
+  exceptions: readonly number[] = [],
 ): number {
   if (array.length === 0) {
     throw new Error(
@@ -123,12 +126,13 @@ export function getRandomArrayIndex<T>(
 }
 
 /** Initializes an array with all elements containing the specified default value. */
+// eslint-disable-next-line isaacscript/no-mutable-return
 export function newArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
 }
 
 /** Helper function to sum every value in an array together. */
-export function sumArray(array: number[] | readonly number[]): number {
+export function sumArray(array: readonly number[]): number {
   return array.reduce((accumulator, element) => accumulator + element, 0);
 }
 

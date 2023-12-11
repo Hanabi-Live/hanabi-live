@@ -187,7 +187,7 @@ export function suitsInit(
 function getSuitClueColors(
   suitJSON: SuitJSON,
   COLORS: ReadonlyMap<string, Color>,
-): Color[] {
+): readonly Color[] {
   if (suitJSON.clueColors !== undefined) {
     // Convert the color name strings to color objects.
     return suitJSON.clueColors.map((colorName) => {
@@ -237,7 +237,7 @@ function getSuitClueColors(
 function getSuitFillAndFillColorblind(
   suitJSON: SuitJSON,
   COLORS: ReadonlyMap<string, Color>,
-  clueColors: Color[],
+  clueColors: readonly Color[],
 ): {
   fill: string;
   fillColorblind: string;

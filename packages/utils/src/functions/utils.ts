@@ -239,4 +239,4 @@ export function repeat(n: number, func: (i: number) => void): void {
  * @allowEmptyVariadic
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-export function todo(...args: unknown[]): void {}
+export function todo(...args: readonly unknown[]): void {}

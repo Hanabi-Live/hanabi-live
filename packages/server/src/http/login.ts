@@ -120,7 +120,7 @@ export async function httpLogin(
  */
 function validateVersion(version: string): string | undefined {
   if (version === "bot") {
-    return;
+    return undefined;
   }
 
   const versionInt = parseIntSafe(version);

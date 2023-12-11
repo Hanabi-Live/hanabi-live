@@ -366,8 +366,8 @@ export function variantsInit(
 function getVariantClueColors(
   variantJSON: VariantJSON,
   COLORS: ReadonlyMap<string, Color>,
-  suits: Suit[],
-): Color[] {
+  suits: readonly Suit[],
+): readonly Color[] {
   // If the clue colors were not specified in the JSON, derive them from the suits.
   if (variantJSON.clueColors === undefined) {
     const clueColors: Color[] = [];
@@ -402,7 +402,7 @@ function getVariantClueColors(
 }
 
 function getVariantShowSuitNames(
-  suits: Suit[],
+  suits: readonly Suit[],
   upOrDown: boolean,
   sudoku: boolean,
 ): boolean {

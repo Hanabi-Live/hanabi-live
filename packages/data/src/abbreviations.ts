@@ -70,7 +70,7 @@ export const ALL_RESERVED_NOTES = new ReadonlySet<string>([
  */
 export function getUppercaseSuitAbbreviationsForVariant(
   variantName: string,
-  suits: Suit[],
+  suits: readonly Suit[],
 ): readonly string[] {
   const lowercaseAbbreviations: string[] = [];
 
@@ -108,7 +108,7 @@ export function getUppercaseSuitAbbreviationsForVariant(
 function getLowercaseSuitAbbreviationToUse(
   variantName: string,
   suit: Suit,
-  lowercaseAbbreviationsUsedSoFar: string[],
+  lowercaseAbbreviationsUsedSoFar: readonly string[],
 ): string {
   const lowercaseAbbreviation = suit.abbreviation.toLowerCase();
   if (!lowercaseAbbreviationsUsedSoFar.includes(lowercaseAbbreviation)) {
