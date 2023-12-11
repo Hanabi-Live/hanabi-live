@@ -1,5 +1,5 @@
 import { sudokuWalkUpAll } from "./sudoku";
-import {Rank} from "@hanabi/data";
+import type {Rank} from "@hanabi/data";
 
 describe("WalkUpAll", () => {
     test("Handles single discarded 1", () => {
