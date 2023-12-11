@@ -14,14 +14,18 @@ type TupleEntry<T extends readonly unknown[]> = Expand<
   [TupleKey<T>, TupleValue<T>]
 >;
 
+/**
+ * Helper function to copy a two-dimensional array. Note that the sub-arrays will only be shallow
+ * copied (using the spread operator).
+ */
 // eslint-disable-next-line isaacscript/no-mutable-return
 export function arrayCopyTwoDimensional<T>(
   array: ReadonlyArray<readonly T[]>,
 ): T[][] {
   const copiedArray: T[][] = [];
 
-  for (const element of array) {
-    copiedArray.push([...element]);
+  for (const subArray of array) {
+    copiedArray.push([...subArray]);
   }
 
   return copiedArray;
