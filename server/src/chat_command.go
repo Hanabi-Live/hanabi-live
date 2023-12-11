@@ -60,6 +60,9 @@ func chatCommandInit() {
 	chatCommandMap["friend"] = chatCommandWebsiteOnly
 	chatCommandMap["friends"] = chatCommandWebsiteOnly
 	chatCommandMap["unfriend"] = chatCommandWebsiteOnly
+	chatCommandMap["link"] = chatCommandWebsiteOnly
+	chatCommandMap["links"] = chatCommandWebsiteOnly
+	chatCommandMap["unlink"] = chatCommandWebsiteOnly
 	chatCommandMap["version"] = chatCommandWebsiteOnly
 
 	chatMapAddSimpleResponses()

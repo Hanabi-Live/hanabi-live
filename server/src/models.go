@@ -32,6 +32,7 @@ type Models struct {
 	Seeds
 	Users
 	UserFriends
+	UserLinkages
 	UserReverseFriends
 	UserSettings
 	UserStats
