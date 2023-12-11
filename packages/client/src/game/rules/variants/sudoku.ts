@@ -187,13 +187,13 @@ function evaluateAssignment(
       );
       assertDefined(
         assignedStackStart,
-        "Failed to retrieve stack start while solving assignment Problem: Index access out of range",
+        "Failed to retrieve the stack start while solving the assignment problem since the index access was out of range.",
       );
 
       const maxPartialScoresForThisSuit = maxPartialScores[assignedSuit];
       assertDefined(
         maxPartialScoresForThisSuit,
-        `Failed to retrieve max partial scores for suit ${assignedSuit}`,
+        `Failed to retrieve the max partial scores for suit: ${assignedSuit}`,
       );
 
       // Note the '-1' here, since the array access starts at 0, while the assigned ranks start at
@@ -201,7 +201,7 @@ function evaluateAssignment(
       const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
       assertDefined(
         value,
-        `Failed to retrieve max score if starting suit ${assignedSuit} at rank ${assignedStackStart}`,
+        `Failed to retrieve the max score for starting suit ${assignedSuit} at rank ${assignedStackStart}.`,
       );
       assignmentValue += value;
       assignment[assignedLocalSuitIndex] = value;
@@ -236,7 +236,7 @@ function isAssignmentBetter(
       const valBestAssignment = bestAssignmentSorted[i];
       assertDefined(
         valBestAssignment,
-        "Failed to retrieve currently best stored assignment entry.",
+        "Failed to retrieve the currently best stored assignment entry.",
       );
       if (val < valBestAssignment) {
         return true;
@@ -308,7 +308,7 @@ export function getMaxScorePerStack(
       const score = maxScoresForEachStartingValueOfSuit[stackStart - 1];
       assertDefined(
         score,
-        `Failed to find the max score for starting suit ${suitIndex} at start ${stackStart}`,
+        `Failed to find the max score for the starting suit index ${suitIndex} at start: ${stackStart}`,
       );
       independentPartOfMaxScore[suitIndex] = score;
       continue;
