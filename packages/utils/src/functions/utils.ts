@@ -63,7 +63,7 @@ export function clamp(num: number, min: number, max: number): number {
  * - `eRange(1, 3)` returns `[1, 2]`.
  * - `eRange(2, 5)` returns `[2, 3, 4]`.
  * - `eRange(5, 2)` returns `[]`.
- * - `eRange(3,3)` returns `[]`.
+ * - `eRange(3, 3)` returns `[]`.
  *
  * If you want an array instead of an iterator, use the spread operator like this:
  *
