@@ -58,7 +58,7 @@ export function sudokuCanStillBePlayed(
  * returned array is [5, 5, 5, 5, 5]. This functions mimics the method `sudokuWalkUpAll` from the
  * server file "variants_sudoku.go".
  */
-function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
+export function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   allMax: boolean;
   maxScoresForEachStartingValueOfSuit: Tuple<number, Rank>;
 } {
