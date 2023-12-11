@@ -119,18 +119,20 @@ type FiveStackIndex = 0 | 1 | 2 | 3 | 4;
 
 function incrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i + 1;
-  if (val < 0 || val > 5) {
-    throw new TypeError("Incrementing FiveStackIndex out of range");
-  }
-  return val as FiveStackIndex;
+  assertFiveStackIndex(val);
+  return val;
 }
 
 function decrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i - 1;
-  if (val < 0 || val > 5) {
-    throw new TypeError("Decrementing FiveStackIndex out of range");
+  assertFiveStackIndex(val);
+  return val;
+}
+
+function assertFiveStackIndex(val: number): asserts val is FiveStackIndex {
+  if (val < 0 || val > 4) {
+    throw new TypeError(`A FiveStackIndex must be between 0 and 4: ${val}`);
   }
-  return val as FiveStackIndex;
 }
 
 /**
