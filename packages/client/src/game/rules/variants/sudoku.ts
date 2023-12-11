@@ -119,7 +119,7 @@ type FiveStackIndex = 0 | 1 | 2 | 3 | 4;
 
 function incrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i + 1;
-  if (val > 5) {
+  if (val < 0 || val > 5) {
     throw new TypeError("Incrementing FiveStackIndex out of range");
   }
   return val as FiveStackIndex;
@@ -127,17 +127,15 @@ function incrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
 
 function decrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i - 1;
-  if (val < 0) {
+  if (val < 0 || val > 5) {
     throw new TypeError("Decrementing FiveStackIndex out of range");
   }
   return val as FiveStackIndex;
 }
 
 /**
- * Helper function for an iterator to range [start, end), type-safe for `FiveStackIndex`.
- *
- * @param start First value in range.
- * @param end First value not in range.
+ * This is a more specialized version of `eRange` that only works with `FiveStackIndex`. (See the
+ * documentation for the `eRange` function.)
  */
 function* eRange5(
   start: FiveStackIndex,
