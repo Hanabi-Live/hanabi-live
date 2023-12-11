@@ -138,7 +138,7 @@ export function startingDeckSize(
  *  total cards in the deck
  *  + number of turns in the final round
  *  - (number of cards in a player's hand * number of players)
- *  - (singleStackSize * number of suits)
+ *  - (stackSize * number of suits)
  *  ```
  *
  * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
@@ -295,7 +295,7 @@ export function cluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
-  singleStackSize: number,
+  stackSize: number,
   deckSize: number,
   endGameLength: number,
   discardValue: number,
@@ -345,8 +345,8 @@ export function cluesStillUsableNotRounded(
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
       const stackMaxScore = maxScorePerStack[suitIndex];
       if (
-        stackMaxScore === singleStackSize &&
-        stackScore < singleStackSize
+        stackMaxScore === stackSize &&
+        stackScore < stackSize
       ) {
         missingCardsPerCompletableSuit.push(
           stackMaxScore - stackScore);
@@ -377,7 +377,7 @@ export function cluesStillUsable(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
-  singleStackSize: number,
+  stackSize: number,
   deckSize: number,
   endGameLength: number,
   discardValue: number,
@@ -388,7 +388,7 @@ export function cluesStillUsable(
     score,
     scorePerStack,
     maxScorePerStack,
-    singleStackSize,
+    stackSize,
     deckSize,
     endGameLength,
     discardValue,

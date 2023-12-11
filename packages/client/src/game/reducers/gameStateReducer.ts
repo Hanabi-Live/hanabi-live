@@ -337,7 +337,7 @@ function gameStateReducerFunction(
           action,
           state.clueTokens,
           variant,
-          playStack.length === variant.singleStackSize,
+          playStack.length === variant.stackSize,
         );
       }
 

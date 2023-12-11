@@ -183,7 +183,7 @@ export function onPlayStacksChanged(
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =
-          availableStackStarts.length === globals.variant.singleStackSize
+          availableStackStarts.length === globals.variant.stackSize
             ? "Any"
             : availableStackStarts.join("");
         text = `Start: [${bracketText}]`;

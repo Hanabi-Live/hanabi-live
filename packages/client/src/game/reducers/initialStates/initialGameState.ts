@@ -94,7 +94,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     score,
     scorePerStack,
     maxScorePerStack,
-    variant.singleStackSize,
+    variant.stackSize,
     startingDeckSize,
     endGameLength,
     discardClueValue,
