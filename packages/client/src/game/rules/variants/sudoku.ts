@@ -20,7 +20,8 @@ export function sudokuCanStillBePlayed(
   variant: Variant,
 ): boolean {
   const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-  const { maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(allDiscardedSet);
+  const { maxScoresForEachStartingValueOfSuit } =
+    sudokuWalkUpAll(allDiscardedSet);
 
   const playStackStart = playStackStarts[suitIndex];
   assertDefined(
@@ -40,10 +41,11 @@ export function sudokuCanStillBePlayed(
     const longestSequence =
       (rank - possibleStackStartRank + DEFAULT_FINISHED_STACK_LENGTH) %
       DEFAULT_FINISHED_STACK_LENGTH;
-    const score = maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1];
+    const score =
+      maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1];
     assertDefined(
-        score,
-        `Failed to find the max score for starting suit ${suitIndex} at start ${possibleStackStartRank}`,
+      score,
+      `Failed to find the max score for starting suit ${suitIndex} at start ${possibleStackStartRank}`,
     );
     return score > longestSequence;
   });
@@ -70,7 +72,8 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (const writeRank of eRange(lastDead + 1, currentRank)) {
-        maxScoresForEachStartingValueOfSuit[writeRank - 1] = currentRank - writeRank;
+        maxScoresForEachStartingValueOfSuit[writeRank - 1] =
+          currentRank - writeRank;
       }
 
       maxScoresForEachStartingValueOfSuit[currentRank - 1] = 0;
@@ -110,7 +113,6 @@ function sudokuGetUnusedStackStartRanks(
   return DEFAULT_CARD_RANKS.filter((rank) => !playStackStarts.includes(rank));
 }
 
-
 type FiveStackIndex = 0 | 1 | 2 | 3 | 4;
 
 function increment_index(i: FiveStackIndex): FiveStackIndex {
@@ -134,14 +136,16 @@ function decrement_index(i: FiveStackIndex): FiveStackIndex {
  * @param start
  * @param end
  */
-function* eRange5(start: FiveStackIndex, end: FiveStackIndex): Generator<FiveStackIndex> {
-  while(start < end) {
+function* eRange5(
+  start: FiveStackIndex,
+  end: FiveStackIndex,
+): Generator<FiveStackIndex> {
+  while (start < end) {
     yield start;
     // Note this increment must be safe since start < end, so in particular, start + 1 is still at most 4
     start = increment_index(start);
   }
 }
-
 
 /**
  * This function mimics `variantSudokuGetMaxScore` from the "variants_sudoku.go" file on the server.
@@ -167,7 +171,8 @@ export function getMaxScorePerStack(
     const suitIndex = i as SuitIndex;
 
     const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-    const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(allDiscardedSet);
+    const { allMax, maxScoresForEachStartingValueOfSuit } =
+      sudokuWalkUpAll(allDiscardedSet);
 
     if (allMax) {
       independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
@@ -177,9 +182,9 @@ export function getMaxScorePerStack(
     if (stackStart !== null) {
       const score = maxScoresForEachStartingValueOfSuit[stackStart - 1];
       assertDefined(
-          score,
-          `Failed to find the max score for starting suit ${suitIndex} at start ${stackStart}`,
-      )
+        score,
+        `Failed to find the max score for starting suit ${suitIndex} at start ${stackStart}`,
+      );
       independentPartOfMaxScore[suitIndex] = score;
       continue;
     }
@@ -206,11 +211,17 @@ export function getMaxScorePerStack(
 
   // This will denote a 'local' index and refers to the index in the unassignedSuits array.
   // We will therefore iterate this over 0, ..., unassignedSuits.length - 1
-  let localSuitIndex: FiveStackIndex =  0;
+  let localSuitIndex: FiveStackIndex = 0;
 
   // A map (unassignedSuits) -> (index in possibleStackStarts) that denotes the current assignment of the stacks
   // to their starting values. We use local suit indices to access into this.
-  const curAssignment: Tuple<FiveStackIndex | undefined, 5> = [undefined, undefined, undefined, undefined, undefined];
+  const curAssignment: Tuple<FiveStackIndex | undefined, 5> = [
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ];
 
   // A map (index of stackStart) -> bool, denoting wether some suit is currently assigned to this
   // stack start
@@ -225,10 +236,13 @@ export function getMaxScorePerStack(
     let couldIncrement = false;
     if (curAssignedStackStartIndex != 4) {
       const first_try =
-          curAssignedStackStartIndex == undefined
-              ? 0
-              : increment_index(curAssignedStackStartIndex);
-      for (const nextAssignment of eRange5(first_try, possibleStackStarts.length as FiveStackIndex)) {
+        curAssignedStackStartIndex == undefined
+          ? 0
+          : increment_index(curAssignedStackStartIndex);
+      for (const nextAssignment of eRange5(
+        first_try,
+        possibleStackStarts.length as FiveStackIndex,
+      )) {
         if (!assigned[nextAssignment]) {
           curAssignment[localSuitIndex] = nextAssignment;
           assigned[nextAssignment] = true;
@@ -248,22 +262,38 @@ export function getMaxScorePerStack(
           assignedStackStartIndex,
         ] of curAssignment.entries()) {
           if (assignedLocalSuitIndex < unassignedSuits.length) {
-            assertDefined(assignedStackStartIndex, "Unexpected undefined assignment when trying to evaluate full assignment");
+            assertDefined(
+              assignedStackStartIndex,
+              "Unexpected undefined assignment when trying to evaluate full assignment",
+            );
 
             const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
-            const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
+            const assignedStackStart =
+              possibleStackStarts[assignedStackStartIndex];
 
             // This hould be redundant, because we already checked that assignedLocalSuitIndex is not too big in the if condition,
             // but the compiler cannot automatically deduce thas.
-            assertDefined(assignedSuit, "Implementation error: Array access undefined after range check.");
-            assertDefined(assignedStackStart, "Failed to retrieve stack start while solving assignment Problem: Index access out of range");
+            assertDefined(
+              assignedSuit,
+              "Implementation error: Array access undefined after range check.",
+            );
+            assertDefined(
+              assignedStackStart,
+              "Failed to retrieve stack start while solving assignment Problem: Index access out of range",
+            );
 
             const maxPartialScoresForThisSuit = maxPartialScores[assignedSuit];
-            assertDefined(maxPartialScoresForThisSuit, `Failed to retrieve max partial scores for suit ${assignedSuit}`);
+            assertDefined(
+              maxPartialScoresForThisSuit,
+              `Failed to retrieve max partial scores for suit ${assignedSuit}`,
+            );
 
             // Note the '-1' here, since the array access starts at 0, while the assigned ranks start at 1
             const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
-            assertDefined(value, `Failed to retrieve max score if starting suit ${assignedSuit} at rank ${assignedStackStart}`);
+            assertDefined(
+              value,
+              `Failed to retrieve max score if starting suit ${assignedSuit} at rank ${assignedStackStart}`,
+            );
             assignmentVal += value;
             assignment[assignedLocalSuitIndex] = value;
           }
@@ -282,7 +312,10 @@ export function getMaxScorePerStack(
           // smaller.
           for (const [i, val] of assignmentSorted.entries()) {
             const valBestAssignment = bestAssignmentSorted[i];
-            assertDefined(valBestAssignment, "Failed to retrieve currently best stored assignment entry.");
+            assertDefined(
+              valBestAssignment,
+              "Failed to retrieve currently best stored assignment entry.",
+            );
             if (val < valBestAssignment) {
               bestAssignment = assignment;
               bestAssignmentSorted = assignmentSorted;
@@ -294,7 +327,10 @@ export function getMaxScorePerStack(
 
       if (localSuitIndex < unassignedSuits.length - 1) {
         // Reset all assignment of the higher-indexed suits.
-        for (const higherLocalSuitIndex of eRange5(increment_index(localSuitIndex), unassignedSuits.length as FiveStackIndex)) {
+        for (const higherLocalSuitIndex of eRange5(
+          increment_index(localSuitIndex),
+          unassignedSuits.length as FiveStackIndex,
+        )) {
           const assignment = curAssignment[higherLocalSuitIndex];
           if (assignment !== undefined) {
             assigned[assignment] = false;
