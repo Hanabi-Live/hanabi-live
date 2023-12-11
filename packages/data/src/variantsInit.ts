@@ -13,7 +13,7 @@ import type { VariantJSON } from "./interfaces/VariantJSON";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
 import type { Rank } from "./types/Rank";
-import { isValidRank, isValidBasicRank } from "./types/Rank";
+import { isValidRank } from "./types/Rank";
 import { isValidRankClueNumber } from "./types/RankClueNumber";
 
 export function variantsInit(

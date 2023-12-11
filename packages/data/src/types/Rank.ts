@@ -12,7 +12,3 @@ export type Rank = BasicRank | typeof START_CARD_RANK;
 export function isValidRank(rank: Rank): boolean {
   return DEFAULT_CARD_RANKS.includes(rank) || rank === START_CARD_RANK;
 }
-
-export function isValidBasicRank(rank: Rank): boolean {
-  return DEFAULT_CARD_RANKS.includes(rank);
-}
