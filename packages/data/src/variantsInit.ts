@@ -12,7 +12,7 @@ import type { Variant } from "./interfaces/Variant";
 import type { VariantJSON } from "./interfaces/VariantJSON";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
-import type { Rank } from "./types/Rank";
+import {isValidBasicRank, Rank} from "./types/Rank";
 import { isValidRank } from "./types/Rank";
 import { isValidRankClueNumber } from "./types/RankClueNumber";
 
@@ -265,6 +265,17 @@ export function variantsInit(
     }
     const sudoku = variantJSON.sudoku ?? false;
 
+    // Validate the "stackSize" property. If it is not specified, assume 5.
+    if (variantJSON.stackSize === DEFAULT_FINISHED_STACK_LENGTH) {
+      throw new Error(
+          `The "stackSize" property for the variant "${variantJSON.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
+      );
+    }
+    if (variantJSON.stackSize !== undefined && !isValidBasicRank(variantJSON.stackSize)) {
+
+    }
+    const stackSize = variantJSON.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;
+
     // ------------------------
     // `VariantJSON` properties
     // ------------------------
@@ -292,7 +303,7 @@ export function variantsInit(
       ranks.push(START_CARD_RANK);
     }
 
-    const maxScore = suits.length * DEFAULT_FINISHED_STACK_LENGTH;
+    const maxScore = suits.length * stackSize;
 
     // Variants with dual-color suits need to adjust the positions of elements in the corner of the
     // card (e.g. the note indicator) because it will overlap with the triangle that shows the color
@@ -325,6 +336,7 @@ export function variantsInit(
 
       clueColors,
       clueRanks,
+      stackSize,
 
       specialRank,
       specialRankAllClueColors,

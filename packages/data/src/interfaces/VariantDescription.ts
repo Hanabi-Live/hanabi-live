@@ -1,4 +1,4 @@
-import type { Rank } from "../types/Rank";
+import type {BasicRank, Rank} from "../types/Rank";
 import type { RankClueNumber } from "../types/RankClueNumber";
 
 /**
@@ -10,6 +10,7 @@ export interface VariantDescription {
 
   clueColors?: readonly string[];
   clueRanks?: readonly RankClueNumber[];
+  stackSize?: BasicRank;
 
   specialRank?: Rank;
   specialRankAllClueColors?: boolean;
