@@ -12,9 +12,9 @@ export interface Subscription<T, U> {
 }
 
 // Observes a property of type T on a Store<S, A> and calls a listener function when it changes.
-export function observeStore<S, A extends Action<unknown>, T>(
+export function observeStore<S, A extends Action, T>(
   store: Store<S, A>,
-  subscriptions: Array<Subscription<S, T>>,
+  subscriptions: ReadonlyArray<Subscription<S, T>>,
 ): Unsubscribe {
   let currentState: S;
 
