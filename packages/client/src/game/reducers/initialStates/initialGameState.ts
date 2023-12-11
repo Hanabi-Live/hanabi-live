@@ -8,7 +8,6 @@ import type {
   Variant,
 } from "@hanabi/data";
 import {
-  DEFAULT_FINISHED_STACK_LENGTH,
   MAX_CLUE_NUM,
   getVariant,
 } from "@hanabi/data";

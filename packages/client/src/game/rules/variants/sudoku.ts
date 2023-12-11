@@ -1,15 +1,12 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import {
   DEFAULT_CARD_RANKS,
-  DEFAULT_FINISHED_STACK_LENGTH,
 } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { assertDefined, eRange, iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { getAllDiscardedSet } from "./discardHelpers";
-
-const NUM_SUITS_SUDOKU = 5;
 
 /** Check if the card can still be played in a Sudoku variant. */
 export function sudokuCanStillBePlayed(
@@ -322,8 +319,6 @@ export function getMaxScorePerStack(
   }
 
   // Solve the assignment problem.
-  const unassigned = -1;
-
   const possibleStackStarts = sudokuGetUnusedStackStartRanks(
     playStackStarts,
     variant,
