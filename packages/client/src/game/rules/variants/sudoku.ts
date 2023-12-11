@@ -162,7 +162,7 @@ function evaluateAssignment(
   assignment: number[];
 } {
   let assignmentValue = 0;
-  let assignment: number[] = [];
+  const assignment: number[] = [];
   for (const [
     assignedLocalSuitIndex,
     assignedStackStartIndex,
@@ -176,8 +176,8 @@ function evaluateAssignment(
       const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
       const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
 
-      // This should be redundant, because we already checked that assignedLocalSuitIndex is
-      // not too big in the if condition, but the compiler cannot automatically deduce this.
+      // This should be redundant, because we already checked that assignedLocalSuitIndex is not too
+      // big in the if condition, but the compiler cannot automatically deduce this.
       assertDefined(
         assignedSuit,
         "Implementation error: Array access undefined after range check.",
@@ -193,8 +193,8 @@ function evaluateAssignment(
         `Failed to retrieve max partial scores for suit ${assignedSuit}`,
       );
 
-      // Note the '-1' here, since the array access starts at 0, while the assigned ranks
-      // start at 1.
+      // Note the '-1' here, since the array access starts at 0, while the assigned ranks start at
+      // 1.
       const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
       assertDefined(
         value,
@@ -208,13 +208,13 @@ function evaluateAssignment(
 }
 
 /**
- * Whether the assignment is better than the previously known best, i.e. either
- * - Has a higher maximum score
- * - Has the same score, but is lexicographically smaller
- * @param assignmentValue Value of new assignment
- * @param assignmentSorted New assignment, sorted in ascending order
- * @param bestAssignmentSum Value of the currently best-known assignment
- * @param bestAssignmentSorted Currently best-known assignment, sorted in ascending order
+ * Whether the assignment is better than the previously known best, i.e. has a higher maximum score
+ * or has the same score, but is lexicographically smaller.
+ *
+ * @param assignmentValue Value of new assignment.
+ * @param assignmentSorted New assignment, sorted in ascending order.
+ * @param bestAssignmentSum Value of the currently best-known assignment.
+ * @param bestAssignmentSorted Currently best-known assignment, sorted in ascending order.
  */
 function isAssignmentBetter(
   assignmentValue: number,
@@ -224,9 +224,9 @@ function isAssignmentBetter(
 ): boolean {
   if (assignmentValue > bestAssignmentSum) {
     return true;
-  } else if (assignmentValue === bestAssignmentSum) {
-    // If the values are the same, we want to update if the assignment is lexicographically
-    // smaller.
+  }
+  if (assignmentValue === bestAssignmentSum) {
+    // If the values are the same, we want to update if the assignment is lexicographically smaller.
     for (const [i, val] of assignmentSorted.entries()) {
       const valBestAssignment = bestAssignmentSorted[i];
       assertDefined(
@@ -345,6 +345,7 @@ export function getMaxScorePerStack(
   // stack start.
   const assigned: Tuple<boolean, 5> = [false, false, false, false, false];
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
   while (true) {
     // The goal of each iteration is to increase the assignment of 'localSuitIndex' to the next free
     // stack start (= available and not yet assigned to some other suit).
@@ -355,7 +356,7 @@ export function getMaxScorePerStack(
       assigned[curAssignedStackStartIndex] = false;
     }
 
-    let nextAssignment = findNextAssignment(
+    const nextAssignment = findNextAssignment(
       curAssignedStackStartIndex,
       possibleStackStarts,
       assigned,
@@ -366,9 +367,9 @@ export function getMaxScorePerStack(
       curAssignment[localSuitIndex] = nextAssignment;
       assigned[nextAssignment] = true;
 
-      // If this was a full assignment, we need to check wether it was better
+      // If this was a full assignment, we need to check whether it was better.
       if (localSuitIndex === unassignedSuits.length - 1) {
-        let { assignmentValue, assignment } = evaluateAssignment(
+        const { assignmentValue, assignment } = evaluateAssignment(
           curAssignment,
           unassignedSuits,
           possibleStackStarts,
