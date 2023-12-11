@@ -85,7 +85,7 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
   if (lastDead === 0) {
     return {
       allMax: true,
-      maxScoresForEachStartingValueOfSuit: maxScoresForEachStartingValueOfSuit,
+      maxScoresForEachStartingValueOfSuit,
     };
   }
 
@@ -100,7 +100,7 @@ function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
 
   return {
     allMax: false,
-    maxScoresForEachStartingValueOfSuit: maxScoresForEachStartingValueOfSuit,
+    maxScoresForEachStartingValueOfSuit,
   };
 }
 
@@ -115,7 +115,7 @@ function sudokuGetUnusedStackStartRanks(
 
 type FiveStackIndex = 0 | 1 | 2 | 3 | 4;
 
-function increment_index(i: FiveStackIndex): FiveStackIndex {
+function incrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i + 1;
   if (val > 5) {
     throw new TypeError("Incrementing FiveStackIndex out of range");
@@ -123,7 +123,7 @@ function increment_index(i: FiveStackIndex): FiveStackIndex {
   return val as FiveStackIndex;
 }
 
-function decrement_index(i: FiveStackIndex): FiveStackIndex {
+function decrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
   const val = i - 1;
   if (val < 5) {
     throw new TypeError("Decrementing FiveStackIndex out of range");
@@ -132,18 +132,21 @@ function decrement_index(i: FiveStackIndex): FiveStackIndex {
 }
 
 /**
- * Helper function for an iterator to range [start, end), typesafe for FiveStackIndex
- * @param start
- * @param end
+ * Helper function for an iterator to range [start, end), typesafe for FiveStackIndex.
+ *
+ * @param start First value in range.
+ * @param end First value not in range.
  */
 function* eRange5(
   start: FiveStackIndex,
   end: FiveStackIndex,
 ): Generator<FiveStackIndex> {
-  while (start < end) {
-    yield start;
-    // Note this increment must be safe since start < end, so in particular, start + 1 is still at most 4
-    start = increment_index(start);
+  let cur = start;
+  while (cur < end) {
+    yield cur;
+    // Note this increment must be safe since start < end, so in particular, start + 1 is still at
+    // most 4.
+    cur = incrementFiveStackIndex(cur);
   }
 }
 
@@ -209,12 +212,12 @@ export function getMaxScorePerStack(
   // Same, but sorted in ascending order.
   let bestAssignmentSorted: number[] = [];
 
-  // This will denote a 'local' index and refers to the index in the unassignedSuits array.
-  // We will therefore iterate this over 0, ..., unassignedSuits.length - 1
+  // This will denote a 'local' index and refers to the index in the unassignedSuits array. We will
+  // therefore iterate this over 0, ..., unassignedSuits.length - 1.
   let localSuitIndex: FiveStackIndex = 0;
 
-  // A map (unassignedSuits) -> (index in possibleStackStarts) that denotes the current assignment of the stacks
-  // to their starting values. We use local suit indices to access into this.
+  // A map (unassignedSuits) -> (index in possibleStackStarts) that denotes the current assignment
+  // of the stacks to their starting values. We use local suit indices to access into this.
   const curAssignment: Tuple<FiveStackIndex | undefined, 5> = [
     undefined,
     undefined,
@@ -224,7 +227,7 @@ export function getMaxScorePerStack(
   ];
 
   // A map (index of stackStart) -> bool, denoting wether some suit is currently assigned to this
-  // stack start
+  // stack start.
   const assigned: Tuple<boolean, 5> = [false, false, false, false, false];
 
   while (localSuitIndex >= 0) {
@@ -234,13 +237,13 @@ export function getMaxScorePerStack(
     }
 
     let couldIncrement = false;
-    if (curAssignedStackStartIndex != 4) {
-      const first_try =
-        curAssignedStackStartIndex == undefined
+    if (curAssignedStackStartIndex !== 4) {
+      const firstTry =
+        curAssignedStackStartIndex === undefined
           ? 0
-          : increment_index(curAssignedStackStartIndex);
+          : incrementFiveStackIndex(curAssignedStackStartIndex);
       for (const nextAssignment of eRange5(
-        first_try,
+        firstTry,
         possibleStackStarts.length as FiveStackIndex,
       )) {
         if (!assigned[nextAssignment]) {
@@ -271,8 +274,8 @@ export function getMaxScorePerStack(
             const assignedStackStart =
               possibleStackStarts[assignedStackStartIndex];
 
-            // This hould be redundant, because we already checked that assignedLocalSuitIndex is not too big in the if condition,
-            // but the compiler cannot automatically deduce thas.
+            // This hould be redundant, because we already checked that assignedLocalSuitIndex is
+            // not too big in the if condition, but the compiler cannot automatically deduce thas.
             assertDefined(
               assignedSuit,
               "Implementation error: Array access undefined after range check.",
@@ -288,7 +291,8 @@ export function getMaxScorePerStack(
               `Failed to retrieve max partial scores for suit ${assignedSuit}`,
             );
 
-            // Note the '-1' here, since the array access starts at 0, while the assigned ranks start at 1
+            // Note the '-1' here, since the array access starts at 0, while the assigned ranks
+            // start at 1.
             const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
             assertDefined(
               value,
@@ -328,7 +332,7 @@ export function getMaxScorePerStack(
       if (localSuitIndex < unassignedSuits.length - 1) {
         // Reset all assignment of the higher-indexed suits.
         for (const higherLocalSuitIndex of eRange5(
-          increment_index(localSuitIndex),
+          incrementFiveStackIndex(localSuitIndex),
           unassignedSuits.length as FiveStackIndex,
         )) {
           const assignment = curAssignment[higherLocalSuitIndex];
@@ -337,10 +341,10 @@ export function getMaxScorePerStack(
           }
           curAssignment[higherLocalSuitIndex] = undefined;
         }
-        localSuitIndex = increment_index(localSuitIndex);
+        localSuitIndex = incrementFiveStackIndex(localSuitIndex);
       }
     } else {
-      localSuitIndex = decrement_index(localSuitIndex);
+      localSuitIndex = decrementFiveStackIndex(localSuitIndex);
     }
   }
 
