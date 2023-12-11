@@ -15,7 +15,9 @@ module.exports = {
      * https://typescript-eslint.io/rules/no-restricted-imports/
      *
      * Defined at:
-     * https://isaacscript.github.io/eslint-config-isaacscript
+     * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-config-isaacscript/configs/base-typescript-eslint.js
+     *
+     * We copy-paste the existing config and then add a clause for `models`.
      */
     "@typescript-eslint/no-restricted-imports": [
       "error",
