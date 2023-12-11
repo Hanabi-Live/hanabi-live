@@ -75,6 +75,14 @@ module.exports = {
 
     /**
      * Documentation:
+     * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-plugin-isaacscript/docs/rules/require-variadic-function-argument.md
+     *
+     * Does not work properly with Redux methods.
+     */
+    "isaacscript/require-variadic-function-argument": "off",
+
+    /**
+     * Documentation:
      * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-null.md
      *
      * Defined at:

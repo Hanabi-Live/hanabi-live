@@ -40,7 +40,7 @@ function gameStateReducerFunction(
   finished: boolean,
   hypothetical: boolean,
   metadata: GameMetadata,
-  ourNotes?: CardNote[],
+  ourNotes?: readonly CardNote[],
 ) {
   const variant = getVariant(metadata.options.variantName);
 
@@ -81,7 +81,7 @@ function gameStateReducerFunction(
       // to satisfy the TypeScript compiler.
       switch (action.clue.type) {
         case ClueType.Color: {
-          state.clues.push({
+          const clue = castDraft({
             type: action.clue.type,
             value: action.clue.value,
             giver: action.giver,
@@ -90,11 +90,12 @@ function gameStateReducerFunction(
             list: action.list,
             negativeList,
           });
+          state.clues.push(clue);
           break;
         }
 
         case ClueType.Rank: {
-          state.clues.push({
+          const clue = castDraft({
             type: action.clue.type,
             value: action.clue.value,
             giver: action.giver,
@@ -103,6 +104,7 @@ function gameStateReducerFunction(
             list: action.list,
             negativeList,
           });
+          state.clues.push(clue);
           break;
         }
       }
@@ -536,6 +538,7 @@ function gameStateReducerFunction(
 }
 
 function cardCycle(
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   hand: number[],
   deck: readonly CardState[],
   metadata: GameMetadata,

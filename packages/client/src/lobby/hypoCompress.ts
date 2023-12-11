@@ -30,13 +30,13 @@ interface MinMax {
 }
 
 export interface GameJSON {
-  players: string[];
-  deck: DeckCard[];
-  actions: Action[];
+  players: readonly string[];
+  deck: readonly DeckCard[];
+  actions: readonly Action[];
   options: Options;
-  characters: string[];
+  characters: readonly string[];
   id: number;
-  notes: [];
+  notes: readonly string[];
   seed: string;
 }
 
@@ -191,7 +191,7 @@ function gameJSONCompress(data: GameJSON): string | undefined {
  * numbers containing the min and max values of `DeckCard.rank`. The rest of the string contains
  * series of strings one characters long, each representing a `DeckCard`.
  */
-function compressDeck(deck: DeckCard[]): string | undefined {
+function compressDeck(deck: readonly DeckCard[]): string | undefined {
   const rankRange = getRankMinMax(deck);
   if (!isMinMaxValid(rankRange)) {
     return undefined;
@@ -210,7 +210,7 @@ function compressDeck(deck: DeckCard[]): string | undefined {
  * numbers containing the min and max values of `DeckCard.rank`. The rest of the string must be
  * composed of series of strings one character long, each representing a `DeckCard`.
  */
-function decompressDeck(src: string): DeckCard[] | undefined {
+function decompressDeck(src: string): readonly DeckCard[] | undefined {
   const deck: DeckCard[] = [];
 
   const minVal = src.charAt(0);
@@ -274,7 +274,7 @@ function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
  * containing the min and max values of `Action.type`. The rest of the string contains series of
  * strings two characters long, each representing an `Action`.
  */
-function compressActions(actions: Action[]): string {
+function compressActions(actions: readonly Action[]): string {
   // Find min/max values of Action.type.
   const typeRange = getTypeMinMax(actions);
   if (!isMinMaxValid(typeRange)) {
@@ -293,7 +293,7 @@ function compressActions(actions: Action[]): string {
  * numbers containing the min and max values of `Action.type`. The rest of the string must be
  * composed of series of strings two characters long, each representing an `Action`.
  */
-function decompressActions(src: string): Action[] | undefined {
+function decompressActions(src: string): readonly Action[] | undefined {
   const actions: Action[] = [];
 
   const minVal = src.charAt(0);
@@ -360,7 +360,7 @@ function stringToAction(src: string, typeRange: MinMax): Action {
 }
 
 /** Returns a string array of hypothetical players (Alice, Bob, etc). */
-function getPlayers(size: number): string[] {
+function getPlayers(size: number): readonly string[] {
   if (size < MIN_PLAYERS || size > MAX_PLAYERS) {
     return [];
   }
@@ -371,7 +371,7 @@ function getPlayers(size: number): string[] {
  * Creates a `MinMax` object, containing the minimum and maximum values of `DeckCard.rank` found in
  * an array of `DeckCard`.
  */
-function getRankMinMax(deck: DeckCard[]): MinMax {
+function getRankMinMax(deck: readonly DeckCard[]): MinMax {
   const range: MinMax = {
     min: -1,
     max: -1,
@@ -389,7 +389,7 @@ function getRankMinMax(deck: DeckCard[]): MinMax {
  * Creates a `MinMax` object, containing the minimum and maximum values of `Action.type` found in an
  * array of `Action`.
  */
-function getTypeMinMax(actions: Action[]): MinMax {
+function getTypeMinMax(actions: readonly Action[]): MinMax {
   const range: MinMax = {
     min: -1,
     max: -1,

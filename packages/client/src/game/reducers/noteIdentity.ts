@@ -157,8 +157,8 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
 
 function identityMapToArray(
   variant: Variant,
-  identityMap: boolean[][],
-): SuitRankTuple[] {
+  identityMap: readonly boolean[][],
+): readonly SuitRankTuple[] {
   const possibilities: SuitRankTuple[] = [];
 
   for (const rank of variant.ranks) {
@@ -192,7 +192,7 @@ function identityMapToArray(
 function getPossibilitiesFromKeyword(
   variant: Variant,
   keyword: string,
-): SuitRankTuple[] {
+): readonly SuitRankTuple[] {
   const { positiveCardIdentities, negativeCardIdentities } =
     getCardIdentitiesFromKeyword(variant, keyword);
 
@@ -271,9 +271,9 @@ function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
  */
 export function getPossibilitiesFromKeywords(
   variant: Variant,
-  keywords: string[],
-): SuitRankTuple[] {
-  let possibilities: SuitRankTuple[] = [];
+  keywords: readonly string[],
+): readonly SuitRankTuple[] {
+  let possibilities: readonly SuitRankTuple[] = [];
 
   // Empty keyword list returns all possibilities.
   for (const keyword of keywords.length > 0 ? keywords : [""]) {

@@ -30,7 +30,7 @@ import type {
 export function colorClue(
   value: ColorIndex,
   giver: PlayerIndex,
-  list: number[],
+  list: readonly number[],
   target: PlayerIndex,
   turn: number,
 ): ActionClue {
@@ -51,7 +51,7 @@ export function colorClue(
 export function rankClue(
   value: RankClueNumber,
   giver: PlayerIndex,
-  list: number[],
+  list: readonly number[],
   target: PlayerIndex,
   turn: number,
 ): ActionClue {

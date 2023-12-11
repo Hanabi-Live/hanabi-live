@@ -11,7 +11,7 @@ type Callback = (...args: any) => void;
 export const chatCommands = new Map<string, Callback>();
 
 // /friend [username]
-function friend(room: string, args: string[]) {
+function friend(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
     sendSelfPMFromServer(
@@ -49,9 +49,12 @@ chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
 
 // /pm [username] [msg]
-function pm(room: string, args: string[]) {
+function pm(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
-  if (args.length < 2) {
+  const [recipient, ...msgArray] = args;
+  const msg = msgArray.join(" ").trim();
+
+  if (recipient === undefined || msg === "") {
     sendSelfPMFromServer(
       "The format of a private message is: <code>/w Alice hello</code>",
       room,
@@ -59,9 +62,6 @@ function pm(room: string, args: string[]) {
     );
     return;
   }
-
-  let recipient = args[0]!;
-  args.shift(); // Remove the recipient
 
   // Validate that they are not sending a private message to themselves.
   if (recipient.toLowerCase() === globals.username.toLowerCase()) {
@@ -74,25 +74,18 @@ function pm(room: string, args: string[]) {
   }
 
   // Validate that the recipient is online.
-  let isOnline = false;
-  for (const user of globals.userMap.values()) {
-    if (user.name.toLowerCase() === recipient.toLowerCase()) {
-      isOnline = true;
-
-      // Overwrite the recipient in case the user capitalized the username wrong.
-      recipient = user.name;
-
-      break;
-    }
-  }
-  if (!isOnline) {
+  const users = [...globals.userMap.values()];
+  const matchingUser = users.find(
+    (user) => user.name.toLowerCase() === recipient.toLowerCase(),
+  );
+  if (matchingUser === undefined) {
     sendSelfPMFromServer(`User "${recipient}" is not currently online.`, room);
     return;
   }
 
   globals.conn!.send("chatPM", {
     msg: args.join(" "),
-    recipient,
+    recipient: matchingUser.name,
     room,
   });
 }
@@ -104,7 +97,7 @@ chatCommands.set("tell", pm);
 chatCommands.set("t", pm);
 
 // /setleader [username]
-function setLeader(room: string, args: string[]) {
+function setLeader(room: string, args: readonly string[]) {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/setleader</code> command.",
@@ -128,7 +121,7 @@ chatCommands.set("changelead", setLeader);
 chatCommands.set("changeowner", setLeader);
 
 // /setvariant [variant]
-function setVariant(room: string, args: string[]) {
+function setVariant(room: string, args: readonly string[]) {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/setvariant</code> command.",
@@ -167,7 +160,7 @@ chatCommands.set("changevariant", setVariant);
 chatCommands.set("cv", setVariant);
 
 // /suggest [turn]
-chatCommands.set("suggest", (room: string, args: string[]) => {
+chatCommands.set("suggest", (room: string, args: readonly string[]) => {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/suggest</code> command.",
@@ -208,7 +201,7 @@ chatCommands.set("suggest", (room: string, args: string[]) => {
 });
 
 // /tag [tag]
-chatCommands.set("tag", (room: string, args: string[]) => {
+chatCommands.set("tag", (room: string, args: readonly string[]) => {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/tag</code> command.",
@@ -225,7 +218,7 @@ chatCommands.set("tag", (room: string, args: string[]) => {
   });
 });
 
-function tagdelete(room: string, args: string[]) {
+function tagdelete(room: string, args: readonly string[]) {
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/tagdelete</code> command.",
@@ -247,7 +240,7 @@ chatCommands.set("tagdelete", tagdelete);
 chatCommands.set("untag", tagdelete);
 
 // /tagsearch
-chatCommands.set("tagsearch", (room: string, args: string[]) => {
+chatCommands.set("tagsearch", (room: string, args: readonly string[]) => {
   const tag = args.join(" ");
 
   globals.conn!.send("tagSearch", {
@@ -270,12 +263,12 @@ chatCommands.set("tagsdeleteall", (room: string) => {
 });
 
 // /playerinfo (username)
-function playerinfo(_room: string, args: string[]) {
-  let usernames: string[];
+function playerinfo(_room: string, args: readonly string[]) {
+  let usernames: readonly string[];
 
+  // - If there are no arguments and we are at a table, return stats for all the players.
+  // - Otherwise, return stats for the caller.
   if (args.length === 0) {
-    // - If there are no arguments and we are at a table, return stats for all the players.
-    // - Otherwise, return stats for the caller.
     usernames =
       globals.tableID !== -1 && globals.ui !== null
         ? [...globals.ui.globals.metadata.playerNames]
@@ -298,7 +291,7 @@ chatCommands.set("games", playerinfo);
 chatCommands.set("stats", playerinfo);
 
 // /unfriend [username]
-chatCommands.set("unfriend", (room: string, args: string[]) => {
+chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
     sendSelfPMFromServer(
@@ -335,7 +328,7 @@ chatCommands.set("copy", (room: string) => {
   createJSONFromReplay(room);
 });
 
-export function getVariantFromArgs(args: string[]): string {
+export function getVariantFromArgs(args: readonly string[]): string {
   const patterns = {
     doubleSpaces: / {2,}/g,
     openingParenthesis: / *\( */g,

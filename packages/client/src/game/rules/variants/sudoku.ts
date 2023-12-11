@@ -58,7 +58,7 @@ export function sudokuCanStillBePlayed(
  * returned array is [5, 5, 5, 5, 5]. This functions mimics the method `sudokuWalkUpAll` from the
  * server file "variants_sudoku.go".
  */
-export function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
+export function sudokuWalkUpAll(allDiscardedSet: ReadonlySet<Rank>): {
   allMax: boolean;
   maxScoresForEachStartingValueOfSuit: Tuple<number, Rank>;
 } {
@@ -111,7 +111,7 @@ export function sudokuWalkUpAll(allDiscardedSet: Set<Rank>): {
  */
 function sudokuGetUnusedStackStartRanks(
   playStackStarts: GameState["playStackStarts"],
-): Rank[] {
+): readonly Rank[] {
   return DEFAULT_CARD_RANKS.filter((rank) => !playStackStarts.includes(rank));
 }
 
@@ -156,9 +156,9 @@ function* eRange5(
 
 function evaluateAssignment(
   curAssignment: Tuple<FiveStackIndex | undefined, 5>,
-  unassignedSuits: number[],
-  possibleStackStarts: number[],
-  maxPartialScores: number[][],
+  unassignedSuits: readonly number[],
+  possibleStackStarts: readonly number[],
+  maxPartialScores: readonly number[][],
 ): {
   assignmentValue: number;
   assignment: number[];
@@ -220,9 +220,9 @@ function evaluateAssignment(
  */
 function isAssignmentBetter(
   assignmentValue: number,
-  assignmentSorted: number[],
+  assignmentSorted: readonly number[],
   bestAssignmentSum: number,
-  bestAssignmentSorted: number[],
+  bestAssignmentSorted: readonly number[],
 ): boolean {
   if (assignmentValue > bestAssignmentSum) {
     return true;
@@ -247,7 +247,7 @@ function isAssignmentBetter(
 
 function findNextAssignment(
   curAssignedStackStartIndex: FiveStackIndex | undefined,
-  possibleStackStarts: number[],
+  possibleStackStarts: readonly number[],
   assignedStackStarts: Tuple<boolean, 5>,
 ): FiveStackIndex | undefined {
   if (curAssignedStackStartIndex !== 4) {

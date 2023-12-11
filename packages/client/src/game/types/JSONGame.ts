@@ -5,7 +5,7 @@ import type { ClientAction } from "./ClientAction";
 export interface JSONGame {
   players: string[];
   deck: CardIdentity[];
-  actions: ClientAction[];
+  actions: readonly ClientAction[];
   options: {
     variant: string;
   };

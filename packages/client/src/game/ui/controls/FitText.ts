@@ -22,7 +22,6 @@ export class FitText extends Konva.Text {
       if (this.needsResize) {
         this.resize();
       }
-      // eslint-disable-next-line isaacscript/require-variadic-function-argument
       Konva.Text.prototype._sceneFunc.call(this, context);
     });
   }

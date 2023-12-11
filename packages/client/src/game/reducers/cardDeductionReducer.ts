@@ -46,7 +46,7 @@ function makeDeductions(
   oldDeck: readonly CardState[],
   hands: GameState["hands"],
   metadata: GameMetadata,
-) {
+): readonly CardState[] {
   const newDeck: CardState[] = [...deck];
   const variant = getVariant(metadata.options.variantName);
   const cardCountMap = getCardCountMap(variant);
@@ -84,9 +84,10 @@ function calculatePlayerPossibilities(
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   hands: GameState["hands"],
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   deck: CardState[],
   oldDeck: readonly CardState[],
-  cardCountMap: number[][],
+  cardCountMap: readonly number[][],
   metadata: GameMetadata,
 ) {
   for (const hand of hands) {
@@ -116,8 +117,9 @@ function calculateCard(
   card: CardState,
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   deck: CardState[],
-  cardCountMap: number[][],
+  cardCountMap: readonly number[][],
   metadata: GameMetadata,
 ) {
   const deckPossibilities = generateDeckPossibilities(
@@ -303,7 +305,7 @@ function generateDeckPossibilities(
  */
 function isPossibleCard(
   possibilities: readonly SuitRankTuple[],
-  cardCountMap: number[][],
+  cardCountMap: readonly number[][],
 ) {
   // We know the card.
   if (possibilities.length === 1) {
@@ -391,7 +393,7 @@ function deckPossibilitiesDifferent(
 function filterCardPossibilities(
   cardPossibilities: readonly SuitRankTuple[],
   deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
-  cardCountMap: number[][],
+  cardCountMap: readonly number[][],
 ): readonly SuitRankTuple[] {
   /**
    * Tracks what possibilities have yet to be validated for a specific card from a specific
@@ -433,7 +435,8 @@ function possibilityValid(
   [suitIndex, rank]: readonly [SuitIndex, Rank],
   deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
   index: number,
-  cardCountMap: number[][],
+  cardCountMap: readonly number[][],
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   if (deckPossibilities.length === index) {
@@ -483,7 +486,8 @@ function possibilityValid(
 }
 
 function updatePossibilitiesToValidate(
-  cardCountMap: number[][],
+  cardCountMap: readonly number[][],
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;
@@ -504,7 +508,7 @@ let cachedVariantID: number | null = null;
 let cachedCardCountMap: number[][] = [];
 
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
-function getCardCountMap(variant: Variant): number[][] {
+function getCardCountMap(variant: Variant): readonly number[][] {
   if (variant.id === cachedVariantID) {
     return arrayCopyTwoDimensional(cachedCardCountMap);
   }

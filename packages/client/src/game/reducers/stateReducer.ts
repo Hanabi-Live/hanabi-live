@@ -41,14 +41,14 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       updateCardIdentities(state);
 
       state.replay.states = castDraft(states);
-      state.replay.actions = action.actions;
+      state.replay.actions = castDraft(action.actions);
       break;
     }
 
     case "cardIdentities": {
       // Either we just entered a new replay or an ongoing game ended, so the server sent us a list
       // of the identities for every card in the deck.
-      state.cardIdentities = action.cardIdentities;
+      state.cardIdentities = castDraft(action.cardIdentities);
 
       // If we were in a variant that scrubbed plays and discards, rehydrate them now.
       state.replay.actions = castDraft(
@@ -226,7 +226,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "spectators": {
-      state.spectators = action.spectators;
+      state.spectators = castDraft(action.spectators);
       break;
     }
 
@@ -306,7 +306,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       }
 
       // Save the action so that we can recompute the state at the end of the game.
-      state.replay.actions.push(action);
+      state.replay.actions.push(castDraft(action));
 
       break;
     }
@@ -319,7 +319,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 // Runs through a list of actions from an initial state, and returns the final state and all
 // intermediate states.
 function reduceGameActions(
-  actions: GameAction[],
+  actions: readonly GameAction[],
   initialState: GameState,
   playing: boolean,
   shadowing: boolean,
@@ -421,7 +421,7 @@ function visualStateToShow(
 function rehydrateScrubbedActions(
   state: State,
   cardIdentities: readonly CardIdentity[],
-): GameAction[] {
+): readonly GameAction[] {
   return state.replay.actions.map((action) => {
     if (
       (action.type === "play" ||

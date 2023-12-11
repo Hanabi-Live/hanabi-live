@@ -30,7 +30,7 @@ export function goesFirst(
 
 export function clue(
   action: ActionClue,
-  targetHand: number[],
+  targetHand: readonly number[],
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
@@ -108,7 +108,7 @@ export function gameOver(
   playerIndex: PlayerIndex,
   score: number,
   metadata: GameMetadata,
-  votes: PlayerIndex[] | null,
+  votes: readonly PlayerIndex[] | null,
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
 

@@ -39,7 +39,7 @@ export function drawCards(
     cvs: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
   ) => HTMLCanvasElement,
-): Map<string, HTMLCanvasElement> {
+): ReadonlyMap<string, HTMLCanvasElement> {
   const cardImages = new Map<string, HTMLCanvasElement>();
 
   // Add the "Unknown" suit to the list of suits for this variant. The unknown suit has blank white
@@ -773,7 +773,11 @@ function colorChannelMixer(
  * - `amountToMix` ranges from 0.0 to 1.0.
  * - For example: `(red): rgbA = [255,0,0]`
  */
-function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
+function colorMixer(
+  rgbA: readonly number[],
+  rgbB: readonly number[],
+  amountToMix: number,
+) {
   const r = colorChannelMixer(rgbA[0]!, rgbB[0]!, amountToMix);
   const g = colorChannelMixer(rgbA[1]!, rgbB[1]!, amountToMix);
   const b = colorChannelMixer(rgbA[2]!, rgbB[2]!, amountToMix);

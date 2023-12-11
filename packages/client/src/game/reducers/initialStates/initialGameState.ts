@@ -32,10 +32,10 @@ export function initialGameState(metadata: GameMetadata): GameState {
   // Calculate some things before we get the game state properties.
   const { options } = metadata;
   const variant = getVariant(options.variantName);
-  const playStacks = newArray<CardOrder[]>(variant.suits.length, []) as Tuple<
-    CardOrder[],
-    NumSuits
-  >;
+  const playStacks = newArray<readonly CardOrder[]>(
+    variant.suits.length,
+    [],
+  ) as Tuple<readonly CardOrder[], NumSuits>;
   const suitIndexes = [...variant.suits.keys()] as SuitIndex[];
   const playStackDirections = suitIndexes.map((suitIndex) =>
     playStacksRules.direction(suitIndex, [], [], variant),

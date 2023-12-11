@@ -66,7 +66,7 @@ function notesReducerFunction(
 
     case "receiveNote": {
       // Add in the notes received from server.
-      notes.allNotes[action.order] = action.notes;
+      notes.allNotes[action.order] = castDraft(action.notes);
       break;
     }
 
@@ -113,7 +113,7 @@ function notesReducerFunction(
   }
 }
 
-function getNoteKeywords(note: string) {
+function getNoteKeywords(note: string): readonly string[] {
   // Match either:
   // - zero or more characters between square brackets `[]`
   //   - \[(.*?)\]
@@ -142,7 +142,7 @@ function getNoteKeywords(note: string) {
 
 function checkNoteKeywordsForMatch(
   patterns: readonly string[],
-  keywords: string[],
+  keywords: readonly string[],
 ) {
   return keywords.some((k) => patterns.includes(k));
 }

@@ -4,7 +4,7 @@
 import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
 import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
-import { produce } from "immer";
+import { castDraft, produce } from "immer";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
@@ -25,7 +25,7 @@ function statsReducerFunction(
   playing: boolean,
   shadowing: boolean,
   metadata: GameMetadata,
-  ourNotes: CardNote[] | null,
+  ourNotes: readonly CardNote[] | null,
 ) {
   const variant = getVariant(metadata.options.variantName);
 
@@ -171,7 +171,7 @@ function statsReducerFunction(
   }
 
   // Record the last action.
-  stats.lastAction = action;
+  stats.lastAction = castDraft(action);
 
   // Find out which sound effect to play (if this is an ongoing game).
   stats.soundTypeForLastAction = getSoundType(

@@ -95,7 +95,7 @@ export interface ActionInit {
 
 interface ActionListReceived {
   readonly type: "gameActionList";
-  readonly actions: GameAction[];
+  readonly actions: readonly GameAction[];
 }
 
 // ---------------------
@@ -104,7 +104,7 @@ interface ActionListReceived {
 
 interface ActionCardIdentities {
   readonly type: "cardIdentities";
-  readonly cardIdentities: CardIdentity[];
+  readonly cardIdentities: readonly CardIdentity[];
 }
 
 interface ActionPremove {
@@ -125,7 +125,7 @@ interface ActionPauseQueue {
 
 interface ActionSpectators {
   readonly type: "spectators";
-  readonly spectators: Spectator[];
+  readonly spectators: readonly Spectator[];
 }
 
 interface ActionFinishOngoingGame {
@@ -160,7 +160,7 @@ export interface ActionClue {
   readonly giver: PlayerIndex;
 
   /** The card orders that were touched by this clue. */
-  readonly list: CardOrder[];
+  readonly list: readonly CardOrder[];
 
   /** The player index of the person being clued. */
   readonly target: PlayerIndex;
@@ -211,7 +211,7 @@ interface ActionGameOver {
    * terminate the game. In a replay, `votes` will be equal to `null` because the server does not
    * store who voted to kill the game in the database.
    */
-  readonly votes: PlayerIndex[] | null;
+  readonly votes: readonly PlayerIndex[] | null;
 }
 
 export interface ActionPlay {
@@ -267,19 +267,19 @@ interface ActionEditNote {
 interface ActionReceiveNote {
   readonly type: "receiveNote";
   readonly order: CardOrder;
-  readonly notes: SpectatorNote[];
+  readonly notes: readonly SpectatorNote[];
 }
 
 interface ActionNoteListPlayer {
   readonly type: "noteListPlayer";
-  readonly texts: string[];
+  readonly texts: readonly string[];
 }
 
 interface ActionNoteList {
   readonly type: "noteList";
-  readonly names: string[];
-  readonly noteTextLists: string[][];
-  readonly isSpectators: boolean[];
+  readonly names: readonly string[];
+  readonly noteTextLists: readonly string[][];
+  readonly isSpectators: readonly boolean[];
 }
 
 interface ActionSetEffMod {
@@ -327,7 +327,7 @@ interface ActionReplayLeader {
 export interface ActionHypotheticalStart {
   readonly type: "hypoStart";
   readonly showDrawnCards: boolean;
-  readonly actions: ActionIncludingHypothetical[];
+  readonly actions: readonly ActionIncludingHypothetical[];
 }
 
 export interface ActionHypotheticalEnd {

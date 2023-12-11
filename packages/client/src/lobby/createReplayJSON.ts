@@ -71,7 +71,8 @@ export function createJSONFromReplay(room: string): void {
     if (replay.segment < log.length) {
       const logLines = log.slice(replay.segment + 1);
       const actions = getGameActionsFromLog(logLines);
-      game.actions.push(...actions);
+      const newActions = [...game.actions, ...actions];
+      game.actions = newActions;
     }
   }
 
@@ -123,7 +124,7 @@ export function createJSONFromReplay(room: string): void {
     });
 }
 
-function getGameActionsFromState(source: ReplayState): ClientAction[] {
+function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
   let currentSegment = 0;
   const maxSegment = source.segment;
   const actions: ClientAction[] = [];
@@ -186,7 +187,9 @@ function getGameActionsFromState(source: ReplayState): ClientAction[] {
   return actions;
 }
 
-function getGameActionsFromLog(log: readonly LogEntry[]): ClientAction[] {
+function getGameActionsFromLog(
+  log: readonly LogEntry[],
+): readonly ClientAction[] {
   const actions: ClientAction[] = [];
 
   for (const [i, logEntry] of log.entries()) {

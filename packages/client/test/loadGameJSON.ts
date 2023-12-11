@@ -289,7 +289,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 function drawCard(
   playerIndex: PlayerIndex,
   order: CardOrder,
-  deck: CardIdentity[],
+  deck: readonly CardIdentity[],
 ): ActionDraw {
   const cardIdentity = deck[order];
   assertDefined(
@@ -318,8 +318,9 @@ function drawCard(
 function dealInitialCards(
   numPlayers: NumPlayers,
   cardsPerHand: number,
+  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   actions: GameAction[],
-  deck: CardIdentity[],
+  deck: readonly CardIdentity[],
 ): CardOrder {
   let topOfDeck = 0 as CardOrder;
 
@@ -338,7 +339,7 @@ function dealInitialCards(
 function parseJSONAction(
   currentPlayer: number,
   turn: number,
-  deck: CardIdentity[],
+  deck: readonly CardIdentity[],
   a: JSONAction,
 ): GameAction | null {
   switch (a.type) {

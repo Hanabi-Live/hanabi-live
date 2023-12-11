@@ -72,7 +72,7 @@ lobbyCommands.set("game", (data: Game) => {
   pregame.drawSpectators(globals.tableID);
 });
 
-lobbyCommands.set("gameHistory", (dataArray: GameHistory[]) => {
+lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
   // `data` will be an array of all of the games that we have previously played.
   for (const data of dataArray) {
     globals.history.set(data.id, data);
@@ -96,7 +96,7 @@ lobbyCommands.set("gameHistory", (dataArray: GameHistory[]) => {
   }
 });
 
-lobbyCommands.set("gameHistoryFriends", (dataArray: GameHistory[]) => {
+lobbyCommands.set("gameHistoryFriends", (dataArray: readonly GameHistory[]) => {
   // `data` will be an array of all of the games that our friends have previously played.
   for (const data of dataArray) {
     globals.historyFriends.set(data.id, data);
@@ -193,7 +193,7 @@ lobbyCommands.set("tableGone", (data: TableGoneData) => {
 });
 
 // Received by the client upon initial connection.
-lobbyCommands.set("tableList", (dataList: Table[]) => {
+lobbyCommands.set("tableList", (dataList: readonly Table[]) => {
   for (const data of dataList) {
     globals.tableMap.set(data.id, data);
   }
@@ -252,7 +252,7 @@ lobbyCommands.set("user", (data: User) => {
   }
 });
 
-lobbyCommands.set("userList", (dataList: User[]) => {
+lobbyCommands.set("userList", (dataList: readonly User[]) => {
   for (const data of dataList) {
     globals.userMap.set(data.userID, data);
   }

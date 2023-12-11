@@ -89,7 +89,6 @@ function touchStart(
   }, DOUBLE_TAP_DELAY_SECONDS);
 
   // Do all of the same things that would occur if we hovered over the card.
-  // eslint-disable-next-line isaacscript/require-variadic-function-argument
   mouseEnter.call(this);
 
   // During replay hypo, skip the starting player.

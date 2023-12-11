@@ -87,7 +87,7 @@ export class Connection {
 
 const SEPARATOR = " ";
 
-function unpack(data: string): string[] {
+function unpack(data: string): readonly string[] {
   const name = data.split(SEPARATOR)[0]!;
   return [name, data.slice(name.length + 1, data.length)];
 }

@@ -119,7 +119,7 @@ function showClueMatch(target: number, clue: Clue): boolean {
 export function getTouchedCardsFromClue(
   target: number,
   clue: MsgClue,
-): CardOrder[] {
+): readonly CardOrder[] {
   const hand = globals.elements.playerHands[target]!;
   const cardsTouched: CardOrder[] = [];
   hand.children.each((child) => {

@@ -34,7 +34,7 @@ export function nextPlayableRanks(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
   deck: readonly CardState[],
-): number[] {
+): readonly number[] {
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
 
   switch (playStackDirection) {

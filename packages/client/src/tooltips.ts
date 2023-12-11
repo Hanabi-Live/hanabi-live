@@ -140,7 +140,7 @@ export function setPosition(selector: string, x: number, y: number): void {
 export function setInstanceOption(
   selector: string,
   option: string,
-  value: string | string[] | readonly string[],
+  value: string | readonly string[],
 ): void {
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {

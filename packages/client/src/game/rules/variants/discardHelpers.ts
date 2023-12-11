@@ -38,7 +38,7 @@ export function getAllDiscardedSet(
   variant: Variant,
   deck: readonly CardState[],
   suitIndex: SuitIndex,
-): Set<Rank> {
+): ReadonlySet<Rank> {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
 
   const allDiscardedSet = new Set<Rank>();

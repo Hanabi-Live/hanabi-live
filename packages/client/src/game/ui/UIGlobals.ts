@@ -1,5 +1,6 @@
 import type { CardOrder, PlayerIndex } from "@hanabi/data";
 import { getDefaultVariant } from "@hanabi/data";
+import { ReadonlyMap } from "@hanabi/utils";
 import Konva from "konva";
 import type * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../Globals";
@@ -47,7 +48,7 @@ export class UIGlobals {
   /** The element that the mouse cursor is currently over. */
   activeHover: Konva.Node | null = null;
 
-  cardImages = new Map<string, HTMLCanvasElement>();
+  cardImages = new ReadonlyMap<string, HTMLCanvasElement>();
   scaledCardImages = new Map<string, HTMLCanvasElement[]>();
 
   // Replay feature

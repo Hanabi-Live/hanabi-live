@@ -32,7 +32,7 @@ export function getPlayerName(
 }
 
 export function getPlayerNames(
-  playerIndices: PlayerIndex[] | null,
+  playerIndices: readonly PlayerIndex[] | null,
   metadata: GameMetadata,
 ): string {
   if (playerIndices === null) {

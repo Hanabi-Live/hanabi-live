@@ -286,7 +286,7 @@ export function cardsReducer(
 function cardIdentityRevealedToPlayer(
   card: CardState,
   characterAssignments: GameMetadata["characterAssignments"],
-): boolean[] {
+): readonly boolean[] {
   const revealedToPlayer: boolean[] = [];
 
   for (const playerIndex of tupleKeys(characterAssignments)) {
@@ -309,7 +309,7 @@ function drawnCardRevealedToPlayer(
   drawLocation: number,
   numPlayers: NumPlayers,
   characterAssignments: Readonly<Array<number | null>>,
-): boolean[] {
+): readonly boolean[] {
   const revealedToPlayer: boolean[] = [];
 
   for (const i of eRange(numPlayers)) {

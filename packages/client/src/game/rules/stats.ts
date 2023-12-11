@@ -208,7 +208,7 @@ export function cardsGottenByNotes(
   playStackDirections: GameState["playStackDirections"],
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
-  notes: CardNote[],
+  notes: readonly CardNote[],
 ): number {
   let numCardsGottenByNotes = 0;
 
@@ -240,7 +240,7 @@ export function cardsGottenByNotes(
 }
 
 function getCardsGottenByNotesAdjustment(
-  notes: CardNote[],
+  notes: readonly CardNote[],
   order: CardOrder,
   card: CardState,
 ): number {

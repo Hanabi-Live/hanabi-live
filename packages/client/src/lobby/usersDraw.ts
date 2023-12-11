@@ -65,7 +65,7 @@ export function draw(): void {
 
 function drawUser(
   username: string,
-  usernameMapping: Map<string, number>,
+  usernameMapping: ReadonlyMap<string, number>,
   tbody: JQuery,
   friend: boolean,
 ) {

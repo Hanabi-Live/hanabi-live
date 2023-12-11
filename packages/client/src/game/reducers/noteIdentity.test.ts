@@ -237,7 +237,10 @@ describe("noteIdentity", () => {
   });
 });
 
-function getRankMap(ranks: Set<number>, numSuits: number): number[][] {
+function getRankMap(
+  ranks: ReadonlySet<number>,
+  numSuits: number,
+): readonly number[][] {
   const cardMap: number[][] = [];
 
   for (const rank of [1, 2, 3, 4, 5, 6, 7]) {
@@ -252,9 +255,9 @@ function getRankMap(ranks: Set<number>, numSuits: number): number[][] {
 }
 
 function identityArrayToMap(
-  possibilities: SuitRankTuple[],
+  possibilities: readonly SuitRankTuple[],
   numSuits: number,
-): number[][] {
+): readonly number[][] {
   const cardMap: number[][] = [];
 
   for (const _rank of iRange(1, 7)) {

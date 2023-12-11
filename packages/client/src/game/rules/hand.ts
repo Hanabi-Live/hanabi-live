@@ -37,7 +37,10 @@ function cardsPerHandNatural(numPlayers: NumPlayers): number {
 }
 
 /** For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game). */
-export function cardSlot(order: CardOrder, hand: number[]): number | undefined {
+export function cardSlot(
+  order: CardOrder,
+  hand: readonly number[],
+): number | undefined {
   const index = hand.indexOf(order);
   return index === -1 ? undefined : hand.length - index;
 }

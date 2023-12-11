@@ -399,6 +399,7 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
     event.shiftKey === true ? tabCompleteWordList.length - 1 : 0;
 }
 
+// eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
 function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   // Prioritize the more commonly used NotLikeThis over NootLikeThis.
   const notLikeThisIndex = usersAndEmotesList.indexOf("NotLikeThis");

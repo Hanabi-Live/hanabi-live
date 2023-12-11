@@ -200,7 +200,7 @@ export function getMaxScorePerStack(
 }
 
 /** A helper function for `getMaxScore`. */
-function walkUp(allDiscardedSet: Set<Rank>, variant: Variant): number {
+function walkUp(allDiscardedSet: ReadonlySet<Rank>, variant: Variant): number {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.
@@ -227,7 +227,7 @@ function walkUp(allDiscardedSet: Set<Rank>, variant: Variant): number {
 }
 
 /** A helper function for `getMaxScore`. */
-function walkDown(allDiscardedSet: Set<Rank>, variant: Variant) {
+function walkDown(allDiscardedSet: ReadonlySet<Rank>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started.

@@ -244,7 +244,7 @@ function hideOtherScoresToFriends() {
 }
 
 export function drawOtherScores(
-  games: GameHistory[],
+  games: readonly GameHistory[],
   variantName: string,
   friends: boolean,
   seed: string,
@@ -429,7 +429,7 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   return html;
 }
 
-function iconsFromOptions(icons: string[]): string {
+function iconsFromOptions(icons: readonly string[]): string {
   let answer = "";
   switch (icons.length) {
     case 1:
