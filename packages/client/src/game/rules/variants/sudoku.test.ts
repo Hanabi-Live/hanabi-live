@@ -1,4 +1,4 @@
-import { sudokuWalkUpAll, getMaxScorePerStack } from "./sudoku";
+import { sudokuWalkUpAll } from "./sudoku";
 import {Rank} from "@hanabi/data";
 
 describe("WalkUpAll", () => {
