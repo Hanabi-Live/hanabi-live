@@ -72,7 +72,7 @@ $(document).ready(() => {
   // Start preloading some images that we will need for when a game starts.
   globals.imageLoader = new Loader();
 
-  // For debugging graphics
+  // For debugging graphics.
   /*
   $('body').click((event) => {
     console.log(`Cursor position: ${event.clientX}, ${event.clientY}`);
