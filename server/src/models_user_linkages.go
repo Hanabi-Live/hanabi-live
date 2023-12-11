@@ -88,3 +88,31 @@ func (*UserLinkages) GetMap(userID int) (map[int]struct{}, error) {
 
 	return linkedMap, nil
 }
+
+func (*UserLinkages) GetLinkedUserIDs(userIDs []int) ([]int, error) {
+	var linkedIDs []int
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
+		SELECT DISTINCT ON (linked_id) linked_id
+		FROM user_linkages
+		WHERE user_id = ANY ($1)
+	`, userIDs); err != nil {
+		return nil, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var linkedID int
+		if err := rows.Scan(&linkedID); err != nil {
+			return linkedIDs, err
+		}
+		linkedIDs = append(linkedIDs, linkedID)
+	}
+	if err := rows.Err(); err != nil {
+		return linkedIDs, err
+	}
+	rows.Close()
+
+	return linkedIDs, nil
+}
