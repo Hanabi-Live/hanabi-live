@@ -45,7 +45,7 @@ export function sudokuCanStillBePlayed(
       maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1];
     assertDefined(
       score,
-      `Failed to find the max score for starting suit ${suitIndex} at start ${possibleStackStartRank}`,
+      `Failed to find the max score for starting suit index ${suitIndex} at start rank: ${possibleStackStartRank}`,
     );
     return score > longestSequence;
   });
@@ -131,7 +131,9 @@ function decrementFiveStackIndex(i: FiveStackIndex): FiveStackIndex {
 
 function assertFiveStackIndex(val: number): asserts val is FiveStackIndex {
   if (val < 0 || val > 4) {
-    throw new TypeError(`A FiveStackIndex must be between 0 and 4: ${val}`);
+    throw new TypeError(
+      `A FiveStackIndex was ${val}, but it must be between 0 and 4.`,
+    );
   }
 }
 
@@ -171,7 +173,7 @@ function evaluateAssignment(
     if (assignedLocalSuitIndex < unassignedSuits.length) {
       assertDefined(
         assignedStackStartIndex,
-        "Unexpected undefined assignment when trying to evaluate full assignment",
+        "Unexpected undefined assignment when trying to evaluate the full assignment.",
       );
 
       const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
