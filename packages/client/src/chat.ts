@@ -415,8 +415,8 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   let tempEmote1: string;
 
   // Prioritize the more commonly used FrankerZ over all the other Franker emotes.
-  const frankerZIndex = usersAndEmotesList.indexOf("FrankerZ");
   const frankerBIndex = usersAndEmotesList.indexOf("FrankerB");
+  const frankerZIndex = usersAndEmotesList.indexOf("FrankerZ");
   tempEmote1 = usersAndEmotesList[frankerBIndex]!;
   usersAndEmotesList[frankerBIndex] = "FrankerZ";
   for (const i of eRange(frankerBIndex, frankerZIndex)) {
@@ -426,8 +426,8 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   }
 
   // Prioritize the more commonly used monkaS over all the other monka emotes.
-  const monkaSIndex = usersAndEmotesList.indexOf("monkaS");
   const monkaEyesIndex = usersAndEmotesList.indexOf("monkaEyes");
+  const monkaSIndex = usersAndEmotesList.indexOf("monkaS");
   tempEmote1 = usersAndEmotesList[monkaEyesIndex]!;
   usersAndEmotesList[monkaEyesIndex] = "monkaS";
   for (const i of eRange(monkaEyesIndex, monkaSIndex)) {
