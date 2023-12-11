@@ -36,47 +36,6 @@ const config = {
 
     /**
      * Documentation:
-     * https://typescript-eslint.io/rules/no-restricted-imports
-     *
-     * Not defined in the parent configs.
-     */
-    "@typescript-eslint/no-restricted-imports": [
-      "error",
-      {
-        patterns: [
-          {
-            // We don't use a suffix or a prefix since some "src" folders have an "index.ts" file.
-            group: ["*src*"],
-            message:
-              'You cannot import directly from other packages in the monorepo. Configure the entity such that it is exported from the root of the project and then use a "@hanabi/foo" style import.',
-          },
-
-          {
-            group: ["*dist*"],
-            message:
-              "You cannot import from compiled output. Instead, import using the package name like you would in a non-monorepo project.",
-          },
-
-          {
-            group: ["*/index*"],
-            message:
-              "You cannot import directly from a package index. Instead, import directly from the file where the code is located.",
-          },
-
-          // This only applies to the server, but we put it here to avoid having to duplicate the
-          // above rule.
-          {
-            // We want to allow: `import { models } from "./models"`
-            group: ["*/models/*"],
-            message:
-              'You cannot import model functions directly. Use the "models" object instead.',
-          },
-        ],
-      },
-    ],
-
-    /**
-     * Documentation:
      * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-plugin-isaacscript/docs/rules/no-number-enums.md
      *
      * Defined at:
@@ -92,12 +51,14 @@ const config = {
      * https://github.com/IsaacScript/isaacscript/blob/main/packages/eslint-plugin-isaacscript/docs/rules/no-number-enums.md
      *
      * Defined at:
-     * https://isaacscript.github.io/eslint-config-isaacscript
+     * https://github.com/IsaacScript/isaacscript/tree/main/packages/eslint-plugin-isaacscript
      *
      * We use number enums to save bandwidth between client and server. Number enums are almost
      * always safe with the `isaacscript/strict-enums` rule.
      */
     "isaacscript/no-number-enums": "off",
+
+    // BEGIN ESM EXCEPTIONS
 
     /**
      * Documentation:
@@ -134,6 +95,8 @@ const config = {
      * dependencies being up to date).
      */
     "unicorn/prefer-top-level-await": "off",
+
+    // END ESM EXCEPTIONS
 
     // @template-customization-end
   },
