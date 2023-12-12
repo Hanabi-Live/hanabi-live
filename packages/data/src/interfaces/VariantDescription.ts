@@ -1,4 +1,4 @@
-import type {BasicRank, Rank} from "../types/Rank";
+import type { BasicRank, Rank } from "../types/Rank";
 import type { RankClueNumber } from "../types/RankClueNumber";
 
 /**

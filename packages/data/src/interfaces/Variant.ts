@@ -1,4 +1,4 @@
-import type {BasicRank, Rank} from "../types/Rank";
+import type { BasicRank, Rank } from "../types/Rank";
 import type { Color } from "./Color";
 import type { Suit } from "./Suit";
 import type { VariantJSON } from "./VariantJSON";

@@ -268,7 +268,7 @@ export function variantsInit(
     // Validate the "stackSize" property. If it is not specified, assume 5.
     if (variantJSON.stackSize === DEFAULT_FINISHED_STACK_LENGTH) {
       throw new Error(
-          `The "stackSize" property for the variant "${variantJSON.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
+        `The "stackSize" property for the variant "${variantJSON.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
       );
     }
     const stackSize = variantJSON.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;

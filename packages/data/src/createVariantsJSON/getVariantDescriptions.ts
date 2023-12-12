@@ -1,9 +1,9 @@
+import type { Rank, RankClueNumber } from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
-import type { Rank, RankClueNumber } from "@hanabi/data";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
@@ -1288,8 +1288,8 @@ function getChimneysVariants(
 }
 
 function getSudokuVariants(
-    suitsToCreateVariantsFor: readonly SuitJSON[],
-    basicVariantSuits: BasicVariantSuits,
+  suitsToCreateVariantsFor: readonly SuitJSON[],
+  basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
