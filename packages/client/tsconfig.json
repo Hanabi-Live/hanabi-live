@@ -19,5 +19,5 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "../game/src/interfaces/CardIdentity.ts"],
 }
