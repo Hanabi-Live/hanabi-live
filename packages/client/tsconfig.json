@@ -19,5 +19,5 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts", "../game/src/enums/ClueType.ts"],
+  "include": ["./src/**/*.ts"],
 }

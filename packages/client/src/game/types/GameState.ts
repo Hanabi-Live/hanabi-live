@@ -9,10 +9,10 @@ import type {
   CardState,
   CardStatus,
   StackDirection,
+  StateClue,
   TurnState,
 } from "@hanabi/game";
 import type { DeepReadonly, Tuple } from "@hanabi/utils";
-import type { StateClue } from "./StateClue";
 import type { StatsState } from "./StatsState";
 
 export interface GameState {

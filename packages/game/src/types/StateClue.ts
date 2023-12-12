@@ -4,7 +4,7 @@ import type {
   PlayerIndex,
   RankClueNumber,
 } from "@hanabi/data";
-import type { ClueType } from "@hanabi/game";
+import type { ClueType } from "../enums/ClueType";
 
 interface StateClueBase {
   readonly giver: PlayerIndex;
