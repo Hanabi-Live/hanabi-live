@@ -177,19 +177,6 @@ One of each card per suit (e.g. 5 in total):
 - In a 5-suit game, the Taupe suit would be removed, and so on.
 - The name of the variant comes from [nested doll sets](https://en.wikipedia.org/wiki/Matryoshka_doll).
 
-### Sudoku (5 Suits)
-
-- Stacks can be started at arbitrary ranks and will wrap around from 5 to 1 until 5 cards are played.
-  - Each stack has to be started with a different rank (but it is not predetermined, which suit starts where).
-- As ranks are now completely symmetric, there are two copies of each card.
-- Playing the fifth card of a suit gives back a clue.
-
-### Sudoku (4 Suits)
-
-- Similar to 5-Suit Sudoku, stacks can be started at arbitrary but different ranks.
-- Cards of rank 5 are removed from the game, therefore stacks only consist of 4 cards each and will wrap around from 4 to 1.
-- Playing the fourth card of a suit gives back a clue.
-
 ### Dual-Color
 
 - Each suit is touched by 2 separate colors.
@@ -427,6 +414,12 @@ One of each card per suit (e.g. 5 in total):
 - Instead of the normal card distribution, there are two copies of each card.
 - Similar to a no variant game, playing the fifth card of a suit gives back a clue.
 
+### Sudoku (4 Suits)
+
+- Similar to 5-Suit Sudoku, stacks can be started at arbitrary but different ranks.
+- Cards of rank 5 are removed from the game, therefore stacks only consist of 4 cards each and will wrap around from 4 to 1.
+- Playing the fourth card of a suit gives back a clue.
+
 <br />
 
 ## Full Variant Listing
@@ -475,3 +468,6 @@ One of each card per suit (e.g. 5 in total):
 - Reversed
 - Up or Down
 - Throw It in a Hole
+- Funnels
+- Chimneys
+- Sudoku
