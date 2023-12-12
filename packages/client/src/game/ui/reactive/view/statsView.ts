@@ -1,5 +1,5 @@
 import type { NumPlayers } from "@hanabi/data";
-import type { PaceRisk } from "@hanabi/game";
+import { PaceRisk } from "@hanabi/game";
 import { assertNotNull } from "@hanabi/utils";
 import * as statsRules from "../../../rules/stats";
 import { globals } from "../../UIGlobals";
@@ -170,41 +170,31 @@ export function onPaceOrPaceRiskChanged(data: {
     label.text(paceText);
 
     // Color the pace label depending on how "risky" it would be to discard (approximately).
-    switch (data.paceRisk) {
-      case "LowRisk": {
-        // We are not even close to the "End-Game", so give it the default color.
-        label.fill(LABEL_COLOR);
-        break;
-      }
-
-      case "MediumRisk": {
-        // It might be risky to discard.
-        label.fill("#efef1d"); // Yellow
-        break;
-      }
-
-      case "HighRisk": {
-        // It would probably be risky to discard.
-        label.fill("#ef8c1d"); // Orange
-        break;
-      }
-
-      case "Zero": {
-        // No more discards can occur in order to get a maximum score.
-        label.fill("#df1c2d"); // Red
-        break;
-      }
-
-      case "Null": {
-        console.error(
-          `An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`,
-        );
-        break;
-      }
-    }
+    const color = getPaceLabelColor(data.paceRisk);
+    label.fill(color);
   }
 
   globals.layers.UI.batchDraw();
+}
+
+function getPaceLabelColor(paceRisk: PaceRisk): string {
+  switch (paceRisk) {
+    case PaceRisk.Low: {
+      return LABEL_COLOR;
+    }
+
+    case PaceRisk.Medium: {
+      return "#efef1d"; // Yellow
+    }
+
+    case PaceRisk.High: {
+      return "#ef8c1d"; // Orange
+    }
+
+    case PaceRisk.Zero: {
+      return "#df1c2d"; // Red
+    }
+  }
 }
 
 export function onMaxTurnsChanged(data: {

@@ -2,7 +2,8 @@
 
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { CardState, PaceRisk } from "@hanabi/game";
+import type { CardState } from "@hanabi/game";
+import { PaceRisk } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { assertNotNull, newArray, sumArray } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
@@ -99,26 +100,26 @@ export function paceRisk(
   numPlayers: NumPlayers,
 ): PaceRisk {
   if (currentPace === null) {
-    return "Null";
+    return PaceRisk.Low;
   }
 
   if (currentPace <= 0) {
-    return "Zero";
+    return PaceRisk.Zero;
   }
 
   // Formula derived by Florrat; a strategical estimate of "End-Game" that tries to account for the
   // number of players.
   if (currentPace - numPlayers + Math.floor(numPlayers / 2) < 0) {
-    return "HighRisk";
+    return PaceRisk.High;
   }
 
-  // Formula derived by Hyphen-ated; a more conservative estimate of "End-Game" that does not
-  // account for the number of players.
+  // Formula derived by Hyphen-ated; a conservative estimate of "End-Game" that does not account for
+  // the number of players.
   if (currentPace - numPlayers < 0) {
-    return "MediumRisk";
+    return PaceRisk.Medium;
   }
 
-  return "LowRisk";
+  return PaceRisk.Low;
 }
 
 export function startingDeckSize(
