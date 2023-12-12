@@ -1,5 +1,11 @@
-import type { Color, Rank, RankClueNumber, Suit } from "@hanabi/data";
-import { VALID_PLAYER_NUMS } from "@hanabi/data";
+import {
+  Color,
+  Rank,
+  RankClueNumber,
+  Suit,
+  VALID_PLAYER_NUMS,
+  Variant,
+} from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
 import { colorsInit } from "../colorsInit";
@@ -10,8 +16,13 @@ import { suitsInit } from "../suitsInit";
 import { createVariant } from "../variantsInit";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
+import { totalCards } from "../../../client/src/game/rules/deck";
 import { cardsPerHand } from "../../../client/src/game/rules/hand";
-import { minEfficiency } from "../../../client/src/game/rules/stats";
+import * as statsRules from "../../../client/src/game/rules/stats";
+import {
+  minEfficiency,
+  startingPace,
+} from "../../../client/src/game/rules/stats";
 import { Options } from "../../../client/src/types/Options";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
@@ -20,6 +31,7 @@ type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS_TO_USE = [1, 5] as const;
 const MAX_ALLOWED_EFFICIENCY_THRESHOLD = 1.79 as const;
+const MINIMUM_CARD_COUNT = 25 as const;
 
 /** These are suit properties that are transferred to special ranks. */
 const SUIT_SPECIAL_PROPERTIES = [
@@ -62,12 +74,7 @@ const NUMBER_WORDS = [
   "Fives",
 ] as const;
 
-function maxRequiredVariantEfficiency(
-  COLORS: ReadonlyMap<string, Color>,
-  SUITS: ReadonlyMap<string, Suit>,
-  variantDescription: VariantDescription,
-): number {
-  const variant = createVariant(COLORS, SUITS, variantDescription, 0, "B");
+function maxRequiredVariantEfficiency(variant: Variant): number {
   const requiredEfficiencies = VALID_PLAYER_NUMS.map((numPlayers) => {
     const options = {
       ...new Options(),
@@ -83,11 +90,28 @@ function maxRequiredVariantEfficiency(
   return Math.max(...requiredEfficiencies);
 }
 
+function minVariantPace(variant: Variant): number {
+  const startingPaces = VALID_PLAYER_NUMS.map((numPlayers) => {
+    const options = {
+      ...new Options(),
+      numPlayers,
+    };
+    const startingDeckSize = statsRules.startingDeckSize(
+      options.numPlayers,
+      cardsPerHand(options),
+      variant,
+    );
+    return startingPace(startingDeckSize, variant.maxScore, numPlayers);
+  });
+  return Math.min(...startingPaces);
+}
+
 function isVariantAllowed(
   COLORS: ReadonlyMap<string, Color>,
   SUITS: ReadonlyMap<string, Suit>,
   variantDescription: VariantDescription,
 ): boolean {
+  const variant = createVariant(COLORS, SUITS, variantDescription, 0, "");
   // TODO: Currently, this is a hardcoded exception that we would like to get rid of, but since
   // these variants exist already and have a too high efficiency (namely 2), the automatic
   // efficiency check would reject them.
@@ -97,10 +121,19 @@ function isVariantAllowed(
   ) {
     return true;
   }
-  return (
-    maxRequiredVariantEfficiency(COLORS, SUITS, variantDescription) <
-    MAX_ALLOWED_EFFICIENCY_THRESHOLD
-  );
+
+  if (totalCards(variant) < MINIMUM_CARD_COUNT) {
+    return false;
+  }
+  if (minVariantPace(variant) < 0) {
+    return false;
+  }
+  if (
+    maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
+  ) {
+    return false;
+  }
+  return true;
 }
 
 export function getVariantDescriptions(
