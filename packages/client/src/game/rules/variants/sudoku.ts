@@ -1,8 +1,8 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { assertDefined, eRange, iRange, newArray } from "@hanabi/utils";
-import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { getAllDiscardedSet } from "./discardHelpers";
 

@@ -1,5 +1,5 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
-import type { CardState } from "../../types/CardState";
+import type { CardState } from "@hanabi/game";
 import * as deckRules from "../deck";
 
 export function discardedHelpers(

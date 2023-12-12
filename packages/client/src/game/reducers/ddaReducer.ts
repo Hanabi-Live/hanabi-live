@@ -1,7 +1,7 @@
 import type { PlayerIndex } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import { assertDefined } from "@hanabi/utils";
 import * as cardRules from "../rules/card";
-import type { CardState } from "../types/CardState";
 
 export function ddaReducer(
   deck: readonly CardState[],

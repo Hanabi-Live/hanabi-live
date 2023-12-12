@@ -2,9 +2,9 @@
 
 import type { SuitRankTuple, Variant } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import { newArray } from "@hanabi/utils";
 import * as cluesRules from "../rules/clues";
-import type { CardState } from "../types/CardState";
 import type { Clue } from "../types/Clue";
 import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";

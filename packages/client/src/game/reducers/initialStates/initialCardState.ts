@@ -5,9 +5,9 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import { newArray } from "@hanabi/utils";
 import * as deck from "../../rules/deck";
-import type { CardState } from "../../types/CardState";
 
 export function initialCardState(
   order: CardOrder,

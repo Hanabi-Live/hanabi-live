@@ -5,8 +5,8 @@ import type {
   Rank,
   SuitRankMap,
 } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import type { DeepReadonly, Tuple } from "@hanabi/utils";
-import type { CardState } from "./CardState";
 import type { CardStatus } from "./CardStatus";
 import type { StackDirection } from "./StackDirection";
 import type { StateClue } from "./StateClue";

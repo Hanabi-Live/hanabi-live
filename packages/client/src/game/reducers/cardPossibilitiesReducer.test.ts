@@ -1,8 +1,8 @@
 import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import { assertDefined } from "@hanabi/utils";
 import { testMetadata } from "../../../test/testMetadata";
-import type { CardState } from "../types/CardState";
 import { newColorClue, newRankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { initialCardState } from "./initialStates/initialCardState";

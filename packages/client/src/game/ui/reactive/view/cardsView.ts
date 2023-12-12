@@ -1,7 +1,7 @@
 import type { CardOrder } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import { eRange } from "@hanabi/utils";
 import type { CardIdentity } from "../../../types/CardIdentity";
-import type { CardState } from "../../../types/CardState";
 import type { State } from "../../../types/State";
 import { HanabiCard } from "../../HanabiCard";
 import { globals } from "../../UIGlobals";

@@ -1,6 +1,6 @@
 import type { Variant } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import * as cardRules from "../rules/card";
-import type { CardState } from "../types/CardState";
 import type { GameState } from "../types/GameState";
 
 export function knownTrashReducer(

@@ -2,6 +2,7 @@
 
 import type { Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import { assertDefined, assertNotNull, tupleEntries } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
@@ -14,7 +15,6 @@ import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
 import type { CardNote } from "../types/CardNote";
-import type { CardState } from "../types/CardState";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";

@@ -1,8 +1,8 @@
 import { getVariant } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import type { Draft } from "immer";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
-import type { CardState } from "../types/CardState";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";

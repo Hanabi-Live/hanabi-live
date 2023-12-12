@@ -9,6 +9,7 @@ import type {
   SuitRankTuple,
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -20,7 +21,6 @@ import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
-import type { CardState } from "../types/CardState";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
 import type { GameAction } from "../types/actions";

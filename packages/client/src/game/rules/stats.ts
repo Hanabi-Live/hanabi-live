@@ -2,10 +2,10 @@
 
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
+import type { CardState } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { assertNotNull, newArray, sumArray } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
-import type { CardState } from "../types/CardState";
 import type { GameState, PaceRisk } from "../types/GameState";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";

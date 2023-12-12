@@ -1,6 +1,6 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import type { CardState } from "../types/CardState";
+import type { CardState } from "@hanabi/game";
 import type { GameState } from "../types/GameState";
 import { StackDirection } from "../types/StackDirection";
 import * as variantRules from "./variant";
