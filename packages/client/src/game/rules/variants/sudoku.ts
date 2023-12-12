@@ -250,6 +250,7 @@ function isAssignmentBetter(
 
   return false;
 }
+
 function findNextAssignment(
   curAssignedStackStartIndex: FiveStackIndex | undefined,
   possibleStackStarts: readonly number[],
@@ -271,6 +272,7 @@ function findNextAssignment(
       }
     }
   }
+
   return undefined;
 }
 

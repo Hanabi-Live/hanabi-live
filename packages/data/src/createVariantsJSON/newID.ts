@@ -681,6 +681,7 @@ function getVariantFromNewID(
       }
     }
   }
+
   return variant;
 }
 

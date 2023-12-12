@@ -23,7 +23,8 @@ function totalCardsInSuit(variant: Variant, suit: Suit): number {
   }
 
   if (variant.upOrDown || variant.criticalRank !== undefined) {
-    return 9; // The normal amount minus one because there is one more critical card.
+    // The normal amount minus one because there is one more critical card.
+    return 2 * variant.stackSize - 1;
   }
 
   return 2 * variant.stackSize; // Three 1's + Two 2's + Two 3's + Two 4's + One 5
