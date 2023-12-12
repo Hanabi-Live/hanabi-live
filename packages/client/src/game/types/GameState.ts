@@ -70,5 +70,3 @@ export interface StateStrike {
   readonly segment: number;
   readonly order: CardOrder;
 }
-
-export type PaceRisk = "LowRisk" | "MediumRisk" | "HighRisk" | "Zero" | "Null";

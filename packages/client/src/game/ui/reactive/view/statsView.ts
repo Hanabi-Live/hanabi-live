@@ -1,7 +1,7 @@
 import type { NumPlayers } from "@hanabi/data";
+import type { PaceRisk } from "@hanabi/game";
 import { assertNotNull } from "@hanabi/utils";
 import * as statsRules from "../../../rules/stats";
-import type { PaceRisk } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";
 import * as konvaTooltips from "../../konvaTooltips";
