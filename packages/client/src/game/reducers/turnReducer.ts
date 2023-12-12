@@ -1,4 +1,5 @@
 import { getVariant } from "@hanabi/data";
+import type { TurnState } from "@hanabi/game";
 import { assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { produce } from "immer";
@@ -7,7 +8,6 @@ import * as turnRules from "../rules/turn";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
-import type { TurnState } from "../types/TurnState";
 import type { GameAction } from "../types/actions";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 

@@ -1,7 +1,7 @@
+import type { TurnState } from "@hanabi/game";
 import { eRange } from "@hanabi/utils";
 import { draw, play } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
-import type { TurnState } from "../types/TurnState";
 import { initialGameState } from "./initialStates/initialGameState";
 import { initialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";

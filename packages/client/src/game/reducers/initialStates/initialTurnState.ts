@@ -1,5 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
-import type { TurnState } from "../../types/TurnState";
+import type { TurnState } from "@hanabi/game";
 
 export function initialTurnState(
   startingPlayerIndex: PlayerIndex = 0,
