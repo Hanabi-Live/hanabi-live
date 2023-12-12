@@ -1,13 +1,13 @@
 import { getVariant } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
 import type { Draft } from "immer";
+import { SoundType } from "../../../../game/src/enums/SoundType";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
 import { ClueType } from "../types/ClueType";
 import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
-import { SoundType } from "../types/SoundType";
 import type { StatsState } from "../types/StatsState";
 import type { ActionPlay, GameAction } from "../types/actions";
 import { getCharacterNameForPlayer } from "./reducerHelpers";

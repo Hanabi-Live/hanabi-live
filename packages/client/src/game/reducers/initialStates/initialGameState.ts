@@ -8,6 +8,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
+import { SoundType } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { newArray, sumArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";
@@ -20,7 +21,6 @@ import * as turnRules from "../../rules/turn";
 import type { CardStatus } from "../../types/CardStatus";
 import type { GameMetadata } from "../../types/GameMetadata";
 import type { GameState } from "../../types/GameState";
-import { SoundType } from "../../types/SoundType";
 import type { StackDirection } from "../../types/StackDirection";
 import { initialTurnState } from "./initialTurnState";
 
