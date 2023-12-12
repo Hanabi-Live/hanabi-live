@@ -1,8 +1,8 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { CardStatus } from "@hanabi/game";
 import { eRange, filterMap } from "@hanabi/utils";
-import { CardStatus } from "../types/CardStatus";
 import type { GameState } from "../types/GameState";
 import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";

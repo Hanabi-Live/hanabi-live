@@ -10,6 +10,7 @@ import type {
 } from "@hanabi/data";
 import { getSuit } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { CardStatus } from "@hanabi/game";
 import { assertDefined, assertNotNull, iRange } from "@hanabi/utils";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
@@ -19,7 +20,6 @@ import * as cardRules from "../rules/card";
 import * as variantRules from "../rules/variant";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { CardNote } from "../types/CardNote";
-import { CardStatus } from "../types/CardStatus";
 import { StackDirection } from "../types/StackDirection";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
