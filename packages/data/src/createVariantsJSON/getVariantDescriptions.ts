@@ -676,6 +676,10 @@ function getDualColorsVariants(
 function getMixVariants(): readonly VariantDescription[] {
   return [
     {
+      name: "Opposites Mix (4 Suits)",
+      suits: ["Rainbow", "Pink", "White", "Brown"],
+    },
+    {
       name: "Special Mix (5 Suits)",
       suits: ["Black", "Rainbow", "Pink", "White", "Brown"],
     },
