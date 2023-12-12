@@ -48,7 +48,8 @@ chatCommands.set("friends", friends);
 chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
 
-function link(room: string, args: string[]) {
+// /link <user>
+function link(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
     sendSelfPMFromServer(
@@ -70,7 +71,8 @@ function link(room: string, args: string[]) {
   });
 }
 
-function unlink(room: string, args: string[]) {
+// /unlink <user>
+function unlink(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
     sendSelfPMFromServer(
@@ -92,7 +94,8 @@ function unlink(room: string, args: string[]) {
   });
 }
 
-function links(room: string, args: string[]) {
+// /links
+function links() {
   globals.conn!.send("chatLinks", {});
 }
 
