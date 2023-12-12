@@ -1,5 +1,5 @@
 import type { Color, Rank, RankClueNumber, Suit, Variant } from "@hanabi/data";
-import { VALID_PLAYER_NUMS } from "@hanabi/data";
+import { VALID_NUM_PLAYERS } from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
 import { colorsInit } from "../colorsInit";
@@ -69,7 +69,7 @@ const NUMBER_WORDS = [
 ] as const;
 
 function maxRequiredVariantEfficiency(variant: Variant): number {
-  const requiredEfficiencies = VALID_PLAYER_NUMS.map((numPlayers) => {
+  const requiredEfficiencies = VALID_NUM_PLAYERS.map((numPlayers) => {
     const options = {
       ...new Options(),
       numPlayers,
@@ -85,7 +85,7 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
 }
 
 function minVariantPace(variant: Variant): number {
-  const startingPaces = VALID_PLAYER_NUMS.map((numPlayers) => {
+  const startingPaces = VALID_NUM_PLAYERS.map((numPlayers) => {
     const options = {
       ...new Options(),
       numPlayers,
