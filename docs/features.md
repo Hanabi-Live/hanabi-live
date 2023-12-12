@@ -511,11 +511,10 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 ## Linked Accounts
 
-- If you use multiple accounts (for example for participating in competitions or just to keep your statistics separate), you might play the same seeds on those accounts. The website supports linking people to your account using the `/link` command. (e.g. `/link YourMainAccount`)
-- When selecting starting a new game with a non-fixed seed, the server will make sure to give you a seed that also none of your linked accounts have played before.
-- This way, by linking your accounts against each other, your seed selection will be as if you just had one account, i.e. you never encounter the same seeds twice.
-- In case you think that you spectate a lot of a certain user's games and might remember their seeds, you could also add some friends to this list to block their seeds.
-- This relation is asymmetric: If Alice puts Bob on their list, she will not play any of Bob's seeds, but Bob might still encounter seeds that Alice played before. This way, each user is in control of their own seed selection.
+- If you play on multiple accounts, then you might see the same deals (e.g. seeds), since deals are only unique per user. If this is not desired, the website supports linking accounts by using the `/link` command. For example, if Alice had an alternate account of Alice1, then she would type `/link Alice1` while logged into Alice.
+- When determining a deal for a new game, the server will ensure that a deal is unique for all of the players at the table and all of the linked accounts of those players.
+- Linking is not necessarily for accounts that you own. For example, if you spectate someone's else game and want to ensure that you never see that seed, then you can also link yourself to one of the player's in that group, which would prevent you from ever getting that seed in your own games.
+- Linking is asymmetric. In other words, if Alice links to Bob, she will not receive any of Bob's seeds, but Bob might still receive seeds that Alice has played. This way, each user is in control of their own seed selection.
 
 <br />
 
