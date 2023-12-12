@@ -407,12 +407,18 @@ One of each card per suit (e.g. 5 in total):
 
 - Rank clues also touch all higher ranked cards.
 
-### Sudoku
+### Sudoku (5 Suits)
 
 - Instead of the stacks starting with a rank of 1, the stacks can be started with any rank. They will wrap around from 5 to 1 until 5 cards are played.
 - Each stack has to be started with a different rank. However, it is not predetermined which stack has to start with a particular rank.
 - Instead of the normal card distribution, there are two copies of each card.
 - Similar to a no variant game, playing the fifth card of a suit gives back a clue.
+
+### Sudoku (4 Suits)
+
+- Similar to 5-suit Sudoku, stacks can be started at arbitrary but different ranks.
+- Cards of rank 5 are removed from the game. Therefore, stacks only consist of 4 cards each and will wrap around from 4 to 1.
+- Playing the fourth card of a suit gives back a clue.
 
 <br />
 
@@ -462,3 +468,6 @@ One of each card per suit (e.g. 5 in total):
 - Reversed
 - Up or Down
 - Throw It in a Hole
+- Funnels
+- Chimneys
+- Sudoku

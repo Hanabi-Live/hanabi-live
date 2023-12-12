@@ -1,6 +1,8 @@
+import type { BasicRank } from "@hanabi/data";
 import { assertDefined, parseIntSafe, trimSuffix } from "@hanabi/utils";
 import { isEqual } from "lodash";
 import {
+  DEFAULT_CLUE_RANKS,
   REVERSE_MODIFIER,
   START_CARD_RANK,
   SUIT_DELIMITER,
@@ -671,6 +673,10 @@ function getVariantFromNewID(
       // Sudoku
       case VariantModifier.Sudoku: {
         variant.sudoku = true;
+        if (variant.suits.length !== 5) {
+          variant.stackSize = variant.suits.length as BasicRank;
+          variant.clueRanks = DEFAULT_CLUE_RANKS.slice(0, variant.suits.length);
+        }
         break;
       }
     }

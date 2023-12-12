@@ -1,15 +1,10 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import {
-  DEFAULT_CARD_RANKS,
-  DEFAULT_FINISHED_STACK_LENGTH,
-} from "@hanabi/data";
+import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { assertDefined, eRange, iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
 import type { GameState } from "../../types/GameState";
 import { getAllDiscardedSet } from "./discardHelpers";
-
-const NUM_SUITS_SUDOKU = 5;
 
 /** Check if the card can still be played in a Sudoku variant. */
 export function sudokuCanStillBePlayed(
@@ -20,8 +15,10 @@ export function sudokuCanStillBePlayed(
   variant: Variant,
 ): boolean {
   const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-  const { maxScoresForEachStartingValueOfSuit } =
-    sudokuWalkUpAll(allDiscardedSet);
+  const { maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
+    allDiscardedSet,
+    variant,
+  );
 
   const playStackStart = playStackStarts[suitIndex];
   assertDefined(
@@ -31,7 +28,7 @@ export function sudokuCanStillBePlayed(
 
   const possibleStackStartRanks =
     playStackStart === null
-      ? sudokuGetUnusedStackStartRanks(playStackStarts)
+      ? sudokuGetUnusedStackStartRanks(playStackStarts, variant)
       : [playStackStart];
 
   // Here, we check if we can play the specified card if we start the stack at `playStackStart`. For
@@ -39,8 +36,7 @@ export function sudokuCanStillBePlayed(
   // sequence starting at the start, thereby checking if the specified rank is included.
   return possibleStackStartRanks.some((possibleStackStartRank) => {
     const longestSequence =
-      (rank - possibleStackStartRank + DEFAULT_FINISHED_STACK_LENGTH) %
-      DEFAULT_FINISHED_STACK_LENGTH;
+      (rank - possibleStackStartRank + variant.stackSize) % variant.stackSize;
     const score =
       maxScoresForEachStartingValueOfSuit[possibleStackStartRank - 1];
     assertDefined(
@@ -58,17 +54,20 @@ export function sudokuCanStillBePlayed(
  * returned array is [5, 5, 5, 5, 5]. This functions mimics the method `sudokuWalkUpAll` from the
  * server file "variants_sudoku.go".
  */
-export function sudokuWalkUpAll(allDiscardedSet: ReadonlySet<Rank>): {
+export function sudokuWalkUpAll(
+  allDiscardedSet: ReadonlySet<Rank>,
+  variant: Variant,
+): {
   allMax: boolean;
   maxScoresForEachStartingValueOfSuit: Tuple<number, Rank>;
 } {
   const maxScoresForEachStartingValueOfSuit = newArray(
-    NUM_SUITS_SUDOKU,
-    DEFAULT_FINISHED_STACK_LENGTH,
+    variant.suits.length,
+    variant.stackSize,
   ) as Tuple<number, Rank>;
   let lastDead = 0;
 
-  for (const currentRank of DEFAULT_CARD_RANKS) {
+  for (const currentRank of variant.ranks) {
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (const writeRank of eRange(lastDead + 1, currentRank)) {
@@ -92,9 +91,12 @@ export function sudokuWalkUpAll(allDiscardedSet: ReadonlySet<Rank>): {
   if (lastDead !== 5) {
     // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
     // to them.
-    for (const writeRank of iRange(lastDead + 1, 5)) {
+    for (const writeRank of iRange(lastDead + 1, variant.stackSize)) {
       maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
-        maxScoresForEachStartingValueOfSuit[0]! + 6 - writeRank,
+        maxScoresForEachStartingValueOfSuit[0]! +
+          variant.stackSize +
+          1 -
+          writeRank,
         DEFAULT_CARD_RANKS.length,
       );
     }
@@ -111,8 +113,9 @@ export function sudokuWalkUpAll(allDiscardedSet: ReadonlySet<Rank>): {
  */
 function sudokuGetUnusedStackStartRanks(
   playStackStarts: GameState["playStackStarts"],
+  variant: Variant,
 ): readonly Rank[] {
-  return DEFAULT_CARD_RANKS.filter((rank) => !playStackStarts.includes(rank));
+  return variant.ranks.filter((rank) => !playStackStarts.includes(rank));
 }
 
 type FiveStackIndex = 0 | 1 | 2 | 3 | 4;
@@ -170,18 +173,18 @@ function evaluateAssignment(
     assignedLocalSuitIndex,
     assignedStackStartIndex,
   ] of curAssignment.entries()) {
-    assertDefined(
-      assignedStackStartIndex,
-      "Unexpected undefined assignment when trying to evaluate the full assignment.",
-    );
-
-    const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
     // Note that since the 'curAssignment' always has length 5, but potentially we are dealing with
     // fewer suits, it is expected that this can be undefined (because we never assigned the other
     // suits), so we don't throw an error here but just stop the loop.
-    if (assignedSuit === undefined) {
-      break;
+    if (assignedStackStartIndex === undefined) {
+      continue;
     }
+
+    const assignedSuit = unassignedSuits[assignedLocalSuitIndex];
+    assertDefined(
+      assignedSuit,
+      `Unexpected assigned local suit index ${assignedLocalSuitIndex} encountered while evaluating assignment.`,
+    );
 
     const assignedStackStart = possibleStackStarts[assignedStackStartIndex];
 
@@ -224,7 +227,10 @@ function isAssignmentBetter(
   bestAssignmentSum: number,
   bestAssignmentSorted: readonly number[],
 ): boolean {
-  if (assignmentValue > bestAssignmentSum) {
+  if (
+    assignmentValue > bestAssignmentSum ||
+    bestAssignmentSorted.length === 0
+  ) {
     return true;
   }
 
@@ -294,11 +300,13 @@ export function getMaxScorePerStack(
     const suitIndex = i as SuitIndex;
 
     const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
-    const { allMax, maxScoresForEachStartingValueOfSuit } =
-      sudokuWalkUpAll(allDiscardedSet);
+    const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
+      allDiscardedSet,
+      variant,
+    );
 
     if (allMax) {
-      independentPartOfMaxScore[suitIndex] = DEFAULT_FINISHED_STACK_LENGTH;
+      independentPartOfMaxScore[suitIndex] = variant.stackSize;
       continue;
     }
 
@@ -320,8 +328,11 @@ export function getMaxScorePerStack(
     return independentPartOfMaxScore as Tuple<number, NumSuits>;
   }
 
-  // We now solve the assignment problem, build up some variables for this:
-  const possibleStackStarts = sudokuGetUnusedStackStartRanks(playStackStarts);
+  // Solve the assignment problem.
+  const possibleStackStarts = sudokuGetUnusedStackStartRanks(
+    playStackStarts,
+    variant,
+  );
 
   // Value of the best assignment found so far.
   let bestAssignmentSum = 0;

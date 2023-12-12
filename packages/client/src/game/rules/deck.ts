@@ -19,14 +19,16 @@ export function totalCards(variant: Variant): number {
 
 function totalCardsInSuit(variant: Variant, suit: Suit): number {
   if (suit.oneOfEach) {
-    return 5;
+    return variant.stackSize;
   }
 
   if (variant.upOrDown || variant.criticalRank !== undefined) {
-    return 9; // The normal amount minus one because there is one more critical card.
+    // The normal amount minus one because there is one more critical card.
+    return variant.stackSize * 2 - 1;
   }
 
-  return 10; // Three 1's + Two 2's + Two 3's + Two 4's + One 5
+  // The normal amount: three 1's + two 2's + two 3's + two 4's + one 5
+  return variant.stackSize * 2;
 }
 
 /**

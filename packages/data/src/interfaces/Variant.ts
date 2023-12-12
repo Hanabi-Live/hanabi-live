@@ -1,4 +1,4 @@
-import type { Rank } from "../types/Rank";
+import type { BasicRank, Rank } from "../types/Rank";
 import type { Color } from "./Color";
 import type { Suit } from "./Suit";
 import type { VariantJSON } from "./VariantJSON";
@@ -18,6 +18,7 @@ export interface Variant extends VariantJSONModified {
   readonly clueColors: readonly Color[];
   readonly specialRank: Rank | undefined;
   readonly criticalRank: Rank | undefined;
+  readonly stackSize: BasicRank;
 
   // Computed values
   readonly ranks: readonly Rank[];

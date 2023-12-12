@@ -1,7 +1,7 @@
 // Functions for calculating running statistics such as efficiency and pace as a result of each
 // action.
 
-import { DEFAULT_FINISHED_STACK_LENGTH, getVariant } from "@hanabi/data";
+import { getVariant } from "@hanabi/data";
 import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
@@ -54,7 +54,7 @@ function statsReducerFunction(
 
         if (
           playStack !== undefined &&
-          playStack.length === DEFAULT_FINISHED_STACK_LENGTH &&
+          playStack.length === variant.stackSize &&
           originalState.clueTokens === currentState.clueTokens &&
           !variant.throwItInAHole // We do not get an extra clue in some variants.
         ) {
@@ -135,6 +135,7 @@ function statsReducerFunction(
     score,
     scorePerStack,
     stats.maxScorePerStack,
+    variant.stackSize,
     currentState.cardsRemainingInTheDeck,
     numEndGameTurns,
     clueTokensRules.discardValue(variant),
@@ -145,6 +146,7 @@ function statsReducerFunction(
     score,
     scorePerStack,
     stats.maxScorePerStack,
+    variant.stackSize,
     currentState.cardsRemainingInTheDeck,
     numEndGameTurns,
     clueTokensRules.discardValue(variant),

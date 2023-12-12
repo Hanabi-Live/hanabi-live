@@ -16628,11 +16628,101 @@
     "chimneys": true
   },
   {
+    "id": 2092,
+    "newID": "R+Y+G+B,Su",
+    "name": "Sudoku (4 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 2072,
     "newID": "R+Y+G+B+P,Su",
     "name": "Sudoku (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
     "sudoku": true
+  },
+  {
+    "id": 2093,
+    "newID": "R+G+B+Ra,Su",
+    "name": "Sudoku & Rainbow (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Rainbow"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2094,
+    "newID": "R+G+B+Pi,Su",
+    "name": "Sudoku & Pink (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Pink"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2095,
+    "newID": "R+G+B+Wh,Su",
+    "name": "Sudoku & White (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "White"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2096,
+    "newID": "R+G+B+Br,Su",
+    "name": "Sudoku & Brown (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Brown"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2097,
+    "newID": "R+G+B+Om,Su",
+    "name": "Sudoku & Omni (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Omni"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2098,
+    "newID": "R+G+B+Nu,Su",
+    "name": "Sudoku & Null (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Null"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2099,
+    "newID": "R+G+B+BrRa,Su",
+    "name": "Sudoku & Muddy Rainbow (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Muddy Rainbow"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2100,
+    "newID": "R+G+B+WhPi,Su",
+    "name": "Sudoku & Light Pink (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Light Pink"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2101,
+    "newID": "R+G+B+Pr,Su",
+    "name": "Sudoku & Prism (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Prism"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
   },
   {
     "id": 2073,

@@ -1,7 +1,7 @@
 // Functions to calculate game stats such as pace and efficiency.
 
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
-import { DEFAULT_FINISHED_STACK_LENGTH, MAX_CLUE_NUM } from "@hanabi/data";
+import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { assertNotNull, newArray, sumArray } from "@hanabi/utils";
 import type { CardNote } from "../types/CardNote";
@@ -138,7 +138,7 @@ export function startingDeckSize(
  *  total cards in the deck
  *  + number of turns in the final round
  *  - (number of cards in a player's hand * number of players)
- *  - (5 * number of suits)
+ *  - (stackSize * number of suits)
  *  ```
  *
  * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
@@ -295,6 +295,7 @@ export function cluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
+  stackSize: number,
   deckSize: number,
   endGameLength: number,
   discardValue: number,
@@ -343,10 +344,7 @@ export function cluesStillUsableNotRounded(
 
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
       const stackMaxScore = maxScorePerStack[suitIndex];
-      if (
-        stackMaxScore === DEFAULT_FINISHED_STACK_LENGTH &&
-        stackScore < DEFAULT_FINISHED_STACK_LENGTH
-      ) {
+      if (stackMaxScore === stackSize && stackScore < stackSize) {
         missingCardsPerCompletableSuit.push(stackMaxScore - stackScore);
       }
     }
@@ -375,6 +373,7 @@ export function cluesStillUsable(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
+  stackSize: number,
   deckSize: number,
   endGameLength: number,
   discardValue: number,
@@ -385,6 +384,7 @@ export function cluesStillUsable(
     score,
     scorePerStack,
     maxScorePerStack,
+    stackSize,
     deckSize,
     endGameLength,
     discardValue,
@@ -413,10 +413,7 @@ export function startingCluesUsable(
 ): number {
   const score = 0;
   const scorePerStack = newArray(variant.suits.length, 0);
-  const maxScorePerStack = newArray(
-    variant.suits.length,
-    DEFAULT_FINISHED_STACK_LENGTH,
-  );
+  const maxScorePerStack = newArray(variant.suits.length, variant.stackSize);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
 
@@ -424,6 +421,7 @@ export function startingCluesUsable(
     score,
     scorePerStack,
     maxScorePerStack,
+    variant.stackSize,
     deckSize,
     endGameLength,
     discardValue,

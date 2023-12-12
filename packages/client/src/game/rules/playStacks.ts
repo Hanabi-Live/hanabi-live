@@ -1,9 +1,5 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
-import {
-  DEFAULT_CARD_RANKS,
-  DEFAULT_FINISHED_STACK_LENGTH,
-  START_CARD_RANK,
-} from "@hanabi/data";
+import { START_CARD_RANK } from "@hanabi/data";
 import type { CardState } from "../types/CardState";
 import type { GameState } from "../types/GameState";
 import { StackDirection } from "../types/StackDirection";
@@ -57,8 +53,8 @@ export function nextPlayableRanks(
       // is already started, then we go up, wrapping around from 5 to 1 (unless the stack was
       // started at 1, in which case 5 will be the last card of this suit).
       if (currentlyPlayedRank !== undefined) {
-        // We mod by 5 and then add to obtain values 1 through 5.
-        return [(currentlyPlayedRank % 5) + 1];
+        // We mod by the stack size and then add to obtain values [1, ..., stackSize].
+        return [(currentlyPlayedRank % variant.stackSize) + 1];
       }
 
       // The stack is not started yet. As a special case, we might already know the start of the
@@ -71,9 +67,7 @@ export function nextPlayableRanks(
 
       // If the stack is not started, it can be started with any rank that is not the starting rank
       // of another stack.
-      return DEFAULT_CARD_RANKS.filter(
-        (rank) => !playStackStarts.includes(rank),
-      );
+      return variant.ranks.filter((rank) => !playStackStarts.includes(rank));
     }
 
     case StackDirection.Down: {
@@ -96,7 +90,7 @@ export function direction(
   deck: readonly CardState[],
   variant: Variant,
 ): StackDirection {
-  if (playStack.length === DEFAULT_FINISHED_STACK_LENGTH) {
+  if (playStack.length === variant.stackSize) {
     return StackDirection.Finished;
   }
 

@@ -265,6 +265,14 @@ export function variantsInit(
     }
     const sudoku = variantJSON.sudoku ?? false;
 
+    // Validate the "stackSize" property. If it is not specified, assume 5.
+    if (variantJSON.stackSize === DEFAULT_FINISHED_STACK_LENGTH) {
+      throw new Error(
+        `The "stackSize" property for the variant "${variantJSON.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
+      );
+    }
+    const stackSize = variantJSON.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;
+
     // ------------------------
     // `VariantJSON` properties
     // ------------------------
@@ -286,13 +294,13 @@ export function variantsInit(
     // -----------------------------
 
     // Derive the ranks that the cards of each suit will be.
-    const ranks: Rank[] = [...DEFAULT_CARD_RANKS];
+    const ranks: Rank[] = [...DEFAULT_CARD_RANKS].slice(0, stackSize);
     if (upOrDown) {
       // The "Up or Down" variants have START cards.
       ranks.push(START_CARD_RANK);
     }
 
-    const maxScore = suits.length * DEFAULT_FINISHED_STACK_LENGTH;
+    const maxScore = suits.length * stackSize;
 
     // Variants with dual-color suits need to adjust the positions of elements in the corner of the
     // card (e.g. the note indicator) because it will overlap with the triangle that shows the color
@@ -325,6 +333,7 @@ export function variantsInit(
 
       clueColors,
       clueRanks,
+      stackSize,
 
       specialRank,
       specialRankAllClueColors,

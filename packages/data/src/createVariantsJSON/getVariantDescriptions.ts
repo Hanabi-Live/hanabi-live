@@ -1,10 +1,9 @@
+import type { Rank, RankClueNumber } from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
-import type { Rank } from "../types/Rank";
-import type { RankClueNumber } from "../types/RankClueNumber";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
@@ -1294,28 +1293,54 @@ function getSudokuVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  // Create the basic variant. Note that for Sudoku, we only want 5-suit variants, so that each
-  // starting stack will be used exactly once.
-  const numSuits = 5;
-  variantDescriptions.push({
-    name: `Sudoku (${numSuits} Suits)`,
-    suits: basicVariantSuits[numSuits],
-    sudoku: true,
-  });
+  const sudokuSuitNumbers = [4, 5] as const;
+
+  // Create the basic variant. Note that for sudoku, we only want 4 or 5-suit variants.
+  for (const numSuits of sudokuSuitNumbers) {
+    if (numSuits === 5) {
+      variantDescriptions.push({
+        name: `Sudoku (${numSuits} Suits)`,
+        suits: basicVariantSuits[numSuits].slice(0, numSuits),
+        sudoku: true,
+      });
+    } else {
+      variantDescriptions.push({
+        name: `Sudoku (${numSuits} Suits)`,
+        suits: basicVariantSuits[numSuits].slice(0, numSuits),
+        sudoku: true,
+        stackSize: numSuits,
+        clueRanks: DEFAULT_CLUE_RANKS.slice(0, numSuits),
+      });
+    }
+  }
 
   // Create combinations with special suits.
-  for (const suit of suitsToCreateVariantsFor) {
-    // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-    // suit.
-    const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
-    const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
-    const basicSuits = basicVariantSuits[numBasicSuits];
-    const variantSuits = [...basicSuits, suit.name];
-    variantDescriptions.push({
-      name: variantName,
-      suits: variantSuits,
-      sudoku: true,
-    });
+  for (const numSuits of sudokuSuitNumbers) {
+    for (const suit of suitsToCreateVariantsFor) {
+      // Having a dark-suit in a 4-suit variant (especially Sudoku) is too hard.
+      if (suit.oneOfEach === true && numSuits === 4) {
+        continue;
+      }
+      const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
+      const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
+      const basicSuits = basicVariantSuits[numBasicSuits];
+      const variantSuits = [...basicSuits.slice(0, numSuits - 1), suit.name];
+      if (numSuits === 5) {
+        variantDescriptions.push({
+          name: variantName,
+          suits: variantSuits,
+          sudoku: true,
+        });
+      } else {
+        variantDescriptions.push({
+          name: variantName,
+          suits: variantSuits,
+          sudoku: true,
+          stackSize: numSuits,
+          clueRanks: DEFAULT_CLUE_RANKS.slice(0, numSuits),
+        });
+      }
+    }
   }
 
   return variantDescriptions;

@@ -2,7 +2,7 @@
 // for "Up Or Down" and "Reversed" variants.
 
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import { DEFAULT_FINISHED_STACK_LENGTH, START_CARD_RANK } from "@hanabi/data";
+import { START_CARD_RANK } from "@hanabi/data";
 import type { Tuple } from "@hanabi/utils";
 import { eRange, iRange, newArray } from "@hanabi/utils";
 import type { CardState } from "../../types/CardState";
@@ -189,7 +189,7 @@ export function getMaxScorePerStack(
       }
 
       case StackDirection.Finished: {
-        maxScorePerStack[suitIndex] += DEFAULT_FINISHED_STACK_LENGTH;
+        maxScorePerStack[suitIndex] += variant.stackSize;
 
         break;
       }

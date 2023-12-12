@@ -136,7 +136,16 @@ export function onPlayStacksChanged(
 
   if (globals.variant.sudoku) {
     // First, we will find out all available stack starts.
-    const availableStackStartsFlags: boolean[] = [true, true, true, true, true];
+    const availableStackStartsFlags: boolean[] = [
+      false,
+      false,
+      false,
+      false,
+      false,
+    ];
+    for (const rank of globals.variant.ranks) {
+      availableStackStartsFlags[rank - 1] = true;
+    }
     for (const playStack of playStacks) {
       const stackStart = stackStartRank(
         playStack,
@@ -157,7 +166,7 @@ export function onPlayStacksChanged(
     // values.
     for (const [suitIndex, playStack] of playStacks.entries()) {
       let text = "";
-      if (playStack.length === 5) {
+      if (playStack.length === globals.variant.ranks.length) {
         text = "Finished";
       } else if (playStack.length > 0) {
         const firstPlayedCardOrder = playStack[0];
@@ -176,14 +185,17 @@ export function onPlayStacksChanged(
           `Failed to get the rank of the first played card at index: ${firstPlayedCardOrder}`,
         );
         const playedRanks = playStack.map(
-          (_stack, rankOffset) => ((rankOffset + firstPlayedRank - 1) % 5) + 1,
+          (_stack, rankOffset) =>
+            ((rankOffset + firstPlayedRank - 1) % globals.variant.stackSize) +
+            1,
         );
         const ranksText =
-          playedRanks.join(" ") + " _".repeat(5 - playStack.length);
+          playedRanks.join(" ") +
+          " _".repeat(globals.variant.stackSize - playStack.length);
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =
-          availableStackStarts.length === 5
+          availableStackStarts.length === globals.variant.stackSize
             ? "Any"
             : availableStackStarts.join("");
         text = `Start: [${bracketText}]`;
