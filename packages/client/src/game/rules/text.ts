@@ -1,10 +1,9 @@
 import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import { ClueType } from "@hanabi/game";
+import { ClueType, EndCondition } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { assertDefined } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import { EndCondition } from "../types/EndCondition";
 import type { GameMetadata } from "../types/GameMetadata";
 import { getPlayerName, getPlayerNames } from "../types/GameMetadata";
 import type { MsgClue } from "../types/MsgClue";
