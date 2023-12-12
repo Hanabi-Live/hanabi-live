@@ -15055,14 +15055,6 @@
     "synesthesia": true
   },
   {
-    "id": 1645,
-    "newID": "R+G+B+Bk,NM,Sy",
-    "name": "Synesthesia & Black (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Black"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
     "id": 1647,
     "newID": "R+Y+G+B+P+Ra,NM,Sy",
     "name": "Synesthesia & Rainbow (6 Suits)",
@@ -15207,14 +15199,6 @@
     "synesthesia": true
   },
   {
-    "id": 1807,
-    "newID": "R+G+B+DRa,NM,Sy",
-    "name": "Synesthesia & Dark Rainbow (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Dark Rainbow"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
     "id": 1809,
     "newID": "R+Y+G+B+P+DWh,NM,Sy",
     "name": "Synesthesia & Gray (6 Suits)",
@@ -15227,14 +15211,6 @@
     "newID": "R+Y+G+B+DWh,NM,Sy",
     "name": "Synesthesia & Gray (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Gray"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
-    "id": 1811,
-    "newID": "R+G+B+DWh,NM,Sy",
-    "name": "Synesthesia & Gray (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Gray"],
     "clueRanks": [],
     "synesthesia": true
   },
@@ -15255,14 +15231,6 @@
     "synesthesia": true
   },
   {
-    "id": 1815,
-    "newID": "R+G+B+DBr,NM,Sy",
-    "name": "Synesthesia & Dark Brown (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Dark Brown"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
     "id": 1817,
     "newID": "R+Y+G+B+P+DNu,NM,Sy",
     "name": "Synesthesia & Dark Null (6 Suits)",
@@ -15275,14 +15243,6 @@
     "newID": "R+Y+G+B+DNu,NM,Sy",
     "name": "Synesthesia & Dark Null (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
-    "id": 1819,
-    "newID": "R+G+B+DNu,NM,Sy",
-    "name": "Synesthesia & Dark Null (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Dark Null"],
     "clueRanks": [],
     "synesthesia": true
   },
