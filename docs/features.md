@@ -19,6 +19,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 1. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
 1. [Chat](#chat)
 1. [Friends](#friends)
+1. [Linked Accounts](#linked-accounts)
 1. [Tags](#tags)
 1. [Website Endpoints](#website-endpoints)
 1. [Research & Bots](#research--bots)
@@ -507,6 +508,13 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - Your friends will be listed alphabetically at the top of the user list.
 - Games that contain one or more of your friends will be sorted at the top of the games list.
 - If you have one or more friends, a "Show History of Friends" button will appear on the history screen.
+
+## Linked Accounts
+
+- If you play on multiple accounts, then you might see the same deals (e.g. seeds), since deals are only unique per user. If this is not desired, the website supports linking accounts by using the `/link` command. For example, if Alice had an alternate account of Alice1, then she would type `/link Alice1` while logged into Alice.
+- When determining a deal for a new game, the server will ensure that a deal is unique for all of the players at the table and all of the linked accounts of those players.
+- Linking is not necessarily for accounts that you own. For example, if you spectate someone's else game and want to ensure that you never see that seed, then you can also link yourself to one of the player's in that group, which would prevent you from ever getting that seed in your own games.
+- Linking is asymmetric. In other words, if Alice links to Bob, she will not receive any of Bob's seeds, but Bob might still receive seeds that Alice has played. This way, each user is in control of their own seed selection.
 
 <br />
 
