@@ -58,8 +58,8 @@ export function set(
   let rot = 0;
   if (
     element instanceof HanabiCard &&
-    !cardRules.isPlayed(element.state) &&
-    !cardRules.isDiscarded(element.state) &&
+    !cardRules.isCardPlayed(element.state) &&
+    !cardRules.isCardDiscarded(element.state) &&
     !element.isStackBase
   ) {
     if (
@@ -74,7 +74,7 @@ export function set(
         element.state.location === globals.metadata.ourPlayerIndex) ||
       (globals.lobby.settings.keldonMode &&
         element.state.location !== globals.metadata.ourPlayerIndex &&
-        cardRules.isInPlayerHand(element.state))
+        cardRules.isCardInPlayerHand(element.state))
     ) {
       // In BGA mode, invert the arrows on our hand (so that it doesn't get cut off by the top of
       // the screen). In Keldon mode, invert the arrows for all other players.

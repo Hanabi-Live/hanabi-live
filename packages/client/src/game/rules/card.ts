@@ -11,7 +11,7 @@ import { discardedHelpers } from "./variants/discardHelpers";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
-export function name(
+export function cardName(
   suitIndex: SuitIndex,
   rank: Rank,
   variant: Variant,
@@ -25,19 +25,19 @@ export function name(
   return `${suit.displayName} ${rankName}`;
 }
 
-export function isClued(card: CardState): boolean {
+export function isCardClued(card: CardState): boolean {
   return card.numPositiveClues > 0;
 }
 
-export function isPlayed(card: CardState): boolean {
+export function isCardPlayed(card: CardState): boolean {
   return card.location === "playStack";
 }
 
-export function isDiscarded(card: CardState): boolean {
+export function isCardDiscarded(card: CardState): boolean {
   return card.location === "discard";
 }
 
-export function isInPlayerHand(card: CardState): boolean {
+export function isCardInPlayerHand(card: CardState): boolean {
   return typeof card.location === "number";
 }
 
@@ -45,7 +45,7 @@ export function isInPlayerHand(card: CardState): boolean {
  * Returns true if the card is not yet played and is still needed to be played in order to get the
  * maximum score. This mirrors the server function "Card.NeedsToBePlayed()".
  */
-export function needsToBePlayed(
+export function isCardNeedsToBePlayed(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -103,7 +103,7 @@ export function needsToBePlayed(
   return true;
 }
 
-export function status(
+export function cardStatus(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -112,7 +112,7 @@ export function status(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): CardStatus {
-  const cardNeedsToBePlayed = needsToBePlayed(
+  const cardNeedsToBePlayed = isCardNeedsToBePlayed(
     suitIndex,
     rank,
     deck,
@@ -123,7 +123,7 @@ export function status(
   );
 
   if (cardNeedsToBePlayed) {
-    if (isCritical(suitIndex, rank, deck, playStackDirections, variant)) {
+    if (isCardCritical(suitIndex, rank, deck, playStackDirections, variant)) {
       return CardStatus.Critical;
     }
 
@@ -133,8 +133,8 @@ export function status(
   return CardStatus.Trash;
 }
 
-// This does not mirror any function on the server.
-function isCritical(
+/** This does not mirror any function on the server. */
+function isCardCritical(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -163,7 +163,7 @@ function isCritical(
 }
 
 // Checks to see if every card possibility would misplay if the card was played right now.
-export function isPotentiallyPlayable(
+export function isCardPotentiallyPlayable(
   card: CardState,
   deck: readonly CardState[],
   playStacks: GameState["playStacks"],
@@ -196,7 +196,7 @@ export function isPotentiallyPlayable(
   });
 }
 
-export function canPossiblyBeFromCluesOnly(
+export function canCardPossiblyBeFromCluesOnly(
   card: CardState,
   suitIndex: SuitIndex | null,
   rank: Rank | null,
@@ -211,7 +211,7 @@ export function canPossiblyBeFromCluesOnly(
   );
 }
 
-export function canPossiblyBeFromEmpathy(
+export function canCardPossiblyBeFromEmpathy(
   card: CardState,
   suitIndex: SuitIndex | null,
   rank: Rank | null,
@@ -226,7 +226,7 @@ export function canPossiblyBeFromEmpathy(
   );
 }
 
-export function allPossibilitiesTrash(
+export function isAllCardPossibilitiesTrash(
   card: CardState,
   deck: readonly CardState[],
   playStacks: GameState["playStacks"],
@@ -237,7 +237,7 @@ export function allPossibilitiesTrash(
 ): boolean {
   // If we fully know the card already, just check if it's playable.
   if (!empathy && card.rank !== null && card.suitIndex !== null) {
-    return !needsToBePlayed(
+    return !isCardNeedsToBePlayed(
       card.suitIndex,
       card.rank,
       deck,
@@ -253,7 +253,7 @@ export function allPossibilitiesTrash(
     ? card.possibleCardsForEmpathy
     : card.possibleCards;
   return !possibilities.some(([suitIndex, rank]) =>
-    needsToBePlayed(
+    isCardNeedsToBePlayed(
       suitIndex,
       rank,
       deck,

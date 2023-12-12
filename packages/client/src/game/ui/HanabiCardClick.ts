@@ -104,7 +104,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.state.order);
     }
   } else if (
-    cardRules.isPlayed(card.state) &&
+    cardRules.isCardPlayed(card.state) &&
     card.state.segmentPlayed !== null
   ) {
     // Clicking on played cards goes to the turn immediately before they were played.
@@ -113,7 +113,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       card.state.order,
     );
   } else if (
-    cardRules.isDiscarded(card.state) &&
+    cardRules.isCardDiscarded(card.state) &&
     card.state.segmentDiscarded !== null
   ) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded.

@@ -193,7 +193,7 @@ function gameStateReducerFunction(
       const card = state.deck[action.order];
       assertDefined(card, `Failed to find the card at order: ${action.order}`);
 
-      const touched = cardRules.isClued(card);
+      const touched = cardRules.isCardClued(card);
       const text = textRules.discard(
         action,
         slot,
@@ -347,7 +347,7 @@ function gameStateReducerFunction(
       const card = state.deck[action.order];
       assertDefined(card, `Failed to find the card at order: ${action.order}`);
 
-      const touched = cardRules.isClued(card);
+      const touched = cardRules.isCardClued(card);
       const text = textRules.play(
         action,
         slot,
@@ -485,7 +485,7 @@ function gameStateReducerFunction(
     action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
-      state.cardStatus[action.suitIndex][rank] = cardRules.status(
+      state.cardStatus[action.suitIndex][rank] = cardRules.cardStatus(
         action.suitIndex,
         rank,
         state.deck,

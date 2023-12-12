@@ -176,7 +176,7 @@ export function play(
     action.rank === -1 ||
     (variant.throwItInAHole && (playing || shadowing))
       ? "a card"
-      : cardRules.name(action.suitIndex, action.rank, variant);
+      : cardRules.cardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
 
@@ -213,7 +213,7 @@ export function discard(
   card =
     action.suitIndex === -1 || action.rank === -1
       ? "a card"
-      : cardRules.name(action.suitIndex, action.rank, variant);
+      : cardRules.cardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
 

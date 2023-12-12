@@ -542,8 +542,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (
       this.note.blank &&
       !this.empathy &&
-      !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state)
+      !cardRules.isCardPlayed(this.state) &&
+      !cardRules.isCardDiscarded(this.state)
     ) {
       return DECK_BACK_IMAGE;
     }
@@ -587,7 +587,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   private shouldShowAnyBorder() {
     return (
-      !cardRules.isPlayed(this.state) && !cardRules.isDiscarded(this.state)
+      !cardRules.isCardPlayed(this.state) &&
+      !cardRules.isCardDiscarded(this.state)
     );
   }
 
@@ -595,7 +596,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return (
       this.shouldShowAnyBorder() &&
       !this.note.unclued &&
-      (cardRules.isClued(this.state) || this.note.clued)
+      (cardRules.isCardClued(this.state) || this.note.clued)
     );
   }
 
@@ -713,8 +714,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.questionMark.visible(
       this.note.questionMark &&
         !this.empathy &&
-        !cardRules.isPlayed(this.state) &&
-        !cardRules.isDiscarded(this.state) &&
+        !cardRules.isCardPlayed(this.state) &&
+        !cardRules.isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -722,8 +723,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.exclamationMark.visible(
       this.note.exclamationMark &&
         !this.empathy &&
-        !cardRules.isPlayed(this.state) &&
-        !cardRules.isDiscarded(this.state) &&
+        !cardRules.isCardPlayed(this.state) &&
+        !cardRules.isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -731,8 +732,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.trashcan.visible(
       this.note.knownTrash &&
         !this.empathy &&
-        !cardRules.isPlayed(this.state) &&
-        !cardRules.isDiscarded(this.state) &&
+        !cardRules.isCardPlayed(this.state) &&
+        !cardRules.isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -740,8 +741,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.wrench.visible(
       this.note.needsFix &&
         !this.empathy &&
-        !cardRules.isPlayed(this.state) &&
-        !cardRules.isDiscarded(this.state) &&
+        !cardRules.isCardPlayed(this.state) &&
+        !cardRules.isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -832,8 +833,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.setCritical(status === CardStatus.Critical);
 
     const isKnownTrash =
-      !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state) &&
+      !cardRules.isCardPlayed(this.state) &&
+      !cardRules.isCardDiscarded(this.state) &&
       this.state.isKnownTrashFromEmpathy;
     this.setTrashMiniIndicator(isKnownTrash);
 
@@ -893,9 +894,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     return (
       isTrash &&
-      !cardRules.isClued(this.state) &&
-      !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state) &&
+      !cardRules.isCardClued(this.state) &&
+      !cardRules.isCardPlayed(this.state) &&
+      !cardRules.isCardDiscarded(this.state) &&
       !this.note.blank &&
       !this.note.chopMoved &&
       !this.variant.throwItInAHole &&
@@ -911,8 +912,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private shouldSetCritical(critical: boolean) {
     return (
       critical &&
-      !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state)
+      !cardRules.isCardPlayed(this.state) &&
+      !cardRules.isCardDiscarded(this.state)
     );
   }
 
@@ -1316,7 +1317,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (
       this.note.possibilities.every(
         ([suitIndex, rank]) =>
-          !cardRules.canPossiblyBeFromEmpathy(this.state, suitIndex, rank),
+          !cardRules.canCardPossiblyBeFromEmpathy(this.state, suitIndex, rank),
       )
     ) {
       // Unmorph

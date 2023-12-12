@@ -16,6 +16,9 @@ export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
  */
 export const DEFAULT_FINISHED_STACK_LENGTH = 5;
 
+/** The valid amount of players that can be in a game. */
+export const VALID_NUM_PLAYERS = [2, 3, 4, 5, 6] as const;
+
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
 

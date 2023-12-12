@@ -176,9 +176,9 @@ export function cardsGotten(
       // played for the purposes of "Throw It in a Hole" variants).
       currentCardsGotten++;
     } else if (
-      cardRules.isInPlayerHand(card) &&
-      cardRules.isClued(card) &&
-      !cardRules.allPossibilitiesTrash(
+      cardRules.isCardInPlayerHand(card) &&
+      cardRules.isCardClued(card) &&
+      !cardRules.isAllCardPossibilitiesTrash(
         card,
         deck,
         playStacks,
@@ -216,8 +216,8 @@ export function cardsGottenByNotes(
     const order = i as CardOrder;
 
     if (
-      cardRules.isInPlayerHand(card) &&
-      !cardRules.allPossibilitiesTrash(
+      cardRules.isCardInPlayerHand(card) &&
+      !cardRules.isAllCardPossibilitiesTrash(
         card,
         deck,
         playStacks,
@@ -249,7 +249,7 @@ function getCardsGottenByNotesAdjustment(
     return 0;
   }
 
-  const isCluedForReal = cardRules.isClued(card);
+  const isCluedForReal = cardRules.isCardClued(card);
   if (isCluedForReal && (note.unclued || note.knownTrash)) {
     return -1;
   }
@@ -487,7 +487,7 @@ export function doubleDiscard(
   }
 
   // It is never a double discard situation if the discarded card does not need to be played.
-  const needsToBePlayed = cardRules.needsToBePlayed(
+  const needsToBePlayed = cardRules.isCardNeedsToBePlayed(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
     state.deck,

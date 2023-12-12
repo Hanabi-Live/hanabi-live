@@ -56,7 +56,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   // Ctrl, then we are using Empathy.)
   if (
     card.state.location !== globals.metadata.ourPlayerIndex &&
-    cardRules.isInPlayerHand(card.state) &&
+    cardRules.isCardInPlayerHand(card.state) &&
     card.state.suitIndex !== null &&
     // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
@@ -144,7 +144,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // Right-clicking on cards in other people's hands is a rank clue action.
   if (
     card.state.location !== globals.metadata.ourPlayerIndex &&
-    cardRules.isInPlayerHand(card.state) &&
+    cardRules.isCardInPlayerHand(card.state) &&
     card.state.rank !== null &&
     // It is not possible to clue a START card with a rank clue.
     card.state.rank !== START_CARD_RANK &&

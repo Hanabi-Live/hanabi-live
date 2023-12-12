@@ -1,3 +1,1 @@
-/* eslint-disable unicorn/no-empty-file */
-
-// TODO
+export * from "./rules/poop";

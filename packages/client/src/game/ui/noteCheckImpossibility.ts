@@ -1,7 +1,7 @@
 import type { Rank, SuitRankTuple, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import * as modals from "../../modals";
-import { canPossiblyBeFromEmpathy } from "../rules/card";
+import { canCardPossiblyBeFromEmpathy } from "../rules/card";
 import type { CardNote } from "../types/CardNote";
 import type { CardState } from "../types/CardState";
 import { globals } from "./UIGlobals";
@@ -32,7 +32,7 @@ export function checkNoteImpossibility(
   if (
     !(cardState.location === globals.metadata.ourPlayerIndex) ||
     possibilities.some((possibility) =>
-      canPossiblyBeFromEmpathy(cardState, possibility[0], possibility[1]),
+      canCardPossiblyBeFromEmpathy(cardState, possibility[0], possibility[1]),
     )
   ) {
     return;

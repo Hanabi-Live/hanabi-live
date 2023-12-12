@@ -273,9 +273,9 @@ function shouldShowEmpathy(
     // Disable empathy for the stack bases.
     !card.isStackBase &&
     // Clicking on a played card goes to the turn that it was played.
-    !cardRules.isPlayed(card.state) &&
+    !cardRules.isCardPlayed(card.state) &&
     // Clicking on a discarded card goes to the turn that it was discarded.
-    !cardRules.isDiscarded(card.state)
+    !cardRules.isCardDiscarded(card.state)
   );
 }
 

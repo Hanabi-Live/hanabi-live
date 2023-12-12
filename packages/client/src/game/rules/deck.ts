@@ -107,7 +107,7 @@ export function discardedCopies(
     if (
       card.suitIndex === suitIndex &&
       card.rank === rank &&
-      cardRules.isDiscarded(card)
+      cardRules.isCardDiscarded(card)
     ) {
       numDiscardedCopies++;
     }

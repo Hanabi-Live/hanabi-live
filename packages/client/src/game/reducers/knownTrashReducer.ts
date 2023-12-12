@@ -15,7 +15,7 @@ export function knownTrashReducer(
   for (const [order, card] of newDeck.entries()) {
     newDeck[order] = {
       ...card,
-      isKnownTrashFromEmpathy: cardRules.allPossibilitiesTrash(
+      isKnownTrashFromEmpathy: cardRules.isAllCardPossibilitiesTrash(
         card,
         deck,
         playStacks,

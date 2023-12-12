@@ -83,7 +83,7 @@ export function getSoundType(
 
       const discardedCard = originalState.deck[action.order];
       const touched =
-        discardedCard !== undefined && cardRules.isClued(discardedCard);
+        discardedCard !== undefined && cardRules.isCardClued(discardedCard);
       if (touched) {
         return SoundType.DiscardClued;
       }
@@ -100,7 +100,7 @@ export function getSoundType(
         if (
           discardedCard !== undefined &&
           previouslyDiscardedCard !== undefined &&
-          cardRules.canPossiblyBeFromCluesOnly(
+          cardRules.canCardPossiblyBeFromCluesOnly(
             discardedCard,
             previouslyDiscardedCard.suitIndex,
             previouslyDiscardedCard.rank,
@@ -140,7 +140,7 @@ export function getSoundType(
       }
 
       const card = currentState.deck[action.order];
-      const touched = card !== undefined && cardRules.isClued(card);
+      const touched = card !== undefined && cardRules.isCardClued(card);
       if (!touched) {
         if (stats.soundTypeForLastAction === SoundType.Blind1) {
           return SoundType.Blind2;

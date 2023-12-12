@@ -164,7 +164,7 @@ export class LayoutChild extends Konva.Group {
       // Do not use warnings for preplays unless we are at 2 strikes.
       (currentPlayerIndex === ourPlayerIndex ||
         ongoingGame.strikes.length === 2) &&
-      !cardRules.isPotentiallyPlayable(
+      !cardRules.isCardPotentiallyPlayable(
         this.card.state,
         ongoingGame.deck,
         ongoingGame.playStacks,

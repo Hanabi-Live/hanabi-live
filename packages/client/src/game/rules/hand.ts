@@ -51,7 +51,7 @@ export function isLocked(
 ): boolean {
   return hand.every((order) => {
     const card = deck[order];
-    return card !== undefined && cardRules.isClued(card);
+    return card !== undefined && cardRules.isCardClued(card);
   });
 }
 
@@ -62,7 +62,7 @@ export function chopIndex(
   // The chop is defined as the oldest (right-most) unclued card.
   for (const [i, cardOrder] of hand.entries()) {
     const card = deck[cardOrder];
-    if (card && !cardRules.isClued(card)) {
+    if (card && !cardRules.isCardClued(card)) {
       return i;
     }
   }
