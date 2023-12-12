@@ -106,16 +106,6 @@ function isVariantAllowed(
   variantDescription: VariantDescription,
 ): boolean {
   const variant = createVariant(COLORS, SUITS, variantDescription, 0, "");
-  // TODO: Currently, this is a hardcoded exception that we would like to get rid of, but since
-  // these variants exist already and have a too high efficiency (namely 2), the automatic
-  // efficiency check would reject them.
-  if (
-    variantDescription.synesthesia === true &&
-    variantDescription.suits.length === 4
-  ) {
-    return true;
-  }
-
   if (totalCards(variant) < MINIMUM_CARD_COUNT) {
     return false;
   }
