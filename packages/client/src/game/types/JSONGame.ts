@@ -1,5 +1,5 @@
 import type { Character } from "@hanabi/data";
-import type { CardIdentity } from "@hanabi/game";
+import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
 
 export interface JSONGame {

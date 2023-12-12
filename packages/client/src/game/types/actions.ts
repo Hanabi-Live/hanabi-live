@@ -9,8 +9,9 @@ import type {
   Rank,
   SuitIndex,
 } from "@hanabi/data";
-import type { CardIdentity, EndCondition } from "@hanabi/game";
+import type { EndCondition } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
+import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
 import type { MsgClue } from "./MsgClue";
 import type { Spectator } from "./Spectator";

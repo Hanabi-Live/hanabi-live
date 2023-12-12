@@ -4,7 +4,6 @@ export * from "./enums/EndCondition";
 export * from "./enums/PaceRisk";
 export * from "./enums/SoundType";
 export * from "./enums/StackDirection";
-export * from "./interfaces/CardIdentity";
 export * from "./interfaces/CardState";
 export * from "./interfaces/TurnState";
 export * from "./types/StateClue";

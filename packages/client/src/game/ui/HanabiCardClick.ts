@@ -1,9 +1,9 @@
 // Click functions for the HanabiCard object.
 
-import type { CardIdentity } from "@hanabi/game";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import * as cardRules from "../rules/card";
+import type { CardIdentity } from "../types/CardIdentity";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
