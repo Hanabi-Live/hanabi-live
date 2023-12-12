@@ -24,7 +24,8 @@ func (*UserLinkages) Delete(userID int, linkedID int) error {
 	return err
 }
 
-func (*UserLinkages) GetAllUsernames(userID int) ([]string, error) {
+// GetAllLinkedUsernames returns a sorted list of the usernames of the linked users.
+func (*UserLinkages) GetAllLinkedUsernames(userID int) ([]string, error) {
 	linkedUsers := make([]string, 0)
 
 	var rows pgx.Rows
@@ -33,6 +34,7 @@ func (*UserLinkages) GetAllUsernames(userID int) ([]string, error) {
 		FROM user_linkages
 			JOIN users ON user_linkages.linked_id = users.id
 		WHERE user_linkages.user_id = $1
+        ORDER BY users.username
 	`, userID); err != nil {
 		return linkedUsers, err
 	} else {
@@ -56,6 +58,7 @@ func (*UserLinkages) GetAllUsernames(userID int) ([]string, error) {
 	return linkedUsers, nil
 }
 
+// isLinked returns true if and only if the specified linkedID is already linked to the specified userID.
 func (*UserLinkages) isLinked(userID int, linkedID int) (bool, error) {
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), `

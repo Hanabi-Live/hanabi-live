@@ -8,7 +8,7 @@ import (
 
 func commandChatLinks(ctx context.Context, s *Session, d *CommandData) {
 	var usernames []string
-	if val, err := models.UserLinkages.GetAllUsernames(s.UserID); err != nil {
+	if val, err := models.UserLinkages.GetAllLinkedUsernames(s.UserID); err != nil {
 		logger.Error("Failed to retrieve linked usernames for user " + s.Username)
 		s.Error(DefaultErrorMsg)
 		return
@@ -32,8 +32,8 @@ func commandChatUnlink(ctx context.Context, s *Session, d *CommandData) {
 	link(s, d, false)
 }
 
+// This function is very similar to the friend function in command_chat_friend.go
 func link(s *Session, d *CommandData, add bool) {
-	logger.Info("link function called")
 	// Validate that they sent a username
 	if len(d.Name) == 0 {
 		var msg string
@@ -78,7 +78,7 @@ func link(s *Session, d *CommandData, add bool) {
 
 	var isLinked bool
 	if val, err := models.UserLinkages.isLinked(s.UserID, linkedUser.ID); err != nil {
-		logger.Error("Failed to check linkage status of " + s.Username + " and " + linkedUser.Username + ": " + err.Error())
+		logger.Error("Failed to whether " + s.Username + " has linked " + linkedUser.Username + ": " + err.Error())
 	} else {
 		isLinked = val
 	}

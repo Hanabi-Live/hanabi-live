@@ -146,31 +146,12 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		// (e.g. playing a deal with a specific seed)
 		g.Seed = seedPrefix + t.ExtraOptions.SetSeedSuffix
 	} else {
-		// This is a normal game with a random seed / a random deck
-		// Get a list of all the seeds that these players and their linked accounts have played before
-		var playerIDs []int
-		for _, p := range t.Players {
-			playerIDs = append(playerIDs, p.UserID)
-		}
-
-		var seedMap map[string]struct{}
-		if v, err := models.UserLinkages.GetBlockedSeeds(playerIDs); err != nil {
-			logger.Error("Failed to get the blocked seed at table " + strconv.FormatInt(int64(s.TableID()), 10) + ": " + err.Error())
+		if val, err := getNextAvailableSeed(t.Players, seedPrefix); err != nil {
+			logger.Error("Failed to compute next seed at table " + strconv.Itoa(int(s.TableID())) + ": " + err.Error())
 			s.Error(StartGameFail)
 			return
 		} else {
-			seedMap = v
-		}
-
-		// Find a seed that no-one has played before
-		seedNum := 0
-		looking := true
-		for looking {
-			seedNum++
-			g.Seed = seedPrefix + strconv.Itoa(seedNum)
-			if _, ok := seedMap[g.Seed]; !ok {
-				looking = false
-			}
+			g.Seed = val
 		}
 	}
 	logger.Info(t.GetName() + "Using seed: " + g.Seed)
@@ -331,6 +312,30 @@ func emulateActions(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			}
 			badGameIDs = append(badGameIDs, d.DatabaseID)
 			return
+		}
+	}
+}
+
+func getNextAvailableSeed(players []*Player, seedPrefix string) (string, error) {
+	var playerIDs []int
+	for _, p := range players {
+		playerIDs = append(playerIDs, p.UserID)
+	}
+
+	var seedMap map[string]struct{}
+	if v, err := models.UserLinkages.GetBlockedSeeds(playerIDs); err != nil {
+		return "", err
+	} else {
+		seedMap = v
+	}
+
+	// Find a seed that no-one has played before
+	seedNum := 0
+	for {
+		seedNum++
+		seed := seedPrefix + strconv.Itoa(seedNum)
+		if _, ok := seedMap[seed]; !ok {
+			return seed, nil
 		}
 	}
 }
