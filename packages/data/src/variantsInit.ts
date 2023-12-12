@@ -385,6 +385,7 @@ export function createVariant(
     showSuitNames,
     identityNotePattern,
   };
+
   return variant;
 }
 
