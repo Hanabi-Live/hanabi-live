@@ -48,6 +48,61 @@ chatCommands.set("friends", friends);
 chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
 
+// /link <user>
+function link(room: string, args: readonly string[]) {
+  // Validate that the format of the command is correct.
+  if (args.length === 0) {
+    sendSelfPMFromServer(
+      "The format of the /link command is: <code>/link Alice</code>",
+      room,
+      SelfChatMessageType.Info,
+    );
+    return;
+  }
+
+  // Validate that we are not targeting ourselves.
+  const name = args.join(" ");
+  if (name.toLowerCase() === globals.username.toLowerCase()) {
+    sendSelfPMFromServer("You cannot link yourself.", room);
+  }
+
+  globals.conn!.send("chatLink", {
+    name,
+  });
+}
+
+// /unlink <user>
+function unlink(room: string, args: readonly string[]) {
+  // Validate that the format of the command is correct.
+  if (args.length === 0) {
+    sendSelfPMFromServer(
+      "The format of the /unlink command is: <code>/unlink Alice</code>",
+      room,
+      SelfChatMessageType.Info,
+    );
+    return;
+  }
+
+  // Validate that we are not targeting ourselves.
+  const name = args.join(" ");
+  if (name.toLowerCase() === globals.username.toLowerCase()) {
+    sendSelfPMFromServer("You cannot unlink yourself.", room);
+  }
+
+  globals.conn!.send("chatUnlink", {
+    name,
+  });
+}
+
+// /links
+function links() {
+  globals.conn!.send("chatLinks", {});
+}
+
+chatCommands.set("link", link);
+chatCommands.set("unlink", unlink);
+chatCommands.set("links", links);
+
 // /pm [username] [msg]
 function pm(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.

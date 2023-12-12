@@ -122,6 +122,15 @@ CREATE TABLE user_reverse_friends (
     PRIMARY KEY (user_id, friend_id)
 );
 
+DROP TABLE IF EXISTS user_linkages;
+CREATE TABLE user_linkages (
+    user_id    INTEGER  NOT NULL,
+    linked_id  INTEGER  NOT NULL,
+    FOREIGN KEY (user_id)   REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (linked_id) REFERENCES users (id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, linked_id)
+);
+
 DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,

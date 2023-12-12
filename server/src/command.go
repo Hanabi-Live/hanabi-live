@@ -119,6 +119,9 @@ func commandInit() {
 	commandMap["chatTyping"] = commandChatTyping
 	commandMap["chatFriend"] = commandChatFriend
 	commandMap["chatUnfriend"] = commandChatUnfriend
+	commandMap["chatLink"] = commandChatLink
+	commandMap["chatUnlink"] = commandChatUnlink
+	commandMap["chatLinks"] = commandChatLinks
 	commandMap["chatPlayerInfo"] = commandChatPlayerInfo
 	commandMap["getName"] = commandGetName
 	commandMap["inactive"] = commandInactive
