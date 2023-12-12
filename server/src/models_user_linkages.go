@@ -40,11 +40,11 @@ func (*UserLinkages) GetAllUsernames(userID int) ([]string, error) {
 	}
 
 	for rows.Next() {
-		var linked_user string
-		if err := rows.Scan(&linked_user); err != nil {
+		var linkedUser string
+		if err := rows.Scan(&linkedUser); err != nil {
 			return linkedUsers, err
 		}
-		linkedUsers = append(linkedUsers, linked_user)
+		linkedUsers = append(linkedUsers, linkedUser)
 	}
 	linkedUsers = sortStringsCaseInsensitive(linkedUsers)
 
@@ -56,46 +56,54 @@ func (*UserLinkages) GetAllUsernames(userID int) ([]string, error) {
 	return linkedUsers, nil
 }
 
-// GetMap composes a map that represents all of this user's friends
-// We use a map to represent the friends instead of a slice because it is faster to check for the
-// existence of a friend in a map than to iterate through a slice
-func (*UserLinkages) GetMap(userID int) (map[int]struct{}, error) {
-	linkedMap := make(map[int]struct{})
-
+func (*UserLinkages) isLinked(userID int, linkedID int) (bool, error) {
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), `
-		SELECT linked_id
-		FROM user_linkages
-		WHERE user_id = $1
-	`, userID); err != nil {
-		return linkedMap, err
+		SELECT COUNT(*)
+        FROM user_linkages
+        WHERE user_id = $1
+          AND linked_id = $2
+    `, userID, linkedID); err != nil {
+		return false, err
 	} else {
 		rows = v
 	}
 
+	var isLinked int
 	for rows.Next() {
-		var linkedID int
-		if err := rows.Scan(&linkedID); err != nil {
-			return linkedMap, err
+		if err := rows.Scan(&isLinked); err != nil {
+			return false, err
 		}
-		linkedMap[linkedID] = struct{}{}
 	}
 
-	if err := rows.Err(); err != nil {
-		return linkedMap, err
-	}
-	rows.Close()
-
-	return linkedMap, nil
+	return isLinked > 0, nil
 }
 
-func (*UserLinkages) GetLinkedUserIDs(userIDs []int) ([]int, error) {
-	var linkedIDs []int
+// GetBlockedSeeds composes a map that represents all the seeds that have been played by the specified users
+// or by one of their linked accounts.
+// Note that we use a map to represent these seeds, since this is faster to iterate through
+func (*UserLinkages) GetBlockedSeeds(userIDs []int) (map[string]struct{}, error) {
+	blockedSeeds := make(map[string]struct{})
 	var rows pgx.Rows
 	if v, err := db.Query(context.Background(), `
-		SELECT DISTINCT ON (linked_id) linked_id
+		SELECT DISTINCT
+            games.seed AS seed
 		FROM user_linkages
-		WHERE user_id = ANY ($1)
+        JOIN game_participants
+            ON user_linkages.linked_id = game_participants.user_id
+        JOIN games
+            ON games.id = game_participants.game_id
+		WHERE user_linkages.user_id = ANY ($1)
+
+		UNION DISTINCT
+
+		SELECT DISTINCT
+            games.seed AS seed
+        FROM game_participants
+        JOIN games
+            ON games.id = game_participants.game_id
+        WHERE game_participants.user_id = ANY ($1)
+        ORDER BY seed
 	`, userIDs); err != nil {
 		return nil, err
 	} else {
@@ -103,16 +111,17 @@ func (*UserLinkages) GetLinkedUserIDs(userIDs []int) ([]int, error) {
 	}
 
 	for rows.Next() {
-		var linkedID int
-		if err := rows.Scan(&linkedID); err != nil {
-			return linkedIDs, err
+		var seed string
+		if err := rows.Scan(&seed); err != nil {
+			return blockedSeeds, err
 		}
-		linkedIDs = append(linkedIDs, linkedID)
+		blockedSeeds[seed] = struct{}{}
 	}
+
 	if err := rows.Err(); err != nil {
-		return linkedIDs, err
+		return blockedSeeds, err
 	}
 	rows.Close()
 
-	return linkedIDs, nil
+	return blockedSeeds, nil
 }

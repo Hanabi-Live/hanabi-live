@@ -148,43 +148,18 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	} else {
 		// This is a normal game with a random seed / a random deck
 		// Get a list of all the seeds that these players and their linked accounts have played before
-		var blockedUserIDS []int
-
+		var playerIDs []int
 		for _, p := range t.Players {
-			blockedUserIDS = append(blockedUserIDS, p.UserID)
+			playerIDs = append(playerIDs, p.UserID)
 		}
 
-		if v, err := models.UserLinkages.GetLinkedUserIDs(blockedUserIDS); err != nil {
-			errMsg := "Failed to get the linked user IDS for users "
-			for i, p := range t.Players {
-				if i > 0 {
-					errMsg += ", "
-				}
-				errMsg += p.Name
-			}
-			errMsg += ": " + err.Error()
-			logger.Error(errMsg)
+		var seedMap map[string]struct{}
+		if v, err := models.UserLinkages.GetBlockedSeeds(playerIDs); err != nil {
+			logger.Error("Failed to get the blocked seed at table " + strconv.FormatInt(int64(s.TableID()), 10) + ": " + err.Error())
 			s.Error(StartGameFail)
 			return
 		} else {
-			blockedUserIDS = append(blockedUserIDS, v[:]...)
-		}
-
-		seedMap := make(map[string]struct{})
-		for _, id := range blockedUserIDS {
-			var seeds []string
-			if v, err := models.Games.GetPlayerSeeds(id, variant.ID); err != nil {
-				logger.Error("Failed to get the past seeds for \"" + s.Username + "\": " +
-					err.Error())
-				s.Error(StartGameFail)
-				return
-			} else {
-				seeds = v
-			}
-
-			for _, seed := range seeds {
-				seedMap[seed] = struct{}{}
-			}
+			seedMap = v
 		}
 
 		// Find a seed that no-one has played before

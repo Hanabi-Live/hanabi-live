@@ -76,17 +76,17 @@ func link(s *Session, d *CommandData, add bool) {
 		linkedUser = v
 	}
 
-	var linkMap map[int]struct{}
-	if val, err := models.UserLinkages.GetMap(s.UserID); err != nil {
-		logger.Error("Failed to get the linked users for user \"" + s.Username + "\": " + err.Error())
+	var isLinked bool
+	if val, err := models.UserLinkages.isLinked(s.UserID, linkedUser.ID); err != nil {
+		logger.Error("Failed to check linkage status of " + s.Username + " and " + linkedUser.Username + ": " + err.Error())
 	} else {
-		linkMap = val
+		isLinked = val
 	}
 
 	var msg string
 	if add {
 		// Validate that this user is not already their linked_user
-		if _, ok := linkMap[linkedUser.ID]; ok {
+		if isLinked {
 			s.Warning("\"" + d.Name + "\" is already linked to your account.")
 			return
 		}
@@ -98,12 +98,11 @@ func link(s *Session, d *CommandData, add bool) {
 			s.Error(DefaultErrorMsg)
 			return
 		}
-		linkMap[linkedUser.ID] = struct{}{}
 
 		msg = "Successfully added \"" + d.Name + "\" to your linked users."
 	} else {
 		// Validate that this user is their linked_user
-		if _, ok := linkMap[linkedUser.ID]; !ok {
+		if !isLinked {
 			s.Warning("\"" + d.Name + "\" is not linked to your account, so you cannot unlink them.")
 			return
 		}
@@ -115,7 +114,6 @@ func link(s *Session, d *CommandData, add bool) {
 			s.Error(DefaultErrorMsg)
 			return
 		}
-		delete(linkMap, linkedUser.ID)
 
 		msg = "Successfully removed \"" + d.Name + "\" from your linked users."
 	}
