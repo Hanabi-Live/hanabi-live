@@ -1,14 +1,25 @@
-import type { Rank, RankClueNumber } from "@hanabi/data";
+import type { Color, Rank, RankClueNumber, Suit } from "@hanabi/data";
+import { VALID_PLAYER_NUMS } from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
+import { colorsInit } from "../colorsInit";
 import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
+import { suitsInit } from "../suitsInit";
+import { createVariant } from "../variantsInit";
+
+/* eslint-disable @typescript-eslint/no-restricted-imports*/
+import { cardsPerHand } from "../../../client/src/game/rules/hand";
+import { minEfficiency } from "../../../client/src/game/rules/stats";
+import { Options } from "../../../client/src/types/Options";
+/* eslint-enable @typescript-eslint/no-restricted-imports*/
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS_TO_USE = [1, 5] as const;
+const MAX_ALLOWED_EFFICIENCY_THRESHOLD = 1.79 as const;
 
 /** These are suit properties that are transferred to special ranks. */
 const SUIT_SPECIAL_PROPERTIES = [
@@ -50,6 +61,47 @@ const NUMBER_WORDS = [
   "Fours",
   "Fives",
 ] as const;
+
+function maxRequiredVariantEfficiency(
+  COLORS: ReadonlyMap<string, Color>,
+  SUITS: ReadonlyMap<string, Suit>,
+  variantDescription: VariantDescription,
+): number {
+  const variant = createVariant(COLORS, SUITS, variantDescription, 0, "B");
+  const requiredEfficiencies = VALID_PLAYER_NUMS.map((numPlayers) => {
+    const options = {
+      ...new Options(),
+      numPlayers,
+    };
+    return minEfficiency(
+      numPlayers,
+      numPlayers,
+      variant,
+      cardsPerHand(options),
+    );
+  });
+  return Math.max(...requiredEfficiencies);
+}
+
+function isVariantAllowed(
+  COLORS: ReadonlyMap<string, Color>,
+  SUITS: ReadonlyMap<string, Suit>,
+  variantDescription: VariantDescription,
+): boolean {
+  // TODO: Currently, this is a hardcoded exception that we would like to get rid of, but since
+  // these variants exist already and have a too high efficiency (namely 2), the automatic
+  // efficiency check would reject them.
+  if (
+    variantDescription.synesthesia === true &&
+    variantDescription.suits.length === 4
+  ) {
+    return true;
+  }
+  return (
+    maxRequiredVariantEfficiency(COLORS, SUITS, variantDescription) <
+    MAX_ALLOWED_EFFICIENCY_THRESHOLD
+  );
+}
 
 export function getVariantDescriptions(
   suits: readonly SuitJSON[],
@@ -94,7 +146,12 @@ export function getVariantDescriptions(
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
 
-  return variantDescriptions;
+  const COLORS = colorsInit();
+  const SUITS = suitsInit(COLORS);
+
+  return variantDescriptions.filter((variantDescription) =>
+    isVariantAllowed(COLORS, SUITS, variantDescription),
+  );
 }
 
 /**
