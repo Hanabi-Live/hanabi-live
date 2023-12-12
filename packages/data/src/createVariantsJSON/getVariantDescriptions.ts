@@ -626,11 +626,6 @@ function getExtremelyAmbiguousVariants(
     for (const numSuits of [5, 4] as const) {
       const incrementedNumSuits = numSuits + 1;
 
-      // It would be too difficult to have a 4 suit variant with a one-of-each suit.
-      if (incrementedNumSuits === 4 && suit.oneOfEach === true) {
-        continue;
-      }
-
       // For some suits:
       // 1) "Extremely Ambiguous + X (6 Suit)" is the same as "Extremely Ambiguous (6 Suit)"
       // 2) "Extremely Ambiguous + X (5 Suit)" is the same as "Extremely Ambiguous (5 Suit)"
@@ -676,12 +671,6 @@ function getMatryoshkaVariants(
   // Second, create the special suit combinations, e.g. "Matryoshka & Rainbow (6 Suits)"
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Matryoshka & ${suit.name} (${numSuits} Suits)`;
       const variantSuits = [
         ...matryoshkaSuits.slice(0, numSuits - 1),
@@ -811,10 +800,9 @@ function getCriticalFoursVariants(
   basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForCriticalFours = [6, 5] as const; // 4 suits and 3 suits would be too difficult.
 
   // Create the basic variants.
-  for (const numSuits of numSuitsForCriticalFours) {
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
     const variantName = `Critical Fours (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
@@ -825,7 +813,7 @@ function getCriticalFoursVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of numSuitsForCriticalFours) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       const variantName = `Critical Fours & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -846,10 +834,9 @@ function getClueStarvedVariants(
   basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForClueStarved = [6, 5] as const; // 4 suits and 3 suits would be too difficult.
 
   // Create the basic variants.
-  for (const numSuits of numSuitsForClueStarved) {
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
     const variantName = `Clue Starved (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
@@ -860,7 +847,7 @@ function getClueStarvedVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of numSuitsForClueStarved) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       // 4 suits and 3 suits would be too difficult.
       const variantName = `Clue Starved & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
@@ -1133,10 +1120,9 @@ function getUpOrDownVariants(
   basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForUpOrDown = [6, 5] as const; // 4 suits and 3 suits would be too difficult.
 
   // Create the basic variants.
-  for (const numSuits of numSuitsForUpOrDown) {
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
     const variantName = `Up or Down (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
@@ -1147,7 +1133,7 @@ function getUpOrDownVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of numSuitsForUpOrDown) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       const variantName = `Up or Down & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1168,10 +1154,9 @@ function getThrowItInAHoleVariants(
   basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
-  const numSuitsForTIIAH = [6, 5, 4] as const; // 3 suits would be too difficult.
 
   // Create the basic variants.
-  for (const numSuits of numSuitsForTIIAH) {
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
     const variantName = `Throw It in a Hole (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
@@ -1182,7 +1167,7 @@ function getThrowItInAHoleVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of numSuitsForTIIAH) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       const variantName = `Throw It in a Hole & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1272,6 +1257,7 @@ function getSudokuVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
+  // Sudoku only makes sense for 4 or 5 suits, since we need as many suits as ranks per suit.
   const sudokuSuitNumbers = [4, 5] as const;
 
   // Create the basic variant. Note that for sudoku, we only want 4 or 5-suit variants.
