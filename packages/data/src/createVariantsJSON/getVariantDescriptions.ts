@@ -1,11 +1,5 @@
-import {
-  Color,
-  Rank,
-  RankClueNumber,
-  Suit,
-  VALID_PLAYER_NUMS,
-  Variant,
-} from "@hanabi/data";
+import type { Color, Rank, RankClueNumber, Suit, Variant } from "@hanabi/data";
+import { VALID_PLAYER_NUMS } from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
 import { colorsInit } from "../colorsInit";
@@ -246,12 +240,6 @@ function getVariantsForEachSuit(
 
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const varianName = `${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -302,24 +290,6 @@ function getVariantsForEachSpecialSuitCombination(
       combinationVariantNames.add(suit.name + suit2.name);
 
       for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-        // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
-        // one-of-each suit.
-        if (
-          (numSuits === 4 || numSuits === 3) &&
-          (suit.oneOfEach === true || suit2.oneOfEach === true)
-        ) {
-          continue;
-        }
-
-        // It would be too difficult to have a 5 suit variant with two one-of-each suits.
-        if (
-          numSuits === 5 &&
-          suit.oneOfEach === true &&
-          suit2.oneOfEach === true
-        ) {
-          continue;
-        }
-
         // Prism and Rainbow require 2 clueable suits, else they are just ambiguous red.
         if (
           numSuits === 3 &&
@@ -387,12 +357,6 @@ function getVariantsForSpecialRanks(
       // Second, create the special suit combinations, e.g. "Rainbow-Ones & Rainbow (6 Suits)"
       for (const suit2 of suitsToCreateVariantsFor) {
         for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-          // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
-          // one-of-each suit.
-          if ((numSuits === 4 || numSuits === 3) && suit2.oneOfEach === true) {
-            continue;
-          }
-
           const hyphenatedSuitName = suit.name.replace(" ", "-");
           const variantName = `${hyphenatedSuitName}-${specialRankName} & ${suit2.name} (${numSuits} Suits)`;
           const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
@@ -431,12 +395,6 @@ function getVariantsForSpecialRanks(
     // Second, create the special suit combinations, e.g. "Deceptive-Ones & Rainbow (6 Suits)"
     for (const suit of suitsToCreateVariantsFor) {
       for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-        // It would be too difficult to have a 4 suit variant or a 3 suits variant with a
-        // one-of-each suit.
-        if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-          continue;
-        }
-
         const variantName = `${variantNamePrefix} & ${suit.name} (${numSuits} Suits)`;
         const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
         const basicSuits = basicVariantSuits[numBasicSuits];
@@ -551,11 +509,6 @@ function getAmbiguousVariants(
     for (const numSuits of [4, 2] as const) {
       const incrementedNumSuits = numSuits + 1;
 
-      // It would be too difficult to have a 3 suits variant with a one-of-each suit.
-      if (incrementedNumSuits === 3 && suit.oneOfEach === true) {
-        continue;
-      }
-
       // "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)".
       if (
         incrementedNumSuits === 3 &&
@@ -616,11 +569,6 @@ function getVeryAmbiguousVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    // It would be too difficult to have a 4 suit variant with a one-of-each suit.
-    if (suit.oneOfEach === true) {
-      continue;
-    }
-
     // "Very Ambiguous + X (4 Suit)" is the same as "Extremely Ambiguous (4 Suit)".
     if (SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)) {
       continue;
@@ -785,12 +733,6 @@ function getDualColorsVariants(
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of [5, 3] as const) {
       const incrementedNumSuits = numSuits + 1;
-
-      // It would be too difficult to have a 4 suit variant with a one-of-each suit.
-      if (incrementedNumSuits === 4 && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Dual-Color & ${suit.name} (${incrementedNumSuits} Suits)`;
       const baseSuits = dualColorSuits[numSuits];
       const variantSuits = [...baseSuits, suit.name];
@@ -883,11 +825,6 @@ function getCriticalFoursVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    // A one of each suit in combination with this variant would be too difficult.
-    if (suit.oneOfEach === true) {
-      continue;
-    }
-
     for (const numSuits of numSuitsForCriticalFours) {
       const variantName = `Critical Fours & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
@@ -923,10 +860,6 @@ function getClueStarvedVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    if (suit.oneOfEach === true) {
-      continue;
-    }
-
     for (const numSuits of numSuitsForClueStarved) {
       // 4 suits and 3 suits would be too difficult.
       const variantName = `Clue Starved & ${suit.name} (${numSuits} Suits)`;
@@ -1025,12 +958,6 @@ function getAlternatingCluesVariants(
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Alternating Clues & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1101,12 +1028,6 @@ function getOddsAndEvensVariants(
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Odds and Evens & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1147,10 +1068,6 @@ function getSynesthesiaVariants(
     }
 
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      if (numSuits === 3 && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Synesthesia & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1197,12 +1114,6 @@ function getReversedVariants(
 
     const reversedSuitName = suit.name + SUIT_REVERSED_SUFFIX;
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `${reversedSuitName} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1236,11 +1147,6 @@ function getUpOrDownVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    // A one of each suit in combination with this variant would be too difficult.
-    if (suit.oneOfEach === true) {
-      continue;
-    }
-
     for (const numSuits of numSuitsForUpOrDown) {
       const variantName = `Up or Down & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
@@ -1276,11 +1182,6 @@ function getThrowItInAHoleVariants(
 
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
-    if (suit.oneOfEach === true) {
-      // Throw It in a Hole & Black (6 Suits)" is 1.88 required efficiency in 5-player.
-      continue;
-    }
-
     for (const numSuits of numSuitsForTIIAH) {
       const variantName = `Throw It in a Hole & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
@@ -1316,12 +1217,6 @@ function getFunnelsVariants(
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Funnels & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1356,12 +1251,6 @@ function getChimneysVariants(
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // It would be too difficult to have a 4 suit variant or a 3 suits variant with a one-of-each
-      // suit.
-      if ((numSuits === 4 || numSuits === 3) && suit.oneOfEach === true) {
-        continue;
-      }
-
       const variantName = `Chimneys & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
@@ -1407,10 +1296,6 @@ function getSudokuVariants(
   // Create combinations with special suits.
   for (const numSuits of sudokuSuitNumbers) {
     for (const suit of suitsToCreateVariantsFor) {
-      // Having a dark-suit in a 4-suit variant (especially Sudoku) is too hard.
-      if (suit.oneOfEach === true && numSuits === 4) {
-        continue;
-      }
       const variantName = `Sudoku & ${suit.name} (${numSuits} Suits)`;
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
