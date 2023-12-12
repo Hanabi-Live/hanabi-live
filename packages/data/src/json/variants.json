@@ -13641,7 +13641,7 @@
     "criticalRank": 4
   },
   {
-    "id": 2092,
+    "id": 2102,
     "newID": "R+Y+G+B+P+Bk,C4",
     "name": "Critical Fours & Black (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
@@ -13774,63 +13774,63 @@
     "criticalRank": 4
   },
   {
-    "id": 2093,
+    "id": 2103,
     "newID": "R+Y+G+B+P+DRa,C4",
     "name": "Critical Fours & Dark Rainbow (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
     "criticalRank": 4
   },
   {
-    "id": 2094,
+    "id": 2104,
     "newID": "R+Y+G+B+P+DPi,C4",
     "name": "Critical Fours & Dark Pink (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
     "criticalRank": 4
   },
   {
-    "id": 2095,
+    "id": 2105,
     "newID": "R+Y+G+B+P+DWh,C4",
     "name": "Critical Fours & Gray (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
     "criticalRank": 4
   },
   {
-    "id": 2096,
+    "id": 2106,
     "newID": "R+Y+G+B+P+DBr,C4",
     "name": "Critical Fours & Dark Brown (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
     "criticalRank": 4
   },
   {
-    "id": 2097,
+    "id": 2107,
     "newID": "R+Y+G+B+P+DOm,C4",
     "name": "Critical Fours & Dark Omni (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
     "criticalRank": 4
   },
   {
-    "id": 2098,
+    "id": 2108,
     "newID": "R+Y+G+B+P+DNu,C4",
     "name": "Critical Fours & Dark Null (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
     "criticalRank": 4
   },
   {
-    "id": 2099,
+    "id": 2109,
     "newID": "R+Y+G+B+P+DBrRa,C4",
     "name": "Critical Fours & Cocoa Rainbow (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
     "criticalRank": 4
   },
   {
-    "id": 2100,
+    "id": 2110,
     "newID": "R+Y+G+B+P+DWhPi,C4",
     "name": "Critical Fours & Gray Pink (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
     "criticalRank": 4
   },
   {
-    "id": 2101,
+    "id": 2111,
     "newID": "R+Y+G+B+P+DPr,C4",
     "name": "Critical Fours & Dark Prism (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
