@@ -1,7 +1,7 @@
 import { getVariant } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { SoundType } from "@hanabi/game";
 import type { Draft } from "immer";
-import { SoundType } from "../../../../game/src/enums/SoundType";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
 import { ClueType } from "../types/ClueType";

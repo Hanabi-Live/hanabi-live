@@ -19,9 +19,5 @@
     "moduleResolution": "Node",
   },
 
-  "include": [
-    "./src/**/*.ts",
-    "../game/src/interfaces/TurnState.ts",
-    "../game/src/enums/SoundType.ts",
-  ],
+  "include": ["./src/**/*.ts"],
 }
