@@ -1293,9 +1293,7 @@ function getSudokuVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  // We use a custom type here so that the compiler can prove below that array access is defined.
-  type FourOrFive = 4 | 5;
-  const sudokuSuitNumbers: FourOrFive[] = [4, 5];
+  const sudokuSuitNumbers = [4, 5] as const;
 
   // Create the basic variant. Note that for sudoku, we only want 4 or 5-suit variants.
   for (const numSuits of sudokuSuitNumbers) {
