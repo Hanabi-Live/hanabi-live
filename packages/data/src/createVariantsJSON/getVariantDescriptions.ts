@@ -68,58 +68,6 @@ const NUMBER_WORDS = [
   "Fives",
 ] as const;
 
-function maxRequiredVariantEfficiency(variant: Variant): number {
-  const requiredEfficiencies = VALID_NUM_PLAYERS.map((numPlayers) => {
-    const options = {
-      ...new Options(),
-      numPlayers,
-    };
-    return minEfficiency(
-      numPlayers,
-      numPlayers,
-      variant,
-      cardsPerHand(options),
-    );
-  });
-  return Math.max(...requiredEfficiencies);
-}
-
-function minVariantPace(variant: Variant): number {
-  const startingPaces = VALID_NUM_PLAYERS.map((numPlayers) => {
-    const options = {
-      ...new Options(),
-      numPlayers,
-    };
-    const startingDeckSize = statsRules.startingDeckSize(
-      options.numPlayers,
-      cardsPerHand(options),
-      variant,
-    );
-    return startingPace(startingDeckSize, variant.maxScore, numPlayers);
-  });
-  return Math.min(...startingPaces);
-}
-
-function isVariantAllowed(
-  COLORS: ReadonlyMap<string, Color>,
-  SUITS: ReadonlyMap<string, Suit>,
-  variantDescription: VariantDescription,
-): boolean {
-  const variant = createVariant(COLORS, SUITS, variantDescription, 0, "");
-  if (totalCards(variant) < MINIMUM_CARD_COUNT) {
-    return false;
-  }
-  if (minVariantPace(variant) < 0) {
-    return false;
-  }
-  if (
-    maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
-  ) {
-    return false;
-  }
-  return true;
-}
-
 export function getVariantDescriptions(
   suits: readonly SuitJSON[],
 ): readonly VariantDescription[] {
@@ -1295,4 +1243,56 @@ function getSudokuVariants(
   }
 
   return variantDescriptions;
+}
+
+function maxRequiredVariantEfficiency(variant: Variant): number {
+  const requiredEfficiencies = VALID_NUM_PLAYERS.map((numPlayers) => {
+    const options = {
+      ...new Options(),
+      numPlayers,
+    };
+    return minEfficiency(
+      numPlayers,
+      numPlayers,
+      variant,
+      cardsPerHand(options),
+    );
+  });
+  return Math.max(...requiredEfficiencies);
+}
+
+function minVariantPace(variant: Variant): number {
+  const startingPaces = VALID_NUM_PLAYERS.map((numPlayers) => {
+    const options = {
+      ...new Options(),
+      numPlayers,
+    };
+    const startingDeckSize = statsRules.startingDeckSize(
+      options.numPlayers,
+      cardsPerHand(options),
+      variant,
+    );
+    return startingPace(startingDeckSize, variant.maxScore, numPlayers);
+  });
+  return Math.min(...startingPaces);
+}
+
+function isVariantAllowed(
+  COLORS: ReadonlyMap<string, Color>,
+  SUITS: ReadonlyMap<string, Suit>,
+  variantDescription: VariantDescription,
+): boolean {
+  const variant = createVariant(COLORS, SUITS, variantDescription, 0, "");
+  if (totalCards(variant) < MINIMUM_CARD_COUNT) {
+    return false;
+  }
+  if (minVariantPace(variant) < 0) {
+    return false;
+  }
+  if (
+    maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
+  ) {
+    return false;
+  }
+  return true;
 }
