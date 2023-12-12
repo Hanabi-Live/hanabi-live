@@ -19,6 +19,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 1. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
 1. [Chat](#chat)
 1. [Friends](#friends)
+1. [Linked Accounts](#linked-accounts)
 1. [Tags](#tags)
 1. [Website Endpoints](#website-endpoints)
 1. [Research & Bots](#research--bots)
@@ -507,6 +508,14 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - Your friends will be listed alphabetically at the top of the user list.
 - Games that contain one or more of your friends will be sorted at the top of the games list.
 - If you have one or more friends, a "Show History of Friends" button will appear on the history screen.
+
+## Linked Accounts
+
+- If you use multiple accounts (for example for participating in competitions or just to keep your statistics separate), you might play the same seeds on those accounts. The website supports linking people to your account using the `/link` command. (e.g. `/link YourMainAccount`)
+- When selecting starting a new game with a non-fixed seed, the server will make sure to give you a seed that also none of your linked accounts have played before.
+- This way, by linking your accounts against each other, your seed selection will be as if you just had one account, i.e. you never encounter the same seeds twice.
+- In case you think that you spectate a lot of a certain user's games and might remember their seeds, you could also add some friends to this list to block their seeds.
+- This relation is asymmetric: If Alice puts Bob on their list, she will not play any of Bob's seeds, but Bob might still encounter seeds that Alice played before. This way, each user is in control of their own seed selection.
 
 <br />
 
