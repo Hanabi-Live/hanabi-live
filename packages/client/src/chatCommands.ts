@@ -383,6 +383,21 @@ chatCommands.set("copy", (room: string) => {
   createJSONFromReplay(room);
 });
 
+// /terminate terminates the ongoing game. This is the same as right-clicking the VTK button.
+chatCommands.set("terminate", (room: string) => {
+  if (globals.tableID === -1) {
+    sendSelfPMFromServer(
+      "You are not currently at a table, so you cannot use the <code>/terminate</code> command.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+  globals.conn!.send("tableTerminate", {
+    tableID: globals.tableID,
+  });
+});
+
 export function getVariantFromArgs(args: readonly string[]): string {
   const patterns = {
     doubleSpaces: / {2,}/g,

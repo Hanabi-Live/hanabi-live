@@ -13641,6 +13641,13 @@
     "criticalRank": 4
   },
   {
+    "id": 1645,
+    "newID": "R+Y+G+B+P+Bk,C4",
+    "name": "Critical Fours & Black (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
+    "criticalRank": 4
+  },
+  {
     "id": 1823,
     "newID": "R+Y+G+B+P+Ra,C4",
     "name": "Critical Fours & Rainbow (6 Suits)",
@@ -13764,6 +13771,69 @@
     "newID": "R+Y+G+B+Pr,C4",
     "name": "Critical Fours & Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Prism"],
+    "criticalRank": 4
+  },
+  {
+    "id": 1807,
+    "newID": "R+Y+G+B+P+DRa,C4",
+    "name": "Critical Fours & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
+    "criticalRank": 4
+  },
+  {
+    "id": 1811,
+    "newID": "R+Y+G+B+P+DPi,C4",
+    "name": "Critical Fours & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
+    "criticalRank": 4
+  },
+  {
+    "id": 1815,
+    "newID": "R+Y+G+B+P+DWh,C4",
+    "name": "Critical Fours & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
+    "criticalRank": 4
+  },
+  {
+    "id": 1819,
+    "newID": "R+Y+G+B+P+DBr,C4",
+    "name": "Critical Fours & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2102,
+    "newID": "R+Y+G+B+P+DOm,C4",
+    "name": "Critical Fours & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2103,
+    "newID": "R+Y+G+B+P+DNu,C4",
+    "name": "Critical Fours & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2104,
+    "newID": "R+Y+G+B+P+DBrRa,C4",
+    "name": "Critical Fours & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2105,
+    "newID": "R+Y+G+B+P+DWhPi,C4",
+    "name": "Critical Fours & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2106,
+    "newID": "R+Y+G+B+P+DPr,C4",
+    "name": "Critical Fours & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
     "criticalRank": 4
   },
   {
@@ -15055,14 +15125,6 @@
     "synesthesia": true
   },
   {
-    "id": 1645,
-    "newID": "R+G+B+Bk,NM,Sy",
-    "name": "Synesthesia & Black (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Black"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
     "id": 1647,
     "newID": "R+Y+G+B+P+Ra,NM,Sy",
     "name": "Synesthesia & Rainbow (6 Suits)",
@@ -15207,14 +15269,6 @@
     "synesthesia": true
   },
   {
-    "id": 1807,
-    "newID": "R+G+B+DRa,NM,Sy",
-    "name": "Synesthesia & Dark Rainbow (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Dark Rainbow"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
     "id": 1809,
     "newID": "R+Y+G+B+P+DWh,NM,Sy",
     "name": "Synesthesia & Gray (6 Suits)",
@@ -15227,14 +15281,6 @@
     "newID": "R+Y+G+B+DWh,NM,Sy",
     "name": "Synesthesia & Gray (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Gray"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
-    "id": 1811,
-    "newID": "R+G+B+DWh,NM,Sy",
-    "name": "Synesthesia & Gray (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Gray"],
     "clueRanks": [],
     "synesthesia": true
   },
@@ -15255,14 +15301,6 @@
     "synesthesia": true
   },
   {
-    "id": 1815,
-    "newID": "R+G+B+DBr,NM,Sy",
-    "name": "Synesthesia & Dark Brown (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Dark Brown"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
     "id": 1817,
     "newID": "R+Y+G+B+P+DNu,NM,Sy",
     "name": "Synesthesia & Dark Null (6 Suits)",
@@ -15275,14 +15313,6 @@
     "newID": "R+Y+G+B+DNu,NM,Sy",
     "name": "Synesthesia & Dark Null (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"],
-    "clueRanks": [],
-    "synesthesia": true
-  },
-  {
-    "id": 1819,
-    "newID": "R+G+B+DNu,NM,Sy",
-    "name": "Synesthesia & Dark Null (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Dark Null"],
     "clueRanks": [],
     "synesthesia": true
   },
@@ -15452,6 +15482,13 @@
     "upOrDown": true
   },
   {
+    "id": 2107,
+    "newID": "R+Y+G+B+P+Bk,UD",
+    "name": "Up or Down & Black (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
+    "upOrDown": true
+  },
+  {
     "id": 25,
     "newID": "R+Y+G+B+P+Ra,UD",
     "name": "Up or Down & Rainbow (6 Suits)",
@@ -15578,6 +15615,69 @@
     "upOrDown": true
   },
   {
+    "id": 2108,
+    "newID": "R+Y+G+B+P+DRa,UD",
+    "name": "Up or Down & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
+    "upOrDown": true
+  },
+  {
+    "id": 2109,
+    "newID": "R+Y+G+B+P+DPi,UD",
+    "name": "Up or Down & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
+    "upOrDown": true
+  },
+  {
+    "id": 2110,
+    "newID": "R+Y+G+B+P+DWh,UD",
+    "name": "Up or Down & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
+    "upOrDown": true
+  },
+  {
+    "id": 2111,
+    "newID": "R+Y+G+B+P+DBr,UD",
+    "name": "Up or Down & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
+    "upOrDown": true
+  },
+  {
+    "id": 2112,
+    "newID": "R+Y+G+B+P+DOm,UD",
+    "name": "Up or Down & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
+    "upOrDown": true
+  },
+  {
+    "id": 2113,
+    "newID": "R+Y+G+B+P+DNu,UD",
+    "name": "Up or Down & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
+    "upOrDown": true
+  },
+  {
+    "id": 2114,
+    "newID": "R+Y+G+B+P+DBrRa,UD",
+    "name": "Up or Down & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
+    "upOrDown": true
+  },
+  {
+    "id": 2115,
+    "newID": "R+Y+G+B+P+DWhPi,UD",
+    "name": "Up or Down & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
+    "upOrDown": true
+  },
+  {
+    "id": 2116,
+    "newID": "R+Y+G+B+P+DPr,UD",
+    "name": "Up or Down & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "upOrDown": true
+  },
+  {
     "id": 279,
     "newID": "R+Y+G+B+P+T,TH",
     "name": "Throw It in a Hole (6 Suits)",
@@ -15596,6 +15696,13 @@
     "newID": "R+Y+G+B,TH",
     "name": "Throw It in a Hole (4 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2117,
+    "newID": "R+Y+G+B+P+Bk,TH",
+    "name": "Throw It in a Hole & Black (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
     "throwItInAHole": true
   },
   {
@@ -15785,6 +15892,69 @@
     "newID": "R+G+B+Pr,TH",
     "name": "Throw It in a Hole & Prism (4 Suits)",
     "suits": ["Red", "Green", "Blue", "Prism"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2118,
+    "newID": "R+Y+G+B+P+DRa,TH",
+    "name": "Throw It in a Hole & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2119,
+    "newID": "R+Y+G+B+P+DPi,TH",
+    "name": "Throw It in a Hole & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2120,
+    "newID": "R+Y+G+B+P+DWh,TH",
+    "name": "Throw It in a Hole & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2121,
+    "newID": "R+Y+G+B+P+DBr,TH",
+    "name": "Throw It in a Hole & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2122,
+    "newID": "R+Y+G+B+P+DOm,TH",
+    "name": "Throw It in a Hole & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2123,
+    "newID": "R+Y+G+B+P+DNu,TH",
+    "name": "Throw It in a Hole & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2124,
+    "newID": "R+Y+G+B+P+DBrRa,TH",
+    "name": "Throw It in a Hole & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2125,
+    "newID": "R+Y+G+B+P+DWhPi,TH",
+    "name": "Throw It in a Hole & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2126,
+    "newID": "R+Y+G+B+P+DPr,TH",
+    "name": "Throw It in a Hole & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
     "throwItInAHole": true
   },
   {

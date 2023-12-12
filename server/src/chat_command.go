@@ -64,6 +64,7 @@ func chatCommandInit() {
 	chatCommandMap["links"] = chatCommandWebsiteOnly
 	chatCommandMap["unlink"] = chatCommandWebsiteOnly
 	chatCommandMap["version"] = chatCommandWebsiteOnly
+	chatCommandMap["terminate"] = chatCommandWebsiteOnly
 
 	chatMapAddSimpleResponses()
 }
