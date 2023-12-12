@@ -16,7 +16,7 @@ import type { EndCondition } from "./EndCondition";
 import type { MsgClue } from "./MsgClue";
 import type { Spectator } from "./Spectator";
 import type { SpectatorNote } from "./SpectatorNote";
-import type { UIAction } from "./UI";
+import type { UIAction } from "./UIAction";
 
 export type Action =
   | ActionInit

@@ -1,4 +1,4 @@
-import type { UIAction } from "../types/UI";
+import type { UIAction } from "../types/UIAction";
 import type { UIState } from "../types/UIState";
 import { HanabiCard } from "../ui/HanabiCard";
 

@@ -1,4 +1,5 @@
 import { getDefaultVariant, getVariant } from "@hanabi/data";
+import { PaceRisk } from "@hanabi/game";
 import {
   cluesStillUsable,
   minEfficiency,
@@ -145,11 +146,11 @@ describe("pace", () => {
 
 describe("paceRisk", () => {
   test("is Zero when pace is 0", () => {
-    expect(paceRisk(0, 4)).toBe("Zero");
+    expect(paceRisk(0, 4)).toBe(PaceRisk.Zero);
   });
 
-  test("is Null when pace is null", () => {
-    expect(paceRisk(null, 4)).toBe("Null");
+  test("is Low when pace is null", () => {
+    expect(paceRisk(null, 4)).toBe(PaceRisk.Low);
   });
 });
 
