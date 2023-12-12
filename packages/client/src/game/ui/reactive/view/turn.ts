@@ -1,5 +1,5 @@
+import { ClueType } from "@hanabi/game";
 import * as clueTokensRules from "../../../rules/clueTokens";
-import { ClueType } from "../../../types/ClueType";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { isOurTurn } from "../../isOurTurn";

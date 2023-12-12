@@ -9,6 +9,7 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import { assertDefined, assertNotNull, eRange } from "@hanabi/utils";
+import { ClueType } from "../../game/src/enums/ClueType";
 import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
@@ -17,7 +18,6 @@ import * as playStacksRules from "../src/game/rules/playStacks";
 import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
-import { ClueType } from "../src/game/types/ClueType";
 import type { GameState } from "../src/game/types/GameState";
 import type { State } from "../src/game/types/State";
 import type {

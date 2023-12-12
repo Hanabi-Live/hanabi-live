@@ -1,10 +1,10 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
+import { ClueType } from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
 import type { ClientAction } from "../game/types/ClientAction";
-import { ClueType } from "../game/types/ClueType";
 import type { LogEntry } from "../game/types/GameState";
 import type { JSONGame } from "../game/types/JSONGame";
 import type { ReplayState } from "../game/types/ReplayState";

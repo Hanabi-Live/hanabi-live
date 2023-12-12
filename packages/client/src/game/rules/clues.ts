@@ -2,11 +2,11 @@
 
 import type { PlayerIndex, Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { ClueType } from "@hanabi/game";
 import { assertDefined } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue, ColorClue, RankClue } from "../types/Clue";
 import { newColorClue, newRankClue } from "../types/Clue";
-import { ClueType } from "../types/ClueType";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { MsgClue } from "../types/MsgClue";
 

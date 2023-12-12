@@ -10,7 +10,7 @@ import type {
   RankClueNumber,
   SuitIndex,
 } from "@hanabi/data";
-import { ClueType } from "../src/game/types/ClueType";
+import { ClueType } from "../../game/src/enums/ClueType";
 import type {
   ActionCardIdentity,
   ActionClue,

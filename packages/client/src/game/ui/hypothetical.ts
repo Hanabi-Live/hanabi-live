@@ -7,11 +7,11 @@ import type {
   PlayerIndex,
   RankClueNumber,
 } from "@hanabi/data";
+import { ClueType } from "@hanabi/game";
 import { assertDefined, eRange } from "@hanabi/utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
-import { ClueType } from "../types/ClueType";
 import type { MsgClue } from "../types/MsgClue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";

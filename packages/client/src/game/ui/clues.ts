@@ -1,11 +1,11 @@
 import type { CardOrder } from "@hanabi/data";
+import { ClueType } from "@hanabi/game";
 import { assertDefined, eRange } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";
 import { ActionType } from "../types/ActionType";
 import type { Clue } from "../types/Clue";
-import { ClueType } from "../types/ClueType";
 import type { MsgClue } from "../types/MsgClue";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
