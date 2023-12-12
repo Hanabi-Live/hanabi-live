@@ -80,10 +80,11 @@ If you need general help with the website, then read the [features page](feature
 
 ## Game Commands
 
-| Command    | Description                              |
-| ---------- | ---------------------------------------- |
-| `/pause`   | Pause the game (can be done on any turn) |
-| `/unpause` | Unpause the game                         |
+| Command      | Description                              |
+| ------------ | ---------------------------------------- |
+| `/pause`     | Pause the game (can be done on any turn) |
+| `/unpause`   | Unpause the game                         |
+| `/terminate` | Terminate the game                       |
 
 <br />
 
