@@ -48,14 +48,13 @@ chatCommands.set("friends", friends);
 chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
 
-
 function link(room: string, args: string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
     sendSelfPMFromServer(
-        "The format of the /link command is: <code>/link Alice</code>",
-        room,
-        SelfChatMessageType.Info,
+      "The format of the /link command is: <code>/link Alice</code>",
+      room,
+      SelfChatMessageType.Info,
     );
     return;
   }
@@ -75,9 +74,9 @@ function unlink(room: string, args: string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
     sendSelfPMFromServer(
-        "The format of the /unlink command is: <code>/unlink Alice</code>",
-        room,
-        SelfChatMessageType.Info,
+      "The format of the /unlink command is: <code>/unlink Alice</code>",
+      room,
+      SelfChatMessageType.Info,
     );
     return;
   }
