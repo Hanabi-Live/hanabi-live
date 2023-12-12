@@ -1,9 +1,9 @@
 import type { CardOrder, NumSuits, Rank } from "@hanabi/data";
 import { START_CARD_RANK, getDefaultVariant, getVariant } from "@hanabi/data";
+import { StackDirection } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { eRange, newArray } from "@hanabi/utils";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
-import { StackDirection } from "../types/StackDirection";
 import { direction, nextPlayableRanks } from "./playStacks";
 
 const NUM_PLAYERS = 2;

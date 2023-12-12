@@ -4,10 +4,10 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { StackDirection } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { eRange, iRange, newArray } from "@hanabi/utils";
 import type { GameState } from "../../types/GameState";
-import { StackDirection } from "../../types/StackDirection";
 import { discardedHelpers, getAllDiscardedSet } from "./discardHelpers";
 
 /**

@@ -19,5 +19,9 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts", "../game/src/enums/CardStatus.ts"],
+  "include": [
+    "./src/**/*.ts",
+    "../game/src/enums/CardStatus.ts",
+    "../game/src/enums/StackDirection.ts",
+  ],
 }

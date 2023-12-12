@@ -1,6 +1,7 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
 import type { CardState } from "@hanabi/game";
+import { StackDirection } from "@hanabi/game";
 import { assertDefined, eRange } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
@@ -8,7 +9,6 @@ import upOrDownGame from "../../../test_data/up_or_down.json";
 import upOrDownFinalCards from "../../../test_data/up_or_down_final_cards.json";
 import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
 import type { GameState } from "../types/GameState";
-import { StackDirection } from "../types/StackDirection";
 import type { State } from "../types/State";
 import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 
