@@ -19,6 +19,10 @@ export function totalCards(variant: Variant): number {
 
 function totalCardsInSuit(variant: Variant, suit: Suit): number {
   if (suit.oneOfEach) {
+    if (variant.upOrDown) {
+      // A critical suit in up or down has all unique cards plus an extra start card.
+      return variant.stackSize + 1;
+    }
     return variant.stackSize;
   }
 
