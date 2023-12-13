@@ -121,7 +121,7 @@ func commandInit() {
 	commandMap["chatUnfriend"] = commandChatUnfriend
 	commandMap["chatLink"] = commandChatLink
 	commandMap["chatUnlink"] = commandChatUnlink
-	commandMap["chatLinks"] = commandChatLinks
+	commandMap["chatLinked"] = commandChatLinked
 	commandMap["chatPlayerInfo"] = commandChatPlayerInfo
 	commandMap["getName"] = commandGetName
 	commandMap["inactive"] = commandInactive

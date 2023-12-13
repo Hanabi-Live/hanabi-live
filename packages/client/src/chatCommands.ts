@@ -95,13 +95,14 @@ function unlink(room: string, args: readonly string[]) {
 }
 
 // /links
-function links() {
-  globals.conn!.send("chatLinks", {});
+function linked() {
+  globals.conn!.send("chatLinked", {});
 }
 
 chatCommands.set("link", link);
 chatCommands.set("unlink", unlink);
-chatCommands.set("links", links);
+chatCommands.set("linked", linked);
+chatCommands.set("links", linked);
 
 // /pm [username] [msg]
 function pm(room: string, args: readonly string[]) {

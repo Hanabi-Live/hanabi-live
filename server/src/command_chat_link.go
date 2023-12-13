@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func commandChatLinks(ctx context.Context, s *Session, d *CommandData) {
+func commandChatLinked(ctx context.Context, s *Session, d *CommandData) {
 	var usernames []string
 	if val, err := models.UserLinkages.GetAllLinkedUsernames(s.UserID); err != nil {
 		logger.Error("Failed to retrieve linked usernames for user " + s.Username)
@@ -38,7 +38,7 @@ func link(s *Session, d *CommandData, add bool) {
 	if len(d.Name) == 0 {
 		var msg string
 		if add {
-			msg = "The format of the /linked_user command is: /linked_user [username]"
+			msg = "The format of the /link command is: /link [username]"
 		} else {
 			msg = "The format of the /unlink command is: /unlink [username]"
 		}

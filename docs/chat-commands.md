@@ -40,7 +40,7 @@ If you need general help with the website, then read the [features page](feature
 | `/friends`             | Show a list of all your friends             |
 | `/unfriend [username]` | Remove someone from your friends list       |
 | `/link [username]`     | Add someone to your linked accounts         |
-| `/links`               | Show a list of all your linked accounts     |
+| `/linked`              | Show a list of all your linked accounts     |
 | `/unlink [username]`   | Remove someone from your linked accounts    |
 | `/tagsearch [tag]`     | Search through all games for a specific tag |
 | `/version`             | Show the version number of the client code  |
