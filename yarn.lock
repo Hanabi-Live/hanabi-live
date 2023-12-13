@@ -2288,6 +2288,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsconfig/node-lts@npm:^20.1.0":
+  version: 20.1.0
+  resolution: "@tsconfig/node-lts@npm:20.1.0"
+  checksum: 1e8e16ce95f6fac33db355a382930019162519287dd0cf1b33045aa9715e1b62616c1a35e9f91eff3cac4a0b446cd5226c8c49c380fc95cc6943952cf7480212
+  languageName: node
+  linkType: hard
+
 "@tsconfig/strictest@npm:^2.0.2":
   version: 2.0.2
   resolution: "@tsconfig/strictest@npm:2.0.2"
@@ -5745,9 +5752,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:^4.24.3":
-  version: 4.24.3
-  resolution: "fastify@npm:4.24.3"
+"fastify@npm:^4.25.0":
+  version: 4.25.0
+  resolution: "fastify@npm:4.25.0"
   dependencies:
     "@fastify/ajv-compiler": "npm:^3.5.0"
     "@fastify/error": "npm:^3.4.0"
@@ -5758,14 +5765,14 @@ __metadata:
     fast-json-stringify: "npm:^5.8.0"
     find-my-way: "npm:^7.7.0"
     light-my-request: "npm:^5.11.0"
-    pino: "npm:^8.16.0"
-    process-warning: "npm:^2.2.0"
+    pino: "npm:^8.17.0"
+    process-warning: "npm:^3.0.0"
     proxy-addr: "npm:^2.0.7"
     rfdc: "npm:^1.3.0"
     secure-json-parse: "npm:^2.7.0"
     semver: "npm:^7.5.4"
     toad-cache: "npm:^3.3.0"
-  checksum: 36018767b25cde307942f52172eedfc7c1ce186162222334e19caa607e3d29fe3de04cff2c08f21096d45fa4b071cd58a319392a6dbb5b5dbdf8230b38405c3e
+  checksum: 7a6d2ce565d0c959c55ab13c84343963139bf5805842ffd38e65909b680faa20002c66d0ee1526de6ee050ecd739b0f5a0120d9a695e4a077f18f2ff72014a37
   languageName: node
   linkType: hard
 
@@ -6619,7 +6626,7 @@ __metadata:
     "@fastify/static": "npm:^6.12.0"
     "@fastify/view": "npm:^8.2.0"
     "@total-typescript/ts-reset": "npm:^0.5.1"
-    "@tsconfig/node-lts": "npm:^18.12.5"
+    "@tsconfig/node-lts": "npm:^20.1.0"
     "@types/jest": "npm:^29.5.11"
     "@types/jquery": "npm:^3.5.29"
     "@types/jsdom": "npm:^21.1.6"
@@ -6636,7 +6643,7 @@ __metadata:
     esbuild-plugin-pino: "npm:^2.1.0"
     eta: "npm:^3.2.0"
     fast-deep-equal: "npm:^3.1.3"
-    fastify: "npm:^4.24.3"
+    fastify: "npm:^4.25.0"
     fastify-favicon: "npm:^4.3.0"
     grunt: "npm:^1.6.1"
     grunt-contrib-concat: "npm:^2.1.0"
@@ -6645,7 +6652,7 @@ __metadata:
     http-status-codes: "npm:^2.3.0"
     immer: "npm:^10.0.3"
     interactjs: "npm:^1.10.26"
-    isaacscript: "npm:^3.31.0"
+    isaacscript: "npm:^3.32.1"
     isaacscript-lint: "npm:^6.11.0"
     isaacscript-tsconfig: "npm:^5.0.0"
     jest: "npm:^29.7.0"
@@ -6657,7 +6664,7 @@ __metadata:
     linkify-html: "npm:^4.1.3"
     linkifyjs: "npm:^4.1.3"
     lodash: "npm:^4.17.21"
-    pino: "npm:^8.16.2"
+    pino: "npm:^8.17.0"
     pino-pretty: "npm:^10.2.3"
     postgres: "npm:^3.4.3"
     prettier: "npm:^3.1.1"
@@ -6672,7 +6679,7 @@ __metadata:
     tsx: "npm:^4.6.2"
     typescript: "npm:^5.3.3"
     unidecode: "npm:^0.1.8"
-    ws: "npm:^8.15.0"
+    ws: "npm:^8.15.1"
     xmlserializer: "npm:^0.6.1"
     zod: "npm:^3.22.4"
   languageName: unknown
@@ -7504,6 +7511,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isaacscript-common-ts@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "isaacscript-common-ts@npm:12.0.0"
+  checksum: db84ace77884574f6f0df254d126a1919e0e8c1ee2d6943cb2295ee060ef4b618dc876bda7d4134ef122eacb7155a2e3731148115c8a82c86e9a2264f72b7b3d
+  languageName: node
+  linkType: hard
+
 "isaacscript-lint@npm:^6.11.0":
   version: 6.11.0
   resolution: "isaacscript-lint@npm:6.11.0"
@@ -7546,9 +7560,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript@npm:^3.31.0":
-  version: 3.31.0
-  resolution: "isaacscript@npm:3.31.0"
+"isaacscript@npm:^3.32.1":
+  version: 3.32.1
+  resolution: "isaacscript@npm:3.32.1"
   dependencies:
     "@commander-js/extra-typings": "npm:^11.1.0"
     "@zamiell/sync-directory": "npm:^6.0.5"
@@ -7557,7 +7571,7 @@ __metadata:
     commander: "npm:^11.1.0"
     figlet: "npm:^1.7.0"
     isaacscript-common-node: "npm:^1.4.0"
-    isaacscript-common-ts: "npm:^11.6.0"
+    isaacscript-common-ts: "npm:^12.0.0"
     jsonc-parser: "npm:^3.2.0"
     klaw-sync: "npm:^6.0.0"
     moment: "npm:^2.29.4"
@@ -7573,7 +7587,7 @@ __metadata:
       optional: true
   bin:
     isaacscript: dist/main.js
-  checksum: 5c7b83016e2758589363bba80b033405ed1bc178901782aca788d090b10040532b0e840cf97cb31ac9adb9a48c1bc7bb48505f3c6c7b5134c32d12722a4b6f64
+  checksum: 0bc1ed552a3f56ddeac64b2bb146ae2b6456cbe2e3110ab49a5276117ebbbe5af511ac489682dfa14bf844795b13f9620d764de268425a100fbac5350152b824
   languageName: node
   linkType: hard
 
@@ -10314,9 +10328,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^8.16.0":
-  version: 8.16.1
-  resolution: "pino@npm:8.16.1"
+"pino@npm:^8.17.0":
+  version: 8.17.0
+  resolution: "pino@npm:8.17.0"
   dependencies:
     atomic-sleep: "npm:^1.0.0"
     fast-redact: "npm:^3.1.1"
@@ -10331,28 +10345,7 @@ __metadata:
     thread-stream: "npm:^2.0.0"
   bin:
     pino: bin.js
-  checksum: 06ea391095e895f1f94adda231fb51565e2935a9cad87e6559b7e074a6dadc8bd279367dbe119b1649774480a53c97214f32daa4c14b21a853d50c60a4c28976
-  languageName: node
-  linkType: hard
-
-"pino@npm:^8.16.2":
-  version: 8.16.2
-  resolution: "pino@npm:8.16.2"
-  dependencies:
-    atomic-sleep: "npm:^1.0.0"
-    fast-redact: "npm:^3.1.1"
-    on-exit-leak-free: "npm:^2.1.0"
-    pino-abstract-transport: "npm:v1.1.0"
-    pino-std-serializers: "npm:^6.0.0"
-    process-warning: "npm:^2.0.0"
-    quick-format-unescaped: "npm:^4.0.3"
-    real-require: "npm:^0.2.0"
-    safe-stable-stringify: "npm:^2.3.1"
-    sonic-boom: "npm:^3.7.0"
-    thread-stream: "npm:^2.0.0"
-  bin:
-    pino: bin.js
-  checksum: ea1b2f426985a442b65566a75e3f20eed47c1f51f3aea9a10fc16a452feb339cde4d5439d724c822408fce6a8bfcf6d24f61421547f4cc718f44a6eb47921293
+  checksum: 88460847d1a0319896acbe083de8b81a0af44219a6f7336e3263b6987f97073d6c9c03923fefff01cb9bfc72f9fb6b1bf99356bfdd04223b6a6b60d36dab9fda
   languageName: node
   linkType: hard
 
@@ -10517,10 +10510,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"process-warning@npm:^2.0.0, process-warning@npm:^2.2.0":
+"process-warning@npm:^2.0.0":
   version: 2.3.0
   resolution: "process-warning@npm:2.3.0"
   checksum: c9ce917ccf5418d229910fa4f431c6ad16388793e000afb47deeaf8434fb697fc0ad0ca4e1c2dc7adb25cab9d6d759208a0765849fe93e35ecf0444ae2c88e08
+  languageName: node
+  linkType: hard
+
+"process-warning@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "process-warning@npm:3.0.0"
+  checksum: 60f3c8ddee586f0706c1e6cb5aa9c86df05774b9330d792d7c8851cf0031afd759d665404d07037e0b4901b55c44a423f07bdc465c63de07d8d23196bb403622
   languageName: node
   linkType: hard
 
@@ -12937,9 +12937,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.15.0":
-  version: 8.15.0
-  resolution: "ws@npm:8.15.0"
+"ws@npm:^8.15.1":
+  version: 8.15.1
+  resolution: "ws@npm:8.15.1"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -12948,7 +12948,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: b778a405b2589ffbf549323e2f404f1f72e372a049d332d2f0b1f33057e9fbb14a05aa474cb156e4584b418cd95edf4297c0ca5263d6519e8009064bf8e0b80d
+  checksum: 9964360dd5ab35c7376bd7c4295a3c8bd44ea0838c9413742548a6fb3ec371fc6c18552d5b8e76bdc21536db1909765612815bae072674b5ec69971605395a96
   languageName: node
   linkType: hard
 
