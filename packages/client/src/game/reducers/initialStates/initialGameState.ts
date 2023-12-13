@@ -134,6 +134,10 @@ export function initialGameState(metadata: GameMetadata): GameState {
       cluesStillUsableNotRounded,
 
       doubleDiscard: null,
+
+      numSubsequentBlindPlays: 0,
+      numSubsequentMisplays: 0,
+
       lastAction: null,
       soundTypeForLastAction: SoundType.Standard,
     },

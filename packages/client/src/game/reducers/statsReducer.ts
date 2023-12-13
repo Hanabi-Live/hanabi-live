@@ -5,6 +5,7 @@ import { getVariant } from "@hanabi/data";
 import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
+import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
@@ -174,6 +175,26 @@ function statsReducerFunction(
     );
   } else if (action.type === "play" || action.type === "clue") {
     statsState.doubleDiscard = null;
+  }
+
+  // Handle `numSubsequentBlindPlays`.
+  if (action.type === "play") {
+    const card = currentState.deck[action.order];
+    const touched = card !== undefined && cardRules.isCardClued(card);
+    if (touched) {
+      statsState.numSubsequentBlindPlays = 0;
+    } else {
+      statsState.numSubsequentBlindPlays++;
+    }
+  } else {
+    statsState.numSubsequentBlindPlays = 0;
+  }
+
+  // Handle `numSubsequentMisplays`.
+  if (action.type === "discard" && action.failed) {
+    statsState.numSubsequentMisplays++;
+  } else {
+    statsState.numSubsequentMisplays = 0;
   }
 
   // Record the last action.

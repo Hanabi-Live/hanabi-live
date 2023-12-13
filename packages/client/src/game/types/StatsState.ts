@@ -5,21 +5,21 @@ import type { SoundType } from "./SoundType";
 import type { GameAction } from "./actions";
 
 export interface StatsState {
-  // For max score
+  // For max score.
   readonly maxScore: number;
   readonly maxScorePerStack: Readonly<Tuple<number, NumSuits>>;
 
-  // For pace
+  // For pace.
   readonly pace: number | null;
   readonly paceRisk: PaceRisk;
   readonly finalRoundEffectivelyStarted: boolean;
 
-  // For efficiency
+  // For efficiency.
   readonly cardsGotten: number;
   readonly potentialCluesLost: number;
   // (Efficiency is simply "cardsGotten / potentialCluesLost".)
 
-  // For future efficiency
+  // For future efficiency.
   readonly cluesStillUsable: number | null;
   readonly cluesStillUsableNotRounded: number | null;
   readonly cardsGottenByNotes: number | null;
@@ -30,6 +30,10 @@ export interface StatsState {
   readonly doubleDiscard: CardOrder | null;
 
   // For determining sound effects.
+  readonly numSubsequentBlindPlays: number;
+  readonly numSubsequentMisplays: number;
+
+  // TODO: Remove these.
   readonly lastAction: GameAction | null;
   readonly soundTypeForLastAction: SoundType;
 }
