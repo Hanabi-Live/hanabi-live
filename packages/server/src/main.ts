@@ -10,7 +10,7 @@ main().catch((error) => {
 
 async function main() {
   logWelcomeMessage();
-  logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`, 123);
+  logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`);
 
   await models.chatLog.testDatabase();
   await httpInit();
