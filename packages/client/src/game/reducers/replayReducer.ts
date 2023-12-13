@@ -9,7 +9,7 @@ import type {
   ActionIncludingHypothetical,
   ReplayAction,
 } from "../types/actions";
-import { gameStateReducer } from "./gameStateReducer";
+import { gameReducer } from "./gameReducer";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 
@@ -293,7 +293,7 @@ function hypoAction(
     : action;
 
   const oldSegment = state.hypothetical.ongoing.turn.segment;
-  const newState = gameStateReducer(
+  const newState = gameReducer(
     state.hypothetical.ongoing,
     newAction,
     true,

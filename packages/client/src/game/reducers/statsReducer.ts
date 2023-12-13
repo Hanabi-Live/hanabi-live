@@ -18,7 +18,7 @@ import { getSoundType } from "./getSoundType";
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 
 function statsReducerFunction(
-  stats: Draft<StatsState>,
+  statsState: Draft<StatsState>,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
@@ -32,7 +32,7 @@ function statsReducerFunction(
   switch (action.type) {
     case "clue": {
       // A clue was spent.
-      stats.potentialCluesLost++;
+      statsState.potentialCluesLost++;
 
       break;
     }
@@ -42,7 +42,7 @@ function statsReducerFunction(
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
       if (!variant.throwItInAHole || (!playing && !shadowing)) {
-        stats.potentialCluesLost += clueTokensRules.discardValue(variant);
+        statsState.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
       break;
@@ -60,7 +60,8 @@ function statsReducerFunction(
         ) {
           // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
           // what happens when the team gets a strike.
-          stats.potentialCluesLost += clueTokensRules.discardValue(variant);
+          statsState.potentialCluesLost +=
+            clueTokensRules.discardValue(variant);
         }
       }
 
@@ -79,14 +80,14 @@ function statsReducerFunction(
 
   // Handle max score calculation.
   if (action.type === "play" || action.type === "discard") {
-    stats.maxScorePerStack = statsRules.getMaxScorePerStack(
+    statsState.maxScorePerStack = statsRules.getMaxScorePerStack(
       currentState.deck,
       currentState.playStackDirections,
       currentState.playStackStarts,
       variant,
     );
 
-    stats.maxScore = sumArray(stats.maxScorePerStack);
+    statsState.maxScore = sumArray(statsState.maxScorePerStack);
   }
 
   // Handle pace calculation.
@@ -94,28 +95,31 @@ function statsReducerFunction(
     variant.throwItInAHole && (playing || shadowing)
       ? currentState.numAttemptedCardsPlayed
       : currentState.score;
-  stats.pace = statsRules.pace(
+  statsState.pace = statsRules.pace(
     score,
     currentState.cardsRemainingInTheDeck,
-    stats.maxScore,
+    statsState.maxScore,
     numEndGameTurns,
     // `currentPlayerIndex` will be null if the game is over.
     currentState.turn.currentPlayerIndex === null,
   );
-  stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
+  statsState.paceRisk = statsRules.paceRisk(
+    statsState.pace,
+    metadata.options.numPlayers,
+  );
 
   // Handle efficiency calculation.
-  stats.cardsGotten = statsRules.cardsGotten(
+  statsState.cardsGotten = statsRules.cardsGotten(
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
     currentState.playStackStarts,
     playing,
     shadowing,
-    stats.maxScore,
+    statsState.maxScore,
     variant,
   );
-  stats.cardsGottenByNotes =
+  statsState.cardsGottenByNotes =
     ourNotes === null
       ? null
       : statsRules.cardsGottenByNotes(
@@ -131,10 +135,10 @@ function statsReducerFunction(
   const scorePerStack = currentState.playStacks.map(
     (playStack) => playStack.length,
   );
-  stats.cluesStillUsable = statsRules.cluesStillUsable(
+  statsState.cluesStillUsable = statsRules.cluesStillUsable(
     score,
     scorePerStack,
-    stats.maxScorePerStack,
+    statsState.maxScorePerStack,
     variant.stackSize,
     currentState.cardsRemainingInTheDeck,
     numEndGameTurns,
@@ -142,10 +146,10 @@ function statsReducerFunction(
     clueTokensRules.suitValue(variant),
     clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
   );
-  stats.cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
+  statsState.cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
     score,
     scorePerStack,
-    stats.maxScorePerStack,
+    statsState.maxScorePerStack,
     variant.stackSize,
     currentState.cardsRemainingInTheDeck,
     numEndGameTurns,
@@ -156,28 +160,28 @@ function statsReducerFunction(
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed
   // number of turns.
-  stats.finalRoundEffectivelyStarted =
+  statsState.finalRoundEffectivelyStarted =
     currentState.cardsRemainingInTheDeck <= 0 ||
-    stats.cluesStillUsable === null ||
-    stats.cluesStillUsable < 1;
+    statsState.cluesStillUsable === null ||
+    statsState.cluesStillUsable < 1;
 
   // Handle double discard calculation.
   if (action.type === "discard") {
-    stats.doubleDiscard = statsRules.doubleDiscard(
+    statsState.doubleDiscard = statsRules.doubleDiscard(
       action.order,
       currentState,
       variant,
     );
   } else if (action.type === "play" || action.type === "clue") {
-    stats.doubleDiscard = null;
+    statsState.doubleDiscard = null;
   }
 
   // Record the last action.
-  stats.lastAction = castDraft(action);
+  statsState.lastAction = castDraft(action);
 
   // Find out which sound effect to play (if this is an ongoing game).
-  stats.soundTypeForLastAction = getSoundType(
-    stats,
+  statsState.soundTypeForLastAction = getSoundType(
+    statsState,
     action,
     originalState,
     currentState,

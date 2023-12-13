@@ -26,13 +26,10 @@ import { knownTrashReducer } from "./knownTrashReducer";
 import { statsReducer } from "./statsReducer";
 import { turnReducer } from "./turnReducer";
 
-export const gameStateReducer = produce(
-  gameStateReducerFunction,
-  {} as GameState,
-);
+export const gameReducer = produce(gameReducerFunction, {} as GameState);
 
-function gameStateReducerFunction(
-  state: Draft<GameState>,
+function gameReducerFunction(
+  gameState: Draft<GameState>,
   action: GameAction,
   playing: boolean,
   shadowing: boolean,
@@ -59,14 +56,14 @@ function gameStateReducerFunction(
      * ```
      */
     case "clue": {
-      state.clueTokens -= clueTokensRules.getAdjusted(1, variant);
+      gameState.clueTokens -= clueTokensRules.getAdjusted(1, variant);
 
       assertNotNull(
-        state.turn.segment,
+        gameState.turn.segment,
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
 
-      const targetHand = state.hands[action.target];
+      const targetHand = gameState.hands[action.target];
       assertDefined(
         targetHand,
         `Failed to find the hand at index: ${action.target}`,
@@ -85,11 +82,11 @@ function gameStateReducerFunction(
             value: action.clue.value,
             giver: action.giver,
             target: action.target,
-            segment: state.turn.segment,
+            segment: gameState.turn.segment,
             list: action.list,
             negativeList,
           });
-          state.clues.push(clue);
+          gameState.clues.push(clue);
           break;
         }
 
@@ -99,29 +96,29 @@ function gameStateReducerFunction(
             value: action.clue.value,
             giver: action.giver,
             target: action.target,
-            segment: state.turn.segment,
+            segment: gameState.turn.segment,
             list: action.list,
             negativeList,
           });
-          state.clues.push(clue);
+          gameState.clues.push(clue);
           break;
         }
       }
 
       const text = textRules.clue(action, targetHand, hypothetical, metadata);
-      state.log.push({
-        turn: state.turn.turnNum + 1,
+      gameState.log.push({
+        turn: gameState.turn.turnNum + 1,
         text,
       });
 
       // Handle the "Card Cycling" game option.
-      const giverHand = state.hands[action.giver];
+      const giverHand = gameState.hands[action.giver];
       assertDefined(
         giverHand,
         `Failed to find the hand at index: ${action.giver}`,
       );
 
-      cardCycle(giverHand, castDraft(state.deck), metadata);
+      cardCycle(giverHand, castDraft(gameState.deck), metadata);
 
       break;
     }
@@ -142,7 +139,7 @@ function gameStateReducerFunction(
      */
     case "discard": {
       // Remove it from the hand.
-      const hand = state.hands[action.playerIndex];
+      const hand = gameState.hands[action.playerIndex];
       assertDefined(
         hand,
         `Failed to find the hand at index: ${action.playerIndex}`,
@@ -158,7 +155,7 @@ function gameStateReducerFunction(
 
       if (
         !throwItInAHolePlayedOrMisplayed(
-          state,
+          gameState,
           action,
           variant,
           playing,
@@ -173,7 +170,7 @@ function gameStateReducerFunction(
         }
 
         // Add it to the discard stacks.
-        const discardStack = state.discardStacks[action.suitIndex];
+        const discardStack = gameState.discardStacks[action.suitIndex];
         assertDefined(
           discardStack,
           `Failed to find the discard stack at index: ${action.suitIndex}`,
@@ -182,14 +179,14 @@ function gameStateReducerFunction(
         discardStack.push(action.order);
 
         // Discarding cards grants clue tokens under certain circumstances.
-        state.clueTokens = clueTokensRules.gain(
+        gameState.clueTokens = clueTokensRules.gain(
           action,
-          state.clueTokens,
+          gameState.clueTokens,
           variant,
         );
       }
 
-      const card = state.deck[action.order];
+      const card = gameState.deck[action.order];
       assertDefined(card, `Failed to find the card at order: ${action.order}`);
 
       const touched = cardRules.isCardClued(card);
@@ -202,8 +199,8 @@ function gameStateReducerFunction(
         hypothetical,
         metadata,
       );
-      state.log.push({
-        turn: state.turn.turnNum + 1,
+      gameState.log.push({
+        turn: gameState.turn.turnNum + 1,
         text,
       });
 
@@ -224,21 +221,24 @@ function gameStateReducerFunction(
      * ```
      */
     case "draw": {
-      state.cardsRemainingInTheDeck--;
-      const hand = state.hands[action.playerIndex];
+      gameState.cardsRemainingInTheDeck--;
+      const hand = gameState.hands[action.playerIndex];
       if (hand !== undefined) {
         hand.push(action.order);
       }
 
       if (
-        deckRules.isInitialDealFinished(state.cardsRemainingInTheDeck, metadata)
+        deckRules.isInitialDealFinished(
+          gameState.cardsRemainingInTheDeck,
+          metadata,
+        )
       ) {
         const text = textRules.goesFirst(
-          state.turn.currentPlayerIndex,
+          gameState.turn.currentPlayerIndex,
           metadata.playerNames,
         );
-        state.log.push({
-          turn: state.turn.turnNum + 1,
+        gameState.log.push({
+          turn: gameState.turn.turnNum + 1,
           text,
         });
       }
@@ -260,18 +260,18 @@ function gameStateReducerFunction(
      */
     case "gameOver": {
       if (action.endCondition !== EndCondition.Normal) {
-        state.score = 0;
+        gameState.score = 0;
       }
 
       const text = textRules.gameOver(
         action.endCondition,
         action.playerIndex,
-        state.score,
+        gameState.score,
         metadata,
         action.votes,
       );
-      state.log.push({
-        turn: state.turn.turnNum + 1,
+      gameState.log.push({
+        turn: gameState.turn.turnNum + 1,
         text,
       });
 
@@ -293,7 +293,7 @@ function gameStateReducerFunction(
      */
     case "play": {
       // Remove it from the hand.
-      const hand = state.hands[action.playerIndex];
+      const hand = gameState.hands[action.playerIndex];
       assertDefined(
         hand,
         `Failed to find the hand at index: ${action.playerIndex}`,
@@ -309,7 +309,7 @@ function gameStateReducerFunction(
       // Add it to the play stacks.
       if (
         !throwItInAHolePlayedOrMisplayed(
-          state,
+          gameState,
           action,
           variant,
           playing,
@@ -323,7 +323,7 @@ function gameStateReducerFunction(
           );
         }
 
-        const playStack = state.playStacks[action.suitIndex];
+        const playStack = gameState.playStacks[action.suitIndex];
         assertDefined(
           playStack,
           `Failed to find the play stack at index: ${action.suitIndex}`,
@@ -332,18 +332,18 @@ function gameStateReducerFunction(
         playStack.push(action.order);
 
         // Playing cards grants clue tokens under certain circumstances.
-        state.clueTokens = clueTokensRules.gain(
+        gameState.clueTokens = clueTokensRules.gain(
           action,
-          state.clueTokens,
+          gameState.clueTokens,
           variant,
           playStack.length === variant.stackSize,
         );
       }
 
       // Gain a point.
-      state.score++;
+      gameState.score++;
 
-      const card = state.deck[action.order];
+      const card = gameState.deck[action.order];
       assertDefined(card, `Failed to find the card at order: ${action.order}`);
 
       const touched = cardRules.isCardClued(card);
@@ -356,8 +356,8 @@ function gameStateReducerFunction(
         hypothetical,
         metadata,
       );
-      state.log.push({
-        turn: state.turn.turnNum + 1,
+      gameState.log.push({
+        turn: gameState.turn.turnNum + 1,
         text,
       });
 
@@ -377,16 +377,16 @@ function gameStateReducerFunction(
         const text = metadata.options.timed
           ? `${playerName} had ${durationString} left`
           : `${playerName} took: ${durationString}`;
-        state.log.push({
-          turn: state.turn.turnNum + 1,
+        gameState.log.push({
+          turn: gameState.turn.turnNum + 1,
           text,
         });
       }
 
       const clockString = millisecondsToClockString(action.duration);
       const text = `The total game duration was: ${clockString}`;
-      state.log.push({
-        turn: state.turn.turnNum + 1,
+      gameState.log.push({
+        turn: gameState.turn.turnNum + 1,
         text,
       });
 
@@ -409,9 +409,9 @@ function gameStateReducerFunction(
     case "strike": {
       // We intentionally do not validate the size of the strikes array because we allow more than 3
       // strikes in hypotheticals.
-      state.strikes.push({
+      gameState.strikes.push({
         order: action.order,
-        segment: state.turn.segment ?? 1,
+        segment: gameState.turn.segment ?? 1,
       });
 
       break;
@@ -435,9 +435,11 @@ function gameStateReducerFunction(
   }
 
   // Use a sub-reducer to calculate changes on cards.
-  const originalDeck = original(state.deck);
+  const originalDeck = original(gameState.deck);
   assertDefined(originalDeck, "Failed to find the original deck.");
-  state.deck = castDraft(cardsReducer(originalDeck, action, state, metadata));
+  gameState.deck = castDraft(
+    cardsReducer(originalDeck, action, gameState, metadata),
+  );
 
   // Resolve the stack direction.
   if (
@@ -447,7 +449,7 @@ function gameStateReducerFunction(
   ) {
     // We have to wait until the deck is updated with the information of the card that we played
     // before the `direction` function will work.
-    const playStack = state.playStacks[action.suitIndex];
+    const playStack = gameState.playStacks[action.suitIndex];
     assertDefined(
       playStack,
       `Failed to find the play stack at index: ${action.suitIndex}`,
@@ -456,24 +458,22 @@ function gameStateReducerFunction(
     const direction = playStacksRules.direction(
       action.suitIndex,
       playStack,
-      state.deck,
+      gameState.deck,
       variant,
     );
-    state.playStackDirections[action.suitIndex] = direction;
+    gameState.playStackDirections[action.suitIndex] = direction;
   }
 
   // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variant.sudoku && action.suitIndex !== -1) {
-    const playStack = state.playStacks[action.suitIndex];
+    const playStack = gameState.playStacks[action.suitIndex];
     assertDefined(
       playStack,
       `Failed to find the play stack at index: ${action.suitIndex}`,
     );
 
-    state.playStackStarts[action.suitIndex] = playStacksRules.stackStartRank(
-      playStack,
-      state.deck,
-    );
+    gameState.playStackStarts[action.suitIndex] =
+      playStacksRules.stackStartRank(playStack, gameState.deck);
   }
 
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can
@@ -484,30 +484,35 @@ function gameStateReducerFunction(
     action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
-      state.cardStatus[action.suitIndex][rank] = cardRules.cardStatus(
+      gameState.cardStatus[action.suitIndex][rank] = cardRules.cardStatus(
         action.suitIndex,
         rank,
-        state.deck,
-        state.playStacks,
-        state.playStackDirections,
-        state.playStackStarts,
+        gameState.deck,
+        gameState.playStacks,
+        gameState.playStackDirections,
+        gameState.playStackStarts,
         variant,
       );
     }
   }
 
   // Use a sub-reducer to calculate the turn.
-  state.turn = turnReducer(original(state.turn), action, state, metadata);
+  gameState.turn = turnReducer(
+    original(gameState.turn),
+    action,
+    gameState,
+    metadata,
+  );
 
   // Use a sub-reducer to calculate some game statistics.
-  const originalState = original(state);
+  const originalState = original(gameState);
   assertDefined(originalState, "Failed to get the original state.");
-  state.stats = castDraft(
+  gameState.stats = castDraft(
     statsReducer(
-      original(state.stats),
+      original(gameState.stats),
       action,
       originalState,
-      state,
+      gameState,
       playing,
       shadowing,
       metadata,
@@ -516,21 +521,21 @@ function gameStateReducerFunction(
   );
 
   // After stats calculated, compute DDA property on all card states.
-  state.deck = castDraft(
+  gameState.deck = castDraft(
     ddaReducer(
-      state.deck,
-      state.stats.doubleDiscard,
-      state.turn.currentPlayerIndex,
+      gameState.deck,
+      gameState.stats.doubleDiscard,
+      gameState.turn.currentPlayerIndex,
     ),
   );
 
   // Finally, mark cards as known-trash.
-  state.deck = castDraft(
+  gameState.deck = castDraft(
     knownTrashReducer(
-      state.deck,
-      state.playStacks,
-      state.playStackDirections,
-      state.playStackStarts,
+      gameState.deck,
+      gameState.playStacks,
+      gameState.playStackDirections,
+      gameState.playStackStarts,
       variant,
     ),
   );
@@ -562,7 +567,7 @@ function cardCycle(
 }
 
 function throwItInAHolePlayedOrMisplayed(
-  state: Draft<GameState>,
+  gameState: Draft<GameState>,
   action: ActionPlay | ActionDiscard,
   variant: Variant,
   playing: boolean,
@@ -576,10 +581,10 @@ function throwItInAHolePlayedOrMisplayed(
   if ((action.type === "discard" && action.failed) || action.type === "play") {
     // In "Throw It in a Hole" variants, plays and unknown misplayed cards go the hole instead of
     // the play stack / discard pile.
-    state.hole.push(action.order);
+    gameState.hole.push(action.order);
 
     // Keep track of attempted plays.
-    state.numAttemptedCardsPlayed++;
+    gameState.numAttemptedCardsPlayed++;
 
     return true;
   }

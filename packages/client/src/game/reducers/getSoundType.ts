@@ -12,7 +12,7 @@ import type { ActionPlay, GameAction } from "../types/actions";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export function getSoundType(
-  stats: Draft<StatsState>,
+  statsState: Draft<StatsState>,
   originalAction: GameAction,
   originalState: GameState,
   currentState: GameState,
@@ -66,7 +66,7 @@ export function getSoundType(
 
     case "discard": {
       if (action.failed) {
-        if (stats.soundTypeForLastAction === SoundType.Fail1) {
+        if (statsState.soundTypeForLastAction === SoundType.Fail1) {
           return SoundType.Fail2;
         }
 
@@ -74,7 +74,7 @@ export function getSoundType(
       }
 
       if (
-        stats.maxScore < originalState.stats.maxScore &&
+        statsState.maxScore < originalState.stats.maxScore &&
         !variant.throwItInAHole
       ) {
         return SoundType.Sad;
@@ -110,7 +110,7 @@ export function getSoundType(
         }
       }
 
-      if (stats.doubleDiscard !== null && !metadata.hardVariant) {
+      if (statsState.doubleDiscard !== null && !metadata.hardVariant) {
         // A player has discarded to *cause* a double discard situation.
         return SoundType.DoubleDiscardCause;
       }
@@ -132,7 +132,7 @@ export function getSoundType(
 
     case "play": {
       if (
-        stats.maxScore < originalState.stats.maxScore &&
+        statsState.maxScore < originalState.stats.maxScore &&
         !variant.throwItInAHole
       ) {
         return SoundType.Sad;
@@ -141,23 +141,23 @@ export function getSoundType(
       const card = currentState.deck[action.order];
       const touched = card !== undefined && cardRules.isCardClued(card);
       if (!touched) {
-        if (stats.soundTypeForLastAction === SoundType.Blind1) {
+        if (statsState.soundTypeForLastAction === SoundType.Blind1) {
           return SoundType.Blind2;
         }
 
-        if (stats.soundTypeForLastAction === SoundType.Blind2) {
+        if (statsState.soundTypeForLastAction === SoundType.Blind2) {
           return SoundType.Blind3;
         }
 
-        if (stats.soundTypeForLastAction === SoundType.Blind3) {
+        if (statsState.soundTypeForLastAction === SoundType.Blind3) {
           return SoundType.Blind4;
         }
 
-        if (stats.soundTypeForLastAction === SoundType.Blind4) {
+        if (statsState.soundTypeForLastAction === SoundType.Blind4) {
           return SoundType.Blind5;
         }
 
-        if (stats.soundTypeForLastAction === SoundType.Blind5) {
+        if (statsState.soundTypeForLastAction === SoundType.Blind5) {
           return SoundType.Blind6;
         }
 
@@ -173,7 +173,7 @@ export function getSoundType(
 
     default: {
       // No change
-      return stats.soundTypeForLastAction;
+      return statsState.soundTypeForLastAction;
     }
   }
 }

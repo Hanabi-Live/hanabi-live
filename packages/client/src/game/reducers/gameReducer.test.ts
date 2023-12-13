@@ -10,7 +10,7 @@ import {
   strike,
 } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
-import { gameStateReducer } from "./gameStateReducer";
+import { gameReducer } from "./gameReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { initialGameStateTest } from "./initialStates/initialGameStateTest";
 import { getEfficiency } from "./reducerHelpers";
@@ -19,11 +19,11 @@ const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
 const clueStarvedMetadata = testMetadata(numPlayers, "Clue Starved (6 Suits)");
 
-describe("gameStateReducer", () => {
+describe("gameReducer", () => {
   test("does not mutate state", () => {
     const state = initialGameState(defaultMetadata);
     const unchangedState = initialGameState(defaultMetadata);
-    const newState = gameStateReducer(
+    const newState = gameReducer(
       state,
       draw(0, 0),
       true,
@@ -43,7 +43,7 @@ describe("gameStateReducer", () => {
       let state = initialGameStateTest(defaultMetadata);
 
       const testClue = rankClue(5, 1, [], 0, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         testClue,
         true,
@@ -62,7 +62,7 @@ describe("gameStateReducer", () => {
       let state = initialGameStateTest(defaultMetadata);
 
       const testClue = rankClue(5, 1, [], 0, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         testClue,
         true,
@@ -83,7 +83,7 @@ describe("gameStateReducer", () => {
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawAction,
         true,
@@ -95,7 +95,7 @@ describe("gameStateReducer", () => {
 
       // Blind-play that red 1.
       const playAction = play(0, 0, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playAction,
         true,
@@ -114,7 +114,7 @@ describe("gameStateReducer", () => {
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawAction,
         true,
@@ -126,7 +126,7 @@ describe("gameStateReducer", () => {
 
       // Misplay the red 1.
       const discardAction = discard(0, 0, 0, 1, true);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         discardAction,
         true,
@@ -139,7 +139,7 @@ describe("gameStateReducer", () => {
       // TODO: remove this when misplays are calculated from an ActionPlay
       // Mark a strike
       const strikeAction = strike(1, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         strikeAction,
         true,
@@ -161,7 +161,7 @@ describe("gameStateReducer", () => {
         const order = i - 1;
         const rank = i as Rank;
         const drawAction = draw(0, order, 0, rank);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawAction,
           true,
@@ -174,7 +174,7 @@ describe("gameStateReducer", () => {
 
       // Give a 3-for-1 clue touching the 3 red cards.
       const clueAction = colorClue(0, 1, [0, 1, 2], 0, 0);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         clueAction,
         true,
@@ -193,7 +193,7 @@ describe("gameStateReducer", () => {
 
       // Draw a yellow 2 to player 0.
       const drawYellow2Action = draw(0, 0, 1, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawYellow2Action,
         true,
@@ -205,7 +205,7 @@ describe("gameStateReducer", () => {
 
       // Draw a red 1 to player 1.
       const drawRed1Action = draw(1, 1, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed1Action,
         true,
@@ -217,7 +217,7 @@ describe("gameStateReducer", () => {
 
       // Give a 1-for-1 clue.
       const clueAction = colorClue(0, 0, [0], 1, 0);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         clueAction,
         true,
@@ -229,7 +229,7 @@ describe("gameStateReducer", () => {
 
       // Play that red 1.
       const playAction = play(1, 1, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playAction,
         true,
@@ -241,7 +241,7 @@ describe("gameStateReducer", () => {
 
       // Misplay the yellow 2.
       const discardAction = discard(0, 0, 1, 2, true);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         discardAction,
         true,
@@ -254,7 +254,7 @@ describe("gameStateReducer", () => {
       // TODO: remove this when misplays are calculated from an ActionPlay
       // Mark a strike
       const strikeAction = strike(1, 1, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         strikeAction,
         true,
@@ -273,7 +273,7 @@ describe("gameStateReducer", () => {
 
       // Draw a red 2, a red 4, and a red 5 to player 0.
       const drawRed2Action = draw(0, 0, 0, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed2Action,
         true,
@@ -283,7 +283,7 @@ describe("gameStateReducer", () => {
         defaultMetadata,
       );
       const drawRed4Action = draw(0, 1, 0, 4);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed4Action,
         true,
@@ -293,7 +293,7 @@ describe("gameStateReducer", () => {
         defaultMetadata,
       );
       const drawRed5Action = draw(0, 2, 0, 5);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed5Action,
         true,
@@ -305,7 +305,7 @@ describe("gameStateReducer", () => {
 
       // Draw a red 1, a red 3, and a red 1 to player 1.
       const drawRed1Action = draw(1, 3, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed1Action,
         true,
@@ -315,7 +315,7 @@ describe("gameStateReducer", () => {
         defaultMetadata,
       );
       const drawRed3Action = draw(1, 4, 0, 3);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed3Action,
         true,
@@ -325,7 +325,7 @@ describe("gameStateReducer", () => {
         defaultMetadata,
       );
       const drawRed1Action2 = draw(1, 5, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawRed1Action2,
         true,
@@ -337,7 +337,7 @@ describe("gameStateReducer", () => {
 
       // Player 0 gives a 1-for-1 clue.
       const clueAction = rankClue(1, 0, [3, 5], 1, 0);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         clueAction,
         true,
@@ -349,7 +349,7 @@ describe("gameStateReducer", () => {
 
       // Player 1 plays the red 1.
       const playRed1Action = play(1, 3, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playRed1Action,
         true,
@@ -361,7 +361,7 @@ describe("gameStateReducer", () => {
 
       // Player 0 plays the red 2.
       const playRed2Action = play(0, 0, 0, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playRed2Action,
         true,
@@ -373,7 +373,7 @@ describe("gameStateReducer", () => {
 
       // Player 1 plays the red 3.
       const playRed3Action = play(1, 4, 0, 3);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playRed3Action,
         true,
@@ -385,7 +385,7 @@ describe("gameStateReducer", () => {
 
       // Player 0 plays the red 4.
       const playRed4Action = play(0, 1, 0, 4);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playRed4Action,
         true,
@@ -397,7 +397,7 @@ describe("gameStateReducer", () => {
 
       // Player 1 discards the other red 1.
       const discardAction = discard(1, 5, 0, 1, false);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         discardAction,
         true,
@@ -413,7 +413,7 @@ describe("gameStateReducer", () => {
 
       // Player 0 plays the red 5.
       const playRed5Action = play(0, 2, 0, 5);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playRed5Action,
         true,
@@ -433,7 +433,7 @@ describe("gameStateReducer", () => {
 
         // Draw a red 2, a red 4, and a red 5 to player 0.
         const drawRed2Action = draw(0, 0, 0, 2);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed2Action,
           true,
@@ -443,7 +443,7 @@ describe("gameStateReducer", () => {
           clueStarvedMetadata,
         );
         const drawRed4Action = draw(0, 1, 0, 4);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed4Action,
           true,
@@ -453,7 +453,7 @@ describe("gameStateReducer", () => {
           clueStarvedMetadata,
         );
         const drawRed5Action = draw(1, 2, 0, 5);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed5Action,
           true,
@@ -465,7 +465,7 @@ describe("gameStateReducer", () => {
 
         // Draw a red 1, a red 3, a red 1, and a red 1 to player 1.
         const drawRed1Action = draw(1, 3, 0, 1);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed1Action,
           true,
@@ -475,7 +475,7 @@ describe("gameStateReducer", () => {
           clueStarvedMetadata,
         );
         const drawRed3Action = draw(1, 4, 0, 3);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed3Action,
           true,
@@ -485,7 +485,7 @@ describe("gameStateReducer", () => {
           clueStarvedMetadata,
         );
         const drawRed1Action2 = draw(0, 5, 0, 1);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed1Action2,
           true,
@@ -495,7 +495,7 @@ describe("gameStateReducer", () => {
           clueStarvedMetadata,
         );
         const drawRed1Action3 = draw(0, 6, 0, 1);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawRed1Action3,
           true,
@@ -507,7 +507,7 @@ describe("gameStateReducer", () => {
 
         // Player 0 gives a 1-for-1 clue.
         const clueAction = rankClue(1, 0, [3, 5, 6], 1, 0);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           clueAction,
           true,
@@ -519,7 +519,7 @@ describe("gameStateReducer", () => {
 
         // Player 1 plays the red 1.
         const playRed1Action = play(1, 3, 0, 1);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           playRed1Action,
           true,
@@ -531,7 +531,7 @@ describe("gameStateReducer", () => {
 
         // Player 0 plays the red 2.
         const playRed2Action = play(0, 0, 0, 2);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           playRed2Action,
           true,
@@ -543,7 +543,7 @@ describe("gameStateReducer", () => {
 
         // Player 1 plays the red 3.
         const playRed3Action = play(1, 4, 0, 3);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           playRed3Action,
           true,
@@ -555,7 +555,7 @@ describe("gameStateReducer", () => {
 
         // Player 0 plays the red 4.
         const playRed4Action = play(0, 1, 0, 4);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           playRed4Action,
           true,
@@ -567,7 +567,7 @@ describe("gameStateReducer", () => {
 
         // Player 1 discards the other two red 1s.
         const discardAction1 = discard(1, 5, 0, 1, false);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           discardAction1,
           true,
@@ -577,7 +577,7 @@ describe("gameStateReducer", () => {
           clueStarvedMetadata,
         );
         const discardAction2 = discard(1, 6, 0, 1, false);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           discardAction2,
           true,
@@ -593,7 +593,7 @@ describe("gameStateReducer", () => {
 
         // Player 0 plays the red 5.
         const playRed5Action = play(0, 2, 0, 5);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           playRed5Action,
           true,
@@ -617,7 +617,7 @@ describe("gameStateReducer", () => {
 
       // Player 1 gives a random clue to player 0.
       const testClue = rankClue(5, 1, [], 0, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         testClue,
         true,
@@ -647,7 +647,7 @@ describe("gameStateReducer", () => {
         const suitIndex = i <= 2 ? 0 : 1;
         const rank = (i + 1) as Rank;
         const drawAction = draw(1, i, suitIndex, rank);
-        state = gameStateReducer(
+        state = gameReducer(
           state,
           drawAction,
           true,
@@ -660,7 +660,7 @@ describe("gameStateReducer", () => {
 
       // Player 0 gives a clue that touches cards 0, 1, and 2.
       const testClue = rankClue(5, 0, [0, 1, 2], 1, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         testClue,
         true,
@@ -682,7 +682,7 @@ describe("gameStateReducer", () => {
 
       // Player 1 gives a random clue to player 0.
       const testClue = rankClue(5, 1, [], 0, 2);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         testClue,
         true,
@@ -702,7 +702,7 @@ describe("gameStateReducer", () => {
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         drawAction,
         true,
@@ -714,7 +714,7 @@ describe("gameStateReducer", () => {
 
       // Play a red 1.
       const playAction = play(0, 0, 0, 1);
-      state = gameStateReducer(
+      state = gameReducer(
         state,
         playAction,
         true,

@@ -10,7 +10,7 @@ import type {
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import { assertDefined, assertNotNull, eRange } from "@hanabi/utils";
 import { ClueType } from "../../game/src/enums/ClueType";
-import { gameStateReducer } from "../src/game/reducers/gameStateReducer";
+import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
 import * as handRules from "../src/game/rules/hand";
@@ -192,7 +192,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
             rank: a.rank,
             failed: true,
           };
-          nextState = gameStateReducer(
+          nextState = gameReducer(
             s,
             action,
             false,
@@ -230,7 +230,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     }
 
     const previousSegment = nextState.turn.segment;
-    nextState = gameStateReducer(
+    nextState = gameReducer(
       nextState,
       action,
       false,

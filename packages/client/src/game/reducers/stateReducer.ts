@@ -9,7 +9,7 @@ import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
 import type { State } from "../types/State";
 import type { Action, GameAction } from "../types/actions";
-import { gameStateReducer } from "./gameStateReducer";
+import { gameReducer } from "./gameReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
@@ -260,7 +260,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       if (state.playing && !state.finished) {
         // Recompute efficiency since it could change.
         state.ongoingGame = castDraft(
-          gameStateReducer(
+          gameReducer(
             original(state.ongoingGame),
             action,
             state.playing,
@@ -279,7 +279,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // A new game action happened.
       const previousSegment = state.ongoingGame.turn.segment;
       state.ongoingGame = castDraft(
-        gameStateReducer(
+        gameReducer(
           original(state.ongoingGame),
           action,
           state.playing,
@@ -330,7 +330,7 @@ function reduceGameActions(
 
   // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameStateReducer(
+    const nextState = gameReducer(
       s,
       a,
       playing,

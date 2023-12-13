@@ -2,29 +2,29 @@ import type { UIAction } from "../types/UIAction";
 import type { UIState } from "../types/UIState";
 import { HanabiCard } from "../ui/HanabiCard";
 
-export function uiReducer(state: UIState, action: UIAction): UIState {
-  switch (action.type) {
+export function uiReducer(uiState: UIState, uiAction: UIAction): UIState {
+  switch (uiAction.type) {
     case "dragStart": {
-      if (action.card instanceof HanabiCard) {
-        const cardText = JSON.stringify(action.card);
+      if (uiAction.card instanceof HanabiCard) {
+        const cardText = JSON.stringify(uiAction.card);
         return {
-          ...state,
+          ...uiState,
           // This is required due to a Konva bug.
           cardDragged: JSON.parse(cardText) as HanabiCard,
         };
       }
-      return state;
+      return uiState;
     }
 
     case "dragReset": {
       if (
-        state.cardDragged !== null &&
-        state.cardDragged instanceof HanabiCard
+        uiState.cardDragged !== null &&
+        uiState.cardDragged instanceof HanabiCard
       ) {
-        state.cardDragged.setShadowOffset();
+        uiState.cardDragged.setShadowOffset();
       }
       return {
-        ...state,
+        ...uiState,
         cardDragged: null,
       };
     }
