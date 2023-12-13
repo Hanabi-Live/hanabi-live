@@ -1,5 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { SoundType } from "@hanabi/game";
+import { SoundType } from "../../../types/SoundType";
 import type { GameAction } from "../../../types/actions";
 import { globals } from "../../UIGlobals";
 

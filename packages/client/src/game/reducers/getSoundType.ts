@@ -1,11 +1,12 @@
 import { getVariant } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
-import { ClueType, EndCondition, SoundType } from "@hanabi/game";
+import { ClueType, EndCondition } from "@hanabi/game";
 import type { Draft } from "immer";
 import * as cardRules from "../rules/card";
 import * as handRules from "../rules/hand";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
+import { SoundType } from "../types/SoundType";
 import type { StatsState } from "../types/StatsState";
 import type { ActionPlay, GameAction } from "../types/actions";
 import { getCharacterNameForPlayer } from "./reducerHelpers";

@@ -1,6 +1,7 @@
 import type { CardOrder, NumSuits } from "@hanabi/data";
-import type { PaceRisk, SoundType } from "@hanabi/game";
+import type { PaceRisk } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
+import type { SoundType } from "./SoundType";
 import type { GameAction } from "./actions";
 
 export interface StatsState {
