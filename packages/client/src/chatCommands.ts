@@ -140,7 +140,7 @@ function pm(room: string, args: readonly string[]) {
   }
 
   globals.conn!.send("chatPM", {
-    msg: args.join(" "),
+    msg,
     recipient: matchingUser.name,
     room,
   });
