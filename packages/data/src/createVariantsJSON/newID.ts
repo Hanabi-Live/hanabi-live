@@ -1,4 +1,3 @@
-import type { BasicRank } from "@hanabi/data";
 import { assertDefined, parseIntSafe, trimSuffix } from "@hanabi/utils";
 import { isEqual } from "lodash";
 import {
@@ -18,6 +17,7 @@ import {
 import type { SuitJSON } from "../interfaces/SuitJSON";
 import type { VariantDescription } from "../interfaces/VariantDescription";
 import type { VariantJSON } from "../interfaces/VariantJSON";
+import type { BasicRank } from "../types/Rank";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
 
 export function getNewVariantID(
