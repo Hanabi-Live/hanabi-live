@@ -1,4 +1,4 @@
-import type { CardOrder } from "@hanabi/game";
+import type { CardOrder } from "@hanabi/data";
 import { ClueType } from "@hanabi/game";
 import { assertDefined, eRange } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";

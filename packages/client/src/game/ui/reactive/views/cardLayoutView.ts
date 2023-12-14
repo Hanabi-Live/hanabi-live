@@ -1,5 +1,5 @@
-import type { SuitIndex } from "@hanabi/data";
-import type { CardOrder, GameState } from "@hanabi/game";
+import type { CardOrder, SuitIndex } from "@hanabi/data";
+import type { GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
 import { ReadonlyMap, assertDefined, assertNotNull } from "@hanabi/utils";
 import equal from "fast-deep-equal";

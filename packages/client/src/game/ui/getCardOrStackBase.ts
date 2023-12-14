@@ -1,4 +1,4 @@
-import type { CardOrder } from "@hanabi/game";
+import type { CardOrder } from "@hanabi/data";
 import * as deckRules from "../rules/deck";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";

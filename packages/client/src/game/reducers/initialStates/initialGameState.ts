@@ -1,4 +1,5 @@
 import type {
+  CardOrder,
   NumPlayers,
   NumSuits,
   Rank,
@@ -7,12 +8,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
-import type {
-  CardOrder,
-  CardStatus,
-  GameState,
-  StackDirection,
-} from "@hanabi/game";
+import type { CardStatus, GameState, StackDirection } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { newArray, sumArray } from "@hanabi/utils";
 import * as cardRules from "../../rules/card";

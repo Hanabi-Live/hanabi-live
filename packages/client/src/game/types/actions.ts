@@ -2,8 +2,14 @@
 // and the state reducers to fire.) All of the sub-actions from the "gameAction" command are listed
 // here.
 
-import type { NumPlayers, PlayerIndex, Rank, SuitIndex } from "@hanabi/data";
-import type { CardOrder, EndCondition } from "@hanabi/game";
+import type {
+  CardOrder,
+  NumPlayers,
+  PlayerIndex,
+  Rank,
+  SuitIndex,
+} from "@hanabi/data";
+import type { EndCondition } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";

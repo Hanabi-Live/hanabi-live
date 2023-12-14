@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- refactor ClientAction interface to be union
 - move data/src/types to @hanabi/game
 
 +-----+

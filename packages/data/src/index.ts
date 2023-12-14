@@ -13,6 +13,7 @@ export * from "./interfaces/Color";
 export * from "./interfaces/HTTPLoginData";
 export * from "./interfaces/Suit";
 export * from "./interfaces/Variant";
+export * from "./types/CardOrder";
 export * from "./types/ColorIndex";
 export * from "./types/NumPlayers";
 export * from "./types/NumSuits";

@@ -3,13 +3,13 @@
 // Helper functions to build actions with a compact syntax. For use in tests.
 
 import type {
+  CardOrder,
   ColorIndex,
   PlayerIndex,
   Rank,
   RankClueNumber,
   SuitIndex,
 } from "@hanabi/data";
-import type { CardOrder } from "@hanabi/game";
 import { ClueType } from "../../game/src/enums/ClueType";
 import type {
   ActionCardIdentity,

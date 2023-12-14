@@ -2,9 +2,8 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { NumPlayers, PlayerIndex } from "@hanabi/data";
+import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardOrder } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { iRange, newArray } from "@hanabi/utils";
 import { createStore } from "redux";

@@ -1,10 +1,11 @@
 import type {
+  CardOrder,
   NumPlayers,
   SuitIndex,
   SuitRankTuple,
   Variant,
 } from "@hanabi/data";
-import type { CardOrder, CardState } from "@hanabi/game";
+import type { CardState } from "@hanabi/game";
 import { newArray } from "@hanabi/utils";
 import * as deck from "../../rules/deck";
 
