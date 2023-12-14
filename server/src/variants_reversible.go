@@ -113,7 +113,7 @@ func variantReversibleGetMaxScore(g *Game) int {
 		} else if g.PlayStackDirections[suitIndex] == StackDirectionDown {
 			maxScore += variantReversibleWalkDown(g, allDiscarded)
 		} else if g.PlayStackDirections[suitIndex] == StackDirectionFinished {
-			maxScore += 5
+			maxScore += variant.StackSize
 		}
 	}
 

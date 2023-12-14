@@ -95,7 +95,7 @@ const (
 
 	// Currently, in all variants, you get 5 points per suit/stack,
 	// but this may not always be the case
-	PointsPerSuit = 5
+	DefaultPointsPerSuit = 5
 
 	DefaultVariantName = "No Variant"
 

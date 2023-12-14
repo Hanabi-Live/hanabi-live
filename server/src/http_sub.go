@@ -114,17 +114,16 @@ func httpGetVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*Use
 	variantStatsList := make([]*UserVariantStats, 0)
 	for _, name := range variantNames {
 		variant := variants[name]
-		maxScore := len(variant.Suits) * PointsPerSuit
 		variantStats := &UserVariantStats{ // nolint: exhaustivestruct
 			ID:       variant.ID,
 			Name:     name,
-			MaxScore: maxScore,
+			MaxScore: variant.MaxScore,
 		}
 
 		if stats, ok := statsMap[variant.ID]; ok {
 			// This player has played at least one game in this particular variant
 			for j, bestScore := range stats.BestScores {
-				if bestScore.Score == maxScore {
+				if bestScore.Score == variant.MaxScore {
 					numMaxScores++
 					numMaxScoresPerType[j]++
 				}

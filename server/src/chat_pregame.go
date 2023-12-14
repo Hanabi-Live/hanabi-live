@@ -239,14 +239,13 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 	// Make a list of variants that no-one has the max score in
 	variantsWithNoMaxScores := make([]string, 0)
 	for _, variant := range variants {
-		maxScore := len(variant.Suits) * PointsPerSuit
 		someoneHasMaxScore := false
 		for _, statsMap := range statsMaps {
 			if stats, ok := statsMap[variant.ID]; ok {
 				// This player has played at least one game in this particular variant
 				// Check to see if they have a max score
 				// We minus 2 because element 0 is for 2-player, element 1 is for 3-player, etc.
-				if stats.BestScores[len(userIDs)-2].Score == maxScore {
+				if stats.BestScores[len(userIDs)-2].Score == variant.MaxScore {
 					someoneHasMaxScore = true
 					break
 				}

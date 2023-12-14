@@ -13,6 +13,7 @@ type Variant struct {
 	Ranks                    []int
 	ClueColors               []string
 	ClueRanks                []int
+	StackSize                int
 	ColorCluesTouchNothing   bool
 	RankCluesTouchNothing    bool
 	SpecialRank              int // For e.g. Rainbow-Ones
