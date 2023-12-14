@@ -19,10 +19,5 @@
     "moduleResolution": "Node",
   },
 
-  "include": [
-    "./src/**/*.ts",
-    "../utils/src/types/ERange.ts",
-    "../utils/src/types/NaturalNumbersLessThan.ts",
-    "../utils/src/types/NaturalNumbersLessThanOrEqualTo.ts",
-  ],
+  "include": ["./src/**/*.ts"],
 }

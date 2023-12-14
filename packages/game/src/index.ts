@@ -10,4 +10,5 @@ export * from "./interfaces/StateStrike";
 export * from "./interfaces/StatsState";
 export * from "./interfaces/TurnState";
 export * from "./types/CardOrder";
+export * from "./types/ColorIndex";
 export * from "./types/StateClue";
