@@ -111,7 +111,7 @@ func NewGame(t *Table) *Game {
 		ActivePlayerIndex:     0,
 		ClueTokens:            variant.GetAdjustedClueTokens(MaxClueNum),
 		Score:                 0,
-		MaxScore:              len(variant.Suits) * PointsPerSuit,
+		MaxScore:              variant.MaxScore,
 		Strikes:               0,
 		LastClueTypeGiven:     -1,
 		Actions:               make([]interface{}, 0),

@@ -19,11 +19,11 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 		return false
 	}
 
-	nextRank := g.Stacks[c.SuitIndex]%len(variant.Ranks) + 1
+	nextRank := g.Stacks[c.SuitIndex]%variant.StackSize + 1
 	failed := c.Rank != nextRank || g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 	if !failed {
 		// This subtracts 1 (mod stackSize) from the stack starts and outputs one of 1,...,stackSize
-		finalRank := (g.StackStarts[c.SuitIndex]+len(variant.Ranks)-2)%len(variant.Ranks) + 1
+		finalRank := (g.StackStarts[c.SuitIndex]+variant.StackSize-2)%variant.StackSize + 1
 		if c.Rank == finalRank {
 			g.PlayStackDirections[c.SuitIndex] = StackDirectionFinished
 		}
@@ -53,15 +53,15 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 //     we will probably never have to do this, since for most of the suits, we should have one copy of each card
 //     or known starting value, in which case they will be filtered out in step 2 or 3 already.
 func variantSudokuGetMaxScore(g *Game) int {
-	singleStackSize := len(variants[g.Options.VariantName].Ranks)
+	variant := variants[g.Options.VariantName]
 	independentPartOfMaxScore := 0
 	// Note that we use length 5 here even though the variant may have smaller stackSize.
 	maxPartialScores := [5][5]int{}
 	unassignedSuits := make([]int, 0)
 	for suitIndex, stackStart := range g.StackStarts {
-		allMax, suitMaxScores := sudokuWalkUpAll(checkAllDiscarded(g, suitIndex), singleStackSize)
+		allMax, suitMaxScores := sudokuWalkUpAll(checkAllDiscarded(g, suitIndex), variant.StackSize)
 		if allMax {
-			independentPartOfMaxScore += singleStackSize
+			independentPartOfMaxScore += variant.StackSize
 			continue
 		}
 		if stackStart != 0 {
@@ -149,7 +149,7 @@ func variantSudokuGetMaxScore(g *Game) int {
 func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
 	allDiscarded := [5]bool{}
 
-	for rank := 1; rank <= len(variants[g.Options.VariantName].Ranks); rank++ {
+	for rank := 1; rank <= variants[g.Options.VariantName].StackSize; rank++ {
 		total, discarded := g.GetSpecificCardNum(suitIndex, rank)
 		allDiscarded[rank-1] = total == discarded
 	}
@@ -161,7 +161,7 @@ func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
 func variantSudokuGetFreeStackStarts(g *Game) []int {
 	possibleStackStarts := make([]int, 0)
 
-	for possibleStackStart := 1; possibleStackStart <= len(variants[g.Options.VariantName].Ranks); possibleStackStart++ {
+	for possibleStackStart := 1; possibleStackStart <= variants[g.Options.VariantName].StackSize; possibleStackStart++ {
 		if !contains(g.StackStarts, possibleStackStart) {
 			possibleStackStarts = append(possibleStackStarts, possibleStackStart)
 		}
@@ -174,14 +174,14 @@ func variantSudokuGetFreeStackStarts(g *Game) []int {
 // - a vector of the longest consecutive sequences starting at each of these values, wrapping around
 // - boolean value indicating whether allDiscarded contained only truth values
 // Note that this always returns a vector of length 5; if stacks are smaller, then only the first values are relevant
-func sudokuWalkUpAll(allDiscarded [5]bool, singleStackSize int) (bool, [5]int) {
+func sudokuWalkUpAll(allDiscarded [5]bool, stackSize int) (bool, [5]int) {
 	// We can solve this with a simple sweep-method, sweeping bottom-up and always keeping track of the last rank
 	// that did not exist.
 	// Upon encountering a new dead rank, we will write all previously visited values
-	maxScores := [5]int{singleStackSize, singleStackSize, singleStackSize, singleStackSize, singleStackSize}
+	maxScores := [5]int{stackSize, stackSize, stackSize, stackSize, stackSize}
 	lastDead := -1
-	for curVal := 0; curVal < singleStackSize; curVal++ {
-		if allDiscarded[curVal%singleStackSize] {
+	for curVal := 0; curVal < stackSize; curVal++ {
+		if allDiscarded[curVal%stackSize] {
 			// We hit a new dead card
 			for writeVal := lastDead + 1; writeVal < curVal; writeVal++ {
 				maxScores[writeVal] = curVal - lastDead - 1
@@ -197,8 +197,8 @@ func sudokuWalkUpAll(allDiscarded [5]bool, singleStackSize int) (bool, [5]int) {
 	}
 
 	// Here, we still need to write all 'higher' values, adding the longest sequence starting at 0
-	for writeVal := lastDead + 1; writeVal < singleStackSize; writeVal++ {
-		maxScores[writeVal] = min(maxScores[0]+singleStackSize-writeVal, singleStackSize)
+	for writeVal := lastDead + 1; writeVal < stackSize; writeVal++ {
+		maxScores[writeVal] = min(maxScores[0]+stackSize-writeVal, stackSize)
 	}
 
 	return false, maxScores
@@ -218,7 +218,7 @@ func variantSudokuCheckAllDead(g *Game) bool {
 
 		if stackRank != 0 {
 			// Find the next card up (cyclic)
-			nextRank := stackRank%len(variant.Ranks) + 1
+			nextRank := stackRank%variant.StackSize + 1
 			possibleNextRanks = []int{nextRank}
 		} else {
 			// New stack start only limited by other started stacks

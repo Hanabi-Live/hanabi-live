@@ -2,12 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"os"
 	"path"
 	"strconv"
-	"strings"
-
-	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 var (
@@ -39,6 +37,8 @@ type VariantJSON struct {
 	OddsAndEvens             bool      `json:"oddsAndEvens"`
 	Funnels                  bool      `json:"funnels"`
 	Chimneys                 bool      `json:"chimneys"`
+	Sudoku                   bool      `json:"sudoku"`
+	UpOrDown                 bool      `json:"upOrDown"`
 }
 
 func variantsInit() {
@@ -99,13 +99,18 @@ func variantsInit() {
 		// Derive the card ranks (the ranks that the cards of each suit will be)
 		// By default, assume ranks 1 through 5
 		variantRanks := []int{1, 2, 3, 4, 5}
-		if strings.HasPrefix(variant.Name, "Sudoku") {
+		if variant.Sudoku {
 			variantRanks = variantRanks[:len(variantSuits)]
 		}
-		if strings.HasPrefix(variant.Name, "Up or Down") {
+		if variant.UpOrDown {
 			// The "Up or Down" variants have START cards
 			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
 			variantRanks = append(variantRanks, StartCardRank)
+		}
+
+		stackSize := DefaultPointsPerSuit
+		if variant.Sudoku {
+			stackSize = len(variantSuits)
 		}
 
 		// Validate or derive the clue colors (the colors available to clue in this variant)
@@ -159,6 +164,7 @@ func variantsInit() {
 			Ranks:                    variantRanks,
 			ClueColors:               *clueColors,
 			ClueRanks:                *clueRanks,
+			StackSize:                stackSize,
 			ColorCluesTouchNothing:   variant.ColorCluesTouchNothing,
 			RankCluesTouchNothing:    variant.RankCluesTouchNothing,
 			SpecialRank:              specialRank,
@@ -170,7 +176,7 @@ func variantsInit() {
 			OddsAndEvens:             variant.OddsAndEvens,
 			Funnels:                  variant.Funnels,
 			Chimneys:                 variant.Chimneys,
-			MaxScore:                 len(variantSuits) * 5,
+			MaxScore:                 len(variantSuits) * stackSize,
 			// (we assume that there are 5 points per stack)
 		}
 
