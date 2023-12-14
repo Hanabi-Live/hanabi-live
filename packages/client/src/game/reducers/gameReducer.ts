@@ -583,9 +583,6 @@ function throwItInAHolePlayedOrMisplayed(
     // the play stack / discard pile.
     gameState.hole.push(action.order);
 
-    // Keep track of attempted plays.
-    gameState.numAttemptedCardsPlayed++;
-
     return true;
   }
 

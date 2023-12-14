@@ -441,13 +441,13 @@ export function efficiency(
   return numCardsGotten / potentialCluesLost;
 }
 
-export function futureEfficiency(state: GameState): number | null {
-  if (state.stats.cluesStillUsable === null) {
+export function futureEfficiency(gameState: GameState): number | null {
+  if (gameState.stats.cluesStillUsable === null) {
     return null;
   }
 
-  const cardsNotGotten = state.stats.maxScore - state.stats.cardsGotten;
-  return cardsNotGotten / state.stats.cluesStillUsable;
+  const cardsNotGotten = gameState.stats.maxScore - gameState.stats.cardsGotten;
+  return cardsNotGotten / gameState.stats.cluesStillUsable;
 }
 
 /**
@@ -456,26 +456,26 @@ export function futureEfficiency(state: GameState): number | null {
  */
 export function doubleDiscard(
   orderOfDiscardedCard: CardOrder,
-  state: GameState,
+  gameState: GameState,
   variant: Variant,
 ): CardOrder | null {
-  const cardDiscarded = state.deck[orderOfDiscardedCard];
+  const cardDiscarded = gameState.deck[orderOfDiscardedCard];
   if (cardDiscarded === undefined) {
     return null;
   }
 
   // It is never a double discard situation if the game is over.
-  if (state.turn.currentPlayerIndex === null) {
+  if (gameState.turn.currentPlayerIndex === null) {
     return null;
   }
 
   // It is never a double discard situation if the next player has one or more positive clues on
   // every card in their hand.
   const nextPlayerIndex =
-    (state.turn.currentPlayerIndex + 1) % state.hands.length;
-  const hand = state.hands[nextPlayerIndex];
+    (gameState.turn.currentPlayerIndex + 1) % gameState.hands.length;
+  const hand = gameState.hands[nextPlayerIndex];
   if (hand !== undefined) {
-    const nextPlayerLocked = handRules.isLocked(hand, state.deck);
+    const nextPlayerLocked = handRules.isLocked(hand, gameState.deck);
     if (nextPlayerLocked) {
       return null;
     }
@@ -491,10 +491,10 @@ export function doubleDiscard(
   const needsToBePlayed = cardRules.isCardNeedsToBePlayed(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
-    state.deck,
-    state.playStacks,
-    state.playStackDirections,
-    state.playStackStarts,
+    gameState.deck,
+    gameState.playStacks,
+    gameState.playStackDirections,
+    gameState.playStackStarts,
     variant,
   );
   if (!needsToBePlayed) {
@@ -503,7 +503,7 @@ export function doubleDiscard(
 
   // It is never a double discard situation if another player has a copy of the card in their hand
   // that happens to be fully "fill-in" from clues.
-  for (const cardInDeck of state.deck) {
+  for (const cardInDeck of gameState.deck) {
     if (
       cardInDeck.order !== cardDiscarded.order &&
       cardInDeck.suitIndex === cardDiscarded.suitIndex &&
@@ -526,7 +526,7 @@ export function doubleDiscard(
     variant,
   );
   const numDiscarded = deckRules.discardedCopies(
-    state.deck,
+    gameState.deck,
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
   );

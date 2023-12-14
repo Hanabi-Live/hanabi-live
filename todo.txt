@@ -2,9 +2,6 @@
 | TODO |
 +------+
 
-- refactor numAttemptedCardsPlayed to StatsState
-- server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh
-
 +-----+
 | OLD |
 +-----+
@@ -17,12 +14,12 @@
 - delete UIGlobals.activePlayerIndex
 
 short term:
-- refactor soundTypeForLastAction (should probably delete the whole thing)
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
 - get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer
 
 long term once the server is rewritten in TypeScript:
+- server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845
   - once this is done, we don't have to use client-side cookies anymore, can remove `@fastify/secure-session` dep entirely
   - will also have to generate argon2 hash on client side so that the hash can be stored in local storage
@@ -32,3 +29,4 @@ long term once the server is rewritten in TypeScript:
 - refactor `order` --> `cardOrder`
 - stronger typing for `disconShadowingSeat` field
 - remove -1 type from activePlayerIndex (prefer undefined)
+- readonly turn: number; // TODO: remove. This is unused.

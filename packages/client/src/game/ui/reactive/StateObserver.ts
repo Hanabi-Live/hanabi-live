@@ -127,7 +127,7 @@ const visibleStateObservers: Subscriptions = [
     gameInfoView.onScoreOrMaxScoreChanged,
   ),
   subVS(
-    (s) => s.numAttemptedCardsPlayed,
+    (s) => s.stats.numAttemptedCardsPlayed,
     gameInfoView.onNumAttemptedCardsPlayedChanged,
   ),
   subVS((s) => s.clueTokens, gameInfoView.onClueTokensChanged),

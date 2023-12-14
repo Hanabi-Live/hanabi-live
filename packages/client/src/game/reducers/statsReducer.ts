@@ -90,10 +90,15 @@ function statsReducerFunction(
     statsState.maxScore = sumArray(statsState.maxScorePerStack);
   }
 
+  // Handle "numAttemptedCardsPlayed". (This needs to be before the pace calculation.)
+  if ((action.type === "discard" && action.failed) || action.type === "play") {
+    statsState.numAttemptedCardsPlayed++;
+  }
+
   // Handle pace calculation.
   const score =
     variant.throwItInAHole && (playing || shadowing)
-      ? gameState.numAttemptedCardsPlayed
+      ? statsState.numAttemptedCardsPlayed
       : gameState.score;
   statsState.pace = statsRules.pace(
     score,
@@ -177,15 +182,9 @@ function statsReducerFunction(
   }
 
   // Handle `numSubsequentBlindPlays`.
-  if (action.type === "play") {
-    const card = gameState.deck[action.order];
-    const touched = card !== undefined && cardRules.isCardClued(card);
-    if (touched) {
-      statsState.numSubsequentBlindPlays = 0;
-    } else {
-      statsState.numSubsequentBlindPlays++;
-    }
-  } else if (action.type === "clue" || action.type === "discard") {
+  if (isBlindPlay(action, gameState)) {
+    statsState.numSubsequentBlindPlays++;
+  } else if (isOneOfThreeMainActions(action)) {
     statsState.numSubsequentBlindPlays = 0;
   }
 
@@ -199,4 +198,24 @@ function statsReducerFunction(
   } else if (action.type === "clue" || action.type === "play") {
     statsState.numSubsequentMisplays = 0;
   }
+}
+
+function isBlindPlay(action: GameAction, gameState: GameState): boolean {
+  if (action.type !== "play") {
+    return false;
+  }
+
+  const card = gameState.deck[action.order];
+  const cardClued = card !== undefined && cardRules.isCardClued(card);
+
+  return !cardClued;
+}
+
+/** Whether the action was a clue, discard, or play. */
+function isOneOfThreeMainActions(action: GameAction) {
+  return (
+    action.type === "clue" ||
+    action.type === "discard" ||
+    action.type === "play"
+  );
 }

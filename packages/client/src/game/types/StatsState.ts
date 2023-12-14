@@ -30,4 +30,7 @@ export interface StatsState {
   // For determining sound effects.
   readonly numSubsequentBlindPlays: number;
   readonly numSubsequentMisplays: number;
+
+  /** For "Throw It in a Hole" variants. */
+  readonly numAttemptedCardsPlayed: number;
 }

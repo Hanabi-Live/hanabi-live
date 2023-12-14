@@ -31,9 +31,6 @@ export interface GameState {
 
   readonly score: number;
 
-  /** For "Throw It in a Hole" variants. */
-  readonly numAttemptedCardsPlayed: number;
-
   readonly clueTokens: number;
   readonly strikes: readonly StateStrike[];
 

@@ -6,15 +6,15 @@ import { assertDefined } from "@hanabi/utils";
 import * as statsRules from "../rules/stats";
 import type { GameState } from "../types/GameState";
 
-export function getEfficiency(state: GameState): number {
+export function getEfficiency(gameState: GameState): number {
   return statsRules.efficiency(
-    state.stats.cardsGotten,
-    state.stats.potentialCluesLost,
+    gameState.stats.cardsGotten,
+    gameState.stats.potentialCluesLost,
   );
 }
 
-export function getFutureEfficiency(state: GameState): number | null {
-  return statsRules.futureEfficiency(state);
+export function getFutureEfficiency(gameState: GameState): number | null {
+  return statsRules.futureEfficiency(gameState);
 }
 
 export function getCharacterNameForPlayer(

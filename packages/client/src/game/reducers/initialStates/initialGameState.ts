@@ -107,7 +107,6 @@ export function initialGameState(metadata: GameMetadata): GameState {
     cardsRemainingInTheDeck,
     cardStatus,
     score: 0,
-    numAttemptedCardsPlayed: 0,
     clueTokens,
     strikes: [],
     hands,
@@ -136,6 +135,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
 
       numSubsequentBlindPlays: 0,
       numSubsequentMisplays: 0,
+      numAttemptedCardsPlayed: 0,
     },
   };
 }
