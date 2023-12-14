@@ -32,33 +32,20 @@ export function onNewSoundEffect(
 
   const lastAction = getLastAction(data.actions);
 
-  let soundType = getSoundType(
+  const soundType = getSoundType(
     previousData?.gameState,
     data.gameState,
     lastAction,
     globals.metadata,
   );
 
-  // Only play certain sound effects for people in the H-Group.
-  if (
-    (soundType === SoundType.OrderChopMove ||
-      soundType === SoundType.DiscardClued ||
-      soundType === SoundType.DoubleDiscard ||
-      soundType === SoundType.DoubleDiscardCause) &&
-    !globals.lobby.settings.hyphenatedConventions &&
-    // Disable special sounds in "Throw It in a Hole" variants because they leak information.
-    !globals.variant.throwItInAHole
-  ) {
-    soundType = SoundType.Standard;
-  }
-
   const ourTurn =
     globals.metadata.ourPlayerIndex === data.gameState.turn.currentPlayerIndex;
-  const fileName = getFileName(soundType, ourTurn);
+  const adjustedSoundType = getAdjustedSoundType(soundType, ourTurn);
   // The turn sound and the game finished sound will be played back-to-back, so we want to mute the
   // former.
-  const muteExistingSoundEffects = fileName.startsWith("finished_");
-  globals.game!.sounds.play(fileName, muteExistingSoundEffects);
+  const muteExistingSoundEffects = adjustedSoundType.startsWith("finished-");
+  globals.game!.sounds.play(adjustedSoundType, muteExistingSoundEffects);
 }
 
 /**
@@ -73,14 +60,28 @@ function getLastAction(actions: readonly GameAction[]): GameAction | undefined {
   );
 }
 
-function getFileName(soundType: SoundType, ourTurn: boolean): SoundType {
-  switch (soundType) {
-    case SoundType.Standard: {
-      return ourTurn ? SoundType.Us : SoundType.Other;
-    }
+function getAdjustedSoundType(
+  soundType: SoundType,
+  ourTurn: boolean,
+): SoundType {
+  let adjustedSoundType = soundType;
 
-    default: {
-      return soundType;
-    }
+  // Only play certain sound effects for people in the H-Group.
+  if (
+    (soundType === SoundType.OrderChopMove ||
+      soundType === SoundType.DiscardClued ||
+      soundType === SoundType.DoubleDiscard ||
+      soundType === SoundType.DoubleDiscardCause) &&
+    !globals.lobby.settings.hyphenatedConventions &&
+    // Disable special sounds in "Throw It in a Hole" variants because they leak information.
+    !globals.variant.throwItInAHole
+  ) {
+    adjustedSoundType = SoundType.Standard;
   }
+
+  if (adjustedSoundType === SoundType.Standard) {
+    return ourTurn ? SoundType.Us : SoundType.Other;
+  }
+
+  return adjustedSoundType;
 }
