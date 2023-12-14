@@ -2,8 +2,6 @@
 | TODO |
 +------+
 
-- change: Boolean(s.visibleState) --> s.visibleState === null
-- change: Boolean(isSpectator) --> isSpectator
 - refactor numAttemptedCardsPlayed to StatsState
 - rename view to views
 - change file names from underscores to hyphens
