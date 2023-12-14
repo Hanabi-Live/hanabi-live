@@ -185,14 +185,18 @@ function statsReducerFunction(
     } else {
       statsState.numSubsequentBlindPlays++;
     }
-  } else {
+  } else if (action.type === "clue" || action.type === "discard") {
     statsState.numSubsequentBlindPlays = 0;
   }
 
   // Handle `numSubsequentMisplays`.
-  if (action.type === "discard" && action.failed) {
-    statsState.numSubsequentMisplays++;
-  } else {
+  if (action.type === "discard") {
+    if (action.failed) {
+      statsState.numSubsequentMisplays++;
+    } else {
+      statsState.numSubsequentMisplays = 0;
+    }
+  } else if (action.type === "clue" || action.type === "play") {
     statsState.numSubsequentMisplays = 0;
   }
 }

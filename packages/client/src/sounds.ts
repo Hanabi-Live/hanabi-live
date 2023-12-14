@@ -1,7 +1,18 @@
 // In-game sounds.
 
 import { globals } from "./Globals";
-import type { SoundType } from "./game/types/SoundType";
+import { SoundType } from "./game/types/SoundType";
+
+const PRELOAD_SOUND_TYPES = [
+  SoundType.Tone,
+  SoundType.Blind1,
+  // (Do not preload the rest of the blind-play sounds, since they will only occur very rarely.)
+  SoundType.Fail1,
+  SoundType.Other,
+  SoundType.Us,
+  // (Do not preload shared replay sound effects or pause sound effects, as they are used more
+  // rarely.)
+] as const;
 
 let soundEffect: HTMLAudioElement | null = null;
 
@@ -10,18 +21,8 @@ export function init(): void {
   // enabled (or "volume" set above 0) before attempting to preload sounds. However, at this point
   // in the code, the server has not sent us the settings corresponding to this user account, so
   // just assume that they have sounds enabled.
-  const soundFiles = [
-    "tone",
-    "turn-blind1",
-    // (Do not preload the rest of the blind-play sounds, since they will only occur very rarely.)
-    "turn-fail1",
-    "turn-other",
-    "turn-us",
-    // (Do not preload shared replay sound effects or pause sound effects, as they are used more
-    // rarely.)
-  ];
-  for (const file of soundFiles) {
-    const audio = new Audio(`/public/sounds/${file}.mp3`);
+  for (const soundType of PRELOAD_SOUND_TYPES) {
+    const audio = new Audio(`/public/sounds/${soundType}.mp3`);
     audio.load();
   }
 }

@@ -31,7 +31,6 @@ export function onNewSoundEffect(
   }
 
   const lastAction = getLastAction(data.actions);
-
   const soundType = getSoundType(
     previousData?.gameState,
     data.gameState,
