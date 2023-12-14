@@ -2,7 +2,7 @@
 
 import type { Color } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined, todo } from "@hanabi/utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
@@ -102,14 +102,19 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       }
     }
 
+    // Use the first color as a default.
     const colorIndex =
       clueColor === undefined
-        ? 0 // Use the color at index 0 as a default.
-        : colorToColorIndex(clueColor, globals.variant);
+        ? 0
+        : colorToColorIndex(clueColor, globals.variant) ?? 0;
+
+    if (typeof card.state.location !== "number") {
+      return;
+    }
 
     turn.end({
       type: ActionType.ColorClue,
-      target: card.state.location as number,
+      target: card.state.location,
       value: colorIndex,
     });
   }
@@ -143,6 +148,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 
   // Right-clicking on cards in other people's hands is a rank clue action.
   if (
+    typeof card.state.location === "number" &&
     card.state.location !== globals.metadata.ourPlayerIndex &&
     cardRules.isCardInPlayerHand(card.state) &&
     card.state.rank !== null &&
@@ -158,7 +164,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   ) {
     turn.end({
       type: ActionType.RankClue,
-      target: card.state.location as number,
+      target: card.state.location,
       value: card.state.rank,
     });
     return;
@@ -180,5 +186,8 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // moved".)
   if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
     card.appendNote("cm");
+    return;
   }
+
+  todo();
 }

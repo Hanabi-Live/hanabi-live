@@ -14,7 +14,6 @@ import type { VariantJSON } from "./interfaces/VariantJSON";
 import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
 import type { Rank } from "./types/Rank";
-import { isValidRank } from "./types/Rank";
 import { isValidRankClueNumber } from "./types/RankClueNumber";
 
 export function variantsInit(
@@ -107,86 +106,18 @@ export function createVariant(
   }
   const clueRanks = variantDescription.clueRanks ?? [...DEFAULT_CLUE_RANKS];
 
-  // --------------------------------------------
-  // Special rank properties (from `VariantJSON`)
-  // --------------------------------------------
-
-  // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
-  // `undefined` (e.g. there are no special ranks).
-  if (
-    variantDescription.specialRank !== undefined &&
-    !isValidRank(variantDescription.specialRank)
-  ) {
+  // Validate the "stackSize" property.
+  if (variantDescription.stackSize === DEFAULT_FINISHED_STACK_LENGTH) {
     throw new Error(
-      `The "specialRank" property for the variant "${variantDescription.name}" is invalid: ${variantDescription.specialRank}`,
+      `The "stackSize" property for the variant "${variantDescription.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
     );
   }
-  const { specialRank } = variantDescription;
-
-  // Validate the "specialRankAllClueColors" property. If it is not specified, assume false (e.g.
-  // cluing ranks in this variant works normally).
-  if (variantDescription.specialRankAllClueColors === false) {
-    throw new Error(
-      `The "specialRankAllClueColors" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-    );
-  }
-  const specialRankAllClueColors =
-    variantDescription.specialRankAllClueColors ?? false;
-
-  // Validate the "specialRankAllClueRanks" property. If it is not specified, assume false (e.g.
-  // cluing ranks in this variant works normally).
-  if (variantDescription.specialRankAllClueRanks === false) {
-    throw new Error(
-      `The "specialRankAllClueRanks" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-    );
-  }
-  const specialRankAllClueRanks =
-    variantDescription.specialRankAllClueRanks ?? false;
-
-  // Validate the "specialRankNoClueColors" property. If it is not specified, assume false (e.g.
-  // cluing ranks in this variant works normally).
-  if (variantDescription.specialRankNoClueColors === false) {
-    throw new Error(
-      `The "specialRankNoClueColors" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-    );
-  }
-  const specialRankNoClueColors =
-    variantDescription.specialRankNoClueColors ?? false;
-
-  // Validate the "specialRankNoClueRanks" property. If it is not specified, assume false (e.g.
-  // cluing ranks in this variant works normally).
-  if (variantDescription.specialRankNoClueRanks === false) {
-    throw new Error(
-      `The "specialRankNoClueRanks" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-    );
-  }
-  const specialRankNoClueRanks =
-    variantDescription.specialRankNoClueRanks ?? false;
-
-  // Validate the "specialRankDeceptive" property. If it is not specified, assume false (e.g. cluing
-  // ranks in this variant works normally).
-  if (variantDescription.specialRankDeceptive === false) {
-    throw new Error(
-      `The "specialRankDeceptive" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
-    );
-  }
-  const specialRankDeceptive = variantDescription.specialRankDeceptive ?? false;
+  const stackSize =
+    variantDescription.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;
 
   // -----------------------------------------------
   // Special variant properties (from `VariantJSON`)
   // -----------------------------------------------
-
-  // Validate the "criticalRank" property. If it is not specified, assume `undefined` (e.g. there
-  // are no critical ranks).
-  if (
-    variantDescription.criticalRank !== undefined &&
-    !isValidRank(variantDescription.criticalRank)
-  ) {
-    throw new Error(
-      `The "criticalRank" property for the variant "${variantDescription.name}" is invalid: ${variantDescription.criticalRank}`,
-    );
-  }
-  const { criticalRank } = variantDescription;
 
   // Validate the "clueStarved" property. If it is not specified, assume false.
   if (variantDescription.clueStarved === false) {
@@ -300,24 +231,98 @@ export function createVariant(
   }
   const sudoku = variantDescription.sudoku ?? false;
 
-  // Validate the "stackSize" property. If it is not specified, assume 5.
-  if (variantDescription.stackSize === DEFAULT_FINISHED_STACK_LENGTH) {
-    throw new Error(
-      `The "stackSize" property for the variant "${variantDescription.name}" must not be set to ${DEFAULT_FINISHED_STACK_LENGTH}. If it is intended to be ${DEFAULT_FINISHED_STACK_LENGTH}, then remove the property altogether.`,
-    );
-  }
-  const stackSize =
-    variantDescription.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;
-  // -----------------------------
-  // Computed `Variant` properties
-  // -----------------------------
+  // --------------------------------------
+  // Computed `Variant` properties (part 1)
+  // --------------------------------------
 
-  // Derive the ranks that the cards of each suit will be.
+  // Derive the ranks that the cards of each suit will be. (This must be before validating the
+  // special rank properties.)
   const ranks: Rank[] = [...DEFAULT_CARD_RANKS].slice(0, stackSize);
   if (upOrDown) {
     // The "Up or Down" variants have START cards.
     ranks.push(START_CARD_RANK);
   }
+
+  // --------------------------------------------
+  // Special rank properties (from `VariantJSON`)
+  // --------------------------------------------
+
+  // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
+  // `undefined` (e.g. there are no special ranks).
+  if (
+    variantDescription.specialRank !== undefined &&
+    !ranks.includes(variantDescription.specialRank)
+  ) {
+    throw new Error(
+      `The "specialRank" property for the variant "${variantDescription.name}" is invalid: ${variantDescription.specialRank}`,
+    );
+  }
+  const { specialRank } = variantDescription;
+
+  // Validate the "specialRankAllClueColors" property. If it is not specified, assume false (e.g.
+  // cluing ranks in this variant works normally).
+  if (variantDescription.specialRankAllClueColors === false) {
+    throw new Error(
+      `The "specialRankAllClueColors" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+    );
+  }
+  const specialRankAllClueColors =
+    variantDescription.specialRankAllClueColors ?? false;
+
+  // Validate the "specialRankAllClueRanks" property. If it is not specified, assume false (e.g.
+  // cluing ranks in this variant works normally).
+  if (variantDescription.specialRankAllClueRanks === false) {
+    throw new Error(
+      `The "specialRankAllClueRanks" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+    );
+  }
+  const specialRankAllClueRanks =
+    variantDescription.specialRankAllClueRanks ?? false;
+
+  // Validate the "specialRankNoClueColors" property. If it is not specified, assume false (e.g.
+  // cluing ranks in this variant works normally).
+  if (variantDescription.specialRankNoClueColors === false) {
+    throw new Error(
+      `The "specialRankNoClueColors" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+    );
+  }
+  const specialRankNoClueColors =
+    variantDescription.specialRankNoClueColors ?? false;
+
+  // Validate the "specialRankNoClueRanks" property. If it is not specified, assume false (e.g.
+  // cluing ranks in this variant works normally).
+  if (variantDescription.specialRankNoClueRanks === false) {
+    throw new Error(
+      `The "specialRankNoClueRanks" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+    );
+  }
+  const specialRankNoClueRanks =
+    variantDescription.specialRankNoClueRanks ?? false;
+
+  // Validate the "specialRankDeceptive" property. If it is not specified, assume false (e.g. cluing
+  // ranks in this variant works normally).
+  if (variantDescription.specialRankDeceptive === false) {
+    throw new Error(
+      `The "specialRankDeceptive" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+    );
+  }
+  const specialRankDeceptive = variantDescription.specialRankDeceptive ?? false;
+
+  // Validate the "criticalRank" property. If it is not specified, assume `undefined` (e.g. there
+  // are no critical ranks).
+  if (
+    variantDescription.criticalRank !== undefined &&
+    !ranks.includes(variantDescription.criticalRank)
+  ) {
+    throw new Error(
+      `The "criticalRank" property for the variant "${variantDescription.name}" is invalid: ${variantDescription.criticalRank}`,
+    );
+  }
+  const { criticalRank } = variantDescription;
+
+  // --------------------------------------
+  // Computed `Variant` properties (part 2)
+  // --------------------------------------
 
   const maxScore = suits.length * stackSize;
 

@@ -1,11 +1,22 @@
-import type { PlayerIndex } from "@hanabi/data";
+import type {
+  CardOrder,
+  ColorIndex,
+  PlayerIndex,
+  RankClueNumber,
+  Variant,
+} from "@hanabi/data";
 import { DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import type { LogEntry } from "@hanabi/game";
 import { ClueType } from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "@hanabi/utils";
+import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
+import { cardsPerHand } from "../game/rules/hand";
 import { ActionType } from "../game/types/ActionType";
-import type { ClientAction } from "../game/types/ClientAction";
+import type {
+  ClientAction,
+  ClientActionClue,
+} from "../game/types/ClientAction";
 import type { JSONGame } from "../game/types/JSONGame";
 import type { ReplayState } from "../game/types/ReplayState";
 import { globals } from "../game/ui/UIGlobals";
@@ -208,38 +219,43 @@ function getActionFromLogEntry(
   logEntry: LogEntry,
 ): ClientAction | undefined {
   const foundPlay = logEntry.text.match(PLAY_REGEX);
+  if (foundPlay !== null) {
+    const [, playerName, slotString] = foundPlay;
+    if (playerName !== undefined && slotString !== undefined) {
+      const slot = parseIntSafe(slotString);
+      if (slot !== undefined) {
+        return getActionFromHypoPlayOrDiscard(
+          i,
+          ActionType.Play,
+          playerName,
+          slot,
+        );
+      }
+    }
+  }
+
   const foundDiscard = logEntry.text.match(DISCARD_REGEX);
+  if (foundDiscard !== null) {
+    const [, playerName, slotString] = foundDiscard;
+    if (playerName !== undefined && slotString !== undefined) {
+      const slot = parseIntSafe(slotString);
+      if (slot !== undefined) {
+        return getActionFromHypoPlayOrDiscard(
+          i,
+          ActionType.Discard,
+          playerName,
+          slot,
+        );
+      }
+    }
+  }
+
   const foundClue = logEntry.text.match(CLUE_REGEX);
-
-  if (foundPlay !== null && foundPlay.length > 2) {
-    const target = parseIntSafe(foundPlay[2]!);
-    assertDefined(target, `Failed to parse the play target: ${foundPlay[2]}`);
-
-    return getActionFromHypoPlayOrDiscard(
-      i,
-      ActionType.Play,
-      foundPlay[1]!,
-      target,
-    );
-  }
-
-  if (foundDiscard !== null && foundDiscard.length > 2) {
-    const target = parseIntSafe(foundDiscard[2]!);
-    assertDefined(
-      target,
-      `Failed to parse the discard target: ${foundDiscard[2]}`,
-    );
-
-    return getActionFromHypoPlayOrDiscard(
-      i,
-      ActionType.Discard,
-      foundDiscard[1]!,
-      target,
-    );
-  }
-
-  if (foundClue !== null && foundClue.length > 2) {
-    return getActionFromHypoClue(foundClue[1]!, foundClue[2]!);
+  if (foundClue !== null) {
+    const [, playerName, clueWord] = foundClue;
+    if (playerName !== undefined && clueWord !== undefined) {
+      return getActionFromHypoClue(playerName, clueWord);
+    }
   }
 
   return undefined;
@@ -247,11 +263,11 @@ function getActionFromLogEntry(
 
 function getActionFromHypoPlayOrDiscard(
   entryNumber: number,
-  actionType: ActionType,
+  actionType: ActionType.Play | ActionType.Discard,
   playerName: string,
   slot: number,
 ): ClientAction {
-  const playerIndex = getPlayerIndexFromName(playerName);
+  const playerIndex = getPlayerIndexFromPlayerName(playerName);
   assertDefined(
     playerIndex,
     `Failed to find the player index corresponding to: ${playerName}`,
@@ -259,78 +275,110 @@ function getActionFromHypoPlayOrDiscard(
 
   // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
   // perceived.
-  const cardsPerPlayer = getCardsPerPlayer();
-  const slotIndex = cardsPerPlayer - slot;
-  const cardID = getCardFromHypoState(entryNumber - 1, playerIndex, slotIndex);
+  const numCards = cardsPerHand(globals.options);
+  const slotIndex = numCards - slot;
+  const cardOrder = getCardOrderFromHypoState(
+    entryNumber - 1,
+    playerIndex,
+    slotIndex,
+  );
+  assertDefined(
+    cardOrder,
+    "Failed to get the card order from the last hypothetical state.",
+  );
+
   return {
     type: actionType,
-    target: cardID,
+    target: cardOrder,
   };
 }
 
-function getActionFromHypoClue(playerName: string, clue: string): ClientAction {
-  const playerIndex = getPlayerIndexFromName(playerName);
+function getActionFromHypoClue(
+  playerName: string,
+  clueWord: string,
+): ClientActionClue {
+  const playerIndex = getPlayerIndexFromPlayerName(playerName);
   assertDefined(
     playerIndex,
     `Failed to find the player index corresponding to: ${playerName}`,
   );
 
-  let parsedClue = parseIntSafe(clue);
+  let clueNumber = parseIntSafe(clueWord);
 
   // "Odds and Evens" give "Odd" or "Even" as rank clues.
-  if (clue === "Odd") {
-    parsedClue = 1;
-  } else if (clue === "Even") {
-    parsedClue = 2;
+  if (clueWord === "Odd") {
+    clueNumber = 1;
+  } else if (clueWord === "Even") {
+    clueNumber = 2;
   }
 
-  if (parsedClue === undefined) {
+  if (clueNumber === undefined) {
     // It is a color clue.
+    const colorIndex = getColorIndexFromColorName(clueWord, globals.variant);
+    assertDefined(
+      colorIndex,
+      `The clue color name of ${clueWord} is not valid for this variant.`,
+    );
+
     return {
       type: ActionType.ColorClue,
       target: playerIndex,
-      value: getColorIdFromString(clue),
+      value: colorIndex,
     };
   }
+
+  if (!includes(globals.variant.clueRanks, clueNumber)) {
+    throw new Error(
+      `The clue rank of ${clueNumber} is not valid for this variant.`,
+    );
+  }
+  const rankClueNumber = clueNumber as RankClueNumber;
 
   // It is a rank clue.
   return {
     type: ActionType.RankClue,
     target: playerIndex,
-    value: parsedClue,
+    value: rankClueNumber,
   };
 }
 
-function getPlayerIndexFromName(name: string): PlayerIndex | undefined {
-  const playerIndex = globals.metadata.playerNames.indexOf(name);
+function getPlayerIndexFromPlayerName(
+  playerName: string,
+): PlayerIndex | undefined {
+  const playerIndex = globals.metadata.playerNames.indexOf(playerName);
   return playerIndex === -1 ? undefined : (playerIndex as PlayerIndex);
 }
 
-function getCardFromHypoState(
+function getCardOrderFromHypoState(
   previousStateIndex: number,
   playerIndex: PlayerIndex,
   slotIndex: number,
-): number {
+): CardOrder | undefined {
   if (globals.state.replay.hypothetical === null) {
-    return 0;
+    return undefined;
   }
 
   const stateIndex = Math.max(previousStateIndex, 0);
-  const stateOnHypoTurn = globals.state.replay.hypothetical.states[stateIndex]!;
-  const playerHand = stateOnHypoTurn.hands[playerIndex]!;
-  return playerHand[slotIndex]!;
-}
-
-function getColorIdFromString(clue: string): number {
-  let suitIndex = 0;
-  for (const [index, color] of globals.variant.clueColors.entries()) {
-    if (clue.startsWith(color.name)) {
-      suitIndex = index;
-    }
+  const stateOnHypoTurn = globals.state.replay.hypothetical.states[stateIndex];
+  if (stateOnHypoTurn === undefined) {
+    return undefined;
   }
-  return suitIndex;
+
+  const playerHand = stateOnHypoTurn.hands[playerIndex];
+  if (playerHand === undefined) {
+    return undefined;
+  }
+
+  return playerHand[slotIndex];
 }
 
-function getCardsPerPlayer(): number {
-  return globals.state.replay.states[0]!.hands[0]!.length;
+function getColorIndexFromColorName(
+  colorName: string,
+  variant: Variant,
+): ColorIndex | undefined {
+  const colorIndex = variant.clueColors.findIndex(
+    (clueColor) => clueColor.name === colorName,
+  );
+
+  return colorIndex === -1 ? undefined : (colorIndex as ColorIndex);
 }

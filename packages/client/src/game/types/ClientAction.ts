@@ -1,12 +1,44 @@
-import type { CardOrder } from "@hanabi/data";
+import type {
+  CardOrder,
+  PlayerIndex,
+  RankClueNumber,
+  SuitIndex,
+} from "@hanabi/data";
+import type { CompositionTypeSatisfiesEnum } from "@hanabi/utils";
 import type { ActionType } from "./ActionType";
 
 /** A message sent to the server that represents the in-game action that we just took. */
-export interface ClientAction {
-  type: ActionType;
+export type ClientAction =
+  | ClientActionPlay
+  | ClientActionDiscard
+  | ClientActionColorClue
+  | ClientActionRankClue;
 
-  /** The player index of the player clued or the card order of the card played/discarded. */
-  target: number | CardOrder;
+type _Test = CompositionTypeSatisfiesEnum<
+  ClientAction,
+  Exclude<ActionType, ActionType.GameOver>
+>;
 
-  value?: number;
+interface ClientActionPlay {
+  type: ActionType.Play;
+  target: CardOrder;
 }
+
+interface ClientActionDiscard {
+  type: ActionType.Discard;
+  target: CardOrder;
+}
+
+export interface ClientActionColorClue {
+  type: ActionType.ColorClue;
+  target: PlayerIndex;
+  value: SuitIndex;
+}
+
+export interface ClientActionRankClue {
+  type: ActionType.RankClue;
+  target: PlayerIndex;
+  value: RankClueNumber;
+}
+
+export type ClientActionClue = ClientActionColorClue | ClientActionRankClue;

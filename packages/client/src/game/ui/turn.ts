@@ -34,14 +34,14 @@ function handlePremove() {
   }
 
   // Make a copy of the premove values and then clear the premove action.
-  const { type, target, value } = premove;
+  const oldPremove = { ...premove };
   globals.store!.dispatch({
     type: "premove",
     premove: null,
   });
 
   // Perform some validation
-  switch (type) {
+  switch (oldPremove.type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
       // Prevent pre-cluing if there is not a clue available.
@@ -75,9 +75,7 @@ function handlePremove() {
 
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
-      type,
-      target,
-      value,
+      ...oldPremove,
     });
 
     hideArrowsAndDisableDragging();
@@ -103,9 +101,7 @@ export function end(clientAction: ClientAction): void {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
-      type: clientAction.type,
-      target: clientAction.target,
-      value: clientAction.value,
+      ...clientAction,
     });
     hideArrowsAndDisableDragging();
   } else {

@@ -1,3 +1,4 @@
+import type { CardOrder } from "@hanabi/data";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import { OptionIcons } from "../../types/OptionIcons";
@@ -91,10 +92,12 @@ export class Deck extends Konva.Group {
         },
       });
     } else if (draggedTo === "playArea") {
+      // Card orders start at 0, so the final card order is the length of the deck - 1.
+      const numCardsInDeck = deckRules.totalCards(globals.variant);
+      const cardOrder = (numCardsInDeck - 1) as CardOrder;
       turn.end({
         type: ActionType.Play,
-        // Card orders start at 0, so the final card order is the length of the deck - 1.
-        target: deckRules.totalCards(globals.variant) - 1,
+        target: cardOrder,
       });
     }
   }

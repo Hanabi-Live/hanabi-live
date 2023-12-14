@@ -54,10 +54,6 @@ export function onChanged(
         text += "Clue";
         break;
       }
-
-      case ActionType.GameOver: {
-        break;
-      }
     }
 
     globals.elements.premoveCancelButton?.text(text);

@@ -3,6 +3,7 @@
 +------+
 
 - refactor ClientAction interface to be union
+- make Connection.send type-safe
 
 +-----+
 | OLD |

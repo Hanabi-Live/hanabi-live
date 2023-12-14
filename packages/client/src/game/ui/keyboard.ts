@@ -1,5 +1,6 @@
 // Functions for handling all of the keyboard shortcuts.
 
+import type { CardOrder } from "@hanabi/data";
 import { parseIntSafe } from "@hanabi/utils";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
@@ -393,7 +394,9 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
     if (/^deck$/i.test(response)) {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
-      performAction(actionType, deckRules.totalCards(globals.variant) - 1);
+      const numCardsInDeck = deckRules.totalCards(globals.variant);
+      const cardOrder = (numCardsInDeck - 1) as CardOrder;
+      performAction(actionType, cardOrder);
       return;
     }
 
@@ -405,7 +408,10 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
       return;
     }
 
-    performAction(actionType, hand[maxSlotIndex - slot]!);
+    const cardOrder = hand[maxSlotIndex - slot];
+    if (cardOrder !== undefined) {
+      performAction(actionType, cardOrder);
+    }
   };
 
   showPrompt("#play-discard-modal", null, playDiscardCard, playDiscardButton);
@@ -419,7 +425,7 @@ function click(element: Konva.Node) {
 
 function performAction(
   actionType: ActionType.Play | ActionType.Discard,
-  target: number,
+  target: CardOrder,
 ) {
   if (globals.state.replay.hypothetical === null) {
     globals.lobby.conn!.send("action", {

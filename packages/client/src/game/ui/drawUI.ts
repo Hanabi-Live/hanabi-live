@@ -1,6 +1,12 @@
 // This function draws the UI when going into a game for the first time.
 
-import type { CardOrder, RankClueNumber, Suit, SuitIndex } from "@hanabi/data";
+import type {
+  CardOrder,
+  PlayerIndex,
+  RankClueNumber,
+  Suit,
+  SuitIndex,
+} from "@hanabi/data";
 import { assertDefined, eRange, repeat } from "@hanabi/utils";
 import Konva from "konva";
 import * as debug from "../../debug";
@@ -1779,16 +1785,17 @@ function drawClueArea() {
     const playerButtonW = totalPlayerW / totalPlayerButtons;
 
     for (const i of eRange(totalPlayerButtons)) {
-      const j = (globals.metadata.ourPlayerIndex + i + 1) % numPlayers;
+      const playerIndex = ((globals.metadata.ourPlayerIndex + i + 1) %
+        numPlayers) as PlayerIndex;
       const button = new PlayerButton(
         {
           x: (playerButtonW + playerButtonSpacing) * i * winW,
           y: 0,
           width: playerButtonW * winW,
           height: playerButtonH * winH,
-          text: globals.metadata.playerNames[j],
+          text: globals.metadata.playerNames[playerIndex],
         },
-        j,
+        playerIndex,
       );
       globals.elements.clueTargetButtonGroup.add(
         button as unknown as Konva.Group,
@@ -1818,18 +1825,19 @@ function drawClueArea() {
     const playerButtonW = totalPlayerW / totalPlayerButtons;
 
     for (const i of eRange(totalPlayerButtons)) {
-      // We change the calculation of j from the above code block because we want the buttons to
-      // follow the order of players from top to bottom (in BGA mode).
-      const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
+      // We change the calculation of `playerIndex` from the above code block because we want the
+      // buttons to follow the order of players from top to bottom (in BGA mode).
+      const playerIndex = ((globals.metadata.ourPlayerIndex + i) %
+        numPlayers) as PlayerIndex;
       const button = new PlayerButton(
         {
           x: (playerButtonW + playerButtonSpacing) * i * winW,
           y: 0,
           width: playerButtonW * winW,
           height: playerButtonH * winH,
-          text: globals.metadata.playerNames[j],
+          text: globals.metadata.playerNames[playerIndex],
         },
-        j,
+        playerIndex,
       );
       globals.elements.clueTargetButtonGroup2.add(
         button as unknown as Konva.Group,

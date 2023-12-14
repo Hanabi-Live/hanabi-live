@@ -12,15 +12,16 @@ export interface VariantDescription {
   clueRanks?: readonly RankClueNumber[];
   stackSize?: BasicRank;
 
+  // The following properties are listed in order of how they appear in "variants.md".
+
   specialRank?: Rank;
   specialRankAllClueColors?: boolean;
   specialRankAllClueRanks?: boolean;
   specialRankNoClueColors?: boolean;
   specialRankNoClueRanks?: boolean;
   specialRankDeceptive?: boolean;
-
-  // The following properties are listed in order of how they appear in "variants.md".
   criticalRank?: Rank;
+
   clueStarved?: boolean;
   colorCluesTouchNothing?: boolean;
   rankCluesTouchNothing?: boolean;

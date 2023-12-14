@@ -1,14 +1,15 @@
+import type { PlayerIndex } from "@hanabi/data";
 import Konva from "konva";
 import { Button } from "./Button";
 
 export class PlayerButton extends Button {
-  targetIndex: number;
+  targetPlayerIndex: PlayerIndex;
   radioBackground: Konva.Circle;
   radioDot: Konva.Circle;
 
-  constructor(config: Konva.ContainerConfig, targetIndex: number) {
+  constructor(config: Konva.ContainerConfig, targetPlayerIndex: PlayerIndex) {
     super(config, []);
-    this.targetIndex = targetIndex;
+    this.targetPlayerIndex = targetPlayerIndex;
 
     const x = this.height() / 2;
     this.radioBackground = new Konva.Circle({

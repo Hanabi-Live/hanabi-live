@@ -1,6 +1,7 @@
 import type {
   CardOrder,
   Color,
+  PlayerIndex,
   Rank,
   RankClueNumber,
   SuitIndex,
@@ -9,10 +10,7 @@ import type {
 
 export interface CardState {
   readonly order: CardOrder;
-
-  /** If this is a number, it is the index of the player that holds this card. */
-  readonly location: "deck" | "discard" | "playStack" | number;
-
+  readonly location: "deck" | "discard" | "playStack" | PlayerIndex;
   readonly suitIndex: SuitIndex | null;
   readonly rank: Rank | null;
 

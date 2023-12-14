@@ -5,6 +5,10 @@ import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";
 import { ActionType } from "../types/ActionType";
+import type {
+  ClientActionColorClue,
+  ClientActionRankClue,
+} from "../types/ClientAction";
 import type { Clue } from "../types/Clue";
 import type { MsgClue } from "../types/MsgClue";
 import type { ColorButton } from "./ColorButton";
@@ -44,7 +48,7 @@ export function checkLegal(): void {
     return;
   }
 
-  const who = target.targetIndex;
+  const who = target.targetPlayerIndex;
   const { currentPlayerIndex } = globals.state.visibleState!.turn;
   if (currentPlayerIndex === null) {
     return;
@@ -154,22 +158,22 @@ export function give(): void {
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
 
-  const target = clueTargetButtonGroup?.getPressed() as
+  const playerButton = clueTargetButtonGroup?.getPressed() as
     | PlayerButton
     | null
     | undefined;
   const { clueTypeButtonGroup } = globals.elements;
-  const clueButton = clueTypeButtonGroup?.getPressed() as
+  const clueOrRankButton = clueTypeButtonGroup?.getPressed() as
     | ColorButton
     | RankButton
     | null
     | undefined;
 
   if (
-    target === undefined ||
-    target === null ||
-    clueButton === undefined ||
-    clueButton === null
+    playerButton === undefined ||
+    playerButton === null ||
+    clueOrRankButton === undefined ||
+    clueOrRankButton === null
   ) {
     // They have not selected a player or a clue type.
     globals.elements.giveClueButton!.setEnabled(false);
@@ -182,38 +186,38 @@ export function give(): void {
 
   globals.elements.giveClueButton!.setEnabled(false);
 
-  let type: ActionType;
-  let value: number;
-
-  switch (clueButton.clue.type) {
+  switch (clueOrRankButton.clue.type) {
     case ClueType.Color: {
       const colorIndex = colorToColorIndex(
-        clueButton.clue.value,
+        clueOrRankButton.clue.value,
         globals.variant,
       );
       assertDefined(
         colorIndex,
-        `Failed to get the color index for color: ${clueButton.clue.value.name}`,
+        `Failed to get the color index for color: ${clueOrRankButton.clue.value.name}`,
       );
 
-      type = ActionType.ColorClue;
-      value = colorIndex;
+      const clientActionColorClue: ClientActionColorClue = {
+        type: ActionType.ColorClue,
+        target: playerButton.targetPlayerIndex,
+        value: colorIndex,
+      };
+      turn.end(clientActionColorClue);
+
       break;
     }
 
     case ClueType.Rank: {
-      type = ActionType.RankClue;
-      value = clueButton.clue.value; // eslint-disable-line @typescript-eslint/prefer-destructuring
+      const clientActionRankClue: ClientActionRankClue = {
+        type: ActionType.RankClue,
+        target: playerButton.targetPlayerIndex,
+        value: clueOrRankButton.clue.value,
+      };
+      turn.end(clientActionRankClue);
+
       break;
     }
   }
-
-  // Send the message to the server.
-  turn.end({
-    type,
-    target: target.targetIndex,
-    value,
-  });
 }
 
 function shouldGiveClue() {

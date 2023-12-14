@@ -8,10 +8,10 @@ import type {
   RankClueNumber,
 } from "@hanabi/data";
 import { ClueType } from "@hanabi/game";
-import { assertDefined, eRange } from "@hanabi/utils";
+import { eRange } from "@hanabi/utils";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
-import type { ClientAction } from "../types/ClientAction";
+import type { ClientAction, ClientActionClue } from "../types/ClientAction";
 import type { MsgClue } from "../types/MsgClue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
@@ -84,10 +84,6 @@ export function send(hypoAction: ClientAction): void {
     case ActionType.RankClue: {
       type = "clue";
       break;
-    }
-
-    case ActionType.GameOver: {
-      throw new Error(`Unknown hypothetical action of: ${hypoAction.type}`);
     }
   }
 
@@ -177,7 +173,8 @@ export function send(hypoAction: ClientAction): void {
     }
 
     case "clue": {
-      const clue = hypoActionToMsgClue(hypoAction);
+      const clientActionClue = hypoAction as ClientActionClue;
+      const clue = hypoActionToMsgClue(clientActionClue);
       const list = getTouchedCardsFromClue(hypoAction.target, clue);
       sendHypoAction({
         type,
@@ -211,12 +208,7 @@ export function send(hypoAction: ClientAction): void {
   });
 }
 
-function hypoActionToMsgClue(hypoAction: ClientAction): MsgClue {
-  assertDefined(
-    hypoAction.value,
-    "The hypothetical action was a clue but it did not include a value.",
-  );
-
+function hypoActionToMsgClue(hypoAction: ClientActionClue): MsgClue {
   switch (hypoAction.type) {
     case ActionType.ColorClue: {
       return {
@@ -230,10 +222,6 @@ function hypoActionToMsgClue(hypoAction: ClientAction): MsgClue {
         type: ClueType.Rank,
         value: hypoAction.value as RankClueNumber,
       };
-    }
-
-    default: {
-      throw new Error(`Unknown hypothetical clue action: ${hypoAction.type}`);
     }
   }
 }
