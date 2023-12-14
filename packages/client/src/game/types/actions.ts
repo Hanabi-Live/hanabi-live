@@ -201,7 +201,7 @@ export interface ActionDraw {
   readonly rank: Rank | -1;
 }
 
-interface ActionGameOver {
+export interface ActionGameOver {
   readonly type: "gameOver";
   readonly endCondition: EndCondition;
   readonly playerIndex: PlayerIndex;

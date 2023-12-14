@@ -7,8 +7,21 @@ import * as handRules from "../../rules/hand";
 import type { GameMetadata } from "../../types/GameMetadata";
 import type { GameState } from "../../types/GameState";
 import { SoundType } from "../../types/SoundType";
-import type { ActionPlay, GameAction } from "../../types/actions";
+import type {
+  ActionClue,
+  ActionDiscard,
+  ActionGameOver,
+  ActionPlay,
+  GameAction,
+} from "../../types/actions";
 import { globals } from "../UIGlobals";
+
+export const SOUND_TYPE_ACTIONS = [
+  "clue",
+  "discard",
+  "gameOver",
+  "play",
+] as const;
 
 export function getSoundType(
   previousGameState: GameState | undefined,
@@ -33,11 +46,19 @@ export function getSoundType(
         }
       : originalAction;
 
-  switch (action.type) {
+  if (!SOUND_TYPE_ACTIONS.includes(action.type)) {
+    return SoundType.Standard;
+  }
+
+  const actionType = action.type as (typeof SOUND_TYPE_ACTIONS)[number];
+
+  switch (actionType) {
     case "clue": {
+      const actionClue = action as ActionClue;
+
       if (metadata.options.detrimentalCharacters) {
         const giverCharacterName = getCharacterNameForPlayer(
-          action.giver,
+          actionClue.giver,
           metadata.characterAssignments,
         );
 
@@ -47,7 +68,7 @@ export function getSoundType(
       }
 
       if (variant.cowAndPig) {
-        switch (action.clue.type) {
+        switch (actionClue.clue.type) {
           case ClueType.Color: {
             return SoundType.Moo;
           }
@@ -66,7 +87,9 @@ export function getSoundType(
     }
 
     case "discard": {
-      if (action.failed) {
+      const actionDiscard = action as ActionDiscard;
+
+      if (actionDiscard.failed) {
         return gameState.stats.numSubsequentMisplays === 2
           ? SoundType.Fail2
           : SoundType.Fail1;
@@ -79,14 +102,14 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const discardedCard = previousGameState.deck[action.order];
+      const discardedCard = previousGameState.deck[actionDiscard.order];
       const touched =
         discardedCard !== undefined && cardRules.isCardClued(discardedCard);
       if (touched) {
         return SoundType.DiscardClued;
       }
 
-      const nextPlayerHand = gameState.hands[action.playerIndex];
+      const nextPlayerHand = gameState.hands[actionDiscard.playerIndex];
       if (
         nextPlayerHand !== undefined &&
         !handRules.isLocked(nextPlayerHand, gameState.deck) &&
@@ -118,7 +141,9 @@ export function getSoundType(
     }
 
     case "gameOver": {
-      if (action.endCondition > EndCondition.Normal) {
+      const actionGameOver = action as ActionGameOver;
+
+      if (actionGameOver.endCondition > EndCondition.Normal) {
         return SoundType.FinishedFail;
       }
 
@@ -130,6 +155,8 @@ export function getSoundType(
     }
 
     case "play": {
+      const actionPlay = action as ActionPlay;
+
       if (
         gameState.stats.maxScore < previousGameState.stats.maxScore &&
         !variant.throwItInAHole
@@ -137,7 +164,7 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const card = gameState.deck[action.order];
+      const card = gameState.deck[actionPlay.order];
       const touched = card !== undefined && cardRules.isCardClued(card);
       if (!touched) {
         switch (gameState.stats.numSubsequentBlindPlays) {
@@ -167,14 +194,10 @@ export function getSoundType(
         }
       }
 
-      if (isOrderChopMove(previousGameState, gameState, action, metadata)) {
+      if (isOrderChopMove(previousGameState, gameState, actionPlay, metadata)) {
         return SoundType.OneOutOfOrder;
       }
 
-      return SoundType.Standard;
-    }
-
-    default: {
       return SoundType.Standard;
     }
   }

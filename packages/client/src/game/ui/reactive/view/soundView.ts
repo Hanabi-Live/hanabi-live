@@ -2,7 +2,7 @@ import type { GameState } from "../../../types/GameState";
 import { SoundType } from "../../../types/SoundType";
 import type { GameAction } from "../../../types/actions";
 import { globals } from "../../UIGlobals";
-import { getSoundType } from "../getSoundType";
+import { SOUND_TYPE_ACTIONS, getSoundType } from "../getSoundType";
 
 export function onNewSoundEffect(
   data: {
@@ -30,7 +30,7 @@ export function onNewSoundEffect(
     return;
   }
 
-  const lastAction = data.actions.at(-1);
+  const lastAction = getLastAction(data.actions);
 
   let soundType = getSoundType(
     previousData?.gameState,
@@ -60,6 +60,18 @@ export function onNewSoundEffect(
   // former.
   const muteExistingSoundEffects = fileNameSuffix.startsWith("finished_");
   globals.game!.sounds.play(fileName, muteExistingSoundEffects);
+}
+
+/**
+ * The last action will likely be a "draw" action, but we need the last "play" or "discard" action
+ * so that we can compute the correct sound to play. Thus, work our way backwards, looking for
+ * matching action types.
+ */
+function getLastAction(actions: readonly GameAction[]): GameAction | undefined {
+  const reversedActions = [...actions].reverse();
+  return reversedActions.find((action) =>
+    SOUND_TYPE_ACTIONS.includes(action.type),
+  );
 }
 
 function getFileName(soundType: SoundType, ourTurn: boolean): string {
