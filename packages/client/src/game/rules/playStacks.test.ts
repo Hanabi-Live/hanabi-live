@@ -1,5 +1,6 @@
-import type { CardOrder, NumSuits, Rank } from "@hanabi/data";
+import type { NumSuits, Rank } from "@hanabi/data";
 import { START_CARD_RANK, getDefaultVariant, getVariant } from "@hanabi/data";
+import type { CardOrder } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { eRange, newArray } from "@hanabi/utils";

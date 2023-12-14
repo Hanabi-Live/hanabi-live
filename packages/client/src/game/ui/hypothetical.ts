@@ -1,12 +1,8 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import type {
-  CardOrder,
-  ColorIndex,
-  PlayerIndex,
-  RankClueNumber,
-} from "@hanabi/data";
+import type { ColorIndex, PlayerIndex, RankClueNumber } from "@hanabi/data";
+import type { CardOrder } from "@hanabi/game";
 import { ClueType } from "@hanabi/game";
 import { assertDefined, eRange } from "@hanabi/utils";
 import * as playStacksRules from "../rules/playStacks";

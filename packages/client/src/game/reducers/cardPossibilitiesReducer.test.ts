@@ -1,6 +1,6 @@
-import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
+import type { Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardOrder, CardState } from "@hanabi/game";
 import { assertDefined } from "@hanabi/utils";
 import { testMetadata } from "../../../test/testMetadata";
 import { newColorClue, newRankClue } from "../types/Clue";

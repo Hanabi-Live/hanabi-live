@@ -1,7 +1,6 @@
 // Calculates the state of the deck after an action.
 
 import type {
-  CardOrder,
   NumPlayers,
   PlayerIndex,
   Rank,
@@ -9,7 +8,7 @@ import type {
   SuitRankTuple,
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardOrder, CardState, GameState } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,

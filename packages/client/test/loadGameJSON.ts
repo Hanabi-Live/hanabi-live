@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import type {
-  CardOrder,
-  NumPlayers,
-  PlayerIndex,
-  Rank,
-  SuitIndex,
-} from "@hanabi/data";
+import type { NumPlayers, PlayerIndex, Rank, SuitIndex } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
-import type { GameState } from "@hanabi/game";
+import type { CardOrder, GameState } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "@hanabi/utils";
 import { ClueType } from "../../game/src/enums/ClueType";
 import { gameReducer } from "../src/game/reducers/gameReducer";

@@ -1,4 +1,4 @@
-import type { CardOrder } from "@hanabi/data";
+import type { CardOrder } from "../types/CardOrder";
 
 export interface StateStrike {
   readonly segment: number;

@@ -1,5 +1,4 @@
 import type {
-  CardOrder,
   Color,
   NumPlayers,
   Rank,
@@ -9,7 +8,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getSuit } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardOrder, CardState } from "@hanabi/game";
 import { CardStatus, StackDirection } from "@hanabi/game";
 import { assertDefined, assertNotNull, iRange, includes } from "@hanabi/utils";
 import Konva from "konva";

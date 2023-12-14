@@ -1,13 +1,8 @@
-import type {
-  CardOrder,
-  NumPlayers,
-  NumSuits,
-  Rank,
-  SuitRankMap,
-} from "@hanabi/data";
+import type { NumPlayers, NumSuits, Rank, SuitRankMap } from "@hanabi/data";
 import type { DeepReadonly, Tuple } from "@hanabi/utils";
 import type { CardStatus } from "../enums/CardStatus";
 import type { StackDirection } from "../enums/StackDirection";
+import type { CardOrder } from "../types/CardOrder";
 import type { StateClue } from "../types/StateClue";
 import type { CardState } from "./CardState";
 import type { LogEntry } from "./LogEntry";

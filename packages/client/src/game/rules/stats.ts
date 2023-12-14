@@ -1,8 +1,8 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
+import type { NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardOrder, CardState, GameState } from "@hanabi/game";
 import { PaceRisk } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import { assertNotNull, newArray, sumArray } from "@hanabi/utils";

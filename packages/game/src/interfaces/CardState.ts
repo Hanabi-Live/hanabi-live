@@ -1,11 +1,11 @@
 import type {
-  CardOrder,
   Color,
   Rank,
   RankClueNumber,
   SuitIndex,
   SuitRankTuple,
 } from "@hanabi/data";
+import type { CardOrder } from "../types/CardOrder";
 
 export interface CardState {
   readonly order: CardOrder;

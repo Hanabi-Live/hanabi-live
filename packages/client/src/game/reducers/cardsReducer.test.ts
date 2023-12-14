@@ -1,6 +1,6 @@
-import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
+import type { NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardOrder, CardState, GameState } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import {
   cardIdentity,

@@ -1,5 +1,4 @@
 import type {
-  CardOrder,
   PlayerIndex,
   Rank,
   SuitIndex,
@@ -7,7 +6,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardOrder, CardState, GameState } from "@hanabi/game";
 import type { DeepReadonly } from "@hanabi/utils";
 import {
   arrayCopyTwoDimensional,
