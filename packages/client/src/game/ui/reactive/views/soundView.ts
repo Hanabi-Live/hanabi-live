@@ -1,4 +1,4 @@
-import type { GameState } from "../../../types/GameState";
+import type { GameState } from "@hanabi/game";
 import { SoundType } from "../../../types/SoundType";
 import type { GameAction } from "../../../types/actions";
 import { globals } from "../../UIGlobals";

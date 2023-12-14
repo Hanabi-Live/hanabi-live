@@ -1,5 +1,5 @@
+import type { GameState } from "@hanabi/game";
 import type { Store, Unsubscribe } from "redux";
-import type { GameState } from "../../types/GameState";
 import type { State } from "../../types/State";
 import type { Action } from "../../types/actions";
 import { globals } from "../UIGlobals";

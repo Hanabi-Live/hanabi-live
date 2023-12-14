@@ -1,4 +1,5 @@
 import type { CardOrder, SuitIndex } from "@hanabi/data";
+import type { GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
 import { ReadonlyMap, assertDefined, assertNotNull } from "@hanabi/utils";
 import equal from "fast-deep-equal";
@@ -6,7 +7,6 @@ import type Konva from "konva";
 import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";
-import type { GameState } from "../../../types/GameState";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../UIGlobals";

@@ -2,7 +2,7 @@
 
 import type { Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardState, GameState } from "@hanabi/game";
 import { ClueType, EndCondition } from "@hanabi/game";
 import { assertDefined, assertNotNull, tupleEntries } from "@hanabi/utils";
 import type { Draft } from "immer";
@@ -18,7 +18,6 @@ import * as variantRules from "../rules/variant";
 import type { CardNote } from "../types/CardNote";
 import type { GameMetadata } from "../types/GameMetadata";
 import { getPlayerName } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
 import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";

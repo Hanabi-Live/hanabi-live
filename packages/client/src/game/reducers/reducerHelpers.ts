@@ -2,9 +2,9 @@
 
 import type { PlayerIndex } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
+import type { GameState } from "@hanabi/game";
 import { assertDefined } from "@hanabi/utils";
 import * as statsRules from "../rules/stats";
-import type { GameState } from "../types/GameState";
 
 export function getEfficiency(gameState: GameState): number {
   return statsRules.efficiency(

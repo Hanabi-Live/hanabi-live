@@ -7,7 +7,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardState, GameState } from "@hanabi/game";
 import type { DeepReadonly } from "@hanabi/utils";
 import {
   arrayCopyTwoDimensional,
@@ -16,7 +16,6 @@ import {
 } from "@hanabi/utils";
 import * as deckRules from "../rules/deck";
 import type { GameMetadata } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
 import type { GameAction } from "../types/actions";
 
 export function cardDeductionReducer(

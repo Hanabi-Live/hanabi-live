@@ -1,6 +1,6 @@
 import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardState, GameState } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
 import {
   cardIdentity,
@@ -12,7 +12,6 @@ import {
 } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
 import * as deckRules from "../rules/deck";
-import type { GameState } from "../types/GameState";
 import { cardsReducer } from "./cardsReducer";
 import { initialCardState } from "./initialStates/initialCardState";
 import { initialGameState } from "./initialStates/initialGameState";

@@ -19,5 +19,5 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts", "../game/src/interfaces/StatsState.ts"],
+  "include": ["./src/**/*.ts"],
 }

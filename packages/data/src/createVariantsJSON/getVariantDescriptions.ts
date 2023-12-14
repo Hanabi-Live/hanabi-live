@@ -1,12 +1,19 @@
-import type { Color, Rank, RankClueNumber, Suit, Variant } from "@hanabi/data";
-import { VALID_NUM_PLAYERS } from "@hanabi/data";
 import type { Subtract } from "@hanabi/utils";
 import { ReadonlySet } from "@hanabi/utils";
 import { colorsInit } from "../colorsInit";
-import { DEFAULT_CLUE_RANKS, SUIT_REVERSED_SUFFIX } from "../constants";
+import {
+  DEFAULT_CLUE_RANKS,
+  SUIT_REVERSED_SUFFIX,
+  VALID_NUM_PLAYERS,
+} from "../constants";
+import type { Color } from "../interfaces/Color";
+import type { Suit } from "../interfaces/Suit";
 import type { SuitJSON } from "../interfaces/SuitJSON";
+import type { Variant } from "../interfaces/Variant";
 import type { VariantDescription } from "../interfaces/VariantDescription";
 import { suitsInit } from "../suitsInit";
+import type { Rank } from "../types/Rank";
+import type { RankClueNumber } from "../types/RankClueNumber";
 import { createVariant } from "../variantsInit";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
@@ -1224,6 +1231,7 @@ function getSudokuVariants(
       const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
       const basicSuits = basicVariantSuits[numBasicSuits];
       const variantSuits = [...basicSuits.slice(0, numSuits - 1), suit.name];
+
       if (numSuits === 5) {
         variantDescriptions.push({
           name: variantName,
@@ -1251,6 +1259,7 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
       ...new Options(),
       numPlayers,
     };
+
     return minEfficiency(
       numPlayers,
       numPlayers,
@@ -1258,6 +1267,7 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
       cardsPerHand(options),
     );
   });
+
   return Math.max(...requiredEfficiencies);
 }
 
@@ -1267,13 +1277,16 @@ function minVariantPace(variant: Variant): number {
       ...new Options(),
       numPlayers,
     };
+
     const startingDeckSize = statsRules.startingDeckSize(
       options.numPlayers,
       cardsPerHand(options),
       variant,
     );
+
     return startingPace(startingDeckSize, variant.maxScore, numPlayers);
   });
+
   return Math.min(...startingPaces);
 }
 
@@ -1283,16 +1296,20 @@ function isVariantAllowed(
   variantDescription: VariantDescription,
 ): boolean {
   const variant = createVariant(COLORS, SUITS, variantDescription, 0, "");
+
   if (totalCards(variant) < MINIMUM_CARD_COUNT) {
     return false;
   }
+
   if (minVariantPace(variant) < 0) {
     return false;
   }
+
   if (
     maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
   ) {
     return false;
   }
+
   return true;
 }

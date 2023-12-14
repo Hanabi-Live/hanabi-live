@@ -1,10 +1,10 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
+import type { GameState } from "@hanabi/game";
 import { assertDefined } from "@hanabi/utils";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
-import type { GameState } from "../types/GameState";
 import type { State } from "../types/State";
 import { isCritical } from "./variants/reversible";
 

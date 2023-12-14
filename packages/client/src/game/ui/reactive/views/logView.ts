@@ -1,5 +1,5 @@
+import type { LogEntry } from "@hanabi/game";
 import { eRange } from "@hanabi/utils";
-import type { LogEntry } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {

@@ -1,9 +1,9 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { MAX_STRIKES } from "@hanabi/data";
+import type { StateStrike } from "@hanabi/game";
 import { eRange } from "@hanabi/utils";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import * as clueTokensRules from "../../../rules/clueTokens";
-import type { StateStrike } from "../../../types/GameState";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
 import { animate } from "../../konvaHelpers";

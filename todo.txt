@@ -2,6 +2,8 @@
 | TODO |
 +------+
 
+- move data/src/types to @hanabi/game
+
 +-----+
 | OLD |
 +-----+

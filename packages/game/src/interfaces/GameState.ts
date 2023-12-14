@@ -5,15 +5,15 @@ import type {
   Rank,
   SuitRankMap,
 } from "@hanabi/data";
-import type {
-  CardState,
-  CardStatus,
-  StackDirection,
-  StateClue,
-  StatsState,
-  TurnState,
-} from "@hanabi/game";
 import type { DeepReadonly, Tuple } from "@hanabi/utils";
+import type { CardStatus } from "../enums/CardStatus";
+import type { StackDirection } from "../enums/StackDirection";
+import type { StateClue } from "../types/StateClue";
+import type { CardState } from "./CardState";
+import type { LogEntry } from "./LogEntry";
+import type { StateStrike } from "./StateStrike";
+import type { StatsState } from "./StatsState";
+import type { TurnState } from "./TurnState";
 
 export interface GameState {
   readonly turn: TurnState;
@@ -56,14 +56,4 @@ export interface GameState {
 
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;
-}
-
-export interface LogEntry {
-  readonly turn: number;
-  readonly text: string;
-}
-
-export interface StateStrike {
-  readonly segment: number;
-  readonly order: CardOrder;
 }

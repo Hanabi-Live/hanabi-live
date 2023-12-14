@@ -2,7 +2,7 @@
 // action.
 
 import { getVariant } from "@hanabi/data";
-import type { StatsState } from "@hanabi/game";
+import type { GameState, StatsState } from "@hanabi/game";
 import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { produce } from "immer";
@@ -12,7 +12,6 @@ import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import type { CardNote } from "../types/CardNote";
 import type { GameMetadata } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
 import type { GameAction } from "../types/actions";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
