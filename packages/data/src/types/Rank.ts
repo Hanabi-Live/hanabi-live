@@ -1,3 +1,4 @@
+import { includes } from "@hanabi/utils";
 import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "../constants";
 
 export type BasicRank = (typeof DEFAULT_CARD_RANKS)[number];
@@ -10,5 +11,10 @@ export type BasicRank = (typeof DEFAULT_CARD_RANKS)[number];
 export type Rank = BasicRank | typeof START_CARD_RANK;
 
 export function isValidRank(rank: Rank): boolean {
-  return DEFAULT_CARD_RANKS.includes(rank) || rank === START_CARD_RANK;
+  const potentialRank = rank as number;
+
+  return (
+    includes(DEFAULT_CARD_RANKS, potentialRank) ||
+    potentialRank === START_CARD_RANK
+  );
 }

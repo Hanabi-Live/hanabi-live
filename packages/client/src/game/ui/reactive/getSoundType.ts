@@ -1,6 +1,7 @@
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
 import { ClueType, EndCondition } from "@hanabi/game";
+import { includes } from "@hanabi/utils";
 import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
 import * as cardRules from "../../rules/card";
 import * as handRules from "../../rules/hand";
@@ -45,7 +46,7 @@ export function getSoundType(
         }
       : originalAction;
 
-  if (!SOUND_TYPE_ACTIONS.includes(action.type)) {
+  if (!includes(SOUND_TYPE_ACTIONS, action.type)) {
     return SoundType.Standard;
   }
 

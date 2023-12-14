@@ -1,6 +1,7 @@
 import type { Expand } from "../types/Expand";
 import { ReadonlySet } from "../types/ReadonlySet";
 import type { Tuple } from "../types/Tuple";
+import type { WidenLiteral } from "../types/WidenLiteral";
 import { getRandomInt } from "./random";
 import { assertDefined } from "./utils";
 
@@ -129,6 +130,20 @@ export function getRandomArrayIndex<T>(
   }
 
   return getRandomInt(0, array.length - 1, exceptions);
+}
+
+/**
+ * Similar to the `Array.includes` method, but works on a widened version of the array.
+ *
+ * This is useful when the normal `Array.includes` produces a type error from an array that uses an
+ * `as const` assertion.
+ */
+export function includes<T, TupleElement extends WidenLiteral<T>>(
+  array: readonly TupleElement[],
+  searchElement: WidenLiteral<T>,
+): searchElement is TupleElement {
+  const widenedArray: ReadonlyArray<WidenLiteral<T>> = array;
+  return widenedArray.includes(searchElement);
 }
 
 /** Initializes an array with all elements containing the specified default value. */

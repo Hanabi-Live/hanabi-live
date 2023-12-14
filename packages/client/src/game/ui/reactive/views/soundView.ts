@@ -1,4 +1,5 @@
 import type { GameState } from "@hanabi/game";
+import { includes } from "@hanabi/utils";
 import { SoundType } from "../../../types/SoundType";
 import type { GameAction } from "../../../types/actions";
 import { globals } from "../../UIGlobals";
@@ -55,7 +56,7 @@ export function onNewSoundEffect(
 function getLastAction(actions: readonly GameAction[]): GameAction | undefined {
   const reversedActions = [...actions].reverse();
   return reversedActions.find((action) =>
-    SOUND_TYPE_ACTIONS.includes(action.type),
+    includes(SOUND_TYPE_ACTIONS, action.type),
   );
 }
 

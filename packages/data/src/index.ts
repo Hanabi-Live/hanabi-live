@@ -1,5 +1,3 @@
-import "@total-typescript/ts-reset"; // eslint-disable-line import/no-unassigned-import
-
 import emojisJSON from "./json/emojis.json";
 import emotesJSON from "./json/emotes.json";
 

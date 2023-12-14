@@ -25,7 +25,6 @@
     "@fastify/secure-session": "^7.1.0",
     "@fastify/static": "^6.12.0",
     "@fastify/view": "^8.2.0",
-    "@total-typescript/ts-reset": "^0.5.1",
     "@tsconfig/node-lts": "^20.1.0",
     "@types/jest": "^29.5.11",
     "@types/jquery": "^3.5.29",

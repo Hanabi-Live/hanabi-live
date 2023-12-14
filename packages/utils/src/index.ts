@@ -10,3 +10,4 @@ export * from "./types/NaturalNumbersLessThan";
 export * from "./types/ReadonlyMap";
 export * from "./types/ReadonlySet";
 export * from "./types/Tuple";
+export * from "./types/WidenLiteral";

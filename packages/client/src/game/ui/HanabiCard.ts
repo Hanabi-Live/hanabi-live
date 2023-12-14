@@ -11,7 +11,7 @@ import type {
 import { getSuit } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
 import { CardStatus, StackDirection } from "@hanabi/game";
-import { assertDefined, assertNotNull, iRange } from "@hanabi/utils";
+import { assertDefined, assertNotNull, iRange, includes } from "@hanabi/utils";
 import Konva from "konva";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -683,7 +683,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       const pip = this.rankPipsMap.get(rank);
       const x = this.rankPipsXMap.get(rank);
       if (pip !== undefined && x !== undefined) {
-        const hasPositiveRankClue = this.state.positiveRankClues.includes(rank);
+        const hasPositiveRankClue = includes(
+          this.state.positiveRankClues,
+          rank,
+        );
         updatePip(pipState, hasPositiveRankClue, pip, x);
       }
     }

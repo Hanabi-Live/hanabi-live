@@ -2262,13 +2262,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@total-typescript/ts-reset@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "@total-typescript/ts-reset@npm:0.5.1"
-  checksum: 0339e975034ae648e83f08d0d408d9bda926fdb0cbaddf8efebd3105b378847be8bc9c2f1aa1435e2221f5958019bc2cb562211745a52fe076a109645c8a31f0
-  languageName: node
-  linkType: hard
-
 "@ts-morph/common@npm:~0.18.0":
   version: 0.18.1
   resolution: "@ts-morph/common@npm:0.18.1"
@@ -6625,7 +6618,6 @@ __metadata:
     "@fastify/secure-session": "npm:^7.1.0"
     "@fastify/static": "npm:^6.12.0"
     "@fastify/view": "npm:^8.2.0"
-    "@total-typescript/ts-reset": "npm:^0.5.1"
     "@tsconfig/node-lts": "npm:^20.1.0"
     "@types/jest": "npm:^29.5.11"
     "@types/jquery": "npm:^3.5.29"
