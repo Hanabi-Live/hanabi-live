@@ -189,13 +189,9 @@ function statsReducerFunction(
   }
 
   // Handle `numSubsequentMisplays`.
-  if (action.type === "discard") {
-    if (action.failed) {
-      statsState.numSubsequentMisplays++;
-    } else {
-      statsState.numSubsequentMisplays = 0;
-    }
-  } else if (action.type === "clue" || action.type === "play") {
+  if (action.type === "discard" && action.failed) {
+    statsState.numSubsequentMisplays++;
+  } else if (isOneOfThreeMainActions(action)) {
     statsState.numSubsequentMisplays = 0;
   }
 }
@@ -211,7 +207,7 @@ function isBlindPlay(action: GameAction, gameState: GameState): boolean {
   return !cardClued;
 }
 
-/** Whether the action was a clue, discard, or play. */
+/** Whether the action was a clue, a discard, or a play. */
 function isOneOfThreeMainActions(action: GameAction) {
   return (
     action.type === "clue" ||
