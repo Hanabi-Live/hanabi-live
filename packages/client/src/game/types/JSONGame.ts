@@ -2,6 +2,10 @@ import type { Character } from "@hanabi/data";
 import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
 
+/**
+ * Represents the state of a game in a minimal, serializable format. This JSON stringified object is
+ * put into the clipboard when players perform the "/copy" command.
+ */
 export interface JSONGame {
   players: string[];
   deck: CardIdentity[];

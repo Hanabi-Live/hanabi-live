@@ -86,7 +86,7 @@ export function send(hypoAction: ClientAction): void {
       break;
     }
 
-    default: {
+    case ActionType.GameOver: {
       throw new Error(`Unknown hypothetical action of: ${hypoAction.type}`);
     }
   }
