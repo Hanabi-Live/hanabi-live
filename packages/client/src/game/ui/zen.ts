@@ -1,5 +1,5 @@
 import { globals } from "./UIGlobals";
-import { onSpectatorsChanged } from "./reactive/view/spectatorsView";
+import { onSpectatorsChanged } from "./reactive/views/spectatorsView";
 
 export function toggleZen(): void {
   globals.lobby.zenModeEnabled = globals.state.finished

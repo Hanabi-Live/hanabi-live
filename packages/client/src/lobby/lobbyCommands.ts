@@ -2,7 +2,7 @@
 
 import * as gameMain from "../game/main";
 import type { Spectator } from "../game/types/Spectator";
-import * as spectatorsView from "../game/ui/reactive/view/spectatorsView";
+import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import { globals } from "../Globals";
 import * as sounds from "../sounds";
 import * as history from "./history";
