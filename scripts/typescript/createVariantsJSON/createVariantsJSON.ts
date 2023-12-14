@@ -1,8 +1,6 @@
+import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/data";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { SuitJSON } from "../interfaces/SuitJSON";
-import type { VariantDescription } from "../interfaces/VariantDescription";
-import type { VariantJSON } from "../interfaces/VariantJSON";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 

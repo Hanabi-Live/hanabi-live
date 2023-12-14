@@ -1,5 +1,9 @@
-import { assertDefined, parseIntSafe, trimSuffix } from "@hanabi/utils";
-import { isEqual } from "lodash";
+import type {
+  BasicRank,
+  SuitJSON,
+  VariantDescription,
+  VariantJSON,
+} from "@hanabi/data";
 import {
   DEFAULT_CLUE_RANKS,
   REVERSE_MODIFIER,
@@ -9,15 +13,11 @@ import {
   SUIT_MODIFIER_DELIMITER,
   SUIT_REVERSED_SUFFIX,
   VARIANT_DELIMITER,
-} from "../constants";
-import {
   VARIANT_MODIFIER_SET,
   VariantModifier,
-} from "../enums/VariantModifier";
-import type { SuitJSON } from "../interfaces/SuitJSON";
-import type { VariantDescription } from "../interfaces/VariantDescription";
-import type { VariantJSON } from "../interfaces/VariantJSON";
-import type { BasicRank } from "../types/Rank";
+} from "@hanabi/data";
+import { assertDefined, parseIntSafe, trimSuffix } from "@hanabi/utils";
+import { isEqual } from "lodash";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
 
 export function getNewVariantID(

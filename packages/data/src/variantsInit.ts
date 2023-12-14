@@ -17,8 +17,8 @@ import type { Rank } from "./types/Rank";
 import { isValidRankClueNumber } from "./types/RankClueNumber";
 
 export function variantsInit(
-  COLORS: ReadonlyMap<string, Color>,
-  SUITS: ReadonlyMap<string, Suit>,
+  colorsMap: ReadonlyMap<string, Color>,
+  suitsMap: ReadonlyMap<string, Suit>,
 ): ReadonlyMap<string, Variant> {
   const variants = new Map<string, Variant>();
 
@@ -48,7 +48,7 @@ export function variantsInit(
     }
     const { newID } = variantJSON;
 
-    const variant = createVariant(COLORS, SUITS, variantJSON, id, newID);
+    const variant = createVariant(colorsMap, suitsMap, variantJSON, id, newID);
 
     variants.set(variantJSON.name, variant);
   }
@@ -57,8 +57,8 @@ export function variantsInit(
 }
 
 export function createVariant(
-  COLORS: ReadonlyMap<string, Color>,
-  SUITS: ReadonlyMap<string, Suit>,
+  colorsMap: ReadonlyMap<string, Color>,
+  suitsMap: ReadonlyMap<string, Suit>,
   variantDescription: VariantDescription,
   id: number,
   newID: string,
@@ -80,7 +80,7 @@ export function createVariant(
 
   // The suits are specified as an array of strings. Convert the strings to objects.
   const suits = variantDescription.suits.map((suitName) => {
-    const suit = SUITS.get(suitName);
+    const suit = suitsMap.get(suitName);
     assertDefined(
       suit,
       `The "${name}" variant has a "${suitName}" suit, which does not exist.`,
@@ -91,7 +91,7 @@ export function createVariant(
 
   // Validate the clue colors (the colors available to clue in this variant) and convert the string
   // array to a color object array.
-  const clueColors = getVariantClueColors(variantDescription, COLORS, suits);
+  const clueColors = getVariantClueColors(variantDescription, colorsMap, suits);
 
   // Validate the clue ranks (the ranks available to clue in this variant). If it is not specified,
   // assume that players can clue the normal ranks.

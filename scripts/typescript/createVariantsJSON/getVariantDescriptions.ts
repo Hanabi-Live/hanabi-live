@@ -1,30 +1,32 @@
-import type { Subtract } from "@hanabi/utils";
-import { ReadonlySet } from "@hanabi/utils";
-import { colorsInit } from "../colorsInit";
+import type {
+  Color,
+  Rank,
+  RankClueNumber,
+  Suit,
+  SuitJSON,
+  Variant,
+  VariantDescription,
+} from "@hanabi/data";
 import {
+  COLORS_MAP,
   DEFAULT_CLUE_RANKS,
+  SUITS_MAP,
   SUIT_REVERSED_SUFFIX,
   VALID_NUM_PLAYERS,
-} from "../constants";
-import type { Color } from "../interfaces/Color";
-import type { Suit } from "../interfaces/Suit";
-import type { SuitJSON } from "../interfaces/SuitJSON";
-import type { Variant } from "../interfaces/Variant";
-import type { VariantDescription } from "../interfaces/VariantDescription";
-import { suitsInit } from "../suitsInit";
-import type { Rank } from "../types/Rank";
-import type { RankClueNumber } from "../types/RankClueNumber";
-import { createVariant } from "../variantsInit";
+  createVariant,
+} from "@hanabi/data";
+import { Options } from "@hanabi/game";
+import type { Subtract } from "@hanabi/utils";
+import { ReadonlySet } from "@hanabi/utils";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
-import { totalCards } from "../../../client/src/game/rules/deck";
-import { cardsPerHand } from "../../../client/src/game/rules/hand";
-import * as statsRules from "../../../client/src/game/rules/stats";
+import { totalCards } from "../../../packages/client/src/game/rules/deck";
+import { cardsPerHand } from "../../../packages/client/src/game/rules/hand";
+import * as statsRules from "../../../packages/client/src/game/rules/stats";
 import {
   minEfficiency,
   startingPace,
-} from "../../../client/src/game/rules/stats";
-import { Options } from "../../../game/src/classes/Options";
+} from "../../../packages/client/src/game/rules/stats";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
@@ -67,7 +69,7 @@ const SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_SYNESTHESIA = new ReadonlySet([
 ]);
 
 const NUMBER_WORDS = [
-  "Zeroes",
+  "Zeros",
   "Ones",
   "Twos",
   "Threes",
@@ -118,11 +120,8 @@ export function getVariantDescriptions(
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
 
-  const COLORS = colorsInit();
-  const SUITS = suitsInit(COLORS);
-
   return variantDescriptions.filter((variantDescription) =>
-    isVariantAllowed(COLORS, SUITS, variantDescription),
+    isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
   );
 }
 
@@ -1287,11 +1286,11 @@ function minVariantPace(variant: Variant): number {
 }
 
 function isVariantAllowed(
-  COLORS: ReadonlyMap<string, Color>,
-  SUITS: ReadonlyMap<string, Suit>,
+  colorsMap: ReadonlyMap<string, Color>,
+  suitsMap: ReadonlyMap<string, Suit>,
   variantDescription: VariantDescription,
 ): boolean {
-  const variant = createVariant(COLORS, SUITS, variantDescription, 0, "");
+  const variant = createVariant(colorsMap, suitsMap, variantDescription, 0, "");
 
   if (totalCards(variant) < MINIMUM_CARD_COUNT) {
     return false;

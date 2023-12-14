@@ -146,10 +146,10 @@ export function init(): void {
   // Check for changes in the various input fields so that we can remember their respective
   // settings.
   $("#create-game-variant-dropdown1").on("change", () => {
-    getVariant("createTableVariant");
+    getVariantName("createTableVariant");
   });
   $("#create-game-variant-dropdown2").on("change", () => {
-    getVariant("createTableVariant");
+    getVariantName("createTableVariant");
   });
   $("#createTableTimeBaseMinutes").on("change", () => {
     getTextboxForTimeBase("createTableTimeBaseMinutes");
@@ -365,7 +365,7 @@ function submit() {
   }
 
   const options = {
-    variantName: getVariant("createTableVariant"), // This is a hidden span field
+    variantName: getVariantName("createTableVariant"), // This is a hidden span field
     timed,
     timeBase: timeBaseSeconds,
     timePerTurn,
@@ -417,7 +417,7 @@ function acceptOptionsFromGuest(options: Options) {
   });
 }
 
-function getCheckbox(setting: keyof Settings) {
+function getCheckbox(setting: keyof Settings): boolean {
   const selector = `#${setting}`;
   const element = getHTMLInputElement(selector);
   const value = element.checked;
@@ -431,7 +431,7 @@ function getTextboxValue(setting: keyof Settings): string {
   return element.value.trim();
 }
 
-function getTextboxForTimePerTurn(setting: keyof Settings) {
+function getTextboxForTimePerTurn(setting: keyof Settings): number {
   const element = $(`#${setting}`);
   const valueString = getTextboxValue(setting);
   let value = parseIntSafe(valueString);
@@ -447,7 +447,7 @@ function getTextboxForTimePerTurn(setting: keyof Settings) {
   return value;
 }
 
-function getTextboxForTimeBase(setting: keyof Settings) {
+function getTextboxForTimeBase(setting: keyof Settings): number {
   const element = $(`#${setting}`);
   const valueString = getTextboxValue(setting);
   let value = parseFloatSafe(valueString);
@@ -463,7 +463,7 @@ function getTextboxForTimeBase(setting: keyof Settings) {
   return value;
 }
 
-function getVariant(setting: keyof Settings) {
+function getVariantName(setting: keyof Settings): string {
   const element = $(`#${setting}`);
   let value = element.text();
   value = value.trim(); // Remove all leading and trailing whitespace
