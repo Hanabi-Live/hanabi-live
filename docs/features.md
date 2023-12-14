@@ -273,7 +273,7 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - a [special sound effect when discarding a clued card](../public/sounds/turn-discard-clued.mp3)
 - a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn-double_discard-cause.mp3)
 - a [special sound effect when discarding in a double discard situation](../public/sounds/turn-double-discard.mp3)
-- a [special sound effect when playing a 1 out of order](../public/sounds/turn-1s.mp3)
+- a [special sound effect when playing a 1 out of order](../public/sounds/turn-order-chop-move.mp3)
 
 <br />
 

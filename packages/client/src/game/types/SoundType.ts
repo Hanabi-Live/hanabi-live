@@ -59,7 +59,7 @@ export enum SoundType {
   Blind6 = "turn-blind6",
 
   /** When someone performs an "Order Chop Move". */
-  OrderChopMove = "turn-ocm",
+  OrderChopMove = "turn-order-chop-move",
 
   // --------------
   // Discard Sounds
