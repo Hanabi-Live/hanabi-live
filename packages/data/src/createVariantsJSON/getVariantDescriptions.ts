@@ -1259,13 +1259,9 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
       ...new Options(),
       numPlayers,
     };
+    const numCardsPerHand = cardsPerHand(options);
 
-    return minEfficiency(
-      numPlayers,
-      numPlayers,
-      variant,
-      cardsPerHand(options),
-    );
+    return minEfficiency(numPlayers, numPlayers, variant, numCardsPerHand);
   });
 
   return Math.max(...requiredEfficiencies);
