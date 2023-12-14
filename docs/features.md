@@ -270,10 +270,10 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - a blue question mark drawn on cards potentially in a double discard situation based on the empathy of the card
 - locked hand notification (in the "Current Player" area)
 - _Low Score Phase_ notification (via the score being cyan)
-- a [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)
-- a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_double_discard_cause.mp3)
-- a [special sound effect when discarding in a double discard situation](../public/sounds/turn_double_discard.mp3)
-- a [special sound effect when playing a 1 out of order](../public/sounds/turn_1s.mp3)
+- a [special sound effect when discarding a clued card](../public/sounds/turn-discard-clued.mp3)
+- a [special sound effect when discarding to enter a double discard situation](../public/sounds/turn-double_discard-cause.mp3)
+- a [special sound effect when discarding in a double discard situation](../public/sounds/turn-double-discard.mp3)
+- a [special sound effect when playing a 1 out of order](../public/sounds/turn-1s.mp3)
 
 <br />
 
@@ -359,16 +359,16 @@ There are also some keyboard shortcuts for making notes:
 
 There are different sounds for:
 
-- [when a player takes an action](../public/sounds/turn_other.mp3)
-- [when it reaches your turn](../public/sounds/turn_us.mp3)
-- [when a card fails to play](../public/sounds/turn_fail1.mp3)
-- [when two cards fail to play in a row](../public/sounds/turn_fail2.mp3)
-- [when a card blind-plays](../public/sounds/turn_blind1.mp3)
-- [when multiple cards blind-play in a row (up to 6)](../public/sounds/turn_blind2.mp3)
-- [discarding a "critical" card](../public/sounds/turn_sad.mp3)
-- [finishing the game with a score of 0](../public/sounds/turn_finished_fail.mp3)
-- [finishing the game with a non-perfect score](../public/sounds/turn_finished_success.mp3)
-- [finishing the game with a perfect score](../public/sounds/turn_finished_perfect.mp3)
+- [when a player takes an action](../public/sounds/turn-other.mp3)
+- [when it reaches your turn](../public/sounds/turn-us.mp3)
+- [when a card fails to play](../public/sounds/turn-fail1.mp3)
+- [when two cards fail to play in a row](../public/sounds/turn-fail2.mp3)
+- [when a card blind-plays](../public/sounds/turn-blind1.mp3)
+- [when multiple cards blind-play in a row (up to 6)](../public/sounds/turn-blind2.mp3)
+- [discarding a "critical" card](../public/sounds/turn-sad.mp3)
+- [finishing the game with a score of 0](../public/sounds/turn-finished-fail.mp3)
+- [finishing the game with a non-perfect score](../public/sounds/turn-finished-success.mp3)
+- [finishing the game with a perfect score](../public/sounds/turn-finished-perfect.mp3)
 
 <br />
 
@@ -495,7 +495,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - The website offers a public lobby chat and a private per-game chat. When chatting with other players, please follow [the community guidelines](community-guidelines.md).
 - You can also send private messages to other players with the `/pm` command.
 - You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json). For example, `:thinking:` will turn into 🤔.
-- You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
+- You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img alt="Kappa" src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
 - There are various chat commands. The full list can be found [here](chat-commands.md).
 - All lobby chat will be replicated to (and from) the [Discord server](https://discord.gg/FADvkJp).
 - During an ongoing game, right-clicking the chat button will mute notifications from chat and hide the spectator count ("zen mode", indicated by ☯️). Right-clicking again reverts this.

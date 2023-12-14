@@ -1,6 +1,7 @@
 // In-game sounds.
 
 import { globals } from "./Globals";
+import type { SoundType } from "./game/types/SoundType";
 
 let soundEffect: HTMLAudioElement | null = null;
 
@@ -11,11 +12,11 @@ export function init(): void {
   // just assume that they have sounds enabled.
   const soundFiles = [
     "tone",
-    "turn_blind1",
+    "turn-blind1",
     // (Do not preload the rest of the blind-play sounds, since they will only occur very rarely.)
-    "turn_fail1",
-    "turn_other",
-    "turn_us",
+    "turn-fail1",
+    "turn-other",
+    "turn-us",
     // (Do not preload shared replay sound effects or pause sound effects, as they are used more
     // rarely.)
   ];
@@ -25,7 +26,7 @@ export function init(): void {
   }
 }
 
-export function play(file: string, mute = false): void {
+export function play(file: SoundType, mute = false): void {
   if (mute && soundEffect !== null) {
     soundEffect.muted = true;
   }

@@ -41,7 +41,7 @@ export function onNewSoundEffect(
 
   // Only play certain sound effects for people in the H-Group.
   if (
-    (soundType === SoundType.OneOutOfOrder ||
+    (soundType === SoundType.OrderChopMove ||
       soundType === SoundType.DiscardClued ||
       soundType === SoundType.DoubleDiscard ||
       soundType === SoundType.DoubleDiscardCause) &&
@@ -54,11 +54,10 @@ export function onNewSoundEffect(
 
   const ourTurn =
     globals.metadata.ourPlayerIndex === data.gameState.turn.currentPlayerIndex;
-  const fileNameSuffix = getFileName(soundType, ourTurn);
-  const fileName = `turn_${fileNameSuffix}`;
+  const fileName = getFileName(soundType, ourTurn);
   // The turn sound and the game finished sound will be played back-to-back, so we want to mute the
   // former.
-  const muteExistingSoundEffects = fileNameSuffix.startsWith("finished_");
+  const muteExistingSoundEffects = fileName.startsWith("finished_");
   globals.game!.sounds.play(fileName, muteExistingSoundEffects);
 }
 
@@ -74,86 +73,14 @@ function getLastAction(actions: readonly GameAction[]): GameAction | undefined {
   );
 }
 
-function getFileName(soundType: SoundType, ourTurn: boolean): string {
+function getFileName(soundType: SoundType, ourTurn: boolean): SoundType {
   switch (soundType) {
     case SoundType.Standard: {
-      return ourTurn ? "us" : "other";
+      return ourTurn ? SoundType.Us : SoundType.Other;
     }
 
-    case SoundType.Fail1: {
-      return "fail1";
-    }
-
-    case SoundType.Fail2: {
-      return "fail2";
-    }
-
-    case SoundType.Blind1: {
-      return "blind1";
-    }
-
-    case SoundType.Blind2: {
-      return "blind2";
-    }
-
-    case SoundType.Blind3: {
-      return "blind3";
-    }
-
-    case SoundType.Blind4: {
-      return "blind4";
-    }
-
-    case SoundType.Blind5: {
-      return "blind5";
-    }
-
-    case SoundType.Blind6: {
-      return "blind6";
-    }
-
-    case SoundType.OneOutOfOrder: {
-      return "1s";
-    }
-
-    case SoundType.DiscardClued: {
-      return "discard_clued";
-    }
-
-    case SoundType.DoubleDiscard: {
-      return "double_discard";
-    }
-
-    case SoundType.DoubleDiscardCause: {
-      return "double_discard_cause";
-    }
-
-    case SoundType.Sad: {
-      return "sad";
-    }
-
-    case SoundType.Moo: {
-      return "moo";
-    }
-
-    case SoundType.Oink: {
-      return "oink";
-    }
-
-    case SoundType.Quack: {
-      return "quack";
-    }
-
-    case SoundType.FinishedSuccess: {
-      return "finished_success";
-    }
-
-    case SoundType.FinishedFail: {
-      return "finished_fail";
-    }
-
-    case SoundType.FinishedPerfect: {
-      return "finished_perfect";
+    default: {
+      return soundType;
     }
   }
 }

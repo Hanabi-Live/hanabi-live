@@ -14,6 +14,7 @@ import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
 import { ActionType } from "../types/ActionType";
 import { ReplayActionType } from "../types/ReplayActionType";
+import { SoundType } from "../types/SoundType";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import { backToLobby } from "./backToLobby";
@@ -188,7 +189,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     }
     if (event.which === KeyCode.KEY_Z) {
       // Alt + z. This is used as a sound test.
-      globals.game!.sounds.play("turn_us");
+      globals.game!.sounds.play(SoundType.Us);
       return;
     }
 

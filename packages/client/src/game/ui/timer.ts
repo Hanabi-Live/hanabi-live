@@ -3,6 +3,7 @@
 import type { PlayerIndex } from "@hanabi/data";
 import * as tooltips from "../../tooltips";
 import { millisecondsToClockString } from "../../utils";
+import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
 import type { TimerDisplay } from "./controls/TimerDisplay";
 import { drawLayer } from "./konvaHelpers";
@@ -167,7 +168,7 @@ function setTickingDownTime(timer: TimerDisplay) {
   ) {
     timer.oval.opacity(timer.oval.fill() === "black" ? 0.7 : 0.2);
     timer.oval.fill(timer.oval.fill() === "black" ? "red" : "black");
-    globals.game!.sounds.play("tone");
+    globals.game!.sounds.play(SoundType.Tone);
   }
 }
 

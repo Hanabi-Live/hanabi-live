@@ -188,14 +188,24 @@ export function getSoundType(
             return SoundType.Blind5;
           }
 
-          default: {
+          case 6: {
             return SoundType.Blind6;
+          }
+
+          default: {
+            if (gameState.stats.numSubsequentBlindPlays > 6) {
+              return SoundType.Blind6;
+            }
+
+            throw new Error(
+              `Failed to get the sound effect for the blind play count of: ${gameState.stats.numSubsequentBlindPlays}`,
+            );
           }
         }
       }
 
       if (isOrderChopMove(previousGameState, gameState, actionPlay, metadata)) {
-        return SoundType.OneOutOfOrder;
+        return SoundType.OrderChopMove;
       }
 
       return SoundType.Standard;

@@ -3,7 +3,6 @@
 +------+
 
 - refactor numAttemptedCardsPlayed to StatsState
-- rename view to views
 - change file names from underscores to hyphens
 - make SoundType a string enum based on the file name, then remove `getFileName`
 - server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh

@@ -1,6 +1,7 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
 import * as gameMain from "../game/main";
+import type { SoundType } from "../game/types/SoundType";
 import type { Spectator } from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import { globals } from "../Globals";
@@ -166,7 +167,7 @@ lobbyCommands.set("shutdown", (data: ShutdownData) => {
 });
 
 interface SoundLobbyData {
-  file: string;
+  file: SoundType;
 }
 lobbyCommands.set("soundLobby", (data: SoundLobbyData) => {
   sounds.play(data.file);

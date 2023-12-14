@@ -19,6 +19,7 @@ import type { CardIdentity } from "../types/CardIdentity";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
+import { SoundType } from "../types/SoundType";
 import type { Spectator } from "../types/Spectator";
 import type { SpectatorNote } from "../types/SpectatorNote";
 import type { State } from "../types/State";
@@ -286,7 +287,9 @@ interface PauseData {
   playerIndex: PlayerIndex;
 }
 gameCommands.set("pause", (data: PauseData) => {
-  globals.game!.sounds.play(data.active ? "game_paused" : "game_unpaused");
+  const soundType = data.active ? SoundType.GamePaused : SoundType.GameUnpaused;
+  globals.game!.sounds.play(soundType);
+
   globals.store!.dispatch({
     type: "pause",
     active: data.active,
@@ -399,7 +402,7 @@ gameCommands.set("replaySegment", (data: ReplaySegmentData) => {
 
 // This is used in shared replays to make fun sounds.
 interface ReplaySoundData {
-  sound: string;
+  sound: SoundType;
 }
 gameCommands.set("replaySound", (data: ReplaySoundData) => {
   globals.game!.sounds.play(data.sound);

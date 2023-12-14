@@ -40,16 +40,16 @@ fail2:
 - Notes: G, F#, F
 - (set tuning --> key --> none)
 
-finished_failure:
+finished-failure:
 - Keys: G, F#, F, E, D#
 - Notes: a, /, ".", ",", m
 - (set tuning --> key --> none)
 
-finished_perfect:
+finished-perfect:
 - Keys: m, >, a, f, a, >, m
 - Notes: G, B, D, G, D, B, G
 
-finished_success:
+finished-success:
 - Keys: m, <, >, <, m
 - Notes: G, A, B, A, G
 

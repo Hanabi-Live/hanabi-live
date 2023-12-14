@@ -5,6 +5,7 @@ import * as sounds from "../../sounds";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
+import { SoundType } from "../types/SoundType";
 import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
 import type { PlayStack } from "./PlayStack";
@@ -132,7 +133,7 @@ export class LayoutChild extends Konva.Group {
       draggedTo === "discardArea" &&
       clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)
     ) {
-      sounds.play("error");
+      sounds.play(SoundType.Error);
       globals.elements.cluesNumberLabelPulse!.play();
       draggedTo = null;
     }

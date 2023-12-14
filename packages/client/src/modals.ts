@@ -4,6 +4,7 @@ import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi/data";
 import { assertDefined, parseIntSafe } from "@hanabi/utils";
 import { globals } from "./Globals";
 import * as noteIdentity from "./game/reducers/noteIdentity";
+import { SoundType } from "./game/types/SoundType";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import * as lobbyNav from "./lobby/nav";
@@ -287,7 +288,7 @@ export function showError(msg: string): void {
 
   // Play a sound if the server has shut down.
   if (msg.includes("The server is going down for scheduled maintenance.")) {
-    sounds.play("turn_double_discard");
+    sounds.play(SoundType.DoubleDiscard);
   }
 }
 
