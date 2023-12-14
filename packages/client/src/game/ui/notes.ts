@@ -48,7 +48,7 @@ function get(order: CardOrder, our: boolean, escape = false) {
     const text = escapeFunc(noteObject.text);
     const { isSpectator } = noteObject;
     if (noteObject.text !== "") {
-      if (!firstSpectator && Boolean(isSpectator)) {
+      if (!firstSpectator && isSpectator) {
         firstSpectator = true;
         if (content !== "") {
           content = `<div class='noteTitle'><span>Players</span></div>${content}`;
