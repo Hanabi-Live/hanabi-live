@@ -20,7 +20,6 @@ import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
 import type { GameMetadata } from "../../types/GameMetadata";
 import type { GameState } from "../../types/GameState";
-import { SoundType } from "../../types/SoundType";
 import { initialTurnState } from "./initialTurnState";
 
 export function initialGameState(metadata: GameMetadata): GameState {
@@ -137,9 +136,6 @@ export function initialGameState(metadata: GameMetadata): GameState {
 
       numSubsequentBlindPlays: 0,
       numSubsequentMisplays: 0,
-
-      lastAction: null,
-      soundTypeForLastAction: SoundType.Standard,
     },
   };
 }

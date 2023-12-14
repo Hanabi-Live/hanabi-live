@@ -1,36 +1,37 @@
 import { getVariant } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
 import { ClueType, EndCondition } from "@hanabi/game";
-import type { Draft } from "immer";
-import * as cardRules from "../rules/card";
-import * as handRules from "../rules/hand";
-import type { GameMetadata } from "../types/GameMetadata";
-import type { GameState } from "../types/GameState";
-import { SoundType } from "../types/SoundType";
-import type { StatsState } from "../types/StatsState";
-import type { ActionPlay, GameAction } from "../types/actions";
-import { getCharacterNameForPlayer } from "./reducerHelpers";
+import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
+import * as cardRules from "../../rules/card";
+import * as handRules from "../../rules/hand";
+import type { GameMetadata } from "../../types/GameMetadata";
+import type { GameState } from "../../types/GameState";
+import { SoundType } from "../../types/SoundType";
+import type { ActionPlay, GameAction } from "../../types/actions";
+import { globals } from "../UIGlobals";
 
 export function getSoundType(
-  statsState: Draft<StatsState>,
-  originalAction: GameAction,
-  originalState: GameState,
-  currentState: GameState,
+  previousGameState: GameState | undefined,
+  gameState: GameState,
+  originalAction: GameAction | undefined,
   metadata: GameMetadata,
 ): SoundType {
-  const variant = getVariant(metadata.options.variantName);
+  if (previousGameState === undefined || originalAction === undefined) {
+    return SoundType.Standard;
+  }
+
+  const variant = getVariant(globals.metadata.options.variantName);
 
   // In some variants, failed plays are treated as normal plays.
-  let action = originalAction;
-  if (action.type === "discard" && action.failed && variant.throwItInAHole) {
-    action = {
-      type: "play",
-      playerIndex: action.playerIndex,
-      order: action.order,
-      suitIndex: action.suitIndex,
-      rank: action.rank,
-    };
-  }
+  const action: GameAction =
+    originalAction.type === "discard" &&
+    originalAction.failed &&
+    variant.throwItInAHole
+      ? {
+          ...originalAction,
+          type: "play",
+        }
+      : originalAction;
 
   switch (action.type) {
     case "clue": {
@@ -66,36 +67,34 @@ export function getSoundType(
 
     case "discard": {
       if (action.failed) {
-        if (statsState.soundTypeForLastAction === SoundType.Fail1) {
-          return SoundType.Fail2;
-        }
-
-        return SoundType.Fail1;
+        return gameState.stats.numSubsequentMisplays === 2
+          ? SoundType.Fail2
+          : SoundType.Fail1;
       }
 
       if (
-        statsState.maxScore < originalState.stats.maxScore &&
+        gameState.stats.maxScore < previousGameState.stats.maxScore &&
         !variant.throwItInAHole
       ) {
         return SoundType.Sad;
       }
 
-      const discardedCard = originalState.deck[action.order];
+      const discardedCard = previousGameState.deck[action.order];
       const touched =
         discardedCard !== undefined && cardRules.isCardClued(discardedCard);
       if (touched) {
         return SoundType.DiscardClued;
       }
 
-      const nextPlayerHand = currentState.hands[action.playerIndex];
+      const nextPlayerHand = gameState.hands[action.playerIndex];
       if (
-        originalState.stats.doubleDiscard !== null &&
-        !metadata.hardVariant &&
         nextPlayerHand !== undefined &&
-        !handRules.isLocked(nextPlayerHand, currentState.deck)
+        !handRules.isLocked(nextPlayerHand, gameState.deck) &&
+        previousGameState.stats.doubleDiscard !== null &&
+        !metadata.hardVariant
       ) {
         const previouslyDiscardedCard =
-          originalState.deck[originalState.stats.doubleDiscard];
+          previousGameState.deck[previousGameState.stats.doubleDiscard];
         if (
           discardedCard !== undefined &&
           previouslyDiscardedCard !== undefined &&
@@ -110,7 +109,7 @@ export function getSoundType(
         }
       }
 
-      if (statsState.doubleDiscard !== null && !metadata.hardVariant) {
+      if (gameState.stats.doubleDiscard !== null && !metadata.hardVariant) {
         // A player has discarded to *cause* a double discard situation.
         return SoundType.DoubleDiscardCause;
       }
@@ -123,7 +122,7 @@ export function getSoundType(
         return SoundType.FinishedFail;
       }
 
-      if (currentState.score === variant.maxScore) {
+      if (gameState.score === variant.maxScore) {
         return SoundType.FinishedPerfect;
       }
 
@@ -132,39 +131,43 @@ export function getSoundType(
 
     case "play": {
       if (
-        statsState.maxScore < originalState.stats.maxScore &&
+        gameState.stats.maxScore < previousGameState.stats.maxScore &&
         !variant.throwItInAHole
       ) {
         return SoundType.Sad;
       }
 
-      const card = currentState.deck[action.order];
+      const card = gameState.deck[action.order];
       const touched = card !== undefined && cardRules.isCardClued(card);
       if (!touched) {
-        if (statsState.soundTypeForLastAction === SoundType.Blind1) {
-          return SoundType.Blind2;
-        }
+        switch (gameState.stats.numSubsequentBlindPlays) {
+          case 1: {
+            return SoundType.Blind1;
+          }
 
-        if (statsState.soundTypeForLastAction === SoundType.Blind2) {
-          return SoundType.Blind3;
-        }
+          case 2: {
+            return SoundType.Blind2;
+          }
 
-        if (statsState.soundTypeForLastAction === SoundType.Blind3) {
-          return SoundType.Blind4;
-        }
+          case 3: {
+            return SoundType.Blind3;
+          }
 
-        if (statsState.soundTypeForLastAction === SoundType.Blind4) {
-          return SoundType.Blind5;
-        }
+          case 4: {
+            return SoundType.Blind4;
+          }
 
-        if (statsState.soundTypeForLastAction === SoundType.Blind5) {
-          return SoundType.Blind6;
-        }
+          case 5: {
+            return SoundType.Blind5;
+          }
 
-        return SoundType.Blind1;
+          default: {
+            return SoundType.Blind6;
+          }
+        }
       }
 
-      if (isOrderChopMove(action, originalState, currentState, metadata)) {
+      if (isOrderChopMove(previousGameState, gameState, action, metadata)) {
         return SoundType.OneOutOfOrder;
       }
 
@@ -172,8 +175,7 @@ export function getSoundType(
     }
 
     default: {
-      // No change
-      return statsState.soundTypeForLastAction;
+      return SoundType.Standard;
     }
   }
 }
@@ -185,9 +187,9 @@ export function getSoundType(
  * https://hanabi.github.io/level_5/#the-order-chop-move-ocm
  */
 function isOrderChopMove(
+  previousGameState: GameState,
+  gameState: GameState,
   action: ActionPlay,
-  originalState: GameState,
-  currentState: GameState,
   metadata: GameMetadata,
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
@@ -198,7 +200,7 @@ function isOrderChopMove(
     return false;
   }
 
-  const playedCard = originalState.deck[action.order];
+  const playedCard = previousGameState.deck[action.order];
   if (playedCard === undefined) {
     return false;
   }
@@ -214,7 +216,7 @@ function isOrderChopMove(
       continue;
     }
 
-    const playStack = currentState.playStacks[suitIndex];
+    const playStack = gameState.playStacks[suitIndex];
     if (playStack !== undefined && playStack.length === 0) {
       numOnesLeftToPlay++;
     }
@@ -226,7 +228,7 @@ function isOrderChopMove(
   }
 
   // Find out if there are any other candidate 1s in the hand.
-  const playerHand = originalState.hands[action.playerIndex];
+  const playerHand = previousGameState.hands[action.playerIndex];
   if (playerHand === undefined) {
     return false;
   }
@@ -238,7 +240,7 @@ function isOrderChopMove(
       continue;
     }
 
-    const card = originalState.deck[order];
+    const card = previousGameState.deck[order];
     if (card !== undefined && isCandidateOneForOCM(card)) {
       candidateCards.push(card);
     }
@@ -266,7 +268,7 @@ function isOrderChopMove(
 
     // Find out if the clue that touched the newest 1 also touched a 1 that was on chop at the same
     // time.
-    const newestOne = originalState.deck[newestOneOrder];
+    const newestOne = previousGameState.deck[newestOneOrder];
     if (newestOne === undefined) {
       return false;
     }

@@ -21,7 +21,7 @@ import * as replayView from "./view/replayView";
 import * as soundView from "./view/soundView";
 import * as spectatorsView from "./view/spectatorsView";
 import * as statsView from "./view/statsView";
-import * as turnView from "./view/turn";
+import * as turnView from "./view/turnView";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscriptions = Array<Subscription<State, any>>;
@@ -33,7 +33,7 @@ export class StateObserver {
     this.registerObservers(store);
   }
 
-  // Observe the store, calling different functions when a particular path changes.
+  /** Observe the store, calling different functions when a particular path changes. */
   registerObservers(store: Store<State, Action>): void {
     // Clean up any existing subscribers.
     this.unregisterObservers();
@@ -61,7 +61,7 @@ export class StateObserver {
 // Subscription functions
 // ----------------------
 
-// A shorthand function used to subscribe an observer to the state store
+/** A shorthand function used to subscribe an observer to the state store. */
 function sub<T>(s: Selector<State, T>, l: Listener<T>) {
   return {
     select: s,
@@ -69,7 +69,7 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
   };
 }
 
-// A shorthand function used to subscribe an observer to the visible state.
+/** A shorthand function used to subscribe an observer to the visible state. */
 function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
   // We do not want anything to fire if the visible state is null
   // (e.g. when the UI is still initializing)
@@ -79,8 +79,10 @@ function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
   return sub(selector, l);
 }
 
-// A shorthand function used to subscribe an observer to the state, but only when the visible state
-// has already been initialized.
+/**
+ * A shorthand function used to subscribe an observer to the state, but only when the visible state
+ * has already been initialized.
+ */
 function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
   // eslint-disable-next-line func-style
   const selector = (state: State) =>
@@ -95,7 +97,7 @@ function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
 // List of observer subscriptions
 // ------------------------------
 
-// These observers need to run before other observers
+/** These observers need to run before other observers. */
 const earlyObservers: Subscriptions = [
   // This has to come first because it sets up animateFast correctly.
   subAfterInit((s) => s, animateFastView.onObserversStarted),
@@ -276,10 +278,8 @@ const ongoingGameObservers: Subscriptions = [
   // Sound effects
   subAfterInit(
     (s) => ({
-      soundType: s.ongoingGame.stats.soundTypeForLastAction,
-      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
-      turn: s.ongoingGame.turn.turnNum,
-      lastAction: s.ongoingGame.stats.lastAction,
+      gameState: s.ongoingGame,
+      actions: s.replay.actions,
     }),
     soundView.onNewSoundEffect,
   ),
@@ -352,7 +352,7 @@ const replayObservers: Subscriptions = [
     hypotheticalView.onDrawnCardsInHypotheticalChanged,
   ),
 
-  // Replay entered or exited. Note that this needs to go after onActiveOrAmLeaderChanged so that
+  // Replay entered or exited. Note that this needs to go after `onActiveOrAmLeaderChanged` so that
   // the clue area is shown at game start.
   subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
 

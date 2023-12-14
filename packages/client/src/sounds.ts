@@ -16,9 +16,8 @@ export function init(): void {
     "turn_fail1",
     "turn_other",
     "turn_us",
-    // (Do not preload shared replay sound effects, as they are used more rarely.)
-    "game_paused",
-    "game_unpaused",
+    // (Do not preload shared replay sound effects or pause sound effects, as they are used more
+    // rarely.)
   ];
   for (const file of soundFiles) {
     const audio = new Audio(`/public/sounds/${file}.mp3`);

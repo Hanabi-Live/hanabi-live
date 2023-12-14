@@ -2,15 +2,24 @@
 | TODO |
 +------+
 
+- change: Boolean(s.visibleState) --> s.visibleState === null
+- change: Boolean(isSpectator) --> isSpectator
+- refactor numAttemptedCardsPlayed to StatsState
+- rename view to views
+- change file names from underscores to hyphens
+- make SoundType a string enum based on the file name, then remove `getFileName`
+- server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh
+
++-----+
+| OLD |
++-----+
+
 - remove type assertions from lobby + views
 - redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 - search for "This message is unnecessary"
 - search for "TODO: remove. This is unused"
 - delete UIGlobals.activePlayerIndex
-
-waiting to hear back:
-- remove type assertions from sudoku.ts (need feedback from Ram)
 
 short term:
 - refactor soundTypeForLastAction (should probably delete the whole thing)

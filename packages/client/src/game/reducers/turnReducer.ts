@@ -16,7 +16,7 @@ export const turnReducer = produce(turnReducerFunction, {} as TurnState);
 function turnReducerFunction(
   turn: Draft<TurnState>,
   action: GameAction,
-  currentState: GameState,
+  currentGameState: GameState,
   metadata: GameMetadata,
 ) {
   const variant = getVariant(metadata.options.variantName);
@@ -29,14 +29,14 @@ function turnReducerFunction(
     case "play": {
       turn.cardsPlayedOrDiscardedThisTurn++;
 
-      if (currentState.cardsRemainingInTheDeck === 0) {
+      if (currentGameState.cardsRemainingInTheDeck === 0) {
         if (turn.segment !== null) {
           turn.segment++;
         }
 
         nextTurn(
           turn,
-          currentState.cardsRemainingInTheDeck,
+          currentGameState.cardsRemainingInTheDeck,
           characterName,
           metadata,
         );
@@ -51,7 +51,7 @@ function turnReducerFunction(
         turn.cardsDiscardedThisTurn++;
       }
 
-      if (currentState.cardsRemainingInTheDeck === 0) {
+      if (currentGameState.cardsRemainingInTheDeck === 0) {
         if (turn.segment !== null) {
           turn.segment++;
         }
@@ -61,13 +61,13 @@ function turnReducerFunction(
             turn.cardsPlayedOrDiscardedThisTurn,
             turn.cardsDiscardedThisTurn,
             characterName,
-            currentState.clueTokens,
+            currentGameState.clueTokens,
             variant,
           )
         ) {
           nextTurn(
             turn,
-            currentState.cardsRemainingInTheDeck,
+            currentGameState.cardsRemainingInTheDeck,
             characterName,
             metadata,
           );
@@ -92,7 +92,7 @@ function turnReducerFunction(
       ) {
         nextTurn(
           turn,
-          currentState.cardsRemainingInTheDeck,
+          currentGameState.cardsRemainingInTheDeck,
           characterName,
           metadata,
         );
@@ -105,7 +105,7 @@ function turnReducerFunction(
         // If the initial deal is still going on.
         if (
           deckRules.isInitialDealFinished(
-            currentState.cardsRemainingInTheDeck,
+            currentGameState.cardsRemainingInTheDeck,
             metadata,
           )
         ) {
@@ -123,13 +123,13 @@ function turnReducerFunction(
             turn.cardsPlayedOrDiscardedThisTurn,
             turn.cardsDiscardedThisTurn,
             characterName,
-            currentState.clueTokens,
+            currentGameState.clueTokens,
             variant,
           )
         ) {
           nextTurn(
             turn,
-            currentState.cardsRemainingInTheDeck,
+            currentGameState.cardsRemainingInTheDeck,
             characterName,
             metadata,
           );

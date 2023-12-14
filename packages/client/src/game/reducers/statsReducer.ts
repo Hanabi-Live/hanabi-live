@@ -4,7 +4,7 @@
 import { getVariant } from "@hanabi/data";
 import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
-import { castDraft, produce } from "immer";
+import { produce } from "immer";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
@@ -14,15 +14,14 @@ import type { GameMetadata } from "../types/GameMetadata";
 import type { GameState } from "../types/GameState";
 import type { StatsState } from "../types/StatsState";
 import type { GameAction } from "../types/actions";
-import { getSoundType } from "./getSoundType";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 
 function statsReducerFunction(
   statsState: Draft<StatsState>,
   action: GameAction,
-  originalState: GameState,
-  currentState: GameState,
+  previousGameState: GameState,
+  gameState: GameState,
   playing: boolean,
   shadowing: boolean,
   metadata: GameMetadata,
@@ -51,12 +50,12 @@ function statsReducerFunction(
 
     case "play": {
       if (action.suitIndex !== -1) {
-        const playStack = currentState.playStacks[action.suitIndex];
+        const playStack = gameState.playStacks[action.suitIndex];
 
         if (
           playStack !== undefined &&
           playStack.length === variant.stackSize &&
-          originalState.clueTokens === currentState.clueTokens &&
+          previousGameState.clueTokens === gameState.clueTokens &&
           !variant.throwItInAHole // We do not get an extra clue in some variants.
         ) {
           // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
@@ -82,9 +81,9 @@ function statsReducerFunction(
   // Handle max score calculation.
   if (action.type === "play" || action.type === "discard") {
     statsState.maxScorePerStack = statsRules.getMaxScorePerStack(
-      currentState.deck,
-      currentState.playStackDirections,
-      currentState.playStackStarts,
+      gameState.deck,
+      gameState.playStackDirections,
+      gameState.playStackStarts,
       variant,
     );
 
@@ -94,15 +93,15 @@ function statsReducerFunction(
   // Handle pace calculation.
   const score =
     variant.throwItInAHole && (playing || shadowing)
-      ? currentState.numAttemptedCardsPlayed
-      : currentState.score;
+      ? gameState.numAttemptedCardsPlayed
+      : gameState.score;
   statsState.pace = statsRules.pace(
     score,
-    currentState.cardsRemainingInTheDeck,
+    gameState.cardsRemainingInTheDeck,
     statsState.maxScore,
     numEndGameTurns,
     // `currentPlayerIndex` will be null if the game is over.
-    currentState.turn.currentPlayerIndex === null,
+    gameState.turn.currentPlayerIndex === null,
   );
   statsState.paceRisk = statsRules.paceRisk(
     statsState.pace,
@@ -111,10 +110,10 @@ function statsReducerFunction(
 
   // Handle efficiency calculation.
   statsState.cardsGotten = statsRules.cardsGotten(
-    currentState.deck,
-    currentState.playStacks,
-    currentState.playStackDirections,
-    currentState.playStackStarts,
+    gameState.deck,
+    gameState.playStacks,
+    gameState.playStackDirections,
+    gameState.playStackStarts,
     playing,
     shadowing,
     statsState.maxScore,
@@ -124,16 +123,16 @@ function statsReducerFunction(
     ourNotes === null
       ? null
       : statsRules.cardsGottenByNotes(
-          currentState.deck,
-          currentState.playStacks,
-          currentState.playStackDirections,
-          currentState.playStackStarts,
+          gameState.deck,
+          gameState.playStacks,
+          gameState.playStackDirections,
+          gameState.playStackStarts,
           variant,
           ourNotes,
         );
 
   // Handle future efficiency calculation.
-  const scorePerStack = currentState.playStacks.map(
+  const scorePerStack = gameState.playStacks.map(
     (playStack) => playStack.length,
   );
   statsState.cluesStillUsable = statsRules.cluesStillUsable(
@@ -141,28 +140,28 @@ function statsReducerFunction(
     scorePerStack,
     statsState.maxScorePerStack,
     variant.stackSize,
-    currentState.cardsRemainingInTheDeck,
+    gameState.cardsRemainingInTheDeck,
     numEndGameTurns,
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
-    clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
+    clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
   );
   statsState.cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
     score,
     scorePerStack,
     statsState.maxScorePerStack,
     variant.stackSize,
-    currentState.cardsRemainingInTheDeck,
+    gameState.cardsRemainingInTheDeck,
     numEndGameTurns,
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
-    clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
+    clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
   );
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed
   // number of turns.
   statsState.finalRoundEffectivelyStarted =
-    currentState.cardsRemainingInTheDeck <= 0 ||
+    gameState.cardsRemainingInTheDeck <= 0 ||
     statsState.cluesStillUsable === null ||
     statsState.cluesStillUsable < 1;
 
@@ -170,7 +169,7 @@ function statsReducerFunction(
   if (action.type === "discard") {
     statsState.doubleDiscard = statsRules.doubleDiscard(
       action.order,
-      currentState,
+      gameState,
       variant,
     );
   } else if (action.type === "play" || action.type === "clue") {
@@ -179,7 +178,7 @@ function statsReducerFunction(
 
   // Handle `numSubsequentBlindPlays`.
   if (action.type === "play") {
-    const card = currentState.deck[action.order];
+    const card = gameState.deck[action.order];
     const touched = card !== undefined && cardRules.isCardClued(card);
     if (touched) {
       statsState.numSubsequentBlindPlays = 0;
@@ -196,16 +195,4 @@ function statsReducerFunction(
   } else {
     statsState.numSubsequentMisplays = 0;
   }
-
-  // Record the last action.
-  statsState.lastAction = castDraft(action);
-
-  // Find out which sound effect to play (if this is an ongoing game).
-  statsState.soundTypeForLastAction = getSoundType(
-    statsState,
-    action,
-    originalState,
-    currentState,
-    metadata,
-  );
 }

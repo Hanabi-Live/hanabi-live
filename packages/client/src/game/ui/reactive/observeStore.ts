@@ -2,10 +2,12 @@ import equal from "fast-deep-equal";
 import type { Action, Store, Unsubscribe } from "redux";
 
 export type Selector<T, U> = (s: T) => U | undefined;
+
 export type Listener<U> = (
   currentValue: U,
   previousValue: U | undefined,
 ) => void;
+
 export interface Subscription<T, U> {
   select: Selector<T, U>;
   onChange: Listener<U>;
@@ -32,13 +34,16 @@ export function observeStore<S, A extends Action, T>(
         // The selector wants to skip this one.
         return false;
       }
+
       if (currentState === undefined) {
         // Initializing, always fire all.
         return true;
       }
+
       // Fire if any part of it changed.
       return !equal(nextValue, subscription.select(currentState));
     });
+
     for (const subscription of filteredSubscriptions) {
       // `currentState` is undefined during initialization.
       const currentValue =
