@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # This script uses the "createVariantsJSON.ts" script to create:
-# - $REPO_ROOT/misc/variants.txt
-# - $REPO_ROOT/packages/data/src/json/variants.json
+# - ./misc/variants.txt
+# - ./packages/data/src/json/variants.json
 
 set -euo pipefail # Exit on errors and undefined variables.
 
@@ -12,8 +12,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 cd "$DIR"
 
-echo "Creating variants files..."
-npx tsx "$DIR/src/createVariantsJSON/createVariantsJSON.ts"
-echo "Applying prettier to variants.json..."
-npx prettier --write "$DIR/src/json/variants.json"
+echo "Creating the \"variants.json\" file..."
+npx tsx "$DIR/scripts/typescript/createVariantsJSON/createVariantsJSON.ts"
+echo "Formatting the \"variants.json\" file..."
+npx prettier --write "$DIR/packages/data/src/json/variants.json"
 echo "Done."

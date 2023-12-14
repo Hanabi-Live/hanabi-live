@@ -365,7 +365,7 @@ function submit() {
   }
 
   const options = {
-    variantName: getVariantName("createTableVariant"), // This is a hidden span field
+    variantName: getVariantName("createTableVariant"), // This is a hidden span field.
     timed,
     timeBase: timeBaseSeconds,
     timePerTurn,

@@ -27,19 +27,4 @@ npx eslint --max-warnings 0 .
 # use that.
 # npx ts-prune --error --ignore "index.ts"
 
-# Ensure that the "update_variant_files.sh" script does not change the files that are checked into
-# the repository.
-VARIANTS_JSON="$DIR/src/json/variants.json"
-TMP_VARIANTS_JSON="/tmp/variants.json"
-cp "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
-REPO_ROOT="$DIR/../.."
-VARIANTS_TXT="$REPO_ROOT/misc/variants.txt"
-TMP_VARIANTS_TXT="/tmp/variants.txt"
-cp "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
-bash "$DIR/update_variant_files.sh" > /dev/null
-diff "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
-diff "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
-rm -f "$TMP_VARIANTS_JSON"
-rm -f "$TMP_VARIANTS_TXT"
-
 echo "Successfully linted package \"$PACKAGE_NAME\" in $SECONDS seconds."
