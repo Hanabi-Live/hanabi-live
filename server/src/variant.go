@@ -80,16 +80,27 @@ func (v *Variant) HasReversedSuits() bool {
 func (v *Variant) GetDeckSize() int {
 	deckSize := 0
 	for _, s := range v.Suits {
-		if s.OneOfEach {
-			deckSize += 5
-		} else {
-			deckSize += 10
-		}
-	}
-	if v.IsUpOrDown() || v.IsCriticalFours() {
-		deckSize -= len(v.Suits)
+		deckSize += v.totalCardsInSuit(s)
 	}
 	return deckSize
+}
+
+func (v *Variant) totalCardsInSuit(suit *Suit) int {
+	if suit.OneOfEach {
+		if v.IsUpOrDown() {
+			// A critical suit in up or down has all unique cards plus an extra start card.
+			return v.StackSize + 1
+		}
+		return v.StackSize
+	}
+
+	if v.IsUpOrDown() || v.IsCriticalFours() {
+		// The normal amount minus one because there is one more critical card
+		return v.StackSize*2 - 1
+	}
+
+	// The normal amount: three 1's + two 2's + two 3's + two 4's + one 5. Or in Sudoku: 2 of each.
+	return v.StackSize * 2
 }
 
 func (v *Variant) GetAdjustedClueTokens(clueTokens int) int {
