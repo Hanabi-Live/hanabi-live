@@ -1,6 +1,6 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi/data";
+import type { Options } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
-import type { Options } from "../../types/Options";
 
 export interface InitData {
   // Game settings

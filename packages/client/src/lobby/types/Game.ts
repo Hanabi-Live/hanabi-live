@@ -1,5 +1,5 @@
 import type { NumPlayers } from "@hanabi/data";
-import type { Options } from "../../types/Options";
+import type { Options } from "@hanabi/game";
 
 export interface Game {
   name: string;

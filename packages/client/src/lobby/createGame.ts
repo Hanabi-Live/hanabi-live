@@ -7,6 +7,7 @@ import {
   VARIANT_NAMES,
   doesVariantExist,
 } from "@hanabi/data";
+import type { Options } from "@hanabi/game";
 import {
   ReadonlySet,
   getRandomArrayElement,
@@ -19,7 +20,6 @@ import { SHUTDOWN_TIMEOUT } from "../constants";
 import * as debug from "../debug";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import type { Options } from "../types/Options";
 import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
 import type { Settings } from "./types/Settings";

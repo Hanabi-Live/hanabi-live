@@ -1,6 +1,6 @@
 import type { NumPlayers } from "@hanabi/data";
+import type { Options } from "@hanabi/game";
 import type { Spectator } from "../../game/types/Spectator";
-import type { Options } from "../../types/Options";
 
 export interface Table {
   id: number;

@@ -1,3 +1,4 @@
+export * from "./classes/Options";
 export * from "./enums/CardStatus";
 export * from "./enums/ClueType";
 export * from "./enums/EndCondition";

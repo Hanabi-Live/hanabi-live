@@ -24,7 +24,7 @@ import {
   minEfficiency,
   startingPace,
 } from "../../../client/src/game/rules/stats";
-import { Options } from "../../../client/src/types/Options";
+import { Options } from "../../../game/src/classes/Options";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;

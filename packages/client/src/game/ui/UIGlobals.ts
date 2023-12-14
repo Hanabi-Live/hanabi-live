@@ -1,11 +1,11 @@
 import type { CardOrder, PlayerIndex } from "@hanabi/data";
 import { getDefaultVariant } from "@hanabi/data";
+import type { Options } from "@hanabi/game";
 import { ReadonlyMap } from "@hanabi/utils";
 import Konva from "konva";
 import type * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../Globals";
 import type { Loader } from "../../Loader";
-import type { Options } from "../../types/Options";
 import type { GameExports } from "../main";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { State } from "../types/State";

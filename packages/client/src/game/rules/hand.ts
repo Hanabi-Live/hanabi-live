@@ -1,8 +1,7 @@
 // Functions related to hand management.
 
 import type { CardOrder, NumPlayers } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
-import type { Options } from "../../types/Options";
+import type { CardState, Options } from "@hanabi/game";
 import * as cardRules from "./card";
 
 export function cardsPerHand(options: Options): number {
