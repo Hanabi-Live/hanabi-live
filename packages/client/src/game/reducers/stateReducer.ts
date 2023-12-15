@@ -353,10 +353,12 @@ function reduceGameActions(
   return { game, states };
 }
 
-// We keep a copy of each card identity in the global state for convenience After each game action,
-// check to see if we can add any new card identities (or any suit/rank information to existing card
-// identities). We cannot just replace the array every time because we need to keep the "full" deck
-// that the server sends us.
+/**
+ * We keep a copy of each card identity in the global state for convenience. After each game action,
+ * check to see if we can add any new card identities (or any suit/rank information to existing card
+ * identities). We cannot just replace the array every time because we need to keep the "full" deck
+ * that the server sends us.
+ */
 function updateCardIdentities(state: Draft<State>) {
   for (const [i, newCardIdentity] of state.ongoingGame.deck.entries()) {
     if (i >= state.cardIdentities.length) {
@@ -418,6 +420,11 @@ function visualStateToShow(
   return state.ongoingGame;
 }
 
+/**
+ * The server sends us "draw" actions about cards in our own hand that have scrubbed information (to
+ * prevent cheating). After a game finishes, the server sends us a list of all of the card
+ * identities. With those, we can go through and "fill-in" all of the scrubbed actions.
+ */
 function rehydrateScrubbedActions(
   state: State,
   cardIdentities: readonly CardIdentity[],
