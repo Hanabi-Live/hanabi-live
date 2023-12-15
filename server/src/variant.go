@@ -136,13 +136,13 @@ func (v *Variant) CalculateEfficiency(numPlayers int) float64 {
 	cardsDealt := (cardsPerHand - 1) * numPlayers
 
 	// We have to play numPlayers + 1 many consecutive cards in the endgame (if at pace 0).
-	// Thus, 1 + numPlayers/v.StackSize (not this rounds down) many stacks cannot be finished before the endagme starts
-	numStacksFinishableBeforeEndgame := len(v.Suits) - numPlayers/v.StackSize - 1
+	// Thus, 1 + numPlayers/v.StackSize (not this rounds down) many stacks cannot be finished before the endgame starts
+	maxNumStacksFinishedBeforeEndgame := len(v.Suits) - numPlayers/v.StackSize - 1
 
 	startingPace := cardsInDeck - cardsDealt - v.MaxScore
 
 	startingClues := v.GetAdjustedClueTokens(MaxClueNum)
-	numCluesGainedByFinishingStacks := numStacksFinishableBeforeEndgame
+	numCluesGainedByFinishingStacks := maxNumStacksFinishedBeforeEndgame
 	if !v.ShouldGiveClueTokenForFinishingStack() {
 		numCluesGainedByFinishingStacks = 0
 	}
