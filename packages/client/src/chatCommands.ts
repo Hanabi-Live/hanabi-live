@@ -1,5 +1,5 @@
 import { VARIANT_NAMES } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "./Globals";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
 import * as createGame from "./lobby/createGame";

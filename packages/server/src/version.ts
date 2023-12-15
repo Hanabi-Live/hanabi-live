@@ -1,4 +1,4 @@
-import { parseIntSafe } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import fs from "node:fs";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";

@@ -12,8 +12,8 @@ import {
   ReadonlySet,
   getRandomArrayElement,
   parseFloatSafe,
-  parseIntSafe,
 } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { SHUTDOWN_TIMEOUT } from "../constants";

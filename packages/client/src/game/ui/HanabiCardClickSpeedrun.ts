@@ -2,7 +2,8 @@
 
 import type { Color } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import { assertDefined, todo } from "@hanabi/utils";
+import { assertDefined } from "@hanabi/utils";
+import { todo } from "isaacscript-common-ts";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";

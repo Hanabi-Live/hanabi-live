@@ -1,4 +1,5 @@
-import { assertDefined, parseIntSafe } from "@hanabi/utils";
+import { assertDefined } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
 import {
   DEFAULT_CARD_RANKS,

@@ -1,4 +1,4 @@
-import { parseIntSafe } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";

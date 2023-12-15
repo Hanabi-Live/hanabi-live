@@ -1,7 +1,7 @@
 // Functions for handling all of the keyboard shortcuts.
 
 import type { CardOrder } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";

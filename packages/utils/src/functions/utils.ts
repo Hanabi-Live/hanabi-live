@@ -1,4 +1,3 @@
-const INTEGER_REGEX = /^\d+$/;
 const FLOAT_REGEX = /^-?\d*\.?\d+$/;
 
 /**
@@ -167,51 +166,3 @@ export function parseFloatSafe(string: string): number | undefined {
   const number = Number.parseFloat(trimmedString);
   return Number.isNaN(number) ? undefined : number;
 }
-
-/**
- * This is a more reliable version of `Number.parseInt`:
- *
- * - `undefined` is returned instead of `Number.NaN`, which is helpful in conjunction with
- *   TypeScript type narrowing patterns.
- * - Strings that are a mixture of numbers and letters will result in undefined instead of the part
- *   of the string that is the number. (e.g. "1a" --> undefined instead of "1a" --> 1)
- * - Non-strings will result in undefined instead of being coerced to a number.
- *
- * If you have to use a radix other than 10, use the vanilla `Number.parseInt` function instead,
- * because this function ensures that the string contains no letters.
- *
- * @param string A string to convert to an integer.
- */
-export function parseIntSafe(string: string): number | undefined {
-  if (typeof string !== "string") {
-    return undefined;
-  }
-
-  const trimmedString = string.trim();
-
-  // If the string does not entirely consist of numbers, return undefined.
-  if (INTEGER_REGEX.exec(trimmedString) === null) {
-    return undefined;
-  }
-
-  const number = Number.parseInt(trimmedString, 10);
-  return Number.isNaN(number) ? undefined : number;
-}
-
-/**
- * Helper function to signify that the enclosing code block is not yet complete. Using this function
- * is similar to writing a "TODO" comment, but it has the benefit of preventing ESLint errors due to
- * unused variables or early returns.
- *
- * When you see this function, it simply means that the programmer intends to add in more code to
- * this spot later.
- *
- * This function is variadic, meaning that you can pass as many arguments as you want. (This is
- * useful as a means to prevent unused variables.)
- *
- * This function does not actually do anything. (It is an "empty" function.)
- *
- * @allowEmptyVariadic
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-export function todo(...args: readonly unknown[]): void {}

@@ -1,5 +1,5 @@
 import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
-import { parseIntSafe } from "@hanabi/utils";
+import { parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
 import type { GameJSON } from "./hypoCompress";
