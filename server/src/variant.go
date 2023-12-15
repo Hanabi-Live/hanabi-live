@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/Hanabi-Live/hanabi-live/logger"
+	"strconv"
 	"strings"
 )
 
@@ -118,6 +120,39 @@ func (v *Variant) AtMaxClueTokens(clueTokens int) bool {
 	return clueTokens >= v.GetAdjustedClueTokens(MaxClueNum)
 }
 
-func (v *Variant) ShouldGiveClueTokenForPlaying5() bool {
+func (v *Variant) ShouldGiveClueTokenForFinishingStack() bool {
 	return !v.IsThrowItInAHole()
+}
+
+func (v *Variant) CalculateEfficiency(numPlayers int) float64 {
+	cardsInDeck := v.GetDeckSize()
+	var cardsPerHand int
+	if val, ok := DefaultNumCardsPerHand[numPlayers]; ok {
+		cardsPerHand = val
+	} else {
+		logger.Error("Failed to get the hand size for " + strconv.Itoa(numPlayers) + " while calculating efficiency for variant " + v.Name + ".")
+		cardsPerHand = 4
+	}
+	cardsDealt := (cardsPerHand - 1) * numPlayers
+
+	// We have to play numPlayers + 1 many consecutive cards in the endgame (if at pace 0).
+	// Thus, 1 + numPlayers/v.StackSize (not this rounds down) many stacks cannot be finished before the endgame starts
+	maxNumStacksFinishedBeforeEndgame := len(v.Suits) - numPlayers/v.StackSize - 1
+
+	startingPace := cardsInDeck - cardsDealt - v.MaxScore
+
+	startingClues := v.GetAdjustedClueTokens(MaxClueNum)
+	numCluesGainedByFinishingStacks := maxNumStacksFinishedBeforeEndgame
+	if !v.ShouldGiveClueTokenForFinishingStack() {
+		numCluesGainedByFinishingStacks = 0
+	}
+	numCluesGainedByDiscards := startingPace
+	totalAvailableClueTokens := startingClues + numCluesGainedByFinishingStacks + numCluesGainedByDiscards
+
+	// In Clue Starved variants, discarding costs 2 tokens
+	totalAvailableClues := totalAvailableClueTokens / v.GetAdjustedClueTokens(1)
+
+	minEff := float64(v.MaxScore) / float64(totalAvailableClues)
+
+	return minEff
 }

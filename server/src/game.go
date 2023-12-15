@@ -356,17 +356,13 @@ func (g *Game) GetHandSizeForNormalGame() int {
 	t := g.Table
 	numPlayers := len(g.Players)
 
-	if numPlayers == 2 || numPlayers == 3 {
-		return 5
-	} else if numPlayers == 4 || numPlayers == 5 {
+	if handSize, ok := DefaultNumCardsPerHand[numPlayers]; ok {
+		return handSize
+	} else {
+		logger.Error("Failed to get the hand size for " + strconv.Itoa(numPlayers) +
+			" players for game: " + t.Name)
 		return 4
-	} else if numPlayers == 6 {
-		return 3
 	}
-
-	logger.Error("Failed to get the hand size for " + strconv.Itoa(numPlayers) +
-		" players for game: " + t.Name)
-	return 4
 }
 
 // GetMaxScore calculates what the maximum score is,

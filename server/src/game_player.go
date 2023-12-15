@@ -181,7 +181,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 
 	if extraClue {
 		// Some variants do not grant an extra clue when successfully playing a 5
-		if variant.ShouldGiveClueTokenForPlaying5() {
+		if variant.ShouldGiveClueTokenForFinishingStack() {
 			g.ClueTokens++
 		}
 
