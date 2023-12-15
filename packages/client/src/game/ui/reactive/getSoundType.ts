@@ -14,7 +14,6 @@ import type {
   ActionPlay,
   GameAction,
 } from "../../types/actions";
-import { globals } from "../UIGlobals";
 
 export const SOUND_TYPE_ACTIONS = [
   "clue",
@@ -33,7 +32,7 @@ export function getSoundType(
     return SoundType.Standard;
   }
 
-  const variant = getVariant(globals.metadata.options.variantName);
+  const variant = getVariant(metadata.options.variantName);
 
   // In some variants, failed plays are treated as normal plays.
   const action: GameAction =

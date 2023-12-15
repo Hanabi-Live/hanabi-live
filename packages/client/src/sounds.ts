@@ -14,7 +14,7 @@ const PRELOAD_SOUND_TYPES = [
   // rarely.)
 ] as const;
 
-let soundEffect: HTMLAudioElement | null = null;
+let soundEffect: HTMLAudioElement | undefined;
 
 export function init(): void {
   // Preload some sounds. Ideally, we would check to see if the user has the "soundMove" setting
@@ -28,7 +28,9 @@ export function init(): void {
 }
 
 export function play(file: SoundType, mute = false): void {
-  if (mute && soundEffect !== null) {
+  console.log(`Playing file: ${file} (mute: ${mute})`);
+
+  if (mute && soundEffect !== undefined) {
     soundEffect.muted = true;
   }
 

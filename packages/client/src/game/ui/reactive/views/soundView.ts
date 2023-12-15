@@ -32,8 +32,14 @@ export function onNewSoundEffect(
   }
 
   const lastAction = getLastAction(data.actions);
+
+  // `previousData.gameState` might not actually correspond to a different game state, because we
+  // are also subscribed to the actions. In other words, this view will fire if an action is added
+  // to the array (like a "draw" action). Thus, we have to manually retrieve the penultimate game
+  // state.
+  const previousGameState = globals.state.replay.states.at(-2);
   const soundType = getSoundType(
-    previousData?.gameState,
+    previousGameState,
     data.gameState,
     lastAction,
     globals.metadata,
