@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/Hanabi-Live/hanabi-live/variantslogic"
 	"github.com/gin-gonic/gin"
 )
 
@@ -87,10 +86,9 @@ func httpSharedMissingScores(c *gin.Context) {
 
 	// Efficiencies
 	variantsEfficiencies := make([]float64, 0)
-	effIndex := numPlayers - 2
 	for _, v := range combinedVariantStatsList {
-		variant := variantslogic.GetVariantFromID(v.ID)
-		variantsEfficiencies = append(variantsEfficiencies, variant.Efficiency[effIndex])
+		variant := variants[v.Name]
+		variantsEfficiencies = append(variantsEfficiencies, variant.CalculateEfficiency(numPlayers))
 	}
 
 	lastIndex := len(playerNames) - 1

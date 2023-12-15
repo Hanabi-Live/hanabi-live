@@ -127,3 +127,13 @@ const (
 	NotOwnerFail    = "Only the table owner can use that command."
 	NotInTwoPlayers = "You can only perform this command when there are more than two players."
 )
+
+var (
+	DefaultNumCardsPerHand = map[int]int{
+		2: 5,
+		3: 5,
+		4: 4,
+		5: 4,
+		6: 3,
+	}
+)

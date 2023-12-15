@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/Hanabi-Live/hanabi-live/variantslogic"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,10 +52,9 @@ func httpMissingScores(c *gin.Context) {
 	// Efficiencies
 	variantsEfficiencies := make([]float64, 0)
 	if numPlayers >= 2 && numPlayers <= 6 {
-		effIndex := numPlayers - 2
 		for _, v := range variantStatsList {
-			variant := variantslogic.GetVariantFromID(v.ID)
-			variantsEfficiencies = append(variantsEfficiencies, variant.Efficiency[effIndex])
+			variant := variants[v.Name]
+			variantsEfficiencies = append(variantsEfficiencies, variant.CalculateEfficiency(numPlayers))
 		}
 	}
 
