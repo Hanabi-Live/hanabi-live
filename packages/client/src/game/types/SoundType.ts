@@ -102,13 +102,13 @@ export enum SoundType {
   // ---------------
 
   /** When the game is finished with any score other than 0 or the maximum score. */
-  FinishedSuccess = "turn-finished-success",
+  FinishedSuccess = "finished-success",
 
   /** When the game is finished with a score of 0. */
-  FinishedFail = "turn-finished-fail",
+  FinishedFail = "finished-fail",
 
   /** When the game is finished with the maximum score possible. */
-  FinishedPerfect = "turn-finished-perfect",
+  FinishedPerfect = "finished-perfect",
 
   // ------------
   // Other Sounds

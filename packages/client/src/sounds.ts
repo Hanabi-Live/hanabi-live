@@ -28,7 +28,7 @@ export function init(): void {
 }
 
 export function play(file: SoundType, mute = false): void {
-  console.log(`Playing file: ${file} (mute: ${mute})`);
+  console.log(`%cPlaying file: ${file} (mute: ${mute})`, "color: orange");
 
   if (mute && soundEffect !== undefined) {
     soundEffect.muted = true;
