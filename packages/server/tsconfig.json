@@ -18,7 +18,6 @@
     // the server also uses the `data` package, the server must also be CJS. Thus, we have to
     // manually revert the ESM options from the base config.
     "module": "CommonJS",
-    "moduleResolution": "Node",
   },
 
   "include": ["./src/**/*.ts"],

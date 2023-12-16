@@ -20,6 +20,9 @@
     // false.
     "resolveJsonModule": true,
 
+    // Specifying "Node" is necessary in order for JSON files to be imported without erroring.
+    "moduleResolution": "Node",
+
     "paths": {
       "@hanabi/data": ["./packages/data/src/index.ts"],
       "@hanabi/game": ["./packages/game/src/index.ts"],
