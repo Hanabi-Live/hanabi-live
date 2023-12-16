@@ -73,7 +73,7 @@ export function isCardNeedsToBePlayed(
 
   // Second, check to see if it is still possible to play this card. (The preceding cards in the
   // suit might have already been discarded.)
-  const { isAllDiscarded } = deckRules.discardedHelpers(variant, deck);
+  const { isAllDiscarded } = deckRules.getDiscardHelpers(variant, deck);
   for (const precedingRank of eRange(1, rank)) {
     if (isAllDiscarded(suitIndex, precedingRank as Rank)) {
       // The suit is "dead", so this card does not need to be played anymore.

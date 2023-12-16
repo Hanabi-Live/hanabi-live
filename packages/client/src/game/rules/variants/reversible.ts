@@ -7,7 +7,7 @@ import type { CardState, GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { eRange, iRange, newArray } from "isaacscript-common-ts";
-import { discardedHelpers, getAllDiscardedSet } from "../deck";
+import { getDiscardHelpers, getDiscardedSetForSuit } from "../deck";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -82,7 +82,7 @@ function isDead(
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ) {
-  const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
+  const allDiscardedSet = getDiscardedSetForSuit(variant, deck, suitIndex);
 
   // We denote by this either the true direction or the only remaining direction in case we already
   // lost the necessary cards for the other direction in "Up or Down".
@@ -159,7 +159,7 @@ export function getMaxScorePerStack(
   for (const i of variant.suits.keys()) {
     const suitIndex = i as SuitIndex;
 
-    const allDiscardedSet = getAllDiscardedSet(variant, deck, suitIndex);
+    const allDiscardedSet = getDiscardedSetForSuit(variant, deck, suitIndex);
 
     const stackDirection = playStackDirections[suitIndex];
     if (stackDirection === undefined) {
@@ -260,7 +260,7 @@ export function isCritical(
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
-  const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
+  const { isLastCopy, isAllDiscarded } = getDiscardHelpers(variant, deck);
 
   const lastCopy = isLastCopy(suitIndex, rank);
   if (!variant.upOrDown) {

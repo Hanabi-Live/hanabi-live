@@ -131,7 +131,7 @@ export function isInitialDealFinished(
   );
 }
 
-export function discardedHelpers(
+export function getDiscardHelpers(
   variant: Variant,
   deck: readonly CardState[],
 ): {
@@ -163,12 +163,12 @@ export function discardedHelpers(
   return { isLastCopy, isAllDiscarded };
 }
 
-export function getAllDiscardedSet(
+export function getDiscardedSetForSuit(
   variant: Variant,
   deck: readonly CardState[],
   suitIndex: SuitIndex,
 ): ReadonlySet<Rank> {
-  const { isAllDiscarded } = discardedHelpers(variant, deck);
+  const { isAllDiscarded } = getDiscardHelpers(variant, deck);
 
   const allDiscardedSet = new Set<Rank>();
   for (const variantRank of variant.ranks) {
