@@ -5,7 +5,6 @@ import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { GameMetadata } from "../types/GameMetadata";
-import { getPlayerName, getPlayerNames } from "../types/GameMetadata";
 import type { MsgClue } from "../types/MsgClue";
 import type { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import * as cardRules from "./card";
@@ -226,4 +225,30 @@ export function discard(
 
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
   return `${hypoPrefix}${playerName} ${verb} ${card} from ${location}${suffix}`;
+}
+
+export function getPlayerName(
+  playerIndex: PlayerIndex,
+  metadata: GameMetadata,
+): string {
+  return metadata.playerNames[playerIndex] ?? "[unknown]";
+}
+
+function getPlayerNames(
+  playerIndices: readonly PlayerIndex[] | null,
+  metadata: GameMetadata,
+): string {
+  if (playerIndices === null) {
+    return "The players";
+  }
+
+  const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
+  playerNames.sort();
+
+  if (playerNames.length === 2) {
+    return `${playerNames[0]} and ${playerNames[1]}`;
+  }
+
+  const playerNamesExceptLast = playerNames.slice(0, -1);
+  return `${playerNamesExceptLast.join(", ")}, and ${playerNames.at(-1)}`;
 }

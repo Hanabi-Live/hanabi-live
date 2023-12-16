@@ -21,7 +21,6 @@ import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
 import type { CardNote } from "../types/CardNote";
 import type { GameMetadata } from "../types/GameMetadata";
-import { getPlayerName } from "../types/GameMetadata";
 import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
@@ -375,7 +374,7 @@ function gameReducerFunction(
         const modifier = metadata.options.timed ? 1 : -1;
         const milliseconds = playerTime * modifier;
         const durationString = millisecondsToClockString(milliseconds);
-        const playerName = getPlayerName(playerIndex, metadata);
+        const playerName = textRules.getPlayerName(playerIndex, metadata);
 
         const text = metadata.options.timed
           ? `${playerName} had ${durationString} left`

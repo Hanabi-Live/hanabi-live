@@ -2,7 +2,7 @@ import type { NumPlayers, PlayerIndex } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 
-/** This is for data that does not change. */
+/** This is for data that does not change once a game starts. */
 export interface GameMetadata {
   readonly ourUsername: string;
   readonly options: Options;
@@ -22,30 +22,4 @@ export interface GameMetadata {
 
   readonly hasCustomSeed: boolean;
   readonly seed: string;
-}
-
-export function getPlayerName(
-  playerIndex: PlayerIndex,
-  metadata: GameMetadata,
-): string {
-  return metadata.playerNames[playerIndex] ?? "[unknown]";
-}
-
-export function getPlayerNames(
-  playerIndices: readonly PlayerIndex[] | null,
-  metadata: GameMetadata,
-): string {
-  if (playerIndices === null) {
-    return "The players";
-  }
-
-  const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
-  playerNames.sort();
-
-  if (playerNames.length === 2) {
-    return `${playerNames[0]} and ${playerNames[1]}`;
-  }
-
-  const playerNamesExceptLast = playerNames.slice(0, -1);
-  return `${playerNamesExceptLast.join(", ")}, and ${playerNames.at(-1)}`;
 }
