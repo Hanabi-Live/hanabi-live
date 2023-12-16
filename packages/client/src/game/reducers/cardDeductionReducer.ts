@@ -8,7 +8,6 @@ import type {
 } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
-import type { DeepReadonly } from "@hanabi/utils";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -241,7 +240,7 @@ function generateDeckPossibilities(
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   metadata: GameMetadata,
-): DeepReadonly<SuitRankTuple[][]> {
+): ReadonlyArray<readonly SuitRankTuple[]> {
   const deckPossibilities: Array<readonly SuitRankTuple[]> = [];
   for (const card of deck) {
     if (canBeUsedToDisprovePossibility(card, excludeCardOrder, playerIndex)) {
@@ -391,7 +390,7 @@ function deckPossibilitiesDifferent(
 
 function filterCardPossibilities(
   cardPossibilities: readonly SuitRankTuple[],
-  deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
+  deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   cardCountMap: readonly number[][],
 ): readonly SuitRankTuple[] {
   /**
@@ -432,7 +431,7 @@ function hasPossibility(
 
 function possibilityValid(
   [suitIndex, rank]: readonly [SuitIndex, Rank],
-  deckPossibilities: DeepReadonly<SuitRankTuple[][]>,
+  deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   index: number,
   cardCountMap: readonly number[][],
   // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types

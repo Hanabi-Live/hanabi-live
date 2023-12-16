@@ -5,7 +5,6 @@ import type {
   Rank,
   SuitRankMap,
 } from "@hanabi/data";
-import type { DeepReadonly } from "@hanabi/utils";
 import type { Tuple } from "isaacscript-common-ts";
 import type { CardStatus } from "../enums/CardStatus";
 import type { StackDirection } from "../enums/StackDirection";
@@ -28,7 +27,7 @@ export interface GameState {
    * This only depends on a card's identity, not the card itself, so it is stored here rather than
    * as a sub-property of `CardState`.
    */
-  readonly cardStatus: DeepReadonly<SuitRankMap<CardStatus>>;
+  readonly cardStatus: SuitRankMap<CardStatus>;
 
   readonly score: number;
 

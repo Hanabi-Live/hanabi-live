@@ -1,3 +1,4 @@
+import type { ReadonlyRecord } from "isaacscript-common-ts";
 import type { Rank } from "./Rank";
 import type { SuitIndex } from "./SuitIndex";
 
@@ -8,4 +9,4 @@ import type { SuitIndex } from "./SuitIndex";
  * copy. Thus, we instead use a two-dimensional `Record` (which is just a normal JavaScript object
  * at run-time).
  */
-export type SuitRankMap<T> = Record<SuitIndex, Record<Rank, T>>;
+export type SuitRankMap<T> = ReadonlyRecord<SuitIndex, ReadonlyRecord<Rank, T>>;
