@@ -1,7 +1,6 @@
 // The "Settings" nav button.
 
-import { isKeyOf } from "@hanabi/utils";
-import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, isKeyOf, parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as notifications from "../notifications";
 

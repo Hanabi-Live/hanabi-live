@@ -6642,7 +6642,7 @@ __metadata:
     interactjs: "npm:^1.10.26"
     isaacscript: "npm:^3.36.0"
     isaacscript-common-node: "npm:^3.0.0"
-    isaacscript-common-ts: "npm:^13.4.0"
+    isaacscript-common-ts: "npm:^13.5.1"
     isaacscript-lint: "npm:^6.12.1"
     isaacscript-tsconfig: "npm:^5.0.0"
     jest: "npm:^29.7.0"
@@ -7499,12 +7499,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-ts@npm:^13.4.0":
-  version: 13.4.0
-  resolution: "isaacscript-common-ts@npm:13.4.0"
+"isaacscript-common-ts@npm:^13.5.1":
+  version: 13.5.1
+  resolution: "isaacscript-common-ts@npm:13.5.1"
   dependencies:
     unidecode: "npm:^0.1.8"
-  checksum: 37f439684cc6255d4adeedac848b6d07131915b996f8432139409646db43cfe4893723c57db123038f950f2f27c3b73a63948850069ec60e3fae0df28f934280
+  checksum: 9548aae891762b66ce83d7836be8c9b5ca1beabbb8db13a1ba63077cf73d87aca79081803bc4d96e41d3cc274bf448d0aa353343b2800deb421616aeede15a9b
   languageName: node
   linkType: hard
 

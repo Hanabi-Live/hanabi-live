@@ -1,8 +1,7 @@
 // Functions for progressing forward and backward through time.
 
 import type { CardOrder } from "@hanabi/data";
-import { clamp } from "@hanabi/utils";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { clamp, parseIntSafe } from "isaacscript-common-ts";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
