@@ -10,7 +10,13 @@ import type {
 } from "@hanabi/data";
 import { getSuit } from "@hanabi/data";
 import type { CardNote, CardState } from "@hanabi/game";
-import { CardStatus, StackDirection } from "@hanabi/game";
+import {
+  CardStatus,
+  StackDirection,
+  isCardClued,
+  isCardDiscarded,
+  isCardPlayed,
+} from "@hanabi/game";
 import { assertDefined, assertNotNull, iRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import { includes } from "lodash";
@@ -541,8 +547,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (
       this.note.blank &&
       !this.empathy &&
-      !cardRules.isCardPlayed(this.state) &&
-      !cardRules.isCardDiscarded(this.state)
+      !isCardPlayed(this.state) &&
+      !isCardDiscarded(this.state)
     ) {
       return DECK_BACK_IMAGE;
     }
@@ -585,17 +591,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   private shouldShowAnyBorder() {
-    return (
-      !cardRules.isCardPlayed(this.state) &&
-      !cardRules.isCardDiscarded(this.state)
-    );
+    return !isCardPlayed(this.state) && !isCardDiscarded(this.state);
   }
 
   private shouldShowClueBorder() {
     return (
       this.shouldShowAnyBorder() &&
       !this.note.unclued &&
-      (cardRules.isCardClued(this.state) || this.note.clued)
+      (isCardClued(this.state) || this.note.clued)
     );
   }
 
@@ -716,8 +719,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.questionMark.visible(
       this.note.questionMark &&
         !this.empathy &&
-        !cardRules.isCardPlayed(this.state) &&
-        !cardRules.isCardDiscarded(this.state) &&
+        !isCardPlayed(this.state) &&
+        !isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -725,8 +728,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.exclamationMark.visible(
       this.note.exclamationMark &&
         !this.empathy &&
-        !cardRules.isCardPlayed(this.state) &&
-        !cardRules.isCardDiscarded(this.state) &&
+        !isCardPlayed(this.state) &&
+        !isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -734,8 +737,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.trashcan.visible(
       this.note.knownTrash &&
         !this.empathy &&
-        !cardRules.isCardPlayed(this.state) &&
-        !cardRules.isCardDiscarded(this.state) &&
+        !isCardPlayed(this.state) &&
+        !isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -743,8 +746,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.wrench.visible(
       this.note.needsFix &&
         !this.empathy &&
-        !cardRules.isCardPlayed(this.state) &&
-        !cardRules.isCardDiscarded(this.state) &&
+        !isCardPlayed(this.state) &&
+        !isCardDiscarded(this.state) &&
         !globals.state.finished,
     );
 
@@ -835,8 +838,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.setCritical(status === CardStatus.Critical);
 
     const isKnownTrash =
-      !cardRules.isCardPlayed(this.state) &&
-      !cardRules.isCardDiscarded(this.state) &&
+      !isCardPlayed(this.state) &&
+      !isCardDiscarded(this.state) &&
       this.state.isKnownTrashFromEmpathy;
     this.setTrashMiniIndicator(isKnownTrash);
 
@@ -896,9 +899,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     return (
       isTrash &&
-      !cardRules.isCardClued(this.state) &&
-      !cardRules.isCardPlayed(this.state) &&
-      !cardRules.isCardDiscarded(this.state) &&
+      !isCardClued(this.state) &&
+      !isCardPlayed(this.state) &&
+      !isCardDiscarded(this.state) &&
       !this.note.blank &&
       !this.note.chopMoved &&
       !this.variant.throwItInAHole &&
@@ -913,9 +916,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   private shouldSetCritical(critical: boolean) {
     return (
-      critical &&
-      !cardRules.isCardPlayed(this.state) &&
-      !cardRules.isCardDiscarded(this.state)
+      critical && !isCardPlayed(this.state) && !isCardDiscarded(this.state)
     );
   }
 

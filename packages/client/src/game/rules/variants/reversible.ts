@@ -7,7 +7,7 @@ import type { CardState, GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { eRange, iRange, newArray } from "isaacscript-common-ts";
-import { discardedHelpers, getAllDiscardedSet } from "./discardHelpers";
+import { discardedHelpers, getAllDiscardedSet } from "../deck";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the

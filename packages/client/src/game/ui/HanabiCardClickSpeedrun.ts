@@ -2,8 +2,8 @@
 
 import type { Color } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { isCardInPlayerHand } from "@hanabi/game";
 import { assertDefined, todo } from "isaacscript-common-ts";
-import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import type { ColorButton } from "./ColorButton";
@@ -56,7 +56,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   // Ctrl, then we are using Empathy.)
   if (
     card.state.location !== globals.metadata.ourPlayerIndex &&
-    cardRules.isCardInPlayerHand(card.state) &&
+    isCardInPlayerHand(card.state) &&
     card.state.suitIndex !== null &&
     // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
@@ -150,7 +150,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   if (
     typeof card.state.location === "number" &&
     card.state.location !== globals.metadata.ourPlayerIndex &&
-    cardRules.isCardInPlayerHand(card.state) &&
+    isCardInPlayerHand(card.state) &&
     card.state.rank !== null &&
     // It is not possible to clue a START card with a rank clue.
     card.state.rank !== START_CARD_RANK &&

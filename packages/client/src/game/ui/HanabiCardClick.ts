@@ -1,8 +1,8 @@
 // Click functions for the HanabiCard object.
 
+import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
 import type Konva from "konva";
 import * as modals from "../../modals";
-import * as cardRules from "../rules/card";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
@@ -103,17 +103,14 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       replay.goToSegment(segmentDrawn, true);
       replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.state.order);
     }
-  } else if (
-    cardRules.isCardPlayed(card.state) &&
-    card.state.segmentPlayed !== null
-  ) {
+  } else if (isCardPlayed(card.state) && card.state.segmentPlayed !== null) {
     // Clicking on played cards goes to the turn immediately before they were played.
     replay.goToSegmentAndIndicateCard(
       card.state.segmentPlayed,
       card.state.order,
     );
   } else if (
-    cardRules.isCardDiscarded(card.state) &&
+    isCardDiscarded(card.state) &&
     card.state.segmentDiscarded !== null
   ) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded.

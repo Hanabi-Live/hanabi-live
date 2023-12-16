@@ -6,7 +6,6 @@ import { eRange, filterMap } from "isaacscript-common-ts";
 import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
-import { discardedHelpers } from "./variants/discardHelpers";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
@@ -22,22 +21,6 @@ export function getCardName(
 
   const rankName = rank === START_CARD_RANK ? "START" : rank.toString();
   return `${suit.displayName} ${rankName}`;
-}
-
-export function isCardClued(card: CardState): boolean {
-  return card.numPositiveClues > 0;
-}
-
-export function isCardPlayed(card: CardState): boolean {
-  return card.location === "playStack";
-}
-
-export function isCardDiscarded(card: CardState): boolean {
-  return card.location === "discard";
-}
-
-export function isCardInPlayerHand(card: CardState): boolean {
-  return typeof card.location === "number";
 }
 
 /**
@@ -90,7 +73,7 @@ export function isCardNeedsToBePlayed(
 
   // Second, check to see if it is still possible to play this card. (The preceding cards in the
   // suit might have already been discarded.)
-  const { isAllDiscarded } = discardedHelpers(variant, deck);
+  const { isAllDiscarded } = deckRules.discardedHelpers(variant, deck);
   for (const precedingRank of eRange(1, rank)) {
     if (isAllDiscarded(suitIndex, precedingRank as Rank)) {
       // The suit is "dead", so this card does not need to be played anymore.

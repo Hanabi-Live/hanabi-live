@@ -1,6 +1,6 @@
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata, GameState } from "@hanabi/game";
-import { ClueType, EndCondition } from "@hanabi/game";
+import { ClueType, EndCondition, isCardClued } from "@hanabi/game";
 import { includes } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
 import * as cardRules from "../../rules/card";
@@ -100,10 +100,10 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const discardedCard = previousGameState.deck[actionDiscard.order];
-      const touched =
-        discardedCard !== undefined && cardRules.isCardClued(discardedCard);
-      if (touched) {
+      const previousCardState = previousGameState.deck[actionDiscard.order];
+      const touchedBeforeDiscarding =
+        previousCardState !== undefined && isCardClued(previousCardState);
+      if (touchedBeforeDiscarding) {
         return SoundType.DiscardClued;
       }
 
@@ -117,10 +117,10 @@ export function getSoundType(
         const previouslyDiscardedCard =
           previousGameState.deck[previousGameState.stats.doubleDiscardCard];
         if (
-          discardedCard !== undefined &&
+          previousCardState !== undefined &&
           previouslyDiscardedCard !== undefined &&
           cardRules.canCardPossiblyBeFromCluesOnly(
-            discardedCard,
+            previousCardState,
             previouslyDiscardedCard.suitIndex,
             previouslyDiscardedCard.rank,
           )
@@ -162,8 +162,8 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const card = gameState.deck[actionPlay.order];
-      const touched = card !== undefined && cardRules.isCardClued(card);
+      const cardState = gameState.deck[actionPlay.order];
+      const touched = cardState !== undefined && isCardClued(cardState);
       if (!touched) {
         switch (gameState.stats.numSubsequentBlindPlays) {
           case 1: {

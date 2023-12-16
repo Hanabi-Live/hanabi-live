@@ -8,7 +8,7 @@ import type {
   GameMetadata,
   GameState,
 } from "@hanabi/game";
-import { ClueType, EndCondition } from "@hanabi/game";
+import { ClueType, EndCondition, isCardClued } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import {
@@ -191,10 +191,13 @@ function gameReducerFunction(
         );
       }
 
-      const card = gameState.deck[action.order];
-      assertDefined(card, `Failed to find the card at order: ${action.order}`);
+      const cardState = gameState.deck[action.order];
+      assertDefined(
+        cardState,
+        `Failed to find the card state at order: ${action.order}`,
+      );
 
-      const touched = cardRules.isCardClued(card);
+      const touched = isCardClued(cardState);
       const text = textRules.discard(
         action,
         slot,
@@ -348,10 +351,13 @@ function gameReducerFunction(
       // Gain a point.
       gameState.score++;
 
-      const card = gameState.deck[action.order];
-      assertDefined(card, `Failed to find the card at order: ${action.order}`);
+      const cardState = gameState.deck[action.order];
+      assertDefined(
+        cardState,
+        `Failed to find the card state at order: ${action.order}`,
+      );
 
-      const touched = cardRules.isCardClued(card);
+      const touched = isCardClued(cardState);
       const text = textRules.play(
         action,
         slot,

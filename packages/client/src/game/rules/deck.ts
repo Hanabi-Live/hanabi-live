@@ -3,7 +3,7 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK, getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata } from "@hanabi/game";
-import * as cardRules from "./card";
+import { isCardDiscarded } from "@hanabi/game";
 import * as handRules from "./hand";
 
 export function totalCards(variant: Variant): number {
@@ -106,11 +106,11 @@ export function discardedCopies(
 ): number {
   let numDiscardedCopies = 0;
 
-  for (const card of deck) {
+  for (const cardState of deck) {
     if (
-      card.suitIndex === suitIndex &&
-      card.rank === rank &&
-      cardRules.isCardDiscarded(card)
+      cardState.suitIndex === suitIndex &&
+      cardState.rank === rank &&
+      isCardDiscarded(cardState)
     ) {
       numDiscardedCopies++;
     }
@@ -130,4 +130,53 @@ export function isInitialDealFinished(
     currentDeckSize ===
     totalCardsInTheDeck - metadata.options.numPlayers * numCardsPerHand
   );
+}
+
+export function discardedHelpers(
+  variant: Variant,
+  deck: readonly CardState[],
+): {
+  isLastCopy: (suitIndex: SuitIndex, rank: Rank) => boolean;
+  isAllDiscarded: (suitIndex: SuitIndex, rank: Rank) => boolean;
+} {
+  // eslint-disable-next-line func-style
+  const total = (suitIndex: SuitIndex, rank: Rank) => {
+    const suit = variant.suits[suitIndex];
+    if (suit === undefined) {
+      return 0;
+    }
+
+    return numCopiesOfCard(suit, rank, variant);
+  };
+
+  // eslint-disable-next-line func-style
+  const discarded = (suitIndex: SuitIndex, rank: Rank) =>
+    discardedCopies(deck, suitIndex, rank);
+
+  // eslint-disable-next-line func-style
+  const isLastCopy = (suitIndex: SuitIndex, rank: Rank) =>
+    total(suitIndex, rank) === discarded(suitIndex, rank) + 1;
+
+  // eslint-disable-next-line func-style
+  const isAllDiscarded = (suitIndex: SuitIndex, rank: Rank) =>
+    total(suitIndex, rank) === discarded(suitIndex, rank);
+
+  return { isLastCopy, isAllDiscarded };
+}
+
+export function getAllDiscardedSet(
+  variant: Variant,
+  deck: readonly CardState[],
+  suitIndex: SuitIndex,
+): ReadonlySet<Rank> {
+  const { isAllDiscarded } = discardedHelpers(variant, deck);
+
+  const allDiscardedSet = new Set<Rank>();
+  for (const variantRank of variant.ranks) {
+    if (isAllDiscarded(suitIndex, variantRank)) {
+      allDiscardedSet.add(variantRank);
+    }
+  }
+
+  return allDiscardedSet;
 }

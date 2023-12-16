@@ -1,8 +1,8 @@
 // Touch actions for the HanabiCard object. These are a subset of the actions in HanabiCardClick.ts.
 
-import * as cardRules from "../rules/card";
-import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
+import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
 import type { HanabiCard } from "./HanabiCard";
+import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
@@ -34,14 +34,14 @@ function HanabiCardTapAction(this: HanabiCard) {
     return;
   }
 
-  if (cardRules.isCardPlayed(this.state) && this.state.segmentPlayed !== null) {
+  if (isCardPlayed(this.state) && this.state.segmentPlayed !== null) {
     // Tapping on played cards goes to the turn immediately before they were played.
     replay.goToSegmentAndIndicateCard(
       this.state.segmentPlayed,
       this.state.order,
     );
   } else if (
-    cardRules.isCardDiscarded(this.state) &&
+    isCardDiscarded(this.state) &&
     this.state.segmentDiscarded !== null
   ) {
     // Tapping on discarded cards goes to the turn immediately before they were discarded.

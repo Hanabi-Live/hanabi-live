@@ -8,10 +8,10 @@ import type {
   GameState,
   StatsState,
 } from "@hanabi/game";
+import { isCardClued } from "@hanabi/game";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { sumArray } from "isaacscript-common-ts";
-import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
@@ -204,8 +204,8 @@ function isBlindPlay(action: GameAction, gameState: GameState): boolean {
     return false;
   }
 
-  const card = gameState.deck[action.order];
-  const cardClued = card !== undefined && cardRules.isCardClued(card);
+  const cardState = gameState.deck[action.order];
+  const cardClued = cardState !== undefined && isCardClued(cardState);
 
   return !cardClued;
 }

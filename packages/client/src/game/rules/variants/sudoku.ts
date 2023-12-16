@@ -3,7 +3,7 @@ import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
-import { getAllDiscardedSet } from "./discardHelpers";
+import { getAllDiscardedSet } from "../deck";
 
 /** Check if the card can still be played in a Sudoku variant. */
 export function sudokuCanStillBePlayed(

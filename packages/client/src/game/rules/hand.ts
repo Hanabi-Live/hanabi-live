@@ -2,7 +2,7 @@
 
 import type { CardOrder, NumPlayers } from "@hanabi/data";
 import type { CardState, Options } from "@hanabi/game";
-import * as cardRules from "./card";
+import { isCardClued } from "@hanabi/game";
 
 export function cardsPerHand(options: Options): number {
   return (
@@ -49,8 +49,8 @@ export function isLocked(
   deck: readonly CardState[],
 ): boolean {
   return hand.every((order) => {
-    const card = deck[order];
-    return card !== undefined && cardRules.isCardClued(card);
+    const cardState = deck[order];
+    return cardState !== undefined && isCardClued(cardState);
   });
 }
 
@@ -60,8 +60,8 @@ export function chopIndex(
 ): number {
   // The chop is defined as the oldest (right-most) unclued card.
   for (const [i, cardOrder] of hand.entries()) {
-    const card = deck[cardOrder];
-    if (card && !cardRules.isCardClued(card)) {
+    const cardState = deck[cardOrder];
+    if (cardState && !isCardClued(cardState)) {
       return i;
     }
   }

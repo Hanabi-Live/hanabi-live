@@ -1,6 +1,6 @@
+import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
 import type Konva from "konva";
 import * as tooltips from "../../tooltips";
-import * as cardRules from "../rules/card";
 import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
 import { HanabiCardClick } from "./HanabiCardClick";
@@ -273,9 +273,9 @@ function shouldShowEmpathy(
     // Disable empathy for the stack bases.
     !card.isStackBase &&
     // Clicking on a played card goes to the turn that it was played.
-    !cardRules.isCardPlayed(card.state) &&
+    !isCardPlayed(card.state) &&
     // Clicking on a discarded card goes to the turn that it was discarded.
-    !cardRules.isCardDiscarded(card.state)
+    !isCardDiscarded(card.state)
   );
 }
 

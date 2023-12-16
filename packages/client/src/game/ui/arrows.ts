@@ -2,13 +2,17 @@
 // replays).
 
 import type { CardOrder, PlayerIndex, Suit } from "@hanabi/data";
-import { ClueType } from "@hanabi/game";
+import {
+  ClueType,
+  isCardDiscarded,
+  isCardInPlayerHand,
+  isCardPlayed,
+} from "@hanabi/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import * as cardRules from "../rules/card";
 import type { Clue } from "../types/Clue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
@@ -58,8 +62,8 @@ export function set(
   let rot = 0;
   if (
     element instanceof HanabiCard &&
-    !cardRules.isCardPlayed(element.state) &&
-    !cardRules.isCardDiscarded(element.state) &&
+    !isCardPlayed(element.state) &&
+    !isCardDiscarded(element.state) &&
     !element.isStackBase
   ) {
     if (
@@ -74,7 +78,7 @@ export function set(
         element.state.location === globals.metadata.ourPlayerIndex) ||
       (globals.lobby.settings.keldonMode &&
         element.state.location !== globals.metadata.ourPlayerIndex &&
-        cardRules.isCardInPlayerHand(element.state))
+        isCardInPlayerHand(element.state))
     ) {
       // In BGA mode, invert the arrows on our hand (so that it doesn't get cut off by the top of
       // the screen). In Keldon mode, invert the arrows for all other players.

@@ -3,7 +3,7 @@
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { CardNote, CardState, GameState } from "@hanabi/game";
-import { PaceRisk } from "@hanabi/game";
+import { PaceRisk, isCardClued, isCardInPlayerHand } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "./card";
@@ -163,11 +163,11 @@ export function getCardsGotten(
   let currentCardsGotten = 0;
 
   // Go through the deck and count the cards that are gotten.
-  for (const card of deck) {
+  for (const cardState of deck) {
     if (
-      card.location === "playStack" ||
-      (card.location === "discard" &&
-        card.isMisplayed &&
+      cardState.location === "playStack" ||
+      (cardState.location === "discard" &&
+        cardState.isMisplayed &&
         variant.throwItInAHole &&
         (playing || shadowing))
     ) {
@@ -175,10 +175,10 @@ export function getCardsGotten(
       // played for the purposes of "Throw It in a Hole" variants).
       currentCardsGotten++;
     } else if (
-      cardRules.isCardInPlayerHand(card) &&
-      cardRules.isCardClued(card) &&
+      isCardInPlayerHand(cardState) &&
+      isCardClued(cardState) &&
       !cardRules.isAllCardPossibilitiesTrash(
-        card,
+        cardState,
         deck,
         playStacks,
         playStackDirections,
@@ -211,13 +211,13 @@ export function getCardsGottenByNotes(
 ): number {
   let numCardsGottenByNotes = 0;
 
-  for (const [i, card] of deck.entries()) {
+  for (const [i, cardState] of deck.entries()) {
     const order = i as CardOrder;
 
     if (
-      cardRules.isCardInPlayerHand(card) &&
+      isCardInPlayerHand(cardState) &&
       !cardRules.isAllCardPossibilitiesTrash(
-        card,
+        cardState,
         deck,
         playStacks,
         playStackDirections,
@@ -229,7 +229,7 @@ export function getCardsGottenByNotes(
       const adjustmentFromThisCard = getCardsGottenByNotesAdjustment(
         notes,
         order,
-        card,
+        cardState,
       );
       numCardsGottenByNotes += adjustmentFromThisCard;
     }
@@ -241,14 +241,14 @@ export function getCardsGottenByNotes(
 function getCardsGottenByNotesAdjustment(
   notes: readonly CardNote[],
   order: CardOrder,
-  card: CardState,
+  cardState: CardState,
 ): number {
   const note = notes[order];
   if (!note) {
     return 0;
   }
 
-  const isCluedForReal = cardRules.isCardClued(card);
+  const isCluedForReal = isCardClued(cardState);
   if (isCluedForReal && (note.unclued || note.knownTrash)) {
     return -1;
   }
