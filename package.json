@@ -15,9 +15,9 @@
   "author": "Zamiell",
   "type": "commonjs",
   "scripts": {
+    "test": "jest",
     "lint": "bash ./lint.sh",
     "nuke": "isaacscript nuke",
-    "test": "jest",
     "update": "isaacscript update"
   },
   "dependencies": {
