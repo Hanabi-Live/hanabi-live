@@ -1,5 +1,5 @@
 import type { CardOrder } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import * as deckRules from "../rules/deck";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
