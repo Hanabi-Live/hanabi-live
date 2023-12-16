@@ -3,8 +3,7 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK, getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata } from "@hanabi/game";
-import { isCardDiscarded } from "@hanabi/game";
-import * as handRules from "./hand";
+import { getCardsPerHand, isCardDiscarded } from "@hanabi/game";
 
 export function totalCards(variant: Variant): number {
   let totalCardsInTheDeck = 0;
@@ -125,7 +124,7 @@ export function isInitialDealFinished(
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
   const totalCardsInTheDeck = totalCards(variant);
-  const numCardsPerHand = handRules.getCardsPerHand(metadata.options);
+  const numCardsPerHand = getCardsPerHand(metadata.options);
   return (
     currentDeckSize ===
     totalCardsInTheDeck - metadata.options.numPlayers * numCardsPerHand

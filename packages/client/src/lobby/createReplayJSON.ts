@@ -7,11 +7,10 @@ import type {
 } from "@hanabi/data";
 import { DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import type { LogEntry } from "@hanabi/game";
-import { ClueType } from "@hanabi/game";
+import { ClueType, getCardsPerHand } from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
-import { getCardsPerHand } from "../game/rules/hand";
 import { ActionType } from "../game/types/ActionType";
 import type {
   ClientAction,

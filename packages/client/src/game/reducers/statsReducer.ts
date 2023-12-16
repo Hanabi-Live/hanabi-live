@@ -75,7 +75,7 @@ function statsReducerFunction(
     }
   }
 
-  const numEndGameTurns = turnRules.endGameLength(
+  const numEndGameTurns = turnRules.getEndGameLength(
     metadata.options,
     metadata.characterAssignments,
   );

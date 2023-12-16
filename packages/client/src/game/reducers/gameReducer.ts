@@ -8,7 +8,12 @@ import type {
   GameMetadata,
   GameState,
 } from "@hanabi/game";
-import { ClueType, EndCondition, isCardClued } from "@hanabi/game";
+import {
+  ClueType,
+  EndCondition,
+  getChopIndex,
+  isCardClued,
+} from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import {
@@ -20,7 +25,6 @@ import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as deckRules from "../rules/deck";
-import * as handRules from "../rules/hand";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
@@ -563,7 +567,7 @@ function cardCycle(
   }
 
   // We do not need to reorder anything if the chop is slot 1 (the left-most card).
-  const chopIndex = handRules.getChopIndex(hand, deck);
+  const chopIndex = getChopIndex(hand, deck);
   if (chopIndex === hand.length - 1) {
     return;
   }

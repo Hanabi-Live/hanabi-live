@@ -1,8 +1,8 @@
 import type { PlayerIndex } from "@hanabi/data";
+import { isHandLocked } from "@hanabi/game";
 import { assertDefined, eRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as clueTokensRules from "../../../rules/clueTokens";
-import * as handRules from "../../../rules/hand";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";
@@ -76,7 +76,7 @@ export function onChanged(
       text3.fill(LABEL_COLOR);
     } else if (
       globals.lobby.settings.hyphenatedConventions &&
-      handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck)
+      isHandLocked(currentPlayerHand, globals.state.ongoingGame.deck)
     ) {
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);

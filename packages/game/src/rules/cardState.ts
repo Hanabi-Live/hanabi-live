@@ -1,4 +1,4 @@
-// Helper functions relating to the `CardState` interface.
+// Functions relating to the `CardState` interface.
 
 import type { CardState } from "../interfaces/CardState";
 

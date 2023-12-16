@@ -10,6 +10,7 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata, GameState } from "@hanabi/game";
+import { isCardOnChop } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -19,7 +20,6 @@ import {
 } from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
-import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
 import type { GameAction } from "../types/actions";
 import { cardDeductionReducer } from "./cardDeductionReducer";
@@ -118,8 +118,7 @@ export function cardsReducer(
           segmentFirstClued: card.segmentFirstClued ?? game.turn.segment ?? 1,
           hasClueApplied: true,
           firstCluedWhileOnChop:
-            card.firstCluedWhileOnChop ??
-            handRules.isCardOnChop(hand, deck, card),
+            card.firstCluedWhileOnChop ?? isCardOnChop(hand, deck, card),
         };
         applyClue(order, true);
       }

@@ -9,12 +9,12 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
+import { getCardsPerHand } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
 import { ClueType } from "../../game/src/enums/ClueType";
 import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
-import * as handRules from "../src/game/rules/hand";
 import * as playStacksRules from "../src/game/rules/playStacks";
 import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
@@ -56,7 +56,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
-  const cardsPerHand = handRules.getCardsPerHand(metadata.options);
+  const cardsPerHand = getCardsPerHand(metadata.options);
 
   /**
    * The type of `number` in the JSON is too loose for the types of `SuitIndex` and `Rank`, so we

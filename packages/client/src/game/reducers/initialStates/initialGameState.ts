@@ -14,12 +14,12 @@ import type {
   GameState,
   StackDirection,
 } from "@hanabi/game";
+import { getCardsPerHand } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";
-import * as handRules from "../../rules/hand";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
@@ -67,13 +67,13 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.suits.length,
     variant.stackSize,
   ) as Tuple<number, NumSuits>;
-  const cardsPerHand = handRules.getCardsPerHand(options);
+  const cardsPerHand = getCardsPerHand(options);
   const startingDeckSize = statsRules.getStartingDeckSize(
     options.numPlayers,
     cardsPerHand,
     variant,
   );
-  const endGameLength = turnRules.endGameLength(
+  const endGameLength = turnRules.getEndGameLength(
     metadata.options,
     metadata.characterAssignments,
   );

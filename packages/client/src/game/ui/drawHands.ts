@@ -1,8 +1,8 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
+import { getCardsPerHand } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import Konva from "konva";
-import * as hand from "../rules/hand";
 import { CardLayout } from "./CardLayout";
 import { NameFrame } from "./NameFrame";
 import { globals } from "./UIGlobals";
@@ -25,7 +25,7 @@ const namePosBGA: HandConfig[][] = [];
 export function drawHands(winW: number, winH: number): void {
   // Constants
   const { numPlayers } = globals.options;
-  const numCardsPerHand = hand.getCardsPerHand(globals.options);
+  const numCardsPerHand = getCardsPerHand(globals.options);
 
   // In Keldon mode, the hand positions are different depending on the amount of players, so they
   // have to be hard-coded.

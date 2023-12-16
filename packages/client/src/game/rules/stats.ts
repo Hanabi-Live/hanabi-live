@@ -3,13 +3,17 @@
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { CardNote, CardState, GameState } from "@hanabi/game";
-import { PaceRisk, isCardClued, isCardInPlayerHand } from "@hanabi/game";
+import {
+  PaceRisk,
+  isCardClued,
+  isCardInPlayerHand,
+  isHandLocked,
+} from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
-import * as handRules from "./hand";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
@@ -474,7 +478,7 @@ export function getDoubleDiscardCard(
     (gameState.turn.currentPlayerIndex + 1) % gameState.hands.length;
   const hand = gameState.hands[nextPlayerIndex];
   if (hand !== undefined) {
-    const nextPlayerLocked = handRules.isLocked(hand, gameState.deck);
+    const nextPlayerLocked = isHandLocked(hand, gameState.deck);
     if (nextPlayerLocked) {
       return null;
     }

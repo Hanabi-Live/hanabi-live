@@ -1,7 +1,7 @@
 import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { GameMetadata } from "@hanabi/game";
-import { ClueType, EndCondition } from "@hanabi/game";
+import { ClueType, EndCondition, getCardSlot } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
@@ -9,7 +9,6 @@ import type { MsgClue } from "../types/MsgClue";
 import type { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import * as cardRules from "./card";
 import * as cluesRules from "./clues";
-import * as handRules from "./hand";
 
 const HYPO_PREFIX = "[Hypo] ";
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six"] as const;
@@ -50,7 +49,7 @@ export function clue(
     // Create a list of slot numbers that correspond to the cards touched.
     const slots: number[] = [];
     for (const order of action.list) {
-      const slot = handRules.getCardSlot(order, targetHand);
+      const slot = getCardSlot(order, targetHand);
       assertDefined(slot, `Failed to get the slot for card: ${order}`);
 
       slots.push(slot);

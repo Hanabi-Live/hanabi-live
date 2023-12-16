@@ -1,8 +1,9 @@
 // Functions related to hand management.
 
 import type { CardOrder, NumPlayers } from "@hanabi/data";
-import type { CardState, Options } from "@hanabi/game";
-import { isCardClued } from "@hanabi/game";
+import type { Options } from "../classes/Options";
+import type { CardState } from "../interfaces/CardState";
+import { isCardClued } from "./cardState";
 
 export function getCardsPerHand(options: Options): number {
   return (
@@ -44,7 +45,7 @@ export function getCardSlot(
   return index === -1 ? undefined : hand.length - index;
 }
 
-export function isLocked(
+export function isHandLocked(
   hand: readonly number[],
   deck: readonly CardState[],
 ): boolean {

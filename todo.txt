@@ -3,6 +3,7 @@
 +------+
 
 - make Connection.send type-safe
+- rename konvaTooltips
 
 +-----+
 | OLD |

@@ -65,7 +65,7 @@ export function getNextPlayerIndex(
   return nextPlayerIndex as PlayerIndex;
 }
 
-export function endGameLength(
+export function getEndGameLength(
   options: Options,
   characterAssignments: Readonly<Array<number | null>>,
 ): number {
@@ -86,5 +86,7 @@ export function endGameLength(
 }
 
 export function getEndTurn(turn: number, metadata: GameMetadata): number {
-  return turn + endGameLength(metadata.options, metadata.characterAssignments);
+  return (
+    turn + getEndGameLength(metadata.options, metadata.characterAssignments)
+  );
 }
