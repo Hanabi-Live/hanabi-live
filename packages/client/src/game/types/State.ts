@@ -1,7 +1,6 @@
-import type { GameState } from "@hanabi/game";
+import type { GameMetadata, GameState } from "@hanabi/game";
 import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
-import type { GameMetadata } from "./GameMetadata";
 import type { NotesState } from "./NotesState";
 import type { PauseState } from "./PauseState";
 import type { ReplayState } from "./ReplayState";

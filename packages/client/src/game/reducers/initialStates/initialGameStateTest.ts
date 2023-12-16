@@ -1,5 +1,4 @@
-import type { GameState } from "@hanabi/game";
-import type { GameMetadata } from "../../types/GameMetadata";
+import type { GameMetadata, GameState } from "@hanabi/game";
 import { initialGameState } from "./initialGameState";
 import { initialTurnState } from "./initialTurnState";
 

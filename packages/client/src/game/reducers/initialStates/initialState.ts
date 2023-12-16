@@ -1,7 +1,7 @@
 import { getVariant } from "@hanabi/data";
+import type { GameMetadata } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
 import * as deckRules from "../../rules/deck";
-import type { GameMetadata } from "../../types/GameMetadata";
 import type { State } from "../../types/State";
 import { initialGameState } from "./initialGameState";
 

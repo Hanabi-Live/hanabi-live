@@ -8,7 +8,12 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
-import type { CardStatus, GameState, StackDirection } from "@hanabi/game";
+import type {
+  CardStatus,
+  GameMetadata,
+  GameState,
+  StackDirection,
+} from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../../rules/card";
@@ -18,7 +23,6 @@ import * as handRules from "../../rules/hand";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
-import type { GameMetadata } from "../../types/GameMetadata";
 import { initialTurnState } from "./initialTurnState";
 
 export function initialGameState(metadata: GameMetadata): GameState {

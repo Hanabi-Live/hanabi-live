@@ -9,7 +9,7 @@ import type {
   SuitRankTuple,
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardState, GameMetadata, GameState } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -21,7 +21,6 @@ import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";
 import * as characterRules from "../rules/variants/characters";
-import type { GameMetadata } from "../types/GameMetadata";
 import type { GameAction } from "../types/actions";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";

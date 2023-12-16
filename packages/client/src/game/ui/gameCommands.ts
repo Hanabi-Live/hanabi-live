@@ -4,6 +4,7 @@
 
 import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
+import type { GameMetadata } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { iRange, newArray } from "isaacscript-common-ts";
 import { createStore } from "redux";
@@ -16,7 +17,6 @@ import * as handRules from "../rules/hand";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import type { CardIdentity } from "../types/CardIdentity";
-import type { GameMetadata } from "../types/GameMetadata";
 import type { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { SoundType } from "../types/SoundType";

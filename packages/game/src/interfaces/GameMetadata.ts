@@ -1,6 +1,6 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi/data";
-import type { Options } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
+import type { Options } from "../classes/Options";
 
 /** This is for data that does not change once a game starts. */
 export interface GameMetadata {

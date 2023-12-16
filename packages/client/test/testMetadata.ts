@@ -9,11 +9,11 @@ import {
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
 import { Options } from "../../game/src/classes/Options";
+import type { GameMetadata } from "../../game/src/interfaces/GameMetadata";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as handRules from "../src/game/rules/hand";
 import * as statsRules from "../src/game/rules/stats";
 import * as turnRules from "../src/game/rules/turn";
-import type { GameMetadata } from "../src/game/types/GameMetadata";
 
 export function testMetadata(
   numPlayers: NumPlayers,

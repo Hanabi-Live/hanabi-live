@@ -7,14 +7,13 @@ import type {
   Variant,
 } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardState, GameMetadata, GameState } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
   tupleKeys,
 } from "isaacscript-common-ts";
 import * as deckRules from "../rules/deck";
-import type { GameMetadata } from "../types/GameMetadata";
 import type { GameAction } from "../types/actions";
 
 export function cardDeductionReducer(

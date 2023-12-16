@@ -1,11 +1,10 @@
 import { getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardState, GameMetadata, GameState } from "@hanabi/game";
 import { ClueType, EndCondition } from "@hanabi/game";
 import { includes } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
 import * as cardRules from "../../rules/card";
 import * as handRules from "../../rules/hand";
-import type { GameMetadata } from "../../types/GameMetadata";
 import { SoundType } from "../../types/SoundType";
 import type {
   ActionClue,

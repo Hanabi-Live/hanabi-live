@@ -2,8 +2,7 @@
 
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK, getVariant } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
-import type { GameMetadata } from "../types/GameMetadata";
+import type { CardState, GameMetadata } from "@hanabi/game";
 import * as cardRules from "./card";
 import * as handRules from "./hand";
 

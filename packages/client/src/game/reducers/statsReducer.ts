@@ -2,7 +2,7 @@
 // action.
 
 import { getVariant } from "@hanabi/data";
-import type { GameState, StatsState } from "@hanabi/game";
+import type { GameMetadata, GameState, StatsState } from "@hanabi/game";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { sumArray } from "isaacscript-common-ts";
@@ -11,7 +11,6 @@ import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 import type { CardNote } from "../types/CardNote";
-import type { GameMetadata } from "../types/GameMetadata";
 import type { GameAction } from "../types/actions";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);

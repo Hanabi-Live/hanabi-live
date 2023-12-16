@@ -19,5 +19,9 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts", "../game/src/classes/Options.ts"],
+  "include": [
+    "./src/**/*.ts",
+    "../game/src/classes/Options.ts",
+    "../game/src/interfaces/GameMetadata.ts",
+  ],
 }
