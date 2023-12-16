@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        packageName: [client, data, game, server]
+        packageName: [client, data, game, scripts, server]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/workflows/setup

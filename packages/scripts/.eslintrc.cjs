@@ -6,6 +6,6 @@ module.exports = {
   extends: [path.join(REPO_ROOT, ".eslintrc.cjs")],
 
   parserOptions: {
-    project: path.join(__dirname, "tsconfig.json"),
+    project: path.join(__dirname, "tsconfig.eslint.json"),
   },
 };

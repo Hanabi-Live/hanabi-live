@@ -13,7 +13,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd "$DIR"
 
 echo "Creating the \"variants.json\" file..."
-npx tsx "$DIR/scripts/typescript/createVariantsJSON/createVariantsJSON.ts"
+npx tsx "$DIR/packages/scripts/src/createVariantsJSON/createVariantsJSON.ts"
 echo "Formatting the \"variants.json\" file..."
 npx prettier --write "$DIR/packages/data/src/json/variants.json"
 echo "Done."

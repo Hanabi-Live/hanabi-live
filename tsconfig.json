@@ -16,6 +16,10 @@
     // conservative; the project targets browsers / Node.js within a 2 year time-frame.
     "target": "ES2021",
 
+    // "resolveJsonModule" is required to import files with ".json" extensions. By default, it is
+    // false.
+    "resolveJsonModule": true,
+
     "paths": {
       "@hanabi/data": ["./packages/data/src/index.ts"],
       "@hanabi/game": ["./packages/game/src/index.ts"],

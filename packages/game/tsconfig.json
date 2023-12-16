@@ -7,10 +7,6 @@
 
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
-    // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
-    // false. We import JSON files in the code base, so this is needed.
-    "resolveJsonModule": true,
-
     // "moduleResolution" specifies how modules (imports) get resolved. By default, it is "Classic",
     // but this is a legacy option and "Node" will be the default in the future:
     // https://www.typescriptlang.org/docs/handbook/module-resolution.html

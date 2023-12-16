@@ -20,8 +20,8 @@ import type { Subtract } from "isaacscript-common-ts";
 import { ReadonlySet } from "isaacscript-common-ts";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
-import { totalCards } from "../../../packages/client/src/game/rules/deck";
-import * as statsRules from "../../../packages/client/src/game/rules/stats";
+import { totalCards } from "../../../client/src/game/rules/deck";
+import * as statsRules from "../../../client/src/game/rules/stats";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;

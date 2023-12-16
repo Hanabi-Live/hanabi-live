@@ -19,10 +19,6 @@
     // manually revert the ESM options from the base config.
     "module": "CommonJS",
     "moduleResolution": "Node",
-
-    // "resolveJsonModule" includes modules imported with ".json" extensions. By default, it is
-    // false. We import JSON files in the code base, so this is needed.
-    "resolveJsonModule": true,
   },
 
   "include": ["./src/**/*.ts"],

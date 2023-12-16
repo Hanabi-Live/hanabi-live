@@ -19,12 +19,12 @@ cd "$DIR"
 bash "$DIR/packages/client/lint.sh" &
 bash "$DIR/packages/data/lint.sh" &
 bash "$DIR/packages/game/lint.sh" &
+bash "$DIR/packages/scripts/lint.sh" &
 bash "$DIR/packages/server/lint.sh" &
-bash "$DIR/scripts/typescript/lint.sh" &
 bash "$DIR/server/build_server.sh" &
 # (The linting of the Golang code is disabled until it can be rewritten in TypeScript.)
 bash "$DIR/spell_check.sh" &
-bash "$DIR/check_variants.sh" &
+bash "$DIR/check_variant_files.sh" &
 npx isaacscript check-ts --ignore "build.ts,ci.yml,cspell.json,lint.ts,publish.sh,run.sh,tsconfig.json" &
 
 wait
