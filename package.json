@@ -53,7 +53,7 @@
     "interactjs": "^1.10.26",
     "isaacscript": "^3.36.0",
     "isaacscript-common-node": "^3.0.0",
-    "isaacscript-common-ts": "^13.1.8",
+    "isaacscript-common-ts": "^13.2.2",
     "isaacscript-lint": "^6.12.1",
     "isaacscript-tsconfig": "^5.0.0",
     "jest": "^29.7.0",

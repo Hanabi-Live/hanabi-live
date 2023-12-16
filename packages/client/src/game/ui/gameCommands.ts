@@ -4,8 +4,9 @@
 
 import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { Tuple } from "@hanabi/utils";
-import { iRange, newArray } from "@hanabi/utils";
+import { iRange } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
+import { newArray } from "isaacscript-common-ts";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";

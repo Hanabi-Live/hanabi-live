@@ -10,13 +10,13 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
+import { eRange } from "@hanabi/utils";
 import {
   arrayCopyTwoDimensional,
-  eRange,
+  assertDefined,
   newArray,
   tupleKeys,
-} from "@hanabi/utils";
-import { assertDefined } from "isaacscript-common-ts";
+} from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
 import * as deckRules from "../rules/deck";
 import * as handRules from "../rules/hand";

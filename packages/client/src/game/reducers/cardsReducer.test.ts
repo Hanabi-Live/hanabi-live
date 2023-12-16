@@ -1,7 +1,7 @@
 import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
-import type { Tuple } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
 import {
   cardIdentity,
   colorClue,

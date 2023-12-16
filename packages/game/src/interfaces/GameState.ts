@@ -5,7 +5,8 @@ import type {
   Rank,
   SuitRankMap,
 } from "@hanabi/data";
-import type { DeepReadonly, Tuple } from "@hanabi/utils";
+import type { DeepReadonly } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
 import type { CardStatus } from "../enums/CardStatus";
 import type { StackDirection } from "../enums/StackDirection";
 import type { StateClue } from "../types/StateClue";

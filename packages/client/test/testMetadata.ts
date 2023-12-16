@@ -6,8 +6,8 @@ import {
   DEFAULT_VARIANT_NAME,
   getVariant,
 } from "@hanabi/data";
-import type { Tuple } from "@hanabi/utils";
-import { newArray } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
+import { newArray } from "isaacscript-common-ts";
 import { Options } from "../../game/src/classes/Options";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as handRules from "../src/game/rules/hand";

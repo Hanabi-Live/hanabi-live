@@ -1,5 +1,5 @@
 import type { CardOrder, NumSuits } from "@hanabi/data";
-import type { Tuple } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
 import type { PaceRisk } from "../enums/PaceRisk";
 
 export interface StatsState {

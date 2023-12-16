@@ -11,9 +11,10 @@ import type {
 import { getSuit } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
 import { CardStatus, StackDirection } from "@hanabi/game";
-import { assertNotNull, iRange, includes } from "@hanabi/utils";
+import { assertNotNull, iRange } from "@hanabi/utils";
 import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
+import { includes } from "lodash";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";

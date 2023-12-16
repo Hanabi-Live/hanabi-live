@@ -9,8 +9,8 @@ import type {
 } from "@hanabi/data";
 import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
 import type { CardStatus, GameState, StackDirection } from "@hanabi/game";
-import type { Tuple } from "@hanabi/utils";
-import { newArray, sumArray } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
+import { newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../../rules/card";
 import * as clueTokensRules from "../../rules/clueTokens";
 import * as deckRules from "../../rules/deck";

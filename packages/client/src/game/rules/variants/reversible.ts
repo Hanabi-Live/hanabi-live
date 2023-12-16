@@ -5,8 +5,9 @@ import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
-import type { Tuple } from "@hanabi/utils";
-import { eRange, iRange, newArray } from "@hanabi/utils";
+import { eRange, iRange } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
+import { newArray } from "isaacscript-common-ts";
 import { discardedHelpers, getAllDiscardedSet } from "./discardHelpers";
 
 /**

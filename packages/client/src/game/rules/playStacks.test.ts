@@ -1,8 +1,9 @@
 import type { CardOrder, NumSuits, Rank } from "@hanabi/data";
 import { START_CARD_RANK, getDefaultVariant, getVariant } from "@hanabi/data";
 import { StackDirection } from "@hanabi/game";
-import type { Tuple } from "@hanabi/utils";
-import { eRange, newArray } from "@hanabi/utils";
+import { eRange } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
+import { newArray } from "isaacscript-common-ts";
 import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { direction, nextPlayableRanks } from "./playStacks";
 

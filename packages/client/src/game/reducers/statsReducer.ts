@@ -3,9 +3,9 @@
 
 import { getVariant } from "@hanabi/data";
 import type { GameState, StatsState } from "@hanabi/game";
-import { sumArray } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { produce } from "immer";
+import { sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";

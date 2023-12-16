@@ -10,7 +10,7 @@ import type {
   SuitIndex,
 } from "@hanabi/data";
 import type { EndCondition } from "@hanabi/game";
-import type { Tuple } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
 import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
 import type { MsgClue } from "./MsgClue";

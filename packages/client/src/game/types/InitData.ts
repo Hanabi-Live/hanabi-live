@@ -1,6 +1,6 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
-import type { Tuple } from "@hanabi/utils";
+import type { Tuple } from "isaacscript-common-ts";
 
 export interface InitData {
   // Game settings

@@ -6,7 +6,7 @@ import type {
   Variant,
 } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
-import { newArray } from "@hanabi/utils";
+import { newArray } from "isaacscript-common-ts";
 import * as deck from "../../rules/deck";
 
 export function initialCardState(

@@ -1,5 +1,5 @@
 import type { GameState } from "@hanabi/game";
-import { includes } from "@hanabi/utils";
+import { includes } from "isaacscript-common-ts";
 import { SoundType } from "../../../types/SoundType";
 import type { GameAction } from "../../../types/actions";
 import { globals } from "../../UIGlobals";
