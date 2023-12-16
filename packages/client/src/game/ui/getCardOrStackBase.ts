@@ -1,12 +1,12 @@
 import type { CardOrder } from "@hanabi/data";
+import { getTotalCardsInDeck } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
-import * as deckRules from "../rules/deck";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 
 export function getCardOrStackBase(order: CardOrder): HanabiCard | undefined {
-  const numTotalCards = deckRules.getTotalCardsInDeck(globals.variant);
-  if (order < numTotalCards) {
+  const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+  if (order < totalCardsInDeck) {
     const card = globals.deck[order];
     assertDefined(card, `Failed to get card of order ${order} from the deck.`);
     if (card.isStackBase) {
@@ -18,7 +18,7 @@ export function getCardOrStackBase(order: CardOrder): HanabiCard | undefined {
   }
 
   // Stack bases use the orders after the final card in the deck.
-  const stackBaseIndex = order - numTotalCards;
+  const stackBaseIndex = order - totalCardsInDeck;
   const stackBase = globals.stackBases[stackBaseIndex];
   assertDefined(
     stackBase,

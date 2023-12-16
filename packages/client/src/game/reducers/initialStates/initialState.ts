@@ -1,7 +1,7 @@
 import { getVariant } from "@hanabi/data";
 import type { GameMetadata } from "@hanabi/game";
+import { getTotalCardsInDeck } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
-import * as deckRules from "../../rules/deck";
 import type { State } from "../../types/State";
 import { initialGameState } from "./initialGameState";
 
@@ -10,7 +10,7 @@ export function initialState(metadata: GameMetadata): State {
 
   const { options } = metadata;
   const variant = getVariant(options.variantName);
-  const totalCards = deckRules.getTotalCardsInDeck(variant);
+  const totalCardsInDeck = getTotalCardsInDeck(variant);
 
   return {
     visibleState: null,
@@ -36,7 +36,7 @@ export function initialState(metadata: GameMetadata): State {
     // The array needs to be longer than just the total cards in the deck because we also need to
     // account for notes on a stack base.
     notes: {
-      ourNotes: newArray(totalCards + variant.suits.length + 1, {
+      ourNotes: newArray(totalCardsInDeck + variant.suits.length + 1, {
         possibilities: [],
         chopMoved: false,
         needsFix: false,
@@ -49,12 +49,12 @@ export function initialState(metadata: GameMetadata): State {
         clued: false,
         text: "",
       }),
-      allNotes: newArray(totalCards + variant.suits.length + 1, []),
+      allNotes: newArray(totalCardsInDeck + variant.suits.length + 1, []),
       efficiencyModifier: 0,
     },
 
     metadata,
-    cardIdentities: newArray(totalCards, {
+    cardIdentities: newArray(totalCardsInDeck, {
       suitIndex: null,
       rank: null,
     }),

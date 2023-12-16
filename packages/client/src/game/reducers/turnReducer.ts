@@ -1,10 +1,9 @@
 import { getVariant } from "@hanabi/data";
 import type { GameMetadata, GameState, TurnState } from "@hanabi/game";
-import { EndCondition } from "@hanabi/game";
+import { EndCondition, isInitialDealFinished } from "@hanabi/game";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { assertNotNull } from "isaacscript-common-ts";
-import * as deckRules from "../rules/deck";
 import * as turnRules from "../rules/turn";
 import type { GameAction } from "../types/actions";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
@@ -102,10 +101,7 @@ function turnReducerFunction(
       if (turn.segment === null) {
         // If the initial deal is still going on.
         if (
-          deckRules.isInitialDealFinished(
-            gameState.cardsRemainingInTheDeck,
-            metadata,
-          )
+          isInitialDealFinished(gameState.cardsRemainingInTheDeck, metadata)
         ) {
           turn.segment = 0;
         }

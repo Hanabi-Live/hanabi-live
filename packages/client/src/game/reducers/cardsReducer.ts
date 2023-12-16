@@ -10,7 +10,7 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata, GameState } from "@hanabi/game";
-import { isCardOnChop } from "@hanabi/game";
+import { isCardOnChop, isInitialDealFinished } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -19,7 +19,6 @@ import {
   tupleKeys,
 } from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
-import * as deckRules from "../rules/deck";
 import * as characterRules from "../rules/variants/characters";
 import type { GameAction } from "../types/actions";
 import { cardDeductionReducer } from "./cardDeductionReducer";
@@ -267,7 +266,7 @@ export function cardsReducer(
   if (
     game.turn.turnNum === 0 &&
     action.type === "draw" &&
-    !deckRules.isInitialDealFinished(newDeck.length, metadata)
+    !isInitialDealFinished(newDeck.length, metadata)
   ) {
     // No need to do deduction while cards are being drawn.
     return newDeck;

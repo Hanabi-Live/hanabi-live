@@ -1,7 +1,7 @@
 import type { CardOrder } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { getTotalCardsInDeck } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
-import * as deckRules from "../../../rules/deck";
 import type { CardIdentity } from "../../../types/CardIdentity";
 import type { State } from "../../../types/State";
 import { HanabiCard } from "../../HanabiCard";
@@ -12,7 +12,8 @@ import type { Listener, Selector, Subscription } from "../observeStore";
 import { observeStore } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {
-  const numTotalCards = deckRules.getTotalCardsInDeck(globals.variant);
+  const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+
   // Subscribe the new cards.
   for (const i of eRange(globals.cardSubscriptions.length, length)) {
     if (globals.deck.length <= i) {
@@ -25,7 +26,7 @@ export function onCardsPossiblyAdded(length: number): void {
         globals.options.numPlayers,
       );
       globals.deck.push(newCard);
-      if (globals.deck.length > numTotalCards) {
+      if (globals.deck.length > totalCardsInDeck) {
         throw new Error(
           `Unexpected card of order ${i} added to globals.deck: Deck too long.`,
         );

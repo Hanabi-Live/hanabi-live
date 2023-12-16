@@ -15,12 +15,11 @@ import {
   VALID_NUM_PLAYERS,
   createVariant,
 } from "@hanabi/data";
-import { Options, getCardsPerHand } from "@hanabi/game";
+import { Options, getCardsPerHand, getTotalCardsInDeck } from "@hanabi/game";
 import type { Subtract } from "isaacscript-common-ts";
 import { ReadonlySet } from "isaacscript-common-ts";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
-import { getTotalCardsInDeck } from "../../../client/src/game/rules/deck";
 import * as statsRules from "../../../client/src/game/rules/stats";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 

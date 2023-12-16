@@ -1,9 +1,9 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
+import { getAllDiscardedSetForSuit } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
-import { getDiscardedSetForSuit } from "../deck";
 
 /** Check if the card can still be played in a Sudoku variant. */
 export function sudokuCanStillBePlayed(
@@ -13,7 +13,7 @@ export function sudokuCanStillBePlayed(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
-  const allDiscardedSet = getDiscardedSetForSuit(variant, deck, suitIndex);
+  const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
   const { maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
     allDiscardedSet,
     variant,
@@ -298,7 +298,7 @@ export function getMaxScorePerStack(
   for (const [i, stackStart] of playStackStarts.entries()) {
     const suitIndex = i as SuitIndex;
 
-    const allDiscardedSet = getDiscardedSetForSuit(variant, deck, suitIndex);
+    const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,

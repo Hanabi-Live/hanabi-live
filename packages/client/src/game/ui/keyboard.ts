@@ -1,6 +1,7 @@
 // Functions for handling all of the keyboard shortcuts.
 
 import type { CardOrder } from "@hanabi/data";
+import { getTotalCardsInDeck } from "@hanabi/game";
 import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
@@ -12,7 +13,6 @@ import {
   getHTMLInputElement,
 } from "../../utils";
 import * as clueTokensRules from "../rules/clueTokens";
-import * as deckRules from "../rules/deck";
 import { ActionType } from "../types/ActionType";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { SoundType } from "../types/SoundType";
@@ -394,8 +394,8 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
     if (/^deck$/i.test(response)) {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const numCardsInDeck = deckRules.getTotalCardsInDeck(globals.variant);
-      const cardOrder = (numCardsInDeck - 1) as CardOrder;
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
       performAction(actionType, cardOrder);
       return;
     }

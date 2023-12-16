@@ -5,6 +5,9 @@ import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { CardNote, CardState, GameState } from "@hanabi/game";
 import {
   PaceRisk,
+  getNumCopiesOfCard,
+  getNumDiscardedCopiesOfCard,
+  getTotalCardsInDeck,
   isCardClued,
   isCardInPlayerHand,
   isHandLocked,
@@ -13,7 +16,6 @@ import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
-import * as deckRules from "./deck";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
@@ -129,9 +131,9 @@ export function getStartingDeckSize(
   cardsPerHand: number,
   variant: Variant,
 ): number {
-  const totalCards = deckRules.getTotalCardsInDeck(variant);
+  const totalCardsInDeck = getTotalCardsInDeck(variant);
   const initialCardsDrawn = cardsPerHand * numPlayers;
-  return totalCards - initialCardsDrawn;
+  return totalCardsInDeck - initialCardsDrawn;
 }
 
 /**
@@ -523,12 +525,8 @@ export function getDoubleDiscardCard(
   if (suit === undefined) {
     return null;
   }
-  const numCopiesTotal = deckRules.getNumCopiesOfCard(
-    suit,
-    cardDiscarded.rank,
-    variant,
-  );
-  const numDiscarded = deckRules.getNumDiscardedCopiesOfCard(
+  const numCopiesTotal = getNumCopiesOfCard(suit, cardDiscarded.rank, variant);
+  const numDiscarded = getNumDiscardedCopiesOfCard(
     gameState.deck,
     cardDiscarded.suitIndex,
     cardDiscarded.rank,

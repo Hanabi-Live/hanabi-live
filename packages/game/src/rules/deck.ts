@@ -2,17 +2,18 @@
 
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK, getVariant } from "@hanabi/data";
-import type { CardState, GameMetadata } from "@hanabi/game";
-import { getCardsPerHand, isCardDiscarded } from "@hanabi/game";
+import { sumArray } from "isaacscript-common-ts";
+import type { CardState } from "../interfaces/CardState";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import { isCardDiscarded } from "./cardState";
+import { getCardsPerHand } from "./hand";
 
 export function getTotalCardsInDeck(variant: Variant): number {
-  let totalCardsInDeck = 0;
+  const suitCounts = variant.suits.map((suit) =>
+    getTotalCardsInSuit(variant, suit),
+  );
 
-  for (const suit of variant.suits) {
-    totalCardsInDeck += getTotalCardsInSuit(variant, suit);
-  }
-
-  return totalCardsInDeck;
+  return sumArray(suitCounts);
 }
 
 function getTotalCardsInSuit(variant: Variant, suit: Suit): number {
@@ -123,11 +124,11 @@ export function isInitialDealFinished(
   metadata: GameMetadata,
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
-  const totalCardsInTheDeck = getTotalCardsInDeck(variant);
+  const totalCardsInDeck = getTotalCardsInDeck(variant);
   const numCardsPerHand = getCardsPerHand(metadata.options);
   return (
     currentDeckSize ===
-    totalCardsInTheDeck - metadata.options.numPlayers * numCardsPerHand
+    totalCardsInDeck - metadata.options.numPlayers * numCardsPerHand
   );
 }
 
@@ -163,7 +164,7 @@ export function getDiscardHelpers(
   return { isLastCopy, isAllDiscarded };
 }
 
-export function getDiscardedSetForSuit(
+export function getAllDiscardedSetForSuit(
   variant: Variant,
   deck: readonly CardState[],
   suitIndex: SuitIndex,

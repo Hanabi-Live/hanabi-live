@@ -1,6 +1,6 @@
 import type { CardOrder, SuitIndex } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
-import { StackDirection } from "@hanabi/game";
+import { StackDirection, getTotalCardsInDeck } from "@hanabi/game";
 import equal from "fast-deep-equal";
 import {
   ReadonlyMap,
@@ -8,7 +8,6 @@ import {
   assertNotNull,
 } from "isaacscript-common-ts";
 import type Konva from "konva";
-import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";
 import * as variantRules from "../../../rules/variant";
 import type { HanabiCard } from "../../HanabiCard";
@@ -235,9 +234,9 @@ export function onHoleChanged(
 }
 
 export function updatePlayStackVisuals(): void {
-  const totalCards = deck.getTotalCardsInDeck(globals.variant);
+  const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
   for (const suitIndex of globals.variant.suits.keys()) {
-    const playStackOrder = (totalCards + suitIndex) as CardOrder;
+    const playStackOrder = (totalCardsInDeck + suitIndex) as CardOrder;
     updateCardVisuals(playStackOrder);
   }
 }

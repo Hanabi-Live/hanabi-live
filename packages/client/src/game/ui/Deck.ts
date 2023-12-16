@@ -1,4 +1,5 @@
 import type { CardOrder } from "@hanabi/data";
+import { getTotalCardsInDeck } from "@hanabi/game";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import { OptionIcons } from "../../types/OptionIcons";
@@ -7,7 +8,6 @@ import {
   millisecondsToClockString,
   timerFormatter,
 } from "../../utils";
-import * as deckRules from "../rules/deck";
 import { ActionType } from "../types/ActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { globals } from "./UIGlobals";
@@ -42,7 +42,7 @@ export class Deck extends Konva.Group {
     this.cardBack.on("dragend", this.dragEnd);
 
     // The text that shows the number of cards remaining in the deck.
-    this.numLeft = deckRules.getTotalCardsInDeck(globals.variant);
+    this.numLeft = getTotalCardsInDeck(globals.variant);
     this.numLeftText = new Konva.Text({
       fill: "white",
       stroke: "#222222",
@@ -93,8 +93,8 @@ export class Deck extends Konva.Group {
       });
     } else if (draggedTo === "playArea") {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const numCardsInDeck = deckRules.getTotalCardsInDeck(globals.variant);
-      const cardOrder = (numCardsInDeck - 1) as CardOrder;
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
       turn.end({
         type: ActionType.Play,
         target: cardOrder,

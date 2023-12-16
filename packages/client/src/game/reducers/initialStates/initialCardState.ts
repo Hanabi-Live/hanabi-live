@@ -6,8 +6,8 @@ import type {
   Variant,
 } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { getTotalCardsInDeck } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
-import * as deck from "../../rules/deck";
 
 export function initialCardState(
   order: CardOrder,
@@ -24,11 +24,11 @@ export function initialCardState(
     }
   }
 
-  const total = deck.getTotalCardsInDeck(variant);
+  const totalCardsInDeck = getTotalCardsInDeck(variant);
 
   return {
     order,
-    location: order < total ? "deck" : "playStack",
+    location: order < totalCardsInDeck ? "deck" : "playStack",
     suitIndex: null,
     rank: null,
     possibleCardsFromClues: possibleCards,

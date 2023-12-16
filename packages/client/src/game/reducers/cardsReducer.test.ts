@@ -2,6 +2,7 @@ import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
+import * as deckRules from "../../../../game/src/rules/deck"; // eslint-disable-line @typescript-eslint/no-restricted-imports
 import {
   cardIdentity,
   colorClue,
@@ -11,7 +12,6 @@ import {
   rankClue,
 } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
-import * as deckRules from "../rules/deck";
 import { cardsReducer } from "./cardsReducer";
 import { initialCardState } from "./initialStates/initialCardState";
 import { initialGameState } from "./initialStates/initialGameState";

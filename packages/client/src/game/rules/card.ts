@@ -1,9 +1,13 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
-import { CardStatus } from "@hanabi/game";
+import {
+  CardStatus,
+  getDiscardHelpers,
+  getNumCopiesOfCard,
+  getNumDiscardedCopiesOfCard,
+} from "@hanabi/game";
 import { eRange, filterMap } from "isaacscript-common-ts";
-import * as deckRules from "./deck";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
@@ -73,7 +77,7 @@ export function isCardNeedsToBePlayed(
 
   // Second, check to see if it is still possible to play this card. (The preceding cards in the
   // suit might have already been discarded.)
-  const { isAllDiscarded } = deckRules.getDiscardHelpers(variant, deck);
+  const { isAllDiscarded } = getDiscardHelpers(variant, deck);
   for (const precedingRank of eRange(1, rank)) {
     if (isAllDiscarded(suitIndex, precedingRank as Rank)) {
       // The suit is "dead", so this card does not need to be played anymore.
@@ -139,13 +143,9 @@ function isCardCritical(
     return false;
   }
 
-  const total = deckRules.getNumCopiesOfCard(suit, rank, variant);
-  const discarded = deckRules.getNumDiscardedCopiesOfCard(
-    deck,
-    suitIndex,
-    rank,
-  );
-  return total === discarded + 1;
+  const numTotal = getNumCopiesOfCard(suit, rank, variant);
+  const numDiscarded = getNumDiscardedCopiesOfCard(deck, suitIndex, rank);
+  return numTotal === numDiscarded + 1;
 }
 
 // Checks to see if every card possibility would misplay if the card was played right now.
