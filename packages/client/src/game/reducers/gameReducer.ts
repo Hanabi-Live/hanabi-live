@@ -563,7 +563,7 @@ function cardCycle(
   }
 
   // We do not need to reorder anything if the chop is slot 1 (the left-most card).
-  const chopIndex = handRules.chopIndex(hand, deck);
+  const chopIndex = handRules.getChopIndex(hand, deck);
   if (chopIndex === hand.length - 1) {
     return;
   }

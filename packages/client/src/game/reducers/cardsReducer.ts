@@ -119,7 +119,7 @@ export function cardsReducer(
           hasClueApplied: true,
           firstCluedWhileOnChop:
             card.firstCluedWhileOnChop ??
-            handRules.cardIsOnChop(hand, deck, card),
+            handRules.isCardOnChop(hand, deck, card),
         };
         applyClue(order, true);
       }

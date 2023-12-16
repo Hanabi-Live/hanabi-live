@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- rename rules/hand.ts
 - make Connection.send type-safe
 
 +-----+

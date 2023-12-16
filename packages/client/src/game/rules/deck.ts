@@ -125,7 +125,7 @@ export function isInitialDealFinished(
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
   const totalCardsInTheDeck = totalCards(variant);
-  const numCardsPerHand = handRules.cardsPerHand(metadata.options);
+  const numCardsPerHand = handRules.getCardsPerHand(metadata.options);
   return (
     currentDeckSize ===
     totalCardsInTheDeck - metadata.options.numPlayers * numCardsPerHand

@@ -56,7 +56,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
-  const cardsPerHand = handRules.cardsPerHand(metadata.options);
+  const cardsPerHand = handRules.getCardsPerHand(metadata.options);
 
   /**
    * The type of `number` in the JSON is too loose for the types of `SuitIndex` and `Rank`, so we

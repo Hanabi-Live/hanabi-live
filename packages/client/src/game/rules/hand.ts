@@ -4,15 +4,15 @@ import type { CardOrder, NumPlayers } from "@hanabi/data";
 import type { CardState, Options } from "@hanabi/game";
 import { isCardClued } from "@hanabi/game";
 
-export function cardsPerHand(options: Options): number {
+export function getCardsPerHand(options: Options): number {
   return (
-    cardsPerHandNatural(options.numPlayers) +
+    getCardsPerHandNatural(options.numPlayers) +
     (options.oneExtraCard ? 1 : 0) -
     (options.oneLessCard ? 1 : 0)
   );
 }
 
-function cardsPerHandNatural(numPlayers: NumPlayers): number {
+function getCardsPerHandNatural(numPlayers: NumPlayers): number {
   switch (numPlayers) {
     case 2:
     case 3: {
@@ -36,7 +36,7 @@ function cardsPerHandNatural(numPlayers: NumPlayers): number {
 }
 
 /** For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game). */
-export function cardSlot(
+export function getCardSlot(
   order: CardOrder,
   hand: readonly number[],
 ): number | undefined {
@@ -54,7 +54,7 @@ export function isLocked(
   });
 }
 
-export function chopIndex(
+export function getChopIndex(
   hand: readonly number[],
   deck: readonly CardState[],
 ): number {
@@ -71,12 +71,12 @@ export function chopIndex(
   return hand.length - 1;
 }
 
-export function cardIsOnChop(
+export function isCardOnChop(
   hand: readonly number[],
   deck: readonly CardState[],
   card: CardState,
 ): boolean {
   const cardIndexInHand = hand.indexOf(card.order);
-  const handChopIndex = chopIndex(hand, deck);
+  const handChopIndex = getChopIndex(hand, deck);
   return cardIndexInHand === handChopIndex;
 }

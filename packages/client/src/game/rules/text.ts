@@ -50,7 +50,7 @@ export function clue(
     // Create a list of slot numbers that correspond to the cards touched.
     const slots: number[] = [];
     for (const order of action.list) {
-      const slot = handRules.cardSlot(order, targetHand);
+      const slot = handRules.getCardSlot(order, targetHand);
       assertDefined(slot, `Failed to get the slot for card: ${order}`);
 
       slots.push(slot);

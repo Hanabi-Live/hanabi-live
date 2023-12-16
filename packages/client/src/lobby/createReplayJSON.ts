@@ -11,7 +11,7 @@ import { ClueType } from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
-import { cardsPerHand } from "../game/rules/hand";
+import { getCardsPerHand } from "../game/rules/hand";
 import { ActionType } from "../game/types/ActionType";
 import type {
   ClientAction,
@@ -275,7 +275,7 @@ function getActionFromHypoPlayOrDiscard(
 
   // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
   // perceived.
-  const numCards = cardsPerHand(globals.options);
+  const numCards = getCardsPerHand(globals.options);
   const slotIndex = numCards - slot;
   const cardOrder = getCardOrderFromHypoState(
     entryNumber - 1,

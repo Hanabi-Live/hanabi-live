@@ -41,7 +41,7 @@ export function testMetadata(
     numPlayers,
     turnRules.endGameLength(options, characterAssignments),
     variant,
-    handRules.cardsPerHand(options),
+    handRules.getCardsPerHand(options),
   );
 
   return {

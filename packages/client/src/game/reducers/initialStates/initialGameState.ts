@@ -67,7 +67,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.suits.length,
     variant.stackSize,
   ) as Tuple<number, NumSuits>;
-  const cardsPerHand = handRules.cardsPerHand(options);
+  const cardsPerHand = handRules.getCardsPerHand(options);
   const startingDeckSize = statsRules.getStartingDeckSize(
     options.numPlayers,
     cardsPerHand,

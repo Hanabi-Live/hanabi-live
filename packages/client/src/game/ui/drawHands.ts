@@ -25,7 +25,7 @@ const namePosBGA: HandConfig[][] = [];
 export function drawHands(winW: number, winH: number): void {
   // Constants
   const { numPlayers } = globals.options;
-  const numCardsPerHand = hand.cardsPerHand(globals.options);
+  const numCardsPerHand = hand.getCardsPerHand(globals.options);
 
   // In Keldon mode, the hand positions are different depending on the amount of players, so they
   // have to be hard-coded.
