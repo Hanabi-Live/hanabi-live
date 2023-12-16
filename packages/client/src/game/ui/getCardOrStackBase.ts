@@ -4,13 +4,15 @@ import * as deckRules from "../rules/deck";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 
-export function getCardOrStackBase(order: CardOrder): HanabiCard {
+export function getCardOrStackBase(order: CardOrder): HanabiCard | undefined {
   const numTotalCards = deckRules.totalCards(globals.variant);
   if (order < numTotalCards) {
     const card = globals.deck[order];
     assertDefined(card, `Failed to get card of order ${order} from the deck.`);
     if (card.isStackBase) {
-      throw Error("Unexpected card marked stackBase found in globals.deck.");
+      throw new Error(
+        "Unexpected card marked stackBase found in globals.deck.",
+      );
     }
     return card;
   }
@@ -23,7 +25,7 @@ export function getCardOrStackBase(order: CardOrder): HanabiCard {
     `Failed to get stack base of index ${stackBaseIndex}`,
   );
   if (!stackBase.isStackBase) {
-    throw Error(
+    throw new Error(
       "Unexpected card not marked stackBase found in globals.stackBases.",
     );
   }

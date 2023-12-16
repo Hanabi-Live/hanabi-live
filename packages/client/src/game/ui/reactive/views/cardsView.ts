@@ -26,7 +26,7 @@ export function onCardsPossiblyAdded(length: number): void {
       );
       globals.deck.push(newCard);
       if (globals.deck.length >= numTotalCards) {
-        throw Error(
+        throw new Error(
           `Unexpected card of order ${i} added to globals.deck: Deck too long.`,
         );
       }
