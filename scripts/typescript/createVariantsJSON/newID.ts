@@ -16,8 +16,7 @@ import {
   VARIANT_MODIFIER_SET,
   VariantModifier,
 } from "@hanabi/data";
-import { trimSuffix } from "@hanabi/utils";
-import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, parseIntSafe, trimSuffix } from "isaacscript-common-ts";
 import { isEqual } from "lodash";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
 
