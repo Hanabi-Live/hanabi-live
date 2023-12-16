@@ -1,6 +1,5 @@
 import { HTTPLoginDataSchema, PROJECT_NAME } from "@hanabi/data";
 import {
-  ReadonlySet,
   getNumConsecutiveDiacritics,
   hasEmoji,
   normalizeString,
@@ -8,7 +7,7 @@ import {
 import * as argon2 from "argon2";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { ReadonlySet, parseIntSafe } from "isaacscript-common-ts";
 import { logger } from "../logger";
 import { models } from "../models";
 import { getClientVersion } from "../version";

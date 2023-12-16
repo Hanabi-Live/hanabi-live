@@ -1,4 +1,4 @@
-import { ReadonlySet, trimPrefix } from "@hanabi/utils";
+import { ReadonlySet, trimPrefix } from "isaacscript-common-ts";
 import type { Suit } from "./interfaces/Suit";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;

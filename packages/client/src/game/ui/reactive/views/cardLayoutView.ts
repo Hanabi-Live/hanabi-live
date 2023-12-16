@@ -1,9 +1,12 @@
 import type { CardOrder, SuitIndex } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
-import { ReadonlyMap, assertNotNull } from "@hanabi/utils";
 import equal from "fast-deep-equal";
-import { assertDefined } from "isaacscript-common-ts";
+import {
+  ReadonlyMap,
+  assertDefined,
+  assertNotNull,
+} from "isaacscript-common-ts";
 import type Konva from "konva";
 import * as deck from "../../../rules/deck";
 import { stackStartRank } from "../../../rules/playStacks";

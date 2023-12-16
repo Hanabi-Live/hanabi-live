@@ -1,6 +1,6 @@
 /* eslint-disable isaacscript/consistent-enum-values */
 
-import { ReadonlySet } from "@hanabi/utils";
+import { ReadonlySet } from "isaacscript-common-ts";
 
 /**
  * These correspond to values in the database. We want them to be as short as possible in order to

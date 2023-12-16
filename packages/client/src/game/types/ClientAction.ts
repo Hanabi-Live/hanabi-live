@@ -4,7 +4,7 @@ import type {
   RankClueNumber,
   SuitIndex,
 } from "@hanabi/data";
-import type { CompositionTypeSatisfiesEnum } from "@hanabi/utils";
+import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
 import type { ActionType } from "./ActionType";
 
 /** A message sent to the server that represents the in-game action that we just took. */

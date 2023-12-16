@@ -1,4 +1,4 @@
-import { ReadonlySet } from "@hanabi/utils";
+import { ReadonlySet } from "isaacscript-common-ts";
 
 const TEST_USERNAMES = new ReadonlySet([
   "test",

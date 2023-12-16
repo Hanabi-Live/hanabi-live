@@ -16,8 +16,8 @@ import {
   createVariant,
 } from "@hanabi/data";
 import { Options } from "@hanabi/game";
-import type { Subtract } from "@hanabi/utils";
-import { ReadonlySet } from "@hanabi/utils";
+import type { Subtract } from "isaacscript-common-ts";
+import { ReadonlySet } from "isaacscript-common-ts";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
 import { totalCards } from "../../../packages/client/src/game/rules/deck";

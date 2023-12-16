@@ -1,4 +1,4 @@
-import { ReadonlySet } from "@hanabi/utils";
+import { ReadonlySet } from "isaacscript-common-ts";
 
 export const START_CARD_RANK = 7;
 

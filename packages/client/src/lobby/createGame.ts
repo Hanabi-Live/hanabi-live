@@ -8,8 +8,8 @@ import {
   doesVariantExist,
 } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
-import { ReadonlySet } from "@hanabi/utils";
 import {
+  ReadonlySet,
   getRandomArrayElement,
   parseFloatSafe,
   parseIntSafe,
