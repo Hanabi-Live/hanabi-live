@@ -15,13 +15,12 @@ import {
   VALID_NUM_PLAYERS,
   createVariant,
 } from "@hanabi/data";
-import { Options } from "@hanabi/game";
+import { Options, getCardsPerHand } from "@hanabi/game";
 import type { Subtract } from "isaacscript-common-ts";
 import { ReadonlySet } from "isaacscript-common-ts";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
 import { totalCards } from "../../../packages/client/src/game/rules/deck";
-import { cardsPerHand } from "../../../packages/client/src/game/rules/hand";
 import * as statsRules from "../../../packages/client/src/game/rules/stats";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
@@ -1254,13 +1253,13 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
       ...new Options(),
       numPlayers,
     };
-    const numCardsPerHand = cardsPerHand(options);
+    const cardsPerHand = getCardsPerHand(options);
 
     return statsRules.getMinEfficiency(
       numPlayers,
       numPlayers,
       variant,
-      numCardsPerHand,
+      cardsPerHand,
     );
   });
 
@@ -1274,9 +1273,10 @@ function minVariantPace(variant: Variant): number {
       numPlayers,
     };
 
+    const cardsPerHand = getCardsPerHand(options);
     const startingDeckSize = statsRules.getStartingDeckSize(
       options.numPlayers,
-      cardsPerHand(options),
+      cardsPerHand,
       variant,
     );
 
