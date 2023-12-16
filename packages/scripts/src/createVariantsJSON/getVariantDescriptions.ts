@@ -20,7 +20,7 @@ import type { Subtract } from "isaacscript-common-ts";
 import { ReadonlySet } from "isaacscript-common-ts";
 
 /* eslint-disable @typescript-eslint/no-restricted-imports*/
-import { totalCards } from "../../../client/src/game/rules/deck";
+import { getTotalCardsInDeck } from "../../../client/src/game/rules/deck";
 import * as statsRules from "../../../client/src/game/rules/stats";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
@@ -1297,7 +1297,7 @@ function isVariantAllowed(
 ): boolean {
   const variant = createVariant(colorsMap, suitsMap, variantDescription, 0, "");
 
-  if (totalCards(variant) < MINIMUM_CARD_COUNT) {
+  if (getTotalCardsInDeck(variant) < MINIMUM_CARD_COUNT) {
     return false;
   }
 
