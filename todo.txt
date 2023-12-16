@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- refactor ClientAction interface to be union
 - make Connection.send type-safe
 
 +-----+
@@ -10,7 +9,6 @@
 +-----+
 
 - remove type assertions from lobby + views
-- redo install instructions without choco
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 - search for "This message is unnecessary"
 - search for "TODO: remove. This is unused"

@@ -23,10 +23,6 @@ import { ReadonlySet } from "isaacscript-common-ts";
 import { totalCards } from "../../../packages/client/src/game/rules/deck";
 import { cardsPerHand } from "../../../packages/client/src/game/rules/hand";
 import * as statsRules from "../../../packages/client/src/game/rules/stats";
-import {
-  minEfficiency,
-  startingPace,
-} from "../../../packages/client/src/game/rules/stats";
 /* eslint-enable @typescript-eslint/no-restricted-imports*/
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
@@ -1260,7 +1256,12 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
     };
     const numCardsPerHand = cardsPerHand(options);
 
-    return minEfficiency(numPlayers, numPlayers, variant, numCardsPerHand);
+    return statsRules.minEfficiency(
+      numPlayers,
+      numPlayers,
+      variant,
+      numCardsPerHand,
+    );
   });
 
   return Math.max(...requiredEfficiencies);
@@ -1279,7 +1280,11 @@ function minVariantPace(variant: Variant): number {
       variant,
     );
 
-    return startingPace(startingDeckSize, variant.maxScore, numPlayers);
+    return statsRules.startingPace(
+      startingDeckSize,
+      variant.maxScore,
+      numPlayers,
+    );
   });
 
   return Math.min(...startingPaces);
