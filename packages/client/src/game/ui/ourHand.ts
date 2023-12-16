@@ -1,6 +1,6 @@
 // Helper functions for doing actions to our own hand.
 
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import type { CardLayout } from "./CardLayout";
 import { globals } from "./UIGlobals";
 

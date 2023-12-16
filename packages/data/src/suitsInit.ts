@@ -1,4 +1,4 @@
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { ALL_RESERVED_NOTES } from "./abbreviations";
 import { SUIT_REVERSED_SUFFIX } from "./constants";
 import type { Color } from "./interfaces/Color";

@@ -2,7 +2,7 @@
 
 import type { Suit, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type * as KonvaUtil from "konva/types/Util";

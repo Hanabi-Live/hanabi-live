@@ -8,8 +8,12 @@ import {
   doesVariantExist,
 } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
-import { ReadonlySet, getRandomArrayElement } from "@hanabi/utils";
-import { parseFloatSafe, parseIntSafe } from "isaacscript-common-ts";
+import { ReadonlySet } from "@hanabi/utils";
+import {
+  getRandomArrayElement,
+  parseFloatSafe,
+  parseIntSafe,
+} from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { SHUTDOWN_TIMEOUT } from "../constants";

@@ -1,13 +1,20 @@
 import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/data";
+import { findPackageRoot, isMain } from "isaacscript-common-node";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
-main();
+if (isMain()) {
+  main();
+}
 
 function main() {
-  const [suitsPath, variantsPath, textPath] = getPaths();
+  createVariantsJSON();
+}
+
+function createVariantsJSON() {
+  const { suitsPath, variantsPath, textPath } = getPaths();
 
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
   validateSuits(suits);
@@ -39,10 +46,14 @@ function main() {
   createVariantsTextFile(variants, textPath);
 }
 
-function getPaths(): [string, string, string] {
-  const repoRootPath = path.join(__dirname, "..", "..", "..", "..");
+function getPaths(): {
+  readonly suitsPath: string;
+  readonly variantsPath: string;
+  readonly textPath: string;
+} {
+  const packageRoot = findPackageRoot();
   const jsonDirectoryPath = path.join(
-    repoRootPath,
+    packageRoot,
     "packages",
     "data",
     "src",
@@ -50,9 +61,9 @@ function getPaths(): [string, string, string] {
   );
   const suitsPath = path.join(jsonDirectoryPath, "suits.json");
   const variantsPath = path.join(jsonDirectoryPath, "variants.json");
-  const textPath = path.join(repoRootPath, "misc", "variants.txt");
+  const textPath = path.join(packageRoot, "misc", "variants.txt");
 
-  return [suitsPath, variantsPath, textPath];
+  return { suitsPath, variantsPath, textPath };
 }
 
 function getJSONAndParse(jsonPath: string): unknown {

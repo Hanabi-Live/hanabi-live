@@ -1,7 +1,7 @@
 import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { testMetadata } from "../../../test/testMetadata";
 import { newColorClue, newRankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";

@@ -1,4 +1,4 @@
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 
 type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;

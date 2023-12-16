@@ -24,25 +24,11 @@ bash "$DIR/packages/utils/lint.sh" &
 bash "$DIR/server/build_server.sh" &
 # (The linting of the Golang code is disabled until it can be rewritten in TypeScript.)
 bash "$DIR/spell_check.sh" &
+bash "$DIR/check_variants.sh" &
+npx isaacscript check-ts --ignore "build.ts,ci.yml,cspell.json,lint.ts,publish.sh,run.sh,tsconfig.json" &
 
 wait
 
 # TODO: https://stackoverflow.com/questions/49513335/bash-wait-exit-on-error-code
-
-npx isaacscript check-ts --ignore "build.ts,ci.yml,cspell.json,lint.ts,publish.sh,run.sh,tsconfig.json"
-
-# Ensure that the "update_variant_files.sh" script does not change the files that are checked into
-# the repository.
-VARIANTS_JSON="$DIR/packages/data/src/json/variants.json"
-TMP_VARIANTS_JSON="/tmp/variants.json"
-cp "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
-VARIANTS_TXT="$DIR/misc/variants.txt"
-TMP_VARIANTS_TXT="/tmp/variants.txt"
-cp "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
-bash "$DIR/update_variant_files.sh" > /dev/null
-diff "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
-diff "$VARIANTS_TXT" "$TMP_VARIANTS_TXT"
-rm -f "$TMP_VARIANTS_JSON"
-rm -f "$TMP_VARIANTS_TXT"
 
 echo "Successfully linted $REPO_NAME in $SECONDS seconds."

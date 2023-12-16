@@ -1,7 +1,8 @@
 // The lobby area that shows all of the current tables.
 
 import { MAX_PLAYERS } from "@hanabi/data";
-import { assertDefined, iRange } from "@hanabi/utils";
+import { iRange } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";

@@ -1,4 +1,4 @@
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import type { Suit } from "./interfaces/Suit";
 
 /**

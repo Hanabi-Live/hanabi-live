@@ -1,5 +1,5 @@
 import type { Rank } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 
 type DrawFunction = (ctx: CanvasRenderingContext2D) => void;
 const shapeFunctions = new Map<number, DrawFunction>();

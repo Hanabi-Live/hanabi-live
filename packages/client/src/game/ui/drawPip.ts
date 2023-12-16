@@ -1,5 +1,5 @@
 import type { Suit } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 
 type DrawFunction = (
   ctx: CanvasRenderingContext2D,

@@ -2,7 +2,7 @@
 
 import type { HTTPLoginData } from "@hanabi/data";
 import { VERSION } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";

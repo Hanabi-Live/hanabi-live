@@ -3,7 +3,6 @@ import { ReadonlySet } from "../types/ReadonlySet";
 import type { Tuple } from "../types/Tuple";
 import type { WidenLiteral } from "../types/WidenLiteral";
 import { getRandomInt } from "./random";
-import { assertDefined } from "./utils";
 
 type TupleKey<T extends readonly unknown[]> = Expand<
   {
@@ -82,34 +81,6 @@ export function filterMap<OldT, NewT>(
   }
 
   return filteredArray;
-}
-
-/**
- * Helper function to get a random element from the provided array.
- *
- * @param array The array to get an element from.
- * @param exceptions Optional. An array of elements to skip over if selected.
- */
-export function getRandomArrayElement<T>(
-  array: readonly T[],
-  exceptions: readonly T[] = [],
-): T {
-  if (array.length === 0) {
-    throw new Error(
-      "Failed to get a random array element since the provided array is empty.",
-    );
-  }
-
-  const arrayToUse =
-    exceptions.length > 0 ? arrayRemove(array, ...exceptions) : array;
-  const randomIndex = getRandomArrayIndex(arrayToUse);
-  const randomElement = arrayToUse[randomIndex];
-  assertDefined(
-    randomElement,
-    `Failed to get a random array element since the random index of ${randomIndex} was not valid.`,
-  );
-
-  return randomElement;
 }
 
 /**

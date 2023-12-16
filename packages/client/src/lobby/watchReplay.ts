@@ -1,7 +1,6 @@
 // The "Watch Specific Replay" nav button.
 
-import { assertDefined } from "@hanabi/utils";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";

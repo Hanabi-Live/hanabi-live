@@ -8,8 +8,7 @@ import type {
 import { DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
 import type { LogEntry } from "@hanabi/game";
 import { ClueType } from "@hanabi/game";
-import { assertDefined } from "@hanabi/utils";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { cardsPerHand } from "../game/rules/hand";
