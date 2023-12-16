@@ -48,7 +48,7 @@ import { drawHands } from "./drawHands";
 import { drawReplayArea } from "./drawReplayArea";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as hypothetical from "./hypothetical";
-import * as konvaTooltips from "./konvaTooltips";
+import { initKonvaTooltips } from "./konvaTooltips";
 import * as replay from "./replay";
 import * as stats from "./stats";
 import * as timer from "./timer";
@@ -519,7 +519,7 @@ function drawBottomLeftButtons() {
   replayButton.tooltipName = "replay";
   replayButton.tooltipContent =
     "Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.";
-  konvaTooltips.init(replayButton, true, false);
+  initKonvaTooltips(replayButton, true, false);
   globals.elements.replayButton = replayButton;
 
   // The restart button (to go into a new game with the same settings as the current shared replay).
@@ -549,7 +549,7 @@ function drawBottomLeftButtons() {
   restartButton.tooltipName = "restart";
   restartButton.tooltipContent =
     "Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).";
-  konvaTooltips.init(restartButton, true, false);
+  initKonvaTooltips(restartButton, true, false);
   globals.elements.restartButton = restartButton;
 
   // The chat button.
@@ -571,7 +571,7 @@ function drawBottomLeftButtons() {
   });
   chatButton.tooltipName = "chat";
   chatButton.tooltipContent = "Toggle the in-game chat.";
-  konvaTooltips.init(chatButton, true, false);
+  initKonvaTooltips(chatButton, true, false);
   globals.elements.chatButton = chatButton;
 
   // The lobby button (which takes the user back to the lobby).
@@ -591,7 +591,7 @@ function drawBottomLeftButtons() {
   lobbyButton.on("click tap", lobbyButtonClick);
   lobbyButton.tooltipName = "lobby";
   lobbyButton.tooltipContent = "Return to the lobby.";
-  konvaTooltips.init(lobbyButton, true, false);
+  initKonvaTooltips(lobbyButton, true, false);
   globals.elements.lobbyButton = lobbyButton;
 }
 
@@ -675,7 +675,7 @@ function drawDeck() {
   // Also apply the card deck tooltip to the faded background rectangle.
   deckRect.tooltipName = "deck";
   deckRect.tooltipContent = globals.elements.deck.tooltipContent;
-  konvaTooltips.init(deckRect, true, true);
+  initKonvaTooltips(deckRect, true, true);
 
   // When there are no cards left in the deck, show a label that indicates how many turns are left
   // before the game ends.
@@ -1055,8 +1055,8 @@ function drawScoreArea() {
     strikeSquare.tooltipContent =
       "This shows how many strikes (bombs) the team currently has.";
     strikeX.tooltipContent = strikeSquare.tooltipContent;
-    konvaTooltips.init(strikeSquare, true, false);
-    konvaTooltips.init(strikeX, true, false);
+    initKonvaTooltips(strikeSquare, true, false);
+    initKonvaTooltips(strikeX, true, false);
 
     // Click on the strike to go to the turn that the strike happened, if any (and highlight the
     // card that misplayed).
@@ -1108,7 +1108,7 @@ function drawScoreArea() {
     terminateContent +=
       "<strong>Right click</strong> to terminate immediately.";
     terminateButton.tooltipContent = terminateContent;
-    konvaTooltips.init(terminateButton, true, false);
+    initKonvaTooltips(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
 }
@@ -1146,7 +1146,7 @@ function drawSpectators() {
   globals.layers.UI.add(spectatorsLabel);
   spectatorsLabel.tooltipName = "spectators";
   spectatorsLabel.tooltipContent = ""; // This will be filled in later by the "spectators" command.
-  konvaTooltips.init(spectatorsLabel, false, true);
+  initKonvaTooltips(spectatorsLabel, false, true);
   globals.elements.spectatorsLabel = spectatorsLabel;
 
   globals.elements.spectatorsNumLabel = new Konva.Text({
@@ -1237,7 +1237,7 @@ function drawSharedReplay() {
   sharedReplayLeaderLabel.tooltipName = "leader";
   // This will get filled in later by the "replayLeader" command.
   sharedReplayLeaderLabel.tooltipContent = "";
-  konvaTooltips.init(sharedReplayLeaderLabel, false, true);
+  initKonvaTooltips(sharedReplayLeaderLabel, false, true);
 
   // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
   // double tap to prevent accidentally opening the dialog when hovering over the crown.
@@ -1434,7 +1434,7 @@ function drawStatistics() {
     '(For more information, click on the "Help" button in the lobby.)';
   globals.layers.UI.add(paceTextLabel);
   paceTextLabel.tooltipContent = paceContent;
-  konvaTooltips.init(paceTextLabel, true, false);
+  initKonvaTooltips(paceTextLabel, true, false);
 
   const paceNumberLabel = basicNumberLabel.clone({
     text: "-",
@@ -1478,7 +1478,7 @@ function drawStatistics() {
     ${padding}(For more information, click on the "Help" button in the lobby.)
   `;
   efficiencyTextLabel.tooltipContent = efficiencyTextLabelContent;
-  konvaTooltips.init(efficiencyTextLabel, true, false);
+  initKonvaTooltips(efficiencyTextLabel, true, false);
   efficiencyTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1702,7 +1702,7 @@ function drawTimers() {
   if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
     globals.elements.timer2.tooltipName = "time-taken";
     // (The content will be updated in the "setTickingDownTimeCPTooltip()" function.)
-    konvaTooltips.init(globals.elements.timer2, true, false);
+    initKonvaTooltips(globals.elements.timer2, true, false);
   }
 }
 
@@ -2196,7 +2196,7 @@ function drawHypotheticalArea() {
   globals.elements.hypoBackButton.tooltipName = "hypo-back";
   globals.elements.hypoBackButton.tooltipContent =
     "Go back a turn in this hypothetical.";
-  konvaTooltips.init(globals.elements.hypoBackButton, true, false);
+  initKonvaTooltips(globals.elements.hypoBackButton, true, false);
 
   globals.elements.hypoBackButton.on("click tap", hypothetical.sendBack);
   globals.elements.hypoButtonsArea.add(
@@ -2246,7 +2246,7 @@ function drawHypotheticalArea() {
   globals.elements.editCardsButton.tooltipName = "hypo-edit-cards";
   globals.elements.editCardsButton.tooltipContent =
     "Turn this on and then click on cards to change them into other cards.";
-  konvaTooltips.init(globals.elements.editCardsButton, true, false);
+  initKonvaTooltips(globals.elements.editCardsButton, true, false);
 
   globals.elements.editCardsButton.on("click tap", () => {
     globals.elements.editCardsButton?.setPressed(
@@ -2273,7 +2273,7 @@ function drawHypotheticalArea() {
   globals.elements.toggleDrawnCardsButton.tooltipName = "hypo-show-drawn";
   globals.elements.toggleDrawnCardsButton.tooltipContent =
     "Show the front faces of cards drawn during the hypothetical.";
-  konvaTooltips.init(globals.elements.toggleDrawnCardsButton, true, false);
+  initKonvaTooltips(globals.elements.toggleDrawnCardsButton, true, false);
 
   globals.elements.toggleDrawnCardsButton.on(
     "click tap",

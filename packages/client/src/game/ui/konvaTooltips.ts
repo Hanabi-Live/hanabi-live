@@ -6,7 +6,7 @@ import { globals } from "./UIGlobals";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 
-export function init(
+export function initKonvaTooltips(
   element: NodeWithTooltip,
   delayed: boolean,
   customContent: boolean,

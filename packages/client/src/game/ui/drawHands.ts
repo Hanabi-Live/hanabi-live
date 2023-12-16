@@ -8,7 +8,7 @@ import { NameFrame } from "./NameFrame";
 import { globals } from "./UIGlobals";
 import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
 import { TextWithTooltip } from "./controls/TextWithTooltip";
-import * as konvaTooltips from "./konvaTooltips";
+import { initKonvaTooltips } from "./konvaTooltips";
 
 interface HandConfig {
   x: number;
@@ -532,7 +532,7 @@ function drawDetrimentalCharacters(
     );
   }
   charIcon.tooltipContent = tooltipContent;
-  konvaTooltips.init(charIcon, false, true);
+  initKonvaTooltips(charIcon, false, true);
 }
 
 function isHandReversed(j: number) {
