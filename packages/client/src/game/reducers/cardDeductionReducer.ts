@@ -514,7 +514,7 @@ function getCardCountMap(variant: Variant): readonly number[][] {
   for (const [suitIndex, suit] of variant.suits.entries()) {
     possibleCardMap[suitIndex] = [];
     for (const rank of variant.ranks) {
-      possibleCardMap[suitIndex]![rank] = deckRules.numCopiesOfCard(
+      possibleCardMap[suitIndex]![rank] = deckRules.getNumCopiesOfCard(
         suit,
         rank,
         variant,

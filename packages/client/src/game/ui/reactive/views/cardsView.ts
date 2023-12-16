@@ -12,7 +12,7 @@ import type { Listener, Selector, Subscription } from "../observeStore";
 import { observeStore } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {
-  const numTotalCards = deckRules.totalCards(globals.variant);
+  const numTotalCards = deckRules.getTotalCardsInDeck(globals.variant);
   // Subscribe the new cards.
   for (const i of eRange(globals.cardSubscriptions.length, length)) {
     if (globals.deck.length <= i) {

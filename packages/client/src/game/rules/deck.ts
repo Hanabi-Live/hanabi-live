@@ -5,17 +5,17 @@ import { START_CARD_RANK, getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata } from "@hanabi/game";
 import { getCardsPerHand, isCardDiscarded } from "@hanabi/game";
 
-export function totalCards(variant: Variant): number {
-  let totalCardsInTheDeck = 0;
+export function getTotalCardsInDeck(variant: Variant): number {
+  let totalCardsInDeck = 0;
 
   for (const suit of variant.suits) {
-    totalCardsInTheDeck += totalCardsInSuit(variant, suit);
+    totalCardsInDeck += getTotalCardsInSuit(variant, suit);
   }
 
-  return totalCardsInTheDeck;
+  return totalCardsInDeck;
 }
 
-function totalCardsInSuit(variant: Variant, suit: Suit): number {
+function getTotalCardsInSuit(variant: Variant, suit: Suit): number {
   if (suit.oneOfEach) {
     if (variant.upOrDown) {
       // A critical suit in up or down has all unique cards plus an extra start card.
@@ -38,7 +38,7 @@ function totalCardsInSuit(variant: Variant, suit: Suit): number {
  *
  * This implementation mirrors `numCopiesOfCard` in "server/src/game_deck.go".
  */
-export function numCopiesOfCard(
+export function getNumCopiesOfCard(
   suit: Suit,
   rank: Rank,
   variant: Variant,
@@ -98,12 +98,12 @@ export function numCopiesOfCard(
 }
 
 /** Returns how many cards of a specific suit/rank that have been already discarded. */
-export function discardedCopies(
+export function getNumDiscardedCopiesOfCard(
   deck: readonly CardState[],
   suitIndex: SuitIndex,
   rank: Rank,
 ): number {
-  let numDiscardedCopies = 0;
+  let numDiscardedCopiesOfCard = 0;
 
   for (const cardState of deck) {
     if (
@@ -111,11 +111,11 @@ export function discardedCopies(
       cardState.rank === rank &&
       isCardDiscarded(cardState)
     ) {
-      numDiscardedCopies++;
+      numDiscardedCopiesOfCard++;
     }
   }
 
-  return numDiscardedCopies;
+  return numDiscardedCopiesOfCard;
 }
 
 export function isInitialDealFinished(
@@ -123,7 +123,7 @@ export function isInitialDealFinished(
   metadata: GameMetadata,
 ): boolean {
   const variant = getVariant(metadata.options.variantName);
-  const totalCardsInTheDeck = totalCards(variant);
+  const totalCardsInTheDeck = getTotalCardsInDeck(variant);
   const numCardsPerHand = getCardsPerHand(metadata.options);
   return (
     currentDeckSize ===
@@ -145,12 +145,12 @@ export function discardedHelpers(
       return 0;
     }
 
-    return numCopiesOfCard(suit, rank, variant);
+    return getNumCopiesOfCard(suit, rank, variant);
   };
 
   // eslint-disable-next-line func-style
   const discarded = (suitIndex: SuitIndex, rank: Rank) =>
-    discardedCopies(deck, suitIndex, rank);
+    getNumDiscardedCopiesOfCard(deck, suitIndex, rank);
 
   // eslint-disable-next-line func-style
   const isLastCopy = (suitIndex: SuitIndex, rank: Rank) =>

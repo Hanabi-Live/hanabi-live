@@ -1,11 +1,11 @@
 import { getDefaultVariant, getVariant } from "@hanabi/data";
-import { totalCards } from "./deck";
+import { getTotalCardsInDeck } from "./deck";
 
 const DEFAULT_VARIANT = getDefaultVariant();
 
-describe("totalCards", () => {
+describe("getTotalCardsInDeck", () => {
   test("returns 50 for No Variant", () => {
-    expect(totalCards(DEFAULT_VARIANT)).toBe(50);
+    expect(getTotalCardsInDeck(DEFAULT_VARIANT)).toBe(50);
   });
 
   test.each`
@@ -15,7 +15,7 @@ describe("totalCards", () => {
     ${6}  | ${60}
   `("returns $cards for $suits suits", ({ suits, cards }) => {
     const variant = getVariant(`${suits} Suits`);
-    expect(totalCards(variant)).toBe(cards);
+    expect(getTotalCardsInDeck(variant)).toBe(cards);
   });
 
   test.each`
@@ -24,7 +24,7 @@ describe("totalCards", () => {
     ${6}  | ${55}
   `("returns $cards for Black ($suits suits)", ({ suits, cards }) => {
     const blackVariant = getVariant(`Black (${suits} Suits)`);
-    expect(totalCards(blackVariant)).toBe(cards);
+    expect(getTotalCardsInDeck(blackVariant)).toBe(cards);
   });
 
   test.each`
@@ -33,6 +33,6 @@ describe("totalCards", () => {
     ${6}  | ${54}
   `("returns $cards for Up or Down ($suits suits)", ({ suits, cards }) => {
     const upOrDownVariant = getVariant(`Up or Down (${suits} Suits)`);
-    expect(totalCards(upOrDownVariant)).toBe(cards);
+    expect(getTotalCardsInDeck(upOrDownVariant)).toBe(cards);
   });
 });

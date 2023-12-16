@@ -24,7 +24,7 @@ export function initialCardState(
     }
   }
 
-  const total = deck.totalCards(variant);
+  const total = deck.getTotalCardsInDeck(variant);
 
   return {
     order,

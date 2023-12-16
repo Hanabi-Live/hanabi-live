@@ -394,7 +394,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
     if (/^deck$/i.test(response)) {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const numCardsInDeck = deckRules.totalCards(globals.variant);
+      const numCardsInDeck = deckRules.getTotalCardsInDeck(globals.variant);
       const cardOrder = (numCardsInDeck - 1) as CardOrder;
       performAction(actionType, cardOrder);
       return;

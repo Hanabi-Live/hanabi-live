@@ -44,7 +44,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
 
   // Game state properties
   const turn = initialTurnState(options.startingPlayer);
-  const cardsRemainingInTheDeck = deckRules.totalCards(variant);
+  const cardsRemainingInTheDeck = deckRules.getTotalCardsInDeck(variant);
   const cardStatus = getInitialCardStatusMap(
     variant,
     playStacks,

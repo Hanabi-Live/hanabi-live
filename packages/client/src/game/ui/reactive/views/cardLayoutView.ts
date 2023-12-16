@@ -235,7 +235,7 @@ export function onHoleChanged(
 }
 
 export function updatePlayStackVisuals(): void {
-  const totalCards = deck.totalCards(globals.variant);
+  const totalCards = deck.getTotalCardsInDeck(globals.variant);
   for (const suitIndex of globals.variant.suits.keys()) {
     const playStackOrder = (totalCards + suitIndex) as CardOrder;
     updateCardVisuals(playStackOrder);

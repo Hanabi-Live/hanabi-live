@@ -139,8 +139,12 @@ function isCardCritical(
     return false;
   }
 
-  const total = deckRules.numCopiesOfCard(suit, rank, variant);
-  const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
+  const total = deckRules.getNumCopiesOfCard(suit, rank, variant);
+  const discarded = deckRules.getNumDiscardedCopiesOfCard(
+    deck,
+    suitIndex,
+    rank,
+  );
   return total === discarded + 1;
 }
 

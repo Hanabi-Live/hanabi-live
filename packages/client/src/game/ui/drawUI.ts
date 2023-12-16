@@ -391,7 +391,7 @@ function drawPlayStacks() {
     globals.layers.card.add(playStack as unknown as Konva.Group);
 
     // Add the stack base to the play stack.
-    const order = (deck.totalCards(globals.variant) + i) as CardOrder;
+    const order = (deck.getTotalCardsInDeck(globals.variant) + i) as CardOrder;
     // Stack bases use card orders after the final card in the deck.
     const stackBase = new HanabiCard(
       order,

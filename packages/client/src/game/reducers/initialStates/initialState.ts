@@ -10,7 +10,7 @@ export function initialState(metadata: GameMetadata): State {
 
   const { options } = metadata;
   const variant = getVariant(options.variantName);
-  const totalCards = deckRules.totalCards(variant);
+  const totalCards = deckRules.getTotalCardsInDeck(variant);
 
   return {
     visibleState: null,

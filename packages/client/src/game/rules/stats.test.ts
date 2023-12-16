@@ -18,7 +18,7 @@ const CARDS_PER_HAND_4_PLAYER = 4;
 const CARDS_PER_HAND_2_PLAYER_ONE_EXTRA = CARDS_PER_HAND_2_PLAYER + 1;
 const CARDS_PER_HAND_2_PLAYER_ONE_LESS = CARDS_PER_HAND_2_PLAYER - 1;
 
-describe("startingPace", () => {
+describe("getStartingPace", () => {
   test("returns 17 for 2-player No Variant", () => {
     expect(
       getStartingPace(
@@ -98,7 +98,7 @@ describe("startingPace", () => {
   });
 });
 
-describe("minEfficiency", () => {
+describe("getMinEfficiency", () => {
   test("returns about 0.86 for 2-player No Variant", () => {
     expect(
       getMinEfficiency(2, 2, DEFAULT_VARIANT, CARDS_PER_HAND_2_PLAYER),
@@ -142,7 +142,7 @@ describe("minEfficiency", () => {
   });
 });
 
-describe("pace", () => {
+describe("getPace", () => {
   test("is null when deckSize is 0", () => {
     expect(getPace(25, 0, 25, 4, false)).toBeNull();
   });
@@ -152,7 +152,7 @@ describe("pace", () => {
   });
 });
 
-describe("paceRisk", () => {
+describe("getPaceRisk", () => {
   test("is Zero when pace is 0", () => {
     expect(getPaceRisk(0, 4)).toBe(PaceRisk.Zero);
   });
@@ -162,7 +162,7 @@ describe("paceRisk", () => {
   });
 });
 
-describe("cluesStillUsable", () => {
+describe("getCluesStillUsable", () => {
   test("discarding the first 5 gains a clue", () => {
     expect(
       getCluesStillUsable(

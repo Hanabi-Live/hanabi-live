@@ -42,7 +42,7 @@ export class Deck extends Konva.Group {
     this.cardBack.on("dragend", this.dragEnd);
 
     // The text that shows the number of cards remaining in the deck.
-    this.numLeft = deckRules.totalCards(globals.variant);
+    this.numLeft = deckRules.getTotalCardsInDeck(globals.variant);
     this.numLeftText = new Konva.Text({
       fill: "white",
       stroke: "#222222",
@@ -93,7 +93,7 @@ export class Deck extends Konva.Group {
       });
     } else if (draggedTo === "playArea") {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const numCardsInDeck = deckRules.totalCards(globals.variant);
+      const numCardsInDeck = deckRules.getTotalCardsInDeck(globals.variant);
       const cardOrder = (numCardsInDeck - 1) as CardOrder;
       turn.end({
         type: ActionType.Play,

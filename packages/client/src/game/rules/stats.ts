@@ -129,7 +129,7 @@ export function getStartingDeckSize(
   cardsPerHand: number,
   variant: Variant,
 ): number {
-  const totalCards = deckRules.totalCards(variant);
+  const totalCards = deckRules.getTotalCardsInDeck(variant);
   const initialCardsDrawn = cardsPerHand * numPlayers;
   return totalCards - initialCardsDrawn;
 }
@@ -523,12 +523,12 @@ export function getDoubleDiscardCard(
   if (suit === undefined) {
     return null;
   }
-  const numCopiesTotal = deckRules.numCopiesOfCard(
+  const numCopiesTotal = deckRules.getNumCopiesOfCard(
     suit,
     cardDiscarded.rank,
     variant,
   );
-  const numDiscarded = deckRules.discardedCopies(
+  const numDiscarded = deckRules.getNumDiscardedCopiesOfCard(
     gameState.deck,
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
