@@ -1,29 +1,37 @@
-// Functions related to clues: gaining clues, giving clues, applying clues
+// Functions related to clues: gaining clues, giving clues, applying clues.
 
 import type { Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { ActionDiscard, ActionPlay } from "@hanabi/game";
+import type { ActionDiscard, ActionPlay } from "../types/gameActions";
 
 /** Gain a clue by discarding or finishing a stack. */
-export function gain(
+export function getNewClueTokensAfterAction(
   action: ActionPlay | ActionDiscard,
   clueTokens: number,
   variant: Variant,
   playStackComplete = false,
 ): number {
-  if (shouldGenerateClue(action, clueTokens, variant, playStackComplete)) {
+  if (
+    shouldActionGenerateClueToken(
+      action,
+      clueTokens,
+      variant,
+      playStackComplete,
+    )
+  ) {
     return clueTokens + 1;
   }
+
   return clueTokens;
 }
 
-function shouldGenerateClue(
+function shouldActionGenerateClueToken(
   action: ActionPlay | ActionDiscard,
   clueTokens: number,
   variant: Variant,
   playStackComplete: boolean,
 ) {
-  if (atMax(clueTokens, variant)) {
+  if (isAtMaxClueTokens(clueTokens, variant)) {
     return false;
   }
 
@@ -48,20 +56,30 @@ function shouldGenerateClue(
  * In "Clue Starved" variants, each discard only grants 0.5 clue tokens. This is represented on the
  * client by discards granting 1 clue token and clues costing 2 tokens (to avoid having to use
  * floating point numbers).
+ *
+ * Thus, for a "Clue Starved" variant, if the unadjusted clue tokens were 2, the adjusted clue
+ * tokens would be 4.
  */
-export function getAdjusted(clueTokens: number, variant: Variant): number {
+export function getAdjustedClueTokens(
+  clueTokens: number,
+  variant: Variant,
+): number {
   return variant.clueStarved ? clueTokens * 2 : clueTokens;
 }
 
-export function getUnadjusted(
+/** See the documentation for the `getAdjustedClueTokens` function. */
+export function getUnadjustedClueTokens(
   clueTokensAdjusted: number,
   variant: Variant,
 ): number {
   return variant.clueStarved ? clueTokensAdjusted / 2 : clueTokensAdjusted;
 }
 
-export function atMax(clueTokens: number, variant: Variant): boolean {
-  return clueTokens >= getAdjusted(MAX_CLUE_NUM, variant);
+export function isAtMaxClueTokens(
+  clueTokens: number,
+  variant: Variant,
+): boolean {
+  return clueTokens >= getAdjustedClueTokens(MAX_CLUE_NUM, variant);
 }
 
 /**
@@ -70,15 +88,15 @@ export function atMax(clueTokens: number, variant: Variant): boolean {
  *
  * In "Clue Starved" variants, each discard gives only half a clue.
  */
-export function discardValue(variant: Variant): number {
+export function getDiscardClueTokenValue(variant: Variant): number {
   return variant.clueStarved ? 0.5 : 1;
 }
 
 /**
- * The value of clues gained when completing a suit. This function is *only* used in efficiency
- * calculations.
+ * The value of clues gained when completing a suit. This function is only used in efficiency
+ * calculations (because we do not want to use floating point numbers for the general case).
  */
-export function suitValue(variant: Variant): number {
+export function getSuitCompleteClueTokenValue(variant: Variant): number {
   if (variant.throwItInAHole) {
     return 0;
   }

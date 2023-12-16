@@ -1,7 +1,11 @@
 // Functions for handling all of the keyboard shortcuts.
 
 import type { CardOrder } from "@hanabi/data";
-import { getTotalCardsInDeck } from "@hanabi/game";
+import {
+  getAdjustedClueTokens,
+  getTotalCardsInDeck,
+  isAtMaxClueTokens,
+} from "@hanabi/game";
 import { parseIntSafe } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
@@ -12,7 +16,6 @@ import {
   getHTMLElement,
   getHTMLInputElement,
 } from "../../utils";
-import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { SoundType } from "../types/SoundType";
@@ -313,12 +316,11 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   let hotkeyFunction: Callback | undefined;
   if (
-    ongoingGameState.clueTokens >=
-    clueTokensRules.getAdjusted(1, globals.variant)
+    ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant)
   ) {
     hotkeyFunction = hotkeyClueMap.get(event.which);
   }
-  if (!clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)) {
+  if (!isAtMaxClueTokens(ongoingGameState.clueTokens, globals.variant)) {
     hotkeyFunction ||= hotkeyDiscardMap.get(event.which);
   }
   hotkeyFunction ||= hotkeyPlayMap.get(event.which);

@@ -1,8 +1,12 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { isHandLocked } from "@hanabi/game";
+import {
+  getAdjustedClueTokens,
+  getUnadjustedClueTokens,
+  isAtMaxClueTokens,
+  isHandLocked,
+} from "@hanabi/game";
 import { assertDefined, eRange } from "isaacscript-common-ts";
 import Konva from "konva";
-import * as clueTokensRules from "../../../rules/clueTokens";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";
@@ -64,14 +68,16 @@ export function onChanged(
   if (!globals.lobby.settings.realLifeMode) {
     // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the
     // user.
-    const cluesTokensText = clueTokensRules
-      .getUnadjusted(clueTokens, globals.variant)
-      .toString();
+    const unadjustedClueTokens = getUnadjustedClueTokens(
+      clueTokens,
+      globals.variant,
+    );
+    const cluesTokensText = unadjustedClueTokens.toString();
 
-    if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
+    if (clueTokens < getAdjustedClueTokens(1, globals.variant)) {
       specialText = `(cannot clue; ${cluesTokensText} clues left)`;
       text3.fill("red");
-    } else if (clueTokensRules.atMax(clueTokens, globals.variant)) {
+    } else if (isAtMaxClueTokens(clueTokens, globals.variant)) {
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (

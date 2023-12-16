@@ -1,9 +1,9 @@
 import type { PlayerIndex } from "@hanabi/data";
+import { isAtMaxClueTokens } from "@hanabi/game";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
 import * as cardRules from "../rules/card";
-import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import { SoundType } from "../types/SoundType";
 import type { CardLayout } from "./CardLayout";
@@ -131,7 +131,7 @@ export class LayoutChild extends Konva.Group {
     let draggedTo = cursor.getElementDragLocation(this);
     if (
       draggedTo === "discardArea" &&
-      clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)
+      isAtMaxClueTokens(ongoingGameState.clueTokens, globals.variant)
     ) {
       sounds.play(SoundType.Error);
       globals.elements.cluesNumberLabelPulse!.play();

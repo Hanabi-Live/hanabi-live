@@ -13,6 +13,7 @@ export * from "./interfaces/StateStrike";
 export * from "./interfaces/StatsState";
 export * from "./interfaces/TurnState";
 export * from "./rules/cardState";
+export * from "./rules/clueTokens";
 export * from "./rules/deck";
 export * from "./rules/hand";
 export * from "./rules/variants/reversible";

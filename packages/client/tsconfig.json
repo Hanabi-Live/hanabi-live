@@ -19,5 +19,6 @@
     "./src/**/*.ts",
     "../data/src/types/MsgClue.ts",
     "../game/src/interfaces/SpectatorNote.ts",
+    "../game/src/rules/clueTokens.test.ts",
   ],
 }

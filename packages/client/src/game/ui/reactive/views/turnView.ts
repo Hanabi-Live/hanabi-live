@@ -1,5 +1,5 @@
 import { ClueType } from "@hanabi/data";
-import * as clueTokensRules from "../../../rules/clueTokens";
+import { getAdjustedClueTokens } from "@hanabi/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { isOurTurn } from "../../isOurTurn";
@@ -39,8 +39,7 @@ export function shouldShowTurnUIChanged(shouldShow: boolean): void {
 export function shouldIndicateNoClues(state: State): boolean {
   return (
     shouldShowTurnUI(state) &&
-    state.visibleState!.clueTokens <
-      clueTokensRules.getAdjusted(1, globals.variant)
+    state.visibleState!.clueTokens < getAdjustedClueTokens(1, globals.variant)
   );
 }
 

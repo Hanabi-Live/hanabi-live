@@ -9,11 +9,15 @@ import type {
   GameState,
   StatsState,
 } from "@hanabi/game";
-import { isCardClued } from "@hanabi/game";
+import {
+  getDiscardClueTokenValue,
+  getSuitCompleteClueTokenValue,
+  getUnadjustedClueTokens,
+  isCardClued,
+} from "@hanabi/game";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { sumArray } from "isaacscript-common-ts";
-import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
 
@@ -44,7 +48,7 @@ function statsReducerFunction(
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
       if (!variant.throwItInAHole || (!playing && !shadowing)) {
-        statsState.potentialCluesLost += clueTokensRules.discardValue(variant);
+        statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
       }
 
       break;
@@ -62,8 +66,7 @@ function statsReducerFunction(
         ) {
           // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
           // what happens when the team gets a strike.
-          statsState.potentialCluesLost +=
-            clueTokensRules.discardValue(variant);
+          statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
         }
       }
 
@@ -142,6 +145,12 @@ function statsReducerFunction(
   const scorePerStack = gameState.playStacks.map(
     (playStack) => playStack.length,
   );
+  const discardClueTokenValue = getDiscardClueTokenValue(variant);
+  const suitCompleteClueTokenValue = getSuitCompleteClueTokenValue(variant);
+  const unadjustedClueTokens = getUnadjustedClueTokens(
+    gameState.clueTokens,
+    variant,
+  );
   statsState.cluesStillUsable = statsRules.getCluesStillUsable(
     score,
     scorePerStack,
@@ -149,9 +158,9 @@ function statsReducerFunction(
     variant.stackSize,
     gameState.cardsRemainingInTheDeck,
     numEndGameTurns,
-    clueTokensRules.discardValue(variant),
-    clueTokensRules.suitValue(variant),
-    clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
+    discardClueTokenValue,
+    suitCompleteClueTokenValue,
+    unadjustedClueTokens,
   );
   statsState.cluesStillUsableNotRounded =
     statsRules.getCluesStillUsableNotRounded(
@@ -161,9 +170,9 @@ function statsReducerFunction(
       variant.stackSize,
       gameState.cardsRemainingInTheDeck,
       numEndGameTurns,
-      clueTokensRules.discardValue(variant),
-      clueTokensRules.suitValue(variant),
-      clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
+      discardClueTokenValue,
+      suitCompleteClueTokenValue,
+      unadjustedClueTokens,
     );
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed

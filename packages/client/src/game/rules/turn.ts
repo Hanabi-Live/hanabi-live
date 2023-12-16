@@ -1,7 +1,7 @@
 import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import type { GameMetadata, Options } from "@hanabi/game";
-import * as clueTokensRules from "./clueTokens";
+import { getAdjustedClueTokens } from "@hanabi/game";
 
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
@@ -15,7 +15,7 @@ export function shouldEndTurnAfterDraw(
   // Panicky - After discarding, discards again if there are 4 clues or less.
   const panickyFirstDiscard =
     cardsDiscardedThisTurn === 1 &&
-    clueTokens <= clueTokensRules.getAdjusted(4, variant) &&
+    clueTokens <= getAdjustedClueTokens(4, variant) &&
     characterName === "Panicky";
 
   // Otherwise, the turn always increments when:

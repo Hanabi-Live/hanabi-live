@@ -1,8 +1,8 @@
 import type { CardOrder, MsgClue } from "@hanabi/data";
 import { ClueType } from "@hanabi/data";
+import { getAdjustedClueTokens } from "@hanabi/game";
 import { assertDefined, eRange } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";
 import { ActionType } from "../types/ActionType";
 import type {
@@ -232,8 +232,7 @@ function shouldGiveClue() {
     (currentPlayerIndex === ourPlayerIndex ||
       globals.state.replay.hypothetical !== null) &&
     // We can only give a clue if there is a clue token available.
-    ongoingGameState.clueTokens >=
-      clueTokensRules.getAdjusted(1, globals.variant) &&
+    ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant) &&
     // We might be trying to give an invalid clue (e.g. an Empty Clue)
     globals.elements.giveClueButton!.enabled &&
     Date.now() - globals.UIClickTime > 1000 // Prevent the user from accidentally giving a clue.

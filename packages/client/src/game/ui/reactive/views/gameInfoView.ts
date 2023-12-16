@@ -1,9 +1,9 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { MAX_STRIKES } from "@hanabi/data";
 import type { StateStrike } from "@hanabi/game";
+import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import { setBrowserAddressBarPath } from "../../../../utils";
-import * as clueTokensRules from "../../../rules/clueTokens";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
 import { animate } from "../../konvaHelpers";
@@ -153,13 +153,10 @@ export function onClueTokensChanged(clueTokens: number): void {
 
   if (!globals.lobby.settings.realLifeMode) {
     const noCluesAvailable =
-      clueTokens < clueTokensRules.getAdjusted(1, globals.variant);
+      clueTokens < getAdjustedClueTokens(1, globals.variant);
     const oneClueAvailable =
-      clueTokens === clueTokensRules.getAdjusted(1, globals.variant);
-    const maxCluesAvailable = clueTokensRules.atMax(
-      clueTokens,
-      globals.variant,
-    );
+      clueTokens === getAdjustedClueTokens(1, globals.variant);
+    const maxCluesAvailable = isAtMaxClueTokens(clueTokens, globals.variant);
 
     let fill: string;
     if (noCluesAvailable) {
@@ -195,7 +192,7 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
     return;
   }
 
-  const noDiscard = clueTokensRules.atMax(data.clueTokens, globals.variant);
+  const noDiscard = isAtMaxClueTokens(data.clueTokens, globals.variant);
 
   // Show the red border around the discard pile (to reinforce that the current player cannot
   // discard).

@@ -5,8 +5,10 @@ import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { CardNote, CardState, GameState } from "@hanabi/game";
 import {
   PaceRisk,
+  getDiscardClueTokenValue,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
+  getSuitCompleteClueTokenValue,
   getTotalCardsInDeck,
   isCardClued,
   isCardInPlayerHand,
@@ -17,7 +19,6 @@ import {
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "./card";
-import * as clueTokensRules from "./clueTokens";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
@@ -299,8 +300,8 @@ export function getCluesStillUsableNotRounded(
   stackSize: number,
   deckSize: number,
   endGameLength: number,
-  discardValue: number,
-  suitValue: number,
+  discardClueTokenValue: number,
+  suitCompleteClueTokenValue: number,
   currentClues: number,
 ): number | null {
   if (scorePerStack.length !== maxScorePerStack.length) {
@@ -310,8 +311,8 @@ export function getCluesStillUsableNotRounded(
   }
 
   // We want to discard as many times as possible while still getting a max score as long as
-  // discardValue >= suitValue (which is currently true for all variants).
-  if (discardValue < suitValue) {
+  // discardClueTokenValue >= suitCompleteClueTokenValue (which is currently true for all variants).
+  if (discardClueTokenValue < suitCompleteClueTokenValue) {
     throw new Error(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
@@ -330,10 +331,10 @@ export function getCluesStillUsableNotRounded(
     endGameLength,
   );
 
-  const cluesFromDiscards = maxDiscardsBeforeFinalRound * discardValue;
+  const cluesFromDiscards = maxDiscardsBeforeFinalRound * discardClueTokenValue;
 
   let cluesFromSuits = 0;
-  if (suitValue > 0) {
+  if (suitCompleteClueTokenValue > 0) {
     // Compute how many suits we can complete before the final round.
     const playsDuringFinalRound = getMaxPlaysDuringFinalRound(
       missingScore,
@@ -365,7 +366,8 @@ export function getCluesStillUsableNotRounded(
       suitsCompletedBeforeFinalRound++;
     }
 
-    cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
+    cluesFromSuits =
+      suitsCompletedBeforeFinalRound * suitCompleteClueTokenValue;
   }
 
   return cluesFromDiscards + cluesFromSuits + currentClues;
@@ -378,8 +380,8 @@ export function getCluesStillUsable(
   stackSize: number,
   deckSize: number,
   endGameLength: number,
-  discardValue: number,
-  suitValue: number,
+  discardClueTokenValue: number,
+  suitCompleteClueTokenValue: number,
   currentClues: number,
 ): number | null {
   const result = getCluesStillUsableNotRounded(
@@ -389,8 +391,8 @@ export function getCluesStillUsable(
     stackSize,
     deckSize,
     endGameLength,
-    discardValue,
-    suitValue,
+    discardClueTokenValue,
+    suitCompleteClueTokenValue,
     currentClues,
   );
 
@@ -416,8 +418,8 @@ export function getStartingCluesUsable(
   const score = 0;
   const scorePerStack = newArray(variant.suits.length, 0);
   const maxScorePerStack = newArray(variant.suits.length, variant.stackSize);
-  const discardValue = clueTokensRules.discardValue(variant);
-  const suitValue = clueTokensRules.suitValue(variant);
+  const discardClueTokenValue = getDiscardClueTokenValue(variant);
+  const suitCompleteClueTokenValue = getSuitCompleteClueTokenValue(variant);
 
   const startingClues = getCluesStillUsable(
     score,
@@ -426,8 +428,8 @@ export function getStartingCluesUsable(
     variant.stackSize,
     deckSize,
     endGameLength,
-    discardValue,
-    suitValue,
+    discardClueTokenValue,
+    suitCompleteClueTokenValue,
     MAX_CLUE_NUM,
   );
   assertNotNull(startingClues, "The starting clues usable was null.");

@@ -13,7 +13,9 @@ import type {
 } from "@hanabi/game";
 import {
   EndCondition,
+  getAdjustedClueTokens,
   getChopIndex,
+  getNewClueTokensAfterAction,
   isCardClued,
   isInitialDealFinished,
 } from "@hanabi/game";
@@ -26,7 +28,6 @@ import {
 } from "isaacscript-common-ts";
 import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
-import * as clueTokensRules from "../rules/clueTokens";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
@@ -66,7 +67,7 @@ function gameReducerFunction(
      * ```
      */
     case "clue": {
-      gameState.clueTokens -= clueTokensRules.getAdjusted(1, variant);
+      gameState.clueTokens -= getAdjustedClueTokens(1, variant);
 
       assertNotNull(
         gameState.turn.segment,
@@ -189,7 +190,7 @@ function gameReducerFunction(
         discardStack.push(action.order);
 
         // Discarding cards grants clue tokens under certain circumstances.
-        gameState.clueTokens = clueTokensRules.gain(
+        gameState.clueTokens = getNewClueTokensAfterAction(
           action,
           gameState.clueTokens,
           variant,
@@ -340,7 +341,7 @@ function gameReducerFunction(
         playStack.push(action.order);
 
         // Playing cards grants clue tokens under certain circumstances.
-        gameState.clueTokens = clueTokensRules.gain(
+        gameState.clueTokens = getNewClueTokensAfterAction(
           action,
           gameState.clueTokens,
           variant,

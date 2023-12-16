@@ -14,11 +14,17 @@ import type {
   GameState,
   StackDirection,
 } from "@hanabi/game";
-import { getCardsPerHand, getTotalCardsInDeck } from "@hanabi/game";
+import {
+  getAdjustedClueTokens,
+  getCardsPerHand,
+  getDiscardClueTokenValue,
+  getSuitCompleteClueTokenValue,
+  getTotalCardsInDeck,
+  getUnadjustedClueTokens,
+} from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../../rules/card";
-import * as clueTokensRules from "../../rules/clueTokens";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import * as turnRules from "../../rules/turn";
@@ -50,7 +56,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     playStackDirections,
     playStackStarts,
   );
-  const clueTokens = clueTokensRules.getAdjusted(MAX_CLUE_NUM, variant);
+  const clueTokens = getAdjustedClueTokens(MAX_CLUE_NUM, variant);
   const hands = newArray<number[]>(options.numPlayers, []) as Tuple<
     CardOrder[],
     NumPlayers
@@ -83,9 +89,10 @@ export function initialGameState(metadata: GameMetadata): GameState {
   );
   const paceRisk = statsRules.getPaceRisk(pace, options.numPlayers);
   const scorePerStack = playStacks.map((playStack) => playStack.length);
-  const discardClueValue = clueTokensRules.discardValue(variant);
-  const suitClueValue = clueTokensRules.suitValue(variant);
+  const discardClueValue = getDiscardClueTokenValue(variant);
+  const suitClueValue = getSuitCompleteClueTokenValue(variant);
   const score = sumArray(scorePerStack);
+  const currentClues = getUnadjustedClueTokens(clueTokens, variant);
   const cluesStillUsableNotRounded = statsRules.getCluesStillUsableNotRounded(
     score,
     scorePerStack,
@@ -95,7 +102,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     endGameLength,
     discardClueValue,
     suitClueValue,
-    clueTokensRules.getUnadjusted(clueTokens, variant),
+    currentClues,
   );
   const cluesStillUsable =
     cluesStillUsableNotRounded === null

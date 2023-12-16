@@ -1,5 +1,5 @@
+import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi/game";
 import * as notifications from "../../notifications";
-import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
 import { globals } from "./UIGlobals";
@@ -45,7 +45,7 @@ function handlePremove() {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
       // Prevent pre-cluing if there is not a clue available.
-      if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
+      if (clueTokens < getAdjustedClueTokens(1, globals.variant)) {
         return;
       }
 
@@ -54,7 +54,7 @@ function handlePremove() {
 
     case ActionType.Discard: {
       // Prevent discarding if the team is at the maximum amount of clues.
-      if (clueTokensRules.atMax(clueTokens, globals.variant)) {
+      if (isAtMaxClueTokens(clueTokens, globals.variant)) {
         return;
       }
 

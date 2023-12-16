@@ -2,9 +2,12 @@
 
 import type { Color } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import { isCardInPlayerHand } from "@hanabi/game";
+import {
+  getAdjustedClueTokens,
+  isAtMaxClueTokens,
+  isCardInPlayerHand,
+} from "@hanabi/game";
 import { assertDefined, todo } from "isaacscript-common-ts";
-import * as clueTokensRules from "../rules/clueTokens";
 import { ActionType } from "../types/ActionType";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
@@ -60,7 +63,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     card.state.suitIndex !== null &&
     // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
-      clueTokensRules.getAdjusted(1, globals.variant) &&
+      getAdjustedClueTokens(1, globals.variant) &&
     !event.ctrlKey &&
     !event.shiftKey &&
     !event.altKey &&
@@ -131,10 +134,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   ) {
     // Prevent discarding while at the maximum amount of clues.
     if (
-      clueTokensRules.atMax(
-        globals.state.ongoingGame.clueTokens,
-        globals.variant,
-      )
+      isAtMaxClueTokens(globals.state.ongoingGame.clueTokens, globals.variant)
     ) {
       return;
     }
@@ -156,7 +156,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     card.state.rank !== START_CARD_RANK &&
     // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
-      clueTokensRules.getAdjusted(1, globals.variant) &&
+      getAdjustedClueTokens(1, globals.variant) &&
     !event.ctrlKey &&
     !event.shiftKey &&
     !event.altKey &&
