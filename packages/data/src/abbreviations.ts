@@ -20,10 +20,8 @@ export const CHOP_MOVED_NOTES = [
   "ocm", // Order Chop Move
   "tocm", // Trash Order Chop Move
   "mcm", // Misplay Chop Move
-  "utfcm", // Unnecessary Trash Finesse Chop Move
-  "utbcm", // Unnecessary Trash Bluff Chop Move
-  "utdcm", // Unnecessary Trash Discharge Chop Move
-  "uddcm", // Unnecessary Dupe Discharge Chop Move
+  "uutdcm", // Unnecessary Unknown Trash Discharge Chop Move
+  "uuddcm", // Unnecessary Unknown Dupe Discharge Chop Move
   "dtccm", // Duplicitous Tempo Clue Chop Move
   "atcm", // Assisted Trash Chop Move
   "ttcm", // Time Travel Chop Move
