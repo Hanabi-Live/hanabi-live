@@ -6,12 +6,12 @@ import {
   getDiscardHelpers,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
+  sudokuCanStillBePlayed,
 } from "@hanabi/game";
 import { eRange, filterMap } from "isaacscript-common-ts";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
 import * as reversibleRules from "./variants/reversible";
-import * as sudokuRules from "./variants/sudoku";
 
 export function getCardName(
   suitIndex: SuitIndex,
@@ -66,7 +66,7 @@ export function isCardNeedsToBePlayed(
   // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked
   // cards, even though lower ones are dead due to the ability to start stacks anywhere.
   if (variant.sudoku) {
-    return sudokuRules.sudokuCanStillBePlayed(
+    return sudokuCanStillBePlayed(
       suitIndex,
       rank,
       deck,

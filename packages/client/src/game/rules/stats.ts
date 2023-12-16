@@ -11,13 +11,13 @@ import {
   isCardClued,
   isCardInPlayerHand,
   isHandLocked,
+  sudokuGetMaxScorePerStack,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as reversibleRules from "./variants/reversible";
-import * as sudokuRules from "./variants/sudoku";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
@@ -27,7 +27,7 @@ export function getMaxScorePerStack(
 ): Tuple<number, NumSuits> {
   // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
   if (variant.sudoku) {
-    return sudokuRules.getMaxScorePerStack(deck, playStackStarts, variant);
+    return sudokuGetMaxScorePerStack(deck, playStackStarts, variant);
   }
 
   // This handles the maximum scores in Reversed or "Up Or Down" variants.

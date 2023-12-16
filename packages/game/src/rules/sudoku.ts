@@ -1,9 +1,10 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
-import { getAllDiscardedSetForSuit } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
+import { getAllDiscardedSetForSuit } from "./deck";
 
 /** Check if the card can still be played in a Sudoku variant. */
 export function sudokuCanStillBePlayed(
@@ -70,8 +71,8 @@ export function sudokuWalkUpAll(
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (const writeRank of eRange(lastDead + 1, currentRank)) {
-        maxScoresForEachStartingValueOfSuit[writeRank - 1] =
-          currentRank - writeRank;
+        const maxScore = currentRank - writeRank;
+        maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
       }
 
       maxScoresForEachStartingValueOfSuit[currentRank - 1] = 0;
@@ -91,13 +92,15 @@ export function sudokuWalkUpAll(
     // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
     // to them.
     for (const writeRank of iRange(lastDead + 1, variant.stackSize)) {
-      maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
+      const maxScore = Math.min(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         maxScoresForEachStartingValueOfSuit[0]! +
           variant.stackSize +
           1 -
           writeRank,
         DEFAULT_CARD_RANKS.length,
       );
+      maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
     }
   }
 
@@ -285,7 +288,7 @@ function findNextAssignment(
  * the values) as well, since this allows for the most amount of clues to be gotten back before the
  * extra-round.
  */
-export function getMaxScorePerStack(
+export function sudokuGetMaxScorePerStack(
   deck: readonly CardState[],
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
