@@ -11,12 +11,11 @@ import {
   QUESTION_MARK_NOTES,
   UNCLUED_NOTES,
 } from "@hanabi/data";
-import type { GameMetadata } from "@hanabi/game";
+import type { CardNote, GameMetadata } from "@hanabi/game";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
 import type { NoteAction } from "../types/actions";
-import type { CardNote } from "../types/CardNote";
 import type { NotesState } from "../types/NotesState";
 import * as noteIdentity from "./noteIdentity";
 

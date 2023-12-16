@@ -1,9 +1,8 @@
 import type { Rank, SuitRankTuple, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardNote, CardState } from "@hanabi/game";
 import * as modals from "../../modals";
 import { canCardPossiblyBeFromEmpathy } from "../rules/card";
-import type { CardNote } from "../types/CardNote";
 import { globals } from "./UIGlobals";
 
 export function checkNoteImpossibility(

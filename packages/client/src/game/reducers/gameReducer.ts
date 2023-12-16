@@ -2,7 +2,12 @@
 
 import type { Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { CardState, GameMetadata, GameState } from "@hanabi/game";
+import type {
+  CardNote,
+  CardState,
+  GameMetadata,
+  GameState,
+} from "@hanabi/game";
 import { ClueType, EndCondition } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
@@ -19,7 +24,6 @@ import * as handRules from "../rules/hand";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
-import type { CardNote } from "../types/CardNote";
 import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";

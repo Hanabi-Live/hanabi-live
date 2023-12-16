@@ -4,6 +4,7 @@ export * from "./enums/ClueType";
 export * from "./enums/EndCondition";
 export * from "./enums/PaceRisk";
 export * from "./enums/StackDirection";
+export * from "./interfaces/CardNote";
 export * from "./interfaces/CardState";
 export * from "./interfaces/GameMetadata";
 export * from "./interfaces/GameState";

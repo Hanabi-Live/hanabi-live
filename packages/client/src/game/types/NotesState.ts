@@ -1,4 +1,4 @@
-import type { CardNote } from "./CardNote";
+import type { CardNote } from "@hanabi/game";
 import type { SpectatorNote } from "./SpectatorNote";
 
 export interface NotesState {

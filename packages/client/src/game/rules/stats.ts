@@ -2,11 +2,10 @@
 
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardNote, CardState, GameState } from "@hanabi/game";
 import { PaceRisk } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
-import type { CardNote } from "../types/CardNote";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
 import * as deckRules from "./deck";
