@@ -10,7 +10,7 @@ import { discardedHelpers } from "./variants/discardHelpers";
 import * as reversibleRules from "./variants/reversible";
 import * as sudokuRules from "./variants/sudoku";
 
-export function cardName(
+export function getCardName(
   suitIndex: SuitIndex,
   rank: Rank,
   variant: Variant,
@@ -102,7 +102,7 @@ export function isCardNeedsToBePlayed(
   return true;
 }
 
-export function cardStatus(
+export function getCardStatus(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],

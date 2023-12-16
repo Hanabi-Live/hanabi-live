@@ -153,7 +153,7 @@ function getInitialCardStatusMap(
 
     const suitStatuses: Partial<Record<Rank, CardStatus>> = {};
     for (const rank of variant.ranks) {
-      suitStatuses[rank] = cardRules.cardStatus(
+      suitStatuses[rank] = cardRules.getCardStatus(
         suitIndex,
         rank,
         [],

@@ -486,7 +486,7 @@ function gameReducerFunction(
     action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
-      gameState.cardStatus[action.suitIndex][rank] = cardRules.cardStatus(
+      gameState.cardStatus[action.suitIndex][rank] = cardRules.getCardStatus(
         action.suitIndex,
         rank,
         gameState.deck,
