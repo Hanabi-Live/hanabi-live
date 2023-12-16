@@ -526,7 +526,7 @@ function gameReducerFunction(
   gameState.deck = castDraft(
     ddaReducer(
       gameState.deck,
-      gameState.stats.doubleDiscard,
+      gameState.stats.doubleDiscardCard,
       gameState.turn.currentPlayerIndex,
     ),
   );

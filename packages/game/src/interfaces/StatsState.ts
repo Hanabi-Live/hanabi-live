@@ -25,7 +25,7 @@ export interface StatsState {
   // - Future efficiency is simply "cardsNotGotten / cluesStillUsable".
 
   /** Store the order of the double-discard candidate card, or null if not in DDA. */
-  readonly doubleDiscard: CardOrder | null;
+  readonly doubleDiscardCard: CardOrder | null;
 
   // For determining sound effects.
   readonly numSubsequentBlindPlays: number;

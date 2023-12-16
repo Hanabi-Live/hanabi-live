@@ -1256,7 +1256,7 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
     };
     const numCardsPerHand = cardsPerHand(options);
 
-    return statsRules.minEfficiency(
+    return statsRules.getMinEfficiency(
       numPlayers,
       numPlayers,
       variant,
@@ -1274,13 +1274,13 @@ function minVariantPace(variant: Variant): number {
       numPlayers,
     };
 
-    const startingDeckSize = statsRules.startingDeckSize(
+    const startingDeckSize = statsRules.getStartingDeckSize(
       options.numPlayers,
       cardsPerHand(options),
       variant,
     );
 
-    return statsRules.startingPace(
+    return statsRules.getStartingPace(
       startingDeckSize,
       variant.maxScore,
       numPlayers,

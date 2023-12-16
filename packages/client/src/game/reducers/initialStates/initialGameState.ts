@@ -64,7 +64,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.stackSize,
   ) as Tuple<number, NumSuits>;
   const cardsPerHand = handRules.cardsPerHand(options);
-  const startingDeckSize = statsRules.startingDeckSize(
+  const startingDeckSize = statsRules.getStartingDeckSize(
     options.numPlayers,
     cardsPerHand,
     variant,
@@ -73,17 +73,17 @@ export function initialGameState(metadata: GameMetadata): GameState {
     metadata.options,
     metadata.characterAssignments,
   );
-  const pace = statsRules.startingPace(
+  const pace = statsRules.getStartingPace(
     startingDeckSize,
     maxScore,
     endGameLength,
   );
-  const paceRisk = statsRules.paceRisk(pace, options.numPlayers);
+  const paceRisk = statsRules.getPaceRisk(pace, options.numPlayers);
   const scorePerStack = playStacks.map((playStack) => playStack.length);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
   const score = sumArray(scorePerStack);
-  const cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
+  const cluesStillUsableNotRounded = statsRules.getCluesStillUsableNotRounded(
     score,
     scorePerStack,
     maxScorePerStack,
@@ -130,7 +130,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
       cluesStillUsable,
       cluesStillUsableNotRounded,
 
-      doubleDiscard: null,
+      doubleDiscardCard: null,
 
       numSubsequentBlindPlays: 0,
       numSubsequentMisplays: 0,

@@ -99,7 +99,7 @@ function statsReducerFunction(
     variant.throwItInAHole && (playing || shadowing)
       ? statsState.numAttemptedCardsPlayed
       : gameState.score;
-  statsState.pace = statsRules.pace(
+  statsState.pace = statsRules.getPace(
     score,
     gameState.cardsRemainingInTheDeck,
     statsState.maxScore,
@@ -107,13 +107,13 @@ function statsReducerFunction(
     // `currentPlayerIndex` will be null if the game is over.
     gameState.turn.currentPlayerIndex === null,
   );
-  statsState.paceRisk = statsRules.paceRisk(
+  statsState.paceRisk = statsRules.getPaceRisk(
     statsState.pace,
     metadata.options.numPlayers,
   );
 
   // Handle efficiency calculation.
-  statsState.cardsGotten = statsRules.cardsGotten(
+  statsState.cardsGotten = statsRules.getCardsGotten(
     gameState.deck,
     gameState.playStacks,
     gameState.playStackDirections,
@@ -126,7 +126,7 @@ function statsReducerFunction(
   statsState.cardsGottenByNotes =
     ourNotes === null
       ? null
-      : statsRules.cardsGottenByNotes(
+      : statsRules.getCardsGottenByNotes(
           gameState.deck,
           gameState.playStacks,
           gameState.playStackDirections,
@@ -139,7 +139,7 @@ function statsReducerFunction(
   const scorePerStack = gameState.playStacks.map(
     (playStack) => playStack.length,
   );
-  statsState.cluesStillUsable = statsRules.cluesStillUsable(
+  statsState.cluesStillUsable = statsRules.getCluesStillUsable(
     score,
     scorePerStack,
     statsState.maxScorePerStack,
@@ -150,17 +150,18 @@ function statsReducerFunction(
     clueTokensRules.suitValue(variant),
     clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
   );
-  statsState.cluesStillUsableNotRounded = statsRules.cluesStillUsableNotRounded(
-    score,
-    scorePerStack,
-    statsState.maxScorePerStack,
-    variant.stackSize,
-    gameState.cardsRemainingInTheDeck,
-    numEndGameTurns,
-    clueTokensRules.discardValue(variant),
-    clueTokensRules.suitValue(variant),
-    clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
-  );
+  statsState.cluesStillUsableNotRounded =
+    statsRules.getCluesStillUsableNotRounded(
+      score,
+      scorePerStack,
+      statsState.maxScorePerStack,
+      variant.stackSize,
+      gameState.cardsRemainingInTheDeck,
+      numEndGameTurns,
+      clueTokensRules.discardValue(variant),
+      clueTokensRules.suitValue(variant),
+      clueTokensRules.getUnadjusted(gameState.clueTokens, variant),
+    );
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed
   // number of turns.
@@ -171,13 +172,13 @@ function statsReducerFunction(
 
   // Handle double discard calculation.
   if (action.type === "discard") {
-    statsState.doubleDiscard = statsRules.doubleDiscard(
+    statsState.doubleDiscardCard = statsRules.getDoubleDiscardCard(
       action.order,
       gameState,
       variant,
     );
   } else if (action.type === "play" || action.type === "clue") {
-    statsState.doubleDiscard = null;
+    statsState.doubleDiscardCard = null;
   }
 
   // Handle `numSubsequentBlindPlays`.

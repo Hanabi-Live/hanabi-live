@@ -33,7 +33,7 @@ export function getMaxScorePerStack(
   );
 }
 
-function discardsBeforeFinalRound(
+function getMaxDiscardsBeforeFinalRound(
   cardsToPlay: number,
   deckSize: number,
   endGameLength: number,
@@ -49,7 +49,7 @@ function discardsBeforeFinalRound(
   return 0;
 }
 
-function maxPlaysDuringFinalRound(
+function getMaxPlaysDuringFinalRound(
   cardsToPlay: number,
   endGameLength: number,
 ): number {
@@ -60,7 +60,7 @@ function maxPlaysDuringFinalRound(
   return endGameLength + 1;
 }
 
-function maxPlays(
+function getMaxPlays(
   cardsToPlay: number,
   deckSize: number,
   endGameLength: number,
@@ -73,7 +73,7 @@ function maxPlays(
 }
 
 /** @returns The number of discards that can happen while still getting the maximum score. */
-export function pace(
+export function getPace(
   score: number,
   deckSize: number,
   maxScore: number,
@@ -94,7 +94,7 @@ export function pace(
 }
 
 /** @returns A measure of how risky a discard would be right now, using different heuristics. */
-export function paceRisk(
+export function getPaceRisk(
   currentPace: number | null,
   numPlayers: NumPlayers,
 ): PaceRisk {
@@ -121,7 +121,7 @@ export function paceRisk(
   return PaceRisk.Low;
 }
 
-export function startingDeckSize(
+export function getStartingDeckSize(
   numPlayers: NumPlayers,
   cardsPerHand: number,
   variant: Variant,
@@ -143,7 +143,7 @@ export function startingDeckSize(
  *
  * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
  */
-export function startingPace(
+export function getStartingPace(
   deckSize: number,
   maxScore: number,
   endGameLength: number,
@@ -151,7 +151,7 @@ export function startingPace(
   return endGameLength + deckSize - maxScore;
 }
 
-export function cardsGotten(
+export function getCardsGotten(
   deck: readonly CardState[],
   playStacks: GameState["playStacks"],
   playStackDirections: GameState["playStackDirections"],
@@ -202,7 +202,7 @@ export function cardsGotten(
 }
 
 /** @returns The number of cards that are only gotten by notes and are not gotten by real clues. */
-export function cardsGottenByNotes(
+export function getCardsGottenByNotes(
   deck: readonly CardState[],
   playStacks: GameState["playStacks"],
   playStackDirections: GameState["playStackDirections"],
@@ -268,21 +268,21 @@ function getCardsGottenByNotesAdjustment(
 }
 
 /** @returns The minimum amount of efficiency needed in order to win this variant. */
-export function minEfficiency(
+export function getMinEfficiency(
   numPlayers: NumPlayers,
   endGameLength: number,
   variant: Variant,
   cardsPerHand: number,
 ): number {
   // First, calculate the starting pace:
-  const deckSize = startingDeckSize(numPlayers, cardsPerHand, variant);
+  const deckSize = getStartingDeckSize(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
 
   // `max score / maximum number of clues that can be given before the game ends`
   const { maxScore } = variant;
-  const totalClues = startingCluesUsable(endGameLength, deckSize, variant);
+  const totalClues = getStartingCluesUsable(endGameLength, deckSize, variant);
 
   return maxScore / totalClues;
 }
@@ -291,7 +291,7 @@ export function minEfficiency(
  * @returns The max number of clues that can be spent while getting the max possible score from a
  *          given game state onward (not accounting for the locations of playable cards).
  */
-export function cluesStillUsableNotRounded(
+export function getCluesStillUsableNotRounded(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
@@ -323,7 +323,7 @@ export function cluesStillUsableNotRounded(
   const maxScore = sumArray(maxScorePerStack);
   const missingScore = maxScore - score;
 
-  const maxDiscardsBeforeFinalRound = discardsBeforeFinalRound(
+  const maxDiscardsBeforeFinalRound = getMaxDiscardsBeforeFinalRound(
     missingScore,
     deckSize,
     endGameLength,
@@ -334,12 +334,13 @@ export function cluesStillUsableNotRounded(
   let cluesFromSuits = 0;
   if (suitValue > 0) {
     // Compute how many suits we can complete before the final round.
-    const playsDuringFinalRound = maxPlaysDuringFinalRound(
+    const playsDuringFinalRound = getMaxPlaysDuringFinalRound(
       missingScore,
       endGameLength,
     );
     const minPlaysBeforeFinalRound =
-      maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
+      getMaxPlays(missingScore, deckSize, endGameLength) -
+      playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
 
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
@@ -369,7 +370,7 @@ export function cluesStillUsableNotRounded(
   return cluesFromDiscards + cluesFromSuits + currentClues;
 }
 
-export function cluesStillUsable(
+export function getCluesStillUsable(
   score: number,
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
@@ -380,7 +381,7 @@ export function cluesStillUsable(
   suitValue: number,
   currentClues: number,
 ): number | null {
-  const result = cluesStillUsableNotRounded(
+  const result = getCluesStillUsableNotRounded(
     score,
     scorePerStack,
     maxScorePerStack,
@@ -406,7 +407,7 @@ export function cluesStillUsable(
  *
  * @see https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md
  */
-export function startingCluesUsable(
+export function getStartingCluesUsable(
   endGameLength: number,
   deckSize: number,
   variant: Variant,
@@ -417,7 +418,7 @@ export function startingCluesUsable(
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
 
-  const startingClues = cluesStillUsable(
+  const startingClues = getCluesStillUsable(
     score,
     scorePerStack,
     maxScorePerStack,
@@ -433,14 +434,14 @@ export function startingCluesUsable(
   return startingClues;
 }
 
-export function efficiency(
+export function getEfficiency(
   numCardsGotten: number,
   potentialCluesLost: number,
 ): number {
   return numCardsGotten / potentialCluesLost;
 }
 
-export function futureEfficiency(gameState: GameState): number | null {
+export function getFutureEfficiency(gameState: GameState): number | null {
   if (gameState.stats.cluesStillUsable === null) {
     return null;
   }
@@ -453,7 +454,7 @@ export function futureEfficiency(gameState: GameState): number | null {
  * After a discard, it is a "double discard" situation if there is only one other copy of this card
  * and it needs to be played.
  */
-export function doubleDiscard(
+export function getDoubleDiscardCard(
   orderOfDiscardedCard: CardOrder,
   gameState: GameState,
   variant: Variant,

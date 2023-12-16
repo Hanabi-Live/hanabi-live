@@ -504,7 +504,7 @@ function initStateStore(data: InitData) {
   }
 
   // Create the state store (using the Redux library).
-  const minEfficiency = statsRules.minEfficiency(
+  const minEfficiency = statsRules.getMinEfficiency(
     data.options.numPlayers,
     turnRules.endGameLength(data.options, characterAssignments),
     globals.variant,

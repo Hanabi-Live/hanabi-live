@@ -52,7 +52,7 @@ export function onEfficiencyChanged(data: {
 
   const cardsNotGotten = Math.max(data.maxScore - cardsGotten, 0);
 
-  const efficiency = statsRules.efficiency(
+  const efficiency = statsRules.getEfficiency(
     cardsGotten,
     data.potentialCluesLost,
   );
@@ -61,7 +61,7 @@ export function onEfficiencyChanged(data: {
   const futureEfficiency =
     cluesStillUsable === null
       ? Number.NaN
-      : statsRules.efficiency(cardsNotGotten, cluesStillUsable);
+      : statsRules.getEfficiency(cardsNotGotten, cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
   if (shouldShowFutureEfficiency) {

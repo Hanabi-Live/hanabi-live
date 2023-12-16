@@ -37,7 +37,7 @@ export function testMetadata(
     NumPlayers
   >;
   const variant = getVariant(variantName);
-  const minEfficiency = statsRules.minEfficiency(
+  const minEfficiency = statsRules.getMinEfficiency(
     numPlayers,
     turnRules.endGameLength(options, characterAssignments),
     variant,

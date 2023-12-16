@@ -112,11 +112,11 @@ export function getSoundType(
       if (
         nextPlayerHand !== undefined &&
         !handRules.isLocked(nextPlayerHand, gameState.deck) &&
-        previousGameState.stats.doubleDiscard !== null &&
+        previousGameState.stats.doubleDiscardCard !== null &&
         !metadata.hardVariant
       ) {
         const previouslyDiscardedCard =
-          previousGameState.deck[previousGameState.stats.doubleDiscard];
+          previousGameState.deck[previousGameState.stats.doubleDiscardCard];
         if (
           discardedCard !== undefined &&
           previouslyDiscardedCard !== undefined &&
@@ -131,7 +131,7 @@ export function getSoundType(
         }
       }
 
-      if (gameState.stats.doubleDiscard !== null && !metadata.hardVariant) {
+      if (gameState.stats.doubleDiscardCard !== null && !metadata.hardVariant) {
         // A player has discarded to *cause* a double discard situation.
         return SoundType.DoubleDiscardCause;
       }

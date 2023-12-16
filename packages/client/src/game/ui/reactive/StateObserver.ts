@@ -134,7 +134,7 @@ const visibleStateObservers: Subscriptions = [
   subVS(
     (s) => ({
       clueTokens: s.clueTokens,
-      doubleDiscard: s.stats.doubleDiscard,
+      doubleDiscard: s.stats.doubleDiscardCard,
     }),
     gameInfoView.onClueTokensOrDoubleDiscardChanged,
   ),

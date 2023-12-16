@@ -7,14 +7,14 @@ import { assertDefined } from "isaacscript-common-ts";
 import * as statsRules from "../rules/stats";
 
 export function getEfficiency(gameState: GameState): number {
-  return statsRules.efficiency(
+  return statsRules.getEfficiency(
     gameState.stats.cardsGotten,
     gameState.stats.potentialCluesLost,
   );
 }
 
 export function getFutureEfficiency(gameState: GameState): number | null {
-  return statsRules.futureEfficiency(gameState);
+  return statsRules.getFutureEfficiency(gameState);
 }
 
 export function getCharacterNameForPlayer(
