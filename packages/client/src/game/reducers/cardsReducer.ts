@@ -10,10 +10,10 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
+  eRange,
   newArray,
   tupleKeys,
 } from "isaacscript-common-ts";

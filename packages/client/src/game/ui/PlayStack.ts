@@ -1,4 +1,4 @@
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";

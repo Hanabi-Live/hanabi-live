@@ -2,8 +2,7 @@
 // located separately in "game/chat.ts".
 
 import { emojis, emotes, PROJECT_NAME } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
-import { trimPrefix } from "isaacscript-common-ts";
+import { eRange, trimPrefix } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { chatCommands } from "./chatCommands";

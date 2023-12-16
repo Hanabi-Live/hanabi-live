@@ -11,7 +11,7 @@ import {
   MAX_PLAYERS,
   MAX_SUITS_IN_A_VARIANT,
 } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import "tooltipster"; // eslint-disable-line import/no-unassigned-import
 import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
 import { getHTMLElement } from "./utils";

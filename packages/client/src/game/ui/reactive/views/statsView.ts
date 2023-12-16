@@ -1,6 +1,6 @@
 import type { NumPlayers } from "@hanabi/data";
 import { PaceRisk } from "@hanabi/game";
-import { assertNotNull } from "@hanabi/utils";
+import { assertNotNull } from "isaacscript-common-ts";
 import * as statsRules from "../../../rules/stats";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";

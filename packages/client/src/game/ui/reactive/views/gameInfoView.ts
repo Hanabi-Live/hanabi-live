@@ -1,7 +1,7 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { MAX_STRIKES } from "@hanabi/data";
 import type { StateStrike } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import { globals } from "../../UIGlobals";

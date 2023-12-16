@@ -7,8 +7,7 @@ import type {
   Suit,
   SuitIndex,
 } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
-import { assertDefined, repeat } from "isaacscript-common-ts";
+import { assertDefined, eRange, repeat } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";

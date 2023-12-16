@@ -1,5 +1,5 @@
 import type { TurnState } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import { draw, play } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
 import { initialGameState } from "./initialStates/initialGameState";

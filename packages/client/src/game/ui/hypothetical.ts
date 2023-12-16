@@ -8,7 +8,7 @@ import type {
   RankClueNumber,
 } from "@hanabi/data";
 import { ClueType } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction, ClientActionClue } from "../types/ClientAction";

@@ -1,7 +1,6 @@
 import type { CardOrder } from "@hanabi/data";
 import { ClueType } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined, eRange } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as cluesRules from "../rules/clues";

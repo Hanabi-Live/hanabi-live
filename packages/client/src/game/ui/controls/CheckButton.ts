@@ -1,4 +1,4 @@
-import { assertNotNull } from "@hanabi/utils";
+import { assertNotNull } from "isaacscript-common-ts";
 import Konva from "konva";
 import { globals } from "../UIGlobals";
 import { drawLayer } from "../konvaHelpers";

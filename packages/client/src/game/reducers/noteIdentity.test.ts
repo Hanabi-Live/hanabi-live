@@ -1,6 +1,6 @@
 import type { SuitRankTuple } from "@hanabi/data";
 import { getDefaultVariant, getVariant } from "@hanabi/data";
-import { iRange } from "@hanabi/utils";
+import { iRange } from "isaacscript-common-ts";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 const DEFAULT_VARIANT = getDefaultVariant();

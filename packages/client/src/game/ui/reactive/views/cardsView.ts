@@ -1,6 +1,6 @@
 import type { CardOrder } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import * as deckRules from "../../../rules/deck";
 import type { CardIdentity } from "../../../types/CardIdentity";
 import type { State } from "../../../types/State";

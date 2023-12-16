@@ -1,8 +1,7 @@
 // In-game chat
 
-import { assertNotNull } from "@hanabi/utils";
 import interact from "interactjs";
-import { parseFloatSafe } from "isaacscript-common-ts";
+import { assertNotNull, parseFloatSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import { FADE_TIME } from "../constants";
 import { getHTMLElement } from "../utils";

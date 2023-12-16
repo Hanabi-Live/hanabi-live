@@ -1,5 +1,4 @@
-import { assertNotNull } from "@hanabi/utils";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined, assertNotNull } from "isaacscript-common-ts";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {
   hypoAction,

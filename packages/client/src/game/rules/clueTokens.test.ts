@@ -1,5 +1,5 @@
 import { getDefaultVariant, getVariant, MAX_CLUE_NUM } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
+import { eRange } from "isaacscript-common-ts";
 import { discard, play } from "../../../test/testActions";
 import { gain } from "./clueTokens";
 

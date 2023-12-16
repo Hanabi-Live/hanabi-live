@@ -4,10 +4,13 @@ import type { Variant } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
 import { ClueType, EndCondition } from "@hanabi/game";
-import { assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import { assertDefined, tupleEntries } from "isaacscript-common-ts";
+import {
+  assertDefined,
+  assertNotNull,
+  tupleEntries,
+} from "isaacscript-common-ts";
 import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
 import * as clueTokensRules from "../rules/clueTokens";

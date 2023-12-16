@@ -1,5 +1,4 @@
-import { eRange } from "@hanabi/utils";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined, eRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";

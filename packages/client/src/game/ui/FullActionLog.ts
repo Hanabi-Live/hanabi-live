@@ -1,7 +1,6 @@
 import type { NumPlayers } from "@hanabi/data";
-import { assertNotNull, eRange } from "@hanabi/utils";
 import type { Tuple } from "isaacscript-common-ts";
-import { newArray } from "isaacscript-common-ts";
+import { assertNotNull, eRange, newArray } from "isaacscript-common-ts";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/types/Container";
 import { MultiFitText } from "./MultiFitText";

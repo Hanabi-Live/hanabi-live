@@ -1,9 +1,8 @@
 // The reducer for replays and hypotheticals.
 
-import { assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined, assertNotNull } from "isaacscript-common-ts";
 import type { GameMetadata } from "../types/GameMetadata";
 import type { ReplayState } from "../types/ReplayState";
 import type {

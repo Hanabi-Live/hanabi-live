@@ -1,10 +1,9 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
 import type { GameState } from "@hanabi/game";
-import { assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined, assertNotNull } from "isaacscript-common-ts";
 import * as segmentRules from "../rules/segment";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { GameMetadata } from "../types/GameMetadata";

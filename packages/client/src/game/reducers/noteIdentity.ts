@@ -1,7 +1,6 @@
 import type { Rank, SuitIndex, SuitRankTuple, Variant } from "@hanabi/data";
 import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/data";
-import { eRange } from "@hanabi/utils";
-import { newArray } from "isaacscript-common-ts";
+import { eRange, newArray } from "isaacscript-common-ts";
 import type { CardIdentity } from "../types/CardIdentity";
 
 /**

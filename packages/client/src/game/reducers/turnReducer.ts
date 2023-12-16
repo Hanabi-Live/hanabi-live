@@ -1,9 +1,9 @@
 import { getVariant } from "@hanabi/data";
 import type { GameState, TurnState } from "@hanabi/game";
 import { EndCondition } from "@hanabi/game";
-import { assertNotNull } from "@hanabi/utils";
 import type { Draft } from "immer";
 import { produce } from "immer";
+import { assertNotNull } from "isaacscript-common-ts";
 import * as deckRules from "../rules/deck";
 import * as turnRules from "../rules/turn";
 import type { GameMetadata } from "../types/GameMetadata";

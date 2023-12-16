@@ -2,8 +2,7 @@
 
 import type { CardState, GameState } from "@hanabi/game";
 import { StackDirection } from "@hanabi/game";
-import { eRange } from "@hanabi/utils";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined, eRange } from "isaacscript-common-ts";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";

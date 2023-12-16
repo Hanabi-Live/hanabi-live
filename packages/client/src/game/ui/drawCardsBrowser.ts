@@ -1,4 +1,4 @@
-import { assertNotNull } from "@hanabi/utils";
+import { assertNotNull } from "isaacscript-common-ts";
 import { CARD_H, CARD_W } from "./constants";
 
 export function initCanvas(): {

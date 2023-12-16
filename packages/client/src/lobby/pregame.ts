@@ -3,7 +3,7 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
-import { assertNotNull, eRange, iRange } from "@hanabi/utils";
+import { assertNotNull, eRange, iRange } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as chat from "../chat";
 import * as tooltips from "../tooltips";
