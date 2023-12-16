@@ -1,9 +1,8 @@
 // Calculates the state of a card after a clue.
 
 import type { SuitRankTuple, Variant } from "@hanabi/data";
-import { MAX_PLAYERS, getVariant } from "@hanabi/data";
+import { ClueType, MAX_PLAYERS, getVariant } from "@hanabi/data";
 import type { CardState, GameMetadata } from "@hanabi/game";
-import { ClueType } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
 import type { Clue } from "../types/Clue";

@@ -1,22 +1,19 @@
-import { getVariant } from "@hanabi/data";
-import type { CardState, GameMetadata, GameState } from "@hanabi/game";
-import {
-  ClueType,
-  EndCondition,
-  isCardClued,
-  isHandLocked,
-} from "@hanabi/game";
-import { includes } from "isaacscript-common-ts";
-import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
-import * as cardRules from "../../rules/card";
-import { SoundType } from "../../types/SoundType";
+import { ClueType, getVariant } from "@hanabi/data";
 import type {
   ActionClue,
   ActionDiscard,
   ActionGameOver,
   ActionPlay,
+  CardState,
   GameAction,
-} from "../../types/actions";
+  GameMetadata,
+  GameState,
+} from "@hanabi/game";
+import { EndCondition, isCardClued, isHandLocked } from "@hanabi/game";
+import { includes } from "isaacscript-common-ts";
+import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
+import * as cardRules from "../../rules/card";
+import { SoundType } from "../../types/SoundType";
 
 export const SOUND_TYPE_ACTIONS = [
   "clue",

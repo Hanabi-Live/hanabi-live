@@ -1,12 +1,15 @@
-import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
-import type { GameMetadata } from "@hanabi/game";
-import { ClueType, EndCondition, getCardSlot } from "@hanabi/game";
+import type { MsgClue, NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
+import { ClueType, getVariant } from "@hanabi/data";
+import type {
+  ActionClue,
+  ActionDiscard,
+  ActionPlay,
+  GameMetadata,
+} from "@hanabi/game";
+import { EndCondition, getCardSlot } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import type { MsgClue } from "../types/MsgClue";
-import type { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
 import * as cardRules from "./card";
 import * as cluesRules from "./clues";
 

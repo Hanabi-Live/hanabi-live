@@ -1,5 +1,7 @@
-import type { ColorIndex, RankClueNumber } from "@hanabi/data";
-import type { ClueType } from "@hanabi/game";
+import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
+import type { ClueType } from "../enums/ClueType";
+import type { ColorIndex } from "./ColorIndex";
+import type { RankClueNumber } from "./RankClueNumber";
 
 interface MsgColorClue {
   readonly type: ClueType.Color;
@@ -13,3 +15,5 @@ interface MsgRankClue {
 
 /** This represents how a clue looks on the server. On the client, the color is a rich object. */
 export type MsgClue = MsgColorClue | MsgRankClue;
+
+type _Test = CompositionTypeSatisfiesEnum<MsgClue, ClueType>;

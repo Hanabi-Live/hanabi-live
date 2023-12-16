@@ -4,7 +4,7 @@
 
 import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
-import type { GameMetadata } from "@hanabi/game";
+import type { GameAction, GameMetadata, SpectatorNote } from "@hanabi/game";
 import { getCardsPerHand } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { iRange, newArray } from "isaacscript-common-ts";
@@ -21,9 +21,8 @@ import type { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { SoundType } from "../types/SoundType";
 import type { Spectator } from "../types/Spectator";
-import type { SpectatorNote } from "../types/SpectatorNote";
 import type { State } from "../types/State";
-import type { ActionIncludingHypothetical, GameAction } from "../types/actions";
+import type { ActionIncludingHypothetical } from "../types/actions";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { setSkullEnabled, setSkullNormal } from "./drawUI";

@@ -9,7 +9,12 @@ import type {
   SuitRankTuple,
 } from "@hanabi/data";
 import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import type { CardState, GameMetadata, GameState } from "@hanabi/game";
+import type {
+  CardState,
+  GameAction,
+  GameMetadata,
+  GameState,
+} from "@hanabi/game";
 import { isCardOnChop, isInitialDealFinished } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
@@ -20,7 +25,6 @@ import {
 } from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
 import * as characterRules from "../rules/variants/characters";
-import type { GameAction } from "../types/actions";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { initialCardState } from "./initialStates/initialCardState";

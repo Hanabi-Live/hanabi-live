@@ -8,10 +8,17 @@ import type {
   SuitIndex,
 } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
-import type { GameState } from "@hanabi/game";
+import type {
+  ActionClue,
+  ActionDiscard,
+  ActionDraw,
+  ActionPlay,
+  GameAction,
+  GameState,
+} from "@hanabi/game";
 import { getCardsPerHand } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
-import { ClueType } from "../../game/src/enums/ClueType";
+import { ClueType } from "../../data/src/enums/ClueType";
 import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
@@ -20,13 +27,6 @@ import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
 import type { State } from "../src/game/types/State";
-import type {
-  ActionClue,
-  ActionDiscard,
-  ActionDraw,
-  ActionPlay,
-  GameAction,
-} from "../src/game/types/actions";
 import type testGame from "../test_data/up_or_down.json";
 import { testMetadata } from "./testMetadata";
 

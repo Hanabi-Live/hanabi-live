@@ -1,4 +1,4 @@
-import { ClueType } from "@hanabi/game";
+import { ClueType } from "@hanabi/data";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";

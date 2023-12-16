@@ -2,8 +2,8 @@
 // replays).
 
 import type { CardOrder, PlayerIndex, Suit } from "@hanabi/data";
+import { ClueType } from "@hanabi/data";
 import {
-  ClueType,
   isCardDiscarded,
   isCardInPlayerHand,
   isCardPlayed,

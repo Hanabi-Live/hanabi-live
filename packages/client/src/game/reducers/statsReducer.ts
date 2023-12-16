@@ -4,6 +4,7 @@
 import { getVariant } from "@hanabi/data";
 import type {
   CardNote,
+  GameAction,
   GameMetadata,
   GameState,
   StatsState,
@@ -15,7 +16,6 @@ import { sumArray } from "isaacscript-common-ts";
 import * as clueTokensRules from "../rules/clueTokens";
 import * as statsRules from "../rules/stats";
 import * as turnRules from "../rules/turn";
-import type { GameAction } from "../types/actions";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 

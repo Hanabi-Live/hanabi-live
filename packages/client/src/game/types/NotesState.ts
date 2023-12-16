@@ -1,5 +1,4 @@
-import type { CardNote } from "@hanabi/game";
-import type { SpectatorNote } from "./SpectatorNote";
+import type { CardNote, SpectatorNote } from "@hanabi/game";
 
 export interface NotesState {
   /** A sparse array indexed by card order. */

@@ -1,14 +1,19 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import type { PlayerIndex, Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
+import type {
+  MsgClue,
+  PlayerIndex,
+  Rank,
+  Suit,
+  SuitIndex,
+  Variant,
+} from "@hanabi/data";
+import { ClueType, START_CARD_RANK } from "@hanabi/data";
 import type { GameMetadata } from "@hanabi/game";
-import { ClueType } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue, ColorClue, RankClue } from "../types/Clue";
 import { newColorClue, newRankClue } from "../types/Clue";
-import type { MsgClue } from "../types/MsgClue";
 
 export function getClueName(
   clueType: ClueType,

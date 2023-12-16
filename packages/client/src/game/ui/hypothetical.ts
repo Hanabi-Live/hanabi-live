@@ -4,15 +4,15 @@
 import type {
   CardOrder,
   ColorIndex,
+  MsgClue,
   PlayerIndex,
   RankClueNumber,
 } from "@hanabi/data";
-import { ClueType } from "@hanabi/game";
+import { ClueType } from "@hanabi/data";
 import { eRange } from "isaacscript-common-ts";
 import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction, ClientActionClue } from "../types/ClientAction";
-import type { MsgClue } from "../types/MsgClue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import type { HanabiCard } from "./HanabiCard";

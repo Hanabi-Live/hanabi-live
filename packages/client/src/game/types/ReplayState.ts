@@ -1,7 +1,6 @@
-import type { GameState } from "@hanabi/game";
+import type { GameAction, GameState } from "@hanabi/game";
 import type { HypotheticalState } from "./HypotheticalState";
 import type { SharedReplayState } from "./SharedReplayState";
-import type { GameAction } from "./actions";
 
 export interface ReplayState {
   readonly active: boolean;

@@ -10,21 +10,23 @@ import type {
   RankClueNumber,
   SuitIndex,
 } from "@hanabi/data";
-import { ClueType } from "../../game/src/enums/ClueType";
 import type {
   ActionCardIdentity,
   ActionClue,
   ActionDiscard,
   ActionDraw,
+  ActionPlay,
+  ActionStrike,
+} from "@hanabi/game";
+import { ClueType } from "../../data/src/enums/ClueType";
+import type {
   ActionHypotheticalAction,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
   ActionHypotheticalStart,
   ActionIncludingHypothetical,
   ActionInit,
-  ActionPlay,
   ActionReplayEnter,
-  ActionStrike,
 } from "../src/game/types/actions";
 
 export function colorClue(

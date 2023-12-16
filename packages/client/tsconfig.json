@@ -15,5 +15,9 @@
     "moduleResolution": "Node",
   },
 
-  "include": ["./src/**/*.ts"],
+  "include": [
+    "./src/**/*.ts",
+    "../data/src/types/MsgClue.ts",
+    "../game/src/interfaces/SpectatorNote.ts",
+  ],
 }

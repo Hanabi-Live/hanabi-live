@@ -7,6 +7,7 @@ export { emojis, emotes };
 
 export * from "./abbreviations";
 export * from "./constants";
+export * from "./enums/ClueType";
 export * from "./enums/VariantModifier";
 export * from "./gameData";
 export * from "./interfaces/Character";
@@ -19,6 +20,7 @@ export * from "./interfaces/VariantDescription";
 export * from "./interfaces/VariantJSON";
 export * from "./types/CardOrder";
 export * from "./types/ColorIndex";
+export * from "./types/MsgClue";
 export * from "./types/NumPlayers";
 export * from "./types/NumSuits";
 export * from "./types/PlayerIndex";

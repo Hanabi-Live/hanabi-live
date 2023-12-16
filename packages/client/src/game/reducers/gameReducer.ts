@@ -1,15 +1,17 @@
 // Functions for building a state table for every turn.
 
 import type { Variant } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import { ClueType, getVariant } from "@hanabi/data";
 import type {
+  ActionDiscard,
+  ActionPlay,
   CardNote,
   CardState,
+  GameAction,
   GameMetadata,
   GameState,
 } from "@hanabi/game";
 import {
-  ClueType,
   EndCondition,
   getChopIndex,
   isCardClued,
@@ -28,7 +30,6 @@ import * as clueTokensRules from "../rules/clueTokens";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import * as variantRules from "../rules/variant";
-import type { ActionDiscard, ActionPlay, GameAction } from "../types/actions";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";

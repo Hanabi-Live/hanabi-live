@@ -1,5 +1,5 @@
+import type { GameAction } from "@hanabi/game";
 import { EndCondition } from "@hanabi/game";
-import type { GameAction } from "../types/actions";
 
 // When the game state reducer sets "segment" to a new number, it is a signal to record the current
 // state of the game (for the purposes of replays).

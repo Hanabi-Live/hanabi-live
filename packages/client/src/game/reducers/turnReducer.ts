@@ -1,11 +1,15 @@
 import { getVariant } from "@hanabi/data";
-import type { GameMetadata, GameState, TurnState } from "@hanabi/game";
+import type {
+  GameAction,
+  GameMetadata,
+  GameState,
+  TurnState,
+} from "@hanabi/game";
 import { EndCondition, isInitialDealFinished } from "@hanabi/game";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { assertNotNull } from "isaacscript-common-ts";
 import * as turnRules from "../rules/turn";
-import type { GameAction } from "../types/actions";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export const turnReducer = produce(turnReducerFunction, {} as TurnState);

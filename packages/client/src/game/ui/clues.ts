@@ -1,5 +1,5 @@
-import type { CardOrder } from "@hanabi/data";
-import { ClueType } from "@hanabi/game";
+import type { CardOrder, MsgClue } from "@hanabi/data";
+import { ClueType } from "@hanabi/data";
 import { assertDefined, eRange } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as clueTokensRules from "../rules/clueTokens";
@@ -10,7 +10,6 @@ import type {
   ClientActionRankClue,
 } from "../types/ClientAction";
 import type { Clue } from "../types/Clue";
-import type { MsgClue } from "../types/MsgClue";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
 import type { RankButton } from "./RankButton";

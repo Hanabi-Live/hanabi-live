@@ -1,6 +1,6 @@
 import type { CardOrder, PlayerIndex } from "@hanabi/data";
 import { getDefaultVariant } from "@hanabi/data";
-import type { GameMetadata, Options } from "@hanabi/game";
+import type { GameAction, GameMetadata, Options } from "@hanabi/game";
 import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import type * as Redux from "redux";
@@ -8,7 +8,7 @@ import { Globals as LobbyGlobals } from "../../Globals";
 import type { Loader } from "../../Loader";
 import type { GameExports } from "../main";
 import type { State } from "../types/State";
-import type { Action, GameAction } from "../types/actions";
+import type { Action } from "../types/actions";
 import { Elements } from "./Elements";
 import type { HanabiCard } from "./HanabiCard";
 import { Layers } from "./Layers";

@@ -2,7 +2,7 @@
 
 import type { Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { ActionDiscard, ActionPlay } from "../types/actions";
+import type { ActionDiscard, ActionPlay } from "@hanabi/game";
 
 /** Gain a clue by discarding or finishing a stack. */
 export function gain(
