@@ -1,5 +1,5 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";

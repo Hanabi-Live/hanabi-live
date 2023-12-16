@@ -1,4 +1,4 @@
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { charactersInit } from "./charactersInit";
 import { colorsInit } from "./colorsInit";
 import { DEFAULT_VARIANT_NAME } from "./constants";

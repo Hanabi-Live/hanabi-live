@@ -1,6 +1,7 @@
 import type { Rank } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import { assertDefined, eRange, iRange } from "@hanabi/utils";
+import { eRange, iRange } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import {
   colorClue,
   discard,

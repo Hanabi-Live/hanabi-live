@@ -1,6 +1,6 @@
 // The lobby area that shows all of the current logged-in users.
 
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";

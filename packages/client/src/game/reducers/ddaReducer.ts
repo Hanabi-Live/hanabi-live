@@ -1,6 +1,6 @@
 import type { PlayerIndex } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import * as cardRules from "../rules/card";
 
 export function ddaReducer(

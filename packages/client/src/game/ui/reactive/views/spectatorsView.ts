@@ -1,4 +1,4 @@
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import * as tooltips from "../../../../tooltips";
 import type { Spectator } from "../../../types/Spectator";
 import { globals } from "../../UIGlobals";

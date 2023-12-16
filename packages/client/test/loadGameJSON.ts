@@ -9,7 +9,8 @@ import type {
 } from "@hanabi/data";
 import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
-import { assertDefined, assertNotNull, eRange } from "@hanabi/utils";
+import { assertNotNull, eRange } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { ClueType } from "../../game/src/enums/ClueType";
 import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";

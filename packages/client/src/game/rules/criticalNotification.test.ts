@@ -2,7 +2,7 @@
 
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
-import { assertDefined } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
 import type { State } from "../types/State";

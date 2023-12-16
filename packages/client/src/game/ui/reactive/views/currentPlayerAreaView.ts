@@ -1,5 +1,6 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { assertDefined, eRange } from "@hanabi/utils";
+import { eRange } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as clueTokensRules from "../../../rules/clueTokens";
 import * as handRules from "../../../rules/hand";

@@ -2,7 +2,8 @@ import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
 import type { Tuple } from "@hanabi/utils";
-import { assertDefined, eRange, iRange, newArray } from "@hanabi/utils";
+import { eRange, iRange, newArray } from "@hanabi/utils";
+import { assertDefined } from "isaacscript-common-ts";
 import { getAllDiscardedSet } from "./discardHelpers";
 
 /** Check if the card can still be played in a Sudoku variant. */
