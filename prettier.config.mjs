@@ -3,8 +3,13 @@
 
 /** @type {import("prettier").Config} */
 const config = {
-  // @template-ignore-next-line
-  plugins: ["prettier-plugin-organize-imports", "prettier-plugin-go-template"],
+  plugins: [
+    "prettier-plugin-organize-imports", // Prettier does not format imports by default.
+    "prettier-plugin-packagejson", // Prettier does not format "package.json" by default.
+    // @template-customization-start
+    "prettier-plugin-go-template", // Prettier does not format Golang files by default.
+    // @template-customization-end
+  ],
 
   overrides: [
     // Allow proper formatting of JSONC files:

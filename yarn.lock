@@ -22,13 +22,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@arktype/fs@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "@arktype/fs@npm:0.0.4"
-  checksum: 02e794d2e72b82505201945ec22612d92c933910f923f171ea74e6128fa98ac7724e12d3b9b93f5347f888f98aaa7805d908b5ee853d115a0c5d6b611b2dd24f
-  languageName: node
-  linkType: hard
-
 "@arktype/fs@npm:^0.0.8":
   version: 0.0.8
   resolution: "@arktype/fs@npm:0.0.8"
@@ -5756,9 +5749,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:^4.25.0":
-  version: 4.25.0
-  resolution: "fastify@npm:4.25.0"
+"fastify@npm:^4.25.1":
+  version: 4.25.1
+  resolution: "fastify@npm:4.25.1"
   dependencies:
     "@fastify/ajv-compiler": "npm:^3.5.0"
     "@fastify/error": "npm:^3.4.0"
@@ -5776,7 +5769,7 @@ __metadata:
     secure-json-parse: "npm:^2.7.0"
     semver: "npm:^7.5.4"
     toad-cache: "npm:^3.3.0"
-  checksum: 7a6d2ce565d0c959c55ab13c84343963139bf5805842ffd38e65909b680faa20002c66d0ee1526de6ee050ecd739b0f5a0120d9a695e4a077f18f2ff72014a37
+  checksum: a5afe8abf33ce8cee35c1993a21a3fb56f097ed30c12d8d2cb8bdd54b31c9f41e1e241a77343fea6159f5f528f65745456f901a685dc11b07b3fecb0393dd973
   languageName: node
   linkType: hard
 
@@ -6646,7 +6639,7 @@ __metadata:
     esbuild-plugin-pino: "npm:^2.1.0"
     eta: "npm:^3.2.0"
     fast-deep-equal: "npm:^3.1.3"
-    fastify: "npm:^4.25.0"
+    fastify: "npm:^4.25.1"
     fastify-favicon: "npm:^4.3.0"
     grunt: "npm:^1.6.1"
     grunt-contrib-concat: "npm:^2.1.0"
@@ -6655,9 +6648,9 @@ __metadata:
     http-status-codes: "npm:^2.3.0"
     immer: "npm:^10.0.3"
     interactjs: "npm:^1.10.26"
-    isaacscript: "npm:^3.33.0"
-    isaacscript-common-node: "npm:^2.0.0"
-    isaacscript-common-ts: "npm:^13.1.2"
+    isaacscript: "npm:^3.36.0"
+    isaacscript-common-node: "npm:^3.0.0"
+    isaacscript-common-ts: "npm:^13.1.8"
     isaacscript-lint: "npm:^6.12.1"
     isaacscript-tsconfig: "npm:^5.0.0"
     jest: "npm:^29.7.0"
@@ -7465,24 +7458,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-node@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "isaacscript-common-node@npm:1.4.0"
-  dependencies:
-    "@arktype/fs": "npm:^0.0.4"
-    chalk: "npm:^5.3.0"
-    command-exists: "npm:^1.2.9"
-    diff: "npm:^5.1.0"
-    dotenv: "npm:^16.3.1"
-    execa: "npm:^8.0.1"
-    isaacscript-common-ts: "npm:^11.6.0"
-    jsonc-parser: "npm:^3.2.0"
-    npm-check-updates: "npm:^16.14.11"
-    zod: "npm:^3.22.4"
-  checksum: 23dae47d9fd97c9eb63ab946306b23151cc47610b2817b9b86d1d896da2ede97b22de4865bbd89884b5aa0cd57ee7abf5f2927c360fe0f4aeec58d6f53cfe82c
-  languageName: node
-  linkType: hard
-
 "isaacscript-common-node@npm:^1.6.1":
   version: 1.6.1
   resolution: "isaacscript-common-node@npm:1.6.1"
@@ -7501,9 +7476,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-node@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "isaacscript-common-node@npm:2.0.0"
+"isaacscript-common-node@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "isaacscript-common-node@npm:3.0.0"
   dependencies:
     "@arktype/fs": "npm:^0.0.8"
     chalk: "npm:^5.3.0"
@@ -7511,25 +7486,11 @@ __metadata:
     diff: "npm:^5.1.0"
     dotenv: "npm:^16.3.1"
     execa: "npm:^8.0.1"
-    isaacscript-common-ts: "npm:^13.1.2"
+    isaacscript-common-ts: "npm:^13.1.8"
     jsonc-parser: "npm:^3.2.0"
     npm-check-updates: "npm:^16.14.12"
     zod: "npm:^3.22.4"
-  checksum: 31a7f29c1054e351d93712eebe01a9ab16e0ec6353fb591c676379e1b53f213b3e25841914a02c1add23906b8723495972eb21712f34892ddba00ce177796f82
-  languageName: node
-  linkType: hard
-
-"isaacscript-common-ts@npm:^11.6.0":
-  version: 11.6.0
-  resolution: "isaacscript-common-ts@npm:11.6.0"
-  checksum: af63629d548bad441c79af88d1e64c0826294a78ad326a54257b61fa71f7431a7a70b1d4617a2a1d78afd145835bc46453c274a4d27766e7bf7ca6ff7449b4f9
-  languageName: node
-  linkType: hard
-
-"isaacscript-common-ts@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "isaacscript-common-ts@npm:12.0.0"
-  checksum: db84ace77884574f6f0df254d126a1919e0e8c1ee2d6943cb2295ee060ef4b618dc876bda7d4134ef122eacb7155a2e3731148115c8a82c86e9a2264f72b7b3d
+  checksum: 3ec64a45f39d578c21ccfdc80822523b7a7daa0012375498927d0ed41fe2f32c79371fc5f5cf4f373216afaaf03a5b87b59217ef0370f4b38d60304ebaa65d51
   languageName: node
   linkType: hard
 
@@ -7540,10 +7501,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-ts@npm:^13.1.2":
-  version: 13.1.2
-  resolution: "isaacscript-common-ts@npm:13.1.2"
-  checksum: be985bb1e4f91faf22e135654be42015d6abb0e0c3b45f8d4c1f449cc83e936fb68aa6fff34f42bfb3108938a6768c8ad964210e3142ec0db6f8be8db4ad76b5
+"isaacscript-common-ts@npm:^13.1.8":
+  version: 13.1.8
+  resolution: "isaacscript-common-ts@npm:13.1.8"
+  checksum: 50ddc86c28f7274a4feb1f915993cc66c7c705c4afd8be570e7cf6ddf10c239e9c287cfa3fbb322c1741c9161418019f691740b937ed610bd74bb3d1a558c13f
   languageName: node
   linkType: hard
 
@@ -7589,9 +7550,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript@npm:^3.33.0":
-  version: 3.33.0
-  resolution: "isaacscript@npm:3.33.0"
+"isaacscript@npm:^3.36.0":
+  version: 3.36.0
+  resolution: "isaacscript@npm:3.36.0"
   dependencies:
     "@commander-js/extra-typings": "npm:^11.1.0"
     "@zamiell/sync-directory": "npm:^6.0.5"
@@ -7599,8 +7560,8 @@ __metadata:
     chalk: "npm:^5.3.0"
     commander: "npm:^11.1.0"
     figlet: "npm:^1.7.0"
-    isaacscript-common-node: "npm:^1.4.0"
-    isaacscript-common-ts: "npm:^12.0.0"
+    isaacscript-common-node: "npm:^3.0.0"
+    isaacscript-common-ts: "npm:^13.1.8"
     jsonc-parser: "npm:^3.2.0"
     klaw-sync: "npm:^6.0.0"
     moment: "npm:^2.29.4"
@@ -7616,7 +7577,7 @@ __metadata:
       optional: true
   bin:
     isaacscript: dist/main.js
-  checksum: 892d51e60062e97cb9540731a22996a82e1d86cdcf8db782e3002809f272670738416cf8d1462f0f9cfa8f4a43afb0da0ae8ff58eb72f69a7d8d1fb656b85c2e
+  checksum: 09a2ab9d432f81e27f39dc1bf3b165fc7f7c8bfabe8fe1a743b3bb3e1290ba329aa952a29cb92da1759de386a66d2c0597263a525384a39ed512c5f6af4cb88f
   languageName: node
   linkType: hard
 
@@ -9549,49 +9510,6 @@ __metadata:
   dependencies:
     npm-normalize-package-bin: "npm:^3.0.0"
   checksum: 65fcc621ba6e183be2715e3bbbf29d85e65e986965f06ee5e96a293d62dfad59ee57a9dcdd1c591eab156e03d58b3c35926b4211ce792d683458e15bb9f642c7
-  languageName: node
-  linkType: hard
-
-"npm-check-updates@npm:^16.14.11":
-  version: 16.14.11
-  resolution: "npm-check-updates@npm:16.14.11"
-  dependencies:
-    chalk: "npm:^5.3.0"
-    cli-table3: "npm:^0.6.3"
-    commander: "npm:^10.0.1"
-    fast-memoize: "npm:^2.5.2"
-    find-up: "npm:5.0.0"
-    fp-and-or: "npm:^0.1.4"
-    get-stdin: "npm:^8.0.0"
-    globby: "npm:^11.0.4"
-    hosted-git-info: "npm:^5.1.0"
-    ini: "npm:^4.1.1"
-    js-yaml: "npm:^4.1.0"
-    json-parse-helpfulerror: "npm:^1.0.3"
-    jsonlines: "npm:^0.1.1"
-    lodash: "npm:^4.17.21"
-    make-fetch-happen: "npm:^11.1.1"
-    minimatch: "npm:^9.0.3"
-    p-map: "npm:^4.0.0"
-    pacote: "npm:15.2.0"
-    parse-github-url: "npm:^1.0.2"
-    progress: "npm:^2.0.3"
-    prompts-ncu: "npm:^3.0.0"
-    rc-config-loader: "npm:^4.1.3"
-    remote-git-tags: "npm:^3.0.0"
-    rimraf: "npm:^5.0.5"
-    semver: "npm:^7.5.4"
-    semver-utils: "npm:^1.1.4"
-    source-map-support: "npm:^0.5.21"
-    spawn-please: "npm:^2.0.2"
-    strip-ansi: "npm:^7.1.0"
-    strip-json-comments: "npm:^5.0.1"
-    untildify: "npm:^4.0.0"
-    update-notifier: "npm:^6.0.2"
-  bin:
-    ncu: build/src/bin/cli.js
-    npm-check-updates: build/src/bin/cli.js
-  checksum: bbd2a43e84280d228a357d27a7016dcc8b60aa1361f75b59ad67a61b73a7156ee62be9d44bcaa41c24f65cb9cc436ea85169a0702399842b4f8e16bca1834565
   languageName: node
   linkType: hard
 

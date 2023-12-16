@@ -9,9 +9,9 @@ const config = {
     "eslint-config-isaacscript/base",
   ],
 
-  // Don't bother linting the compiled output.
+  // Don't bother linting compiled output.
   // @template-ignore-next-line
-  ignorePatterns: ["**/dist/**", "**/lib/**", "**/version.js"],
+  ignorePatterns: ["**/dist/**", "*.min.js", "version.js"],
 
   parserOptions: {
     // ESLint needs to know about the project's TypeScript settings in order for TypeScript-specific
