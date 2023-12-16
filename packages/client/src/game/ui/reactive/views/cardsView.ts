@@ -1,6 +1,7 @@
 import type { CardOrder } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
 import { eRange } from "@hanabi/utils";
+import * as deckRules from "../../../rules/deck";
 import type { CardIdentity } from "../../../types/CardIdentity";
 import type { State } from "../../../types/State";
 import { HanabiCard } from "../../HanabiCard";
@@ -11,6 +12,7 @@ import type { Listener, Selector, Subscription } from "../observeStore";
 import { observeStore } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {
+  const numTotalCards = deckRules.totalCards(globals.variant);
   // Subscribe the new cards.
   for (const i of eRange(globals.cardSubscriptions.length, length)) {
     if (globals.deck.length <= i) {
@@ -23,6 +25,11 @@ export function onCardsPossiblyAdded(length: number): void {
         globals.options.numPlayers,
       );
       globals.deck.push(newCard);
+      if (globals.deck.length >= numTotalCards) {
+        throw new Error(
+          `Unexpected card of order ${i} added to globals.deck: Deck too long.`,
+        );
+      }
     }
 
     const subscription = subscribeToCardChanges(i as CardOrder);

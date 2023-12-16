@@ -1,20 +1,34 @@
 import type { CardOrder } from "@hanabi/data";
+import { assertDefined } from "@hanabi/utils";
 import * as deckRules from "../rules/deck";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 
 export function getCardOrStackBase(order: CardOrder): HanabiCard | undefined {
-  const card = globals.deck[order];
-  if (card !== undefined) {
+  const numTotalCards = deckRules.totalCards(globals.variant);
+  if (order < numTotalCards) {
+    const card = globals.deck[order];
+    assertDefined(card, `Failed to get card of order ${order} from the deck.`);
+    if (card.isStackBase) {
+      throw new Error(
+        "Unexpected card marked stackBase found in globals.deck.",
+      );
+    }
     return card;
   }
 
   // Stack bases use the orders after the final card in the deck.
-  const stackBaseIndex = order - deckRules.totalCards(globals.variant);
+  const stackBaseIndex = order - numTotalCards;
   const stackBase = globals.stackBases[stackBaseIndex];
-  if (stackBase !== undefined) {
-    return stackBase;
+  assertDefined(
+    stackBase,
+    `Failed to get stack base of index ${stackBaseIndex}`,
+  );
+  if (!stackBase.isStackBase) {
+    throw new Error(
+      "Unexpected card not marked stackBase found in globals.stackBases.",
+    );
   }
 
-  return undefined;
+  return stackBase;
 }
