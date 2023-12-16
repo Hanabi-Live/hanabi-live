@@ -6,12 +6,13 @@ import {
   getDiscardHelpers,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
-  sudokuCanStillBePlayed,
+  reversibleIsCardCritical,
+  reversibleIsCardNeededForMaxScore,
+  sudokuIsCardNeededForMaxScore,
 } from "@hanabi/game";
 import { eRange, filterMap } from "isaacscript-common-ts";
 import * as playStacksRules from "./playStacks";
 import * as variantRules from "./variant";
-import * as reversibleRules from "./variants/reversible";
 
 export function getCardName(
   suitIndex: SuitIndex,
@@ -31,7 +32,7 @@ export function getCardName(
  * Returns true if the card is not yet played and is still needed to be played in order to get the
  * maximum score. This mirrors the server function "Card.NeedsToBePlayed()".
  */
-export function isCardNeedsToBePlayed(
+export function isCardNeededForMaxScore(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -53,7 +54,7 @@ export function isCardNeedsToBePlayed(
 
   // Determining if the card needs to be played in variants with reversed suits is more complicated.
   if (variantRules.hasReversedSuits(variant)) {
-    return reversibleRules.needsToBePlayed(
+    return reversibleIsCardNeededForMaxScore(
       suitIndex,
       rank,
       deck,
@@ -66,7 +67,7 @@ export function isCardNeedsToBePlayed(
   // In Sudoku, checking this is also a bit tricky, since we might be able to play higher ranked
   // cards, even though lower ones are dead due to the ability to start stacks anywhere.
   if (variant.sudoku) {
-    return sudokuCanStillBePlayed(
+    return sudokuIsCardNeededForMaxScore(
       suitIndex,
       rank,
       deck,
@@ -98,7 +99,7 @@ export function getCardStatus(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): CardStatus {
-  const cardNeedsToBePlayed = isCardNeedsToBePlayed(
+  const cardNeedsToBePlayed = isCardNeededForMaxScore(
     suitIndex,
     rank,
     deck,
@@ -129,7 +130,7 @@ function isCardCritical(
 ): boolean {
   // "Up or Down" has some special cases for critical cards.
   if (variantRules.hasReversedSuits(variant)) {
-    return reversibleRules.isCritical(
+    return reversibleIsCardCritical(
       suitIndex,
       rank,
       deck,
@@ -223,7 +224,7 @@ export function isAllCardPossibilitiesTrash(
 ): boolean {
   // If we fully know the card already, just check if it's playable.
   if (!empathy && card.rank !== null && card.suitIndex !== null) {
-    return !isCardNeedsToBePlayed(
+    return !isCardNeededForMaxScore(
       card.suitIndex,
       card.rank,
       deck,
@@ -239,7 +240,7 @@ export function isAllCardPossibilitiesTrash(
     ? card.possibleCardsForEmpathy
     : card.possibleCards;
   return !possibilities.some(([suitIndex, rank]) =>
-    isCardNeedsToBePlayed(
+    isCardNeededForMaxScore(
       suitIndex,
       rank,
       deck,

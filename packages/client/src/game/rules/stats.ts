@@ -11,13 +11,13 @@ import {
   isCardClued,
   isCardInPlayerHand,
   isHandLocked,
+  reversibleGetMaxScorePerStack,
   sudokuGetMaxScorePerStack,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "./card";
 import * as clueTokensRules from "./clueTokens";
-import * as reversibleRules from "./variants/reversible";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
@@ -31,11 +31,7 @@ export function getMaxScorePerStack(
   }
 
   // This handles the maximum scores in Reversed or "Up Or Down" variants.
-  return reversibleRules.getMaxScorePerStack(
-    deck,
-    playStackDirections,
-    variant,
-  );
+  return reversibleGetMaxScorePerStack(deck, playStackDirections, variant);
 }
 
 function getMaxDiscardsBeforeFinalRound(
@@ -493,7 +489,7 @@ export function getDoubleDiscardCard(
   }
 
   // It is never a double discard situation if the discarded card does not need to be played.
-  const needsToBePlayed = cardRules.isCardNeedsToBePlayed(
+  const needsToBePlayed = cardRules.isCardNeededForMaxScore(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
     gameState.deck,

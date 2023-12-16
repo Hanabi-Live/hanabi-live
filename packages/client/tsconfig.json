@@ -15,9 +15,5 @@
     "moduleResolution": "Node",
   },
 
-  "include": [
-    "./src/**/*.ts",
-    "../game/src/rules/sudoku.ts",
-    "../game/src/rules/sudoku.test.ts",
-  ],
+  "include": ["./src/**/*.ts"],
 }

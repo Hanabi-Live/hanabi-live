@@ -2,11 +2,11 @@
 
 import { getVariant, START_CARD_RANK } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
+import { reversibleIsCardCritical } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
 import type { State } from "../types/State";
-import { isCritical } from "./variants/reversible";
 
 let testState: State;
 
@@ -24,7 +24,7 @@ describe("UI", () => {
       test("red S is not critical", () => {
         const turnState = getGameStateAtTurn(testState, 2);
         expect(
-          isCritical(
+          reversibleIsCardCritical(
             redSuit,
             START_CARD_RANK,
             turnState.deck,
@@ -39,7 +39,7 @@ describe("UI", () => {
       test("red 1 is not critical", () => {
         const turnState = getGameStateAtTurn(testState, 5);
         expect(
-          isCritical(
+          reversibleIsCardCritical(
             redSuit,
             1,
             turnState.deck,
@@ -54,7 +54,7 @@ describe("UI", () => {
       test("red 5 is critical", () => {
         const turnState = getGameStateAtTurn(testState, 21);
         expect(
-          isCritical(
+          reversibleIsCardCritical(
             redSuit,
             5,
             turnState.deck,

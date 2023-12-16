@@ -15,5 +15,6 @@ export * from "./interfaces/TurnState";
 export * from "./rules/cardState";
 export * from "./rules/deck";
 export * from "./rules/hand";
-export * from "./rules/sudoku";
+export * from "./rules/variants/reversible";
+export * from "./rules/variants/sudoku";
 export * from "./types/StateClue";

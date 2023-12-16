@@ -2,12 +2,12 @@ import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
-import type { CardState } from "../interfaces/CardState";
-import type { GameState } from "../interfaces/GameState";
-import { getAllDiscardedSetForSuit } from "./deck";
+import type { CardState } from "../../interfaces/CardState";
+import type { GameState } from "../../interfaces/GameState";
+import { getAllDiscardedSetForSuit } from "../deck";
 
 /** Check if the card can still be played in a Sudoku variant. */
-export function sudokuCanStillBePlayed(
+export function sudokuIsCardNeededForMaxScore(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],

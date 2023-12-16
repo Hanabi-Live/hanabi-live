@@ -2,6 +2,8 @@
 | TODO |
 +------+
 
+- refactor most of data --> game (?)
+  - figure out clear delineation
 - make Connection.send type-safe
 
 +-----+

@@ -32,7 +32,7 @@ export function getCharacterNameForPlayer(
 function getCharacterIDForPlayer(
   playerIndex: PlayerIndex | null,
   characterAssignments: Readonly<Array<number | null>>,
-) {
+): number | null {
   if (playerIndex === null) {
     return null;
   }

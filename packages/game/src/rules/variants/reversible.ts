@@ -1,16 +1,14 @@
-// Helper methods for variants where suits may have a different direction than up. Currently used
-// for "Up Or Down" and "Reversed" variants.
+// Helper methods for variants where suits may have a different direction than up. This is currently
+// used for "Up Or Down" and "Reversed" variants.
 
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
-import {
-  StackDirection,
-  getAllDiscardedSetForSuit,
-  getDiscardHelpers,
-} from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { eRange, iRange, newArray } from "isaacscript-common-ts";
+import { StackDirection } from "../../enums/StackDirection";
+import type { CardState } from "../../interfaces/CardState";
+import type { GameState } from "../../interfaces/GameState";
+import { getAllDiscardedSetForSuit, getDiscardHelpers } from "../deck";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -18,7 +16,7 @@ import { eRange, iRange, newArray } from "isaacscript-common-ts";
  * the card has been played.) This function mirrors the server function
  * "variantReversibleNeedsToBePlayed()".
  */
-export function needsToBePlayed(
+export function reversibleIsCardNeededForMaxScore(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -34,7 +32,7 @@ export function needsToBePlayed(
 
   // Second, check to see if this card is dead. (Meaning that all of a previous card in the suit
   // have been discarded already.)
-  if (isDead(suitIndex, rank, deck, playStackDirections, variant)) {
+  if (isCardDead(suitIndex, rank, deck, playStackDirections, variant)) {
     return false;
   }
 
@@ -78,7 +76,7 @@ export function needsToBePlayed(
  * previous cards in the stack have been discarded (taking into account the stack direction). This
  * function mirrors the server function "variantReversibleIsDeadIsDead()".
  */
-function isDead(
+function isCardDead(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -152,7 +150,7 @@ function isDead(
  * This function mirrors the server function "variantReversibleGetMaxScore()", except that it
  * creates a per stack array, instead.
  */
-export function getMaxScorePerStack(
+export function reversibleGetMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
@@ -256,7 +254,7 @@ function walkDown(allDiscardedSet: ReadonlySet<Rank>, variant: Variant) {
 }
 
 /** This does not mirror any function on the server. */
-export function isCritical(
+export function reversibleIsCardCritical(
   suitIndex: SuitIndex,
   rank: Rank,
   deck: readonly CardState[],
@@ -299,6 +297,6 @@ export function isCritical(
     return direction === StackDirection.Up;
   }
 
-  // Default case: all other ranks
+  // The default case is all other ranks.
   return true;
 }
