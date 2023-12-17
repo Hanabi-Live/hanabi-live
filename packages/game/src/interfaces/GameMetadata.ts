@@ -17,7 +17,10 @@ export interface GameMetadata {
   readonly characterAssignments: Readonly<Tuple<number | null, NumPlayers>>;
   readonly characterMetadata: Readonly<Tuple<number, NumPlayers>>;
 
+  /** The minimum efficiency required in order to get a perfect score in the chosen variant. */
   readonly minEfficiency: number;
+
+  /** Whether or not this is considered a "hard" variant by the H-Group. */
   readonly hardVariant: boolean;
 
   readonly hasCustomSeed: boolean;

@@ -6,10 +6,9 @@ import {
   DEFAULT_VARIANT_NAME,
   getVariant,
 } from "@hanabi/data";
-import { getCardsPerHand, getEndGameLength } from "@hanabi/game";
+import { getCardsPerHand, getEndGameLength, isHardVariant } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
-import { isHardVariant } from "packages/game/src/rules/variants/hGroup";
 import { Options } from "../../game/src/classes/Options";
 import type { GameMetadata } from "../../game/src/interfaces/GameMetadata";
 import * as statsRules from "../src/game/rules/stats";

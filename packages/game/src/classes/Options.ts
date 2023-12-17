@@ -19,6 +19,7 @@ export class Options {
   readonly oneLessCard: boolean = false;
   readonly allOrNothing: boolean = false;
   readonly detrimentalCharacters: boolean = false;
+
   readonly tableName?: string;
   readonly maxPlayers?: number;
 }
