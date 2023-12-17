@@ -13,6 +13,7 @@ import type { CardNote, CardState } from "@hanabi/game";
 import {
   CardStatus,
   StackDirection,
+  getInitialCardState,
   hasReversedSuits,
   isCardClued,
   isCardDiscarded,
@@ -21,7 +22,6 @@ import {
 import { assertDefined, assertNotNull, iRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import { includes } from "lodash";
-import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
@@ -184,7 +184,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     });
 
     // Order is defined upon first initialization.
-    const initialState = initialCardState(order, this.variant, numPlayers);
+    const initialState = getInitialCardState(order, this.variant, numPlayers);
     this._state = {
       ...initialState,
       suitIndex, // Only initially specified for stack bases.

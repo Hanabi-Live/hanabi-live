@@ -9,8 +9,8 @@ import type {
   RankClueNumber,
 } from "@hanabi/data";
 import { ClueType } from "@hanabi/data";
+import { getNextPlayableRanks } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
-import * as playStacksRules from "../rules/playStacks";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction, ClientActionClue } from "../types/ClientAction";
 import { ReplayActionType } from "../types/ReplayActionType";
@@ -105,7 +105,7 @@ export function send(hypoAction: ClientAction): void {
       let failed = false;
       let newType = type;
       if (type === "play") {
-        const nextRanks = playStacksRules.nextPlayableRanks(
+        const nextRanks = getNextPlayableRanks(
           suitIndex,
           gameState.playStacks[suitIndex]!,
           gameState.playStackDirections[suitIndex]!,

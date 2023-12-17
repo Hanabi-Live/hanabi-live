@@ -4,6 +4,7 @@ import type { CardState, GameState } from "@hanabi/game";
 import {
   CardStatus,
   getDiscardHelpers,
+  getNextPlayableRanks,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
   hasReversedSuits,
@@ -12,7 +13,6 @@ import {
   sudokuIsCardNeededForMaxScore,
 } from "@hanabi/game";
 import { eRange, filterMap } from "isaacscript-common-ts";
-import * as playStacksRules from "./playStacks";
 
 export function getCardName(
   suitIndex: SuitIndex,
@@ -171,7 +171,7 @@ export function isCardPotentiallyPlayable(
       return false;
     }
 
-    const nextRanksArray = playStacksRules.nextPlayableRanks(
+    const nextRanksArray = getNextPlayableRanks(
       suitIndex,
       playStack,
       playStackDirection,

@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/no-null */
+
 import type {
   CardOrder,
   NumPlayers,
@@ -5,11 +7,11 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
-import { getTotalCardsInDeck } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
+import type { CardState } from "../../interfaces/CardState";
+import { getTotalCardsInDeck } from "../../rules/deck";
 
-export function initialCardState(
+export function getInitialCardState(
   order: CardOrder,
   variant: Variant,
   numPlayers: NumPlayers,

@@ -16,6 +16,8 @@ import {
   getAdjustedClueTokens,
   getChopIndex,
   getNewClueTokensAfterAction,
+  getStackDirection,
+  getStackStartRank,
   hasReversedSuits,
   isCardClued,
   isInitialDealFinished,
@@ -29,7 +31,6 @@ import {
 } from "isaacscript-common-ts";
 import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
-import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
@@ -467,7 +468,7 @@ function gameReducerFunction(
       `Failed to find the play stack at index: ${action.suitIndex}`,
     );
 
-    const direction = playStacksRules.direction(
+    const direction = getStackDirection(
       action.suitIndex,
       playStack,
       gameState.deck,
@@ -485,7 +486,7 @@ function gameReducerFunction(
     );
 
     gameState.playStackStarts[action.suitIndex] =
-      playStacksRules.stackStartRank(playStack, gameState.deck);
+      getStackStartRank(playStack, gameState.deck) ?? null;
   }
 
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can

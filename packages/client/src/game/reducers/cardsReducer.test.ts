@@ -1,6 +1,7 @@
 import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
+import { getInitialCardState } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import * as deckRules from "../../../../game/src/rules/deck"; // eslint-disable-line @typescript-eslint/no-restricted-imports
 import {
@@ -13,7 +14,6 @@ import {
 } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
 import { cardsReducer } from "./cardsReducer";
-import { initialCardState } from "./initialStates/initialCardState";
 import { initialGameState } from "./initialStates/initialGameState";
 
 const NUM_PLAYERS = 3;
@@ -27,11 +27,11 @@ const GAME_STATE = initialGameState(DEFAULT_METADATA);
 const THROW_IT_IN_A_HOLE_GAME_STATE = initialGameState(
   THROW_IT_IN_A_HOLE_METADATA,
 );
-const FIRST_CARD = initialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
-const SECOND_CARD = initialCardState(1 as CardOrder, VARIANT, NUM_PLAYERS);
-const THIRD_CARD = initialCardState(2 as CardOrder, VARIANT, NUM_PLAYERS);
-const FOURTH_CARD = initialCardState(3 as CardOrder, VARIANT, NUM_PLAYERS);
-const FIFTH_CARD = initialCardState(4 as CardOrder, VARIANT, NUM_PLAYERS);
+const FIRST_CARD = getInitialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
+const SECOND_CARD = getInitialCardState(1 as CardOrder, VARIANT, NUM_PLAYERS);
+const THIRD_CARD = getInitialCardState(2 as CardOrder, VARIANT, NUM_PLAYERS);
+const FOURTH_CARD = getInitialCardState(3 as CardOrder, VARIANT, NUM_PLAYERS);
+const FIFTH_CARD = getInitialCardState(4 as CardOrder, VARIANT, NUM_PLAYERS);
 
 jest.spyOn(deckRules, "isInitialDealFinished").mockReturnValue(true);
 

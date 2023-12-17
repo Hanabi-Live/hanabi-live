@@ -19,6 +19,7 @@ import {
   getCardsPerHand,
   getDiscardClueTokenValue,
   getEndGameLength,
+  getStackDirection,
   getSuitCompleteClueTokenValue,
   getTotalCardsInDeck,
   getUnadjustedClueTokens,
@@ -26,7 +27,6 @@ import {
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../../rules/card";
-import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
 import { initialTurnState } from "./initialTurnState";
 
@@ -40,7 +40,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   ) as Tuple<readonly CardOrder[], NumSuits>;
   const suitIndexes = [...variant.suits.keys()] as SuitIndex[];
   const playStackDirections = suitIndexes.map((suitIndex) =>
-    playStacksRules.direction(suitIndex, [], [], variant),
+    getStackDirection(suitIndex, [], [], variant),
   ) as Tuple<StackDirection, NumSuits>;
   const playStackStarts = newArray(variant.suits.length, null) as Tuple<
     Rank | null,

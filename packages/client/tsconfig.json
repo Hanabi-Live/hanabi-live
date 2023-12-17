@@ -5,5 +5,5 @@
   // We extend the TypeScript config for the monorepo.
   "extends": "../../tsconfig.json",
 
-  "include": ["./src/**/*.ts", "../game/src/rules/variants/hGroup.ts"],
+  "include": ["./src/**/*.ts"],
 }

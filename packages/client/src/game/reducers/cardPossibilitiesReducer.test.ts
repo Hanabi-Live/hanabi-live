@@ -1,16 +1,16 @@
 import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { getInitialCardState } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import { testMetadata } from "../../../test/testMetadata";
 import { newColorClue, newRankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
-import { initialCardState } from "./initialStates/initialCardState";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);
 const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
-const DEFAULT_CARD = initialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
+const DEFAULT_CARD = getInitialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
 
 const FIRST_CLUE_COLOR = VARIANT.clueColors[0];
 assertDefined(
@@ -99,7 +99,7 @@ describe("cardPossibilitiesReducer", () => {
     const redClue = newColorClue(FIRST_CLUE_COLOR);
     const oneClue = newRankClue(FIRST_CLUE_RANK);
 
-    let card = initialCardState(
+    let card = getInitialCardState(
       0 as CardOrder,
       rainbowOnesAndBrown,
       NUM_PLAYERS,

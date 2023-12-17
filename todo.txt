@@ -5,6 +5,7 @@
 - refactor most of data --> game (?)
   - figure out clear delineation
 - make Connection.send type-safe
+- remove all null in @hanabi/game
 
 +-----+
 | OLD |

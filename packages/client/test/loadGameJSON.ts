@@ -16,13 +16,12 @@ import type {
   GameAction,
   GameState,
 } from "@hanabi/game";
-import { getCardsPerHand } from "@hanabi/game";
+import { getCardsPerHand, getNextPlayableRanks } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
 import { ClueType } from "../../data/src/enums/ClueType";
 import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";
-import * as playStacksRules from "../src/game/rules/playStacks";
 import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
@@ -174,7 +173,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           `Failed to get the play stack direction at suit index: ${jsonCard.suitIndex}`,
         );
 
-        const nextRanks = playStacksRules.nextPlayableRanks(
+        const nextPlayableRanks = getNextPlayableRanks(
           jsonCard.suitIndex,
           playStack,
           playStackDirection,
@@ -182,7 +181,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           variant,
           s.deck,
         );
-        if (!nextRanks.includes(jsonCard.rank)) {
+        if (!nextPlayableRanks.includes(jsonCard.rank)) {
           // Send a discard and a strike.
           action = {
             type: "discard",

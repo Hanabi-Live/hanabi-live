@@ -15,7 +15,11 @@ import type {
   GameMetadata,
   GameState,
 } from "@hanabi/game";
-import { isCardOnChop, isInitialDealFinished } from "@hanabi/game";
+import {
+  getInitialCardState,
+  isCardOnChop,
+  isInitialDealFinished,
+} from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -27,7 +31,6 @@ import * as cluesRules from "../rules/clues";
 import * as characterRules from "../rules/variants/characters";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
-import { initialCardState } from "./initialStates/initialCardState";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export function cardsReducer(
@@ -217,7 +220,7 @@ export function cardsReducer(
         );
       }
 
-      const initial = initialCardState(
+      const initial = getInitialCardState(
         action.order,
         variant,
         metadata.options.numPlayers,

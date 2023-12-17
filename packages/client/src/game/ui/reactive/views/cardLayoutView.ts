@@ -2,6 +2,7 @@ import type { CardOrder, SuitIndex } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
 import {
   StackDirection,
+  getStackStartRank,
   getTotalCardsInDeck,
   hasReversedSuits,
 } from "@hanabi/game";
@@ -12,7 +13,6 @@ import {
   assertNotNull,
 } from "isaacscript-common-ts";
 import type Konva from "konva";
-import { stackStartRank } from "../../../rules/playStacks";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../UIGlobals";
@@ -154,11 +154,11 @@ export function onPlayStacksChanged(
       availableStackStartsFlags[rank - 1] = true;
     }
     for (const playStack of playStacks) {
-      const stackStart = stackStartRank(
+      const stackStart = getStackStartRank(
         playStack,
         globals.state.visibleState!.deck,
       );
-      if (stackStart !== null) {
+      if (stackStart !== undefined) {
         availableStackStartsFlags[stackStart - 1] = false;
       }
     }

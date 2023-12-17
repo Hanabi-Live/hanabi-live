@@ -1,27 +1,15 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
-import { StackDirection, hasReversedSuits } from "@hanabi/game";
+import { StackDirection } from "../enums/StackDirection";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
+import { hasReversedSuits } from "./variants/variantIdentity";
 
-/** @returns `undefined` if there are no cards played on the stack. */
-function lastPlayedRank(
-  playStack: readonly number[],
-  deck: readonly CardState[],
-): Rank | undefined {
-  const orderOfTopCard = playStack.at(-1);
-  if (orderOfTopCard === undefined) {
-    return undefined;
-  }
-
-  const card = deck[orderOfTopCard];
-  if (card === undefined) {
-    return undefined;
-  }
-
-  return card.rank ?? undefined;
-}
-
-export function nextPlayableRanks(
+/**
+ * Returns an array since it is possible in some variants to have two or more possible cards that
+ * are legal next plays.
+ */
+export function getNextPlayableRanks(
   suitIndex: SuitIndex,
   playStack: readonly number[],
   playStackDirection: StackDirection,
@@ -29,7 +17,7 @@ export function nextPlayableRanks(
   variant: Variant,
   deck: readonly CardState[],
 ): readonly number[] {
-  const currentlyPlayedRank = lastPlayedRank(playStack, deck);
+  const currentlyPlayedRank = getLastPlayedRank(playStack, deck);
 
   switch (playStackDirection) {
     case StackDirection.Undecided: {
@@ -82,7 +70,25 @@ export function nextPlayableRanks(
   }
 }
 
-export function direction(
+/** @returns `undefined` if there are no cards played on the stack. */
+function getLastPlayedRank(
+  playStack: readonly number[],
+  deck: readonly CardState[],
+): Rank | undefined {
+  const orderOfTopCard = playStack.at(-1);
+  if (orderOfTopCard === undefined) {
+    return undefined;
+  }
+
+  const card = deck[orderOfTopCard];
+  if (card === undefined) {
+    return undefined;
+  }
+
+  return card.rank ?? undefined;
+}
+
+export function getStackDirection(
   suitIndex: SuitIndex,
   playStack: readonly number[],
   deck: readonly CardState[],
@@ -105,7 +111,7 @@ export function direction(
     return suit.reversed ? StackDirection.Down : StackDirection.Up;
   }
 
-  const top = lastPlayedRank(playStack, deck);
+  const top = getLastPlayedRank(playStack, deck);
   if (top === undefined || top === START_CARD_RANK) {
     return StackDirection.Undecided;
   }
@@ -133,19 +139,20 @@ export function direction(
   return secondCard.rank === 2 ? StackDirection.Up : StackDirection.Down;
 }
 
-export function stackStartRank(
+/** Returns the rank of the bottom card of the stack. */
+export function getStackStartRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): Rank | null {
+): Rank | undefined {
   const bottomCardOrder = playStack[0];
   if (bottomCardOrder === undefined) {
-    return null;
+    return undefined;
   }
 
   const bottomCard = deck[bottomCardOrder];
   if (bottomCard === undefined) {
-    return null;
+    return undefined;
   }
 
-  return bottomCard.rank;
+  return bottomCard.rank ?? undefined;
 }
