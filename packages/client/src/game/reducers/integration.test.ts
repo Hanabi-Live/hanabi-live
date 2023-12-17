@@ -1,7 +1,7 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
 import type { CardState, GameState } from "@hanabi/game";
-import { StackDirection } from "@hanabi/game";
+import { StackDirection, getFutureEfficiency } from "@hanabi/game";
 import { assertDefined, eRange } from "isaacscript-common-ts";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
@@ -9,7 +9,7 @@ import upOrDownGame from "../../../test_data/up_or_down.json";
 import upOrDownFinalCards from "../../../test_data/up_or_down_final_cards.json";
 import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
 import type { State } from "../types/State";
-import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
+import { getEfficiencyFromGameState } from "./reducerHelpers";
 
 let testState: State;
 
@@ -38,7 +38,7 @@ describe("integration", () => {
         expect(turn5State.score).toBe(2);
         expect(turn5State.clueTokens).toBe(6);
         expect(turn5State.stats.pace).toBe(8);
-        const efficiency = getEfficiency(turn5State);
+        const efficiency = getEfficiencyFromGameState(turn5State);
         expect(efficiency).toBeCloseTo(1.5);
         const futureEfficiency = getFutureEfficiency(turn5State);
         expect(futureEfficiency).toBeCloseTo(22 / (8 + 5 - 1 + 6));
@@ -93,7 +93,7 @@ describe("integration", () => {
         expect(finalState.score).toBe(24);
         expect(finalState.clueTokens).toBe(2);
         expect(finalState.stats.pace).toBeNull();
-        const efficiency = getEfficiency(finalState);
+        const efficiency = getEfficiencyFromGameState(finalState);
         expect(efficiency).toBeCloseTo(1.39);
         const futureEfficiency = getFutureEfficiency(finalState);
         expect(futureEfficiency).toBeNull();
@@ -153,7 +153,7 @@ describe("integration", () => {
         expect(finalState.score).toBe(25);
         expect(finalState.clueTokens).toBe(8);
         expect(finalState.stats.pace).toBeNull();
-        const efficiency = getEfficiency(finalState);
+        const efficiency = getEfficiencyFromGameState(finalState);
         expect(efficiency).toBeCloseTo(1.39);
         const futureEfficiency = getFutureEfficiency(finalState);
         expect(futureEfficiency).toBeNull();

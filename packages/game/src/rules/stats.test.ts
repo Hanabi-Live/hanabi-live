@@ -1,5 +1,5 @@
 import { getDefaultVariant, getVariant } from "@hanabi/data";
-import { PaceRisk } from "@hanabi/game";
+import { PaceRisk } from "../enums/PaceRisk";
 import {
   getCluesStillUsable,
   getMinEfficiency,
@@ -143,8 +143,8 @@ describe("getMinEfficiency", () => {
 });
 
 describe("getPace", () => {
-  test("is null when deckSize is 0", () => {
-    expect(getPace(25, 0, 25, 4, false)).toBeNull();
+  test("is undefined when deckSize is 0", () => {
+    expect(getPace(25, 0, 25, 4, false)).toBeUndefined();
   });
 
   test("returns +13 at the beginning of a 4-player No Variant game", () => {
@@ -158,6 +158,7 @@ describe("getPaceRisk", () => {
   });
 
   test("is Low when pace is null", () => {
+    // eslint-disable-next-line unicorn/no-null
     expect(getPaceRisk(null, 4)).toBe(PaceRisk.Low);
   });
 });

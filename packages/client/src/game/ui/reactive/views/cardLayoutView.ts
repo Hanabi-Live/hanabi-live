@@ -158,7 +158,7 @@ export function onPlayStacksChanged(
         playStack,
         globals.state.visibleState!.deck,
       );
-      if (stackStart !== undefined) {
+      if (stackStart !== null) {
         availableStackStartsFlags[stackStart - 1] = false;
       }
     }

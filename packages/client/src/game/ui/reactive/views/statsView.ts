@@ -1,7 +1,6 @@
 import type { NumPlayers } from "@hanabi/data";
-import { PaceRisk } from "@hanabi/game";
+import { PaceRisk, getEfficiency } from "@hanabi/game";
 import { assertNotNull } from "isaacscript-common-ts";
-import * as statsRules from "../../../rules/stats";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";
 import { initKonvaTooltips } from "../../konvaTooltips";
@@ -52,16 +51,13 @@ export function onEfficiencyChanged(data: {
 
   const cardsNotGotten = Math.max(data.maxScore - cardsGotten, 0);
 
-  const efficiency = statsRules.getEfficiency(
-    cardsGotten,
-    data.potentialCluesLost,
-  );
+  const efficiency = getEfficiency(cardsGotten, data.potentialCluesLost);
   const shouldShowEfficiency =
     Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
   const futureEfficiency =
     cluesStillUsable === null
       ? Number.NaN
-      : statsRules.getEfficiency(cardsNotGotten, cluesStillUsable);
+      : getEfficiency(cardsNotGotten, cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
   if (shouldShowFutureEfficiency) {

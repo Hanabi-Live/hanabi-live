@@ -3,18 +3,14 @@
 import type { PlayerIndex } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
+import { getEfficiency } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
-import * as statsRules from "../rules/stats";
 
-export function getEfficiency(gameState: GameState): number {
-  return statsRules.getEfficiency(
+export function getEfficiencyFromGameState(gameState: GameState): number {
+  return getEfficiency(
     gameState.stats.cardsGotten,
     gameState.stats.potentialCluesLost,
   );
-}
-
-export function getFutureEfficiency(gameState: GameState): number | null {
-  return statsRules.getFutureEfficiency(gameState);
 }
 
 export function getCharacterNameForPlayer(

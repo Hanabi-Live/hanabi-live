@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/no-null */
+
 import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
 import type { Options } from "../classes/Options";
@@ -43,10 +45,10 @@ export function getNextPlayerIndex(
   currentPlayerIndex: PlayerIndex | null,
   numPlayers: NumPlayers,
   turnsInverted: boolean,
-): PlayerIndex | undefined {
+): PlayerIndex | null {
   // If the game is already over, then there is no next player.
   if (currentPlayerIndex === null) {
-    return undefined;
+    return null;
   }
 
   if (turnsInverted) {

@@ -15,13 +15,16 @@ import {
   VALID_NUM_PLAYERS,
   createVariant,
 } from "@hanabi/data";
-import { Options, getCardsPerHand, getTotalCardsInDeck } from "@hanabi/game";
+import {
+  Options,
+  getCardsPerHand,
+  getMinEfficiency,
+  getStartingDeckSize,
+  getStartingPace,
+  getTotalCardsInDeck,
+} from "@hanabi/game";
 import type { Subtract } from "isaacscript-common-ts";
 import { ReadonlySet } from "isaacscript-common-ts";
-
-/* eslint-disable @typescript-eslint/no-restricted-imports*/
-import * as statsRules from "../../../client/src/game/rules/stats";
-/* eslint-enable @typescript-eslint/no-restricted-imports*/
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
@@ -1254,12 +1257,7 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
     };
     const cardsPerHand = getCardsPerHand(options);
 
-    return statsRules.getMinEfficiency(
-      numPlayers,
-      numPlayers,
-      variant,
-      cardsPerHand,
-    );
+    return getMinEfficiency(numPlayers, numPlayers, variant, cardsPerHand);
   });
 
   return Math.max(...requiredEfficiencies);
@@ -1273,17 +1271,13 @@ function minVariantPace(variant: Variant): number {
     };
 
     const cardsPerHand = getCardsPerHand(options);
-    const startingDeckSize = statsRules.getStartingDeckSize(
+    const startingDeckSize = getStartingDeckSize(
       options.numPlayers,
       cardsPerHand,
       variant,
     );
 
-    return statsRules.getStartingPace(
-      startingDeckSize,
-      variant.maxScore,
-      numPlayers,
-    );
+    return getStartingPace(startingDeckSize, variant.maxScore, numPlayers);
   });
 
   return Math.min(...startingPaces);

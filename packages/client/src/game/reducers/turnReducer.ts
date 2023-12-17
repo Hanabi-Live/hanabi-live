@@ -200,12 +200,11 @@ function nextTurn(
     state.playOrderInverted = !state.playOrderInverted;
   }
 
-  state.currentPlayerIndex =
-    getNextPlayerIndex(
-      state.currentPlayerIndex,
-      metadata.options.numPlayers,
-      state.playOrderInverted,
-    ) ?? null;
+  state.currentPlayerIndex = getNextPlayerIndex(
+    state.currentPlayerIndex,
+    metadata.options.numPlayers,
+    state.playOrderInverted,
+  );
 
   if (deckSize === 0 && state.endTurnNum === null) {
     state.endTurnNum = getEndTurn(state.turnNum, metadata);

@@ -13,7 +13,7 @@ import { testMetadata } from "../../../test/testMetadata";
 import { gameReducer } from "./gameReducer";
 import { initialGameState } from "./initialStates/initialGameState";
 import { initialGameStateTest } from "./initialStates/initialGameStateTest";
-import { getEfficiency } from "./reducerHelpers";
+import { getEfficiencyFromGameState } from "./reducerHelpers";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
@@ -105,7 +105,7 @@ describe("gameReducer", () => {
         defaultMetadata,
       );
 
-      const efficiency = getEfficiency(state);
+      const efficiency = getEfficiencyFromGameState(state);
       expect(efficiency).toBe(Number.POSITIVE_INFINITY);
     });
 
@@ -149,7 +149,7 @@ describe("gameReducer", () => {
         defaultMetadata,
       );
 
-      const efficiency = getEfficiency(state);
+      const efficiency = getEfficiencyFromGameState(state);
       expect(efficiency).toBe(0);
     });
 
@@ -184,7 +184,7 @@ describe("gameReducer", () => {
         defaultMetadata,
       );
 
-      const efficiency = getEfficiency(state);
+      const efficiency = getEfficiencyFromGameState(state);
       expect(efficiency).toBe(3);
     });
 
@@ -264,7 +264,7 @@ describe("gameReducer", () => {
         defaultMetadata,
       );
 
-      const efficiency = getEfficiency(state);
+      const efficiency = getEfficiencyFromGameState(state);
       expect(efficiency).toBe(0.5);
     });
 
@@ -408,7 +408,7 @@ describe("gameReducer", () => {
       );
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM);
-      const efficiency1 = getEfficiency(state);
+      const efficiency1 = getEfficiencyFromGameState(state);
       expect(efficiency1).toBe(4); // e.g. 4 / 1
 
       // Player 0 plays the red 5.
@@ -423,7 +423,7 @@ describe("gameReducer", () => {
         defaultMetadata,
       );
 
-      const efficiency2 = getEfficiency(state);
+      const efficiency2 = getEfficiencyFromGameState(state);
       expect(efficiency2).toBe(2.5); // e.g. 5 / 2 (because we wasted a clue)
     });
 
@@ -588,7 +588,7 @@ describe("gameReducer", () => {
         );
 
         expect(state.clueTokens).toBe(MAX_CLUE_NUM * 2);
-        const efficiency1 = getEfficiency(state);
+        const efficiency1 = getEfficiencyFromGameState(state);
         expect(efficiency1).toBe(4); // e.g. 4 / 1
 
         // Player 0 plays the red 5.
@@ -603,7 +603,7 @@ describe("gameReducer", () => {
           clueStarvedMetadata,
         );
 
-        const efficiency2 = getEfficiency(state);
+        const efficiency2 = getEfficiencyFromGameState(state);
         expect(efficiency2).toBeCloseTo(3.33);
         // e.g. 5 / 1.5 (because we wasted half a clue)
       });

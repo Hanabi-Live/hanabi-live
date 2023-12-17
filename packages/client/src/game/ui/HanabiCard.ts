@@ -337,7 +337,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         | -1;
       this._visibleSuitIndex = suitIndexToShow === -1 ? null : suitIndexToShow;
     }
-    this._visibleRank = rankToShow ?? null;
+    this._visibleRank = rankToShow;
 
     // Setting "this.bareName" will automatically update how the card appears the next time that the
     // "card" layer is drawn.

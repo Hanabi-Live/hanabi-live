@@ -10,8 +10,16 @@ import type {
   StatsState,
 } from "@hanabi/game";
 import {
+  getCardsGotten,
+  getCardsGottenByNotes,
+  getCluesStillUsable,
+  getCluesStillUsableNotRounded,
   getDiscardClueTokenValue,
+  getDoubleDiscardCard,
   getEndGameLength,
+  getMaxScorePerStack,
+  getPace,
+  getPaceRisk,
   getSuitCompleteClueTokenValue,
   getUnadjustedClueTokens,
   isCardClued,
@@ -19,7 +27,6 @@ import {
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { sumArray } from "isaacscript-common-ts";
-import * as statsRules from "../rules/stats";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 
@@ -85,7 +92,7 @@ function statsReducerFunction(
 
   // Handle max score calculation.
   if (action.type === "play" || action.type === "discard") {
-    statsState.maxScorePerStack = statsRules.getMaxScorePerStack(
+    statsState.maxScorePerStack = getMaxScorePerStack(
       gameState.deck,
       gameState.playStackDirections,
       gameState.playStackStarts,
@@ -105,7 +112,7 @@ function statsReducerFunction(
     variant.throwItInAHole && (playing || shadowing)
       ? statsState.numAttemptedCardsPlayed
       : gameState.score;
-  statsState.pace = statsRules.getPace(
+  statsState.pace = getPace(
     score,
     gameState.cardsRemainingInTheDeck,
     statsState.maxScore,
@@ -113,13 +120,13 @@ function statsReducerFunction(
     // `currentPlayerIndex` will be null if the game is over.
     gameState.turn.currentPlayerIndex === null,
   );
-  statsState.paceRisk = statsRules.getPaceRisk(
+  statsState.paceRisk = getPaceRisk(
     statsState.pace,
     metadata.options.numPlayers,
   );
 
   // Handle efficiency calculation.
-  statsState.cardsGotten = statsRules.getCardsGotten(
+  statsState.cardsGotten = getCardsGotten(
     gameState.deck,
     gameState.playStacks,
     gameState.playStackDirections,
@@ -132,7 +139,7 @@ function statsReducerFunction(
   statsState.cardsGottenByNotes =
     ourNotes === null
       ? null
-      : statsRules.getCardsGottenByNotes(
+      : getCardsGottenByNotes(
           gameState.deck,
           gameState.playStacks,
           gameState.playStackDirections,
@@ -151,7 +158,7 @@ function statsReducerFunction(
     gameState.clueTokens,
     variant,
   );
-  statsState.cluesStillUsable = statsRules.getCluesStillUsable(
+  statsState.cluesStillUsable = getCluesStillUsable(
     score,
     scorePerStack,
     statsState.maxScorePerStack,
@@ -162,18 +169,17 @@ function statsReducerFunction(
     suitCompleteClueTokenValue,
     unadjustedClueTokens,
   );
-  statsState.cluesStillUsableNotRounded =
-    statsRules.getCluesStillUsableNotRounded(
-      score,
-      scorePerStack,
-      statsState.maxScorePerStack,
-      variant.stackSize,
-      gameState.cardsRemainingInTheDeck,
-      numEndGameTurns,
-      discardClueTokenValue,
-      suitCompleteClueTokenValue,
-      unadjustedClueTokens,
-    );
+  statsState.cluesStillUsableNotRounded = getCluesStillUsableNotRounded(
+    score,
+    scorePerStack,
+    statsState.maxScorePerStack,
+    variant.stackSize,
+    gameState.cardsRemainingInTheDeck,
+    numEndGameTurns,
+    discardClueTokenValue,
+    suitCompleteClueTokenValue,
+    unadjustedClueTokens,
+  );
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed
   // number of turns.
@@ -184,7 +190,7 @@ function statsReducerFunction(
 
   // Handle double discard calculation.
   if (action.type === "discard") {
-    statsState.doubleDiscardCard = statsRules.getDoubleDiscardCard(
+    statsState.doubleDiscardCard = getDoubleDiscardCard(
       action.order,
       gameState,
       variant,

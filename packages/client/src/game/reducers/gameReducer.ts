@@ -485,8 +485,10 @@ function gameReducerFunction(
       `Failed to find the play stack at index: ${action.suitIndex}`,
     );
 
-    gameState.playStackStarts[action.suitIndex] =
-      getStackStartRank(playStack, gameState.deck) ?? null;
+    gameState.playStackStarts[action.suitIndex] = getStackStartRank(
+      playStack,
+      gameState.deck,
+    );
   }
 
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can

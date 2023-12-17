@@ -1,25 +1,29 @@
 // Functions to calculate game stats such as pace and efficiency.
 
+/* eslint-disable unicorn/no-null */
+
 import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
 import { MAX_CLUE_NUM } from "@hanabi/data";
-import type { CardNote, CardState, GameState } from "@hanabi/game";
-import {
-  PaceRisk,
-  getDiscardClueTokenValue,
-  getNumCopiesOfCard,
-  getNumDiscardedCopiesOfCard,
-  getSuitCompleteClueTokenValue,
-  getTotalCardsInDeck,
-  isAllCardPossibilitiesTrash,
-  isCardClued,
-  isCardInPlayerHand,
-  isCardNeededForMaxScore,
-  isHandLocked,
-  reversibleGetMaxScorePerStack,
-  sudokuGetMaxScorePerStack,
-} from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
+import { PaceRisk } from "../enums/PaceRisk";
+import type { CardNote } from "../interfaces/CardNote";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
+import { isAllCardPossibilitiesTrash, isCardNeededForMaxScore } from "./card";
+import { isCardClued, isCardInPlayerHand } from "./cardState";
+import {
+  getDiscardClueTokenValue,
+  getSuitCompleteClueTokenValue,
+} from "./clueTokens";
+import {
+  getNumCopiesOfCard,
+  getNumDiscardedCopiesOfCard,
+  getTotalCardsInDeck,
+} from "./deck";
+import { isHandLocked } from "./hand";
+import { reversibleGetMaxScorePerStack } from "./variants/reversible";
+import { sudokuGetMaxScorePerStack } from "./variants/sudoku";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],

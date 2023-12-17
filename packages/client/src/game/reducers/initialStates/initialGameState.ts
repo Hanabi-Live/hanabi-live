@@ -18,16 +18,19 @@ import {
   getAdjustedClueTokens,
   getCardStatus,
   getCardsPerHand,
+  getCluesStillUsableNotRounded,
   getDiscardClueTokenValue,
   getEndGameLength,
+  getPaceRisk,
   getStackDirection,
+  getStartingDeckSize,
+  getStartingPace,
   getSuitCompleteClueTokenValue,
   getTotalCardsInDeck,
   getUnadjustedClueTokens,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
-import * as statsRules from "../../rules/stats";
 import { initialTurnState } from "./initialTurnState";
 
 export function initialGameState(metadata: GameMetadata): GameState {
@@ -73,7 +76,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     variant.stackSize,
   ) as Tuple<number, NumSuits>;
   const cardsPerHand = getCardsPerHand(options);
-  const startingDeckSize = statsRules.getStartingDeckSize(
+  const startingDeckSize = getStartingDeckSize(
     options.numPlayers,
     cardsPerHand,
     variant,
@@ -82,18 +85,14 @@ export function initialGameState(metadata: GameMetadata): GameState {
     metadata.options,
     metadata.characterAssignments,
   );
-  const pace = statsRules.getStartingPace(
-    startingDeckSize,
-    maxScore,
-    endGameLength,
-  );
-  const paceRisk = statsRules.getPaceRisk(pace, options.numPlayers);
+  const pace = getStartingPace(startingDeckSize, maxScore, endGameLength);
+  const paceRisk = getPaceRisk(pace, options.numPlayers);
   const scorePerStack = playStacks.map((playStack) => playStack.length);
   const discardClueValue = getDiscardClueTokenValue(variant);
   const suitClueValue = getSuitCompleteClueTokenValue(variant);
   const score = sumArray(scorePerStack);
   const currentClues = getUnadjustedClueTokens(clueTokens, variant);
-  const cluesStillUsableNotRounded = statsRules.getCluesStillUsableNotRounded(
+  const cluesStillUsableNotRounded = getCluesStillUsableNotRounded(
     score,
     scorePerStack,
     maxScorePerStack,

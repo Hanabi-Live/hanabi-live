@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/no-null */
+
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import { StackDirection } from "../enums/StackDirection";
@@ -30,15 +32,13 @@ export function getNextPlayableRanks(
       if (!variant.sudoku) {
         // In non-Sudoku variants, the next playable card is 1 if the stack is not stared yet or the
         // N+1 rank.
-        return currentlyPlayedRank === undefined
-          ? [1]
-          : [currentlyPlayedRank + 1];
+        return currentlyPlayedRank === null ? [1] : [currentlyPlayedRank + 1];
       }
 
       // In Sudoku variants, determining the next playable ranks is more complicated. If the stack
       // is already started, then we go up, wrapping around from 5 to 1 (unless the stack was
       // started at 1, in which case 5 will be the last card of this suit).
-      if (currentlyPlayedRank !== undefined) {
+      if (currentlyPlayedRank !== null) {
         // We mod by the stack size and then add to obtain values [1, ..., stackSize].
         return [(currentlyPlayedRank % variant.stackSize) + 1];
       }
@@ -59,9 +59,7 @@ export function getNextPlayableRanks(
     case StackDirection.Down: {
       // In non-Sudoku variants, the next playable card is 5 if the stack is not stared yet or the
       // N-1 rank.
-      return currentlyPlayedRank === undefined
-        ? [5]
-        : [currentlyPlayedRank - 1];
+      return currentlyPlayedRank === null ? [5] : [currentlyPlayedRank - 1];
     }
 
     case StackDirection.Finished: {
@@ -74,18 +72,18 @@ export function getNextPlayableRanks(
 function getLastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): Rank | undefined {
+): Rank | null {
   const orderOfTopCard = playStack.at(-1);
   if (orderOfTopCard === undefined) {
-    return undefined;
+    return null;
   }
 
   const card = deck[orderOfTopCard];
   if (card === undefined) {
-    return undefined;
+    return null;
   }
 
-  return card.rank ?? undefined;
+  return card.rank;
 }
 
 export function getStackDirection(
@@ -112,7 +110,7 @@ export function getStackDirection(
   }
 
   const top = getLastPlayedRank(playStack, deck);
-  if (top === undefined || top === START_CARD_RANK) {
+  if (top === null || top === START_CARD_RANK) {
     return StackDirection.Undecided;
   }
 
@@ -143,16 +141,16 @@ export function getStackDirection(
 export function getStackStartRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): Rank | undefined {
+): Rank | null {
   const bottomCardOrder = playStack[0];
   if (bottomCardOrder === undefined) {
-    return undefined;
+    return null;
   }
 
   const bottomCard = deck[bottomCardOrder];
   if (bottomCard === undefined) {
-    return undefined;
+    return null;
   }
 
-  return bottomCard.rank ?? undefined;
+  return bottomCard.rank;
 }
