@@ -5,7 +5,7 @@
 import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { GameAction, GameMetadata, SpectatorNote } from "@hanabi/game";
-import { getCardsPerHand, getEndGameLength } from "@hanabi/game";
+import { getCardsPerHand, getEndGameLength, isHardVariant } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { iRange, newArray } from "isaacscript-common-ts";
 import { createStore } from "redux";
@@ -13,7 +13,6 @@ import { sendSelfPMFromServer } from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
-import * as hGroupRules from "../rules/hGroup";
 import * as statsRules from "../rules/stats";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { InitData } from "../types/InitData";
@@ -510,6 +509,7 @@ function initStateStore(data: InitData) {
     globals.variant,
     cardsPerHand,
   );
+  const hardVariant = isHardVariant(globals.variant, minEfficiency);
   const metadata: GameMetadata = {
     ourUsername: globals.lobby.username,
     options: data.options,
@@ -519,7 +519,7 @@ function initStateStore(data: InitData) {
     characterMetadata: data.characterMetadata,
 
     minEfficiency,
-    hardVariant: hGroupRules.hardVariant(globals.variant, minEfficiency),
+    hardVariant,
 
     hasCustomSeed: data.hasCustomSeed,
     seed: data.seed,

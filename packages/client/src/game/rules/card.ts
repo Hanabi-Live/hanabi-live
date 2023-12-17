@@ -6,13 +6,13 @@ import {
   getDiscardHelpers,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
+  hasReversedSuits,
   reversibleIsCardCritical,
   reversibleIsCardNeededForMaxScore,
   sudokuIsCardNeededForMaxScore,
 } from "@hanabi/game";
 import { eRange, filterMap } from "isaacscript-common-ts";
 import * as playStacksRules from "./playStacks";
-import * as variantRules from "./variant";
 
 export function getCardName(
   suitIndex: SuitIndex,
@@ -53,7 +53,7 @@ export function isCardNeededForMaxScore(
   }
 
   // Determining if the card needs to be played in variants with reversed suits is more complicated.
-  if (variantRules.hasReversedSuits(variant)) {
+  if (hasReversedSuits(variant)) {
     return reversibleIsCardNeededForMaxScore(
       suitIndex,
       rank,
@@ -129,7 +129,7 @@ function isCardCritical(
   variant: Variant,
 ): boolean {
   // "Up or Down" has some special cases for critical cards.
-  if (variantRules.hasReversedSuits(variant)) {
+  if (hasReversedSuits(variant)) {
     return reversibleIsCardCritical(
       suitIndex,
       rank,

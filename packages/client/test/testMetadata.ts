@@ -9,9 +9,9 @@ import {
 import { getCardsPerHand, getEndGameLength } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
+import { isHardVariant } from "packages/game/src/rules/variants/hGroup";
 import { Options } from "../../game/src/classes/Options";
 import type { GameMetadata } from "../../game/src/interfaces/GameMetadata";
-import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as statsRules from "../src/game/rules/stats";
 
 export function testMetadata(
@@ -44,6 +44,7 @@ export function testMetadata(
     variant,
     cardsPerHand,
   );
+  const hardVariant = isHardVariant(variant, minEfficiency);
 
   return {
     ourUsername: "Alice",
@@ -54,7 +55,7 @@ export function testMetadata(
     characterMetadata,
 
     minEfficiency,
-    hardVariant: minEfficiency >= HARD_VARIANT_EFFICIENCY_THRESHOLD,
+    hardVariant,
 
     hasCustomSeed: false,
     seed: "",

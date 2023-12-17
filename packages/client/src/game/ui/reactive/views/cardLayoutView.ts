@@ -1,6 +1,10 @@
 import type { CardOrder, SuitIndex } from "@hanabi/data";
 import type { GameState } from "@hanabi/game";
-import { StackDirection, getTotalCardsInDeck } from "@hanabi/game";
+import {
+  StackDirection,
+  getTotalCardsInDeck,
+  hasReversedSuits,
+} from "@hanabi/game";
 import equal from "fast-deep-equal";
 import {
   ReadonlyMap,
@@ -9,7 +13,6 @@ import {
 } from "isaacscript-common-ts";
 import type Konva from "konva";
 import { stackStartRank } from "../../../rules/playStacks";
-import * as variantRules from "../../../rules/variant";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../UIGlobals";
@@ -33,46 +36,47 @@ export function onPlayStackDirectionsChanged(
   directions: readonly StackDirection[],
   previousDirections: readonly StackDirection[] | undefined,
 ): void {
-  if (variantRules.hasReversedSuits(globals.variant)) {
-    // Update the stack directions (which are only used in the "Up or Down" and "Reversed"
-    // variants).
-    for (const [i, direction] of directions.entries()) {
-      if (
-        previousDirections !== undefined &&
-        direction === previousDirections[i]
-      ) {
-        continue;
-      }
-
-      const suit = globals.variant.suits[i]!;
-      let text = "";
-      const isUpOrDown = globals.variant.upOrDown;
-      if (isUpOrDown || suit.reversed) {
-        const stackStrings = isUpOrDown
-          ? STACK_STRINGS_UP_OR_DOWN
-          : STACK_STRINGS_REVERSED;
-
-        const stackText = stackStrings.get(direction);
-        assertDefined(
-          stackText,
-          `Failed to find the stack string for the stack direction of: ${direction}`,
-        );
-
-        text = stackText;
-      }
-
-      globals.elements.suitLabelTexts[i]!.fitText(text);
-
-      const visibleCardsOfThisSuit = globals.deck.filter(
-        (card) => card.visibleSuitIndex === i,
-      );
-      for (const card of visibleCardsOfThisSuit) {
-        const suitIndex = i as SuitIndex;
-        card.setDirectionArrow(suitIndex, direction);
-      }
-    }
-    globals.layers.UI.batchDraw();
+  if (!hasReversedSuits(globals.variant)) {
+    return;
   }
+
+  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
+  for (const [i, direction] of directions.entries()) {
+    if (
+      previousDirections !== undefined &&
+      direction === previousDirections[i]
+    ) {
+      continue;
+    }
+
+    const suit = globals.variant.suits[i]!;
+    let text = "";
+    const isUpOrDown = globals.variant.upOrDown;
+    if (isUpOrDown || suit.reversed) {
+      const stackStrings = isUpOrDown
+        ? STACK_STRINGS_UP_OR_DOWN
+        : STACK_STRINGS_REVERSED;
+
+      const stackText = stackStrings.get(direction);
+      assertDefined(
+        stackText,
+        `Failed to find the stack string for the stack direction of: ${direction}`,
+      );
+
+      text = stackText;
+    }
+
+    globals.elements.suitLabelTexts[i]!.fitText(text);
+
+    const visibleCardsOfThisSuit = globals.deck.filter(
+      (card) => card.visibleSuitIndex === i,
+    );
+    for (const card of visibleCardsOfThisSuit) {
+      const suitIndex = i as SuitIndex;
+      card.setDirectionArrow(suitIndex, direction);
+    }
+  }
+  globals.layers.UI.batchDraw();
 }
 
 export function onHandsChanged(hands: GameState["hands"]): void {

@@ -2,13 +2,13 @@
 
 import type { Suit, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
+import { hasReversedSuits } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type * as KonvaUtil from "konva/types/Util";
 import type { Arrow } from "konva/types/shapes/Arrow";
 import type { RectConfig } from "konva/types/shapes/Rect";
-import * as variantRules from "../rules/variant";
 import type { Pips } from "../types/Pips";
 import { globals } from "./UIGlobals";
 import {
@@ -108,7 +108,7 @@ export function finesseBorder(): Konva.Group {
 export function directionArrow(
   variant: Variant,
 ): { arrow: Konva.Group; arrowBase: Arrow } | null {
-  if (!variantRules.hasReversedSuits(variant)) {
+  if (!hasReversedSuits(variant)) {
     return null;
   }
 

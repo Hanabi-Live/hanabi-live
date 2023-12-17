@@ -16,6 +16,7 @@ import {
   getAdjustedClueTokens,
   getChopIndex,
   getNewClueTokensAfterAction,
+  hasReversedSuits,
   isCardClued,
   isInitialDealFinished,
 } from "@hanabi/game";
@@ -30,7 +31,6 @@ import { millisecondsToClockString } from "../../utils";
 import * as cardRules from "../rules/card";
 import * as playStacksRules from "../rules/playStacks";
 import * as textRules from "../rules/text";
-import * as variantRules from "../rules/variant";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
@@ -456,7 +456,7 @@ function gameReducerFunction(
   // Resolve the stack direction.
   if (
     action.type === "play" &&
-    (variantRules.hasReversedSuits(variant) || variant.sudoku) &&
+    (hasReversedSuits(variant) || variant.sudoku) &&
     action.suitIndex !== -1
   ) {
     // We have to wait until the deck is updated with the information of the card that we played

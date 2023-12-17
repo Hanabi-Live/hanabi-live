@@ -1,8 +1,7 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
-import { StackDirection } from "@hanabi/game";
-import * as variantRules from "./variant";
+import { StackDirection, hasReversedSuits } from "@hanabi/game";
 
 /** @returns `undefined` if there are no cards played on the stack. */
 function lastPlayedRank(
@@ -93,7 +92,7 @@ export function direction(
     return StackDirection.Finished;
   }
 
-  if (!variantRules.hasReversedSuits(variant)) {
+  if (!hasReversedSuits(variant)) {
     return StackDirection.Up;
   }
 

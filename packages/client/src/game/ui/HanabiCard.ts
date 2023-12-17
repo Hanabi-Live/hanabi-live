@@ -13,6 +13,7 @@ import type { CardNote, CardState } from "@hanabi/game";
 import {
   CardStatus,
   StackDirection,
+  hasReversedSuits,
   isCardClued,
   isCardDiscarded,
   isCardPlayed,
@@ -24,7 +25,6 @@ import { initialCardState } from "../reducers/initialStates/initialCardState";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
 import * as cardRules from "../rules/card";
-import * as variantRules from "../rules/variant";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
@@ -771,7 +771,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   // Show or hide the direction arrow (for specific variants).
   setDirectionArrow(suitIndex: SuitIndex, direction: StackDirection): void {
-    if (!variantRules.hasReversedSuits(this.variant)) {
+    if (!hasReversedSuits(this.variant)) {
       return;
     }
 

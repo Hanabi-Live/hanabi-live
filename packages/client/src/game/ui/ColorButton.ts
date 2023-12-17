@@ -1,7 +1,7 @@
 import type { Suit } from "@hanabi/data";
+import { isDualColor } from "@hanabi/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
-import * as variantRules from "../rules/variant";
 import type { Clue } from "../types/Clue";
 import { globals } from "./UIGlobals";
 import { drawPip } from "./drawPip";
@@ -47,7 +47,7 @@ export class ColorButton extends Konva.Group {
     this.add(backgroundColor);
 
     if (globals.lobby.settings.colorblindMode) {
-      if (variantRules.isDualColor(globals.variant)) {
+      if (isDualColor(globals.variant)) {
         // For Dual-Color variants, draw the color abbreviation (as text).
         const text = new Konva.Text({
           x: 0,
