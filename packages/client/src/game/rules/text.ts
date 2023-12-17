@@ -6,11 +6,10 @@ import type {
   ActionPlay,
   GameMetadata,
 } from "@hanabi/game";
-import { EndCondition, getCardSlot } from "@hanabi/game";
+import { EndCondition, getCardName, getCardSlot } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import * as cardRules from "./card";
 import * as cluesRules from "./clues";
 
 const HYPO_PREFIX = "[Hypo] ";
@@ -171,12 +170,12 @@ export function play(
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  const card =
+  const cardName =
     action.suitIndex === -1 ||
     action.rank === -1 ||
     (variant.throwItInAHole && (playing || shadowing))
       ? "a card"
-      : cardRules.getCardName(action.suitIndex, action.rank, variant);
+      : getCardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
 
@@ -186,7 +185,7 @@ export function play(
   }
 
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
-  return `${hypoPrefix}${playerName} plays ${card} from ${location}${suffix}`;
+  return `${hypoPrefix}${playerName} plays ${cardName} from ${location}${suffix}`;
 }
 
 export function discard(
@@ -209,11 +208,10 @@ export function discard(
     }
   }
 
-  let card = "";
-  card =
+  const cardName =
     action.suitIndex === -1 || action.rank === -1
       ? "a card"
-      : cardRules.getCardName(action.suitIndex, action.rank, variant);
+      : getCardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
 
@@ -226,7 +224,7 @@ export function discard(
   }
 
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
-  return `${hypoPrefix}${playerName} ${verb} ${card} from ${location}${suffix}`;
+  return `${hypoPrefix}${playerName} ${verb} ${cardName} from ${location}${suffix}`;
 }
 
 export function getPlayerName(

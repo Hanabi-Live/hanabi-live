@@ -14,6 +14,7 @@ import type {
 import {
   EndCondition,
   getAdjustedClueTokens,
+  getCardStatus,
   getChopIndex,
   getNewClueTokensAfterAction,
   getStackDirection,
@@ -30,7 +31,6 @@ import {
   tupleEntries,
 } from "isaacscript-common-ts";
 import { millisecondsToClockString } from "../../utils";
-import * as cardRules from "../rules/card";
 import * as textRules from "../rules/text";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
@@ -497,7 +497,7 @@ function gameReducerFunction(
     action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
-      gameState.cardStatus[action.suitIndex][rank] = cardRules.getCardStatus(
+      gameState.cardStatus[action.suitIndex][rank] = getCardStatus(
         action.suitIndex,
         rank,
         gameState.deck,

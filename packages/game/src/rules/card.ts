@@ -1,18 +1,21 @@
 import type { Rank, SuitIndex, Variant } from "@hanabi/data";
 import { START_CARD_RANK } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import { eRange, filterMap } from "isaacscript-common-ts";
+import { CardStatus } from "../enums/CardStatus";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
 import {
-  CardStatus,
   getDiscardHelpers,
-  getNextPlayableRanks,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
-  hasReversedSuits,
+} from "./deck";
+import { getNextPlayableRanks } from "./playStacks";
+import {
   reversibleIsCardCritical,
   reversibleIsCardNeededForMaxScore,
-  sudokuIsCardNeededForMaxScore,
-} from "@hanabi/game";
-import { eRange, filterMap } from "isaacscript-common-ts";
+} from "./variants/reversible";
+import { sudokuIsCardNeededForMaxScore } from "./variants/sudoku";
+import { hasReversedSuits } from "./variants/variantIdentity";
 
 export function getCardName(
   suitIndex: SuitIndex,

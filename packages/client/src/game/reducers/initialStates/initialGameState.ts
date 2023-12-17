@@ -16,6 +16,7 @@ import type {
 } from "@hanabi/game";
 import {
   getAdjustedClueTokens,
+  getCardStatus,
   getCardsPerHand,
   getDiscardClueTokenValue,
   getEndGameLength,
@@ -26,7 +27,6 @@ import {
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
-import * as cardRules from "../../rules/card";
 import * as statsRules from "../../rules/stats";
 import { initialTurnState } from "./initialTurnState";
 
@@ -163,7 +163,7 @@ function getInitialCardStatusMap(
 
     const suitStatuses: Partial<Record<Rank, CardStatus>> = {};
     for (const rank of variant.ranks) {
-      suitStatuses[rank] = cardRules.getCardStatus(
+      suitStatuses[rank] = getCardStatus(
         suitIndex,
         rank,
         [],

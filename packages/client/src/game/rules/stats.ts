@@ -10,15 +10,16 @@ import {
   getNumDiscardedCopiesOfCard,
   getSuitCompleteClueTokenValue,
   getTotalCardsInDeck,
+  isAllCardPossibilitiesTrash,
   isCardClued,
   isCardInPlayerHand,
+  isCardNeededForMaxScore,
   isHandLocked,
   reversibleGetMaxScorePerStack,
   sudokuGetMaxScorePerStack,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
-import * as cardRules from "./card";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],
@@ -180,7 +181,7 @@ export function getCardsGotten(
     } else if (
       isCardInPlayerHand(cardState) &&
       isCardClued(cardState) &&
-      !cardRules.isAllCardPossibilitiesTrash(
+      !isAllCardPossibilitiesTrash(
         cardState,
         deck,
         playStacks,
@@ -219,7 +220,7 @@ export function getCardsGottenByNotes(
 
     if (
       isCardInPlayerHand(cardState) &&
-      !cardRules.isAllCardPossibilitiesTrash(
+      !isAllCardPossibilitiesTrash(
         cardState,
         deck,
         playStacks,
@@ -491,7 +492,7 @@ export function getDoubleDiscardCard(
   }
 
   // It is never a double discard situation if the discarded card does not need to be played.
-  const needsToBePlayed = cardRules.isCardNeededForMaxScore(
+  const neededForMaxScore = isCardNeededForMaxScore(
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
     gameState.deck,
@@ -500,7 +501,7 @@ export function getDoubleDiscardCard(
     gameState.playStackStarts,
     variant,
   );
-  if (!needsToBePlayed) {
+  if (!neededForMaxScore) {
     return null;
   }
 

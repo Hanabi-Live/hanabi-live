@@ -13,6 +13,7 @@ import type { CardNote, CardState } from "@hanabi/game";
 import {
   CardStatus,
   StackDirection,
+  canCardPossiblyBeFromEmpathy,
   getInitialCardState,
   hasReversedSuits,
   isCardClued,
@@ -24,7 +25,6 @@ import Konva from "konva";
 import { includes } from "lodash";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import * as abbreviationRules from "../rules/abbreviation";
-import * as cardRules from "../rules/card";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
@@ -1320,7 +1320,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     if (
       this.note.possibilities.every(
         ([suitIndex, rank]) =>
-          !cardRules.canCardPossiblyBeFromEmpathy(this.state, suitIndex, rank),
+          !canCardPossiblyBeFromEmpathy(this.state, suitIndex, rank),
       )
     ) {
       // Unmorph

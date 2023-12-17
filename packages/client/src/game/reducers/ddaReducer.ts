@@ -1,7 +1,7 @@
 import type { PlayerIndex } from "@hanabi/data";
 import type { CardState } from "@hanabi/game";
+import { canCardPossiblyBeFromCluesOnly } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
-import * as cardRules from "../rules/card";
 
 export function ddaReducer(
   deck: readonly CardState[],
@@ -27,11 +27,13 @@ export function ddaReducer(
   const { suitIndex, rank } = ddaCard;
 
   for (const [order, card] of newDeck.entries()) {
+    const inDoubleDiscard =
+      card.location === currentPlayerIndex &&
+      canCardPossiblyBeFromCluesOnly(card, suitIndex, rank);
+
     newDeck[order] = {
       ...card,
-      inDoubleDiscard:
-        card.location === currentPlayerIndex &&
-        cardRules.canCardPossiblyBeFromCluesOnly(card, suitIndex, rank),
+      inDoubleDiscard,
     };
   }
 

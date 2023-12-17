@@ -9,10 +9,14 @@ import type {
   GameMetadata,
   GameState,
 } from "@hanabi/game";
-import { EndCondition, isCardClued, isHandLocked } from "@hanabi/game";
+import {
+  EndCondition,
+  canCardPossiblyBeFromCluesOnly,
+  isCardClued,
+  isHandLocked,
+} from "@hanabi/game";
 import { includes } from "isaacscript-common-ts";
 import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
-import * as cardRules from "../../rules/card";
 import { SoundType } from "../../types/SoundType";
 
 export const SOUND_TYPE_ACTIONS = [
@@ -120,7 +124,7 @@ export function getSoundType(
         if (
           previousCardState !== undefined &&
           previouslyDiscardedCard !== undefined &&
-          cardRules.canCardPossiblyBeFromCluesOnly(
+          canCardPossiblyBeFromCluesOnly(
             previousCardState,
             previouslyDiscardedCard.suitIndex,
             previouslyDiscardedCard.rank,

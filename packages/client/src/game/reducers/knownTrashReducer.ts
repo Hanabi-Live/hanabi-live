@@ -1,6 +1,6 @@
 import type { Variant } from "@hanabi/data";
 import type { CardState, GameState } from "@hanabi/game";
-import * as cardRules from "../rules/card";
+import { isAllCardPossibilitiesTrash } from "@hanabi/game";
 
 export function knownTrashReducer(
   deck: readonly CardState[],
@@ -12,17 +12,19 @@ export function knownTrashReducer(
   const newDeck = [...deck];
 
   for (const [order, card] of newDeck.entries()) {
+    const isKnownTrashFromEmpathy = isAllCardPossibilitiesTrash(
+      card,
+      deck,
+      playStacks,
+      playStackDirections,
+      playStackStarts,
+      variant,
+      true,
+    );
+
     newDeck[order] = {
       ...card,
-      isKnownTrashFromEmpathy: cardRules.isAllCardPossibilitiesTrash(
-        card,
-        deck,
-        playStacks,
-        playStackDirections,
-        playStackStarts,
-        variant,
-        true,
-      ),
+      isKnownTrashFromEmpathy,
     };
   }
 

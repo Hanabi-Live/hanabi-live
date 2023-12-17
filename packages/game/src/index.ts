@@ -13,6 +13,7 @@ export * from "./interfaces/StateStrike";
 export * from "./interfaces/StatsState";
 export * from "./interfaces/TurnState";
 export * from "./reducers/initialStates/initialCardState";
+export * from "./rules/card";
 export * from "./rules/cardState";
 export * from "./rules/clueTokens";
 export * from "./rules/deck";

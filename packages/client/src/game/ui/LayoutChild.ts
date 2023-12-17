@@ -1,9 +1,8 @@
 import type { PlayerIndex } from "@hanabi/data";
-import { isAtMaxClueTokens } from "@hanabi/game";
+import { isAtMaxClueTokens, isCardPotentiallyPlayable } from "@hanabi/game";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
-import * as cardRules from "../rules/card";
 import { ActionType } from "../types/ActionType";
 import { SoundType } from "../types/SoundType";
 import type { CardLayout } from "./CardLayout";
@@ -165,7 +164,7 @@ export class LayoutChild extends Konva.Group {
       // Do not use warnings for preplays unless we are at 2 strikes.
       (currentPlayerIndex === ourPlayerIndex ||
         ongoingGame.strikes.length === 2) &&
-      !cardRules.isCardPotentiallyPlayable(
+      !isCardPotentiallyPlayable(
         this.card.state,
         ongoingGame.deck,
         ongoingGame.playStacks,
