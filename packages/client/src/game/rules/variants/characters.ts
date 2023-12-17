@@ -1,5 +1,5 @@
 import type { GameMetadata } from "@hanabi/game";
-import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
+import { getCharacterNameForPlayer } from "@hanabi/game";
 
 export function shouldSeeSlot2CardIdentity(metadata: GameMetadata): boolean {
   if (!metadata.options.detrimentalCharacters) {

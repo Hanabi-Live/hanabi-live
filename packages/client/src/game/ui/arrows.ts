@@ -4,6 +4,7 @@
 import type { CardOrder, PlayerIndex, Suit } from "@hanabi/data";
 import { ClueType } from "@hanabi/data";
 import {
+  getCharacterNameForPlayer,
   isCardDiscarded,
   isCardInPlayerHand,
   isCardPlayed,
@@ -12,7 +13,6 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
-import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue } from "../types/Clue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";

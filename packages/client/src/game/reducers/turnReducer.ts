@@ -7,6 +7,7 @@ import type {
 } from "@hanabi/game";
 import {
   EndCondition,
+  getCharacterNameForPlayer,
   getEndTurn,
   getNextPlayerIndex,
   isInitialDealFinished,
@@ -17,7 +18,6 @@ import {
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { assertNotNull } from "isaacscript-common-ts";
-import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export const turnReducer = produce(turnReducerFunction, {} as TurnState);
 

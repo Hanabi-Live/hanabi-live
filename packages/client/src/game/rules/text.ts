@@ -6,10 +6,14 @@ import type {
   ActionPlay,
   GameMetadata,
 } from "@hanabi/game";
-import { EndCondition, getCardName, getCardSlot } from "@hanabi/game";
+import {
+  EndCondition,
+  getCardName,
+  getCardSlot,
+  getCharacterNameForPlayer,
+} from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";
-import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import * as cluesRules from "./clues";
 
 const HYPO_PREFIX = "[Hypo] ";

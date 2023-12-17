@@ -12,11 +12,11 @@ import type {
 import {
   EndCondition,
   canCardPossiblyBeFromCluesOnly,
+  getCharacterNameForPlayer,
   isCardClued,
   isHandLocked,
 } from "@hanabi/game";
 import { includes } from "isaacscript-common-ts";
-import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
 import { SoundType } from "../../types/SoundType";
 
 export const SOUND_TYPE_ACTIONS = [

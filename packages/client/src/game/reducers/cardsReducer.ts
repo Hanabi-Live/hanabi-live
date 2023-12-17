@@ -16,6 +16,7 @@ import type {
   GameState,
 } from "@hanabi/game";
 import {
+  getCharacterNameForPlayer,
   getInitialCardState,
   isCardOnChop,
   isInitialDealFinished,
@@ -31,7 +32,6 @@ import * as cluesRules from "../rules/clues";
 import * as characterRules from "../rules/variants/characters";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
-import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export function cardsReducer(
   deck: readonly CardState[],
