@@ -11,6 +11,7 @@ import type {
 } from "@hanabi/game";
 import {
   getDiscardClueTokenValue,
+  getEndGameLength,
   getSuitCompleteClueTokenValue,
   getUnadjustedClueTokens,
   isCardClued,
@@ -19,7 +20,6 @@ import type { Draft } from "immer";
 import { produce } from "immer";
 import { sumArray } from "isaacscript-common-ts";
 import * as statsRules from "../rules/stats";
-import * as turnRules from "../rules/turn";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 
@@ -78,7 +78,7 @@ function statsReducerFunction(
     }
   }
 
-  const numEndGameTurns = turnRules.getEndGameLength(
+  const numEndGameTurns = getEndGameLength(
     metadata.options,
     metadata.characterAssignments,
   );

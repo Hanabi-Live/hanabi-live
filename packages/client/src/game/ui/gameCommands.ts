@@ -5,7 +5,7 @@
 import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
 import { getVariant } from "@hanabi/data";
 import type { GameAction, GameMetadata, SpectatorNote } from "@hanabi/game";
-import { getCardsPerHand } from "@hanabi/game";
+import { getCardsPerHand, getEndGameLength } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { iRange, newArray } from "isaacscript-common-ts";
 import { createStore } from "redux";
@@ -15,7 +15,6 @@ import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
 import * as hGroupRules from "../rules/hGroup";
 import * as statsRules from "../rules/stats";
-import * as turnRules from "../rules/turn";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
@@ -503,10 +502,7 @@ function initStateStore(data: InitData) {
   }
 
   // Create the state store (using the Redux library).
-  const endGameLength = turnRules.getEndGameLength(
-    data.options,
-    characterAssignments,
-  );
+  const endGameLength = getEndGameLength(data.options, characterAssignments);
   const cardsPerHand = getCardsPerHand(data.options);
   const minEfficiency = statsRules.getMinEfficiency(
     data.options.numPlayers,

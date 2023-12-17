@@ -5,11 +5,18 @@ import type {
   GameState,
   TurnState,
 } from "@hanabi/game";
-import { EndCondition, isInitialDealFinished } from "@hanabi/game";
+import {
+  EndCondition,
+  getEndTurn,
+  getNextPlayerIndex,
+  isInitialDealFinished,
+  shouldEndTurnAfterClue,
+  shouldEndTurnAfterDraw,
+  shouldPlayOrderInvert,
+} from "@hanabi/game";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { assertNotNull } from "isaacscript-common-ts";
-import * as turnRules from "../rules/turn";
 import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export const turnReducer = produce(turnReducerFunction, {} as TurnState);
@@ -58,7 +65,7 @@ function turnReducerFunction(
         }
 
         if (
-          turnRules.shouldEndTurnAfterDraw(
+          shouldEndTurnAfterDraw(
             turn.cardsPlayedOrDiscardedThisTurn,
             turn.cardsDiscardedThisTurn,
             characterName,
@@ -88,9 +95,7 @@ function turnReducerFunction(
 
       turn.segment++;
 
-      if (
-        turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterName)
-      ) {
+      if (shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterName)) {
         nextTurn(
           turn,
           gameState.cardsRemainingInTheDeck,
@@ -117,7 +122,7 @@ function turnReducerFunction(
         }
 
         if (
-          turnRules.shouldEndTurnAfterDraw(
+          shouldEndTurnAfterDraw(
             turn.cardsPlayedOrDiscardedThisTurn,
             turn.cardsDiscardedThisTurn,
             characterName,
@@ -191,18 +196,19 @@ function nextTurn(
 ) {
   state.turnNum++;
 
-  if (turnRules.shouldPlayOrderInvert(characterName)) {
+  if (shouldPlayOrderInvert(characterName)) {
     state.playOrderInverted = !state.playOrderInverted;
   }
 
-  state.currentPlayerIndex = turnRules.getNextPlayerIndex(
-    state.currentPlayerIndex,
-    metadata.options.numPlayers,
-    state.playOrderInverted,
-  );
+  state.currentPlayerIndex =
+    getNextPlayerIndex(
+      state.currentPlayerIndex,
+      metadata.options.numPlayers,
+      state.playOrderInverted,
+    ) ?? null;
 
   if (deckSize === 0 && state.endTurnNum === null) {
-    state.endTurnNum = turnRules.getEndTurn(state.turnNum, metadata);
+    state.endTurnNum = getEndTurn(state.turnNum, metadata);
   }
 
   state.cardsPlayedOrDiscardedThisTurn = 0;

@@ -26,7 +26,11 @@
     "./**/.*.tsx",
   ],
 
+  // @template-customization-start
+
   // Needed to avoid spurious errors in VSCode when having scripts open (due to the
   // "typescript.tsserver.experimental.enableProjectDiagnostics" setting).
   "exclude": ["misc", "packages"],
+
+  // @template-customization-end
 }

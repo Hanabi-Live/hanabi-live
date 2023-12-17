@@ -18,6 +18,7 @@ import {
   getAdjustedClueTokens,
   getCardsPerHand,
   getDiscardClueTokenValue,
+  getEndGameLength,
   getSuitCompleteClueTokenValue,
   getTotalCardsInDeck,
   getUnadjustedClueTokens,
@@ -27,7 +28,6 @@ import { newArray, sumArray } from "isaacscript-common-ts";
 import * as cardRules from "../../rules/card";
 import * as playStacksRules from "../../rules/playStacks";
 import * as statsRules from "../../rules/stats";
-import * as turnRules from "../../rules/turn";
 import { initialTurnState } from "./initialTurnState";
 
 export function initialGameState(metadata: GameMetadata): GameState {
@@ -78,7 +78,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
     cardsPerHand,
     variant,
   );
-  const endGameLength = turnRules.getEndGameLength(
+  const endGameLength = getEndGameLength(
     metadata.options,
     metadata.characterAssignments,
   );

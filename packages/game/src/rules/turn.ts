@@ -1,7 +1,8 @@
 import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
 import { getCharacter } from "@hanabi/data";
-import type { GameMetadata, Options } from "@hanabi/game";
-import { getAdjustedClueTokens } from "@hanabi/game";
+import type { Options } from "../classes/Options";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import { getAdjustedClueTokens } from "./clueTokens";
 
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
@@ -42,10 +43,10 @@ export function getNextPlayerIndex(
   currentPlayerIndex: PlayerIndex | null,
   numPlayers: NumPlayers,
   turnsInverted: boolean,
-): PlayerIndex | null {
+): PlayerIndex | undefined {
   // If the game is already over, then there is no next player.
   if (currentPlayerIndex === null) {
-    return null;
+    return undefined;
   }
 
   if (turnsInverted) {

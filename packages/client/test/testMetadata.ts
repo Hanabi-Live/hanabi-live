@@ -6,14 +6,13 @@ import {
   DEFAULT_VARIANT_NAME,
   getVariant,
 } from "@hanabi/data";
-import { getCardsPerHand } from "@hanabi/game";
+import { getCardsPerHand, getEndGameLength } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
 import { Options } from "../../game/src/classes/Options";
 import type { GameMetadata } from "../../game/src/interfaces/GameMetadata";
 import { HARD_VARIANT_EFFICIENCY_THRESHOLD } from "../src/constants";
 import * as statsRules from "../src/game/rules/stats";
-import * as turnRules from "../src/game/rules/turn";
 
 export function testMetadata(
   numPlayers: NumPlayers,
@@ -37,10 +36,7 @@ export function testMetadata(
     NumPlayers
   >;
   const variant = getVariant(variantName);
-  const endGameLength = turnRules.getEndGameLength(
-    options,
-    characterAssignments,
-  );
+  const endGameLength = getEndGameLength(options, characterAssignments);
   const cardsPerHand = getCardsPerHand(options);
   const minEfficiency = statsRules.getMinEfficiency(
     numPlayers,
