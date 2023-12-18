@@ -6708,7 +6708,6 @@ __metadata:
     husky: "npm:^8.0.3"
     immer: "npm:^10.0.3"
     interactjs: "npm:^1.10.26"
-    isaac-typescript-definitions: "npm:^40.0.3"
     isaacscript: "npm:^3.36.0"
     isaacscript-common-node: "npm:^3.0.0"
     isaacscript-common-ts: "npm:^13.5.1"
@@ -7531,15 +7530,6 @@ __metadata:
   version: 0.4.1
   resolution: "is-yarn-global@npm:0.4.1"
   checksum: 8ff66f33454614f8e913ad91cc4de0d88d519a46c1ed41b3f589da79504ed0fcfa304064fe3096dda9360c5f35aa210cb8e978fd36798f3118cb66a4de64d365
-  languageName: node
-  linkType: hard
-
-"isaac-typescript-definitions@npm:^40.0.3":
-  version: 40.0.3
-  resolution: "isaac-typescript-definitions@npm:40.0.3"
-  dependencies:
-    lua-types: "npm:^2.13.1"
-  checksum: de27d738d1fa40795987b485b5c3d703cfd04fb0fc248b248b78af60f0d30702ed9601fdaf1547799195459b71bb9077933ada42fc9b9f6bbc0a87ba7986f18d
   languageName: node
   linkType: hard
 
@@ -8872,13 +8862,6 @@ __metadata:
   version: 7.18.3
   resolution: "lru-cache@npm:7.18.3"
   checksum: b3a452b491433db885beed95041eb104c157ef7794b9c9b4d647be503be91769d11206bb573849a16b4cc0d03cbd15ffd22df7960997788b74c1d399ac7a4fed
-  languageName: node
-  linkType: hard
-
-"lua-types@npm:^2.13.1":
-  version: 2.13.1
-  resolution: "lua-types@npm:2.13.1"
-  checksum: c39e0800f35422dcc878c030fe3c320de4dd57486162b30ccbf7006e44606dc0f7e6fc986695c9329170f02feb1b56daf80e9fc15e63c2dc3f9959f3460e7c1a
   languageName: node
   linkType: hard
 
