@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx git-pull-run --pattern "yarn.lock" --command "yarn install --immutable"
