@@ -70,8 +70,8 @@ export function sudokuWalkUpAll(
     if (allDiscardedSet.has(currentRank)) {
       // We hit a new dead rank.
       for (const writeRank of eRange(lastDead + 1, currentRank)) {
-        maxScoresForEachStartingValueOfSuit[writeRank - 1] =
-          currentRank - writeRank;
+        const maxScore = currentRank - writeRank;
+        maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
       }
 
       maxScoresForEachStartingValueOfSuit[currentRank - 1] = 0;
@@ -95,10 +95,8 @@ export function sudokuWalkUpAll(
       const scoreForPlayingUpToLargestRank = variant.stackSize + 1 - writeRank;
       const scoreWithWraparound =
         scoreForStartingAt1 + scoreForPlayingUpToLargestRank;
-      maxScoresForEachStartingValueOfSuit[writeRank - 1] = Math.min(
-        scoreWithWraparound,
-        variant.stackSize,
-      );
+      const maxScore = Math.min(scoreWithWraparound, variant.stackSize);
+      maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
     }
   }
 
