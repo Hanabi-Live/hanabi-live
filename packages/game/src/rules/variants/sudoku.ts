@@ -1,5 +1,4 @@
 import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import { DEFAULT_CARD_RANKS } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
 import type { CardState } from "../../interfaces/CardState";
@@ -92,14 +91,11 @@ export function sudokuWalkUpAll(
     // Here, we still need to write all "higher" values, adding the longest sequence starting at 1
     // to them.
     for (const writeRank of iRange(lastDead + 1, variant.stackSize)) {
-      const maxScore = Math.min(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        maxScoresForEachStartingValueOfSuit[0]! +
-          variant.stackSize +
-          1 -
-          writeRank,
-        DEFAULT_CARD_RANKS.length,
-      );
+      const scoreForStartingAt1 = maxScoresForEachStartingValueOfSuit[0];
+      const scoreForPlayingUpToLargestRank = variant.stackSize + 1 - writeRank;
+      const scoreWithWraparound =
+        scoreForStartingAt1 + scoreForPlayingUpToLargestRank;
+      const maxScore = Math.min(scoreWithWraparound, variant.stackSize);
       maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
     }
   }
