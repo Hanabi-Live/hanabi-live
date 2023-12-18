@@ -7,13 +7,13 @@ import {
   isAtMaxClueTokens,
   isCardInPlayerHand,
 } from "@hanabi/game";
-import { assertDefined, todo } from "isaacscript-common-ts";
+import { assertDefined } from "isaacscript-common-ts";
 import { ActionType } from "../types/ActionType";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
+import { clickRightCheckAddNote } from "./clickNotes";
 import { colorToColorIndex } from "./convert";
-import * as notes from "./notes";
 import * as turn from "./turn";
 
 export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
@@ -170,24 +170,5 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Ctrl + right-click is the normal note pop-up.
-  if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-    notes.openEditTooltip(card);
-    return;
-  }
-
-  // Shift + right-click is a "f" note. (This is a common abbreviation for "this card is Finessed".)
-  if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
-    card.appendNote("f");
-    return;
-  }
-
-  // Alt + right-click is a "cm" note. (This is a common abbreviation for "this card is chop
-  // moved".)
-  if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
-    card.appendNote("cm");
-    return;
-  }
-
-  todo();
+  clickRightCheckAddNote(event, card, true);
 }

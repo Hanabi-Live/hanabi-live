@@ -7,8 +7,8 @@ import type { CardIdentity } from "../types/CardIdentity";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
+import { clickRightCheckAddNote, preOpenNoteEditTooltip } from "./clickNotes";
 import * as hypothetical from "./hypothetical";
-import * as notes from "./notes";
 import * as replay from "./replay";
 
 export function HanabiCardClick(
@@ -74,12 +74,12 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     !globals.state.finished
   ) {
-    lastNote = "";
-    notes.openEditTooltip(card);
+    preOpenNoteEditTooltip(card);
+    return;
   }
 
   if (
-    event.ctrlKey || // No actions in this function use modifiers other than Alt
+    event.ctrlKey || // No actions in this function use modifiers other than alt.
     event.shiftKey ||
     event.metaKey ||
     card.isStackBase || // Disable clicking on the stack base
@@ -138,8 +138,6 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
   }
 }
 
-let lastNote = "";
-
 function clickRight(card: HanabiCard, event: MouseEvent) {
   // Alt + right-click is a card morph (in a hypothetical).
   if (
@@ -175,56 +173,6 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered.
-  // (This must be above the other note code because of the modifiers.)
-  if (
-    event.ctrlKey &&
-    event.shiftKey &&
-    !event.metaKey &&
-    !globals.state.finished
-  ) {
-    if (event.altKey) {
-      // When Alt is held, copy only the new part of the last note.
-      if (lastNote === "") {
-        const noteText = globals.lastNote;
-        const lastPipe = noteText.lastIndexOf("|");
-        const lastNoteString = noteText.slice(lastPipe + 1).trim();
-        lastNote = lastNoteString;
-      }
-      card.appendNoteOnly(lastNote);
-    } else {
-      card.setNote(globals.lastNote);
-    }
-    return;
-  }
-
-  // Shift + right-click is a "f" note. (This is a common abbreviation for "this card is Finessed".)
-  if (
-    !event.ctrlKey &&
-    event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey &&
-    !globals.state.finished
-  ) {
-    lastNote = "f";
-    card.appendNote(lastNote);
-    return;
-  }
-
-  // Alt + right-click is a "cm" note. (This is a common abbreviation for "this card is chop
-  // moved".)
-  if (
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    event.altKey &&
-    !event.metaKey &&
-    !globals.state.finished
-  ) {
-    lastNote = "cm";
-    card.appendNote(lastNote);
-    return;
-  }
-
   // Ctrl + right-click is a local arrow. Even if they are not a leader in a shared replay, a user
   // might still want to draw an arrow on a card for demonstration purposes. However, we do not want
   // to enable this functionality in shared replays because it could be misleading as to who the
@@ -240,30 +188,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Ctrl + Alt + right-click is prepend turn count.
-  if (
-    event.ctrlKey &&
-    !event.shiftKey &&
-    event.altKey &&
-    !event.metaKey &&
-    !globals.state.finished
-  ) {
-    lastNote = `#${globals.elements.turnNumberLabel?.text()}`;
-    card.prependTurnCountNote(lastNote);
-    return;
-  }
-
-  // A normal right-click is edit a note.
-  if (
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey &&
-    !globals.state.finished
-  ) {
-    lastNote = "";
-    notes.openEditTooltip(card);
-  }
+  clickRightCheckAddNote(event, card, false);
 }
 
 /** Morphing cards allows for creation of hypothetical situations. */
