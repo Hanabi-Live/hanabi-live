@@ -53,6 +53,7 @@
     "husky": "^8.0.3",
     "immer": "^10.0.3",
     "interactjs": "^1.10.26",
+    "isaac-typescript-definitions": "^40.0.3",
     "isaacscript": "^3.36.0",
     "isaacscript-common-node": "^3.0.0",
     "isaacscript-common-ts": "^13.5.1",
