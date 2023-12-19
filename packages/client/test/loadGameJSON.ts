@@ -317,7 +317,6 @@ function drawCard(
 function dealInitialCards(
   numPlayers: NumPlayers,
   cardsPerHand: number,
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   actions: GameAction[],
   deck: readonly CardIdentity[],
 ): CardOrder {

@@ -179,7 +179,7 @@ export function openEditTooltip(
   const input = document.createElement("input");
   input.setAttribute("id", `tooltip-${card.tooltipName}-input`);
   input.setAttribute("type", "text");
-  input.setAttribute("value", `${note}`);
+  input.setAttribute("value", note);
 
   tooltips.setInstanceContent(tooltip, input.outerHTML);
 

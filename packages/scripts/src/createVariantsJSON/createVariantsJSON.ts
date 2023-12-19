@@ -170,9 +170,7 @@ function getOldVariantMaps(variants: readonly VariantJSON[]) {
 function getVariantsFromVariantDescriptions(
   variantDescriptions: readonly VariantDescription[],
   suitsNameMap: ReadonlyMap<string, SuitJSON>,
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsNameToIDMap: Map<string, number>,
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsIDToNameMap: Map<number, string>,
 ): readonly VariantJSON[] {
   return variantDescriptions.map((variantDescription) => ({
@@ -188,9 +186,7 @@ function getVariantsFromVariantDescriptions(
 
 function getNextUnusedVariantID(
   variantName: string,
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsNameToIDMap: Map<string, number>,
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   oldVariantsIDToNameMap: Map<number, string>,
 ): number {
   // First, prefer the old/existing variant ID, if present.

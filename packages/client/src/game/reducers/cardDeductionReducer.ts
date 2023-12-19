@@ -85,7 +85,6 @@ function calculatePlayerPossibilities(
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   hands: GameState["hands"],
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
   deck: CardState[],
   oldDeck: readonly CardState[],
   cardCountMap: readonly number[][],
@@ -118,7 +117,7 @@ function calculateCard(
   card: CardState,
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
+
   deck: CardState[],
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
@@ -437,7 +436,7 @@ function possibilityValid(
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   index: number,
   cardCountMap: readonly number[][],
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
+
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   if (deckPossibilities.length === index) {
@@ -488,7 +487,7 @@ function possibilityValid(
 
 function updatePossibilitiesToValidate(
   cardCountMap: readonly number[][],
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
+
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;

@@ -414,7 +414,7 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
     id += "-other-scores";
   }
   let html = `<div id="${id}" data-tooltip-content="#${id}-tooltip">`;
-  html += `${iconsFromOptions(icons)}`;
+  html += iconsFromOptions(icons);
   html += "</div>";
   html += `
     <div class="hidden">
