@@ -1,3 +1,5 @@
+import { WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
+
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
 type WebSocketCallbacks = WebSocketCallbackCommands & {
@@ -85,10 +87,8 @@ export class Connection {
   }
 }
 
-const SEPARATOR = " ";
-
 function unpack(data: string): readonly string[] {
-  const name = data.split(SEPARATOR)[0]!;
+  const name = data.split(WEBSOCKET_COMMAND_SEPARATOR)[0]!;
   return [name, data.slice(name.length + 1, data.length)];
 }
 
@@ -97,5 +97,5 @@ function unmarshal(data: string): unknown {
 }
 
 function marshalAndPack(name: string, data: unknown): string {
-  return name + SEPARATOR + JSON.stringify(data);
+  return name + WEBSOCKET_COMMAND_SEPARATOR + JSON.stringify(data);
 }

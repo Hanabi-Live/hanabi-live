@@ -9,6 +9,7 @@ import {
   normalizeString,
   parseIntSafe,
 } from "isaacscript-common-ts";
+import { setCookieValue } from "../httpSession";
 import { logger } from "../logger";
 import { models } from "../models";
 import { getClientVersion } from "../version";
@@ -31,16 +32,15 @@ const RESERVED_USERNAMES = new ReadonlySet([
 const WHITESPACE_REGEX = /\s/;
 
 /**
- * Handles the first part of login authentication. The user must POST to "/login" with the values
- * from the `HTTPLoginData` interface. If successful, they will receive a cookie from the server
- * that is used to establish a WebSocket connection.
+ * Handles the first part of login authentication. (The second step is found in "ws.ts".)
  *
- * The next step is found in "ws.ts".
+ * The user must POST to "/login" with the values from the `HTTPLoginData` interface. If successful,
+ * they will receive a cookie from the server that is used to establish a WebSocket connection.
  *
  * By allowing this function to run concurrently with no locking, there is a race condition where a
- * new user can login twice at the same time and a new user will be inserted into the database
- * twice. However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row
- * will prevent the 2nd insertion from completing.
+ * new user can login twice at the same time, causing two database inserts at the same time.
+ * However, the UNIQUE SQL constraint on the "username" row and the "normalized_username" row will
+ * prevent the 2nd insertion from completing.
  */
 export async function httpLogin(
   request: FastifyRequest,
@@ -58,8 +58,6 @@ export async function httpLogin(
     return reply.code(StatusCodes.UNAUTHORIZED).send(versionError);
   }
 
-  const passwordHash = await argon2.hash(password);
-
   let user = await models.users.get(username);
   if (user === undefined) {
     const normalizedUsername = normalizeString(username);
@@ -73,6 +71,7 @@ export async function httpLogin(
       return reply.code(StatusCodes.UNAUTHORIZED).send(newUserError);
     }
 
+    const passwordHash = await argon2.hash(password);
     const newUser = await models.users.create(
       username,
       normalizedUsername,
@@ -89,12 +88,15 @@ export async function httpLogin(
 
     user = newUser;
   } else {
-    if (passwordHash !== user.passwordHash) {
+    const isValidPassword = await argon2.verify(user.passwordHash, password);
+    if (!isValidPassword) {
       return reply
         .code(StatusCodes.UNAUTHORIZED)
         .send("That is not the correct password.");
     }
 
+    // Password changes are handled by the same time as normal logins. `newPassword` will be
+    // undefined in situations where users are logging in and not changing their password.
     if (newPassword !== undefined && newPassword !== "") {
       const newPasswordHash = await argon2.hash(password);
       await models.users.setPassword(user.id, newPasswordHash);
@@ -104,11 +106,11 @@ export async function httpLogin(
   logger.info(`User "${user.username}" logged in from: ${request.ip}`);
 
   // Save the information to the session cookie.
-  request.session.set("userID", user.id);
+  setCookieValue(request, "userID", user.id);
 
   // Return a "200 OK" HTTP code. (Returning a code is not actually necessary but Firefox will
   // complain otherwise.)
-  return reply.code(StatusCodes.OK).send();
+  return reply.send(); // An empty reply will have `StatusCodes.OK`.
 
   // Next, the client will attempt to establish a WebSocket connection, which is handled in
   // "websocket.ts".

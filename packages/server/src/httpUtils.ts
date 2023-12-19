@@ -9,6 +9,7 @@ import { getClientVersion } from "./version";
  * This cannot be a constant object because we want the version of the client to be updatable
  * without restarting the server.
  */
+// This cannot return `TemplateVariables` since it does not include the title yet.
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getTemplateVariables() {
   return {

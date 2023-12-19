@@ -11,11 +11,11 @@ func httpTestCookie(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// If they have logged in, their cookie should have values that we set in httpLogin.go
+	// If they have logged in, their cookie should have values that we set in "httpLogin.go".
 	session := gsessions.Default(c)
 	if userID := session.Get("userID"); userID == nil {
 		// It would be more correct to send a "StatusUnauthorized" error code,
-		// but we do not want to cause an error in the JavaScript console
+		// but we do not want to cause an error in the JavaScript console:
 		// https://httpstatuses.com/
 		http.Error(
 			w,

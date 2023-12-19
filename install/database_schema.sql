@@ -330,6 +330,7 @@ CREATE TABLE banned_ips (
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE INDEX banned_ips_index_ip ON banned_ips (ip);
 
 DROP TABLE IF EXISTS muted_ips CASCADE;
 CREATE TABLE muted_ips (
@@ -343,6 +344,7 @@ CREATE TABLE muted_ips (
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE INDEX muted_ips_index_ip ON muted_ips (ip);
 
 /** TODO: Delete this table once the server is rewritten in TypeScript. */
 DROP TABLE IF EXISTS metadata CASCADE;

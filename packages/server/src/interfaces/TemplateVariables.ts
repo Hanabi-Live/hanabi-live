@@ -1,12 +1,12 @@
 export interface TemplateVariables {
   // From the `getTemplateVariables` function.
-  projectName: string;
-  isDev: boolean;
-  version: number;
+  readonly projectName: string;
+  readonly isDev: boolean;
+  readonly version: number;
 
   // Needed by all templates.
-  title: string;
+  readonly title: string;
 
   // Needed by the "main" template.
-  domain?: string;
+  readonly domain?: string;
 }

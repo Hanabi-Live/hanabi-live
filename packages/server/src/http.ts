@@ -3,6 +3,7 @@ import type { SecureSessionPluginOptions } from "@fastify/secure-session";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyStatic from "@fastify/static";
 import fastifyView from "@fastify/view";
+import fastifyWebSocket from "@fastify/websocket";
 import { Eta } from "eta";
 import type {
   FastifyInstance,
@@ -19,7 +20,10 @@ import type { Logger } from "pino";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
 import { httpLogin } from "./http/login";
+import { httpLogout } from "./http/logout";
 import { httpMain } from "./http/main";
+import { httpTestCookie } from "./http/testCookie";
+import { httpWS } from "./http/ws";
 import { logger } from "./logger";
 import { models } from "./models";
 
@@ -112,54 +116,7 @@ export async function httpInit(): Promise<void> {
     disableRequestLogging: IS_DEV,
   });
 
-  // Initialize "application/x-www-form-urlencoded" POST data with the `@fastify/formbody` plugin:
-  await fastify.register(fastifyFormBody);
-
-  // Initialize the template library through the `@fastify/view` plugin:
-  // https://github.com/fastify/point-of-view
-  await fastify.register(fastifyView, {
-    engine: {
-      eta,
-    },
-    templates: path.join(__dirname, "templates"),
-  });
-
-  // Initialize session management through the `@fastify/secure-session` plugin:
-  // https://github.com/fastify/fastify-secure-session/tree/master
-  // (The `@fastify/session` plugin is used for server-side data storage.)
-  await fastify.register(fastifySecureSession, {
-    cookieName: COOKIE_NAME,
-    secret: env.SESSION_SECRET,
-    salt: "hanabiSalt123456", // Must be 16 characters long.
-    cookie: COOKIE_OPTIONS,
-  });
-
-  // Initialize static file serving through the `@fastify/static` plugin:
-  // https://github.com/fastify/fastify-static
-  await fastify.register(fastifyStatic, {
-    root: path.join(REPO_ROOT, "public"),
-    prefix: "/public",
-  });
-
-  // Initialize favicon serving through the `fastify-favicon` plugin:
-  // https://github.com/smartiniOnGitHub/fastify-favicon
-  await fastify.register(fastifyFavicon, {
-    // The plugin appends "favicon.ico" to the provided path.
-    path: path.join(REPO_ROOT, "public", "img"),
-  });
-
-  // Handle renewing HTTPS certificates through `certbot`:
-  // https://letsencrypt.org/docs/challenge-types/
-  if (useTLS) {
-    fs.mkdirSync(LETS_ENCRYPT_PATH, {
-      recursive: true,
-    });
-
-    await fastify.register(fastifyStatic, {
-      root: LETS_ENCRYPT_PATH,
-      prefix: LETS_ENCRYPT_PATH_PREFIX,
-    });
-  }
+  await registerFastifyPlugins(fastify, useTLS);
 
   fastify.setNotFoundHandler(async (_request, reply) => {
     await reply
@@ -180,9 +137,11 @@ export async function httpInit(): Promise<void> {
   });
 
   fastify.addHook("preHandler", async (request, reply) => {
-    const ipIsBanned = await models.bannedIPs.check(request.ip);
+    const ipIsBanned = await models.bannedIPs.isBannedIP(request.ip);
     if (ipIsBanned) {
-      logger.info(`IP "${request.ip}" tried to log in, but they are banned.`);
+      logger.info(
+        `IP "${request.ip}" tried to send an HTTP request, but they are banned.`,
+      );
       return reply
         .code(StatusCodes.UNAUTHORIZED)
         .send(
@@ -198,12 +157,75 @@ export async function httpInit(): Promise<void> {
   });
 }
 
+/** Plugins are registered in alphabetical order. */
+async function registerFastifyPlugins(
+  fastify: FastifyInstanceWithLogger,
+  useTLS: boolean,
+) {
+  // `fastify-favicon` - Needed for the favicon:
+  // https://github.com/smartiniOnGitHub/fastify-favicon
+  await fastify.register(fastifyFavicon, {
+    // The plugin appends "favicon.ico" to the provided path.
+    path: path.join(REPO_ROOT, "public", "img"),
+  });
+
+  // `@fastify/formbody` - Needed for "application/x-www-form-urlencoded" POST data:
+  // https://github.com/fastify/fastify-formbody
+  await fastify.register(fastifyFormBody);
+
+  // `@fastify/secure-session` - Needed for session management:
+  // https://github.com/fastify/fastify-secure-session/tree/master
+  // (The `@fastify/session` plugin is used for server-side data storage.)
+  await fastify.register(fastifySecureSession, {
+    cookieName: COOKIE_NAME,
+    secret: env.SESSION_SECRET,
+    salt: "hanabiSalt123456", // Must be 16 characters long.
+    cookie: COOKIE_OPTIONS,
+  });
+
+  // `@fastify/websocket` - Needed for WebSockets.
+  await fastify.register(fastifyWebSocket, {
+    options: {
+      maxPayload: 123,
+    },
+  });
+
+  // `@fastify/static` - Needed to serve static files:
+  // https://github.com/fastify/fastify-static
+  await fastify.register(fastifyStatic, {
+    root: path.join(REPO_ROOT, "public"),
+    prefix: "/public",
+  });
+
+  // Handle renewing HTTPS certificates through `certbot`:
+  // https://letsencrypt.org/docs/challenge-types/
+  if (useTLS) {
+    fs.mkdirSync(LETS_ENCRYPT_PATH, {
+      recursive: true,
+    });
+
+    await fastify.register(fastifyStatic, {
+      root: LETS_ENCRYPT_PATH,
+      prefix: LETS_ENCRYPT_PATH_PREFIX,
+    });
+  }
+
+  // `@fastify/view` - Needed for the template library:
+  // https://github.com/fastify/point-of-view
+  await fastify.register(fastifyView, {
+    engine: {
+      eta,
+    },
+    templates: path.join(__dirname, "templates"),
+  });
+}
+
 function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
   // For cookies and logging in.
   fastify.post("/login", httpLogin);
-  /// fastify.get("/logout", httpLogout)
-  /// fastify.get("/test-cookie", httpTestCookie)
-  /// fastify.get("/ws", httpWS)
+  fastify.get("/logout", httpLogout);
+  fastify.get("/test-cookie", httpTestCookie);
+  fastify.get("/ws", { websocket: true }, httpWS);
 
   // For the main website.
   fastify.get("/", httpMain);

@@ -1,9 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { usersTable } from "../databaseSchema";
 import { db } from "../db";
-
-// TODO
-/// type User = NonNullable<Awaited<ReturnType<typeof users.get>>>;
 
 export const users = {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -53,12 +50,33 @@ export const users = {
     return rows[0]?.username;
   },
 
-  setPassword: async (id: number, passwordHash: string): Promise<void> => {
+  getUsername: async (userID: number): Promise<string | undefined> => {
+    const rows = await db
+      .select({
+        username: usersTable.username,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userID));
+
+    return rows[0]?.username;
+  },
+
+  setLastLogin: async (userID: number, ip: string): Promise<void> => {
+    await db
+      .update(usersTable)
+      .set({
+        datetimeLastLogin: sql`NOW()`,
+        lastIP: ip,
+      })
+      .where(eq(usersTable.id, userID));
+  },
+
+  setPassword: async (userID: number, passwordHash: string): Promise<void> => {
     await db
       .update(usersTable)
       .set({
         passwordHash,
       })
-      .where(eq(usersTable.id, id));
+      .where(eq(usersTable.id, userID));
   },
 };
