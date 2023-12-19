@@ -21,6 +21,7 @@ import {
   isInitialDealFinished,
   msgClueToClue,
   shouldApplyClue,
+  shouldSeeSlot2CardIdentity,
 } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
@@ -29,7 +30,6 @@ import {
   newArray,
   tupleKeys,
 } from "isaacscript-common-ts";
-import * as characterRules from "../rules/variants/characters";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 
@@ -63,7 +63,7 @@ export function cardsReducer(
         ),
       };
       newDeck[order] = card;
-      if (!characterRules.shouldSeeSlot2CardIdentity(metadata)) {
+      if (!shouldSeeSlot2CardIdentity(metadata)) {
         break;
       }
 
