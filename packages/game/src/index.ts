@@ -34,6 +34,7 @@ export * from "./rules/deck";
 export * from "./rules/hand";
 export * from "./rules/playStacks";
 export * from "./rules/stats";
+export * from "./rules/text";
 export * from "./rules/turn";
 export * from "./rules/variants/hGroup";
 export * from "./rules/variants/reversible";

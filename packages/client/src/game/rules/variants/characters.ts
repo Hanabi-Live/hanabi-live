@@ -9,5 +9,6 @@ export function shouldSeeSlot2CardIdentity(metadata: GameMetadata): boolean {
     metadata.ourPlayerIndex,
     metadata.characterAssignments,
   );
+
   return characterName === "Slow-Witted";
 }

@@ -1,29 +1,35 @@
+import type { Tuple } from "isaacscript-common-ts";
+import { assertDefined } from "isaacscript-common-ts";
+import { ClueType } from "../enums/ClueType";
+import { EndCondition } from "../enums/EndCondition";
+import { getVariant } from "../gameData";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { Variant } from "../interfaces/Variant";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
+import type { MsgClue } from "../types/MsgClue";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { PlayerIndex } from "../types/PlayerIndex";
 import type {
   ActionClue,
   ActionDiscard,
   ActionPlay,
-  GameMetadata,
-  MsgClue,
-  NumPlayers,
-  PlayerIndex,
-  Variant,
-} from "@hanabi/game";
-import {
-  ClueType,
-  EndCondition,
-  getCardName,
-  getCardSlot,
-  getCharacterNameForPlayer,
-  getClueName,
-  getVariant,
-} from "@hanabi/game";
-import type { Tuple } from "isaacscript-common-ts";
-import { assertDefined } from "isaacscript-common-ts";
+} from "../types/gameActions";
+import { getCardName } from "./card";
+import { getClueName } from "./clues";
+import { getCardSlot } from "./hand";
 
 const HYPO_PREFIX = "[Hypo] ";
-const WORDS = ["zero", "one", "two", "three", "four", "five", "six"] as const;
+const NUMBER_WORDS = [
+  "zero",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+] as const;
 
-export function goesFirst(
+export function getGoesFirstText(
   playerIndex: PlayerIndex | null,
   playerNames: Readonly<Tuple<string, NumPlayers>>,
 ): string {
@@ -35,7 +41,7 @@ export function goesFirst(
   return `${playerName} goes first`;
 }
 
-export function clue(
+export function getClueText(
   action: ActionClue,
   targetHand: readonly number[],
   hypothetical: boolean,
@@ -43,7 +49,7 @@ export function clue(
 ): string {
   const giver = metadata.playerNames[action.giver] ?? "unknown";
   const target = metadata.playerNames[action.target] ?? "unknown";
-  const word = WORDS[action.list.length] ?? "unknown";
+  const word = NUMBER_WORDS[action.list.length] ?? "unknown";
   const variant = getVariant(metadata.options.variantName);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
@@ -110,7 +116,7 @@ function getClueActionName(
   return "clues";
 }
 
-export function gameOver(
+export function getGameOverText(
   endCondition: EndCondition,
   playerIndex: PlayerIndex,
   score: number,
@@ -166,7 +172,7 @@ export function gameOver(
   return "Players lose!";
 }
 
-export function play(
+export function getPlayText(
   action: ActionPlay,
   slot: number | null,
   touched: boolean,
@@ -178,12 +184,14 @@ export function play(
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  const cardName =
+  const cardIsHidden =
     action.suitIndex === -1 ||
     action.rank === -1 ||
-    (variant.throwItInAHole && (playing || shadowing))
-      ? "a card"
-      : getCardName(action.suitIndex, action.rank, variant);
+    (variant.throwItInAHole && (playing || shadowing));
+
+  const cardName = cardIsHidden
+    ? "a card"
+    : getCardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
 
@@ -196,7 +204,7 @@ export function play(
   return `${hypoPrefix}${playerName} plays ${cardName} from ${location}${suffix}`;
 }
 
-export function discard(
+export function getDiscardText(
   action: ActionDiscard,
   slot: number | null,
   touched: boolean,

@@ -16,13 +16,20 @@ import {
   getAdjustedClueTokens,
   getCardStatus,
   getChopIndex,
+  getClueText,
+  getDiscardText,
+  getGameOverText,
+  getGoesFirstText,
   getNewClueTokensAfterAction,
+  getPlayText,
+  getPlayerName,
   getStackDirection,
   getStackStartRank,
   getVariant,
   hasReversedSuits,
   isCardClued,
   isInitialDealFinished,
+  millisecondsToClockString,
 } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
@@ -31,7 +38,6 @@ import {
   assertNotNull,
   tupleEntries,
 } from "isaacscript-common-ts";
-import * as textRules from "../rules/text";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
@@ -117,7 +123,7 @@ function gameReducerFunction(
         }
       }
 
-      const text = textRules.clue(action, targetHand, hypothetical, metadata);
+      const text = getClueText(action, targetHand, hypothetical, metadata);
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
         text,
@@ -205,7 +211,7 @@ function gameReducerFunction(
       );
 
       const touched = isCardClued(cardState);
-      const text = textRules.discard(
+      const text = getDiscardText(
         action,
         slot,
         touched,
@@ -243,7 +249,7 @@ function gameReducerFunction(
       }
 
       if (isInitialDealFinished(gameState.cardsRemainingInTheDeck, metadata)) {
-        const text = textRules.goesFirst(
+        const text = getGoesFirstText(
           gameState.turn.currentPlayerIndex,
           metadata.playerNames,
         );
@@ -273,7 +279,7 @@ function gameReducerFunction(
         gameState.score = 0;
       }
 
-      const text = textRules.gameOver(
+      const text = getGameOverText(
         action.endCondition,
         action.playerIndex,
         gameState.score,
@@ -360,7 +366,7 @@ function gameReducerFunction(
       );
 
       const touched = isCardClued(cardState);
-      const text = textRules.play(
+      const text = getPlayText(
         action,
         slot,
         touched,
@@ -384,9 +390,8 @@ function gameReducerFunction(
         // Player times are negative in untimed games.
         const modifier = metadata.options.timed ? 1 : -1;
         const milliseconds = playerTime * modifier;
-        const durationString =
-          textRules.millisecondsToClockString(milliseconds);
-        const playerName = textRules.getPlayerName(playerIndex, metadata);
+        const durationString = millisecondsToClockString(milliseconds);
+        const playerName = getPlayerName(playerIndex, metadata);
 
         const text = metadata.options.timed
           ? `${playerName} had ${durationString} left`
@@ -397,7 +402,7 @@ function gameReducerFunction(
         });
       }
 
-      const clockString = textRules.millisecondsToClockString(action.duration);
+      const clockString = millisecondsToClockString(action.duration);
       const text = `The total game duration was: ${clockString}`;
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
