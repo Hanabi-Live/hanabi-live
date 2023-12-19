@@ -5,10 +5,14 @@ import type {
   SuitIndex,
   SuitRankTuple,
 } from "@hanabi/game";
-import { getInitialCardState, getVariant } from "@hanabi/game";
+import {
+  getInitialCardState,
+  getVariant,
+  newColorClue,
+  newRankClue,
+} from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import { testMetadata } from "../../../test/testMetadata";
-import { newColorClue, newRankClue } from "../types/Clue";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 
 const NUM_PLAYERS = 3;

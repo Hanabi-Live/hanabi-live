@@ -2,6 +2,7 @@
 
 import type {
   CardState,
+  Clue,
   GameMetadata,
   SuitRankTuple,
   Variant,
@@ -9,7 +10,6 @@ import type {
 import { ClueType, MAX_PLAYERS, getVariant } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
-import type { Clue } from "../types/Clue";
 
 export function cardPossibilitiesReducer(
   state: CardState,

@@ -7,13 +7,12 @@ import type {
   Suit,
   SuitIndex,
 } from "@hanabi/game";
-import { getTotalCardsInDeck } from "@hanabi/game";
+import { getTotalCardsInDeck, newColorClue, newRankClue } from "@hanabi/game";
 import { assertDefined, eRange, repeat } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as debug from "../../debug";
 import * as modals from "../../modals";
 import { getHTMLElement } from "../../utils";
-import { newColorClue, newRankClue } from "../types/Clue";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";

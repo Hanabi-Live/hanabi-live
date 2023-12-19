@@ -1,7 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import type { CardOrder, PlayerIndex, Suit } from "@hanabi/game";
+import type { CardOrder, Clue, PlayerIndex, Suit } from "@hanabi/game";
 import {
   ClueType,
   getCharacterNameForPlayer,
@@ -13,7 +13,6 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
-import type { Clue } from "../types/Clue";
 import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";

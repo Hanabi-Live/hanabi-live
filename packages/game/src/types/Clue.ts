@@ -1,5 +1,6 @@
-import type { Color, RankClueNumber } from "@hanabi/game";
-import { ClueType } from "@hanabi/game";
+import { ClueType } from "../enums/ClueType";
+import type { Color } from "../interfaces/Color";
+import type { RankClueNumber } from "./RankClueNumber";
 
 export interface ColorClue {
   readonly type: ClueType.Color;

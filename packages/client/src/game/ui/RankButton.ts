@@ -1,5 +1,5 @@
+import type { Clue } from "@hanabi/game";
 import Konva from "konva";
-import type { Clue } from "../types/Clue";
 import { drawLayer } from "./konvaHelpers";
 
 export class RankButton extends Konva.Group {

@@ -1,4 +1,4 @@
-import type { CardOrder, MsgClue } from "@hanabi/game";
+import type { CardOrder, Clue, MsgClue } from "@hanabi/game";
 import {
   ClueType,
   getAdjustedClueTokens,
@@ -11,7 +11,6 @@ import type {
   ClientActionColorClue,
   ClientActionRankClue,
 } from "../types/ClientAction";
-import type { Clue } from "../types/Clue";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
 import type { RankButton } from "./RankButton";

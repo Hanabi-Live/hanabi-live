@@ -1,8 +1,7 @@
-import type { Suit } from "@hanabi/game";
+import type { Clue, Suit } from "@hanabi/game";
 import { isDualColor } from "@hanabi/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
-import type { Clue } from "../types/Clue";
 import { globals } from "./UIGlobals";
 import { drawPip } from "./drawPip";
 import { drawLayer } from "./konvaHelpers";
