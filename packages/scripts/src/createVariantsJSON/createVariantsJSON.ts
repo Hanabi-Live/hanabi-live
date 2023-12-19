@@ -2,18 +2,21 @@ import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/game";
 import { findPackageRoot, isMain } from "isaacscript-common-node";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
 if (isMain()) {
-  main();
+  main().catch((error) => {
+    throw new Error(`The script encountered an error: ${error}`);
+  });
 }
 
-function main() {
-  createVariantsJSON();
+async function main() {
+  await createVariantsJSON();
 }
 
-function createVariantsJSON() {
+async function createVariantsJSON() {
   const { suitsPath, variantsPath, textPath } = getPaths();
 
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
@@ -42,7 +45,7 @@ function createVariantsJSON() {
     );
   }
 
-  createVariantJSONFile(variants, variantsPath);
+  await createVariantJSONFile(variants, variantsPath);
   createVariantsTextFile(variants, textPath);
 }
 
@@ -231,12 +234,16 @@ function hasMissingVariants(
   return oneOrMoreVariantsIsMissing;
 }
 
-function createVariantJSONFile(
+async function createVariantJSONFile(
   variants: readonly VariantJSON[],
   jsonPath: string,
 ) {
-  const data = `${JSON.stringify(variants, undefined, 2)}\n`;
-  fs.writeFileSync(jsonPath, data);
+  const jsonString = JSON.stringify(variants);
+  const formattedJSONString = await prettier.format(jsonString, {
+    parser: "json",
+  });
+
+  fs.writeFileSync(jsonPath, formattedJSONString);
   console.log(`Created: ${jsonPath}`);
 }
 
@@ -249,9 +256,7 @@ function createVariantsTextFile(
     lines.push(`${variant.name} (#${variant.id})`);
   }
 
-  let fileContents = lines.join("\n");
-  fileContents += "\n";
-
+  const fileContents = lines.join("\n").concat("\n");
   fs.writeFileSync(textPath, fileContents);
   console.log(`Created: ${textPath}`);
 }

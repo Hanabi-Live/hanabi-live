@@ -70,6 +70,18 @@ jobs:
       - name: Spell check the entire repository
         run: bash spell_check.sh
 
+  lint_monorepo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/workflows/setup
+
+      - name: Check templates
+        run: bash check_templates.sh
+
+      - name: Check "variants.json" and "variants.txt"
+        run: npm run check-variant-files
+
   discord:
     name: Discord Failure Notification
     needs: [client_build, server_build, lint, test, format, spell_check]

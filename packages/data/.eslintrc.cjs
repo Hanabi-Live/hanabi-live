@@ -72,7 +72,7 @@ module.exports = {
           {
             group: ["@hanabi/game"],
             message:
-              "You cannot import from game --> data. Refactor it to this package instead.",
+              "You cannot import from game --> data. Try refactoring it to this package instead.",
           },
         ],
       },
