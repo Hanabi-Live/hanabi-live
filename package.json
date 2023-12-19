@@ -15,8 +15,8 @@
   "author": "Zamiell",
   "type": "commonjs",
   "scripts": {
-    "check-variant-files": "tsx ./packages/scripts/createVariantsJSON/checkVariantFiles.ts",
-    "create-variants-json": "tsx ./packages/scripts/createVariantsJSON/createVariantsJSON.ts",
+    "check-variant-files": "tsx ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
+    "create-variants-json": "tsx ./packages/scripts/src/createVariantsJSON/createVariantsJSON.ts",
     "lint": "bash ./lint.sh",
     "nuke": "isaacscript nuke",
     "prepare": "husky install",
