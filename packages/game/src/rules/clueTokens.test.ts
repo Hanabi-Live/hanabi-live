@@ -1,6 +1,7 @@
-import { getDefaultVariant, getVariant, MAX_CLUE_NUM } from "@hanabi/data";
 import { eRange } from "isaacscript-common-ts";
 import { discard, play } from "../../../client/test/testActions";
+import { MAX_CLUE_NUM } from "../constants";
+import { getDefaultVariant, getVariant } from "../gameData";
 import { getNewClueTokensAfterAction } from "./clueTokens";
 
 const DISCARD_ACTION = discard(0, 0, 0, 1, false);

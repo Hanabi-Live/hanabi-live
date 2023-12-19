@@ -1,10 +1,12 @@
 /* eslint-disable unicorn/no-null */
 
-import type { Rank, SuitIndex, Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
+import { START_CARD_RANK } from "../constants";
 import { StackDirection } from "../enums/StackDirection";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
+import type { Variant } from "../interfaces/Variant";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
 import { hasReversedSuits } from "./variants/variantIdentity";
 
 /**

@@ -1,4 +1,4 @@
-import type { Suit } from "@hanabi/data";
+import type { Suit } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 
 type DrawFunction = (

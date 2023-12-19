@@ -1,6 +1,5 @@
-import { getVariant } from "@hanabi/data";
 import type { GameMetadata } from "@hanabi/game";
-import { getTotalCardsInDeck } from "@hanabi/game";
+import { getTotalCardsInDeck, getVariant } from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
 import type { State } from "../../types/State";
 import { initialGameState } from "./initialGameState";

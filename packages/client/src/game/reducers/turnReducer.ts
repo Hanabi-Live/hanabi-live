@@ -1,4 +1,3 @@
-import { getVariant } from "@hanabi/data";
 import type {
   GameAction,
   GameMetadata,
@@ -10,6 +9,7 @@ import {
   getCharacterNameForPlayer,
   getEndTurn,
   getNextPlayerIndex,
+  getVariant,
   isInitialDealFinished,
   shouldEndTurnAfterClue,
   shouldEndTurnAfterDraw,

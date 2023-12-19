@@ -1,7 +1,5 @@
 // Functions for building a state table for every turn.
 
-import type { Variant } from "@hanabi/data";
-import { ClueType, getVariant } from "@hanabi/data";
 import type {
   ActionDiscard,
   ActionPlay,
@@ -10,8 +8,10 @@ import type {
   GameAction,
   GameMetadata,
   GameState,
+  Variant,
 } from "@hanabi/game";
 import {
+  ClueType,
   EndCondition,
   getAdjustedClueTokens,
   getCardStatus,
@@ -19,6 +19,7 @@ import {
   getNewClueTokensAfterAction,
   getStackDirection,
   getStackStartRank,
+  getVariant,
   hasReversedSuits,
   isCardClued,
   isInitialDealFinished,

@@ -1,11 +1,11 @@
-import type { Rank, SuitIndex } from "@hanabi/data";
+import type { Rank, SuitIndex } from "@hanabi/game";
 import {
   DEFAULT_PLAYER_NAMES,
   MAX_PLAYERS,
   MIN_PLAYERS,
   getVariant,
   getVariantByID,
-} from "@hanabi/data";
+} from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import { isEqual } from "lodash";
 

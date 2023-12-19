@@ -1,10 +1,10 @@
 // Miscellaneous helpers used by several reducers.
 
-import type { PlayerIndex } from "@hanabi/data";
-import { getCharacter } from "@hanabi/data";
 import { assertDefined } from "isaacscript-common-ts";
+import { getCharacter } from "../gameData";
 import type { GameState } from "../interfaces/GameState";
 import { getEfficiency } from "../rules/stats";
+import type { PlayerIndex } from "../types/PlayerIndex";
 
 export function getEfficiencyFromGameState(gameState: GameState): number {
   return getEfficiency(

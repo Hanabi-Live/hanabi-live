@@ -1,5 +1,4 @@
-import type { CardOrder, SuitIndex } from "@hanabi/data";
-import type { GameState } from "@hanabi/game";
+import type { CardOrder, GameState, SuitIndex } from "@hanabi/game";
 import {
   StackDirection,
   getStackStartRank,

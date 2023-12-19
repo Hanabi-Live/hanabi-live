@@ -1,6 +1,5 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import { VERSION } from "@hanabi/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import type { HanabiUI } from "./game/ui/HanabiUI";
@@ -12,9 +11,6 @@ import type { Table } from "./lobby/types/Table";
 import type { User } from "./lobby/types/User";
 
 export class Globals {
-  /** From "version.js", which is dynamically created by the build script. */
-  version = VERSION;
-
   /** The WebSocket connection (set in "websocket.ts"). */
   conn: Connection | null = null;
 

@@ -1,4 +1,4 @@
-import { getDefaultVariant, getVariant } from "@hanabi/data";
+import { getDefaultVariant, getVariant } from "../../gameData";
 import { hasReversedSuits } from "./variantIdentity";
 
 const DEFAULT_VARIANT = getDefaultVariant();

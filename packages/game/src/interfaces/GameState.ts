@@ -1,14 +1,12 @@
-import type {
-  CardOrder,
-  NumPlayers,
-  NumSuits,
-  Rank,
-  SuitRankMap,
-} from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import type { CardStatus } from "../enums/CardStatus";
 import type { StackDirection } from "../enums/StackDirection";
+import type { CardOrder } from "../types/CardOrder";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { NumSuits } from "../types/NumSuits";
+import type { Rank } from "../types/Rank";
 import type { StateClue } from "../types/StateClue";
+import type { SuitRankMap } from "../types/SuitRankMap";
 import type { CardState } from "./CardState";
 import type { LogEntry } from "./LogEntry";
 import type { StateStrike } from "./StateStrike";

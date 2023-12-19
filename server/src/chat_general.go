@@ -21,8 +21,6 @@ type SimpleResponse struct {
 	IsHelp   bool
 }
 
-const ChatReplyCommands = "chatReplyCommands.json"
-
 var (
 	simpleResponses = make(map[string]SimpleResponse)
 	helpCommands    = make([]string, 0)
@@ -36,10 +34,10 @@ func chatMapAddSimpleResponses() {
 	}
 
 	// Load external one-line responses
-	source := path.Join(jsonPath, ChatReplyCommands)
+	source := path.Join(jsonPath, "..", "..", "..", "server", "src", "json", "chatReplyCommands.json")
 	var contents []byte
 	if c, err := os.ReadFile(source); err != nil {
-		logger.Error("Error reading file " + ChatReplyCommands)
+		logger.Error("Error reading file: " + source)
 		return
 	} else {
 		contents = c

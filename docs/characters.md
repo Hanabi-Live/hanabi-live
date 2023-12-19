@@ -7,4 +7,4 @@
 
 ## List of Characters
 
-- See the [characters.json file](https://github.com/Hanabi-Live/hanabi-live/blob/main/packages/data/src/json/characters.json).
+- See the [characters.json file](https://github.com/Hanabi-Live/hanabi-live/blob/main/packages/game/src/json/characters.json).

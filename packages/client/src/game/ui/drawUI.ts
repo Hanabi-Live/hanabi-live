@@ -6,7 +6,7 @@ import type {
   RankClueNumber,
   Suit,
   SuitIndex,
-} from "@hanabi/data";
+} from "@hanabi/game";
 import { getTotalCardsInDeck } from "@hanabi/game";
 import { assertDefined, eRange, repeat } from "isaacscript-common-ts";
 import Konva from "konva";
@@ -2199,7 +2199,10 @@ function drawHypotheticalArea() {
     "Go back a turn in this hypothetical.";
   initKonvaTooltips(globals.elements.hypoBackButton, true, false);
 
-  globals.elements.hypoBackButton.on("click tap", hypothetical.sendBack);
+  globals.elements.hypoBackButton.on(
+    "click tap",
+    hypothetical.sendHypotheticalBack,
+  );
   globals.elements.hypoButtonsArea.add(
     globals.elements.hypoBackButton as unknown as Konva.Group,
   );
@@ -2226,7 +2229,7 @@ function drawHypotheticalArea() {
     endHypotheticalButton as unknown as Konva.Group,
   );
   endHypotheticalButton.on("click tap", () => {
-    hypothetical.end();
+    hypothetical.endHypothetical();
   });
   globals.elements.endHypotheticalButton = endHypotheticalButton;
 

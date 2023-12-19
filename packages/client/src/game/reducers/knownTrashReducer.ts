@@ -1,5 +1,4 @@
-import type { Variant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardState, GameState, Variant } from "@hanabi/game";
 import { isAllCardPossibilitiesTrash } from "@hanabi/game";
 
 export function knownTrashReducer(

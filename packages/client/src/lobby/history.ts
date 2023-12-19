@@ -1,7 +1,7 @@
 // The screens that show past games and other scores.
 
-import { getVariant } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
+import { getVariant } from "@hanabi/game";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import { OptionIcons } from "../types/OptionIcons";

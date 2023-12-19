@@ -1,13 +1,16 @@
 // Helper methods for variants where suits may have a different direction than up. This is currently
 // used for "Up Or Down" and "Reversed" variants.
 
-import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import { eRange, iRange, newArray } from "isaacscript-common-ts";
+import { START_CARD_RANK } from "../../constants";
 import { StackDirection } from "../../enums/StackDirection";
 import type { CardState } from "../../interfaces/CardState";
 import type { GameState } from "../../interfaces/GameState";
+import type { Variant } from "../../interfaces/Variant";
+import type { NumSuits } from "../../types/NumSuits";
+import type { Rank } from "../../types/Rank";
+import type { SuitIndex } from "../../types/SuitIndex";
 import { getAllDiscardedSetForSuit, getDiscardHelpers } from "../deck";
 
 /**
@@ -155,7 +158,10 @@ export function reversibleGetMaxScorePerStack(
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): Tuple<number, NumSuits> {
-  const maxScorePerStack = newArray(variant.suits.length, 0);
+  const maxScorePerStack = newArray(variant.suits.length, 0) as Tuple<
+    number,
+    NumSuits
+  >;
 
   for (const i of variant.suits.keys()) {
     const suitIndex = i as SuitIndex;
@@ -196,7 +202,7 @@ export function reversibleGetMaxScorePerStack(
     }
   }
 
-  return maxScorePerStack as Tuple<number, NumSuits>;
+  return maxScorePerStack;
 }
 
 /** A helper function for `getMaxScore`. */

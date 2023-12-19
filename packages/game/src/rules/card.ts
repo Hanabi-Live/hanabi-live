@@ -1,9 +1,11 @@
-import type { Rank, SuitIndex, Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
 import { eRange, filterMap } from "isaacscript-common-ts";
+import { START_CARD_RANK } from "../constants";
 import { CardStatus } from "../enums/CardStatus";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
+import type { Variant } from "../interfaces/Variant";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
 import {
   getDiscardHelpers,
   getNumCopiesOfCard,

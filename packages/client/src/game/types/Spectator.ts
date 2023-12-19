@@ -1,4 +1,4 @@
-import type { PlayerIndex } from "@hanabi/data";
+import type { PlayerIndex } from "@hanabi/game";
 
 export interface Spectator {
   name: string;

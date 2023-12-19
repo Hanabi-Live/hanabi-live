@@ -1,16 +1,20 @@
-import type { MsgClue, NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
-import { ClueType, getVariant } from "@hanabi/data";
 import type {
   ActionClue,
   ActionDiscard,
   ActionPlay,
   GameMetadata,
+  MsgClue,
+  NumPlayers,
+  PlayerIndex,
+  Variant,
 } from "@hanabi/game";
 import {
+  ClueType,
   EndCondition,
   getCardName,
   getCardSlot,
   getCharacterNameForPlayer,
+  getVariant,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";

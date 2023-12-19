@@ -494,8 +494,8 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 
 - The website offers a public lobby chat and a private per-game chat. When chatting with other players, please follow [the community guidelines](community-guidelines.md).
 - You can also send private messages to other players with the `/pm` command.
-- You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json). For example, `:thinking:` will turn into 🤔.
-- You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img alt="Kappa" src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
+- You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/client/src/json/emojis.json). For example, `:thinking:` will turn into 🤔.
+- You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/client/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img alt="Kappa" src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
 - There are various chat commands. The full list can be found [here](chat-commands.md).
 - All lobby chat will be replicated to (and from) the [Discord server](https://discord.gg/FADvkJp).
 - During an ongoing game, right-clicking the chat button will mute notifications from chat and hide the spectator count ("zen mode", indicated by ☯️). Right-clicking again reverts this.

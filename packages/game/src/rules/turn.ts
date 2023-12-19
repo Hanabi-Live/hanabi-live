@@ -1,9 +1,11 @@
 /* eslint-disable unicorn/no-null */
 
-import type { NumPlayers, PlayerIndex, Variant } from "@hanabi/data";
-import { getCharacter } from "@hanabi/data";
 import type { Options } from "../classes/Options";
+import { getCharacter } from "../gameData";
 import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { Variant } from "../interfaces/Variant";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { PlayerIndex } from "../types/PlayerIndex";
 import { getAdjustedClueTokens } from "./clueTokens";
 
 export function shouldEndTurnAfterDraw(

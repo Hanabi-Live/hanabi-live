@@ -1,17 +1,16 @@
-import type { Variant } from "@hanabi/data";
+import type { CardNote, GameMetadata, NoteAction, Variant } from "@hanabi/game";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
   EXCLAMATION_MARK_NOTES,
   FINESSED_NOTES,
-  getVariant,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
   QUESTION_MARK_NOTES,
   UNCLUED_NOTES,
-} from "@hanabi/data";
-import type { CardNote, GameMetadata, NoteAction } from "@hanabi/game";
+  getVariant,
+} from "@hanabi/game";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";

@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import type { NumPlayers } from "@hanabi/data";
+import type { NumPlayers } from "@hanabi/game";
 import {
   DEFAULT_PLAYER_NAMES,
   DEFAULT_VARIANT_NAME,
-  getVariant,
-} from "@hanabi/data";
-import {
   getCardsPerHand,
   getEndGameLength,
   getMinEfficiency,
+  getVariant,
   isHardVariant,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";

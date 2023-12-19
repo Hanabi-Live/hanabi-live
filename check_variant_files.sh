@@ -8,7 +8,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Ensure that the "update_variant_files.sh" script does not change the files that are checked into
 # the repository.
-VARIANTS_JSON="$DIR/packages/data/src/json/variants.json"
+VARIANTS_JSON="$DIR/packages/game/src/json/variants.json"
 TMP_VARIANTS_JSON="/tmp/variants.json"
 cp "$VARIANTS_JSON" "$TMP_VARIANTS_JSON"
 VARIANTS_TXT="$DIR/misc/variants.txt"

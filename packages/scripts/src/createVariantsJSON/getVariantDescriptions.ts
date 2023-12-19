@@ -6,17 +6,15 @@ import type {
   SuitJSON,
   Variant,
   VariantDescription,
-} from "@hanabi/data";
+} from "@hanabi/game";
 import {
   COLORS_MAP,
   DEFAULT_CLUE_RANKS,
+  Options,
   SUITS_MAP,
   SUIT_REVERSED_SUFFIX,
   VALID_NUM_PLAYERS,
   createVariant,
-} from "@hanabi/data";
-import {
-  Options,
   getCardsPerHand,
   getMinEfficiency,
   getStartingDeckSize,

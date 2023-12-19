@@ -1,4 +1,4 @@
-import type { PlayerIndex } from "@hanabi/data";
+import type { PlayerIndex } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
 import * as modals from "../../modals";

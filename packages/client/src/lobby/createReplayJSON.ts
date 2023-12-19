@@ -1,13 +1,13 @@
+import { SITE_URL } from "@hanabi/data";
 import type {
   CardOrder,
   ColorIndex,
+  LogEntry,
   PlayerIndex,
   RankClueNumber,
   Variant,
-} from "@hanabi/data";
-import { ClueType, DEFAULT_PLAYER_NAMES, SITE_URL } from "@hanabi/data";
-import type { LogEntry } from "@hanabi/game";
-import { getCardsPerHand } from "@hanabi/game";
+} from "@hanabi/game";
+import { ClueType, DEFAULT_PLAYER_NAMES, getCardsPerHand } from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";

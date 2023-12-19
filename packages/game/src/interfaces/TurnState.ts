@@ -1,4 +1,4 @@
-import type { PlayerIndex } from "@hanabi/data";
+import type { PlayerIndex } from "../types/PlayerIndex";
 
 export interface TurnState {
   /**
@@ -15,7 +15,13 @@ export interface TurnState {
   readonly segment: number | null;
 
   readonly turnNum: number;
+
+  /**
+   * Initialized to the starting player index. If this is null, it signifies that the game is over
+   * and will prevent any name frames from being highlighted on subsequent segments.
+   */
   readonly currentPlayerIndex: PlayerIndex | null;
+
   readonly playOrderInverted: boolean;
   readonly endTurnNum: number | null;
   readonly cardsPlayedOrDiscardedThisTurn: number;

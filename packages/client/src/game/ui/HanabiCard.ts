@@ -1,5 +1,7 @@
 import type {
+  CardNote,
   CardOrder,
+  CardState,
   Color,
   NumPlayers,
   Rank,
@@ -7,14 +9,13 @@ import type {
   SuitIndex,
   SuitRankTuple,
   Variant,
-} from "@hanabi/data";
-import { getSuit } from "@hanabi/data";
-import type { CardNote, CardState } from "@hanabi/game";
+} from "@hanabi/game";
 import {
   CardStatus,
   StackDirection,
   canCardPossiblyBeFromEmpathy,
   getInitialCardState,
+  getSuit,
   hasReversedSuits,
   isCardClued,
   isCardDiscarded,

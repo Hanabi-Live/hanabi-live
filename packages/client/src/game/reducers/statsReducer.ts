@@ -1,7 +1,6 @@
 // Functions for calculating running statistics such as efficiency and pace as a result of each
 // action.
 
-import { getVariant } from "@hanabi/data";
 import type {
   CardNote,
   GameAction,
@@ -22,6 +21,7 @@ import {
   getPaceRisk,
   getSuitCompleteClueTokenValue,
   getUnadjustedClueTokens,
+  getVariant,
   isCardClued,
 } from "@hanabi/game";
 import type { Draft } from "immer";

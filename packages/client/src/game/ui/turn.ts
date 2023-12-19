@@ -91,7 +91,7 @@ export function resetSelectedClue(): void {
 
 export function end(clientAction: ClientAction): void {
   if (globals.state.replay.hypothetical !== null) {
-    hypothetical.send(clientAction);
+    hypothetical.sendHypotheticalAction(clientAction);
     return;
   }
 

@@ -2,13 +2,19 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { CardOrder, NumPlayers, PlayerIndex } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
-import type { GameAction, GameMetadata, SpectatorNote } from "@hanabi/game";
+import type {
+  CardOrder,
+  GameAction,
+  GameMetadata,
+  NumPlayers,
+  PlayerIndex,
+  SpectatorNote,
+} from "@hanabi/game";
 import {
   getCardsPerHand,
   getEndGameLength,
   getMinEfficiency,
+  getVariant,
   isHardVariant,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
@@ -147,7 +153,7 @@ gameCommands.set("hypoBack", () => {
 });
 
 gameCommands.set("hypoEnd", () => {
-  hypothetical.end();
+  hypothetical.endHypothetical();
 });
 
 interface HypoShowDrawnCardsData {
@@ -161,7 +167,7 @@ gameCommands.set("hypoShowDrawnCards", (data: HypoShowDrawnCardsData) => {
 });
 
 gameCommands.set("hypoStart", () => {
-  hypothetical.start();
+  hypothetical.startHypothetical();
 });
 
 gameCommands.set("init", (metadata: InitData) => {

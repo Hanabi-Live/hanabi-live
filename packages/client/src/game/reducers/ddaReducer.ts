@@ -1,5 +1,4 @@
-import type { PlayerIndex } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardState, PlayerIndex } from "@hanabi/game";
 import { canCardPossiblyBeFromCluesOnly } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 

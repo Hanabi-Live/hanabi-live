@@ -1,20 +1,18 @@
 import type {
   CardOrder,
-  NumPlayers,
-  NumSuits,
-  Rank,
-  SuitIndex,
-  SuitRankMap,
-  Variant,
-} from "@hanabi/data";
-import { MAX_CLUE_NUM, getVariant } from "@hanabi/data";
-import type {
   CardStatus,
   GameMetadata,
   GameState,
+  NumPlayers,
+  NumSuits,
+  Rank,
   StackDirection,
+  SuitIndex,
+  SuitRankMap,
+  Variant,
 } from "@hanabi/game";
 import {
+  MAX_CLUE_NUM,
   getAdjustedClueTokens,
   getCardStatus,
   getCardsPerHand,
@@ -28,6 +26,7 @@ import {
   getSuitCompleteClueTokenValue,
   getTotalCardsInDeck,
   getUnadjustedClueTokens,
+  getVariant,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";

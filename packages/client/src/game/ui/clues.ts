@@ -1,6 +1,9 @@
-import type { CardOrder, MsgClue } from "@hanabi/data";
-import { ClueType } from "@hanabi/data";
-import { getAdjustedClueTokens, getCharacterNameForPlayer } from "@hanabi/game";
+import type { CardOrder, MsgClue } from "@hanabi/game";
+import {
+  ClueType,
+  getAdjustedClueTokens,
+  getCharacterNameForPlayer,
+} from "@hanabi/game";
 import { assertDefined, eRange } from "isaacscript-common-ts";
 import * as cluesRules from "../rules/clues";
 import { ActionType } from "../types/ActionType";

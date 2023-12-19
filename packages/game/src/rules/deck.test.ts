@@ -1,4 +1,4 @@
-import { getDefaultVariant, getVariant } from "@hanabi/data";
+import { getDefaultVariant, getVariant } from "../gameData";
 import { getTotalCardsInDeck } from "./deck";
 
 const DEFAULT_VARIANT = getDefaultVariant();

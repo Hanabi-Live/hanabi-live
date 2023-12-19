@@ -1,4 +1,3 @@
-import { ClueType, getVariant } from "@hanabi/data";
 import type {
   ActionClue,
   ActionDiscard,
@@ -10,9 +9,11 @@ import type {
   GameState,
 } from "@hanabi/game";
 import {
+  ClueType,
   EndCondition,
   canCardPossiblyBeFromCluesOnly,
   getCharacterNameForPlayer,
+  getVariant,
   isCardClued,
   isHandLocked,
 } from "@hanabi/game";

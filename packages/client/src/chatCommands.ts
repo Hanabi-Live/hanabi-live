@@ -1,4 +1,5 @@
-import { VARIANT_NAMES } from "@hanabi/data";
+import { VERSION } from "@hanabi/data";
+import { VARIANT_NAMES } from "@hanabi/game";
 import { parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "./Globals";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
@@ -375,7 +376,7 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
 
 // /version
 chatCommands.set("version", (room: string) => {
-  const msg = `You are running version <strong>${globals.version}</strong> of the client.`;
+  const msg = `You are running version <strong>${VERSION}</strong> of the client.`;
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
 });
 

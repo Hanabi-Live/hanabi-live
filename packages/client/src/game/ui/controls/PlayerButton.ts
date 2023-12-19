@@ -1,4 +1,4 @@
-import type { PlayerIndex } from "@hanabi/data";
+import type { PlayerIndex } from "@hanabi/game";
 import Konva from "konva";
 import { Button } from "./Button";
 

@@ -201,12 +201,12 @@ export function morphReplayFromModal(
   cardIdentity: CardIdentity | "original",
 ): void {
   if (cardIdentity === "original") {
-    hypothetical.sendHypoAction({
+    hypothetical.sendHypotheticalActionToServer({
       type: "unmorph",
       order: card.state.order,
     });
   } else {
-    hypothetical.sendHypoAction({
+    hypothetical.sendHypotheticalActionToServer({
       type: "morph",
       order: card.state.order,
       suitIndex: cardIdentity.suitIndex ?? -1,

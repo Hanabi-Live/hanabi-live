@@ -1,6 +1,5 @@
-import type { Rank } from "@hanabi/data";
-import { MAX_CLUE_NUM } from "@hanabi/data";
-import { getEfficiencyFromGameState } from "@hanabi/game";
+import type { Rank } from "@hanabi/game";
+import { MAX_CLUE_NUM, getEfficiencyFromGameState } from "@hanabi/game";
 import { assertDefined, eRange, iRange } from "isaacscript-common-ts";
 import {
   colorClue,

@@ -7,9 +7,8 @@ import type {
   MsgClue,
   PlayerIndex,
   RankClueNumber,
-} from "@hanabi/data";
-import { ClueType } from "@hanabi/data";
-import { getNextPlayableRanks } from "@hanabi/game";
+} from "@hanabi/game";
+import { ClueType, getNextPlayableRanks } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction, ClientActionClue } from "../types/ClientAction";
@@ -21,7 +20,7 @@ import { globals } from "./UIGlobals";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 
-export function start(): void {
+export function startHypothetical(): void {
   if (globals.state.replay.hypothetical !== null) {
     return;
   }
@@ -45,7 +44,7 @@ export function start(): void {
   });
 }
 
-export function end(): void {
+export function endHypothetical(): void {
   if (globals.state.replay.hypothetical === null) {
     return;
   }
@@ -65,8 +64,13 @@ export function end(): void {
   });
 }
 
-export function send(hypoAction: ClientAction): void {
+export function sendHypotheticalAction(hypoAction: ClientAction): void {
   const gameState = globals.state.replay.hypothetical!.ongoing;
+
+  // If the game is already over, do nothing.
+  if (gameState.turn.currentPlayerIndex === null) {
+    return;
+  }
 
   let type: string;
   switch (hypoAction.type) {
@@ -121,9 +125,9 @@ export function send(hypoAction: ClientAction): void {
 
       switch (newType) {
         case "play": {
-          sendHypoAction({
+          sendHypotheticalActionToServer({
             type: "play",
-            playerIndex: gameState.turn.currentPlayerIndex!,
+            playerIndex: gameState.turn.currentPlayerIndex,
             order: hypoAction.target as CardOrder,
             suitIndex,
             rank,
@@ -132,9 +136,9 @@ export function send(hypoAction: ClientAction): void {
         }
 
         case "discard": {
-          sendHypoAction({
+          sendHypotheticalActionToServer({
             type: "discard",
-            playerIndex: gameState.turn.currentPlayerIndex!,
+            playerIndex: gameState.turn.currentPlayerIndex,
             order: hypoAction.target as CardOrder,
             suitIndex,
             rank,
@@ -145,7 +149,7 @@ export function send(hypoAction: ClientAction): void {
       }
 
       if (failed) {
-        sendHypoAction({
+        sendHypotheticalActionToServer({
           type: "strike",
           num: (gameState.strikes.length + 1) as 1 | 2 | 3,
           turn: gameState.turn.segment!,
@@ -158,10 +162,10 @@ export function send(hypoAction: ClientAction): void {
         // Draw
         const nextCardOrder = gameState.deck.length as CardOrder;
         const nextCard = globals.state.cardIdentities[nextCardOrder];
-        sendHypoAction({
+        sendHypotheticalActionToServer({
           type: "draw",
           order: nextCardOrder,
-          playerIndex: gameState.turn.currentPlayerIndex!,
+          playerIndex: gameState.turn.currentPlayerIndex,
           // Always send the correct suitIndex and rank if known; the blanking of the card will be
           // performed on the client.
           suitIndex: nextCard?.suitIndex ?? -1,
@@ -176,10 +180,10 @@ export function send(hypoAction: ClientAction): void {
       const clientActionClue = hypoAction as ClientActionClue;
       const clue = hypoActionToMsgClue(clientActionClue);
       const list = getTouchedCardsFromClue(hypoAction.target, clue);
-      sendHypoAction({
+      sendHypotheticalActionToServer({
         type,
         clue,
-        giver: gameState.turn.currentPlayerIndex!,
+        giver: gameState.turn.currentPlayerIndex,
         list,
         target: hypoAction.target as PlayerIndex,
         turn: gameState.turn.turnNum,
@@ -197,11 +201,11 @@ export function send(hypoAction: ClientAction): void {
   // Finally, send a turn action. Even though this action is unnecessary from the point of the
   // client, for now we must send it to the server so that it can correctly shave off the last
   // action during a "hypoBack".
-  let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
+  let nextPlayerIndex = gameState.turn.currentPlayerIndex + 1;
   if (nextPlayerIndex === globals.options.numPlayers) {
     nextPlayerIndex = 0;
   }
-  sendHypoAction({
+  sendHypotheticalActionToServer({
     type: "turn",
     num: gameState.turn.turnNum + 1,
     currentPlayerIndex: nextPlayerIndex as PlayerIndex,
@@ -226,7 +230,9 @@ function hypoActionToMsgClue(hypoAction: ClientActionClue): MsgClue {
   }
 }
 
-export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
+export function sendHypotheticalActionToServer(
+  hypoAction: ActionIncludingHypothetical,
+): void {
   if (globals.state.replay.shared === null) {
     globals.store!.dispatch({
       type: "hypoAction",
@@ -241,7 +247,7 @@ export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
   }
 }
 
-export function sendBack(): void {
+export function sendHypotheticalBack(): void {
   if (
     globals.state.replay.hypothetical === null ||
     globals.state.replay.hypothetical.states.length <= 1

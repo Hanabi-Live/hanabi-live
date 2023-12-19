@@ -1,5 +1,5 @@
-import type { Rank } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
+import { getVariant } from "../../gameData";
+import type { Rank } from "../../types/Rank";
 import { sudokuWalkUpAll } from "./sudoku";
 
 describe("sudokuWalkUpAll5", () => {

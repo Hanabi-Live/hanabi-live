@@ -1,4 +1,4 @@
-import type { CardOrder } from "@hanabi/data";
+import type { CardOrder } from "@hanabi/game";
 import { getTotalCardsInDeck } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import type { HanabiCard } from "./HanabiCard";

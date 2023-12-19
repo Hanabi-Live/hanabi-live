@@ -1,4 +1,4 @@
-import type { Variant } from "@hanabi/data";
+import type { Variant } from "../../interfaces/Variant";
 import { isColorMute, isNumberMute } from "./variantIdentity";
 
 const HARD_VARIANT_EFFICIENCY_THRESHOLD = 1.33;

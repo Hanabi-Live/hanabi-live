@@ -1,14 +1,12 @@
-import type {
-  CardOrder,
-  MsgClue,
-  NumPlayers,
-  PlayerIndex,
-  Rank,
-  SuitIndex,
-} from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import type { EndCondition } from "../enums/EndCondition";
 import type { SpectatorNote } from "../interfaces/SpectatorNote";
+import type { CardOrder } from "./CardOrder";
+import type { MsgClue } from "./MsgClue";
+import type { NumPlayers } from "./NumPlayers";
+import type { PlayerIndex } from "./PlayerIndex";
+import type { Rank } from "./Rank";
+import type { SuitIndex } from "./SuitIndex";
 
 export type GameAction =
   | ActionCardIdentity

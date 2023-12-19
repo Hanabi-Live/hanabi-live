@@ -2,22 +2,21 @@
 
 import type {
   CardOrder,
+  CardState,
+  GameAction,
+  GameMetadata,
+  GameState,
   NumPlayers,
   PlayerIndex,
   Rank,
   SuitIndex,
   SuitRankTuple,
-} from "@hanabi/data";
-import { MAX_PLAYERS, getVariant } from "@hanabi/data";
-import type {
-  CardState,
-  GameAction,
-  GameMetadata,
-  GameState,
 } from "@hanabi/game";
 import {
+  MAX_PLAYERS,
   getCharacterNameForPlayer,
   getInitialCardState,
+  getVariant,
   isCardOnChop,
   isInitialDealFinished,
 } from "@hanabi/game";

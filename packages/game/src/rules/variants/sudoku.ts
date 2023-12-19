@@ -1,8 +1,11 @@
-import type { NumSuits, Rank, SuitIndex, Variant } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
 import type { CardState } from "../../interfaces/CardState";
 import type { GameState } from "../../interfaces/GameState";
+import type { Variant } from "../../interfaces/Variant";
+import type { NumSuits } from "../../types/NumSuits";
+import type { Rank } from "../../types/Rank";
+import type { SuitIndex } from "../../types/SuitIndex";
 import { getAllDiscardedSetForSuit } from "../deck";
 
 /** Check if the card can still be played in a Sudoku variant. */
@@ -437,9 +440,9 @@ export function sudokuGetMaxScorePerStack(
     unassignedSuit,
   ] of unassignedSuits.entries()) {
     // Note the "??" here, since it can be that there is actually no feasible assignment. In this
-    // case, these values are still undefined at this point, so we replace them by 0.
-    maxScorePerStack[unassignedSuit] =
-      bestAssignment[unassignedLocalSuitIndex] ?? 0;
+    // case, these values are still undefined at this point, so we replace them with 0.
+    const maxScore = bestAssignment[unassignedLocalSuitIndex] ?? 0;
+    maxScorePerStack[unassignedSuit] = maxScore;
   }
 
   return maxScorePerStack as Tuple<number, NumSuits>;

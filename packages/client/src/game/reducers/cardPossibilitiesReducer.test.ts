@@ -1,7 +1,11 @@
-import type { CardOrder, Rank, SuitIndex, SuitRankTuple } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
-import { getInitialCardState } from "@hanabi/game";
+import type {
+  CardOrder,
+  CardState,
+  Rank,
+  SuitIndex,
+  SuitRankTuple,
+} from "@hanabi/game";
+import { getInitialCardState, getVariant } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import { testMetadata } from "../../../test/testMetadata";
 import { newColorClue, newRankClue } from "../types/Clue";

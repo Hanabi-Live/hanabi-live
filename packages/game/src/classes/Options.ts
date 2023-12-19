@@ -1,5 +1,6 @@
-import type { NumPlayers, PlayerIndex } from "@hanabi/data";
-import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
+import { DEFAULT_VARIANT_NAME } from "../constants";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { PlayerIndex } from "../types/PlayerIndex";
 
 export class Options {
   readonly numPlayers: NumPlayers = 2;

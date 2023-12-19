@@ -1,9 +1,9 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import type { CardOrder, PlayerIndex, Suit } from "@hanabi/data";
-import { ClueType } from "@hanabi/data";
+import type { CardOrder, PlayerIndex, Suit } from "@hanabi/game";
 import {
+  ClueType,
   getCharacterNameForPlayer,
   isCardDiscarded,
   isCardInPlayerHand,

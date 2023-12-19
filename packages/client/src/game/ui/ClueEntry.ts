@@ -1,7 +1,6 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI).
 
-import type { CardOrder } from "@hanabi/data";
-import type { StateClue } from "@hanabi/game";
+import type { CardOrder, StateClue } from "@hanabi/game";
 import { getCharacterNameForPlayer } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";

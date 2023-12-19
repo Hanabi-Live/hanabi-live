@@ -1,4 +1,4 @@
-import type { CardOrder } from "@hanabi/data";
+import type { CardOrder } from "@hanabi/game";
 import { getTotalCardsInDeck } from "@hanabi/game";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";

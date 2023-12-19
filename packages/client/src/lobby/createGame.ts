@@ -1,13 +1,13 @@
 // The "Create Game" nav button.
 
+import type { Options } from "@hanabi/game";
 import {
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
   MIN_PLAYERS,
   VARIANT_NAMES,
   doesVariantExist,
-} from "@hanabi/data";
-import type { Options } from "@hanabi/game";
+} from "@hanabi/game";
 import {
   ReadonlySet,
   getRandomArrayElement,

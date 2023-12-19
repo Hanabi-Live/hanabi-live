@@ -1,6 +1,6 @@
 // Rules related to properties of variants.
 
-import type { Variant } from "@hanabi/data";
+import type { Variant } from "../../interfaces/Variant";
 
 export function isDualColor(variant: Variant): boolean {
   return variant.suits.some((suit) => suit.clueColors.length >= 2);

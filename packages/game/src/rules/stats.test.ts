@@ -1,5 +1,5 @@
-import { getDefaultVariant, getVariant } from "@hanabi/data";
 import { PaceRisk } from "../enums/PaceRisk";
+import { getDefaultVariant, getVariant } from "../gameData";
 import {
   getCluesStillUsable,
   getMinEfficiency,

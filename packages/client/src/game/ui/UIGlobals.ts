@@ -1,6 +1,11 @@
-import type { CardOrder, PlayerIndex } from "@hanabi/data";
-import { getDefaultVariant } from "@hanabi/data";
-import type { GameAction, GameMetadata, Options } from "@hanabi/game";
+import type {
+  CardOrder,
+  GameAction,
+  GameMetadata,
+  Options,
+  PlayerIndex,
+} from "@hanabi/game";
+import { getDefaultVariant } from "@hanabi/game";
 import { ReadonlyMap } from "isaacscript-common-ts";
 import Konva from "konva";
 import type * as Redux from "redux";

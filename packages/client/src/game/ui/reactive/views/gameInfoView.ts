@@ -1,7 +1,9 @@
-import type { PlayerIndex } from "@hanabi/data";
-import { MAX_STRIKES } from "@hanabi/data";
-import type { StateStrike } from "@hanabi/game";
-import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi/game";
+import type { PlayerIndex, StateStrike } from "@hanabi/game";
+import {
+  MAX_STRIKES,
+  getAdjustedClueTokens,
+  isAtMaxClueTokens,
+} from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";

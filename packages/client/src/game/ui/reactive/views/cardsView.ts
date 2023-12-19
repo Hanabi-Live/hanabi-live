@@ -1,5 +1,4 @@
-import type { CardOrder } from "@hanabi/data";
-import type { CardState } from "@hanabi/game";
+import type { CardOrder, CardState } from "@hanabi/game";
 import { getTotalCardsInDeck } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import type { CardIdentity } from "../../../types/CardIdentity";

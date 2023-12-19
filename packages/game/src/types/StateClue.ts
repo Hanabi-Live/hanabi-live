@@ -1,10 +1,8 @@
-import type {
-  CardOrder,
-  ClueType,
-  ColorIndex,
-  PlayerIndex,
-  RankClueNumber,
-} from "@hanabi/data";
+import type { ClueType } from "../enums/ClueType";
+import type { CardOrder } from "./CardOrder";
+import type { ColorIndex } from "./ColorIndex";
+import type { PlayerIndex } from "./PlayerIndex";
+import type { RankClueNumber } from "./RankClueNumber";
 
 interface StateClueBase {
   readonly giver: PlayerIndex;

@@ -1,6 +1,6 @@
 // Functions for handling all of the keyboard shortcuts.
 
-import type { CardOrder } from "@hanabi/data";
+import type { CardOrder } from "@hanabi/game";
 import {
   getAdjustedClueTokens,
   getTotalCardsInDeck,
@@ -126,7 +126,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
     if (globals.state.replay.hypothetical !== null) {
       // Escape = If in a hypothetical, exit back to the replay.
-      hypothetical.end();
+      hypothetical.endHypothetical();
       return;
     }
 
@@ -292,7 +292,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     }
   } else if (event.which === KeyCode.KEY_LEFT) {
     globals.store!.dispatch({ type: "dragReset" });
-    hypothetical.sendBack();
+    hypothetical.sendHypotheticalBack();
     return;
   }
 
@@ -370,11 +370,21 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const playerIndex =
     globals.state.replay.hypothetical === null
       ? globals.metadata.ourPlayerIndex
-      : globals.state.replay.hypothetical.ongoing.turn.currentPlayerIndex!;
+      : globals.state.replay.hypothetical.ongoing.turn.currentPlayerIndex;
+
+  if (playerIndex === null) {
+    return;
+  }
+
   const hand =
     globals.state.replay.hypothetical === null
-      ? globals.state.ongoingGame.hands[playerIndex]!
-      : globals.state.replay.hypothetical.ongoing.hands[playerIndex]!;
+      ? globals.state.ongoingGame.hands[playerIndex]
+      : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
+
+  if (hand === undefined) {
+    return;
+  }
+
   const maxSlotIndex = hand.length;
   const verb = ActionType[actionType];
 
@@ -436,7 +446,7 @@ function performAction(
       target,
     });
   } else {
-    hypothetical.send({
+    hypothetical.sendHypotheticalAction({
       type: actionType,
       target,
     });

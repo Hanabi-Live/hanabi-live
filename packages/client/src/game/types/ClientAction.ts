@@ -3,7 +3,7 @@ import type {
   PlayerIndex,
   RankClueNumber,
   SuitIndex,
-} from "@hanabi/data";
+} from "@hanabi/game";
 import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
 import type { ActionType } from "./ActionType";
 

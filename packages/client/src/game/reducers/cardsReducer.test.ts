@@ -1,7 +1,12 @@
-import type { CardOrder, NumPlayers, Rank, SuitIndex } from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
-import type { CardState, GameState } from "@hanabi/game";
-import { getInitialCardState } from "@hanabi/game";
+import type {
+  CardOrder,
+  CardState,
+  GameState,
+  NumPlayers,
+  Rank,
+  SuitIndex,
+} from "@hanabi/game";
+import { getInitialCardState, getVariant } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import * as deckRules from "../../../../game/src/rules/deck"; // eslint-disable-line @typescript-eslint/no-restricted-imports
 import {

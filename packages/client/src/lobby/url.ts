@@ -1,4 +1,4 @@
-import { DEFAULT_VARIANT_NAME } from "@hanabi/data";
+import { DEFAULT_VARIANT_NAME } from "@hanabi/game";
 import { parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";

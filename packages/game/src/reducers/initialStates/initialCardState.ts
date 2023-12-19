@@ -1,15 +1,13 @@
 /* eslint-disable unicorn/no-null */
 
-import type {
-  CardOrder,
-  NumPlayers,
-  SuitIndex,
-  SuitRankTuple,
-  Variant,
-} from "@hanabi/data";
 import { newArray } from "isaacscript-common-ts";
 import type { CardState } from "../../interfaces/CardState";
+import type { Variant } from "../../interfaces/Variant";
 import { getTotalCardsInDeck } from "../../rules/deck";
+import type { CardOrder } from "../../types/CardOrder";
+import type { NumPlayers } from "../../types/NumPlayers";
+import type { SuitIndex } from "../../types/SuitIndex";
+import type { SuitRankTuple } from "../../types/SuitRankTuple";
 
 export function getInitialCardState(
   order: CardOrder,

@@ -304,7 +304,10 @@ export function drawReplayArea(winW: number, winH: number): void {
     height: bottomButtonValues.h * winH,
     text: "Enter Hypothetical",
   });
-  globals.elements.enterHypoButton.on("click tap", hypothetical.start);
+  globals.elements.enterHypoButton.on(
+    "click tap",
+    hypothetical.startHypothetical,
+  );
   globals.elements.replayArea.add(
     globals.elements.enterHypoButton as unknown as Konva.Group,
   );

@@ -1,6 +1,7 @@
-import type { CardOrder, NumSuits } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import type { PaceRisk } from "../enums/PaceRisk";
+import type { CardOrder } from "../types/CardOrder";
+import type { NumSuits } from "../types/NumSuits";
 
 export interface StatsState {
   // For max score.

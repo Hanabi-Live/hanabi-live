@@ -1,11 +1,14 @@
 /* eslint-disable unicorn/no-null */
 
-import type { CardOrder, NumSuits, Rank } from "@hanabi/data";
-import { START_CARD_RANK, getDefaultVariant, getVariant } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import { eRange, newArray } from "isaacscript-common-ts";
+import { START_CARD_RANK } from "../constants";
 import { StackDirection } from "../enums/StackDirection";
+import { getDefaultVariant, getVariant } from "../gameData";
 import { getInitialCardState } from "../reducers/initialStates/initialCardState";
+import type { CardOrder } from "../types/CardOrder";
+import type { NumSuits } from "../types/NumSuits";
+import type { Rank } from "../types/Rank";
 import { getNextPlayableRanks, getStackDirection } from "./playStacks";
 
 const NUM_PLAYERS = 2;

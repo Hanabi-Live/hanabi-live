@@ -1,19 +1,16 @@
 import type {
   CardOrder,
+  CardState,
+  GameAction,
+  GameMetadata,
+  GameState,
   PlayerIndex,
   Rank,
   SuitIndex,
   SuitRankTuple,
   Variant,
-} from "@hanabi/data";
-import { getVariant } from "@hanabi/data";
-import type {
-  CardState,
-  GameAction,
-  GameMetadata,
-  GameState,
 } from "@hanabi/game";
-import { getNumCopiesOfCard } from "@hanabi/game";
+import { getNumCopiesOfCard, getVariant } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,

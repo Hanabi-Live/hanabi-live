@@ -1,7 +1,7 @@
 // The card graphics are various HTML5 canvas drawings.
 
-import type { Color, Rank, Suit, Variant } from "@hanabi/data";
-import { START_CARD_RANK, getSuit } from "@hanabi/data";
+import type { Color, Rank, Suit, Variant } from "@hanabi/game";
+import { START_CARD_RANK, getSuit } from "@hanabi/game";
 import * as abbreviationRules from "../rules/abbreviation";
 import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";

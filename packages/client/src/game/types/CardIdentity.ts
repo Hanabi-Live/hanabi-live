@@ -1,4 +1,4 @@
-import type { Rank, SuitIndex } from "@hanabi/data";
+import type { Rank, SuitIndex } from "@hanabi/game";
 
 export interface CardIdentity {
   /** `null` represents an unknown suit index. */

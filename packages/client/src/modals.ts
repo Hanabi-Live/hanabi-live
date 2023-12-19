@@ -1,6 +1,6 @@
 // Modals (boxes that hover on top of the UI).
 
-import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi/data";
+import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi/game";
 import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "./Globals";
 import * as noteIdentity from "./game/reducers/noteIdentity";

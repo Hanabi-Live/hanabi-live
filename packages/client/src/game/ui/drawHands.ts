@@ -1,6 +1,5 @@
-import type { NumPlayers, PlayerIndex } from "@hanabi/data";
-import { getCharacter } from "@hanabi/data";
-import { getCardsPerHand } from "@hanabi/game";
+import type { NumPlayers, PlayerIndex } from "@hanabi/game";
+import { getCardsPerHand, getCharacter } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import { CardLayout } from "./CardLayout";

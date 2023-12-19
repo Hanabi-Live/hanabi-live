@@ -1,8 +1,8 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { Color } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
+import type { Color } from "@hanabi/game";
 import {
+  START_CARD_RANK,
   getAdjustedClueTokens,
   isAtMaxClueTokens,
   isCardInPlayerHand,

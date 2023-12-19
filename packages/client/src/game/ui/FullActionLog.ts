@@ -1,4 +1,4 @@
-import type { NumPlayers } from "@hanabi/data";
+import type { NumPlayers } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, eRange, newArray } from "isaacscript-common-ts";
 import Konva from "konva";

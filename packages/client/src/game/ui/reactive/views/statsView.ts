@@ -1,4 +1,4 @@
-import type { NumPlayers } from "@hanabi/data";
+import type { NumPlayers } from "@hanabi/game";
 import { PaceRisk, getEfficiency } from "@hanabi/game";
 import { assertNotNull } from "isaacscript-common-ts";
 import { globals } from "../../UIGlobals";

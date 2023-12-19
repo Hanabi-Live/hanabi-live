@@ -1,10 +1,14 @@
 // Functions related to deck information: total cards, drawing cards
 
-import type { Rank, Suit, SuitIndex, Variant } from "@hanabi/data";
-import { START_CARD_RANK, getVariant } from "@hanabi/data";
 import { sumArray } from "isaacscript-common-ts";
+import { START_CARD_RANK } from "../constants";
+import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { Suit } from "../interfaces/Suit";
+import type { Variant } from "../interfaces/Variant";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
 import { isCardDiscarded } from "./cardState";
 import { getCardsPerHand } from "./hand";
 

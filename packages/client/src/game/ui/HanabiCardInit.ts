@@ -1,8 +1,7 @@
 // Initialization functions for the HanabiCard object.
 
-import type { Suit, Variant } from "@hanabi/data";
-import { START_CARD_RANK } from "@hanabi/data";
-import { hasReversedSuits } from "@hanabi/game";
+import type { Suit, Variant } from "@hanabi/game";
+import { START_CARD_RANK, hasReversedSuits } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";

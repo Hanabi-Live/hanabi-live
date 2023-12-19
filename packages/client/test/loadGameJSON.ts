@@ -1,24 +1,27 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
 import type {
-  CardOrder,
-  NumPlayers,
-  PlayerIndex,
-  Rank,
-  SuitIndex,
-} from "@hanabi/data";
-import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/data";
-import type {
   ActionClue,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
+  CardOrder,
   GameAction,
   GameState,
+  NumPlayers,
+  PlayerIndex,
+  Rank,
+  SuitIndex,
 } from "@hanabi/game";
-import { getCardsPerHand, getNextPlayableRanks } from "@hanabi/game";
+import {
+  ClueType,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  getCardsPerHand,
+  getNextPlayableRanks,
+  getVariant,
+} from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
-import { ClueType } from "../../data/src/enums/ClueType";
 import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as cluesRules from "../src/game/rules/clues";

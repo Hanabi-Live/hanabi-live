@@ -2,7 +2,7 @@
 
 # This script uses the "createVariantsJSON.ts" script to create:
 # - ./misc/variants.txt
-# - ./packages/data/src/json/variants.json
+# - ./packages/game/src/json/variants.json
 
 set -euo pipefail # Exit on errors and undefined variables.
 
@@ -15,5 +15,5 @@ cd "$DIR"
 echo "Creating the \"variants.json\" file..."
 npx tsx "$DIR/packages/scripts/src/createVariantsJSON/createVariantsJSON.ts"
 echo "Formatting the \"variants.json\" file..."
-npx prettier --write "$DIR/packages/data/src/json/variants.json"
+npx prettier --write "$DIR/packages/game/src/json/variants.json"
 echo "Done."

@@ -2,14 +2,17 @@
 
 /* eslint-disable unicorn/no-null */
 
-import type { CardOrder, NumPlayers, NumSuits, Variant } from "@hanabi/data";
-import { MAX_CLUE_NUM } from "@hanabi/data";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
+import { MAX_CLUE_NUM } from "../constants";
 import { PaceRisk } from "../enums/PaceRisk";
 import type { CardNote } from "../interfaces/CardNote";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
+import type { Variant } from "../interfaces/Variant";
+import type { CardOrder } from "../types/CardOrder";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { NumSuits } from "../types/NumSuits";
 import { isAllCardPossibilitiesTrash, isCardNeededForMaxScore } from "./card";
 import { isCardClued, isCardInPlayerHand } from "./cardState";
 import {

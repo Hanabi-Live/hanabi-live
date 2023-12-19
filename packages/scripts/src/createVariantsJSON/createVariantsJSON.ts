@@ -1,4 +1,4 @@
-import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/data";
+import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/game";
 import { findPackageRoot, isMain } from "isaacscript-common-node";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -55,7 +55,7 @@ function getPaths(): {
   const jsonDirectoryPath = path.join(
     packageRoot,
     "packages",
-    "data",
+    "game",
     "src",
     "json",
   );

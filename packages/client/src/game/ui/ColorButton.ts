@@ -1,4 +1,4 @@
-import type { Suit } from "@hanabi/data";
+import type { Suit } from "@hanabi/game";
 import { isDualColor } from "@hanabi/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";

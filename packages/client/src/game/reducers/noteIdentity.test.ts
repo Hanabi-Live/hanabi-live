@@ -1,5 +1,5 @@
-import type { SuitRankTuple } from "@hanabi/data";
-import { getDefaultVariant, getVariant } from "@hanabi/data";
+import type { SuitRankTuple } from "@hanabi/game";
+import { getDefaultVariant, getVariant } from "@hanabi/game";
 import { iRange } from "isaacscript-common-ts";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
