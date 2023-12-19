@@ -13,10 +13,10 @@ if (isMain()) {
 }
 
 async function main() {
-  await createVariantsJSON();
+  await createVariantsJSON(false);
 }
 
-async function createVariantsJSON() {
+export async function createVariantsJSON(quiet: boolean): Promise<void> {
   const { suitsPath, variantsPath, textPath } = getPaths();
 
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
@@ -45,8 +45,8 @@ async function createVariantsJSON() {
     );
   }
 
-  await createVariantJSONFile(variants, variantsPath);
-  createVariantsTextFile(variants, textPath);
+  await createVariantJSONFile(variants, variantsPath, quiet);
+  createVariantsTextFile(variants, textPath, quiet);
 }
 
 function getPaths(): {
@@ -237,6 +237,7 @@ function hasMissingVariants(
 async function createVariantJSONFile(
   variants: readonly VariantJSON[],
   jsonPath: string,
+  quiet: boolean,
 ) {
   const jsonString = JSON.stringify(variants);
   const formattedJSONString = await prettier.format(jsonString, {
@@ -244,12 +245,16 @@ async function createVariantJSONFile(
   });
 
   fs.writeFileSync(jsonPath, formattedJSONString);
-  console.log(`Created: ${jsonPath}`);
+
+  if (!quiet) {
+    console.log(`Created: ${jsonPath}`);
+  }
 }
 
 function createVariantsTextFile(
   variants: readonly VariantJSON[],
   textPath: string,
+  quiet: boolean,
 ) {
   const lines: string[] = [];
   for (const variant of variants) {
@@ -258,5 +263,8 @@ function createVariantsTextFile(
 
   const fileContents = lines.join("\n").concat("\n");
   fs.writeFileSync(textPath, fileContents);
-  console.log(`Created: ${textPath}`);
+
+  if (!quiet) {
+    console.log(`Created: ${textPath}`);
+  }
 }

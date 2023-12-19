@@ -1,5 +1,4 @@
 import {
-  $s,
   diff,
   fatalError,
   findPackageRoot,
@@ -8,23 +7,30 @@ import {
   readFile,
 } from "isaacscript-common-node";
 import path from "node:path";
+import { createVariantsJSON } from "./createVariantsJSON";
 
-const PACKAGE_ROOT = findPackageRoot();
-const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
+const REPO_ROOT = findPackageRoot();
 const VARIANTS_JSON_PATH = path.join(
   REPO_ROOT,
   "packages",
   "game",
+  "src",
   "json",
   "variants.json",
 );
 const VARIANTS_TXT_PATH = path.join(REPO_ROOT, "misc", "variants.txt");
 
 if (isMain()) {
-  main();
+  main().catch((error) => {
+    throw new Error(`The script encountered an error: ${error}`);
+  });
 }
 
-function main() {
+async function main() {
+  await checkVariantFiles();
+}
+
+async function checkVariantFiles() {
   if (!isFile(VARIANTS_JSON_PATH)) {
     fatalError(
       `Failed to find the "variants.json" file at: ${VARIANTS_JSON_PATH}`,
@@ -34,7 +40,7 @@ function main() {
   const oldVariantsJSON = readFile(VARIANTS_JSON_PATH);
   const oldVariantsTXT = readFile(VARIANTS_TXT_PATH);
 
-  $s`npm run create-variants-json`;
+  await createVariantsJSON(true);
 
   const newVariantsJSON = readFile(VARIANTS_JSON_PATH);
   const newVariantsTXT = readFile(VARIANTS_TXT_PATH);
