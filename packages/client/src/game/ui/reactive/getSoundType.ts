@@ -33,8 +33,11 @@ export function getSoundType(
   originalAction: GameAction | undefined,
   metadata: GameMetadata,
 ): SoundType {
+  const ourTurn = gameState.turn.currentPlayerIndex === metadata.ourPlayerIndex;
+  const standardSoundType = getStandardSoundType(ourTurn);
+
   if (previousGameState === undefined || originalAction === undefined) {
-    return SoundType.Standard;
+    return standardSoundType;
   }
 
   const variant = getVariant(metadata.options.variantName);
@@ -51,7 +54,7 @@ export function getSoundType(
       : originalAction;
 
   if (!includes(SOUND_TYPE_ACTIONS, action.type)) {
-    return SoundType.Standard;
+    return standardSoundType;
   }
 
   const actionType = action.type as (typeof SOUND_TYPE_ACTIONS)[number];
@@ -87,7 +90,7 @@ export function getSoundType(
         return SoundType.Quack;
       }
 
-      return SoundType.Standard;
+      return standardSoundType;
     }
 
     case "discard": {
@@ -141,7 +144,7 @@ export function getSoundType(
         return SoundType.DoubleDiscardCause;
       }
 
-      return SoundType.Standard;
+      return standardSoundType;
     }
 
     case "gameOver": {
@@ -212,9 +215,13 @@ export function getSoundType(
         return SoundType.OrderChopMove;
       }
 
-      return SoundType.Standard;
+      return getStandardSoundType(ourTurn);
     }
   }
+}
+
+export function getStandardSoundType(ourTurn: boolean): SoundType {
+  return ourTurn ? SoundType.Us : SoundType.Other;
 }
 
 /**

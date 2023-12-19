@@ -2,7 +2,11 @@ import type { GameAction, GameState } from "@hanabi/game";
 import { includes } from "isaacscript-common-ts";
 import { SoundType } from "../../../types/SoundType";
 import { globals } from "../../UIGlobals";
-import { SOUND_TYPE_ACTIONS, getSoundType } from "../getSoundType";
+import {
+  SOUND_TYPE_ACTIONS,
+  getSoundType,
+  getStandardSoundType,
+} from "../getSoundType";
 
 export function onNewSoundEffect(
   data: {
@@ -69,24 +73,18 @@ function getAdjustedSoundType(
   soundType: SoundType,
   ourTurn: boolean,
 ): SoundType {
-  let adjustedSoundType = soundType;
+  const standardSoundType = getStandardSoundType(ourTurn);
 
-  // Only play certain sound effects for people in the H-Group.
-  if (
+  return (
+    // Only play certain sound effects for people in the H-Group.
     (soundType === SoundType.OrderChopMove ||
       soundType === SoundType.DiscardClued ||
       soundType === SoundType.DoubleDiscard ||
       soundType === SoundType.DoubleDiscardCause) &&
-    !globals.lobby.settings.hyphenatedConventions &&
-    // Disable special sounds in "Throw It in a Hole" variants because they leak information.
-    !globals.variant.throwItInAHole
-  ) {
-    adjustedSoundType = SoundType.Standard;
-  }
-
-  if (adjustedSoundType === SoundType.Standard) {
-    return ourTurn ? SoundType.Us : SoundType.Other;
-  }
-
-  return adjustedSoundType;
+      !globals.lobby.settings.hyphenatedConventions &&
+      // Disable special sounds in "Throw It in a Hole" variants because they leak information.
+      !globals.variant.throwItInAHole
+      ? standardSoundType
+      : soundType
+  );
 }

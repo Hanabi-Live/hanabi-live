@@ -10,24 +10,7 @@ export enum SoundType {
   // Normal Game Sounds
   // ------------------
 
-  /**
-   * A "normal" or "boring" game action occurred, so do not play any special sound effect.
-   *
-   * This enum value does not correspond to an actual mp3 file; either `SoundType.Us` or
-   * `SoundType.Other` should be played instead.
-   */
-  Standard = "undefined",
-
-  /**
-   * This will be automatically selected from `SoundType.Standard`, depending on whether or not it
-   * is our turn.
-   */
   Us = "turn-us",
-
-  /**
-   * This will be automatically selected from `SoundType.Standard`, depending on whether or not it
-   * is our turn.
-   */
   Other = "turn-other",
 
   // -----------
