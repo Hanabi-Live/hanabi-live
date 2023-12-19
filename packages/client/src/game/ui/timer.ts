@@ -2,7 +2,7 @@
 
 import type { PlayerIndex } from "@hanabi/game";
 import * as tooltips from "../../tooltips";
-import { millisecondsToClockString } from "../../utils";
+import { millisecondsToClockString } from "../rules/text";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
 import type { TimerDisplay } from "./controls/TimerDisplay";
@@ -62,7 +62,9 @@ export function update(data: ClockData): void {
       // Invert it to show how much time each player is taking.
       time *= -1;
     }
-    globals.elements.timer1.setTimerText(millisecondsToClockString(time));
+
+    const text = millisecondsToClockString(time);
+    globals.elements.timer1.setTimerText(text);
   }
 
   const ourTurn =
@@ -75,7 +77,9 @@ export function update(data: ClockData): void {
       // Invert it to show how much time each player is taking.
       time *= -1;
     }
-    globals.elements.timer2.setTimerText(millisecondsToClockString(time));
+
+    const text = millisecondsToClockString(time);
+    globals.elements.timer2.setTimerText(text);
 
     if (data.activePlayerIndex !== -1) {
       const activePlayerName =
@@ -148,10 +152,8 @@ function setTickingDownTime(timer: TimerDisplay) {
     // Invert it to show how much time each player is taking.
     millisecondsLeft *= -1;
   }
-  const displayString = millisecondsToClockString(millisecondsLeft);
-
-  // Update display
-  timer.setTimerText(displayString);
+  const text = millisecondsToClockString(millisecondsLeft);
+  timer.setTimerText(text);
   drawLayer(timer);
 
   // Play a sound to indicate that the current player is almost out of time. Do not play it more

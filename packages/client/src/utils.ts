@@ -47,20 +47,6 @@ export function getURLFromPath(path: string): string {
   return url;
 }
 
-export function millisecondsToClockString(milliseconds: number): string {
-  // Non timed games measure time in negative values.
-  const time = Math.abs(milliseconds);
-  const seconds = Math.ceil(time / 1000);
-  return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
-}
-
-function pad2(num: number) {
-  if (num < 10) {
-    return `0${num}`;
-  }
-  return `${num}`;
-}
-
 export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
   const queryParameters = new URLSearchParams(window.location.search);

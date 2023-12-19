@@ -3,11 +3,8 @@ import { getTotalCardsInDeck } from "@hanabi/game";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import { OptionIcons } from "../../types/OptionIcons";
-import {
-  dateTimeFormatter,
-  millisecondsToClockString,
-  timerFormatter,
-} from "../../utils";
+import { dateTimeFormatter, timerFormatter } from "../../utils";
+import { millisecondsToClockString } from "../rules/text";
 import { ActionType } from "../types/ActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { globals } from "./UIGlobals";

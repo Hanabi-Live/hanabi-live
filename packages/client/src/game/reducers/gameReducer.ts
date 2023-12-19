@@ -31,7 +31,6 @@ import {
   assertNotNull,
   tupleEntries,
 } from "isaacscript-common-ts";
-import { millisecondsToClockString } from "../../utils";
 import * as textRules from "../rules/text";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
@@ -385,7 +384,8 @@ function gameReducerFunction(
         // Player times are negative in untimed games.
         const modifier = metadata.options.timed ? 1 : -1;
         const milliseconds = playerTime * modifier;
-        const durationString = millisecondsToClockString(milliseconds);
+        const durationString =
+          textRules.millisecondsToClockString(milliseconds);
         const playerName = textRules.getPlayerName(playerIndex, metadata);
 
         const text = metadata.options.timed
@@ -397,7 +397,7 @@ function gameReducerFunction(
         });
       }
 
-      const clockString = millisecondsToClockString(action.duration);
+      const clockString = textRules.millisecondsToClockString(action.duration);
       const text = `The total game duration was: ${clockString}`;
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
