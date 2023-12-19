@@ -29,6 +29,7 @@ export * from "./reducers/reducerHelpers";
 export * from "./rules/card";
 export * from "./rules/cardState";
 export * from "./rules/clueTokens";
+export * from "./rules/clues";
 export * from "./rules/deck";
 export * from "./rules/hand";
 export * from "./rules/playStacks";

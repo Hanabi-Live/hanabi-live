@@ -1,10 +1,9 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI).
 
 import type { CardOrder, StateClue } from "@hanabi/game";
-import { getCharacterNameForPlayer } from "@hanabi/game";
+import { getCharacterNameForPlayer, getClueName } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
 import Konva from "konva";
-import * as cluesRules from "../rules/clues";
 import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
 import { drawLayer } from "./konvaHelpers";
@@ -70,6 +69,12 @@ export class ClueEntry extends Konva.Group {
       clue.giver,
       globals.metadata.characterAssignments,
     );
+    const clueName = getClueName(
+      clue.type,
+      clue.value,
+      globals.variant,
+      characterName,
+    );
     const name = new Konva.Text({
       x: 0.75 * w,
       y: 0,
@@ -79,12 +84,7 @@ export class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: "Verdana",
       fill: "white",
-      text: cluesRules.getClueName(
-        clue.type,
-        clue.value,
-        globals.variant,
-        characterName,
-      ),
+      text: clueName,
       verticalAlign: "middle",
       listening: false,
     });

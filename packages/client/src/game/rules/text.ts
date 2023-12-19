@@ -14,11 +14,11 @@ import {
   getCardName,
   getCardSlot,
   getCharacterNameForPlayer,
+  getClueName,
   getVariant,
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { assertDefined } from "isaacscript-common-ts";
-import * as cluesRules from "./clues";
 
 const HYPO_PREFIX = "[Hypo] ";
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six"] as const;
@@ -73,7 +73,7 @@ export function clue(
   }
 
   // Handle the default case of a normal clue.
-  let clueName = cluesRules.getClueName(
+  let clueName = getClueName(
     action.clue.type,
     action.clue.value,
     variant,

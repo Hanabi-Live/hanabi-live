@@ -1,6 +1,6 @@
 import type { StateClue } from "@hanabi/game";
+import { msgClueToClue } from "@hanabi/game";
 import equal from "fast-deep-equal";
-import { msgClueToClue } from "../../../rules/clues";
 import { ClueEntry } from "../../ClueEntry";
 import { globals } from "../../UIGlobals";
 import * as arrows from "../../arrows";

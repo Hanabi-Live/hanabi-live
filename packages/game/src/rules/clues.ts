@@ -1,25 +1,18 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import type {
-  Clue,
-  ColorClue,
-  GameMetadata,
-  MsgClue,
-  PlayerIndex,
-  Rank,
-  RankClue,
-  Suit,
-  SuitIndex,
-  Variant,
-} from "@hanabi/game";
-import {
-  ClueType,
-  START_CARD_RANK,
-  getCharacterNameForPlayer,
-  newColorClue,
-  newRankClue,
-} from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
+import { START_CARD_RANK } from "../constants";
+import { ClueType } from "../enums/ClueType";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { Suit } from "../interfaces/Suit";
+import type { Variant } from "../interfaces/Variant";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
+import type { Clue, ColorClue, RankClue } from "../types/Clue";
+import { newColorClue, newRankClue } from "../types/Clue";
+import type { MsgClue } from "../types/MsgClue";
+import type { PlayerIndex } from "../types/PlayerIndex";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
 
 export function getClueName(
   clueType: ClueType,
@@ -89,7 +82,7 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
 }
 
 /** This mirrors the function `variantIsCardTouched` in "variants.go". */
-export function touchesCard(
+export function isCardTouchedByClue(
   variant: Variant,
   clue: Clue,
   suitIndex: SuitIndex,
@@ -102,16 +95,16 @@ export function touchesCard(
 
   switch (clue.type) {
     case ClueType.Color: {
-      return touchesCardColor(variant, clue, suit, rank);
+      return isCardTouchedByColorClue(variant, clue, suit, rank);
     }
 
     case ClueType.Rank: {
-      return touchesCardRank(variant, clue, suitIndex, suit, rank);
+      return isCardTouchedByRankClue(variant, clue, suitIndex, suit, rank);
     }
   }
 }
 
-function touchesCardColor(
+function isCardTouchedByColorClue(
   variant: Variant,
   clue: ColorClue,
   suit: Suit,
@@ -165,7 +158,7 @@ function touchesCardColor(
   return clueColorNames.includes(clue.value.name);
 }
 
-function touchesCardRank(
+function isCardTouchedByRankClue(
   variant: Variant,
   clue: RankClue,
   suitIndex: SuitIndex,

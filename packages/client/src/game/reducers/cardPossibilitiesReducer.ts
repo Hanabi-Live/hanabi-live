@@ -7,9 +7,13 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi/game";
-import { ClueType, MAX_PLAYERS, getVariant } from "@hanabi/game";
+import {
+  ClueType,
+  MAX_PLAYERS,
+  getVariant,
+  isCardTouchedByClue,
+} from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
-import * as cluesRules from "../rules/clues";
 
 export function cardPossibilitiesReducer(
   state: CardState,
@@ -27,15 +31,15 @@ export function cardPossibilitiesReducer(
   // Apply the clue and check what is eliminated.
   const possibleCardsFromClues = state.possibleCardsFromClues.filter(
     ([suitIndex, rank]) =>
-      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+      isCardTouchedByClue(variant, clue, suitIndex, rank) === positive,
   );
   const possibleCards = state.possibleCards.filter(
     ([suitIndex, rank]) =>
-      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+      isCardTouchedByClue(variant, clue, suitIndex, rank) === positive,
   );
   const possibleCardsForEmpathy = state.possibleCardsForEmpathy.filter(
     ([suitIndex, rank]) =>
-      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+      isCardTouchedByClue(variant, clue, suitIndex, rank) === positive,
   );
 
   let { positiveColorClues } = state;

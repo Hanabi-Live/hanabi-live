@@ -3,9 +3,10 @@ import {
   ClueType,
   getAdjustedClueTokens,
   getCharacterNameForPlayer,
+  isCardTouchedByClue,
+  msgClueToClue,
 } from "@hanabi/game";
 import { assertDefined, eRange } from "isaacscript-common-ts";
-import * as cluesRules from "../rules/clues";
 import { ActionType } from "../types/ActionType";
 import type {
   ClientActionColorClue,
@@ -134,7 +135,7 @@ export function getTouchedCardsFromClue(
       return;
     }
 
-    if (isTouched(card, cluesRules.msgClueToClue(clue, globals.variant))) {
+    if (isTouched(card, msgClueToClue(clue, globals.variant))) {
       cardsTouched.push(card.state.order);
     }
   });
@@ -145,8 +146,8 @@ export function getTouchedCardsFromClue(
 function isTouched(card: HanabiCard, clue: Clue): boolean {
   const morphedPossibilities = card.getMorphedPossibilities();
   return morphedPossibilities.every(
-    ([suitIndexC, rankC]) =>
-      cluesRules.touchesCard(globals.variant, clue, suitIndexC, rankC) &&
+    ([suitIndex, rank]) =>
+      isCardTouchedByClue(globals.variant, clue, suitIndex, rank) &&
       ((clue.type === ClueType.Rank && card.visibleRank !== null) ||
         (clue.type === ClueType.Color && card.visibleSuitIndex !== null)),
   );

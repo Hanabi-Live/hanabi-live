@@ -20,11 +20,12 @@ import {
   getCardsPerHand,
   getNextPlayableRanks,
   getVariant,
+  isCardTouchedByClue,
+  msgClueToClue,
 } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
 import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
-import * as cluesRules from "../src/game/rules/clues";
 import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
@@ -137,9 +138,11 @@ export function loadGameJSON(gameJSON: JSONGame): State {
             `Failed to find the JSON card at index: ${order}`,
           );
 
-          return cluesRules.touchesCard(
+          const clue = msgClueToClue(a.clue, variant);
+
+          return isCardTouchedByClue(
             variant,
-            cluesRules.msgClueToClue(a.clue, variant),
+            clue,
             jsonCard.suitIndex as SuitIndex,
             jsonCard.rank as Rank,
           );

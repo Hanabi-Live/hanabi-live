@@ -19,6 +19,8 @@ import {
   getVariant,
   isCardOnChop,
   isInitialDealFinished,
+  msgClueToClue,
+  shouldApplyClue,
 } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
@@ -27,7 +29,6 @@ import {
   newArray,
   tupleKeys,
 } from "isaacscript-common-ts";
-import * as cluesRules from "../rules/clues";
 import * as characterRules from "../rules/variants/characters";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
@@ -92,7 +93,7 @@ export function cardsReducer(
     }
 
     case "clue": {
-      const clue = cluesRules.msgClueToClue(action.clue, variant);
+      const clue = msgClueToClue(action.clue, variant);
 
       const hand = game.hands[action.target];
       assertDefined(hand, `Failed to find the hand at index: ${action.target}`);
@@ -100,7 +101,7 @@ export function cardsReducer(
       // eslint-disable-next-line func-style
       const applyClue = (order: CardOrder, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
-        if (!cluesRules.shouldApplyClue(action.giver, metadata, variant)) {
+        if (!shouldApplyClue(action.giver, metadata, variant)) {
           return;
         }
 
