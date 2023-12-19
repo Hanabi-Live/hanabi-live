@@ -1,11 +1,11 @@
 import type { SocketStream } from "@fastify/websocket";
-import { WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
+import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
 import { todo } from "isaacscript-common-ts";
 import { getCookieValue } from "../httpSession";
 import { models } from "../models";
 import type { CommandData } from "./commands";
-import { Command, commandStringifyFuncs } from "./commands";
+import { commandStringifyFuncs } from "./commands";
 
 /**
  * Handles the second part of logic authentication. (The first step is found in "login.ts".)

@@ -117,7 +117,6 @@ function calculateCard(
   card: CardState,
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
-
   deck: CardState[],
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
@@ -436,7 +435,6 @@ function possibilityValid(
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   index: number,
   cardCountMap: readonly number[][],
-
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   if (deckPossibilities.length === index) {
@@ -487,7 +485,6 @@ function possibilityValid(
 
 function updatePossibilitiesToValidate(
   cardCountMap: readonly number[][],
-
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;

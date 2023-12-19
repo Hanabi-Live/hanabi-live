@@ -1,13 +1,9 @@
 import type { CommandErrorData } from "@hanabi/data";
-import { CommandErrorDataSchema } from "@hanabi/data";
+import { Command, CommandErrorDataSchema } from "@hanabi/data";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
 import { validateInterfaceMatchesEnum } from "isaacscript-common-ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
-
-export enum Command {
-  error = "error",
-}
 
 export interface CommandData {
   [Command.error]: CommandErrorData;

@@ -1,13 +1,7 @@
-import emojisJSON from "./json/emojis.json";
-import emotesJSON from "./json/emotes.json";
-
-const emojis = emojisJSON;
-const emotes = emotesJSON;
-export { emojis, emotes };
-
 export * from "./abbreviations";
 export * from "./constants";
 export * from "./enums/ClueType";
+export * from "./enums/Command";
 export * from "./enums/VariantModifier";
 export * from "./gameData";
 export * from "./interfaces/Character";
