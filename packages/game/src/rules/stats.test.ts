@@ -143,8 +143,8 @@ describe("getMinEfficiency", () => {
 });
 
 describe("getPace", () => {
-  test("is undefined when deckSize is 0", () => {
-    expect(getPace(25, 0, 25, 4, false)).toBeUndefined();
+  test("is null when deckSize is 0", () => {
+    expect(getPace(25, 0, 25, 4, false)).toBeNull();
   });
 
   test("returns +13 at the beginning of a 4-player No Variant game", () => {
