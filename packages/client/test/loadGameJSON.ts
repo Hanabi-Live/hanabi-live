@@ -26,7 +26,7 @@ import {
 } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
-import * as segmentRules from "../src/game/rules/segment";
+import { shouldStoreSegment } from "../src/game/reducers/stateReducer";
 import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
 import type { State } from "../src/game/types/State";
@@ -208,7 +208,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           );
 
           if (
-            segmentRules.shouldStoreSegment(
+            shouldStoreSegment(
               nextState.turn.segment,
               s.turn.segment,
               action,
@@ -246,11 +246,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     );
 
     if (
-      segmentRules.shouldStoreSegment(
-        nextState.turn.segment,
-        previousSegment,
-        action,
-      ) &&
+      shouldStoreSegment(nextState.turn.segment, previousSegment, action) &&
       nextState.turn.segment !== null
     ) {
       states[nextState.turn.segment] = nextState;

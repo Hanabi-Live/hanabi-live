@@ -1,11 +1,10 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
 import type { GameAction, GameMetadata, GameState } from "@hanabi/game";
-import { gameReducer, getInitialGameState } from "@hanabi/game";
+import { EndCondition, gameReducer, getInitialGameState } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { assertDefined, assertNotNull } from "isaacscript-common-ts";
-import * as segmentRules from "../rules/segment";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { State } from "../types/State";
 import type { Action } from "../types/actions";
@@ -293,7 +292,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       updateCardIdentities(state);
 
       if (
-        segmentRules.shouldStoreSegment(
+        shouldStoreSegment(
           state.ongoingGame.turn.segment,
           previousSegment,
           action,
@@ -339,11 +338,7 @@ function reduceGameActions(
     );
 
     if (
-      segmentRules.shouldStoreSegment(
-        nextState.turn.segment,
-        s.turn.segment,
-        a,
-      ) &&
+      shouldStoreSegment(nextState.turn.segment, s.turn.segment, a) &&
       nextState.turn.segment !== null
     ) {
       states[nextState.turn.segment] = nextState;
@@ -460,4 +455,35 @@ function rehydrateScrubbedActions(
 
     return action;
   });
+}
+
+/**
+ * When the game state reducer sets "segment" to a new number, it is a signal to record the current
+ * state of the game (for the purposes of replays).
+ */
+export function shouldStoreSegment(
+  segment: number | null,
+  previousSegment: number | null,
+  action: GameAction,
+): boolean {
+  if (segment === null) {
+    // The game is still doing the initial deal.
+    return false;
+  }
+
+  // The types of "gameOver" that have to do with the previous action should meld together with the
+  // segment of the previous action. Any new end conditions must also be updated in the "gameOver"
+  // block in "turnReducer.ts".
+  if (
+    action.type === "gameOver" &&
+    action.endCondition !== EndCondition.Timeout &&
+    action.endCondition !== EndCondition.TerminatedByPlayer &&
+    action.endCondition !== EndCondition.TerminatedByVote &&
+    action.endCondition !== EndCondition.IdleTimeout
+  ) {
+    return true;
+  }
+
+  // By default, store a new segment whenever the turn reducer changes the segment number.
+  return segment !== previousSegment;
 }
