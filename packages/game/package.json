@@ -25,7 +25,8 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc --project ./tsconfig.npm.json && npx typedoc ./src/index.ts",
-    "lint": "bash ./lint.sh"
+    "lint": "bash ./lint.sh",
+    "publish": "isaacscript publish-ts"
   },
   "peerDependencies": {
     "immer": ">= 10.0.0"
