@@ -1,5 +1,10 @@
 import type { Rank } from "@hanabi/game";
-import { MAX_CLUE_NUM, getEfficiencyFromGameState } from "@hanabi/game";
+import {
+  MAX_CLUE_NUM,
+  getEfficiencyFromGameState,
+  getInitialGameState,
+  getInitialGameStateTest,
+} from "@hanabi/game";
 import { assertDefined, eRange, iRange } from "isaacscript-common-ts";
 import {
   colorClue,
@@ -11,8 +16,6 @@ import {
 } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
 import { gameReducer } from "./gameReducer";
-import { initialGameState } from "./initialStates/initialGameState";
-import { initialGameStateTest } from "./initialStates/initialGameStateTest";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
@@ -20,8 +23,8 @@ const clueStarvedMetadata = testMetadata(numPlayers, "Clue Starved (6 Suits)");
 
 describe("gameReducer", () => {
   test("does not mutate state", () => {
-    const state = initialGameState(defaultMetadata);
-    const unchangedState = initialGameState(defaultMetadata);
+    const state = getInitialGameState(defaultMetadata);
+    const unchangedState = getInitialGameState(defaultMetadata);
     const newState = gameReducer(
       state,
       draw(0, 0),
@@ -38,8 +41,8 @@ describe("gameReducer", () => {
 
   describe("turn", () => {
     test("is properly incremented (integration test)", () => {
-      const initialState = initialGameState(defaultMetadata);
-      let state = initialGameStateTest(defaultMetadata);
+      const initialState = getInitialGameState(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameReducer(
@@ -57,8 +60,8 @@ describe("gameReducer", () => {
 
   describe("currentPlayerIndex", () => {
     test("is properly incremented (integration test)", () => {
-      const initialState = initialGameState(defaultMetadata);
-      let state = initialGameStateTest(defaultMetadata);
+      const initialState = getInitialGameState(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameReducer(
@@ -78,7 +81,7 @@ describe("gameReducer", () => {
 
   describe("efficiency", () => {
     test("is Infinity after a play on the first turn", () => {
-      let state = initialGameState(defaultMetadata);
+      let state = getInitialGameState(defaultMetadata);
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
@@ -109,7 +112,7 @@ describe("gameReducer", () => {
     });
 
     test("is 0 after a misplay on the first turn", () => {
-      let state = initialGameState(defaultMetadata);
+      let state = getInitialGameState(defaultMetadata);
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
@@ -153,7 +156,7 @@ describe("gameReducer", () => {
     });
 
     test("is 3 after a 3-for-1 clue", () => {
-      let state = initialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       // Draw a red 1, a red 2, and a red 3.
       for (const i of iRange(1, 3)) {
@@ -188,7 +191,7 @@ describe("gameReducer", () => {
     });
 
     test("is decreased after a misplay", () => {
-      let state = initialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       // Draw a yellow 2 to player 0.
       const drawYellow2Action = draw(0, 0, 1, 2);
@@ -268,7 +271,7 @@ describe("gameReducer", () => {
     });
 
     test("is decreased after a clue from playing a 5 is wasted", () => {
-      let state = initialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       // Draw a red 2, a red 4, and a red 5 to player 0.
       const drawRed2Action = draw(0, 0, 0, 2);
@@ -428,7 +431,7 @@ describe("gameReducer", () => {
 
     describe("Clue Starved", () => {
       test("is decreased after a clue from playing a 5 is wasted", () => {
-        let state = initialGameStateTest(clueStarvedMetadata);
+        let state = getInitialGameStateTest(clueStarvedMetadata);
 
         // Draw a red 2, a red 4, and a red 5 to player 0.
         const drawRed2Action = draw(0, 0, 0, 2);
@@ -611,8 +614,8 @@ describe("gameReducer", () => {
 
   describe("clues", () => {
     test("are added to the list of clues", () => {
-      const initialState = initialGameState(defaultMetadata);
-      let state = initialGameStateTest(defaultMetadata);
+      const initialState = getInitialGameState(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       // Player 1 gives a random clue to player 0.
       const testClue = rankClue(5, 1, [], 0, 2);
@@ -639,7 +642,7 @@ describe("gameReducer", () => {
     });
 
     test("are remembered with the correct positive and negative cards", () => {
-      let state = initialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       // Draw 5 cards (red 1-3, yellow 4-5).
       for (const i of eRange(5)) {
@@ -677,7 +680,7 @@ describe("gameReducer", () => {
     });
 
     test("decrement clueTokens", () => {
-      let state = initialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(defaultMetadata);
 
       // Player 1 gives a random clue to player 0.
       const testClue = rankClue(5, 1, [], 0, 2);
@@ -697,7 +700,7 @@ describe("gameReducer", () => {
 
   describe("plays", () => {
     test("increase the score by 1", () => {
-      let state = initialGameState(defaultMetadata);
+      let state = getInitialGameState(defaultMetadata);
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);

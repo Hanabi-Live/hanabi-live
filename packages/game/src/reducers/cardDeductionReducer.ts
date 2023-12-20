@@ -1,21 +1,23 @@
-import type {
-  CardOrder,
-  CardState,
-  GameAction,
-  GameMetadata,
-  GameState,
-  PlayerIndex,
-  Rank,
-  SuitIndex,
-  SuitRankTuple,
-  Variant,
-} from "@hanabi/game";
-import { getNumCopiesOfCard, getVariant } from "@hanabi/game";
 import {
   arrayCopyTwoDimensional,
   assertDefined,
   tupleKeys,
 } from "isaacscript-common-ts";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { GameState } from "../interfaces/GameState";
+import type { Variant } from "../interfaces/Variant";
+import { getNumCopiesOfCard } from "../rules/deck";
+import type { CardOrder } from "../types/CardOrder";
+import type { PlayerIndex } from "../types/PlayerIndex";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
+import type { SuitRankTuple } from "../types/SuitRankTuple";
+import type { GameAction } from "../types/gameActions";
+
+let cachedVariantID: number | undefined;
+let cachedCardCountMap: number[][] = [];
 
 export function cardDeductionReducer(
   deck: readonly CardState[],
@@ -51,7 +53,7 @@ function makeDeductions(
 
   // We need to calculate our own unknown cards first because those possibilities will be needed for
   // pretending like we know what the other players see.
-  calculatePlayerPossibilities(
+  updateAllCardPossibilities(
     metadata.ourPlayerIndex,
     metadata.ourPlayerIndex,
     hands,
@@ -63,7 +65,7 @@ function makeDeductions(
 
   for (const playerIndex of tupleKeys(hands)) {
     if (playerIndex !== metadata.ourPlayerIndex) {
-      calculatePlayerPossibilities(
+      updateAllCardPossibilities(
         playerIndex,
         metadata.ourPlayerIndex,
         hands,
@@ -78,7 +80,7 @@ function makeDeductions(
   return newDeck;
 }
 
-function calculatePlayerPossibilities(
+function updateAllCardPossibilities(
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   hands: GameState["hands"],
@@ -95,9 +97,15 @@ function calculatePlayerPossibilities(
       }
 
       if (
-        shouldCalculateCard(card, playerIndex, ourPlayerIndex, deck, oldDeck)
+        shouldUpdateCardPossibilities(
+          card,
+          playerIndex,
+          ourPlayerIndex,
+          deck,
+          oldDeck,
+        )
       ) {
-        calculateCard(
+        updateCardPossibilities(
           card,
           playerIndex,
           ourPlayerIndex,
@@ -110,54 +118,13 @@ function calculatePlayerPossibilities(
   }
 }
 
-function calculateCard(
-  card: CardState,
-  playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
-  deck: CardState[],
-  cardCountMap: readonly number[][],
-  metadata: GameMetadata,
-) {
-  const deckPossibilities = generateDeckPossibilities(
-    card.order,
-    deck,
-    playerIndex,
-    ourPlayerIndex,
-    metadata,
-  );
-
-  let { possibleCards, possibleCardsForEmpathy } = card;
-
-  if (playerIndex === ourPlayerIndex) {
-    possibleCards = filterCardPossibilities(
-      card.possibleCards,
-      deckPossibilities,
-      cardCountMap,
-    );
-  }
-
-  if (playerIndex === card.location) {
-    possibleCardsForEmpathy = filterCardPossibilities(
-      card.possibleCardsForEmpathy,
-      deckPossibilities,
-      cardCountMap,
-    );
-  }
-
-  deck[card.order] = {
-    ...card,
-    possibleCards,
-    possibleCardsForEmpathy,
-  };
-}
-
-function shouldCalculateCard(
+function shouldUpdateCardPossibilities(
   card: CardState,
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
-) {
+): boolean {
   if (playerIndex !== ourPlayerIndex && playerIndex !== card.location) {
     // Both possibleCards and possibleCardsFromEmpathy are not calculated by the player at
     // playerIndex.
@@ -197,6 +164,49 @@ function shouldCalculateCard(
     playerIndex,
     ourPlayerIndex,
   );
+}
+
+/** Mutates the deck in-place. */
+function updateCardPossibilities(
+  card: CardState,
+  playerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex,
+  deck: CardState[],
+  cardCountMap: readonly number[][],
+  metadata: GameMetadata,
+) {
+  const deckPossibilities = generateDeckPossibilities(
+    card.order,
+    deck,
+    playerIndex,
+    ourPlayerIndex,
+    metadata,
+  );
+
+  let { possibleCards, possibleCardsForEmpathy } = card;
+
+  if (playerIndex === ourPlayerIndex) {
+    possibleCards = filterCardPossibilities(
+      card.possibleCards,
+      deckPossibilities,
+      cardCountMap,
+    );
+  }
+
+  if (playerIndex === card.location) {
+    possibleCardsForEmpathy = filterCardPossibilities(
+      card.possibleCardsForEmpathy,
+      deckPossibilities,
+      cardCountMap,
+    );
+  }
+
+  const newCard = {
+    ...card,
+    possibleCards,
+    possibleCardsForEmpathy,
+  };
+  deck[card.order] = newCard; // eslint-disable-line no-param-reassign
 }
 
 function getCardPossibilitiesForPlayer(
@@ -294,20 +304,25 @@ function generateDeckPossibilities(
   return deckPossibilities.filter((a) => isPossibleCard(a, cardCountMap));
 }
 
-/*
- * When we are in a hypo and morph cards, we can create impossible decks,
- * if we do the empathy will be broken.
- * Remove cards from possibilities that we know are from an impossible deck.
+/**
+ * When we are in a hypo and morph cards, we can create impossible decks. If we do, the empathy will
+ * be broken. Remove cards from possibilities that we know are from an impossible deck.
+ *
+ * Mutates the `cardCountMap` in-place.
  */
 function isPossibleCard(
   possibilities: readonly SuitRankTuple[],
   cardCountMap: readonly number[][],
-) {
+): boolean {
   // We know the card.
   if (possibilities.length === 1) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [suitIndex, rank] = possibilities[0]!;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
     cardCountMap[suitIndex]![rank]!--;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (cardCountMap[suitIndex]![rank]! < 0) {
       return false;
     }
@@ -320,7 +335,7 @@ function canBeUsedToDisprovePossibility(
   card: CardState | undefined,
   excludeCardOrder: CardOrder,
   playerIndex: PlayerIndex,
-) {
+): boolean {
   return (
     card !== undefined &&
     card.order !== excludeCardOrder &&
@@ -336,7 +351,7 @@ function deckPossibilitiesDifferent(
   oldDeck: readonly CardState[],
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
-) {
+): boolean {
   for (const [order, card] of deck.entries()) {
     const oldCard = oldDeck[order];
     const previouslyUsed = canBeUsedToDisprovePossibility(
@@ -420,25 +435,32 @@ function filterCardPossibilities(
 function hasPossibility(
   possibilitiesToValidate: readonly SuitRankTuple[],
   [suitIndex, rank]: SuitRankTuple,
-) {
+): boolean {
   return possibilitiesToValidate.some(
     ([suitIndexCandidate, rankCandidate]) =>
       suitIndexCandidate === suitIndex && rankCandidate === rank,
   );
 }
 
+/** Mutates the `countCountMap` in-place. */
 function possibilityValid(
   [suitIndex, rank]: readonly [SuitIndex, Rank],
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   index: number,
   cardCountMap: readonly number[][],
   possibilitiesToValidate: SuitRankTuple[],
-) {
+): boolean {
   if (deckPossibilities.length === index) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (cardCountMap[suitIndex]![rank]! > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
       cardCountMap[suitIndex]![rank]!--;
+
       updatePossibilitiesToValidate(cardCountMap, possibilitiesToValidate);
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
       cardCountMap[suitIndex]![rank]!++;
+
       return true;
     }
 
@@ -446,7 +468,10 @@ function possibilityValid(
   }
 
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit.
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
   cardCountMap[suitIndex]![rank]!--;
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (cardCountMap[suitIndex]![rank]! >= 0) {
     const suitRankTuples = deckPossibilities[index];
     assertDefined(
@@ -470,16 +495,20 @@ function possibilityValid(
           possibilitiesToValidate,
         )
       ) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
         cardCountMap[suitIndex]![rank]!++;
         return true;
       }
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
   cardCountMap[suitIndex]![rank]!++;
+
   return false;
 }
 
+/** Mutates the `possibilitiesToValidate` in-place. */
 function updatePossibilitiesToValidate(
   cardCountMap: readonly number[][],
   possibilitiesToValidate: SuitRankTuple[],
@@ -489,17 +518,17 @@ function updatePossibilitiesToValidate(
   for (const suitRankTuple of possibilitiesToValidate) {
     const [suitIndex, rank] = suitRankTuple;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (cardCountMap[suitIndex]![rank]! <= 0) {
+      // eslint-disable-next-line no-param-reassign
       possibilitiesToValidate[j] = [suitIndex, rank];
       j++;
     }
   }
 
+  // eslint-disable-next-line no-param-reassign
   possibilitiesToValidate.length = j;
 }
-
-let cachedVariantID: number | null = null;
-let cachedCardCountMap: number[][] = [];
 
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
 function getCardCountMap(variant: Variant): readonly number[][] {
@@ -511,11 +540,9 @@ function getCardCountMap(variant: Variant): readonly number[][] {
   for (const [suitIndex, suit] of variant.suits.entries()) {
     possibleCardMap[suitIndex] = [];
     for (const rank of variant.ranks) {
-      possibleCardMap[suitIndex]![rank] = getNumCopiesOfCard(
-        suit,
-        rank,
-        variant,
-      );
+      const numCopiesOfCard = getNumCopiesOfCard(suit, rank, variant);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      possibleCardMap[suitIndex]![rank] = numCopiesOfCard;
     }
   }
 

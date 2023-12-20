@@ -1,38 +1,40 @@
-import type {
-  CardOrder,
-  CardStatus,
-  GameMetadata,
-  GameState,
-  NumPlayers,
-  NumSuits,
-  Rank,
-  StackDirection,
-  SuitIndex,
-  SuitRankMap,
-  Variant,
-} from "@hanabi/game";
-import {
-  MAX_CLUE_NUM,
-  getAdjustedClueTokens,
-  getCardStatus,
-  getCardsPerHand,
-  getCluesStillUsableNotRounded,
-  getDiscardClueTokenValue,
-  getEndGameLength,
-  getPaceRisk,
-  getStackDirection,
-  getStartingDeckSize,
-  getStartingPace,
-  getSuitCompleteClueTokenValue,
-  getTotalCardsInDeck,
-  getUnadjustedClueTokens,
-  getVariant,
-} from "@hanabi/game";
+/* eslint-disable unicorn/no-null */
+
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray, sumArray } from "isaacscript-common-ts";
-import { initialTurnState } from "./initialTurnState";
+import { MAX_CLUE_NUM } from "../../constants";
+import type { CardStatus } from "../../enums/CardStatus";
+import type { StackDirection } from "../../enums/StackDirection";
+import { getVariant } from "../../gameData";
+import type { GameMetadata } from "../../interfaces/GameMetadata";
+import type { GameState } from "../../interfaces/GameState";
+import type { Variant } from "../../interfaces/Variant";
+import { getCardStatus } from "../../rules/card";
+import {
+  getAdjustedClueTokens,
+  getDiscardClueTokenValue,
+  getSuitCompleteClueTokenValue,
+  getUnadjustedClueTokens,
+} from "../../rules/clueTokens";
+import { getTotalCardsInDeck } from "../../rules/deck";
+import { getCardsPerHand } from "../../rules/hand";
+import { getStackDirection } from "../../rules/playStacks";
+import {
+  getCluesStillUsableNotRounded,
+  getPaceRisk,
+  getStartingDeckSize,
+  getStartingPace,
+} from "../../rules/stats";
+import { getEndGameLength } from "../../rules/turn";
+import type { CardOrder } from "../../types/CardOrder";
+import type { NumPlayers } from "../../types/NumPlayers";
+import type { NumSuits } from "../../types/NumSuits";
+import type { Rank } from "../../types/Rank";
+import type { SuitIndex } from "../../types/SuitIndex";
+import type { SuitRankMap } from "../../types/SuitRankMap";
+import { getInitialTurnState } from "./initialTurnState";
 
-export function initialGameState(metadata: GameMetadata): GameState {
+export function getInitialGameState(metadata: GameMetadata): GameState {
   // Calculate some things before we get the game state properties.
   const { options } = metadata;
   const variant = getVariant(options.variantName);
@@ -50,7 +52,7 @@ export function initialGameState(metadata: GameMetadata): GameState {
   >;
 
   // Game state properties
-  const turn = initialTurnState(options.startingPlayer);
+  const turn = getInitialTurnState(options.startingPlayer);
   const cardsRemainingInTheDeck = getTotalCardsInDeck(variant);
   const cardStatus = getInitialCardStatusMap(
     variant,

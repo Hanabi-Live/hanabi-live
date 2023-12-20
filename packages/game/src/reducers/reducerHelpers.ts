@@ -6,13 +6,6 @@ import type { GameState } from "../interfaces/GameState";
 import { getEfficiency } from "../rules/stats";
 import type { PlayerIndex } from "../types/PlayerIndex";
 
-export function getEfficiencyFromGameState(gameState: GameState): number {
-  return getEfficiency(
-    gameState.stats.cardsGotten,
-    gameState.stats.potentialCluesLost,
-  );
-}
-
 export function getCharacterNameForPlayer(
   playerIndex: PlayerIndex | null,
   characterAssignments: Readonly<Array<number | null>>,
@@ -40,4 +33,11 @@ function getCharacterIDForPlayer(
   );
 
   return characterID;
+}
+
+export function getEfficiencyFromGameState(gameState: GameState): number {
+  return getEfficiency(
+    gameState.stats.cardsGotten,
+    gameState.stats.potentialCluesLost,
+  );
 }

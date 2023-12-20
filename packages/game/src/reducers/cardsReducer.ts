@@ -1,28 +1,7 @@
 // Calculates the state of the deck after an action.
 
-import type {
-  CardOrder,
-  CardState,
-  GameAction,
-  GameMetadata,
-  GameState,
-  NumPlayers,
-  PlayerIndex,
-  Rank,
-  SuitIndex,
-  SuitRankTuple,
-} from "@hanabi/game";
-import {
-  MAX_PLAYERS,
-  getCharacterNameForPlayer,
-  getInitialCardState,
-  getVariant,
-  isCardOnChop,
-  isInitialDealFinished,
-  msgClueToClue,
-  shouldApplyClue,
-  shouldSeeSlot2CardIdentity,
-} from "@hanabi/game";
+/* eslint-disable unicorn/no-null */
+
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -30,8 +9,26 @@ import {
   newArray,
   tupleKeys,
 } from "isaacscript-common-ts";
+import { MAX_PLAYERS } from "../constants";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { GameState } from "../interfaces/GameState";
+import { msgClueToClue, shouldApplyClue } from "../rules/clues";
+import { isInitialDealFinished } from "../rules/deck";
+import { isCardOnChop } from "../rules/hand";
+import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters";
+import type { CardOrder } from "../types/CardOrder";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { PlayerIndex } from "../types/PlayerIndex";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
+import type { SuitRankTuple } from "../types/SuitRankTuple";
+import type { GameAction } from "../types/gameActions";
 import { cardDeductionReducer } from "./cardDeductionReducer";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
+import { getInitialCardState } from "./initialStates/initialCardState";
+import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export function cardsReducer(
   deck: readonly CardState[],

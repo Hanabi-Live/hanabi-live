@@ -1,19 +1,16 @@
 // Calculates the state of a card after a clue.
 
-import type {
-  CardState,
-  Clue,
-  GameMetadata,
-  SuitRankTuple,
-  Variant,
-} from "@hanabi/game";
-import {
-  ClueType,
-  MAX_PLAYERS,
-  getVariant,
-  isCardTouchedByClue,
-} from "@hanabi/game";
+/* eslint-disable unicorn/no-null */
+
 import { newArray } from "isaacscript-common-ts";
+import { MAX_PLAYERS } from "../constants";
+import { ClueType } from "../enums/ClueType";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import { isCardTouchedByClue } from "../rules/clues";
+import type { Clue } from "../types/Clue";
+import type { SuitRankTuple } from "../types/SuitRankTuple";
 
 export function cardPossibilitiesReducer(
   state: CardState,
@@ -26,7 +23,7 @@ export function cardPossibilitiesReducer(
     return state;
   }
 
-  const variant: Variant = getVariant(metadata.options.variantName);
+  const variant = getVariant(metadata.options.variantName);
 
   // Apply the clue and check what is eliminated.
   const possibleCardsFromClues = state.possibleCardsFromClues.filter(

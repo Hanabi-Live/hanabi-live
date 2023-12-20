@@ -1,6 +1,7 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
 import type { GameAction, GameMetadata, GameState } from "@hanabi/game";
+import { getInitialGameState } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { assertDefined, assertNotNull } from "isaacscript-common-ts";
@@ -9,7 +10,6 @@ import type { CardIdentity } from "../types/CardIdentity";
 import type { State } from "../types/State";
 import type { Action } from "../types/actions";
 import { gameReducer } from "./gameReducer";
-import { initialGameState } from "./initialStates/initialGameState";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
 import { uiReducer } from "./uiReducer";
@@ -20,11 +20,11 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
   switch (action.type) {
     case "gameActionList": {
       // Calculate all the intermediate states.
-      const initialState = initialGameState(state.metadata);
+      const initialGameState = getInitialGameState(state.metadata);
 
       const { game, states } = reduceGameActions(
         action.actions,
-        initialState,
+        initialGameState,
         state.playing,
         state.shadowing,
         state.finished,
@@ -64,10 +64,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.playing = false;
         state.shadowing = false;
 
-        const initialState = initialGameState(state.metadata);
+        const initialGameState = getInitialGameState(state.metadata);
         const { game, states } = reduceGameActions(
           state.replay.actions,
-          initialState,
+          initialGameState,
           state.playing,
           state.shadowing,
           true,

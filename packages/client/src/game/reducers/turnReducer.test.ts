@@ -1,20 +1,19 @@
 import type { TurnState } from "@hanabi/game";
+import { getInitialGameState, getInitialTurnState } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
 import { draw, play } from "../../../test/testActions";
 import { testMetadata } from "../../../test/testMetadata";
-import { initialGameState } from "./initialStates/initialGameState";
-import { initialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
-const defaultGameState = initialGameState(defaultMetadata);
+const defaultGameState = getInitialGameState(defaultMetadata);
 
 describe("turnReducer", () => {
   describe("turn", () => {
     test("is properly incremented", () => {
       let state: TurnState = {
-        ...initialTurnState(),
+        ...getInitialTurnState(),
         segment: 0,
       };
 
@@ -49,7 +48,7 @@ describe("turnReducer", () => {
   describe("currentPlayerIndex", () => {
     test("is properly incremented", () => {
       let state: TurnState = {
-        ...initialTurnState(),
+        ...getInitialTurnState(),
         segment: 0,
       };
 
@@ -68,7 +67,7 @@ describe("turnReducer", () => {
 
     test("is properly incremented for a legacy game with a custom starting player", () => {
       let state: TurnState = {
-        ...initialTurnState(1),
+        ...getInitialTurnState(1),
         segment: 0,
       };
 

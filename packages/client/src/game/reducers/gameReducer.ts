@@ -13,6 +13,7 @@ import type {
 import {
   ClueType,
   EndCondition,
+  cardsReducer,
   getAdjustedClueTokens,
   getCardStatus,
   getChopIndex,
@@ -38,7 +39,6 @@ import {
   assertNotNull,
   tupleEntries,
 } from "isaacscript-common-ts";
-import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
 import { statsReducer } from "./statsReducer";

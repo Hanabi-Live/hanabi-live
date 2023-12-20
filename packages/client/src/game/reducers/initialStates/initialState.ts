@@ -1,11 +1,14 @@
 import type { GameMetadata } from "@hanabi/game";
-import { getTotalCardsInDeck, getVariant } from "@hanabi/game";
+import {
+  getInitialGameState,
+  getTotalCardsInDeck,
+  getVariant,
+} from "@hanabi/game";
 import { newArray } from "isaacscript-common-ts";
 import type { State } from "../../types/State";
-import { initialGameState } from "./initialGameState";
 
 export function initialState(metadata: GameMetadata): State {
-  const game = initialGameState(metadata);
+  const gameState = getInitialGameState(metadata);
 
   const { options } = metadata;
   const variant = getVariant(options.variantName);
@@ -13,7 +16,7 @@ export function initialState(metadata: GameMetadata): State {
 
   return {
     visibleState: null,
-    ongoingGame: game,
+    ongoingGame: gameState,
     replay: {
       active: false,
       segment: 0,

@@ -1,19 +1,14 @@
-import type {
-  CardOrder,
-  CardState,
-  Rank,
-  SuitIndex,
-  SuitRankTuple,
-} from "@hanabi/game";
-import {
-  getInitialCardState,
-  getVariant,
-  newColorClue,
-  newRankClue,
-} from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
-import { testMetadata } from "../../../test/testMetadata";
+import { testMetadata } from "../../../client/test/testMetadata";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import type { CardOrder } from "../types/CardOrder";
+import { newColorClue, newRankClue } from "../types/Clue";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
+import type { SuitRankTuple } from "../types/SuitRankTuple";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
+import { getInitialCardState } from "./initialStates/initialCardState";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);

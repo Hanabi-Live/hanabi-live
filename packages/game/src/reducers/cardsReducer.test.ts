@@ -1,14 +1,7 @@
-import type {
-  CardOrder,
-  CardState,
-  GameState,
-  NumPlayers,
-  Rank,
-  SuitIndex,
-} from "@hanabi/game";
-import { getInitialCardState, getVariant } from "@hanabi/game";
+/* eslint-disable unicorn/no-null */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import type { Tuple } from "isaacscript-common-ts";
-import * as deckRules from "../../../../game/src/rules/deck"; // eslint-disable-line @typescript-eslint/no-restricted-imports
 import {
   cardIdentity,
   colorClue,
@@ -16,10 +9,19 @@ import {
   draw,
   play,
   rankClue,
-} from "../../../test/testActions";
-import { testMetadata } from "../../../test/testMetadata";
+} from "../../../client/test/testActions";
+import { testMetadata } from "../../../client/test/testMetadata";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
+import * as deckRules from "../rules/deck";
+import type { CardOrder } from "../types/CardOrder";
+import type { NumPlayers } from "../types/NumPlayers";
+import type { Rank } from "../types/Rank";
+import type { SuitIndex } from "../types/SuitIndex";
 import { cardsReducer } from "./cardsReducer";
-import { initialGameState } from "./initialStates/initialGameState";
+import { getInitialCardState } from "./initialStates/initialCardState";
+import { getInitialGameState } from "./initialStates/initialGameState";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);
@@ -28,8 +30,8 @@ const THROW_IT_IN_A_HOLE_METADATA = testMetadata(
   "Throw It in a Hole (4 Suits)",
 );
 const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
-const GAME_STATE = initialGameState(DEFAULT_METADATA);
-const THROW_IT_IN_A_HOLE_GAME_STATE = initialGameState(
+const GAME_STATE = getInitialGameState(DEFAULT_METADATA);
+const THROW_IT_IN_A_HOLE_GAME_STATE = getInitialGameState(
   THROW_IT_IN_A_HOLE_METADATA,
 );
 const FIRST_CARD = getInitialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
