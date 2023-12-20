@@ -1,0 +1,26 @@
+{
+  "name": "@hanabi/game",
+  "version": "1.0.0",
+  "description": "Functions for computing game states of Hanabi.",
+  "keywords": [],
+  "homepage": "https://github.com/Hanabi-Live/hanabi-live",
+  "bugs": {
+    "url": "https://github.com/Hanabi-Live/hanabi-live/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hanabi-Live/hanabi-live.git"
+  },
+  "license": "GPL-3.0",
+  "author": "Zamiell",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "package.json",
+    "README.md"
+  ]
+}
