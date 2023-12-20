@@ -105,7 +105,7 @@ func main() {
 	logger.Info("Current git commit: " + gitCommitOnStart)
 
 	// Check to see if the data path exists
-	jsonPath = path.Join(projectPath, "packages", "data", "src", "json")
+	jsonPath = path.Join(projectPath, "packages", "game", "src", "json")
 	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
 		logger.Fatal("The path of \"" + jsonPath + "\" does not exist. " +
 			"This directory should always exist; please try re-cloning the repository.")
