@@ -99,7 +99,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v2
         with:
-          path: "./packages/game/docs"
+          path: ./packages/game/docs
 
       - uses: actions/deploy-pages@v2
 
