@@ -1404,7 +1404,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       );
     }
 
-    const abbreviation = abbreviationRules.get(suit.name, variant);
+    const abbreviation = abbreviationRules.getAbbreviation(suit.name, variant);
     return `<div style="font-size: 0.75em;"><div style="text-align: center">${
       suit.displayName
     } (${abbreviation})</div>${lines.join("<br>")}</div>`;

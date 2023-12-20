@@ -109,7 +109,7 @@ export function drawCards(
         }
         let fontSize: number;
         if (colorblindMode) {
-          rankLabel += abbreviationRules.get(suit.name, variant);
+          rankLabel += abbreviationRules.getAbbreviation(suit.name, variant);
           fontSize = 68;
           textYPos = 83;
         } else {
