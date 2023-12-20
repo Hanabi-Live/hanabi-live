@@ -24,7 +24,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc"
+    "build": "rm -rf dist && tsc",
+    "lint": "bash ./lint.sh"
   },
   "peerDependencies": {
     "immer": ">= 10.0.0"

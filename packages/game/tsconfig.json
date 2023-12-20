@@ -7,7 +7,17 @@
 
   "compilerOptions": {
     "outDir": "dist",
+
+    // Because of the monorepo "rootDir" setting, the compiled output will be in a subdirectory.
+    // Thus, we need to manually revert the setting for this specific package.
+    "rootDir": "./src",
+
+    // Needed this this package is an npm library.
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
   },
 
   "include": ["./src/**/*.ts"],
+  "exclude": ["**/*.test.ts"],
 }
