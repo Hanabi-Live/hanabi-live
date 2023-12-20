@@ -1,13 +1,13 @@
 import { eRange } from "isaacscript-common-ts";
 import { draw, play } from "../../../client/test/testActions";
-import { testMetadata } from "../../../client/test/testMetadata";
+import { getTestMetadata } from "../../../client/test/testMetadata";
 import type { TurnState } from "../interfaces/TurnState";
 import { getInitialGameState } from "./initialStates/initialGameState";
 import { getInitialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";
 
 const numPlayers = 3;
-const defaultMetadata = testMetadata(numPlayers);
+const defaultMetadata = getTestMetadata(numPlayers);
 const defaultGameState = getInitialGameState(defaultMetadata);
 
 describe("turnReducer", () => {

@@ -12,7 +12,7 @@ import {
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
 
-export function testMetadata(
+export function getTestMetadata(
   numPlayers: NumPlayers,
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {

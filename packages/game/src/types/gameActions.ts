@@ -124,7 +124,7 @@ export interface ActionPlay {
   readonly rank: Rank | -1;
 }
 
-interface ActionPlayerTimes {
+export interface ActionPlayerTimes {
   readonly type: "playerTimes";
   readonly playerTimes: Tuple<number, NumPlayers>;
   readonly duration: number;
@@ -140,7 +140,7 @@ export interface ActionStrike {
   readonly turn: number;
 }
 
-interface ActionTurn {
+export interface ActionTurn {
   readonly type: "turn";
   readonly num: number;
   readonly currentPlayerIndex: PlayerIndex;
@@ -150,31 +150,31 @@ interface ActionTurn {
 // Note actions
 // ------------
 
-interface ActionEditNote {
+export interface ActionEditNote {
   readonly type: "editNote";
   readonly order: CardOrder;
   readonly text: string;
 }
 
-interface ActionReceiveNote {
+export interface ActionReceiveNote {
   readonly type: "receiveNote";
   readonly order: CardOrder;
   readonly notes: readonly SpectatorNote[];
 }
 
-interface ActionNoteListPlayer {
+export interface ActionNoteListPlayer {
   readonly type: "noteListPlayer";
   readonly texts: readonly string[];
 }
 
-interface ActionNoteList {
+export interface ActionNoteList {
   readonly type: "noteList";
   readonly names: readonly string[];
   readonly noteTextLists: ReadonlyArray<readonly string[]>;
   readonly isSpectators: readonly boolean[];
 }
 
-interface ActionSetEffMod {
+export interface ActionSetEffMod {
   readonly type: "setEffMod";
   readonly mod: number;
 }

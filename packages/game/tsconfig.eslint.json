@@ -25,7 +25,4 @@
     "./**/*.tsx",
     "./**/.*.tsx",
   ],
-
-  // An empty array is needed to overwrite the "exclude" setting from the inherited config.
-  "exclude": [],
 }

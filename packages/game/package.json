@@ -24,7 +24,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc --project ./tsconfig.npm.json && npx typedoc ./src/index.ts",
     "lint": "bash ./lint.sh"
   },
   "peerDependencies": {

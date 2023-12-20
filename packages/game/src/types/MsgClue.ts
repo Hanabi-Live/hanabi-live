@@ -3,12 +3,12 @@ import type { ClueType } from "../enums/ClueType";
 import type { ColorIndex } from "./ColorIndex";
 import type { RankClueNumber } from "./RankClueNumber";
 
-interface MsgColorClue {
+export interface MsgColorClue {
   readonly type: ClueType.Color;
   readonly value: ColorIndex;
 }
 
-interface MsgRankClue {
+export interface MsgRankClue {
   readonly type: ClueType.Rank;
   readonly value: RankClueNumber;
 }

@@ -1,5 +1,5 @@
 import { draw, replayEnter } from "../../../test/testActions";
-import { testMetadata } from "../../../test/testMetadata";
+import { getTestMetadata } from "../../../test/testMetadata";
 import { initialState } from "./initialStates/initialState";
 import { stateReducer } from "./stateReducer";
 
@@ -8,7 +8,7 @@ jest.mock("./uiReducer", () => ({
 }));
 
 const numPlayers = 3;
-const defaultMetadata = testMetadata(numPlayers);
+const defaultMetadata = getTestMetadata(numPlayers);
 
 describe("stateReducer", () => {
   test("does not mutate state", () => {

@@ -10,7 +10,7 @@ import {
   play,
   rankClue,
 } from "../../../client/test/testActions";
-import { testMetadata } from "../../../client/test/testMetadata";
+import { getTestMetadata } from "../../../client/test/testMetadata";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
@@ -24,8 +24,8 @@ import { getInitialCardState } from "./initialStates/initialCardState";
 import { getInitialGameState } from "./initialStates/initialGameState";
 
 const NUM_PLAYERS = 3;
-const DEFAULT_METADATA = testMetadata(NUM_PLAYERS);
-const THROW_IT_IN_A_HOLE_METADATA = testMetadata(
+const DEFAULT_METADATA = getTestMetadata(NUM_PLAYERS);
+const THROW_IT_IN_A_HOLE_METADATA = getTestMetadata(
   NUM_PLAYERS,
   "Throw It in a Hole (4 Suits)",
 );

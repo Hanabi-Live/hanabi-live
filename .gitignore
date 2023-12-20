@@ -51,6 +51,9 @@ GitHub_private_key.pem
 # Scripts can create temporary SQL files
 /scripts/bash/*.sql
 
+# Docs for npm packages
+/packages/game/docs
+
 # ------------------------------
 # GitHub Node.gitignore template
 # https://raw.githubusercontent.com/github/gitignore/master/Node.gitignore

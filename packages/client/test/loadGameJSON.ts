@@ -31,7 +31,7 @@ import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
 import type { State } from "../src/game/types/State";
 import type testGame from "../test_data/up_or_down.json";
-import { testMetadata } from "./testMetadata";
+import { getTestMetadata } from "./testMetadata";
 
 type JSONGame = typeof testGame;
 
@@ -56,7 +56,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   }
   const numPlayers = potentialNumPlayers as NumPlayers;
 
-  const metadata = testMetadata(numPlayers, gameJSON.options.variant);
+  const metadata = getTestMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = getCardsPerHand(metadata.options);

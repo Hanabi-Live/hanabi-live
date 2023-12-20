@@ -7,7 +7,7 @@ import {
   rankClue,
   strike,
 } from "../../../client/test/testActions";
-import { testMetadata } from "../../../client/test/testMetadata";
+import { getTestMetadata } from "../../../client/test/testMetadata";
 import { MAX_CLUE_NUM } from "../constants";
 import type { Rank } from "../types/Rank";
 import { gameReducer } from "./gameReducer";
@@ -16,8 +16,11 @@ import { getInitialGameStateTest } from "./initialStates/initialGameStateTest";
 import { getEfficiencyFromGameState } from "./reducerHelpers";
 
 const numPlayers = 3;
-const defaultMetadata = testMetadata(numPlayers);
-const clueStarvedMetadata = testMetadata(numPlayers, "Clue Starved (6 Suits)");
+const defaultMetadata = getTestMetadata(numPlayers);
+const clueStarvedMetadata = getTestMetadata(
+  numPlayers,
+  "Clue Starved (6 Suits)",
+);
 
 describe("gameReducer", () => {
   test("does not mutate state", () => {

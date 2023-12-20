@@ -16,12 +16,12 @@ interface StateClueBase {
   readonly negativeList: readonly CardOrder[];
 }
 
-interface StateColorClue extends StateClueBase {
+export interface StateColorClue extends StateClueBase {
   readonly type: ClueType.Color;
   readonly value: ColorIndex;
 }
 
-interface StateRankClue extends StateClueBase {
+export interface StateRankClue extends StateClueBase {
   readonly type: ClueType.Rank;
   readonly value: RankClueNumber;
 }
