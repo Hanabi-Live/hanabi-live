@@ -1,4 +1,5 @@
 import type { GameMetadata } from "@hanabi/game";
+import { rankClue } from "@hanabi/game";
 import { assertDefined, assertNotNull } from "isaacscript-common-ts";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {
@@ -7,7 +8,6 @@ import {
   hypoEnd,
   hypoStart,
   init,
-  rankClue,
 } from "../../../test/testActions";
 import testGame from "../../../test_data/up_or_down.json";
 import type { State } from "../types/State";

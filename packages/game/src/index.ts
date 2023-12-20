@@ -53,6 +53,7 @@ export * from "./rules/variants/hGroup";
 export * from "./rules/variants/reversible";
 export * from "./rules/variants/sudoku";
 export * from "./rules/variants/variantIdentity";
+export * from "./testActions";
 export * from "./types/CardOrder";
 export * from "./types/Clue";
 export * from "./types/ColorIndex";

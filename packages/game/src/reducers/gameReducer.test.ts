@@ -1,4 +1,6 @@
 import { assertDefined, eRange, iRange } from "isaacscript-common-ts";
+import { MAX_CLUE_NUM } from "../constants";
+import { getDefaultMetadata } from "../metadata";
 import {
   colorClue,
   discard,
@@ -6,9 +8,7 @@ import {
   play,
   rankClue,
   strike,
-} from "../../../client/test/testActions";
-import { MAX_CLUE_NUM } from "../constants";
-import { getDefaultMetadata } from "../metadata";
+} from "../testActions";
 import type { Rank } from "../types/Rank";
 import { gameReducer } from "./gameReducer";
 import { getInitialGameState } from "./initialStates/initialGameState";

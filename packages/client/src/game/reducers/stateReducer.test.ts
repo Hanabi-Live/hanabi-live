@@ -1,5 +1,5 @@
-import { getDefaultMetadata } from "@hanabi/game";
-import { draw, replayEnter } from "../../../test/testActions";
+import { draw, getDefaultMetadata } from "@hanabi/game";
+import { replayEnter } from "../../../test/testActions";
 import { initialState } from "./initialStates/initialState";
 import { stateReducer } from "./stateReducer";
 

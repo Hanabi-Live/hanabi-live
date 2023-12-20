@@ -1,7 +1,7 @@
 import { eRange } from "isaacscript-common-ts";
-import { draw, play } from "../../../client/test/testActions";
 import type { TurnState } from "../interfaces/TurnState";
 import { getDefaultMetadata } from "../metadata";
+import { draw, play } from "../testActions";
 import { getInitialGameState } from "./initialStates/initialGameState";
 import { getInitialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";

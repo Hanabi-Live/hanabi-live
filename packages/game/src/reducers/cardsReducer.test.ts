@@ -2,6 +2,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import type { Tuple } from "isaacscript-common-ts";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
+import { getDefaultMetadata } from "../metadata";
+import * as deckRules from "../rules/deck";
 import {
   cardIdentity,
   colorClue,
@@ -9,12 +14,7 @@ import {
   draw,
   play,
   rankClue,
-} from "../../../client/test/testActions";
-import { getVariant } from "../gameData";
-import type { CardState } from "../interfaces/CardState";
-import type { GameState } from "../interfaces/GameState";
-import { getDefaultMetadata } from "../metadata";
-import * as deckRules from "../rules/deck";
+} from "../testActions";
 import type { CardOrder } from "../types/CardOrder";
 import type { NumPlayers } from "../types/NumPlayers";
 import type { Rank } from "../types/Rank";
