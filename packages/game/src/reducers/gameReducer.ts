@@ -1,41 +1,8 @@
 // Functions for building a game state for every turn.
 
-import type {
-  ActionDiscard,
-  ActionPlay,
-  CardNote,
-  CardState,
-  GameAction,
-  GameMetadata,
-  GameState,
-  Variant,
-} from "@hanabi/game";
-import {
-  ClueType,
-  EndCondition,
-  cardsReducer,
-  ddaReducer,
-  getAdjustedClueTokens,
-  getCardStatus,
-  getChopIndex,
-  getClueText,
-  getDiscardText,
-  getGameOverText,
-  getGoesFirstText,
-  getNewClueTokensAfterAction,
-  getPlayText,
-  getPlayerName,
-  getStackDirection,
-  getStackStartRank,
-  getVariant,
-  hasReversedSuits,
-  isCardClued,
-  isInitialDealFinished,
-  knownTrashReducer,
-  millisecondsToClockString,
-  statsReducer,
-  turnReducer,
-} from "@hanabi/game";
+/* eslint-disable no-param-reassign */
+/* eslint-disable unicorn/no-null */
+
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import {
@@ -43,6 +10,43 @@ import {
   assertNotNull,
   tupleEntries,
 } from "isaacscript-common-ts";
+import { ClueType } from "../enums/ClueType";
+import { EndCondition } from "../enums/EndCondition";
+import { getVariant } from "../gameData";
+import type { CardNote } from "../interfaces/CardNote";
+import type { CardState } from "../interfaces/CardState";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { GameState } from "../interfaces/GameState";
+import type { Variant } from "../interfaces/Variant";
+import { getCardStatus } from "../rules/card";
+import { isCardClued } from "../rules/cardState";
+import {
+  getAdjustedClueTokens,
+  getNewClueTokensAfterAction,
+} from "../rules/clueTokens";
+import { isInitialDealFinished } from "../rules/deck";
+import { getChopIndex } from "../rules/hand";
+import { getStackDirection, getStackStartRank } from "../rules/playStacks";
+import {
+  getClueText,
+  getDiscardText,
+  getGameOverText,
+  getGoesFirstText,
+  getPlayText,
+  getPlayerName,
+  millisecondsToClockString,
+} from "../rules/text";
+import { hasReversedSuits } from "../rules/variants/variantIdentity";
+import type {
+  ActionDiscard,
+  ActionPlay,
+  GameAction,
+} from "../types/gameActions";
+import { cardsReducer } from "./cardsReducer";
+import { ddaReducer } from "./ddaReducer";
+import { knownTrashReducer } from "./knownTrashReducer";
+import { statsReducer } from "./statsReducer";
+import { turnReducer } from "./turnReducer";
 
 export const gameReducer = produce(gameReducerFunction, {} as GameState);
 

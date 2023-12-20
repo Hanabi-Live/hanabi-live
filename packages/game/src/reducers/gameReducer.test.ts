@@ -1,10 +1,3 @@
-import type { Rank } from "@hanabi/game";
-import {
-  MAX_CLUE_NUM,
-  getEfficiencyFromGameState,
-  getInitialGameState,
-  getInitialGameStateTest,
-} from "@hanabi/game";
 import { assertDefined, eRange, iRange } from "isaacscript-common-ts";
 import {
   colorClue,
@@ -13,9 +6,14 @@ import {
   play,
   rankClue,
   strike,
-} from "../../../test/testActions";
-import { testMetadata } from "../../../test/testMetadata";
+} from "../../../client/test/testActions";
+import { testMetadata } from "../../../client/test/testMetadata";
+import { MAX_CLUE_NUM } from "../constants";
+import type { Rank } from "../types/Rank";
 import { gameReducer } from "./gameReducer";
+import { getInitialGameState } from "./initialStates/initialGameState";
+import { getInitialGameStateTest } from "./initialStates/initialGameStateTest";
+import { getEfficiencyFromGameState } from "./reducerHelpers";
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);

@@ -28,6 +28,7 @@ export * from "./reducers/cardDeductionReducer";
 export * from "./reducers/cardPossibilitiesReducer";
 export * from "./reducers/cardsReducer";
 export * from "./reducers/ddaReducer";
+export * from "./reducers/gameReducer";
 export * from "./reducers/initialStates/initialCardState";
 export * from "./reducers/initialStates/initialGameState";
 export * from "./reducers/initialStates/initialGameStateTest";
