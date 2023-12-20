@@ -1,6 +1,7 @@
 // The reducer for replays and hypotheticals.
 
 import type { GameMetadata } from "@hanabi/game";
+import { gameReducer } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { assertDefined, assertNotNull } from "isaacscript-common-ts";
@@ -9,7 +10,6 @@ import type {
   ActionIncludingHypothetical,
   ReplayAction,
 } from "../types/actions";
-import { gameReducer } from "./gameReducer";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 

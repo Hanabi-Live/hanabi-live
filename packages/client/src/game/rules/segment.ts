@@ -1,9 +1,11 @@
 import type { GameAction } from "@hanabi/game";
 import { EndCondition } from "@hanabi/game";
 
-// When the game state reducer sets "segment" to a new number, it is a signal to record the current
-// state of the game (for the purposes of replays).
-export function shouldStore(
+/**
+ * When the game state reducer sets "segment" to a new number, it is a signal to record the current
+ * state of the game (for the purposes of replays).
+ */
+export function shouldStoreSegment(
   segment: number | null,
   previousSegment: number | null,
   action: GameAction,

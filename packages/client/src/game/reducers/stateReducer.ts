@@ -1,7 +1,7 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
 import type { GameAction, GameMetadata, GameState } from "@hanabi/game";
-import { getInitialGameState } from "@hanabi/game";
+import { gameReducer, getInitialGameState } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { assertDefined, assertNotNull } from "isaacscript-common-ts";
@@ -9,7 +9,6 @@ import * as segmentRules from "../rules/segment";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { State } from "../types/State";
 import type { Action } from "../types/actions";
-import { gameReducer } from "./gameReducer";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
 import { uiReducer } from "./uiReducer";
@@ -294,7 +293,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       updateCardIdentities(state);
 
       if (
-        segmentRules.shouldStore(
+        segmentRules.shouldStoreSegment(
           state.ongoingGame.turn.segment,
           previousSegment,
           action,
@@ -340,7 +339,11 @@ function reduceGameActions(
     );
 
     if (
-      segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, a) &&
+      segmentRules.shouldStoreSegment(
+        nextState.turn.segment,
+        s.turn.segment,
+        a,
+      ) &&
       nextState.turn.segment !== null
     ) {
       states[nextState.turn.segment] = nextState;

@@ -17,6 +17,7 @@ import {
   ClueType,
   MAX_PLAYERS,
   MIN_PLAYERS,
+  gameReducer,
   getCardsPerHand,
   getNextPlayableRanks,
   getVariant,
@@ -24,7 +25,6 @@ import {
   msgClueToClue,
 } from "@hanabi/game";
 import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
-import { gameReducer } from "../src/game/reducers/gameReducer";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import * as segmentRules from "../src/game/rules/segment";
 import { ActionType } from "../src/game/types/ActionType";
@@ -208,7 +208,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           );
 
           if (
-            segmentRules.shouldStore(
+            segmentRules.shouldStoreSegment(
               nextState.turn.segment,
               s.turn.segment,
               action,
@@ -246,7 +246,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     );
 
     if (
-      segmentRules.shouldStore(
+      segmentRules.shouldStoreSegment(
         nextState.turn.segment,
         previousSegment,
         action,
