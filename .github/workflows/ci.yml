@@ -83,7 +83,7 @@ jobs:
         run: npm run check-variant-files
 
   deploy_docs_website:
-    if: "needs.pr-check.outputs.number != 'null'"
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [lint]
     runs-on: ubuntu-latest
     permissions:
