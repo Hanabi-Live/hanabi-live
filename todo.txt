@@ -5,7 +5,6 @@
 - refactor most of data --> game (?)
   - figure out clear delineation
 - make Connection.send type-safe
-- remove all null in @hanabi/game
 
 +-----+
 | OLD |
@@ -23,6 +22,7 @@ short term:
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer
 
 long term once the server is rewritten in TypeScript:
+- remove all null in @hanabi/game (this might need server changes)
 - server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845
   - once this is done, we don't have to use client-side cookies anymore, can remove `@fastify/secure-session` dep entirely

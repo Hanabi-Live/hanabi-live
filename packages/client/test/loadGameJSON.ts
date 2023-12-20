@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import { getTestMetadata } from "@hanabi-live/game/src/testMetadata";
 import type {
   ActionClue,
   ActionDiscard,
@@ -20,6 +19,7 @@ import {
   MIN_PLAYERS,
   gameReducer,
   getCardsPerHand,
+  getDefaultMetadata,
   getNextPlayableRanks,
   getVariant,
   isCardTouchedByClue,
@@ -56,7 +56,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   }
   const numPlayers = potentialNumPlayers as NumPlayers;
 
-  const metadata = getTestMetadata(numPlayers, gameJSON.options.variant);
+  const metadata = getDefaultMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = getCardsPerHand(metadata.options);
