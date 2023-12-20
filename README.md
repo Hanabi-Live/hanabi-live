@@ -3,7 +3,8 @@
 <p align="center">
   <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
 </p>
-<br />
+
+<br>
 
 ## Description
 
@@ -14,31 +15,31 @@
 - The server is programmed in [Go](https://golang.org/). It is located in the `server` subdirectory.
   - It uses a [PostgreSQL](https://www.postgresql.org/) database to store information about the users and games.
 
-<br />
+<br>
 
 ## Discord
 
 Find teammates to play games with at [the Discord server](https://discord.gg/FADvkJp). We also discuss code changes here.
 
-<br />
+<br>
 
 ## List of Variants
 
 Hanab Live is different from normal Hanabi in that it implements [many special variants](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/variants.md), in which the rules are changed to make the game more difficult.
 
-<br />
+<br>
 
 ## List of Features
 
 See the [features documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/features.md).
 
-<br />
+<br>
 
 ## Installation
 
 See the [installation documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/install.md).
 
-<br />
+<br>
 
 ## Credits
 
