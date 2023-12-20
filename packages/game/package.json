@@ -22,5 +22,8 @@
     "LICENSE",
     "package.json",
     "README.md"
-  ]
+  ],
+  "peerDependencies": {
+    "immer": ">= 10.0.0"
+  }
 }

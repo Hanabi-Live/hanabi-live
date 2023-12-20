@@ -78,4 +78,14 @@ module.exports = {
       },
     ],
   },
+
+  overrides: [
+    {
+      files: ["*.test.ts"],
+      rules: {
+        "import/no-relative-packages": "off",
+        "n/no-unpublished-import": "off",
+      },
+    },
+  ],
 };

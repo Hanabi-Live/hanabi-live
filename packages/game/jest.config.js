@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const jsoncParser = require("jsonc-parser");
-const { pathsToModuleNameMapper } = require("ts-jest");
+const jsoncParser = require("jsonc-parser"); // eslint-disable-line import/no-extraneous-dependencies
+const { pathsToModuleNameMapper } = require("ts-jest"); // eslint-disable-line import/no-extraneous-dependencies
 
 // Read and parse the compiler options from the "tsconfig.json" file.
 const REPO_ROOT = path.join(__dirname, "..", "..");
