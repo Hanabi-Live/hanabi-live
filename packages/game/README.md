@@ -16,7 +16,7 @@ If you want to use the game logic in a bot or some other Hanab-related program, 
 npm install @hanabi-live/game --save
 ```
 
-If you want to use the reducer functions to compute new game states, turn states, and so on., then you also need to install [Immer](https://immerjs.github.io/immer/):
+If you want to use the reducer functions to compute new game states, then you also need to install [Immer](https://immerjs.github.io/immer/):
 
 ```sh
 npm install immer --save
