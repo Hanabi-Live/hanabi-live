@@ -1,4 +1,4 @@
-import { ReadonlySet, assertDefined, trimPrefix } from "isaacscript-common-ts";
+import { ReadonlySet, trimPrefix } from "isaacscript-common-ts";
 import type { Suit } from "./interfaces/Suit";
 import type { Variant } from "./interfaces/Variant";
 
@@ -138,6 +138,9 @@ function getLowercaseSuitAbbreviationToUse(
 /**
  * Given an existing variant, find the suit abbreviation for a suit. (Suit abbreviations are dynamic
  * and depend on the specific variant.)
+ *
+ * It is possible for this function to take in the "Unknown" suit, so we want to provide a fallback
+ * without throwing an error.
  */
 export function getSuitAbbreviationForVariant(
   suitToMatch: Suit,
@@ -148,14 +151,9 @@ export function getSuitAbbreviationForVariant(
   );
 
   if (suitIndex === -1) {
-    throw new Error(`Failed to find the suit: ${suitToMatch.name}`);
+    return "?";
   }
 
   const suitAbbreviation = variant.suitAbbreviations[suitIndex];
-  assertDefined(
-    suitAbbreviation,
-    `Failed to find the suit abbreviation at index: ${suitIndex}`,
-  );
-
-  return suitAbbreviation;
+  return suitAbbreviation ?? "?";
 }
