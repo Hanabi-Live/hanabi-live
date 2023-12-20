@@ -375,8 +375,8 @@ function getColorIndexFromColorName(
   colorName: string,
   variant: Variant,
 ): ColorIndex | undefined {
-  const colorIndex = variant.clueColors.findIndex(
-    (clueColor) => clueColor.name === colorName,
+  const colorIndex = variant.clueColors.findIndex((clueColor) =>
+    colorName.startsWith(clueColor.name),
   );
 
   return colorIndex === -1 ? undefined : (colorIndex as ColorIndex);
