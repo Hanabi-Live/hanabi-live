@@ -1,32 +1,35 @@
 // Functions for calculating running statistics such as efficiency and pace as a result of each
 // action.
 
-import type {
-  CardNote,
-  GameAction,
-  GameMetadata,
-  GameState,
-  StatsState,
-} from "@hanabi/game";
+/* eslint-disable no-param-reassign */
+/* eslint-disable unicorn/no-null */
+
+import type { Draft } from "immer";
+import { produce } from "immer";
+import { sumArray } from "isaacscript-common-ts";
+import { getVariant } from "../gameData";
+import type { CardNote } from "../interfaces/CardNote";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { GameState } from "../interfaces/GameState";
+import type { StatsState } from "../interfaces/StatsState";
+import { isCardClued } from "../rules/cardState";
+import {
+  getDiscardClueTokenValue,
+  getSuitCompleteClueTokenValue,
+  getUnadjustedClueTokens,
+} from "../rules/clueTokens";
 import {
   getCardsGotten,
   getCardsGottenByNotes,
   getCluesStillUsable,
   getCluesStillUsableNotRounded,
-  getDiscardClueTokenValue,
   getDoubleDiscardCard,
-  getEndGameLength,
   getMaxScorePerStack,
   getPace,
   getPaceRisk,
-  getSuitCompleteClueTokenValue,
-  getUnadjustedClueTokens,
-  getVariant,
-  isCardClued,
-} from "@hanabi/game";
-import type { Draft } from "immer";
-import { produce } from "immer";
-import { sumArray } from "isaacscript-common-ts";
+} from "../rules/stats";
+import { getEndGameLength } from "../rules/turn";
+import type { GameAction } from "../types/gameActions";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 

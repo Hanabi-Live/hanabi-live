@@ -1,4 +1,4 @@
-// Functions for building a state table for every turn.
+// Functions for building a game state for every turn.
 
 import type {
   ActionDiscard,
@@ -14,6 +14,7 @@ import {
   ClueType,
   EndCondition,
   cardsReducer,
+  ddaReducer,
   getAdjustedClueTokens,
   getCardStatus,
   getChopIndex,
@@ -30,7 +31,9 @@ import {
   hasReversedSuits,
   isCardClued,
   isInitialDealFinished,
+  knownTrashReducer,
   millisecondsToClockString,
+  statsReducer,
   turnReducer,
 } from "@hanabi/game";
 import type { Draft } from "immer";
@@ -40,9 +43,6 @@ import {
   assertNotNull,
   tupleEntries,
 } from "isaacscript-common-ts";
-import { ddaReducer } from "./ddaReducer";
-import { knownTrashReducer } from "./knownTrashReducer";
-import { statsReducer } from "./statsReducer";
 
 export const gameReducer = produce(gameReducerFunction, {} as GameState);
 

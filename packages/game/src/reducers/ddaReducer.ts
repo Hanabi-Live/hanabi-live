@@ -1,6 +1,7 @@
-import type { CardState, PlayerIndex } from "@hanabi/game";
-import { canCardPossiblyBeFromCluesOnly } from "@hanabi/game";
 import { assertDefined } from "isaacscript-common-ts";
+import type { CardState } from "../interfaces/CardState";
+import { canCardPossiblyBeFromCluesOnly } from "../rules/card";
+import type { PlayerIndex } from "../types/PlayerIndex";
 
 export function ddaReducer(
   deck: readonly CardState[],

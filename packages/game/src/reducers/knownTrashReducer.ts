@@ -1,5 +1,7 @@
-import type { CardState, GameState, Variant } from "@hanabi/game";
-import { isAllCardPossibilitiesTrash } from "@hanabi/game";
+import type { CardState } from "../interfaces/CardState";
+import type { GameState } from "../interfaces/GameState";
+import type { Variant } from "../interfaces/Variant";
+import { isAllCardPossibilitiesTrash } from "../rules/card";
 
 export function knownTrashReducer(
   deck: readonly CardState[],
