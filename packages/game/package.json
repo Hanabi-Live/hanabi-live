@@ -23,6 +23,9 @@
     "package.json",
     "README.md"
   ],
+  "scripts": {
+    "build": "rm -rf dist && tsc"
+  },
   "peerDependencies": {
     "immer": ">= 10.0.0"
   }

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-restricted-imports */
-
-import type { NumPlayers } from "@hanabi/game";
+import type { GameMetadata, NumPlayers } from "@hanabi/game";
 import {
   DEFAULT_PLAYER_NAMES,
   DEFAULT_VARIANT_NAME,
+  Options,
   getCardsPerHand,
   getEndGameLength,
   getMinEfficiency,
@@ -12,8 +11,6 @@ import {
 } from "@hanabi/game";
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
-import { Options } from "../../game/src/classes/Options";
-import type { GameMetadata } from "../../game/src/interfaces/GameMetadata";
 
 export function testMetadata(
   numPlayers: NumPlayers,
