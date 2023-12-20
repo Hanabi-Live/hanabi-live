@@ -13,7 +13,8 @@ if (!fs.existsSync(MONOREPO_TS_CONFIG)) {
 const tsconfigString = fs.readFileSync(MONOREPO_TS_CONFIG).toString().trim();
 const tsconfig = jsoncParser.parse(tsconfigString);
 
-module.exports = {
+/** @type {import('ts-jest/dist/types').JestConfigWithTsJest} */
+const config = {
   preset: "ts-jest",
   testEnvironment: "node",
 
@@ -24,3 +25,5 @@ module.exports = {
     prefix: "<rootDir>/../../",
   }),
 };
+
+module.exports = config;
