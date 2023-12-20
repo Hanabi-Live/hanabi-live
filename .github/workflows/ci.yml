@@ -92,7 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm run docs
-        cwd: ./packages/game
+        working-directory: ./packages/game
       - uses: actions/upload-pages-artifact@v2
         with:
           path: "./packages/game/docs"
