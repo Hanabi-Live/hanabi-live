@@ -2,7 +2,7 @@
 
 This package contains the rules for the game. These are exported as functions like `isCardTouchedByClue`, `isCardOnChop`, and so on.
 
-You can see the full list of things that this library provides in the [auto-generated documentation](./docs/modules.html).
+You can see the full list of things that this library provides in the [auto-generated documentation](https://hanabi-live.github.io/hanabi-live/).
 
 The main export of this library is the `gameReducer` function, which can compute the next game state from an existing game state and a game action.
 
