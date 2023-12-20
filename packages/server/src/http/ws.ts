@@ -2,10 +2,19 @@ import type { SocketStream } from "@fastify/websocket";
 import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
 import { todo } from "isaacscript-common-ts";
+import type { UUID } from "node:crypto";
 import { getCookieValue } from "../httpSession";
 import { models } from "../models";
 import type { CommandData } from "./commands";
 import { commandStringifyFuncs } from "./commands";
+
+interface WSUser {
+  sessionID: UUID;
+  userID: number;
+  username: string;
+}
+
+const wsUsers = new Map<UUID, WSUser>();
 
 /**
  * Handles the second part of logic authentication. (The first step is found in "login.ts".)
@@ -51,7 +60,14 @@ export async function httpWS(
   // Validation was successful; update the database with "datetime_last_login" and "last_ip".
   await models.users.setLastLogin(userID, request.ip);
 
-  connection.socket.send("hi from server");
+  const sessionID = crypto.randomUUID();
+  const wsUser: WSUser = {
+    sessionID,
+    userID,
+    username,
+  };
+
+  wsUsers.set(sessionID, wsUser);
 }
 
 function wsError(connection: SocketStream, msg: string) {
