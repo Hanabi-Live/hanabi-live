@@ -1,7 +1,7 @@
 import { assertDefined } from "isaacscript-common-ts";
-import { getTestMetadata } from "../../../client/test/testMetadata";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
+import { getDefaultMetadata } from "../metadata";
 import type { CardOrder } from "../types/CardOrder";
 import { newColorClue, newRankClue } from "../types/Clue";
 import type { Rank } from "../types/Rank";
@@ -11,7 +11,7 @@ import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
 import { getInitialCardState } from "./initialStates/initialCardState";
 
 const NUM_PLAYERS = 3;
-const DEFAULT_METADATA = getTestMetadata(NUM_PLAYERS);
+const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);
 const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
 const DEFAULT_CARD = getInitialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
 
@@ -93,7 +93,7 @@ describe("cardPossibilitiesReducer", () => {
   });
 
   test("removes possibilities based on previous rank and color clues", () => {
-    const metadata = getTestMetadata(
+    const metadata = getDefaultMetadata(
       NUM_PLAYERS,
       "Rainbow-Ones & Brown (6 Suits)",
     );

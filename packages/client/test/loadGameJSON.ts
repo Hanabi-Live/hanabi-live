@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
+import { getTestMetadata } from "@hanabi-live/game/src/testMetadata";
 import type {
   ActionClue,
   ActionDiscard,
@@ -31,7 +32,6 @@ import { ActionType } from "../src/game/types/ActionType";
 import type { CardIdentity } from "../src/game/types/CardIdentity";
 import type { State } from "../src/game/types/State";
 import type testGame from "../test_data/up_or_down.json";
-import { getTestMetadata } from "./testMetadata";
 
 type JSONGame = typeof testGame;
 

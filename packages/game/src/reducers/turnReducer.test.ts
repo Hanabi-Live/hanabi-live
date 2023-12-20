@@ -1,14 +1,14 @@
 import { eRange } from "isaacscript-common-ts";
 import { draw, play } from "../../../client/test/testActions";
-import { getTestMetadata } from "../../../client/test/testMetadata";
 import type { TurnState } from "../interfaces/TurnState";
+import { getDefaultMetadata } from "../metadata";
 import { getInitialGameState } from "./initialStates/initialGameState";
 import { getInitialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";
 
-const numPlayers = 3;
-const defaultMetadata = getTestMetadata(numPlayers);
-const defaultGameState = getInitialGameState(defaultMetadata);
+const NUM_PLAYERS = 3;
+const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);
+const DEFAULT_GAME_STATE = getInitialGameState(DEFAULT_METADATA);
 
 describe("turnReducer", () => {
   describe("turn", () => {
@@ -20,7 +20,12 @@ describe("turnReducer", () => {
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
-      state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
+      state = turnReducer(
+        state,
+        drawAction,
+        DEFAULT_GAME_STATE,
+        DEFAULT_METADATA,
+      );
 
       for (const i of eRange(3)) {
         // Play the last red 1 that was drawn.
@@ -28,8 +33,8 @@ describe("turnReducer", () => {
         state = turnReducer(
           state,
           playAction,
-          defaultGameState,
-          defaultMetadata,
+          DEFAULT_GAME_STATE,
+          DEFAULT_METADATA,
         );
 
         // Draw another red 1.
@@ -37,8 +42,8 @@ describe("turnReducer", () => {
         state = turnReducer(
           state,
           drawAction2,
-          defaultGameState,
-          defaultMetadata,
+          DEFAULT_GAME_STATE,
+          DEFAULT_METADATA,
         );
       }
 
@@ -55,7 +60,12 @@ describe("turnReducer", () => {
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
-      state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
+      state = turnReducer(
+        state,
+        drawAction,
+        DEFAULT_GAME_STATE,
+        DEFAULT_METADATA,
+      );
 
       expect(state.currentPlayerIndex).toBe(0);
       state = playRed1AndDraw(state, 0);
@@ -74,7 +84,12 @@ describe("turnReducer", () => {
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
-      state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
+      state = turnReducer(
+        state,
+        drawAction,
+        DEFAULT_GAME_STATE,
+        DEFAULT_METADATA,
+      );
 
       expect(state.currentPlayerIndex).toBe(1);
       state = playRed1AndDraw(state, 0);
@@ -92,11 +107,11 @@ function playRed1AndDraw(oldState: TurnState, i: number) {
 
   // Play that red 1.
   const playAction = play(0, i, 0, 1);
-  state = turnReducer(state, playAction, defaultGameState, defaultMetadata);
+  state = turnReducer(state, playAction, DEFAULT_GAME_STATE, DEFAULT_METADATA);
 
   // Draw another red 1.
   const drawAction2 = draw(0, i + 1, 0, 1);
-  state = turnReducer(state, drawAction2, defaultGameState, defaultMetadata);
+  state = turnReducer(state, drawAction2, DEFAULT_GAME_STATE, DEFAULT_METADATA);
 
   return state;
 }

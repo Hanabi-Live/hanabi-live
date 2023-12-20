@@ -1,5 +1,5 @@
+import { getDefaultMetadata } from "@hanabi/game";
 import { draw, replayEnter } from "../../../test/testActions";
-import { getTestMetadata } from "../../../test/testMetadata";
 import { initialState } from "./initialStates/initialState";
 import { stateReducer } from "./stateReducer";
 
@@ -8,7 +8,7 @@ jest.mock("./uiReducer", () => ({
 }));
 
 const numPlayers = 3;
-const defaultMetadata = getTestMetadata(numPlayers);
+const defaultMetadata = getDefaultMetadata(numPlayers);
 
 describe("stateReducer", () => {
   test("does not mutate state", () => {

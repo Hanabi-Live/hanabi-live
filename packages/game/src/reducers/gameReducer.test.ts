@@ -7,25 +7,25 @@ import {
   rankClue,
   strike,
 } from "../../../client/test/testActions";
-import { getTestMetadata } from "../../../client/test/testMetadata";
 import { MAX_CLUE_NUM } from "../constants";
+import { getDefaultMetadata } from "../metadata";
 import type { Rank } from "../types/Rank";
 import { gameReducer } from "./gameReducer";
 import { getInitialGameState } from "./initialStates/initialGameState";
 import { getInitialGameStateTest } from "./initialStates/initialGameStateTest";
 import { getEfficiencyFromGameState } from "./reducerHelpers";
 
-const numPlayers = 3;
-const defaultMetadata = getTestMetadata(numPlayers);
-const clueStarvedMetadata = getTestMetadata(
-  numPlayers,
+const NUM_PLAYERS = 3;
+const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);
+const CLUE_STARVED_METADATA = getDefaultMetadata(
+  NUM_PLAYERS,
   "Clue Starved (6 Suits)",
 );
 
 describe("gameReducer", () => {
   test("does not mutate state", () => {
-    const state = getInitialGameState(defaultMetadata);
-    const unchangedState = getInitialGameState(defaultMetadata);
+    const state = getInitialGameState(DEFAULT_METADATA);
+    const unchangedState = getInitialGameState(DEFAULT_METADATA);
     const newState = gameReducer(
       state,
       draw(0, 0),
@@ -33,7 +33,7 @@ describe("gameReducer", () => {
       false,
       false,
       false,
-      defaultMetadata,
+      DEFAULT_METADATA,
     );
     expect(newState).not.toEqual(state);
     expect(newState).not.toStrictEqual(state);
@@ -42,8 +42,8 @@ describe("gameReducer", () => {
 
   describe("turn", () => {
     test("is properly incremented (integration test)", () => {
-      const initialState = getInitialGameState(defaultMetadata);
-      let state = getInitialGameStateTest(defaultMetadata);
+      const initialState = getInitialGameState(DEFAULT_METADATA);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameReducer(
@@ -53,7 +53,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
       expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
     });
@@ -61,8 +61,8 @@ describe("gameReducer", () => {
 
   describe("currentPlayerIndex", () => {
     test("is properly incremented (integration test)", () => {
-      const initialState = getInitialGameState(defaultMetadata);
-      let state = getInitialGameStateTest(defaultMetadata);
+      const initialState = getInitialGameState(DEFAULT_METADATA);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameReducer(
@@ -72,7 +72,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
       expect(state.turn.currentPlayerIndex).not.toEqual(
         initialState.turn.currentPlayerIndex,
@@ -82,7 +82,7 @@ describe("gameReducer", () => {
 
   describe("efficiency", () => {
     test("is Infinity after a play on the first turn", () => {
-      let state = getInitialGameState(defaultMetadata);
+      let state = getInitialGameState(DEFAULT_METADATA);
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
@@ -93,7 +93,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Blind-play that red 1.
@@ -105,7 +105,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const efficiency = getEfficiencyFromGameState(state);
@@ -113,7 +113,7 @@ describe("gameReducer", () => {
     });
 
     test("is 0 after a misplay on the first turn", () => {
-      let state = getInitialGameState(defaultMetadata);
+      let state = getInitialGameState(DEFAULT_METADATA);
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
@@ -124,7 +124,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Misplay the red 1.
@@ -136,7 +136,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // TODO: remove this when misplays are calculated from an ActionPlay
@@ -149,7 +149,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const efficiency = getEfficiencyFromGameState(state);
@@ -157,7 +157,7 @@ describe("gameReducer", () => {
     });
 
     test("is 3 after a 3-for-1 clue", () => {
-      let state = getInitialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Draw a red 1, a red 2, and a red 3.
       for (const i of iRange(1, 3)) {
@@ -171,7 +171,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          defaultMetadata,
+          DEFAULT_METADATA,
         );
       }
 
@@ -184,7 +184,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const efficiency = getEfficiencyFromGameState(state);
@@ -192,7 +192,7 @@ describe("gameReducer", () => {
     });
 
     test("is decreased after a misplay", () => {
-      let state = getInitialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Draw a yellow 2 to player 0.
       const drawYellow2Action = draw(0, 0, 1, 2);
@@ -203,7 +203,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Draw a red 1 to player 1.
@@ -215,7 +215,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Give a 1-for-1 clue.
@@ -227,7 +227,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Play that red 1.
@@ -239,7 +239,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Misplay the yellow 2.
@@ -251,7 +251,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // TODO: remove this when misplays are calculated from an ActionPlay
@@ -264,7 +264,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const efficiency = getEfficiencyFromGameState(state);
@@ -272,7 +272,7 @@ describe("gameReducer", () => {
     });
 
     test("is decreased after a clue from playing a 5 is wasted", () => {
-      let state = getInitialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Draw a red 2, a red 4, and a red 5 to player 0.
       const drawRed2Action = draw(0, 0, 0, 2);
@@ -283,7 +283,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
       const drawRed4Action = draw(0, 1, 0, 4);
       state = gameReducer(
@@ -293,7 +293,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
       const drawRed5Action = draw(0, 2, 0, 5);
       state = gameReducer(
@@ -303,7 +303,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Draw a red 1, a red 3, and a red 1 to player 1.
@@ -315,7 +315,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
       const drawRed3Action = draw(1, 4, 0, 3);
       state = gameReducer(
@@ -325,7 +325,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
       const drawRed1Action2 = draw(1, 5, 0, 1);
       state = gameReducer(
@@ -335,7 +335,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Player 0 gives a 1-for-1 clue.
@@ -347,7 +347,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Player 1 plays the red 1.
@@ -359,7 +359,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Player 0 plays the red 2.
@@ -371,7 +371,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Player 1 plays the red 3.
@@ -383,7 +383,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Player 0 plays the red 4.
@@ -395,7 +395,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Player 1 discards the other red 1.
@@ -407,7 +407,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM);
@@ -423,7 +423,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const efficiency2 = getEfficiencyFromGameState(state);
@@ -432,7 +432,7 @@ describe("gameReducer", () => {
 
     describe("Clue Starved", () => {
       test("is decreased after a clue from playing a 5 is wasted", () => {
-        let state = getInitialGameStateTest(clueStarvedMetadata);
+        let state = getInitialGameStateTest(CLUE_STARVED_METADATA);
 
         // Draw a red 2, a red 4, and a red 5 to player 0.
         const drawRed2Action = draw(0, 0, 0, 2);
@@ -443,7 +443,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
         const drawRed4Action = draw(0, 1, 0, 4);
         state = gameReducer(
@@ -453,7 +453,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
         const drawRed5Action = draw(1, 2, 0, 5);
         state = gameReducer(
@@ -463,7 +463,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Draw a red 1, a red 3, a red 1, and a red 1 to player 1.
@@ -475,7 +475,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
         const drawRed3Action = draw(1, 4, 0, 3);
         state = gameReducer(
@@ -485,7 +485,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
         const drawRed1Action2 = draw(0, 5, 0, 1);
         state = gameReducer(
@@ -495,7 +495,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
         const drawRed1Action3 = draw(0, 6, 0, 1);
         state = gameReducer(
@@ -505,7 +505,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Player 0 gives a 1-for-1 clue.
@@ -517,7 +517,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Player 1 plays the red 1.
@@ -529,7 +529,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Player 0 plays the red 2.
@@ -541,7 +541,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Player 1 plays the red 3.
@@ -553,7 +553,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Player 0 plays the red 4.
@@ -565,7 +565,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         // Player 1 discards the other two red 1s.
@@ -577,7 +577,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
         const discardAction2 = discard(1, 6, 0, 1, false);
         state = gameReducer(
@@ -587,7 +587,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         expect(state.clueTokens).toBe(MAX_CLUE_NUM * 2);
@@ -603,7 +603,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          clueStarvedMetadata,
+          CLUE_STARVED_METADATA,
         );
 
         const efficiency2 = getEfficiencyFromGameState(state);
@@ -615,8 +615,8 @@ describe("gameReducer", () => {
 
   describe("clues", () => {
     test("are added to the list of clues", () => {
-      const initialState = getInitialGameState(defaultMetadata);
-      let state = getInitialGameStateTest(defaultMetadata);
+      const initialState = getInitialGameState(DEFAULT_METADATA);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Player 1 gives a random clue to player 0.
       const testClue = rankClue(5, 1, [], 0, 2);
@@ -627,7 +627,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const clue = state.clues[0];
@@ -643,7 +643,7 @@ describe("gameReducer", () => {
     });
 
     test("are remembered with the correct positive and negative cards", () => {
-      let state = getInitialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Draw 5 cards (red 1-3, yellow 4-5).
       for (const i of eRange(5)) {
@@ -657,7 +657,7 @@ describe("gameReducer", () => {
           false,
           false,
           false,
-          defaultMetadata,
+          DEFAULT_METADATA,
         );
       }
 
@@ -670,7 +670,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       const clue = state.clues[0];
@@ -681,7 +681,7 @@ describe("gameReducer", () => {
     });
 
     test("decrement clueTokens", () => {
-      let state = getInitialGameStateTest(defaultMetadata);
+      let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Player 1 gives a random clue to player 0.
       const testClue = rankClue(5, 1, [], 0, 2);
@@ -692,7 +692,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM - 1);
@@ -701,7 +701,7 @@ describe("gameReducer", () => {
 
   describe("plays", () => {
     test("increase the score by 1", () => {
-      let state = getInitialGameState(defaultMetadata);
+      let state = getInitialGameState(DEFAULT_METADATA);
 
       // Draw a red 1.
       const drawAction = draw(0, 0, 0, 1);
@@ -712,7 +712,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       // Play a red 1.
@@ -724,7 +724,7 @@ describe("gameReducer", () => {
         false,
         false,
         false,
-        defaultMetadata,
+        DEFAULT_METADATA,
       );
 
       expect(state.score).toBe(1);

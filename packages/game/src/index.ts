@@ -24,6 +24,7 @@ export * from "./interfaces/TurnState";
 export * from "./interfaces/Variant";
 export * from "./interfaces/VariantDescription";
 export * from "./interfaces/VariantJSON";
+export * from "./metadata";
 export * from "./reducers/cardDeductionReducer";
 export * from "./reducers/cardPossibilitiesReducer";
 export * from "./reducers/cardsReducer";
