@@ -1,8 +1,9 @@
-import type { TurnState } from "@hanabi/game";
-import { getInitialGameState, getInitialTurnState } from "@hanabi/game";
 import { eRange } from "isaacscript-common-ts";
-import { draw, play } from "../../../test/testActions";
-import { testMetadata } from "../../../test/testMetadata";
+import { draw, play } from "../../../client/test/testActions";
+import { testMetadata } from "../../../client/test/testMetadata";
+import type { TurnState } from "../interfaces/TurnState";
+import { getInitialGameState } from "./initialStates/initialGameState";
+import { getInitialTurnState } from "./initialStates/initialTurnState";
 import { turnReducer } from "./turnReducer";
 
 const numPlayers = 3;

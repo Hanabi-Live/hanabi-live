@@ -32,6 +32,7 @@ export * from "./reducers/initialStates/initialGameState";
 export * from "./reducers/initialStates/initialGameStateTest";
 export * from "./reducers/initialStates/initialTurnState";
 export * from "./reducers/reducerHelpers";
+export * from "./reducers/turnReducer";
 export * from "./rules/card";
 export * from "./rules/cardState";
 export * from "./rules/clueTokens";

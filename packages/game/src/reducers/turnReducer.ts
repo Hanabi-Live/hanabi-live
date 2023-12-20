@@ -1,23 +1,23 @@
-import type {
-  GameAction,
-  GameMetadata,
-  GameState,
-  TurnState,
-} from "@hanabi/game";
-import {
-  EndCondition,
-  getCharacterNameForPlayer,
-  getEndTurn,
-  getNextPlayerIndex,
-  getVariant,
-  isInitialDealFinished,
-  shouldEndTurnAfterClue,
-  shouldEndTurnAfterDraw,
-  shouldPlayOrderInvert,
-} from "@hanabi/game";
+/* eslint-disable no-param-reassign */
+
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { assertNotNull } from "isaacscript-common-ts";
+import { EndCondition } from "../enums/EndCondition";
+import { getVariant } from "../gameData";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { GameState } from "../interfaces/GameState";
+import type { TurnState } from "../interfaces/TurnState";
+import { isInitialDealFinished } from "../rules/deck";
+import {
+  getEndTurn,
+  getNextPlayerIndex,
+  shouldEndTurnAfterClue,
+  shouldEndTurnAfterDraw,
+  shouldPlayOrderInvert,
+} from "../rules/turn";
+import type { GameAction } from "../types/gameActions";
+import { getCharacterNameForPlayer } from "./reducerHelpers";
 
 export const turnReducer = produce(turnReducerFunction, {} as TurnState);
 
@@ -150,7 +150,7 @@ function turnReducerFunction(
 
       // Setting the current player index to null signifies that the game is over and will prevent
       // any name frames from being highlighted on subsequent segments.
-      turn.currentPlayerIndex = null;
+      turn.currentPlayerIndex = null; // eslint-disable-line unicorn/no-null
 
       // For some types of game overs, we want the explanation text to appear on its own replay
       // segment. The types of "gameOver" that do not have to do with the previous action should be

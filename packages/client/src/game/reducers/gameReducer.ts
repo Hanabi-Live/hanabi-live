@@ -31,6 +31,7 @@ import {
   isCardClued,
   isInitialDealFinished,
   millisecondsToClockString,
+  turnReducer,
 } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
@@ -42,7 +43,6 @@ import {
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
 import { statsReducer } from "./statsReducer";
-import { turnReducer } from "./turnReducer";
 
 export const gameReducer = produce(gameReducerFunction, {} as GameState);
 
