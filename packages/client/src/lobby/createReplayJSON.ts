@@ -74,7 +74,7 @@ export function createJSONFromReplay(room: string): void {
   const { replay } = globals.state;
   game.actions = getGameActionsFromState(replay);
 
-  // Add the hypothesis from log, after current segment.
+  // Add the hypothetical from the log, after the current segment.
   if (replay.hypothetical !== null) {
     const { states } = replay.hypothetical;
     const { log } = states.at(-1)!;

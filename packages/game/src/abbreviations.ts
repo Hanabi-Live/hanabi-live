@@ -1,5 +1,6 @@
-import { ReadonlySet, trimPrefix } from "isaacscript-common-ts";
+import { ReadonlySet, assertDefined, trimPrefix } from "isaacscript-common-ts";
 import type { Suit } from "./interfaces/Suit";
+import type { Variant } from "./interfaces/Variant";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const QUESTION_MARK_NOTES = ["?"] as const;
@@ -132,4 +133,29 @@ function getLowercaseSuitAbbreviationToUse(
   throw new Error(
     `Failed to find a suit abbreviation for "${suit.name}" in the variant of "${variantName}". (We went through every letter and did not find a match.)`,
   );
+}
+
+/**
+ * Given an existing variant, find the suit abbreviation for a suit. (Suit abbreviations are dynamic
+ * and depend on the specific variant.)
+ */
+export function getSuitAbbreviationForVariant(
+  suitToMatch: Suit,
+  variant: Variant,
+): string {
+  const suitIndex = variant.suits.findIndex(
+    (suit) => suit.name === suitToMatch.name,
+  );
+
+  if (suitIndex === -1) {
+    throw new Error(`Failed to find the suit: ${suitToMatch.name}`);
+  }
+
+  const suitAbbreviation = variant.suitAbbreviations[suitIndex];
+  assertDefined(
+    suitAbbreviation,
+    `Failed to find the suit abbreviation at index: ${suitIndex}`,
+  );
+
+  return suitAbbreviation;
 }

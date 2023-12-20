@@ -16,6 +16,7 @@ import {
   canCardPossiblyBeFromEmpathy,
   getInitialCardState,
   getSuit,
+  getSuitAbbreviationForVariant,
   hasReversedSuits,
   isCardClued,
   isCardDiscarded,
@@ -25,7 +26,6 @@ import { assertDefined, assertNotNull, iRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import { includes } from "lodash";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
-import * as abbreviationRules from "../rules/abbreviation";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
@@ -1404,10 +1404,16 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       );
     }
 
-    const abbreviation = abbreviationRules.getAbbreviation(suit.name, variant);
-    return `<div style="font-size: 0.75em;"><div style="text-align: center">${
-      suit.displayName
-    } (${abbreviation})</div>${lines.join("<br>")}</div>`;
+    const abbreviation = getSuitAbbreviationForVariant(suit, variant);
+
+    return `
+      <div style="font-size: 0.75em;">
+        <div style="text-align: center">
+          ${suit.displayName} (${abbreviation})
+        </div>
+        ${lines.join("<br>")}
+      </div>
+    `.trim();
   }
 
   getLayoutParent(): LayoutChild {
