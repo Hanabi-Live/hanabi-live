@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD041 -->
+
 <p align="center">
   <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
 </p>
