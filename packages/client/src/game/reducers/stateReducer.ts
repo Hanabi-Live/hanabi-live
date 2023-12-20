@@ -5,12 +5,12 @@ import { gameReducer, getInitialGameState } from "@hanabi/game";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { assertDefined, assertNotNull } from "isaacscript-common-ts";
-import * as segmentRules from "../rules/segment";
 import type { CardIdentity } from "../types/CardIdentity";
 import type { State } from "../types/State";
 import type { Action } from "../types/actions";
 import { notesReducer } from "./notesReducer";
 import { replayReducer } from "./replayReducer";
+import { shouldStoreSegment } from "./stateReducerHelpers";
 import { uiReducer } from "./uiReducer";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
@@ -293,7 +293,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       updateCardIdentities(state);
 
       if (
-        segmentRules.shouldStoreSegment(
+        shouldStoreSegment(
           state.ongoingGame.turn.segment,
           previousSegment,
           action,
@@ -339,11 +339,7 @@ function reduceGameActions(
     );
 
     if (
-      segmentRules.shouldStoreSegment(
-        nextState.turn.segment,
-        s.turn.segment,
-        a,
-      ) &&
+      shouldStoreSegment(nextState.turn.segment, s.turn.segment, a) &&
       nextState.turn.segment !== null
     ) {
       states[nextState.turn.segment] = nextState;
