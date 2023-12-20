@@ -48,6 +48,7 @@ import { knownTrashReducer } from "./knownTrashReducer";
 import { statsReducer } from "./statsReducer";
 import { turnReducer } from "./turnReducer";
 
+/** Computes the next game state from a given action. */
 export const gameReducer = produce(gameReducerFunction, {} as GameState);
 
 function gameReducerFunction(

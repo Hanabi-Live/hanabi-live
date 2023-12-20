@@ -82,9 +82,35 @@ jobs:
       - name: Check "variants.json" and "variants.txt"
         run: npm run check-variant-files
 
+  deploy_docs_website:
+    if: "needs.pr-check.outputs.number != 'null'"
+    needs: [lint]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm run docs
+        cwd: ./packages/game
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: "./packages/game/docs"
+      - uses: actions/deploy-pages@v2
+
   discord:
     name: Discord Failure Notification
-    needs: [client_build, server_build, lint, test, format, spell_check]
+    needs:
+      [
+        client_build,
+        server_build,
+        lint,
+        test,
+        format,
+        spell_check,
+        lint_monorepo,
+        deploy_docs_website,
+      ]
     if: always() # This is needed to always run this job, even if the other jobs fail.
     runs-on: ubuntu-latest
     steps:
