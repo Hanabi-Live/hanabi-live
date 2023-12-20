@@ -13,10 +13,9 @@ if (!fs.existsSync(MONOREPO_TS_CONFIG)) {
 const tsconfigString = fs.readFileSync(MONOREPO_TS_CONFIG).toString().trim();
 const tsconfig = jsoncParser.parse(tsconfigString);
 
-/** @type {import('ts-jest/dist/types').JestConfigWithTsJest} */
-const config = {
+module.exports = {
   preset: "ts-jest",
-  testEnvironment: "jsdom",
+  testEnvironment: "node",
 
   // From: https://kulshekhar.github.io/ts-jest/docs/getting-started/paths-mapping/
   roots: ["<rootDir>"],
@@ -25,5 +24,3 @@ const config = {
     prefix: "<rootDir>/../../",
   }),
 };
-
-module.exports = config;

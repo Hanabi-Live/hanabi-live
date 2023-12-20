@@ -20,12 +20,8 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
 export function getHTMLElement(selectors: string): HTMLElement {
   const element = document.querySelector(selectors);
 
-  if (areWeTestingWithJest()) {
-    return element as HTMLElement;
-  }
-
   if (!(element instanceof HTMLElement)) {
-    throw new TypeError(`Failed to get the HTMLElement: ${selectors}`);
+    throw new TypeError(`Failed to find the HTMLElement: ${selectors}`);
   }
 
   return element;
@@ -34,12 +30,8 @@ export function getHTMLElement(selectors: string): HTMLElement {
 export function getHTMLInputElement(selectors: string): HTMLInputElement {
   const element = document.querySelector(selectors);
 
-  if (areWeTestingWithJest()) {
-    return element as HTMLInputElement;
-  }
-
   if (!(element instanceof HTMLInputElement)) {
-    throw new TypeError(`Failed to get the HTMLInputElement: ${selectors}`);
+    throw new TypeError(`Failed to find the HTMLInputElement: ${selectors}`);
   }
 
   return element;
@@ -90,8 +82,4 @@ export function timerFormatter(totalSeconds: number): string {
   }
 
   return `${minutes}:${secondsFormatted}`;
-}
-
-function areWeTestingWithJest() {
-  return process.env["JEST_WORKER_ID"] !== undefined;
 }

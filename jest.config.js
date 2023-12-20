@@ -1,6 +1,3 @@
-/** @type {import('ts-jest/dist/types').JestConfigWithTsJest} */
-const config = {
+module.exports = {
   projects: ["<rootDir>/packages/client"],
 };
-
-module.exports = config;
