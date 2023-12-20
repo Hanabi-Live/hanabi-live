@@ -11,7 +11,15 @@ const config = {
 
   // Don't bother linting compiled output.
   // @template-ignore-next-line
-  ignorePatterns: ["**/dist/**", "*.min.js", "version.js"],
+  /// ignorePatterns: [],
+  // @template-customization-start
+  ignorePatterns: [
+    "**/dist/**",
+    "*.min.js",
+    "packages/data/src/version.js",
+    "packages/game/docs/assets/main.js",
+  ],
+  // @template-customization-end
 
   parserOptions: {
     // ESLint needs to know about the project's TypeScript settings in order for TypeScript-specific
