@@ -91,11 +91,16 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - run: npm run docs
+      - uses: ./.github/workflows/setup
+
+      - name: Use TypeDoc to automatically generate documentation
+        run: npm run docs
         working-directory: ./packages/game
+
       - uses: actions/upload-pages-artifact@v2
         with:
           path: "./packages/game/docs"
+
       - uses: actions/deploy-pages@v2
 
   discord:
