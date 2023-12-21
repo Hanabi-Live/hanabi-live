@@ -15,6 +15,7 @@ export function initErrorListener(): void {
         <li>or in <a href="https://discord.gg/FADvkJp">the Hanab Discord server</a> (better option)</li>
         <li>or <a href="https://github.com/Hanabi-Live/hanabi-live">on the GitHub repository</a> (best option)</li>
       </ul>
+      When reporting, please copy/paste the stack-trace above as text, rather than showing a screenshot.
     `;
 
     const iosText = `You appear to be using an iPhone/iPad/iPod device (i.e. iOS). ${PROJECT_NAME} does not support Apple devices, so the above error might be an iOS-specific error. Please use a desktop PC to access the site, or refresh the page to try again`;
