@@ -1,7 +1,6 @@
 import type { SocketStream } from "@fastify/websocket";
 import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
-import { todo } from "isaacscript-common-ts";
 import type { UUID } from "node:crypto";
 import { getCookieValue } from "../httpSession";
 import { models } from "../models";
@@ -32,9 +31,6 @@ export async function httpWS(
   connection: SocketStream,
   request: FastifyRequest,
 ): Promise<void> {
-  // TODO: TEST SENDING ERROR
-  todo();
-
   // If they have a valid cookie, it should have the "userID" value.
   const userID = getCookieValue(request, "userID");
   if (userID === undefined) {

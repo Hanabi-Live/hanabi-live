@@ -53,8 +53,8 @@ Building the client code can be memory intensive. Make sure that your system has
   - `net stop postgresql-x64-16`
   - `net start postgresql-x64-16`
 - Create a new database and set up a database user:
-  - `psql -U postgres`
-  - Enter the password of "postgres". (The default password for the "postgres" user installed by the `winget` installer is "postgres".)
+  - `set PGPASSWORD=postgres`
+  - `"C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres`
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />

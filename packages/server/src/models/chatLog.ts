@@ -12,9 +12,7 @@ export const chatLog = {
     const firstChatLog = chatLogs[0];
 
     if (firstChatLog === undefined || firstChatLog.message === "") {
-      throw new Error(
-        'Failed to retrieve the a chat log message from the database when testing to see if the database is operational. Did you already run the "install_database_schema.sh" script to set up the database?',
-      );
+      throw new Error("Failed to get the first chat log message.");
     }
   },
 };

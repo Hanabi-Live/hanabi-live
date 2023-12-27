@@ -11,7 +11,7 @@ import type {
   RawRequestDefaultExpression,
   RawServerDefault,
 } from "fastify";
-import Fastify from "fastify";
+import { fastify } from "fastify";
 import fastifyFavicon from "fastify-favicon";
 import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
@@ -106,26 +106,33 @@ export async function httpInit(): Promise<void> {
   const defaultPort = useTLS ? 443 : 80;
   const port = env.PORT === 0 ? defaultPort : env.PORT;
 
+  const https = useTLS
+    ? {
+        ca: env.TLS_CERT_FILE,
+        key: env.TLS_KEY_FILE,
+      }
+    : null; // eslint-disable-line unicorn/no-null
+
   // Initialize the HTTP server using the Fastify library:
   // https://fastify.dev/
-  // eslint-disable-next-line new-cap
-  const fastify = Fastify({
+  const httpServer = fastify({
     logger,
+    https,
 
     // The "incoming request" and "request completed" logs are too noisy when developing.
     disableRequestLogging: IS_DEV,
   });
 
-  await registerFastifyPlugins(fastify, useTLS);
+  await registerFastifyPlugins(httpServer, useTLS);
 
-  fastify.setNotFoundHandler(async (_request, reply) => {
+  httpServer.setNotFoundHandler(async (_request, reply) => {
     await reply
       .code(StatusCodes.NOT_FOUND)
       .type("text/html")
       .send("404 not found");
   });
 
-  fastify.setErrorHandler(async (error, _request, reply) => {
+  httpServer.setErrorHandler(async (error, _request, reply) => {
     // Use "||" to handle undefined and an empty string at the same time.
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
     const text = error.stack || error.message || "unknown error";
@@ -136,7 +143,7 @@ export async function httpInit(): Promise<void> {
       .send(`<pre>${text}</pre>`);
   });
 
-  fastify.addHook("preHandler", async (request, reply) => {
+  httpServer.addHook("preHandler", async (request, reply) => {
     const ipIsBanned = await models.bannedIPs.isBannedIP(request.ip);
     if (ipIsBanned) {
       logger.info(
@@ -150,33 +157,33 @@ export async function httpInit(): Promise<void> {
     }
   });
 
-  registerPathHandlers(fastify);
+  registerPathHandlers(httpServer);
 
-  await fastify.listen({
+  await httpServer.listen({
     port,
   });
 }
 
 /** Plugins are registered in alphabetical order. */
 async function registerFastifyPlugins(
-  fastify: FastifyInstanceWithLogger,
+  httpServer: FastifyInstanceWithLogger,
   useTLS: boolean,
 ) {
   // `fastify-favicon` - Needed for the favicon:
   // https://github.com/smartiniOnGitHub/fastify-favicon
-  await fastify.register(fastifyFavicon, {
+  await httpServer.register(fastifyFavicon, {
     // The plugin appends "favicon.ico" to the provided path.
     path: path.join(REPO_ROOT, "public", "img"),
   });
 
   // `@fastify/formbody` - Needed for "application/x-www-form-urlencoded" POST data:
   // https://github.com/fastify/fastify-formbody
-  await fastify.register(fastifyFormBody);
+  await httpServer.register(fastifyFormBody);
 
   // `@fastify/secure-session` - Needed for session management:
   // https://github.com/fastify/fastify-secure-session/tree/master
   // (The `@fastify/session` plugin is used for server-side data storage.)
-  await fastify.register(fastifySecureSession, {
+  await httpServer.register(fastifySecureSession, {
     cookieName: COOKIE_NAME,
     secret: env.SESSION_SECRET,
     salt: "hanabiSalt123456", // Must be 16 characters long.
@@ -184,7 +191,7 @@ async function registerFastifyPlugins(
   });
 
   // `@fastify/websocket` - Needed for WebSockets.
-  await fastify.register(fastifyWebSocket, {
+  await httpServer.register(fastifyWebSocket, {
     options: {
       maxPayload: 123,
     },
@@ -192,7 +199,7 @@ async function registerFastifyPlugins(
 
   // `@fastify/static` - Needed to serve static files:
   // https://github.com/fastify/fastify-static
-  await fastify.register(fastifyStatic, {
+  await httpServer.register(fastifyStatic, {
     root: path.join(REPO_ROOT, "public"),
     prefix: "/public",
   });
@@ -204,7 +211,7 @@ async function registerFastifyPlugins(
       recursive: true,
     });
 
-    await fastify.register(fastifyStatic, {
+    await httpServer.register(fastifyStatic, {
       root: LETS_ENCRYPT_PATH,
       prefix: LETS_ENCRYPT_PATH_PREFIX,
     });
@@ -212,7 +219,7 @@ async function registerFastifyPlugins(
 
   // `@fastify/view` - Needed for the template library:
   // https://github.com/fastify/point-of-view
-  await fastify.register(fastifyView, {
+  await httpServer.register(fastifyView, {
     engine: {
       eta,
     },
@@ -220,28 +227,28 @@ async function registerFastifyPlugins(
   });
 }
 
-function registerPathHandlers(fastify: FastifyInstanceWithLogger) {
+function registerPathHandlers(httpServer: FastifyInstanceWithLogger) {
   // For cookies and logging in.
-  fastify.post("/login", httpLogin);
-  fastify.get("/logout", httpLogout);
-  fastify.get("/test-cookie", httpTestCookie);
-  fastify.get("/ws", { websocket: true }, httpWS);
+  httpServer.post("/login", httpLogin);
+  httpServer.get("/logout", httpLogout);
+  httpServer.get("/test-cookie", httpTestCookie);
+  httpServer.get("/ws", { websocket: true }, httpWS);
 
   // For the main website.
-  fastify.get("/", httpMain);
-  fastify.get("/lobby", httpMain);
-  fastify.get("/pre-game", httpMain);
-  fastify.get("/pre-game/:tableID", httpMain);
-  fastify.get("/game", httpMain);
-  fastify.get("/game/:tableID", httpMain);
-  fastify.get("/game/:tableID/shadow/:seat", httpMain);
-  fastify.get("/replay", httpMain);
-  fastify.get("/replay/:databaseID", httpMain);
-  fastify.get("/shared-replay", httpMain);
-  fastify.get("/shared-replay/:databaseID", httpMain);
-  fastify.get("/replay-json/:string", httpMain);
-  fastify.get("/shared-replay-json/:string", httpMain);
-  fastify.get("/create-table", httpMain);
+  httpServer.get("/", httpMain);
+  httpServer.get("/lobby", httpMain);
+  httpServer.get("/pre-game", httpMain);
+  httpServer.get("/pre-game/:tableID", httpMain);
+  httpServer.get("/game", httpMain);
+  httpServer.get("/game/:tableID", httpMain);
+  httpServer.get("/game/:tableID/shadow/:seat", httpMain);
+  httpServer.get("/replay", httpMain);
+  httpServer.get("/replay/:databaseID", httpMain);
+  httpServer.get("/shared-replay", httpMain);
+  httpServer.get("/shared-replay/:databaseID", httpMain);
+  httpServer.get("/replay-json/:string", httpMain);
+  httpServer.get("/shared-replay-json/:string", httpMain);
+  httpServer.get("/create-table", httpMain);
 
   /*
 

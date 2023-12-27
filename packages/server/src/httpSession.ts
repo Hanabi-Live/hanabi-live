@@ -13,6 +13,7 @@ export function getCookieValue<T extends keyof HTTPSessionData>(
   request: FastifyRequest,
   key: T,
 ): HTTPSessionData[T] {
+  // By default, the secure session library is typed to return `any`.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return request.session.get(key);
 }
