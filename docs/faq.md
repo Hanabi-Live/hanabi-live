@@ -23,3 +23,5 @@ A: No.
 Players routinely write the note on a future turn or past turn from when the contextual information was actually inferred. For example, if Alice performs a clue, Bob blind plays, and Cathy discards, then Donald needs to write a note about the blind-play, but it is now on the N+1 turn. If automated notes were the default, then Donald would either 1) have to explicitly enter a replay just in order to make the note correct, or 2) explicitly decrement the turn after the automated system entered the wrong note. The same example can also happen in reverse, when Donald goes back into the in-game replay to write notes about the present, but then is forced to manually change the automated notes from a past turn to a present turn.
 
 Both of these situations combine to account for >= 50% of situations. An automated turn tracking feature would only be net useful if the inverse were true.
+
+Also note that players can quickly add the turn to any existing note by using the ctrl + alt + right-click hotkey.
