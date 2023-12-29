@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- on new server, test disconnect to see if players are erroneously set to red
 - make Connection.send on client type-safe
 
 +-----+
@@ -33,4 +32,3 @@ long term once the server is rewritten in TypeScript:
 - stronger typing for `disconShadowingSeat` field
 - remove -1 type from activePlayerIndex (prefer undefined)
 - readonly turn: number; // TODO: remove. This is unused.
-- change all dates to use epoch timestamp in database and when transferring over the wire
