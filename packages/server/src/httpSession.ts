@@ -1,7 +1,8 @@
 import type { FastifyRequest } from "fastify";
+import type { UserID } from "./types/UserID";
 
 interface HTTPSessionData {
-  userID?: number;
+  userID?: UserID;
 }
 
 /** Delete the session cookie server-side (which will invalidate the cookie going forward). */

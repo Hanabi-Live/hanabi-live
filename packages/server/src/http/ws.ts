@@ -1,19 +1,10 @@
 import type { SocketStream } from "@fastify/websocket";
-import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
-import type { UUID } from "node:crypto";
 import { getCookieValue } from "../httpSession";
 import { models } from "../models";
-import type { CommandData } from "./commands";
-import { commandStringifyFuncs } from "./commands";
-
-interface WSUser {
-  sessionID: UUID;
-  userID: number;
-  username: string;
-}
-
-const wsUsers = new Map<UUID, WSUser>();
+import type { WSUser } from "../ws";
+import { wsError } from "../ws";
+import { WSQueueElementType, enqueueWSMsg } from "../wsQueue";
 
 /**
  * Handles the second part of logic authentication. (The first step is found in "login.ts".)
@@ -56,30 +47,11 @@ export async function httpWS(
   // Validation was successful; update the database with "datetime_last_login" and "last_ip".
   await models.users.setLastLogin(userID, request.ip);
 
-  const sessionID = crypto.randomUUID();
   const wsUser: WSUser = {
-    sessionID,
+    connection,
     userID,
     username,
   };
 
-  wsUsers.set(sessionID, wsUser);
-}
-
-function wsError(connection: SocketStream, msg: string) {
-  wsSend(connection, Command.error, {
-    error: msg,
-  });
-}
-
-/** We send WebSocket messages using the Golem protocol. */
-function wsSend<T extends Command>(
-  connection: SocketStream,
-  command: T,
-  data: CommandData[T],
-) {
-  const stringifyFunc = commandStringifyFuncs[command];
-  const dataString = stringifyFunc(data);
-  const msg = command + WEBSOCKET_COMMAND_SEPARATOR + dataString;
-  connection.socket.send(msg);
+  enqueueWSMsg(WSQueueElementType.Login, wsUser);
 }

@@ -1,15 +1,21 @@
 import { eq, sql } from "drizzle-orm";
 import { usersTable } from "../databaseSchema";
 import { db } from "../db";
+import type { UserID } from "../types/UserID";
+
+interface User {
+  id: UserID;
+  username: string;
+  passwordHash: string;
+}
 
 export const users = {
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   create: async (
     username: string,
     normalizedUsername: string,
     passwordHash: string,
     lastIP: string,
-  ) => {
+  ): Promise<User | undefined> => {
     const rows = await db
       .insert(usersTable)
       .values({
@@ -20,11 +26,13 @@ export const users = {
       })
       .returning();
 
-    return rows[0];
+    // A type assertion is necessary since we are branding the user ID.
+    const user = rows[0] as User | undefined;
+
+    return user;
   },
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  get: async (username: string) => {
+  get: async (username: string): Promise<User | undefined> => {
     const rows = await db
       .select({
         id: usersTable.id,
@@ -34,7 +42,10 @@ export const users = {
       .from(usersTable)
       .where(eq(usersTable.username, username));
 
-    return rows[0];
+    // A type assertion is necessary since we are branding the user ID.
+    const user = rows[0] as User | undefined;
+
+    return user;
   },
 
   getSimilarUsername: async (

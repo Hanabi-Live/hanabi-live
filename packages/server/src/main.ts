@@ -3,6 +3,7 @@ import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { httpInit } from "./http";
 import { logger } from "./logger";
 import { models } from "./models";
+import { redisInit } from "./redis";
 
 // We do not bother writing a catch block since it does not display errors correctly when there is
 // an aggregate error.
@@ -23,6 +24,7 @@ async function main() {
     process.exit(1);
   }
 
+  await redisInit();
   await httpInit();
 }
 

@@ -2,9 +2,8 @@
 | TODO |
 +------+
 
-- refactor most of data --> game (?)
-  - figure out clear delineation
-- make Connection.send type-safe
+- on new server, test disconnect to see if players are erroneously set to red
+- make Connection.send on client type-safe
 
 +-----+
 | OLD |

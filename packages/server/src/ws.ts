@@ -1,0 +1,56 @@
+import type { SocketStream } from "@fastify/websocket";
+import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
+import type { CommandData } from "./http/commands";
+import { commandStringifyFuncs } from "./http/commands";
+import type { UserID } from "./types/UserID";
+
+export interface WSUser {
+  connection: SocketStream;
+  userID: UserID;
+  username: string;
+}
+
+export const wsUsers = new Map<UserID, WSUser>();
+
+/** Returns a WebSocket message in the Golem protocol format. */
+function getWSMsg<T extends Command>(command: T, data: CommandData[T]) {
+  const stringifyFunc = commandStringifyFuncs[command];
+  const dataString = stringifyFunc(data);
+  return command + WEBSOCKET_COMMAND_SEPARATOR + dataString;
+}
+
+/**
+ * Helper function to send a message to a WebSocket connection.
+ *
+ * Messages are sent using the Golem protocol.
+ */
+function wsSend<T extends Command>(
+  connection: SocketStream,
+  command: T,
+  data: CommandData[T],
+) {
+  const msg = getWSMsg(command, data);
+  connection.socket.send(msg);
+}
+
+/**
+ * Helper function to send a message to every currently-connected WebSocket client.
+ *
+ * Messages are sent using the Golem protocol.
+ */
+export function wsSendAll<T extends Command>(
+  command: T,
+  data: CommandData[T],
+): void {
+  const msg = getWSMsg(command, data);
+  for (const wsUser of wsUsers.values()) {
+    wsUser.connection.socket.send(msg);
+  }
+}
+
+/** Helper function to send an error to a WebSocket connection. */
+export function wsError(connection: SocketStream, msg: string): void {
+  wsSend(connection, Command.error, {
+    error: msg,
+  });
+}
