@@ -1,10 +1,11 @@
 import type { SocketStream } from "@fastify/websocket";
 import type { FastifyRequest } from "fastify";
-import { getCookieValue } from "../httpSession";
+import { deleteCookie, getCookieValue } from "../httpSession";
 import { models } from "../models";
-import type { WSUser } from "../ws";
 import { wsError } from "../ws";
 import { WSQueueElementType, enqueueWSMsg } from "../wsQueue";
+import type { WSUser } from "../wsUsers";
+import { getSessionID } from "../wsUsers";
 
 /**
  * Handles the second part of logic authentication. (The first step is found in "login.ts".)
@@ -12,11 +13,10 @@ import { WSQueueElementType, enqueueWSMsg } from "../wsQueue";
  * After receiving a cookie in the previous step, the client will attempt to open a WebSocket
  * connection with the cookie. (This is done implicitly because JavaScript will automatically use
  * any current cookies for the website when establishing a WebSocket connection.) So, before
- * allowing anyone to open a WebSocket connection, we need to validate that they have a valid
- * cookie. We also do some other checks to be thorough. If all of the checks pass, the WebSocket
- * connection will be established, and then the user's website data will be initialized in
- * "websocketConnect.ts". If anything fails in this function, we want to delete the user's cookie in
- * order to force them to start authentication from the beginning.
+ * allowing anyone to open a WebSocket connection, we need to validate the cookie and the user ID.
+ * If the checks pass, we queue the login work (to i.e. send them their game history and so on).
+ *
+ * @see https://github.com/fastify/fastify-websocket
  */
 export async function httpWS(
   connection: SocketStream,
@@ -27,8 +27,7 @@ export async function httpWS(
   if (userID === undefined) {
     const msg =
       "You do not have a valid cookie. Please logout and then login again.";
-    wsError(connection, msg);
-    connection.destroy();
+    httpWSError(connection, request, msg);
     return;
   }
 
@@ -39,19 +38,34 @@ export async function httpWS(
     // cookie and force them to re-login.
     const msg =
       "You have a cookie that belongs to an orphaned account. Please logout and then login again.";
-    wsError(connection, msg);
-    connection.destroy();
+    httpWSError(connection, request, msg);
     return;
   }
 
-  // Validation was successful; update the database with "datetime_last_login" and "last_ip".
-  await models.users.setLastLogin(userID, request.ip);
+  const sessionID = getSessionID();
+  const { ip } = request;
 
   const wsUser: WSUser = {
     connection,
+    sessionID,
     userID,
     username,
+    ip,
   };
 
   enqueueWSMsg(WSQueueElementType.Login, wsUser);
+}
+
+/**
+ * If anything fails in the `httpWS` function, we want to immediately kill the WebSocket connection
+ * and delete the user's cookie in order to force them to start authentication from the beginning.
+ */
+function httpWSError(
+  connection: SocketStream,
+  request: FastifyRequest,
+  msg: string,
+) {
+  wsError(connection, msg);
+  connection.destroy();
+  deleteCookie(request);
 }

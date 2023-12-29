@@ -4,9 +4,12 @@ import { Command } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { enqueueSetPlayerConnected } from "./gameQueue";
+import { logger } from "./logger";
+import { models } from "./models";
 import { getRedisGamesWithUser } from "./redis";
-import type { WSUser } from "./ws";
-import { wsError, wsSendAll, wsUsers } from "./ws";
+import { wsError, wsSendAll } from "./ws";
+import type { WSUser } from "./wsUsers";
+import { wsUsers } from "./wsUsers";
 
 export enum WSQueueElementType {
   Login,
@@ -35,9 +38,12 @@ async function processQueue(element: WSQueueElement) {
   await func(element);
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
 async function login(wsUser: WSUser) {
-  const { connection, userID } = wsUser;
+  logger.info(
+    `Logging in WebSocket user: ${wsUser.username} (${wsUser.userID})`,
+  );
+
+  const { connection, userID, ip } = wsUser;
 
   // First, check to see if an existing WebSocket connection exists for this user.
   const existingUser = wsUsers.get(userID);
@@ -51,7 +57,11 @@ async function login(wsUser: WSUser) {
 
   wsUsers.set(userID, wsUser);
 
-  connection.on("close", () => {
+  // Validation was successful; update the database with "datetime_last_login" and "last_ip".
+  await models.users.setLastLogin(userID, ip);
+
+  // Attach event handlers.
+  connection.socket.on("close", () => {
     enqueueWSMsg(WSQueueElementType.Logout, wsUser);
   });
 
@@ -60,7 +70,21 @@ async function login(wsUser: WSUser) {
 }
 
 async function logout(wsUser: WSUser) {
-  const { userID } = wsUser;
+  const { userID, username } = wsUser;
+
+  // Check to see if there is a newer WebSocket connection for this user that is already connected.
+  // If so, we can skip the logout work. (This check is necessary because when the same user logs in
+  // twice, a logout will be triggered for the first connection after the second one has already
+  // connected.)
+  const existingWSUser = wsUsers.get(userID);
+  if (
+    existingWSUser !== undefined &&
+    existingWSUser.sessionID > wsUser.sessionID
+  ) {
+    return;
+  }
+
+  logger.info(`Logging out WebSocket user: ${username} (${userID})`);
 
   wsUsers.delete(userID);
 

@@ -2,15 +2,7 @@ import type { SocketStream } from "@fastify/websocket";
 import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
 import type { CommandData } from "./http/commands";
 import { commandStringifyFuncs } from "./http/commands";
-import type { UserID } from "./types/UserID";
-
-export interface WSUser {
-  connection: SocketStream;
-  userID: UserID;
-  username: string;
-}
-
-export const wsUsers = new Map<UserID, WSUser>();
+import { wsUsers } from "./wsUsers";
 
 /** Returns a WebSocket message in the Golem protocol format. */
 function getWSMsg<T extends Command>(command: T, data: CommandData[T]) {
