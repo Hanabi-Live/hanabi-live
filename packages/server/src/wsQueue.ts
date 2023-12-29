@@ -64,8 +64,8 @@ async function login(wsUser: WSUser) {
   connection.socket.on("close", () => {
     enqueueWSMsg(WSQueueElementType.Logout, wsUser);
   });
-
   // TODO: attach more event handlers
+
   // TODO: everything from "websocket_connect.go"
 }
 

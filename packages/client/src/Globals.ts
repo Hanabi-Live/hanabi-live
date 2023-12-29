@@ -1,12 +1,12 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
+import { Settings } from "@hanabi/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import type { HanabiUI } from "./game/ui/HanabiUI";
 import type { Game } from "./lobby/types/Game";
 import type { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";
-import { Settings } from "./lobby/types/Settings";
 import type { Table } from "./lobby/types/Table";
 import type { User } from "./lobby/types/User";
 

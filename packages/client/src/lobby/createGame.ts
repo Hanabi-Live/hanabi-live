@@ -1,5 +1,7 @@
 // The "Create Game" nav button.
 
+import type { Settings } from "@hanabi/data";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi/data";
 import type { Options } from "@hanabi/game";
 import {
   DEFAULT_VARIANT_NAME,
@@ -22,8 +24,6 @@ import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
-import type { Settings } from "./types/Settings";
-import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "./types/Settings";
 
 const BASIC_VARIANT_NAMES = [
   "No Variant",

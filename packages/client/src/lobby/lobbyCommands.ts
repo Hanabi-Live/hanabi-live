@@ -1,10 +1,11 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
+import type { CommandWelcomeData } from "@hanabi/data";
+import { globals } from "../Globals";
 import * as gameMain from "../game/main";
 import type { SoundType } from "../game/types/SoundType";
 import type { Spectator } from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
-import { globals } from "../Globals";
 import * as sounds from "../sounds";
 import * as history from "./history";
 import * as lobbyLogin from "./login";
@@ -16,7 +17,6 @@ import type { GameHistory } from "./types/GameHistory";
 import { Screen } from "./types/Screen";
 import type { Table } from "./types/Table";
 import type { User } from "./types/User";
-import type { WelcomeData } from "./types/WelcomeData";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 
@@ -299,7 +299,7 @@ lobbyCommands.set("userInactive", (data: UserInactiveData) => {
 });
 
 // Received by the client upon first connecting.
-lobbyCommands.set("welcome", (data: WelcomeData) => {
+lobbyCommands.set("welcome", (data: CommandWelcomeData) => {
   // Store some variables (mostly relating to our user account).
   globals.userID = data.userID;
   globals.username = data.username; // We might have logged-in with a different stylization
