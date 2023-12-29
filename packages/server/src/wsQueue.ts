@@ -1,5 +1,6 @@
 // We handle all WebSocket logins and logouts using a queue to prevent race conditions.
 
+import type { Settings } from "@hanabi/data";
 import { Command } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
@@ -7,6 +8,7 @@ import { enqueueSetPlayerConnected } from "./gameQueue";
 import { logger } from "./logger";
 import { models } from "./models";
 import { getRedisGamesWithUser } from "./redis";
+import type { UserID } from "./types/UserID";
 import { wsError, wsSendAll } from "./ws";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
@@ -18,6 +20,25 @@ export enum WSQueueElementType {
 
 interface WSQueueElement extends WSUser {
   type: WSQueueElementType;
+}
+
+interface LoginData {
+  // Data that will be attached to the session.
+  muted: boolean;
+  friends: Set<UserID>;
+  reverseFriends: Set<UserID>;
+  hyphenated: boolean;
+
+  // Other stats.
+  firstTimeUser: boolean;
+  totalGames: number;
+  settings: Settings;
+  friendsList: string[];
+
+  // Information about their current activity.
+  playingAtTables: number[];
+  disconSpectatingTable: number;
+  disconShadowingSeat: number;
 }
 
 const QUEUE_FUNCTIONS = {
@@ -39,11 +60,28 @@ async function processQueue(element: WSQueueElement) {
 }
 
 async function login(wsUser: WSUser) {
-  logger.info(
-    `Logging in WebSocket user: ${wsUser.username} (${wsUser.userID})`,
-  );
+  const { userID, username, ip } = wsUser;
 
-  const { connection, userID, ip } = wsUser;
+  logger.info(`Logging in WebSocket user: ${username} (${userID})`);
+
+  // Do all asynchronous work first before adding the user to the map and attaching handlers.
+  const data = await getLoginData(userID, ip);
+
+  // The rest must be done synchronously to prevent race conditions.
+  addToMapAndAddConnectionHandlers(wsUser, data);
+}
+
+async function getLoginData(userID: UserID, ip: string): Promise<LoginData> {
+  // Update the database with "datetime_last_login" and "last_ip".
+  await models.users.setLastLogin(userID, ip);
+
+  // TODO
+
+  return {} as LoginData; // TODO
+}
+
+function addToMapAndAddConnectionHandlers(wsUser: WSUser, _data: LoginData) {
+  const { connection, userID } = wsUser;
 
   // First, check to see if an existing WebSocket connection exists for this user.
   const existingUser = wsUsers.get(userID);
@@ -55,10 +93,9 @@ async function login(wsUser: WSUser) {
     existingUser.connection.destroy();
   }
 
-  wsUsers.set(userID, wsUser);
-
-  // Validation was successful; update the database with "datetime_last_login" and "last_ip".
-  await models.users.setLastLogin(userID, ip);
+  // We perform a type assertion to a readable map to represent that we are inside of the WebSocket
+  // login queue, which is the only place that this map should be mutable.
+  (wsUsers as Map<UserID, WSUser>).set(userID, wsUser);
 
   // Attach event handlers.
   connection.socket.on("close", () => {
@@ -86,7 +123,9 @@ async function logout(wsUser: WSUser) {
 
   logger.info(`Logging out WebSocket user: ${username} (${userID})`);
 
-  wsUsers.delete(userID);
+  // We perform a type assertion to a readable map to represent that we are inside of the WebSocket
+  // login queue, which is the only place that this map should be mutable.
+  (wsUsers as Map<UserID, WSUser>).delete(userID);
 
   const games = await getRedisGamesWithUser(userID);
   for (const game of games) {

@@ -1,4 +1,5 @@
 import type { SocketStream } from "@fastify/websocket";
+import { ReadonlyMap } from "isaacscript-common-ts";
 import type { SessionID } from "./types/SessionID";
 import type { UserID } from "./types/UserID";
 
@@ -13,6 +14,13 @@ export interface WSUser {
 }
 
 /**
+ * Contains the currently connected WebSocket users.
+ *
+ * Should only be written to by functions inside of the WebSocket queue.
+ */
+export const wsUsers = new ReadonlyMap<UserID, WSUser>();
+
+/**
  * The first session will be given an ID of 1, the second session will be given an ID of 2, and so
  * on.
  */
@@ -22,6 +30,3 @@ export function getSessionID(): SessionID {
   sessionID++;
   return sessionID;
 }
-
-/** Contains the currently connected WebSocket users. */
-export const wsUsers = new Map<UserID, WSUser>();

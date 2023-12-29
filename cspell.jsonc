@@ -155,6 +155,7 @@
     "hanabilive",
     "hanabiuser",
     "hanablive",
+    "hdel",
     "hget",
     "hgetall",
     "hlive",

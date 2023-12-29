@@ -72,3 +72,9 @@ export async function setRedisGame(game: Game): Promise<void> {
   const gameJSON = gameStringifyFunc(game);
   await redis.hset(REDIS_GAMES_KEY, game.id, gameJSON);
 }
+
+/*
+export async function deleteRedisGame(gameID: GameID): Promise<void> {
+  await redis.hdel(REDIS_GAMES_KEY, gameID.toString());
+}
+*/

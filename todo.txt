@@ -2,7 +2,11 @@
 | TODO |
 +------+
 
+- on server, do chat PM command next
+- optimize DB calls in wsQueue.ts, can they be done outside of the critical path?
+
 - make Connection.send on client type-safe
+- linking to lobby table that doesn't exist shouldn't throw warning and should instead just redirect to /
 
 +-----+
 | OLD |
