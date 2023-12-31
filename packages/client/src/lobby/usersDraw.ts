@@ -1,11 +1,11 @@
 // The lobby area that shows all of the current logged-in users.
 
+import { Status, StatusText } from "@hanabi/data";
 import { assertDefined } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
 import { Screen } from "./types/Screen";
-import { Status, StatusText } from "./types/Status";
 
 export function draw(): void {
   $(".lobby-users-num").text(globals.userMap.size);

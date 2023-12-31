@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import type { UserID } from "./types/UserID";
+import type { UserID } from "../../data/src/types/UserID";
 
 interface HTTPSessionData {
   userID?: UserID;

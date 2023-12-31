@@ -1,17 +1,19 @@
 import type {
   CommandChatData,
   CommandErrorData,
+  CommandUserData,
   CommandUserLeftData,
   CommandWarningData,
   CommandWelcomeData,
 } from "@hanabi/data";
 import {
   Command,
-  CommandChatDataSchema,
-  CommandErrorDataSchema,
-  CommandUserLeftDataSchema,
-  CommandWarningDataSchema,
-  CommandWelcomeDataSchema,
+  commandChatData,
+  commandErrorData,
+  commandUserData,
+  commandUserLeftData,
+  commandWarningData,
+  commandWelcomeData,
 } from "@hanabi/data";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
@@ -21,6 +23,7 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 export interface CommandData {
   [Command.chat]: CommandChatData;
   [Command.error]: CommandErrorData;
+  [Command.user]: CommandUserData;
   [Command.userLeft]: CommandUserLeftData;
   [Command.warning]: CommandWarningData;
   [Command.welcome]: CommandWelcomeData;
@@ -29,11 +32,12 @@ export interface CommandData {
 validateInterfaceMatchesEnum<CommandData, Command>();
 
 const commandSchemas = {
-  [Command.chat]: CommandChatDataSchema,
-  [Command.error]: CommandErrorDataSchema,
-  [Command.userLeft]: CommandUserLeftDataSchema,
-  [Command.warning]: CommandWarningDataSchema,
-  [Command.welcome]: CommandWelcomeDataSchema,
+  [Command.chat]: commandChatData,
+  [Command.error]: commandErrorData,
+  [Command.user]: commandUserData,
+  [Command.userLeft]: commandUserLeftData,
+  [Command.warning]: commandWarningData,
+  [Command.welcome]: commandWelcomeData,
 } as const satisfies Record<Command, unknown>;
 
 export const commandStringifyFuncs = Object.fromEntries(

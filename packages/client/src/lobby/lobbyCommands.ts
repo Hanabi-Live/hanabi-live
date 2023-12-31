@@ -1,6 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type { CommandWelcomeData } from "@hanabi/data";
+import type { CommandUserData, CommandWelcomeData } from "@hanabi/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
 import type { SoundType } from "../game/types/SoundType";
@@ -16,7 +16,6 @@ import type { Game } from "./types/Game";
 import type { GameHistory } from "./types/GameHistory";
 import { Screen } from "./types/Screen";
 import type { Table } from "./types/Table";
-import type { User } from "./types/User";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 
@@ -243,7 +242,7 @@ lobbyCommands.set("pregameSpectators", (data: SpectatorsData) => {
 });
 
 // Received by the client when a user connects or has a new status.
-lobbyCommands.set("user", (data: User) => {
+lobbyCommands.set("user", (data: CommandUserData) => {
   globals.userMap.set(data.userID, data);
   if (
     globals.currentScreen === Screen.Lobby ||
@@ -253,7 +252,7 @@ lobbyCommands.set("user", (data: User) => {
   }
 });
 
-lobbyCommands.set("userList", (dataList: readonly User[]) => {
+lobbyCommands.set("userList", (dataList: readonly CommandUserData[]) => {
   for (const data of dataList) {
     globals.userMap.set(data.userID, data);
   }
@@ -285,11 +284,19 @@ interface UserInactiveData {
   inactive: boolean;
 }
 lobbyCommands.set("userInactive", (data: UserInactiveData) => {
-  const user = globals.userMap.get(data.userID);
+  const { userID, inactive } = data;
+
+  const user = globals.userMap.get(userID);
   if (user === undefined) {
     return;
   }
-  user.inactive = data.inactive;
+
+  const newUser = {
+    ...user,
+    inactive,
+  };
+  globals.userMap.set(userID, newUser);
+
   if (
     globals.currentScreen === Screen.Lobby ||
     globals.currentScreen === Screen.PreGame

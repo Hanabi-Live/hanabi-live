@@ -1,6 +1,6 @@
+import type { UserID } from "../../../data/src/types/UserID";
 import { chatLogPMTable } from "../databaseSchema";
 import { db } from "../db";
-import type { UserID } from "../types/UserID";
 
 export const chatLogPM = {
   insert: async (

@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { Settings } from "../../../classes/Settings";
+import { tableID } from "../../TableID";
+import { userID } from "../../UserID";
 
-export const CommandWelcomeDataSchema = z
+export const commandWelcomeData = z
   .object({
-    userID: z.number(),
+    userID,
     username: z.string(),
     totalGames: z.number().int(),
     muted: z.boolean(),
@@ -12,7 +14,7 @@ export const CommandWelcomeDataSchema = z
     friends: z.string().array(),
 
     playingAtTables: z.number().int().array(),
-    disconSpectatingTable: z.number().int(),
+    disconSpectatingTable: tableID,
     disconShadowingSeat: z.number().int(),
 
     randomTableName: z.string(),
@@ -22,4 +24,4 @@ export const CommandWelcomeDataSchema = z
   })
   .readonly();
 
-export type CommandWelcomeData = z.infer<typeof CommandWelcomeDataSchema>;
+export type CommandWelcomeData = z.infer<typeof commandWelcomeData>;

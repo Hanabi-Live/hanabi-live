@@ -1,10 +1,9 @@
+import type { GameID, UserID } from "@hanabi/data";
 import { Redis } from "ioredis";
 import { IS_DEV } from "./env";
-import type { Game } from "./interfaces/Game";
-import { gameStringifyFunc } from "./interfaces/Game";
 import { logger } from "./logger";
-import type { GameID } from "./types/GameID";
-import type { UserID } from "./types/UserID";
+import type { Game } from "./types/Game";
+import { gameStringifyFunc } from "./types/Game";
 
 const REDIS_GAMES_KEY = "games";
 const DEFAULT_REDIS_PORT = 6379;
@@ -51,7 +50,7 @@ export async function getRedisGamesWithUser(userID: UserID): Promise<Game[]> {
 
   for (const gameJSON of Object.values(gamesHash)) {
     const game = JSON.parse(gameJSON) as Game;
-    if (game.players.some((player) => player.id === userID)) {
+    if (game.players.some((player) => player.userID === userID)) {
       games.push(game);
     }
   }

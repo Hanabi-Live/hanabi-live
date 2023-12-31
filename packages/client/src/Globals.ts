@@ -1,5 +1,6 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
+import type { CommandUserData } from "@hanabi/data";
 import { Settings } from "@hanabi/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
@@ -8,7 +9,6 @@ import type { Game } from "./lobby/types/Game";
 import type { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";
 import type { Table } from "./lobby/types/Table";
-import type { User } from "./lobby/types/User";
 
 export class Globals {
   /** The WebSocket connection (set in "websocket.ts"). */
@@ -37,7 +37,7 @@ export class Globals {
   // -----------------------
 
   /** Keys are IDs. */
-  userMap = new Map<number, User>();
+  userMap = new Map<number, CommandUserData>();
 
   /** Keys are IDs. */
   tableMap = new Map<number, Table>();

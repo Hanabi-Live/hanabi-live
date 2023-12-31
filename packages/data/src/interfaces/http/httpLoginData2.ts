@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const HTTPLoginDataSchema = z
+export const httpLoginData = z
   .object({
     username: z.string().min(1),
     password: z.string().min(1),
@@ -8,5 +8,3 @@ export const HTTPLoginDataSchema = z
     version: z.string().min(1),
   })
   .readonly();
-
-export type HTTPLoginData = z.infer<typeof HTTPLoginDataSchema>;

@@ -62,6 +62,7 @@ async function chatPM(wsUser: WSUser, wsUserRecipient: WSUser, msg: string) {
   // Send the private message to the recipient.
   wsSend(wsUserRecipient.connection, Command.chat, data);
 
-  // Add the message to the database.
+  // Add the message to the database. (This can be done last since it is the most time intensive
+  // part.)
   await models.chatLogPM.insert(wsUser.userID, wsUserRecipient.userID, msg);
 }

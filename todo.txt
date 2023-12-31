@@ -2,7 +2,7 @@
 | TODO |
 +------+
 
-- on server, do chat PM command next
+- try sending WS message on server to connection that is already destroyed
 - optimize DB calls in wsQueue.ts, can they be done outside of the critical path?
 
 - make Connection.send on client type-safe

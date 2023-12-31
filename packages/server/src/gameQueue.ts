@@ -1,9 +1,8 @@
+import type { GameID, UserID } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
 import { getRedisGame, setRedisGame } from "./redis";
-import type { GameID } from "./types/GameID";
-import type { UserID } from "./types/UserID";
 
 enum GameQueueElementType {
   SetPlayerConnected,
@@ -48,7 +47,9 @@ async function setPlayerConnected(data: SetPlayerConnectedData) {
     return;
   }
 
-  const matchingPlayer = game.players.find((player) => player.id === userID);
+  const matchingPlayer = game.players.find(
+    (player) => player.userID === userID,
+  );
   if (matchingPlayer === undefined) {
     return;
   }

@@ -1,7 +1,7 @@
 import type { SocketStream } from "@fastify/websocket";
 import { ReadonlyMap } from "isaacscript-common-ts";
+import type { UserID } from "../../data/src/types/UserID";
 import type { SessionID } from "./types/SessionID";
-import type { UserID } from "./types/UserID";
 
 export interface WSUser {
   /** We need to store the `SocketStream` instead of the `WebSocket` for destruction purposes. */
@@ -9,7 +9,7 @@ export interface WSUser {
 
   sessionID: SessionID;
   userID: UserID;
-  username: string; // TODO: unused?
+  username: string;
   normalizedUsername: string;
   ip: string;
   muted: boolean;

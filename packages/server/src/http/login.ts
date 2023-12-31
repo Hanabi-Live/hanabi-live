@@ -1,14 +1,14 @@
-import { HTTPLoginDataSchema, PROJECT_NAME } from "@hanabi/data";
+import { httpLoginData, PROJECT_NAME } from "@hanabi/data";
 import * as argon2 from "argon2";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import {
-  ReadonlySet,
   getNumConsecutiveDiacritics,
   hasEmoji,
   hasWhitespace,
   normalizeUsername,
   parseIntSafe,
+  ReadonlySet,
 } from "isaacscript-common-ts";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "../constants";
 import { setCookieValue } from "../httpSession";
@@ -50,7 +50,7 @@ export async function httpLogin(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<FastifyReply> {
-  const result = HTTPLoginDataSchema.safeParse(request.body);
+  const result = httpLoginData.safeParse(request.body);
   if (!result.success) {
     return reply.code(StatusCodes.UNAUTHORIZED).send(result.error);
   }

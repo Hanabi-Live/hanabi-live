@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
+import type { UserID } from "../../../data/src/types/UserID";
 import { mutedIPsTable, usersTable } from "../databaseSchema";
 import { db } from "../db";
-import type { UserID } from "../types/UserID";
 
 interface User {
   id: UserID;
