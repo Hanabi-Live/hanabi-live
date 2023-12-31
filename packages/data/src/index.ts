@@ -2,6 +2,7 @@ export * from "./classes/Settings";
 export * from "./constants";
 export * from "./enums/Command";
 export * from "./enums/Status";
+export * from "./functions/golem";
 export * from "./types/GameID";
 export * from "./types/HTTPLoginData";
 export * from "./types/TableID";

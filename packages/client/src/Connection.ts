@@ -1,4 +1,4 @@
-import { WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
+import { packWSMessageOnClient, unpackWSMessage } from "@hanabi/data";
 
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
@@ -45,22 +45,31 @@ export class Connection {
   }
 
   onMessage(event: MessageEvent): void {
-    const data = unpack(event.data as string);
-    const command = data[0]!;
-    if (this.callbacks[command] === undefined) {
-      console.error(
-        "Received WebSocket message with no callback:",
-        command,
-        JSON.parse(data[1]!),
-      );
-    } else {
-      const obj = unmarshal(data[1]!);
-      if (this.debug) {
-        console.log(`%cReceived ${command}:`, "color: blue;");
-        console.log(obj);
-      }
-      this.callbacks[command]!(obj);
+    if (typeof event.data !== "string") {
+      return;
     }
+
+    const msg = unpackWSMessage(event.data);
+    if (msg === undefined) {
+      return;
+    }
+
+    const [command, data] = msg;
+
+    const callback = this.callbacks[command];
+    if (callback === undefined) {
+      console.error(
+        `Received a WebSocket message with no corresponding callback: ${command}`,
+      );
+      return;
+    }
+
+    if (this.debug) {
+      console.log(`%cReceived ${command}:`, "color: blue;");
+      console.log(data);
+    }
+
+    callback(data);
   }
 
   onError(event: Event): void {
@@ -73,29 +82,19 @@ export class Connection {
     this.callbacks[name] = callback;
   }
 
-  send(command: string, data?: unknown): void {
+  send(command: string, data: unknown): void {
     if (this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
+
+    const msg = packWSMessageOnClient(command, data);
+    this.ws.send(msg);
+
     console.log(`%cSent ${command}:`, "color: green;");
     console.log(data);
-    this.ws.send(marshalAndPack(command, data ?? {}));
   }
 
   close(): void {
     this.ws.close();
   }
-}
-
-function unpack(data: string): readonly string[] {
-  const name = data.split(WEBSOCKET_COMMAND_SEPARATOR)[0]!;
-  return [name, data.slice(name.length + 1, data.length)];
-}
-
-function unmarshal(data: string): unknown {
-  return JSON.parse(data);
-}
-
-function marshalAndPack(name: string, data: unknown): string {
-  return name + WEBSOCKET_COMMAND_SEPARATOR + JSON.stringify(data);
 }

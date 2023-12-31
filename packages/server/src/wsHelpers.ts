@@ -1,5 +1,5 @@
 import type { SocketStream } from "@fastify/websocket";
-import { Command, WEBSOCKET_COMMAND_SEPARATOR } from "@hanabi/data";
+import { Command, packWSMessageOnServer } from "@hanabi/data";
 import type { CommandData } from "./http/commands";
 import { commandStringifyFuncs } from "./http/commands";
 import { wsUsers } from "./wsUsers";
@@ -7,8 +7,7 @@ import { wsUsers } from "./wsUsers";
 /** Returns a WebSocket message in the Golem protocol format. */
 function getWSMsg<T extends Command>(command: T, data: CommandData[T]) {
   const stringifyFunc = commandStringifyFuncs[command];
-  const dataString = stringifyFunc(data);
-  return command + WEBSOCKET_COMMAND_SEPARATOR + dataString;
+  return packWSMessageOnServer(command, data, stringifyFunc);
 }
 
 /**

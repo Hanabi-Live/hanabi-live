@@ -541,7 +541,7 @@ export function ready(): boolean {
       gameName = globals.randomTableName;
 
       // Get a new random name from the server for the next time we click the button.
-      globals.conn!.send("getName");
+      globals.conn!.send("getName", undefined);
     }
     dialogOptions = globals.settings;
 

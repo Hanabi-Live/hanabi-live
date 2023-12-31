@@ -9,6 +9,7 @@ import { logger } from "./logger";
 import { models } from "./models";
 import { getRedisGamesWithUser } from "./redis";
 import { wsError, wsSendAll } from "./wsHelpers";
+import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
 
@@ -86,11 +87,12 @@ async function login(wsUser: WSUser) {
   });
 
   // Attach event handlers.
+  connection.socket.on("message", (data) => {
+    wsMessage(connection, data);
+  });
   connection.socket.on("close", () => {
     enqueueWSMsg(WSQueueElementType.Logout, wsUser);
   });
-
-  // TODO: attach more event handlers
 
   // We intentionally do not await the sending of the "welcome" command because we want to do
   // database-intensive work out of the critical path.
